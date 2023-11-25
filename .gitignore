@@ -1,0 +1,6 @@
+*
+!.github
+!.github/**/*
+!README.md
+!public
+!public/**/*
