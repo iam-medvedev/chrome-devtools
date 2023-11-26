@@ -1,0 +1,54 @@
+name: publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Get published version
+        id: get_published_version
+        run: |
+          published_version=$(npm show chrome-devtools-built version || echo "0.0.0")
+          IFS='.' read -r major date patch <<< "$published_version"
+          echo "date=${date}" >> $GITHUB_OUTPUT
+          echo "patch=${patch}" >> $GITHUB_OUTPUT
+
+      - name: Create new version
+        id: create_new_version
+        run: |
+          current_date=$(date +"%Y%d%m")
+          if [ "${{ steps.get_published_version.outputs.date }}" != "$current_date" ]; then
+            new_version="1.${current_date}.0"
+          else
+            new_patch=$(( ${{ steps.get_published_version.outputs.patch }} + 1 ))
+            new_version="1.${current_date}.${new_patch}"
+          fi
+          echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+
+      - name: Update package version
+        run: |
+          echo "Updating package version to ${{ steps.create_new_version.outputs.new_version }}"
+          npm version ${{ steps.create_new_version.outputs.new_version }} --allow-same-version
+
+      - name: Create git release
+        run: |
+          git tag -a v${{ steps.create_new_version.outputs.new_version }} -m "Release v${{ steps.create_new_version.outputs.new_version }}"
+          git push origin v${{ steps.create_new_version.outputs.new_version }}
+
+      - name: Publish
+        run: npm publish --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
