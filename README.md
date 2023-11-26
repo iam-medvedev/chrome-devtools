@@ -1,12 +1,25 @@
 # Automated Chrome DevTools frontend builder
 
-This repository contains a [GitHub Action](.github/workflows/build.yml) that runs once a week on a schedule, builds the [Chrome DevTools frontend](https://chromium.googlesource.com/devtools/devtools-frontend) source code, and sends the build code to the [main](https://github.com/iam-medvedev/chrome-devtools/tree/main) branch via [PR](https://github.com/iam-medvedev/chrome-devtools/pulls?q=is%3Apr+label%3Aauto-build).
+This repository contains a [Github Action](.github/workflows/build.yml) that runs once a week on a schedule, builds the [Chrome DevTools frontend](https://chromium.googlesource.com/devtools/devtools-frontend) source code, and sends the build code to the [main](https://github.com/iam-medvedev/chrome-devtools/tree/main) branch via [PR](https://github.com/iam-medvedev/chrome-devtools/pulls?q=is%3Apr+label%3Aauto-build).
+
+## Workflow
+
+### Build and Merge
+
+- **Schedule:** Runs once a week.
+- **Build Action:** Automatically triggers a build process.
+- **PR Creation and merge:** Creates a Pull Request with the changes and automatically merges into the main branch.
+
+### Deployment and Release
+
+- **Github Pages deploy**
+- **NPM release**
 
 ## Deployed version
 
 For your hack needs there is a [deployed version](https://iam-medvedev.github.io/chrome-devtools/) which will be updated after each build.
 
-## NPM version
+## NPM package
 
 [![npm version](https://badge.fury.io/js/chrome-devtools-built.svg)](https://www.npmjs.com/package/chrome-devtools-built)
 
