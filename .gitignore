@@ -2,6 +2,7 @@
 !.github
 !.github/**/*
 !README.md
+!LICENSE
 !public
 !public/**/*
 !package.json
