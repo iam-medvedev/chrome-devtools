@@ -4,3 +4,5 @@
 !README.md
 !public
 !public/**/*
+!package.json
+!yarn.lock

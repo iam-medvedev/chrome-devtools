@@ -6,6 +6,14 @@ This repository contains a [GitHub Action](.github/workflows/build.yml) that run
 
 For your hack needs there is a [deployed version](https://iam-medvedev.github.io/chrome-devtools/) which will be updated after each build.
 
+## NPM version
+
+[![npm version](https://badge.fury.io/js/chrome-devtools-built.svg)](https://www.npmjs.com/package/chrome-devtools-built)
+
+Also every build is published in the NPM.
+
+Package versioning works as follows: `1.20232611.0` where `1.${current_date}.{patch_number}`.
+
 ## License
 
 The [devtools-frontend](https://chromium.googlesource.com/devtools/devtools-frontend) code is subject to its own license terms. Please refer to the [Chromium DevTools Frontend License](https://chromium.googlesource.com/devtools/devtools-frontend/+/main/LICENSE) for details.
