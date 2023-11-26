@@ -17,6 +17,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          registry-url: "https://registry.npmjs.org/"
+          cache: "yarn"
 
       - name: Get published version
         id: get_published_version
@@ -25,6 +27,7 @@ jobs:
           IFS='.' read -r major date patch <<< "$published_version"
           echo "date=${date}" >> $GITHUB_OUTPUT
           echo "patch=${patch}" >> $GITHUB_OUTPUT
+          echo "Published version: ${published_version} (date: ${date}, patch: ${patch})"
 
       - name: Create new version
         id: create_new_version
@@ -36,19 +39,22 @@ jobs:
             new_patch=$(( ${{ steps.get_published_version.outputs.patch }} + 1 ))
             new_version="1.${current_date}.${new_patch}"
           fi
+          echo "New version: ${new_version}"
           echo "new_version=${new_version}" >> $GITHUB_OUTPUT
 
       - name: Update package version
         run: |
+          git config --global user.name "GitHub"
+          git config --global user.email "noreply@github.com"
           echo "Updating package version to ${{ steps.create_new_version.outputs.new_version }}"
           npm version ${{ steps.create_new_version.outputs.new_version }} --allow-same-version
 
       - name: Create git release
         run: |
-          git tag -a v${{ steps.create_new_version.outputs.new_version }} -m "Release v${{ steps.create_new_version.outputs.new_version }}"
+          git tag -a v${{ steps.create_new_version.outputs.new_version }} -m "Release v${{ steps.create_new_version.outputs.new_version }}" --force
           git push origin v${{ steps.create_new_version.outputs.new_version }}
 
       - name: Publish
-        run: npm publish --dry-run
+        run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
