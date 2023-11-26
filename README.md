@@ -8,7 +8,7 @@ For your hack needs there is a [deployed version](https://iam-medvedev.github.io
 
 ## License
 
-The [devtools-frontend](https://github.com/iam-medvedev/chrome-devtools) code is subject to its own license terms. Please refer to the [Chromium DevTools Frontend License](https://chromium.googlesource.com/devtools/devtools-frontend/+/main/LICENSE) for details.
+The [devtools-frontend](https://chromium.googlesource.com/devtools/devtools-frontend) code is subject to its own license terms. Please refer to the [Chromium DevTools Frontend License](https://chromium.googlesource.com/devtools/devtools-frontend/+/main/LICENSE) for details.
 
 The code in this repository, specific to the automation process, is licensed under [MIT](LICENSE).
 
