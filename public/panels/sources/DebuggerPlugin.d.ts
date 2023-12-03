@@ -89,11 +89,8 @@ export declare class DebuggerPlugin extends Plugin {
     private setExecutionLocation;
     dispose(): void;
 }
-export declare class BreakpointLocationRevealer implements Common.Revealer.Revealer {
-    static instance({ forceNew }?: {
-        forceNew: boolean;
-    }): BreakpointLocationRevealer;
-    reveal(breakpointLocation: Object, omitFocus?: boolean | undefined): Promise<void>;
+export declare class BreakpointLocationRevealer implements Common.Revealer.Revealer<Breakpoints.BreakpointManager.BreakpointLocation> {
+    reveal(breakpointLocation: Breakpoints.BreakpointManager.BreakpointLocation, omitFocus?: boolean | undefined): Promise<void>;
 }
 export declare function computeExecutionDecorations(state: CodeMirror.EditorState, lineNumber: number, columnNumber: number): CodeMirror.DecorationSet;
 export declare function getVariableNamesByLine(editorState: CodeMirror.EditorState, fromPos: number, toPos: number, currentPos: number): {

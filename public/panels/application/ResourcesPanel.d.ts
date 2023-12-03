@@ -4,6 +4,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ApplicationPanelSidebar } from './ApplicationPanelSidebar.js';
 import { type DOMStorage } from './DOMStorageModel.js';
+import type * as PreloadingHelper from './preloading/helper/helper.js';
 export declare class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     private readonly resourcesLastSelectedItemSetting;
     visibleView: UI.Widget.Widget | null;
@@ -33,27 +34,15 @@ export declare class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     clearCookies(target: SDK.Target.Target, cookieDomain: string): void;
     wasShown(): void;
 }
-export declare class ResourceRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): ResourceRevealer;
-    reveal(resource: Object): Promise<void>;
+export declare class ResourceRevealer implements Common.Revealer.Revealer<SDK.Resource.Resource> {
+    reveal(resource: SDK.Resource.Resource): Promise<void>;
 }
-export declare class FrameDetailsRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): FrameDetailsRevealer;
-    reveal(frame: Object): Promise<void>;
+export declare class FrameDetailsRevealer implements Common.Revealer.Revealer<SDK.ResourceTreeModel.ResourceTreeFrame> {
+    reveal(frame: SDK.ResourceTreeModel.ResourceTreeFrame): Promise<void>;
 }
-export declare class RuleSetViewRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): FrameDetailsRevealer;
-    reveal(revealInfo: Object): Promise<void>;
+export declare class RuleSetViewRevealer implements Common.Revealer.Revealer<PreloadingHelper.PreloadingForward.RuleSetView> {
+    reveal(revealInfo: PreloadingHelper.PreloadingForward.RuleSetView): Promise<void>;
 }
-export declare class AttemptViewWithFilterRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): FrameDetailsRevealer;
-    reveal(filter: Object): Promise<void>;
+export declare class AttemptViewWithFilterRevealer implements Common.Revealer.Revealer<PreloadingHelper.PreloadingForward.AttemptViewWithFilter> {
+    reveal(filter: PreloadingHelper.PreloadingForward.AttemptViewWithFilter): Promise<void>;
 }

@@ -54,6 +54,7 @@ export declare class EntriesFilter {
      * This method is cached, so it is safe to call multiple times.
      **/
     invisibleEntries(): Types.TraceEvents.TraceEventData[];
+    isEntryModified(event: Types.TraceEvents.TraceEventData): boolean;
     isUserApplyFilterAction(action: UserFilterAction): action is UserApplyFilterAction;
     isFilterUndoAction(action: FilterAction): action is FilterUndoAction;
 }

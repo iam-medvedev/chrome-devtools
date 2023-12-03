@@ -72,7 +72,7 @@ styles.replaceSync(
 
 .issue.selected,
 .issue.expanded.selected {
-  background-color: var(--sys-color-neutral-container);
+  background-color: var(--sys-color-surface2);
 
   &:focus {
     background-color: var(--sys-color-tonal-container);

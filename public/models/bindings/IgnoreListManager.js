@@ -367,6 +367,7 @@ export class IgnoreListManager {
                 menuItems.push({
                     text: i18nString(UIStrings.removeFromIgnoreList),
                     callback: this.unIgnoreListUISourceCode.bind(this, uiSourceCode),
+                    jslogContext: 'remove-script-from-ignorelist',
                 });
             }
         }
@@ -375,6 +376,7 @@ export class IgnoreListManager {
                 menuItems.push({
                     text: i18nString(UIStrings.addScriptToIgnoreList),
                     callback: this.ignoreListUISourceCode.bind(this, uiSourceCode),
+                    jslogContext: 'add-script-to-ignorelist',
                 });
             }
             menuItems.push(...this.getIgnoreListGeneralContextMenuItems({ isContentScript, isKnownThirdParty }));
@@ -387,12 +389,14 @@ export class IgnoreListManager {
             menuItems.push({
                 text: i18nString(UIStrings.addAllContentScriptsToIgnoreList),
                 callback: this.ignoreListContentScripts.bind(this),
+                jslogContext: 'add-content-scripts-to-ignorelist',
             });
         }
         if (options?.isKnownThirdParty) {
             menuItems.push({
                 text: i18nString(UIStrings.addAllThirdPartyScriptsToIgnoreList),
                 callback: this.ignoreListThirdParty.bind(this),
+                jslogContext: 'add-3p-scripts-to-ignorelist',
             });
         }
         return menuItems;

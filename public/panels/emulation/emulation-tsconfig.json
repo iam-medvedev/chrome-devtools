@@ -90,6 +90,9 @@
       "path": "../../ui/legacy/theme_support/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/visual_logging/bundle-tsconfig.json"
+    },
+    {
       "path": "components/bundle-tsconfig.json"
     }
   ]

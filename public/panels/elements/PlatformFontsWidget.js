@@ -36,6 +36,18 @@ const UIStrings = {
      */
     renderedFonts: 'Rendered Fonts',
     /**
+     *@description Font property title text content in Platform Fonts Widget of the Elements panel
+     */
+    familyName: 'Family name',
+    /**
+     *@description Font property title text content in Platform Fonts Widget of the Elements panel
+     */
+    postScriptName: 'PostScript name',
+    /**
+     *@description Font property title text content in Platform Fonts Widget of the Elements panel
+     */
+    fontOrigin: 'Font origin',
+    /**
      *@description Text in Platform Fonts Widget of the Elements panel
      */
     networkResource: 'Network resource',
@@ -88,17 +100,17 @@ export class PlatformFontsWidget extends UI.ThrottledWidget.ThrottledWidget {
         platformFonts.sort(function (a, b) {
             return b.glyphCount - a.glyphCount;
         });
-        for (let i = 0; i < platformFonts.length; ++i) {
+        for (const platformFont of platformFonts) {
             const fontStatElement = this.fontStatsSection.createChild('div', 'font-stats-item');
-            const fontNameElement = fontStatElement.createChild('span', 'font-name');
-            fontNameElement.textContent = platformFonts[i].familyName;
-            const fontDelimeterElement = fontStatElement.createChild('span', 'font-delimeter');
-            fontDelimeterElement.textContent = '\u2014';
-            const fontOrigin = fontStatElement.createChild('span');
-            fontOrigin.textContent =
-                platformFonts[i].isCustomFont ? i18nString(UIStrings.networkResource) : i18nString(UIStrings.localFile);
-            const fontUsageElement = fontStatElement.createChild('span', 'font-usage');
-            const usage = platformFonts[i].glyphCount;
+            const familyNameElement = fontStatElement.createChild('div');
+            familyNameElement.textContent = `${UIStrings.familyName}: ${platformFont.familyName}`;
+            const postScriptNameElement = fontStatElement.createChild('div');
+            postScriptNameElement.textContent = `${UIStrings.postScriptName}: ${platformFont.postScriptName}`;
+            const fontOriginElement = fontStatElement.createChild('div');
+            const fontOrigin = platformFont.isCustomFont ? i18nString(UIStrings.networkResource) : i18nString(UIStrings.localFile);
+            fontOriginElement.textContent = `${UIStrings.fontOrigin}: ${fontOrigin}`;
+            const fontUsageElement = fontOriginElement.createChild('span', 'font-usage');
+            const usage = platformFont.glyphCount;
             fontUsageElement.textContent = i18nString(UIStrings.dGlyphs, { n: usage });
         }
     }

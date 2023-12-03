@@ -85,6 +85,6 @@ export declare class BottomUpNode extends Node {
     searchTree(matchFunction: (arg0: TraceEngine.Legacy.CompatibleTraceEvent) => boolean, results?: Node[]): Node[];
 }
 export declare function eventURL(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): Platform.DevToolsPath.UrlString | null;
-export declare function eventStackFrame(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): Protocol.Runtime.CallFrame | null;
+export declare function eventStackFrame(event: TraceEngine.Types.TraceEvents.TraceEventData): Protocol.Runtime.CallFrame | null;
 export declare function generateEventID(event: TraceEngine.Legacy.CompatibleTraceEvent): string;
 export type ChildrenCache = Map<string | symbol, Node>;

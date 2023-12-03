@@ -15,6 +15,7 @@ export interface Conditions {
     description: string;
     network: SDK.NetworkManager.Conditions;
     cpuThrottlingRate: number;
+    jslogContext?: string;
 }
 export interface NetworkThrottlingConditionsGroup {
     title: string;
@@ -28,4 +29,5 @@ export type ConditionsList = (Conditions | PlaceholderConditions | null)[];
 export interface PlaceholderConditions {
     title: string;
     description: string;
+    jslogContext?: string;
 }

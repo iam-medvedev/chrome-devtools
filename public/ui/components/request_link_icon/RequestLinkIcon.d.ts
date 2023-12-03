@@ -20,7 +20,7 @@ export interface RequestLinkIconData {
     displayURL?: boolean;
     urlToDisplay?: string;
     additionalOnClickAction?: () => void;
-    revealOverride?: (revealable: Object | null, omitFocus?: boolean | undefined) => Promise<void>;
+    revealOverride?: (revealable: unknown, omitFocus?: boolean) => Promise<void>;
 }
 export declare const extractShortPath: (path: Platform.DevToolsPath.UrlString) => string;
 export declare class RequestLinkIcon extends HTMLElement {

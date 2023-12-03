@@ -83,6 +83,9 @@ var VisualElements;
     VisualElements[VisualElements["TableCell"] = 70] = "TableCell";
     VisualElements[VisualElements["StylesComputedPane"] = 71] = "StylesComputedPane";
     VisualElements[VisualElements["Pane"] = 72] = "Pane";
+    VisualElements[VisualElements["ResponsivePresets"] = 73] = "ResponsivePresets";
+    VisualElements[VisualElements["DeviceModeRuler"] = 74] = "DeviceModeRuler";
+    VisualElements[VisualElements["MediaInspectorView"] = 75] = "MediaInspectorView";
 })(VisualElements || (VisualElements = {}));
 function resolveVe(ve) {
     return VisualElements[ve] ?? 0;
@@ -126,7 +129,9 @@ export function makeConfigStringBuilder(veName) {
     const components = [veName];
     return {
         context: function (value) {
-            components.push(`context: ${value}`);
+            if (typeof value !== 'undefined') {
+                components.push(`context: ${value}`);
+            }
             return this;
         },
         parent: function (value) {

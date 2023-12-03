@@ -1,4 +1,5 @@
 import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.ViewLocationResolver {
     private readonly tabbedLocation;
@@ -54,11 +55,8 @@ export declare class ExperimentsSettingsTab extends SettingsTab {
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;
 }
-export declare class Revealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean;
-    }): Revealer;
-    reveal(object: Object): Promise<void>;
+export declare class Revealer implements Common.Revealer.Revealer<Root.Runtime.Experiment | Common.Settings.Setting<unknown>> {
+    reveal(object: Root.Runtime.Experiment | Common.Settings.Setting<unknown>): Promise<void>;
 }
 export interface ShowSettingsScreenOptions {
     name?: string;

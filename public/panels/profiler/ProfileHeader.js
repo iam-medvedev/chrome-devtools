@@ -73,7 +73,6 @@ export class StatusUpdate {
 export var Events;
 (function (Events) {
     Events["UpdateStatus"] = "UpdateStatus";
-    Events["ProfileReceived"] = "ProfileReceived";
     Events["ProfileTitleChanged"] = "ProfileTitleChanged";
 })(Events || (Events = {}));
 export class ProfileType extends Common.ObjectWrapper.ObjectWrapper {

@@ -1042,7 +1042,7 @@ export class CheckboxLabel extends HTMLSpanElement {
         const element = CheckboxLabel.constructorInternal();
         element.checkboxElement.checked = Boolean(checked);
         if (jslogContext) {
-            element.checkboxElement.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true }).context(jslogContext)}`);
+            element.checkboxElement.setAttribute('jslog', `${VisualLogging.toggle().track({ change: true }).context(jslogContext)}`);
         }
         if (title !== undefined) {
             element.textElement.textContent = title;
@@ -1192,13 +1192,14 @@ export function bindInput(input, apply, validate, numeric, modifierMultiplier) {
             return;
         }
         const value = modifiedFloatNumber(parseFloat(input.value), event, modifierMultiplier);
-        const stringValue = value ? String(value) : '';
-        const { valid } = validate(stringValue);
-        if (!valid || !value) {
+        if (value === null) {
             return;
         }
-        input.value = stringValue;
-        apply(input.value);
+        const stringValue = String(value);
+        const { valid } = validate(stringValue);
+        if (valid) {
+            setValue(stringValue);
+        }
         event.preventDefault();
     }
     function setValue(value) {

@@ -136,7 +136,7 @@ export function isTraceEventUpdateCounters(event) {
     return event.name === 'UpdateCounters';
 }
 export function isThreadName(traceEventData) {
-    return traceEventData.name === 'thread_name';
+    return traceEventData.name === "thread_name" /* KnownEventName.ThreadName */;
 }
 export function isProcessName(traceEventData) {
     return traceEventData.name === 'process_name';

@@ -35,11 +35,11 @@ import * as SDK from '../../core/sdk/sdk.js';
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import heapProfilerStyles from './heapProfiler.css.js';
+import { ProfileEvents as ProfileTypeEvents, ProfileHeader, } from './ProfileHeader.js';
+import { Events as ProfileLauncherEvents, ProfileLauncherView } from './ProfileLauncherView.js';
+import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
 import profilesPanelStyles from './profilesPanel.css.js';
 import profilesSidebarTreeStyles from './profilesSidebarTree.css.js';
-import { ProfileEvents as ProfileTypeEvents, } from './ProfileHeader.js';
-import { Events as ProfileLauncherEvents, ProfileLauncherView } from './ProfileLauncherView.js';
-import { ProfileSidebarTreeElement, setSharedFileSelectorElement } from './ProfileSidebarTreeElement.js';
 import { instance } from './ProfileTypeRegistry.js';
 const UIStrings = {
     /**
@@ -60,10 +60,6 @@ const UIStrings = {
      *@example {cannot open file} PH1
      */
     profileLoadingFailedS: 'Profile loading failed: {PH1}.',
-    /**
-     *@description A context menu item in the Profiles Panel of a profiler tool
-     */
-    load: 'Load…',
     /**
      *@description Text in Profiles Panel of a profiler tool
      *@example {2} PH1
@@ -105,6 +101,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     toggleRecordAction;
     toggleRecordButton;
     clearResultsButton;
+    #saveToFileAction;
     profileViewToolbar;
     profileGroups;
     launcherView;
@@ -143,6 +140,11 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         this.clearResultsButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.reset, this);
         toolbar.appendToolbarItem(this.clearResultsButton);
         toolbar.appendSeparator();
+        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('profiler.load-from-file'));
+        this.#saveToFileAction = UI.ActionRegistry.ActionRegistry.instance().getAction('profiler.save-to-file');
+        this.#saveToFileAction.setEnabled(false);
+        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.#saveToFileAction));
+        toolbar.appendSeparator();
         toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('components.collect-garbage'));
         this.profileViewToolbar = new UI.Toolbar.Toolbar('', this.toolbarElement);
         this.profileViewToolbar.makeWrappable(true);
@@ -159,7 +161,6 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         this.profilesItemTreeElement.select();
         this.showLauncherView();
         this.createFileSelectorElement();
-        this.element.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), false);
         SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this.onSuspendStateChanged, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.CPUProfilerModel.CPUProfilerModel, this.updateProfileTypeSpecificUI, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.HeapProfilerModel.HeapProfilerModel, this.updateProfileTypeSpecificUI, this);
@@ -188,7 +189,6 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
             this.element.removeChild(this.fileSelectorElement);
         }
         this.fileSelectorElement = UI.UIUtils.createFileSelectorElement(this.loadFromFile.bind(this));
-        setSharedFileSelectorElement(this.fileSelectorElement);
         this.element.appendChild(this.fileSelectorElement);
     }
     findProfileTypeByExtension(fileName) {
@@ -277,7 +277,6 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         this.launcherView.detach();
         this.profileViews.removeChildren();
         this.profileViewToolbar.removeToolbarItems();
-        this.clearResultsButton.element.classList.remove('hidden');
         this.profilesItemTreeElement.select();
         this.showLauncherView();
     }
@@ -287,13 +286,13 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         this.launcherView.show(this.profileViews);
         this.visibleView = this.launcherView;
         this.toolbarElement.classList.add('hidden');
+        this.#saveToFileAction.setEnabled(false);
     }
     registerProfileType(profileType) {
         this.launcherView.addProfileType(profileType);
         const profileTypeSection = new ProfileTypeSidebarSection(this, profileType);
         this.typeIdToSidebarSection[profileType.id] = profileTypeSection;
         this.sidebarTree.appendChild(profileTypeSection);
-        profileTypeSection.childrenListElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), false);
         function onAddProfileHeader(event) {
             this.addProfileHeader(event.data);
         }
@@ -311,13 +310,6 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         for (let i = 0; i < profiles.length; i++) {
             this.addProfileHeader(profiles[i]);
         }
-    }
-    handleContextMenuEvent(event) {
-        const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        if (this.panelSidebarElement().isSelfOrAncestor(event.target)) {
-            contextMenu.defaultSection().appendItem(i18nString(UIStrings.load), this.fileSelectorElement.click.bind(this.fileSelectorElement));
-        }
-        void contextMenu.show();
     }
     showLoadFromFileDialog() {
         this.fileSelectorElement.click();
@@ -357,6 +349,8 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
             return view;
         }
         this.closeVisibleView();
+        UI.Context.Context.instance().setFlavor(ProfileHeader, profile);
+        this.#saveToFileAction.setEnabled(profile.canSaveToFile());
         view.show(this.profileViews);
         this.toolbarElement.classList.remove('hidden');
         this.visibleView = view;
@@ -390,6 +384,8 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         return this.profileToView.findIndex(item => item.profile === profile);
     }
     closeVisibleView() {
+        UI.Context.Context.instance().setFlavor(ProfileHeader, null);
+        this.#saveToFileAction.setEnabled(false);
         if (this.visibleView) {
             this.visibleView.detach();
         }
@@ -400,8 +396,13 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     }
     wasShown() {
         super.wasShown();
+        UI.Context.Context.instance().setFlavor(ProfilesPanel, this);
         this.registerCSSFiles([objectValueStyles, profilesPanelStyles, heapProfilerStyles]);
         this.sidebarTree.registerCSSFiles([profilesSidebarTreeStyles]);
+    }
+    willHide() {
+        UI.Context.Context.instance().setFlavor(ProfilesPanel, null);
+        super.willHide();
     }
 }
 export class ProfileTypeSidebarSection extends UI.TreeOutline.TreeElement {
@@ -667,6 +668,7 @@ export class JSProfilerPanel extends ProfilesPanel {
     }
     willHide() {
         UI.Context.Context.instance().setFlavor(JSProfilerPanel, null);
+        super.willHide();
     }
     handleAction(_context, _actionId) {
         const panel = UI.Context.Context.instance().flavor(JSProfilerPanel);
@@ -677,6 +679,37 @@ export class JSProfilerPanel extends ProfilesPanel {
             throw new Error('non-null JSProfilerPanel expected!');
         }
         return true;
+    }
+}
+export class ActionDelegate {
+    handleAction(context, actionId) {
+        switch (actionId) {
+            case 'profiler.load-from-file': {
+                const profilesPanel = context.flavor(ProfilesPanel);
+                if (profilesPanel !== null) {
+                    profilesPanel.showLoadFromFileDialog();
+                    return true;
+                }
+                return false;
+            }
+            case 'profiler.save-to-file': {
+                const profile = context.flavor(ProfileHeader);
+                if (profile !== null) {
+                    profile.saveToFile();
+                    return true;
+                }
+                return false;
+            }
+            case 'profiler.delete-profile': {
+                const profile = context.flavor(ProfileHeader);
+                if (profile !== null) {
+                    profile.profileType().removeProfile(profile);
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
     }
 }
 //# sourceMappingURL=ProfilesPanel.js.map

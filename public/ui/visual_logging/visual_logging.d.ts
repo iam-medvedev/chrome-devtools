@@ -1,7 +1,7 @@
 import type * as LoggableModule from './Loggable.js';
 import * as LoggingConfig from './LoggingConfig.js';
 export type Loggable = LoggableModule.Loggable;
-export { startLogging, stopLogging } from './LoggingDriver.js';
+export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logClick, logImpressions } from './LoggingEvents.js';
 export { registerContextProvider, registerParentProvider } from './LoggingState.js';
 export declare function registerLoggable(loggable: Loggable, config: string, parent: Loggable | null): void;
@@ -31,6 +31,7 @@ export declare const cssFlexboxEditor: () => LoggingConfig.ConfigStringBuilder;
 export declare const cssGridEditor: () => LoggingConfig.ConfigStringBuilder;
 export declare const cssLayersPane: () => LoggingConfig.ConfigStringBuilder;
 export declare const cssShadowEditor: () => LoggingConfig.ConfigStringBuilder;
+export declare const deviceModeRuler: () => LoggingConfig.ConfigStringBuilder;
 export declare const domBreakpoint: () => LoggingConfig.ConfigStringBuilder;
 export declare const dropDown: () => LoggingConfig.ConfigStringBuilder;
 export declare const elementsBreadcrumbs: () => LoggingConfig.ConfigStringBuilder;
@@ -53,6 +54,7 @@ export declare const key: () => LoggingConfig.ConfigStringBuilder;
  * of hyperlinks.
  */
 export declare const link: () => LoggingConfig.ConfigStringBuilder;
+export declare const mediaInspectorView: () => LoggingConfig.ConfigStringBuilder;
 export declare const menu: () => LoggingConfig.ConfigStringBuilder;
 export declare const metricsBox: () => LoggingConfig.ConfigStringBuilder;
 export declare const next: () => LoggingConfig.ConfigStringBuilder;
@@ -67,6 +69,7 @@ export declare const panel: () => LoggingConfig.ConfigStringBuilder;
 export declare const panelTabHeader: () => LoggingConfig.ConfigStringBuilder;
 export declare const preview: () => LoggingConfig.ConfigStringBuilder;
 export declare const previous: () => LoggingConfig.ConfigStringBuilder;
+export declare const responsivePresets: () => LoggingConfig.ConfigStringBuilder;
 export declare const showAllStyleProperties: () => LoggingConfig.ConfigStringBuilder;
 export declare const showStyleEditor: () => LoggingConfig.ConfigStringBuilder;
 export declare const slider: () => LoggingConfig.ConfigStringBuilder;

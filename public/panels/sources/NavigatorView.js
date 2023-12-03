@@ -1038,7 +1038,7 @@ export class NavigatorFolderTreeElement extends UI.TreeOutline.TreeElement {
     isIgnoreListed;
     isFromSourceMap;
     constructor(navigatorView, type, title, hoverCallback) {
-        super('', true);
+        super('', true, NavigatorFolderTreeElement.#contextForType(type));
         this.listItemElement.classList.add('navigator-' + type + '-tree-item', 'navigator-folder-tree-item');
         UI.ARIAUtils.setLabel(this.listItemElement, `${title}, ${type}`);
         this.nodeType = type;
@@ -1134,6 +1134,21 @@ export class NavigatorFolderTreeElement extends UI.TreeOutline.TreeElement {
         this.hovered = false;
         this.hoverCallback(false);
     }
+    static #contextForType(type) {
+        switch (type) {
+            case Types.Domain:
+                return 'domain';
+            case Types.Frame:
+                return 'frame';
+            case Types.Worker:
+                return 'worker';
+            case Types.Authored:
+                return 'authored';
+            case Types.Deployed:
+                return 'deployed';
+        }
+        return 'folder';
+    }
 }
 export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
     nodeType;
@@ -1141,7 +1156,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
     navigatorView;
     uiSourceCodeInternal;
     constructor(navigatorView, uiSourceCode, title, node) {
-        super('', false);
+        super('', false, uiSourceCode.contentType().name());
         this.nodeType = Types.File;
         this.node = node;
         this.title = title;

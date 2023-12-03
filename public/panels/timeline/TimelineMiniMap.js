@@ -11,7 +11,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
 import { TimelineEventOverviewCPUActivity, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview, } from './TimelineEventOverview.js';
 import miniMapStyles from './timelineMiniMap.css.js';
-import { ThreadTracksSource } from './TimelinePanel.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 /**
  * This component wraps the generic PerfUI Overview component and configures it
@@ -25,12 +24,9 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     breadcrumbs = null;
     #breadcrumbsUI;
     #minTime = TimingTypes.Timing.MilliSeconds(0);
-    // Once the sync tracks migration is completely shipped, this can be removed.
-    #threadTracksSource;
     #data = null;
-    constructor(threadTracksSource = ThreadTracksSource.NEW_ENGINE) {
+    constructor() {
         super();
-        this.#threadTracksSource = threadTracksSource;
         this.element.classList.add('timeline-minimap');
         this.#breadcrumbsUI = new TimelineComponents.BreadcrumbsUI.BreadcrumbsUI();
         this.#overviewComponent.show(this.element);
@@ -150,34 +146,21 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         }
         this.#data = data;
         this.#controls = [];
-        if (data.traceParsedData?.Meta.traceBounds.min !== undefined) {
+        if (data.traceParsedData.Meta.traceBounds.min !== undefined) {
             this.#minTime = Helpers.Timing.microSecondsToMilliseconds(data.traceParsedData?.Meta.traceBounds.min);
         }
-        if (data.traceParsedData) {
-            this.#setMarkers(data.traceParsedData);
-            this.#setNavigationStartEvents(data.traceParsedData);
-            this.#controls.push(new TimelineEventOverviewResponsiveness(data.traceParsedData));
-            // TODO: Once we commit to shipping sync tracks, we can remove this
-            // conditional and update the CPUActivity component to not be given the
-            // PerformanceModel instance.
-            if (this.#threadTracksSource === ThreadTracksSource.NEW_ENGINE) {
-                this.#controls.push(new TimelineEventOverviewCPUActivity(null, data.traceParsedData));
-            }
-        }
-        const useOldEngineForCpu = this.#threadTracksSource !== ThreadTracksSource.NEW_ENGINE;
-        if (data.performanceModel && useOldEngineForCpu) {
-            this.#controls.push(new TimelineEventOverviewCPUActivity(data.performanceModel, null));
-        }
-        if (data.traceParsedData) {
-            this.#controls.push(new TimelineEventOverviewNetwork(data.traceParsedData));
-        }
-        if (data.settings.showScreenshots && data.traceParsedData) {
+        this.#setMarkers(data.traceParsedData);
+        this.#setNavigationStartEvents(data.traceParsedData);
+        this.#controls.push(new TimelineEventOverviewResponsiveness(data.traceParsedData));
+        this.#controls.push(new TimelineEventOverviewCPUActivity(data.traceParsedData));
+        this.#controls.push(new TimelineEventOverviewNetwork(data.traceParsedData));
+        if (data.settings.showScreenshots) {
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(data.traceParsedData);
             if (filmStrip.frames.length) {
                 this.#controls.push(new TimelineFilmStripOverview(filmStrip));
             }
         }
-        if (data.settings.showMemory && data.traceParsedData) {
+        if (data.settings.showMemory) {
             this.#controls.push(new TimelineEventOverviewMemory(data.traceParsedData));
         }
         this.#overviewComponent.setOverviewControls(this.#controls);

@@ -386,15 +386,15 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         if (!item) {
             return;
         }
-        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event, { jsLogContext: 'call-stack-frame' });
         const debuggerCallFrame = itemToCallFrame.get(item);
         if (debuggerCallFrame) {
             contextMenu.defaultSection().appendItem(i18nString(UIStrings.restartFrame), () => {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.StackFrameRestarted);
                 void debuggerCallFrame.restart();
-            }, { disabled: !debuggerCallFrame.canBeRestarted });
+            }, { disabled: !debuggerCallFrame.canBeRestarted, jslogContext: 'restart-frame' });
         }
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyStackTrace), this.copyStackTrace.bind(this));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyStackTrace), this.copyStackTrace.bind(this), { jslogContext: 'copy-stack-trace' });
         if (item.uiLocation) {
             this.appendIgnoreListURLContextMenuItems(contextMenu, item.uiLocation.uiSourceCode);
         }
@@ -443,9 +443,9 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
             // Already added menu items.
             return;
         }
-        for (const { text, callback } of Bindings.IgnoreListManager.IgnoreListManager.instance()
+        for (const { text, callback, jslogContext } of Bindings.IgnoreListManager.IgnoreListManager.instance()
             .getIgnoreListURLContextMenuItems(uiSourceCode)) {
-            menuSection.appendItem(text, callback);
+            menuSection.appendItem(text, callback, { jslogContext });
         }
     }
     selectNextCallFrameOnStack() {

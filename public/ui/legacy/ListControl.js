@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
+import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { Events as ListModelEvents } from './ListModel.js';
 import { measurePreferredSize } from './UIUtils.js';
@@ -309,6 +310,7 @@ export class ListControl {
         let element = this.itemToElement.get(item);
         if (!element) {
             element = this.delegate.createElementForItem(item);
+            element.setAttribute('jslog', `${VisualLogging.item().track({ click: true })}`);
             this.itemToElement.set(item, element);
             this.updateElementARIA(element, index);
         }

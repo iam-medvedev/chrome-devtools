@@ -210,26 +210,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.legacyTimelineModel = performanceModel && performanceModel.timelineModel();
         this.traceEngineData = newTraceEngineData;
         this.isCpuProfile = isCpuProfile;
-        if (this.legacyTimelineModel) {
-            this.minimumBoundaryInternal = this.legacyTimelineModel.minimumRecordTime();
-            this.timeSpan = this.legacyTimelineModel.isEmpty() ?
-                1000 :
-                this.legacyTimelineModel.maximumRecordTime() - this.minimumBoundaryInternal;
+        if (newTraceEngineData) {
+            const { traceBounds } = newTraceEngineData.Meta;
+            const minTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceBounds.min);
+            const maxTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceBounds.max);
+            this.minimumBoundaryInternal = minTime;
+            this.timeSpan = minTime === maxTime ? 1000 : maxTime - this.minimumBoundaryInternal;
         }
-        else if (this.traceEngineData) {
-            this.setTimingBoundsData(this.traceEngineData);
-        }
-    }
-    /**
-     * Sets the minimum time and total time span of a trace using the
-     * new engine data.
-     */
-    setTimingBoundsData(newTraceEngineData) {
-        const { traceBounds } = newTraceEngineData.Meta;
-        const minTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceBounds.min);
-        const maxTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceBounds.max);
-        this.minimumBoundaryInternal = minTime;
-        this.timeSpan = minTime === maxTime ? 1000 : maxTime - this.minimumBoundaryInternal;
     }
     /**
      * Instances and caches a CompatibilityTracksAppender using the
@@ -683,11 +670,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (TraceEngine.Legacy.eventIsFromNewEngine(event) && TraceEngine.Types.TraceEvents.isProfileCall(event)) {
             return this.isIgnoreListedURL(event.callFrame.url);
         }
-        if (!TimelineModel.TimelineModel.TimelineModelImpl.isJsFrameEvent(event)) {
-            return false;
-        }
-        const url = event.args['data']['url'];
-        return url && this.isIgnoreListedURL(url);
+        return false;
     }
     isIgnoreListedURL(url) {
         return Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url);

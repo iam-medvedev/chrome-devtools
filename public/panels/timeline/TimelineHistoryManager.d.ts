@@ -2,7 +2,6 @@ import type * as TraceEngine from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type PerformanceModel } from './PerformanceModel.js';
 import { type TimelineMiniMap } from './TimelineMiniMap.js';
-import { ThreadTracksSource } from './TimelinePanel.js';
 export type RecordingData = {
     legacyModel: PerformanceModel;
     traceParseDataIndex: number;
@@ -22,7 +21,7 @@ export declare class TimelineHistoryManager {
     private totalHeight;
     private enabled;
     private lastActiveModel;
-    constructor(threadTracksSource?: ThreadTracksSource, minimapComponent?: TimelineMiniMap);
+    constructor(minimapComponent?: TimelineMiniMap);
     addRecording(newInput: NewHistoryRecordingData): void;
     setEnabled(enabled: boolean): void;
     button(): ToolbarButton;

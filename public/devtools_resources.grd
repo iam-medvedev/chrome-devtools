@@ -534,7 +534,7 @@
       <include file="panels/recorder/injected/injected.generated.js" name="PANELS_RECORDER_INJECTED_INJECTED_GENERATED_JS" resource_path="panels/recorder/injected/injected.generated.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/injected/injected.js" name="PANELS_RECORDER_INJECTED_INJECTED_JS" resource_path="panels/recorder/injected/injected.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/models/models.js" name="PANELS_RECORDER_MODELS_MODELS_JS" resource_path="panels/recorder/models/models.js" type="BINDATA" compress="false"/>
-      <include file="panels/recorder/recorder-actions.js" name="PANELS_RECORDER_RECORDER_ACTIONS_JS" resource_path="panels/recorder/recorder-actions.js" type="BINDATA" compress="false"/>
+      <include file="panels/recorder/recorder-actions/recorder-actions.js" name="PANELS_RECORDER_RECORDER_ACTIONS_RECORDER_ACTIONS_JS" resource_path="panels/recorder/recorder-actions/recorder-actions.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/recorder-meta.js" name="PANELS_RECORDER_RECORDER_META_JS" resource_path="panels/recorder/recorder-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/recorder.js" name="PANELS_RECORDER_RECORDER_JS" resource_path="panels/recorder/recorder.js" type="BINDATA" compress="false"/>
       <include file="panels/recorder/util/util.js" name="PANELS_RECORDER_UTIL_UTIL_JS" resource_path="panels/recorder/util/util.js" type="BINDATA" compress="false"/>
@@ -575,7 +575,6 @@
       <include file="third_party/codemirror.next/chunk/codemirror.js" name="THIRD_PARTY_CODEMIRROR_NEXT_CHUNK_CODEMIRROR_JS" resource_path="third_party/codemirror.next/chunk/codemirror.js" type="BINDATA" compress="false"/>
       <include file="third_party/codemirror.next/chunk/cpp.js" name="THIRD_PARTY_CODEMIRROR_NEXT_CHUNK_CPP_JS" resource_path="third_party/codemirror.next/chunk/cpp.js" type="BINDATA" compress="false"/>
       <include file="third_party/codemirror.next/chunk/java.js" name="THIRD_PARTY_CODEMIRROR_NEXT_CHUNK_JAVA_JS" resource_path="third_party/codemirror.next/chunk/java.js" type="BINDATA" compress="false"/>
-      <include file="third_party/codemirror.next/chunk/json.js" name="THIRD_PARTY_CODEMIRROR_NEXT_CHUNK_JSON_JS" resource_path="third_party/codemirror.next/chunk/json.js" type="BINDATA" compress="false"/>
       <include file="third_party/codemirror.next/chunk/legacy.js" name="THIRD_PARTY_CODEMIRROR_NEXT_CHUNK_LEGACY_JS" resource_path="third_party/codemirror.next/chunk/legacy.js" type="BINDATA" compress="false"/>
       <include file="third_party/codemirror.next/chunk/less.js" name="THIRD_PARTY_CODEMIRROR_NEXT_CHUNK_LESS_JS" resource_path="third_party/codemirror.next/chunk/less.js" type="BINDATA" compress="false"/>
       <include file="third_party/codemirror.next/chunk/markdown.js" name="THIRD_PARTY_CODEMIRROR_NEXT_CHUNK_MARKDOWN_JS" resource_path="third_party/codemirror.next/chunk/markdown.js" type="BINDATA" compress="false"/>
@@ -930,6 +929,7 @@
       <include file="models/trace/TracingManager.js" name="MODELS_TRACE_TRACINGMANAGER_JS" resource_path="models/trace/TracingManager.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/FetchNodes.js" name="MODELS_TRACE_EXTRAS_FETCHNODES_JS" resource_path="models/trace/extras/FetchNodes.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/FilmStrip.js" name="MODELS_TRACE_EXTRAS_FILMSTRIP_JS" resource_path="models/trace/extras/FilmStrip.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/extras/MainThreadActivity.js" name="MODELS_TRACE_EXTRAS_MAINTHREADACTIVITY_JS" resource_path="models/trace/extras/MainThreadActivity.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/Metadata.js" name="MODELS_TRACE_EXTRAS_METADATA_JS" resource_path="models/trace/extras/Metadata.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AnimationHandler.js" name="MODELS_TRACE_HANDLERS_ANIMATIONHANDLER_JS" resource_path="models/trace/handlers/AnimationHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AuctionWorkletsHandler.js" name="MODELS_TRACE_HANDLERS_AUCTIONWORKLETSHANDLER_JS" resource_path="models/trace/handlers/AuctionWorkletsHandler.js" type="BINDATA" compress="false"/>
@@ -1877,11 +1877,13 @@
       <include file="ui/components/linkifier/LinkifierImpl.js" name="UI_COMPONENTS_LINKIFIER_LINKIFIERIMPL_JS" resource_path="ui/components/linkifier/LinkifierImpl.js" type="BINDATA" compress="false"/>
       <include file="ui/components/linkifier/LinkifierUtils.js" name="UI_COMPONENTS_LINKIFIER_LINKIFIERUTILS_JS" resource_path="ui/components/linkifier/LinkifierUtils.js" type="BINDATA" compress="false"/>
       <include file="ui/components/linkifier/linkifierImpl.css.js" name="UI_COMPONENTS_LINKIFIER_LINKIFIERIMPL_CSS_JS" resource_path="ui/components/linkifier/linkifierImpl.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/markdown_view/CodeBlock.js" name="UI_COMPONENTS_MARKDOWN_VIEW_CODEBLOCK_JS" resource_path="ui/components/markdown_view/CodeBlock.js" type="BINDATA" compress="false"/>
       <include file="ui/components/markdown_view/MarkdownImage.js" name="UI_COMPONENTS_MARKDOWN_VIEW_MARKDOWNIMAGE_JS" resource_path="ui/components/markdown_view/MarkdownImage.js" type="BINDATA" compress="false"/>
       <include file="ui/components/markdown_view/MarkdownImagesMap.js" name="UI_COMPONENTS_MARKDOWN_VIEW_MARKDOWNIMAGESMAP_JS" resource_path="ui/components/markdown_view/MarkdownImagesMap.js" type="BINDATA" compress="false"/>
       <include file="ui/components/markdown_view/MarkdownLink.js" name="UI_COMPONENTS_MARKDOWN_VIEW_MARKDOWNLINK_JS" resource_path="ui/components/markdown_view/MarkdownLink.js" type="BINDATA" compress="false"/>
       <include file="ui/components/markdown_view/MarkdownLinksMap.js" name="UI_COMPONENTS_MARKDOWN_VIEW_MARKDOWNLINKSMAP_JS" resource_path="ui/components/markdown_view/MarkdownLinksMap.js" type="BINDATA" compress="false"/>
       <include file="ui/components/markdown_view/MarkdownView.js" name="UI_COMPONENTS_MARKDOWN_VIEW_MARKDOWNVIEW_JS" resource_path="ui/components/markdown_view/MarkdownView.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/markdown_view/codeBlock.css.js" name="UI_COMPONENTS_MARKDOWN_VIEW_CODEBLOCK_CSS_JS" resource_path="ui/components/markdown_view/codeBlock.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/markdown_view/markdownImage.css.js" name="UI_COMPONENTS_MARKDOWN_VIEW_MARKDOWNIMAGE_CSS_JS" resource_path="ui/components/markdown_view/markdownImage.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/markdown_view/markdownLink.css.js" name="UI_COMPONENTS_MARKDOWN_VIEW_MARKDOWNLINK_CSS_JS" resource_path="ui/components/markdown_view/markdownLink.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/markdown_view/markdownView.css.js" name="UI_COMPONENTS_MARKDOWN_VIEW_MARKDOWNVIEW_CSS_JS" resource_path="ui/components/markdown_view/markdownView.css.js" type="BINDATA" compress="false"/>
@@ -2151,6 +2153,7 @@
       <include file="ui/visual_logging/LoggingConfig.js" name="UI_VISUAL_LOGGING_LOGGINGCONFIG_JS" resource_path="ui/visual_logging/LoggingConfig.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/LoggingDriver.js" name="UI_VISUAL_LOGGING_LOGGINGDRIVER_JS" resource_path="ui/visual_logging/LoggingDriver.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/LoggingEvents.js" name="UI_VISUAL_LOGGING_LOGGINGEVENTS_JS" resource_path="ui/visual_logging/LoggingEvents.js" type="BINDATA" compress="false"/>
-      <include file="ui/visual_logging/LoggingState.js" name="UI_VISUAL_LOGGING_LOGGINGSTATE_JS" resource_path="ui/visual_logging/LoggingState.js" type="BINDATA" compress="false"/></includes>
+      <include file="ui/visual_logging/LoggingState.js" name="UI_VISUAL_LOGGING_LOGGINGSTATE_JS" resource_path="ui/visual_logging/LoggingState.js" type="BINDATA" compress="false"/>
+      <include file="ui/visual_logging/NonDomState.js" name="UI_VISUAL_LOGGING_NONDOMSTATE_JS" resource_path="ui/visual_logging/NonDomState.js" type="BINDATA" compress="false"/></includes>
   </release>
 </grit>

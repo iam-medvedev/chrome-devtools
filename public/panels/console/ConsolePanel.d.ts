@@ -19,9 +19,6 @@ export declare class WrapperView extends UI.Widget.VBox {
     willHide(): void;
     showViewInWrapper(): void;
 }
-export declare class ConsoleRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): ConsoleRevealer;
-    reveal(_object: Object): Promise<void>;
+export declare class ConsoleRevealer implements Common.Revealer.Revealer<Common.Console.Console> {
+    reveal(_object: Common.Console.Console): Promise<void>;
 }

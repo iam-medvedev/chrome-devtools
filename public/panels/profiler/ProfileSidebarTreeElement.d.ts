@@ -1,10 +1,10 @@
 import type * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type DataDisplayDelegate, type ProfileHeader, type StatusUpdate } from './ProfileHeader.js';
-export declare function setSharedFileSelectorElement(element: HTMLInputElement): void;
 export declare class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     readonly iconElement: HTMLDivElement;
     readonly titlesElement: HTMLDivElement;
+    readonly menuElement: HTMLButtonElement;
     titleContainer: HTMLElement;
     titleElement: HTMLElement;
     subtitleElement: HTMLElement;
@@ -15,8 +15,6 @@ export declare class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElemen
     saveLinkElement?: HTMLElement;
     editing?: UI.InplaceEditor.Controller | null;
     constructor(dataDisplayDelegate: DataDisplayDelegate, profile: ProfileHeader, className: string);
-    createSaveLink(): void;
-    onProfileReceived(): void;
     updateStatus(event: Common.EventTarget.EventTargetEvent<StatusUpdate>): void;
     ondblclick(event: Event): boolean;
     startEditing(eventTarget: Element): void;
@@ -27,8 +25,6 @@ export declare class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElemen
     ondelete(): boolean;
     onattach(): void;
     handleContextMenuEvent(event: Event): void;
-    saveProfile(_event: Event): void;
-    saveProfileKeyDown(event: KeyboardEvent): void;
     setSmall(small: boolean): void;
     setMainTitle(title: string): void;
 }

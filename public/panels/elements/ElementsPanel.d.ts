@@ -111,17 +111,11 @@ export declare class ContextMenuProvider implements UI.ContextMenu.Provider {
     appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, object: Object): void;
     static instance(): ContextMenuProvider;
 }
-export declare class DOMNodeRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): DOMNodeRevealer;
-    reveal(node: Object, omitFocus?: boolean): Promise<void>;
+export declare class DOMNodeRevealer implements Common.Revealer.Revealer<SDK.DOMModel.DOMNode | SDK.DOMModel.DeferredDOMNode | SDK.RemoteObject.RemoteObject> {
+    reveal(node: SDK.DOMModel.DOMNode | SDK.DOMModel.DeferredDOMNode | SDK.RemoteObject.RemoteObject, omitFocus?: boolean): Promise<void>;
 }
-export declare class CSSPropertyRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): CSSPropertyRevealer;
-    reveal(property: Object): Promise<void>;
+export declare class CSSPropertyRevealer implements Common.Revealer.Revealer<SDK.CSSProperty.CSSProperty> {
+    reveal(property: SDK.CSSProperty.CSSProperty): Promise<void>;
 }
 export declare class ElementsActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;

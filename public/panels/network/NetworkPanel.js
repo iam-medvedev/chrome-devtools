@@ -39,7 +39,6 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -677,53 +676,20 @@ export class ContextMenuProvider {
         NetworkPanel.instance().appendApplicableItems(event, contextMenu, target);
     }
 }
-let requestRevealerInstance;
 export class RequestRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!requestRevealerInstance || forceNew) {
-            requestRevealerInstance = new RequestRevealer();
-        }
-        return requestRevealerInstance;
-    }
     reveal(request) {
-        if (!(request instanceof SDK.NetworkRequest.NetworkRequest)) {
-            return Promise.reject(new Error('Internal error: not a network request'));
-        }
         const panel = NetworkPanel.instance();
         return UI.ViewManager.ViewManager.instance().showView('network').then(panel.revealAndHighlightRequest.bind(panel, request));
     }
 }
-let requestIdRevealerInstance;
 export class RequestIdRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!requestIdRevealerInstance || forceNew) {
-            requestIdRevealerInstance = new RequestIdRevealer();
-        }
-        return requestIdRevealerInstance;
-    }
     reveal(requestId) {
-        if (!(requestId instanceof NetworkForward.NetworkRequestId.NetworkRequestId)) {
-            return Promise.reject(new Error('Internal error: not a network request ID'));
-        }
         const panel = NetworkPanel.instance();
         return UI.ViewManager.ViewManager.instance().showView('network').then(panel.revealAndHighlightRequestWithId.bind(panel, requestId));
     }
 }
-let networkLogWithFilterRevealerInstance;
 export class NetworkLogWithFilterRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!networkLogWithFilterRevealerInstance || forceNew) {
-            networkLogWithFilterRevealerInstance = new NetworkLogWithFilterRevealer();
-        }
-        return networkLogWithFilterRevealerInstance;
-    }
     reveal(request) {
-        if (!(request instanceof NetworkForward.UIFilter.UIRequestFilter)) {
-            return Promise.reject(new Error('Internal error: not a UIRequestFilter'));
-        }
         return NetworkPanel.revealAndFilter(request.filters);
     }
 }
@@ -852,17 +818,8 @@ export class ActionDelegate {
         return false;
     }
 }
-let requestLocationRevealerInstance;
 export class RequestLocationRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!requestLocationRevealerInstance || forceNew) {
-            requestLocationRevealerInstance = new RequestLocationRevealer();
-        }
-        return requestLocationRevealerInstance;
-    }
-    async reveal(match) {
-        const location = match;
+    async reveal(location) {
         const view = await NetworkPanel.instance().selectAndActivateRequest(location.request, location.tab, location.filterOptions);
         if (!view) {
             return;

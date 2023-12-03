@@ -186,11 +186,11 @@ Common.Revealer.registerRevealer({
             Root.Runtime.Experiment,
         ];
     },
+    destination: undefined,
     async loadRevealer() {
         const Settings = await loadSettingsModule();
-        return Settings.SettingsScreen.Revealer.instance();
+        return new Settings.SettingsScreen.Revealer();
     },
-    destination: undefined,
 });
 UI.ContextMenu.registerItem({
     location: UI.ContextMenu.ItemLocation.MAIN_MENU_FOOTER,

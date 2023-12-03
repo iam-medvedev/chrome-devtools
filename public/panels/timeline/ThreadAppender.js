@@ -468,6 +468,10 @@ export class ThreadAppender {
      * Gets the color an event added by this appender should be rendered with.
      */
     colorForEvent(event) {
+        if (this.#entriesFilter?.isEntryModified(event)) {
+            // TODO(crbug.com/1469887): Change the UI of modifies entries to the final designs when they're completed.
+            return this.#colorGenerator.colorForID('temporary');
+        }
         if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
             if (event.callFrame.functionName === '(idle)') {
                 return getCategoryStyles().Idle.getComputedColorValue();

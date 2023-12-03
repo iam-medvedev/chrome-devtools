@@ -1,7 +1,7 @@
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import * as Components from './components/components.js';
 import * as Models from './models/models.js';
-import * as Actions from './recorder-actions.js';
+import * as Actions from './recorder-actions/recorder-actions.js';
 declare const LitElement: typeof LitHtml.LitElement;
 declare global {
     interface HTMLElementTagNameMap {

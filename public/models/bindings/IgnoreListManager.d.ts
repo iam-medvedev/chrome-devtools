@@ -51,6 +51,7 @@ export declare class IgnoreListManager implements SDK.TargetManager.SDKModelObse
     getIgnoreListURLContextMenuItems(uiSourceCode: Workspace.UISourceCode.UISourceCode): Array<{
         text: string;
         callback: () => void;
+        jslogContext: string;
     }>;
     private getIgnoreListGeneralContextMenuItems;
     getIgnoreListFolderContextMenuItems(url: Platform.DevToolsPath.UrlString, options?: IgnoreListGeneralRules): Array<{

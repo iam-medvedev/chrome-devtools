@@ -232,19 +232,8 @@ export class ActionDelegate {
         return false;
     }
 }
-let diffUILocationRevealerInstance;
 export class DiffUILocationRevealer {
-    static instance(opts = { forceNew: false }) {
-        const { forceNew } = opts;
-        if (!diffUILocationRevealerInstance || forceNew) {
-            diffUILocationRevealerInstance = new DiffUILocationRevealer();
-        }
-        return diffUILocationRevealerInstance;
-    }
     async reveal(diffUILocation, omitFocus) {
-        if (!(diffUILocation instanceof WorkspaceDiff.WorkspaceDiff.DiffUILocation)) {
-            throw new Error('Internal error: not a diff ui location');
-        }
         await UI.ViewManager.ViewManager.instance().showView('changes.changes');
         ChangesView.instance().changesSidebar.selectUISourceCode(diffUILocation.uiSourceCode, omitFocus);
     }

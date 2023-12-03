@@ -3,12 +3,9 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
-import { type PerformanceModel } from './PerformanceModel.js';
 import { type TimelineEventOverview } from './TimelineEventOverview.js';
-import { ThreadTracksSource } from './TimelinePanel.js';
 export interface OverviewData {
-    performanceModel: PerformanceModel | null;
-    traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null;
+    traceParsedData: TraceEngine.Handlers.Types.TraceParseData;
     isCpuProfile?: boolean;
     settings: {
         showScreenshots: boolean;
@@ -32,7 +29,7 @@ export declare class TimelineMiniMap extends TimelineMiniMap_base {
     #private;
     breadcrumbsActivated: boolean;
     breadcrumbs: TimelineComponents.Breadcrumbs.Breadcrumbs | null;
-    constructor(threadTracksSource?: ThreadTracksSource);
+    constructor();
     activateBreadcrumbs(): void;
     breadcrumbWindowBounds(breadcrumbWindow: PerfUI.TimelineOverviewPane.BreadcrumbAddedEvent): PerfUI.TimelineOverviewPane.BreadcrumbAddedEvent;
     addBreadcrumb({ startTime, endTime }: PerfUI.TimelineOverviewPane.BreadcrumbAddedEvent): void;

@@ -29,7 +29,7 @@ export declare class TimelineUIUtils {
     static buildDetailsTextForTraceEvent(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): Promise<string | null>;
     static buildDetailsNodeForTraceEvent(event: TraceEngine.Legacy.CompatibleTraceEvent, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Promise<Node | null>;
     static linkifyLocation(linkifyOptions: LinkifyLocationOptions): Element | null;
-    static linkifyTopCallFrame(event: TraceEngine.Legacy.CompatibleTraceEvent, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Element | null;
+    static linkifyTopCallFrame(event: TraceEngine.Types.TraceEvents.TraceEventData, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Element | null;
     static buildDetailsNodeForPerformanceEvent(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): Element;
     static buildConsumeCacheDetails(eventData: {
         consumedCacheSize?: number;

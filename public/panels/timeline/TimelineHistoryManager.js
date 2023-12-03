@@ -7,7 +7,6 @@ import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { TimelineEventOverviewCPUActivity, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, } from './TimelineEventOverview.js';
 import timelineHistoryManagerStyles from './timelineHistoryManager.css.js';
-import { ThreadTracksSource } from './TimelinePanel.js';
 const UIStrings = {
     /**
      *@description Screen reader label for the Timeline History dropdown button
@@ -62,12 +61,8 @@ export class TimelineHistoryManager {
     totalHeight;
     enabled;
     lastActiveModel;
-    #threadTracksSource = ThreadTracksSource.OLD_ENGINE;
     #minimapComponent;
-    constructor(threadTracksSource, minimapComponent) {
-        if (threadTracksSource) {
-            this.#threadTracksSource = threadTracksSource;
-        }
+    constructor(minimapComponent) {
         this.recordings = [];
         this.#minimapComponent = minimapComponent;
         this.action = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.show-history');
@@ -86,16 +81,12 @@ export class TimelineHistoryManager {
                 height: 3,
             },
             {
-                constructor: (_traceParsedData, performanceModel) => {
+                constructor: (traceParsedData) => {
                     const cpuOverviewFromMinimap = this.#minimapComponent?.getControls().find(control => control instanceof TimelineEventOverviewCPUActivity);
                     if (cpuOverviewFromMinimap) {
                         return cpuOverviewFromMinimap;
                     }
-                    // TODO(crbug.com/1464206): remove this conditional once ThreadTracksSource has been fully shipped and the flag removed.
-                    if (this.#threadTracksSource === ThreadTracksSource.NEW_ENGINE) {
-                        return new TimelineEventOverviewCPUActivity(null, _traceParsedData);
-                    }
-                    return new TimelineEventOverviewCPUActivity(performanceModel, null);
+                    return new TimelineEventOverviewCPUActivity(traceParsedData);
                 },
                 height: 20,
             },

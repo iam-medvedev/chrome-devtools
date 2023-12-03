@@ -100,7 +100,8 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.typeIdToOptionElementAndProfileType = new Map();
     }
     loadButtonClicked() {
-        this.panel.showLoadFromFileDialog();
+        const loadFromFileAction = UI.ActionRegistry.ActionRegistry.instance().getAction('profiler.load-from-file');
+        void loadFromFileAction.execute();
     }
     updateControls() {
         if (this.isEnabled && this.recordButtonEnabled) {

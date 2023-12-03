@@ -111,6 +111,7 @@ export declare class ConsoleViewMessage implements ConsoleViewportElement {
     showRepeatCountElement(): void;
     get text(): string;
     toExportString(): string;
+    toMessageTextString(): string;
     setSearchRegex(regex: RegExp | null): void;
     searchRegex(): RegExp | null;
     searchCount(): number;

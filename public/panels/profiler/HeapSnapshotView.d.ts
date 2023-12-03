@@ -250,7 +250,7 @@ export declare class HeapProfileHeader extends ProfileHeader {
     snapshotReceived(snapshotProxy: HeapSnapshotProxy): void;
     notifySnapshotReceived(): void;
     canSaveToFile(): boolean;
-    saveToFile(): void;
+    saveToFile(): Promise<void>;
     onChunkTransferred(reader: Bindings.FileUtils.ChunkedReader): void;
     updateSaveProgress(value: number, total: number): void;
     loadFromFile(file: File): Promise<DOMError | null>;

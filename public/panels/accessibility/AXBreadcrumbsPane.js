@@ -58,7 +58,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
         this.rootElement = this.element.createChild('div', 'ax-breadcrumbs');
         this.hoveredBreadcrumb = null;
         const previewToggle = new Feedback.PreviewToggle.PreviewToggle();
-        previewToggle.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true }).context('fullAccessibilityTree')}`);
+        previewToggle.setAttribute('jslog', `${VisualLogging.toggle().context('fullAccessibilityTree')}`);
         const name = i18nString(UIStrings.fullTreeExperimentName);
         const experiment = Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE;
         const onChangeCallback = checked => {
@@ -306,12 +306,14 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
             // This will collapse and preselect/focus the breadcrumb.
             this.collapseBreadcrumb(breadcrumb);
             breadcrumb.nodeElement().focus();
+            void VisualLogging.logClick(breadcrumb.expandLoggable, event);
             return;
         }
         if (!breadcrumb.isDOMNode()) {
             return;
         }
         this.inspectDOMNode(breadcrumb.axNode());
+        void VisualLogging.logClick(breadcrumb.expandLoggable, event);
     }
     setHoveredBreadcrumb(breadcrumb) {
         if (breadcrumb === this.hoveredBreadcrumb) {
@@ -397,6 +399,7 @@ export class AXBreadcrumb {
     preselectedInternal;
     parent;
     inspectedInternal;
+    expandLoggable = {};
     constructor(axNode, depth, inspected) {
         this.axNodeInternal = axNode;
         this.elementInternal = document.createElement('div');
@@ -440,6 +443,7 @@ export class AXBreadcrumb {
         if (!this.axNodeInternal.ignored() && this.axNodeInternal.hasOnlyUnloadedChildren()) {
             this.nodeElementInternal.classList.add('children-unloaded');
             UI.ARIAUtils.setExpanded(this.nodeElementInternal, false);
+            VisualLogging.registerLoggable(this.expandLoggable, `${VisualLogging.treeItemExpand()}`, this.elementInternal);
         }
         if (!this.axNodeInternal.isDOMNode()) {
             this.nodeElementInternal.classList.add('no-dom-node');
@@ -457,6 +461,7 @@ export class AXBreadcrumb {
         this.nodeElementInternal.classList.add('parent');
         UI.ARIAUtils.setExpanded(this.nodeElementInternal, true);
         this.childrenGroupElement.appendChild(breadcrumb.element());
+        VisualLogging.registerLoggable(this.expandLoggable, `${VisualLogging.treeItemExpand()}`, this.elementInternal);
     }
     hasExpandedChildren() {
         return this.children.length;

@@ -1,7 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import * as NetworkForward from '../../panels/network/forward/forward.js';
+import type * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Search from '../search/search.js';
@@ -94,23 +94,14 @@ export declare class ContextMenuProvider implements UI.ContextMenu.Provider {
     }): ContextMenuProvider;
     appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Object): void;
 }
-export declare class RequestRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): RequestRevealer;
-    reveal(request: Object): Promise<void>;
+export declare class RequestRevealer implements Common.Revealer.Revealer<SDK.NetworkRequest.NetworkRequest> {
+    reveal(request: SDK.NetworkRequest.NetworkRequest): Promise<void>;
 }
-export declare class RequestIdRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): RequestIdRevealer;
-    reveal(requestId: Object): Promise<void>;
+export declare class RequestIdRevealer implements Common.Revealer.Revealer<NetworkForward.NetworkRequestId.NetworkRequestId> {
+    reveal(requestId: NetworkForward.NetworkRequestId.NetworkRequestId): Promise<void>;
 }
-export declare class NetworkLogWithFilterRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): NetworkLogWithFilterRevealer;
-    reveal(request: Object): Promise<void>;
+export declare class NetworkLogWithFilterRevealer implements Common.Revealer.Revealer<NetworkForward.UIFilter.UIRequestFilter> {
+    reveal(request: NetworkForward.UIFilter.UIRequestFilter): Promise<void>;
 }
 export declare class FilmStripRecorder implements TraceEngine.TracingManager.TracingManagerClient {
     #private;
@@ -132,11 +123,8 @@ export declare class FilmStripRecorder implements TraceEngine.TracingManager.Tra
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;
 }
-export declare class RequestLocationRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    } | undefined): RequestLocationRevealer;
-    reveal(match: Object): Promise<void>;
+export declare class RequestLocationRevealer implements Common.Revealer.Revealer<NetworkForward.UIRequestLocation.UIRequestLocation> {
+    reveal(location: NetworkForward.UIRequestLocation.UIRequestLocation): Promise<void>;
 }
 export declare class SearchNetworkView extends Search.SearchView.SearchView {
     private constructor();

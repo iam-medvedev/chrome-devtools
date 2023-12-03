@@ -411,10 +411,10 @@ Common.Revealer.registerRevealer({
             Common.Console.Console,
         ];
     },
+    destination: undefined,
     async loadRevealer() {
         const Console = await loadConsoleModule();
-        return Console.ConsolePanel.ConsoleRevealer.instance();
+        return new Console.ConsolePanel.ConsoleRevealer();
     },
-    destination: undefined,
 });
 //# sourceMappingURL=console-meta.js.map

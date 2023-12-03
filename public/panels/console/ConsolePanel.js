@@ -74,15 +74,7 @@ export class WrapperView extends UI.Widget.VBox {
         this.view.show(this.element);
     }
 }
-let consoleRevealerInstance;
 export class ConsoleRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!consoleRevealerInstance || forceNew) {
-            consoleRevealerInstance = new ConsoleRevealer();
-        }
-        return consoleRevealerInstance;
-    }
     async reveal(_object) {
         const consoleView = ConsoleView.instance();
         if (consoleView.isShowing()) {

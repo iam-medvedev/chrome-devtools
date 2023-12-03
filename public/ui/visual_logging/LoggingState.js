@@ -1,8 +1,5 @@
 const state = new WeakMap();
 let nextVeId = 0;
-export function resetStateForTesting() {
-    nextVeId = 0;
-}
 export function getOrCreateLoggingState(loggable, config, parent) {
     if (state.has(loggable)) {
         return state.get(loggable);

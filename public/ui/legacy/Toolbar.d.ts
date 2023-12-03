@@ -142,7 +142,7 @@ export declare class ToolbarMenuButton extends ToolbarButton {
     private readonly useSoftMenu;
     private triggerTimeout?;
     private lastTriggerTime?;
-    constructor(contextMenuHandler: (arg0: ContextMenu) => void, useSoftMenu?: boolean);
+    constructor(contextMenuHandler: (arg0: ContextMenu) => void, useSoftMenu?: boolean, jslogContext?: string);
     mouseDown(event: MouseEvent): void;
     private trigger;
     clicked(event: Event): void;

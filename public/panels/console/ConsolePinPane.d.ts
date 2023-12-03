@@ -12,7 +12,7 @@ export declare class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
     savePins(): void;
     private contextMenuEventFired;
     private removeAllPins;
-    removePin(pin: ConsolePin, focus?: boolean): void;
+    removePin(pin: ConsolePin): void;
     addPin(expression: string, userGesture?: boolean): void;
     private focusedPinAfterDeletion;
     doUpdate(): Promise<void>;
@@ -36,7 +36,7 @@ export declare class ConsolePin {
     setHovered(hovered: boolean): void;
     expression(): string;
     element(): Element;
-    focus(): void;
+    focus(): Promise<void>;
     appendToContextMenu(contextMenu: UI.ContextMenu.ContextMenu): void;
     updatePreview(): Promise<void>;
 }

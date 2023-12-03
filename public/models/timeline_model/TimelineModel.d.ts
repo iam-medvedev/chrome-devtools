@@ -1,7 +1,6 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import * as CPUProfile from '../cpu_profile/cpu_profile.js';
 import * as TraceEngine from '../trace/trace.js';
 export declare class TimelineModelImpl {
     #private;
@@ -12,19 +11,15 @@ export declare class TimelineModelImpl {
     private sessionId;
     private mainFrameNodeId;
     private pageFrames;
-    private cpuProfilesInternal;
     private workerIdByThread;
     private requestsFromBrowser;
     private mainFrame;
     private minimumRecordTimeInternal;
     private maximumRecordTimeInternal;
-    private asyncEventTracker;
     private invalidationTracker;
-    private layoutInvalidate;
     private lastScheduleStyleRecalculation;
     private paintImageEventByPixelRefId;
     private lastPaintForLayer;
-    private lastRecalculateStylesEvent;
     private currentScriptEvent;
     private eventStack;
     private browserFrameTracking;
@@ -71,13 +66,8 @@ export declare class TimelineModelImpl {
     isMarkerEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): boolean;
     isInteractiveTimeEvent(event: TraceEngine.Legacy.Event): boolean;
     isLayoutShiftEvent(event: TraceEngine.Legacy.Event): boolean;
-    static isJsFrameEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): boolean;
     static globalEventId(event: TraceEngine.Legacy.Event, field: string): string;
     static eventFrameId(event: TraceEngine.Legacy.Event): Protocol.Page.FrameId | null;
-    cpuProfiles(): {
-        cpuProfileData: CPUProfile.CPUProfileDataModel.CPUProfileDataModel;
-        target: SDK.Target.Target | null;
-    }[];
     targetByEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): SDK.Target.Target | null;
     isFreshRecording(): boolean;
     setEvents(tracingModel: TraceEngine.Legacy.TracingModel, isFreshRecording?: boolean): void;
@@ -88,9 +78,7 @@ export declare class TimelineModelImpl {
     private processSyncBrowserEvents;
     private processAsyncBrowserEvents;
     private resetProcessingState;
-    private extractCpuProfileDataModel;
     private processThreadEvents;
-    private fixNegativeDuration;
     private processAsyncEvents;
     private processEvent;
     private processBrowserEvent;
@@ -104,7 +92,6 @@ export declare class TimelineModelImpl {
     maximumRecordTime(): number;
     inspectedTargetEvents(): TraceEngine.Legacy.Event[];
     tracks(): Track[];
-    isEmpty(): boolean;
     rootFrames(): PageFrame[];
     pageURL(): Platform.DevToolsPath.UrlString;
     pageFrameById(frameId: Protocol.Page.FrameId): PageFrame | null;
@@ -391,26 +378,14 @@ export declare class InvalidationTracker {
     private startNewFrameIfNeeded;
     private initializePerFrameState;
 }
-export declare class TimelineAsyncEventTracker {
-    private readonly initiatorByType;
-    constructor();
-    private static initialize;
-    processEvent(event: TraceEngine.Legacy.Event): void;
-    private static asyncEvents;
-    private static typeToInitiator;
-}
 export declare class EventOnTimelineData {
     url: Platform.DevToolsPath.UrlString | null;
     backendNodeIds: Protocol.DOM.BackendNodeId[];
     stackTrace: Protocol.Runtime.CallFrame[] | null;
     picture: TraceEngine.Legacy.ObjectSnapshot | null;
-    private initiatorInternal;
     frameId: Protocol.Page.FrameId | null;
     constructor();
-    setInitiator(initiator: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
-    initiator(): TraceEngine.Types.TraceEvents.TraceEventData | null;
     topFrame(): Protocol.Runtime.CallFrame | null;
-    stackTraceForSelfOrInitiator(): Protocol.Runtime.CallFrame[] | null;
     static forEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): EventOnTimelineData;
     static forTraceEventData(event: TraceEngine.Types.TraceEvents.TraceEventData): EventOnTimelineData;
     static reset(): void;

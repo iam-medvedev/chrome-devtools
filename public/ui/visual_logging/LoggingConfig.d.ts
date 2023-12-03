@@ -70,7 +70,10 @@ declare enum VisualElements {
     TableHeader = 69,
     TableCell = 70,
     StylesComputedPane = 71,
-    Pane = 72
+    Pane = 72,
+    ResponsivePresets = 73,
+    DeviceModeRuler = 74,
+    MediaInspectorView = 75
 }
 export type VisualElementName = keyof typeof VisualElements;
 export declare function parseJsLog(jslog: string): LoggingConfig;
@@ -83,7 +86,7 @@ export interface ConfigStringBuilder {
      * @param value Optional context, which can be either a string or a number.
      * @returns The builder itself.
      */
-    context: (value: string | number) => ConfigStringBuilder;
+    context: (value: string | number | undefined) => ConfigStringBuilder;
     /**
      * Speficies the name of a `ParentProvider` used to lookup the parent visual element.
      *

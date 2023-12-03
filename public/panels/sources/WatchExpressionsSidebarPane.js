@@ -100,11 +100,11 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
         this.watchExpressions = [];
         this.watchExpressionsSetting =
             Common.Settings.Settings.instance().createLocalSetting('watchExpressions', []);
-        this.addButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addWatchExpression), 'plus');
+        this.addButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addWatchExpression), 'plus', undefined, 'add-watch-expression');
         this.addButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
             void this.addButtonClicked();
         });
-        this.refreshButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refreshWatchExpressions), 'refresh');
+        this.refreshButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refreshWatchExpressions), 'refresh', undefined, 'refresh-watch-expressions');
         this.refreshButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.update, this);
         this.contentElement.classList.add('watch-expressions');
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('debugger-watch')}`);
@@ -203,10 +203,10 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
             isEditing = isEditing || watchExpression.isEditing();
         }
         if (!isEditing) {
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.addWatchExpression), this.addButtonClicked.bind(this));
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.addWatchExpression), this.addButtonClicked.bind(this), { jslogContext: 'add-watch-expression' });
         }
         if (this.watchExpressions.length > 1) {
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.deleteAllWatchExpressions), this.deleteAllButtonClicked.bind(this));
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.deleteAllWatchExpressions), this.deleteAllButtonClicked.bind(this), { jslogContext: 'delete-all-watch-expressions' });
         }
         const treeElement = this.treeOutline.treeElementFromEvent(event);
         if (!treeElement) {
@@ -396,6 +396,7 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     createWatchExpressionHeader(expressionValue, exceptionDetails) {
         const headerElement = this.element.createChild('div', 'watch-expression-header');
         const deleteButton = UI.Icon.Icon.create('cross', 'watch-expression-delete-button');
+        deleteButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('delete-watch-expression')}`);
         this.resizeObserver = new ResizeObserver(entries => {
             entries.forEach(entry => {
                 // 55 serves as a width threshold here (in px)
@@ -493,10 +494,10 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     }
     populateContextMenu(contextMenu, event) {
         if (!this.isEditing()) {
-            contextMenu.editSection().appendItem(i18nString(UIStrings.deleteWatchExpression), this.updateExpression.bind(this, null));
+            contextMenu.editSection().appendItem(i18nString(UIStrings.deleteWatchExpression), this.updateExpression.bind(this, null), { jslogContext: 'delete-watch-expression' });
         }
         if (!this.isEditing() && this.result && (this.result.type === 'number' || this.result.type === 'string')) {
-            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyValue), this.copyValueButtonClicked.bind(this));
+            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyValue), this.copyValueButtonClicked.bind(this), { jslogContext: 'copy-watch-expression-value' });
         }
         const target = UI.UIUtils.deepElementFromEvent(event);
         if (target && this.valueElement.isSelfOrAncestor(target) && this.result) {

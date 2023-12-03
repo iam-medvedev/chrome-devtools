@@ -1,5 +1,5 @@
-import * as UI from '../../ui/legacy/legacy.js';
 import type * as Protocol from '../../generated/protocol.js';
+import * as UI from '../../ui/legacy/legacy.js';
 export declare class DeviceModeView extends UI.Widget.VBox {
     wrapperInstance: UI.Widget.VBox | null;
     blockElementToWidth: WeakMap<HTMLElement, number>;

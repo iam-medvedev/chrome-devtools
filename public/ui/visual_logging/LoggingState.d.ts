@@ -9,7 +9,6 @@ export interface LoggingState {
     parent: LoggingState | null;
     processedForDebugging?: boolean;
 }
-export declare function resetStateForTesting(): void;
 export declare function getOrCreateLoggingState(loggable: Loggable, config: LoggingConfig, parent?: Loggable): LoggingState;
 export declare function getLoggingState(loggable: Loggable): LoggingState | null;
 export type ContextProvider = (e: Loggable | Event) => Promise<number | undefined>;

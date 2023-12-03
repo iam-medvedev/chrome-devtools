@@ -104,6 +104,7 @@ export declare class NavigatorView extends UI.Widget.VBox implements SDK.TargetM
     wasShown(): void;
 }
 export declare class NavigatorFolderTreeElement extends UI.TreeOutline.TreeElement {
+    #private;
     private readonly nodeType;
     private readonly navigatorView;
     private hoverCallback;

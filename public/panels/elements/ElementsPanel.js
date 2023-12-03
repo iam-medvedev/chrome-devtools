@@ -1062,15 +1062,7 @@ export class ContextMenuProvider {
         return contextMenuProviderInstance;
     }
 }
-let dOMNodeRevealerInstance;
 export class DOMNodeRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!dOMNodeRevealerInstance || forceNew) {
-            dOMNodeRevealerInstance = new DOMNodeRevealer();
-        }
-        return dOMNodeRevealerInstance;
-    }
     reveal(node, omitFocus) {
         const panel = ElementsPanel.instance();
         panel.pendingNodeReveal = true;
@@ -1094,7 +1086,7 @@ export class DOMNodeRevealer {
             else if (node instanceof SDK.DOMModel.DeferredDOMNode) {
                 node.resolve(checkDeferredDOMNodeThenReveal);
             }
-            else if (node instanceof SDK.RemoteObject.RemoteObject) {
+            else {
                 const domModel = node.runtimeModel().target().model(SDK.DOMModel.DOMModel);
                 if (domModel) {
                     void domModel.pushObjectAsNodeToFrontend(node).then(checkRemoteObjectThenReveal);
@@ -1103,11 +1095,6 @@ export class DOMNodeRevealer {
                     const msg = i18nString(UIStrings.nodeCannotBeFoundInTheCurrent);
                     reject(new Platform.UserVisibleError.UserVisibleError(msg));
                 }
-            }
-            else {
-                const msg = i18nString(UIStrings.theRemoteObjectCouldNotBe);
-                reject(new Platform.UserVisibleError.UserVisibleError(msg));
-                panel.pendingNodeReveal = false;
             }
             function onNodeResolved(resolvedNode) {
                 panel.pendingNodeReveal = false;
@@ -1152,15 +1139,7 @@ export class DOMNodeRevealer {
         }
     }
 }
-let cSSPropertyRevealerInstance;
 export class CSSPropertyRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!cSSPropertyRevealerInstance || forceNew) {
-            cSSPropertyRevealerInstance = new CSSPropertyRevealer();
-        }
-        return cSSPropertyRevealerInstance;
-    }
     reveal(property) {
         const panel = ElementsPanel.instance();
         return panel.revealProperty(property);

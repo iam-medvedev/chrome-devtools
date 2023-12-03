@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { needsLogging } from './LoggingConfig.js';
-export function getDomState() {
+export function getDomState(documents) {
     const loggables = [];
     const shadowRoots = [];
-    const stack = [];
-    const putOnStack = (children, parent) => {
+    const queue = [];
+    const enqueue = (children, parent) => {
         for (const child of children) {
-            stack.push({ element: child, parent });
+            queue.push({ element: child, parent });
         }
     };
-    putOnStack(document.body.children);
-    while (stack.length > 0) {
-        const top = stack.pop();
+    for (const document of documents) {
+        enqueue(document.body.children);
+    }
+    let head = 0;
+    const dequeue = () => queue[head++];
+    while (true) {
+        const top = dequeue();
         if (!top) {
             break;
         }
@@ -23,10 +27,10 @@ export function getDomState() {
             loggables.push({ element, parent });
             parent = element;
         }
-        putOnStack(element.children, parent);
+        enqueue(element.children, parent);
         if (element.shadowRoot) {
             shadowRoots.push(element.shadowRoot);
-            putOnStack(element.shadowRoot.children, parent);
+            enqueue(element.shadowRoot.children, parent);
         }
     }
     return { loggables, shadowRoots };

@@ -14,6 +14,7 @@ export declare class ConsoleInsight extends HTMLElement {
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(promptBuilder: PublicPromptBuilder, insightProvider: PublicInsightProvider);
     connectedCallback(): void;
+    disonnectedCallback(): void;
     set dogfood(value: boolean);
     get dogfood(): boolean;
     update(includeContext?: boolean): Promise<void>;
