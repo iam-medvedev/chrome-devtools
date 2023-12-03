@@ -243,14 +243,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIS
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let timelinePanelInstance;
 let isNode;
-// TODO(crbug.com/1386091): Remove this enum when we can remove the
-// old engine.
-// eslint-disable-next-line rulesdir/const_enum
-export var ThreadTracksSource;
-(function (ThreadTracksSource) {
-    ThreadTracksSource["NEW_ENGINE"] = "NEW_ENGINE";
-    ThreadTracksSource["OLD_ENGINE"] = "OLD_ENGINE";
-})(ThreadTracksSource || (ThreadTracksSource = {}));
 export class TimelinePanel extends UI.Panel.Panel {
     dropTarget;
     recordingOptionUIControls;
@@ -315,7 +307,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.millisecondsToRecordAfterLoadEvent = 5000;
         this.toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
         this.recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
-        this.#historyManager = new TimelineHistoryManager(ThreadTracksSource.NEW_ENGINE, this.#minimapComponent);
+        this.#historyManager = new TimelineHistoryManager(this.#minimapComponent);
         this.performanceModel = null;
         this.traceLoadStart = null;
         this.disableCaptureJSProfileSetting =
@@ -660,8 +652,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         const traceParsedData = this.#traceEngineModel.traceParsedData(this.#traceEngineActiveTraceIndex);
         const isCpuProfile = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex)?.dataOrigin ===
             "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPUProfile */;
+        if (!traceParsedData) {
+            return;
+        }
         this.#minimapComponent.setData({
-            performanceModel: this.performanceModel,
             traceParsedData,
             isCpuProfile,
             settings: {
@@ -1008,9 +1002,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             model.addEventListener(Events.WindowChanged, this.onModelWindowChanged, this);
             this.#minimapComponent.setBounds(TraceEngine.Types.Timing.MilliSeconds(model.timelineModel().minimumRecordTime()), TraceEngine.Types.Timing.MilliSeconds(model.timelineModel().maximumRecordTime()));
             PerfUI.LineLevelProfile.Performance.instance().reset();
-            for (const profile of model.timelineModel().cpuProfiles()) {
-                PerfUI.LineLevelProfile.Performance.instance().appendCPUProfile(profile.cpuProfileData, profile.target);
-            }
             this.flameChart.setSelection(null);
             const { left, right } = model.calculateWindowForMainThreadActivity();
             model.setWindow({ left, right });
@@ -1019,9 +1010,25 @@ export class TimelinePanel extends UI.Panel.Panel {
                 TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(left, right));
             }
         }
+        // Set up line level profiling with CPU profiles, if we found any.
+        PerfUI.LineLevelProfile.Performance.instance().reset();
+        if (traceParsedData && traceParsedData.Samples.profilesInProcess.size) {
+            const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
+            // Gather up all CPU Profiles we found when parsing this trace.
+            const cpuProfiles = Array.from(traceParsedData.Samples.profilesInProcess).flatMap(([_processId, threadsInProcess]) => {
+                const profiles = Array.from(threadsInProcess.values()).map(profileData => profileData.parsedProfile);
+                return profiles;
+            });
+            for (const profile of cpuProfiles) {
+                PerfUI.LineLevelProfile.Performance.instance().appendCPUProfile(profile, rootTarget);
+            }
+        }
         this.updateOverviewControls();
         if (this.flameChart) {
             this.flameChart.resizeToPreferredHeights();
+            if (this.#minimapComponent.breadcrumbsActivated) {
+                this.#minimapComponent.addInitialBreadcrumb();
+            }
         }
         this.updateTimelineControls();
     }
@@ -1189,9 +1196,6 @@ export class TimelinePanel extends UI.Panel.Panel {
                 filmStripForPreview: TraceEngine.Extras.FilmStrip.fromTraceData(traceData),
                 traceParsedData: traceData,
             });
-            if (this.#minimapComponent.breadcrumbsActivated) {
-                this.#minimapComponent.addInitialBreadcrumb();
-            }
         }
         catch (error) {
             // Try to get the raw events: if we errored during the parsing stage, it

@@ -27,7 +27,9 @@ export async function logClick(loggable, event, options) {
         return;
     }
     const loggingState = getLoggingState(loggable);
-    assertNotNullOrUndefined(loggingState);
+    if (!loggingState) {
+        return;
+    }
     const clickEvent = { veid: loggingState.veid, mouseButton: event.button, doubleClick: Boolean(options?.doubleClick) };
     const context = await loggingState.context(event);
     if (context) {

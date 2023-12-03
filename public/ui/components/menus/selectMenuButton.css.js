@@ -18,6 +18,7 @@ styles.replaceSync(
 }
 
 .show {
+  display: block;
   font-size: 12px;
   color: var(--sys-color-on-surface);
   height: 100%;

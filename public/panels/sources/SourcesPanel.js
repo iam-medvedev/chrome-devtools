@@ -1027,19 +1027,8 @@ export class SourcesPanel extends UI.Panel.Panel {
 }
 export let lastModificationTimeout = 200;
 export const minToolbarWidth = 215;
-let uILocationRevealerInstance;
 export class UILocationRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!uILocationRevealerInstance || forceNew) {
-            uILocationRevealerInstance = new UILocationRevealer();
-        }
-        return uILocationRevealerInstance;
-    }
     async reveal(uiLocation, omitFocus) {
-        if (!(uiLocation instanceof Workspace.UISourceCode.UILocation)) {
-            throw new Error('Internal error: not a ui location');
-        }
         SourcesPanel.instance().showUILocation(uiLocation, omitFocus);
     }
 }
@@ -1052,57 +1041,24 @@ export class UILocationRangeRevealer {
         return UILocationRangeRevealer.#instance;
     }
     async reveal(uiLocationRange, omitFocus) {
-        if (!(uiLocationRange instanceof Workspace.UISourceCode.UILocationRange)) {
-            throw new Error('Internal error: Not a UILocationRange');
-        }
         const { uiSourceCode, range: { start: from, end: to } } = uiLocationRange;
         SourcesPanel.instance().showUISourceCode(uiSourceCode, { from, to }, omitFocus);
     }
 }
-let debuggerLocationRevealerInstance;
 export class DebuggerLocationRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!debuggerLocationRevealerInstance || forceNew) {
-            debuggerLocationRevealerInstance = new DebuggerLocationRevealer();
-        }
-        return debuggerLocationRevealerInstance;
-    }
     async reveal(rawLocation, omitFocus) {
-        if (!(rawLocation instanceof SDK.DebuggerModel.Location)) {
-            throw new Error('Internal error: not a debugger location');
-        }
         const uiLocation = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
         if (uiLocation) {
             SourcesPanel.instance().showUILocation(uiLocation, omitFocus);
         }
     }
 }
-let uISourceCodeRevealerInstance;
 export class UISourceCodeRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!uISourceCodeRevealerInstance || forceNew) {
-            uISourceCodeRevealerInstance = new UISourceCodeRevealer();
-        }
-        return uISourceCodeRevealerInstance;
-    }
     async reveal(uiSourceCode, omitFocus) {
-        if (!(uiSourceCode instanceof Workspace.UISourceCode.UISourceCode)) {
-            throw new Error('Internal error: not a ui source code');
-        }
         SourcesPanel.instance().showUISourceCode(uiSourceCode, undefined, omitFocus);
     }
 }
-let debuggerPausedDetailsRevealerInstance;
 export class DebuggerPausedDetailsRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!debuggerPausedDetailsRevealerInstance || forceNew) {
-            debuggerPausedDetailsRevealerInstance = new DebuggerPausedDetailsRevealer();
-        }
-        return debuggerPausedDetailsRevealerInstance;
-    }
     async reveal(_object) {
         if (Common.Settings.Settings.instance().moduleSetting('autoFocusOnDebuggerPausedEnabled').get()) {
             return SourcesPanel.instance().setAsCurrentPanel();

@@ -11,9 +11,6 @@
   "core/common/ResourceType.ts | document": {
     "message": "Document"
   },
-  "core/common/ResourceType.ts | documents": {
-    "message": "Documents"
-  },
   "core/common/ResourceType.ts | eventsource": {
     "message": "EventSource"
   },
@@ -23,17 +20,14 @@
   "core/common/ResourceType.ts | font": {
     "message": "Font"
   },
-  "core/common/ResourceType.ts | fonts": {
-    "message": "Fonts"
-  },
   "core/common/ResourceType.ts | image": {
     "message": "Image"
   },
-  "core/common/ResourceType.ts | images": {
-    "message": "Images"
-  },
   "core/common/ResourceType.ts | img": {
     "message": "Img"
+  },
+  "core/common/ResourceType.ts | javascript": {
+    "message": "JavaScript"
   },
   "core/common/ResourceType.ts | js": {
     "message": "JS"
@@ -56,17 +50,11 @@
   "core/common/ResourceType.ts | script": {
     "message": "Script"
   },
-  "core/common/ResourceType.ts | scripts": {
-    "message": "Scripts"
-  },
   "core/common/ResourceType.ts | signedexchange": {
     "message": "SignedExchange"
   },
   "core/common/ResourceType.ts | stylesheet": {
     "message": "Stylesheet"
-  },
-  "core/common/ResourceType.ts | stylesheets": {
-    "message": "Stylesheets"
   },
   "core/common/ResourceType.ts | texttrack": {
     "message": "TextTrack"
@@ -82,9 +70,6 @@
   },
   "core/common/ResourceType.ts | websocket": {
     "message": "WebSocket"
-  },
-  "core/common/ResourceType.ts | websockets": {
-    "message": "WebSockets"
   },
   "core/common/ResourceType.ts | webtransport": {
     "message": "WebTransport"
@@ -4883,6 +4868,9 @@
   "panels/console/ConsolePinPane.ts | removeAllExpressions": {
     "message": "Remove all expressions"
   },
+  "panels/console/ConsolePinPane.ts | removeBlankExpression": {
+    "message": "Remove blank expression"
+  },
   "panels/console/ConsolePinPane.ts | removeExpression": {
     "message": "Remove expression"
   },
@@ -5939,11 +5927,20 @@
   "panels/elements/PlatformFontsWidget.ts | dGlyphs": {
     "message": "{n, plural, =1 {(# glyph)} other {(# glyphs)}}"
   },
+  "panels/elements/PlatformFontsWidget.ts | familyName": {
+    "message": "Family name"
+  },
+  "panels/elements/PlatformFontsWidget.ts | fontOrigin": {
+    "message": "Font origin"
+  },
   "panels/elements/PlatformFontsWidget.ts | localFile": {
     "message": "Local file"
   },
   "panels/elements/PlatformFontsWidget.ts | networkResource": {
     "message": "Network resource"
+  },
+  "panels/elements/PlatformFontsWidget.ts | postScriptName": {
+    "message": "PostScript name"
   },
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Rendered Fonts"
@@ -6337,6 +6334,9 @@
   },
   "panels/explain/components/ConsoleInsight.ts | refineButtonHint": {
     "message": "Click this button to send the following data to the AI model running on Google's servers, so it can generate a more accurate and relevant response:"
+  },
+  "panels/explain/components/ConsoleInsight.ts | refineInfo": {
+    "message": "Learn how personalizing of insights works"
   },
   "panels/explain/components/ConsoleInsight.ts | refining": {
     "message": "Personalizing insight…"
@@ -7452,16 +7452,19 @@
     "message": "Presets"
   },
   "panels/mobile_throttling/NetworkPanelIndicator.ts | acceptedEncodingOverrideSet": {
-    "message": "The set of accepted Content-Encoding headers has been modified by DevTools. See the Network Conditions panel."
+    "message": "The set of accepted Content-Encoding headers has been modified by DevTools, see the Network conditions panel"
+  },
+  "panels/mobile_throttling/NetworkPanelIndicator.ts | browserCacheDisabled": {
+    "message": "Browser cache is disabled"
   },
   "panels/mobile_throttling/NetworkPanelIndicator.ts | networkThrottlingIsEnabled": {
     "message": "Network throttling is enabled"
   },
   "panels/mobile_throttling/NetworkPanelIndicator.ts | requestsMayBeBlocked": {
-    "message": "Requests may be blocked"
+    "message": "Requests may be blocked, see the Network request blocking panel"
   },
   "panels/mobile_throttling/NetworkPanelIndicator.ts | requestsMayBeOverridden": {
-    "message": "Requests may be overridden locally"
+    "message": "Requests may be overridden locally, see the Sources panel"
   },
   "panels/mobile_throttling/NetworkThrottlingSelector.ts | custom": {
     "message": "Custom"
@@ -9560,11 +9563,20 @@
   "panels/profiler/ProfileLauncherView.ts | takeSnapshot": {
     "message": "Take snapshot"
   },
+  "panels/profiler/profiler-meta.ts | deleteProfile": {
+    "message": "Delete profile"
+  },
   "panels/profiler/profiler-meta.ts | liveHeapProfile": {
     "message": "Live Heap Profile"
   },
+  "panels/profiler/profiler-meta.ts | loadProfile": {
+    "message": "Load profile…"
+  },
   "panels/profiler/profiler-meta.ts | memory": {
     "message": "Memory"
+  },
+  "panels/profiler/profiler-meta.ts | saveProfile": {
+    "message": "Save profile…"
   },
   "panels/profiler/profiler-meta.ts | showLiveHeapProfile": {
     "message": "Show Live Heap Profile"
@@ -9583,21 +9595,6 @@
   },
   "panels/profiler/profiler-meta.ts | stopRecordingHeapAllocations": {
     "message": "Stop recording heap allocations"
-  },
-  "panels/profiler/ProfileSidebarTreeElement.ts | delete": {
-    "message": "Delete"
-  },
-  "panels/profiler/ProfileSidebarTreeElement.ts | enterToSave": {
-    "message": "Save. Press enter to save file"
-  },
-  "panels/profiler/ProfileSidebarTreeElement.ts | load": {
-    "message": "Load…"
-  },
-  "panels/profiler/ProfileSidebarTreeElement.ts | save": {
-    "message": "Save"
-  },
-  "panels/profiler/ProfileSidebarTreeElement.ts | saveWithEllipsis": {
-    "message": "Save…"
   },
   "panels/profiler/ProfilesPanel.ts | cantLoadFileSupportedFile": {
     "message": "Can’t load file. Supported file extensions: ''{PH1}''."
@@ -9622,9 +9619,6 @@
   },
   "panels/profiler/ProfilesPanel.ts | learnMore": {
     "message": "Learn more"
-  },
-  "panels/profiler/ProfilesPanel.ts | load": {
-    "message": "Load…"
   },
   "panels/profiler/ProfilesPanel.ts | profileLoadingFailedS": {
     "message": "Profile loading failed: {PH1}."
@@ -12872,9 +12866,6 @@
   "panels/timeline/TimelineTreeView.ts | hideHeaviestStack": {
     "message": "Hide Heaviest stack"
   },
-  "panels/timeline/TimelineTreeView.ts | javascript": {
-    "message": "JavaScript"
-  },
   "panels/timeline/TimelineTreeView.ts | matchCase": {
     "message": "Match Case"
   },
@@ -13277,9 +13268,6 @@
   "panels/timeline/TimelineUIUtils.ts | mimeType": {
     "message": "Mime Type"
   },
-  "panels/timeline/TimelineUIUtils.ts | mimeTypeCaps": {
-    "message": "MIME Type"
-  },
   "panels/timeline/TimelineUIUtils.ts | minorGc": {
     "message": "Minor GC"
   },
@@ -13421,9 +13409,6 @@
   "panels/timeline/TimelineUIUtils.ts | requestMethod": {
     "message": "Request Method"
   },
-  "panels/timeline/TimelineUIUtils.ts | resource": {
-    "message": "Resource"
-  },
   "panels/timeline/TimelineUIUtils.ts | reveal": {
     "message": "Reveal"
   },
@@ -13441,9 +13426,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | sAtSParentheses": {
     "message": "{PH1} (at {PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sBytes": {
-    "message": "{n, plural, =1 {# Byte} other {# Bytes}}"
   },
   "panels/timeline/TimelineUIUtils.ts | scheduleStyleRecalculation": {
     "message": "Schedule Style Recalculation"
@@ -13537,9 +13519,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | state": {
     "message": "State"
-  },
-  "panels/timeline/TimelineUIUtils.ts | statusCode": {
-    "message": "Status Code"
   },
   "panels/timeline/TimelineUIUtils.ts | streamed": {
     "message": "Streamed"
@@ -13940,8 +13919,11 @@
   "ui/components/linear_memory_inspector/ValueInterpreterSettings.ts | otherGroup": {
     "message": "Other"
   },
-  "ui/components/markdown_view/MarkdownView.ts | copy": {
-    "message": "Copy"
+  "ui/components/markdown_view/CodeBlock.ts | copied": {
+    "message": "Copied to clipboard"
+  },
+  "ui/components/markdown_view/CodeBlock.ts | copy": {
+    "message": "Copy code"
   },
   "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
     "message": "Feedback"

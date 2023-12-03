@@ -1,43 +1,12 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Events as ProfileHeaderEvents, } from './ProfileHeader.js';
-const UIStrings = {
-    /**
-     *@description Text to save something
-     */
-    save: 'Save',
-    /**
-     *@description Text to save something (with ellipsis)
-     */
-    saveWithEllipsis: 'Save…',
-    /**
-     *@description A context menu item in the Profiles Panel of a profiler tool
-     */
-    load: 'Load…',
-    /**
-     *@description Text to delete something
-     */
-    delete: 'Delete',
-    /**
-     *@description Text for screen reader to announce when focusing on save element.
-     */
-    enterToSave: 'Save. Press enter to save file',
-};
-const str_ = i18n.i18n.registerUIStrings('panels/profiler/ProfileSidebarTreeElement.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let sharedFileSelectorElement = null;
-function getSharedFileSelectorElement() {
-    return sharedFileSelectorElement;
-}
-export function setSharedFileSelectorElement(element) {
-    sharedFileSelectorElement = element;
-}
 export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     iconElement;
     titlesElement;
+    menuElement;
     titleContainer;
     titleElement;
     subtitleElement;
@@ -57,30 +26,16 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
         this.titleContainer = this.titlesElement.createChild('span', 'title-container');
         this.titleElement = this.titleContainer.createChild('span', 'title');
         this.subtitleElement = this.titlesElement.createChild('span', 'subtitle');
+        this.menuElement = document.createElement('button');
+        this.menuElement.tabIndex = -1;
+        this.menuElement.appendChild(UI.Icon.Icon.create('dots-vertical'));
+        this.menuElement.addEventListener('click', this.handleContextMenuEvent.bind(this));
         this.titleElement.textContent = profile.title;
         this.className = className;
         this.small = false;
         this.dataDisplayDelegate = dataDisplayDelegate;
         this.profile = profile;
         profile.addEventListener(ProfileHeaderEvents.UpdateStatus, this.updateStatus, this);
-        if (profile.canSaveToFile()) {
-            this.createSaveLink();
-        }
-        else {
-            profile.addEventListener(ProfileHeaderEvents.ProfileReceived, this.onProfileReceived, this);
-        }
-    }
-    createSaveLink() {
-        this.saveLinkElement = this.titleContainer.createChild('span', 'save-link');
-        this.saveLinkElement.role = 'link';
-        this.saveLinkElement.textContent = i18nString(UIStrings.save);
-        this.saveLinkElement.tabIndex = 0;
-        UI.ARIAUtils.setLabel(this.saveLinkElement, i18nString(UIStrings.enterToSave));
-        this.saveLinkElement.addEventListener('click', this.saveProfile.bind(this), false);
-        this.saveLinkElement.addEventListener('keydown', this.saveProfileKeyDown.bind(this), true);
-    }
-    onProfileReceived() {
-        this.createSaveLink();
     }
     updateStatus(event) {
         const statusUpdate = event.data;
@@ -117,7 +72,6 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     }
     dispose() {
         this.profile.removeEventListener(ProfileHeaderEvents.UpdateStatus, this.updateStatus, this);
-        this.profile.removeEventListener(ProfileHeaderEvents.ProfileReceived, this.onProfileReceived, this);
     }
     onselect() {
         this.dataDisplayDelegate.showProfile(this.profile);
@@ -134,32 +88,14 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
         if (this.small) {
             this.listItemElement.classList.add('small');
         }
-        this.listItemElement.append(this.iconElement, this.titlesElement);
+        this.listItemElement.append(this.iconElement, this.titlesElement, this.menuElement);
         this.listItemElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this), true);
         UI.ARIAUtils.setDescription(this.listItemElement, this.profile.profileType().name);
     }
     handleContextMenuEvent(event) {
-        const profile = this.profile;
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        // FIXME: use context menu provider
-        const sharedFileSelectorElement = getSharedFileSelectorElement();
-        if (!sharedFileSelectorElement) {
-            throw new Error('File selector element shared by ProfilePanel instances is missing');
-        }
-        contextMenu.headerSection().appendItem(i18nString(UIStrings.load), sharedFileSelectorElement.click.bind(sharedFileSelectorElement));
-        if (profile.canSaveToFile()) {
-            contextMenu.saveSection().appendItem(i18nString(UIStrings.saveWithEllipsis), profile.saveToFile.bind(profile));
-        }
-        contextMenu.footerSection().appendItem(i18nString(UIStrings.delete), this.ondelete.bind(this));
+        contextMenu.appendItemsAtLocation('profilerMenu');
         void contextMenu.show();
-    }
-    saveProfile(_event) {
-        this.profile.saveToFile();
-    }
-    saveProfileKeyDown(event) {
-        if (event.key === 'Enter') {
-            this.profile.saveToFile();
-        }
     }
     setSmall(small) {
         this.small = small;

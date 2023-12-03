@@ -1,6 +1,6 @@
+import type * as Extensions from '../extensions/extensions.js';
 import type * as Models from '../models/models.js';
 import { PlayRecordingSpeed } from '../models/RecordingPlayer.js';
-import type * as Extensions from '../extensions/extensions.js';
 export declare class StartReplayEvent extends Event {
     speed: PlayRecordingSpeed;
     extension?: Extensions.ExtensionManager.Extension | undefined;

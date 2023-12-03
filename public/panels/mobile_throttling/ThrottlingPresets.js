@@ -49,6 +49,7 @@ export class ThrottlingPresets {
             description: i18nString(UIStrings.noThrottling),
             network: SDK.NetworkManager.NoThrottlingConditions,
             cpuThrottlingRate: SDK.CPUThrottlingManager.CPUThrottlingRates.NoThrottling,
+            jslogContext: 'No throttling',
         };
     }
     static getOfflineConditions() {
@@ -60,6 +61,7 @@ export class ThrottlingPresets {
             description: i18nString(UIStrings.noInternetConnectivity),
             network: SDK.NetworkManager.OfflineConditions,
             cpuThrottlingRate: SDK.CPUThrottlingManager.CPUThrottlingRates.NoThrottling,
+            jslogContext: 'offline',
         };
     }
     static getLowEndMobileConditions() {
@@ -68,6 +70,7 @@ export class ThrottlingPresets {
             description: i18nString(UIStrings.slowGXCpuSlowdown),
             network: SDK.NetworkManager.Slow3GConditions,
             cpuThrottlingRate: SDK.CPUThrottlingManager.CPUThrottlingRates.LowEndMobile,
+            jslogContext: 'lowEndMobile',
         };
     }
     static getMidTierMobileConditions() {
@@ -76,12 +79,14 @@ export class ThrottlingPresets {
             description: i18nString(UIStrings.fastGXCpuSlowdown),
             network: SDK.NetworkManager.Fast3GConditions,
             cpuThrottlingRate: SDK.CPUThrottlingManager.CPUThrottlingRates.MidTierMobile,
+            jslogContext: 'midTierMobile',
         };
     }
     static getCustomConditions() {
         return {
             title: i18nString(UIStrings.custom),
             description: i18nString(UIStrings.checkNetworkAndPerformancePanels),
+            jslogContext: 'custom',
         };
     }
     static getMobilePresets() {

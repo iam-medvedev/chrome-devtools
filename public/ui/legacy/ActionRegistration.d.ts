@@ -97,7 +97,8 @@ export declare const enum IconClass {
     BREAKPOINT_CROSSED = "breakpoint-crossed",
     PLUS = "plus",
     UNDO = "undo",
-    COPY = "copy"
+    COPY = "copy",
+    IMPORT = "import"
 }
 export declare const enum KeybindSet {
     DEVTOOLS_DEFAULT = "devToolsDefault",

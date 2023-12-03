@@ -48,9 +48,6 @@
   ],
   "references": [
     {
-      "path": "../actions-tsconfig.json"
-    },
-    {
       "path": "../../../core/common/bundle-tsconfig.json"
     },
     {
@@ -124,6 +121,9 @@
     },
     {
       "path": "../models/bundle-tsconfig.json"
+    },
+    {
+      "path": "../recorder-actions/bundle-tsconfig.json"
     }
   ]
 }

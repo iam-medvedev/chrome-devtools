@@ -4,7 +4,7 @@ export declare class Console extends ObjectWrapper<EventTypes> {
     /**
      * Instantiable via the instance() factory below.
      */
-    private constructor();
+    constructor();
     static instance(opts?: {
         forceNew: boolean;
     }): Console;

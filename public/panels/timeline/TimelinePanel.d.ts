@@ -7,10 +7,6 @@ import { PerformanceModel } from './PerformanceModel.js';
 import { type Client } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineSelection } from './TimelineSelection.js';
-export declare enum ThreadTracksSource {
-    NEW_ENGINE = "NEW_ENGINE",
-    OLD_ENGINE = "OLD_ENGINE"
-}
 declare global {
     interface FileSystemWritableFileStream extends WritableStream {
         write(data: unknown): Promise<void>;

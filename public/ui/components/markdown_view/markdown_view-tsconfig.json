@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/ui/components/markdown_view/CodeBlock.ts",
     "../../../../../../../front_end/ui/components/markdown_view/MarkdownImage.ts",
     "../../../../../../../front_end/ui/components/markdown_view/MarkdownImagesMap.ts",
     "../../../../../../../front_end/ui/components/markdown_view/MarkdownLink.ts",

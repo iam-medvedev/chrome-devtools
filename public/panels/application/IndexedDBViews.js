@@ -225,6 +225,7 @@ export class IDBDataView extends UI.View.SimpleView {
     index;
     keyInput;
     dataGrid;
+    previouslySelectedNode;
     lastPageSize;
     lastSkipCount;
     pageBackButton;
@@ -313,7 +314,10 @@ export class IDBDataView extends UI.View.SimpleView {
             editCallback: undefined,
         });
         dataGrid.setStriped(true);
-        dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, () => this.updateToolbarEnablement(), this);
+        dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, () => {
+            this.updateToolbarEnablement();
+            this.updateSelectionColor();
+        }, this);
         return dataGrid;
     }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
@@ -477,6 +481,7 @@ export class IDBDataView extends UI.View.SimpleView {
             this.pageForwardButton.setEnabled(hasMore);
             this.needsRefresh.setVisible(false);
             this.updateToolbarEnablement();
+            this.updateSelectionColor();
             this.updatedDataForTests();
         }
         const idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
@@ -546,6 +551,21 @@ export class IDBDataView extends UI.View.SimpleView {
     updateToolbarEnablement() {
         const empty = !this.dataGrid || this.dataGrid.rootNode().children.length === 0;
         this.deleteSelectedButton.setEnabled(!empty && this.dataGrid.selectedNode !== null);
+    }
+    updateSelectionColor() {
+        if (this.previouslySelectedNode) {
+            this.previouslySelectedNode.element().querySelectorAll('.source-code').forEach(element => {
+                const shadowRoot = element.shadowRoot;
+                shadowRoot?.adoptedStyleSheets.pop();
+            });
+        }
+        this.previouslySelectedNode = this.dataGrid.selectedNode ?? undefined;
+        this.dataGrid.selectedNode?.element().querySelectorAll('.source-code').forEach(element => {
+            const shadowRoot = element.shadowRoot;
+            const sheet = new CSSStyleSheet();
+            sheet.replaceSync('::selection {background-color: var(--sys-color-state-focus-select);}');
+            shadowRoot?.adoptedStyleSheets.push(sheet);
+        });
     }
     wasShown() {
         super.wasShown();

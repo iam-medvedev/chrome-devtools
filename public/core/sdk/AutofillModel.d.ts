@@ -3,8 +3,8 @@ import type * as Protocol from '../../generated/protocol.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
 export declare class AutofillModel extends SDKModel<EventTypes> implements ProtocolProxyApi.AutofillDispatcher {
+    #private;
     readonly agent: ProtocolProxyApi.AutofillApi;
-    private enabled?;
     constructor(target: Target);
     enable(): void;
     disable(): void;

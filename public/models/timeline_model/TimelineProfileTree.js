@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as TraceEngine from '../../models/trace/trace.js';
 import { TimelineJSProfileProcessor } from './TimelineJSProfile.js';
-import { EventOnTimelineData, RecordType, TimelineModelImpl } from './TimelineModel.js';
+import { RecordType, TimelineModelImpl } from './TimelineModel.js';
 export class Node {
     totalTime;
     selfTime;
@@ -462,6 +462,11 @@ export function eventURL(event) {
     if (data && data['url']) {
         return data['url'];
     }
+    // Temporary break to aid migration: no events are from the old engine now,
+    // and we are incrementally removing these checks
+    if (!TraceEngine.Legacy.eventIsFromNewEngine(event)) {
+        return null;
+    }
     let frame = eventStackFrame(event);
     while (frame) {
         const url = frame['url'];
@@ -475,20 +480,14 @@ export function eventURL(event) {
     return null;
 }
 export function eventStackFrame(event) {
-    if (TraceEngine.Legacy.eventIsFromNewEngine(event) && TraceEngine.Types.TraceEvents.isProfileCall(event)) {
+    if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
         return event.callFrame;
     }
-    if (TraceEngine.Legacy.eventIsFromNewEngine(event)) {
-        const topFrame = event.args?.data?.stackTrace?.[0];
-        if (!topFrame) {
-            return null;
-        }
-        return { ...topFrame, scriptId: String(topFrame.scriptId) };
+    const topFrame = event.args?.data?.stackTrace?.[0];
+    if (!topFrame) {
+        return null;
     }
-    if (TimelineModelImpl.isJsFrameEvent(event)) {
-        return event.args['data'] || null;
-    }
-    return EventOnTimelineData.forEvent(event).topFrame();
+    return { ...topFrame, scriptId: String(topFrame.scriptId) };
 }
 export function generateEventID(event) {
     if (TraceEngine.Legacy.eventIsFromNewEngine(event) && TraceEngine.Types.TraceEvents.isProfileCall(event)) {
@@ -501,15 +500,6 @@ export function generateEventID(event) {
     if (event.name === RecordType.TimeStamp) {
         return `${event.name}:${event.args.data.message}`;
     }
-    if (!TimelineModelImpl.isJsFrameEvent(event)) {
-        return event.name;
-    }
-    const frame = event.args['data'];
-    const location = frame['scriptId'] || frame['url'] || '';
-    const functionName = frame['functionName'];
-    const name = TimelineJSProfileProcessor.isNativeRuntimeFrame(frame) ?
-        TimelineJSProfileProcessor.nativeGroup(functionName) || functionName :
-        `${functionName}:${frame['lineNumber']}:${frame['columnNumber']}`;
-    return `f:${name}@${location}`;
+    return event.name;
 }
 //# sourceMappingURL=TimelineProfileTree.js.map

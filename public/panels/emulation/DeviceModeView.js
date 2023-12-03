@@ -5,11 +5,12 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { DeviceModeToolbar } from './DeviceModeToolbar.js';
-import { MediaQueryInspector } from './MediaQueryInspector.js';
 import deviceModeViewStyles from './deviceModeView.css.legacy.js';
+import { MediaQueryInspector } from './MediaQueryInspector.js';
 const UIStrings = {
     /**
      *@description Bottom resizer element title in Device Mode View of the Device Toolbar
@@ -109,6 +110,7 @@ export class DeviceModeView extends UI.Widget.VBox {
         this.contentClip = this.contentElement.createChild('div', 'device-mode-content-clip vbox');
         this.responsivePresetsContainer =
             this.contentClip.createChild('div', 'device-mode-presets-container');
+        this.responsivePresetsContainer.setAttribute('jslog', `${VisualLogging.responsivePresets()}`);
         this.populatePresetsContainer();
         this.mediaInspectorContainer = this.contentClip.createChild('div', 'device-mode-media-container');
         this.contentArea = this.contentClip.createChild('div', 'device-mode-content-area');
@@ -161,6 +163,7 @@ export class DeviceModeView extends UI.Widget.VBox {
             const outer = inner.createChild('div', 'fill device-mode-preset-bar-outer');
             const block = outer.createChild('div', 'device-mode-preset-bar');
             block.createChild('span').textContent = titles[i] + ' \u2013 ' + sizes[i] + 'px';
+            block.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context(`deviceModePreset-${sizes[i]}px`)}`);
             block.addEventListener('click', applySize.bind(this, sizes[i]), false);
             this.blockElementToWidth.set(block, sizes[i]);
             this.presetBlocks.push(block);
@@ -173,6 +176,7 @@ export class DeviceModeView extends UI.Widget.VBox {
     }
     createResizer(element, widthFactor, heightFactor) {
         const resizer = new UI.ResizerWidget.ResizerWidget();
+        element.setAttribute('jslog', `${VisualLogging.slider().context('deviceModeResizer').track({ drag: true })}`);
         resizer.addElement(element);
         let cursor = widthFactor ? 'ew-resize' : 'ns-resize';
         if (widthFactor * heightFactor > 0) {
@@ -505,6 +509,7 @@ export class Ruler extends UI.Widget.VBox {
     constructor(horizontal, applyCallback) {
         super();
         this.element.classList.add('device-mode-ruler');
+        this.element.setAttribute('jslog', `${VisualLogging.deviceModeRuler().track({ click: true })}`);
         this.contentElementInternal =
             this.element.createChild('div', 'device-mode-ruler-content').createChild('div', 'device-mode-ruler-inner');
         this.horizontal = horizontal;

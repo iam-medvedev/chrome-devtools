@@ -183,7 +183,7 @@ export class ThrottlingManager {
         return checkbox;
     }
     createMobileThrottlingButton() {
-        const button = new UI.Toolbar.ToolbarMenuButton(appendItems);
+        const button = new UI.Toolbar.ToolbarMenuButton(appendItems, undefined, 'mobileThrottling');
         button.setTitle(i18nString(UIStrings.throttling));
         button.setGlyph('');
         button.turnIntoSelect();
@@ -202,7 +202,7 @@ export class ThrottlingManager {
                     conditions.description === ThrottlingPresets.getCustomConditions().description) {
                     continue;
                 }
-                contextMenu.defaultSection().appendCheckboxItem(conditions.title, selector.optionSelected.bind(selector, conditions), selectedIndex === index);
+                contextMenu.defaultSection().appendCheckboxItem(conditions.title, selector.optionSelected.bind(selector, conditions), selectedIndex === index, undefined, undefined, undefined, conditions.jslogContext);
             }
         }
         function populate(groups) {

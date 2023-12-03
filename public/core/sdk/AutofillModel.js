@@ -6,7 +6,7 @@ import { SDKModel } from './SDKModel.js';
 import { Capability } from './Target.js';
 export class AutofillModel extends SDKModel {
     agent;
-    enabled;
+    #enabled;
     constructor(target) {
         super(target);
         this.agent = target.autofillAgent();
@@ -14,17 +14,17 @@ export class AutofillModel extends SDKModel {
         this.enable();
     }
     enable() {
-        if (this.enabled || Host.InspectorFrontendHost.isUnderTest()) {
+        if (this.#enabled || Host.InspectorFrontendHost.isUnderTest()) {
             return;
         }
         void this.agent.invoke_enable();
-        this.enabled = true;
+        this.#enabled = true;
     }
     disable() {
-        if (!this.enabled || Host.InspectorFrontendHost.isUnderTest()) {
+        if (!this.#enabled || Host.InspectorFrontendHost.isUnderTest()) {
             return;
         }
-        this.enabled = false;
+        this.#enabled = false;
         void this.agent.invoke_disable();
     }
     addressFormFilled(addressFormFilledEvent) {

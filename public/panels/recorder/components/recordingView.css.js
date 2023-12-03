@@ -232,6 +232,7 @@ styles.replaceSync(
   align-items: center;
   align-content: center;
   gap: 5px;
+  width: fit-content;
 }
 
 .settings {

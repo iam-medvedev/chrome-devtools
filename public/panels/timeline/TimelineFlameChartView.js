@@ -164,6 +164,9 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             this.networkFlameChart.setTotalAndMinimumBreadcrumbValues(minMilliseconds, maxMilliseconds);
             this.mainFlameChart.update();
         }
+        else {
+            this.#currentBreadcrumbTimeWindow = undefined;
+        }
         // If breadcrumbs are not activated, update window times at all times,
         // If breadcrumbs exist, do not update to window times outside the breadcrumb
         const isWindowWithinBreadcrumb = (this.#currentBreadcrumbTimeWindow &&
@@ -178,7 +181,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     windowChanged(windowStartTime, windowEndTime, animate) {
         if (this.model) {
-            this.model.setWindow({ left: windowStartTime, right: windowEndTime }, animate);
+            this.model.setWindow({ left: windowStartTime, right: windowEndTime }, animate, this.#currentBreadcrumbTimeWindow);
         }
         TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(TraceEngine.Types.Timing.MilliSeconds(windowStartTime), TraceEngine.Types.Timing.MilliSeconds(windowEndTime)), { shouldAnimate: animate });
     }

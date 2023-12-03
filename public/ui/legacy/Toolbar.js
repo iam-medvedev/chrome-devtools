@@ -703,8 +703,8 @@ export class ToolbarMenuButton extends ToolbarButton {
     useSoftMenu;
     triggerTimeout;
     lastTriggerTime;
-    constructor(contextMenuHandler, useSoftMenu) {
-        super('', 'dots-vertical');
+    constructor(contextMenuHandler, useSoftMenu, jslogContext) {
+        super('', 'dots-vertical', undefined, jslogContext);
         this.contextMenuHandler = contextMenuHandler;
         this.useSoftMenu = Boolean(useSoftMenu);
         ARIAUtils.markAsMenuButton(this.element);

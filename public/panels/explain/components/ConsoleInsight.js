@@ -58,13 +58,13 @@ const UIStrings = {
     /**
      * @description The title of the insight source "Google search answers".
      */
-    searchAnswers: '`Google` search answers',
+    searchAnswers: 'Google search answers',
     /**
      * @description The text appearing before the list of sources that DevTools
      * could collect based on a console message. If the user clicks the button
      * related to the text, these sources will be used to generate insights.
      */
-    refineButtonHint: 'Click this button to send the following data to the AI model running on `Google`\'s servers, so it can generate a more accurate and relevant response:',
+    refineButtonHint: 'Click this button to send the following data to the AI model running on Google\'s servers, so it can generate a more accurate and relevant response:',
     /**
      * @description The title that is shown while the insight is being generated.
      */
@@ -131,6 +131,12 @@ const UIStrings = {
      * @description The text of the header inside the console insight pane when there was an error generating an insight.
      */
     error: 'Something went wrong…',
+    /**
+     * @description Title of the info icon button that shows more details about
+     * how refining a console insight will work. It shows a tooltip with
+     * additional info when hovered or pressed.
+     */
+    refineInfo: 'Learn how personalizing of insights works',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/explain/components/ConsoleInsight.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -166,7 +172,27 @@ function localizeType(sourceType) {
 }
 const DOGFOODFEEDBACK_URL = 'http://go/console-insights-experiment-general-feedback';
 function buildRatingFormLink(rating, comment, explanation, consoleMessage, stackTrace, relatedCode, networkData) {
-    return `https://docs.google.com/forms/d/e/1FAIpQLSen1K-Uli0CSvlsNkI-L0Wq5iJ0FO9zFv0_mjM-3m5I8AKQGg/viewform?usp=pp_url&entry.1465663861=${encodeURIComponent(rating)}&entry.109342357=${encodeURIComponent(comment)}&entry.1805879004=${encodeURIComponent(explanation)}&entry.623054399=${encodeURIComponent(consoleMessage)}&entry.720239045=${encodeURIComponent(stackTrace)}&entry.1520357991=${encodeURIComponent(relatedCode)}&entry.1966708581=${encodeURIComponent(networkData)}`;
+    const params = rating === 'Negative' ? {
+        'entry.1465663861': rating,
+        'entry.1232404632': explanation,
+        'entry.37285503': stackTrace,
+        'entry.542010749': consoleMessage,
+        'entry.420621380': relatedCode,
+        'entry.822323774': networkData,
+    } :
+        {
+            'entry.1465663861': rating,
+            'entry.1805879004': explanation,
+            'entry.720239045': stackTrace,
+            'entry.623054399': consoleMessage,
+            'entry.1520357991': relatedCode,
+            'entry.1966708581': networkData,
+        };
+    return `http://go/console-insights-experiment-rating?usp=pp_url&${Object.keys(params)
+        .map(param => {
+        return `${param}=${encodeURIComponent(params[param])}`;
+    })
+        .join('&')}`;
 }
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
@@ -177,6 +203,7 @@ var State;
     State["REFINING"] = "refining";
     State["ERROR"] = "error";
 })(State || (State = {}));
+let nextInstanceId = 0;
 export class ConsoleInsight extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-console-insight`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -197,6 +224,7 @@ export class ConsoleInsight extends HTMLElement {
     #selectedRating;
     #selectedRatingReasons = new Set();
     #popover;
+    #id;
     constructor(promptBuilder, insightProvider) {
         super();
         this.#promptBuilder = promptBuilder;
@@ -214,10 +242,12 @@ export class ConsoleInsight extends HTMLElement {
             e.stopPropagation();
         });
         this.tabIndex = 0;
+        this.#id = nextInstanceId++;
         this.focus();
         this.#popover = new UI.PopoverHelper.PopoverHelper(this, event => {
             const hoveredNode = event.composedPath()[0];
-            if (!hoveredNode || !hoveredNode.parentElementOrShadowHost()?.matches('.info')) {
+            if (!hoveredNode ||
+                (!hoveredNode?.matches('.info') && !hoveredNode.parentElementOrShadowHost()?.matches('.info'))) {
                 return null;
             }
             return {
@@ -228,6 +258,7 @@ export class ConsoleInsight extends HTMLElement {
                     container.style.display = 'flex';
                     container.style.flexDirection = 'column';
                     container.style.fontSize = '13px';
+                    container.style.lineHeight = '20px';
                     const text = document.createElement('p');
                     text.innerText = i18nString(UIStrings.refineButtonHint);
                     text.style.margin = '0';
@@ -235,6 +266,10 @@ export class ConsoleInsight extends HTMLElement {
                     list.sources = sources;
                     container.append(text);
                     container.append(list);
+                    container.setAttribute('role', 'tooltip');
+                    const tooltipId = `console-insight-tooltip-${this.#id}`;
+                    container.setAttribute('id', tooltipId);
+                    this.#shadow.querySelector('.info')?.setAttribute('aria-describedby', tooltipId);
                     popover.contentElement.append(container);
                     popover.setAnchorBehavior("PreferBottom" /* UI.GlassPane.AnchorBehavior.PreferBottom */);
                     return true;
@@ -252,6 +287,9 @@ export class ConsoleInsight extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
         this.classList.add('opening');
+    }
+    disonnectedCallback() {
+        this.#popover.dispose();
     }
     set dogfood(value) {
         this.#dogfood = value;
@@ -351,6 +389,25 @@ export class ConsoleInsight extends HTMLElement {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRefined);
         void this.update(true);
     }
+    #onInfoKeyDown(event) {
+        if (event instanceof KeyboardEvent) {
+            switch (event.key) {
+                case 'Escape':
+                    this.#popover.hidePopover();
+                    break;
+                case 'Enter':
+                case ' ':
+                    event.target?.dispatchEvent(new MouseEvent('mousedown', {
+                        bubbles: true,
+                        composed: true,
+                        cancelable: true,
+                        clientX: event.target.getBoundingClientRect().x,
+                        clientY: event.target.getBoundingClientRect().y,
+                    }));
+                    break;
+            }
+        }
+    }
     #renderMain() {
         // clang-format off
         switch (this.#state.type) {
@@ -392,7 +449,10 @@ export class ConsoleInsight extends HTMLElement {
             </${Buttons.Button.Button.litTagName}>
             <${IconButton.Icon.Icon.litTagName}
               class="info"
+              role="button"
+              title=${i18nString(UIStrings.refineInfo)}
               tabindex="0"
+              @keydown=${this.#onInfoKeyDown}
               .data=${{
                     iconName: 'info',
                     color: 'var(--icon-default)',

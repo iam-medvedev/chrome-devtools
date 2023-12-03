@@ -37,9 +37,6 @@
   ],
   "references": [
     {
-      "path": "./actions-tsconfig.json"
-    },
-    {
       "path": "./bundle-tsconfig.json"
     },
     {
@@ -62,6 +59,9 @@
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"
+    },
+    {
+      "path": "recorder-actions/bundle-tsconfig.json"
     }
   ]
 }

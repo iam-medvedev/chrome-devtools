@@ -83,7 +83,7 @@ export default {
     border: none;
     padding: 0;
     text-decoration: underline;
-    margin-inline: 4px;
+    margin-inline: 5px;
 
     &:focus-visible {
       outline: 2px solid var(--sys-color-state-focus-ring);

@@ -6,6 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import consoleContextSelectorStyles from './consoleContextSelector.css.js';
 const UIStrings = {
     /**
@@ -35,6 +36,7 @@ export class ConsoleContextSelector {
         this.toolbarItemInternal = new UI.Toolbar.ToolbarItem(this.dropDown.element);
         this.toolbarItemInternal.setEnabled(false);
         this.toolbarItemInternal.setTitle(i18nString(UIStrings.javascriptContextNotSelected));
+        this.toolbarItemInternal.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('javascript-context')}`);
         this.items.addEventListener(UI.ListModel.Events.ItemsReplaced, () => this.toolbarItemInternal.setEnabled(Boolean(this.items.length)));
         this.toolbarItemInternal.element.classList.add('toolbar-has-dropdown');
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextCreated, this.onExecutionContextCreated, this, { scoped: true });

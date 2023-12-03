@@ -17,6 +17,7 @@ export default {
   flex-direction: column;
   position: relative;
   padding: 6px;
+  min-width: fit-content;
 }
 
 .infobar:focus {

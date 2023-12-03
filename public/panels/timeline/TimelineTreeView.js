@@ -70,10 +70,6 @@ const UIStrings = {
      */
     unattributed: '[unattributed]',
     /**
-     *@description Text in Timeline Tree View of the Performance panel
-     */
-    javascript: 'JavaScript',
-    /**
      *@description Text that refers to one or a group of webpages
      */
     page: 'Page',
@@ -192,10 +188,6 @@ export class TimelineTreeView extends UI.Widget.VBox {
         this.searchResults = [];
     }
     static eventNameForSorting(event) {
-        if (TimelineModel.TimelineModel.TimelineModelImpl.isJsFrameEvent(event)) {
-            const data = event.args['data'];
-            return data['functionName'] + '@' + (data['scriptId'] || data['url'] || '');
-        }
         return event.name + ':@' + TimelineModel.TimelineProfileTree.eventURL(event);
     }
     setSearchableView(searchableView) {
@@ -575,7 +567,9 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             const target = this.treeView.modelInternal?.timelineModel().targetByEvent(event) || null;
             const linkifier = this.treeView.linkifier;
             const isFreshRecording = Boolean(this.treeView.modelInternal?.timelineModel().isFreshRecording());
-            this.linkElement = TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording);
+            this.linkElement = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
+                TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording) :
+                null;
             if (this.linkElement) {
                 container.createChild('div', 'activity-link').appendChild(this.linkElement);
             }
@@ -598,13 +592,13 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             case 'startTime':
                 {
                     event = this.profileNode.event;
-                    const model = this.treeView.model();
-                    if (!model) {
-                        throw new Error('Unable to find model for tree view');
+                    const traceParseData = this.treeView.traceParseData();
+                    if (!traceParseData) {
+                        throw new Error('Unable to load trace data for tree view');
                     }
                     const timings = event && TraceEngine.Legacy.timesForEventInMilliseconds(event);
                     const startTime = timings?.startTime ?? 0;
-                    value = startTime - model.timelineModel().minimumRecordTime();
+                    value = startTime - TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceParseData.Meta.traceBounds.min);
                 }
                 break;
             case 'self':
@@ -731,14 +725,10 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
                 if (!node.event) {
                     throw new Error('Unable to find event for group by operation');
                 }
-                const name = (TimelineModel.TimelineModel.TimelineModelImpl.isJsFrameEvent(node.event)) ?
-                    i18nString(UIStrings.javascript) :
-                    TimelineUIUtils.eventTitle(node.event);
+                const name = TimelineUIUtils.eventTitle(node.event);
                 return {
                     name: name,
-                    color: TimelineModel.TimelineModel.TimelineModelImpl.isJsFrameEvent(node.event) ?
-                        TimelineUIUtils.eventStyle(node.event).category.color :
-                        color,
+                    color,
                     icon: undefined,
                 };
             }

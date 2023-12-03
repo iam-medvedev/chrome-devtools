@@ -88,6 +88,7 @@ export declare class TreeElement {
     titleInternal: string | Node;
     private childrenInternal;
     childrenListNode: HTMLOListElement;
+    private expandLoggable;
     private hiddenInternal;
     private selectableInternal;
     expanded: boolean;
@@ -102,7 +103,7 @@ export declare class TreeElement {
     private trailingIconsElement;
     protected selectionElementInternal: HTMLElement | null;
     private disableSelectFocus;
-    constructor(title?: string | Node, expandable?: boolean);
+    constructor(title?: string | Node, expandable?: boolean, jslogContext?: string | number);
     static getTreeElementBylistItemNode(node: Node): TreeElement | undefined;
     hasAncestor(ancestor: TreeElement | null): boolean;
     hasAncestorOrSelf(ancestor: TreeElement | null): boolean;

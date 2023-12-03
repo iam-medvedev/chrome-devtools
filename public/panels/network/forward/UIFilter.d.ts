@@ -39,7 +39,7 @@ interface UIFilter {
 }
 export declare class UIRequestFilter {
     readonly filters: UIFilter[];
-    private constructor();
+    constructor(filters: UIFilter[]);
     static filters(filters: UIFilter[]): UIRequestFilter;
 }
 export {};

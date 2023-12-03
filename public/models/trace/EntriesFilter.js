@@ -38,6 +38,9 @@ export class EntriesFilter {
     // changed.
     #lastInvisibleEntries = null;
     #activeActions = [];
+    // List of entries whose children are modified. This list is used to
+    // keep track of entries that should be identified in the UI as modified.
+    #modifiedVisibleEntries = [];
     constructor(entryToNode) {
         this.#entryToNode = entryToNode;
     }
@@ -47,6 +50,7 @@ export class EntriesFilter {
      **/
     applyAction(action) {
         if ( /* FilterApplyActions */this.isUserApplyFilterAction(action)) {
+            this.#modifiedVisibleEntries.push(action.entry);
             if (this.#actionIsActive(action)) {
                 // If the action is already active there is no reason to apply it again.
                 return;
@@ -54,6 +58,8 @@ export class EntriesFilter {
             this.#activeActions.push(action);
         }
         else if ( /* FilterUndoActions */this.isFilterUndoAction(action.type)) {
+            const entryIndex = this.#modifiedVisibleEntries.indexOf(action.entry);
+            this.#modifiedVisibleEntries.splice(entryIndex);
             this.#applyUndoAction(action.type, action.entry);
         }
         // Clear the last list of invisible entries - this invalidates the cache and
@@ -70,6 +76,7 @@ export class EntriesFilter {
         switch (action) {
             case "UNDO_ALL_ACTIONS" /* FilterUndoAction.UNDO_ALL_ACTIONS */: {
                 this.#activeActions = [];
+                this.#modifiedVisibleEntries = [];
                 break;
             }
             default: {
@@ -211,6 +218,9 @@ export class EntriesFilter {
             }
         }
         return repeatingNodes;
+    }
+    isEntryModified(event) {
+        return this.#modifiedVisibleEntries.includes(event);
     }
     isUserApplyFilterAction(action) {
         return filterApplyActionSet.has(action.type);

@@ -1,7 +1,7 @@
 import * as SDK from '../../../core/sdk/sdk.js';
 import type * as PublicExtensions from '../../../models/extensions/extensions.js';
-import type * as Extensions from '../extensions/extensions.js';
 import type * as Converters from '../converters/converters.js';
+import type * as Extensions from '../extensions/extensions.js';
 import * as Models from '../models/models.js';
 import { PlayRecordingSpeed } from '../models/RecordingPlayer.js';
 declare global {

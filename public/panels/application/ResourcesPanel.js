@@ -11,7 +11,6 @@ import { CookieItemsView } from './CookieItemsView.js';
 import { DatabaseQueryView } from './DatabaseQueryView.js';
 import { DatabaseTableView } from './DatabaseTableView.js';
 import { DOMStorageItemsView } from './DOMStorageItemsView.js';
-import * as PreloadingHelper from './preloading/helper/helper.js';
 import resourcesPanelStyles from './resourcesPanel.css.js';
 import { StorageItemsView } from './StorageItemsView.js';
 const UIStrings = {
@@ -169,70 +168,26 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
         this.registerCSSFiles([resourcesPanelStyles]);
     }
 }
-let resourceRevealerInstance;
 export class ResourceRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!resourceRevealerInstance || forceNew) {
-            resourceRevealerInstance = new ResourceRevealer();
-        }
-        return resourceRevealerInstance;
-    }
     async reveal(resource) {
-        if (!(resource instanceof SDK.Resource.Resource)) {
-            throw new Error('Internal error: not a resource');
-        }
         const sidebar = await ResourcesPanel.showAndGetSidebar();
         await sidebar.showResource(resource);
     }
 }
-let frameDetailsRevealerInstance;
 export class FrameDetailsRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!frameDetailsRevealerInstance || forceNew) {
-            frameDetailsRevealerInstance = new FrameDetailsRevealer();
-        }
-        return frameDetailsRevealerInstance;
-    }
     async reveal(frame) {
-        if (!(frame instanceof SDK.ResourceTreeModel.ResourceTreeFrame)) {
-            throw new Error('Internal error: not a frame');
-        }
         const sidebar = await ResourcesPanel.showAndGetSidebar();
         sidebar.showFrame(frame);
     }
 }
-let ruleSetViewRevealerInstance;
 export class RuleSetViewRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!ruleSetViewRevealerInstance || forceNew) {
-            ruleSetViewRevealerInstance = new RuleSetViewRevealer();
-        }
-        return ruleSetViewRevealerInstance;
-    }
     async reveal(revealInfo) {
-        if (!(revealInfo instanceof PreloadingHelper.PreloadingForward.RuleSetView)) {
-            throw new Error('Internal error: not an RuleSetView');
-        }
         const sidebar = await ResourcesPanel.showAndGetSidebar();
         sidebar.showPreloadingRuleSetView(revealInfo);
     }
 }
-let attemptViewWithFilterRevealerInstance;
 export class AttemptViewWithFilterRevealer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!attemptViewWithFilterRevealerInstance || forceNew) {
-            attemptViewWithFilterRevealerInstance = new AttemptViewWithFilterRevealer();
-        }
-        return attemptViewWithFilterRevealerInstance;
-    }
     async reveal(filter) {
-        if (!(filter instanceof PreloadingHelper.PreloadingForward.AttemptViewWithFilter)) {
-            throw new Error('Internal error: not an AttemptViewWithFilter');
-        }
         const sidebar = await ResourcesPanel.showAndGetSidebar();
         sidebar.showPreloadingAttemptViewWithFilter(filter);
     }

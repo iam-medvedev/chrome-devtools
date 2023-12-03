@@ -1,14 +1,14 @@
 import type * as Platform from '../platform/platform.js';
-export interface Revealer {
-    reveal(object: Object, omitFocus?: boolean): Promise<void>;
+export interface Revealer<T> {
+    reveal(revealable: T, omitFocus?: boolean): Promise<void>;
 }
-export declare let reveal: (revealable: Object | null, omitFocus?: boolean) => Promise<void>;
-export declare function setRevealForTest(newReveal: (arg0: Object | null, arg1?: boolean | undefined) => Promise<void>): void;
-export declare const revealDestination: (revealable: Object | null) => string | null;
-export declare function registerRevealer(registration: RevealerRegistration): void;
-export interface RevealerRegistration {
-    contextTypes: () => Array<Function>;
-    loadRevealer: () => Promise<Revealer>;
+export declare let reveal: (revealable: unknown, omitFocus?: boolean) => Promise<void>;
+export declare function setRevealForTest(newReveal: (revealable: unknown, omitFocus?: boolean) => Promise<void>): void;
+export declare function revealDestination(revealable: unknown): string | null;
+export declare function registerRevealer<T>(registration: RevealerRegistration<T>): void;
+export interface RevealerRegistration<T> {
+    contextTypes: () => Array<abstract new (...any: any) => T>;
+    loadRevealer: () => Promise<Revealer<T>>;
     destination?: RevealerDestination;
 }
 export declare const RevealerDestination: {

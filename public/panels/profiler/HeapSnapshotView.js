@@ -1450,14 +1450,12 @@ export class HeapProfileHeader extends ProfileHeader {
             this.fulfillLoad(this.snapshotProxy);
         }
         this.profileType().snapshotReceived(this);
-        if (this.canSaveToFile()) {
-            this.dispatchEventToListeners(ProfileHeaderEvents.ProfileReceived);
-        }
     }
     canSaveToFile() {
-        return !this.fromFile() && Boolean(this.snapshotProxy);
+        return !this.fromFile();
     }
-    saveToFile() {
+    async saveToFile() {
+        await this.loadPromise;
         const fileOutputStream = new Bindings.FileUtils.FileOutputStream();
         this.fileName = this.fileName ||
             'Heap-' + Platform.DateUtilities.toISO8601Compact(new Date()) + this.profileType().fileExtension();
@@ -1483,7 +1481,7 @@ export class HeapProfileHeader extends ProfileHeader {
             };
             this.updateSaveProgress(0, 1);
         };
-        void fileOutputStream.open(this.fileName).then(onOpen.bind(this));
+        await fileOutputStream.open(this.fileName).then(onOpen.bind(this));
     }
     onChunkTransferred(reader) {
         this.updateSaveProgress(reader.loadedSize(), reader.fileSize());

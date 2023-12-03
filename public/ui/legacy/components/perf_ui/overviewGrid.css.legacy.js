@@ -123,8 +123,14 @@ export default {
   gap: 2px;
 }
 
+.create-breadcrumb-button:active {
+  /* On minimap cursor changes to text to selected an area,
+  * so keep it as default on the breadcrumb button */
+  cursor: default;
+}
+
 .create-breadcrumb-button:hover {
-  background: var(--ref-palette-neutral95);
+  background: var(--sys-color-neutral-container);
 }
 
 @media (forced-colors: active) {

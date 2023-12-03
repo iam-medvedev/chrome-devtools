@@ -38,6 +38,7 @@ export declare class IDBDataView extends UI.View.SimpleView {
     private index;
     private keyInput;
     private dataGrid;
+    private previouslySelectedNode?;
     private lastPageSize;
     private lastSkipCount;
     private pageBackButton;
@@ -64,6 +65,7 @@ export declare class IDBDataView extends UI.View.SimpleView {
     private deleteButtonClicked;
     clear(): void;
     private updateToolbarEnablement;
+    private updateSelectionColor;
     wasShown(): void;
 }
 export declare class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode<unknown> {

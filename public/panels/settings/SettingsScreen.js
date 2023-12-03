@@ -482,15 +482,7 @@ export class ActionDelegate {
         return false;
     }
 }
-let revealerInstance;
 export class Revealer {
-    static instance(opts = { forceNew: false }) {
-        const { forceNew } = opts;
-        if (!revealerInstance || forceNew) {
-            revealerInstance = new Revealer();
-        }
-        return revealerInstance;
-    }
     reveal(object) {
         if (object instanceof Root.Runtime.Experiment) {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
@@ -498,13 +490,11 @@ export class Revealer {
                 .then(() => ExperimentsSettingsTab.instance().highlightObject(object));
             return Promise.resolve();
         }
-        console.assert(object instanceof Common.Settings.Setting);
-        const setting = object;
         for (const settingRegistration of Common.Settings.getRegisteredSettings()) {
             if (!GenericSettingsTab.isSettingVisible(settingRegistration)) {
                 continue;
             }
-            if (settingRegistration.settingName === setting.name) {
+            if (settingRegistration.settingName === object.name) {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
                 void SettingsScreen.showSettingsScreen().then(() => GenericSettingsTab.instance().highlightObject(object));
                 return Promise.resolve();
@@ -518,7 +508,7 @@ export class Revealer {
                 continue;
             }
             const settings = view.settings();
-            if (settings && settings.indexOf(setting.name) !== -1) {
+            if (settings && settings.indexOf(object.name) !== -1) {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
                 void SettingsScreen.showSettingsScreen({ name: id }).then(async () => {
                     const widget = await view.widget();

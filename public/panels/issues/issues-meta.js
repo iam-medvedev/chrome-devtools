@@ -45,7 +45,7 @@ Common.Revealer.registerRevealer({
     destination: Common.Revealer.RevealerDestination.ISSUES_VIEW,
     async loadRevealer() {
         const Issues = await loadIssuesModule();
-        return Issues.IssueRevealer.IssueRevealer.instance();
+        return new Issues.IssueRevealer.IssueRevealer();
     },
 });
 //# sourceMappingURL=issues-meta.js.map

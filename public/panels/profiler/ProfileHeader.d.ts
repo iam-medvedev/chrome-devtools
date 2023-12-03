@@ -33,12 +33,10 @@ export declare class StatusUpdate {
 }
 export declare enum Events {
     UpdateStatus = "UpdateStatus",
-    ProfileReceived = "ProfileReceived",
     ProfileTitleChanged = "ProfileTitleChanged"
 }
 export type EventTypes = {
     [Events.UpdateStatus]: StatusUpdate;
-    [Events.ProfileReceived]: void;
     [Events.ProfileTitleChanged]: ProfileHeader;
 };
 export declare class ProfileType extends Common.ObjectWrapper.ObjectWrapper<ProfileEventTypes> {

@@ -610,10 +610,15 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         const domStorageTreeElement = new DOMStorageTreeElement(this.panel, domStorage);
         this.domStorageTreeElements.set(domStorage, domStorageTreeElement);
         if (domStorage.isLocalStorage) {
-            this.localStorageListTreeElement.appendChild(domStorageTreeElement);
+            this.localStorageListTreeElement.appendChild(domStorageTreeElement, comparator);
         }
         else {
-            this.sessionStorageListTreeElement.appendChild(domStorageTreeElement);
+            this.sessionStorageListTreeElement.appendChild(domStorageTreeElement, comparator);
+        }
+        function comparator(a, b) {
+            const aTitle = a.titleAsText().toLocaleLowerCase();
+            const bTitle = b.titleAsText().toLocaleUpperCase();
+            return aTitle.localeCompare(bTitle);
         }
     }
     domStorageRemoved(event) {

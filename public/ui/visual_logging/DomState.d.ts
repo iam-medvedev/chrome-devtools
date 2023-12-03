@@ -2,7 +2,7 @@ interface ElementWithParent {
     element: Element;
     parent?: Element;
 }
-export declare function getDomState(): {
+export declare function getDomState(documents: Document[]): {
     loggables: ElementWithParent[];
     shadowRoots: ShadowRoot[];
 };

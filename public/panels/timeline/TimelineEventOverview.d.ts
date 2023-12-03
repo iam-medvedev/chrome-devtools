@@ -1,6 +1,5 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
-import { type PerformanceModel } from './PerformanceModel.js';
 export declare abstract class TimelineEventOverview extends PerfUI.TimelineOverviewPane.TimelineOverviewBase {
     constructor(id: string, title: string | null);
     renderBar(begin: number, end: number, position: number, height: number, color: string): void;
@@ -13,7 +12,7 @@ export declare class TimelineEventOverviewNetwork extends TimelineEventOverview 
 export declare class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
     #private;
     private backgroundCanvas;
-    constructor(model: PerformanceModel | null, traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null);
+    constructor(traceParsedData: TraceEngine.Handlers.Types.TraceParseData);
     resetCanvas(): void;
     update(start?: TraceEngine.Types.Timing.MilliSeconds, end?: TraceEngine.Types.Timing.MilliSeconds): void;
 }

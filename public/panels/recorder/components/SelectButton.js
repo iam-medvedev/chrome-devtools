@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
+import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Models from '../models/models.js';
 import selectButtonStyles from './selectButton.css.js';
 export class SelectButtonClickEvent extends Event {

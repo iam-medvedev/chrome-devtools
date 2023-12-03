@@ -19,10 +19,6 @@ styles.replaceSync(
   flex-shrink: 0;
 }
 
-.font-name {
-  font-weight: bold;
-}
-
 .font-usage {
   color: var(--sys-color-token-subtle);
   padding-left: 3px;
@@ -42,16 +38,16 @@ styles.replaceSync(
   align-items: center;
 }
 
-.stats-section {
-  margin: 5px 0;
-}
-
 .font-stats-item {
-  padding-left: 1em;
-}
+  padding: 5px 1em;
 
-.font-stats-item .font-delimeter {
-  margin: 0 1ex;
+  div {
+    margin-bottom: 2px;
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--sys-color-divider);
+  }
 }
 
 /*# sourceURL=platformFontsWidget.css */

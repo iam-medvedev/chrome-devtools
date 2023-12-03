@@ -164,7 +164,10 @@ export class Section {
         if (!label) {
             label = action.title();
         }
-        const result = this.appendItem(label, action.execute.bind(action), { jslogContext: actionId });
+        const result = this.appendItem(label, action.execute.bind(action), {
+            disabled: !action.enabled(),
+            jslogContext: actionId,
+        });
         const shortcut = ShortcutRegistry.instance().shortcutTitleForAction(actionId);
         if (shortcut) {
             result.setShortcut(shortcut);
@@ -317,6 +320,7 @@ export class ContextMenu extends SubMenu {
     x;
     y;
     onSoftMenuClosed;
+    jsLogContext;
     handlers;
     idInternal;
     softMenu;
@@ -338,6 +342,7 @@ export class ContextMenu extends SubMenu {
         this.x = options.x === undefined ? mouseEvent.x : options.x;
         this.y = options.y === undefined ? mouseEvent.y : options.y;
         this.onSoftMenuClosed = options.onSoftMenuClosed;
+        this.jsLogContext = options.jsLogContext;
         this.handlers = new Map();
         this.idInternal = 0;
         this.openHostedMenu = null;
@@ -397,7 +402,6 @@ export class ContextMenu extends SubMenu {
         }
     }
     registerLoggablesWithin(descriptors, parent) {
-        const loggables = [];
         for (const descriptor of descriptors) {
             if (descriptor.jslogContext) {
                 if (descriptor.type === 'checkbox') {
@@ -406,16 +410,14 @@ export class ContextMenu extends SubMenu {
                 else if (descriptor.type === 'item') {
                     VisualLogging.registerLoggable(descriptor, `${VisualLogging.action().track({ click: true }).context(descriptor.jslogContext)}`, parent || descriptors);
                 }
-                else if (descriptor.type !== 'subMenu') {
+                else if (descriptor.type === 'subMenu') {
                     VisualLogging.registerLoggable(descriptor, `${VisualLogging.item().context(descriptor.jslogContext)}`, parent || descriptors);
                 }
-                loggables.push(descriptor);
                 if (descriptor.subItems) {
-                    loggables.push(...this.registerLoggablesWithin(descriptor.subItems, descriptor));
+                    this.registerLoggablesWithin(descriptor.subItems, descriptor);
                 }
             }
         }
-        return loggables;
     }
     innerShow() {
         const menuObject = this.buildMenuDescriptors();
@@ -441,11 +443,13 @@ export class ContextMenu extends SubMenu {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuCleared, this.menuCleared, this);
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, this.onItemSelected, this);
             }
-            VisualLogging.registerLoggable(menuObject, `${VisualLogging.menu()}`, null);
-            const loggables = this.registerLoggablesWithin(menuObject);
-            if (loggables.length) {
-                void VisualLogging.logImpressions(loggables);
+            const visualElement = VisualLogging.menu();
+            if (this.jsLogContext) {
+                visualElement.context(this.jsLogContext);
             }
+            VisualLogging.registerLoggable(menuObject, `${visualElement}`, null);
+            this.registerLoggablesWithin(menuObject);
+            void VisualLogging.logImpressions([menuObject]);
             this.openHostedMenu = menuObject;
             // showContextMenuAtPoint call above synchronously issues a clear event for previous context menu (if any),
             // so we skip it before subscribing to the clear event.
@@ -571,6 +575,7 @@ export var ItemLocation;
     ItemLocation["MAIN_MENU_FOOTER"] = "mainMenu/footer";
     ItemLocation["MAIN_MENU_HELP_DEFAULT"] = "mainMenuHelp/default";
     ItemLocation["NAVIGATOR_MENU_DEFAULT"] = "navigatorMenu/default";
+    ItemLocation["PROFILER_MENU_DEFAULT"] = "profilerMenu/default";
     ItemLocation["TIMELINE_MENU_OPEN"] = "timelineMenu/open";
 })(ItemLocation || (ItemLocation = {}));
 //# sourceMappingURL=ContextMenu.js.map

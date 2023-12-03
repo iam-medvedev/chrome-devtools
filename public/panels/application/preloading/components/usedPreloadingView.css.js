@@ -25,8 +25,16 @@ devtools-report-section-header {
   margin-bottom: -1.5em;
 }
 
+devtools-report-section {
+  min-width: fit-content;
+}
+
 devtools-report-divider {
   margin: 1em 0;
+}
+
+.reveal-links {
+  white-space: nowrap;
 }
 
 .link {
@@ -40,6 +48,7 @@ devtools-report-divider {
 }
 
 .status-badge-container {
+  white-space: nowrap;
   margin: 8px 0 24px;
 }
 

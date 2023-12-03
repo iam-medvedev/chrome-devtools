@@ -112,36 +112,24 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
 }
 export declare let lastModificationTimeout: number;
 export declare const minToolbarWidth = 215;
-export declare class UILocationRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): UILocationRevealer;
-    reveal(uiLocation: Object, omitFocus?: boolean): Promise<void>;
+export declare class UILocationRevealer implements Common.Revealer.Revealer<Workspace.UISourceCode.UILocation> {
+    reveal(uiLocation: Workspace.UISourceCode.UILocation, omitFocus?: boolean): Promise<void>;
 }
-export declare class UILocationRangeRevealer implements Common.Revealer.Revealer {
+export declare class UILocationRangeRevealer implements Common.Revealer.Revealer<Workspace.UISourceCode.UILocationRange> {
     #private;
     static instance(opts?: {
         forceNew: boolean;
     }): UILocationRangeRevealer;
-    reveal(uiLocationRange: Object, omitFocus?: boolean): Promise<void>;
+    reveal(uiLocationRange: Workspace.UISourceCode.UILocationRange, omitFocus?: boolean): Promise<void>;
 }
-export declare class DebuggerLocationRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): DebuggerLocationRevealer;
-    reveal(rawLocation: Object, omitFocus?: boolean): Promise<void>;
+export declare class DebuggerLocationRevealer implements Common.Revealer.Revealer<SDK.DebuggerModel.Location> {
+    reveal(rawLocation: SDK.DebuggerModel.Location, omitFocus?: boolean): Promise<void>;
 }
-export declare class UISourceCodeRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): UISourceCodeRevealer;
-    reveal(uiSourceCode: Object, omitFocus?: boolean): Promise<void>;
+export declare class UISourceCodeRevealer implements Common.Revealer.Revealer<Workspace.UISourceCode.UISourceCode> {
+    reveal(uiSourceCode: Workspace.UISourceCode.UISourceCode, omitFocus?: boolean): Promise<void>;
 }
-export declare class DebuggerPausedDetailsRevealer implements Common.Revealer.Revealer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): DebuggerPausedDetailsRevealer;
-    reveal(_object: Object): Promise<void>;
+export declare class DebuggerPausedDetailsRevealer implements Common.Revealer.Revealer<SDK.DebuggerModel.DebuggerPausedDetails> {
+    reveal(_object: SDK.DebuggerModel.DebuggerPausedDetails): Promise<void>;
 }
 export declare class RevealingActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;

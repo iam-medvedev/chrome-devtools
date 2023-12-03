@@ -38,10 +38,10 @@ export declare class ResourceCategory {
     static categoryByTitle(title: string): ResourceCategory | null;
 }
 export declare const resourceCategories: {
-    Document: ResourceCategory;
-    Script: ResourceCategory;
     XHR: ResourceCategory;
+    Document: ResourceCategory;
     Stylesheet: ResourceCategory;
+    Script: ResourceCategory;
     Font: ResourceCategory;
     Image: ResourceCategory;
     Media: ResourceCategory;

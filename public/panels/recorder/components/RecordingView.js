@@ -8,19 +8,19 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as CodeHighlighter from '../../../ui/components/code_highlighter/code_highlighter.js';
+import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Input from '../../../ui/components/input/input.js';
+import * as Menus from '../../../ui/components/menus/menus.js';
+import * as SplitView from '../../../ui/components/split_view/split_view.js';
 import * as TextEditor from '../../../ui/components/text_editor/text_editor.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
-import * as Menus from '../../../ui/components/menus/menus.js';
 import * as Models from '../models/models.js';
-import recordingViewStyles from './recordingView.css.js';
-import { StepView, } from './StepView.js';
-import { ReplayButton, } from './ReplayButton.js';
-import * as SplitView from '../../../ui/components/split_view/split_view.js';
 import { ExtensionView } from './ExtensionView.js';
+import recordingViewStyles from './recordingView.css.js';
+import { ReplayButton, } from './ReplayButton.js';
+import { StepView, } from './StepView.js';
 const UIStrings = {
     /**
      * @description Depicts that the recording was done on a mobile device (e.g., a smartphone or tablet).

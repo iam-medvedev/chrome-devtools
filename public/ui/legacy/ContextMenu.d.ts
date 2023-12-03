@@ -63,6 +63,7 @@ export interface ContextMenuOptions {
     onSoftMenuClosed?: () => void;
     x?: number;
     y?: number;
+    jsLogContext?: string;
 }
 export declare class ContextMenu extends SubMenu {
     protected contextMenu: this;
@@ -75,6 +76,7 @@ export declare class ContextMenu extends SubMenu {
     private x;
     private y;
     private onSoftMenuClosed?;
+    private jsLogContext?;
     private readonly handlers;
     idInternal: number;
     private softMenu?;
@@ -120,6 +122,7 @@ export declare enum ItemLocation {
     MAIN_MENU_FOOTER = "mainMenu/footer",
     MAIN_MENU_HELP_DEFAULT = "mainMenuHelp/default",
     NAVIGATOR_MENU_DEFAULT = "navigatorMenu/default",
+    PROFILER_MENU_DEFAULT = "profilerMenu/default",
     TIMELINE_MENU_OPEN = "timelineMenu/open"
 }
 export interface ProviderRegistration {

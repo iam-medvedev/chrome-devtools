@@ -222,6 +222,11 @@ h2 {
   font-weight: inherit;
 }
 
+.info {
+  width: 16px;
+  height: 16px;
+}
+
 /*# sourceURL=./components/consoleInsight.css */
 `);
 

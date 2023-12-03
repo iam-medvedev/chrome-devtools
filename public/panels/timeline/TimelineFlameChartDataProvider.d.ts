@@ -39,11 +39,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private buildGroupStyle;
     setModel(performanceModel: PerformanceModel | null, newTraceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
     /**
-     * Sets the minimum time and total time span of a trace using the
-     * new engine data.
-     */
-    setTimingBoundsData(newTraceEngineData: TraceEngine.Handlers.Types.TraceParseData): void;
-    /**
      * Instances and caches a CompatibilityTracksAppender using the
      * internal flame chart data and the trace parsed data coming from the
      * trace engine.

@@ -7,6 +7,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import mediaQueryInspectorStyles from './mediaQueryInspector.css.legacy.js';
 const UIStrings = {
     /**
@@ -30,6 +31,7 @@ export class MediaQueryInspector extends UI.Widget.Widget {
         super(true);
         this.registerRequiredCSS(mediaQueryInspectorStyles);
         this.contentElement.classList.add('media-inspector-view');
+        this.contentElement.setAttribute('jslog', `${VisualLogging.mediaInspectorView().track({ click: true })}`);
         this.contentElement.addEventListener('click', this.onMediaQueryClicked.bind(this), false);
         this.contentElement.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
         this.mediaThrottler = mediaThrottler;
@@ -118,10 +120,10 @@ export class MediaQueryInspector extends UI.Widget.Widget {
         }
         const contextMenuItems = [...uiLocations.keys()].sort();
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        const subMenuItem = contextMenu.defaultSection().appendSubMenuItem(i18nString(UIStrings.revealInSourceCode));
+        const subMenuItem = contextMenu.defaultSection().appendSubMenuItem(i18nString(UIStrings.revealInSourceCode), undefined);
         for (let i = 0; i < contextMenuItems.length; ++i) {
             const title = contextMenuItems[i];
-            subMenuItem.defaultSection().appendItem(title, this.revealSourceLocation.bind(this, uiLocations.get(title)));
+            subMenuItem.defaultSection().appendItem(title, this.revealSourceLocation.bind(this, uiLocations.get(title)), { jslogContext: 'revealInSourceCode' });
         }
         void contextMenu.show();
     }

@@ -625,21 +625,9 @@ const UIStrings = {
      */
     callbackId: 'Callback ID',
     /**
-     *@description Text that refers to the resources of the web page
-     */
-    resource: 'Resource',
-    /**
      *@description Text that refers to the network request method
      */
     requestMethod: 'Request Method',
-    /**
-     *@description Status code of an event
-     */
-    statusCode: 'Status Code',
-    /**
-     *@description Text in Timeline UIUtils of the Performance panel
-     */
-    mimeTypeCaps: 'MIME Type',
     /**
      *@description Text to show the priority of an item
      */
@@ -648,10 +636,6 @@ const UIStrings = {
      *@description Text in Timeline UIUtils of the Performance panel
      */
     encodedData: 'Encoded Data',
-    /**
-     *@description Text in Timeline UIUtils of the Performance panel
-     */
-    sBytes: '{n, plural, =1 {# Byte} other {# Bytes}}',
     /**
      *@description Text in Timeline UIUtils of the Performance panel
      */
@@ -1337,12 +1321,6 @@ export class TimelineUIUtils {
         return result;
     }
     static eventColor(event) {
-        if (TimelineModel.TimelineModel.TimelineModelImpl.isJsFrameEvent(event)) {
-            const frame = event.args['data'];
-            if (TimelineUIUtils.isUserFrame(frame)) {
-                return TimelineUIUtils.colorForId(frame.url);
-            }
-        }
         if (TraceEngine.Legacy.eventIsFromNewEngine(event) && TraceEngine.Types.TraceEvents.isProfileCall(event)) {
             const frame = event.callFrame;
             if (TimelineUIUtils.isUserFrame(frame)) {
@@ -1371,9 +1349,6 @@ export class TimelineUIUtils {
         }
         const recordType = TimelineModel.TimelineModel.RecordType;
         const eventData = event.args['data'];
-        if (TimelineModel.TimelineModel.TimelineModelImpl.isJsFrameEvent(event)) {
-            return TimelineUIUtils.frameDisplayName(eventData);
-        }
         if (event.name === 'EventTiming') {
             let payload = null;
             if (event instanceof TraceEngine.Legacy.PayloadEvent) {
@@ -1717,7 +1692,9 @@ export class TimelineUIUtils {
                     detailsText = null;
                 }
                 else {
-                    details = this.linkifyTopCallFrame(event, target, linkifier, isFreshRecording);
+                    details = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
+                        this.linkifyTopCallFrame(event, target, linkifier, isFreshRecording) :
+                        null;
                 }
                 break;
             }
@@ -1915,41 +1892,6 @@ export class TimelineUIUtils {
             }
             case recordTypes.FireAnimationFrame: {
                 contentHelper.appendTextRow(i18nString(UIStrings.callbackId), eventData['id']);
-                break;
-            }
-            case recordTypes.ResourceWillSendRequest:
-            case recordTypes.ResourceSendRequest:
-            case recordTypes.ResourceReceiveResponse:
-            case recordTypes.ResourceReceivedData:
-            case recordTypes.ResourceFinish: {
-                url = timelineData.url;
-                if (url) {
-                    const options = {
-                        tabStop: true,
-                        showColumnNumber: false,
-                        inlineFrameIndex: 0,
-                    };
-                    contentHelper.appendElementRow(i18nString(UIStrings.resource), LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options));
-                }
-                if (eventData['requestMethod']) {
-                    contentHelper.appendTextRow(i18nString(UIStrings.requestMethod), eventData['requestMethod']);
-                }
-                if (typeof eventData['statusCode'] === 'number') {
-                    contentHelper.appendTextRow(i18nString(UIStrings.statusCode), eventData['statusCode']);
-                }
-                if (eventData['mimeType']) {
-                    contentHelper.appendTextRow(i18nString(UIStrings.mimeTypeCaps), eventData['mimeType']);
-                }
-                if ('priority' in eventData) {
-                    const priority = PerfUI.NetworkPriorities.uiLabelForNetworkPriority(eventData['priority']);
-                    contentHelper.appendTextRow(i18nString(UIStrings.priority), priority);
-                }
-                if (eventData['encodedDataLength']) {
-                    contentHelper.appendTextRow(i18nString(UIStrings.encodedData), i18nString(UIStrings.sBytes, { n: eventData['encodedDataLength'] }));
-                }
-                if (eventData['decodedBodyLength']) {
-                    contentHelper.appendTextRow(i18nString(UIStrings.decodedBody), i18nString(UIStrings.sBytes, { n: eventData['decodedBodyLength'] }));
-                }
                 break;
             }
             case recordTypes.CompileModule: {
@@ -2213,7 +2155,7 @@ export class TimelineUIUtils {
             // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
             contentHelper.appendElementRow('', event[previewElementSymbol]);
         }
-        if (initiator || timelineData.stackTraceForSelfOrInitiator() ||
+        if (initiator || timelineData.stackTrace ||
             TimelineModel.TimelineModel.InvalidationTracker.invalidationEventsFor(event)) {
             TimelineUIUtils.generateCauses(event, model.targetByEvent(event), relatedNodesMap, contentHelper, traceParseData);
         }
@@ -2386,24 +2328,11 @@ export class TimelineUIUtils {
             contentHelper.appendTextRow(i18nString(UIStrings.decodedBody), Platform.NumberUtilities.bytesToString(event.args.data.decodedBodyLength));
         }
         const title = i18nString(UIStrings.initiator);
-        // const sendRequest = event.args.data.children[0];
         const topFrame = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).topFrame();
         if (topFrame) {
             const link = linkifier.maybeLinkifyConsoleCallFrame(maybeTarget, topFrame, { tabStop: true, inlineFrameIndex: 0, showColumnNumber: true });
             if (link) {
                 contentHelper.appendElementRow(title, link);
-            }
-        }
-        else {
-            const initiator = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).initiator();
-            if (initiator) {
-                const initiatorURL = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(initiator).url;
-                if (initiatorURL) {
-                    const link = linkifier.maybeLinkifyScriptLocation(maybeTarget, null, initiatorURL, 0, { tabStop: true, inlineFrameIndex: 0 });
-                    if (link) {
-                        contentHelper.appendElementRow(title, link);
-                    }
-                }
             }
         }
         if (!requestPreviewElements.get(event) && event.args.data.url && maybeTarget) {

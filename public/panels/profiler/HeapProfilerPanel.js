@@ -73,6 +73,7 @@ export class HeapProfilerPanel extends ProfilesPanel {
     }
     willHide() {
         UI.Context.Context.instance().setFlavor(HeapProfilerPanel, null);
+        super.willHide();
     }
     showObject(snapshotObjectId, perspectiveName) {
         const registry = instance;

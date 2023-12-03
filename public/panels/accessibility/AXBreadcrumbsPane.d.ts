@@ -40,6 +40,7 @@ export declare class AXBreadcrumb {
     private preselectedInternal;
     private parent;
     private inspectedInternal;
+    expandLoggable: {};
     constructor(axNode: SDK.AccessibilityModel.AccessibilityNode, depth: number, inspected: boolean);
     element(): HTMLElement;
     nodeElement(): HTMLElement;

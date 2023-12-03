@@ -13,6 +13,7 @@ import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ConsolePanel } from './ConsolePanel.js';
 import consolePromptStyles from './consolePrompt.css.js';
 const { Direction } = TextEditor.TextEditorHistory;
@@ -124,6 +125,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.editorSetForTest();
         // Record the console tool load time after the console prompt constructor is complete.
         Host.userMetrics.panelLoaded('console', 'DevTools.Launch.Console');
+        this.element.setAttribute('jslog', `${VisualLogging.action().track({ keydown: 'Enter' }).context('console-prompt')}`);
     }
     eagerSettingChanged() {
         const enabled = this.eagerEvalSetting.get();

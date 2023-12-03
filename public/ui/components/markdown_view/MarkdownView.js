@@ -1,22 +1,12 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Host from '../../../core/host/host.js';
-import * as i18n from '../../../core/i18n/i18n.js';
-import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
+import { CodeBlock } from './CodeBlock.js';
 import { MarkdownImage } from './MarkdownImage.js';
 import { MarkdownLink } from './MarkdownLink.js';
 import markdownViewStyles from './markdownView.css.js';
-const UIStrings = {
-    /**
-     * @description The title of the button to copy the codeblock from a Markdown view.
-     */
-    copy: 'Copy',
-};
-const str_ = i18n.i18n.registerUIStrings('ui/components/markdown_view/MarkdownView.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const html = LitHtml.html;
 const render = LitHtml.render;
 export class MarkdownView extends HTMLElement {
@@ -102,23 +92,12 @@ export class MarkdownLitRenderer {
         }
     }
     renderCodeBlock(token) {
-        return html `<div class="codeblock">
-      <div class="toolbar">
-        <div class="lang">${token.lang}</div>
-        <div class="copy">
-          <${Buttons.Button.Button.litTagName}
-            title=${i18nString(UIStrings.copy)}
-            .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
-            .iconName=${'copy'}
-            .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
-            @click=${() => {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(token.text);
-        }}
-          ></${Buttons.Button.Button.litTagName}>
-        </div>
-      </div>
-      <code>${this.unescape(token.text)}</code>
-    </div>`;
+        // clang-format off
+        return html `<${CodeBlock.litTagName}
+      .code=${this.unescape(token.text)}
+      .codeLang=${token.lang}>
+    </${CodeBlock.litTagName}>`;
+        // clang-format one
     }
     templateForToken(token) {
         switch (token.type) {
