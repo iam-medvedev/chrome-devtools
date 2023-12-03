@@ -44,7 +44,7 @@ jobs:
         id: create_commit
         run: |
           # Copy built files
-          mv ./devtools-frontend/out/Default/gen/front_end ./public
+          rsync -a ./devtools-frontend/out/Default/gen/front_end/ ./public
           # Create index.html
           cp ./public/devtools_app.html ./public/index.html
           # Create commit info with latest devtools-frontend commit
