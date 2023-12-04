@@ -67,7 +67,6 @@ export interface ContextMenuOptions {
 }
 export declare class ContextMenu extends SubMenu {
     protected contextMenu: this;
-    private readonly defaultSectionInternal;
     private pendingPromises;
     private pendingTargets;
     private readonly event;
@@ -103,16 +102,16 @@ export declare class ContextMenu extends SubMenu {
     private itemSelected;
     private menuCleared;
     containsTarget(target: Object): boolean;
-    appendApplicableItems(target: Object): void;
+    appendApplicableItems(target: unknown): void;
     markAsMenuItemCheckBox(): void;
     private static pendingMenu;
     private static useSoftMenu;
     static readonly groupWeights: string[];
 }
-export interface Provider {
-    appendApplicableItems(event: Event, contextMenu: ContextMenu, target: Object): void;
+export interface Provider<T> {
+    appendApplicableItems(event: Event, contextMenu: ContextMenu, target: T): void;
 }
-export declare function registerProvider(registration: ProviderRegistration): void;
+export declare function registerProvider<T>(registration: ProviderRegistration<T>): void;
 export declare function registerItem(registration: ContextMenuItemRegistration): void;
 export declare function maybeRemoveItem(registration: ContextMenuItemRegistration): boolean;
 export declare enum ItemLocation {
@@ -125,9 +124,9 @@ export declare enum ItemLocation {
     PROFILER_MENU_DEFAULT = "profilerMenu/default",
     TIMELINE_MENU_OPEN = "timelineMenu/open"
 }
-export interface ProviderRegistration {
-    contextTypes: () => unknown[];
-    loadProvider: () => Promise<Provider>;
+export interface ProviderRegistration<T> {
+    contextTypes: () => Array<abstract new (...any: any) => T>;
+    loadProvider: () => Promise<Provider<T>>;
     experiment?: Root.Runtime.ExperimentName;
 }
 export interface ContextMenuItemRegistration {

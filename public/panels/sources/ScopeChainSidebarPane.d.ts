@@ -1,3 +1,4 @@
+import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.ContextFlavorListener.ContextFlavorListener {
     #private;
@@ -18,10 +19,7 @@ export declare class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.
     private sidebarPaneUpdatedForTest;
     wasShown(): void;
 }
-export declare class OpenLinearMemoryInspector extends UI.Widget.VBox implements UI.ContextMenu.Provider {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): OpenLinearMemoryInspector;
-    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Object): void;
+export declare class OpenLinearMemoryInspector extends UI.Widget.VBox implements UI.ContextMenu.Provider<ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement> {
+    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement): void;
     private openMemoryInspector;
 }

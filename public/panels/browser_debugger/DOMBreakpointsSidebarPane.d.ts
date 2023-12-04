@@ -20,9 +20,6 @@ export declare class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements
     private update;
     wasShown(): void;
 }
-export declare class ContextMenuProvider implements UI.ContextMenu.Provider {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): ContextMenuProvider;
-    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, object: Object): void;
+export declare class ContextMenuProvider implements UI.ContextMenu.Provider<SDK.DOMModel.DOMNode> {
+    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, node: SDK.DOMModel.DOMNode): void;
 }

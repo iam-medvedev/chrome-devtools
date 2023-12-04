@@ -72,11 +72,8 @@ export declare namespace LinkDecorator {
         [Events.LinkIconChanged]: Workspace.UISourceCode.UISourceCode;
     };
 }
-export declare class LinkContextMenuProvider implements UI.ContextMenu.Provider {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): LinkContextMenuProvider;
-    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Object): void;
+export declare class LinkContextMenuProvider implements UI.ContextMenu.Provider<Node> {
+    appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Node): void;
 }
 export declare class LinkHandlerSettingUI implements UI.SettingsUI.SettingUI {
     private element;
@@ -88,11 +85,9 @@ export declare class LinkHandlerSettingUI implements UI.SettingsUI.SettingUI {
     private onChange;
     settingElement(): Element | null;
 }
-export declare class ContentProviderContextMenuProvider implements UI.ContextMenu.Provider {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): ContentProviderContextMenuProvider;
-    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Object): void;
+export declare class ContentProviderContextMenuProvider implements UI.ContextMenu
+    .Provider<Workspace.UISourceCode.UISourceCode | SDK.Resource.Resource | SDK.NetworkRequest.NetworkRequest> {
+    appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, contentProvider: Workspace.UISourceCode.UISourceCode | SDK.Resource.Resource | SDK.NetworkRequest.NetworkRequest): void;
 }
 export interface _LinkInfo {
     icon: IconButton.Icon.Icon | null;

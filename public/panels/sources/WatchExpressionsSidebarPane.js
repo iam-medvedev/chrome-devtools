@@ -238,12 +238,14 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
         void this.focusAndAddExpressionToWatch(text);
         return true;
     }
-    appendApplicableItems(event, contextMenu, target) {
-        if (target instanceof ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement && !target.property.synthetic) {
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.addPropertyPathToWatch), () => this.focusAndAddExpressionToWatch(target.path()));
+    appendApplicableItems(_event, contextMenu, target) {
+        if (target instanceof ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement) {
+            if (!target.property.synthetic) {
+                contextMenu.debugSection().appendItem(i18nString(UIStrings.addPropertyPathToWatch), () => this.focusAndAddExpressionToWatch(target.path()));
+            }
+            return;
         }
-        const frame = UI.Context.Context.instance().flavor(UISourceCodeFrame);
-        if (!frame || frame.textEditor.state.selection.main.empty) {
+        if (target.textEditor.state.selection.main.empty) {
             return;
         }
         contextMenu.debugSection().appendAction('sources.add-to-watch');

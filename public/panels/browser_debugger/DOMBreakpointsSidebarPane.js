@@ -338,17 +338,8 @@ const BreakpointTypeLabels = new Map([
     ["attribute-modified" /* Protocol.DOMDebugger.DOMBreakpointType.AttributeModified */, i18nLazyString(UIStrings.attributeModified)],
     ["node-removed" /* Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved */, i18nLazyString(UIStrings.nodeRemoved)],
 ]);
-let contextMenuProviderInstance;
 export class ContextMenuProvider {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!contextMenuProviderInstance || forceNew) {
-            contextMenuProviderInstance = new ContextMenuProvider();
-        }
-        return contextMenuProviderInstance;
-    }
-    appendApplicableItems(event, contextMenu, object) {
-        const node = object;
+    appendApplicableItems(event, contextMenu, node) {
         if (node.pseudoType()) {
             return;
         }

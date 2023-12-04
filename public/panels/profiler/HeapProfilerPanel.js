@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ProfilesPanel } from './ProfilesPanel.js';
 import { instance } from './ProfileTypeRegistry.js';
@@ -28,14 +27,10 @@ export class HeapProfilerPanel extends ProfilesPanel {
         }
         return heapProfilerPanelInstance;
     }
-    appendApplicableItems(event, contextMenu, target) {
-        if (!(target instanceof SDK.RemoteObject.RemoteObject)) {
-            return;
-        }
+    appendApplicableItems(_event, contextMenu, object) {
         if (!this.isShowing()) {
             return;
         }
-        const object = target;
         if (!object.objectId) {
             return;
         }

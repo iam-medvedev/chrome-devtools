@@ -729,17 +729,28 @@ export class SourcesPanel extends UI.Panel.Panel {
         return debugToolbarDrawer;
     }
     appendApplicableItems(event, contextMenu, target) {
-        this.appendUISourceCodeItems(event, contextMenu, target);
-        this.appendUISourceCodeFrameItems(event, contextMenu, target);
-        this.appendUILocationItems(contextMenu, target);
-        this.appendRemoteObjectItems(contextMenu, target);
-        this.appendNetworkRequestItems(contextMenu, target);
-    }
-    appendUISourceCodeItems(event, contextMenu, target) {
-        if (!(target instanceof Workspace.UISourceCode.UISourceCode) || !event.target) {
+        if (target instanceof Workspace.UISourceCode.UISourceCode) {
+            this.appendUISourceCodeItems(event, contextMenu, target);
             return;
         }
-        const uiSourceCode = target;
+        if (target instanceof UISourceCodeFrame) {
+            this.appendUISourceCodeFrameItems(contextMenu, target);
+            return;
+        }
+        if (target instanceof Workspace.UISourceCode.UILocation) {
+            this.appendUILocationItems(contextMenu, target);
+            return;
+        }
+        if (target instanceof SDK.RemoteObject.RemoteObject) {
+            this.appendRemoteObjectItems(contextMenu, target);
+            return;
+        }
+        this.appendNetworkRequestItems(contextMenu, target);
+    }
+    appendUISourceCodeItems(event, contextMenu, uiSourceCode) {
+        if (!event.target) {
+            return;
+        }
         const eventTarget = event.target;
         if (!uiSourceCode.project().isServiceProject() &&
             !eventTarget.isSelfOrDescendant(this.navigatorTabbedLocation.widget().element) &&
@@ -755,20 +766,13 @@ export class SourcesPanel extends UI.Panel.Panel {
             this.callstackPane.appendIgnoreListURLContextMenuItems(contextMenu, uiSourceCode);
         }
     }
-    appendUISourceCodeFrameItems(event, contextMenu, target) {
-        if (!(target instanceof UISourceCodeFrame)) {
-            return;
-        }
+    appendUISourceCodeFrameItems(contextMenu, target) {
         if (target.uiSourceCode().contentType().isFromSourceMap() || target.textEditor.state.selection.main.empty) {
             return;
         }
         contextMenu.debugSection().appendAction('debugger.evaluate-selection');
     }
-    appendUILocationItems(contextMenu, object) {
-        if (!(object instanceof Workspace.UISourceCode.UILocation)) {
-            return;
-        }
-        const uiLocation = object;
+    appendUILocationItems(contextMenu, uiLocation) {
         const uiSourceCode = uiLocation.uiSourceCode;
         if (!Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
             .scriptsForUISourceCode(uiSourceCode)
@@ -790,12 +794,8 @@ export class SourcesPanel extends UI.Panel.Panel {
         this.editorView.showBoth();
         this.revealInNavigator(uiSourceCode);
     }
-    appendRemoteObjectItems(contextMenu, target) {
-        if (!(target instanceof SDK.RemoteObject.RemoteObject)) {
-            return;
-        }
+    appendRemoteObjectItems(contextMenu, remoteObject) {
         const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
-        const remoteObject = target;
         const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
         function getObjectTitle() {
             if (remoteObject.type === 'wasm') {
@@ -880,11 +880,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             }
         }
     }
-    appendNetworkRequestItems(contextMenu, target) {
-        if (!(target instanceof SDK.NetworkRequest.NetworkRequest)) {
-            return;
-        }
-        const request = target;
+    appendNetworkRequestItems(contextMenu, request) {
         const uiSourceCode = this.workspace.uiSourceCodeForURL(request.url());
         if (!uiSourceCode) {
             return;
