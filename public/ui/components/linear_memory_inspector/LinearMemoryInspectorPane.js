@@ -4,9 +4,10 @@
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as UI from '../../legacy/legacy.js';
+import * as VisualLogging from '../../visual_logging/visual_logging.js';
+import { DeleteMemoryHighlightEvent } from './LinearMemoryHighlightChipList.js';
 import { AddressChangedEvent, LinearMemoryInspector, MemoryRequestEvent, SettingsChangedEvent, } from './LinearMemoryInspector.js';
 import { LinearMemoryInspectorController } from './LinearMemoryInspectorController.js';
-import { DeleteMemoryHighlightEvent } from './LinearMemoryHighlightChipList.js';
 const UIStrings = {
     /**
      *@description Label in the Linear Memory Inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
@@ -22,6 +23,7 @@ export class Wrapper extends UI.Widget.VBox {
     view;
     constructor() {
         super();
+        this.element.setAttribute('jslog', `${VisualLogging.panel().context('linear-memory-inspector')}`);
         this.view = LinearMemoryInspectorPaneImpl.instance();
     }
     static instance(opts = { forceNew: null }) {

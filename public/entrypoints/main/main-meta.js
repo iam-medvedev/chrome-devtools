@@ -750,7 +750,7 @@ UI.ContextMenu.registerProvider({
         ];
     },
     async loadProvider() {
-        return Components.Linkifier.ContentProviderContextMenuProvider.instance();
+        return new Components.Linkifier.ContentProviderContextMenuProvider();
     },
     experiment: undefined,
 });
@@ -761,7 +761,7 @@ UI.ContextMenu.registerProvider({
         ];
     },
     async loadProvider() {
-        return UI.XLink.ContextMenuProvider.instance();
+        return new UI.XLink.ContextMenuProvider();
     },
     experiment: undefined,
 });
@@ -772,7 +772,7 @@ UI.ContextMenu.registerProvider({
         ];
     },
     async loadProvider() {
-        return Components.Linkifier.LinkContextMenuProvider.instance();
+        return new Components.Linkifier.LinkContextMenuProvider();
     },
     experiment: undefined,
 });

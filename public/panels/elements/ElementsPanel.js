@@ -1043,23 +1043,15 @@ const TrackedCSSProperties = [
         value: 'size',
     },
 ];
-let contextMenuProviderInstance;
 export class ContextMenuProvider {
     appendApplicableItems(event, contextMenu, object) {
-        if (!(object instanceof SDK.RemoteObject.RemoteObject && object.isNode()) &&
-            !(object instanceof SDK.DOMModel.DOMNode) && !(object instanceof SDK.DOMModel.DeferredDOMNode)) {
+        if (object instanceof SDK.RemoteObject.RemoteObject && !object.isNode()) {
             return;
         }
         if (ElementsPanel.instance().element.isAncestor(event.target)) {
             return;
         }
         contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInElementsPanel), () => Common.Revealer.reveal(object));
-    }
-    static instance() {
-        if (!contextMenuProviderInstance) {
-            contextMenuProviderInstance = new ContextMenuProvider();
-        }
-        return contextMenuProviderInstance;
     }
 }
 export class DOMNodeRevealer {

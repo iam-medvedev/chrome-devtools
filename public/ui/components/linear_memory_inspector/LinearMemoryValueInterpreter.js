@@ -1,13 +1,14 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
+import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import linearMemoryValueInterpreterStyles from './linearMemoryValueInterpreter.css.js';
 import { ValueInterpreterDisplay } from './ValueInterpreterDisplay.js';
 import { ValueInterpreterSettings, } from './ValueInterpreterSettings.js';
-import * as i18n from '../../../core/i18n/i18n.js';
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over the gear button to open and close settings in the Linear Memory Inspector. These settings
@@ -65,7 +66,9 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
       <div class="value-interpreter">
         <div class="settings-toolbar">
           ${this.#renderEndiannessSetting()}
-          <button data-settings="true" class="settings-toolbar-button ${this.#showSettings ? 'active' : ''}" title=${i18nString(UIStrings.toggleValueTypeSettings)} @click=${this.#onSettingsToggle}>
+          <button data-settings="true" class="settings-toolbar-button ${this.#showSettings ? 'active' : ''}"
+              title=${i18nString(UIStrings.toggleValueTypeSettings)} @click=${this.#onSettingsToggle}
+              jslog=${VisualLogging.action().track({ click: true }).context('linear-memory-inspector.toggle-value-settings')}>
             <${IconButton.Icon.Icon.litTagName}
               .data=${{ iconName: 'gear', color: 'var(--icon-default)', width: '20px' }}>
             </${IconButton.Icon.Icon.litTagName}>
@@ -107,6 +110,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
         return html `
     <label data-endianness-setting="true" title=${i18nString(UIStrings.changeEndianness)}>
       <select class="chrome-select"
+        jslog=${VisualLogging.toggle().track({ change: true }).context('linear-memory-inspector.endianess')}
         style="border: none; background-color: transparent; cursor: pointer;"
         data-endianness="true" @change=${onEnumSettingChange}>
         ${["Little Endian" /* Endianness.Little */, "Big Endian" /* Endianness.Big */].map(endianness => {

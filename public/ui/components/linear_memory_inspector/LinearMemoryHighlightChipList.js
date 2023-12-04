@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
+import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import linearMemoryHighlightChipListStyles from './linearMemoryHighlightChipList.css.js';
@@ -79,13 +80,16 @@ export class LinearMemoryHighlightChipList extends HTMLElement {
         return html `
       <div class=${LitHtml.Directives.classMap(classMap)}>
         <button class="jump-to-highlight-button" title=${i18nString(UIStrings.jumpToAddress)}
+            jslog=${VisualLogging.action().track({ click: true }).context('linear-memory-inspector.jump-to-highlight')}
             @click=${() => this.#onJumpToHighlightClick(highlightInfo.startAddress)}>
           <span class="source-code">
             <span class="value">${expressionName}</span><span class="separator">: </span><span>${expressionType}</span>
           </span>
         </button>
         <div class="delete-highlight-container">
-          <button class="delete-highlight-button" title=${i18nString(UIStrings.deleteHighlight)} @click=${() => this.#onDeleteHighlightClick(highlightInfo)}>
+          <button class="delete-highlight-button" title=${i18nString(UIStrings.deleteHighlight)}
+              jslog=${VisualLogging.action().track({ click: true }).context('linear-memory-inspector.delete-highlight')}
+              @click=${() => this.#onDeleteHighlightClick(highlightInfo)}>
             <${IconButton.Icon.Icon.litTagName} .data=${{
             iconName: 'cross',
             color: 'var(--icon-default-hover)',

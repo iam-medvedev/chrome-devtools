@@ -5,7 +5,8 @@ import type * as SourceFrame from '../../ui/legacy/components/source_frame/sourc
 import * as UI from '../../ui/legacy/legacy.js';
 import { type NavigatorView } from './NavigatorView.js';
 import { SourcesView } from './SourcesView.js';
-export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provider, SDK.TargetManager.Observer, UI.View.ViewLocationResolver {
+import { UISourceCodeFrame } from './UISourceCodeFrame.js';
+export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provider<Workspace.UISourceCode.UISourceCode | Workspace.UISourceCode.UILocation | SDK.RemoteObject.RemoteObject | SDK.NetworkRequest.NetworkRequest | UISourceCodeFrame>, SDK.TargetManager.Observer, UI.View.ViewLocationResolver {
     private readonly workspace;
     private readonly togglePauseAction;
     private readonly stepOverAction;
@@ -92,10 +93,10 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     private breakpointsActiveStateChanged;
     private createDebugToolbar;
     private createDebugToolbarDrawer;
-    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Object): void;
+    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Workspace.UISourceCode.UISourceCode | Workspace.UISourceCode.UILocation | SDK.RemoteObject.RemoteObject | SDK.NetworkRequest.NetworkRequest | UISourceCodeFrame): void;
     private appendUISourceCodeItems;
     private appendUISourceCodeFrameItems;
-    appendUILocationItems(contextMenu: UI.ContextMenu.ContextMenu, object: Object): void;
+    appendUILocationItems(contextMenu: UI.ContextMenu.ContextMenu, uiLocation: Workspace.UISourceCode.UILocation): void;
     private handleContextMenuReveal;
     private appendRemoteObjectItems;
     private appendNetworkRequestItems;

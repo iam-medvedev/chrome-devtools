@@ -543,7 +543,7 @@ UI.ContextMenu.registerProvider({
     },
     async loadProvider() {
         const Elements = await loadElementsModule();
-        return Elements.ElementsPanel.ContextMenuProvider.instance();
+        return new Elements.ElementsPanel.ContextMenuProvider();
     },
     experiment: undefined,
 });

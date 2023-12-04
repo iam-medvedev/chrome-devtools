@@ -599,41 +599,32 @@ export class NetworkPanel extends UI.Panel.Panel {
         }
     }
     appendApplicableItems(event, contextMenu, target) {
-        function reveal(request) {
-            void UI.ViewManager.ViewManager.instance()
+        const appendRevealItem = (request) => {
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInNetworkPanel), () => UI.ViewManager.ViewManager.instance()
                 .showView('network')
                 .then(this.networkLogView.resetFilter.bind(this.networkLogView))
-                .then(this.revealAndHighlightRequest.bind(this, request));
-        }
-        function appendRevealItem(request) {
-            contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInNetworkPanel), reveal.bind(this, request));
-        }
+                .then(this.revealAndHighlightRequest.bind(this, request)));
+        };
         if (event.target.isSelfOrDescendant(this.element)) {
             return;
         }
         if (target instanceof SDK.Resource.Resource) {
-            const resource = target;
-            if (resource.request) {
-                appendRevealItem.call(this, resource.request);
+            if (target.request) {
+                appendRevealItem(target.request);
             }
             return;
         }
         if (target instanceof Workspace.UISourceCode.UISourceCode) {
-            const uiSourceCode = target;
-            const resource = Bindings.ResourceUtils.resourceForURL(uiSourceCode.url());
+            const resource = Bindings.ResourceUtils.resourceForURL(target.url());
             if (resource && resource.request) {
-                appendRevealItem.call(this, resource.request);
+                appendRevealItem(resource.request);
             }
             return;
         }
-        if (!(target instanceof SDK.NetworkRequest.NetworkRequest)) {
+        if (this.networkItemView && this.networkItemView.isShowing() && this.networkItemView.request() === target) {
             return;
         }
-        const request = target;
-        if (this.networkItemView && this.networkItemView.isShowing() && this.networkItemView.request() === request) {
-            return;
-        }
-        appendRevealItem.call(this, request);
+        appendRevealItem(target);
     }
     onFilmFrameSelected(event) {
         const timestamp = event.data;
@@ -661,19 +652,6 @@ export class NetworkPanel extends UI.Panel.Panel {
             return this.sidebarLocation;
         }
         return null;
-    }
-}
-let contextMenuProviderInstance;
-export class ContextMenuProvider {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!contextMenuProviderInstance || forceNew) {
-            contextMenuProviderInstance = new ContextMenuProvider();
-        }
-        return contextMenuProviderInstance;
-    }
-    appendApplicableItems(event, contextMenu, target) {
-        NetworkPanel.instance().appendApplicableItems(event, contextMenu, target);
     }
 }
 export class RequestRevealer {

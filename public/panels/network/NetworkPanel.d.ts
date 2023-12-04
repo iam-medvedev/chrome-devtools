@@ -1,6 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import type * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -8,7 +9,8 @@ import * as Search from '../search/search.js';
 import { NetworkItemView } from './NetworkItemView.js';
 import { NetworkLogView } from './NetworkLogView.js';
 import { type NetworkTimeCalculator } from './NetworkTimeCalculator.js';
-export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu.Provider, UI.View.ViewLocationResolver {
+export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu
+    .Provider<SDK.NetworkRequest.NetworkRequest | SDK.Resource.Resource | Workspace.UISourceCode.UISourceCode>, UI.View.ViewLocationResolver {
     private readonly networkLogShowOverviewSetting;
     private readonly networkLogLargeRowsSetting;
     private readonly networkRecordFilmStripSetting;
@@ -81,18 +83,12 @@ export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMe
     private clearNetworkItemView;
     private createNetworkItemView;
     private updateUI;
-    appendApplicableItems(this: NetworkPanel, event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Object): void;
+    appendApplicableItems(this: NetworkPanel, event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: SDK.NetworkRequest.NetworkRequest | SDK.Resource.Resource | Workspace.UISourceCode.UISourceCode): void;
     private onFilmFrameSelected;
     private onFilmFrameEnter;
     private onFilmFrameExit;
     private onUpdateRequest;
     resolveLocation(locationName: string): UI.View.ViewLocation | null;
-}
-export declare class ContextMenuProvider implements UI.ContextMenu.Provider {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): ContextMenuProvider;
-    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Object): void;
 }
 export declare class RequestRevealer implements Common.Revealer.Revealer<SDK.NetworkRequest.NetworkRequest> {
     reveal(request: SDK.NetworkRequest.NetworkRequest): Promise<void>;

@@ -140,7 +140,7 @@ export declare class Renderer implements UI.UIUtils.Renderer {
         tree: UI.TreeOutline.TreeOutline | null;
     } | null>;
 }
-export declare class ObjectPropertyValue implements UI.ContextMenu.Provider {
+export declare class ObjectPropertyValue implements UI.ContextMenu.Provider<Object> {
     element: Element;
     constructor(element: Element);
     appendApplicableItems(_event: Event, _contextMenu: UI.ContextMenu.ContextMenu, _object: Object): void;

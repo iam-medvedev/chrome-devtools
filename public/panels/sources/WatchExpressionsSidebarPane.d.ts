@@ -2,7 +2,8 @@ import * as Common from '../../core/common/common.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWidget implements UI.ActionRegistration.ActionDelegate, UI.Toolbar.ItemsProvider, UI.ContextMenu.Provider {
+import { UISourceCodeFrame } from './UISourceCodeFrame.js';
+export declare class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWidget implements UI.ActionRegistration.ActionDelegate, UI.Toolbar.ItemsProvider, UI.ContextMenu.Provider<ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement | UISourceCodeFrame> {
     private watchExpressions;
     private emptyElement;
     private readonly watchExpressionsSetting;
@@ -26,7 +27,7 @@ export declare class WatchExpressionsSidebarPane extends UI.ThrottledWidget.Thro
     private deleteAllButtonClicked;
     private focusAndAddExpressionToWatch;
     handleAction(_context: UI.Context.Context, _actionId: string): boolean;
-    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: Object): void;
+    appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement | UISourceCodeFrame): void;
     wasShown(): void;
 }
 export declare class WatchExpression extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {

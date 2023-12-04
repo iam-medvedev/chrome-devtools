@@ -718,16 +718,8 @@ export var LinkDecorator;
         Events["LinkIconChanged"] = "LinkIconChanged";
     })(Events = LinkDecorator.Events || (LinkDecorator.Events = {}));
 })(LinkDecorator || (LinkDecorator = {}));
-let linkContextMenuProviderInstance;
 export class LinkContextMenuProvider {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!linkContextMenuProviderInstance || forceNew) {
-            linkContextMenuProviderInstance = new LinkContextMenuProvider();
-        }
-        return linkContextMenuProviderInstance;
-    }
-    appendApplicableItems(event, contextMenu, target) {
+    appendApplicableItems(_event, contextMenu, target) {
         let targetNode = target;
         while (targetNode && !infoByAnchor.get(targetNode)) {
             targetNode = targetNode.parentNodeOrShadowHost();
@@ -797,17 +789,8 @@ function listenForNewComponentLinkifierEvents() {
     });
 }
 listenForNewComponentLinkifierEvents();
-let contentProviderContextMenuProviderInstance;
 export class ContentProviderContextMenuProvider {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!contentProviderContextMenuProviderInstance || forceNew) {
-            contentProviderContextMenuProviderInstance = new ContentProviderContextMenuProvider();
-        }
-        return contentProviderContextMenuProviderInstance;
-    }
-    appendApplicableItems(event, contextMenu, target) {
-        const contentProvider = target;
+    appendApplicableItems(_event, contextMenu, contentProvider) {
         const contentUrl = contentProvider.contentURL();
         if (!contentUrl) {
             return;
@@ -828,7 +811,13 @@ export class ContentProviderContextMenuProvider {
             return;
         }
         contextMenu.clipboardSection().appendItem(UI.UIUtils.copyLinkAddressLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentUrl));
-        contextMenu.clipboardSection().appendItem(UI.UIUtils.copyFileNameLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName()));
+        // TODO(bmeurer): `displayName` should be an accessor/data property consistently.
+        if (contentProvider instanceof Workspace.UISourceCode.UISourceCode) {
+            contextMenu.clipboardSection().appendItem(UI.UIUtils.copyFileNameLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName()));
+        }
+        else {
+            contextMenu.clipboardSection().appendItem(UI.UIUtils.copyFileNameLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName));
+        }
     }
 }
 //# sourceMappingURL=Linkifier.js.map

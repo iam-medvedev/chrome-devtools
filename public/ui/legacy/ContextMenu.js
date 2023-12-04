@@ -311,7 +311,6 @@ export class SubMenu extends Item {
 }
 export class ContextMenu extends SubMenu {
     contextMenu;
-    defaultSectionInternal;
     pendingPromises;
     pendingTargets;
     event;
@@ -332,7 +331,6 @@ export class ContextMenu extends SubMenu {
         const mouseEvent = event;
         this.contextMenu = this;
         super.init();
-        this.defaultSectionInternal = this.defaultSection();
         this.pendingPromises = [];
         this.pendingTargets = [];
         this.event = mouseEvent;
@@ -532,23 +530,20 @@ export function registerProvider(registration) {
     registeredProviders.push(registration);
 }
 async function loadApplicableRegisteredProviders(target) {
-    return Promise.all(registeredProviders.filter(isProviderApplicableToContextTypes).map(registration => registration.loadProvider()));
-    function isProviderApplicableToContextTypes(providerRegistration) {
+    const providers = [];
+    for (const providerRegistration of registeredProviders) {
         if (!Root.Runtime.Runtime.isDescriptorEnabled({ experiment: providerRegistration.experiment, condition: undefined })) {
-            return false;
+            continue;
         }
-        if (!providerRegistration.contextTypes) {
-            return true;
-        }
-        for (const contextType of providerRegistration.contextTypes()) {
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // @ts-expect-error
-            if (target instanceof contextType) {
-                return true;
+        if (providerRegistration.contextTypes) {
+            for (const contextType of providerRegistration.contextTypes()) {
+                if (target instanceof contextType) {
+                    providers.push(await providerRegistration.loadProvider());
+                }
             }
         }
-        return false;
     }
+    return providers;
 }
 const registeredItemsProviders = [];
 export function registerItem(registration) {

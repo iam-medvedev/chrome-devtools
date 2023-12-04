@@ -378,7 +378,7 @@ UI.ContextMenu.registerProvider({
     },
     async loadProvider() {
         const Network = await loadNetworkModule();
-        return Network.NetworkPanel.ContextMenuProvider.instance();
+        return Network.NetworkPanel.NetworkPanel.instance();
     },
     experiment: undefined,
 });

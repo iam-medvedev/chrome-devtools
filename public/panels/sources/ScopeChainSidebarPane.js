@@ -225,22 +225,12 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
         this.registerCSSFiles([scopeChainSidebarPaneStyles]);
     }
 }
-let openLinearMemoryInspectorInstance;
 export class OpenLinearMemoryInspector extends UI.Widget.VBox {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!openLinearMemoryInspectorInstance || forceNew) {
-            openLinearMemoryInspectorInstance = new OpenLinearMemoryInspector();
-        }
-        return openLinearMemoryInspectorInstance;
-    }
     appendApplicableItems(event, contextMenu, target) {
-        if (target instanceof ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement) {
-            if (target.property && target.property.value &&
-                LinearMemoryInspector.LinearMemoryInspectorController.isMemoryObjectProperty(target.property.value)) {
-                const expression = target.path();
-                contextMenu.debugSection().appendItem(i18nString(UIStrings.revealInMemoryInspectorPanel), this.openMemoryInspector.bind(this, expression, target.property.value));
-            }
+        if (target.property && target.property.value &&
+            LinearMemoryInspector.LinearMemoryInspectorController.isMemoryObjectProperty(target.property.value)) {
+            const expression = target.path();
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.revealInMemoryInspectorPanel), this.openMemoryInspector.bind(this, expression, target.property.value));
         }
     }
     async openMemoryInspector(expression, obj) {
