@@ -23,7 +23,7 @@ jobs:
       - name: Get published version
         id: get_published_version
         run: |
-          published_version=$(npm show chrome-devtools-built version || echo "0.0.0")
+          published_version=$(npm show @ltipton/chrome-devtools version || echo "0.0.0")
           IFS='.' read -r major date patch <<< "$published_version"
           echo "date=${date}" >> $GITHUB_OUTPUT
           echo "patch=${patch}" >> $GITHUB_OUTPUT

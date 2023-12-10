@@ -1,6 +1,11 @@
 # Automated Chrome DevTools frontend builder
 
-This repository contains a [Github Action](.github/workflows/build.yml) that runs once a week on a schedule, builds the [Chrome DevTools frontend](https://chromium.googlesource.com/devtools/devtools-frontend) source code, and sends the build code to the [main](https://github.com/iam-medvedev/chrome-devtools/tree/main) branch via [PR](https://github.com/iam-medvedev/chrome-devtools/pulls?q=is%3Apr+label%3Aauto-build).
+
+This repository contains a [Github Action](.github/workflows/build.yml) that runs once a week on a schedule, builds the [Chrome DevTools frontend](https://chromium.googlesource.com/devtools/devtools-frontend) source code, and sends the build code to the [main](https://github.com/lancetipton/chrome-devtools/tree/main) branch via [PR](https://github.com/lancetipton/chrome-devtools/pulls?q=is%3Apr+label%3Aauto-build).
+
+## Original Fork
+
+This code was originally forked from https://github.com/iam-medvedev/chrome-devtools
 
 ## Workflow
 
@@ -17,7 +22,7 @@ This repository contains a [Github Action](.github/workflows/build.yml) that run
 
 ## Deployed version
 
-For your hack needs there is a [deployed version](https://iam-medvedev.github.io/chrome-devtools/) which will be updated after each build.
+For your hack needs there is a [deployed version](https://lancetipton.github.io/chrome-devtools/) which will be updated after each build.
 
 ## NPM package
 
