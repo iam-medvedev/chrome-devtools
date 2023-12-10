@@ -1,6 +1,6 @@
 {
   "name": "@ltipton/chrome-devtools",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "chrome-devtools-frontend built version",
   "repository": "https://github.com/lancetipton/chrome-devtools.git",
   "author": "Lance Tipton <lancetipton04@gmail.com>",
