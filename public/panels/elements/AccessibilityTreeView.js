@@ -21,7 +21,7 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
         this.accessibilityTreeComponent = accessibilityTreeComponent;
         const container = this.contentElement.createChild('div');
         container.classList.add('accessibility-tree-view-container');
-        container.setAttribute('jslog', `${VisualLogging.fullAccessibilityTree()}`);
+        container.setAttribute('jslog', `${VisualLogging.tree().context('full-accessibility-tree')}`);
         container.appendChild(this.toggleButton);
         container.appendChild(this.accessibilityTreeComponent);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.AccessibilityModel.AccessibilityModel, this, { scoped: true });

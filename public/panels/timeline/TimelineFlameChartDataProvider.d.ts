@@ -5,7 +5,7 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { CompatibilityTracksAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 import { type PerformanceModel } from './PerformanceModel.js';
 import { TimelineSelection } from './TimelineSelection.js';
-export type TimelineFlameChartEntry = (TraceEngine.Legacy.Event | TimelineModel.TimelineFrameModel.TimelineFrame | TraceEngine.Types.TraceEvents.TraceEventData);
+export type TimelineFlameChartEntry = (TraceEngine.Legacy.Event | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | TraceEngine.Types.TraceEvents.TraceEventData);
 export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     private droppedFramePatternCanvas;
@@ -101,7 +101,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private appendHeader;
     private appendEvent;
     private appendAsyncEvent;
-    private appendFrame;
     createSelection(entryIndex: number): TimelineSelection | null;
     formatValue(value: number, precision?: number): string;
     canJumpToEntry(_entryIndex: number): boolean;

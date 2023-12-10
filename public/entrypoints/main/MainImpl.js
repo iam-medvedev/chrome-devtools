@@ -37,6 +37,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AutofillManager from '../../models/autofill_manager/autofill_manager.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Extensions from '../../models/extensions/extensions.js';
@@ -242,13 +243,8 @@ export class MainImpl {
         Root.Runtime.experiments.register('ignoreListJSFramesOnTimeline', 'Ignore List for JavaScript frames on Timeline', true);
         Root.Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
         Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor', undefined, 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor');
-        Root.Runtime.experiments.register('developerResourcesView', 'Show developer resources view');
         Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
         Root.Runtime.experiments.register('showOptionToExposeInternalsInHeapSnapshot', 'Show option to expose internals in heap snapshots');
-        Root.Runtime.experiments.register('sourceOrderViewer', 'Source order viewer', undefined, 'https://developer.chrome.com/blog/new-in-devtools-92/#source-order');
-        Root.Runtime.experiments.register('webauthnPane', 'WebAuthn Pane');
-        // Back/forward cache
-        Root.Runtime.experiments.register('bfcacheDisplayTree', 'Show back/forward cache blocking reasons in the frame tree structure view');
         // Timeline
         Root.Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
         Root.Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
@@ -261,7 +257,6 @@ export class MainImpl {
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE, 'Disable Indentation Markers temporarily', 
         /* unstable= */ false, 'https://developer.chrome.com/blog/new-in-devtools-121/#indentation', 'https://crbug.com/1479986');
         // Debugging
-        Root.Runtime.experiments.register('wasmDWARFDebugging', 'WebAssembly Debugging: Enable DWARF support', undefined, 'https://developer.chrome.com/blog/wasm-debugging-2020/');
         Root.Runtime.experiments.register('evaluateExpressionsWithSourceMaps', 'Resolve variable names in expressions using source maps', undefined, 'https://goo.gle/evaluate-source-var-default', 'https://crbug.com/1504123');
         Root.Runtime.experiments.register('instrumentationBreakpoints', 'Enable instrumentation breakpoints', true);
         Root.Runtime.experiments.register('setAllBreakpointsEagerly', 'Set all breakpoints eagerly at startup');
@@ -276,19 +271,11 @@ export class MainImpl {
         Root.Runtime.experiments.register('contrastIssues', 'Enable automatic contrast issue reporting via the Issues panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast');
         // New cookie features.
         Root.Runtime.experiments.register('experimentalCookieFeatures', 'Enable experimental cookie features');
-        // CSS <length> authoring tool.
-        Root.Runtime.experiments.register('cssTypeComponentLength', 'Enable CSS <length> authoring tool in the Styles pane', undefined, 'https://developer.chrome.com/blog/new-in-devtools-96/#length', 'https://g.co/devtools/length-feedback');
-        // Display precise changes in the Changes tab.
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.PRECISE_CHANGES, 'Display more precise changes in the Changes tab');
         // Integrate CSS changes in the Styles pane.
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES, 'Sync CSS changes in the Styles pane');
         // Highlights a violating node or attribute by rendering a squiggly line under it and adding a tooltip linking to the issues panel.
         // Right now violating nodes are exclusively form fields that contain an HTML issue, for example, and <input /> whose id is duplicate inside the form.
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL, 'Highlights a violating node or attribute in the Elements panel DOM tree');
-        // Local overrides
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.HEADER_OVERRIDES, 'Local overrides for response headers');
-        // Enable color picking outside the browser window (using Eyedropper API)
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.EYEDROPPER_COLOR_PICKER, 'Enable color picking outside the browser window');
         // Change grouping of sources panel to use Authored/Deployed trees
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING, 'Group sources into Authored and Deployed trees', undefined, 'https://goo.gle/authored-deployed', 'https://goo.gle/authored-deployed-feedback');
         // Hide third party code (as determined by ignore lists or source maps)
@@ -307,33 +294,20 @@ export class MainImpl {
             Root.Runtime.experiments.register(Root.Runtime.ExperimentName.CONSOLE_INSIGHTS, 'Enable Console Insights. This implies consent to collect and process data', false, 'http://go/console-insights-experiment', 'http://go/console-insights-experiment-general-feedback');
         }
         Root.Runtime.experiments.enableExperimentsByDefault([
-            'sourceOrderViewer',
-            'cssTypeComponentLength',
-            Root.Runtime.ExperimentName.PRECISE_CHANGES,
-            ...('EyeDropper' in window ? [Root.Runtime.ExperimentName.EYEDROPPER_COLOR_PICKER] : []),
             'setAllBreakpointsEagerly',
             Root.Runtime.ExperimentName.TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL,
-            Root.Runtime.ExperimentName.WASM_DWARF_DEBUGGING,
-            Root.Runtime.ExperimentName.HEADER_OVERRIDES,
             Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR,
             Root.Runtime.ExperimentName.SELF_XSS_WARNING,
             Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL,
             'evaluateExpressionsWithSourceMaps',
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocolMonitor'] : []),
         ]);
-        Root.Runtime.experiments.setNonConfigurableExperiments([
-            ...(!('EyeDropper' in window) ? [Root.Runtime.ExperimentName.EYEDROPPER_COLOR_PICKER] : []),
-        ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
         const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
         if (enabledExperiments) {
             Root.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(';'));
         }
-        Root.Runtime.experiments.enableExperimentsTransiently([
-            'bfcacheDisplayTree',
-            'webauthnPane',
-            'developerResourcesView',
-        ]);
+        Root.Runtime.experiments.enableExperimentsTransiently([]);
         if (Host.InspectorFrontendHost.isUnderTest()) {
             const testParam = Root.Runtime.Runtime.queryParam('test');
             if (testParam && testParam.includes('live-line-level-heap-profile.js')) {
@@ -434,6 +408,7 @@ export class MainImpl {
             forceNew: true,
             debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
         });
+        AutofillManager.AutofillManager.AutofillManager.instance();
         new PauseListener();
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         // Required for legacy a11y layout tests

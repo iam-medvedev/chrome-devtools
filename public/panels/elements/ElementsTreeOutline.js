@@ -142,7 +142,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         this.elementInternal.addEventListener('keydown', this.onKeyDown.bind(this), false);
         outlineDisclosureElement.appendChild(this.elementInternal);
         this.element = shadowContainer;
-        this.element.setAttribute('jslog', `${VisualLogging.elementsTreeOutline()}`);
+        this.element.setAttribute('jslog', `${VisualLogging.tree().context('elements-tree-outline')}`);
         this.includeRootDOMNode = !omitRootDOMNode;
         this.selectEnabled = selectEnabled;
         this.rootDOMNodeInternal = null;

@@ -406,6 +406,16 @@ export class CompatibilityTracksAppender {
         return trackStartLevel + lastUsedTimeByLevel.length;
     }
     entryIsVisibleInTimeline(entry) {
+        if (TraceEngine.Types.TraceEvents.isTraceEventUpdateCounters(entry)) {
+            // These events are not "visible" on the timeline because they are instant events with 0 duration.
+            // However, the Memory view (CountersGraph in the codebase) relies on
+            // finding the UpdateCounters events within the user's active trace
+            // selection in order to show the memory usage for the selected time
+            // period.
+            // Therefore we mark them as visible so they are appended onto the Thread
+            // track, and hence accessible by the CountersGraph view.
+            return true;
+        }
         // Default styles are globally defined for each event name. Some
         // events are hidden by default.
         const eventStyle = getEventStyle(entry.name);

@@ -2,17 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
+import * as Root from '../../core/root/root.js';
 export class InsightProvider {
+    static buildApiRequest(input) {
+        const request = {
+            input,
+            client: 'CHROME_DEVTOOLS',
+        };
+        const temperature = parseFloat(Root.Runtime.Runtime.queryParam('aidaTemperature') || '');
+        if (!isNaN(temperature)) {
+            request.options = { temperature };
+        }
+        return request;
+    }
     async getInsights(input) {
         return new Promise((resolve, reject) => {
             if (!Host.InspectorFrontendHost.InspectorFrontendHostInstance.doAidaConversation) {
                 return reject(new Error('doAidaConversation is not available'));
             }
             console.time('request');
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.doAidaConversation(JSON.stringify({
-                input,
-                client: 'CHROME_DEVTOOLS',
-            }), result => {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.doAidaConversation(JSON.stringify(InsightProvider.buildApiRequest(input)), result => {
                 console.timeEnd('request');
                 try {
                     const results = JSON.parse(result.response);

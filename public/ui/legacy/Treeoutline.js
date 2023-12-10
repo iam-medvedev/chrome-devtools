@@ -80,6 +80,7 @@ export class TreeOutline extends Common.ObjectWrapper.ObjectWrapper {
         this.focusable = true;
         this.setFocusable(true);
         this.element = this.contentElement;
+        this.element.setAttribute('jslog', `${VisualLogging.tree()}`);
         ARIAUtils.markAsTree(this.element);
         this.useLightSelectionColor = false;
         this.treeElementToScrollIntoView = null;
@@ -1212,7 +1213,7 @@ export class TreeElement {
 }
 function loggingParentProvider(e) {
     const treeElement = TreeElement.getTreeElementBylistItemNode(e);
-    return treeElement?.parent?.listItemElement;
+    return treeElement?.parent?.listItemElement || treeElement?.treeOutline?.element;
 }
 VisualLogging.registerParentProvider('parentTreeItem', loggingParentProvider);
 //# sourceMappingURL=Treeoutline.js.map

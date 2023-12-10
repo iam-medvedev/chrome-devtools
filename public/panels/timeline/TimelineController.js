@@ -22,6 +22,7 @@ export class TimelineController {
     rootTarget;
     tracingManager;
     performanceModel;
+    #collectedEvents = [];
     client;
     tracingModel;
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -151,6 +152,8 @@ export class TimelineController {
         return this.tracingManager.start(this, categories, '');
     }
     traceEventsCollected(events) {
+        this.#collectedEvents =
+            this.#collectedEvents.concat(events);
         this.tracingModel.addEvents(events);
     }
     tracingComplete() {
@@ -167,7 +170,7 @@ export class TimelineController {
     async finalizeTrace() {
         await SDK.TargetManager.TargetManager.instance().resumeAllTargets();
         this.tracingModel.tracingComplete();
-        await this.client.loadingComplete(this.tracingModel, /* exclusiveFilter= */ null, /* isCpuProfile= */ false);
+        await this.client.loadingComplete(this.#collectedEvents, this.tracingModel, /* exclusiveFilter= */ null, /* isCpuProfile= */ false);
         this.client.loadingCompleteForTest();
     }
     tracingBufferUsage(usage) {

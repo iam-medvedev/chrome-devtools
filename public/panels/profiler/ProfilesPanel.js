@@ -43,10 +43,6 @@ import profilesSidebarTreeStyles from './profilesSidebarTree.css.js';
 import { instance } from './ProfileTypeRegistry.js';
 const UIStrings = {
     /**
-     *@description Tooltip text that appears when hovering over the largeicon clear button in the Profiles Panel of a profiler tool
-     */
-    clearAllProfiles: 'Clear all profiles',
-    /**
      *@description Text in Profiles Panel of a profiler tool
      *@example {'.js', '.json'} PH1
      */
@@ -100,7 +96,6 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
     toolbarElement;
     toggleRecordAction;
     toggleRecordButton;
-    clearResultsButton;
     #saveToFileAction;
     profileViewToolbar;
     profileGroups;
@@ -133,12 +128,11 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         toolbarContainerLeft.classList.add('profiles-toolbar');
         this.panelSidebarElement().insertBefore(toolbarContainerLeft, this.panelSidebarElement().firstChild);
         const toolbar = new UI.Toolbar.Toolbar('', toolbarContainerLeft);
+        toolbar.makeWrappable(true);
         this.toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction(recordingActionId);
         this.toggleRecordButton = UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction);
         toolbar.appendToolbarItem(this.toggleRecordButton);
-        this.clearResultsButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearAllProfiles), 'clear');
-        this.clearResultsButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.reset, this);
-        toolbar.appendToolbarItem(this.clearResultsButton);
+        toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('profiler.clear-all'));
         toolbar.appendSeparator();
         toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('profiler.load-from-file'));
         this.#saveToFileAction = UI.ActionRegistry.ActionRegistry.instance().getAction('profiler.save-to-file');
@@ -684,6 +678,14 @@ export class JSProfilerPanel extends ProfilesPanel {
 export class ActionDelegate {
     handleAction(context, actionId) {
         switch (actionId) {
+            case 'profiler.clear-all': {
+                const profilesPanel = context.flavor(ProfilesPanel);
+                if (profilesPanel !== null) {
+                    profilesPanel.reset();
+                    return true;
+                }
+                return false;
+            }
             case 'profiler.load-from-file': {
                 const profilesPanel = context.flavor(ProfilesPanel);
                 if (profilesPanel !== null) {

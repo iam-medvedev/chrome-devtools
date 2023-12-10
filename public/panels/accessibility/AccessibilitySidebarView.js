@@ -11,7 +11,6 @@ import { AXBreadcrumbsPane } from './AXBreadcrumbsPane.js';
 import { SourceOrderPane } from './SourceOrderView.js';
 let accessibilitySidebarViewInstance;
 export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget {
-    sourceOrderViewerExperimentEnabled;
     nodeInternal;
     axNodeInternal;
     skipNextPullNode;
@@ -22,7 +21,6 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
     sourceOrderSubPane;
     constructor(throttlingTimeout) {
         super(false /* isWebComponent */, throttlingTimeout);
-        this.sourceOrderViewerExperimentEnabled = Root.Runtime.experiments.isEnabled('sourceOrderViewer');
         this.nodeInternal = null;
         this.axNodeInternal = null;
         this.skipNextPullNode = false;
@@ -33,10 +31,8 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
         void this.sidebarPaneStack.showView(this.ariaSubPane);
         this.axNodeSubPane = new AXNodeSubPane();
         void this.sidebarPaneStack.showView(this.axNodeSubPane);
-        if (this.sourceOrderViewerExperimentEnabled) {
-            this.sourceOrderSubPane = new SourceOrderPane();
-            void this.sidebarPaneStack.showView(this.sourceOrderSubPane);
-        }
+        this.sourceOrderSubPane = new SourceOrderPane();
+        void this.sidebarPaneStack.showView(this.sourceOrderSubPane);
         this.sidebarPaneStack.widget().show(this.element);
         this.element.setAttribute('jslog', `${VisualLogging.accessibilityPane()}`);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.pullNode, this);
@@ -84,9 +80,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
         if (this.breadcrumbsSubPane) {
             this.breadcrumbsSubPane.setNode(node);
         }
-        if (this.sourceOrderViewerExperimentEnabled && this.sourceOrderSubPane) {
-            void this.sourceOrderSubPane.setNodeAsync(node);
-        }
+        void this.sourceOrderSubPane.setNodeAsync(node);
         if (!node) {
             return;
         }

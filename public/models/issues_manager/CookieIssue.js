@@ -89,6 +89,8 @@ export class CookieIssue extends Issue {
      * can uniquely identify a specific cookie issue.
      * warningReasons is only needed for some CookieExclusionReason in order to determine if an issue should be raised.
      * It is not required if reason is a CookieWarningReason.
+     *
+     * The issue code will be mapped to a CookieIssueSubCategory enum for metric purpose.
      */
     static codeForCookieIssueDetails(reason, warningReasons, operation, cookieUrl) {
         const isURLSecure = cookieUrl && (Common.ParsedURL.schemeIs(cookieUrl, 'https:') || Common.ParsedURL.schemeIs(cookieUrl, 'wss:'));
@@ -188,6 +190,15 @@ export class CookieIssue extends Issue {
             return [];
         }
         return CookieIssue.createIssuesFromCookieIssueDetails(cookieIssueDetails, issuesModel);
+    }
+    static getSubCategory(code) {
+        if (code.includes('SameSite') || code.includes('Downgrade')) {
+            return "SameSiteCookie" /* CookieIssueSubCategory.SameSiteCookie */;
+        }
+        if (code.includes('ThirdPartyPhaseout')) {
+            return "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.ThirdPartyPhaseoutCookie */;
+        }
+        return "GenericCookie" /* CookieIssueSubCategory.GenericCookie */;
     }
 }
 /**

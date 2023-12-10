@@ -181,11 +181,10 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         this.prompt.setPlaceholder(i18nString(UIStrings.filter));
         this.prompt.addEventListener(Events.TextChanged, this.valueChanged.bind(this));
         this.suggestionProvider = null;
-        const clearButton = container.createChild('div', 'filter-input-clear-button');
+        const clearButton = container.createChild('button', 'filter-input-clear-button');
         Tooltip.install(clearButton, i18nString(UIStrings.clearFilter));
         const clearIcon = new IconButton.Icon.Icon();
         clearIcon.data = { color: 'var(--icon-default)', width: '16px', height: '16px', iconName: 'cross-circle-filled' };
-        clearIcon.classList.add('filter-cancel-button');
         clearButton.appendChild(clearIcon);
         clearButton.addEventListener('click', () => {
             this.clear();

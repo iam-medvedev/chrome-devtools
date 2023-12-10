@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as auctionWorkletsData } from './AuctionWorkletsHandler.js';
@@ -38,12 +39,16 @@ export async function finalize() {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('FramesHandler is not initialized');
     }
+    // Snapshot events can be emitted out of order, so we need to sort before
+    // building the frames model.
+    Helpers.Trace.sortTraceEventsInPlace(allEvents);
     const modelForTrace = new TimelineFrameModel(allEvents, rendererHandlerData(), auctionWorkletsData(), metaHandlerData(), layerTreeHandlerData());
     model = modelForTrace;
 }
 export function data() {
     return {
         frames: model ? Array.from(model.frames()) : [],
+        framesById: model ? { ...model.framesById() } : {},
     };
 }
 export function deps() {
@@ -62,14 +67,6 @@ function isFrameEvent(event) {
         Types.TraceEvents.isTraceEventCommit(event) || Types.TraceEvents.isTraceEventCompositeLayers(event) ||
         Types.TraceEvents.isTraceEventActivateLayerTree(event) || Types.TraceEvents.isTraceEventDrawFrame(event));
 }
-function idForEntry(entry) {
-    const scope = Types.TraceEvents.isTraceEventInstant(entry) && entry.s || undefined;
-    if (Types.TraceEvents.isNestableAsyncPhase(entry.ph)) {
-        const id = Helpers.Trace.extractId(entry);
-        return scope ? `${scope}@${id}` : id;
-    }
-    return undefined;
-}
 function entryIsTopLevel(entry) {
     const devtoolsTimelineCategory = 'disabled-by-default-devtools.timeline';
     return entry.name === "RunTask" /* Types.TraceEvents.KnownEventName.RunTask */ && entry.cat.includes(devtoolsTimelineCategory);
@@ -78,7 +75,6 @@ export class TimelineFrameModel {
     #frames = [];
     #frameById = {};
     #beginFrameQueue = new TimelineFrameBeginFrameQueue();
-    #minimumRecordTime = Types.Timing.MicroSeconds(Infinity);
     #lastFrame = null;
     #mainFrameCommitted = false;
     #mainFrameRequested = false;
@@ -108,6 +104,9 @@ export class TimelineFrameModel {
         });
         this.#layerTreeData = layerTreeData;
         this.#addTraceEvents(allEvents, threadData, metaData.mainFrameId);
+    }
+    framesById() {
+        return this.#frameById;
     }
     frames() {
         return this.#frames;
@@ -203,7 +202,7 @@ export class TimelineFrameModel {
             this.#flushFrame(this.#lastFrame, startTime);
         }
         this.#lastFrame =
-            new TimelineFrame(seqId, startTime, Types.Timing.MicroSeconds(startTime - this.#minimumRecordTime));
+            new TimelineFrame(seqId, startTime, Types.Timing.MicroSeconds(startTime - metaHandlerData().traceBounds.min));
     }
     #flushFrame(frame, endTime) {
         frame.setLayerTree(this.#lastLayerTree);
@@ -244,15 +243,10 @@ export class TimelineFrameModel {
         this.#activeProcessId = null;
     }
     #addTraceEvent(event, mainFrameId) {
-        if (event.ts && event.ts < this.#minimumRecordTime) {
-            this.#minimumRecordTime = event.ts;
-        }
-        const entryId = idForEntry(event);
         if (Types.TraceEvents.isTraceEventSetLayerId(event) && event.args.data.frame === mainFrameId) {
             this.#layerTreeId = event.args.data.layerTreeId;
         }
-        else if (entryId && Types.TraceEvents.isTraceEventLayerTreeHostImplSnapshot(event) &&
-            Number(entryId) === this.#layerTreeId) {
+        else if (Types.TraceEvents.isTraceEventLayerTreeHostImplSnapshot(event) && Number(event.id) === this.#layerTreeId) {
             this.#handleLayerTreeSnapshot({
                 entry: event,
                 paints: [],
@@ -454,5 +448,10 @@ export class TimelineFrameBeginFrameQueue {
         }
         return framesToVisualize;
     }
+}
+export function framesWithinWindow(frames, startTime, endTime) {
+    const firstFrame = Platform.ArrayUtilities.lowerBound(frames, startTime || 0, (time, frame) => time - frame.endTime);
+    const lastFrame = Platform.ArrayUtilities.lowerBound(frames, endTime || Infinity, (time, frame) => time - frame.startTime);
+    return frames.slice(firstFrame, lastFrame);
 }
 //# sourceMappingURL=FramesHandler.js.map

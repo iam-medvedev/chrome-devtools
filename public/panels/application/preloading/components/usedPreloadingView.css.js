@@ -16,6 +16,10 @@ styles.replaceSync(
   height: 100%;
 }
 
+button {
+  font-size: inherit;
+}
+
 devtools-report {
   padding: 1em 0;
 }

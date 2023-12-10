@@ -225,6 +225,7 @@ export class ConsoleInsight extends HTMLElement {
     #selectedRatingReasons = new Set();
     #popover;
     #id;
+    #popoverInitiatedViaKeyboard = false;
     constructor(promptBuilder, insightProvider) {
         super();
         this.#promptBuilder = promptBuilder;
@@ -244,38 +245,7 @@ export class ConsoleInsight extends HTMLElement {
         this.tabIndex = 0;
         this.#id = nextInstanceId++;
         this.focus();
-        this.#popover = new UI.PopoverHelper.PopoverHelper(this, event => {
-            const hoveredNode = event.composedPath()[0];
-            if (!hoveredNode ||
-                (!hoveredNode?.matches('.info') && !hoveredNode.parentElementOrShadowHost()?.matches('.info'))) {
-                return null;
-            }
-            return {
-                box: hoveredNode.boxInWindow(),
-                show: async (popover) => {
-                    const { sources } = await this.#promptBuilder.buildPrompt();
-                    const container = document.createElement('div');
-                    container.style.display = 'flex';
-                    container.style.flexDirection = 'column';
-                    container.style.fontSize = '13px';
-                    container.style.lineHeight = '20px';
-                    const text = document.createElement('p');
-                    text.innerText = i18nString(UIStrings.refineButtonHint);
-                    text.style.margin = '0';
-                    const list = document.createElement('devtools-console-insight-sources-list');
-                    list.sources = sources;
-                    container.append(text);
-                    container.append(list);
-                    container.setAttribute('role', 'tooltip');
-                    const tooltipId = `console-insight-tooltip-${this.#id}`;
-                    container.setAttribute('id', tooltipId);
-                    this.#shadow.querySelector('.info')?.setAttribute('aria-describedby', tooltipId);
-                    popover.contentElement.append(container);
-                    popover.setAnchorBehavior("PreferBottom" /* UI.GlassPane.AnchorBehavior.PreferBottom */);
-                    return true;
-                },
-            };
-        });
+        this.#popover = new UI.PopoverHelper.PopoverHelper(this, this.#onPopoverRequest.bind(this));
         this.#popover.setTimeout(300);
         this.#popover.setHasPadding(true);
         // Measure the height of the element after an animation. `--actual-height` can
@@ -283,6 +253,84 @@ export class ConsoleInsight extends HTMLElement {
         this.addEventListener('animationend', () => {
             this.style.setProperty('--actual-height', `${this.offsetHeight}px`);
         });
+    }
+    #onPopoverRequest(event) {
+        const hoveredNode = event.composedPath()[0];
+        if (!hoveredNode ||
+            (!hoveredNode?.matches('.info') && !hoveredNode.parentElementOrShadowHost()?.matches('.info'))) {
+            return null;
+        }
+        const trapFocus = this.#popoverInitiatedViaKeyboard || event.type !== 'mousemove';
+        return {
+            box: hoveredNode.boxInWindow(),
+            show: async (popover) => {
+                const { sources } = await this.#promptBuilder.buildPrompt();
+                const dialogId = `dialog-${this.#id}`;
+                const container = document.createElement('div');
+                container.style.display = 'flex';
+                container.style.flexDirection = 'column';
+                container.style.fontSize = '13px';
+                container.style.lineHeight = '20px';
+                container.setAttribute('aria-modal', 'true');
+                container.tabIndex = -1;
+                container.role = 'dialog';
+                if (trapFocus) {
+                    container.addEventListener('keydown', event => {
+                        const keyboardEvent = event;
+                        if (keyboardEvent.key === 'Tab') {
+                            const focusableElements = getFocusableElements(popover);
+                            const focusedElement = getFocusedElement(popover);
+                            // Trap focus for the tab navigation inside the dialog.
+                            if (focusedElement) {
+                                const focusedItemIdx = focusableElements.indexOf(focusedElement);
+                                if (event.shiftKey && focusedItemIdx === 0) {
+                                    focusableElements.at(-1)?.focus();
+                                    event.preventDefault();
+                                }
+                                else if (!event.shiftKey && focusedItemIdx === focusableElements.length - 1) {
+                                    focusableElements.at(0)?.focus();
+                                    event.preventDefault();
+                                }
+                            }
+                        }
+                        else if (keyboardEvent.key === 'Escape') {
+                            event.consume(true);
+                            // Restore focus to the info icon.
+                            this.#popover.hidePopover();
+                            this.#shadow.querySelector('.info')?.focus();
+                        }
+                    });
+                }
+                const doc = document.createElement('div');
+                doc.role = 'document';
+                doc.tabIndex = 0;
+                doc.setAttribute('aria-describedby', dialogId);
+                container.append(doc);
+                const text = document.createElement('p');
+                text.id = dialogId;
+                text.innerText = i18nString(UIStrings.refineButtonHint);
+                text.style.margin = '0';
+                doc.append(text);
+                const list = document.createElement('devtools-console-insight-sources-list');
+                list.sources = sources;
+                doc.append(list);
+                popover.contentElement.append(container);
+                popover.setAnchorBehavior("PreferBottom" /* UI.GlassPane.AnchorBehavior.PreferBottom */);
+                if (trapFocus) {
+                    const origShow = popover.show;
+                    popover.show = (document) => {
+                        origShow.call(popover, document);
+                        popover.contentElement.querySelector('[role=document]')?.focus();
+                    };
+                    const origHide = popover.hide;
+                    popover.hide = () => {
+                        origHide.call(popover);
+                        this.#shadow.querySelector('.info')?.focus();
+                    };
+                }
+                return true;
+            },
+        };
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
@@ -393,17 +441,25 @@ export class ConsoleInsight extends HTMLElement {
         if (event instanceof KeyboardEvent) {
             switch (event.key) {
                 case 'Escape':
+                    event.consume(true);
                     this.#popover.hidePopover();
                     break;
                 case 'Enter':
                 case ' ':
-                    event.target?.dispatchEvent(new MouseEvent('mousedown', {
-                        bubbles: true,
-                        composed: true,
-                        cancelable: true,
-                        clientX: event.target.getBoundingClientRect().x,
-                        clientY: event.target.getBoundingClientRect().y,
-                    }));
+                    event.consume(true);
+                    this.#popoverInitiatedViaKeyboard = true;
+                    try {
+                        event.target?.dispatchEvent(new MouseEvent('mousedown', {
+                            bubbles: true,
+                            composed: true,
+                            cancelable: true,
+                            clientX: event.target.getBoundingClientRect().x,
+                            clientY: event.target.getBoundingClientRect().y,
+                        }));
+                    }
+                    finally {
+                        this.#popoverInitiatedViaKeyboard = false;
+                    }
                     break;
             }
         }
@@ -687,5 +743,44 @@ export class MarkdownRenderer extends MarkdownView.MarkdownView.MarkdownLitRende
         }
         return super.templateForToken(token);
     }
+}
+function getFocusedElement(popover) {
+    const root = popover.contentElement.getComponentRoot();
+    if (!(root instanceof ShadowRoot)) {
+        throw new Error('Expected a shadow root');
+    }
+    let focusedElement = root.activeElement;
+    while (focusedElement && focusedElement.shadowRoot?.activeElement) {
+        focusedElement = focusedElement.shadowRoot?.activeElement;
+    }
+    return focusedElement;
+}
+function getFocusableElements(popover) {
+    const root = popover.contentElement.getComponentRoot();
+    if (!(root instanceof ShadowRoot)) {
+        throw new Error('Expected a shadow root');
+    }
+    const focusableSelectors = [
+        'x-link',
+        '[role=document]',
+    ];
+    const result = [];
+    function walk(root) {
+        const iter = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+        do {
+            const currentNode = iter.currentNode;
+            if (currentNode.shadowRoot) {
+                walk(currentNode.shadowRoot);
+            }
+            if (currentNode instanceof ShadowRoot) {
+                continue;
+            }
+            if (currentNode !== root && focusableSelectors.some(selector => currentNode.matches(selector))) {
+                result.push(currentNode);
+            }
+        } while (iter.nextNode());
+    }
+    walk(root.host);
+    return result;
 }
 //# sourceMappingURL=ConsoleInsight.js.map

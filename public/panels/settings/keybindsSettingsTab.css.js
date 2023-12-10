@@ -195,6 +195,7 @@ button.text-button {
   align-self: flex-start;
   min-height: 2em;
   line-height: 2em;
+  margin-bottom: 4px;
 }
 
 .keybinds-footer {

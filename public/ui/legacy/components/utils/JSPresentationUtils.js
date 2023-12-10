@@ -35,6 +35,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import jsUtilsStyles from './jsUtils.css.js';
 import { Linkifier } from './Linkifier.js';
@@ -106,6 +107,7 @@ export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, upd
                 revealBreakpoint: previousStackFrameWasBreakpointCondition,
             });
             if (link) {
+                link.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('stack-trace-link')}`);
                 link.addEventListener('contextmenu', populateContextMenu.bind(null, link));
                 // TODO(crbug.com/1183325): fix race condition with uiLocation still being null here
                 // Note: This has always checked whether the call frame location *in the generated

@@ -4,7 +4,7 @@ export declare function initialize(): void;
 export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
 export declare function finalize(): Promise<void>;
 export type MetaHandlerData = {
-    traceBounds: Types.Timing.TraceWindow;
+    traceBounds: Types.Timing.TraceWindowMicroSeconds;
     browserProcessId: Types.TraceEvents.ProcessID;
     browserThreadId: Types.TraceEvents.ThreadID;
     gpuProcessId: Types.TraceEvents.ProcessID;
@@ -30,6 +30,6 @@ export type MetaHandlerData = {
 };
 export type FrameProcessData = Map<string, Map<Types.TraceEvents.ProcessID, {
     frame: Types.TraceEvents.TraceFrame;
-    window: Types.Timing.TraceWindow;
+    window: Types.Timing.TraceWindowMicroSeconds;
 }[]>>;
 export declare function data(): MetaHandlerData;

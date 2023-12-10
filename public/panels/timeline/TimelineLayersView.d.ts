@@ -10,7 +10,7 @@ export declare class TimelineLayersView extends UI.SplitWidget.SplitWidget {
     private frameLayerTree?;
     private updateWhenVisible?;
     constructor(model: TimelineModel.TimelineModel.TimelineModelImpl, showPaintProfilerCallback: (arg0: SDK.PaintProfiler.PaintProfilerSnapshot) => void);
-    showLayerTree(frameLayerTree: TimelineModel.TimelineFrameModel.TracingFrameLayerTree): void;
+    showLayerTree(frameLayerTree: TimelineModel.TracingLayerTree.TracingFrameLayerTree): void;
     wasShown(): void;
     private onPaintProfilerRequested;
     private update;

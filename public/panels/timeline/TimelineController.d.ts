@@ -4,6 +4,7 @@ import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import { PerformanceModel } from './PerformanceModel.js';
 export declare class TimelineController implements TraceEngine.TracingManager.TracingManagerClient {
+    #private;
     readonly primaryPageTarget: SDK.Target.Target;
     readonly rootTarget: SDK.Target.Target;
     private tracingManager;
@@ -56,7 +57,7 @@ export interface Client {
     loadingStarted(): void;
     processingStarted(): void;
     loadingProgress(progress?: number): void;
-    loadingComplete(tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, isCpuProfile: boolean): Promise<void>;
+    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, isCpuProfile: boolean): Promise<void>;
     loadingCompleteForTest(): void;
 }
 export interface RecordingOptions {

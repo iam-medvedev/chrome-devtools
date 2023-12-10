@@ -8,7 +8,6 @@ export declare class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper
     private tracingModelInternal;
     private filtersInternal;
     private readonly timelineModelInternal;
-    private readonly frameModelInternal;
     private windowInternal;
     private recordStartTimeInternal?;
     constructor();
@@ -22,16 +21,10 @@ export declare class PerformanceModel extends Common.ObjectWrapper.ObjectWrapper
     setTracingModel(model: TraceEngine.Legacy.TracingModel, isFreshRecording?: boolean): Promise<void>;
     tracingModel(): TraceEngine.Legacy.TracingModel;
     timelineModel(): TimelineModel.TimelineModel.TimelineModelImpl;
-    frames(): TimelineModel.TimelineFrameModel.TimelineFrame[];
-    frameModel(): TimelineModel.TimelineFrameModel.TimelineFrameModel;
-    setWindow(window: Window, animate?: boolean, breadcrumb?: TraceEngine.Types.Timing.TraceWindow): void;
+    setWindow(window: Window, animate?: boolean, breadcrumb?: TraceEngine.Types.Timing.TraceWindowMicroSeconds): void;
     window(): Window;
     minimumRecordTime(): number;
     maximumRecordTime(): number;
-    calculateWindowForMainThreadActivity(): {
-        left: TraceEngine.Types.Timing.MilliSeconds;
-        right: TraceEngine.Types.Timing.MilliSeconds;
-    };
 }
 export declare enum Events {
     WindowChanged = "WindowChanged",
@@ -40,7 +33,7 @@ export declare enum Events {
 export interface WindowChangedEvent {
     window: Window;
     animate: boolean | undefined;
-    breadcrumbWindow?: TraceEngine.Types.Timing.TraceWindow;
+    breadcrumbWindow?: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
 }
 export type EventTypes = {
     [Events.WindowChanged]: WindowChangedEvent;

@@ -20,7 +20,7 @@ export declare function getNavigationForTraceEvent(event: Types.TraceEvents.Trac
 export declare function extractId(event: Types.TraceEvents.TraceEventNestableAsync | Types.TraceEvents.TraceEventSyntheticNestableAsyncEvent): string | undefined;
 export declare function activeURLForFrameAtTime(frameId: string, time: Types.Timing.MicroSeconds, rendererProcessesByFrame: Map<string, Map<Types.TraceEvents.ProcessID, {
     frame: Types.TraceEvents.TraceFrame;
-    window: Types.Timing.TraceWindow;
+    window: Types.Timing.TraceWindowMicroSeconds;
 }[]>>): string | null;
 export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.ProfileNode, ts: Types.Timing.MicroSeconds, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID): Types.TraceEvents.TraceEventSyntheticProfileCall;
 export declare function matchBeginningAndEndEvents(unpairedEvents: Types.TraceEvents.TraceEventNestableAsync[]): Map<string, {

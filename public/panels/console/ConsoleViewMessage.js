@@ -1374,15 +1374,13 @@ export class ConsoleViewMessage {
     }
     async getInlineFrames(debuggerModel, url, lineNumber, columnNumber) {
         const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
-        if (debuggerWorkspaceBinding.pluginManager) {
-            const projects = Workspace.Workspace.WorkspaceImpl.instance().projects();
-            const uiSourceCodes = projects.map(project => project.uiSourceCodeForURL(url)).flat().filter(f => Boolean(f));
-            const scripts = uiSourceCodes.map(uiSourceCode => debuggerWorkspaceBinding.scriptsForUISourceCode(uiSourceCode)).flat();
-            if (scripts.length) {
-                const location = new SDK.DebuggerModel.Location(debuggerModel, scripts[0].scriptId, lineNumber || 0, columnNumber);
-                const functionInfo = await debuggerWorkspaceBinding.pluginManager.getFunctionInfo(scripts[0], location);
-                return functionInfo && 'frames' in functionInfo ? functionInfo : { frames: [] };
-            }
+        const projects = Workspace.Workspace.WorkspaceImpl.instance().projects();
+        const uiSourceCodes = projects.map(project => project.uiSourceCodeForURL(url)).flat().filter(f => Boolean(f));
+        const scripts = uiSourceCodes.map(uiSourceCode => debuggerWorkspaceBinding.scriptsForUISourceCode(uiSourceCode)).flat();
+        if (scripts.length) {
+            const location = new SDK.DebuggerModel.Location(debuggerModel, scripts[0].scriptId, lineNumber || 0, columnNumber);
+            const functionInfo = await debuggerWorkspaceBinding.pluginManager.getFunctionInfo(scripts[0], location);
+            return functionInfo && 'frames' in functionInfo ? functionInfo : { frames: [] };
         }
         return { frames: [] };
     }

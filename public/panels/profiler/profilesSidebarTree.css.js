@@ -136,7 +136,7 @@ li button {
   visibility: hidden;
 }
 
-li.selected button {
+li.selected:hover button {
   visibility: visible;
 }
 

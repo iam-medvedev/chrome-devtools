@@ -37,7 +37,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -1008,14 +1007,14 @@ export class NetworkRequestNode extends NetworkNode {
             iconElement.classList.add('icon');
             return iconElement;
         }
-        if (request.wasIntercepted()) {
+        const isHeaderOverriden = request.hasOverriddenHeaders();
+        const isContentOverriden = request.hasOverriddenContent;
+        if (isHeaderOverriden || isContentOverriden) {
             const iconData = {
                 iconName: 'document',
                 color: 'var(--icon-default)',
             };
             let title;
-            const isHeaderOverriden = request.hasOverriddenHeaders();
-            const isContentOverriden = request.hasOverriddenContent;
             if (isHeaderOverriden && isContentOverriden) {
                 title = i18nString(UIStrings.requestContentHeadersOverridden);
             }
@@ -1156,12 +1155,9 @@ export class NetworkRequestNode extends NetworkNode {
             }
             if (displayShowHeadersLink) {
                 this.setTextAndTitleAsLink(cell, i18nString(UIStrings.blockeds, { PH1: reason }), i18nString(UIStrings.blockedTooltip), () => {
-                    const tab = Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES) ?
-                        NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent :
-                        NetworkForward.UIRequestLocation.UIRequestTabs.Headers;
                     this.parentView().dispatchEventToListeners(Events.RequestActivated, {
                         showPanel: true,
-                        tab,
+                        tab: NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent,
                     });
                 });
             }
@@ -1374,11 +1370,11 @@ export class NetworkRequestNode extends NetworkNode {
             this.setTextAndTitle(cell, i18nString(UIStrings.pending));
         }
     }
-    appendSubtitle(cellElement, subtitleText, showInlineWhenSelected = false, tooltipText = '') {
+    appendSubtitle(cellElement, subtitleText, alwaysVisible = false, tooltipText = '') {
         const subtitleElement = document.createElement('div');
         subtitleElement.classList.add('network-cell-subtitle');
-        if (showInlineWhenSelected) {
-            subtitleElement.classList.add('network-cell-subtitle-show-inline-when-selected');
+        if (alwaysVisible) {
+            subtitleElement.classList.add('always-visible');
         }
         subtitleElement.textContent = subtitleText;
         if (tooltipText) {

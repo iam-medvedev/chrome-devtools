@@ -1,6 +1,6 @@
+import { type Chrome } from '../../../extension-api/ExtensionAPI.js';
 import type * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
-import { type Chrome } from '../../../extension-api/ExtensionAPI.js';
 export declare class LanguageExtensionEndpoint implements Bindings.DebuggerLanguagePlugins.DebuggerLanguagePlugin {
     private readonly supportedScriptTypes;
     private endpoint;

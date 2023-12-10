@@ -995,14 +995,6 @@ const UIStrings = {
     frame: 'Frame',
     /**
      *@description Text in Timeline UIUtils of the Performance panel
-     */
-    layerTree: 'Layer tree',
-    /**
-     *@description Text in Timeline UIUtils of the Performance panel
-     */
-    show: 'Show',
-    /**
-     *@description Text in Timeline UIUtils of the Performance panel
      *@example {10ms} PH1
      *@example {10ms} PH2
      */
@@ -1793,9 +1785,9 @@ export class TimelineUIUtils {
                         precomputedFeatures: undefined,
                     });
                 }
-                else if (event instanceof TraceEngine.Legacy.Event &&
-                    TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).picture) {
-                    previewElement = await TimelineUIUtils.buildPicturePreviewContent(event, target);
+                else if (traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event) &&
+                    TraceEngine.Types.TraceEvents.isTraceEventPaint(event)) {
+                    previewElement = await TimelineUIUtils.buildPicturePreviewContent(traceParseData, event, target);
                 }
                 // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
                 event[previewElementSymbol] = previewElement;
@@ -1860,6 +1852,21 @@ export class TimelineUIUtils {
             }
             return contentHelper.fragment;
         }
+        if (TraceEngine.Legacy.eventIsFromNewEngine(event) && TraceEngine.Types.TraceEvents.isTraceEventV8Compile(event)) {
+            url = event.args.data?.url;
+            if (url) {
+                const lineNumber = event.args?.data?.lineNumber || 0;
+                const columnNumber = event.args?.data?.columnNumber;
+                contentHelper.appendLocationRow(i18nString(UIStrings.script), url, lineNumber, columnNumber);
+            }
+            const isEager = Boolean(event.args.data?.eager);
+            if (isEager) {
+                contentHelper.appendTextRow(i18nString(UIStrings.eagerCompile), true);
+            }
+            const isStreamed = Boolean(event.args.data?.streamed);
+            contentHelper.appendTextRow(i18nString(UIStrings.streamed), isStreamed + (isStreamed ? '' : `: ${event.args.data?.notStreamedReason || ''}`));
+            TimelineUIUtils.buildConsumeCacheDetails(eventData, contentHelper);
+        }
         switch (event.name) {
             case recordTypes.GCEvent:
             case recordTypes.MajorGC:
@@ -1899,17 +1906,7 @@ export class TimelineUIUtils {
                 break;
             }
             case recordTypes.CompileScript: {
-                url = eventData && eventData['url'];
-                if (url) {
-                    contentHelper.appendLocationRow(i18nString(UIStrings.script), url, eventData['lineNumber'], eventData['columnNumber']);
-                }
-                const isEager = eventData['eager'] ?? false;
-                if (isEager) {
-                    contentHelper.appendTextRow(i18nString(UIStrings.eagerCompile), true);
-                }
-                const isStreamed = eventData['streamed'];
-                contentHelper.appendTextRow(i18nString(UIStrings.streamed), isStreamed + (isStreamed ? '' : `: ${eventData['notStreamedReason']}`));
-                TimelineUIUtils.buildConsumeCacheDetails(eventData, contentHelper);
+                // This case is handled above
                 break;
             }
             case recordTypes.CacheModule: {
@@ -2511,7 +2508,7 @@ export class TimelineUIUtils {
         if (endTime) {
             for (let i = index; i < events.length; i++) {
                 const nextEvent = events[i];
-                const { startTime: nextEventStartTime } = TraceEngine.Legacy.timesForEventInMilliseconds(nextEvent);
+                const { startTime: nextEventStartTime, selfTime: nextEventSelfTime } = TraceEngine.Legacy.timesForEventInMilliseconds(nextEvent);
                 if (nextEventStartTime >= endTime) {
                     break;
                 }
@@ -2525,7 +2522,7 @@ export class TimelineUIUtils {
                     hasChildren = true;
                 }
                 const categoryName = TimelineUIUtils.eventStyle(nextEvent).category.name;
-                total[categoryName] = (total[categoryName] || 0) + nextEvent.selfTime;
+                total[categoryName] = (total[categoryName] || 0) + nextEventSelfTime;
             }
         }
         if (TraceEngine.Types.TraceEvents.isAsyncPhase(TraceEngine.Legacy.phaseForEvent(event))) {
@@ -2540,8 +2537,23 @@ export class TimelineUIUtils {
         }
         return hasChildren;
     }
-    static async buildPicturePreviewContent(event, target) {
-        const snapshotWithRect = await new TimelineModel.TimelineFrameModel.LayerPaintEvent(event, target).snapshotPromise();
+    static async buildPicturePreviewContent(traceData, event, target) {
+        const snapshotEvent = traceData.LayerTree.paintsToSnapshots.get(event);
+        if (!snapshotEvent) {
+            return null;
+        }
+        const paintProfilerModel = target.model(SDK.PaintProfiler.PaintProfilerModel);
+        if (!paintProfilerModel) {
+            return null;
+        }
+        const snapshot = await paintProfilerModel.loadSnapshot(snapshotEvent.args.snapshot.skp64);
+        if (!snapshot) {
+            return null;
+        }
+        const snapshotWithRect = {
+            snapshot,
+            rect: snapshotEvent.args.snapshot.params?.layer_rect,
+        };
         if (!snapshotWithRect) {
             return null;
         }
@@ -2658,7 +2670,10 @@ export class TimelineUIUtils {
         // Add other categories.
         for (const categoryName in TimelineUIUtils.categories()) {
             const category = TimelineUIUtils.categories()[categoryName];
-            if (category === selfCategory) {
+            if (categoryName === selfCategory?.name) {
+                // Do not add an entry for this event's self category because 2
+                // entries for it where added just before this for loop (for
+                // self and children times).
                 continue;
             }
             appendLegendRow(category.name, category.title, aggregatedStats[category.name], category.getCSSValue());
@@ -2688,18 +2703,17 @@ export class TimelineUIUtils {
             contentHelper.appendElementRow('', filmStripPreview);
             filmStripPreview.addEventListener('click', frameClicked.bind(null, filmStrip, filmStripFrame), false);
         }
-        if (frame.layerTree) {
-            contentHelper.appendElementRow(i18nString(UIStrings.layerTree), LegacyComponents.Linkifier.Linkifier.linkifyRevealable(frame.layerTree, i18nString(UIStrings.show)));
-        }
         function frameClicked(filmStrip, filmStripFrame) {
             PerfUI.FilmStripView.Dialog.fromFilmStrip(filmStrip, filmStripFrame.index);
         }
         return contentHelper.fragment;
     }
     static frameDuration(frame) {
+        const offsetMilli = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.startTimeOffset);
+        const durationMilli = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(TraceEngine.Types.Timing.MicroSeconds(frame.endTime - frame.startTime));
         const durationText = i18nString(UIStrings.sAtSParentheses, {
-            PH1: i18n.TimeUtilities.millisToString(frame.endTime - frame.startTime, true),
-            PH2: i18n.TimeUtilities.millisToString(frame.startTimeOffset, true),
+            PH1: i18n.TimeUtilities.millisToString(durationMilli, true),
+            PH2: i18n.TimeUtilities.millisToString(offsetMilli, true),
         });
         return i18n.i18n.getFormatLocalizedString(str_, UIStrings.emptyPlaceholder, { PH1: durationText });
     }
@@ -3043,7 +3057,7 @@ export class TimelineDetailsContentHelper {
         }
     }
     appendLocationRow(title, url, startLine, startColumn) {
-        if (!this.linkifierInternal || !this.target) {
+        if (!this.linkifierInternal) {
             return;
         }
         const options = {

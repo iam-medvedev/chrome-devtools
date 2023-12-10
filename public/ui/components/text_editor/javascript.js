@@ -153,7 +153,7 @@ export async function javascriptCompletionSource(cx) {
     }
     const script = getExecutionContext()?.debuggerModel.selectedCallFrame()?.script;
     if (script &&
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pluginManager?.hasPluginForScript(script)) {
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pluginManager.hasPluginForScript(script)) {
         return null;
     }
     let result;

@@ -1,8 +1,18 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { Events as ProfileHeaderEvents, } from './ProfileHeader.js';
+const UIStrings = {
+    /**
+     *@description Tooltip for the 3-dots menu in the Memory panel profiles list.
+     */
+    profileOptions: 'Profile options',
+};
+const str_ = i18n.i18n.registerUIStrings('panels/profiler/ProfileSidebarTreeElement.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     iconElement;
     titlesElement;
@@ -30,6 +40,8 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
         this.menuElement.tabIndex = -1;
         this.menuElement.appendChild(UI.Icon.Icon.create('dots-vertical'));
         this.menuElement.addEventListener('click', this.handleContextMenuEvent.bind(this));
+        this.menuElement.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('dots-menu')}`);
+        UI.Tooltip.Tooltip.install(this.menuElement, i18nString(UIStrings.profileOptions));
         this.titleElement.textContent = profile.title;
         this.className = className;
         this.small = false;

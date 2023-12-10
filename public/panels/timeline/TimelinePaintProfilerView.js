@@ -1,12 +1,13 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import timelinePaintProfilerStyles from './timelinePaintProfiler.css.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
+import * as TraceEngine from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LayerViewer from '../layer_viewer/layer_viewer.js';
+import timelinePaintProfilerStyles from './timelinePaintProfiler.css.js';
 export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
-    frameModel;
     logAndImageSplitWidget;
     imageView;
     paintProfilerView;
@@ -16,12 +17,13 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
     event;
     paintProfilerModel;
     lastLoadedSnapshot;
-    constructor(frameModel) {
+    #traceEngineData;
+    constructor(traceEngineData) {
         super(false, false);
         this.element.classList.add('timeline-paint-profiler-view');
         this.setSidebarSize(60);
         this.setResizable(false);
-        this.frameModel = frameModel;
+        this.#traceEngineData = traceEngineData;
         this.logAndImageSplitWidget = new UI.SplitWidget.SplitWidget(true, false);
         this.logAndImageSplitWidget.element.classList.add('timeline-paint-profiler-log-split');
         this.setMainWidget(this.logAndImageSplitWidget);
@@ -52,17 +54,29 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
         this.event = null;
         this.updateWhenVisible();
     }
+    #rasterEventHasTile(event) {
+        const data = event.args.tileData;
+        if (!data) {
+            return false;
+        }
+        const frame = this.#traceEngineData.Frames.framesById[data.sourceFrameNumber];
+        if (!frame || !frame.layerTree) {
+            return false;
+        }
+        return true;
+    }
     setEvent(paintProfilerModel, event) {
         this.releaseSnapshot();
         this.paintProfilerModel = paintProfilerModel;
         this.pendingSnapshot = null;
         this.event = event;
         this.updateWhenVisible();
-        if (this.event.name === TimelineModel.TimelineModel.RecordType.Paint) {
-            return Boolean(TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).picture);
+        if (TraceEngine.Types.TraceEvents.isTraceEventPaint(event)) {
+            const snapshot = this.#traceEngineData.LayerTree.paintsToSnapshots.get(event);
+            return Boolean(snapshot);
         }
-        if (this.event.name === TimelineModel.TimelineModel.RecordType.RasterTask) {
-            return this.frameModel.hasRasterTile(this.event);
+        if (TraceEngine.Types.TraceEvents.isTraceEventRasterTask(event)) {
+            return this.#rasterEventHasTile(event);
         }
         return false;
     }
@@ -74,6 +88,26 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
             this.needsUpdateWhenVisible = true;
         }
     }
+    async #rasterTilePromise(rasterEvent) {
+        const data = rasterEvent.args.tileData;
+        if (!data) {
+            return null;
+        }
+        if (!data.tileId.id_ref) {
+            return null;
+        }
+        const target = SDK.TargetManager.TargetManager.instance().rootTarget();
+        if (!target) {
+            return null;
+        }
+        const frame = this.#traceEngineData.Frames.framesById[data.sourceFrameNumber];
+        if (!frame || !frame.layerTree) {
+            return null;
+        }
+        const layerTree = new TimelineModel.TracingLayerTree.TracingFrameLayerTree(target, frame.layerTree);
+        const tracingLayerTree = await layerTree.layerTreePromise();
+        return tracingLayerTree ? tracingLayerTree.pictureForRasterTile(data.tileId.id_ref) : null;
+    }
     update() {
         this.logTreeView.setCommandLog([]);
         void this.paintProfilerView.setSnapshotAndLog(null, [], null);
@@ -81,20 +115,25 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
         if (this.pendingSnapshot) {
             snapshotPromise = Promise.resolve({ rect: null, snapshot: this.pendingSnapshot });
         }
-        else if (this.event && this.event.name === TimelineModel.TimelineModel.RecordType.Paint && this.paintProfilerModel) {
+        else if (this.event && this.paintProfilerModel && TraceEngine.Types.TraceEvents.isTraceEventPaint(this.event)) {
             // When we process events (TimelineModel#processEvent) and find a
             // snapshot event, we look for the last paint that occurred and link the
             // snapshot to that paint event. That is why here if the event is a Paint
             // event, we look to see if it has had a matching picture event set for
             // it.
-            const picture = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(this.event).picture;
-            const snapshotData = picture.getSnapshot();
-            snapshotPromise = this.paintProfilerModel.loadSnapshot(snapshotData['skp64']).then(snapshot => {
-                return snapshot && { rect: null, snapshot: snapshot };
-            });
+            const snapshotEvent = this.#traceEngineData.LayerTree.paintsToSnapshots.get(this.event);
+            if (snapshotEvent) {
+                const encodedData = snapshotEvent.args.snapshot.skp64;
+                snapshotPromise = this.paintProfilerModel.loadSnapshot(encodedData).then(snapshot => {
+                    return snapshot && { rect: null, snapshot: snapshot };
+                });
+            }
+            else {
+                snapshotPromise = Promise.resolve(null);
+            }
         }
-        else if (this.event && this.event.name === TimelineModel.TimelineModel.RecordType.RasterTask) {
-            snapshotPromise = this.frameModel.rasterTilePromise(this.event);
+        else if (this.event && TraceEngine.Types.TraceEvents.isTraceEventRasterTask(this.event)) {
+            snapshotPromise = this.#rasterTilePromise(this.event);
         }
         else {
             console.assert(false, 'Unexpected event type or no snapshot');

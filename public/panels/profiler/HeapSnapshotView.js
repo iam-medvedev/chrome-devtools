@@ -40,7 +40,8 @@ import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { AllocationDataGrid, HeapSnapshotSortableDataGridEvents, HeapSnapshotConstructorsDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotRetainmentDataGrid, HeapSnapshotContainmentDataGrid, } from './HeapSnapshotDataGrids.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import { AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotContainmentDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotRetainmentDataGrid, HeapSnapshotSortableDataGridEvents, } from './HeapSnapshotDataGrids.js';
 import { HeapSnapshotGenericObjectNode, } from './HeapSnapshotGridNodes.js';
 import { HeapSnapshotWorkerProxy } from './HeapSnapshotProxy.js';
 import { HeapTimelineOverview, Samples } from './HeapTimelineOverview.js';
@@ -312,6 +313,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         this.constructorsDataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, this.selectionChanged, this);
         this.constructorsWidget = this.constructorsDataGrid.asWidget();
         this.constructorsWidget.setMinimumSize(50, 25);
+        this.constructorsWidget.element.setAttribute('jslog', `${VisualLogging.section().context('heap-snapshot.constructors-view')}`);
         this.diffDataGrid = new HeapSnapshotDiffDataGrid(heapProfilerModel, this);
         this.diffDataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, this.selectionChanged, this);
         this.diffWidget = this.diffDataGrid.asWidget();
@@ -330,6 +332,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         this.retainmentWidget = this.retainmentDataGrid.asWidget();
         this.retainmentWidget.setMinimumSize(50, 21);
         this.retainmentWidget.element.classList.add('retaining-paths-view');
+        this.retainmentWidget.element.setAttribute('jslog', `${VisualLogging.section().context('heap-snapshot.retaining-paths-view')}`);
         let splitWidgetResizer;
         if (this.allocationStackView) {
             this.tabbedPane = new UI.TabbedPane.TabbedPane();
@@ -365,13 +368,12 @@ export class HeapSnapshotView extends UI.View.SimpleView {
             this.perspectives.push(new AllocationPerspective());
         }
         this.perspectives.push(new StatisticsPerspective());
-        this.perspectiveSelect =
-            new UI.Toolbar.ToolbarComboBox(this.onSelectedPerspectiveChanged.bind(this), i18nString(UIStrings.perspective));
+        this.perspectiveSelect = new UI.Toolbar.ToolbarComboBox(this.onSelectedPerspectiveChanged.bind(this), i18nString(UIStrings.perspective), undefined, 'profiler.heap-snapshot-perspective');
         this.updatePerspectiveOptions();
-        this.baseSelect = new UI.Toolbar.ToolbarComboBox(this.changeBase.bind(this), i18nString(UIStrings.baseSnapshot));
+        this.baseSelect = new UI.Toolbar.ToolbarComboBox(this.changeBase.bind(this), i18nString(UIStrings.baseSnapshot), undefined, 'profiler.heap-snapshot-base');
         this.baseSelect.setVisible(false);
         this.updateBaseOptions();
-        this.filterSelect = new UI.Toolbar.ToolbarComboBox(this.changeFilter.bind(this), i18nString(UIStrings.filter));
+        this.filterSelect = new UI.Toolbar.ToolbarComboBox(this.changeFilter.bind(this), i18nString(UIStrings.filter), undefined, 'profiler.heap-snapshot-filter');
         this.filterSelect.setVisible(false);
         this.updateFilterOptions();
         this.classNameFilter = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.classFilter));
@@ -1512,6 +1514,7 @@ export class HeapSnapshotStatisticsView extends UI.Widget.VBox {
     constructor() {
         super();
         this.element.classList.add('heap-snapshot-statistics-view');
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('profiler.heap-snapshot-statistics-view')}`);
         this.pieChart = new PerfUI.PieChart.PieChart();
         this.setTotalAndRecords(0, []);
         this.pieChart.classList.add('heap-snapshot-stats-pie-chart');

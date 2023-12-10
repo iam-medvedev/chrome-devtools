@@ -39,7 +39,6 @@ export declare class ExperimentsSupport {
     enableExperimentsTransiently(experimentNames: string[]): void;
     enableExperimentsByDefault(experimentNames: string[]): void;
     setServerEnabledExperiments(experimentNames: string[]): void;
-    setNonConfigurableExperiments(experimentNames: string[]): void;
     enableForTest(experimentName: string): void;
     disableForTest(experimentName: string): void;
     clearForTest(): void;
@@ -62,16 +61,11 @@ export declare enum ExperimentName {
     CAPTURE_NODE_CREATION_STACKS = "captureNodeCreationStacks",
     CSS_OVERVIEW = "cssOverview",
     LIVE_HEAP_PROFILE = "liveHeapProfile",
-    DEVELOPER_RESOURCES_VIEW = "developerResourcesView",
-    WASM_DWARF_DEBUGGING = "wasmDWARFDebugging",
     ALL = "*",
     PROTOCOL_MONITOR = "protocolMonitor",
-    WEBAUTHN_PANE = "webauthnPane",
     FULL_ACCESSIBILITY_TREE = "fullAccessibilityTree",
-    PRECISE_CHANGES = "preciseChanges",
     STYLES_PANE_CSS_CHANGES = "stylesPaneCSSChanges",
     HEADER_OVERRIDES = "headerOverrides",
-    EYEDROPPER_COLOR_PICKER = "eyedropperColorPicker",
     INSTRUMENTATION_BREAKPOINTS = "instrumentationBreakpoints",
     AUTHORED_DEPLOYED_GROUPING = "authoredDeployedGrouping",
     IMPORTANT_DOM_PROPERTIES = "importantDOMProperties",

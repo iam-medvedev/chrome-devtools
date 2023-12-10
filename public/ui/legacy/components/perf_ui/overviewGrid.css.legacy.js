@@ -97,6 +97,8 @@ export default {
 
 .create-breadcrumb-button-container {
   visibility: hidden;
+  opacity: 0%;
+  transition: opacity 100ms 250ms;
   display: flex;
   position: absolute;
   top: 15px;
@@ -104,6 +106,11 @@ export default {
   z-index: 600;
   left: 0;
   right: 0;
+}
+
+.is-breadcrumb-button-visible {
+  visibility: visible;
+  opacity: 100%;
 }
 
 .create-breadcrumb-button-container.with-screenshots {

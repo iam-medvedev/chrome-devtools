@@ -307,7 +307,6 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     levelToOffset(level: number): number;
     private levelHeight;
     private updateBoundaries;
-    setTotalAndMinimumBreadcrumbValues(min: TraceEngine.Types.Timing.MilliSeconds, max: TraceEngine.Types.Timing.MilliSeconds): void;
     private updateHeight;
     onResize(): void;
     update(): void;

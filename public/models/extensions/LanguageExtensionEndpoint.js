@@ -14,9 +14,7 @@ class LanguageExtensionEndpointImpl extends ExtensionEndpoint {
             case "unregisteredLanguageExtensionPlugin" /* PrivateAPI.LanguageExtensionPluginEvents.UnregisteredLanguageExtensionPlugin */: {
                 this.disconnect();
                 const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
-                if (pluginManager) {
-                    pluginManager.removePlugin(this.plugin);
-                }
+                pluginManager.removePlugin(this.plugin);
                 break;
             }
         }

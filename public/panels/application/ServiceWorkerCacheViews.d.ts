@@ -1,7 +1,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import type * as Protocol from '../../generated/protocol.js';
 export declare class ServiceWorkerCacheView extends UI.View.SimpleView {
     private model;
     private entriesForTest;

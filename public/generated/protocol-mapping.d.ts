@@ -664,6 +664,11 @@ export namespace ProtocolMapping {
     'Preload.preloadingAttemptSourcesUpdated': [Protocol.Preload.PreloadingAttemptSourcesUpdatedEvent];
     'FedCm.dialogShown': [Protocol.FedCm.DialogShownEvent];
     /**
+     * Triggered when a dialog is closed, either by user action, JS abort,
+     * or a command below.
+     */
+    'FedCm.dialogClosed': [Protocol.FedCm.DialogClosedEvent];
+    /**
      * Fired when breakpoint is resolved to an actual script and location.
      */
     'Debugger.breakpointResolved': [Protocol.Debugger.BreakpointResolvedEvent];
@@ -2787,6 +2792,14 @@ export namespace ProtocolMapping {
     'Network.setUserAgentOverride': {
       paramsType: [Protocol.Network.SetUserAgentOverrideRequest];
       returnType: void;
+    };
+    /**
+     * Enables streaming of the response for the given requestId.
+     * If enabled, the dataReceived event contains the data that was received during streaming.
+     */
+    'Network.streamResourceContent': {
+      paramsType: [Protocol.Network.StreamResourceContentRequest];
+      returnType: Protocol.Network.StreamResourceContentResponse;
     };
     /**
      * Returns information about the COEP/COOP isolation status.

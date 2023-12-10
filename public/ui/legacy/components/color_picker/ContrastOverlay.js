@@ -107,8 +107,7 @@ export class ContrastRatioLineBuilder {
         let currentSlope = 0;
         const candidateHSVA = [fgHSVA[H], 0, 0, fgHSVA[A]];
         let pathBuilder = [];
-        const candidateRGBA = [0, 0, 0, 0];
-        Common.Color.hsva2rgba(candidateHSVA, candidateRGBA);
+        const candidateRGBA = Common.Color.hsva2rgba(candidateHSVA);
         blendedRGBA = Common.ColorUtils.blendColors(candidateRGBA, bgRGBA);
         let candidateLuminance = (candidateHSVA) => {
             return Common.ColorUtils.luminance(Common.ColorUtils.blendColors(Common.Color.Legacy.fromHSVA(candidateHSVA).rgba(), bgRGBA));

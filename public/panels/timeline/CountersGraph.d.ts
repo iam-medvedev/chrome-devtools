@@ -21,7 +21,7 @@ export declare class CountersGraph extends UI.Widget.VBox {
     currentValuesBar?: HTMLElement;
     private markerXPosition?;
     constructor(delegate: TimelineModeViewDelegate);
-    setModel(model: PerformanceModel | null, events: TraceEngine.Legacy.CompatibleTraceEvent[] | null): void;
+    setModel(model: PerformanceModel | null, traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, events: TraceEngine.Legacy.CompatibleTraceEvent[] | null): void;
     private createCurrentValuesBar;
     private createCounter;
     resizerElement(): Element | null;

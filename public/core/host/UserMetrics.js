@@ -821,29 +821,20 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["captureNodeCreationStacks"] = 1] = "captureNodeCreationStacks";
     DevtoolsExperiments[DevtoolsExperiments["liveHeapProfile"] = 11] = "liveHeapProfile";
     DevtoolsExperiments[DevtoolsExperiments["protocolMonitor"] = 13] = "protocolMonitor";
-    DevtoolsExperiments[DevtoolsExperiments["developerResourcesView"] = 15] = "developerResourcesView";
     DevtoolsExperiments[DevtoolsExperiments["samplingHeapProfilerTimeline"] = 17] = "samplingHeapProfilerTimeline";
     DevtoolsExperiments[DevtoolsExperiments["showOptionToExposeInternalsInHeapSnapshot"] = 18] = "showOptionToExposeInternalsInHeapSnapshot";
-    DevtoolsExperiments[DevtoolsExperiments["sourceOrderViewer"] = 20] = "sourceOrderViewer";
-    DevtoolsExperiments[DevtoolsExperiments["webauthnPane"] = 22] = "webauthnPane";
     DevtoolsExperiments[DevtoolsExperiments["timelineEventInitiators"] = 24] = "timelineEventInitiators";
     DevtoolsExperiments[DevtoolsExperiments["timelineInvalidationTracking"] = 26] = "timelineInvalidationTracking";
     DevtoolsExperiments[DevtoolsExperiments["timelineShowAllEvents"] = 27] = "timelineShowAllEvents";
     DevtoolsExperiments[DevtoolsExperiments["timelineV8RuntimeCallStats"] = 28] = "timelineV8RuntimeCallStats";
-    DevtoolsExperiments[DevtoolsExperiments["wasmDWARFDebugging"] = 31] = "wasmDWARFDebugging";
     DevtoolsExperiments[DevtoolsExperiments["APCA"] = 39] = "APCA";
     DevtoolsExperiments[DevtoolsExperiments["fontEditor"] = 41] = "fontEditor";
     DevtoolsExperiments[DevtoolsExperiments["fullAccessibilityTree"] = 42] = "fullAccessibilityTree";
     DevtoolsExperiments[DevtoolsExperiments["ignoreListJSFramesOnTimeline"] = 43] = "ignoreListJSFramesOnTimeline";
     DevtoolsExperiments[DevtoolsExperiments["contrastIssues"] = 44] = "contrastIssues";
     DevtoolsExperiments[DevtoolsExperiments["experimentalCookieFeatures"] = 45] = "experimentalCookieFeatures";
-    DevtoolsExperiments[DevtoolsExperiments["cssTypeComponentLength"] = 52] = "cssTypeComponentLength";
-    DevtoolsExperiments[DevtoolsExperiments["preciseChanges"] = 53] = "preciseChanges";
-    DevtoolsExperiments[DevtoolsExperiments["bfcacheDisplayTree"] = 54] = "bfcacheDisplayTree";
     DevtoolsExperiments[DevtoolsExperiments["stylesPaneCSSChanges"] = 55] = "stylesPaneCSSChanges";
-    DevtoolsExperiments[DevtoolsExperiments["headerOverrides"] = 56] = "headerOverrides";
     DevtoolsExperiments[DevtoolsExperiments["evaluateExpressionsWithSourceMaps"] = 58] = "evaluateExpressionsWithSourceMaps";
-    DevtoolsExperiments[DevtoolsExperiments["eyedropperColorPicker"] = 60] = "eyedropperColorPicker";
     DevtoolsExperiments[DevtoolsExperiments["instrumentationBreakpoints"] = 61] = "instrumentationBreakpoints";
     DevtoolsExperiments[DevtoolsExperiments["authoredDeployedGrouping"] = 63] = "authoredDeployedGrouping";
     DevtoolsExperiments[DevtoolsExperiments["importantDOMProperties"] = 64] = "importantDOMProperties";
@@ -865,18 +856,21 @@ export var DevtoolsExperiments;
     // Increment this when new experiments are added.
     DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 84] = "MaxValue";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
+// Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
 export var IssueExpanded;
 (function (IssueExpanded) {
     IssueExpanded[IssueExpanded["CrossOriginEmbedderPolicy"] = 0] = "CrossOriginEmbedderPolicy";
     IssueExpanded[IssueExpanded["MixedContent"] = 1] = "MixedContent";
-    IssueExpanded[IssueExpanded["Cookie"] = 2] = "Cookie";
+    IssueExpanded[IssueExpanded["SameSiteCookie"] = 2] = "SameSiteCookie";
     IssueExpanded[IssueExpanded["HeavyAd"] = 3] = "HeavyAd";
     IssueExpanded[IssueExpanded["ContentSecurityPolicy"] = 4] = "ContentSecurityPolicy";
     IssueExpanded[IssueExpanded["Other"] = 5] = "Other";
     IssueExpanded[IssueExpanded["Generic"] = 6] = "Generic";
-    IssueExpanded[IssueExpanded["MaxValue"] = 7] = "MaxValue";
+    IssueExpanded[IssueExpanded["ThirdPartyPhaseoutCookie"] = 7] = "ThirdPartyPhaseoutCookie";
+    IssueExpanded[IssueExpanded["GenericCookie"] = 8] = "GenericCookie";
+    IssueExpanded[IssueExpanded["MaxValue"] = 9] = "MaxValue";
 })(IssueExpanded || (IssueExpanded = {}));
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum

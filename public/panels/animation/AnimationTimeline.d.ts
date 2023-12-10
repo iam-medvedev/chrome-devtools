@@ -23,7 +23,6 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     private createHeader;
     private handlePlaybackRateControlKeyDown;
     private focusNextPlaybackRateButton;
-    private getPopoverRequest;
     private togglePauseAll;
     private setPlaybackRate;
     private updatePlaybackControls;
@@ -37,6 +36,8 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     private clearTimeline;
     private reset;
     private animationGroupStarted;
+    private clearPreviews;
+    private createPreview;
     private addAnimationGroup;
     private handleAnimationGroupKeyDown;
     private focusNextGroup;

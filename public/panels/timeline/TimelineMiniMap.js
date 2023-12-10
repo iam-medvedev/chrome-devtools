@@ -88,6 +88,16 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.#breadcrumbsUI.data = {
             breadcrumb: this.breadcrumbs.initialBreadcrumb,
         };
+        // Dispatch event to update the breadcrumb in TimelineFlameChardView
+        this.dispatchEventToListeners(PerfUI.TimelineOverviewPane.Events.WindowChanged, {
+            startTime: startTime,
+            endTime: endTime,
+            breadcrumb: {
+                min: TraceEngine.Types.Timing.MicroSeconds(this.breadcrumbs.lastBreadcrumb.window.min + this.#minTime),
+                max: TraceEngine.Types.Timing.MicroSeconds(this.breadcrumbs.lastBreadcrumb.window.max + this.#minTime),
+                range: TraceEngine.Types.Timing.MicroSeconds(this.breadcrumbs.lastBreadcrumb.window.max - this.breadcrumbs.lastBreadcrumb.window.min),
+            },
+        });
     }
     removeBreadcrumb(breadcrumb) {
         const startMSWithMin = TraceEngine.Types.Timing.MilliSeconds(breadcrumb.window.min + this.#minTime);
@@ -100,8 +110,8 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             };
         }
         this.setBounds(startMSWithMin, endMSWithMin);
+        this.setWindowTimes(startMSWithMin, endMSWithMin);
         this.#overviewComponent.scheduleUpdate(startMSWithMin, endMSWithMin);
-        this.#overviewComponent.setWindowTimes(startMSWithMin, endMSWithMin);
     }
     wasShown() {
         super.wasShown();
@@ -115,7 +125,13 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.#overviewComponent.setBounds(min, max);
     }
     setWindowTimes(left, right) {
-        this.#overviewComponent.setWindowTimes(left, right);
+        // If breadcrumbs exist, make sure that selectected window is within timeline boundaries
+        if (!this.breadcrumbsActivated ||
+            (this.#overviewComponent.overviewCalculator.minimumBoundary() <= TraceEngine.Types.Timing.MilliSeconds(left) &&
+                this.#overviewComponent.overviewCalculator.maximumBoundary() >=
+                    TraceEngine.Types.Timing.MilliSeconds(right))) {
+            this.#overviewComponent.setWindowTimes(left, right);
+        }
     }
     #setMarkers(traceParsedData) {
         const markers = new Map();

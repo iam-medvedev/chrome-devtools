@@ -4,7 +4,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import type * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
-import { DebuggerWorkspaceBinding, type DebuggerSourceMapping } from './DebuggerWorkspaceBinding.js';
+import { type DebuggerSourceMapping, DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
 export declare class ResourceScriptMapping implements DebuggerSourceMapping {
     #private;
     readonly debuggerModel: SDK.DebuggerModel.DebuggerModel;

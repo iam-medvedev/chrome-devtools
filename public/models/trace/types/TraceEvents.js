@@ -347,4 +347,7 @@ export function isWebSocketTraceEvent(event) {
     return isTraceEventWebSocketCreate(event) || isTraceEventWebSocketDestroy(event) ||
         isTraceEventWebSocketReceiveHandshakeResponse(event) || isTraceEventWebSocketSendHandshakeRequest(event);
 }
+export function isTraceEventV8Compile(event) {
+    return event.name === "v8.compile" /* KnownEventName.Compile */;
+}
 //# sourceMappingURL=TraceEvents.js.map

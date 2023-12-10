@@ -10,12 +10,14 @@ export declare function handleEvent(event: Types.TraceEvents.TraceEventData): vo
 export declare function finalize(): Promise<void>;
 export interface FramesData {
     frames: readonly TimelineFrame[];
+    framesById: Readonly<Record<number, TimelineFrame | undefined>>;
 }
 export declare function data(): FramesData;
 export declare function deps(): TraceEventHandlerName[];
 export declare class TimelineFrameModel {
     #private;
     constructor(allEvents: readonly Types.TraceEvents.TraceEventData[], rendererData: RendererHandlerData, auctionWorkletsData: AuctionWorkletsData, metaData: MetaHandlerData, layerTreeData: LayerTreeData);
+    framesById(): Readonly<Record<number, TimelineFrame | undefined>>;
     frames(): TimelineFrame[];
 }
 export interface FrameLayerTreeData {
@@ -70,4 +72,5 @@ export declare class TimelineFrameBeginFrameQueue {
     setPartial(seqId: number, isPartial: boolean): void;
     processPendingBeginFramesOnDrawFrame(seqId: number): BeginFrameInfo[];
 }
+export declare function framesWithinWindow(frames: readonly TimelineFrame[], startTime: Types.Timing.MicroSeconds, endTime: Types.Timing.MicroSeconds): TimelineFrame[];
 export {};

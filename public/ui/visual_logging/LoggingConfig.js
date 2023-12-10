@@ -17,7 +17,7 @@ var VisualElements;
     VisualElements[VisualElements["AccessibilityPane"] = 4] = "AccessibilityPane";
     VisualElements[VisualElements["AccessibilitySourceOrder"] = 5] = "AccessibilitySourceOrder";
     VisualElements[VisualElements["Toggle"] = 6] = "Toggle";
-    /* 7 used to be AddStylesRule, but free to grab now */
+    VisualElements[VisualElements["Tree"] = 7] = "Tree";
     VisualElements[VisualElements["TextField"] = 8] = "TextField";
     VisualElements[VisualElements["ShowAllStyleProperties"] = 9] = "ShowAllStyleProperties";
     VisualElements[VisualElements["Section"] = 10] = "Section";
@@ -69,11 +69,11 @@ var VisualElements;
     VisualElements[VisualElements["FlexboxOverlays"] = 56] = "FlexboxOverlays";
     VisualElements[VisualElements["GridOverlays"] = 57] = "GridOverlays";
     VisualElements[VisualElements["JumpToElement"] = 58] = "JumpToElement";
-    /* 59 used to be ElementsPanel, but free to grab now */
-    VisualElements[VisualElements["ElementsTreeOutline"] = 60] = "ElementsTreeOutline";
-    /* 61 used to be RenderingPanel, but free to grab now */
+    VisualElements[VisualElements["PieChart"] = 59] = "PieChart";
+    VisualElements[VisualElements["PieChartSlice"] = 60] = "PieChartSlice";
+    VisualElements[VisualElements["PieChartTotal"] = 61] = "PieChartTotal";
     VisualElements[VisualElements["ElementsBreadcrumbs"] = 62] = "ElementsBreadcrumbs";
-    VisualElements[VisualElements["FullAccessibilityTree"] = 63] = "FullAccessibilityTree";
+    /* 63 used to be FullAccessibilityTree, but free to grab now */
     /* 64 used to be ToggleDeviceMode, but free to grab now */
     /* 65 used to be ToggleElementSearch, but free to grab now */
     VisualElements[VisualElements["PanelTabHeader"] = 66] = "PanelTabHeader";

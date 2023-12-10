@@ -7,11 +7,11 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotRetainmentDataGrid, HeapSnapshotContainmentDataGrid, type HeapSnapshotSortableDataGrid } from './HeapSnapshotDataGrids.js';
+import { AllocationDataGrid, HeapSnapshotConstructorsDataGrid, HeapSnapshotContainmentDataGrid, HeapSnapshotDiffDataGrid, HeapSnapshotRetainmentDataGrid, type HeapSnapshotSortableDataGrid } from './HeapSnapshotDataGrids.js';
 import { type HeapSnapshotGridNode } from './HeapSnapshotGridNodes.js';
-import { HeapSnapshotWorkerProxy, type HeapSnapshotProxy } from './HeapSnapshotProxy.js';
-import { HeapTimelineOverview, Samples, type IdsRangeChangedEvent } from './HeapTimelineOverview.js';
-import { ProfileHeader, ProfileType, type DataDisplayDelegate } from './ProfileHeader.js';
+import { type HeapSnapshotProxy, HeapSnapshotWorkerProxy } from './HeapSnapshotProxy.js';
+import { HeapTimelineOverview, type IdsRangeChangedEvent, Samples } from './HeapTimelineOverview.js';
+import { type DataDisplayDelegate, ProfileHeader, ProfileType } from './ProfileHeader.js';
 import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
 export declare class HeapSnapshotView extends UI.View.SimpleView implements DataDisplayDelegate, UI.SearchableView.Searchable {
     searchResults: number[];

@@ -27,13 +27,13 @@ export declare function data(): LayoutShifts;
 export declare function deps(): TraceEventHandlerName[];
 export declare function stateForLayoutShiftScore(score: number): ScoreClassification;
 export interface LayoutShiftCluster {
-    clusterWindow: Types.Timing.TraceWindow;
+    clusterWindow: Types.Timing.TraceWindowMicroSeconds;
     clusterCumulativeScore: number;
     events: Types.TraceEvents.SyntheticLayoutShift[];
     scoreWindows: {
-        good: Types.Timing.TraceWindow;
-        needsImprovement: Types.Timing.TraceWindow | null;
-        bad: Types.Timing.TraceWindow | null;
+        good: Types.Timing.TraceWindowMicroSeconds;
+        needsImprovement: Types.Timing.TraceWindowMicroSeconds | null;
+        bad: Types.Timing.TraceWindowMicroSeconds | null;
     };
 }
 export declare const enum LayoutShiftsThreshold {
