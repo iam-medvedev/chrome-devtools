@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { ContentProviderBasedProject } from './ContentProviderBasedProject.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import { NetworkProject } from './NetworkProject.js';
 const UIStrings = {
     /**
@@ -310,6 +310,9 @@ export class ExtensionRemoteObject extends SDK.RemoteObject.RemoteObject {
     runtimeModel() {
         return this.callFrame.debuggerModel.runtimeModel();
     }
+    isLinearMemoryInspectable() {
+        return this.extensionObject.linearMemoryAddress !== undefined;
+    }
 }
 export class DebuggerLanguagePluginManager {
     #workspace;
@@ -386,13 +389,13 @@ export class DebuggerLanguagePluginManager {
                 if ('missingSymbolFiles' in functionInfo && functionInfo.missingSymbolFiles.length) {
                     const resources = functionInfo.missingSymbolFiles;
                     const details = i18nString(UIStrings.debugSymbolsIncomplete, { PH1: callFrame.functionName });
-                    callFrame.setMissingDebugInfoDetails({ details, resources });
+                    callFrame.missingDebugInfoDetails = { details, resources };
                 }
                 else {
-                    callFrame.setMissingDebugInfoDetails({
-                        resources: [],
+                    callFrame.missingDebugInfoDetails = {
                         details: i18nString(UIStrings.failedToLoadDebugSymbolsForFunction, { PH1: callFrame.functionName }),
-                    });
+                        resources: [],
+                    };
                 }
             }
             return callFrame;

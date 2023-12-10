@@ -1,16 +1,22 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
-import { type LayerPaintEvent } from './TimelineFrameModel.js';
+import type * as TraceEngine from '../trace/trace.js';
 export declare class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
     private tileById;
     private paintProfilerModel;
     constructor(target: SDK.Target.Target | null);
-    setLayers(root: TracingLayerPayload | null, layers: TracingLayerPayload[] | null, paints: LayerPaintEvent[]): Promise<void>;
+    setLayers(root: TracingLayerPayload | null, layers: TracingLayerPayload[] | null, paints: TraceEngine.Handlers.ModelHandlers.Frames.LayerPaintEvent[]): Promise<void>;
     setTiles(tiles: TracingLayerTile[]): void;
     pictureForRasterTile(tileId: string): Promise<SDK.PaintProfiler.SnapshotWithRect | null>;
     private setPaints;
     private innerSetLayers;
     private extractNodeIdsToResolve;
+}
+export declare class TracingFrameLayerTree {
+    #private;
+    constructor(target: SDK.Target.Target | null, data: TraceEngine.Handlers.ModelHandlers.Frames.FrameLayerTreeData);
+    layerTreePromise(): Promise<TracingLayerTree | null>;
+    paints(): TraceEngine.Handlers.ModelHandlers.Frames.LayerPaintEvent[];
 }
 export declare class TracingLayer implements SDK.LayerTreeBase.Layer {
     private parentLayerId;
@@ -58,7 +64,7 @@ export declare class TracingLayer implements SDK.LayerTreeBase.Layer {
     pictureForRect(targetRect: number[]): Promise<SDK.PaintProfiler.SnapshotWithRect | null>;
     private scrollRectsFromParams;
     private createScrollRects;
-    addPaintEvent(paint: LayerPaintEvent): void;
+    addPaintEvent(paint: TraceEngine.Handlers.ModelHandlers.Frames.LayerPaintEvent): void;
     requestCompositingReasons(): Promise<string[]>;
     requestCompositingReasonIds(): Promise<string[]>;
     drawsContent(): boolean;

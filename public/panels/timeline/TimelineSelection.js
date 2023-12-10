@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 const SelectionRangeSymbol = Symbol('SelectionRange');
 export class TimelineSelection {
@@ -14,10 +13,10 @@ export class TimelineSelection {
         this.object = object;
     }
     static isFrameObject(object) {
-        return object instanceof TimelineModel.TimelineFrameModel.TimelineFrame;
+        return object instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame;
     }
     static fromFrame(frame) {
-        return new TimelineSelection(TraceEngine.Types.Timing.MilliSeconds(frame.startTime), TraceEngine.Types.Timing.MilliSeconds(frame.endTime), frame);
+        return new TimelineSelection(TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.startTime), TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.endTime), frame);
     }
     static isSyntheticNetworkRequestDetailsEventSelection(object) {
         if (object instanceof TraceEngine.Legacy.Event) {

@@ -490,7 +490,7 @@ export class DebuggerPlugin extends Plugin {
                 const addSourceMapURLLabel = i18nString(UIStrings.addSourceMap);
                 contextMenu.debugSection().appendItem(addSourceMapURLLabel, addSourceMapURL.bind(null, scriptFile), { jslogContext: 'add-source-map' });
                 if (scriptFile.script?.isWasm() &&
-                    !Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pluginManager?.hasPluginForScript(scriptFile.script)) {
+                    !Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pluginManager.hasPluginForScript(scriptFile.script)) {
                     contextMenu.debugSection().appendItem(i18nString(UIStrings.addWasmDebugInfo), addDebugInfoURL.bind(null, scriptFile), { jslogContext: 'add-wasm-debug-info' });
                 }
             }

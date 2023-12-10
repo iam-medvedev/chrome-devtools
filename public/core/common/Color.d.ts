@@ -2,8 +2,8 @@ import { type Color3D, type Color4D, type Color4DOr3D } from './ColorUtils.js';
 export declare function getFormat(formatText: string): Format | null;
 type ColorSpace = Format.SRGB | Format.SRGB_LINEAR | Format.DISPLAY_P3 | Format.A98_RGB | Format.PROPHOTO_RGB | Format.REC_2020 | Format.XYZ | Format.XYZ_D50 | Format.XYZ_D65;
 export declare function parse(text: string): Color | null;
-export declare function hsl2rgb(hsl: Color4D, out_rgb: Color4D): void;
-export declare function hsva2rgba(hsva: Color4D, out_rgba: Color4D): void;
+export declare function hsl2rgb(hsl: Color4D): Color4D;
+export declare function hsva2rgba(hsva: Color4D): Color4D;
 export declare function rgb2hsv(rgba: Color3D): Color3D;
 /**
  * Compute a desired luminance given a given luminance and a desired contrast

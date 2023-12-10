@@ -12,7 +12,6 @@ export declare class ProfilesPanel extends UI.Panel.PanelWithSidebar implements 
     readonly toolbarElement: HTMLDivElement;
     toggleRecordAction: UI.ActionRegistration.Action;
     readonly toggleRecordButton: UI.Toolbar.ToolbarButton;
-    clearResultsButton: UI.Toolbar.ToolbarButton;
     readonly profileViewToolbar: UI.Toolbar.Toolbar;
     profileGroups: {};
     launcherView: ProfileLauncherView;

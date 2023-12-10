@@ -222,6 +222,13 @@ export class RemoteObject {
     isNode() {
         return false;
     }
+    /**
+     * Checks whether this object can be inspected with the Linear Memory Inspector.
+     * @returns `true` if this object can be inspected with the Linear Memory Inspector.
+     */
+    isLinearMemoryInspectable() {
+        return false;
+    }
     webIdl;
 }
 export class RemoteObjectImpl extends RemoteObject {
@@ -489,6 +496,10 @@ export class RemoteObjectImpl extends RemoteObject {
     }
     isNode() {
         return Boolean(this.#objectIdInternal) && this.type === 'object' && this.subtype === 'node';
+    }
+    isLinearMemoryInspectable() {
+        return this.type === 'object' && this.subtype !== undefined &&
+            ['webassemblymemory', 'typedarray', 'dataview', 'arraybuffer'].includes(this.subtype);
     }
 }
 export class ScopeRemoteObject extends RemoteObjectImpl {
@@ -939,4 +950,31 @@ const _descriptionLengthParenRegex = /\(([0-9]+)\)/;
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _descriptionLengthSquareRegex = /\[([0-9]+)\]/;
+/**
+ * Pair of a linear memory inspectable {@link RemoteObject} and an optional
+ * expression, which identifies the variable holding the object in the
+ * current scope or the name of the field holding the object.
+ *
+ * This data structure is used to reveal an object in the Linear Memory
+ * Inspector panel.
+ */
+export class LinearMemoryInspectable {
+    /** The linear memory inspectable {@link RemoteObject}. */
+    object;
+    /** The name of the variable or the field holding the `object`. */
+    expression;
+    /**
+     * Wrap `object` and `expression` into a reveable structure.
+     *
+     * @param object A linear memory inspectable {@link RemoteObject}.
+     * @param expression An optional name of the field or variable holding the `object`.
+     */
+    constructor(object, expression) {
+        if (!object.isLinearMemoryInspectable()) {
+            throw new Error('object must be linear memory inspectable');
+        }
+        this.object = object;
+        this.expression = expression;
+    }
+}
 //# sourceMappingURL=RemoteObject.js.map

@@ -4,7 +4,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
@@ -86,11 +85,7 @@ class AffectedRequestsView extends AffectedResourcesView {
             const element = document.createElement('tr');
             element.classList.add('affected-resource-request');
             const category = this.issue.getCategory();
-            let tab = issueTypeToNetworkHeaderMap.get(category) || NetworkForward.UIRequestLocation.UIRequestTabs.Headers;
-            if (tab === NetworkForward.UIRequestLocation.UIRequestTabs.Headers &&
-                Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES)) {
-                tab = NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent;
-            }
+            const tab = issueTypeToNetworkHeaderMap.get(category) || NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent;
             element.appendChild(this.createRequestCell(affectedRequest, {
                 networkTab: tab,
                 additionalOnClickAction() {
@@ -129,11 +124,11 @@ const issueTypeToNetworkHeaderMap = new Map([
     ],
     [
         IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy,
-        NetworkForward.UIRequestLocation.UIRequestTabs.Headers,
+        NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent,
     ],
     [
         IssuesManager.Issue.IssueCategory.MixedContent,
-        NetworkForward.UIRequestLocation.UIRequestTabs.Headers,
+        NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent,
     ],
 ]);
 class AffectedMixedContentView extends AffectedResourcesView {
@@ -157,12 +152,8 @@ class AffectedMixedContentView extends AffectedResourcesView {
         const element = document.createElement('tr');
         element.classList.add('affected-resource-mixed-content');
         if (mixedContent.request) {
-            let networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) ||
-                NetworkForward.UIRequestLocation.UIRequestTabs.Headers;
-            if (networkTab === NetworkForward.UIRequestLocation.UIRequestTabs.Headers &&
-                Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES)) {
-                networkTab = NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent;
-            }
+            const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) ||
+                NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent;
             element.appendChild(this.createRequestCell(mixedContent.request, {
                 networkTab,
                 additionalOnClickAction() {
@@ -323,7 +314,15 @@ export class IssueView extends UI.TreeOutline.TreeElement {
         this.listItemElement.appendChild(header);
     }
     onexpand() {
-        Host.userMetrics.issuesPanelIssueExpanded(this.#issue.getCategory());
+        const category = this.#issue.getCategory();
+        // Handle sub type for cookie issues.
+        if (category === IssuesManager.Issue.IssueCategory.Cookie) {
+            const cookieIssueSubCatagory = IssuesManager.CookieIssue.CookieIssue.getSubCategory(this.#issue.code());
+            Host.userMetrics.issuesPanelIssueExpanded(cookieIssueSubCatagory);
+        }
+        else {
+            Host.userMetrics.issuesPanelIssueExpanded(category);
+        }
         if (this.#needsUpdateOnExpand) {
             this.#doUpdate();
         }

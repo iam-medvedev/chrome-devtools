@@ -12,7 +12,7 @@ styles.replaceSync(
  */
 
 .placeholder-container {
-  height: 100%;
+  height: calc(100% - 29px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -23,7 +23,8 @@ styles.replaceSync(
 }
 
 .address {
-  padding: 15px;
+  padding: 10px;
+  margin-right: auto;
 }
 
 .filled-fields-grid {
@@ -39,6 +40,27 @@ styles.replaceSync(
 
 .grid-wrapper {
   flex-grow: 1;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+}
+
+.right-to-left {
+  display: flex;
+  flex-flow: row-reverse wrap;
+  justify-content: flex-end;
+}
+
+.label-container {
+  padding: 5px 5px 0;
+}
+
+.top-right-corner {
+  display: flex;
+  justify-content: flex-end;
+  padding: 5px;
 }
 
 /*# sourceURL=autofillView.css */

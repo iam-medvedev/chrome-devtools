@@ -290,6 +290,62 @@ text.animation-timeline-grid-label {
   text-anchor: middle;
 }
 
+@keyframes --full-opacity-for-screenshots-container {
+  from {
+    opacity: 100%;
+  }
+
+  to {
+    opacity: 100%;
+  }
+}
+
+.preview-ui-container {
+  position: relative;
+
+  & .screenshot-arrow {
+    position: absolute;
+    left: 6px;
+    top: -19px;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  & .screenshots-container {
+    position: absolute;
+    display: none;
+    opacity: 0%;
+    left: 6px;
+    top: 100%;
+    z-index: 100;
+    border: 1px solid transparent;
+    box-shadow: var(--drop-shadow);
+    border-radius: 2px;
+  }
+
+  & .screenshots-container.to-the-left {
+    left: unset;
+    right: 6px;
+  }
+
+  & .screenshots-container.to-the-left .screenshot-arrow {
+    left: unset;
+    right: 6px;
+  }
+
+  &:hover .screenshots-container:not(.no-screenshots) {
+    display: block;
+    animation-name: --full-opacity-for-screenshots-container;
+    animation-duration: 0s;
+    animation-delay: 0.2s; /* Show the screenshots after 0.2s delay */
+    animation-fill-mode: forwards;
+  }
+
+  &:hover .screenshots-container:not(.no-screenshots):hover {
+    display: none;
+  }
+}
+
 .animation-timeline-rows,
 .animation-timeline-rows-hint {
   flex-grow: 1;
@@ -396,7 +452,7 @@ text.animation-timeline-grid-label {
 
 @keyframes newGroupAnim {
   from {
-    clip-path: polygon(0% 0%, 0% 100%, 0% 100%, 0% 0%);
+    clip-path: polygon(0% 0%, 0% 100%, 50% 100%, 50% 0%);
   }
 
   to {

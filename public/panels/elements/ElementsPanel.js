@@ -871,7 +871,7 @@ export class ElementsPanel extends UI.Panel.Panel {
                 skippedInitialTabSelectedEvent = true;
             }
         };
-        this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => UI.ViewManager.ViewManager.instance().showView('elements'), 'Styles-pane-sidebar', false, true);
+        this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => UI.ViewManager.ViewManager.instance().showView('elements'), 'Styles-pane-sidebar', true, true);
         const tabbedPane = this.sidebarPaneView.tabbedPane();
         if (this.splitMode !== "Vertical" /* _splitMode.Vertical */) {
             this.splitWidget.installResizer(tabbedPane.headerElement());

@@ -14,6 +14,10 @@ const UIStrings = {
      */
     showConsole: 'Show Console',
     /**
+     *@description Title of an action that toggles the console.
+     */
+    toggleConsole: 'Toggle Console',
+    /**
      *@description Text to clear the console
      */
     clearConsole: 'Clear console',
@@ -163,7 +167,7 @@ UI.ViewManager.registerViewExtension({
 UI.ActionRegistration.registerActionExtension({
     actionId: 'console.toggle',
     category: UI.ActionRegistration.ActionCategory.CONSOLE,
-    title: i18nLazyString(UIStrings.showConsole),
+    title: i18nLazyString(UIStrings.toggleConsole),
     async loadActionDelegate() {
         const Console = await loadConsoleModule();
         return new Console.ConsoleView.ActionDelegate();

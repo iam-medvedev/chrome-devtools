@@ -1690,18 +1690,6 @@ UI.ContextMenu.registerProvider({
     },
     experiment: undefined,
 });
-UI.ContextMenu.registerProvider({
-    async loadProvider() {
-        const Sources = await loadSourcesModule();
-        return new Sources.ScopeChainSidebarPane.OpenLinearMemoryInspector();
-    },
-    experiment: undefined,
-    contextTypes() {
-        return [
-            ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement,
-        ];
-    },
-});
 Common.Revealer.registerRevealer({
     contextTypes() {
         return [

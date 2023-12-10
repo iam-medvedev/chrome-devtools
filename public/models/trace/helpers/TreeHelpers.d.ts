@@ -86,5 +86,5 @@ export declare function walkTreeFromEntry(entryToNode: Map<Types.TraceEvents.Tra
  * 11. End E
  *
  */
-export declare function walkEntireTree(entryToNode: Map<Types.TraceEvents.TraceEntry, TraceEntryNode>, tree: TraceEntryTree, onEntryStart: (entry: Types.TraceEvents.TraceEntry) => void, onEntryEnd: (entry: Types.TraceEvents.TraceEntry) => void, traceWindowToInclude?: Types.Timing.TraceWindow, minDuration?: Types.Timing.MicroSeconds): void;
+export declare function walkEntireTree(entryToNode: Map<Types.TraceEvents.TraceEntry, TraceEntryNode>, tree: TraceEntryTree, onEntryStart: (entry: Types.TraceEvents.TraceEntry) => void, onEntryEnd: (entry: Types.TraceEvents.TraceEntry) => void, traceWindowToInclude?: Types.Timing.TraceWindowMicroSeconds, minDuration?: Types.Timing.MicroSeconds): void;
 export {};

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Root from '../../../core/root/root.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
@@ -126,10 +125,7 @@ export class RequestLinkIcon extends HTMLElement {
             void this.#reveal(requestLocation);
         }
         else {
-            const headersTab = Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES) ?
-                NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent :
-                NetworkForward.UIRequestLocation.UIRequestTabs.Headers;
-            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(linkedRequest, this.#networkTab ?? headersTab);
+            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(linkedRequest, this.#networkTab ?? NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent);
             void this.#reveal(requestLocation);
         }
         this.#additionalOnClickAction?.();

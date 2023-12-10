@@ -92,6 +92,9 @@
   "core/common/Revealer.ts | issuesView": {
     "message": "Issues view"
   },
+  "core/common/Revealer.ts | memoryInspectorPanel": {
+    "message": "Memory Inspector panel"
+  },
   "core/common/Revealer.ts | networkPanel": {
     "message": "Network panel"
   },
@@ -1130,9 +1133,6 @@
   "generated/Deprecation.ts | DOMMutationEvents": {
     "message": "DOM Mutation Events, including DOMSubtreeModified, DOMNodeInserted, DOMNodeRemoved, DOMNodeRemovedFromDocument, DOMNodeInsertedIntoDocument, and DOMCharacterDataModified are deprecated (https://w3c.github.io/uievents/#legacy-event-types) and will be removed. Please use MutationObserver instead."
   },
-  "generated/Deprecation.ts | ExpectCTHeader": {
-    "message": "The Expect-CT header is deprecated and will be removed. Chrome requires Certificate Transparency for all publicly trusted certificates issued after April 30, 2018."
-  },
   "generated/Deprecation.ts | GeolocationInsecureOrigin": {
     "message": "getCurrentPosition() and watchPosition() no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
   },
@@ -1246,6 +1246,9 @@
   },
   "generated/Deprecation.ts | TextToSpeech_DisallowedByAutoplay": {
     "message": "speechSynthesis.speak() without user activation is deprecated and will be removed."
+  },
+  "generated/Deprecation.ts | UnloadHandler": {
+    "message": "Unload event listeners are deprecated and will be removed."
   },
   "generated/Deprecation.ts | V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
@@ -3782,8 +3785,11 @@
   "panels/application/preloading/components/PreloadingMismatchedHeadersGrid.ts | missing": {
     "message": "(missing)"
   },
-  "panels/application/preloading/components/PreloadingString.ts | PrefetchEvicted": {
-    "message": "The prefetch was discarded for a newer prefetch because |kPrefetchNewLimits| is enabled"
+  "panels/application/preloading/components/PreloadingString.ts | PrefetchEvictedAfterCandidateRemoved": {
+    "message": "The prefetch was discarded because no speculation rule in the initating page triggers a prefetch for this URL anymore."
+  },
+  "panels/application/preloading/components/PreloadingString.ts | PrefetchEvictedForNewerPrefetch": {
+    "message": "The prefetch was discarded because the initiating page has too many prefetches ongoing, and this was one of the oldest."
   },
   "panels/application/preloading/components/PreloadingString.ts | PrefetchFailedIneligibleRedirect": {
     "message": "The prefetch was redirected, but the redirect URL is not eligible for prefetch."
@@ -4481,6 +4487,9 @@
   "panels/autofill/AutofillView.ts | autocompleteAttribute": {
     "message": "Autocomplete attribute"
   },
+  "panels/autofill/AutofillView.ts | autoShow": {
+    "message": "Automatically open tab on autofill"
+  },
   "panels/autofill/AutofillView.ts | formField": {
     "message": "Form field"
   },
@@ -4840,6 +4849,9 @@
   },
   "panels/console/console-meta.ts | showTimestamps": {
     "message": "Show timestamps"
+  },
+  "panels/console/console-meta.ts | toggleConsole": {
+    "message": "Toggle Console"
   },
   "panels/console/console-meta.ts | treatEvaluationAsUserActivation": {
     "message": "Treat evaluation as user activation"
@@ -7229,6 +7241,75 @@
   "panels/lighthouse/LighthouseTimespanView.ts | timespanStarting": {
     "message": "Timespan starting…"
   },
+  "panels/linear_memory_inspector/components/LinearMemoryHighlightChipList.ts | deleteHighlight": {
+    "message": "Stop highlighting this memory"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryHighlightChipList.ts | jumpToAddress": {
+    "message": "Jump to this memory"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryInspector.ts | addressHasToBeANumberBetweenSAnd": {
+    "message": "Address has to be a number between {PH1} and {PH2}"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | enterAddress": {
+    "message": "Enter address"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | goBackInAddressHistory": {
+    "message": "Go back in address history"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | goForwardInAddressHistory": {
+    "message": "Go forward in address history"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | nextPage": {
+    "message": "Next page"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | previousPage": {
+    "message": "Previous page"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | refresh": {
+    "message": "Refresh"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryValueInterpreter.ts | changeEndianness": {
+    "message": "Change Endianness"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryValueInterpreter.ts | toggleValueTypeSettings": {
+    "message": "Toggle value type settings"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | addressOutOfRange": {
+    "message": "Address out of memory range"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | changeValueTypeMode": {
+    "message": "Change mode"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | jumpToPointer": {
+    "message": "Jump to address"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | signedValue": {
+    "message": "Signed value"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | unsignedValue": {
+    "message": "Unsigned value"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplayUtils.ts | notApplicable": {
+    "message": "N/A"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterSettings.ts | otherGroup": {
+    "message": "Other"
+  },
+  "panels/linear_memory_inspector/linear_memory_inspector-meta.ts | memoryInspector": {
+    "message": "Memory Inspector"
+  },
+  "panels/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
+    "message": "Show Memory Inspector"
+  },
+  "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | couldNotOpenLinearMemory": {
+    "message": "Could not open linear memory inspector: failed locating buffer."
+  },
+  "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | revealInMemoryInspectorPanel": {
+    "message": "Reveal in Memory Inspector panel"
+  },
+  "panels/linear_memory_inspector/LinearMemoryInspectorPane.ts | noOpenInspections": {
+    "message": "No open inspections"
+  },
   "panels/media/EventDisplayTable.ts | eventDisplay": {
     "message": "Event display"
   },
@@ -8594,105 +8675,6 @@
   "panels/network/RequestCookiesView.ts | thisRequestHasNoCookies": {
     "message": "This request has no cookies."
   },
-  "panels/network/RequestHeadersView.ts | activeClientExperimentVariation": {
-    "message": "Active client experiment variation IDs."
-  },
-  "panels/network/RequestHeadersView.ts | activeClientExperimentVariationIds": {
-    "message": "Active client experiment variation IDs that trigger server-side behavior."
-  },
-  "panels/network/RequestHeadersView.ts | chooseThisOptionIfTheResourceAnd": {
-    "message": "Choose this option if the resource and the document are served from the same site."
-  },
-  "panels/network/RequestHeadersView.ts | copyValue": {
-    "message": "Copy value"
-  },
-  "panels/network/RequestHeadersView.ts | decoded": {
-    "message": "Decoded:"
-  },
-  "panels/network/RequestHeadersView.ts | fromDiskCache": {
-    "message": "(from disk cache)"
-  },
-  "panels/network/RequestHeadersView.ts | fromMemoryCache": {
-    "message": "(from memory cache)"
-  },
-  "panels/network/RequestHeadersView.ts | fromPrefetchCache": {
-    "message": "(from prefetch cache)"
-  },
-  "panels/network/RequestHeadersView.ts | fromServiceWorker": {
-    "message": "(from service worker)"
-  },
-  "panels/network/RequestHeadersView.ts | fromSignedexchange": {
-    "message": "(from signed-exchange)"
-  },
-  "panels/network/RequestHeadersView.ts | fromWebBundle": {
-    "message": "(from Web Bundle)"
-  },
-  "panels/network/RequestHeadersView.ts | general": {
-    "message": "General"
-  },
-  "panels/network/RequestHeadersView.ts | learnMore": {
-    "message": "Learn more"
-  },
-  "panels/network/RequestHeadersView.ts | learnMoreInTheIssuesTab": {
-    "message": "Learn more in the issues tab"
-  },
-  "panels/network/RequestHeadersView.ts | onlyChooseThisOptionIfAn": {
-    "message": "Only choose this option if an arbitrary website including this resource does not impose a security risk."
-  },
-  "panels/network/RequestHeadersView.ts | onlyProvisionalHeadersAre": {
-    "message": "Only provisional headers are available because this request was not sent over the network and instead was served from a local cache, which doesn’t store the original request headers. Disable cache to see full request headers."
-  },
-  "panels/network/RequestHeadersView.ts | provisionalHeadersAreShown": {
-    "message": "Provisional headers are shown"
-  },
-  "panels/network/RequestHeadersView.ts | provisionalHeadersAreShownS": {
-    "message": "Provisional headers are shown. Disable cache to see full headers."
-  },
-  "panels/network/RequestHeadersView.ts | referrerPolicy": {
-    "message": "Referrer Policy"
-  },
-  "panels/network/RequestHeadersView.ts | remoteAddress": {
-    "message": "Remote Address"
-  },
-  "panels/network/RequestHeadersView.ts | requestHeaders": {
-    "message": "Request Headers"
-  },
-  "panels/network/RequestHeadersView.ts | requestMethod": {
-    "message": "Request Method"
-  },
-  "panels/network/RequestHeadersView.ts | requestUrl": {
-    "message": "Request URL"
-  },
-  "panels/network/RequestHeadersView.ts | responseHeaders": {
-    "message": "Response Headers"
-  },
-  "panels/network/RequestHeadersView.ts | showMore": {
-    "message": "Show more"
-  },
-  "panels/network/RequestHeadersView.ts | statusCode": {
-    "message": "Status Code"
-  },
-  "panels/network/RequestHeadersView.ts | thisDocumentWasBlockedFrom": {
-    "message": "The document was blocked from loading in a popup opened by a sandboxed iframe because this document specified a cross-origin opener policy."
-  },
-  "panels/network/RequestHeadersView.ts | toEmbedThisFrameInYourDocument": {
-    "message": "To embed this frame in your document, the response needs to enable the cross-origin embedder policy by specifying the following response header:"
-  },
-  "panels/network/RequestHeadersView.ts | toUseThisResourceFromADifferent": {
-    "message": "To use this resource from a different origin, the server needs to specify a cross-origin resource policy in the response headers:"
-  },
-  "panels/network/RequestHeadersView.ts | toUseThisResourceFromADifferentOrigin": {
-    "message": "To use this resource from a different origin, the server may relax the cross-origin resource policy response header:"
-  },
-  "panels/network/RequestHeadersView.ts | toUseThisResourceFromADifferentSite": {
-    "message": "To use this resource from a different site, the server may relax the cross-origin resource policy response header:"
-  },
-  "panels/network/RequestHeadersView.ts | viewParsed": {
-    "message": "View parsed"
-  },
-  "panels/network/RequestHeadersView.ts | viewSource": {
-    "message": "View source"
-  },
   "panels/network/RequestInitiatorView.ts | requestCallStack": {
     "message": "Request call stack"
   },
@@ -9563,6 +9545,9 @@
   "panels/profiler/ProfileLauncherView.ts | takeSnapshot": {
     "message": "Take snapshot"
   },
+  "panels/profiler/profiler-meta.ts | clearAllProfiles": {
+    "message": "Clear all profiles"
+  },
   "panels/profiler/profiler-meta.ts | deleteProfile": {
     "message": "Delete profile"
   },
@@ -9596,14 +9581,14 @@
   "panels/profiler/profiler-meta.ts | stopRecordingHeapAllocations": {
     "message": "Stop recording heap allocations"
   },
+  "panels/profiler/ProfileSidebarTreeElement.ts | profileOptions": {
+    "message": "Profile options"
+  },
   "panels/profiler/ProfilesPanel.ts | cantLoadFileSupportedFile": {
     "message": "Can’t load file. Supported file extensions: ''{PH1}''."
   },
   "panels/profiler/ProfilesPanel.ts | cantLoadProfileWhileAnother": {
     "message": "Can’t load profile while another profile is being recorded."
-  },
-  "panels/profiler/ProfilesPanel.ts | clearAllProfiles": {
-    "message": "Clear all profiles"
   },
   "panels/profiler/ProfilesPanel.ts | deprecationWarnMsg": {
     "message": "This panel will be deprecated in the upcoming version. Use the Performance panel to record JavaScript CPU profiles."
@@ -11594,9 +11579,6 @@
   "panels/sources/ScopeChainSidebarPane.ts | returnValue": {
     "message": "Return value"
   },
-  "panels/sources/ScopeChainSidebarPane.ts | revealInMemoryInspectorPanel": {
-    "message": "Reveal in Memory Inspector panel"
-  },
   "panels/sources/SnippetsPlugin.ts | ctrlenter": {
     "message": "Ctrl+Enter"
   },
@@ -11996,8 +11978,8 @@
   "panels/sources/SourcesPanel.ts | showNavigator": {
     "message": "Show navigator"
   },
-  "panels/sources/SourcesPanel.ts | storeSAsGlobalVariable": {
-    "message": "Store {PH1} as global variable"
+  "panels/sources/SourcesPanel.ts | storeAsGlobalVariable": {
+    "message": "Store as global variable"
   },
   "panels/sources/SourcesPanel.ts | terminateCurrentJavascriptCall": {
     "message": "Terminate current JavaScript call"
@@ -12009,7 +11991,7 @@
     "message": "Run command"
   },
   "panels/sources/SourcesView.ts | selectFolder": {
-    "message": "select folder"
+    "message": "Select folder"
   },
   "panels/sources/SourcesView.ts | sourceViewActions": {
     "message": "Source View Actions"
@@ -13229,9 +13211,6 @@
   "panels/timeline/TimelineUIUtils.ts | layerRoot": {
     "message": "Layer Root"
   },
-  "panels/timeline/TimelineUIUtils.ts | layerTree": {
-    "message": "Layer tree"
-  },
   "panels/timeline/TimelineUIUtils.ts | layout": {
     "message": "Layout"
   },
@@ -13468,9 +13447,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | sForS": {
     "message": "{PH1} for {PH2}"
-  },
-  "panels/timeline/TimelineUIUtils.ts | show": {
-    "message": "Show"
   },
   "panels/timeline/TimelineUIUtils.ts | sign": {
     "message": "Sign"
@@ -13852,72 +13828,6 @@
   },
   "ui/components/issue_counter/IssueLinkIcon.ts | issueUnavailable": {
     "message": "Issue unavailable at this time"
-  },
-  "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | memoryInspector": {
-    "message": "Memory Inspector"
-  },
-  "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
-    "message": "Show Memory Inspector"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryHighlightChipList.ts | deleteHighlight": {
-    "message": "Stop highlighting this memory"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryHighlightChipList.ts | jumpToAddress": {
-    "message": "Jump to this memory"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryInspector.ts | addressHasToBeANumberBetweenSAnd": {
-    "message": "Address has to be a number between {PH1} and {PH2}"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryInspectorController.ts | couldNotOpenLinearMemory": {
-    "message": "Could not open linear memory inspector: failed locating buffer."
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryInspectorPane.ts | noOpenInspections": {
-    "message": "No open inspections"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | enterAddress": {
-    "message": "Enter address"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | goBackInAddressHistory": {
-    "message": "Go back in address history"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | goForwardInAddressHistory": {
-    "message": "Go forward in address history"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | nextPage": {
-    "message": "Next page"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | previousPage": {
-    "message": "Previous page"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | refresh": {
-    "message": "Refresh"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryValueInterpreter.ts | changeEndianness": {
-    "message": "Change Endianness"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryValueInterpreter.ts | toggleValueTypeSettings": {
-    "message": "Toggle value type settings"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | addressOutOfRange": {
-    "message": "Address out of memory range"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | changeValueTypeMode": {
-    "message": "Change mode"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | jumpToPointer": {
-    "message": "Jump to address"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | signedValue": {
-    "message": "Signed value"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | unsignedValue": {
-    "message": "Unsigned value"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplayUtils.ts | notApplicable": {
-    "message": "N/A"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterSettings.ts | otherGroup": {
-    "message": "Other"
   },
   "ui/components/markdown_view/CodeBlock.ts | copied": {
     "message": "Copied to clipboard"

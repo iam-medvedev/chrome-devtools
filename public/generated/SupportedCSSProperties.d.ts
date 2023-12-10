@@ -455,6 +455,9 @@ export const generatedPropertyValues: {
     "inline-size": {
         values: string[];
     };
+    "inset-area": {
+        values: string[];
+    };
     isolation: {
         values: string[];
     };

@@ -86,12 +86,12 @@ export class AnimationTimeline extends UI.Widget.VBox {
     #grid;
     #playbackRate;
     #allPaused;
+    #screenshotPopovers = [];
     #animationsContainer;
     #playbackRateButtons;
     #previewContainer;
     #timelineScrubber;
     #currentTime;
-    #popoverHelper;
     #clearButton;
     #selectedGroup;
     #renderQueue;
@@ -187,9 +187,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
         for (const animationModel of SDK.TargetManager.TargetManager.instance().models(AnimationModel, { scoped: true })) {
             this.removeEventListeners(animationModel);
         }
-        if (this.#popoverHelper) {
-            this.#popoverHelper.hidePopover();
-        }
     }
     modelAdded(animationModel) {
         if (this.isShowing()) {
@@ -257,9 +254,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.#previewContainer = this.contentElement.createChild('div', 'animation-timeline-buffer');
         UI.ARIAUtils.markAsListBox(this.#previewContainer);
         UI.ARIAUtils.setLabel(this.#previewContainer, i18nString(UIStrings.animationPreviews));
-        this.#popoverHelper = new UI.PopoverHelper.PopoverHelper(this.#previewContainer, this.getPopoverRequest.bind(this));
-        this.#popoverHelper.setDisableOnClick(true);
-        this.#popoverHelper.setTimeout(0);
         const emptyBufferHint = this.contentElement.createChild('div', 'animation-timeline-buffer-hint');
         emptyBufferHint.textContent = i18nString(UIStrings.waitingForAnimations);
         const container = this.contentElement.createChild('div', 'animation-timeline-header');
@@ -303,47 +297,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
         if (target) {
             target.tabIndex = -1;
         }
-    }
-    getPopoverRequest(event) {
-        const element = event.target;
-        if (!element || !element.isDescendant(this.#previewContainer)) {
-            return null;
-        }
-        return {
-            box: element.boxInWindow(),
-            show: (popover) => {
-                let animGroup;
-                for (const [group, previewUI] of this.#previewMap) {
-                    if (previewUI.element === element || previewUI.element === element.parentElement) {
-                        animGroup = group;
-                    }
-                }
-                console.assert(typeof animGroup !== 'undefined');
-                if (!animGroup) {
-                    return Promise.resolve(false);
-                }
-                const screenshots = animGroup.screenshots();
-                if (!screenshots.length) {
-                    return Promise.resolve(false);
-                }
-                let fulfill;
-                const promise = new Promise(x => {
-                    fulfill = x;
-                });
-                if (!screenshots[0].complete) {
-                    screenshots[0].onload = onFirstScreenshotLoaded.bind(null, screenshots);
-                }
-                else {
-                    onFirstScreenshotLoaded(screenshots);
-                }
-                return promise;
-                function onFirstScreenshotLoaded(screenshots) {
-                    new AnimationScreenshotPopover(screenshots).show(popover.contentElement);
-                    fulfill(true);
-                }
-            },
-            hide: undefined,
-        };
     }
     togglePauseAll() {
         this.#allPaused = !this.#allPaused;
@@ -471,13 +424,69 @@ export class AnimationTimeline extends UI.Widget.VBox {
             group.release();
         }
         this.#groupBuffer = [];
-        this.#previewMap.clear();
-        this.#previewContainer.removeChildren();
-        this.#popoverHelper.hidePopover();
+        this.clearPreviews();
         this.renderGrid();
     }
     animationGroupStarted({ data }) {
         this.addAnimationGroup(data);
+    }
+    clearPreviews() {
+        this.#previewMap.clear();
+        this.#screenshotPopovers.forEach(popover => {
+            popover.detach();
+        });
+        this.#previewContainer.removeChildren();
+        this.#screenshotPopovers = [];
+    }
+    createPreview(group) {
+        const preview = new AnimationGroupPreviewUI(group);
+        const previewUiContainer = document.createElement('div');
+        previewUiContainer.classList.add('preview-ui-container');
+        previewUiContainer.appendChild(preview.element);
+        const screenshotsContainer = document.createElement('div');
+        screenshotsContainer.classList.add('screenshots-container', 'no-screenshots');
+        screenshotsContainer.appendChild(UI.Icon.Icon.create('mediumicon-arrow-top', 'screenshot-arrow'));
+        // After the view is shown on hover, position it if it is out of bounds.
+        screenshotsContainer.addEventListener('animationend', () => {
+            const { right } = screenshotsContainer.getBoundingClientRect();
+            if (right > window.innerWidth) {
+                screenshotsContainer.classList.add('to-the-left');
+            }
+        });
+        previewUiContainer.appendChild(screenshotsContainer);
+        this.#groupBuffer.push(group);
+        this.#previewMap.set(group, preview);
+        this.#previewContainer.appendChild(previewUiContainer);
+        preview.removeButton().addEventListener('click', this.removeAnimationGroup.bind(this, group));
+        preview.element.addEventListener('click', this.selectAnimationGroup.bind(this, group));
+        preview.element.addEventListener('keydown', this.handleAnimationGroupKeyDown.bind(this, group));
+        preview.element.addEventListener('mouseover', () => {
+            const screenshots = group.screenshots();
+            if (!screenshots.length) {
+                return;
+            }
+            screenshotsContainer.classList.remove('no-screenshots');
+            const createAndShowScreenshotPopover = () => {
+                const screenshotPopover = new AnimationScreenshotPopover(screenshots);
+                // This is needed for clearing out the widgets
+                this.#screenshotPopovers.push(screenshotPopover);
+                screenshotPopover.show(screenshotsContainer);
+            };
+            if (!screenshots[0].complete) {
+                screenshots[0].onload = createAndShowScreenshotPopover;
+            }
+            else {
+                createAndShowScreenshotPopover();
+            }
+        }, { once: true });
+        UI.ARIAUtils.setLabel(preview.element, i18nString(UIStrings.animationPreviewS, { PH1: this.#groupBuffer.indexOf(group) + 1 }));
+        UI.ARIAUtils.markAsOption(preview.element);
+        if (this.#previewMap.size === 1) {
+            const preview = this.#previewMap.get(this.#groupBuffer[0]);
+            if (preview) {
+                preview.element.tabIndex = 0;
+            }
+        }
     }
     addAnimationGroup(group) {
         function startTimeComparator(left, right) {
@@ -513,22 +522,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
             this.#previewMap.delete(g);
             g.release();
         }
-        // Generate preview
-        const preview = new AnimationGroupPreviewUI(group);
-        this.#groupBuffer.push(group);
-        this.#previewMap.set(group, preview);
-        this.#previewContainer.appendChild(preview.element);
-        preview.removeButton().addEventListener('click', this.removeAnimationGroup.bind(this, group));
-        preview.element.addEventListener('click', this.selectAnimationGroup.bind(this, group));
-        preview.element.addEventListener('keydown', this.handleAnimationGroupKeyDown.bind(this, group));
-        UI.ARIAUtils.setLabel(preview.element, i18nString(UIStrings.animationPreviewS, { PH1: this.#groupBuffer.indexOf(group) + 1 }));
-        UI.ARIAUtils.markAsOption(preview.element);
-        if (this.#previewMap.size === 1) {
-            const preview = this.#previewMap.get(this.#groupBuffer[0]);
-            if (preview) {
-                preview.element.tabIndex = 0;
-            }
-        }
+        this.createPreview(group);
     }
     handleAnimationGroupKeyDown(group, event) {
         switch (event.key) {

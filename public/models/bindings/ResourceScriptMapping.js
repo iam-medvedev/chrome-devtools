@@ -404,9 +404,7 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         const { pluginManager } = DebuggerWorkspaceBinding.instance();
-        if (pluginManager) {
-            pluginManager.setDebugInfoURL(this.#script, debugInfoURL);
-        }
+        pluginManager.setDebugInfoURL(this.#script, debugInfoURL);
     }
     hasSourceMapURL() {
         return this.#script !== undefined && Boolean(this.#script.sourceMapURL);
@@ -416,9 +414,6 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
             return null;
         }
         const { pluginManager } = this.#resourceScriptMapping.debuggerWorkspaceBinding;
-        if (!pluginManager) {
-            return null;
-        }
         const sources = await pluginManager.getSourcesForScript(this.#script);
         return sources && 'missingSymbolFiles' in sources ? sources.missingSymbolFiles : null;
     }

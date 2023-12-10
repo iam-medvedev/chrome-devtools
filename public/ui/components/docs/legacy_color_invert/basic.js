@@ -50,8 +50,7 @@ function patchColor(colorAsText, colorUsage) {
     }
     const hsla = [color.h, color.s, color.l, color.alpha ?? 1];
     patchHSLA(hsla, colorUsage);
-    const rgba = [0, 0, 0, 0];
-    Common.Color.hsl2rgb(hsla, rgba);
+    const rgba = Common.Color.hsl2rgb(hsla);
     const outColor = new Common.Color.Legacy(rgba, "rgba" /* Common.Color.Format.RGBA */);
     let outText = outColor.asString();
     if (!outText) {

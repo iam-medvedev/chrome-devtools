@@ -6,6 +6,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import requestInitiatorViewStyles from './requestInitiatorView.css.js';
 import requestInitiatorViewTreeStyles from './requestInitiatorViewTree.css.js';
 const UIStrings = {
@@ -32,6 +33,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
     constructor(request) {
         super();
         this.element.classList.add('request-initiator-view');
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('initiator')}`);
         this.linkifier = new Components.Linkifier.Linkifier();
         this.request = request;
         this.emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoInitiatorData));
@@ -52,6 +54,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
         const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         treeOutline.registerCSSFiles([requestInitiatorViewTreeStyles]);
         treeOutline.contentElement.classList.add('request-initiator-view-tree');
+        treeOutline.contentElement.setAttribute('jslog', `${VisualLogging.tree().context('initiator-tree')}`);
         return treeOutline;
     }
     buildRequestChainTree(initiatorGraph, title, tree) {

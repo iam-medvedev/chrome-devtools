@@ -29,7 +29,6 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
@@ -38,7 +37,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as NetworkComponents from './components/components.js';
 import { EventSourceMessagesView } from './EventSourceMessagesView.js';
 import { RequestCookiesView } from './RequestCookiesView.js';
-import { RequestHeadersView } from './RequestHeadersView.js';
 import { RequestInitiatorView } from './RequestInitiatorView.js';
 import { RequestPayloadView } from './RequestPayloadView.js';
 import { RequestPreviewView } from './RequestPreviewView.js';
@@ -136,7 +134,6 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     requestInternal;
     resourceViewTabSetting;
-    headersView;
     headersViewComponent;
     payloadView;
     responseView;
@@ -146,24 +143,16 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         super();
         this.requestInternal = request;
         this.element.classList.add('network-item-view');
-        const headersTab = Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES) ?
-            NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent :
-            NetworkForward.UIRequestLocation.UIRequestTabs.Headers;
-        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resourceViewTab', headersTab);
-        this.headersView = new RequestHeadersView(request);
+        const headersTab = NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent;
+        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resourceViewTab', NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent);
         this.headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
-        if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES)) {
-            this.appendTab(headersTab, i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, this.headersViewComponent), i18nString(UIStrings.headers));
-            if (this.requestInternal.hasOverriddenHeaders()) {
-                const icon = new IconButton.Icon.Icon();
-                icon.data =
-                    { iconName: 'small-status-dot', color: 'var(--sys-color-purple-bright)', width: '16px', height: '16px' };
-                icon.title = i18nString(UIStrings.containsOverriddenHeaders);
-                this.setTabIcon(NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent, icon);
-            }
-        }
-        else {
-            this.appendTab(headersTab, i18nString(UIStrings.headers), this.headersView, i18nString(UIStrings.headers));
+        this.appendTab(headersTab, i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, this.headersViewComponent), i18nString(UIStrings.headers));
+        if (this.requestInternal.hasOverriddenHeaders()) {
+            const icon = new IconButton.Icon.Icon();
+            icon.data =
+                { iconName: 'small-status-dot', color: 'var(--sys-color-purple-bright)', width: '16px', height: '16px' };
+            icon.title = i18nString(UIStrings.containsOverriddenHeaders);
+            this.setTabIcon(NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent, icon);
         }
         this.payloadView = null;
         void this.maybeAppendPayloadPanel();
@@ -282,17 +271,8 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         await this.responseView?.revealPosition(position);
     }
     revealHeader(section, header) {
-        if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.HEADER_OVERRIDES)) {
-            this.selectTabInternal(NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent);
-            this.headersViewComponent.revealHeader(section, header);
-        }
-        else {
-            this.selectTabInternal(NetworkForward.UIRequestLocation.UIRequestTabs.Headers);
-            this.headersView.revealHeader(section, header);
-        }
-    }
-    getHeadersView() {
-        return this.headersView;
+        this.selectTabInternal(NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent);
+        this.headersViewComponent.revealHeader(section, header);
     }
     getHeadersViewComponent() {
         return this.headersViewComponent;

@@ -52,6 +52,7 @@ export class TimelineLoader {
     totalSize;
     jsonTokenizer;
     filter;
+    #collectedEvents = [];
     #traceFinalizedCallbackForTest;
     #traceFinalizedPromiseForTest;
     constructor(client, title) {
@@ -142,6 +143,7 @@ export class TimelineLoader {
         const eventsPerChunk = 15_000;
         for (let i = 0; i < events.length; i += eventsPerChunk) {
             const chunk = events.slice(i, i + eventsPerChunk);
+            this.#collectEvents(chunk);
             this.tracingModel.addEvents(chunk);
             await this.client?.loadingProgress((i + chunk.length) / events.length);
             await new Promise(r => window.setTimeout(r)); // Yield event loop to paint.
@@ -152,7 +154,7 @@ export class TimelineLoader {
         this.tracingModel = null;
         if (this.client) {
             await this.client.loadingComplete(
-            /* tracingModel= */ null, /* exclusiveFilter= */ null, /* isCpuProfile= */ false);
+            /* collectedEvents */ [], /* tracingModel= */ null, /* exclusiveFilter= */ null, /* isCpuProfile= */ false);
             this.client = null;
         }
         if (this.canceledCallback) {
@@ -252,6 +254,7 @@ export class TimelineLoader {
         }
         try {
             this.tracingModel.addEvents(items);
+            this.#collectEvents(items);
         }
         catch (e) {
             this.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineDataS, { PH1: e.toString() }));
@@ -284,7 +287,8 @@ export class TimelineLoader {
             this.buffer = '';
         }
         this.tracingModel.tracingComplete();
-        await this.client.loadingComplete(this.tracingModel, this.filter, this.isCpuProfile());
+        await this.client
+            .loadingComplete(this.#collectedEvents, this.tracingModel, this.filter, this.isCpuProfile());
         this.#traceFinalizedCallbackForTest?.();
     }
     traceFinalizedForTest() {
@@ -302,6 +306,12 @@ export class TimelineLoader {
         }
         this.filter = TimelineLoader.getCpuProfileFilter();
         this.tracingModel.addEvents(traceEvents);
+        this.#collectEvents(traceEvents);
+    }
+    #collectEvents(events) {
+        // Once the old engine is removed, this can be updated to use the types from the new engine and avoid the `as unknown`.
+        this.#collectedEvents =
+            this.#collectedEvents.concat(events);
     }
 }
 export const TransferChunkLengthBytes = 5000000;

@@ -134,7 +134,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     clickHandler;
     resizerParentOffsetLeft;
     breadcrumbsEnabled = false;
-    #mouseOverGridFirstTime = false;
+    #mouseOverGridOverview = false;
     constructor(parentElement, dividersLabelBarElement, calculator) {
         super();
         this.parentElement = parentElement;
@@ -193,16 +193,18 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     }
     changeBreadcrumbButtonVisibilityOnInteraction(element) {
         element.addEventListener('mouseover', () => {
-            this.#mouseOverGridFirstTime = true;
             if ((this.windowLeft ?? 0) <= 0 && (this.windowRight ?? 1) >= 1) {
-                this.breadcrumbButtonContainerElement.style.visibility = 'hidden';
+                this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', false);
+                this.#mouseOverGridOverview = false;
             }
             else {
-                this.breadcrumbButtonContainerElement.style.visibility = 'visible';
+                this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', true);
+                this.#mouseOverGridOverview = true;
             }
         });
         element.addEventListener('mouseout', () => {
-            this.breadcrumbButtonContainerElement.style.visibility = 'hidden';
+            this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', false);
+            this.#mouseOverGridOverview = false;
         });
     }
     onRightResizeElementFocused() {
@@ -210,7 +212,6 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.parentElement.scrollLeft = 0;
     }
     reset() {
-        this.#mouseOverGridFirstTime = false;
         this.windowLeft = 0.0;
         this.windowRight = 1.0;
         this.setEnabled(true);
@@ -290,6 +291,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         return true;
     }
     windowSelectorDragging(event) {
+        this.#mouseOverGridOverview = true;
         if (!this.overviewWindowSelector) {
             return;
         }
@@ -336,7 +338,8 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         return true;
     }
     windowDragging(event) {
-        this.breadcrumbButtonContainerElement.style.visibility = 'visible';
+        this.#mouseOverGridOverview = true;
+        this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', true);
         const mouseEvent = event;
         mouseEvent.preventDefault();
         let delta = (mouseEvent.pageX - this.dragStartPoint) / this.parentElement.clientWidth;
@@ -349,6 +352,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.setWindow(this.dragStartLeft + delta, this.dragStartRight + delta);
     }
     resizeWindowLeft(start) {
+        this.#mouseOverGridOverview = true;
         // Glue to edge.
         if (start < OffsetFromWindowEnds) {
             start = 0;
@@ -359,6 +363,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.setWindowPosition(start, null);
     }
     resizeWindowRight(end) {
+        this.#mouseOverGridOverview = true;
         // Glue to edge.
         if (end > this.parentElement.clientWidth - OffsetFromWindowEnds) {
             end = this.parentElement.clientWidth;
@@ -422,11 +427,14 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.dispatchEventToListeners(Events.WindowChanged);
         this.changeBreadcrumbButtonVisibility(windowLeft, windowRight);
     }
-    // Add breadcrumb button is only visible when the window is set to something other than the full range
+    // "Create breadcrumb" button is only visible when the window is set to something other than the full range and mouse is hovering over the MiniMap
     changeBreadcrumbButtonVisibility(windowLeft, windowRight) {
-        // this.#mouseOverOverviewFirstTime is checked to not show button the first time when trace is loaded and window is set without user interaction
-        this.breadcrumbButtonContainerElement.style.visibility =
-            ((windowRight >= 1 && windowLeft <= 0) || !this.#mouseOverGridFirstTime) ? 'hidden' : 'visible';
+        if ((windowRight >= 1 && windowLeft <= 0) || !this.#mouseOverGridOverview) {
+            this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', false);
+        }
+        else {
+            this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', true);
+        }
     }
     createBreadcrumb() {
         this.dispatchEventToListeners(Events.BreadcrumbAdded, this.calculateWindowPosition());

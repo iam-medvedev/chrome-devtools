@@ -47,7 +47,7 @@ export declare class TimelineUIUtils {
     private static generateInvalidationsForType;
     private static collectInvalidationNodeIds;
     private static aggregatedStatsForTraceEvent;
-    static buildPicturePreviewContent(event: TraceEngine.Legacy.Event, target: SDK.Target.Target): Promise<Element | null>;
+    static buildPicturePreviewContent(traceData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventPaint, target: SDK.Target.Target): Promise<Element | null>;
     static createEventDivider(event: TraceEngine.Legacy.CompatibleTraceEvent, zeroTime: number): Element;
     static visibleTypes(): string[];
     static visibleEventsFilter(): TimelineModel.TimelineModelFilter.TimelineModelFilter;
@@ -62,8 +62,8 @@ export declare class TimelineUIUtils {
     static generatePieChart(aggregatedStats: {
         [x: string]: number;
     }, selfCategory?: TimelineCategory, selfTime?: number): Element;
-    static generateDetailsContentForFrame(frame: TimelineModel.TimelineFrameModel.TimelineFrame, filmStrip: TraceEngine.Extras.FilmStrip.Data | null, filmStripFrame: TraceEngine.Extras.FilmStrip.Frame | null): DocumentFragment;
-    static frameDuration(frame: TimelineModel.TimelineFrameModel.TimelineFrame): Element;
+    static generateDetailsContentForFrame(frame: TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame, filmStrip: TraceEngine.Extras.FilmStrip.Data | null, filmStripFrame: TraceEngine.Extras.FilmStrip.Frame | null): DocumentFragment;
+    static frameDuration(frame: TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): Element;
     static quadWidth(quad: number[]): number;
     static quadHeight(quad: number[]): number;
     static eventDispatchDesciptors(): EventDispatchTypeDescriptor[];

@@ -442,6 +442,7 @@ export interface TraceEventUpdateCounters extends TraceEventInstant {
             jsEventListeners: number;
             jsHeapSizeUsed: number;
             nodes: number;
+            gpuMemoryLimitKB?: number;
         };
     };
 }
@@ -911,7 +912,7 @@ export declare function isTraceEventCommit(event: TraceEventData): event is Trac
 export interface TraceEventRasterTask extends TraceEventComplete {
     name: KnownEventName.RasterTask;
     args: TraceEventArgs & {
-        tileData: {
+        tileData?: {
             layerId: number;
             sourceFrameNumber: number;
             tileId: {
@@ -1109,19 +1110,21 @@ export interface TraceEventLayerTreeHostImplSnapshot extends TraceEventData {
     ph: Phase.OBJECT_SNAPSHOT;
     id: string;
     args: TraceEventArgs & {
-        active_tiles: Array<{
-            id: string;
-            layer_id: string;
-            gpu_memory_usage: number;
-            content_rect: number[];
-        }>;
-        device_viewport_size: {
-            width: number;
-            height: number;
-        };
-        active_tree: {
-            root_layer: TraceLayer;
-            layers: TraceLayer[];
+        snapshot: {
+            active_tiles: Array<{
+                id: string;
+                layer_id: string;
+                gpu_memory_usage: number;
+                content_rect: number[];
+            }>;
+            device_viewport_size: {
+                width: number;
+                height: number;
+            };
+            active_tree: {
+                root_layer: TraceLayer;
+                layers: TraceLayer[];
+            };
         };
     };
 }
@@ -1253,6 +1256,21 @@ export interface TraceEventWebSocketDestroy extends TraceEventInstant {
 }
 export declare function isTraceEventWebSocketDestroy(event: TraceEventData): event is TraceEventWebSocketDestroy;
 export declare function isWebSocketTraceEvent(event: TraceEventData): event is TraceEventWebSocketCreate | TraceEventWebSocketDestroy | TraceEventWebSocketReceiveHandshakeResponse | TraceEventWebSocketSendHandshakeRequest;
+export interface TraceEventV8Compile extends TraceEventComplete {
+    name: KnownEventName.Compile;
+    args: TraceEventArgs & {
+        data?: {
+            url?: string;
+            columnNumber?: number;
+            lineNumber?: number;
+            notStreamedReason?: string;
+            streamed?: boolean;
+            eager?: boolean;
+        };
+        fileName?: string;
+    };
+}
+export declare function isTraceEventV8Compile(event: TraceEventData): event is TraceEventV8Compile;
 /**
  * This is an exhaustive list of events we track in the Performance
  * panel. Note not all of them are necessarliry shown in the flame
@@ -1269,9 +1287,10 @@ export declare const enum KnownEventName {
     XHRReadyStateChange = "XHRReadyStateChange",
     ParseHTML = "ParseHTML",
     ParseCSS = "ParseAuthorStyleSheet",
-    CompileScript = "V8.CompileScript",
     CompileCode = "V8.CompileCode",
     CompileModule = "V8.CompileModule",
+    Compile = "v8.compile",
+    CompileScript = "V8.CompileScript",
     Optimize = "V8.OptimizeCode",
     WasmStreamFromResponseCallback = "v8.wasm.streamFromResponseCallback",
     WasmCompiledModule = "v8.wasm.compiledModule",

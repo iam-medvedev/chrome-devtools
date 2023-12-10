@@ -1,13 +1,13 @@
-import * as Common from '../common/common.js';
-import * as Platform from '../platform/platform.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
 import { type RemoteObject } from './RemoteObject.js';
-import { RuntimeModel, type EvaluationOptions, type EvaluationResult, type ExecutionContext } from './RuntimeModel.js';
+import { type EvaluationOptions, type EvaluationResult, type ExecutionContext, RuntimeModel } from './RuntimeModel.js';
 import { Script } from './Script.js';
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
 import { SourceMapManager } from './SourceMapManager.js';
+import { type Target } from './Target.js';
 export declare function sortAndMergeRanges(locationRanges: Protocol.Debugger.LocationRange[]): Protocol.Debugger.LocationRange[];
 export declare enum StepMode {
     StepInto = "StepInto",
@@ -169,22 +169,21 @@ export interface MissingDebugInfoDetails {
 export declare class CallFrame {
     #private;
     debuggerModel: DebuggerModel;
+    readonly script: Script;
     payload: Protocol.Debugger.CallFrame;
+    readonly inlineFrameIndex: number;
+    readonly functionName: string;
+    missingDebugInfoDetails: MissingDebugInfoDetails | null;
     readonly canBeRestarted: boolean;
     constructor(debuggerModel: DebuggerModel, script: Script, payload: Protocol.Debugger.CallFrame, inlineFrameIndex?: number, functionName?: string);
     static fromPayloadArray(debuggerModel: DebuggerModel, callFrames: Protocol.Debugger.CallFrame[]): CallFrame[];
     createVirtualCallFrame(inlineFrameIndex: number, name: string): CallFrame;
-    setMissingDebugInfoDetails(details: MissingDebugInfoDetails): void;
-    get missingDebugInfoDetails(): MissingDebugInfoDetails | null;
-    get script(): Script;
     get id(): Protocol.Debugger.CallFrameId;
-    get inlineFrameIndex(): number;
     scopeChain(): Scope[];
     localScope(): Scope | null;
     thisObject(): RemoteObject | null;
     returnValue(): RemoteObject | null;
     setReturnValue(expression: string): Promise<RemoteObject | null>;
-    get functionName(): string;
     location(): Location;
     functionLocation(): Location | null;
     evaluate(options: EvaluationOptions): Promise<EvaluationResult>;

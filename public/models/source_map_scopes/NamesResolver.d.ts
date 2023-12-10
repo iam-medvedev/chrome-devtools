@@ -1,7 +1,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
 import * as Formatter from '../formatter/formatter.js';
 import type * as Workspace from '../workspace/workspace.js';
-import * as Protocol from '../../generated/protocol.js';
 export declare class IdentifierPositions {
     name: string;
     positions: {

@@ -91,9 +91,13 @@ const UIStrings = {
      */
     PrefetchNotUsedProbeFailed: 'The prefetch was blocked by your Internet Service Provider or network administrator.',
     /**
-     *@description  Description text for Prefetch status PrefetchEvicted.
+     *@description  Description text for Prefetch status PrefetchEvictedForNewerPrefetch.
      */
-    PrefetchEvicted: 'The prefetch was discarded for a newer prefetch because |kPrefetchNewLimits| is enabled',
+    PrefetchEvictedForNewerPrefetch: 'The prefetch was discarded because the initiating page has too many prefetches ongoing, and this was one of the oldest.',
+    /**
+     *@description Description text for Prefetch status PrefetchEvictedAfterCandidateRemoved.
+     */
+    PrefetchEvictedAfterCandidateRemoved: 'The prefetch was discarded because no speculation rule in the initating page triggers a prefetch for this URL anymore.',
     /**
      *@description  Description text for Prefetch status PrefetchNotEligibleBatterySaverEnabled.
      */
@@ -349,7 +353,8 @@ export const PrefetchReasonDescription = {
     'PrefetchNotUsedCookiesChanged': { name: i18nLazyString(UIStrings.PrefetchNotUsedCookiesChanged) },
     'PrefetchProxyNotAvailable': { name: i18nLazyString(UIStrings.PrefetchProxyNotAvailable) },
     'PrefetchNotUsedProbeFailed': { name: i18nLazyString(UIStrings.PrefetchNotUsedProbeFailed) },
-    'PrefetchEvicted': { name: i18nLazyString(UIStrings.PrefetchEvicted) },
+    'PrefetchEvictedForNewerPrefetch': { name: i18nLazyString(UIStrings.PrefetchEvictedForNewerPrefetch) },
+    'PrefetchEvictedAfterCandidateRemoved': { name: i18nLazyString(UIStrings.PrefetchEvictedAfterCandidateRemoved) },
     'PrefetchNotEligibleBatterySaverEnabled': { name: i18nLazyString(UIStrings.PrefetchNotEligibleBatterySaverEnabled) },
     'PrefetchNotEligiblePreloadingDisabled': { name: i18nLazyString(UIStrings.PrefetchNotEligiblePreloadingDisabled) },
 };
@@ -391,8 +396,10 @@ export function prefetchFailureReason({ prefetchStatus }) {
             return PrefetchReasonDescription['PrefetchFailedPerPageLimitExceeded'].name();
         case "PrefetchIneligibleRetryAfter" /* Protocol.Preload.PrefetchStatus.PrefetchIneligibleRetryAfter */:
             return PrefetchReasonDescription['PrefetchIneligibleRetryAfter'].name();
-        case "PrefetchEvicted" /* Protocol.Preload.PrefetchStatus.PrefetchEvicted */:
-            return PrefetchReasonDescription['PrefetchEvicted'].name();
+        case "PrefetchEvictedForNewerPrefetch" /* Protocol.Preload.PrefetchStatus.PrefetchEvictedForNewerPrefetch */:
+            return PrefetchReasonDescription['PrefetchEvictedForNewerPrefetch'].name();
+        case "PrefetchEvictedAfterCandidateRemoved" /* Protocol.Preload.PrefetchStatus.PrefetchEvictedAfterCandidateRemoved */:
+            return PrefetchReasonDescription['PrefetchEvictedAfterCandidateRemoved'].name();
         case "PrefetchIsPrivacyDecoy" /* Protocol.Preload.PrefetchStatus.PrefetchIsPrivacyDecoy */:
             return PrefetchReasonDescription['PrefetchIsPrivacyDecoy'].name();
         case "PrefetchIsStale" /* Protocol.Preload.PrefetchStatus.PrefetchIsStale */:

@@ -222,10 +222,6 @@ styles.replaceSync(
   transform: rotate(90deg);
 }
 
-.data-grid tbody tr.revealed:hover {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
 .data-grid tbody tr.revealed.selected {
   background-color: var(--sys-color-neutral-container);
   color: inherit;
@@ -237,6 +233,10 @@ styles.replaceSync(
 
 .data-grid tbody tr.revealed:focus-within {
   background-color: var(--sys-color-tonal-container);
+}
+
+.data-grid tbody tr.revealed:not(.data-grid-filler-row):hover {
+  background-color: var(--sys-color-state-hover-on-subtle);
 }
 
 .data-grid tbody tr.revealed.selected.dirty {

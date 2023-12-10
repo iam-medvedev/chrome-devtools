@@ -364,6 +364,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
         UI.ARIAUtils.bindLabelToControl(labelElement, this.#inputElement);
         filterSection.appendChild(this.#inputElement);
         this.#inputElement.addEventListener('input', () => this.renderExperiments(this.#inputElement.value.toLowerCase()), false);
+        this.setDefaultFocusedElement(this.#inputElement);
         this.setFilter('');
     }
     renderExperiments(filterText) {

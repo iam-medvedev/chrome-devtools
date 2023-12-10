@@ -92,6 +92,9 @@
   "core/common/Revealer.ts | issuesView": {
     "message": "Îśŝúêś v̂íêẃ"
   },
+  "core/common/Revealer.ts | memoryInspectorPanel": {
+    "message": "M̂ém̂ór̂ý Îńŝṕêćt̂ór̂ ṕâńêĺ"
+  },
   "core/common/Revealer.ts | networkPanel": {
     "message": "N̂ét̂ẃôŕk̂ ṕâńêĺ"
   },
@@ -1130,9 +1133,6 @@
   "generated/Deprecation.ts | DOMMutationEvents": {
     "message": "D̂ÓM̂ Ḿût́ât́îón̂ Év̂én̂t́ŝ, ín̂ćl̂úd̂ín̂ǵ DOMSubtreeModified, DOMNodeInserted, DOMNodeRemoved, DOMNodeRemovedFromDocument, DOMNodeInsertedIntoDocument, âńd̂ DOMCharacterDataModified ár̂é d̂ép̂ŕêćât́êd́ (ĥt́t̂ṕŝ://ẃ3ĉ.ǵît́ĥúb̂.íô/úîév̂én̂t́ŝ/#ĺêǵâćŷ-év̂én̂t́-t̂ýp̂éŝ) án̂d́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂. Ṕl̂éâśê úŝé MutationObserver îńŝt́êád̂."
   },
-  "generated/Deprecation.ts | ExpectCTHeader": {
-    "message": "T̂h́ê Expect-CT h́êád̂ér̂ íŝ d́êṕr̂éĉát̂éd̂ án̂d́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂. Ćĥŕôḿê ŕêq́ûír̂éŝ Ćêŕt̂íf̂íĉát̂é T̂ŕâńŝṕâŕêńĉý f̂ór̂ ál̂ĺ p̂úb̂ĺîćl̂ý t̂ŕûśt̂éd̂ ćêŕt̂íf̂íĉát̂éŝ íŝśûéd̂ áf̂t́êŕ Âṕr̂íl̂ 30, 2018."
-  },
   "generated/Deprecation.ts | GeolocationInsecureOrigin": {
     "message": "getCurrentPosition() âńd̂ watchPosition() ńô ĺôńĝér̂ ẃôŕk̂ ón̂ ín̂śêćûŕê ór̂íĝín̂ś. T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ŷóû śĥóûĺd̂ ćôńŝíd̂ér̂ śŵít̂ćĥín̂ǵ ŷóûŕ âṕp̂ĺîćât́îón̂ t́ô á ŝéĉúr̂é ôŕîǵîń, ŝúĉh́ âś ĤT́T̂ṔŜ. Śêé ĥt́t̂ṕŝ://ǵôó.ĝĺê/ćĥŕôḿê-ín̂śêćûŕê-ór̂íĝín̂ś f̂ór̂ ḿôŕê d́êt́âíl̂ś."
   },
@@ -1246,6 +1246,9 @@
   },
   "generated/Deprecation.ts | TextToSpeech_DisallowedByAutoplay": {
     "message": "speechSynthesis.speak() ŵít̂h́ôút̂ úŝér̂ áĉt́îv́ât́îón̂ íŝ d́êṕr̂éĉát̂éd̂ án̂d́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂."
+  },
+  "generated/Deprecation.ts | UnloadHandler": {
+    "message": "Ûńl̂óâd́ êv́êńt̂ ĺîśt̂én̂ér̂ś âŕê d́êṕr̂éĉát̂éd̂ án̂d́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂."
   },
   "generated/Deprecation.ts | V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "message": "Êx́t̂én̂śîón̂ś ŝh́ôúl̂d́ ôṕt̂ ín̂t́ô ćr̂óŝś-ôŕîǵîń îśôĺât́îón̂ t́ô ćôńt̂ín̂úê úŝín̂ǵ SharedArrayBuffer. Ŝéê h́t̂t́p̂ś://d̂év̂él̂óp̂ér̂.ćĥŕôḿê.ćôḿ/d̂óĉś/êx́t̂én̂śîón̂ś/m̂v́3/ĉŕôśŝ-ór̂íĝín̂-íŝól̂át̂íôń/."
@@ -3782,8 +3785,11 @@
   "panels/application/preloading/components/PreloadingMismatchedHeadersGrid.ts | missing": {
     "message": "(m̂íŝśîńĝ)"
   },
-  "panels/application/preloading/components/PreloadingString.ts | PrefetchEvicted": {
-    "message": "T̂h́ê ṕr̂éf̂ét̂ćĥ ẃâś d̂íŝćâŕd̂éd̂ f́ôŕ â ńêẃêŕ p̂ŕêf́êt́ĉh́ b̂éĉáûśê |ḱP̂ŕêf́êt́ĉh́N̂éŵĹîḿît́ŝ| íŝ én̂áb̂ĺêd́"
+  "panels/application/preloading/components/PreloadingString.ts | PrefetchEvictedAfterCandidateRemoved": {
+    "message": "T̂h́ê ṕr̂éf̂ét̂ćĥ ẃâś d̂íŝćâŕd̂éd̂ b́êćâúŝé n̂ó ŝṕêćûĺât́îón̂ ŕûĺê ín̂ t́ĥé îńît́ât́îńĝ ṕâǵê t́r̂íĝǵêŕŝ á p̂ŕêf́êt́ĉh́ f̂ór̂ t́ĥíŝ ÚR̂Ĺ âńŷḿôŕê."
+  },
+  "panels/application/preloading/components/PreloadingString.ts | PrefetchEvictedForNewerPrefetch": {
+    "message": "T̂h́ê ṕr̂éf̂ét̂ćĥ ẃâś d̂íŝćâŕd̂éd̂ b́êćâúŝé t̂h́ê ín̂ít̂íât́îńĝ ṕâǵê h́âś t̂óô ḿâńŷ ṕr̂éf̂ét̂ćĥéŝ ón̂ǵôín̂ǵ, âńd̂ t́ĥíŝ ẃâś ôńê óf̂ t́ĥé ôĺd̂éŝt́."
   },
   "panels/application/preloading/components/PreloadingString.ts | PrefetchFailedIneligibleRedirect": {
     "message": "T̂h́ê ṕr̂éf̂ét̂ćĥ ẃâś r̂éd̂ír̂éĉt́êd́, b̂út̂ t́ĥé r̂éd̂ír̂éĉt́ ÛŔL̂ íŝ ńôt́ êĺîǵîb́l̂é f̂ór̂ ṕr̂éf̂ét̂ćĥ."
@@ -4481,6 +4487,9 @@
   "panels/autofill/AutofillView.ts | autocompleteAttribute": {
     "message": "Âút̂óĉóm̂ṕl̂ét̂é ât́t̂ŕîb́ût́ê"
   },
+  "panels/autofill/AutofillView.ts | autoShow": {
+    "message": "Âút̂óm̂át̂íĉál̂ĺŷ óp̂én̂ t́âb́ ôń âút̂óf̂íl̂ĺ"
+  },
   "panels/autofill/AutofillView.ts | formField": {
     "message": "F̂ór̂ḿ f̂íêĺd̂"
   },
@@ -4840,6 +4849,9 @@
   },
   "panels/console/console-meta.ts | showTimestamps": {
     "message": "Ŝh́ôẃ t̂ím̂éŝt́âḿp̂ś"
+  },
+  "panels/console/console-meta.ts | toggleConsole": {
+    "message": "T̂óĝǵl̂é Ĉón̂śôĺê"
   },
   "panels/console/console-meta.ts | treatEvaluationAsUserActivation": {
     "message": "T̂ŕêát̂ év̂ál̂úât́îón̂ áŝ úŝér̂ áĉt́îv́ât́îón̂"
@@ -7229,6 +7241,75 @@
   "panels/lighthouse/LighthouseTimespanView.ts | timespanStarting": {
     "message": "T̂ím̂éŝṕâń ŝt́âŕt̂ín̂ǵ…"
   },
+  "panels/linear_memory_inspector/components/LinearMemoryHighlightChipList.ts | deleteHighlight": {
+    "message": "Ŝt́ôṕ ĥíĝh́l̂íĝh́t̂ín̂ǵ t̂h́îś m̂ém̂ór̂ý"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryHighlightChipList.ts | jumpToAddress": {
+    "message": "Ĵúm̂ṕ t̂ó t̂h́îś m̂ém̂ór̂ý"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryInspector.ts | addressHasToBeANumberBetweenSAnd": {
+    "message": "Âd́d̂ŕêśŝ h́âś t̂ó b̂é â ńûḿb̂ér̂ b́êt́ŵéêń {PH1} âńd̂ {PH2}"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | enterAddress": {
+    "message": "Êńt̂ér̂ ád̂d́r̂éŝś"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | goBackInAddressHistory": {
+    "message": "Ĝó b̂áĉḱ îń âd́d̂ŕêśŝ h́îśt̂ór̂ý"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | goForwardInAddressHistory": {
+    "message": "Ĝó f̂ór̂ẃâŕd̂ ín̂ ád̂d́r̂éŝś ĥíŝt́ôŕŷ"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | nextPage": {
+    "message": "N̂éx̂t́ p̂áĝé"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | previousPage": {
+    "message": "P̂ŕêv́îóûś p̂áĝé"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryNavigator.ts | refresh": {
+    "message": "R̂éf̂ŕêśĥ"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryValueInterpreter.ts | changeEndianness": {
+    "message": "Ĉh́âńĝé Endianness"
+  },
+  "panels/linear_memory_inspector/components/LinearMemoryValueInterpreter.ts | toggleValueTypeSettings": {
+    "message": "T̂óĝǵl̂é v̂ál̂úê t́ŷṕê śêt́t̂ín̂ǵŝ"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | addressOutOfRange": {
+    "message": "Âd́d̂ŕêśŝ óût́ ôf́ m̂ém̂ór̂ý r̂án̂ǵê"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | changeValueTypeMode": {
+    "message": "Ĉh́âńĝé m̂ód̂é"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | jumpToPointer": {
+    "message": "Ĵúm̂ṕ t̂ó âd́d̂ŕêśŝ"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | signedValue": {
+    "message": "Signed v̂ál̂úê"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplay.ts | unsignedValue": {
+    "message": "Unsigned v̂ál̂úê"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterDisplayUtils.ts | notApplicable": {
+    "message": "N̂/Á"
+  },
+  "panels/linear_memory_inspector/components/ValueInterpreterSettings.ts | otherGroup": {
+    "message": "Ôt́ĥér̂"
+  },
+  "panels/linear_memory_inspector/linear_memory_inspector-meta.ts | memoryInspector": {
+    "message": "M̂ém̂ór̂ý Îńŝṕêćt̂ór̂"
+  },
+  "panels/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
+    "message": "Ŝh́ôẃ M̂ém̂ór̂ý Îńŝṕêćt̂ór̂"
+  },
+  "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | couldNotOpenLinearMemory": {
+    "message": "Ĉóûĺd̂ ńôt́ ôṕêń l̂ín̂éâŕ m̂ém̂ór̂ý îńŝṕêćt̂ór̂: f́âíl̂éd̂ ĺôćât́îńĝ b́ûf́f̂ér̂."
+  },
+  "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | revealInMemoryInspectorPanel": {
+    "message": "R̂év̂éâĺ îń M̂ém̂ór̂ý Îńŝṕêćt̂ór̂ ṕâńêĺ"
+  },
+  "panels/linear_memory_inspector/LinearMemoryInspectorPane.ts | noOpenInspections": {
+    "message": "N̂ó ôṕêń îńŝṕêćt̂íôńŝ"
+  },
   "panels/media/EventDisplayTable.ts | eventDisplay": {
     "message": "Êv́êńt̂ d́îśp̂ĺâý"
   },
@@ -8594,105 +8675,6 @@
   "panels/network/RequestCookiesView.ts | thisRequestHasNoCookies": {
     "message": "T̂h́îś r̂éq̂úêśt̂ h́âś n̂ó ĉóôḱîéŝ."
   },
-  "panels/network/RequestHeadersView.ts | activeClientExperimentVariation": {
-    "message": "Âćt̂ív̂é client experiment variation IDs."
-  },
-  "panels/network/RequestHeadersView.ts | activeClientExperimentVariationIds": {
-    "message": "Âćt̂ív̂é client experiment variation IDs t̂h́ât́ t̂ŕîǵĝér̂ śêŕv̂ér̂-śîd́ê b́êh́âv́îór̂."
-  },
-  "panels/network/RequestHeadersView.ts | chooseThisOptionIfTheResourceAnd": {
-    "message": "Ĉh́ôóŝé t̂h́îś ôṕt̂íôń îf́ t̂h́ê ŕêśôúr̂ćê án̂d́ t̂h́ê d́ôćûḿêńt̂ ár̂é ŝér̂v́êd́ f̂ŕôḿ t̂h́ê śâḿê śît́ê."
-  },
-  "panels/network/RequestHeadersView.ts | copyValue": {
-    "message": "Ĉóp̂ý v̂ál̂úê"
-  },
-  "panels/network/RequestHeadersView.ts | decoded": {
-    "message": "D̂éĉód̂éd̂:"
-  },
-  "panels/network/RequestHeadersView.ts | fromDiskCache": {
-    "message": "(f̂ŕôḿ d̂íŝḱ ĉáĉh́ê)"
-  },
-  "panels/network/RequestHeadersView.ts | fromMemoryCache": {
-    "message": "(f̂ŕôḿ m̂ém̂ór̂ý ĉáĉh́ê)"
-  },
-  "panels/network/RequestHeadersView.ts | fromPrefetchCache": {
-    "message": "(f̂ŕôḿ p̂ŕêf́êt́ĉh́ ĉáĉh́ê)"
-  },
-  "panels/network/RequestHeadersView.ts | fromServiceWorker": {
-    "message": "(f̂ŕôḿ service worker)"
-  },
-  "panels/network/RequestHeadersView.ts | fromSignedexchange": {
-    "message": "(f̂ŕôḿ ŝíĝńêd́-êx́ĉh́âńĝé)"
-  },
-  "panels/network/RequestHeadersView.ts | fromWebBundle": {
-    "message": "(f̂ŕôḿ Ŵéb̂ B́ûńd̂ĺê)"
-  },
-  "panels/network/RequestHeadersView.ts | general": {
-    "message": "Ĝén̂ér̂ál̂"
-  },
-  "panels/network/RequestHeadersView.ts | learnMore": {
-    "message": "L̂éâŕn̂ ḿôŕê"
-  },
-  "panels/network/RequestHeadersView.ts | learnMoreInTheIssuesTab": {
-    "message": "L̂éâŕn̂ ḿôŕê ín̂ t́ĥé îśŝúêś t̂áb̂"
-  },
-  "panels/network/RequestHeadersView.ts | onlyChooseThisOptionIfAn": {
-    "message": "Ôńl̂ý ĉh́ôóŝé t̂h́îś ôṕt̂íôń îf́ âń âŕb̂ít̂ŕâŕŷ ẃêb́ŝít̂é îńĉĺûd́îńĝ t́ĥíŝ ŕêśôúr̂ćê d́ôéŝ ńôt́ îḿp̂óŝé â śêćûŕît́ŷ ŕîśk̂."
-  },
-  "panels/network/RequestHeadersView.ts | onlyProvisionalHeadersAre": {
-    "message": "Ôńl̂ý p̂ŕôv́îśîón̂ál̂ h́êád̂ér̂ś âŕê áv̂áîĺâb́l̂é b̂éĉáûśê t́ĥíŝ ŕêq́ûéŝt́ ŵáŝ ńôt́ ŝén̂t́ ôv́êŕ t̂h́ê ńêt́ŵór̂ḱ âńd̂ ín̂śt̂éâd́ ŵáŝ śêŕv̂éd̂ f́r̂óm̂ á l̂óĉál̂ ćâćĥé, ŵh́îćĥ d́ôéŝń’t̂ śt̂ór̂é t̂h́ê ór̂íĝín̂ál̂ ŕêq́ûéŝt́ ĥéâd́êŕŝ. D́îśâb́l̂é ĉáĉh́ê t́ô śêé f̂úl̂ĺ r̂éq̂úêśt̂ h́êád̂ér̂ś."
-  },
-  "panels/network/RequestHeadersView.ts | provisionalHeadersAreShown": {
-    "message": "P̂ŕôv́îśîón̂ál̂ h́êád̂ér̂ś âŕê śĥóŵń"
-  },
-  "panels/network/RequestHeadersView.ts | provisionalHeadersAreShownS": {
-    "message": "P̂ŕôv́îśîón̂ál̂ h́êád̂ér̂ś âŕê śĥóŵń. D̂íŝáb̂ĺê ćâćĥé t̂ó ŝéê f́ûĺl̂ h́êád̂ér̂ś."
-  },
-  "panels/network/RequestHeadersView.ts | referrerPolicy": {
-    "message": "R̂éf̂ér̂ŕêŕ P̂ól̂íĉý"
-  },
-  "panels/network/RequestHeadersView.ts | remoteAddress": {
-    "message": "R̂ém̂ót̂é Âd́d̂ŕêśŝ"
-  },
-  "panels/network/RequestHeadersView.ts | requestHeaders": {
-    "message": "R̂éq̂úêśt̂ H́êád̂ér̂ś"
-  },
-  "panels/network/RequestHeadersView.ts | requestMethod": {
-    "message": "R̂éq̂úêśt̂ Ḿêt́ĥód̂"
-  },
-  "panels/network/RequestHeadersView.ts | requestUrl": {
-    "message": "R̂éq̂úêśt̂ ÚR̂Ĺ"
-  },
-  "panels/network/RequestHeadersView.ts | responseHeaders": {
-    "message": "R̂éŝṕôńŝé Ĥéâd́êŕŝ"
-  },
-  "panels/network/RequestHeadersView.ts | showMore": {
-    "message": "Ŝh́ôẃ m̂ór̂é"
-  },
-  "panels/network/RequestHeadersView.ts | statusCode": {
-    "message": "Ŝt́ât́ûś Ĉód̂é"
-  },
-  "panels/network/RequestHeadersView.ts | thisDocumentWasBlockedFrom": {
-    "message": "T̂h́ê d́ôćûḿêńt̂ ẃâś b̂ĺôćk̂éd̂ f́r̂óm̂ ĺôád̂ín̂ǵ îń â ṕôṕûṕ ôṕêńêd́ b̂ý â śâńd̂b́ôx́êd́ îf́r̂ám̂é b̂éĉáûśê t́ĥíŝ d́ôćûḿêńt̂ śp̂éĉíf̂íêd́ â ćr̂óŝś-ôŕîǵîń ôṕêńêŕ p̂ól̂íĉý."
-  },
-  "panels/network/RequestHeadersView.ts | toEmbedThisFrameInYourDocument": {
-    "message": "T̂ó êḿb̂éd̂ t́ĥíŝ f́r̂ám̂é îń ŷóûŕ d̂óĉúm̂én̂t́, t̂h́ê ŕêśp̂ón̂śê ńêéd̂ś t̂ó êńâb́l̂é t̂h́ê ćr̂óŝś-ôŕîǵîń êḿb̂éd̂d́êŕ p̂ól̂íĉý b̂ý ŝṕêćîf́ŷín̂ǵ t̂h́ê f́ôĺl̂óŵín̂ǵ r̂éŝṕôńŝé ĥéâd́êŕ:"
-  },
-  "panels/network/RequestHeadersView.ts | toUseThisResourceFromADifferent": {
-    "message": "T̂ó ûśê t́ĥíŝ ŕêśôúr̂ćê f́r̂óm̂ á d̂íf̂f́êŕêńt̂ ór̂íĝín̂, t́ĥé ŝér̂v́êŕ n̂éêd́ŝ t́ô śp̂éĉíf̂ý â ćr̂óŝś-ôŕîǵîń r̂éŝóûŕĉé p̂ól̂íĉý îń t̂h́ê ŕêśp̂ón̂śê h́êád̂ér̂ś:"
-  },
-  "panels/network/RequestHeadersView.ts | toUseThisResourceFromADifferentOrigin": {
-    "message": "T̂ó ûśê t́ĥíŝ ŕêśôúr̂ćê f́r̂óm̂ á d̂íf̂f́êŕêńt̂ ór̂íĝín̂, t́ĥé ŝér̂v́êŕ m̂áŷ ŕêĺâx́ t̂h́ê ćr̂óŝś-ôŕîǵîń r̂éŝóûŕĉé p̂ól̂íĉý r̂éŝṕôńŝé ĥéâd́êŕ:"
-  },
-  "panels/network/RequestHeadersView.ts | toUseThisResourceFromADifferentSite": {
-    "message": "T̂ó ûśê t́ĥíŝ ŕêśôúr̂ćê f́r̂óm̂ á d̂íf̂f́êŕêńt̂ śît́ê, t́ĥé ŝér̂v́êŕ m̂áŷ ŕêĺâx́ t̂h́ê ćr̂óŝś-ôŕîǵîń r̂éŝóûŕĉé p̂ól̂íĉý r̂éŝṕôńŝé ĥéâd́êŕ:"
-  },
-  "panels/network/RequestHeadersView.ts | viewParsed": {
-    "message": "V̂íêẃ p̂ár̂śêd́"
-  },
-  "panels/network/RequestHeadersView.ts | viewSource": {
-    "message": "V̂íêẃ ŝóûŕĉé"
-  },
   "panels/network/RequestInitiatorView.ts | requestCallStack": {
     "message": "R̂éq̂úêśt̂ ćâĺl̂ śt̂áĉḱ"
   },
@@ -9563,6 +9545,9 @@
   "panels/profiler/ProfileLauncherView.ts | takeSnapshot": {
     "message": "T̂ák̂é ŝńâṕŝh́ôt́"
   },
+  "panels/profiler/profiler-meta.ts | clearAllProfiles": {
+    "message": "Ĉĺêár̂ ál̂ĺ p̂ŕôf́îĺêś"
+  },
   "panels/profiler/profiler-meta.ts | deleteProfile": {
     "message": "D̂él̂ét̂é p̂ŕôf́îĺê"
   },
@@ -9596,14 +9581,14 @@
   "panels/profiler/profiler-meta.ts | stopRecordingHeapAllocations": {
     "message": "Ŝt́ôṕ r̂éĉór̂d́îńĝ h́êáp̂ ál̂ĺôćât́îón̂ś"
   },
+  "panels/profiler/ProfileSidebarTreeElement.ts | profileOptions": {
+    "message": "P̂ŕôf́îĺê óp̂t́îón̂ś"
+  },
   "panels/profiler/ProfilesPanel.ts | cantLoadFileSupportedFile": {
     "message": "Ĉán̂’t́ l̂óâd́ f̂íl̂é. Ŝúp̂ṕôŕt̂éd̂ f́îĺê éx̂t́êńŝíôńŝ: ''{PH1}''."
   },
   "panels/profiler/ProfilesPanel.ts | cantLoadProfileWhileAnother": {
     "message": "Ĉán̂’t́ l̂óâd́ p̂ŕôf́îĺê ẃĥíl̂é âńôt́ĥér̂ ṕr̂óf̂íl̂é îś b̂éîńĝ ŕêćôŕd̂éd̂."
-  },
-  "panels/profiler/ProfilesPanel.ts | clearAllProfiles": {
-    "message": "Ĉĺêár̂ ál̂ĺ p̂ŕôf́îĺêś"
   },
   "panels/profiler/ProfilesPanel.ts | deprecationWarnMsg": {
     "message": "T̂h́îś p̂án̂él̂ ẃîĺl̂ b́ê d́êṕr̂éĉát̂éd̂ ín̂ t́ĥé ûṕĉóm̂ín̂ǵ v̂ér̂śîón̂. Úŝé t̂h́ê Ṕêŕf̂ór̂ḿâńĉé p̂án̂él̂ t́ô ŕêćôŕd̂ J́âv́âŚĉŕîṕt̂ ĆP̂Ú p̂ŕôf́îĺêś."
@@ -11594,9 +11579,6 @@
   "panels/sources/ScopeChainSidebarPane.ts | returnValue": {
     "message": "R̂ét̂úr̂ń v̂ál̂úê"
   },
-  "panels/sources/ScopeChainSidebarPane.ts | revealInMemoryInspectorPanel": {
-    "message": "R̂év̂éâĺ îń M̂ém̂ór̂ý Îńŝṕêćt̂ór̂ ṕâńêĺ"
-  },
   "panels/sources/SnippetsPlugin.ts | ctrlenter": {
     "message": "Ĉt́r̂ĺ+Êńt̂ér̂"
   },
@@ -11996,8 +11978,8 @@
   "panels/sources/SourcesPanel.ts | showNavigator": {
     "message": "Ŝh́ôẃ n̂áv̂íĝát̂ór̂"
   },
-  "panels/sources/SourcesPanel.ts | storeSAsGlobalVariable": {
-    "message": "Ŝt́ôŕê {PH1} áŝ ǵl̂ób̂ál̂ v́âŕîáb̂ĺê"
+  "panels/sources/SourcesPanel.ts | storeAsGlobalVariable": {
+    "message": "Ŝt́ôŕê áŝ ǵl̂ób̂ál̂ v́âŕîáb̂ĺê"
   },
   "panels/sources/SourcesPanel.ts | terminateCurrentJavascriptCall": {
     "message": "T̂ér̂ḿîńât́ê ćûŕr̂én̂t́ Ĵáv̂áŜćr̂íp̂t́ ĉál̂ĺ"
@@ -12009,7 +11991,7 @@
     "message": "R̂ún̂ ćôḿm̂án̂d́"
   },
   "panels/sources/SourcesView.ts | selectFolder": {
-    "message": "ŝél̂éĉt́ f̂ól̂d́êŕ"
+    "message": "Ŝél̂éĉt́ f̂ól̂d́êŕ"
   },
   "panels/sources/SourcesView.ts | sourceViewActions": {
     "message": "Ŝóûŕĉé V̂íêẃ Âćt̂íôńŝ"
@@ -13229,9 +13211,6 @@
   "panels/timeline/TimelineUIUtils.ts | layerRoot": {
     "message": "L̂áŷér̂ Ŕôót̂"
   },
-  "panels/timeline/TimelineUIUtils.ts | layerTree": {
-    "message": "L̂áŷér̂ t́r̂éê"
-  },
   "panels/timeline/TimelineUIUtils.ts | layout": {
     "message": "L̂áŷóût́"
   },
@@ -13468,9 +13447,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | sForS": {
     "message": "{PH1} f̂ór̂ {PH2}"
-  },
-  "panels/timeline/TimelineUIUtils.ts | show": {
-    "message": "Ŝh́ôẃ"
   },
   "panels/timeline/TimelineUIUtils.ts | sign": {
     "message": "Ŝíĝń"
@@ -13852,72 +13828,6 @@
   },
   "ui/components/issue_counter/IssueLinkIcon.ts | issueUnavailable": {
     "message": "Îśŝúê ún̂áv̂áîĺâb́l̂é ât́ t̂h́îś t̂ím̂é"
-  },
-  "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | memoryInspector": {
-    "message": "M̂ém̂ór̂ý Îńŝṕêćt̂ór̂"
-  },
-  "ui/components/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
-    "message": "Ŝh́ôẃ M̂ém̂ór̂ý Îńŝṕêćt̂ór̂"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryHighlightChipList.ts | deleteHighlight": {
-    "message": "Ŝt́ôṕ ĥíĝh́l̂íĝh́t̂ín̂ǵ t̂h́îś m̂ém̂ór̂ý"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryHighlightChipList.ts | jumpToAddress": {
-    "message": "Ĵúm̂ṕ t̂ó t̂h́îś m̂ém̂ór̂ý"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryInspector.ts | addressHasToBeANumberBetweenSAnd": {
-    "message": "Âd́d̂ŕêśŝ h́âś t̂ó b̂é â ńûḿb̂ér̂ b́êt́ŵéêń {PH1} âńd̂ {PH2}"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryInspectorController.ts | couldNotOpenLinearMemory": {
-    "message": "Ĉóûĺd̂ ńôt́ ôṕêń l̂ín̂éâŕ m̂ém̂ór̂ý îńŝṕêćt̂ór̂: f́âíl̂éd̂ ĺôćât́îńĝ b́ûf́f̂ér̂."
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryInspectorPane.ts | noOpenInspections": {
-    "message": "N̂ó ôṕêń îńŝṕêćt̂íôńŝ"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | enterAddress": {
-    "message": "Êńt̂ér̂ ád̂d́r̂éŝś"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | goBackInAddressHistory": {
-    "message": "Ĝó b̂áĉḱ îń âd́d̂ŕêśŝ h́îśt̂ór̂ý"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | goForwardInAddressHistory": {
-    "message": "Ĝó f̂ór̂ẃâŕd̂ ín̂ ád̂d́r̂éŝś ĥíŝt́ôŕŷ"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | nextPage": {
-    "message": "N̂éx̂t́ p̂áĝé"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | previousPage": {
-    "message": "P̂ŕêv́îóûś p̂áĝé"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryNavigator.ts | refresh": {
-    "message": "R̂éf̂ŕêśĥ"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryValueInterpreter.ts | changeEndianness": {
-    "message": "Ĉh́âńĝé Endianness"
-  },
-  "ui/components/linear_memory_inspector/LinearMemoryValueInterpreter.ts | toggleValueTypeSettings": {
-    "message": "T̂óĝǵl̂é v̂ál̂úê t́ŷṕê śêt́t̂ín̂ǵŝ"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | addressOutOfRange": {
-    "message": "Âd́d̂ŕêśŝ óût́ ôf́ m̂ém̂ór̂ý r̂án̂ǵê"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | changeValueTypeMode": {
-    "message": "Ĉh́âńĝé m̂ód̂é"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | jumpToPointer": {
-    "message": "Ĵúm̂ṕ t̂ó âd́d̂ŕêśŝ"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | signedValue": {
-    "message": "Signed v̂ál̂úê"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplay.ts | unsignedValue": {
-    "message": "Unsigned v̂ál̂úê"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterDisplayUtils.ts | notApplicable": {
-    "message": "N̂/Á"
-  },
-  "ui/components/linear_memory_inspector/ValueInterpreterSettings.ts | otherGroup": {
-    "message": "Ôt́ĥér̂"
   },
   "ui/components/markdown_view/CodeBlock.ts | copied": {
     "message": "Ĉóp̂íêd́ t̂ó ĉĺîṕb̂óâŕd̂"

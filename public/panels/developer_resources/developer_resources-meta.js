@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
@@ -30,7 +29,6 @@ UI.ViewManager.registerViewExtension({
     commandPrompt: i18nLazyString(UIStrings.showDeveloperResources),
     order: 100,
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
-    experiment: Root.Runtime.ExperimentName.DEVELOPER_RESOURCES_VIEW,
     async loadView() {
         const DeveloperResources = await loadDeveloperResourcesModule();
         return new DeveloperResources.DeveloperResourcesView.DeveloperResourcesView();

@@ -38,6 +38,11 @@ export declare class RemoteObject {
     debuggerModel(): DebuggerModel;
     runtimeModel(): RuntimeModel;
     isNode(): boolean;
+    /**
+     * Checks whether this object can be inspected with the Linear Memory Inspector.
+     * @returns `true` if this object can be inspected with the Linear Memory Inspector.
+     */
+    isLinearMemoryInspectable(): boolean;
     webIdl?: RemoteObjectWebIdlTypeMetadata;
 }
 export declare class RemoteObjectImpl extends RemoteObject {
@@ -71,6 +76,7 @@ export declare class RemoteObjectImpl extends RemoteObject {
     debuggerModel(): DebuggerModel;
     runtimeModel(): RuntimeModel;
     isNode(): boolean;
+    isLinearMemoryInspectable(): boolean;
 }
 export declare class ScopeRemoteObject extends RemoteObjectImpl {
     #private;
@@ -166,4 +172,25 @@ export interface RemoteObjectWebIdlTypeMetadata {
 export interface RemoteObjectWebIdlPropertyMetadata {
     info: DOMPinnedWebIDLProp;
     applicable?: boolean;
+}
+/**
+ * Pair of a linear memory inspectable {@link RemoteObject} and an optional
+ * expression, which identifies the variable holding the object in the
+ * current scope or the name of the field holding the object.
+ *
+ * This data structure is used to reveal an object in the Linear Memory
+ * Inspector panel.
+ */
+export declare class LinearMemoryInspectable {
+    /** The linear memory inspectable {@link RemoteObject}. */
+    readonly object: RemoteObject;
+    /** The name of the variable or the field holding the `object`. */
+    readonly expression: string | undefined;
+    /**
+     * Wrap `object` and `expression` into a reveable structure.
+     *
+     * @param object A linear memory inspectable {@link RemoteObject}.
+     * @param expression An optional name of the field or variable holding the `object`.
+     */
+    constructor(object: RemoteObject, expression?: string);
 }

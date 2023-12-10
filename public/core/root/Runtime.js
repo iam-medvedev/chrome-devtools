@@ -82,20 +82,17 @@ export class ExperimentsSupport {
     #enabledTransiently;
     #enabledByDefault;
     #serverEnabled;
-    // Experiments in this set won't be shown to the user
-    #nonConfigurable;
     constructor() {
         this.#experiments = [];
         this.#experimentNames = new Set();
         this.#enabledTransiently = new Set();
         this.#enabledByDefault = new Set();
         this.#serverEnabled = new Set();
-        this.#nonConfigurable = new Set();
     }
     allConfigurableExperiments() {
         const result = [];
         for (const experiment of this.#experiments) {
-            if (!this.#enabledTransiently.has(experiment.name) && !this.#nonConfigurable.has(experiment.name)) {
+            if (!this.#enabledTransiently.has(experiment.name)) {
                 result.push(experiment);
             }
         }
@@ -149,12 +146,6 @@ export class ExperimentsSupport {
         for (const experiment of experimentNames) {
             this.checkExperiment(experiment);
             this.#serverEnabled.add(experiment);
-        }
-    }
-    setNonConfigurableExperiments(experimentNames) {
-        for (const experiment of experimentNames) {
-            this.checkExperiment(experiment);
-            this.#nonConfigurable.add(experiment);
         }
     }
     enableForTest(experimentName) {
@@ -220,16 +211,11 @@ export var ExperimentName;
     ExperimentName["CAPTURE_NODE_CREATION_STACKS"] = "captureNodeCreationStacks";
     ExperimentName["CSS_OVERVIEW"] = "cssOverview";
     ExperimentName["LIVE_HEAP_PROFILE"] = "liveHeapProfile";
-    ExperimentName["DEVELOPER_RESOURCES_VIEW"] = "developerResourcesView";
-    ExperimentName["WASM_DWARF_DEBUGGING"] = "wasmDWARFDebugging";
     ExperimentName["ALL"] = "*";
     ExperimentName["PROTOCOL_MONITOR"] = "protocolMonitor";
-    ExperimentName["WEBAUTHN_PANE"] = "webauthnPane";
     ExperimentName["FULL_ACCESSIBILITY_TREE"] = "fullAccessibilityTree";
-    ExperimentName["PRECISE_CHANGES"] = "preciseChanges";
     ExperimentName["STYLES_PANE_CSS_CHANGES"] = "stylesPaneCSSChanges";
     ExperimentName["HEADER_OVERRIDES"] = "headerOverrides";
-    ExperimentName["EYEDROPPER_COLOR_PICKER"] = "eyedropperColorPicker";
     ExperimentName["INSTRUMENTATION_BREAKPOINTS"] = "instrumentationBreakpoints";
     ExperimentName["AUTHORED_DEPLOYED_GROUPING"] = "authoredDeployedGrouping";
     ExperimentName["IMPORTANT_DOM_PROPERTIES"] = "importantDOMProperties";

@@ -1,7 +1,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget {
-    private readonly sourceOrderViewerExperimentEnabled;
     private nodeInternal;
     private axNodeInternal;
     private skipNextPullNode;

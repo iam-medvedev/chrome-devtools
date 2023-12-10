@@ -2044,6 +2044,12 @@ declare namespace ProtocolProxyApi {
     invoke_setUserAgentOverride(params: Protocol.Network.SetUserAgentOverrideRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
+     * Enables streaming of the response for the given requestId.
+     * If enabled, the dataReceived event contains the data that was received during streaming.
+     */
+    invoke_streamResourceContent(params: Protocol.Network.StreamResourceContentRequest): Promise<Protocol.Network.StreamResourceContentResponse>;
+
+    /**
      * Returns information about the COEP/COOP isolation status.
      */
     invoke_getSecurityIsolationStatus(params: Protocol.Network.GetSecurityIsolationStatusRequest): Promise<Protocol.Network.GetSecurityIsolationStatusResponse>;
@@ -3797,6 +3803,12 @@ declare namespace ProtocolProxyApi {
   }
   export interface FedCmDispatcher {
     dialogShown(params: Protocol.FedCm.DialogShownEvent): void;
+
+    /**
+     * Triggered when a dialog is closed, either by user action, JS abort,
+     * or a command below.
+     */
+    dialogClosed(params: Protocol.FedCm.DialogClosedEvent): void;
 
   }
 

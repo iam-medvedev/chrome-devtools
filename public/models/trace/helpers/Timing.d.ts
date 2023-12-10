@@ -9,7 +9,7 @@ interface FormatOptions extends Intl.NumberFormatOptions {
     format?: Types.Timing.TimeUnit;
 }
 export declare function formatMicrosecondsTime(timeInMicroseconds: Types.Timing.MicroSeconds, opts?: FormatOptions): string;
-export declare function timeStampForEventAdjustedByClosestNavigation(event: Types.TraceEvents.TraceEventData, traceBounds: Types.Timing.TraceWindow, navigationsByNavigationId: Map<string, Types.TraceEvents.TraceEventNavigationStart>, navigationsByFrameId: Map<string, Types.TraceEvents.TraceEventNavigationStart[]>): Types.Timing.MicroSeconds;
+export declare function timeStampForEventAdjustedByClosestNavigation(event: Types.TraceEvents.TraceEventData, traceBounds: Types.Timing.TraceWindowMicroSeconds, navigationsByNavigationId: Map<string, Types.TraceEvents.TraceEventNavigationStart>, navigationsByFrameId: Map<string, Types.TraceEvents.TraceEventNavigationStart[]>): Types.Timing.MicroSeconds;
 export interface EventTimingsData<ValueType extends Types.Timing.MicroSeconds | Types.Timing.MilliSeconds | Types.Timing.Seconds> {
     startTime: ValueType;
     endTime: ValueType;
@@ -19,7 +19,7 @@ export interface EventTimingsData<ValueType extends Types.Timing.MicroSeconds | 
 export declare function eventTimingsMicroSeconds(event: Types.TraceEvents.TraceEventData): EventTimingsData<Types.Timing.MicroSeconds>;
 export declare function eventTimingsMilliSeconds(event: Types.TraceEvents.TraceEventData): EventTimingsData<Types.Timing.MilliSeconds>;
 export declare function eventTimingsSeconds(event: Types.TraceEvents.TraceEventData): EventTimingsData<Types.Timing.Seconds>;
-export declare function traceWindowMilliSeconds(bounds: Types.Timing.TraceWindow): Types.Timing.TraceWindowMilliSeconds;
-export declare function traceWindowMillisecondsToMicroSeconds(bounds: Types.Timing.TraceWindowMilliSeconds): Types.Timing.TraceWindow;
-export declare function traceWindowFromMilliSeconds(min: Types.Timing.MilliSeconds, max: Types.Timing.MilliSeconds): Types.Timing.TraceWindow;
+export declare function traceWindowMilliSeconds(bounds: Types.Timing.TraceWindowMicroSeconds): Types.Timing.TraceWindowMilliSeconds;
+export declare function traceWindowMillisecondsToMicroSeconds(bounds: Types.Timing.TraceWindowMilliSeconds): Types.Timing.TraceWindowMicroSeconds;
+export declare function traceWindowFromMilliSeconds(min: Types.Timing.MilliSeconds, max: Types.Timing.MilliSeconds): Types.Timing.TraceWindowMicroSeconds;
 export {};

@@ -725,8 +725,8 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         const expanded = Root.Runtime.Runtime.queryParam('flamechart-force-expand') === 'frames';
         this.appendHeader(i18nString(UIStrings.frames), this.framesHeader, false /* selectable */, expanded);
         this.entryTypeByLevel[this.currentLevel] = EntryType.Frame;
-        for (const frame of this.legacyPerformanceModel.frames()) {
-            this.appendFrame(frame);
+        for (const frame of this.traceEngineData.Frames.frames) {
+            this.#appendNewEngineFrame(frame);
         }
         ++this.currentLevel;
         if (!hasScreenshots) {
@@ -803,7 +803,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         else if (entryType === EntryType.Frame) {
             const frame = this.entryData[entryIndex];
-            time = i18n.TimeUtilities.preciseMillisToString(frame.duration, 1);
+            time = i18n.TimeUtilities.preciseMillisToString(TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.duration), 1);
             if (frame.idle) {
                 title = i18nString(UIStrings.idleFrame);
             }
@@ -951,7 +951,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             context.fillStyle = '#d7f0d1';
         }
         context.fillRect(barX, barY, barWidth, barHeight);
-        const frameDurationText = i18n.TimeUtilities.preciseMillisToString(frame.duration, 1);
+        const frameDurationText = i18n.TimeUtilities.preciseMillisToString(TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.duration), 1);
         const textWidth = context.measureText(frameDurationText).width;
         if (textWidth <= barWidth) {
             context.fillStyle = this.textColor(entryIndex);
@@ -1143,16 +1143,18 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             timelineData.entryStartTimes[index] = startTime;
         }
     }
-    appendFrame(frame) {
+    #appendNewEngineFrame(frame) {
         const index = this.entryData.length;
         this.entryData.push(frame);
-        this.entryIndexToTitle[index] = i18n.TimeUtilities.millisToString(frame.duration, true);
+        const durationMilliseconds = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.duration);
+        this.entryIndexToTitle[index] = i18n.TimeUtilities.millisToString(durationMilliseconds, true);
         if (!this.timelineDataInternal) {
             return;
         }
         this.timelineDataInternal.entryLevels[index] = this.currentLevel;
-        this.timelineDataInternal.entryTotalTimes[index] = frame.duration;
-        this.timelineDataInternal.entryStartTimes[index] = frame.startTime;
+        this.timelineDataInternal.entryTotalTimes[index] = durationMilliseconds;
+        this.timelineDataInternal.entryStartTimes[index] =
+            TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.startTime);
     }
     createSelection(entryIndex) {
         const entryType = this.entryType(entryIndex);
@@ -1162,8 +1164,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             timelineSelection = TimelineSelection.fromTraceEvent(entry);
         }
         else if (entryType === EntryType.Frame) {
-            timelineSelection =
-                TimelineSelection.fromFrame(this.entryData[entryIndex]);
+            timelineSelection = TimelineSelection.fromFrame(this.entryData[entryIndex]);
         }
         if (timelineSelection) {
             this.lastSelection = new Selection(timelineSelection, entryIndex);

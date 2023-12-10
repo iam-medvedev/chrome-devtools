@@ -49,6 +49,7 @@ export declare class ExtensionRemoteObject extends SDK.RemoteObject.RemoteObject
     release(): void;
     debuggerModel(): SDK.DebuggerModel.DebuggerModel;
     runtimeModel(): SDK.RuntimeModel.RuntimeModel;
+    isLinearMemoryInspectable(): boolean;
 }
 export type StopId = bigint;
 export declare class DebuggerLanguagePluginManager implements SDK.TargetManager.SDKModelObserver<SDK.DebuggerModel.DebuggerModel> {

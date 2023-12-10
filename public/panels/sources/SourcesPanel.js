@@ -128,9 +128,8 @@ const UIStrings = {
     continueToHere: 'Continue to here',
     /**
      *@description A context menu item in the Console that stores selection as a temporary global variable
-     *@example {string} PH1
      */
-    storeSAsGlobalVariable: 'Store {PH1} as global variable',
+    storeAsGlobalVariable: 'Store as global variable',
     /**
      *@description A context menu item in the Console, Sources, and Network panel
      *@example {string} PH1
@@ -807,7 +806,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             return remoteObject.type;
         }
         const copyContextMenuTitle = getObjectTitle();
-        contextMenu.debugSection().appendItem(i18nString(UIStrings.storeSAsGlobalVariable, { PH1: String(copyContextMenuTitle) }), () => executionContext?.target()
+        contextMenu.debugSection().appendItem(i18nString(UIStrings.storeAsGlobalVariable), () => executionContext?.target()
             .model(SDK.ConsoleModel.ConsoleModel)
             ?.saveToTempVariable(executionContext, remoteObject));
         const ctxMenuClipboardSection = contextMenu.clipboardSection();

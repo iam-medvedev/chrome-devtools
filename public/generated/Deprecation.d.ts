@@ -60,10 +60,6 @@ export declare const UIStrings: {
      */
     DOMMutationEvents: string;
     /**
-     * @description This message is shown when the deprecated Expect-CT header is present.
-     */
-    ExpectCTHeader: string;
-    /**
      * @description Warning displayed to developers when the Geolocation API is used from an insecure origin (one that isn't localhost or doesn't use HTTPS) to notify them that this use is no longer supported.
      */
     GeolocationInsecureOrigin: string;
@@ -215,6 +211,10 @@ export declare const UIStrings: {
      * @description A deprecation warning shown in the DevTools Issues tab. It's shown when the speech synthesis API is called before the page receives a user activation.
      */
     TextToSpeech_DisallowedByAutoplay: string;
+    /**
+     * @description A deprecation warning shown in the DevTools Issues tab. It's shown when a listener for the `unload` event is added.
+     */
+    UnloadHandler: string;
     /**
      * @description A deprecation warning shown in the DevTools Issues tab. The placeholder is always the noun 'SharedArrayBuffer' which refers to a JavaScript construct. 'Extensions' refers to Chrome extensions. The warning is shown when Chrome Extensions attempt to use 'SharedArrayBuffer's under insecure circumstances.
      */

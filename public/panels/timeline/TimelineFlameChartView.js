@@ -158,11 +158,6 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         const { window, animate } = event.data;
         if (event.data.breadcrumbWindow) {
             this.#currentBreadcrumbTimeWindow = event.data.breadcrumbWindow;
-            const minMilliseconds = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.data.breadcrumbWindow.min);
-            const maxMilliseconds = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.data.breadcrumbWindow.max);
-            this.mainFlameChart.setTotalAndMinimumBreadcrumbValues(minMilliseconds, maxMilliseconds);
-            this.networkFlameChart.setTotalAndMinimumBreadcrumbValues(minMilliseconds, maxMilliseconds);
-            this.mainFlameChart.update();
         }
         else {
             this.#currentBreadcrumbTimeWindow = undefined;
@@ -238,7 +233,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.updateSearchResults(false, false);
     }
     #updateDetailViews() {
-        this.countersView.setModel(this.model, this.#selectedEvents);
+        this.countersView.setModel(this.model, this.#traceEngineData, this.#selectedEvents);
         // TODO(crbug.com/1459265):  Change to await after migration work.
         void this.detailsView.setModel(this.model, this.#traceEngineData, this.#selectedEvents);
     }

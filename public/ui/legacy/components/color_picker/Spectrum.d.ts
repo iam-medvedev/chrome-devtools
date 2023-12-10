@@ -56,7 +56,6 @@ export declare class Spectrum extends Spectrum_base {
     private colorOffset?;
     private closeButton?;
     private paletteContainerMutable?;
-    private eyeDropperExperimentEnabled?;
     private shadesCloseHandler?;
     private dragElement?;
     private dragHotSpotX?;

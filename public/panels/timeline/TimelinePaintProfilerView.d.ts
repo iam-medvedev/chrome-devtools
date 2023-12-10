@@ -1,10 +1,9 @@
-import type * as SDK from '../../core/sdk/sdk.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
-import type * as TraceEngine from '../../models/trace/trace.js';
-import * as UI from '../../ui/legacy/legacy.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
+import * as TraceEngine from '../../models/trace/trace.js';
+import * as UI from '../../ui/legacy/legacy.js';
 export declare class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
-    private frameModel;
+    #private;
     private readonly logAndImageSplitWidget;
     private readonly imageView;
     private readonly paintProfilerView;
@@ -14,10 +13,10 @@ export declare class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidge
     private event;
     private paintProfilerModel;
     private lastLoadedSnapshot;
-    constructor(frameModel: TimelineModel.TimelineFrameModel.TimelineFrameModel);
+    constructor(traceEngineData: TraceEngine.Handlers.Types.TraceParseData);
     wasShown(): void;
     setSnapshot(snapshot: SDK.PaintProfiler.PaintProfilerSnapshot): void;
-    setEvent(paintProfilerModel: SDK.PaintProfiler.PaintProfilerModel, event: TraceEngine.Legacy.Event): boolean;
+    setEvent(paintProfilerModel: SDK.PaintProfiler.PaintProfilerModel, event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
     private updateWhenVisible;
     private update;
     private releaseSnapshot;

@@ -2247,10 +2247,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.minimumBoundaryInternal = this.dataProvider.minimumBoundary();
         this.chartViewport.setBoundaries(this.minimumBoundaryInternal, this.totalTime);
     }
-    setTotalAndMinimumBreadcrumbValues(min, max) {
-        this.minimumBoundaryInternal = min;
-        this.totalTime = max - min;
-    }
     updateHeight() {
         const height = this.levelToOffset(this.dataProvider.maxStackDepth()) + 2;
         this.chartViewport.setContentHeight(height);
