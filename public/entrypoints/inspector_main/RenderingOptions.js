@@ -201,7 +201,6 @@ const supportsPrefersContrast = () => {
     const query = 'not all and (prefers-contrast), (prefers-contrast)';
     return window.matchMedia(query).matches;
 };
-let renderingOptionsViewInstance;
 export class RenderingOptionsView extends UI.Widget.VBox {
     constructor() {
         super(true);
@@ -237,13 +236,6 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         this.#appendCheckbox(i18nString(UIStrings.disableAvifImageFormat), i18nString(UIStrings.requiresAPageReloadToApplyAnd), Common.Settings.Settings.instance().moduleSetting('avifFormatDisabled'));
         this.#appendCheckbox(i18nString(UIStrings.disableWebpImageFormat), i18nString(UIStrings.requiresAPageReloadToApplyAnd), Common.Settings.Settings.instance().moduleSetting('webpFormatDisabled'));
         this.contentElement.createChild('div').classList.add('panel-section-separator');
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!renderingOptionsViewInstance || forceNew) {
-            renderingOptionsViewInstance = new RenderingOptionsView();
-        }
-        return renderingOptionsViewInstance;
     }
     #appendCheckbox(label, subtitle, setting) {
         const checkbox = UI.UIUtils.CheckboxLabel.create(label, false, subtitle, setting.name);

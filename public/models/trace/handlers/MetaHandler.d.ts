@@ -4,6 +4,7 @@ export declare function initialize(): void;
 export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
 export declare function finalize(): Promise<void>;
 export type MetaHandlerData = {
+    traceIsGeneric: boolean;
     traceBounds: Types.Timing.TraceWindowMicroSeconds;
     browserProcessId: Types.TraceEvents.ProcessID;
     browserThreadId: Types.TraceEvents.ThreadID;

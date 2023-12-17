@@ -29,7 +29,7 @@ export class LayersWidget extends UI.Widget.Widget {
     constructor() {
         super(true);
         this.contentElement.className = 'styles-layers-pane';
-        this.contentElement.setAttribute('jslog', `${VisualLogging.cssLayersPane()}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('css-layers')}`);
         UI.UIUtils.createTextChild(this.contentElement.createChild('div'), i18nString(UIStrings.cssLayersTitle));
         this.contentElement.appendChild(this.layerTreeComponent);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);

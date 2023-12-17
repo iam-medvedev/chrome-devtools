@@ -5,46 +5,41 @@ import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Search from '../search/search.js';
 import { SourcesSearchScope } from './SourcesSearchScope.js';
-let searchSourcesViewInstance;
+export class SearchSources {
+    query;
+    constructor(query) {
+        this.query = query;
+    }
+}
 export class SearchSourcesView extends Search.SearchView.SearchView {
     constructor() {
         super('sources', new Common.Throttler.Throttler(/* timeoutMs */ 200));
-    }
-    static instance() {
-        if (!searchSourcesViewInstance) {
-            searchSourcesViewInstance = new SearchSourcesView();
-        }
-        return searchSourcesViewInstance;
-    }
-    static async openSearch(query, searchImmediately) {
-        const view = UI.ViewManager.ViewManager.instance().view('sources.search-sources-tab');
-        // Deliberately use target location name so that it could be changed
-        // based on the setting later.
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const location = await UI.ViewManager.ViewManager.instance().resolveLocation('drawer-view');
-        location.appendView(view);
-        await UI.ViewManager.ViewManager.instance().revealView(view);
-        const widget = await view.widget();
-        widget.toggle(query, Boolean(searchImmediately));
-        return widget;
     }
     createScope() {
         return new SourcesSearchScope();
     }
 }
 export class ActionDelegate {
-    handleAction(_context, _actionId) {
-        void this.showSearch();
-        return true;
-    }
-    showSearch() {
-        const selection = UI.InspectorView.InspectorView.instance().element.window().getSelection();
-        let queryCandidate = '';
-        if (selection && selection.rangeCount) {
-            queryCandidate = selection.toString().replace(/\r?\n.*/, '');
+    handleAction(_context, actionId) {
+        switch (actionId) {
+            case 'sources.search': {
+                const selection = UI.InspectorView.InspectorView.instance().element.window().getSelection();
+                const query = selection ? selection.toString().replace(/\r?\n.*/, '') : '';
+                void Common.Revealer.reveal(new SearchSources(query));
+                return true;
+            }
         }
-        return SearchSourcesView.openSearch(queryCandidate);
+        return false;
+    }
+}
+export class Revealer {
+    async reveal({ query }, omitFocus) {
+        const viewManager = UI.ViewManager.ViewManager.instance();
+        await viewManager.showView('sources.search-sources-tab', true, omitFocus);
+        const searchSourcesView = viewManager.materializedWidget('sources.search-sources-tab');
+        if (searchSourcesView instanceof SearchSourcesView) {
+            searchSourcesView.toggle(query);
+        }
     }
 }
 //# sourceMappingURL=SearchSourcesView.js.map

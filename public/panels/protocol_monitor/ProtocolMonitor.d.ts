@@ -55,9 +55,6 @@ export declare class ProtocolMonitorDataGrid extends ProtocolMonitorDataGrid_bas
     readonly selector: UI.Toolbar.ToolbarComboBox;
     constructor(splitWidget: UI.SplitWidget.SplitWidget);
     onCommandSend(command: string, parameters: object, target?: string): void;
-    static instance(opts?: {
-        forceNew: null | boolean;
-    }): ProtocolMonitorImpl;
     wasShown(): void;
     private setRecording;
     private targetToString;
@@ -68,9 +65,6 @@ export declare class ProtocolMonitorDataGrid extends ProtocolMonitorDataGrid_bas
 export declare class ProtocolMonitorImpl extends UI.Widget.VBox {
     #private;
     constructor();
-    static instance(opts?: {
-        forceNew: null | boolean;
-    }): ProtocolMonitorImpl;
 }
 export declare class CommandAutocompleteSuggestionProvider {
     #private;

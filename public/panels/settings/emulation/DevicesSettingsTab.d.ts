@@ -8,8 +8,7 @@ export declare class DevicesSettingsTab extends UI.Widget.VBox implements UI.Lis
     private muteUpdate;
     private emulatedDevicesList;
     private editor?;
-    private constructor();
-    static instance(): DevicesSettingsTab;
+    constructor();
     wasShown(): void;
     private devicesUpdated;
     private muteAndSaveDeviceList;

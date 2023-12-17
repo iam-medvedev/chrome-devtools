@@ -223,10 +223,6 @@ export function sanitizeProcesses(processes) {
             }
             continue;
         }
-        const asUrl = new URL(process.url);
-        if (asUrl.protocol === 'about:') {
-            processes.delete(pid);
-        }
     }
 }
 /**

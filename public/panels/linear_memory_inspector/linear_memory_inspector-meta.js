@@ -8,13 +8,13 @@ import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Title of the Linear Memory Inspector tool
+     *@description Title of the Linear Memory inspector tool
      */
-    memoryInspector: 'Memory Inspector',
+    memoryInspector: 'Memory inspector',
     /**
-     *@description Command for showing the 'Memory Inspector' tool
+     *@description Command for showing the 'Memory inspector' tool
      */
-    showMemoryInspector: 'Show Memory Inspector',
+    showMemoryInspector: 'Show Memory inspector',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/linear_memory_inspector/linear_memory_inspector-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);

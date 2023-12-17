@@ -12,6 +12,10 @@ function getThreadTypeForRendererThread(auctionWorkletsData, pid, thread) {
     else if (auctionWorkletsData.worklets.has(pid)) {
         threadType = "AUCTION_WORKLET" /* ThreadType.AUCTION_WORKLET */;
     }
+    else if (thread.name?.startsWith('ThreadPool')) {
+        // TODO(paulirish): perhaps exclude ThreadPoolServiceThread entirely
+        threadType = "THREAD_POOL" /* ThreadType.THREAD_POOL */;
+    }
     return threadType;
 }
 export function threadsInRenderer(rendererData, auctionWorkletsData) {

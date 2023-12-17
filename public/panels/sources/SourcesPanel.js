@@ -42,7 +42,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Snippets from '../snippets/snippets.js';
 import { CallStackSidebarPane } from './CallStackSidebarPane.js';
 import { DebuggerPausedMessage } from './DebuggerPausedMessage.js';
-import { ContentScriptsNavigatorView, FilesNavigatorView, NetworkNavigatorView, OverridesNavigatorView, SnippetsNavigatorView, } from './SourcesNavigator.js';
+import { NavigatorView } from './NavigatorView.js';
 import sourcesPanelStyles from './sourcesPanel.css.js';
 import { Events, SourcesView } from './SourcesView.js';
 import { ThreadsSidebarPane } from './ThreadsSidebarPane.js';
@@ -119,7 +119,7 @@ const UIStrings = {
     /**
      *@description A context menu item in the Sources Panel of the Sources panel
      */
-    revealInSidebar: 'Reveal in sidebar',
+    revealInSidebar: 'Reveal in navigator sidebar',
     /**
      *@description A context menu item in the Sources Panel of the Sources panel when debugging JS code.
      * When clicked, the execution is resumed until it reaches the line specified by the right-click that
@@ -461,18 +461,18 @@ export class SourcesPanel extends UI.Panel.Panel {
         const { uiSourceCode, lineNumber, columnNumber } = uiLocation;
         this.showUISourceCode(uiSourceCode, { lineNumber, columnNumber }, omitFocus);
     }
-    revealInNavigator(uiSourceCode, skipReveal) {
-        for (const navigator of registeredNavigatorViews) {
-            const navigatorView = navigator.navigatorView();
-            const viewId = navigator.viewId;
-            if (viewId && navigatorView.acceptProject(uiSourceCode.project())) {
+    async revealInNavigator(uiSourceCode, skipReveal) {
+        const viewManager = UI.ViewManager.ViewManager.instance();
+        for (const view of viewManager.viewsForLocation("navigator-view" /* UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW */)) {
+            const navigatorView = await view.widget();
+            if (navigatorView instanceof NavigatorView && navigatorView.acceptProject(uiSourceCode.project())) {
                 navigatorView.revealUISourceCode(uiSourceCode, true);
-                if (skipReveal) {
-                    this.navigatorTabbedLocation.tabbedPane().selectTab(viewId);
+                this.navigatorTabbedLocation.tabbedPane().selectTab(view.viewId(), true);
+                if (!skipReveal) {
+                    this.editorView.showBoth(true);
+                    navigatorView.focus();
                 }
-                else {
-                    void UI.ViewManager.ViewManager.instance().showView(viewId);
-                }
+                break;
             }
         }
     }
@@ -608,7 +608,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         const uiSourceCode = event.data;
         if (this.editorView.mainWidget() &&
             Common.Settings.Settings.instance().moduleSetting('autoRevealInNavigator').get()) {
-            this.revealInNavigator(uiSourceCode, true);
+            void this.revealInNavigator(uiSourceCode, true);
         }
     }
     togglePause() {
@@ -755,7 +755,9 @@ export class SourcesPanel extends UI.Panel.Panel {
             !eventTarget.isSelfOrDescendant(this.navigatorTabbedLocation.widget().element) &&
             !(Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.JUST_MY_CODE) &&
                 Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode))) {
-            contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSidebar), this.handleContextMenuReveal.bind(this, uiSourceCode));
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSidebar), this.revealInNavigator.bind(this, uiSourceCode), {
+                jslogContext: 'sources.reveal-in-navigator-sidebar',
+            });
         }
         // Ignore list only works for JavaScript debugging.
         if (uiSourceCode.contentType().hasScripts() &&
@@ -788,10 +790,6 @@ export class SourcesPanel extends UI.Panel.Panel {
             }
             this.callstackPane.appendIgnoreListURLContextMenuItems(contextMenu, uiSourceCode);
         }
-    }
-    handleContextMenuReveal(uiSourceCode) {
-        this.editorView.showBoth();
-        this.revealInNavigator(uiSourceCode);
     }
     appendRemoteObjectItems(contextMenu, remoteObject) {
         const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
@@ -1143,6 +1141,14 @@ export class ActionDelegate {
                 }
                 return true;
             }
+            case 'sources.reveal-in-navigator-sidebar': {
+                const uiSourceCode = panel.sourcesView().currentUISourceCode();
+                if (uiSourceCode === null) {
+                    return false;
+                }
+                void panel.revealInNavigator(uiSourceCode);
+                return true;
+            }
             case 'sources.toggle-navigator-sidebar': {
                 panel.toggleNavigatorSidebar();
                 return true;
@@ -1190,31 +1196,4 @@ export class WrapperView extends UI.Widget.VBox {
         this.view.show(this.element);
     }
 }
-const registeredNavigatorViews = [
-    {
-        viewId: 'navigator-network',
-        navigatorView: NetworkNavigatorView.instance,
-        experiment: undefined,
-    },
-    {
-        viewId: 'navigator-files',
-        navigatorView: FilesNavigatorView.instance,
-        experiment: undefined,
-    },
-    {
-        viewId: 'navigator-snippets',
-        navigatorView: SnippetsNavigatorView.instance,
-        experiment: undefined,
-    },
-    {
-        viewId: 'navigator-overrides',
-        navigatorView: OverridesNavigatorView.instance,
-        experiment: undefined,
-    },
-    {
-        viewId: 'navigator-contentScripts',
-        navigatorView: ContentScriptsNavigatorView.instance,
-        experiment: undefined,
-    },
-];
 //# sourceMappingURL=SourcesPanel.js.map

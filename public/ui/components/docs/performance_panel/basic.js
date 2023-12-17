@@ -91,9 +91,6 @@ const traceFileName = params.get('trace');
 const cpuprofileName = params.get('cpuprofile');
 const nodeMode = params.get('isNode');
 const isNodeMode = nodeMode === 'true' ? true : false;
-if (params.has('initiators')) {
-    Root.Runtime.experiments.setEnabled('timelineEventInitiators', true);
-}
 Root.Runtime.experiments.setEnabled(Root.Runtime.ExperimentName.BREADCRUMBS_PERFORMANCE_PANEL, params.has('breadcrumbs'));
 const timeline = Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, isNode: isNodeMode });
 const container = document.getElementById('container');
@@ -111,12 +108,17 @@ else if (cpuprofileName) {
     fileName = `${cpuprofileName}.cpuprofile.gz`;
 }
 if (fileName) {
-    const file = new URL(`../../../../../test/unittests/fixtures/traces/${fileName}`, import.meta.url);
+    await loadFromFile(fileName);
+}
+async function loadFromFile(fileNameWithExtension) {
+    const file = new URL(`../../../../../test/unittests/fixtures/traces/${fileNameWithExtension}`, import.meta.url);
     const response = await fetch(file);
     const asBlob = await response.blob();
-    const asFile = new File([asBlob], `${fileName}`, {
+    const asFile = new File([asBlob], `${fileNameWithExtension}`, {
         type: 'application/gzip',
     });
-    void timeline.loadFromFile(asFile);
+    await timeline.loadFromFile(asFile);
 }
+// @ts-expect-error
+window.loadFromFile = loadFromFile;
 //# sourceMappingURL=basic.js.map

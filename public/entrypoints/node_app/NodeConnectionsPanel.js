@@ -1,10 +1,10 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import nodeConnectionsPanelStyles from './nodeConnectionsPanel.css.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import nodeConnectionsPanelStyles from './nodeConnectionsPanel.css.js';
 const UIStrings = {
     /**
      *@description Text in Node Connections Panel of the Sources panel when debugging a Node.js app
@@ -30,7 +30,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/node_app/NodeConnectionsPanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let nodeConnectionsPanelInstance;
 export class NodeConnectionsPanel extends UI.Panel.Panel {
     #config;
     #networkDiscoveryView;
@@ -51,13 +50,6 @@ export class NodeConnectionsPanel extends UI.Panel.Panel {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.setDevicesDiscoveryConfig(this.#config);
         });
         this.#networkDiscoveryView.show(container);
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!nodeConnectionsPanelInstance || forceNew) {
-            nodeConnectionsPanelInstance = new NodeConnectionsPanel();
-        }
-        return nodeConnectionsPanelInstance;
     }
     #devicesDiscoveryConfigChanged({ data: config }) {
         this.#config = config;

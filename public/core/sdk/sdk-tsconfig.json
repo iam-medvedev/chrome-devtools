@@ -55,6 +55,7 @@
     "../../../../../../front_end/core/sdk/Connections.ts",
     "../../../../../../front_end/core/sdk/ConsoleModel.ts",
     "../../../../../../front_end/core/sdk/ConsoleModelTypes.ts",
+    "../../../../../../front_end/core/sdk/ContentData.ts",
     "../../../../../../front_end/core/sdk/Cookie.ts",
     "../../../../../../front_end/core/sdk/CookieModel.ts",
     "../../../../../../front_end/core/sdk/CookieParser.ts",

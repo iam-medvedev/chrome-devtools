@@ -93,7 +93,7 @@
     "message": "Îśŝúêś v̂íêẃ"
   },
   "core/common/Revealer.ts | memoryInspectorPanel": {
-    "message": "M̂ém̂ór̂ý Îńŝṕêćt̂ór̂ ṕâńêĺ"
+    "message": "M̂ém̂ór̂ý îńŝṕêćt̂ór̂ ṕâńêĺ"
   },
   "core/common/Revealer.ts | networkPanel": {
     "message": "N̂ét̂ẃôŕk̂ ṕâńêĺ"
@@ -1666,6 +1666,9 @@
   },
   "panels/accessibility/AccessibilityNodeView.ts | elementIsHiddenBy": {
     "message": "Êĺêḿêńt̂ íŝ h́îd́d̂én̂ b́ŷ áĉt́îv́ê ḿôd́âĺ d̂íâĺôǵ: "
+  },
+  "panels/accessibility/AccessibilityNodeView.ts | elementIsHiddenByChildTree": {
+    "message": "Êĺêḿêńt̂ íŝ h́îd́d̂én̂ b́ŷ ćĥíl̂d́ t̂ŕêé: "
   },
   "panels/accessibility/AccessibilityNodeView.ts | elementIsInAnInertSubTree": {
     "message": "Êĺêḿêńt̂ íŝ ín̂ án̂ inert śûb́t̂ŕêé f̂ŕôḿ "
@@ -5289,13 +5292,13 @@
     "message": "L̂óĉát̂é t̂h́ê áf̂f́êćt̂éd̂ él̂ém̂én̂t́ŝ ín̂ t́ĥé Êĺêḿêńt̂ś p̂án̂él̂"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
-    "message": "Q̂úîćk̂ śt̂ár̂t́: ĝét̂ śt̂ár̂t́êd́ ŵít̂h́ t̂h́ê ńêẃ ĈŚŜ Óv̂ér̂v́îéŵ ṕâńêĺ"
+    "message": "Q̂úîćk̂ śt̂ár̂t́: ĝét̂ śt̂ár̂t́êd́ ŵít̂h́ t̂h́ê ńêẃ ĈŚŜ óv̂ér̂v́îéŵ ṕâńêĺ"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
-    "message": "ĈŚŜ Óv̂ér̂v́îéŵ"
+    "message": "ĈŚŜ óv̂ér̂v́îéŵ"
   },
   "panels/css_overview/css_overview-meta.ts | showCssOverview": {
-    "message": "Ŝh́ôẃ ĈŚŜ Óv̂ér̂v́îéŵ"
+    "message": "Ŝh́ôẃ ĈŚŜ óv̂ér̂v́îéŵ"
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | aa": {
     "message": "ÂÁ"
@@ -5331,7 +5334,7 @@
     "message": "Ĉón̂t́r̂áŝt́ r̂át̂íô"
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | cssOverviewElements": {
-    "message": "ĈŚŜ Óv̂ér̂v́îéŵ Él̂ém̂én̂t́ŝ"
+    "message": "ĈŚŜ óv̂ér̂v́îéŵ él̂ém̂én̂t́ŝ"
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | declaration": {
     "message": "D̂éĉĺâŕât́îón̂"
@@ -5409,7 +5412,7 @@
     "message": "Ĉĺêár̂ óv̂ér̂v́îéŵ"
   },
   "panels/css_overview/CSSOverviewSidebarPanel.ts | cssOverviewPanelSidebar": {
-    "message": "ĈŚŜ Óv̂ér̂v́îéŵ ṕâńêĺ ŝíd̂éb̂ár̂"
+    "message": "ĈŚŜ óv̂ér̂v́îéŵ ṕâńêĺ ŝíd̂éb̂ár̂"
   },
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | bottomAppliedToAStatically": {
     "message": "Bottom âṕp̂ĺîéd̂ t́ô á ŝt́ât́îćâĺl̂ý p̂óŝít̂íôńêd́ êĺêḿêńt̂"
@@ -5433,10 +5436,10 @@
     "message": "Width âṕp̂ĺîéd̂ t́ô án̂ ín̂ĺîńê él̂ém̂én̂t́"
   },
   "panels/developer_resources/developer_resources-meta.ts | developerResources": {
-    "message": "D̂év̂él̂óp̂ér̂ Ŕêśôúr̂ćêś"
+    "message": "D̂év̂él̂óp̂ér̂ ŕêśôúr̂ćêś"
   },
   "panels/developer_resources/developer_resources-meta.ts | showDeveloperResources": {
-    "message": "Ŝh́ôẃ D̂év̂él̂óp̂ér̂ Ŕêśôúr̂ćêś"
+    "message": "Ŝh́ôẃ D̂év̂él̂óp̂ér̂ ŕêśôúr̂ćêś"
   },
   "panels/developer_resources/DeveloperResourcesListView.ts | copyInitiatorUrl": {
     "message": "Ĉóp̂ý îńît́îát̂ór̂ ÚR̂Ĺ"
@@ -5445,7 +5448,7 @@
     "message": "Ĉóp̂ý ÛŔL̂"
   },
   "panels/developer_resources/DeveloperResourcesListView.ts | developerResources": {
-    "message": "D̂év̂él̂óp̂ér̂ Ŕêśôúr̂ćêś"
+    "message": "D̂év̂él̂óp̂ér̂ ŕêśôúr̂ćêś"
   },
   "panels/developer_resources/DeveloperResourcesListView.ts | error": {
     "message": "Êŕr̂ór̂"
@@ -5603,6 +5606,12 @@
   "panels/elements/ComputedStyleWidget.ts | showAll": {
     "message": "Ŝh́ôẃ âĺl̂"
   },
+  "panels/elements/CSSRuleValidator.ts | flexGridContainerPropertyRuleFix": {
+    "message": "T̂ŕŷ śêt́t̂ín̂ǵ t̂h́ê {PROPERTY_NAME} ón̂ t́ĥé ĉón̂t́âín̂ér̂ él̂ém̂én̂t́ ôŕ ûśê {ALTERNATIVE_PROPERTY_NAME} ín̂śt̂éâd́."
+  },
+  "panels/elements/CSSRuleValidator.ts | flexGridContainerPropertyRuleReason": {
+    "message": "T̂h́îś êĺêḿêńt̂ íŝ á {CONTAINER_DISPLAY_NAME} ît́êḿ, î.é. â ćĥíl̂d́ ôf́ â {CONTAINER_DISPLAY_NAME} ćôńt̂áîńêŕ, b̂út̂ {PROPERTY_NAME} ón̂ĺŷ áp̂ṕl̂íêś t̂ó ĉón̂t́âín̂ér̂ś."
+  },
   "panels/elements/CSSRuleValidator.ts | fontVariationSettingsWarning": {
     "message": "V̂ál̂úê f́ôŕ ŝét̂t́îńĝ “{PH1}” {PH2} íŝ óût́ŝíd̂é t̂h́ê śûṕp̂ór̂t́êd́ r̂án̂ǵê [{PH3}, {PH4}] f́ôŕ f̂ón̂t́-f̂ám̂íl̂ý “{PH5}”."
   },
@@ -5611,6 +5620,9 @@
   },
   "panels/elements/CSSRuleValidator.ts | ruleViolatedByParentElementRuleReason": {
     "message": "T̂h́ê {REASON_PROPERTY_DECLARATION_CODE} ṕr̂óp̂ér̂t́ŷ ón̂ t́ĥé p̂ár̂én̂t́ êĺêḿêńt̂ ṕr̂év̂én̂t́ŝ {AFFECTED_PROPERTY_DECLARATION_CODE} f́r̂óm̂ h́âv́îńĝ án̂ éf̂f́êćt̂."
+  },
+  "panels/elements/CSSRuleValidator.ts | ruleViolatedBySameElementRuleChangeFlexOrGrid": {
+    "message": "T̂ŕŷ ád̂d́îńĝ {DISPLAY_GRID_RULE} ór̂ {DISPLAY_FLEX_RULE} t́ô ḿâḱê t́ĥíŝ él̂ém̂én̂t́ îńt̂ó â ćôńt̂áîńêŕ."
   },
   "panels/elements/CSSRuleValidator.ts | ruleViolatedBySameElementRuleChangeSuggestion": {
     "message": "T̂ŕŷ śêt́t̂ín̂ǵ t̂h́ê {EXISTING_PROPERTY_DECLARATION} ṕr̂óp̂ér̂t́ŷ t́ô {TARGET_PROPERTY_DECLARATION}."
@@ -6140,6 +6152,9 @@
   "panels/emulation/DeviceModeToolbar.ts | devicePixelRatio": {
     "message": "D̂év̂íĉé p̂íx̂él̂ ŕât́îó"
   },
+  "panels/emulation/DeviceModeToolbar.ts | devicePosture": {
+    "message": "D̂év̂íĉé p̂óŝt́ûŕê"
+  },
   "panels/emulation/DeviceModeToolbar.ts | deviceType": {
     "message": "D̂év̂íĉé t̂ýp̂é"
   },
@@ -6438,7 +6453,7 @@
     "message": "R̂éŝóûŕĉé"
   },
   "panels/issues/AffectedDirectivesView.ts | sourceLocation": {
-    "message": "Ŝóûŕĉé L̂óĉát̂íôń"
+    "message": "Ŝóûŕĉé l̂óĉát̂íôń"
   },
   "panels/issues/AffectedDirectivesView.ts | status": {
     "message": "Ŝt́ât́ûś"
@@ -7296,16 +7311,16 @@
     "message": "Ôt́ĥér̂"
   },
   "panels/linear_memory_inspector/linear_memory_inspector-meta.ts | memoryInspector": {
-    "message": "M̂ém̂ór̂ý Îńŝṕêćt̂ór̂"
+    "message": "M̂ém̂ór̂ý îńŝṕêćt̂ór̂"
   },
   "panels/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
-    "message": "Ŝh́ôẃ M̂ém̂ór̂ý Îńŝṕêćt̂ór̂"
+    "message": "Ŝh́ôẃ M̂ém̂ór̂ý îńŝṕêćt̂ór̂"
   },
   "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | couldNotOpenLinearMemory": {
     "message": "Ĉóûĺd̂ ńôt́ ôṕêń l̂ín̂éâŕ m̂ém̂ór̂ý îńŝṕêćt̂ór̂: f́âíl̂éd̂ ĺôćât́îńĝ b́ûf́f̂ér̂."
   },
   "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | revealInMemoryInspectorPanel": {
-    "message": "R̂év̂éâĺ îń M̂ém̂ór̂ý Îńŝṕêćt̂ór̂ ṕâńêĺ"
+    "message": "R̂év̂éâĺ îń M̂ém̂ór̂ý îńŝṕêćt̂ór̂ ṕâńêĺ"
   },
   "panels/linear_memory_inspector/LinearMemoryInspectorPane.ts | noOpenInspections": {
     "message": "N̂ó ôṕêń îńŝṕêćt̂íôńŝ"
@@ -9356,9 +9371,6 @@
   "panels/profiler/HeapSnapshotView.ts | selectedSizeS": {
     "message": "Ŝél̂éĉt́êd́ ŝíẑé: {PH1}"
   },
-  "panels/profiler/HeapSnapshotView.ts | sKb": {
-    "message": "{PH1} k̂B́"
-  },
   "panels/profiler/HeapSnapshotView.ts | snapshotD": {
     "message": "Ŝńâṕŝh́ôt́ {PH1}"
   },
@@ -9593,17 +9605,11 @@
   "panels/profiler/ProfilesPanel.ts | deprecationWarnMsg": {
     "message": "T̂h́îś p̂án̂él̂ ẃîĺl̂ b́ê d́êṕr̂éĉát̂éd̂ ín̂ t́ĥé ûṕĉóm̂ín̂ǵ v̂ér̂śîón̂. Úŝé t̂h́ê Ṕêŕf̂ór̂ḿâńĉé p̂án̂él̂ t́ô ŕêćôŕd̂ J́âv́âŚĉŕîṕt̂ ĆP̂Ú p̂ŕôf́îĺêś."
   },
-  "panels/profiler/ProfilesPanel.ts | enableThisPanelTemporarily": {
-    "message": "Êńâb́l̂é t̂h́îś p̂án̂él̂ t́êḿp̂ór̂ár̂íl̂ý"
-  },
   "panels/profiler/ProfilesPanel.ts | feedback": {
     "message": "F̂éêd́b̂áĉḱ"
   },
   "panels/profiler/ProfilesPanel.ts | goToPerformancePanel": {
     "message": "Ĝó t̂ó P̂ér̂f́ôŕm̂án̂ćê Ṕâńêĺ"
-  },
-  "panels/profiler/ProfilesPanel.ts | learnMore": {
-    "message": "L̂éâŕn̂ ḿôŕê"
   },
   "panels/profiler/ProfilesPanel.ts | profileLoadingFailedS": {
     "message": "P̂ŕôf́îĺê ĺôád̂ín̂ǵ f̂áîĺêd́: {PH1}."
@@ -11762,6 +11768,9 @@
   "panels/sources/sources-meta.ts | resumeScriptExecution": {
     "message": "R̂éŝúm̂é ŝćr̂íp̂t́ êx́êćût́îón̂"
   },
+  "panels/sources/sources-meta.ts | revealActiveFileInSidebar": {
+    "message": "R̂év̂éâĺ âćt̂ív̂é f̂íl̂é îń n̂áv̂íĝát̂ór̂ śîd́êb́âŕ"
+  },
   "panels/sources/sources-meta.ts | runSnippet": {
     "message": "R̂ún̂ śn̂íp̂ṕêt́"
   },
@@ -11967,7 +11976,7 @@
     "message": "R̂éŝúm̂é ŵít̂h́ âĺl̂ ṕâúŝéŝ b́l̂óĉḱêd́ f̂ór̂ 500 ḿŝ"
   },
   "panels/sources/SourcesPanel.ts | revealInSidebar": {
-    "message": "R̂év̂éâĺ îń ŝíd̂éb̂ár̂"
+    "message": "R̂év̂éâĺ îń n̂áv̂íĝát̂ór̂ śîd́êb́âŕ"
   },
   "panels/sources/SourcesPanel.ts | showDebugger": {
     "message": "Ŝh́ôẃ d̂éb̂úĝǵêŕ"
@@ -14244,7 +14253,7 @@
     "message": "N̂ó p̂ŕôṕêŕt̂íêś"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | revealInMemoryInpector": {
-    "message": "R̂év̂éâĺ îń M̂ém̂ór̂ý Îńŝṕêćt̂ór̂ ṕâńêĺ"
+    "message": "R̂év̂éâĺ îń M̂ém̂ór̂ý îńŝṕêćt̂ór̂ ṕâńêĺ"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | showAllD": {
     "message": "Ŝh́ôẃ âĺl̂ {PH1}"

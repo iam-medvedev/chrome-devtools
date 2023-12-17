@@ -72,7 +72,7 @@ export declare class CSSMatchedStyles {
     customHighlightPseudoNames(): Set<string>;
     nodeForStyle(style: CSSStyleDeclaration): DOMNode | null;
     availableCSSVariables(style: CSSStyleDeclaration): string[];
-    computeCSSVariable(style: CSSStyleDeclaration, variableName: string): string | null;
+    computeCSSVariable(style: CSSStyleDeclaration, variableName: string): CSSVariableValue | null;
     computeValue(style: CSSStyleDeclaration, value: string): string | null;
     /**
      * Same as computeValue, but to be used for `var(--#name [,...])` values only
@@ -85,7 +85,12 @@ export declare class CSSMatchedStyles {
     propertyState(property: CSSProperty): PropertyState | null;
     resetActiveProperties(): void;
 }
+interface CSSVariableValue {
+    value: string;
+    declaration: CSSProperty | CSSRegisteredProperty | null;
+}
 export declare enum PropertyState {
     Active = "Active",
     Overloaded = "Overloaded"
 }
+export {};

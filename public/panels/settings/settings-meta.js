@@ -65,7 +65,7 @@ UI.ViewManager.registerViewExtension({
     order: 0,
     async loadView() {
         const Settings = await loadSettingsModule();
-        return Settings.SettingsScreen.GenericSettingsTab.instance();
+        return new Settings.SettingsScreen.GenericSettingsTab();
     },
 });
 UI.ViewManager.registerViewExtension({
@@ -77,7 +77,7 @@ UI.ViewManager.registerViewExtension({
     experiment: Root.Runtime.ExperimentName.ALL,
     async loadView() {
         const Settings = await loadSettingsModule();
-        return Settings.SettingsScreen.ExperimentsSettingsTab.instance();
+        return new Settings.SettingsScreen.ExperimentsSettingsTab();
     },
 });
 UI.ViewManager.registerViewExtension({
@@ -88,7 +88,7 @@ UI.ViewManager.registerViewExtension({
     order: 4,
     async loadView() {
         const Settings = await loadSettingsModule();
-        return Settings.FrameworkIgnoreListSettingsTab.FrameworkIgnoreListSettingsTab.instance();
+        return new Settings.FrameworkIgnoreListSettingsTab.FrameworkIgnoreListSettingsTab();
     },
 });
 UI.ViewManager.registerViewExtension({
@@ -99,7 +99,7 @@ UI.ViewManager.registerViewExtension({
     order: 100,
     async loadView() {
         const Settings = await loadSettingsModule();
-        return Settings.KeybindsSettingsTab.KeybindsSettingsTab.instance();
+        return new Settings.KeybindsSettingsTab.KeybindsSettingsTab();
     },
 });
 UI.ActionRegistration.registerActionExtension({

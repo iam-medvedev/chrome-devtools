@@ -26,10 +26,10 @@ export const defaultOptionsForTabs = {
 };
 export class PreRegisteredView {
     viewRegistration;
-    widgetRequested;
+    widgetPromise;
     constructor(viewRegistration) {
         this.viewRegistration = viewRegistration;
-        this.widgetRequested = false;
+        this.widgetPromise = null;
     }
     title() {
         return this.viewRegistration.title();
@@ -69,20 +69,23 @@ export class PreRegisteredView {
         return this.viewRegistration.persistence;
     }
     async toolbarItems() {
-        if (this.viewRegistration.hasToolbar) {
-            return this.widget().then(widget => widget.toolbarItems());
+        if (!this.viewRegistration.hasToolbar) {
+            return [];
         }
-        return [];
+        const provider = await this.widget();
+        return provider.toolbarItems();
     }
-    async widget() {
-        this.widgetRequested = true;
-        return this.viewRegistration.loadView();
+    widget() {
+        if (this.widgetPromise === null) {
+            this.widgetPromise = this.viewRegistration.loadView();
+        }
+        return this.widgetPromise;
     }
     async disposeView() {
-        if (!this.widgetRequested) {
+        if (this.widgetPromise === null) {
             return;
         }
-        const widget = await this.widget();
+        const widget = await this.widgetPromise;
         await widget.ownerViewDisposed();
     }
     experiment() {

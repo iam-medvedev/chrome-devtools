@@ -35,11 +35,7 @@ export declare class MainView extends UI.Panel.PanelWithSidebar implements SDK.T
     private deletedPlayers;
     private readonly downloadStore;
     private readonly sidebar;
-    constructor(downloadStore: PlayerDataDownloadManager);
-    static instance(opts?: {
-        forceNew: boolean;
-        downloadStore?: PlayerDataDownloadManager;
-    }): MainView;
+    constructor(downloadStore?: PlayerDataDownloadManager);
     renderMainPanel(playerID: string): void;
     wasShown(): void;
     willHide(): void;

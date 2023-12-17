@@ -37,6 +37,7 @@ export declare class PromptBuilder {
     }): string;
 }
 export declare function allowHeader(header: SDK.NetworkRequest.NameValue): boolean;
+export declare function lineWhitespace(line: string): string | null;
 export declare function formatRelatedCode({ text, columnNumber, lineNumber }: {
     text: string;
     columnNumber: number;

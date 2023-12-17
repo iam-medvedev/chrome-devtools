@@ -180,9 +180,7 @@ export class SearchView extends UI.Widget.VBox {
         return new Workspace.SearchConfig.SearchConfig(this.search.value, !this.matchCaseButton.toggled(), this.regexButton.toggled());
     }
     toggle(queryCandidate, searchImmediately) {
-        if (queryCandidate) {
-            this.search.value = queryCandidate;
-        }
+        this.search.value = queryCandidate;
         if (this.isShowing()) {
             this.focus();
         }

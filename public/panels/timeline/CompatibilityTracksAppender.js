@@ -26,7 +26,6 @@ export class CompatibilityTracksAppender {
     #colorGenerator;
     #allTrackAppenders = [];
     #visibleTrackNames = new Set([...TrackNames]);
-    #isCpuProfile = false;
     // TODO(crbug.com/1416533)
     // These are used only for compatibility with the legacy flame chart
     // architecture of the panel. Once all tracks have been migrated to
@@ -53,7 +52,7 @@ export class CompatibilityTracksAppender {
      * architecture and should be removed once all tracks use the new
      * system.
      */
-    constructor(flameChartData, traceParsedData, entryData, legacyEntryTypeByLevel, legacyTimelineModel, isCpuProfile = false) {
+    constructor(flameChartData, traceParsedData, entryData, legacyEntryTypeByLevel, legacyTimelineModel) {
         this.#flameChartData = flameChartData;
         this.#traceParsedData = traceParsedData;
         this.#entryData = entryData;
@@ -64,7 +63,6 @@ export class CompatibilityTracksAppender {
         /* alphaSpace= */ 0.7);
         this.#legacyEntryTypeByLevel = legacyEntryTypeByLevel;
         this.#legacyTimelineModel = legacyTimelineModel;
-        this.#isCpuProfile = isCpuProfile;
         this.#timingsTrackAppender = new TimingsTrackAppender(this, this.#traceParsedData, this.#colorGenerator);
         this.#allTrackAppenders.push(this.#timingsTrackAppender);
         this.#interactionsTrackAppender = new InteractionsTrackAppender(this, this.#traceParsedData, this.#colorGenerator);
@@ -108,62 +106,51 @@ export class CompatibilityTracksAppender {
     #addThreadAppenders() {
         const weight = (appender) => {
             switch (appender.threadType) {
-                case "MAIN_THREAD" /* ThreadType.MAIN_THREAD */:
-                    return appender.isOnMainFrame ? 0 : 1;
-                case "WORKER" /* ThreadType.WORKER */:
-                    return 2;
-                case "RASTERIZER" /* ThreadType.RASTERIZER */:
+                case "MAIN_THREAD" /* TraceEngine.Handlers.Threads.ThreadType.MAIN_THREAD */: {
+                    // Within tracks of the main thread, those with data
+                    // from about:blank are treated with the lowest priority,
+                    // since there's a chance they have only noise from the
+                    // navigation to about:blank done on record and reload.
+                    const asUrl = new URL(appender.getUrl());
+                    if (asUrl.protocol === 'about:') {
+                        return 2;
+                    }
+                    return (appender.isOnMainFrame && appender.getUrl() !== '') ? 0 : 1;
+                }
+                case "WORKER" /* TraceEngine.Handlers.Threads.ThreadType.WORKER */:
                     return 3;
-                case "THREAD_POOL" /* ThreadType.THREAD_POOL */:
+                case "RASTERIZER" /* TraceEngine.Handlers.Threads.ThreadType.RASTERIZER */:
                     return 4;
-                case "AUCTION_WORKLET" /* ThreadType.AUCTION_WORKLET */:
-                    return 4;
-                case "OTHER" /* ThreadType.OTHER */:
+                case "THREAD_POOL" /* TraceEngine.Handlers.Threads.ThreadType.THREAD_POOL */:
                     return 5;
-                default:
+                case "AUCTION_WORKLET" /* TraceEngine.Handlers.Threads.ThreadType.AUCTION_WORKLET */:
                     return 6;
+                case "OTHER" /* TraceEngine.Handlers.Threads.ThreadType.OTHER */:
+                    return 7;
+                default:
+                    return 8;
             }
         };
-        if (this.#isCpuProfile && this.#traceParsedData.Samples) {
-            for (const [pid, process] of this.#traceParsedData.Samples.profilesInProcess) {
-                for (const tid of process.keys()) {
-                    this.#threadAppenders.push(new ThreadAppender(this, this.#traceParsedData, pid, tid, null, "CPU_PROFILE" /* ThreadType.CPU_PROFILE */));
-                }
+        const threads = TraceEngine.Handlers.Threads.threadsInTrace(this.#traceParsedData);
+        const processedAuctionWorkletsIds = new Set();
+        for (const { pid, tid, name, type } of threads) {
+            const maybeWorklet = this.#traceParsedData.AuctionWorklets.worklets.get(pid);
+            if (processedAuctionWorkletsIds.has(pid)) {
+                // Keep track of this process to ensure we only add the following
+                // tracks once per process and not once per thread.
+                continue;
             }
-        }
-        else if (this.#traceParsedData.Renderer) {
-            for (const [pid, process] of this.#traceParsedData.Renderer.processes) {
-                if (this.#traceParsedData.AuctionWorklets.worklets.has(pid)) {
-                    const workletEvent = this.#traceParsedData.AuctionWorklets.worklets.get(pid);
-                    if (!workletEvent) {
-                        continue;
-                    }
-                    // Each AuctionWorklet event represents two threads:
-                    // 1. the Utility Thread
-                    // 2. the V8 Helper Thread
-                    // Note that the names passed here are not used visually. TODO: remove this name?
-                    this.#threadAppenders.push(new ThreadAppender(this, this.#traceParsedData, pid, workletEvent.args.data.utilityThread.tid, 'auction-worket-utility', "AUCTION_WORKLET" /* ThreadType.AUCTION_WORKLET */));
-                    this.#threadAppenders.push(new ThreadAppender(this, this.#traceParsedData, pid, workletEvent.args.data.v8HelperThread.tid, 'auction-worklet-v8helper', "AUCTION_WORKLET" /* ThreadType.AUCTION_WORKLET */));
-                    continue;
-                }
-                for (const [tid, thread] of process.threads) {
-                    let threadType = "OTHER" /* ThreadType.OTHER */;
-                    if (thread.name === 'CrRendererMain') {
-                        threadType = "MAIN_THREAD" /* ThreadType.MAIN_THREAD */;
-                    }
-                    else if (thread.name === 'DedicatedWorker thread') {
-                        threadType = "WORKER" /* ThreadType.WORKER */;
-                    }
-                    else if (thread.name?.startsWith('CompositorTileWorker')) {
-                        threadType = "RASTERIZER" /* ThreadType.RASTERIZER */;
-                    }
-                    else if (thread.name?.startsWith('ThreadPool')) {
-                        // TODO(paulirish): perhaps exclude ThreadPoolServiceThread entirely
-                        threadType = "THREAD_POOL" /* ThreadType.THREAD_POOL */;
-                    }
-                    this.#threadAppenders.push(new ThreadAppender(this, this.#traceParsedData, pid, tid, thread.name, threadType));
-                }
+            if (maybeWorklet) {
+                processedAuctionWorkletsIds.add(pid);
+                // Each AuctionWorklet event represents two threads:
+                // 1. the Utility Thread
+                // 2. the V8 Helper Thread
+                // Note that the names passed here are not used visually. TODO: remove this name?
+                this.#threadAppenders.push(new ThreadAppender(this, this.#traceParsedData, pid, maybeWorklet.args.data.utilityThread.tid, 'auction-worket-utility', "AUCTION_WORKLET" /* TraceEngine.Handlers.Threads.ThreadType.AUCTION_WORKLET */));
+                this.#threadAppenders.push(new ThreadAppender(this, this.#traceParsedData, pid, maybeWorklet.args.data.v8HelperThread.tid, 'auction-worklet-v8helper', "AUCTION_WORKLET" /* TraceEngine.Handlers.Threads.ThreadType.AUCTION_WORKLET */));
+                continue;
             }
+            this.#threadAppenders.push(new ThreadAppender(this, this.#traceParsedData, pid, tid, name, type));
         }
         this.#threadAppenders.sort((a, b) => weight(a) - weight(b));
         this.#allTrackAppenders.push(...this.#threadAppenders);

@@ -159,9 +159,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sensors/SensorsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _instanceObject = null;
 export class SensorsView extends UI.Widget.VBox {
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -221,12 +218,6 @@ export class SensorsView extends UI.Widget.VBox {
         this.createPanelSeparator();
         this.appendIdleEmulator();
         this.createPanelSeparator();
-    }
-    static instance() {
-        if (!_instanceObject) {
-            _instanceObject = new SensorsView();
-        }
-        return _instanceObject;
     }
     wasShown() {
         super.wasShown();

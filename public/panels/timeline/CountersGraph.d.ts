@@ -1,13 +1,11 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type PerformanceModel } from './PerformanceModel.js';
 import { type TimelineModeViewDelegate } from './TimelinePanel.js';
 export declare class CountersGraph extends UI.Widget.VBox {
     #private;
     private readonly delegate;
     private readonly calculator;
-    private model;
     private readonly header;
     readonly toolbar: UI.Toolbar.Toolbar;
     private graphsContainer;
@@ -21,13 +19,11 @@ export declare class CountersGraph extends UI.Widget.VBox {
     currentValuesBar?: HTMLElement;
     private markerXPosition?;
     constructor(delegate: TimelineModeViewDelegate);
-    setModel(model: PerformanceModel | null, traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, events: TraceEngine.Legacy.CompatibleTraceEvent[] | null): void;
+    setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, events: TraceEngine.Types.TraceEvents.TraceEventData[] | null): void;
     private createCurrentValuesBar;
     private createCounter;
     resizerElement(): Element | null;
     private resize;
-    private onWindowChanged;
-    scheduleRefresh(): void;
     draw(): void;
     private onClick;
     private onMouseLeave;

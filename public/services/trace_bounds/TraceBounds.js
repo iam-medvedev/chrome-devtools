@@ -15,6 +15,17 @@ export class StateChangedEvent extends Event {
         this.options = options;
     }
 }
+// Exposed as a shortcut to BoundsManager.instance().addEventListener, which
+// also takes care of type-casting the event to StateChangedEvent.
+export function onChange(cb) {
+    BoundsManager.instance().addEventListener(StateChangedEvent.eventName, 
+    // Cast the callback as TS doesn't know that these events will emit
+    // StateChangedEvent types.
+    cb);
+}
+export function removeListener(cb) {
+    BoundsManager.instance().removeEventListener(StateChangedEvent.eventName, cb);
+}
 export class BoundsManager extends EventTarget {
     static instance(opts = { forceNew: null }) {
         const forceNew = Boolean(opts.forceNew);
@@ -89,6 +100,11 @@ export class BoundsManager extends EventTarget {
             // Minimum timeline visible window range is 1 millisecond.
             return;
         }
+        // Ensure that the setTimelineVisibleWindow can never go outside the bounds of the minimap bounds.
+        newWindow.min =
+            TraceEngine.Types.Timing.MicroSeconds(Math.max(this.#currentState.minimapTraceBounds.min, newWindow.min));
+        newWindow.max =
+            TraceEngine.Types.Timing.MicroSeconds(Math.min(this.#currentState.minimapTraceBounds.max, newWindow.max));
         this.#currentState.timelineTraceWindow = newWindow;
         this.dispatchEvent(new StateChangedEvent(this.state(), 'VISIBLE_WINDOW', { shouldAnimate: options.shouldAnimate }));
     }

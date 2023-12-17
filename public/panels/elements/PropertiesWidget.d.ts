@@ -8,10 +8,6 @@ export declare class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget
     private readonly expandController;
     private lastRequestedNode?;
     constructor(throttlingTimeout?: number);
-    static instance(opts?: {
-        forceNew: boolean;
-        throttlingTimeout: number;
-    }): PropertiesWidget;
     private onFilterChanged;
     private filterList;
     private setNode;

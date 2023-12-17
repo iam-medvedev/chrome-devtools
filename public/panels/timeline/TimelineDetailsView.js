@@ -5,10 +5,10 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { EventsTimelineTreeView } from './EventsTimelineTreeView.js';
-import { Events } from './PerformanceModel.js';
 import { TimelineLayersView } from './TimelineLayersView.js';
 import { TimelinePaintProfilerView } from './TimelinePaintProfilerView.js';
 import { TimelineSelection } from './TimelineSelection.js';
@@ -63,6 +63,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     updateContentsScheduled;
     #traceEngineData = null;
     #filmStrip = null;
+    #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-details');
@@ -87,19 +88,23 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         this.appendTab(Tab.EventLog, i18nString(UIStrings.eventLog), eventsView);
         this.rangeDetailViews.set(Tab.EventLog, eventsView);
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
+        TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
     }
     getDetailsContentElementForTest() {
         return this.defaultDetailsContentElement;
     }
+    #onTraceBoundsChange(event) {
+        if (event.updateType === 'RESET' || event.updateType === 'VISIBLE_WINDOW') {
+            // If the update type was a changing of the minimap bounds, we do not
+            // need to redraw.
+            if (!this.selection) {
+                this.scheduleUpdateContentsFromWindow();
+            }
+        }
+    }
     async setModel(model, traceEngineData, selectedEvents) {
         if (this.model !== model) {
-            if (this.model) {
-                this.model.removeEventListener(Events.WindowChanged, this.onWindowChanged, this);
-            }
             this.model = model;
-            if (this.model) {
-                this.model.addEventListener(Events.WindowChanged, this.onWindowChanged, this);
-            }
         }
         this.#traceEngineData = traceEngineData;
         if (traceEngineData) {
@@ -127,8 +132,12 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     updateContents() {
         const view = this.rangeDetailViews.get(this.tabbedPane.selectedTabId || '');
         if (view) {
-            const window = this.model.window();
-            view.updateContents(this.selection || TimelineSelection.fromRange(window.left, window.right));
+            const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
+            if (!traceBoundsState) {
+                return;
+            }
+            const visibleWindow = traceBoundsState.milli.timelineTraceWindow;
+            view.updateContents(this.selection || TimelineSelection.fromRange(visibleWindow.min, visibleWindow.max));
         }
     }
     appendTab(id, tabTitle, view, isCloseable) {
@@ -142,11 +151,6 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     }
     setPreferredTab(tabId) {
         this.preferredTabId = tabId;
-    }
-    onWindowChanged() {
-        if (!this.selection) {
-            this.scheduleUpdateContentsFromWindow();
-        }
     }
     /**
      * This forces a recalculation and rerendering of the timings
@@ -176,8 +180,12 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         }
     }
     updateContentsFromWindow() {
-        const window = this.model.window();
-        this.updateSelectedRangeStats(window.left, window.right);
+        const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
+        if (!traceBoundsState) {
+            return;
+        }
+        const visibleWindow = traceBoundsState.milli.timelineTraceWindow;
+        this.updateSelectedRangeStats(visibleWindow.min, visibleWindow.max);
         this.updateContents();
     }
     #getFilmStripFrame(frame) {

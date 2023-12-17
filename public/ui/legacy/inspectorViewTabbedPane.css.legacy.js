@@ -25,6 +25,7 @@ export default {
 
 .tabbed-pane-header-contents {
   margin-left: 0;
+  min-width: min-content;
 }
 
 .tabbed-pane-left-toolbar {

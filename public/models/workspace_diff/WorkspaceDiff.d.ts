@@ -60,9 +60,5 @@ export type UISourceCodeDiffEventTypes = {
     [UISourceCodeDiffEvents.DiffChanged]: void;
 };
 export declare function workspaceDiff(): WorkspaceDiffImpl;
-export declare class DiffUILocation {
-    uiSourceCode: Workspace.UISourceCode.UISourceCode;
-    constructor(uiSourceCode: Workspace.UISourceCode.UISourceCode);
-}
 export declare const UpdateTimeout = 200;
 export {};

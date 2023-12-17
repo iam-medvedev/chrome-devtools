@@ -192,7 +192,6 @@ class EmptyDataGridNode extends DataGrid.DataGrid.DataGridNode {
         element.appendChild(td);
     }
 }
-let webauthnPaneImplInstance;
 // We extrapolate this variable as otherwise git detects a private key, even though we
 // perform string manipulation. If we extract the name, then the regex doesn't match
 // and we can upload as expected.
@@ -238,12 +237,6 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         this.#authenticatorsView = this.contentElement.createChild('div', 'authenticators-view');
         this.#createNewAuthenticatorSection();
         this.#updateVisibility(false);
-    }
-    static instance(opts) {
-        if (!webauthnPaneImplInstance || opts?.forceNew) {
-            webauthnPaneImplInstance = new WebauthnPaneImpl();
-        }
-        return webauthnPaneImplInstance;
     }
     modelAdded(model) {
         if (model.target() === model.target().outermostTarget()) {

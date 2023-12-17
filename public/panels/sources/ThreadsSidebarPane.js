@@ -14,7 +14,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/ThreadsSidebarPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let threadsSidebarPaneInstance;
 export class ThreadsSidebarPane extends UI.Widget.VBox {
     items;
     list;
@@ -28,12 +27,6 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
         this.contentElement.appendChild(this.list.element);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, this.targetFlavorChanged, this);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.DebuggerModel.DebuggerModel, this);
-    }
-    static instance() {
-        if (!threadsSidebarPaneInstance) {
-            threadsSidebarPaneInstance = new ThreadsSidebarPane();
-        }
-        return threadsSidebarPaneInstance;
     }
     static shouldBeShown() {
         return SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel).length >= 2;

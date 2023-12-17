@@ -4,9 +4,6 @@ export declare class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWi
     private readonly creationStackTraceElement;
     private readonly linkifier;
     constructor();
-    static instance(opts?: {
-        forceNew: boolean | null;
-    } | undefined): NodeStackTraceWidget;
     wasShown(): void;
     willHide(): void;
     doUpdate(): Promise<void>;

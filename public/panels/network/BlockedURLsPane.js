@@ -1,10 +1,10 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Logs from '../../models/logs/logs.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import blockedURLsPaneStyles from './blockedURLsPane.css.js';
@@ -50,7 +50,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/BlockedURLsPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export let blockedURLsPaneInstance = null;
 export class BlockedURLsPane extends UI.Widget.VBox {
     manager;
     toolbar;
@@ -58,14 +57,11 @@ export class BlockedURLsPane extends UI.Widget.VBox {
     list;
     editor;
     blockedCountForUrl;
-    updateThrottler;
-    constructor(updateThrottler) {
+    constructor() {
         super(true);
         this.element.setAttribute('jslog', `${VisualLogging.panel().context('network.blocked-urls')}`);
         this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
-        this.manager.addEventListener(SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged, () => {
-            void this.update();
-        }, this);
+        this.manager.addEventListener(SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged, this.update, this);
         this.toolbar = new UI.Toolbar.Toolbar('', this.contentElement);
         this.enabledCheckbox = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.enableNetworkRequestBlocking), undefined, this.toggleEnabled.bind(this), 'network.enable-request-blocking');
         this.toolbar.appendToolbarItem(this.enabledCheckbox);
@@ -79,14 +75,8 @@ export class BlockedURLsPane extends UI.Widget.VBox {
         this.editor = null;
         this.blockedCountForUrl = new Map();
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.NetworkManager.NetworkManager, SDK.NetworkManager.Events.RequestFinished, this.onRequestFinished, this, { scoped: true });
-        this.updateThrottler = updateThrottler;
-        void this.update();
-    }
-    static instance(opts) {
-        if (!blockedURLsPaneInstance || opts?.forceNew) {
-            blockedURLsPaneInstance = new BlockedURLsPane(opts?.updateThrottler || new Common.Throttler.Throttler(200));
-        }
-        return blockedURLsPaneInstance;
+        this.update();
+        Logs.NetworkLog.NetworkLog.instance().addEventListener(Logs.NetworkLog.Events.Reset, this.onNetworkLogReset, this);
     }
     createEmptyPlaceholder() {
         const element = this.contentElement.createChild('div', 'no-blocked-urls');
@@ -95,11 +85,6 @@ export class BlockedURLsPane extends UI.Widget.VBox {
         UI.ARIAUtils.setLabel(addButton, i18nString(UIStrings.addNetworkRequestBlockingPattern));
         element.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.networkRequestsAreNotBlockedS, { PH1: addButton }));
         return element;
-    }
-    static reset() {
-        if (blockedURLsPaneInstance) {
-            blockedURLsPaneInstance.reset();
-        }
     }
     addPattern() {
         this.manager.setBlockingEnabled(true);
@@ -133,7 +118,7 @@ export class BlockedURLsPane extends UI.Widget.VBox {
     }
     toggleEnabled() {
         this.manager.setBlockingEnabled(!this.manager.blockingEnabled());
-        void this.update();
+        this.update();
     }
     removeItemRequested(pattern, index) {
         const patterns = this.manager.blockedPatterns();
@@ -191,7 +176,6 @@ export class BlockedURLsPane extends UI.Widget.VBox {
         for (const pattern of this.manager.blockedPatterns()) {
             this.list.appendItem(pattern, enabled);
         }
-        return Promise.resolve();
     }
     blockedRequestsCount(url) {
         if (!url) {
@@ -221,16 +205,16 @@ export class BlockedURLsPane extends UI.Widget.VBox {
         }
         return true;
     }
-    reset() {
+    onNetworkLogReset(_event) {
         this.blockedCountForUrl.clear();
-        void this.updateThrottler.schedule(this.update.bind(this));
+        this.update();
     }
     onRequestFinished(event) {
         const request = event.data;
         if (request.wasBlocked()) {
             const count = this.blockedCountForUrl.get(request.url()) || 0;
             this.blockedCountForUrl.set(request.url(), count + 1);
-            void this.updateThrottler.schedule(this.update.bind(this));
+            this.update();
         }
     }
     wasShown() {

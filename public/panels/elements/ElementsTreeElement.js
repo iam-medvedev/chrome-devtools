@@ -604,6 +604,15 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             await this.nodeInternal.focus();
         }, { jslogContext: 'focus' });
     }
+    populatePseudoElementContextMenu(contextMenu) {
+        if (this.childCount() !== 0) {
+            this.populateExpandRecursively(contextMenu);
+        }
+        this.populateScrollIntoView(contextMenu);
+    }
+    populateExpandRecursively(contextMenu) {
+        contextMenu.viewSection().appendItem(i18nString(UIStrings.expandRecursively), this.expandRecursively.bind(this), { jslogContext: 'expandRecursively' });
+    }
     populateScrollIntoView(contextMenu) {
         contextMenu.viewSection().appendItem(i18nString(UIStrings.scrollIntoView), () => this.nodeInternal.scrollIntoView(), { jslogContext: 'scrollIntoView' });
     }
@@ -661,7 +670,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         if (isEditable) {
             contextMenu.editSection().appendItem(i18nString(UIStrings.deleteElement), this.remove.bind(this), { jslogContext: 'deleteElement' });
         }
-        contextMenu.viewSection().appendItem(i18nString(UIStrings.expandRecursively), this.expandRecursively.bind(this), { jslogContext: 'expandRecursively' });
+        this.populateExpandRecursively(contextMenu);
         contextMenu.viewSection().appendItem(i18nString(UIStrings.collapseChildren), this.collapseChildren.bind(this), { jslogContext: 'collapseChildren' });
         const deviceModeWrapperAction = new Emulation.DeviceModeWrapper.ActionDelegate();
         contextMenu.viewSection().appendItem(i18nString(UIStrings.captureNodeScreenshot), deviceModeWrapperAction.handleAction.bind(null, UI.Context.Context.instance(), 'emulation.capture-node-screenshot'), { jslogContext: 'captureNodeScreenshot' });

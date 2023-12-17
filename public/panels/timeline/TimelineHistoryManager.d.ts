@@ -1,4 +1,4 @@
-import type * as TraceEngine from '../../models/trace/trace.js';
+import * as TraceEngine from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type PerformanceModel } from './PerformanceModel.js';
 import { type TimelineMiniMap } from './TimelineMiniMap.js';
@@ -10,6 +10,7 @@ export interface NewHistoryRecordingData {
     data: RecordingData;
     filmStripForPreview: TraceEngine.Extras.FilmStrip.Data | null;
     traceParsedData: TraceEngine.Handlers.Types.TraceParseData;
+    startTime: number | null;
 }
 export declare class TimelineHistoryManager {
     #private;
@@ -20,7 +21,7 @@ export declare class TimelineHistoryManager {
     private readonly allOverviews;
     private totalHeight;
     private enabled;
-    private lastActiveModel;
+    private lastActiveTraceIndex;
     constructor(minimapComponent?: TimelineMiniMap);
     addRecording(newInput: NewHistoryRecordingData): void;
     setEnabled(enabled: boolean): void;
@@ -31,34 +32,37 @@ export declare class TimelineHistoryManager {
     navigate(direction: number): RecordingData | null;
     private setCurrentModel;
     private updateState;
-    static previewElement(performanceModel: PerformanceModel): Element;
+    static previewElement(traceDataIndex: number): Element;
     private static coarseAge;
     private title;
-    private buildPreview;
-    private buildTextDetails;
-    private buildScreenshotThumbnail;
-    private buildOverview;
-    private static dataForModel;
+    private static dataForTraceIndex;
 }
 export declare const maxRecordings = 5;
 export declare const previewWidth = 450;
-export declare class DropDown implements UI.ListControl.ListDelegate<PerformanceModel> {
+export interface PreviewData {
+    preview: Element;
+    time: Element;
+    lastUsed: number;
+    startTime: number | null;
+    title: string;
+}
+export declare class DropDown implements UI.ListControl.ListDelegate<number> {
     private readonly glassPane;
     private readonly listControl;
     private readonly focusRestorer;
     private selectionDone;
-    constructor(models: PerformanceModel[]);
-    static show(models: PerformanceModel[], currentModel: PerformanceModel, anchor: Element): Promise<PerformanceModel | null>;
+    constructor(availableTraceDataIndexes: number[]);
+    static show(availableTraceDataIndexes: number[], activeTraceDataIndex: number, anchor: Element): Promise<number | null>;
     static cancelIfShowing(): void;
     private show;
     private onMouseMove;
     private onClick;
     private onKeyDown;
     private close;
-    createElementForItem(item: PerformanceModel): Element;
-    heightForItem(_item: PerformanceModel): number;
-    isItemSelectable(_item: PerformanceModel): boolean;
-    selectedItemChanged(from: PerformanceModel | null, to: PerformanceModel | null, fromElement: Element | null, toElement: Element | null): void;
+    createElementForItem(traceDataIndex: number): Element;
+    heightForItem(_traceDataIndex: number): number;
+    isItemSelectable(_traceDataIndex: number): boolean;
+    selectedItemChanged(from: number | null, to: number | null, fromElement: Element | null, toElement: Element | null): void;
     updateSelectedItemARIA(_fromElement: Element | null, _toElement: Element | null): boolean;
     private static instance;
 }
@@ -66,10 +70,4 @@ export declare class ToolbarButton extends UI.Toolbar.ToolbarItem {
     private contentElement;
     constructor(action: UI.ActionRegistration.Action);
     setText(text: string): void;
-}
-export interface PreviewData {
-    preview: Element;
-    time: Element;
-    lastUsed: number;
-    title: string;
 }

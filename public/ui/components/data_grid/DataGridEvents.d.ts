@@ -39,6 +39,20 @@ export declare class BodyCellFocusedEvent extends Event {
     };
     constructor(cell: Cell, row: Row);
 }
+export declare class RowMouseEnterEvent extends Event {
+    static readonly eventName = "rowmouseenter";
+    data: {
+        row: Row;
+    };
+    constructor(row: Row);
+}
+export declare class RowMouseLeaveEvent extends Event {
+    static readonly eventName = "rowmouseleave";
+    data: {
+        row: Row;
+    };
+    constructor(row: Row);
+}
 declare global {
     interface HTMLElementEventMap {
         [ColumnHeaderClickEvent.eventName]: ColumnHeaderClickEvent;
@@ -46,5 +60,7 @@ declare global {
         [ContextMenuHeaderResetClickEvent.eventName]: ContextMenuHeaderResetClickEvent;
         [NewUserFilterTextEvent.eventName]: NewUserFilterTextEvent;
         [BodyCellFocusedEvent.eventName]: BodyCellFocusedEvent;
+        [RowMouseEnterEvent.eventName]: RowMouseEnterEvent;
+        [RowMouseLeaveEvent.eventName]: RowMouseLeaveEvent;
     }
 }

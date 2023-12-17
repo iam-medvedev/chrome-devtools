@@ -133,7 +133,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     enabled;
     clickHandler;
     resizerParentOffsetLeft;
-    breadcrumbsEnabled = false;
+    #breadcrumbsEnabled = false;
     #mouseOverGridOverview = false;
     constructor(parentElement, dividersLabelBarElement, calculator) {
         super();
@@ -181,17 +181,20 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         };
         this.createBreadcrumbButton.appendChild(this.breadcrumbZoomIcon);
         this.createBreadcrumbButton.addEventListener('click', () => {
-            this.createBreadcrumb();
+            this.#createBreadcrumb();
         });
-        this.breadcrumbsEnabled = true;
-        this.changeBreadcrumbButtonVisibilityOnInteraction(this.parentElement);
-        this.changeBreadcrumbButtonVisibilityOnInteraction(this.rightResizeElement);
-        this.changeBreadcrumbButtonVisibilityOnInteraction(this.leftResizeElement);
+        this.#breadcrumbsEnabled = true;
+        this.#changeBreadcrumbButtonVisibilityOnInteraction(this.parentElement);
+        this.#changeBreadcrumbButtonVisibilityOnInteraction(this.rightResizeElement);
+        this.#changeBreadcrumbButtonVisibilityOnInteraction(this.leftResizeElement);
     }
     set showingScreenshots(isShowing) {
         this.breadcrumbButtonContainerElement.classList.toggle('with-screenshots', isShowing);
     }
-    changeBreadcrumbButtonVisibilityOnInteraction(element) {
+    #changeBreadcrumbButtonVisibilityOnInteraction(element) {
+        if (!this.#breadcrumbsEnabled) {
+            return;
+        }
         element.addEventListener('mouseover', () => {
             if ((this.windowLeft ?? 0) <= 0 && (this.windowRight ?? 1) >= 1) {
                 this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', false);
@@ -306,7 +309,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         const mouseEvent = event;
         const window = this.overviewWindowSelector.close(mouseEvent.x - this.offsetLeft);
         // prevent selecting a window on clicking the minimap if breadcrumbs are enabled
-        if (this.breadcrumbsEnabled && window.start === window.end) {
+        if (this.#breadcrumbsEnabled && window.start === window.end) {
             return;
         }
         delete this.overviewWindowSelector;
@@ -339,7 +342,9 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
     }
     windowDragging(event) {
         this.#mouseOverGridOverview = true;
-        this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', true);
+        if (this.#breadcrumbsEnabled) {
+            this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', true);
+        }
         const mouseEvent = event;
         mouseEvent.preventDefault();
         let delta = (mouseEvent.pageX - this.dragStartPoint) / this.parentElement.clientWidth;
@@ -425,10 +430,14 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
             this.dispatchEventToListeners(Events.WindowChangedWithPosition, this.calculateWindowPosition());
         }
         this.dispatchEventToListeners(Events.WindowChanged);
-        this.changeBreadcrumbButtonVisibility(windowLeft, windowRight);
+        this.#changeBreadcrumbButtonVisibility(windowLeft, windowRight);
     }
-    // "Create breadcrumb" button is only visible when the window is set to something other than the full range and mouse is hovering over the MiniMap
-    changeBreadcrumbButtonVisibility(windowLeft, windowRight) {
+    // "Create breadcrumb" button is only visible when the window is set to
+    // something other than the full range and mouse is hovering over the MiniMap
+    #changeBreadcrumbButtonVisibility(windowLeft, windowRight) {
+        if (!this.#breadcrumbsEnabled) {
+            return;
+        }
         if ((windowRight >= 1 && windowLeft <= 0) || !this.#mouseOverGridOverview) {
             this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', false);
         }
@@ -436,7 +445,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
             this.breadcrumbButtonContainerElement.classList.toggle('is-breadcrumb-button-visible', true);
         }
     }
-    createBreadcrumb() {
+    #createBreadcrumb() {
         this.dispatchEventToListeners(Events.BreadcrumbAdded, this.calculateWindowPosition());
     }
     updateCurtains() {

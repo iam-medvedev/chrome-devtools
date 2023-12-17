@@ -3,7 +3,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import type * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type NavigatorView } from './NavigatorView.js';
 import { SourcesView } from './SourcesView.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
 export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provider<Workspace.UISourceCode.UISourceCode | Workspace.UISourceCode.UILocation | SDK.RemoteObject.RemoteObject | SDK.NetworkRequest.NetworkRequest | UISourceCodeFrame>, SDK.TargetManager.Observer, UI.View.ViewLocationResolver {
@@ -65,7 +64,7 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     showUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode, location?: SourceFrame.SourceFrame.RevealPosition, omitFocus?: boolean): void;
     private showEditor;
     showUILocation(uiLocation: Workspace.UISourceCode.UILocation, omitFocus?: boolean): void;
-    revealInNavigator(uiSourceCode: Workspace.UISourceCode.UISourceCode, skipReveal?: boolean): void;
+    revealInNavigator(uiSourceCode: Workspace.UISourceCode.UISourceCode, skipReveal?: boolean): Promise<void>;
     private addExperimentMenuItem;
     private populateNavigatorMenu;
     setIgnoreExecutionLineEvents(ignoreExecutionLineEvents: boolean): void;
@@ -97,7 +96,6 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     private appendUISourceCodeItems;
     private appendUISourceCodeFrameItems;
     appendUILocationItems(contextMenu: UI.ContextMenu.ContextMenu, uiLocation: Workspace.UISourceCode.UILocation): void;
-    private handleContextMenuReveal;
     private appendRemoteObjectItems;
     private appendNetworkRequestItems;
     private showFunctionDefinition;
@@ -146,9 +144,4 @@ export declare class WrapperView extends UI.Widget.VBox {
     wasShown(): void;
     willHide(): void;
     showViewInWrapper(): void;
-}
-export interface NavigatorViewRegistration {
-    navigatorView: () => NavigatorView;
-    viewId: string;
-    experiment?: string;
 }

@@ -120,7 +120,7 @@ UI.ViewManager.registerViewExtension({
     order: 50,
     async loadView() {
         const InspectorMain = await loadInspectorMainModule();
-        return InspectorMain.RenderingOptions.RenderingOptionsView.instance();
+        return new InspectorMain.RenderingOptions.RenderingOptionsView();
     },
     tags: [
         i18nLazyString(UIStrings.paint),

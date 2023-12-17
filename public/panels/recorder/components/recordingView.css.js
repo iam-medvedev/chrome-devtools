@@ -263,7 +263,7 @@ styles.replaceSync(
 }
 
 .is-recording .header-title::before {
-  background: var(--sys-color-error);
+  background: var(--sys-color-error-bright);
 }
 
 .footer {

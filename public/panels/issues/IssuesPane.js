@@ -150,7 +150,6 @@ class IssueCategoryView extends UI.TreeOutline.TreeElement {
 export function getGroupIssuesByCategorySetting() {
     return Common.Settings.Settings.instance().createSetting('groupIssuesByCategory', false);
 }
-let issuesPaneInstance;
 export class IssuesPane extends UI.Widget.VBox {
     #categoryViews;
     #issueViews;
@@ -187,13 +186,6 @@ export class IssuesPane extends UI.Widget.VBox {
         this.#hiddenIssuesRow.hidden = this.#issuesManager.numberOfHiddenIssues() === 0;
         this.#onFullUpdate();
         this.#issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */, this.#updateCounts, this);
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!issuesPaneInstance || forceNew) {
-            issuesPaneInstance = new IssuesPane();
-        }
-        return issuesPaneInstance;
     }
     elementsToRestoreScrollPositionsFor() {
         return [this.#issuesTree.element];

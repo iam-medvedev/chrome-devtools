@@ -405,13 +405,6 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         // @ts-ignore
         test.sendRawMessage(command, parameters, () => { }, sessionId);
     }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!protocolMonitorImplInstance || forceNew) {
-            protocolMonitorImplInstance = new ProtocolMonitorImpl();
-        }
-        return protocolMonitorImplInstance;
-    }
     wasShown() {
         if (this.started) {
             return;
@@ -571,7 +564,6 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         void stream.close();
     }
 }
-let protocolMonitorImplInstance;
 export class ProtocolMonitorImpl extends UI.Widget.VBox {
     #split;
     #editorWidget = new EditorWidget();
@@ -595,13 +587,6 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
         this.#editorWidget.addEventListener(Events.CommandSent, event => {
             this.#protocolMonitorDataGrid.onCommandSend(event.data.command, event.data.parameters, event.data.targetId);
         });
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!protocolMonitorImplInstance || forceNew) {
-            protocolMonitorImplInstance = new ProtocolMonitorImpl();
-        }
-        return protocolMonitorImplInstance;
     }
 }
 export class CommandAutocompleteSuggestionProvider {

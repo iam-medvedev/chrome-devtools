@@ -28,10 +28,10 @@ export class ServiceWorkerRouterView extends LegacyWrapper.LegacyWrapper.Wrappab
     `, this.#shadow, { host: this });
         // clang-format on
     }
-    #renderRouterRule(rule, idx) {
+    #renderRouterRule(rule) {
         return html `
       <li class="router-rule">
-        <div class="rule-id">Rule ${idx + 1}</div>
+        <div class="rule-id">Rule ${rule.id}</div>
         <ul class="item">
           <li class="condition">
             <div class="rule-type">Condition</div>

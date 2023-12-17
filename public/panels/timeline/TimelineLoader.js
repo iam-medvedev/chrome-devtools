@@ -154,7 +154,8 @@ export class TimelineLoader {
         this.tracingModel = null;
         if (this.client) {
             await this.client.loadingComplete(
-            /* collectedEvents */ [], /* tracingModel= */ null, /* exclusiveFilter= */ null, /* isCpuProfile= */ false);
+            /* collectedEvents */ [], /* tracingModel= */ null, /* exclusiveFilter= */ null, /* isCpuProfile= */ false, 
+            /* recordingStartTime= */ null);
             this.client = null;
         }
         if (this.canceledCallback) {
@@ -288,7 +289,7 @@ export class TimelineLoader {
         }
         this.tracingModel.tracingComplete();
         await this.client
-            .loadingComplete(this.#collectedEvents, this.tracingModel, this.filter, this.isCpuProfile());
+            .loadingComplete(this.#collectedEvents, this.tracingModel, this.filter, this.isCpuProfile(), /* recordingStartTime=*/ null);
         this.#traceFinalizedCallbackForTest?.();
     }
     traceFinalizedForTest() {

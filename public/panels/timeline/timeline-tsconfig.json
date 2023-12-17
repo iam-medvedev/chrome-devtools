@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/timeline/ActiveFilters.ts",
     "../../../../../../front_end/panels/timeline/AnimationsTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/AppenderUtils.ts",
     "../../../../../../front_end/panels/timeline/BenchmarkEvents.ts",

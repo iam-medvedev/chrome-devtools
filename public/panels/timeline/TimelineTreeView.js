@@ -10,6 +10,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { ActiveFilters } from './ActiveFilters.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 const UIStrings = {
@@ -263,10 +264,10 @@ export class TimelineTreeView extends UI.Widget.VBox {
         this.refreshTree();
     }
     filters() {
-        return [this.taskFilter, this.textFilterInternal, ...(this.modelInternal ? this.modelInternal.filters() : [])];
+        return [this.taskFilter, this.textFilterInternal, ...(ActiveFilters.instance().activeFilters())];
     }
     filtersWithoutTextFilter() {
-        return [this.taskFilter, ...(this.modelInternal ? this.modelInternal.filters() : [])];
+        return [this.taskFilter, ...(ActiveFilters.instance().activeFilters())];
     }
     textFilter() {
         return this.textFilterInternal;

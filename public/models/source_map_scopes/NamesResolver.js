@@ -6,7 +6,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as TextUtils from '../text_utils/text_utils.js';
-import { ScopeTreeCache } from './ScopeTreeCache.js';
+import { scopeTreeForScript } from './ScopeTreeCache.js';
 const scopeToCachedIdentifiersMap = new WeakMap();
 const cachedMapByCallFrame = new WeakMap();
 const cachedTextByDeferredContent = new WeakMap();
@@ -43,7 +43,7 @@ const computeScopeTree = async function (script) {
     if (!text) {
         return null;
     }
-    const scopeTree = await ScopeTreeCache.instance().scopeTreeForScript(script);
+    const scopeTree = await scopeTreeForScript(script);
     if (!scopeTree) {
         return null;
     }

@@ -161,7 +161,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             const frameView = new ResourceWebSocketFrameView(request);
             this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.WsFrames, i18nString(UIStrings.messages), frameView, i18nString(UIStrings.websocketMessages));
         }
-        else if (request.mimeType === SDK.NetworkRequest.MIME_TYPE.EVENTSTREAM) {
+        else if (request.mimeType === "text/event-stream" /* SDK.NetworkRequest.MimeType.EVENTSTREAM */) {
             this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.EventSource, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
         }
         else {

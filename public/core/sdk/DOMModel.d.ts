@@ -37,6 +37,7 @@ export declare class DOMNode {
     isAdFrameNode(): boolean;
     isSVGNode(): boolean;
     isMediaNode(): boolean;
+    isViewTransitionPseudoNode(): boolean;
     creationStackTrace(): Promise<Protocol.Runtime.StackTrace | null>;
     get subtreeMarkerCount(): number;
     domModel(): DOMModel;

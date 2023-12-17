@@ -1,5 +1,9 @@
 const state = new WeakMap();
-let nextVeId = 0;
+function nextVeId() {
+    const result = new Uint32Array(1);
+    crypto.getRandomValues(result);
+    return result[0];
+}
 export function getOrCreateLoggingState(loggable, config, parent) {
     if (state.has(loggable)) {
         return state.get(loggable);
@@ -12,7 +16,7 @@ export function getOrCreateLoggingState(loggable, config, parent) {
         processed: false,
         config,
         context: resolveContext(config.context),
-        veid: ++nextVeId,
+        veid: nextVeId(),
         parent: parent ? getLoggingState(parent) : null,
     };
     state.set(loggable, loggableState);

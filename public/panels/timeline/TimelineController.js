@@ -23,6 +23,7 @@ export class TimelineController {
     tracingManager;
     performanceModel;
     #collectedEvents = [];
+    #recordingStartTime = null;
     client;
     tracingModel;
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -61,7 +62,6 @@ export class TimelineController {
         // primaryPageTarget, as that is the one we have to invoke tracing against.
         this.tracingManager = rootTarget.model(TraceEngine.TracingManager.TracingManager);
         this.performanceModel = new PerformanceModel();
-        this.performanceModel.setMainTarget(rootTarget);
         this.client = client;
         this.tracingModel = new TraceEngine.Legacy.TracingModel();
     }
@@ -112,7 +112,7 @@ export class TimelineController {
         if (options.captureFilmStrip) {
             categoriesArray.push(disabledByDefault('devtools.screenshot'));
         }
-        this.performanceModel.setRecordStartTime(Date.now());
+        this.#recordingStartTime = Date.now();
         const response = await this.startRecordingWithCategories(categoriesArray.join(','));
         if (response.getError()) {
             await this.waitForTracingToStop(false);
@@ -170,7 +170,7 @@ export class TimelineController {
     async finalizeTrace() {
         await SDK.TargetManager.TargetManager.instance().resumeAllTargets();
         this.tracingModel.tracingComplete();
-        await this.client.loadingComplete(this.#collectedEvents, this.tracingModel, /* exclusiveFilter= */ null, /* isCpuProfile= */ false);
+        await this.client.loadingComplete(this.#collectedEvents, this.tracingModel, /* exclusiveFilter= */ null, /* isCpuProfile= */ false, this.#recordingStartTime);
         this.client.loadingCompleteForTest();
     }
     tracingBufferUsage(usage) {

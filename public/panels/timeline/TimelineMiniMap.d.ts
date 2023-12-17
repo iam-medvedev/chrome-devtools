@@ -24,20 +24,18 @@ declare const TimelineMiniMap_base: (new (...args: any[]) => {
  * This component wraps the generic PerfUI Overview component and configures it
  * specifically for the Performance Panel, including injecting the CSS we use
  * to customise how the components render within the Performance Panel.
+ *
+ * It is also responsible for listening to events from the OverviewPane to
+ * update the visible trace window, and when this happens it will update the
+ * TraceBounds service with the new values.
  */
 export declare class TimelineMiniMap extends TimelineMiniMap_base {
     #private;
     breadcrumbsActivated: boolean;
     breadcrumbs: TimelineComponents.Breadcrumbs.Breadcrumbs | null;
     constructor();
-    activateBreadcrumbs(): void;
-    breadcrumbWindowBounds(breadcrumbWindow: PerfUI.TimelineOverviewPane.BreadcrumbAddedEvent): PerfUI.TimelineOverviewPane.BreadcrumbAddedEvent;
-    addBreadcrumb({ startTime, endTime }: PerfUI.TimelineOverviewPane.BreadcrumbAddedEvent): void;
-    removeBreadcrumb(breadcrumb: TimelineComponents.Breadcrumbs.Breadcrumb): void;
     wasShown(): void;
     reset(): void;
-    setBounds(min: TraceEngine.Types.Timing.MilliSeconds, max: TraceEngine.Types.Timing.MilliSeconds): void;
-    setWindowTimes(left: number, right: number): void;
     getControls(): TimelineEventOverview[];
     setData(data: OverviewData): void;
     addInitialBreadcrumb(): void;

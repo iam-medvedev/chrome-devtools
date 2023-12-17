@@ -23,6 +23,7 @@ const layoutShiftEvents = [];
 // These events denote potential node resizings. We store them to link captured
 // layout shifts to the resizing of unsized elements.
 const layoutInvalidationEvents = [];
+const scheduleStyleInvalidationEvents = [];
 const styleRecalcInvalidationEvents = [];
 const backendNodeIds = new Set();
 // Layout shifts happen during PrePaint as part of the rendering lifecycle.
@@ -47,6 +48,8 @@ export function reset() {
     handlerState = 1 /* HandlerState.UNINITIALIZED */;
     layoutShiftEvents.length = 0;
     layoutInvalidationEvents.length = 0;
+    scheduleStyleInvalidationEvents.length = 0;
+    styleRecalcInvalidationEvents.length = 0;
     prePaintEvents.length = 0;
     backendNodeIds.clear();
     clusters.length = 0;
@@ -62,9 +65,12 @@ export function handleEvent(event) {
         layoutShiftEvents.push(event);
         return;
     }
-    if (Types.TraceEvents.isTraceEventLayoutInvalidation(event)) {
+    if (Types.TraceEvents.isTraceEventLayoutInvalidationTracking(event)) {
         layoutInvalidationEvents.push(event);
         return;
+    }
+    if (Types.TraceEvents.isTraceEventScheduleStyleInvalidationTracking(event)) {
+        scheduleStyleInvalidationEvents.push(event);
     }
     if (Types.TraceEvents.isTraceEventStyleRecalcInvalidation(event)) {
         styleRecalcInvalidationEvents.push(event);
@@ -130,12 +136,18 @@ function collectNodes() {
             backendNodeIds.add(node.node_id);
         }
     }
-    // Collect the node ids present in LayoutInvalidation events.
+    // Collect the node ids present in LayoutInvalidation & scheduleStyleInvalidation events.
     for (const layoutInvalidation of layoutInvalidationEvents) {
         if (!layoutInvalidation.args.data?.nodeId) {
             continue;
         }
         backendNodeIds.add(layoutInvalidation.args.data.nodeId);
+    }
+    for (const scheduleStyleInvalidation of scheduleStyleInvalidationEvents) {
+        if (!scheduleStyleInvalidation.args.data?.nodeId) {
+            continue;
+        }
+        backendNodeIds.add(scheduleStyleInvalidation.args.data.nodeId);
     }
 }
 export async function finalize() {
@@ -326,6 +338,7 @@ export function data() {
         clsWindowID,
         prePaintEvents: [...prePaintEvents],
         layoutInvalidationEvents: [...layoutInvalidationEvents],
+        scheduleStyleInvalidationEvents: [...scheduleStyleInvalidationEvents],
         styleRecalcInvalidationEvents: [],
         scoreRecords: [...scoreRecords],
         backendNodeIds: [...backendNodeIds],

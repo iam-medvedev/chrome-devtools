@@ -152,7 +152,7 @@ UI.ViewManager.registerViewExtension({
     order: 60,
     async loadView() {
         const Network = await loadNetworkModule();
-        return Network.BlockedURLsPane.BlockedURLsPane.instance();
+        return new Network.BlockedURLsPane.BlockedURLsPane();
     },
 });
 UI.ViewManager.registerViewExtension({

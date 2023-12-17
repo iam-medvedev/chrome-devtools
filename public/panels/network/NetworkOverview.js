@@ -87,7 +87,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
         const height = this.element.offsetHeight;
         this.calculator().setDisplayWidth(width);
         this.resetCanvas();
-        const numBands = (((height - _padding - 1) / _bandHeight) - 1) | 0;
+        const numBands = (((height - PADDING - 1) / BAND_HEIGHT) - 1) | 0;
         this.numBands = (numBands > 0) ? numBands : 1;
         this.scheduleUpdate();
     }
@@ -122,7 +122,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
         }
         const context = this.context();
         const linesByType = new Map();
-        const paddingTop = _padding;
+        const paddingTop = PADDING;
         function drawLines(type) {
             const lines = linesByType.get(type);
             if (!lines) {
@@ -134,7 +134,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
             context.lineWidth = BORDER_WIDTH;
             context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue(RequestTimeRangeNameToColor[type]);
             for (let i = 0; i < n;) {
-                const y = lines[i++] * _bandHeight + paddingTop;
+                const y = lines[i++] * BAND_HEIGHT + paddingTop;
                 const startTime = lines[i++];
                 let endTime = lines[i++];
                 if (endTime === Number.MAX_VALUE) {
@@ -142,8 +142,8 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
                 }
                 const startX = calculator.computePosition(TraceEngine.Types.Timing.MilliSeconds(startTime));
                 const endX = calculator.computePosition(TraceEngine.Types.Timing.MilliSeconds(endTime)) + 1;
-                context.fillRect(startX, y, endX - startX, _bandHeight);
-                context.strokeRect(startX, y, endX - startX, _bandHeight);
+                context.fillRect(startX, y, Math.max(endX - startX, MIN_BAND_WIDTH), BAND_HEIGHT);
+                context.strokeRect(startX, y, Math.max(endX - startX, MIN_BAND_WIDTH), BAND_HEIGHT);
             }
         }
         function addLine(type, y, start, end) {
@@ -190,7 +190,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
             const borderSize = 2;
             const request = this.highlightedRequest;
             const band = this.bandId(request.connectionId);
-            const y = ((band === -1) ? 0 : (band % this.numBands + 1)) * _bandHeight + paddingTop;
+            const y = ((band === -1) ? 0 : (band % this.numBands + 1)) * BAND_HEIGHT + paddingTop;
             const timeRanges = RequestTimingView.calculateRequestTimeRanges(request, this.calculator().minimumBoundary());
             context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-tonal-container');
             // The network overview works in seconds, but the calcululator deals in
@@ -262,12 +262,10 @@ export const RequestTimeRangeNameToColor = {
     [RequestTimeRangeNames.Receiving]: '--network-overview-receiving',
     [RequestTimeRangeNames.Queueing]: '--network-overview-queueing',
 };
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _bandHeight = 3;
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _padding = 5;
+const BAND_HEIGHT = 3;
+const PADDING = 5;
+// Minimum rectangle width for very short requests.
+const MIN_BAND_WIDTH = 10;
 // Border between bars in network overview panel for accessibility.
 const BORDER_WIDTH = 1;
 //# sourceMappingURL=NetworkOverview.js.map

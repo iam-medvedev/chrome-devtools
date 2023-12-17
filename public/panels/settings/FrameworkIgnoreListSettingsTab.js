@@ -77,14 +77,13 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/FrameworkIgnoreListSettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let frameworkIgnoreListSettingsTabInstance;
 export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
     list;
     setting;
     editor;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.section().context('blackbox')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('blackbox')}`);
         const header = this.contentElement.createChild('div', 'header');
         header.textContent = i18nString(UIStrings.frameworkIgnoreList);
         UI.ARIAUtils.markAsHeading(header, 1);
@@ -135,13 +134,6 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
                 ignoreListOptions.classList.add('ignore-listing-disabled');
             }
         }
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!frameworkIgnoreListSettingsTabInstance || forceNew) {
-            frameworkIgnoreListSettingsTabInstance = new FrameworkIgnoreListSettingsTab();
-        }
-        return frameworkIgnoreListSettingsTabInstance;
     }
     wasShown() {
         super.wasShown();

@@ -8,9 +8,8 @@ export declare const enum FilterApplyAction {
     COLLAPSE_REPEATING_DESCENDANTS = "COLLAPSE_REPEATING_DESCENDANTS"
 }
 export declare const enum FilterUndoAction {
-    UNDO_ALL_ACTIONS = "UNDO_ALL_ACTIONS",
-    UNDO_COLLAPSE_FUNCTION = "UNDO_COLLAPSE_FUNCTION",
-    UNDO_COLLAPSE_REPEATING_DESCENDANTS = "UNDO_COLLAPSE_REPEATING_DESCENDANTS"
+    RESET_CHILDREN = "RESET_CHILDREN",
+    UNDO_ALL_ACTIONS = "UNDO_ALL_ACTIONS"
 }
 export interface UserFilterAction {
     type: FilterAction;
@@ -34,28 +33,14 @@ export declare class EntriesFilter {
     #private;
     constructor(entryToNode: EntryToNodeMap);
     /**
-     * Adds or removes an action (filter) to/from activeActions
-     * array depending on the type of action.
+     * Applies an action to hide entries or removes entries
+     * from hidden entries array depending on the type of action.
      **/
     applyAction(action: UserFilterAction): void;
     /**
-     * Removes a matching action, if one is found, from the active actions set.
-     * Note that we do not match on action equality and instead search through
-     * the set of active actions for one that is of the same type, and has the
-     * same entry associated with it.
-     *
-     * This is a no-op if the action is not active.
-     **/
-    removeActiveAction(action: UserFilterAction): void;
-    /**
-     * The set of entries that are invisible given the set of applied actions. If
-     * no actions are applied, this will return an empty list of entries.
-     *
-     * This method is cached, so it is safe to call multiple times.
+     * Returns the set of entries that are invisible given the set of applied actions.
      **/
     invisibleEntries(): Types.TraceEvents.TraceEventData[];
     isEntryModified(event: Types.TraceEvents.TraceEventData): boolean;
-    isUserApplyFilterAction(action: UserFilterAction): action is UserApplyFilterAction;
-    isFilterUndoAction(action: FilterAction): action is FilterUndoAction;
 }
 export {};

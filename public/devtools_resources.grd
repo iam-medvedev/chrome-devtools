@@ -174,6 +174,7 @@
       <include file="Images/memory.svg" name="IMAGES_MEMORY_SVG" resource_path="Images/memory.svg" type="BINDATA" compress="false"/>
       <include file="Images/minus.svg" name="IMAGES_MINUS_SVG" resource_path="Images/minus.svg" type="BINDATA" compress="false"/>
       <include file="Images/minus_icon.svg" name="IMAGES_MINUS_ICON_SVG" resource_path="Images/minus_icon.svg" type="BINDATA" compress="false"/>
+      <include file="Images/mop.svg" name="IMAGES_MOP_SVG" resource_path="Images/mop.svg" type="BINDATA" compress="false"/>
       <include file="Images/mouse.svg" name="IMAGES_MOUSE_SVG" resource_path="Images/mouse.svg" type="BINDATA" compress="false"/>
       <include file="Images/navigationControls.png" name="IMAGES_NAVIGATIONCONTROLS_PNG" resource_path="Images/navigationControls.png" type="BINDATA" compress="false"/>
       <include file="Images/navigationControls_2x.png" name="IMAGES_NAVIGATIONCONTROLS_2X_PNG" resource_path="Images/navigationControls_2x.png" type="BINDATA" compress="false"/>
@@ -741,6 +742,7 @@
       <include file="core/sdk/Connections.js" name="CORE_SDK_CONNECTIONS_JS" resource_path="core/sdk/Connections.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/ConsoleModel.js" name="CORE_SDK_CONSOLEMODEL_JS" resource_path="core/sdk/ConsoleModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/ConsoleModelTypes.js" name="CORE_SDK_CONSOLEMODELTYPES_JS" resource_path="core/sdk/ConsoleModelTypes.js" type="BINDATA" compress="false"/>
+      <include file="core/sdk/ContentData.js" name="CORE_SDK_CONTENTDATA_JS" resource_path="core/sdk/ContentData.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/Cookie.js" name="CORE_SDK_COOKIE_JS" resource_path="core/sdk/Cookie.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CookieModel.js" name="CORE_SDK_COOKIEMODEL_JS" resource_path="core/sdk/CookieModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CookieParser.js" name="CORE_SDK_COOKIEPARSER_JS" resource_path="core/sdk/CookieParser.js" type="BINDATA" compress="false"/>
@@ -1577,6 +1579,7 @@
       <include file="panels/sources/sourcesView.css.js" name="PANELS_SOURCES_SOURCESVIEW_CSS_JS" resource_path="panels/sources/sourcesView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/sources/threadsSidebarPane.css.js" name="PANELS_SOURCES_THREADSSIDEBARPANE_CSS_JS" resource_path="panels/sources/threadsSidebarPane.css.js" type="BINDATA" compress="false"/>
       <include file="panels/sources/watchExpressionsSidebarPane.css.js" name="PANELS_SOURCES_WATCHEXPRESSIONSSIDEBARPANE_CSS_JS" resource_path="panels/sources/watchExpressionsSidebarPane.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/ActiveFilters.js" name="PANELS_TIMELINE_ACTIVEFILTERS_JS" resource_path="panels/timeline/ActiveFilters.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/AnimationsTrackAppender.js" name="PANELS_TIMELINE_ANIMATIONSTRACKAPPENDER_JS" resource_path="panels/timeline/AnimationsTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/AppenderUtils.js" name="PANELS_TIMELINE_APPENDERUTILS_JS" resource_path="panels/timeline/AppenderUtils.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/BenchmarkEvents.js" name="PANELS_TIMELINE_BENCHMARKEVENTS_JS" resource_path="panels/timeline/BenchmarkEvents.js" type="BINDATA" compress="false"/>

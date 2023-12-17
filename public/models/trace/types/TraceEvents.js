@@ -21,6 +21,9 @@ export function isTraceEventAuctionWorkletDoneWithProcess(event) {
 export function isTraceEventTracingSessionIdForWorker(event) {
     return event.name === 'TracingSessionIdForWorker';
 }
+export function isTraceEventScheduleStyleInvalidationTracking(event) {
+    return event.name === "ScheduleStyleInvalidationTracking" /* KnownEventName.ScheduleStyleInvalidationTracking */;
+}
 export function isTraceEventScheduleStyleRecalculation(event) {
     return event.name === "ScheduleStyleRecalculation" /* KnownEventName.ScheduleStyleRecalculation */;
 }
@@ -142,7 +145,7 @@ export function isProcessName(traceEventData) {
     return traceEventData.name === 'process_name';
 }
 export function isTraceEventTracingStartedInBrowser(traceEventData) {
-    return traceEventData.name === 'TracingStartedInBrowser';
+    return traceEventData.name === "TracingStartedInBrowser" /* KnownEventName.TracingStartedInBrowser */;
 }
 export function isTraceEventFrameCommittedInBrowser(traceEventData) {
     return traceEventData.name === 'FrameCommittedInBrowser';
@@ -159,9 +162,8 @@ export function isTraceEventAnimation(traceEventData) {
 export function isTraceEventLayoutShift(traceEventData) {
     return traceEventData.name === 'LayoutShift';
 }
-export function isTraceEventLayoutInvalidation(traceEventData) {
-    return traceEventData.name === 'LayoutInvalidationTracking' ||
-        traceEventData.name === 'ScheduleStyleInvalidationTracking';
+export function isTraceEventLayoutInvalidationTracking(traceEventData) {
+    return traceEventData.name === "LayoutInvalidationTracking" /* KnownEventName.LayoutInvalidationTracking */;
 }
 export function isTraceEventStyleRecalcInvalidation(traceEventData) {
     return traceEventData.name === 'StyleRecalcInvalidationTracking';
