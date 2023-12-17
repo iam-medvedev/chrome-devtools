@@ -4,10 +4,7 @@ export declare class WorkspaceSettingsTab extends UI.Widget.VBox {
     private readonly fileSystemsListContainer;
     private readonly elementByPath;
     private readonly mappingViewByPath;
-    private constructor();
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): WorkspaceSettingsTab;
+    constructor();
     wasShown(): void;
     private createFolderExcludePatternInput;
     private addItem;

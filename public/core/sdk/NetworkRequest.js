@@ -160,21 +160,6 @@ const UIStrings = {
 // clang-format on
 const str_ = i18n.i18n.registerUIStrings('core/sdk/NetworkRequest.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum, @typescript-eslint/naming-convention
-export var MIME_TYPE;
-(function (MIME_TYPE) {
-    MIME_TYPE["HTML"] = "text/html";
-    MIME_TYPE["XML"] = "text/xml";
-    MIME_TYPE["PLAIN"] = "text/plain";
-    MIME_TYPE["XHTML"] = "application/xhtml+xml";
-    MIME_TYPE["SVG"] = "image/svg+xml";
-    MIME_TYPE["CSS"] = "text/css";
-    MIME_TYPE["XSL"] = "text/xsl";
-    MIME_TYPE["VTT"] = "text/vtt";
-    MIME_TYPE["PDF"] = "application/pdf";
-    MIME_TYPE["EVENTSTREAM"] = "text/event-stream";
-})(MIME_TYPE || (MIME_TYPE = {}));
 export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #requestIdInternal;
     #backendRequestIdInternal;

@@ -1,6 +1,6 @@
 import * as Common from '../../core/common/common.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import type * as Protocol from '../../generated/protocol.js';
+import * as UI from '../../ui/legacy/legacy.js';
 export declare class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements UI.SoftDropDown.Delegate<Protocol.WebAudio.BaseAudioContext> {
     private readonly placeholderText;
     private readonly items;

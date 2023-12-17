@@ -5,9 +5,6 @@ export declare class ThrottlingSettingsTab extends UI.Widget.VBox implements UI.
     private readonly customSetting;
     private editor?;
     constructor();
-    static instance(opts?: {
-        forceNew: null;
-    }): ThrottlingSettingsTab;
     wasShown(): void;
     private conditionsUpdated;
     private addButtonClicked;

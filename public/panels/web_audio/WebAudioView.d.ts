@@ -9,9 +9,6 @@ export declare class WebAudioView extends UI.ThrottledWidget.ThrottledWidget imp
     private readonly landingPage;
     private readonly summaryBarContainer;
     constructor();
-    static instance(opts?: {
-        forceNew: null;
-    }): WebAudioView;
     wasShown(): void;
     willHide(): void;
     modelAdded(webAudioModel: WebAudioModel): void;

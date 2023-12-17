@@ -75,7 +75,7 @@ export class ListControl {
         const to = from + data.removed.length;
         const keepSelectedIndex = data.keepSelectedIndex;
         const oldSelectedItem = this.selectedItemInternal;
-        const oldSelectedElement = oldSelectedItem ? (this.itemToElement.get(oldSelectedItem) || null) : null;
+        const oldSelectedElement = oldSelectedItem !== null ? (this.itemToElement.get(oldSelectedItem) || null) : null;
         for (let i = 0; i < data.removed.length; i++) {
             this.itemToElement.delete(data.removed[i]);
         }
@@ -262,7 +262,7 @@ export class ListControl {
     }
     onClick(event) {
         const item = this.itemForNode(event.target);
-        if (item && this.delegate.isItemSelectable(item)) {
+        if (item !== null && this.delegate.isItemSelectable(item)) {
             this.selectItem(item);
         }
     }

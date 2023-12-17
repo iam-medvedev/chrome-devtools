@@ -5,9 +5,6 @@ export declare class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox imple
     private readonly setting;
     private editor?;
     constructor();
-    static instance(opts?: {
-        forceNew: null;
-    }): FrameworkIgnoreListSettingsTab;
     wasShown(): void;
     private settingUpdated;
     private addButtonClicked;

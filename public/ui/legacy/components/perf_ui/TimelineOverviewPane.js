@@ -129,9 +129,14 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.overviewGrid.showingScreenshots = isShowing;
     }
     setBounds(minimumBoundary, maximumBoundary) {
+        if (minimumBoundary === this.overviewCalculator.minimumBoundary() &&
+            maximumBoundary === this.overviewCalculator.maximumBoundary()) {
+            return;
+        }
         this.overviewCalculator.setBounds(minimumBoundary, maximumBoundary);
         this.overviewGrid.setResizeEnabled(true);
         this.cursorEnabled = true;
+        this.scheduleUpdate(minimumBoundary, maximumBoundary);
     }
     setNavStartTimes(navStartTimes) {
         this.overviewCalculator.setNavStartTimes(navStartTimes);
@@ -193,7 +198,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         return this.overviewControls.some(control => control.onClick(event));
     }
     onBreadcrumbAdded() {
-        this.dispatchEventToListeners(Events.BreadcrumbAdded, {
+        this.dispatchEventToListeners(Events.OverviewPaneBreadcrumbAdded, {
             startTime: TraceEngine.Types.Timing.MilliSeconds(this.windowStartTime),
             endTime: TraceEngine.Types.Timing.MilliSeconds(this.windowEndTime),
         });
@@ -210,8 +215,11 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
             event.data.rawStartValue === this.overviewCalculator.minimumBoundary() ? 0 : event.data.rawStartValue;
         this.windowEndTime =
             event.data.rawEndValue === this.overviewCalculator.maximumBoundary() ? Infinity : event.data.rawEndValue;
-        const windowTimes = { startTime: this.windowStartTime, endTime: this.windowEndTime };
-        this.dispatchEventToListeners(Events.WindowChanged, windowTimes);
+        const windowTimes = {
+            startTime: TraceEngine.Types.Timing.MilliSeconds(this.windowStartTime),
+            endTime: TraceEngine.Types.Timing.MilliSeconds(this.windowEndTime),
+        };
+        this.dispatchEventToListeners(Events.OverviewPaneWindowChanged, windowTimes);
     }
     setWindowTimes(startTime, endTime) {
         if (startTime === this.windowStartTime && endTime === this.windowEndTime) {
@@ -220,7 +228,10 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.windowStartTime = startTime;
         this.windowEndTime = endTime;
         this.updateWindow();
-        this.dispatchEventToListeners(Events.WindowChanged, { startTime: startTime, endTime: endTime });
+        this.dispatchEventToListeners(Events.OverviewPaneWindowChanged, {
+            startTime: TraceEngine.Types.Timing.MilliSeconds(startTime),
+            endTime: TraceEngine.Types.Timing.MilliSeconds(endTime),
+        });
     }
     updateWindow() {
         if (!this.overviewControls.length) {
@@ -240,8 +251,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
 // eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
-    Events["WindowChanged"] = "WindowChanged";
-    Events["BreadcrumbAdded"] = "BreadcrumbAdded";
+    Events["OverviewPaneWindowChanged"] = "OverviewPaneWindowChanged";
+    Events["OverviewPaneBreadcrumbAdded"] = "OverviewPaneBreadcrumbAdded";
 })(Events || (Events = {}));
 export class TimelineOverviewBase extends UI.Widget.VBox {
     calculatorInternal;

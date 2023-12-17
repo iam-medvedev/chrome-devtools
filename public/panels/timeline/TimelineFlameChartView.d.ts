@@ -32,13 +32,11 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private needsResizeToPreferredHeights?;
     private selectedSearchResult?;
     private searchRegex?;
-    private selectedGroupName;
     constructor(delegate: TimelineModeViewDelegate);
     onEntriesModified(): void;
     isNetworkTrackShownForTests(): boolean;
     updateColorMapper(): void;
-    private onWindowChanged;
-    windowChanged(windowStartTime: number, windowEndTime: number, animate: boolean): void;
+    windowChanged(windowStartTime: TraceEngine.Types.Timing.MilliSeconds, windowEndTime: TraceEngine.Types.Timing.MilliSeconds, animate: boolean): void;
     updateRangeSelection(startTime: number, endTime: number): void;
     getMainFlameChart(): PerfUI.FlameChart.FlameChart;
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;

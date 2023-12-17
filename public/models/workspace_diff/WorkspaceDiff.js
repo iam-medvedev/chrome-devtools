@@ -237,11 +237,5 @@ export function workspaceDiff() {
     }
     return _instance;
 }
-export class DiffUILocation {
-    uiSourceCode;
-    constructor(uiSourceCode) {
-        this.uiSourceCode = uiSourceCode;
-    }
-}
 export const UpdateTimeout = 200;
 //# sourceMappingURL=WorkspaceDiff.js.map

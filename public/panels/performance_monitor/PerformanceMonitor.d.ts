@@ -16,10 +16,7 @@ export declare class PerformanceMonitorImpl extends UI.Widget.HBox implements SD
     private model?;
     private startTimestamp?;
     private pollTimer?;
-    constructor(pollIntervalMs: number);
-    static instance(opts?: {
-        forceNew: null;
-    }): PerformanceMonitorImpl;
+    constructor(pollIntervalMs?: number);
     wasShown(): void;
     willHide(): void;
     modelAdded(model: SDK.PerformanceMetricsModel.PerformanceMetricsModel): void;

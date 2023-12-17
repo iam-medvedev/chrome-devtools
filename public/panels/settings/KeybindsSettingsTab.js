@@ -74,7 +74,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/KeybindsSettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let keybindsSettingsTabInstance;
 export class KeybindsSettingsTab extends UI.Widget.VBox {
     items;
     list;
@@ -82,7 +81,7 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
     editingRow;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.section().context('keybinds')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('keybinds')}`);
         const header = this.contentElement.createChild('header');
         header.createChild('h1').textContent = i18nString(UIStrings.shortcuts);
         const keybindsSetSetting = Common.Settings.Settings.instance().moduleSetting('activeKeybindSet');
@@ -115,13 +114,6 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
         this.editingItem = null;
         this.editingRow = null;
         this.update();
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!keybindsSettingsTabInstance || forceNew) {
-            keybindsSettingsTabInstance = new KeybindsSettingsTab();
-        }
-        return keybindsSettingsTabInstance;
     }
     createElementForItem(item) {
         let itemElement = document.createElement('div');

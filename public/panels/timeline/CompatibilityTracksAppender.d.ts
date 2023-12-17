@@ -5,7 +5,7 @@ import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
 import { InteractionsTrackAppender } from './InteractionsTrackAppender.js';
 import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
-import { ThreadAppender, ThreadType } from './ThreadAppender.js';
+import { ThreadAppender } from './ThreadAppender.js';
 import { EntryType, type TimelineFlameChartEntry } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
 export type HighlightedEntryInfo = {
@@ -77,7 +77,7 @@ export declare class CompatibilityTracksAppender {
      * architecture and should be removed once all tracks use the new
      * system.
      */
-    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[], legacyTimelineModel: TimelineModel.TimelineModel.TimelineModelImpl, isCpuProfile?: boolean);
+    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[], legacyTimelineModel: TimelineModel.TimelineModel.TimelineModelImpl);
     setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
     modifyTree(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.TraceEntry, action: TraceEngine.EntriesFilter.FilterAction, flameChartView: PerfUI.FlameChart.FlameChart): void;
@@ -128,7 +128,7 @@ export declare class CompatibilityTracksAppender {
      * Returns number of tracks of given type already appended.
      * Used to name the "Raster Thread 6" tracks, etc
      */
-    getCurrentTrackCountForThreadType(threadType: ThreadType.RASTERIZER | ThreadType.THREAD_POOL): number;
+    getCurrentTrackCountForThreadType(threadType: TraceEngine.Handlers.Threads.ThreadType.RASTERIZER | TraceEngine.Handlers.Threads.ThreadType.THREAD_POOL): number;
     /**
      * Looks up a FlameChart group for a given appender.
      */

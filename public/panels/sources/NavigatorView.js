@@ -38,10 +38,11 @@ import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Snippets from '../snippets/snippets.js';
 import navigatorTreeStyles from './navigatorTree.css.js';
 import navigatorViewStyles from './navigatorView.css.js';
-import { SearchSourcesView } from './SearchSourcesView.js';
+import { SearchSources } from './SearchSourcesView.js';
 const UIStrings = {
     /**
      *@description Text in Navigator View of the Sources panel
@@ -174,26 +175,20 @@ export class NavigatorView extends UI.Widget.VBox {
     frameNodes;
     authoredNode;
     deployedNode;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     navigatorGroupByFolderSetting;
     navigatorGroupByAuthoredExperiment;
     workspaceInternal;
-    lastSelectedUISourceCode;
     groupByFrame;
     groupByAuthored;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     groupByDomain;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     groupByFolder;
-    constructor(enableAuthoredGrouping) {
+    constructor(jslogContext, enableAuthoredGrouping) {
         super(true);
         this.placeholder = null;
         this.scriptsTree = new UI.TreeOutline.TreeOutlineInShadow();
         this.scriptsTree.setComparator(NavigatorView.treeElementsCompare);
         this.scriptsTree.setFocusable(false);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context(jslogContext)}`);
         this.contentElement.appendChild(this.scriptsTree.element);
         this.setDefaultFocusedElement(this.scriptsTree.element);
         this.uiSourceCodeNodes = new Platform.MapUtilities.Multimap();
@@ -244,16 +239,9 @@ export class NavigatorView extends UI.Widget.VBox {
         return order;
     }
     static appendSearchItem(contextMenu, path) {
-        let searchLabel = i18nString(UIStrings.searchInFolder);
-        if (!path || !path.trim()) {
-            path = '*';
-            searchLabel = i18nString(UIStrings.searchInAllFiles);
-        }
-        contextMenu.viewSection().appendItem(searchLabel, () => {
-            if (path) {
-                void SearchSourcesView.openSearch(`file:${path.trim()}`);
-            }
-        });
+        const searchLabel = path ? i18nString(UIStrings.searchInFolder) : i18nString(UIStrings.searchInAllFiles);
+        const searchSources = new SearchSources(path && `file:${path}`);
+        contextMenu.viewSection().appendItem(searchLabel, () => Common.Revealer.reveal(searchSources));
     }
     static treeElementsCompare(treeElement1, treeElement2) {
         const typeWeight1 = NavigatorView.treeElementOrder(treeElement1);
@@ -681,13 +669,11 @@ export class NavigatorView extends UI.Widget.VBox {
             }
             this.scriptsTree.selectedTreeElement.deselect();
         }
-        this.lastSelectedUISourceCode = uiSourceCode;
         // TODO(dgozman): figure out revealing multiple.
         node.reveal(select);
         return node;
     }
     sourceSelected(uiSourceCode, focusSource) {
-        this.lastSelectedUISourceCode = uiSourceCode;
         void Common.Revealer.reveal(uiSourceCode, !focusSource);
     }
     #isUISourceCodeOrAnyAncestorSelected(node) {

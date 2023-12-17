@@ -61,7 +61,8 @@ export declare class ServiceWorkerVersionState {
 export declare class ServiceWorkerRouterRule {
     condition: string;
     source: string;
-    constructor(condition: string, source: string);
+    id: number;
+    constructor(condition: string, source: string, id: number);
 }
 export declare class ServiceWorkerVersion {
     id: string;

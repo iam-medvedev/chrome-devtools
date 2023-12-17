@@ -783,6 +783,10 @@ span[is="dt-icon-label"] {
   -webkit-mask-image: var(--image-file-list);
 }
 
+.spritesheet-mop.icon-mask {
+  -webkit-mask-image: var(--image-file-mop);
+}
+
 .spritesheet-pause.icon-mask {
   -webkit-mask-image: var(--image-file-pause);
 }
@@ -1042,12 +1046,19 @@ button.link:focus-visible {
 /* search input with customized styling */
 input.custom-search-input::-webkit-search-cancel-button {
   appearance: none;
-  cursor: pointer;
   width: 16px;
   height: 15px;
   margin-right: 0;
-  background-position: -32px 32px;
-  background-image: var(--image-file-mediumIcons);
+  opacity: 70%;
+  -webkit-mask-image: var(--image-file-cross-circle-filled);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 99%;
+  background-color: var(--icon-default);
+}
+
+input.custom-search-input::-webkit-search-cancel-button:hover {
+  opacity: 99%;
 }
 /* loading spinner */
 .spinner::before {

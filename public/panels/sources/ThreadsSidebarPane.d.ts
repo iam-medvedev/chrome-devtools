@@ -4,8 +4,7 @@ export declare class ThreadsSidebarPane extends UI.Widget.VBox implements SDK.Ta
     private readonly items;
     private readonly list;
     private selectedModel;
-    private constructor();
-    static instance(): ThreadsSidebarPane;
+    constructor();
     static shouldBeShown(): boolean;
     createElementForItem(debuggerModel: SDK.DebuggerModel.DebuggerModel): Element;
     heightForItem(_debuggerModel: SDK.DebuggerModel.DebuggerModel): number;

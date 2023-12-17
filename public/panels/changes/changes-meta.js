@@ -1,9 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as UI from '../../ui/legacy/legacy.js';
 let loadedChangesModule;
 const UIStrings = {
@@ -46,7 +44,7 @@ UI.ViewManager.registerViewExtension({
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
     async loadView() {
         const Changes = await loadChangesModule();
-        return Changes.ChangesView.ChangesView.instance();
+        return new Changes.ChangesView.ChangesView();
     },
 });
 UI.ActionRegistration.registerActionExtension({
@@ -73,18 +71,6 @@ UI.ActionRegistration.registerActionExtension({
     },
     contextTypes() {
         return maybeRetrieveContextTypes(Changes => [Changes.ChangesView.ChangesView]);
-    },
-});
-Common.Revealer.registerRevealer({
-    contextTypes() {
-        return [
-            WorkspaceDiff.WorkspaceDiff.DiffUILocation,
-        ];
-    },
-    destination: Common.Revealer.RevealerDestination.CHANGES_DRAWER,
-    async loadRevealer() {
-        const Changes = await loadChangesModule();
-        return new Changes.ChangesView.DiffUILocationRevealer();
     },
 });
 //# sourceMappingURL=changes-meta.js.map

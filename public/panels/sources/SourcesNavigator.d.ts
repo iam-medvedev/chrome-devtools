@@ -13,8 +13,7 @@ export declare class NetworkNavigatorView extends NavigatorView {
     uiSourceCodeAdded(uiSourceCode: Workspace.UISourceCode.UISourceCode): void;
 }
 export declare class FilesNavigatorView extends NavigatorView {
-    private constructor();
-    static instance(): FilesNavigatorView;
+    constructor();
     sourceSelected(uiSourceCode: Workspace.UISourceCode.UISourceCode, focusSource: boolean): void;
     acceptProject(project: Workspace.Workspace.Project): boolean;
     handleContextMenu(event: Event): void;
@@ -33,15 +32,11 @@ export declare class OverridesNavigatorView extends NavigatorView {
     acceptProject(project: Workspace.Workspace.Project): boolean;
 }
 export declare class ContentScriptsNavigatorView extends NavigatorView {
-    private constructor();
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): ContentScriptsNavigatorView;
+    constructor();
     acceptProject(project: Workspace.Workspace.Project): boolean;
 }
 export declare class SnippetsNavigatorView extends NavigatorView {
     constructor();
-    static instance(): SnippetsNavigatorView;
     acceptProject(project: Workspace.Workspace.Project): boolean;
     handleContextMenu(event: Event): void;
     handleFileContextMenu(event: Event, node: NavigatorUISourceCodeTreeNode): void;

@@ -2,15 +2,12 @@ import type * as SDK from '../../core/sdk/sdk.js';
 import * as Formatter from '../formatter/formatter.js';
 type ScopeTreeNode = Formatter.FormatterWorkerPool.ScopeTreeNode;
 /**
- * Caches scope trees for whole scripts.
+ * Computes and caches the scope tree for `script`.
  *
- * We use `SDK.Script` as a key to uniquely identify scripts.
- * `SDK.Script` boils down to "target" + "script ID". This duplicates work in case of
- * identitical script running on multiple targets (e.g. workers).
+ * We use {@link SDK.Script.Script} as a key to uniquely identify scripts.
+ * {@link SDK.Script.Script} boils down to "target" + "script ID". This
+ * duplicates work in case of identitical script running on multiple targets
+ * (e.g. workers).
  */
-export declare class ScopeTreeCache {
-    #private;
-    static instance(): ScopeTreeCache;
-    scopeTreeForScript(script: SDK.Script.Script): Promise<ScopeTreeNode | null>;
-}
+export declare function scopeTreeForScript(script: SDK.Script.Script): Promise<ScopeTreeNode | null>;
 export {};

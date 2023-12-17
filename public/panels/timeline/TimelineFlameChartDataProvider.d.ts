@@ -24,7 +24,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private readonly staticHeader;
     private framesHeader;
     private readonly screenshotsHeader;
-    private readonly flowEventIndexById;
     private entryData;
     private entryTypeByLevel;
     private screenshotImageCache;
@@ -54,7 +53,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
         expandedTracks?: Set<TrackAppenderName>;
     }): void;
     groupTrack(group: PerfUI.FlameChart.Group): TimelineModel.TimelineModel.Track | null;
-    groupTreeEvents(group: PerfUI.FlameChart.Group): TraceEngine.Legacy.CompatibleTraceEvent[] | null;
+    groupTreeEvents(group: PerfUI.FlameChart.Group): TraceEngine.Types.TraceEvents.TraceEventData[] | null;
     mainFrameNavigationStartEvents(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
     entryTitle(entryIndex: number): string | null;
     textColor(index: number): string;

@@ -5,9 +5,6 @@ export declare class KeybindsSettingsTab extends UI.Widget.VBox implements UI.Li
     private editingItem;
     private editingRow;
     constructor();
-    static instance(opts?: {
-        forceNew: null;
-    }): KeybindsSettingsTab;
     createElementForItem(item: KeybindsItem): Element;
     commitChanges(item: UI.ActionRegistration.Action, editedShortcuts: Map<UI.KeyboardShortcut.KeyboardShortcut, UI.KeyboardShortcut.Descriptor[] | null>): void;
     /**

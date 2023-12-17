@@ -40,6 +40,7 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     private notFirstInspectElement?;
     sidebarPaneView?: UI.View.TabbedViewLocation;
     private stylesViewToReveal?;
+    private nodeInsertedTaskRunner;
     private cssStyleTrackerByCSSModel;
     constructor();
     private initializeFullAccessibilityTreeView;
@@ -52,6 +53,7 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     resolveLocation(_locationName: string): UI.View.ViewLocation | null;
     showToolbarPane(widget: UI.Widget.Widget | null, toggle: UI.Toolbar.ToolbarToggle | null): void;
     modelAdded(domModel: SDK.DOMModel.DOMModel): void;
+    private handleNodeInserted;
     modelRemoved(domModel: SDK.DOMModel.DOMModel): void;
     private targetNameChanged;
     private updateTreeOutlineVisibleWidth;

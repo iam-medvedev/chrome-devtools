@@ -14,7 +14,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/NodeStackTraceWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let nodeStackTraceWidgetInstance;
 export class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWidget {
     noStackTraceElement;
     creationStackTraceElement;
@@ -25,13 +24,6 @@ export class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWidget {
         this.noStackTraceElement.textContent = i18nString(UIStrings.noStackTraceAvailable);
         this.creationStackTraceElement = this.contentElement.createChild('div', 'stack-trace');
         this.linkifier = new Components.Linkifier.Linkifier(MaxLengthForLinks);
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!nodeStackTraceWidgetInstance || forceNew) {
-            nodeStackTraceWidgetInstance = new NodeStackTraceWidget();
-        }
-        return nodeStackTraceWidgetInstance;
     }
     wasShown() {
         super.wasShown();

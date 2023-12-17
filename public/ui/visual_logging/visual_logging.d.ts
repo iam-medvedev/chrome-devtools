@@ -5,9 +5,6 @@ export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logClick, logImpressions } from './LoggingEvents.js';
 export { registerContextProvider, registerParentProvider } from './LoggingState.js';
 export declare function registerLoggable(loggable: Loggable, config: string, parent: Loggable | null): void;
-export declare const accessibilityComputedProperties: () => LoggingConfig.ConfigStringBuilder;
-export declare const accessibilityPane: () => LoggingConfig.ConfigStringBuilder;
-export declare const accessibilitySourceOrder: () => LoggingConfig.ConfigStringBuilder;
 /**
  * Action visual elements are either buttons or menu items that trigger a given action. Use the
  * context to differentiate between different actions, and make sure that buttons and menu items
@@ -16,8 +13,6 @@ export declare const accessibilitySourceOrder: () => LoggingConfig.ConfigStringB
  * Ideally the `action`s context should match the ID of an `UI.ActionRegistration.Action`.
  */
 export declare const action: () => LoggingConfig.ConfigStringBuilder;
-export declare const addElementClassPrompt: () => LoggingConfig.ConfigStringBuilder;
-export declare const ariaAttributes: () => LoggingConfig.ConfigStringBuilder;
 export declare const bezierCurveEditor: () => LoggingConfig.ConfigStringBuilder;
 export declare const bezierEditor: () => LoggingConfig.ConfigStringBuilder;
 export declare const bezierPresetCategory: () => LoggingConfig.ConfigStringBuilder;
@@ -29,16 +24,11 @@ export declare const cssAngleEditor: () => LoggingConfig.ConfigStringBuilder;
 export declare const cssColorMix: () => LoggingConfig.ConfigStringBuilder;
 export declare const cssFlexboxEditor: () => LoggingConfig.ConfigStringBuilder;
 export declare const cssGridEditor: () => LoggingConfig.ConfigStringBuilder;
-export declare const cssLayersPane: () => LoggingConfig.ConfigStringBuilder;
 export declare const cssShadowEditor: () => LoggingConfig.ConfigStringBuilder;
 export declare const deviceModeRuler: () => LoggingConfig.ConfigStringBuilder;
 export declare const domBreakpoint: () => LoggingConfig.ConfigStringBuilder;
 export declare const dropDown: () => LoggingConfig.ConfigStringBuilder;
 export declare const elementsBreadcrumbs: () => LoggingConfig.ConfigStringBuilder;
-export declare const elementClassesPane: () => LoggingConfig.ConfigStringBuilder;
-export declare const elementPropertiesPane: () => LoggingConfig.ConfigStringBuilder;
-export declare const elementStatesPane: () => LoggingConfig.ConfigStringBuilder;
-export declare const eventListenersPane: () => LoggingConfig.ConfigStringBuilder;
 export declare const filterDropdown: () => LoggingConfig.ConfigStringBuilder;
 export declare const flexboxOverlays: () => LoggingConfig.ConfigStringBuilder;
 export declare const gridOverlays: () => LoggingConfig.ConfigStringBuilder;
@@ -77,8 +67,6 @@ export declare const slider: () => LoggingConfig.ConfigStringBuilder;
 export declare const stylesComputedPane: () => LoggingConfig.ConfigStringBuilder;
 export declare const section: () => LoggingConfig.ConfigStringBuilder;
 export declare const stylePropertiesSectionSeparator: () => LoggingConfig.ConfigStringBuilder;
-export declare const stylesMetricsPane: () => LoggingConfig.ConfigStringBuilder;
-export declare const stylesPane: () => LoggingConfig.ConfigStringBuilder;
 export declare const stylesSelector: () => LoggingConfig.ConfigStringBuilder;
 export declare const tableCell: () => LoggingConfig.ConfigStringBuilder;
 export declare const tableHeader: () => LoggingConfig.ConfigStringBuilder;

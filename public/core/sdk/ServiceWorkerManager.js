@@ -311,9 +311,11 @@ export class ServiceWorkerVersionState {
 export class ServiceWorkerRouterRule {
     condition;
     source;
-    constructor(condition, source) {
+    id;
+    constructor(condition, source, id) {
         this.condition = condition;
         this.source = source;
+        this.id = id;
     }
 }
 export class ServiceWorkerVersion {
@@ -417,12 +419,12 @@ export class ServiceWorkerVersion {
             }
             const routerRules = [];
             for (const parsedRule of parsedObject) {
-                const { condition, source } = parsedRule;
-                if (condition === undefined || source === undefined) {
+                const { condition, source, id } = parsedRule;
+                if (condition === undefined || source === undefined || id === undefined) {
                     console.error('Parse error: Missing some fields of `routerRules` in ServiceWorkerVersion');
                     return null;
                 }
-                routerRules.push(new ServiceWorkerRouterRule(JSON.stringify(condition), JSON.stringify(source)));
+                routerRules.push(new ServiceWorkerRouterRule(JSON.stringify(condition), JSON.stringify(source), id));
             }
             return routerRules;
         }

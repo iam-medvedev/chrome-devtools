@@ -147,7 +147,15 @@ export function traceWindowFromMilliSeconds(min, max) {
     const traceWindow = {
         min: millisecondsToMicroseconds(min),
         max: millisecondsToMicroseconds(max),
-        range: millisecondsToMicroseconds(Types.Timing.MilliSeconds(max - min)),
+        range: Types.Timing.MicroSeconds(millisecondsToMicroseconds(max) - millisecondsToMicroseconds(min)),
+    };
+    return traceWindow;
+}
+export function traceWindowFromMicroSeconds(min, max) {
+    const traceWindow = {
+        min,
+        max,
+        range: Types.Timing.MicroSeconds(max - min),
     };
     return traceWindow;
 }

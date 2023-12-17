@@ -43,9 +43,9 @@ import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.j
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as SourceComponents from './components/components.js';
 import { AddDebugInfoURLDialog } from './AddSourceMapURLDialog.js';
 import { BreakpointEditDialog } from './BreakpointEditDialog.js';
+import * as SourceComponents from './components/components.js';
 import { Plugin } from './Plugin.js';
 import { SourcesPanel } from './SourcesPanel.js';
 const { EMPTY_BREAKPOINT_CONDITION, NEVER_PAUSE_HERE_CONDITION } = Breakpoints.BreakpointManager;
@@ -195,8 +195,6 @@ export class DebuggerPlugin extends Plugin {
     // content is edited and later saved, these are used as a source of
     // truth for re-creating the breakpoints.
     breakpoints = [];
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     continueToLocations = null;
     liveLocationPool;
     // When the editor content is changed by the user, this becomes
@@ -311,7 +309,7 @@ export class DebuggerPlugin extends Plugin {
             },
         });
     }
-    #openEditDialogForLine(line) {
+    #openEditDialogForLine(line, isLogpoint) {
         if (this.muted) {
             return;
         }
@@ -319,7 +317,10 @@ export class DebuggerPlugin extends Plugin {
             this.activeBreakpointDialog.finishEditing(false, '');
         }
         const breakpoint = this.breakpoints.find(b => b.position >= line.from && b.position <= line.to)?.breakpoint || null;
-        this.editBreakpointCondition({ line, breakpoint, location: null, isLogpoint: breakpoint?.isLogpoint() });
+        if (isLogpoint === undefined && breakpoint !== null) {
+            isLogpoint = breakpoint.isLogpoint();
+        }
+        this.editBreakpointCondition({ line, breakpoint, location: null, isLogpoint });
     }
     editorInitialized(editor) {
         // Start asynchronous actions that require access to the editor
@@ -1385,11 +1386,8 @@ export class DebuggerPlugin extends Plugin {
             return false;
         }
         if (event.metaKey || event.ctrlKey) {
-            if (event.shiftKey) {
-                return false;
-            }
             Host.userMetrics.breakpointEditDialogRevealedFrom(6 /* Host.UserMetrics.BreakpointEditDialogRevealedFrom.MouseClick */);
-            this.#openEditDialogForLine(line);
+            this.#openEditDialogForLine(line, event.shiftKey);
             return true;
         }
         void this.toggleBreakpoint(line, event.shiftKey);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
-import { Timing } from '../helpers/helpers.js';
-import * as TraceEngine from '../types/types.js';
+import * as Helpers from '../helpers/helpers.js';
+import * as Types from '../types/types.js';
 const fontRequestsByPrePaint = new Map();
 const renderBlocksByPrePaint = new Map();
 function setDefaultValue(map, shift) {
@@ -84,7 +84,12 @@ export class LayoutShiftRootCauses {
      * to layout shifts.
      */
     async linkShiftsToLayoutInvalidations(layoutShifts, modelData) {
-        const { prePaintEvents, layoutInvalidationEvents: liEvents, backendNodeIds } = modelData.LayoutShifts;
+        const { prePaintEvents, layoutInvalidationEvents, scheduleStyleInvalidationEvents, backendNodeIds } = modelData.LayoutShifts;
+        // For the purposes of determining root causes of layout shifts, we
+        // consider scheduleStyleInvalidationTracking and
+        // LayoutInvalidationTracking events as events that could have been the
+        // cause of the layout shift.
+        const eventsForLayoutInvalidation = [...layoutInvalidationEvents, ...scheduleStyleInvalidationEvents];
         const nodes = await this.#protocolInterface.pushNodesByBackendIdsToFrontend(backendNodeIds);
         const nodeIdsByBackendIdMap = new Map();
         for (let i = 0; i < backendNodeIds.length; i++) {
@@ -92,7 +97,7 @@ export class LayoutShiftRootCauses {
         }
         // Maps from PrePaint events to LayoutShifts that occured in each one.
         const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
-        for (const layoutInvalidation of liEvents) {
+        for (const layoutInvalidation of eventsForLayoutInvalidation) {
             // Get the first PrePaint event that happened after the current LayoutInvalidation event.
             const nextPrePaintIndex = Platform.ArrayUtilities.nearestIndexFromBeginning(prePaintEvents, prePaint => prePaint.ts > layoutInvalidation.ts);
             if (nextPrePaintIndex === null) {
@@ -113,10 +118,10 @@ export class LayoutShiftRootCauses {
                 null;
             let unsizedMediaRootCause = null;
             let iframeRootCause = null;
-            if (layoutInvalidationNode) {
+            if (layoutInvalidationNode && layoutInvalidation.args.data.reason) {
                 unsizedMediaRootCause =
                     await this.getUnsizedMediaRootCause(layoutInvalidation.args.data.reason, layoutInvalidationNode);
-                iframeRootCause = await this.getIframeRootCause(layoutInvalidation.args.data.reason, layoutInvalidationNode);
+                iframeRootCause = this.getIframeRootCause(layoutInvalidation.args.data.reason, layoutInvalidationNode);
             }
             if (!unsizedMediaRootCause && !iframeRootCause && !fontChangeRootCause && !renderBlockRootCause) {
                 continue;
@@ -167,7 +172,7 @@ export class LayoutShiftRootCauses {
         const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
         const eventTriggersLayout = ({ name }) => {
             const knownName = name;
-            return knownName === "Layout" /* TraceEngine.TraceEvents.KnownEventName.Layout */;
+            return knownName === "Layout" /* Types.TraceEvents.KnownEventName.Layout */;
         };
         const layoutEvents = modelData.Renderer.allTraceEntries.filter(eventTriggersLayout);
         for (const layout of layoutEvents) {
@@ -212,7 +217,7 @@ export class LayoutShiftRootCauses {
      */
     async getUnsizedMediaRootCause(reason, layoutInvalidationNode) {
         // Filter events to resizes only.
-        if (reason !== "Size changed" /* TraceEngine.TraceEvents.LayoutInvalidationReason.SIZE_CHANGED */) {
+        if (reason !== "Size changed" /* Types.TraceEvents.LayoutInvalidationReason.SIZE_CHANGED */) {
             return null;
         }
         const computedStylesList = await this.#protocolInterface.getComputedStyleForNode(layoutInvalidationNode.nodeId);
@@ -233,8 +238,8 @@ export class LayoutShiftRootCauses {
      */
     getIframeRootCause(reason, layoutInvalidationDOMNode) {
         if (layoutInvalidationDOMNode.nodeName !== 'IFRAME' &&
-            reason !== "Style changed" /* TraceEngine.TraceEvents.LayoutInvalidationReason.STYLE_CHANGED */ &&
-            reason !== "Added to layout" /* TraceEngine.TraceEvents.LayoutInvalidationReason.ADDED_TO_LAYOUT */) {
+            reason !== "Style changed" /* Types.TraceEvents.LayoutInvalidationReason.STYLE_CHANGED */ &&
+            reason !== "Added to layout" /* Types.TraceEvents.LayoutInvalidationReason.ADDED_TO_LAYOUT */) {
             return null;
         }
         const iframe = firstIframeInDOMTree(layoutInvalidationDOMNode);
@@ -257,7 +262,7 @@ export class LayoutShiftRootCauses {
         if (lastRequestIndex === null) {
             return [];
         }
-        const MAX_DELTA_FOR_FONT_REQUEST = Timing.secondsToMicroseconds(TraceEngine.Timing.Seconds(0.5));
+        const MAX_DELTA_FOR_FONT_REQUEST = Helpers.Timing.secondsToMicroseconds(Types.Timing.Seconds(0.5));
         const requestsInInvalidationWindow = [];
         // Get all requests finished within the valid window.
         for (let i = lastRequestIndex; i > -1; i--) {
@@ -286,7 +291,7 @@ export class LayoutShiftRootCauses {
      * returned instead.
      */
     getFontChangeRootCause(layoutInvalidation, nextPrePaint, modelData) {
-        if (layoutInvalidation.args.data.reason !== "Fonts changed" /* TraceEngine.TraceEvents.LayoutInvalidationReason.FONTS_CHANGED */) {
+        if (layoutInvalidation.args.data.reason !== "Fonts changed" /* Types.TraceEvents.LayoutInvalidationReason.FONTS_CHANGED */) {
             return null;
         }
         // Prevent computing the result of this function multiple times per PrePaint event.

@@ -93,7 +93,7 @@
     "message": "Issues view"
   },
   "core/common/Revealer.ts | memoryInspectorPanel": {
-    "message": "Memory Inspector panel"
+    "message": "Memory inspector panel"
   },
   "core/common/Revealer.ts | networkPanel": {
     "message": "Network panel"
@@ -1666,6 +1666,9 @@
   },
   "panels/accessibility/AccessibilityNodeView.ts | elementIsHiddenBy": {
     "message": "Element is hidden by active modal dialog: "
+  },
+  "panels/accessibility/AccessibilityNodeView.ts | elementIsHiddenByChildTree": {
+    "message": "Element is hidden by child tree: "
   },
   "panels/accessibility/AccessibilityNodeView.ts | elementIsInAnInertSubTree": {
     "message": "Element is in an inert subtree from "
@@ -5289,13 +5292,13 @@
     "message": "Locate the affected elements in the Elements panel"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | quickStartWithCSSOverview": {
-    "message": "Quick start: get started with the new CSS Overview panel"
+    "message": "Quick start: get started with the new CSS overview panel"
   },
   "panels/css_overview/css_overview-meta.ts | cssOverview": {
-    "message": "CSS Overview"
+    "message": "CSS overview"
   },
   "panels/css_overview/css_overview-meta.ts | showCssOverview": {
-    "message": "Show CSS Overview"
+    "message": "Show CSS overview"
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | aa": {
     "message": "AA"
@@ -5331,7 +5334,7 @@
     "message": "Contrast ratio"
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | cssOverviewElements": {
-    "message": "CSS Overview Elements"
+    "message": "CSS overview elements"
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | declaration": {
     "message": "Declaration"
@@ -5409,7 +5412,7 @@
     "message": "Clear overview"
   },
   "panels/css_overview/CSSOverviewSidebarPanel.ts | cssOverviewPanelSidebar": {
-    "message": "CSS Overview panel sidebar"
+    "message": "CSS overview panel sidebar"
   },
   "panels/css_overview/CSSOverviewUnusedDeclarations.ts | bottomAppliedToAStatically": {
     "message": "Bottom applied to a statically positioned element"
@@ -5433,10 +5436,10 @@
     "message": "Width applied to an inline element"
   },
   "panels/developer_resources/developer_resources-meta.ts | developerResources": {
-    "message": "Developer Resources"
+    "message": "Developer resources"
   },
   "panels/developer_resources/developer_resources-meta.ts | showDeveloperResources": {
-    "message": "Show Developer Resources"
+    "message": "Show Developer resources"
   },
   "panels/developer_resources/DeveloperResourcesListView.ts | copyInitiatorUrl": {
     "message": "Copy initiator URL"
@@ -5445,7 +5448,7 @@
     "message": "Copy URL"
   },
   "panels/developer_resources/DeveloperResourcesListView.ts | developerResources": {
-    "message": "Developer Resources"
+    "message": "Developer resources"
   },
   "panels/developer_resources/DeveloperResourcesListView.ts | error": {
     "message": "Error"
@@ -5603,6 +5606,12 @@
   "panels/elements/ComputedStyleWidget.ts | showAll": {
     "message": "Show all"
   },
+  "panels/elements/CSSRuleValidator.ts | flexGridContainerPropertyRuleFix": {
+    "message": "Try setting the {PROPERTY_NAME} on the container element or use {ALTERNATIVE_PROPERTY_NAME} instead."
+  },
+  "panels/elements/CSSRuleValidator.ts | flexGridContainerPropertyRuleReason": {
+    "message": "This element is a {CONTAINER_DISPLAY_NAME} item, i.e. a child of a {CONTAINER_DISPLAY_NAME} container, but {PROPERTY_NAME} only applies to containers."
+  },
   "panels/elements/CSSRuleValidator.ts | fontVariationSettingsWarning": {
     "message": "Value for setting “{PH1}” {PH2} is outside the supported range [{PH3}, {PH4}] for font-family “{PH5}”."
   },
@@ -5611,6 +5620,9 @@
   },
   "panels/elements/CSSRuleValidator.ts | ruleViolatedByParentElementRuleReason": {
     "message": "The {REASON_PROPERTY_DECLARATION_CODE} property on the parent element prevents {AFFECTED_PROPERTY_DECLARATION_CODE} from having an effect."
+  },
+  "panels/elements/CSSRuleValidator.ts | ruleViolatedBySameElementRuleChangeFlexOrGrid": {
+    "message": "Try adding {DISPLAY_GRID_RULE} or {DISPLAY_FLEX_RULE} to make this element into a container."
   },
   "panels/elements/CSSRuleValidator.ts | ruleViolatedBySameElementRuleChangeSuggestion": {
     "message": "Try setting the {EXISTING_PROPERTY_DECLARATION} property to {TARGET_PROPERTY_DECLARATION}."
@@ -6140,6 +6152,9 @@
   "panels/emulation/DeviceModeToolbar.ts | devicePixelRatio": {
     "message": "Device pixel ratio"
   },
+  "panels/emulation/DeviceModeToolbar.ts | devicePosture": {
+    "message": "Device posture"
+  },
   "panels/emulation/DeviceModeToolbar.ts | deviceType": {
     "message": "Device type"
   },
@@ -6438,7 +6453,7 @@
     "message": "Resource"
   },
   "panels/issues/AffectedDirectivesView.ts | sourceLocation": {
-    "message": "Source Location"
+    "message": "Source location"
   },
   "panels/issues/AffectedDirectivesView.ts | status": {
     "message": "Status"
@@ -7296,16 +7311,16 @@
     "message": "Other"
   },
   "panels/linear_memory_inspector/linear_memory_inspector-meta.ts | memoryInspector": {
-    "message": "Memory Inspector"
+    "message": "Memory inspector"
   },
   "panels/linear_memory_inspector/linear_memory_inspector-meta.ts | showMemoryInspector": {
-    "message": "Show Memory Inspector"
+    "message": "Show Memory inspector"
   },
   "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | couldNotOpenLinearMemory": {
     "message": "Could not open linear memory inspector: failed locating buffer."
   },
   "panels/linear_memory_inspector/LinearMemoryInspectorController.ts | revealInMemoryInspectorPanel": {
-    "message": "Reveal in Memory Inspector panel"
+    "message": "Reveal in Memory inspector panel"
   },
   "panels/linear_memory_inspector/LinearMemoryInspectorPane.ts | noOpenInspections": {
     "message": "No open inspections"
@@ -9356,9 +9371,6 @@
   "panels/profiler/HeapSnapshotView.ts | selectedSizeS": {
     "message": "Selected size: {PH1}"
   },
-  "panels/profiler/HeapSnapshotView.ts | sKb": {
-    "message": "{PH1} kB"
-  },
   "panels/profiler/HeapSnapshotView.ts | snapshotD": {
     "message": "Snapshot {PH1}"
   },
@@ -9593,17 +9605,11 @@
   "panels/profiler/ProfilesPanel.ts | deprecationWarnMsg": {
     "message": "This panel will be deprecated in the upcoming version. Use the Performance panel to record JavaScript CPU profiles."
   },
-  "panels/profiler/ProfilesPanel.ts | enableThisPanelTemporarily": {
-    "message": "Enable this panel temporarily"
-  },
   "panels/profiler/ProfilesPanel.ts | feedback": {
     "message": "Feedback"
   },
   "panels/profiler/ProfilesPanel.ts | goToPerformancePanel": {
     "message": "Go to Performance Panel"
-  },
-  "panels/profiler/ProfilesPanel.ts | learnMore": {
-    "message": "Learn more"
   },
   "panels/profiler/ProfilesPanel.ts | profileLoadingFailedS": {
     "message": "Profile loading failed: {PH1}."
@@ -11762,6 +11768,9 @@
   "panels/sources/sources-meta.ts | resumeScriptExecution": {
     "message": "Resume script execution"
   },
+  "panels/sources/sources-meta.ts | revealActiveFileInSidebar": {
+    "message": "Reveal active file in navigator sidebar"
+  },
   "panels/sources/sources-meta.ts | runSnippet": {
     "message": "Run snippet"
   },
@@ -11967,7 +11976,7 @@
     "message": "Resume with all pauses blocked for 500 ms"
   },
   "panels/sources/SourcesPanel.ts | revealInSidebar": {
-    "message": "Reveal in sidebar"
+    "message": "Reveal in navigator sidebar"
   },
   "panels/sources/SourcesPanel.ts | showDebugger": {
     "message": "Show debugger"
@@ -14244,7 +14253,7 @@
     "message": "No properties"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | revealInMemoryInpector": {
-    "message": "Reveal in Memory Inspector panel"
+    "message": "Reveal in Memory inspector panel"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | showAllD": {
     "message": "Show all {PH1}"

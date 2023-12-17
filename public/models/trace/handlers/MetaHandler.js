@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
+import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 // We track the renderer processes we see in each frame on the way through the trace.
 const rendererProcessesByFrameId = new Map();
@@ -52,6 +53,18 @@ const eventPhasesOfInterestForTraceBounds = new Set([
     "I" /* Types.TraceEvents.Phase.INSTANT */,
 ]);
 let handlerState = 1 /* HandlerState.UNINITIALIZED */;
+// Tracks if the trace is a generic trace, which here means that it did not come from athe DevTools Performance Panel recording.
+// We assume a trace is generic, and mark it as not generic if we see any of:
+// - TracingStartedInPage
+// - TracingStartedInBrowser
+// - TracingSessionIdForWorker
+// These are all events which indicate this is a Chrome browser trace.
+let traceIsGeneric = true;
+const CHROME_WEB_TRACE_EVENTS = new Set([
+    "TracingStartedInPage" /* Types.TraceEvents.KnownEventName.TracingStartedInPage */,
+    "TracingSessionIdForWorker" /* Types.TraceEvents.KnownEventName.TracingSessionIdForWorker */,
+    "TracingStartedInBrowser" /* Types.TraceEvents.KnownEventName.TracingStartedInBrowser */,
+]);
 export function reset() {
     navigationsByFrameId.clear();
     navigationsByNavigationId.clear();
@@ -69,6 +82,7 @@ export function reset() {
     traceBounds.max = Types.Timing.MicroSeconds(Number.NEGATIVE_INFINITY);
     traceBounds.range = Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY);
     traceStartedTimeFromTracingStartedEvent = Types.Timing.MicroSeconds(-1);
+    traceIsGeneric = true;
     handlerState = 1 /* HandlerState.UNINITIALIZED */;
 }
 export function initialize() {
@@ -104,6 +118,9 @@ function updateRendererProcessByFrame(event, frame) {
 export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('Meta Handler is not initialized');
+    }
+    if (traceIsGeneric && CHROME_WEB_TRACE_EVENTS.has(event.name)) {
+        traceIsGeneric = false;
     }
     // If there is a timestamp (which meta events do not have), and the event does
     // not end with ::UMA then it, and the event is in the set of valid phases,
@@ -192,6 +209,8 @@ export function handleEvent(event) {
     // Track all navigation events. Note that there can be navigation start events
     // but where the documentLoaderURL is empty. As far as the trace rendering is
     // concerned, these events are noise so we filter them out here.
+    // (The filtering of empty URLs is done in the
+    // isTraceEventNavigationStartWithURL check)
     if (Types.TraceEvents.isTraceEventNavigationStartWithURL(event) && event.args.data) {
         const navigationId = event.args.data.navigationId;
         if (navigationsByNavigationId.has(navigationId)) {
@@ -266,6 +285,25 @@ export async function finalize() {
             navigationsByNavigationId.delete(navigation.args.data.navigationId);
         }
     }
+    // Sometimes in traces the TracingStartedInBrowser event can give us an
+    // incorrect initial URL for the main frame's URL - about:blank or the URL of
+    // the previous page. This doesn't matter too much except we often use this
+    // URL as the visual name of the trace shown to the user (e.g. in the history
+    // dropdown). We can be more accurate by finding the first main frame
+    // navigaton, and using its URL, if we have it.
+    // However, to avoid doing this in a case where the first navigation is far
+    // into the trace's lifecycle, we only do this in situations where the first
+    // navigation happened very soon (0.5 seconds) after the trace started
+    // recording.
+    const firstMainFrameNav = mainFrameNavigations.at(0);
+    const firstNavTimeThreshold = Helpers.Timing.secondsToMicroseconds(Types.Timing.Seconds(0.5));
+    if (firstMainFrameNav) {
+        const navigationIsWithinThreshold = firstMainFrameNav.ts - traceBounds.min < firstNavTimeThreshold;
+        if (firstMainFrameNav.args.data?.isOutermostMainFrame && firstMainFrameNav.args.data?.documentLoaderURL &&
+            navigationIsWithinThreshold) {
+            mainFrameURL = firstMainFrameNav.args.data.documentLoaderURL;
+        }
+    }
     handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
@@ -288,6 +326,7 @@ export function data() {
         topLevelRendererIds: new Set(topLevelRendererIds),
         frameByProcessId: new Map(framesByProcessId),
         mainFrameNavigations: [...mainFrameNavigations],
+        traceIsGeneric,
     };
 }
 //# sourceMappingURL=MetaHandler.js.map

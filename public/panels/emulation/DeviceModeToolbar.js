@@ -56,7 +56,7 @@ const UIStrings = {
     moreOptions: 'More options',
     /**
      * @description A context menu item in the Device Mode Toolbar. This is a command to resize the
-     * webpage preview to fit the current window. The placholder is the percentage of full-size that
+     * webpage preview to fit the current window. The placeholder is the percentage of full-size that
      * will be displayed after fitting.
      * @example {30.0} PH1
      */
@@ -170,6 +170,11 @@ const UIStrings = {
      * like tablets which have two screens.
      */
     toggleDualscreenMode: 'Toggle dual-screen mode',
+    /**
+     * @description Tooltip tip for a drop-down menu where the user can select the device
+     * posture e.g. Continuous, Folded.
+     */
+    devicePosture: 'Device posture',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/emulation/DeviceModeToolbar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -196,6 +201,7 @@ export class DeviceModeToolbar {
     emulatedDevicesList;
     persistenceSetting;
     spanButton;
+    postureItem;
     modeButton;
     widthInput;
     heightInput;
@@ -329,6 +335,15 @@ export class DeviceModeToolbar {
         this.spanButton = new UI.Toolbar.ToolbarButton('', 'device-fold', undefined, 'deviceFold');
         this.spanButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.spanClicked, this);
         toolbar.appendToolbarItem(this.spanButton);
+        // Show posture toolbar menu for foldable devices.
+        toolbar.appendToolbarItem(this.wrapToolbarItem(this.createEmptyToolbarElement()));
+        this.postureItem =
+            new UI.Toolbar.ToolbarMenuButton(this.appendDevicePostureItems.bind(this), undefined, 'devicePosture');
+        this.postureItem.setGlyph('');
+        this.postureItem.turnIntoSelect();
+        this.postureItem.setDarkText();
+        setTitleForButton(this.postureItem, i18nString(UIStrings.devicePosture));
+        toolbar.appendToolbarItem(this.postureItem);
         this.createExperimentalButton(toolbar);
     }
     createExperimentalButton(toolbar) {
@@ -350,6 +365,20 @@ export class DeviceModeToolbar {
         const moreOptionsButton = new UI.Toolbar.ToolbarMenuButton(this.appendOptionsMenuItems.bind(this), undefined, 'moreOptions');
         setTitleForButton(moreOptionsButton, i18nString(UIStrings.moreOptions));
         toolbar.appendToolbarItem(moreOptionsButton);
+    }
+    appendDevicePostureItems(contextMenu) {
+        for (const title of ['Continuous', 'Folded']) {
+            contextMenu.defaultSection().appendCheckboxItem(title, this.spanClicked.bind(this), title === this.currentDevicePosture(), false, undefined, undefined, title);
+        }
+    }
+    currentDevicePosture() {
+        const mode = this.model.mode();
+        if (mode &&
+            (mode.orientation === EmulationModel.EmulatedDevices.VerticalSpanned ||
+                mode.orientation === EmulationModel.EmulatedDevices.HorizontalSpanned)) {
+            return 'Folded';
+        }
+        return 'Continuous';
     }
     appendScaleMenuItems(contextMenu) {
         if (this.model.type() === EmulationModel.DeviceModeModel.Type.Device) {
@@ -498,7 +527,7 @@ export class DeviceModeToolbar {
     }
     spanClicked() {
         const device = this.model.device();
-        if (!device || !device.isDualScreen) {
+        if (!device || (!device.isDualScreen && !device.isFoldableScreen)) {
             return;
         }
         const scale = this.autoAdjustScaleSetting.get() ? undefined : this.model.scaleSetting().get();
@@ -531,7 +560,7 @@ export class DeviceModeToolbar {
         if (!device) {
             return;
         }
-        if ((device.isDualScreen || device.modes.length === 2) &&
+        if ((device.isDualScreen || device.isFoldableScreen || device.modes.length === 2) &&
             device.modes[0].orientation !== device.modes[1].orientation) {
             const scale = autoAdjustScaleSetting.get() ? undefined : model.scaleSetting().get();
             const mode = model.mode();
@@ -646,12 +675,21 @@ export class DeviceModeToolbar {
         }
         if (this.experimentalButton) {
             const device = this.model.device();
-            if (device && device.isDualScreen) {
-                this.spanButton.setVisible(true);
+            if (device && (device.isDualScreen || device.isFoldableScreen)) {
+                if (device.isDualScreen) {
+                    this.spanButton.setVisible(true);
+                    this.postureItem.setVisible(false);
+                }
+                else if (device.isFoldableScreen) {
+                    this.spanButton.setVisible(false);
+                    this.postureItem.setVisible(true);
+                    this.postureItem.setText(this.currentDevicePosture());
+                }
                 this.experimentalButton.setVisible(true);
             }
             else {
                 this.spanButton.setVisible(false);
+                this.postureItem.setVisible(false);
                 this.experimentalButton.setVisible(false);
             }
             setTitleForButton(this.spanButton, i18nString(UIStrings.toggleDualscreenMode));

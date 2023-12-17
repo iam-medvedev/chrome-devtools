@@ -189,7 +189,7 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private filterOutBlobRequests;
     private generateFetchCall;
     private generateAllFetchCall;
-    static generateCurlCommand(request: SDK.NetworkRequest.NetworkRequest, platform: string): Promise<string>;
+    static generateCurlCommand(request: SDK.NetworkRequest.NetworkRequest, platform: 'unix' | 'win'): Promise<string>;
     private generateAllCurlCommand;
     private generatePowerShellCommand;
     private generateAllPowerShellCommand;

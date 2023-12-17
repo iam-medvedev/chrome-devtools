@@ -1897,8 +1897,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         // The |Accept-Encoding| header is ignored to prevent decompression errors. crbug.com/1015321
         const ignoredHeaders = new Set(['accept-encoding', 'host', 'method', 'path', 'scheme', 'version']);
         function escapeStringWin(str) {
-            /* If there are no new line characters do not escape the " characters
-               since it only uglifies the command.
+            /* Only escape the " characters when necessary.
       
                Because cmd.exe parser and MS Crt arguments parsers use some of the
                same escape characters, they can interact with each other in
@@ -1924,7 +1923,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                new line is there to enact the escape command the second is the character
                to escape (in this case new line).
               */
-            const encapsChars = /[\r\n]/.test(str) ? '^"' : '"';
+            const encapsChars = /[\r\n]|[^a-zA-Z0-9\s_\-:=+~'\/.',?;()*`&]/.test(str) ? '^"' : '"';
             return encapsChars +
                 str.replace(/\\/g, '\\\\')
                     .replace(/"/g, '\\"')
@@ -1992,7 +1991,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             }
         }
         command = command.concat(data);
-        command.push('--compressed');
         if (request.securityState() === "insecure" /* Protocol.Security.SecurityState.Insecure */) {
             command.push('--insecure');
         }

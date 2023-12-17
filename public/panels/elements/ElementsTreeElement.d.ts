@@ -78,7 +78,9 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     private startEditingTarget;
     private showContextMenu;
     populateTagContextMenu(contextMenu: UI.ContextMenu.ContextMenu, event: Event): void;
-    populateScrollIntoView(contextMenu: UI.ContextMenu.ContextMenu): void;
+    populatePseudoElementContextMenu(contextMenu: UI.ContextMenu.ContextMenu): void;
+    private populateExpandRecursively;
+    private populateScrollIntoView;
     populateTextContextMenu(contextMenu: UI.ContextMenu.ContextMenu, textNode: Element): void;
     populateNodeContextMenu(contextMenu: UI.ContextMenu.ContextMenu): void;
     private startEditing;

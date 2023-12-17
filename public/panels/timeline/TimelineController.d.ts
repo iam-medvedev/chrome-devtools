@@ -57,7 +57,7 @@ export interface Client {
     loadingStarted(): void;
     processingStarted(): void;
     loadingProgress(progress?: number): void;
-    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, isCpuProfile: boolean): Promise<void>;
+    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, isCpuProfile: boolean, recordingStartTime: number | null): Promise<void>;
     loadingCompleteForTest(): void;
 }
 export interface RecordingOptions {

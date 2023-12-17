@@ -5,10 +5,7 @@ import { IssueView } from './IssueView.js';
 export declare function getGroupIssuesByCategorySetting(): Common.Settings.Setting<boolean>;
 export declare class IssuesPane extends UI.Widget.VBox {
     #private;
-    private constructor();
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): IssuesPane;
+    constructor();
     elementsToRestoreScrollPositionsFor(): Element[];
     appendIssueViewToParent(issueView: IssueView, parent: UI.TreeOutline.TreeOutline | UI.TreeOutline.TreeElement): void;
     reveal(issue: IssuesManager.Issue.Issue): Promise<void>;

@@ -1,7 +1,5 @@
-import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare let blockedURLsPaneInstance: BlockedURLsPane | null;
 export declare class BlockedURLsPane extends UI.Widget.VBox implements UI.ListWidget.Delegate<SDK.NetworkManager.BlockedPattern> {
     private manager;
     private readonly toolbar;
@@ -9,14 +7,8 @@ export declare class BlockedURLsPane extends UI.Widget.VBox implements UI.ListWi
     private readonly list;
     private editor;
     private blockedCountForUrl;
-    private readonly updateThrottler;
-    constructor(updateThrottler: Common.Throttler.Throttler);
-    static instance(opts?: {
-        forceNew: boolean;
-        updateThrottler: Common.Throttler.Throttler;
-    }): BlockedURLsPane;
+    constructor();
     private createEmptyPlaceholder;
-    static reset(): void;
     addPattern(): void;
     removeAllPatterns(): void;
     renderItem(pattern: SDK.NetworkManager.BlockedPattern, editable: boolean): Element;
@@ -26,10 +18,10 @@ export declare class BlockedURLsPane extends UI.Widget.VBox implements UI.ListWi
     beginEdit(pattern: SDK.NetworkManager.BlockedPattern): UI.ListWidget.Editor<SDK.NetworkManager.BlockedPattern>;
     commitEdit(item: SDK.NetworkManager.BlockedPattern, editor: UI.ListWidget.Editor<SDK.NetworkManager.BlockedPattern>, isNew: boolean): void;
     private createEditor;
-    private update;
+    update(): void;
     private blockedRequestsCount;
     private matches;
-    reset(): void;
+    private onNetworkLogReset;
     private onRequestFinished;
     wasShown(): void;
     willHide(): void;

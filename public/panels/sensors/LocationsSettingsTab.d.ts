@@ -3,8 +3,7 @@ export declare class LocationsSettingsTab extends UI.Widget.VBox implements UI.L
     private readonly list;
     private readonly customSetting;
     private editor?;
-    private constructor();
-    static instance(): LocationsSettingsTab;
+    constructor();
     wasShown(): void;
     private locationsUpdated;
     private addButtonClicked;

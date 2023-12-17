@@ -260,7 +260,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.initialUpdateCompleted = false;
         this.hasMatchedStyles = false;
         this.contentElement.classList.add('styles-pane');
-        this.contentElement.setAttribute('jslog', `${VisualLogging.stylesPane()}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('styles')}`);
         this.sectionBlocks = [];
         this.idleCallbackManager = null;
         this.needsForceUpdate = false;
@@ -1804,13 +1804,13 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
             if (variable) {
                 const computedValue = this.treeElement.matchedStyles().computeCSSVariable(this.treeElement.property.ownerStyle, completion);
                 if (computedValue) {
-                    const color = Common.Color.parse(computedValue);
+                    const color = Common.Color.parse(computedValue.value);
                     if (color) {
                         result.subtitleRenderer = colorSwatchRenderer.bind(null, color);
                         result.isCSSVariableColor = true;
                     }
                     else {
-                        result.subtitleRenderer = computedValueSubtitleRenderer.bind(null, computedValue);
+                        result.subtitleRenderer = computedValueSubtitleRenderer.bind(null, computedValue.value);
                     }
                 }
             }

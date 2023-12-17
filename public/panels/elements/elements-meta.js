@@ -229,7 +229,7 @@ UI.ViewManager.registerViewExtension({
     persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
     async loadView() {
         const Elements = await loadElementsModule();
-        return Elements.PropertiesWidget.PropertiesWidget.instance();
+        return new Elements.PropertiesWidget.PropertiesWidget();
     },
 });
 UI.ViewManager.registerViewExtension({
@@ -242,7 +242,7 @@ UI.ViewManager.registerViewExtension({
     persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
     async loadView() {
         const Elements = await loadElementsModule();
-        return Elements.NodeStackTraceWidget.NodeStackTraceWidget.instance();
+        return new Elements.NodeStackTraceWidget.NodeStackTraceWidget();
     },
 });
 UI.ViewManager.registerViewExtension({

@@ -14,7 +14,7 @@ styles.replaceSync(
 :host {
   z-index: 30;
   padding: 4px;
-  background-color: var(--sys-color-surface1);
+  background-color: var(--sys-color-surface3);
   border-radius: 7px;
   border: 2px solid var(--sys-color-divider);
   width: 90%;
@@ -24,7 +24,7 @@ styles.replaceSync(
 :host(.sources-edit-breakpoint-dialog) {
   border-radius: 0;
   z-index: 30;
-  background-color: var(--sys-color-surface1);
+  background-color: var(--sys-color-surface3);
   width: 555px;
   pointer-events: auto;
   margin-left: -1px;

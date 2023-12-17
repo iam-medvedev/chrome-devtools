@@ -595,7 +595,6 @@ export class ToolbarInput extends ToolbarItem {
             this.prompt.setTitle(tooltip);
         }
         this.prompt.setPlaceholder(placeholder, accessiblePlaceholder);
-        this.prompt.setJsLog(`${VisualLogging.textField().track({ keydown: true })}`);
         this.prompt.addEventListener(TextPromptEvents.TextChanged, this.onChangeCallback.bind(this));
         if (growFactor) {
             this.element.style.flexGrow = String(growFactor);
@@ -702,7 +701,6 @@ export class ToolbarMenuButton extends ToolbarButton {
     contextMenuHandler;
     useSoftMenu;
     triggerTimeout;
-    lastTriggerTime;
     constructor(contextMenuHandler, useSoftMenu, jslogContext) {
         super('', 'dots-vertical', undefined, jslogContext);
         this.contextMenuHandler = contextMenuHandler;
@@ -720,11 +718,6 @@ export class ToolbarMenuButton extends ToolbarButton {
     }
     trigger(event) {
         delete this.triggerTimeout;
-        // Throttling avoids entering a bad state on Macs when rapidly triggering context menus just
-        // after the window gains focus. See crbug.com/655556
-        if (this.lastTriggerTime && Date.now() - this.lastTriggerTime < 300) {
-            return;
-        }
         const contextMenu = new ContextMenu(event, {
             useSoftMenu: this.useSoftMenu,
             x: this.element.getBoundingClientRect().left,
@@ -732,7 +725,6 @@ export class ToolbarMenuButton extends ToolbarButton {
         });
         this.contextMenuHandler(contextMenu);
         void contextMenu.show();
-        this.lastTriggerTime = Date.now();
     }
     clicked(event) {
         if (this.triggerTimeout) {

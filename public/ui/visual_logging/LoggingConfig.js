@@ -12,33 +12,33 @@ export function getLoggingConfig(element) {
 var VisualElements;
 (function (VisualElements) {
     VisualElements[VisualElements["TreeItem"] = 1] = "TreeItem";
-    VisualElements[VisualElements["AriaAttributes"] = 2] = "AriaAttributes";
-    VisualElements[VisualElements["AccessibilityComputedProperties"] = 3] = "AccessibilityComputedProperties";
-    VisualElements[VisualElements["AccessibilityPane"] = 4] = "AccessibilityPane";
-    VisualElements[VisualElements["AccessibilitySourceOrder"] = 5] = "AccessibilitySourceOrder";
+    /* 2 used to be AriaAttributes, but free to grab now */
+    /* 3 used to be AccessibilityComputedProperties, but free to grab now */
+    /* 4 used to be AccessibilityPane, but free to grab now */
+    /* 5 used to be AccessibilitySourceOrder, but free to grab now */
     VisualElements[VisualElements["Toggle"] = 6] = "Toggle";
     VisualElements[VisualElements["Tree"] = 7] = "Tree";
     VisualElements[VisualElements["TextField"] = 8] = "TextField";
     VisualElements[VisualElements["ShowAllStyleProperties"] = 9] = "ShowAllStyleProperties";
     VisualElements[VisualElements["Section"] = 10] = "Section";
     VisualElements[VisualElements["StylePropertiesSectionSeparator"] = 11] = "StylePropertiesSectionSeparator";
-    VisualElements[VisualElements["StylesPane"] = 12] = "StylesPane";
+    /* 12 used to be StylesPane, but free to grab now */
     VisualElements[VisualElements["StylesSelector"] = 13] = "StylesSelector";
     VisualElements[VisualElements["TreeItemExpand"] = 14] = "TreeItemExpand";
     VisualElements[VisualElements["ToggleSubpane"] = 15] = "ToggleSubpane";
-    VisualElements[VisualElements["ElementClassesPane"] = 16] = "ElementClassesPane";
-    VisualElements[VisualElements["AddElementClassPrompt"] = 17] = "AddElementClassPrompt";
-    VisualElements[VisualElements["ElementStatesPan"] = 18] = "ElementStatesPan";
-    VisualElements[VisualElements["CssLayersPane"] = 19] = "CssLayersPane";
+    /* 16 used to be ElementClassesPane, but free to grab now */
+    /* 17 used to be AddElementClassPrompt, but free to grab now */
+    /* 18 used to be ElementStatesPan, but free to grab now */
+    /* 19 used to be CssLayersPane, but free to grab now */
     VisualElements[VisualElements["DropDown"] = 20] = "DropDown";
-    VisualElements[VisualElements["StylesMetricsPane"] = 21] = "StylesMetricsPane";
+    /* 21 used to be StylesMetricsPane, but free to grab now */
     VisualElements[VisualElements["JumpToSource"] = 22] = "JumpToSource";
     VisualElements[VisualElements["MetricsBox"] = 23] = "MetricsBox";
     VisualElements[VisualElements["MetricsBoxPart"] = 24] = "MetricsBoxPart";
     /* 25 used to be DOMBreakpointsPane, but free to grab now */
     VisualElements[VisualElements["DOMBreakpoint"] = 26] = "DOMBreakpoint";
-    VisualElements[VisualElements["ElementPropertiesPane"] = 27] = "ElementPropertiesPane";
-    VisualElements[VisualElements["EventListenersPane"] = 28] = "EventListenersPane";
+    /* 27 used to be ElementPropertiesPane, but free to grab now */
+    /* 28 used to be EventListenersPane, but free to grab now */
     VisualElements[VisualElements["Action"] = 29] = "Action";
     VisualElements[VisualElements["FilterDropdown"] = 30] = "FilterDropdown";
     /* 31 used to be AddColor, but free to grab now */

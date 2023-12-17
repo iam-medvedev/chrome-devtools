@@ -6,7 +6,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import locationsSettingsTabStyles from './locationsSettingsTab.css.js';
-let locationsSettingsTabInstance;
 const UIStrings = {
     /**
      *@description Title in the Locations Settings Tab, where custom geographic locations that the user
@@ -99,7 +98,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
     editor;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.section().context('emulation-locations')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('emulation-locations')}`);
         this.contentElement.createChild('div', 'header').textContent = i18nString(UIStrings.customLocations);
         const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addLocation), this.addButtonClicked.bind(this), 'add-locations-button');
         addButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('add-location')}`);
@@ -132,12 +131,6 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
         this.customSetting.set(list);
         this.customSetting.addChangeListener(this.locationsUpdated, this);
         this.setDefaultFocusedElement(addButton);
-    }
-    static instance() {
-        if (!locationsSettingsTabInstance) {
-            locationsSettingsTabInstance = new LocationsSettingsTab();
-        }
-        return locationsSettingsTabInstance;
     }
     wasShown() {
         super.wasShown();

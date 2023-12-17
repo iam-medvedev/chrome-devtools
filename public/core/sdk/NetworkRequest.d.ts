@@ -4,7 +4,7 @@ import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import { Attributes, type Cookie } from './Cookie.js';
 import { ServerTiming } from './ServerTiming.js';
-export declare enum MIME_TYPE {
+export declare const enum MimeType {
     HTML = "text/html",
     XML = "text/xml",
     PLAIN = "text/plain",
@@ -117,8 +117,8 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     get timing(): Protocol.Network.ResourceTiming | undefined;
     set timing(timingInfo: Protocol.Network.ResourceTiming | undefined);
     private setConnectTimingFromExtraInfo;
-    get mimeType(): MIME_TYPE;
-    set mimeType(x: MIME_TYPE);
+    get mimeType(): string;
+    set mimeType(x: string);
     get displayName(): string;
     name(): string;
     path(): string;

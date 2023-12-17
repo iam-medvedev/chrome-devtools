@@ -213,6 +213,18 @@ export class DOMNode {
     isMediaNode() {
         return this.#nodeNameInternal === 'AUDIO' || this.#nodeNameInternal === 'VIDEO';
     }
+    isViewTransitionPseudoNode() {
+        if (!this.#pseudoTypeInternal) {
+            return false;
+        }
+        return [
+            "view-transition" /* Protocol.DOM.PseudoType.ViewTransition */,
+            "view-transition-group" /* Protocol.DOM.PseudoType.ViewTransitionGroup */,
+            "view-transition-image-pair" /* Protocol.DOM.PseudoType.ViewTransitionImagePair */,
+            "view-transition-old" /* Protocol.DOM.PseudoType.ViewTransitionOld */,
+            "view-transition-new" /* Protocol.DOM.PseudoType.ViewTransitionNew */,
+        ].includes(this.#pseudoTypeInternal);
+    }
     creationStackTrace() {
         if (this.#creationStackTraceInternal) {
             return this.#creationStackTraceInternal;

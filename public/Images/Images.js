@@ -174,6 +174,7 @@ style.setProperty('--image-file-mediumIcons', 'url(\"' + new URL(new URL('medium
 style.setProperty('--image-file-memory', 'url(\"' + new URL(new URL('memory.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-minus', 'url(\"' + new URL(new URL('minus.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-minus_icon', 'url(\"' + new URL(new URL('minus_icon.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-mop', 'url(\"' + new URL(new URL('mop.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-mouse', 'url(\"' + new URL(new URL('mouse.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-network-settings', 'url(\"' + new URL(new URL('network-settings.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-node_search_icon', 'url(\"' + new URL(new URL('node_search_icon.svg', import.meta.url).href, import.meta.url).toString() + '\")');

@@ -55,7 +55,6 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     setTitle(title: string): void;
     setPlaceholder(placeholder: string, ariaPlaceholder?: string): void;
     setEnabled(enabled: boolean): void;
-    setJsLog(jslog: string): void;
     private removeFromElement;
     private startEditing;
     private stopEditing;

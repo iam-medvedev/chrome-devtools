@@ -10,6 +10,8 @@ export declare class StateChangedEvent extends Event {
         shouldAnimate?: boolean;
     });
 }
+export declare function onChange(cb: (event: StateChangedEvent) => void): void;
+export declare function removeListener(cb: (event: StateChangedEvent) => void): void;
 export interface State {
     readonly micro: Readonly<TraceWindows<TraceEngine.Types.Timing.MicroSeconds>>;
     readonly milli: Readonly<TraceWindows<TraceEngine.Types.Timing.MilliSeconds>>;

@@ -7,7 +7,8 @@ interface LayoutShifts {
     sessionMaxScore: number;
     clsWindowID: number;
     prePaintEvents: Types.TraceEvents.TraceEventPrePaint[];
-    layoutInvalidationEvents: Types.TraceEvents.TraceEventLayoutInvalidation[];
+    layoutInvalidationEvents: Types.TraceEvents.TraceEventLayoutInvalidationTracking[];
+    scheduleStyleInvalidationEvents: Types.TraceEvents.TraceEventScheduleStyleInvalidationTracking[];
     styleRecalcInvalidationEvents: Types.TraceEvents.TraceEventStyleRecalcInvalidation[];
     scoreRecords: ScoreRecord[];
     backendNodeIds: Protocol.DOM.BackendNodeId[];

@@ -15,9 +15,6 @@ export declare class WebauthnPaneImpl extends UI.Widget.VBox implements SDK.Targ
     largeBlobCheckbox: HTMLInputElement | undefined;
     addAuthenticatorButton: HTMLButtonElement | undefined;
     constructor();
-    static instance(opts?: {
-        forceNew: boolean;
-    }): WebauthnPaneImpl;
     modelAdded(model: SDK.WebAuthnModel.WebAuthnModel): void;
     modelRemoved(model: SDK.WebAuthnModel.WebAuthnModel): void;
     ownerViewDisposed(): Promise<void>;

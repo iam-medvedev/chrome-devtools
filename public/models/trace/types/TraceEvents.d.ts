@@ -448,7 +448,7 @@ export interface TraceEventUpdateCounters extends TraceEventInstant {
 }
 export type TraceEventRendererEvent = TraceEventInstant | TraceEventComplete;
 export interface TraceEventTracingStartedInBrowser extends TraceEventInstant {
-    name: 'TracingStartedInBrowser';
+    name: KnownEventName.TracingStartedInBrowser;
     args: TraceEventArgs & {
         data?: TraceEventArgsData & {
             frameTreeNodeId: number;
@@ -670,8 +670,8 @@ export declare const enum LayoutInvalidationReason {
     FONTS_CHANGED = "Fonts changed",
     UNKNOWN = "Unknown"
 }
-export interface TraceEventLayoutInvalidation extends TraceEventInstant {
-    name: 'LayoutInvalidationTracking' | 'ScheduleStyleInvalidationTracking';
+export interface TraceEventLayoutInvalidationTracking extends TraceEventInstant {
+    name: KnownEventName.LayoutInvalidationTracking;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             frame: string;
@@ -681,6 +681,22 @@ export interface TraceEventLayoutInvalidation extends TraceEventInstant {
         };
     };
 }
+export interface TraceEventScheduleStyleInvalidationTracking extends TraceEventInstant {
+    name: KnownEventName.ScheduleStyleInvalidationTracking;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            frame: string;
+            nodeId: Protocol.DOM.BackendNodeId;
+            invalidationSet?: string;
+            invalidatedSelectorId?: string;
+            reason?: LayoutInvalidationReason;
+            changedClass?: string;
+            nodeName?: string;
+            stackTrace?: TraceEventCallFrame[];
+        };
+    };
+}
+export declare function isTraceEventScheduleStyleInvalidationTracking(event: TraceEventData): event is TraceEventScheduleStyleInvalidationTracking;
 export declare const enum StyleRecalcInvalidationReason {
     ANIMATION = "Animation"
 }
@@ -1018,7 +1034,7 @@ export declare function isTraceEventCommitLoad(traceEventData: TraceEventData): 
 export declare function isTraceEventNavigationStart(traceEventData: TraceEventData): traceEventData is TraceEventNavigationStart;
 export declare function isTraceEventAnimation(traceEventData: TraceEventData): traceEventData is TraceEventAnimation;
 export declare function isTraceEventLayoutShift(traceEventData: TraceEventData): traceEventData is TraceEventLayoutShift;
-export declare function isTraceEventLayoutInvalidation(traceEventData: TraceEventData): traceEventData is TraceEventLayoutInvalidation;
+export declare function isTraceEventLayoutInvalidationTracking(traceEventData: TraceEventData): traceEventData is TraceEventLayoutInvalidationTracking;
 export declare function isTraceEventStyleRecalcInvalidation(traceEventData: TraceEventData): traceEventData is TraceEventStyleRecalcInvalidation;
 export declare function isTraceEventFirstContentfulPaint(traceEventData: TraceEventData): traceEventData is TraceEventFirstContentfulPaint;
 export declare function isTraceEventLargestContentfulPaintCandidate(traceEventData: TraceEventData): traceEventData is TraceEventLargestContentfulPaintCandidate;
@@ -1412,6 +1428,7 @@ export declare const enum KnownEventName {
     EmbedderCallback = "EmbedderCallback",
     SetLayerTreeId = "SetLayerTreeId",
     TracingStartedInPage = "TracingStartedInPage",
+    TracingStartedInBrowser = "TracingStartedInBrowser",
     TracingSessionIdForWorker = "TracingSessionIdForWorker",
     LazyPixelRef = "LazyPixelRef",
     LayerTreeHostImplSnapshot = "cc::LayerTreeHostImpl",

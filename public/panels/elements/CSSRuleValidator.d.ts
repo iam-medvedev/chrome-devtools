@@ -51,7 +51,7 @@ export declare class FlexOrGridItemValidator extends CSSRuleValidator {
 export declare class FlexGridValidator extends CSSRuleValidator {
     constructor();
     getMetricType(): Host.UserMetrics.CSSHintType;
-    getHint(propertyName: string, computedStyles?: Map<string, string>): Hint | undefined;
+    getHint(propertyName: string, computedStyles?: Map<string, string>, parentComputedStyles?: Map<string, string>): Hint | undefined;
 }
 export declare class MulticolFlexGridValidator extends CSSRuleValidator {
     constructor();

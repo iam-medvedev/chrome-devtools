@@ -43,8 +43,10 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     private focusNextGroup;
     private removeAnimationGroup;
     private selectAnimationGroup;
+    animationGroupSelectedForTest(): void;
     private addAnimation;
-    private nodeRemoved;
+    private markNodeAsRemoved;
+    private hasAnimationGroupActiveNodes;
     private renderGrid;
     scheduleRedraw(): void;
     private render;
@@ -54,7 +56,7 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     private animateTime;
     pixelMsRatio(): number;
     private updateScrubber;
-    private repositionScrubber;
+    private scrubberDragStart;
     private scrubberDragMove;
     private scrubberDragEnd;
 }
@@ -66,6 +68,7 @@ export declare class NodeUI {
     nodeResolved(node: SDK.DOMModel.DOMNode | null): void;
     createNewRow(): Element;
     nodeRemoved(): void;
+    hasActiveNode(): boolean;
     nodeChanged(): void;
 }
 export declare class StepTimingFunction {

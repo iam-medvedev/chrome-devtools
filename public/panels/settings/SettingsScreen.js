@@ -231,13 +231,12 @@ class SettingsTab extends UI.Widget.VBox {
         return block;
     }
 }
-let genericSettingsTabInstance;
 export class GenericSettingsTab extends SettingsTab {
     syncSection = new PanelComponents.SyncSection.SyncSection();
     settingToControl = new Map();
     constructor() {
         super(i18nString(UIStrings.preferences), 'preferences-tab-content');
-        this.element.setAttribute('jslog', `${VisualLogging.section().context('preferences')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('preferences')}`);
         // GRID, MOBILE, EMULATION, and RENDERING are intentionally excluded from this list.
         const explicitSectionOrder = [
             Common.Settings.SettingCategory.NONE,
@@ -279,13 +278,6 @@ export class GenericSettingsTab extends SettingsTab {
             Components.Reload.reload();
         }
     }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!genericSettingsTabInstance || forceNew) {
-            genericSettingsTabInstance = new GenericSettingsTab();
-        }
-        return genericSettingsTabInstance;
-    }
     static isSettingVisible(setting) {
         const titleMac = setting.titleMac && setting.titleMac();
         const defaultTitle = setting.title && setting.title();
@@ -293,8 +285,13 @@ export class GenericSettingsTab extends SettingsTab {
         return Boolean(title && setting.category);
     }
     wasShown() {
+        UI.Context.Context.instance().setFlavor(GenericSettingsTab, this);
         super.wasShown();
         this.updateSyncSection();
+    }
+    willHide() {
+        super.willHide();
+        UI.Context.Context.instance().setFlavor(GenericSettingsTab, null);
     }
     updateSyncSection() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
@@ -347,7 +344,6 @@ export class GenericSettingsTab extends SettingsTab {
         }
     }
 }
-let experimentsSettingsTabInstance;
 export class ExperimentsSettingsTab extends SettingsTab {
     #experimentsSection;
     #unstableExperimentsSection;
@@ -357,7 +353,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
         super(i18nString(UIStrings.experiments), 'experiments-tab-content');
         const filterSection = this.appendSection();
         filterSection.classList.add('experiments-filter');
-        this.element.setAttribute('jslog', `${VisualLogging.section().context('experiments')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('experiments')}`);
         const labelElement = filterSection.createChild('label');
         labelElement.textContent = i18nString(UIStrings.filterExperimentsLabel);
         this.#inputElement = UI.UIUtils.createInput('', 'text', 'experiments-filter');
@@ -399,13 +395,6 @@ export class ExperimentsSettingsTab extends SettingsTab {
             const warning = this.#experimentsSection.createChild('span');
             warning.textContent = i18nString(UIStrings.noResults);
         }
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!experimentsSettingsTabInstance || forceNew) {
-            experimentsSettingsTabInstance = new ExperimentsSettingsTab();
-        }
-        return experimentsSettingsTabInstance;
     }
     createExperimentsWarningSubsection(warningMessage) {
         const subsection = document.createElement('div');
@@ -466,6 +455,14 @@ export class ExperimentsSettingsTab extends SettingsTab {
         this.#inputElement.value = filterText;
         this.#inputElement.dispatchEvent(new Event('input', { 'bubbles': true, 'cancelable': true }));
     }
+    wasShown() {
+        UI.Context.Context.instance().setFlavor(ExperimentsSettingsTab, this);
+        super.wasShown();
+    }
+    willHide() {
+        super.willHide();
+        UI.Context.Context.instance().setFlavor(ExperimentsSettingsTab, null);
+    }
 }
 export class ActionDelegate {
     handleAction(context, actionId) {
@@ -484,12 +481,16 @@ export class ActionDelegate {
     }
 }
 export class Revealer {
-    reveal(object) {
+    async reveal(object) {
+        const context = UI.Context.Context.instance();
         if (object instanceof Root.Runtime.Experiment) {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
-            void SettingsScreen.showSettingsScreen({ name: 'experiments' })
-                .then(() => ExperimentsSettingsTab.instance().highlightObject(object));
-            return Promise.resolve();
+            await SettingsScreen.showSettingsScreen({ name: 'experiments' });
+            const experimentsSettingsTab = context.flavor(ExperimentsSettingsTab);
+            if (experimentsSettingsTab !== null) {
+                experimentsSettingsTab.highlightObject(object);
+            }
+            return;
         }
         for (const settingRegistration of Common.Settings.getRegisteredSettings()) {
             if (!GenericSettingsTab.isSettingVisible(settingRegistration)) {
@@ -497,8 +498,12 @@ export class Revealer {
             }
             if (settingRegistration.settingName === object.name) {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
-                void SettingsScreen.showSettingsScreen().then(() => GenericSettingsTab.instance().highlightObject(object));
-                return Promise.resolve();
+                await SettingsScreen.showSettingsScreen();
+                const genericSettingsTab = context.flavor(GenericSettingsTab);
+                if (genericSettingsTab !== null) {
+                    genericSettingsTab.highlightObject(object);
+                }
+                return;
             }
         }
         // Reveal settings views
@@ -511,16 +516,14 @@ export class Revealer {
             const settings = view.settings();
             if (settings && settings.indexOf(object.name) !== -1) {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
-                void SettingsScreen.showSettingsScreen({ name: id }).then(async () => {
-                    const widget = await view.widget();
-                    if (widget instanceof SettingsTab) {
-                        widget.highlightObject(object);
-                    }
-                });
-                return Promise.resolve();
+                await SettingsScreen.showSettingsScreen({ name: id });
+                const widget = await view.widget();
+                if (widget instanceof SettingsTab) {
+                    widget.highlightObject(object);
+                }
+                return;
             }
         }
-        return Promise.reject();
     }
 }
 //# sourceMappingURL=SettingsScreen.js.map

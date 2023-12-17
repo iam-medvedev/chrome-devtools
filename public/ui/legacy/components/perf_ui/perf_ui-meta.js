@@ -51,7 +51,7 @@ UI.ActionRegistration.registerActionExtension({
     actionId: 'components.collect-garbage',
     category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
     title: i18nLazyString(UIStrings.collectGarbage),
-    iconClass: "bin" /* UI.ActionRegistration.IconClass.BIN */,
+    iconClass: "mop" /* UI.ActionRegistration.IconClass.MOP */,
     async loadActionDelegate() {
         const PerfUI = await loadPerfUIModule();
         return new PerfUI.GCActionDelegate.GCActionDelegate();

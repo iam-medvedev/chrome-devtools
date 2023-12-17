@@ -44,7 +44,6 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Search from '../search/search.js';
-import { BlockedURLsPane } from './BlockedURLsPane.js';
 import { Events } from './NetworkDataGridNode.js';
 import { NetworkItemView } from './NetworkItemView.js';
 import { NetworkLogView } from './NetworkLogView.js';
@@ -215,7 +214,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.filmStripPlaceholderElement = panel.contentElement.createChild('div', 'network-film-strip-placeholder');
         // Create top overview component.
         this.overviewPane = new PerfUI.TimelineOverviewPane.TimelineOverviewPane('network');
-        this.overviewPane.addEventListener(PerfUI.TimelineOverviewPane.Events.WindowChanged, this.onWindowChanged.bind(this));
+        this.overviewPane.addEventListener(PerfUI.TimelineOverviewPane.Events.OverviewPaneWindowChanged, this.onWindowChanged.bind(this));
         this.overviewPane.element.id = 'network-overview-panel';
         this.networkOverview = new NetworkOverview();
         this.overviewPane.setOverviewControls([this.networkOverview]);
@@ -422,7 +421,6 @@ export class NetworkPanel extends UI.Panel.Panel {
     }
     onNetworkLogReset(event) {
         const { clearIfPreserved } = event.data;
-        BlockedURLsPane.reset();
         if (!this.preserveLogSetting.get() || clearIfPreserved) {
             this.calculator.reset();
             this.overviewPane.reset();
@@ -645,7 +643,6 @@ export class NetworkPanel extends UI.Panel.Panel {
         // FIXME: Unify all time units across the frontend!
         this.overviewPane.setBounds(TraceEngine.Types.Timing.MilliSeconds(this.calculator.minimumBoundary() * 1000), TraceEngine.Types.Timing.MilliSeconds(this.calculator.maximumBoundary() * 1000));
         this.networkOverview.updateRequest(request);
-        this.overviewPane.scheduleUpdate();
     }
     resolveLocation(locationName) {
         if (locationName === 'network-sidebar') {

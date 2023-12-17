@@ -30,5 +30,3 @@ export declare class NetworkOverview extends PerfUI.TimelineOverviewPane.Timelin
 export declare const RequestTimeRangeNameToColor: {
     [key: string]: string;
 };
-export declare const _bandHeight: number;
-export declare const _padding: number;

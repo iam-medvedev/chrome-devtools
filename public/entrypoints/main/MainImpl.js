@@ -246,13 +246,12 @@ export class MainImpl {
         Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
         Root.Runtime.experiments.register('showOptionToExposeInternalsInHeapSnapshot', 'Show option to expose internals in heap snapshots');
         // Timeline
-        Root.Runtime.experiments.register('timelineEventInitiators', 'Timeline: event initiators');
         Root.Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
         Root.Runtime.experiments.register('timelineShowAllEvents', 'Timeline: show all events', true);
         Root.Runtime.experiments.register('timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
         Root.Runtime.experiments.register('timelineAsConsoleProfileResultPanel', 'View console.profile() results in the Performance panel for Node.js', true);
         // JS Profiler
-        Root.Runtime.experiments.register('jsProfilerTemporarilyEnable', 'Enable JavaScript Profiler temporarily', /* unstable= */ false, 'https://developer.chrome.com/blog/js-profiler-deprecation/', 'https://bugs.chromium.org/p/chromium/issues/detail?id=1354548');
+        Root.Runtime.experiments.register('jsProfilerTemporarilyEnable', 'Enable JavaScript Profiler temporarily', /* unstable= */ false, 'https://goo.gle/js-profiler-deprecation', 'https://crbug.com/1354548');
         // Sources
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE, 'Disable Indentation Markers temporarily', 
         /* unstable= */ false, 'https://developer.chrome.com/blog/new-in-devtools-121/#indentation', 'https://crbug.com/1479986');

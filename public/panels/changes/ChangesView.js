@@ -47,7 +47,6 @@ function diffStats(diff) {
     const insertionText = i18nString(UIStrings.sInsertions, { n: insertions });
     return `${insertionText}, ${deletionText}`;
 }
-let changesViewInstance;
 export class ChangesView extends UI.Widget.VBox {
     emptyWidget;
     workspaceDiff;
@@ -89,13 +88,6 @@ export class ChangesView extends UI.Widget.VBox {
         }));
         this.hideDiff(i18nString(UIStrings.noChanges));
         this.selectedUISourceCodeChanged();
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!changesViewInstance || forceNew) {
-            changesViewInstance = new ChangesView();
-        }
-        return changesViewInstance;
     }
     selectedUISourceCodeChanged() {
         this.revealUISourceCode(this.changesSidebar.selectedUISourceCode());
@@ -218,22 +210,20 @@ export class ChangesView extends UI.Widget.VBox {
     }
 }
 export class ActionDelegate {
-    handleAction(_context, actionId) {
+    handleAction(context, actionId) {
+        const changesView = context.flavor(ChangesView);
+        if (changesView === null) {
+            return false;
+        }
         switch (actionId) {
             case 'changes.revert':
-                ChangesView.instance().revert();
+                changesView.revert();
                 return true;
             case 'changes.copy':
-                void ChangesView.instance().copy();
+                void changesView.copy();
                 return true;
         }
         return false;
-    }
-}
-export class DiffUILocationRevealer {
-    async reveal(diffUILocation, omitFocus) {
-        await UI.ViewManager.ViewManager.instance().showView('changes.changes');
-        ChangesView.instance().changesSidebar.selectUISourceCode(diffUILocation.uiSourceCode, omitFocus);
     }
 }
 //# sourceMappingURL=ChangesView.js.map

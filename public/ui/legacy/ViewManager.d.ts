@@ -8,7 +8,7 @@ export declare const defaultOptionsForTabs: {
 };
 export declare class PreRegisteredView implements View {
     private readonly viewRegistration;
-    private widgetRequested;
+    private widgetPromise;
     constructor(viewRegistration: ViewRegistration);
     title(): Common.UIString.LocalizedString;
     commandPrompt(): Common.UIString.LocalizedString;

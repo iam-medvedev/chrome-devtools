@@ -70,7 +70,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/PropertiesWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let propertiesWidgetInstance;
 export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     node;
     showAllPropertiesSetting;
@@ -95,7 +94,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
         filterInput.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.showAllPropertiesSetting, i18nString(UIStrings.showAllTooltip), i18nString(UIStrings.showAll)));
-        this.contentElement.setAttribute('jslog', `${VisualLogging.elementPropertiesPane()}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('element-properties')}`);
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message hidden');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingProperty);
         this.treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline({ readOnly: true });
@@ -107,12 +106,6 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.DOMPropertiesExpanded);
         });
         this.update();
-    }
-    static instance(opts) {
-        if (!propertiesWidgetInstance || opts?.forceNew) {
-            propertiesWidgetInstance = new PropertiesWidget(opts?.throttlingTimeout);
-        }
-        return propertiesWidgetInstance;
     }
     onFilterChanged(event) {
         this.filterRegex = event.data ? new RegExp(Platform.StringUtilities.escapeForRegExp(event.data), 'i') : null;

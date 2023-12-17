@@ -338,6 +338,8 @@ export type FlameChartDecoration = {
 } | {
     type: 'WARNING_TRIANGLE';
     customEndTime?: TraceEngine.Types.Timing.MicroSeconds;
+} | {
+    type: 'HIDDEN_ANCESTORS_ARROW';
 };
 export declare function sortDecorationsForRenderingOrder(decorations: FlameChartDecoration[]): void;
 export declare class FlameChartTimelineData {

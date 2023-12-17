@@ -18,13 +18,12 @@ export declare class TimelineDetailsView extends UI.Widget.VBox {
     private updateContentsScheduled;
     constructor(delegate: TimelineModeViewDelegate);
     getDetailsContentElementForTest(): HTMLElement;
-    setModel(model: PerformanceModel | null, traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, selectedEvents: TraceEngine.Legacy.CompatibleTraceEvent[] | null): Promise<void>;
+    setModel(model: PerformanceModel | null, traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, selectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[] | null): Promise<void>;
     private setContent;
     private updateContents;
     private appendTab;
     headerElement(): Element;
     setPreferredTab(tabId: string): void;
-    private onWindowChanged;
     /**
      * This forces a recalculation and rerendering of the timings
      * breakdown of a track.

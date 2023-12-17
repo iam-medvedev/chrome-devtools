@@ -19,7 +19,8 @@ export declare const enum ThreadType {
     RASTERIZER = "RASTERIZER",
     AUCTION_WORKLET = "AUCTION_WORKLET",
     OTHER = "OTHER",
-    CPU_PROFILE = "CPU_PROFILE"
+    CPU_PROFILE = "CPU_PROFILE",
+    THREAD_POOL = "THREAD_POOL"
 }
 export declare function threadsInRenderer(rendererData: Renderer.RendererHandlerData, auctionWorkletsData: AuctionWorkletsData): readonly ThreadData[];
 /**

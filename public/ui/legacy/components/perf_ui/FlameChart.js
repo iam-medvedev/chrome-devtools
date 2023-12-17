@@ -66,6 +66,8 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/perf_ui/FlameChart.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const HIDDEN_ANCESTOR_ARROW = 'data:image/jpg;base64,' +
+    'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABYSURBVHgB7c6xDYBACAVQIM5BWOUmM47iJK5CGATEhMKYK7TyinsV+YEfAKb/YS9k5pWI5J65u5rZ9txdegV5vEfEkaNUpJm11x9cJFUJIGLTBF9JgWlwJyvOFrGul+FpAAAAAElFTkSuQmCC';
 export class FlameChartDelegate {
     windowChanged(_startTime, _endTime, _animate) {
     }
@@ -664,17 +666,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         contextMenu.headerSection().appendItem('Collapse repeating descendants', () => {
             dispatchTreeModifiedEvent("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */);
         });
-        contextMenu.headerSection().appendItem('Undo collapse function', () => {
-            dispatchTreeModifiedEvent("UNDO_COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterUndoAction.UNDO_COLLAPSE_FUNCTION */);
+        contextMenu.headerSection().appendItem('Reset children', () => {
+            dispatchTreeModifiedEvent("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterUndoAction.RESET_CHILDREN */);
         });
-        contextMenu.headerSection().appendItem('Undo collapse repeating descendants', () => {
-            dispatchTreeModifiedEvent("UNDO_COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterUndoAction.UNDO_COLLAPSE_REPEATING_DESCENDANTS */);
-        });
-        contextMenu.headerSection().appendItem('Undo all actions', () => {
+        contextMenu.headerSection().appendItem('Reset trace', () => {
             dispatchTreeModifiedEvent("UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterUndoAction.UNDO_ALL_ACTIONS */);
         });
-        contextMenu.defaultSection().appendAction('timeline.load-from-file');
-        contextMenu.defaultSection().appendAction('timeline.save-to-file');
         void contextMenu.show();
     }
     onKeyDown(e) {
@@ -1227,6 +1224,23 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                     context.lineTo(barX + barWidth, barY);
                     context.lineTo(barX + barWidth, barY + triangleSize);
                     context.fill();
+                    context.restore();
+                }
+                else if (decoration.type === 'HIDDEN_ANCESTORS_ARROW') {
+                    const barX = this.timeToPositionClipped(entryStartTime);
+                    const barLevel = entryLevels[entryIndex];
+                    const barHeight = this.#eventBarHeight(timelineData, entryIndex);
+                    const barY = this.levelToOffset(barLevel);
+                    const barWidth = this.#eventBarWidth(timelineData, entryIndex);
+                    context.save();
+                    context.beginPath();
+                    context.rect(barX, barY, barWidth, barHeight);
+                    const arrowSize = barHeight;
+                    if (barWidth > arrowSize * 2) {
+                        const image = new Image();
+                        image.src = HIDDEN_ANCESTOR_ARROW;
+                        context.drawImage(image, barX + barWidth - arrowSize, barY, arrowSize, arrowSize);
+                    }
                     context.restore();
                 }
             }
@@ -2313,6 +2327,7 @@ export const MinimalTimeWindowMs = 0.5;
 const decorationDrawOrder = {
     CANDY: 1,
     WARNING_TRIANGLE: 2,
+    HIDDEN_ANCESTORS_ARROW: 3,
 };
 export function sortDecorationsForRenderingOrder(decorations) {
     decorations.sort((decoration1, decoration2) => {

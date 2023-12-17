@@ -34,7 +34,6 @@ export declare class SensorsView extends UI.Widget.VBox {
     private mouseDownVector?;
     private originalBoxMatrix?;
     constructor();
-    static instance(): SensorsView;
     wasShown(): void;
     private createPanelSeparator;
     private createLocationSection;

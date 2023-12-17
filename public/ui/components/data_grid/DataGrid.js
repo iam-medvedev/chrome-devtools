@@ -9,7 +9,7 @@ import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import dataGridStyles from './dataGrid.css.js';
-import { BodyCellFocusedEvent, ColumnHeaderClickEvent, ContextMenuHeaderResetClickEvent } from './DataGridEvents.js';
+import { BodyCellFocusedEvent, ColumnHeaderClickEvent, ContextMenuHeaderResetClickEvent, RowMouseEnterEvent, RowMouseLeaveEvent, } from './DataGridEvents.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 import { addColumnVisibilityCheckboxes, addSortableColumnItems } from './DataGridContextMenuUtils.js';
 import { calculateColumnWidthPercentageFromWeighting, calculateFirstFocusableCell, getCellTitleFromCellContent, getRowEntryForColumnId, handleArrowKeyNavigation, renderCellValue, } from './DataGridUtils.js';
@@ -717,6 +717,12 @@ export class DataGrid extends HTMLElement {
                   class=${rowClasses}
                   style=${LitHtml.Directives.ifDefined(row.styles ? LitHtml.Directives.styleMap(row.styles) : undefined)}
                   @contextmenu=${this.#onBodyRowContextMenu}
+                  @mouseenter=${() => {
+                    this.dispatchEvent(new RowMouseEnterEvent(row));
+                }}
+                  @mouseleave=${() => {
+                    this.dispatchEvent(new RowMouseLeaveEvent(row));
+                }}
                 >${this.#columns.map((col, columnIndex) => {
                     const cell = getRowEntryForColumnId(row, col.id);
                     const cellClasses = LitHtml.Directives.classMap({

@@ -46,11 +46,9 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     private enabled?;
     private clickHandler?;
     private resizerParentOffsetLeft?;
-    private breadcrumbsEnabled;
     constructor(parentElement: Element, dividersLabelBarElement?: Element, calculator?: Calculator);
     enableCreateBreadcrumbsButton(): void;
     set showingScreenshots(isShowing: boolean);
-    changeBreadcrumbButtonVisibilityOnInteraction(element: Element): void;
     private onRightResizeElementFocused;
     reset(): void;
     setEnabled(enabled: boolean): void;
@@ -74,8 +72,6 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     private updateResizeElementPercentageLabels;
     private calculateWindowPosition;
     setWindow(windowLeft: number, windowRight: number): void;
-    private changeBreadcrumbButtonVisibility;
-    createBreadcrumb(): void;
     private updateCurtains;
     private toggleZoomButtonDisplay;
     private getWindowRange;

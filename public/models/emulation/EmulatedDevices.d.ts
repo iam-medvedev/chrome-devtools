@@ -16,6 +16,7 @@ export declare class EmulatedDevice {
     userAgentMetadata: Protocol.Emulation.UserAgentMetadata | null;
     modes: Mode[];
     isDualScreen: boolean;
+    isFoldableScreen: boolean;
     verticalSpanned: Orientation;
     horizontalSpanned: Orientation;
     constructor();

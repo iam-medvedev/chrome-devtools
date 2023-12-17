@@ -44,9 +44,11 @@ export class Infobar {
     closeCallback;
     #firstFocusableElement = null;
     parentView;
+    constructor(
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(type, text, actions, disableSetting) {
+    type, text, actions, disableSetting, 
+    /* TODO(crbug.com/1354548) Remove with JS Profiler deprecation */ isCloseable = true) {
         this.element = document.createElement('div');
         this.element.classList.add('flex-none');
         this.shadowRoot =
@@ -89,6 +91,7 @@ export class Infobar {
         this.toggleElement.setAttribute('role', 'link');
         this.closeContainer.appendChild(this.toggleElement);
         this.closeButton = this.closeContainer.createChild('div', 'close-button', 'dt-close-button');
+        this.closeButton.hidden = !isCloseable;
         // @ts-ignore This is a custom element defined in UIUitls.js that has a `setTabbable` that TS doesn't
         //            know about.
         this.closeButton.setTabbable(true);

@@ -243,7 +243,7 @@ export class IDBDataView extends UI.View.SimpleView {
         this.element.classList.add('indexed-db-data-view', 'storage-view');
         this.refreshButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refresh), 'refresh');
         this.refreshButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.refreshButtonClicked, this);
-        this.deleteSelectedButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteSelected), 'cross');
+        this.deleteSelectedButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteSelected), 'bin');
         this.deleteSelectedButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
             void this.deleteButtonClicked(null);
         });
@@ -357,6 +357,8 @@ export class IDBDataView extends UI.View.SimpleView {
     createEditorToolbar() {
         const editorToolbar = new UI.Toolbar.Toolbar('data-view-toolbar', this.element);
         editorToolbar.appendToolbarItem(this.refreshButton);
+        editorToolbar.appendToolbarItem(this.clearButton);
+        editorToolbar.appendToolbarItem(this.deleteSelectedButton);
         editorToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator());
         const triangleLeftIcon = new IconButton.Icon.Icon();
         triangleLeftIcon.data = {
@@ -383,8 +385,6 @@ export class IDBDataView extends UI.View.SimpleView {
         this.keyInput.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.updateData.bind(this, false));
         editorToolbar.appendToolbarItem(this.keyInput);
         editorToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator());
-        editorToolbar.appendToolbarItem(this.clearButton);
-        editorToolbar.appendToolbarItem(this.deleteSelectedButton);
         editorToolbar.appendToolbarItem(this.needsRefresh);
     }
     pageBackButtonClicked() {

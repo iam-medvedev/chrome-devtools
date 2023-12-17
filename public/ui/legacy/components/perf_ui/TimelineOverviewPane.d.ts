@@ -50,21 +50,20 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     private updateWindow;
 }
 export declare enum Events {
-    WindowChanged = "WindowChanged",
-    BreadcrumbAdded = "BreadcrumbAdded"
+    OverviewPaneWindowChanged = "OverviewPaneWindowChanged",
+    OverviewPaneBreadcrumbAdded = "OverviewPaneBreadcrumbAdded"
 }
-export interface WindowChangedEvent {
-    startTime: number;
-    endTime: number;
-    breadcrumb?: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+export interface OverviewPaneWindowChangedEvent {
+    startTime: TraceEngine.Types.Timing.MilliSeconds;
+    endTime: TraceEngine.Types.Timing.MilliSeconds;
 }
-export interface BreadcrumbAddedEvent {
+export interface OverviewPaneBreadcrumbAddedEvent {
     startTime: TraceEngine.Types.Timing.MilliSeconds;
     endTime: TraceEngine.Types.Timing.MilliSeconds;
 }
 export type EventTypes = {
-    [Events.WindowChanged]: WindowChangedEvent;
-    [Events.BreadcrumbAdded]: BreadcrumbAddedEvent;
+    [Events.OverviewPaneWindowChanged]: OverviewPaneWindowChangedEvent;
+    [Events.OverviewPaneBreadcrumbAdded]: OverviewPaneBreadcrumbAddedEvent;
 };
 export interface TimelineOverview {
     show(parentElement: Element, insertBefore?: Element | null): void;

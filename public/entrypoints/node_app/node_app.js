@@ -49,7 +49,7 @@ UI.ViewManager.registerViewExtension({
     commandPrompt: i18nLazyString(UIStrings.showConnection),
     order: 0,
     async loadView() {
-        return NodeConnectionsPanel.instance();
+        return new NodeConnectionsPanel();
     },
     tags: [i18nLazyString(UIStrings.node)],
 });

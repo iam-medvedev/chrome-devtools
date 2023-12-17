@@ -37,6 +37,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
+import { ActiveFilters } from './ActiveFilters.js';
 import { CompatibilityTracksAppender } from './CompatibilityTracksAppender.js';
 import * as Components from './components/components.js';
 import { eventInitiatorPairsToDraw } from './Initiators.js';
@@ -138,7 +139,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     staticHeader;
     framesHeader;
     screenshotsHeader;
-    flowEventIndexById;
     entryData;
     entryTypeByLevel;
     screenshotImageCache;
@@ -186,7 +186,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                     ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container');
             }
         });
-        this.flowEventIndexById = new Map();
     }
     modifyTree(group, node, action, flameChartView) {
         const entry = this.entryData[node];
@@ -231,7 +230,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 throw new Error('Attempted to instantiate a CompatibilityTracksAppender without having set the trace parse data first.');
             }
             this.timelineDataInternal = this.#instantiateTimelineData();
-            this.compatibilityTracksAppender = new CompatibilityTracksAppender(this.timelineDataInternal, this.traceEngineData, this.entryData, this.entryTypeByLevel, this.legacyTimelineModel, this.isCpuProfile);
+            this.compatibilityTracksAppender = new CompatibilityTracksAppender(this.timelineDataInternal, this.traceEngineData, this.entryData, this.entryTypeByLevel, this.legacyTimelineModel);
         }
         return this.compatibilityTracksAppender;
     }
@@ -267,8 +266,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         return group.track || null;
     }
     groupTreeEvents(group) {
-        const eventsFromAppenderSystem = this.compatibilityTracksAppender?.groupEventsForTreeView(group);
-        return eventsFromAppenderSystem || group.track?.eventsForTreeView() || null;
+        return this.compatibilityTracksAppender?.groupEventsForTreeView(group) ?? null;
     }
     mainFrameNavigationStartEvents() {
         if (!this.traceEngineData) {
@@ -356,7 +354,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (rebuild) {
             this.reset(/* resetCompatibilityTracksAppender= */ false);
         }
-        this.flowEventIndexById.clear();
         this.currentLevel = 0;
         if (this.traceEngineData) {
             this.compatibilityTracksAppender = this.compatibilityTracksAppenderInstance();
@@ -455,7 +452,8 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             // If it is, we mark the group as selected.
             if (this.timelineDataInternal && !this.timelineDataInternal.selectedGroup) {
                 if (appender instanceof ThreadAppender &&
-                    (appender.threadType === "MAIN_THREAD" /* ThreadType.MAIN_THREAD */ || appender.threadType === "CPU_PROFILE" /* ThreadType.CPU_PROFILE */)) {
+                    (appender.threadType === "MAIN_THREAD" /* TraceEngine.Handlers.Threads.ThreadType.MAIN_THREAD */ ||
+                        appender.threadType === "CPU_PROFILE" /* TraceEngine.Handlers.Threads.ThreadType.CPU_PROFILE */)) {
                     const group = this.compatibilityTracksAppender?.groupForAppender(appender);
                     if (group) {
                         this.timelineDataInternal.selectedGroup = group;
@@ -466,7 +464,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (this.timelineDataInternal && this.timelineDataInternal.selectedGroup) {
             this.timelineDataInternal.selectedGroup.expanded = true;
         }
-        this.flowEventIndexById.clear();
     }
     #addDecorationToEvent(eventIndex, decoration) {
         if (!this.timelineDataInternal) {
@@ -614,7 +611,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 if (TraceEngine.Types.TraceEvents.isAsyncPhase(event.phase)) {
                     continue;
                 }
-                if (!this.legacyPerformanceModel.isVisible(event)) {
+                if (!ActiveFilters.instance().isVisible(event)) {
                     continue;
                 }
             }
@@ -683,7 +680,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         let group = null;
         for (let i = 0; i < events.length; ++i) {
             const asyncEvent = events[i];
-            if (!this.legacyPerformanceModel || !this.legacyPerformanceModel.isVisible(asyncEvent)) {
+            if (!this.legacyPerformanceModel || !ActiveFilters.instance().isVisible(asyncEvent)) {
                 continue;
             }
             if (!group && title) {

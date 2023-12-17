@@ -56,4 +56,28 @@ export class BodyCellFocusedEvent extends Event {
         };
     }
 }
+export class RowMouseEnterEvent extends Event {
+    static eventName = 'rowmouseenter';
+    data;
+    constructor(row) {
+        super(RowMouseEnterEvent.eventName, {
+            composed: true,
+        });
+        this.data = {
+            row,
+        };
+    }
+}
+export class RowMouseLeaveEvent extends Event {
+    static eventName = 'rowmouseleave';
+    data;
+    constructor(row) {
+        super(RowMouseLeaveEvent.eventName, {
+            composed: true,
+        });
+        this.data = {
+            row,
+        };
+    }
+}
 //# sourceMappingURL=DataGridEvents.js.map

@@ -75,14 +75,13 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/mobile_throttling/ThrottlingSettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let throttlingSettingsTabInstance;
 export class ThrottlingSettingsTab extends UI.Widget.VBox {
     list;
     customSetting;
     editor;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.section().context('throttling-conditions')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('throttling-conditions')}`);
         const header = this.contentElement.createChild('div', 'header');
         header.textContent = i18nString(UIStrings.networkThrottlingProfiles);
         UI.ARIAUtils.markAsHeading(header, 1);
@@ -95,13 +94,6 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox {
         this.customSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
         this.customSetting.addChangeListener(this.conditionsUpdated, this);
         this.setDefaultFocusedElement(addButton);
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!throttlingSettingsTabInstance || forceNew) {
-            throttlingSettingsTabInstance = new ThrottlingSettingsTab();
-        }
-        return throttlingSettingsTabInstance;
     }
     wasShown() {
         super.wasShown();

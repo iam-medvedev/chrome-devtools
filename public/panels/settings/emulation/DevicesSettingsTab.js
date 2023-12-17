@@ -7,7 +7,6 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as EmulationComponents from './components/components.js';
 import devicesSettingsTabStyles from './devicesSettingsTab.css.js';
-let devicesSettingsTabInstance;
 const UIStrings = {
     /**
      *@description Title for a section of the UI that shows all of the devices the user can emulate, in the Device Toolbar.
@@ -73,7 +72,7 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
     editor;
     constructor() {
         super();
-        this.element.setAttribute('jslog', `${VisualLogging.section().context('devices')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('devices')}`);
         this.element.classList.add('settings-tab-container');
         this.element.classList.add('devices-settings-tab');
         const header = this.element.createChild('header');
@@ -96,12 +95,6 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
         this.emulatedDevicesList.addEventListener("CustomDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.CustomDevicesUpdated */, this.devicesUpdated, this);
         this.emulatedDevicesList.addEventListener("StandardDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.StandardDevicesUpdated */, this.devicesUpdated, this);
         this.setDefaultFocusedElement(this.addCustomButton);
-    }
-    static instance() {
-        if (!devicesSettingsTabInstance) {
-            devicesSettingsTabInstance = new DevicesSettingsTab();
-        }
-        return devicesSettingsTabInstance;
     }
     wasShown() {
         super.wasShown();

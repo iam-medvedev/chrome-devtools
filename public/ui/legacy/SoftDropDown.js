@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
-import * as Utils from './utils/utils.js';
+import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { Size } from './Geometry.js';
 import { GlassPane } from './GlassPane.js';
@@ -12,6 +11,8 @@ import { ListControl, ListMode } from './ListControl.js';
 import { Events as ListModelEvents } from './ListModel.js';
 import softDropDownStyles from './softDropDown.css.legacy.js';
 import softDropDownButtonStyles from './softDropDownButton.css.legacy.js';
+import * as ThemeSupport from './theme_support/theme_support.js';
+import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      *@description Placeholder text in Soft Drop Down
@@ -32,12 +33,15 @@ export class SoftDropDown {
     rowHeight;
     width;
     listWasShowing200msAgo;
-    constructor(model, delegate) {
+    constructor(model, delegate, jslogContext) {
         this.delegate = delegate;
         this.selectedItem = null;
         this.model = model;
         this.placeholderText = i18nString(UIStrings.noItemSelected);
         this.element = document.createElement('button');
+        if (jslogContext) {
+            this.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true, keydown: 'ArrowUp|ArrowDown|Enter' }).context(jslogContext)}`);
+        }
         this.element.classList.add('soft-dropdown');
         ThemeSupport.ThemeSupport.instance().appendStyle(this.element, softDropDownButtonStyles);
         this.titleElement = this.element.createChild('span', 'title');

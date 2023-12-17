@@ -70,8 +70,6 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     loadFromEvents(events: TraceEngine.TracingManager.EventPayload[]): void;
     getFlameChart(): TimelineFlameChartView;
     private loadFromCpuProfile;
-    private onOverviewWindowChanged;
-    private onModelWindowChanged;
     private setState;
     private createSettingCheckbox;
     private populateToolbar;
@@ -102,7 +100,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private onClearButton;
     private clear;
     private reset;
-    private applyFilters;
+    applyFilters(_perfModel: PerformanceModel | null, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null): void;
     setModel(model: PerformanceModel | null, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, traceEngineIndex?: number): void;
     private recordingStarted;
     recordingProgress(usage: number): void;
@@ -111,7 +109,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     loadingStarted(): Promise<void>;
     loadingProgress(progress?: number): Promise<void>;
     processingStarted(): Promise<void>;
-    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null | undefined, isCpuProfile: boolean): Promise<void>;
+    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null | undefined, isCpuProfile: boolean, recordingStartTime: number | null): Promise<void>;
     recordTraceLoadMetric(): void;
     loadingCompleteForTest(): void;
     private showRecordingStarted;
@@ -120,9 +118,8 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private frameForSelection;
     jumpToFrame(offset: number): true | undefined;
     select(selection: TimelineSelection | null): void;
-    selectEntryAtTime(events: TraceEngine.Legacy.Event[] | null, time: number): void;
+    selectEntryAtTime(events: TraceEngine.Types.TraceEvents.TraceEventData[] | null, time: number): void;
     highlightEvent(event: TraceEngine.Legacy.Event | null): void;
-    private revealTimeRange;
     private handleDrop;
 }
 export declare enum State {
@@ -137,7 +134,7 @@ export declare const rowHeight = 18;
 export declare const headerHeight = 20;
 export interface TimelineModeViewDelegate {
     select(selection: TimelineSelection | null): void;
-    selectEntryAtTime(events: TraceEngine.Legacy.CompatibleTraceEvent[] | null, time: number): void;
+    selectEntryAtTime(events: TraceEngine.Types.TraceEvents.TraceEventData[] | null, time: number): void;
     highlightEvent(event: TraceEngine.Legacy.CompatibleTraceEvent | null): void;
 }
 export declare class StatusPane extends UI.Widget.VBox {
