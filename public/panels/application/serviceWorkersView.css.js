@@ -147,7 +147,7 @@ styles.replaceSync(
 
 .service-workers-this-origin,
 .service-workers-other-origin {
-  min-width: 530px;
+  min-width: max-content;
 }
 
 .service-worker-has-current .service-workers-other-origin {

@@ -79,7 +79,7 @@ export class ProtocolHandlersView extends HTMLElement {
         this.#render();
     }
     #renderStatusMessage() {
-        const manifestInTextLink = UI.XLink.XLink.create(this.#manifestLink, i18nString(UIStrings.manifest));
+        const manifestInTextLink = UI.XLink.XLink.create(this.#manifestLink, i18nString(UIStrings.manifest), undefined, undefined, 'manifest');
         const statusString = this.#protocolHandlers.length > 0 ? UIStrings.protocolDetected : UIStrings.protocolNotDetected;
         const iconData = this.#protocolHandlers.length > 0 ?
             { iconName: 'check-circle', color: 'var(--icon-checkmark-green)', width: '16px', height: '16px' } :
@@ -133,7 +133,7 @@ export class ProtocolHandlersView extends HTMLElement {
         ];
     }
     #render() {
-        const protocolDocLink = UI.XLink.XLink.create(PROTOCOL_DOCUMENT_URL, i18nString(UIStrings.protocolHandlerRegistrations));
+        const protocolDocLink = UI.XLink.XLink.create(PROTOCOL_DOCUMENT_URL, i18nString(UIStrings.protocolHandlerRegistrations), undefined, undefined, 'learn-more');
         // clang-format off
         LitHtml.render(LitHtml.html `
       ${this.#renderStatusMessage()}

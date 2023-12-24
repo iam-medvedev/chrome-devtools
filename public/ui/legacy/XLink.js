@@ -5,6 +5,7 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as ComponentHelpers from '../components/helpers/helpers.js';
 import * as LitHtml from '../lit-html/lit-html.js';
+import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { html } from './Fragment.js';
 import { Tooltip } from './Tooltip.js';
@@ -15,7 +16,7 @@ export class XLink extends XElement {
     clickable;
     onClick;
     onKeyDown;
-    static create(url, linkText, className, preventClick) {
+    static create(url, linkText, className, preventClick, jsLogContext) {
         if (!linkText) {
             linkText = url;
         }
@@ -24,7 +25,7 @@ export class XLink extends XElement {
         // TODO(dgozman): migrate css from 'devtools-link' to 'x-link'.
         const element = html `
   <x-link href='${url}' tabindex="0" class='${className} devtools-link' ${preventClick ? 'no-click' : ''}
-  >${Platform.StringUtilities.trimMiddle(linkText, MaxLengthForDisplayedURLs)}</x-link>`;
+  jslog=${VisualLogging.link().track({ click: true }).context(jsLogContext)}>${Platform.StringUtilities.trimMiddle(linkText, MaxLengthForDisplayedURLs)}</x-link>`;
         // clang-format on
         return element;
     }

@@ -8,6 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { DatabaseModel } from './DatabaseModel.js';
 import { DOMStorageModel } from './DOMStorageModel.js';
 import { IndexedDBModel } from './IndexedDBModel.js';
@@ -163,6 +164,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
     constructor() {
         super(true, 1000);
         this.contentElement.classList.add('clear-storage-container');
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('clear-storage')}`);
         this.pieColors = new Map([
             ["appcache" /* Protocol.Storage.StorageType.Appcache */, 'rgb(110, 161, 226)'],
             ["cache_storage" /* Protocol.Storage.StorageType.Cache_storage */, 'rgb(229, 113, 113)'],
@@ -186,10 +188,11 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         this.includeThirdPartyCookiesSetting =
             Common.Settings.Settings.instance().createSetting('clear-storage-include-third-party-cookies', false);
         const quota = this.reportView.appendSection(i18nString(UIStrings.usage));
+        quota.element.setAttribute('jslog', `${VisualLogging.section().context('usage')}`);
         this.quotaRow = quota.appendSelectableRow();
         this.quotaRow.classList.add('quota-usage-row');
         const learnMoreRow = quota.appendRow();
-        const learnMore = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/progressive-web-apps#opaque-responses', i18nString(UIStrings.learnMore));
+        const learnMore = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/progressive-web-apps#opaque-responses', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
         learnMoreRow.appendChild(learnMore);
         this.quotaUsage = null;
         this.pieChart = new PerfUI.PieChart.PieChart();
@@ -202,11 +205,13 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         quotaOverrideCheckboxRow.classList.add('quota-override-row');
         this.quotaOverrideCheckbox =
             UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.simulateCustomStorage), false, '');
+        this.quotaOverrideCheckbox.setAttribute('jslog', `${VisualLogging.toggle().track({ change: true }).context('simulate-custom-quota')}`);
         quotaOverrideCheckboxRow.appendChild(this.quotaOverrideCheckbox);
         this.quotaOverrideCheckbox.checkboxElement.addEventListener('click', this.onClickCheckbox.bind(this), false);
         this.quotaOverrideControlRow = quota.appendRow();
         this.quotaOverrideEditor =
             this.quotaOverrideControlRow.createChild('input', 'quota-override-notification-editor');
+        this.quotaOverrideEditor.setAttribute('jslog', `${VisualLogging.textField().track({ keydown: true }).context('quota-override')}`);
         this.quotaOverrideControlRow.appendChild(UI.UIUtils.createLabel(i18nString(UIStrings.mb)));
         this.quotaOverrideControlRow.classList.add('hidden');
         this.quotaOverrideEditor.addEventListener('keyup', event => {
@@ -223,15 +228,18 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         this.quotaOverrideErrorMessage = errorMessageRow.createChild('div', 'quota-override-error');
         const clearButtonSection = this.reportView.appendSection('', 'clear-storage-button').appendRow();
         this.clearButton = UI.UIUtils.createTextButton(i18nString(UIStrings.clearSiteData), this.clear.bind(this));
+        this.clearButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('clear-site-data')}`);
         this.clearButton.id = 'storage-view-clear-button';
         clearButtonSection.appendChild(this.clearButton);
         const includeThirdPartyCookiesCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.includingThirdPartyCookies), this.includeThirdPartyCookiesSetting, true);
         includeThirdPartyCookiesCheckbox.classList.add('include-third-party-cookies');
         clearButtonSection.appendChild(includeThirdPartyCookiesCheckbox);
         const application = this.reportView.appendSection(i18nString(UIStrings.application));
+        application.element.setAttribute('jslog', `${VisualLogging.section().context('application')}`);
         this.appendItem(application, i18nString(UIStrings.unregisterServiceWorker), "service_workers" /* Protocol.Storage.StorageType.Service_workers */);
         application.markFieldListAsGroup();
         const storage = this.reportView.appendSection(i18nString(UIStrings.storageTitle));
+        storage.element.setAttribute('jslog', `${VisualLogging.section().context('storage')}`);
         this.appendItem(storage, i18nString(UIStrings.localAndSessionStorage), "local_storage" /* Protocol.Storage.StorageType.Local_storage */);
         this.appendItem(storage, i18nString(UIStrings.indexDB), "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */);
         this.appendItem(storage, i18nString(UIStrings.webSql), "websql" /* Protocol.Storage.StorageType.Websql */);

@@ -1,6 +1,17 @@
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import { type CanShowSurveyResult, type ChangeEvent, type ClickEvent, type ContextMenuDescriptor, type DoAidaConversationResult, type DragEvent, type EnumeratedHistogram, type EventTypes, type ExtensionDescriptor, type HoverEvent, type ImpressionEvent, type InspectorFrontendHostAPI, type KeyDownEvent, type LoadNetworkResourceResult, type ShowSurveyResult, type SyncInformation } from './InspectorFrontendHostAPI.js';
+/**
+ * The InspectorFrontendHostStub is a stub interface used the frontend is loaded like a webpage. Examples:
+ *   - devtools://devtools/bundled/devtools_app.html
+ *   - https://chrome-devtools-frontend.appspot.com/serve_rev/@030cc140435b0152645522b9864b75cac6c0a854/worker_app.html
+ *   - http://localhost:9222/devtools/inspector.html?ws=localhost:9222/devtools/page/xTARGET_IDx
+ *
+ * When the frontend runs within the native embedder, then the InspectorFrontendHostAPI methods are provided
+ * by devtools_compatibility.js. Those leverage `DevToolsAPI.sendMessageToEmbedder()` which match up with
+ * the embedder API defined here: https://source.chromium.org/search?q=f:devtools%20f:dispatcher%20f:cc%20symbol:CreateForDevToolsFrontend&sq=&ss=chromium%2Fchromium%2Fsrc
+ * The native implementations live in devtools_ui_bindings.cc: https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/devtools/devtools_ui_bindings.cc
+ */
 export declare class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     #private;
     events: Common.EventTarget.EventTarget<EventTypes>;

@@ -34,6 +34,7 @@
     "../../../../../../../front_end/models/trace/handlers/FramesHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/GPUHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/InitiatorsHandler.ts",
+    "../../../../../../../front_end/models/trace/handlers/InvalidationsHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/LargestImagePaintHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/LargestTextPaintHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/LayerTreeHandler.ts",

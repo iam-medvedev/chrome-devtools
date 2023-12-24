@@ -1,17 +1,18 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
-import * as Platform from '../../../core/platform/platform.js';
-import * as SplitView from '../../../ui/components/split_view/split_view.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as UI from '../../../ui/legacy/legacy.js';
+import * as Platform from '../../../core/platform/platform.js';
+import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
-import * as PreloadingComponents from './components/components.js';
+import * as SplitView from '../../../ui/components/split_view/split_view.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import emptyWidgetStyles from '../../../ui/legacy/emptyWidget.css.js';
+import * as UI from '../../../ui/legacy/legacy.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import * as PreloadingComponents from './components/components.js';
 import preloadingViewStyles from './preloadingView.css.js';
 const UIStrings = {
     /**
@@ -178,7 +179,8 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
           <div slot="main" class="overflow-auto" style="height: 100%">
             ${this.ruleSetGrid}
           </div>
-          <div slot="sidebar" class="overflow-auto" style="height: 100%">
+          <div slot="sidebar" class="overflow-auto" style="height: 100%"
+          jslog=${VisualLogging.section().context('rule-set-details')}>
             ${this.ruleSetDetails}
           </div>
         </${SplitView.SplitView.SplitView.litTagName}>`, this.contentElement, { host: this });
@@ -250,6 +252,7 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
     ruleSetSelector;
     constructor(model) {
         super(/* isWebComponent */ true, /* delegatesFocus */ false);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('preloading-speculations')}`);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, SDK.PreloadingModel.Events.ModelUpdated, this.render, this, { scoped: true });
@@ -364,6 +367,7 @@ export class PreloadingSummaryView extends UI.Widget.VBox {
     usedPreloading = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
     constructor(model) {
         super(/* isWebComponent */ true, /* delegatesFocus */ false);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('speculative-loads')}`);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, SDK.PreloadingModel.Events.ModelUpdated, this.render, this, { scoped: true });
@@ -419,6 +423,7 @@ class PreloadingRuleSetSelector {
         this.toolbarItem = new UI.Toolbar.ToolbarItem(this.dropDown.element);
         this.toolbarItem.setTitle(i18nString(UIStrings.filterFilterByRuleSet));
         this.toolbarItem.element.classList.add('toolbar-has-dropdown');
+        this.toolbarItem.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('filter-by-rule-set')}`);
         // Initializes `listModel` and `dropDown` using data of the model.
         this.onModelUpdated();
         // Prevents emitting onSelectionChanged on the first call of `this.onModelUpdated()` for initialization.

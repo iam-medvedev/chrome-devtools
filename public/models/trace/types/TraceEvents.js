@@ -24,6 +24,12 @@ export function isTraceEventTracingSessionIdForWorker(event) {
 export function isTraceEventScheduleStyleInvalidationTracking(event) {
     return event.name === "ScheduleStyleInvalidationTracking" /* KnownEventName.ScheduleStyleInvalidationTracking */;
 }
+export function isTraceEventStyleRecalcInvalidationTracking(event) {
+    return event.name === "StyleRecalcInvalidationTracking" /* KnownEventName.StyleRecalcInvalidationTracking */;
+}
+export function isTraceEventStyleInvalidatorInvalidationTracking(event) {
+    return event.name === "StyleInvalidatorInvalidationTracking" /* KnownEventName.StyleInvalidatorInvalidationTracking */;
+}
 export function isTraceEventScheduleStyleRecalculation(event) {
     return event.name === "ScheduleStyleRecalculation" /* KnownEventName.ScheduleStyleRecalculation */;
 }
@@ -69,6 +75,9 @@ export function isTraceEventCompositeLayers(event) {
 }
 export function isTraceEventActivateLayerTree(event) {
     return event.name === "ActivateLayerTree" /* KnownEventName.ActivateLayerTree */;
+}
+export function isTraceEventSyntheticInvalidation(event) {
+    return event.name === 'SyntheticInvalidation';
 }
 export function isTraceEventUpdateLayoutTree(event) {
     return event.name === "UpdateLayoutTree" /* KnownEventName.UpdateLayoutTree */;
@@ -164,9 +173,6 @@ export function isTraceEventLayoutShift(traceEventData) {
 }
 export function isTraceEventLayoutInvalidationTracking(traceEventData) {
     return traceEventData.name === "LayoutInvalidationTracking" /* KnownEventName.LayoutInvalidationTracking */;
-}
-export function isTraceEventStyleRecalcInvalidation(traceEventData) {
-    return traceEventData.name === 'StyleRecalcInvalidationTracking';
 }
 export function isTraceEventFirstContentfulPaint(traceEventData) {
     return traceEventData.name === 'firstContentfulPaint';

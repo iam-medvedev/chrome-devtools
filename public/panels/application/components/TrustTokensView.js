@@ -9,6 +9,7 @@ import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import trustTokensViewStyles from './trustTokensView.css.js';
 import trustTokensViewDeleteButtonStyles from './trustTokensViewDeleteButton.css.js';
 const UIStrings = {
@@ -65,7 +66,8 @@ class TrustTokensDeleteButton extends HTMLElement {
       <span class="button-container">
         <button class="delete-button"
           title=${i18nString(UIStrings.deleteTrustTokens, { PH1: this.#issuer })}
-          @click=${() => this.#deleteClickHandler(this.#issuer)}>
+          @click=${() => this.#deleteClickHandler(this.#issuer)}
+          jslog=${VisualLogging.action().track({ click: true }).context('delete-all')}>
           <${IconButton.Icon.Icon.litTagName} .data=${{ iconName: 'bin', color: 'var(--icon-default)', width: '14px', height: '14px' }}>
           </${IconButton.Icon.Icon.litTagName}>
         </button>

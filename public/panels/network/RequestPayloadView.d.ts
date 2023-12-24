@@ -28,7 +28,7 @@ export declare class Category extends UI.TreeOutline.TreeElement {
     toggleOnClick: boolean;
     private readonly expandedSetting;
     expanded: boolean;
-    constructor(root: UI.TreeOutline.TreeOutline, name: string, title?: string);
+    constructor(root: UI.TreeOutline.TreeOutline, name: string, title?: string, jslogContext?: string);
     createLeaf(): UI.TreeOutline.TreeElement;
     onexpand(): void;
     oncollapse(): void;

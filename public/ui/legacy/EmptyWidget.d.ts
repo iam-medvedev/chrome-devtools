@@ -6,6 +6,6 @@ export declare class EmptyWidget extends VBox {
     constructor(text: string);
     appendParagraph(): Element;
     appendLink(link: Platform.DevToolsPath.UrlString): HTMLElement;
-    appendWarning(message: string, learnMoreLink: Platform.DevToolsPath.UrlString): Infobar;
+    appendWarning(message: string, learnMoreLink: Platform.DevToolsPath.UrlString, jsLogContext?: string): Infobar;
     set text(text: string);
 }

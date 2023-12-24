@@ -9,7 +9,7 @@ interface LayoutShifts {
     prePaintEvents: Types.TraceEvents.TraceEventPrePaint[];
     layoutInvalidationEvents: Types.TraceEvents.TraceEventLayoutInvalidationTracking[];
     scheduleStyleInvalidationEvents: Types.TraceEvents.TraceEventScheduleStyleInvalidationTracking[];
-    styleRecalcInvalidationEvents: Types.TraceEvents.TraceEventStyleRecalcInvalidation[];
+    styleRecalcInvalidationEvents: Types.TraceEvents.TraceEventStyleRecalcInvalidationTracking[];
     scoreRecords: ScoreRecord[];
     backendNodeIds: Protocol.DOM.BackendNodeId[];
 }

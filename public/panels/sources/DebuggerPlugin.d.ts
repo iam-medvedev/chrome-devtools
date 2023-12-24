@@ -115,5 +115,5 @@ export declare function getVariableValuesByLine(scopeMappings: {
 export declare function computePopoverHighlightRange(state: CodeMirror.EditorState, mimeType: string, cursorPos: number): {
     from: number;
     to: number;
-    containsCallExpression: boolean;
+    containsSideEffects: boolean;
 } | null;

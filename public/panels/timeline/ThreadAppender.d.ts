@@ -20,6 +20,7 @@ export declare class ThreadAppender implements TrackAppender {
      * appended the track's events.
      */
     appendTrackAtLevel(trackStartLevel: number, expanded?: boolean): number;
+    setHeaderNestingLevel(level: number): void;
     setHeaderAppended(headerAppended: boolean): void;
     headerAppended(): boolean;
     trackName(): string;

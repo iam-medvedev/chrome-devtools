@@ -760,6 +760,7 @@
       <include file="core/sdk/IssuesModel.js" name="CORE_SDK_ISSUESMODEL_JS" resource_path="core/sdk/IssuesModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/LayerTreeBase.js" name="CORE_SDK_LAYERTREEBASE_JS" resource_path="core/sdk/LayerTreeBase.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/LogModel.js" name="CORE_SDK_LOGMODEL_JS" resource_path="core/sdk/LogModel.js" type="BINDATA" compress="false"/>
+      <include file="core/sdk/MimeType.js" name="CORE_SDK_MIMETYPE_JS" resource_path="core/sdk/MimeType.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/NetworkManager.js" name="CORE_SDK_NETWORKMANAGER_JS" resource_path="core/sdk/NetworkManager.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/NetworkRequest.js" name="CORE_SDK_NETWORKREQUEST_JS" resource_path="core/sdk/NetworkRequest.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/OverlayColorGenerator.js" name="CORE_SDK_OVERLAYCOLORGENERATOR_JS" resource_path="core/sdk/OverlayColorGenerator.js" type="BINDATA" compress="false"/>
@@ -941,6 +942,7 @@
       <include file="models/trace/handlers/FramesHandler.js" name="MODELS_TRACE_HANDLERS_FRAMESHANDLER_JS" resource_path="models/trace/handlers/FramesHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/GPUHandler.js" name="MODELS_TRACE_HANDLERS_GPUHANDLER_JS" resource_path="models/trace/handlers/GPUHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/InitiatorsHandler.js" name="MODELS_TRACE_HANDLERS_INITIATORSHANDLER_JS" resource_path="models/trace/handlers/InitiatorsHandler.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/handlers/InvalidationsHandler.js" name="MODELS_TRACE_HANDLERS_INVALIDATIONSHANDLER_JS" resource_path="models/trace/handlers/InvalidationsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/LargestImagePaintHandler.js" name="MODELS_TRACE_HANDLERS_LARGESTIMAGEPAINTHANDLER_JS" resource_path="models/trace/handlers/LargestImagePaintHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/LargestTextPaintHandler.js" name="MODELS_TRACE_HANDLERS_LARGESTTEXTPAINTHANDLER_JS" resource_path="models/trace/handlers/LargestTextPaintHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/LayerTreeHandler.js" name="MODELS_TRACE_HANDLERS_LAYERTREEHANDLER_JS" resource_path="models/trace/handlers/LayerTreeHandler.js" type="BINDATA" compress="false"/>
@@ -1623,7 +1625,6 @@
       <include file="panels/timeline/components/breadcrumbsUI.css.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_CSS_JS" resource_path="panels/timeline/components/breadcrumbsUI.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/interactionBreakdown.css.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_CSS_JS" resource_path="panels/timeline/components/interactionBreakdown.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/historyToolbarButton.css.js" name="PANELS_TIMELINE_HISTORYTOOLBARBUTTON_CSS_JS" resource_path="panels/timeline/historyToolbarButton.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/invalidationsTree.css.js" name="PANELS_TIMELINE_INVALIDATIONSTREE_CSS_JS" resource_path="panels/timeline/invalidationsTree.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineFlamechartPopover.css.js" name="PANELS_TIMELINE_TIMELINEFLAMECHARTPOPOVER_CSS_JS" resource_path="panels/timeline/timelineFlamechartPopover.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineHistoryManager.css.js" name="PANELS_TIMELINE_TIMELINEHISTORYMANAGER_CSS_JS" resource_path="panels/timeline/timelineHistoryManager.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineMiniMap.css.js" name="PANELS_TIMELINE_TIMELINEMINIMAP_CSS_JS" resource_path="panels/timeline/timelineMiniMap.css.js" type="BINDATA" compress="false"/>

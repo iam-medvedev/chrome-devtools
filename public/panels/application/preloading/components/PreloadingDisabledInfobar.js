@@ -150,7 +150,7 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
     }
     #dialogContents() {
         const LINK = 'https://developer.chrome.com/blog/prerender-pages/';
-        const learnMoreLink = UI.XLink.XLink.create(LINK, i18nString(UIStrings.footerLearnMore));
+        const learnMoreLink = UI.XLink.XLink.create(LINK, i18nString(UIStrings.footerLearnMore), undefined, undefined, 'learn-more');
         const iconLink = UI.Fragment.html `
       <x-link class="icon-link devtools-link" tabindex="0" href="${LINK}"></x-link>
     `;

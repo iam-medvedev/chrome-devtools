@@ -8183,6 +8183,9 @@
   "panels/network/NetworkDataGridNode.ts | sPreflight": {
     "message": "{PH1} + Preflight"
   },
+  "panels/network/NetworkDataGridNode.ts | thirdPartyPhaseout": {
+    "message": "Cookies for this request are blocked due to third-party cookie phaseout. Learn more in the Issues tab."
+  },
   "panels/network/NetworkDataGridNode.ts | timeSubtitleTooltipText": {
     "message": "Latency (response received time - start time)"
   },
@@ -8248,6 +8251,9 @@
   },
   "panels/network/NetworkItemView.ts | signedexchangeError": {
     "message": "SignedExchange error"
+  },
+  "panels/network/NetworkItemView.ts | thirdPartyPhaseout": {
+    "message": "Cookies blocked due to third-party cookie phaseout."
   },
   "panels/network/NetworkItemView.ts | timing": {
     "message": "Timing"
@@ -12947,21 +12953,6 @@
   "panels/timeline/TimelineUIUtils.ts | cancelIdleCallback": {
     "message": "Cancel Idle Callback"
   },
-  "panels/timeline/TimelineUIUtils.ts | changedAttributeToSs": {
-    "message": "(changed attribute to \"{PH1}\"{PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | changedClassToSs": {
-    "message": "(changed class to \"{PH1}\"{PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | changedIdToSs": {
-    "message": "(changed id to \"{PH1}\"{PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | changedPesudoToSs": {
-    "message": "(changed pseudo to \"{PH1}\"{PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | changedSs": {
-    "message": "(changed \"{PH1}\"{PH2})"
-  },
   "panels/timeline/TimelineUIUtils.ts | collected": {
     "message": "Collected"
   },
@@ -13196,6 +13187,9 @@
   "panels/timeline/TimelineUIUtils.ts | invalidations": {
     "message": "Invalidations"
   },
+  "panels/timeline/TimelineUIUtils.ts | invalidationWithCallFrame": {
+    "message": "{PH1} at {PH2}"
+  },
   "panels/timeline/TimelineUIUtils.ts | invokedByTimeout": {
     "message": "Invoked by Timeout"
   },
@@ -13225,9 +13219,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | layoutForced": {
     "message": "Layout Forced"
-  },
-  "panels/timeline/TimelineUIUtils.ts | layoutInvalidations": {
-    "message": "Layout Invalidations"
   },
   "panels/timeline/TimelineUIUtils.ts | layoutRoot": {
     "message": "Layout root"
@@ -13277,12 +13268,6 @@
   "panels/timeline/TimelineUIUtils.ts | no": {
     "message": "No"
   },
-  "panels/timeline/TimelineUIUtils.ts | node": {
-    "message": "Node:"
-  },
-  "panels/timeline/TimelineUIUtils.ts | nodes": {
-    "message": "Nodes:"
-  },
   "panels/timeline/TimelineUIUtils.ts | nodesThatNeedLayout": {
     "message": "Nodes That Need Layout"
   },
@@ -13294,9 +13279,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | other": {
     "message": "Other"
-  },
-  "panels/timeline/TimelineUIUtils.ts | otherInvalidations": {
-    "message": "Other Invalidations"
   },
   "panels/timeline/TimelineUIUtils.ts | ownerElement": {
     "message": "Owner Element"
@@ -13403,12 +13385,6 @@
   "panels/timeline/TimelineUIUtils.ts | runMicrotasks": {
     "message": "Run Microtasks"
   },
-  "panels/timeline/TimelineUIUtils.ts | sAndS": {
-    "message": "{PH1} and {PH2}"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sAndSOther": {
-    "message": "{PH1}, {PH2}, and 1 other"
-  },
   "panels/timeline/TimelineUIUtils.ts | sAtS": {
     "message": "{PH1} at {PH2}"
   },
@@ -13454,9 +13430,6 @@
   "panels/timeline/TimelineUIUtils.ts | sendWebsocketHandshake": {
     "message": "Send WebSocket Handshake"
   },
-  "panels/timeline/TimelineUIUtils.ts | sForS": {
-    "message": "{PH1} for {PH2}"
-  },
   "panels/timeline/TimelineUIUtils.ts | sign": {
     "message": "Sign"
   },
@@ -13472,17 +13445,11 @@
   "panels/timeline/TimelineUIUtils.ts | sS": {
     "message": "{PH1}: {PH2}"
   },
-  "panels/timeline/TimelineUIUtils.ts | sSAndSOthers": {
-    "message": "{PH1}, {PH2}, and {PH3} others"
-  },
   "panels/timeline/TimelineUIUtils.ts | sSCurlyBrackets": {
     "message": "({PH1}, {PH2})"
   },
   "panels/timeline/TimelineUIUtils.ts | sSDimensions": {
     "message": "{PH1} × {PH2}"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sSDot": {
-    "message": "{PH1}. {PH2}"
   },
   "panels/timeline/TimelineUIUtils.ts | sSelf": {
     "message": "{PH1} (self)"
@@ -13499,9 +13466,6 @@
   "panels/timeline/TimelineUIUtils.ts | stackTrace": {
     "message": "Stack Trace"
   },
-  "panels/timeline/TimelineUIUtils.ts | stackTraceColon": {
-    "message": "Stack trace:"
-  },
   "panels/timeline/TimelineUIUtils.ts | state": {
     "message": "State"
   },
@@ -13513,9 +13477,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | streamingWasmResponse": {
     "message": "Streaming Wasm Response"
-  },
-  "panels/timeline/TimelineUIUtils.ts | styleInvalidations": {
-    "message": "Style Invalidations"
   },
   "panels/timeline/TimelineUIUtils.ts | stylesheetUrl": {
     "message": "Stylesheet URL"
@@ -13549,12 +13510,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | type": {
     "message": "Type"
-  },
-  "panels/timeline/TimelineUIUtils.ts | unknown": {
-    "message": "unknown"
-  },
-  "panels/timeline/TimelineUIUtils.ts | unknownCause": {
-    "message": "Unknown cause"
   },
   "panels/timeline/TimelineUIUtils.ts | UnknownNode": {
     "message": "[ unknown node ]"

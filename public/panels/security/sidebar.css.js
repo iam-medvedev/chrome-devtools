@@ -11,6 +11,10 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+:host {
+  overflow-x: auto;
+}
+
 .tree-outline {
   padding: 0;
 }

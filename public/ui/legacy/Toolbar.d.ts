@@ -107,7 +107,7 @@ export declare namespace ToolbarButton {
 export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
     private prompt;
     private readonly proxyElement;
-    constructor(placeholder: string, accessiblePlaceholder?: string, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean);
+    constructor(placeholder: string, accessiblePlaceholder?: string, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean, jslogContext?: string);
     applyEnabledState(enabled: boolean): void;
     setValue(value: string, notify?: boolean): void;
     value(): string;
@@ -150,7 +150,7 @@ export declare class ToolbarSettingToggle extends ToolbarToggle {
     private readonly defaultTitle;
     private readonly setting;
     private willAnnounceState;
-    constructor(setting: Common.Settings.Setting<boolean>, glyph: string, title: string, toggledGlyph?: string);
+    constructor(setting: Common.Settings.Setting<boolean>, glyph: string, title: string, toggledGlyph?: string, jslogContext?: string);
     private settingChanged;
     clicked(event: Event): void;
 }

@@ -38,6 +38,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PanelFeedback from '../../ui/components/panel_feedback/panel_feedback.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -558,10 +559,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             fileName = `Trace-${traceStart}.json`;
         }
         try {
-            const handler = await window.showSaveFilePicker({
-                suggestedName: fileName,
-            });
-            const encoder = new TextEncoder();
             // TODO(crbug.com/1456818): Extract this logic and add more tests.
             let traceAsString;
             if (metadata?.dataOrigin === "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPUProfile */) {
@@ -585,10 +582,11 @@ export class TimelinePanel extends UI.Panel.Panel {
                 const formattedTraceIter = traceJsonGenerator(traceEvents, metadata);
                 traceAsString = Array.from(formattedTraceIter).join('');
             }
-            const buffer = encoder.encode(traceAsString);
-            const writable = await handler.createWritable();
-            await writable.write(buffer);
-            await writable.close();
+            if (!traceAsString) {
+                throw new Error('Trace content empty');
+            }
+            await Workspace.FileManager.FileManager.instance().save(fileName, traceAsString, true /* forceSaveAs */);
+            Workspace.FileManager.FileManager.instance().close(fileName);
         }
         catch (error) {
             console.error(error.stack);
@@ -1080,7 +1078,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             e.textContent = contents;
             return e;
         }
-        const learnMoreNode = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/evaluate-performance/', i18nString(UIStrings.learnmore));
+        const learnMoreNode = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/evaluate-performance/', i18nString(UIStrings.learnmore), undefined, undefined, 'learn-more');
         const recordKey = encloseWithTag('b', UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('timeline.toggle-recording')[0].title());
         const reloadKey = encloseWithTag('b', UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('timeline.record-reload')[0].title());
         const navigateNode = encloseWithTag('b', i18nString(UIStrings.wasd));
@@ -1472,16 +1470,10 @@ export class StatusPane extends UI.Widget.VBox {
         }
         const traceStart = Platform.DateUtilities.toISO8601Compact(new Date());
         const fileName = `Trace-Load-Error-${traceStart}.json`;
-        const handler = await window.showSaveFilePicker({
-            suggestedName: fileName,
-        });
         const formattedTraceIter = traceJsonGenerator(this.#rawEvents, {});
         const traceAsString = Array.from(formattedTraceIter).join('');
-        const encoder = new TextEncoder();
-        const buffer = encoder.encode(traceAsString);
-        const writable = await handler.createWritable();
-        await writable.write(buffer);
-        await writable.close();
+        await Workspace.FileManager.FileManager.instance().save(fileName, traceAsString, true /* forceSaveAs */);
+        Workspace.FileManager.FileManager.instance().close(fileName);
     }
     enableDownloadOfEvents(rawEvents) {
         this.#rawEvents = rawEvents;

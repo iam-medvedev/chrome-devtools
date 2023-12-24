@@ -6,6 +6,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ApplicationPanelSidebar, StorageCategoryView } from './ApplicationPanelSidebar.js';
 import { CookieItemsView } from './CookieItemsView.js';
 import { DatabaseQueryView } from './DatabaseQueryView.js';
@@ -115,16 +116,20 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
         return view;
     }
     showCategoryView(categoryName, categoryLink) {
+        function kebapCase(paneName) {
+            return paneName.replace(/[\s]+/g, '-').toLowerCase();
+        }
         if (!this.categoryView) {
             this.categoryView = new StorageCategoryView();
         }
+        this.categoryView.element.setAttribute('jslog', `${VisualLogging.pane().context(kebapCase(categoryName))}`);
         this.categoryView.setText(categoryName);
         this.categoryView.setLink(categoryLink);
         const categoryWarning = categoryName === 'Web SQL' ? UIStrings.webSqlDeprecation : null;
         const learnMoreLink = categoryName === 'Web SQL' ?
             'https://developer.chrome.com/blog/deprecating-web-sql/' :
             Platform.DevToolsPath.EmptyUrlString;
-        this.categoryView.setWarning(categoryWarning, learnMoreLink);
+        this.categoryView.setWarning(categoryWarning, learnMoreLink, categoryName === 'Web SQL' ? 'deprecation-warning' : undefined);
         this.showView(this.categoryView);
     }
     showDOMStorage(domStorage) {

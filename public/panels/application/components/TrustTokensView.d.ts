@@ -1,6 +1,6 @@
+import type * as Protocol from '../../../generated/protocol.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import type * as Protocol from '../../../generated/protocol.js';
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 interface TrustTokensDeleteButtonData {
     issuer: DataGrid.DataGridUtils.CellValue;

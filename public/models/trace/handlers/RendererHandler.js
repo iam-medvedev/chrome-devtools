@@ -185,13 +185,10 @@ export function assignIsMainFrame(processes, mainFrameId, rendererProcessesByFra
  * @see assignMeta
  */
 export function assignThreadName(processes, rendererProcessesByFrame, threadsInProcess) {
-    for (const [, renderProcessesByPid] of rendererProcessesByFrame) {
-        for (const [pid] of renderProcessesByPid) {
-            const process = getOrCreateRendererProcess(processes, pid);
-            for (const [tid, threadInfo] of threadsInProcess.get(pid) ?? []) {
-                const thread = getOrCreateRendererThread(process, tid);
-                thread.name = threadInfo?.args.name ?? `${tid}`;
-            }
+    for (const [pid, process] of processes) {
+        for (const [tid, threadInfo] of threadsInProcess.get(pid) ?? []) {
+            const thread = getOrCreateRendererThread(process, tid);
+            thread.name = threadInfo?.args.name ?? `${tid}`;
         }
     }
 }
@@ -202,6 +199,10 @@ export function assignThreadName(processes, rendererProcessesByFrame, threadsInP
  */
 export function sanitizeProcesses(processes) {
     const auctionWorklets = auctionWorkletsData().worklets;
+    const metaData = metaHandlerData();
+    if (metaData.traceIsGeneric) {
+        return;
+    }
     for (const [pid, process] of processes) {
         // If the process had no url, or if it had a malformed url that could not be
         // parsed for some reason, or if it's an "about:" origin, delete it.

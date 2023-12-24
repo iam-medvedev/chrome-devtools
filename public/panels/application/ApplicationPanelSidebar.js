@@ -1230,8 +1230,7 @@ export class IDBDatabaseTreeElement extends ApplicationPanelTreeElement {
             return false;
         }
         if (!this.view) {
-            this.view =
-                LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new IDBDatabaseView(this.model, this.database));
+            this.view = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new IDBDatabaseView(this.model, this.database), 'indexeddb-data');
         }
         this.showView(this.view);
         Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.indexed_db]);
@@ -1521,9 +1520,9 @@ export class StorageCategoryView extends UI.Widget.VBox {
             this.linkElement.classList.remove('hidden');
         }
     }
-    setWarning(message, learnMoreLink) {
+    setWarning(message, learnMoreLink, jsLogContext) {
         if (message && !this.warningBar) {
-            this.warningBar = this.emptyWidget.appendWarning(message, learnMoreLink);
+            this.warningBar = this.emptyWidget.appendWarning(message, learnMoreLink, jsLogContext);
         }
         if (!message && this.warningBar) {
             this.warningBar.element.classList.add('hidden');

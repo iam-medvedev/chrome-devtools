@@ -160,6 +160,9 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     isNetworkTrackShownForTests() {
         return this.networkSplitWidget.showMode() !== UI.SplitWidget.ShowMode.OnlyMain;
     }
+    getMainDataProvider() {
+        return this.mainDataProvider;
+    }
     updateColorMapper() {
         if (!this.model) {
             return;

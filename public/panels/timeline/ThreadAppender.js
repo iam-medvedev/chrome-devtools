@@ -141,6 +141,7 @@ export class ThreadAppender {
     #showAllEventsEnabled = Root.Runtime.experiments.isEnabled('timelineShowAllEvents');
     #entriesFilter;
     #url = '';
+    #headerNestingLevel = null;
     constructor(compatibilityBuilder, traceParsedData, processId, threadId, threadName, type) {
         this.#compatibilityBuilder = compatibilityBuilder;
         // TODO(crbug.com/1456706):
@@ -211,6 +212,9 @@ export class ThreadAppender {
         this.#expanded = expanded;
         return this.#appendTreeAtLevel(trackStartLevel);
     }
+    setHeaderNestingLevel(level) {
+        this.#headerNestingLevel = level;
+    }
     /**
      * Track header is appended only if there are events visible on it.
      * Otherwise we don't append any track. So, instead of preemptively
@@ -248,6 +252,9 @@ export class ThreadAppender {
     #appendTrackHeaderAtLevel(currentLevel) {
         const trackIsCollapsible = this.#entries.length > 0;
         const style = buildGroupStyle({ shareHeaderLine: false, collapsible: trackIsCollapsible });
+        if (this.#headerNestingLevel !== null) {
+            style.nestingLevel = this.#headerNestingLevel;
+        }
         const group = buildTrackHeader(currentLevel, this.trackName(), style, /* selectable= */ true, this.#expanded, /* track= */ null, 
         /* showStackContextMenu= */ true);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
@@ -301,7 +308,11 @@ export class ThreadAppender {
             default:
                 return Platform.assertNever(this.threadType, `Unknown thread type: ${this.threadType}`);
         }
-        return threadTypeLabel || this.#threadDefaultName;
+        let suffix = '';
+        if (this.#traceParsedData.Meta.traceIsGeneric) {
+            suffix = suffix + ` (${this.threadId()})`;
+        }
+        return (threadTypeLabel || this.#threadDefaultName) + suffix;
     }
     getUrl() {
         return this.#url;
@@ -419,7 +430,7 @@ export class ThreadAppender {
             // stack.
             const skipEventDueToIgnoreListing = entryIsIgnoreListed && parentIsIgnoredListed;
             if (entryIsVisible && !skipEventDueToIgnoreListing) {
-                this.#appendEntryAtLevel(entry, startingLevel);
+                this.#appendEntryAtLevel(entry, startingLevel, this.#entriesFilter?.isEntryModified(entry));
                 nextLevel++;
             }
             const depthInChildTree = this.#appendNodesAtLevel(node.children, nextLevel, entryIsIgnoreListed);
@@ -427,17 +438,20 @@ export class ThreadAppender {
         }
         return maxDepthInTree;
     }
-    #appendEntryAtLevel(entry, level) {
+    #appendEntryAtLevel(entry, level, childrenCollapsed) {
         this.#ensureTrackHeaderAppended(level);
         const index = this.#compatibilityBuilder.appendEventAtLevel(entry, level, this);
-        this.#addDecorationsToEntry(entry, index);
+        this.#addDecorationsToEntry(entry, index, childrenCollapsed);
     }
-    #addDecorationsToEntry(entry, index) {
+    #addDecorationsToEntry(entry, index, childrenCollapsed) {
+        const flameChartData = this.#compatibilityBuilder.getFlameChartTimelineData();
+        if (childrenCollapsed) {
+            addDecorationToEvent(flameChartData, index, { type: 'HIDDEN_ANCESTORS_ARROW' });
+        }
         const warnings = this.#traceParsedData.Warnings.perEvent.get(entry);
         if (!warnings) {
             return;
         }
-        const flameChartData = this.#compatibilityBuilder.getFlameChartTimelineData();
         addDecorationToEvent(flameChartData, index, { type: 'WARNING_TRIANGLE' });
         if (!warnings.includes('LONG_TASK')) {
             return;
@@ -470,9 +484,8 @@ export class ThreadAppender {
      * Gets the color an event added by this appender should be rendered with.
      */
     colorForEvent(event) {
-        if (this.#entriesFilter?.isEntryModified(event)) {
-            // TODO(crbug.com/1469887): Change the UI of modifies entries to the final designs when they're completed.
-            return this.#colorGenerator.colorForID('temporary');
+        if (this.#traceParsedData.Meta.traceIsGeneric) {
+            return event.name ? `hsl(${Platform.StringUtilities.hashCode(event.name) % 300 + 30}, 40%, 70%)` : '#ccc';
         }
         if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
             if (event.callFrame.functionName === '(idle)') {

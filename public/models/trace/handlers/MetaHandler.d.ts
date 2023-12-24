@@ -7,6 +7,7 @@ export type MetaHandlerData = {
     traceIsGeneric: boolean;
     traceBounds: Types.Timing.TraceWindowMicroSeconds;
     browserProcessId: Types.TraceEvents.ProcessID;
+    processNames: Map<Types.TraceEvents.ProcessID, Types.TraceEvents.TraceEventProcessName>;
     browserThreadId: Types.TraceEvents.ThreadID;
     gpuProcessId: Types.TraceEvents.ProcessID;
     gpuThreadId?: Types.TraceEvents.ThreadID;

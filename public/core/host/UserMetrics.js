@@ -511,7 +511,11 @@ export var Action;
     Action[Action["InsightClosed"] = 119] = "InsightClosed";
     Action[Action["InsightErrored"] = 120] = "InsightErrored";
     Action[Action["InsightHoverButtonShown"] = 121] = "InsightHoverButtonShown";
-    Action[Action["MaxValue"] = 122] = "MaxValue";
+    Action[Action["SelfXssWarningConsoleMessageShown"] = 122] = "SelfXssWarningConsoleMessageShown";
+    Action[Action["SelfXssWarningDialogShown"] = 123] = "SelfXssWarningDialogShown";
+    Action[Action["SelfXssAllowPastingInConsole"] = 124] = "SelfXssAllowPastingInConsole";
+    Action[Action["SelfXssAllowPastingInDialog"] = 125] = "SelfXssAllowPastingInDialog";
+    Action[Action["MaxValue"] = 126] = "MaxValue";
 })(Action || (Action = {}));
 /* eslint-disable @typescript-eslint/naming-convention */
 // TODO(crbug.com/1167717): Make this a const enum again

@@ -136,11 +136,9 @@ export declare class RevealingActionDelegate implements UI.ActionRegistration.Ac
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;
 }
-export declare class WrapperView extends UI.Widget.VBox {
+export declare class QuickSourceView extends UI.Widget.VBox {
     private readonly view;
     constructor();
-    static instance(): WrapperView;
-    static isShowing(): boolean;
     wasShown(): void;
     willHide(): void;
     showViewInWrapper(): void;

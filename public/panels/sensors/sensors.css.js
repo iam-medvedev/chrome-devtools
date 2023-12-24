@@ -74,10 +74,12 @@ styles.replaceSync(
   width: 70px;
 }
 
-.timezone-error {
+.timezone-error,
+.locale-error {
   margin-left: 10px;
   color: var(--legacy-input-validation-error);
 }
+
 /* Device Orientation */
 
 .orientation-content {

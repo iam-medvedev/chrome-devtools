@@ -71,7 +71,6 @@ export class TimelineModelImpl {
     mainFrame;
     minimumRecordTimeInternal;
     maximumRecordTimeInternal;
-    invalidationTracker;
     lastScheduleStyleRecalculation;
     paintImageEventByPixelRefId;
     lastPaintForLayer;
@@ -456,7 +455,6 @@ export class TimelineModelImpl {
         }
     }
     resetProcessingState() {
-        this.invalidationTracker = new InvalidationTracker();
         this.lastScheduleStyleRecalculation = {};
         this.paintImageEventByPixelRefId = {};
         this.lastPaintForLayer = {};
@@ -607,21 +605,12 @@ export class TimelineModelImpl {
             }
             case RecordType.UpdateLayoutTree:
             case RecordType.RecalculateStyles: {
-                this.invalidationTracker.didRecalcStyle(event);
                 if (this.currentScriptEvent) {
                     this.currentTaskLayoutAndRecalcEvents.push(event);
                 }
                 break;
             }
-            case RecordType.ScheduleStyleInvalidationTracking:
-            case RecordType.StyleRecalcInvalidationTracking:
-            case RecordType.StyleInvalidatorInvalidationTracking:
-            case RecordType.LayoutInvalidationTracking: {
-                this.invalidationTracker.addInvalidation(new InvalidationTrackingEvent(event, timelineData));
-                break;
-            }
             case RecordType.Layout: {
-                this.invalidationTracker.didLayout(event);
                 const frameId = event.args?.beginData?.frame;
                 if (!frameId) {
                     break;
@@ -687,7 +676,6 @@ export class TimelineModelImpl {
                 break;
             }
             case RecordType.Paint: {
-                this.invalidationTracker.didPaint = true;
                 // With CompositeAfterPaint enabled, paint events are no longer
                 // associated with a Node, and nodeId will not be present.
                 if ('nodeId' in eventData) {
@@ -699,22 +687,6 @@ export class TimelineModelImpl {
                 }
                 const layerId = eventData['layerId'];
                 this.lastPaintForLayer[layerId] = event;
-                break;
-            }
-            case RecordType.DisplayItemListSnapshot:
-            case RecordType.PictureSnapshot: {
-                // If we get a snapshot, we try to find the last Paint event for the
-                // current layer, and store the snapshot as the relevant picture for
-                // that event, thus creating a relationship between the snapshot and
-                // the last Paint event for the current timestamp.
-                const layerUpdateEvent = this.findAncestorEvent(RecordType.UpdateLayer);
-                if (!layerUpdateEvent || layerUpdateEvent.args['layerTreeId'] !== this.mainFrameLayerTreeId) {
-                    break;
-                }
-                const paintEvent = this.lastPaintForLayer[layerUpdateEvent.args['layerId']];
-                if (paintEvent) {
-                    EventOnTimelineData.forEvent(paintEvent).picture = event;
-                }
                 break;
             }
             case RecordType.ScrollLayer: {
@@ -986,10 +958,6 @@ export var RecordType;
     RecordType["CompositeLayers"] = "CompositeLayers";
     RecordType["ComputeIntersections"] = "IntersectionObserverController::computeIntersections";
     RecordType["InteractiveTime"] = "InteractiveTime";
-    RecordType["ScheduleStyleInvalidationTracking"] = "ScheduleStyleInvalidationTracking";
-    RecordType["StyleRecalcInvalidationTracking"] = "StyleRecalcInvalidationTracking";
-    RecordType["StyleInvalidatorInvalidationTracking"] = "StyleInvalidatorInvalidationTracking";
-    RecordType["LayoutInvalidationTracking"] = "LayoutInvalidationTracking";
     RecordType["ParseHTML"] = "ParseHTML";
     RecordType["ParseAuthorStyleSheet"] = "ParseAuthorStyleSheet";
     RecordType["TimerInstall"] = "TimerInstall";
@@ -1289,252 +1257,15 @@ export class PageFrame {
         child.parent = this;
     }
 }
-export class InvalidationTrackingEvent {
-    type;
-    startTime;
-    tracingEvent;
-    frame;
-    nodeId;
-    nodeName;
-    invalidationSet;
-    invalidatedSelectorId;
-    changedId;
-    changedClass;
-    changedAttribute;
-    changedPseudo;
-    selectorPart;
-    extraData;
-    invalidationList;
-    cause;
-    linkedRecalcStyleEvent;
-    linkedLayoutEvent;
-    constructor(event, timelineData) {
-        this.type = event.name;
-        this.startTime = event.startTime;
-        this.tracingEvent = event;
-        const eventData = event.args['data'];
-        this.frame = eventData['frame'];
-        this.nodeId = eventData['nodeId'];
-        this.nodeName = eventData['nodeName'];
-        this.invalidationSet = eventData['invalidationSet'];
-        this.invalidatedSelectorId = eventData['invalidatedSelectorId'];
-        this.changedId = eventData['changedId'];
-        this.changedClass = eventData['changedClass'];
-        this.changedAttribute = eventData['changedAttribute'];
-        this.changedPseudo = eventData['changedPseudo'];
-        this.selectorPart = eventData['selectorPart'];
-        this.extraData = eventData['extraData'];
-        this.invalidationList = eventData['invalidationList'];
-        this.cause = { reason: eventData['reason'], stackTrace: timelineData.stackTrace };
-        this.linkedRecalcStyleEvent = false;
-        this.linkedLayoutEvent = false;
-        // FIXME: Move this to TimelineUIUtils.js.
-        if (!this.cause.reason && this.cause.stackTrace && this.type === RecordType.LayoutInvalidationTracking) {
-            this.cause.reason = 'Layout forced';
-        }
-    }
-}
-export class InvalidationTracker {
-    lastRecalcStyle;
-    didPaint;
-    invalidations;
-    invalidationsByNodeId;
-    constructor() {
-        this.lastRecalcStyle = null;
-        this.didPaint = false;
-        this.initializePerFrameState();
-        this.invalidations = {};
-        this.invalidationsByNodeId = {};
-    }
-    static invalidationEventsFor(event) {
-        return eventToInvalidation.get(event) || null;
-    }
-    addInvalidation(invalidation) {
-        this.startNewFrameIfNeeded();
-        if (!invalidation.nodeId) {
-            console.error('Invalidation lacks node information.');
-            console.error(invalidation);
-            return;
-        }
-        // Suppress StyleInvalidator StyleRecalcInvalidationTracking invalidations because they
-        // will be handled by StyleInvalidatorInvalidationTracking.
-        // FIXME: Investigate if we can remove StyleInvalidator invalidations entirely.
-        if (invalidation.type === RecordType.StyleRecalcInvalidationTracking &&
-            invalidation.cause.reason === 'StyleInvalidator') {
-            return;
-        }
-        // Style invalidation events can occur before and during recalc style. didRecalcStyle
-        // handles style invalidations that occur before the recalc style event but we need to
-        // handle style recalc invalidations during recalc style here.
-        const styleRecalcInvalidation = (invalidation.type === RecordType.ScheduleStyleInvalidationTracking ||
-            invalidation.type === RecordType.StyleInvalidatorInvalidationTracking ||
-            invalidation.type === RecordType.StyleRecalcInvalidationTracking);
-        if (styleRecalcInvalidation) {
-            const duringRecalcStyle = invalidation.startTime && this.lastRecalcStyle &&
-                this.lastRecalcStyle.endTime !== undefined && invalidation.startTime >= this.lastRecalcStyle.startTime &&
-                invalidation.startTime <= this.lastRecalcStyle.endTime;
-            if (duringRecalcStyle) {
-                this.associateWithLastRecalcStyleEvent(invalidation);
-            }
-        }
-        // Record the invalidation so later events can look it up.
-        if (this.invalidations[invalidation.type]) {
-            this.invalidations[invalidation.type].push(invalidation);
-        }
-        else {
-            this.invalidations[invalidation.type] = [invalidation];
-        }
-        if (invalidation.nodeId) {
-            if (this.invalidationsByNodeId[invalidation.nodeId]) {
-                this.invalidationsByNodeId[invalidation.nodeId].push(invalidation);
-            }
-            else {
-                this.invalidationsByNodeId[invalidation.nodeId] = [invalidation];
-            }
-        }
-    }
-    didRecalcStyle(recalcStyleEvent) {
-        this.lastRecalcStyle = recalcStyleEvent;
-        const types = [
-            RecordType.ScheduleStyleInvalidationTracking,
-            RecordType.StyleInvalidatorInvalidationTracking,
-            RecordType.StyleRecalcInvalidationTracking,
-        ];
-        for (const invalidation of this.invalidationsOfTypes(types)) {
-            this.associateWithLastRecalcStyleEvent(invalidation);
-        }
-    }
-    associateWithLastRecalcStyleEvent(invalidation) {
-        if (invalidation.linkedRecalcStyleEvent) {
-            return;
-        }
-        if (!this.lastRecalcStyle) {
-            throw new Error('Last recalculate style event not set.');
-        }
-        const recalcStyleFrameId = this.lastRecalcStyle.args['beginData']['frame'];
-        if (invalidation.type === RecordType.StyleInvalidatorInvalidationTracking) {
-            // Instead of calling addInvalidationToEvent directly, we create synthetic
-            // StyleRecalcInvalidationTracking events which will be added in addInvalidationToEvent.
-            this.addSyntheticStyleRecalcInvalidations(this.lastRecalcStyle, recalcStyleFrameId, invalidation);
-        }
-        else if (invalidation.type === RecordType.ScheduleStyleInvalidationTracking) {
-            // ScheduleStyleInvalidationTracking events are only used for adding information to
-            // StyleInvalidatorInvalidationTracking events. See: addSyntheticStyleRecalcInvalidations.
-        }
-        else {
-            this.addInvalidationToEvent(this.lastRecalcStyle, recalcStyleFrameId, invalidation);
-        }
-        invalidation.linkedRecalcStyleEvent = true;
-    }
-    addSyntheticStyleRecalcInvalidations(event, frameId, styleInvalidatorInvalidation) {
-        if (!styleInvalidatorInvalidation.invalidationList) {
-            this.addSyntheticStyleRecalcInvalidation(styleInvalidatorInvalidation.tracingEvent, styleInvalidatorInvalidation);
-            return;
-        }
-        if (!styleInvalidatorInvalidation.nodeId) {
-            console.error('Invalidation lacks node information.');
-            console.error(styleInvalidatorInvalidation);
-            return;
-        }
-        for (let i = 0; i < styleInvalidatorInvalidation.invalidationList.length; i++) {
-            const setId = styleInvalidatorInvalidation.invalidationList[i]['id'];
-            let lastScheduleStyleRecalculation;
-            const nodeInvalidations = this.invalidationsByNodeId[styleInvalidatorInvalidation.nodeId] || [];
-            for (let j = 0; j < nodeInvalidations.length; j++) {
-                const invalidation = nodeInvalidations[j];
-                if (invalidation.frame !== frameId || invalidation.invalidationSet !== setId ||
-                    invalidation.type !== RecordType.ScheduleStyleInvalidationTracking) {
-                    continue;
-                }
-                lastScheduleStyleRecalculation = invalidation;
-            }
-            if (!lastScheduleStyleRecalculation) {
-                continue;
-            }
-            this.addSyntheticStyleRecalcInvalidation(lastScheduleStyleRecalculation.tracingEvent, styleInvalidatorInvalidation);
-        }
-    }
-    addSyntheticStyleRecalcInvalidation(baseEvent, styleInvalidatorInvalidation) {
-        const timelineData = EventOnTimelineData.forEvent(baseEvent);
-        const invalidation = new InvalidationTrackingEvent(baseEvent, timelineData);
-        invalidation.type = RecordType.StyleRecalcInvalidationTracking;
-        if (styleInvalidatorInvalidation.cause.reason) {
-            invalidation.cause.reason = styleInvalidatorInvalidation.cause.reason;
-        }
-        if (styleInvalidatorInvalidation.selectorPart) {
-            invalidation.selectorPart = styleInvalidatorInvalidation.selectorPart;
-        }
-        if (!invalidation.linkedRecalcStyleEvent) {
-            this.associateWithLastRecalcStyleEvent(invalidation);
-        }
-    }
-    didLayout(layoutEvent) {
-        const layoutFrameId = layoutEvent.args?.beginData?.frame;
-        if (!layoutFrameId) {
-            return;
-        }
-        for (const invalidation of this.invalidationsOfTypes([RecordType.LayoutInvalidationTracking])) {
-            if (invalidation.linkedLayoutEvent) {
-                continue;
-            }
-            this.addInvalidationToEvent(layoutEvent, layoutFrameId, invalidation);
-            invalidation.linkedLayoutEvent = true;
-        }
-    }
-    addInvalidationToEvent(event, eventFrameId, invalidation) {
-        if (eventFrameId !== invalidation.frame) {
-            return;
-        }
-        const invalidations = eventToInvalidation.get(event);
-        if (!invalidations) {
-            eventToInvalidation.set(event, [invalidation]);
-        }
-        else {
-            invalidations.push(invalidation);
-        }
-    }
-    invalidationsOfTypes(types) {
-        const invalidations = this.invalidations;
-        if (!types) {
-            types = Object.keys(invalidations);
-        }
-        function* generator() {
-            if (!types) {
-                return;
-            }
-            for (let i = 0; i < types.length; ++i) {
-                const invalidationList = invalidations[types[i]] || [];
-                for (let j = 0; j < invalidationList.length; ++j) {
-                    yield invalidationList[j];
-                }
-            }
-        }
-        return generator();
-    }
-    startNewFrameIfNeeded() {
-        if (!this.didPaint) {
-            return;
-        }
-        this.initializePerFrameState();
-    }
-    initializePerFrameState() {
-        this.invalidations = {};
-        this.invalidationsByNodeId = {};
-        this.lastRecalcStyle = null;
-        this.didPaint = false;
-    }
-}
 export class EventOnTimelineData {
     url;
     backendNodeIds;
     stackTrace;
-    picture;
     frameId;
     constructor() {
         this.url = null;
         this.backendNodeIds = [];
         this.stackTrace = null;
-        this.picture = null;
         this.frameId = null;
     }
     topFrame() {
@@ -1554,7 +1285,6 @@ export class EventOnTimelineData {
     }
     static reset() {
         eventToData = new Map();
-        eventToInvalidation = new WeakMap();
     }
 }
 function getOrCreateEventData(event) {
@@ -1566,5 +1296,4 @@ function getOrCreateEventData(event) {
     return data;
 }
 let eventToData = new Map();
-let eventToInvalidation = new WeakMap();
 //# sourceMappingURL=TimelineModel.js.map

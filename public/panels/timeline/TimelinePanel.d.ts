@@ -7,18 +7,6 @@ import { PerformanceModel } from './PerformanceModel.js';
 import { type Client } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineSelection } from './TimelineSelection.js';
-declare global {
-    interface FileSystemWritableFileStream extends WritableStream {
-        write(data: unknown): Promise<void>;
-        close(): Promise<void>;
-    }
-    interface FileSystemHandle {
-        createWritable(): Promise<FileSystemWritableFileStream>;
-    }
-    interface Window {
-        showSaveFilePicker(opts: unknown): Promise<FileSystemHandle>;
-    }
-}
 export declare class TimelinePanel extends UI.Panel.Panel implements Client, TimelineModeViewDelegate {
     #private;
     private readonly dropTarget;

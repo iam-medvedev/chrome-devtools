@@ -4,7 +4,6 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import { TimelineCategory, TimelineRecordStyle } from './EventUICategory.js';
 type LinkifyLocationOptions = {
     scriptId: Protocol.Runtime.ScriptId | null;
@@ -41,11 +40,10 @@ export declare class TimelineUIUtils {
         [x: string]: number;
     };
     static buildSyntheticNetworkRequestDetails(event: TraceEngine.Types.TraceEvents.TraceEventSyntheticNetworkRequest, model: TimelineModel.TimelineModel.TimelineModelImpl, linkifier: LegacyComponents.Linkifier.Linkifier): Promise<DocumentFragment>;
-    static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[]): Protocol.Runtime.StackTrace;
+    static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | TraceEngine.Types.TraceEvents.TraceEventCallFrame[]): Protocol.Runtime.StackTrace;
     private static generateCauses;
-    private static generateInvalidations;
-    private static generateInvalidationsForType;
-    private static collectInvalidationNodeIds;
+    private static generateInvalidationsList;
+    private static generateInvalidationsForReason;
     private static aggregatedStatsForTraceEvent;
     static buildPicturePreviewContent(traceData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventPaint, target: SDK.Target.Target): Promise<Element | null>;
     static createEventDivider(event: TraceEngine.Legacy.CompatibleTraceEvent, zeroTime: number): Element;
@@ -80,17 +78,6 @@ export declare enum NetworkCategory {
     Other = "Other"
 }
 export declare const aggregatedStatsKey: unique symbol;
-export declare class InvalidationsGroupElement extends UI.TreeOutline.TreeElement {
-    toggleOnClick: boolean;
-    private readonly relatedNodesMap;
-    private readonly contentHelper;
-    private readonly invalidations;
-    constructor(target: SDK.Target.Target, relatedNodesMap: Map<number, SDK.DOMModel.DOMNode | null> | null, contentHelper: TimelineDetailsContentHelper, invalidations: TimelineModel.TimelineModel.InvalidationTrackingEvent[]);
-    private createTitle;
-    onpopulate(): Promise<void>;
-    private getTruncatedNodesElement;
-    private createInvalidationNode;
-}
 export declare const previewElementSymbol: unique symbol;
 export declare class EventDispatchTypeDescriptor {
     priority: number;

@@ -59,6 +59,7 @@ export declare class SuggestionInput extends LitElement {
     disabled: boolean;
     strikethrough: boolean;
     mimeType: string;
+    jslogContext?: string;
     constructor();
     protected willUpdate(properties: LitHtml.PropertyValues<this>): void;
     protected render(): LitHtml.TemplateResult;

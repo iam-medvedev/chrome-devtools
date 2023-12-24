@@ -30,6 +30,7 @@ export declare const domBreakpoint: () => LoggingConfig.ConfigStringBuilder;
 export declare const dropDown: () => LoggingConfig.ConfigStringBuilder;
 export declare const elementsBreadcrumbs: () => LoggingConfig.ConfigStringBuilder;
 export declare const filterDropdown: () => LoggingConfig.ConfigStringBuilder;
+export declare const infoBar: () => LoggingConfig.ConfigStringBuilder;
 export declare const flexboxOverlays: () => LoggingConfig.ConfigStringBuilder;
 export declare const gridOverlays: () => LoggingConfig.ConfigStringBuilder;
 export declare const gridSettings: () => LoggingConfig.ConfigStringBuilder;

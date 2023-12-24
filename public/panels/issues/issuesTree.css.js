@@ -133,7 +133,7 @@ p {
 
 .title {
   flex: 1;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--sys-color-on-surface);
   font-weight: normal;
   user-select: text;
@@ -188,8 +188,8 @@ devtools-icon.leading-issue-icon {
 }
 
 .message {
-  line-height: 20px;
-  font-size: 14px;
+  line-height: 18px;
+  font-size: 12px;
   color: var(--sys-color-token-subtle);
   margin-bottom: 4px;
   user-select: text;
@@ -219,7 +219,7 @@ devtools-icon.leading-issue-icon {
 }
 
 .link {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--sys-color-primary);
 }
 
@@ -289,60 +289,60 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-label {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   color: var(--sys-color-on-surface);
   position: relative;
   cursor: pointer;
 }
 
 .affected-resource-cookie {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-element {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   color: var(--sys-color-primary);
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-row {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   border: 0;
   border-collapse: collapse;
   vertical-align: top;
 }
 
 .affected-resource-mixed-content {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-heavy-ad {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-request {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }
 
 .affected-resource-source {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   color: var(--sys-color-primary);
   border: 0;
   border-collapse: collapse;
@@ -437,8 +437,8 @@ ul > li.plain-enum::before {
 }
 
 .affected-resource-directive {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
   border: 0;
   border-collapse: collapse;
 }

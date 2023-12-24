@@ -2,6 +2,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type PerformanceModel } from './PerformanceModel.js';
+import { TimelineFlameChartDataProvider } from './TimelineFlameChartDataProvider.js';
 import { type TimelineModeViewDelegate } from './TimelinePanel.js';
 import { TimelineSelection } from './TimelineSelection.js';
 import { type TimelineMarkerStyle } from './TimelineUIUtils.js';
@@ -35,6 +36,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     constructor(delegate: TimelineModeViewDelegate);
     onEntriesModified(): void;
     isNetworkTrackShownForTests(): boolean;
+    getMainDataProvider(): TimelineFlameChartDataProvider;
     updateColorMapper(): void;
     windowChanged(windowStartTime: TraceEngine.Types.Timing.MilliSeconds, windowEndTime: TraceEngine.Types.Timing.MilliSeconds, animate: boolean): void;
     updateRangeSelection(startTime: number, endTime: number): void;

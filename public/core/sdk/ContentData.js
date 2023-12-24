@@ -72,7 +72,7 @@ export class ContentData {
         if (this.#contentAsBase64 !== undefined) {
             return TextUtils.ContentProvider.contentAsDataURL(this.#contentAsBase64, this.mimeType ?? '', true, this.#charset ?? null);
         }
-        return TextUtils.ContentProvider.contentAsDataURL(this.text, this.mimeType ?? '', false, this.#charset ?? null);
+        return TextUtils.ContentProvider.contentAsDataURL(this.text, this.mimeType ?? '', false);
     }
     /**
      * @deprecated Used during migration from `DeferredContent` to `ContentData`.

@@ -57,7 +57,7 @@ export interface TraceEventArgsData {
 export interface TraceEventCallFrame {
     codeType?: string;
     functionName: string;
-    scriptId: number;
+    scriptId: number | string;
     columnNumber: number;
     lineNumber: number;
     url: string;
@@ -691,6 +691,8 @@ export interface TraceEventScheduleStyleInvalidationTracking extends TraceEventI
             invalidatedSelectorId?: string;
             reason?: LayoutInvalidationReason;
             changedClass?: string;
+            changedAttribute?: string;
+            changedId?: string;
             nodeName?: string;
             stackTrace?: TraceEventCallFrame[];
         };
@@ -700,8 +702,8 @@ export declare function isTraceEventScheduleStyleInvalidationTracking(event: Tra
 export declare const enum StyleRecalcInvalidationReason {
     ANIMATION = "Animation"
 }
-export interface TraceEventStyleRecalcInvalidation extends TraceEventInstant {
-    name: 'StyleRecalcInvalidationTracking';
+export interface TraceEventStyleRecalcInvalidationTracking extends TraceEventInstant {
+    name: KnownEventName.StyleRecalcInvalidationTracking;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             frame: string;
@@ -713,6 +715,25 @@ export interface TraceEventStyleRecalcInvalidation extends TraceEventInstant {
         };
     };
 }
+export declare function isTraceEventStyleRecalcInvalidationTracking(event: TraceEventData): event is TraceEventStyleRecalcInvalidationTracking;
+export interface TraceEventStyleInvalidatorInvalidationTracking extends TraceEventInstant {
+    name: KnownEventName.StyleInvalidatorInvalidationTracking;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            frame: string;
+            nodeId: Protocol.DOM.BackendNodeId;
+            reason: string;
+            invalidationList: Array<{
+                classes?: string[];
+                id: string;
+            }>;
+            subtree: boolean;
+            nodeName?: string;
+            extraData?: string;
+        };
+    };
+}
+export declare function isTraceEventStyleInvalidatorInvalidationTracking(event: TraceEventData): event is TraceEventStyleInvalidatorInvalidationTracking;
 export interface TraceEventScheduleStyleRecalculation extends TraceEventInstant {
     name: KnownEventName.ScheduleStyleRecalculation;
     args: TraceEventArgs & {
@@ -954,12 +975,23 @@ export interface TraceEventActivateLayerTree extends TraceEventInstant {
     };
 }
 export declare function isTraceEventActivateLayerTree(event: TraceEventData): event is TraceEventActivateLayerTree;
+export interface SyntheticInvalidation extends TraceEventInstant {
+    name: 'SyntheticInvalidation';
+    nodeName?: string;
+    rawEvent: TraceEventScheduleStyleInvalidationTracking | TraceEventStyleRecalcInvalidationTracking | TraceEventStyleInvalidatorInvalidationTracking | TraceEventLayoutInvalidationTracking;
+    nodeId: Protocol.DOM.BackendNodeId;
+    frame: string;
+    reason?: string;
+    stackTrace?: TraceEventCallFrame[];
+}
+export declare function isTraceEventSyntheticInvalidation(event: TraceEventData): event is SyntheticInvalidation;
 export interface TraceEventUpdateLayoutTree extends TraceEventComplete {
     name: KnownEventName.UpdateLayoutTree;
     args: TraceEventArgs & {
         elementCount: number;
         beginData?: {
             frame: string;
+            stackTrace?: TraceEventCallFrame[];
         };
     };
 }
@@ -1035,7 +1067,6 @@ export declare function isTraceEventNavigationStart(traceEventData: TraceEventDa
 export declare function isTraceEventAnimation(traceEventData: TraceEventData): traceEventData is TraceEventAnimation;
 export declare function isTraceEventLayoutShift(traceEventData: TraceEventData): traceEventData is TraceEventLayoutShift;
 export declare function isTraceEventLayoutInvalidationTracking(traceEventData: TraceEventData): traceEventData is TraceEventLayoutInvalidationTracking;
-export declare function isTraceEventStyleRecalcInvalidation(traceEventData: TraceEventData): traceEventData is TraceEventStyleRecalcInvalidation;
 export declare function isTraceEventFirstContentfulPaint(traceEventData: TraceEventData): traceEventData is TraceEventFirstContentfulPaint;
 export declare function isTraceEventLargestContentfulPaintCandidate(traceEventData: TraceEventData): traceEventData is TraceEventLargestContentfulPaintCandidate;
 export declare function isTraceEventLargestImagePaintCandidate(traceEventData: TraceEventData): traceEventData is TraceEventLargestImagePaintCandidate;

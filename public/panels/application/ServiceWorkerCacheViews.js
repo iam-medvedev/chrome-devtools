@@ -8,6 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as NetworkComponents from '../network/components/components.js';
 import * as Network from '../network/network.js';
 import * as ApplicationComponents from './components/components.js';
@@ -92,6 +93,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         this.entriesForTest = null;
         this.element.classList.add('service-worker-cache-data-view');
         this.element.classList.add('storage-view');
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('cache-storage-data')}`);
         const editorToolbar = new UI.Toolbar.Toolbar('data-view-toolbar', this.element);
         this.element.appendChild(this.metadataView);
         this.splitWidget = new UI.SplitWidget.SplitWidget(false, false);
@@ -113,10 +115,11 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         }
         this.dataGrid = null;
         this.refreshThrottler = new Common.Throttler.Throttler(300);
-        this.refreshButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refresh), 'refresh');
+        this.refreshButton =
+            new UI.Toolbar.ToolbarButton(i18nString(UIStrings.refresh), 'refresh', undefined, 'cache-storage.refresh');
         this.refreshButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.refreshButtonClicked, this);
         editorToolbar.appendToolbarItem(this.refreshButton);
-        this.deleteSelectedButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteSelected), 'cross');
+        this.deleteSelectedButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteSelected), 'cross', undefined, 'cache-storage.delete-selected');
         this.deleteSelectedButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
             void this.deleteButtonClicked(null);
         });
@@ -360,11 +363,17 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         request.setRequestHeadersText('');
         request.endTime = entry.responseTime;
         let header = entry.responseHeaders.find(header => header.name.toLowerCase() === 'content-type');
-        const contentType = header ? header.value : "text/plain" /* SDK.NetworkRequest.MimeType.PLAIN */;
-        request.mimeType = contentType;
+        let mimeType = "text/plain" /* SDK.MimeType.MimeType.PLAIN */;
+        if (header) {
+            const result = SDK.MimeType.parseContentType(header.value);
+            if (result.mimeType) {
+                mimeType = result.mimeType;
+            }
+        }
+        request.mimeType = mimeType;
         header = entry.responseHeaders.find(header => header.name.toLowerCase() === 'content-length');
         request.resourceSize = (header && Number(header.value)) || 0;
-        let resourceType = Common.ResourceType.ResourceType.fromMimeType(contentType);
+        let resourceType = Common.ResourceType.ResourceType.fromMimeType(mimeType);
         if (!resourceType) {
             resourceType =
                 Common.ResourceType.ResourceType.fromURL(entry.requestURL) || Common.ResourceType.resourceTypes.Other;
@@ -374,13 +383,11 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         return request;
     }
     async requestContent(request) {
-        const isText = request.resourceType().isTextType();
-        const contentData = { error: null, content: null, encoded: !isText };
         const response = await this.cache.requestCachedResponse(request.url(), request.requestHeaders());
-        if (response) {
-            contentData.content = isText ? window.atob(response.body) : response.body;
+        if (!response) {
+            return { error: 'No cached response found' };
         }
-        return contentData;
+        return new SDK.ContentData.ContentData(response.body, /* isBase64=*/ true, request.resourceType(), request.mimeType, request.charset() ?? undefined);
     }
     updatedForTest() {
     }
@@ -461,6 +468,7 @@ export class RequestView extends UI.Widget.VBox {
     constructor(request) {
         super();
         this.tabbedPane = new UI.TabbedPane.TabbedPane();
+        this.tabbedPane.element.setAttribute('jslog', `${VisualLogging.section().context('network-item-preview')}`);
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('cacheStorageViewTab', 'preview');
         this.tabbedPane.appendTab('headers', i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new NetworkComponents.RequestHeadersView.RequestHeadersView(request)));

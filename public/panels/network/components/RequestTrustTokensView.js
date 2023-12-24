@@ -8,6 +8,7 @@ import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import requestTrustTokensViewStyles from './RequestTrustTokensView.css.js';
 const UIStrings = {
     /**
@@ -123,7 +124,7 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
             return LitHtml.nothing;
         }
         return LitHtml.html `
-      <${ReportView.ReportView.ReportSectionHeader.litTagName}>${i18nString(UIStrings.parameters)}</${ReportView.ReportView.ReportSectionHeader.litTagName}>
+      <${ReportView.ReportView.ReportSectionHeader.litTagName} jslog=${VisualLogging.pane().context('trust-tokens')}>${i18nString(UIStrings.parameters)}</${ReportView.ReportView.ReportSectionHeader.litTagName}>
       ${renderRowWithCodeValue(i18nString(UIStrings.type), trustTokenParams.operation.toString())}
       ${this.#renderRefreshPolicy(trustTokenParams)}
       ${this.#renderIssuers(trustTokenParams)}

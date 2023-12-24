@@ -30,6 +30,7 @@
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import * as ObjectUI from '../object_ui/object_ui.js';
 import jsonViewStyles from './jsonView.css.legacy.js';
@@ -57,6 +58,7 @@ export class JSONView extends UI.Widget.VBox {
         this.parsedJSON = parsedJSON;
         this.startCollapsed = Boolean(startCollapsed);
         this.element.classList.add('json-view');
+        this.element.setAttribute('jslog', `${VisualLogging.section().context('json-view')}`);
         this.currentSearchFocusIndex = 0;
         this.currentSearchTreeElements = [];
         this.searchRegex = null;

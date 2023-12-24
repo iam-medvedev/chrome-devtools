@@ -20,7 +20,7 @@ styles.replaceSync(
   background-color: var(--sys-color-cdt-base-container);
   display: flex;
   flex: 1 1 auto;
-  font-size: 18px;
+  font-size: 14px;
   justify-content: center;
   padding: 30px;
 }

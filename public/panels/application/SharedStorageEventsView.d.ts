@@ -1,5 +1,5 @@
-import * as UI from '../../ui/legacy/legacy.js';
 import type * as Protocol from '../../generated/protocol.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components/components.js';
 export declare class SharedStorageEventsView extends UI.SplitWidget.SplitWidget {
     #private;

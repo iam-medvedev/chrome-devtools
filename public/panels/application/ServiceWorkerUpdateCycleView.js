@@ -4,6 +4,7 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 const UIStrings = {
     /**
      *@description Text in Indexed DBViews of the Application panel
@@ -119,6 +120,7 @@ export class ServiceWorkerUpdateCycleView {
     }
     createTimingTable() {
         this.tableElement.classList.add('service-worker-update-timing-table');
+        this.tableElement.setAttribute('jslog', `${VisualLogging.tree().context('update-timing-table')}`);
         const timeRanges = this.calculateServiceWorkerUpdateRanges();
         this.updateTimingTable(timeRanges);
     }
@@ -155,6 +157,7 @@ export class ServiceWorkerUpdateCycleView {
             const left = (scale * (range.start - startTime));
             const right = (scale * (endTime - range.end));
             const tr = this.tableElement.createChild('tr', 'service-worker-update-timeline');
+            tr.setAttribute('jslog', `${VisualLogging.treeItem().context('update-timeline')}`);
             this.rows.push(tr);
             const timingBarVersionElement = tr.createChild('td');
             UI.UIUtils.createTextChild(timingBarVersionElement, '#' + range.id);
@@ -164,6 +167,7 @@ export class ServiceWorkerUpdateCycleView {
             timingBarVersionElement.addEventListener('focus', (event) => {
                 this.onFocus(event);
             });
+            timingBarVersionElement.setAttribute('jslog', `${VisualLogging.treeItemExpand().track({ click: true }).context('timing-info')}`);
             UI.ARIAUtils.setChecked(timingBarVersionElement, false);
             const timingBarTitleElement = tr.createChild('td');
             UI.UIUtils.createTextChild(timingBarTitleElement, phaseName);

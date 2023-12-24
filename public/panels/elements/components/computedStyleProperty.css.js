@@ -81,6 +81,11 @@ styles.replaceSync(
 /* narrowed styles */
 :host-context(.computed-narrow) .computed-style-property {
   white-space: normal;
+
+  & .goto {
+    display: none;
+    margin-left: 0;
+  }
 }
 
 :host-context(.computed-narrow) .property-name,
@@ -92,8 +97,14 @@ styles.replaceSync(
   white-space: nowrap;
 }
 
-:host-context(.computed-narrow) .goto {
-  display: none;
+:host-context(.computed-narrow) .computed-style-property:not(.inherited):hover {
+  & .property-value {
+    margin-left: var(--goto-size);
+  }
+
+  & .goto {
+    display: inline-block;
+  }
 }
 /* high-contrast styles */
 @media (forced-colors: active) {

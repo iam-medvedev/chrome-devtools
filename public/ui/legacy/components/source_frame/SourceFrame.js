@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Common from '../../../../core/common/common.js';
+import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Root from '../../../../core/root/root.js';
@@ -277,6 +278,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         const allowPasting = await SelfXssWarningDialog.show();
         if (allowPasting) {
             this.selfXssWarningDisabledSetting.set(true);
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssAllowPastingInDialog);
         }
     }
     get wasmDisassembly() {
@@ -350,7 +352,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         if (this.options.lineNumbers === false) {
             return [];
         }
-        let formatNumber = null;
+        let formatNumber = undefined;
         if (this.wasmDisassemblyInternal) {
             const disassembly = this.wasmDisassemblyInternal;
             const lastBytecodeOffset = disassembly.lineNumberToBytecodeOffset(disassembly.lineNumbers - 1);
@@ -361,13 +363,16 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
             };
         }
         else if (this.prettyInternal) {
-            formatNumber = (lineNumber) => {
-                const line = this.prettyToRawLocation(lineNumber - 1, 0)[0] + 1;
-                if (lineNumber === 1) {
-                    return String(line);
+            formatNumber = (lineNumber, state) => {
+                // @codemirror/view passes a high number here to estimate the
+                // maximum width to allocate for the line number gutter.
+                if (lineNumber < 2 || lineNumber > state.doc.lines) {
+                    return String(lineNumber);
                 }
-                if (line !== this.prettyToRawLocation(lineNumber - 2, 0)[0] + 1) {
-                    return String(line);
+                const [currLine] = this.prettyToRawLocation(lineNumber - 1);
+                const [prevLine] = this.prettyToRawLocation(lineNumber - 2);
+                if (currLine !== prevLine) {
+                    return String(currLine + 1);
                 }
                 return '-';
             };
@@ -959,6 +964,7 @@ export class SelfXssWarningDialog {
                 resolve(false);
             });
             dialog.show();
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssWarningDialogShown);
         });
         dialog.hide();
         return result;

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Utils from './utils/utils.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
+import infobarStyles from './infobar.css.legacy.js';
 import { Keys } from './KeyboardShortcut.js';
 import { createTextButton } from './UIUtils.js';
-import infobarStyles from './infobar.css.legacy.js';
+import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      *@description Text on a button to close the infobar and never show the infobar in the future
@@ -48,8 +49,11 @@ export class Infobar {
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     type, text, actions, disableSetting, 
-    /* TODO(crbug.com/1354548) Remove with JS Profiler deprecation */ isCloseable = true) {
+    /* TODO(crbug.com/1354548) Remove with JS Profiler deprecation */ isCloseable = true, jsLogContext) {
         this.element = document.createElement('div');
+        if (jsLogContext) {
+            this.element.setAttribute('jslog', `${VisualLogging.infoBar().context(jsLogContext)}`);
+        }
         this.element.classList.add('flex-none');
         this.shadowRoot =
             Utils.createShadowRootWithCoreStyles(this.element, { cssFile: infobarStyles, delegatesFocus: undefined });
@@ -75,6 +79,9 @@ export class Infobar {
                     buttonClass += ' primary-button';
                 }
                 const button = createTextButton(action.text, actionCallback, buttonClass);
+                if (action.jsLogContext) {
+                    button.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context(action.jsLogContext)}`);
+                }
                 if (action.highlight && !this.#firstFocusableElement) {
                     this.#firstFocusableElement = button;
                 }
@@ -95,6 +102,7 @@ export class Infobar {
         // @ts-ignore This is a custom element defined in UIUitls.js that has a `setTabbable` that TS doesn't
         //            know about.
         this.closeButton.setTabbable(true);
+        this.closeButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('close')}`);
         ARIAUtils.setDescription(this.closeButton, i18nString(UIStrings.close));
         self.onInvokeElement(this.closeButton, this.dispose.bind(this));
         if (type !== Type.Issue) {
