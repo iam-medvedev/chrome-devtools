@@ -177,6 +177,7 @@ export declare class CompatibilityTracksAppender {
      * Gets the all track appenders that have been set to be visible.
      */
     allVisibleTrackAppenders(): TrackAppender[];
+    allThreadAppendersByProcess(): Map<TraceEngine.Types.TraceEvents.ProcessID, ThreadAppender[]>;
     /**
      * Sets the visible tracks internally
      * @param visibleTracks set with the names of the visible track

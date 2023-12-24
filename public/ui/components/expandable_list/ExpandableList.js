@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
+import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import expandableListStyles from './expandableList.css.js';
 export class ExpandableList extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-expandable-list`;
@@ -32,7 +33,8 @@ export class ExpandableList extends HTMLElement {
           ${this.#rows.length > 1 ?
             LitHtml.html `
               <button @click=${() => this.#onArrowClick()} class="arrow-icon-button">
-                <span class="arrow-icon ${this.#expanded ? 'expanded' : ''}"></span>
+                <span class="arrow-icon ${this.#expanded ? 'expanded' : ''}"
+                jslog=${VisualLogging.treeItemExpand().track({ click: true })}></span>
               </button>
             `
             : LitHtml.nothing}

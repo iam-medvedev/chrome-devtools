@@ -63,6 +63,14 @@ styles.replaceSync(
   padding: 5px;
 }
 
+.matches-filled-field {
+  background-color: var(--sys-color-tonal-container);
+}
+
+.highlighted {
+  background-color: var(--sys-color-state-focus-select);
+}
+
 /*# sourceURL=autofillView.css */
 `);
 

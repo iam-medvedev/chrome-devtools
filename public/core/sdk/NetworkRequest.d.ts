@@ -2,20 +2,9 @@ import * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
+import { type ContentDataOrError } from './ContentData.js';
 import { Attributes, type Cookie } from './Cookie.js';
 import { ServerTiming } from './ServerTiming.js';
-export declare const enum MimeType {
-    HTML = "text/html",
-    XML = "text/xml",
-    PLAIN = "text/plain",
-    XHTML = "application/xhtml+xml",
-    SVG = "image/svg+xml",
-    CSS = "text/css",
-    XSL = "text/xsl",
-    VTT = "text/vtt",
-    PDF = "application/pdf",
-    EVENTSTREAM = "text/event-stream"
-}
 export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements TextUtils.ContentProvider.ContentProvider {
     #private;
     statusCode: number;
@@ -190,8 +179,8 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
      */
     private parseMultipartFormDataParameters;
     private computeHeaderValue;
-    contentData(): Promise<ContentData>;
-    setContentDataProvider(dataProvider: () => Promise<ContentData>): void;
+    contentData(): Promise<ContentDataOrError>;
+    setContentDataProvider(dataProvider: () => Promise<ContentDataOrError>): void;
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
     requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
@@ -246,6 +235,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     getAssociatedData(key: string): object | null;
     setAssociatedData(key: string, data: object): void;
     deleteAssociatedData(key: string): void;
+    hasThirdPartyCookiePhaseoutIssue(): boolean;
 }
 export declare enum Events {
     FinishedLoading = "FinishedLoading",

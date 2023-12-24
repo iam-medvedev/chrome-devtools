@@ -46,6 +46,7 @@ export class FileManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         return fileManagerInstance;
     }
+    // close() *must* be called, for the InspectorFrontendHostStub case, to complete the saving.
     save(url, content, forceSaveAs) {
         // Remove this url from the saved URLs while it is being saved.
         const result = new Promise(resolve => this.saveCallbacks.set(url, resolve));

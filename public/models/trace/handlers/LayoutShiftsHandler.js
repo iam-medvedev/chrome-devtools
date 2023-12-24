@@ -72,7 +72,7 @@ export function handleEvent(event) {
     if (Types.TraceEvents.isTraceEventScheduleStyleInvalidationTracking(event)) {
         scheduleStyleInvalidationEvents.push(event);
     }
-    if (Types.TraceEvents.isTraceEventStyleRecalcInvalidation(event)) {
+    if (Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(event)) {
         styleRecalcInvalidationEvents.push(event);
     }
     if (Types.TraceEvents.isTraceEventPrePaint(event)) {

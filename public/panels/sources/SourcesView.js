@@ -303,7 +303,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         }
     }
     createSourceView(uiSourceCode) {
-        let sourceFrame;
         let sourceView;
         const contentType = uiSourceCode.contentType();
         if (contentType === Common.ResourceType.resourceTypes.Image) {
@@ -316,15 +315,12 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
             sourceView = new Components.HeadersView.HeadersView(uiSourceCode);
         }
         else {
-            sourceFrame = new UISourceCodeFrame(uiSourceCode);
-        }
-        if (sourceFrame) {
-            this.historyManager.trackSourceFrameCursorJumps(sourceFrame);
+            sourceView = new UISourceCodeFrame(uiSourceCode);
+            this.historyManager.trackSourceFrameCursorJumps(sourceView);
         }
         uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
-        const widget = (sourceFrame || sourceView);
-        this.sourceViewByUISourceCode.set(uiSourceCode, widget);
-        return widget;
+        this.sourceViewByUISourceCode.set(uiSourceCode, sourceView);
+        return sourceView;
     }
     #sourceViewTypeForWidget(widget) {
         if (widget instanceof SourceFrame.ImageView.ImageView) {

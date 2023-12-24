@@ -8183,6 +8183,9 @@
   "panels/network/NetworkDataGridNode.ts | sPreflight": {
     "message": "{PH1} + P̂ŕêf́l̂íĝh́t̂"
   },
+  "panels/network/NetworkDataGridNode.ts | thirdPartyPhaseout": {
+    "message": "Ĉóôḱîéŝ f́ôŕ t̂h́îś r̂éq̂úêśt̂ ár̂é b̂ĺôćk̂éd̂ d́ûé t̂ó t̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîé p̂h́âśêóût́. L̂éâŕn̂ ḿôŕê ín̂ t́ĥé Îśŝúêś t̂áb̂."
+  },
   "panels/network/NetworkDataGridNode.ts | timeSubtitleTooltipText": {
     "message": "L̂át̂én̂ćŷ (ŕêśp̂ón̂śê ŕêćêív̂éd̂ t́îḿê - śt̂ár̂t́ t̂ím̂é)"
   },
@@ -8248,6 +8251,9 @@
   },
   "panels/network/NetworkItemView.ts | signedexchangeError": {
     "message": "Ŝíĝńêd́Êx́ĉh́âńĝé êŕr̂ór̂"
+  },
+  "panels/network/NetworkItemView.ts | thirdPartyPhaseout": {
+    "message": "Ĉóôḱîéŝ b́l̂óĉḱêd́ d̂úê t́ô t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íê ṕĥáŝéôút̂."
   },
   "panels/network/NetworkItemView.ts | timing": {
     "message": "T̂ím̂ín̂ǵ"
@@ -12947,21 +12953,6 @@
   "panels/timeline/TimelineUIUtils.ts | cancelIdleCallback": {
     "message": "Ĉán̂ćêĺ Îd́l̂é Ĉál̂ĺb̂áĉḱ"
   },
-  "panels/timeline/TimelineUIUtils.ts | changedAttributeToSs": {
-    "message": "(ĉh́âńĝéd̂ át̂t́r̂íb̂út̂é t̂ó \"{PH1}\"{PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | changedClassToSs": {
-    "message": "(ĉh́âńĝéd̂ ćl̂áŝś t̂ó \"{PH1}\"{PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | changedIdToSs": {
-    "message": "(ĉh́âńĝéd̂ íd̂ t́ô \"{PH1}\"{PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | changedPesudoToSs": {
-    "message": "(ĉh́âńĝéd̂ ṕŝéûd́ô t́ô \"{PH1}\"{PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | changedSs": {
-    "message": "(ĉh́âńĝéd̂ \"{PH1}\"{PH2})"
-  },
   "panels/timeline/TimelineUIUtils.ts | collected": {
     "message": "Ĉól̂ĺêćt̂éd̂"
   },
@@ -13196,6 +13187,9 @@
   "panels/timeline/TimelineUIUtils.ts | invalidations": {
     "message": "Îńv̂ál̂íd̂át̂íôńŝ"
   },
+  "panels/timeline/TimelineUIUtils.ts | invalidationWithCallFrame": {
+    "message": "{PH1} ât́ {PH2}"
+  },
   "panels/timeline/TimelineUIUtils.ts | invokedByTimeout": {
     "message": "Îńv̂ók̂éd̂ b́ŷ T́îḿêóût́"
   },
@@ -13225,9 +13219,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | layoutForced": {
     "message": "L̂áŷóût́ F̂ór̂ćêd́"
-  },
-  "panels/timeline/TimelineUIUtils.ts | layoutInvalidations": {
-    "message": "L̂áŷóût́ Îńv̂ál̂íd̂át̂íôńŝ"
   },
   "panels/timeline/TimelineUIUtils.ts | layoutRoot": {
     "message": "L̂áŷóût́ r̂óôt́"
@@ -13277,12 +13268,6 @@
   "panels/timeline/TimelineUIUtils.ts | no": {
     "message": "N̂ó"
   },
-  "panels/timeline/TimelineUIUtils.ts | node": {
-    "message": "N̂ód̂é:"
-  },
-  "panels/timeline/TimelineUIUtils.ts | nodes": {
-    "message": "N̂ód̂éŝ:"
-  },
   "panels/timeline/TimelineUIUtils.ts | nodesThatNeedLayout": {
     "message": "N̂ód̂éŝ T́ĥát̂ Ńêéd̂ Ĺâýôút̂"
   },
@@ -13294,9 +13279,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | other": {
     "message": "Ôt́ĥér̂"
-  },
-  "panels/timeline/TimelineUIUtils.ts | otherInvalidations": {
-    "message": "Ôt́ĥér̂ Ín̂v́âĺîd́ât́îón̂ś"
   },
   "panels/timeline/TimelineUIUtils.ts | ownerElement": {
     "message": "Ôẃn̂ér̂ Él̂ém̂én̂t́"
@@ -13403,12 +13385,6 @@
   "panels/timeline/TimelineUIUtils.ts | runMicrotasks": {
     "message": "R̂ún̂ Ḿîćr̂ót̂áŝḱŝ"
   },
-  "panels/timeline/TimelineUIUtils.ts | sAndS": {
-    "message": "{PH1} âńd̂ {PH2}"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sAndSOther": {
-    "message": "{PH1}, {PH2}, âńd̂ 1 ót̂h́êŕ"
-  },
   "panels/timeline/TimelineUIUtils.ts | sAtS": {
     "message": "{PH1} ât́ {PH2}"
   },
@@ -13454,9 +13430,6 @@
   "panels/timeline/TimelineUIUtils.ts | sendWebsocketHandshake": {
     "message": "Ŝén̂d́ Ŵéb̂Śôćk̂ét̂ H́âńd̂śĥák̂é"
   },
-  "panels/timeline/TimelineUIUtils.ts | sForS": {
-    "message": "{PH1} f̂ór̂ {PH2}"
-  },
   "panels/timeline/TimelineUIUtils.ts | sign": {
     "message": "Ŝíĝń"
   },
@@ -13472,17 +13445,11 @@
   "panels/timeline/TimelineUIUtils.ts | sS": {
     "message": "{PH1}: {PH2}"
   },
-  "panels/timeline/TimelineUIUtils.ts | sSAndSOthers": {
-    "message": "{PH1}, {PH2}, âńd̂ {PH3} ót̂h́êŕŝ"
-  },
   "panels/timeline/TimelineUIUtils.ts | sSCurlyBrackets": {
     "message": "({PH1}, {PH2})"
   },
   "panels/timeline/TimelineUIUtils.ts | sSDimensions": {
     "message": "{PH1} × {PH2}"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sSDot": {
-    "message": "{PH1}. {PH2}"
   },
   "panels/timeline/TimelineUIUtils.ts | sSelf": {
     "message": "{PH1} (ŝél̂f́)"
@@ -13499,9 +13466,6 @@
   "panels/timeline/TimelineUIUtils.ts | stackTrace": {
     "message": "Ŝt́âćk̂ T́r̂áĉé"
   },
-  "panels/timeline/TimelineUIUtils.ts | stackTraceColon": {
-    "message": "Ŝt́âćk̂ t́r̂áĉé:"
-  },
   "panels/timeline/TimelineUIUtils.ts | state": {
     "message": "Ŝt́ât́ê"
   },
@@ -13513,9 +13477,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | streamingWasmResponse": {
     "message": "Ŝt́r̂éâḿîńĝ Ẃâśm̂ Ŕêśp̂ón̂śê"
-  },
-  "panels/timeline/TimelineUIUtils.ts | styleInvalidations": {
-    "message": "Ŝt́ŷĺê Ín̂v́âĺîd́ât́îón̂ś"
   },
   "panels/timeline/TimelineUIUtils.ts | stylesheetUrl": {
     "message": "Ŝt́ŷĺêśĥéêt́ ÛŔL̂"
@@ -13549,12 +13510,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | type": {
     "message": "T̂ýp̂é"
-  },
-  "panels/timeline/TimelineUIUtils.ts | unknown": {
-    "message": "ûńk̂ńôẃn̂"
-  },
-  "panels/timeline/TimelineUIUtils.ts | unknownCause": {
-    "message": "Ûńk̂ńôẃn̂ ćâúŝé"
   },
   "panels/timeline/TimelineUIUtils.ts | UnknownNode": {
     "message": "[ ûńk̂ńôẃn̂ ńôd́ê ]"

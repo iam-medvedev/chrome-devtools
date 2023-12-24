@@ -16,7 +16,6 @@ export declare class TimelineModelImpl {
     private mainFrame;
     private minimumRecordTimeInternal;
     private maximumRecordTimeInternal;
-    private invalidationTracker;
     private lastScheduleStyleRecalculation;
     private paintImageEventByPixelRefId;
     private lastPaintForLayer;
@@ -130,10 +129,6 @@ export declare enum RecordType {
     CompositeLayers = "CompositeLayers",
     ComputeIntersections = "IntersectionObserverController::computeIntersections",
     InteractiveTime = "InteractiveTime",
-    ScheduleStyleInvalidationTracking = "ScheduleStyleInvalidationTracking",
-    StyleRecalcInvalidationTracking = "StyleRecalcInvalidationTracking",
-    StyleInvalidatorInvalidationTracking = "StyleInvalidatorInvalidationTracking",
-    LayoutInvalidationTracking = "LayoutInvalidationTracking",
     ParseHTML = "ParseHTML",
     ParseAuthorStyleSheet = "ParseAuthorStyleSheet",
     TimerInstall = "TimerInstall",
@@ -337,52 +332,10 @@ export declare class PageFrame {
     processReady(processPseudoId: string, processId: number): void;
     addChild(child: PageFrame): void;
 }
-export declare class InvalidationTrackingEvent {
-    type: string;
-    startTime: number;
-    readonly tracingEvent: TraceEngine.Legacy.Event;
-    frame: number;
-    nodeId: number | null;
-    nodeName: string | null;
-    invalidationSet: number | null;
-    invalidatedSelectorId: string | null;
-    changedId: string | null;
-    changedClass: string | null;
-    changedAttribute: string | null;
-    changedPseudo: string | null;
-    selectorPart: string | null;
-    extraData: string | null;
-    invalidationList: {
-        [x: string]: number;
-    }[] | null;
-    cause: InvalidationCause;
-    linkedRecalcStyleEvent: boolean;
-    linkedLayoutEvent: boolean;
-    constructor(event: TraceEngine.Legacy.Event, timelineData: EventOnTimelineData);
-}
-export declare class InvalidationTracker {
-    private lastRecalcStyle;
-    didPaint: boolean;
-    private invalidations;
-    private invalidationsByNodeId;
-    constructor();
-    static invalidationEventsFor(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): InvalidationTrackingEvent[] | null;
-    addInvalidation(invalidation: InvalidationTrackingEvent): void;
-    didRecalcStyle(recalcStyleEvent: TraceEngine.Legacy.Event): void;
-    private associateWithLastRecalcStyleEvent;
-    private addSyntheticStyleRecalcInvalidations;
-    private addSyntheticStyleRecalcInvalidation;
-    didLayout(layoutEvent: TraceEngine.Legacy.Event): void;
-    private addInvalidationToEvent;
-    private invalidationsOfTypes;
-    private startNewFrameIfNeeded;
-    private initializePerFrameState;
-}
 export declare class EventOnTimelineData {
     url: Platform.DevToolsPath.UrlString | null;
     backendNodeIds: Protocol.DOM.BackendNodeId[];
     stackTrace: Protocol.Runtime.CallFrame[] | null;
-    picture: TraceEngine.Legacy.ObjectSnapshot | null;
     frameId: Protocol.Page.FrameId | null;
     constructor();
     topFrame(): Protocol.Runtime.CallFrame | null;

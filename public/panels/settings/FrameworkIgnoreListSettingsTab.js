@@ -99,10 +99,9 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         ignoreListContentScripts.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.ignoreListContentScripts), Common.Settings.Settings.instance().moduleSetting('skipContentScripts'), true));
         const automaticallyIgnoreList = ignoreListOptions.createChild('div', 'ignore-list-option');
         automaticallyIgnoreList.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.automaticallyIgnoreListKnownThirdPartyScripts), Common.Settings.Settings.instance().moduleSetting('automaticallyIgnoreListKnownThirdPartyScripts'), true));
-        const automaticallyIgnoreLink = UI.XLink.XLink.create('http://goo.gle/skip-third-party');
+        const automaticallyIgnoreLink = UI.XLink.XLink.create('http://goo.gle/skip-third-party', undefined, undefined, undefined, 'learn-more');
         automaticallyIgnoreLink.textContent = '';
         automaticallyIgnoreLink.setAttribute('aria-label', i18nString(UIStrings.learnMore));
-        automaticallyIgnoreLink.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('learn-more')}`);
         const automaticallyIgnoreLinkIcon = new IconButton.Icon.Icon();
         automaticallyIgnoreLinkIcon.data = { iconName: 'help', color: 'var(--icon-default)', width: '16px', height: '16px' };
         automaticallyIgnoreLink.prepend(automaticallyIgnoreLinkIcon);

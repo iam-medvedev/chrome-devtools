@@ -44,14 +44,14 @@ export class Cookie {
         if ('partitionKey' in protocolCookie) {
             cookie.addAttribute('partitionKey', protocolCookie.partitionKey);
         }
-        if ('partitionKeyOpaque' in protocolCookie) {
+        if ('partitionKeyOpaque' in protocolCookie && protocolCookie.partitionKeyOpaque) {
             cookie.addAttribute('partitionKey', OPAQUE_PARTITION_KEY);
         }
         cookie.setSize(protocolCookie['size']);
         return cookie;
     }
     key() {
-        return (this.domain() || '-') + ' ' + this.name() + ' ' + (this.path() || '-');
+        return (this.domain() || '-') + ' ' + this.name() + ' ' + (this.path() || '-') + ' ' + (this.partitionKey() || '-');
     }
     name() {
         return this.#nameInternal;

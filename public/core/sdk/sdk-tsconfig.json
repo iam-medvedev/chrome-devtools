@@ -73,6 +73,7 @@
     "../../../../../../front_end/core/sdk/IssuesModel.ts",
     "../../../../../../front_end/core/sdk/LayerTreeBase.ts",
     "../../../../../../front_end/core/sdk/LogModel.ts",
+    "../../../../../../front_end/core/sdk/MimeType.ts",
     "../../../../../../front_end/core/sdk/NetworkManager.ts",
     "../../../../../../front_end/core/sdk/NetworkRequest.ts",
     "../../../../../../front_end/core/sdk/OverlayColorGenerator.ts",

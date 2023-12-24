@@ -9,6 +9,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import emptyWidgetStyles from '../../ui/legacy/emptyWidget.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { Events } from './BackgroundServiceModel.js';
 import backgroundServiceViewStyles from './backgroundServiceView.css.js';
 const UIStrings = {
@@ -161,6 +162,8 @@ export class BackgroundServiceView extends UI.Widget.VBox {
     constructor(serviceName, model) {
         super(true);
         this.serviceName = serviceName;
+        const kebabName = serviceName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context(kebabName)}`);
         this.model = model;
         this.model.addEventListener(Events.RecordingStateChanged, this.onRecordingStateChanged, this);
         this.model.addEventListener(Events.BackgroundServiceEventReceived, this.onEventReceived, this);
@@ -204,20 +207,20 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         this.toolbar.makeWrappable(true);
         this.recordButton = UI.Toolbar.Toolbar.createActionButton(this.recordAction);
         this.toolbar.appendToolbarItem(this.recordButton);
-        const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear');
+        const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear', undefined, 'background-service.clear');
         clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this.clearEvents());
         this.toolbar.appendToolbarItem(clearButton);
         this.toolbar.appendSeparator();
-        this.saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveEvents), 'download');
+        this.saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveEvents), 'download', undefined, 'background-service.save-events');
         this.saveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
             void this.saveToFile();
         });
         this.saveButton.setEnabled(false);
         this.toolbar.appendToolbarItem(this.saveButton);
         this.toolbar.appendSeparator();
-        this.originCheckbox = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.showEventsFromOtherDomains), i18nString(UIStrings.showEventsFromOtherDomains), () => this.refreshView());
+        this.originCheckbox = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.showEventsFromOtherDomains), i18nString(UIStrings.showEventsFromOtherDomains), () => this.refreshView(), 'show-events-from-other-domains');
         this.toolbar.appendToolbarItem(this.originCheckbox);
-        this.storageKeyCheckbox = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.showEventsForOtherStorageKeys), i18nString(UIStrings.showEventsForOtherStorageKeys), () => this.refreshView());
+        this.storageKeyCheckbox = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.showEventsForOtherStorageKeys), i18nString(UIStrings.showEventsForOtherStorageKeys), () => this.refreshView(), 'show-events-from-other-partitions');
         this.toolbar.appendToolbarItem(this.storageKeyCheckbox);
     }
     /**
@@ -373,7 +376,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
             default:
                 break;
         }
-        return UI.XLink.XLink.create(url, i18nString(UIStrings.learnMore));
+        return UI.XLink.XLink.create(url, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
     }
     showPreview(dataNode) {
         if (this.selectedEventNode && this.selectedEventNode === dataNode) {
@@ -443,6 +446,7 @@ export class EventDataNode extends DataGrid.DataGrid.DataGridNode {
     createPreview() {
         const preview = new UI.Widget.VBox();
         preview.element.classList.add('background-service-metadata');
+        preview.element.setAttribute('jslog', `${VisualLogging.section().context('metadata')}`);
         for (const entry of this.eventMetadata) {
             const div = document.createElement('div');
             div.classList.add('background-service-metadata-entry');

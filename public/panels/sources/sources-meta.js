@@ -490,7 +490,7 @@ UI.ViewManager.registerViewExtension({
     order: 1000,
     async loadView() {
         const Sources = await loadSourcesModule();
-        return Sources.SourcesPanel.WrapperView.instance();
+        return new Sources.SourcesPanel.QuickSourceView();
     },
 });
 UI.ViewManager.registerViewExtension({

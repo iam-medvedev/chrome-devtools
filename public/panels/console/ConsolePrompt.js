@@ -254,6 +254,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     showSelfXssWarning() {
         Common.Console.Console.instance().warn(i18nString(UIStrings.selfXssWarning, { PH1: i18nString(UIStrings.allowPasting) }));
         this.#selfXssWarningShown = true;
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssWarningConsoleMessageShown);
     }
     async handleEnter(forceEvaluate) {
         if (this.#selfXssWarningShown && this.text() === i18nString(UIStrings.allowPasting)) {
@@ -266,6 +267,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
                 .createSetting('disableSelfXssWarning', false, Common.Settings.SettingStorageType.Synced)
                 .set(true);
             this.#selfXssWarningShown = false;
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssAllowPastingInConsole);
             return;
         }
         if (await this.enterWillEvaluate(forceEvaluate)) {

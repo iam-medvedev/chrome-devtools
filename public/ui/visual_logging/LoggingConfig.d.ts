@@ -24,6 +24,7 @@ declare enum VisualElements {
     DOMBreakpoint = 26,
     Action = 29,
     FilterDropdown = 30,
+    InfoBar = 31,
     BezierCurveEditor = 32,
     BezierEditor = 33,
     BezierPresetCategory = 34,

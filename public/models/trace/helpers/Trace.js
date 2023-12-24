@@ -4,6 +4,18 @@
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
+export function stackTraceForEvent(event) {
+    if (Types.TraceEvents.isTraceEventSyntheticInvalidation(event)) {
+        return event.stackTrace || null;
+    }
+    if (event.args?.data?.stackTrace) {
+        return event.args.data.stackTrace;
+    }
+    if (Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
+        return event.args.beginData?.stackTrace || null;
+    }
+    return null;
+}
 export function extractOriginFromTrace(firstNavigationURL) {
     const url = Common.ParsedURL.ParsedURL.fromString(firstNavigationURL);
     if (url) {

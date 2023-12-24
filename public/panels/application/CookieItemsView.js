@@ -35,6 +35,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as CookieTable from '../../ui/legacy/components/cookie_table/cookie_table.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import cookieItemsViewStyles from './cookieItemsView.css.js';
 import { StorageItemsView } from './StorageItemsView.js';
 const UIStrings = {
@@ -91,7 +92,7 @@ class CookiePreviewWidget extends UI.Widget.VBox {
         span.textContent = 'Cookie Value';
         header.appendChild(span);
         this.contentElement.appendChild(header);
-        const toggle = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.showUrlDecoded), this.showDecodedSetting.get());
+        const toggle = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.showUrlDecoded), this.showDecodedSetting.get(), undefined, 'show-url-decoded');
         toggle.classList.add('cookie-preview-widget-toggle');
         toggle.checkboxElement.addEventListener('click', () => this.showDecoded(!this.showDecodedSetting.get()));
         header.appendChild(toggle);
@@ -102,6 +103,7 @@ class CookiePreviewWidget extends UI.Widget.VBox {
         value.addEventListener('dblclick', this.handleDblClickOnCookieValue.bind(this));
         this.value = value;
         this.contentElement.classList.add('cookie-preview-widget');
+        this.contentElement.setAttribute('jslog', `${VisualLogging.section().context('cookie-preview')}`);
         this.contentElement.appendChild(value);
     }
     showDecoded(decoded) {
@@ -158,6 +160,7 @@ export class CookieItemsView extends StorageItemsView {
     constructor(model, cookieDomain) {
         super(i18nString(UIStrings.cookies), 'cookiesPanel');
         this.element.classList.add('storage-view');
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('cookies-data')}`);
         this.model = model;
         this.cookieDomain = cookieDomain;
         this.totalSize = 0;
@@ -177,7 +180,7 @@ export class CookieItemsView extends StorageItemsView {
         this.emptyWidget.show(this.previewPanel.contentElement);
         this.onlyIssuesFilterUI = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.onlyShowCookiesWithAnIssue), i18nString(UIStrings.onlyShowCookiesWhichHaveAn), () => {
             this.updateWithCookies(this.allCookies);
-        });
+        }, 'only-show-cookies-with-issues');
         this.appendToolbarItem(this.onlyIssuesFilterUI);
         this.refreshThrottler = new Common.Throttler.Throttler(300);
         this.eventDescriptors = [];

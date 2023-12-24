@@ -4,6 +4,7 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ApplicationComponents from './components/components.js';
 import interestGroupStorageViewStyles from './interestGroupStorageView.css.js';
 const UIStrings = {
@@ -31,6 +32,7 @@ export class InterestGroupStorageView extends UI.SplitWidget.SplitWidget {
     noDisplayView;
     constructor(detailsGetter) {
         super(/* isVertical */ false, /* secondIsSidebar: */ true);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('interest-groups')}`);
         this.detailsGetter = detailsGetter;
         const topPanel = new UI.Widget.VBox();
         this.noDisplayView = new UI.Widget.VBox();

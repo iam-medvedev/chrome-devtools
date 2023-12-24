@@ -101,8 +101,7 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
         UI.ARIAUtils.setLabel(this.list.element, i18nString(UIStrings.keyboardShortcutsList));
         const footer = this.contentElement.createChild('div');
         footer.classList.add('keybinds-footer');
-        const docsLink = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/shortcuts/', i18nString(UIStrings.FullListOfDevtoolsKeyboard));
-        docsLink.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('learn-more')}`);
+        const docsLink = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/shortcuts/', i18nString(UIStrings.FullListOfDevtoolsKeyboard), undefined, undefined, 'learn-more');
         docsLink.classList.add('docs-link');
         footer.appendChild(docsLink);
         const restoreDefaultShortcutsButton = UI.UIUtils.createTextButton(i18nString(UIStrings.RestoreDefaultShortcuts), () => {

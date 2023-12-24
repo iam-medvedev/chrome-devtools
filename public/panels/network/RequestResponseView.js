@@ -30,9 +30,11 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 const UIStrings = {
     /**
      *@description Text in Request Response View of the Network panel
@@ -51,6 +53,7 @@ export class RequestResponseView extends UI.Widget.VBox {
     constructor(request) {
         super();
         this.element.classList.add('request-view');
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('response')}`);
         this.request = request;
         this.contentViewPromise = null;
     }
@@ -79,7 +82,7 @@ export class RequestResponseView extends UI.Widget.VBox {
         if (sourceView !== undefined) {
             return sourceView;
         }
-        const contentData = await request.contentData();
+        const contentData = SDK.ContentData.ContentData.asLegacyContentData(await request.contentData());
         if (!RequestResponseView.hasTextContent(request, contentData)) {
             requestToSourceView.delete(request);
             return null;
@@ -114,7 +117,7 @@ export class RequestResponseView extends UI.Widget.VBox {
         return responseView;
     }
     async createPreview() {
-        const contentData = await this.request.contentData();
+        const contentData = SDK.ContentData.ContentData.asLegacyContentData(await this.request.contentData());
         const sourceView = await RequestResponseView.sourceViewForRequest(this.request);
         if ((!contentData.content || !sourceView) && !contentData.error) {
             return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoResponseData));

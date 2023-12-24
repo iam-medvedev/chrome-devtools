@@ -41,7 +41,7 @@ var VisualElements;
     /* 28 used to be EventListenersPane, but free to grab now */
     VisualElements[VisualElements["Action"] = 29] = "Action";
     VisualElements[VisualElements["FilterDropdown"] = 30] = "FilterDropdown";
-    /* 31 used to be AddColor, but free to grab now */
+    VisualElements[VisualElements["InfoBar"] = 31] = "InfoBar";
     VisualElements[VisualElements["BezierCurveEditor"] = 32] = "BezierCurveEditor";
     VisualElements[VisualElements["BezierEditor"] = 33] = "BezierEditor";
     VisualElements[VisualElements["BezierPresetCategory"] = 34] = "BezierPresetCategory";

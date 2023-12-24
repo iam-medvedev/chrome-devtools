@@ -42,6 +42,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Search from '../search/search.js';
 import { Events } from './NetworkDataGridNode.js';
@@ -200,6 +201,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         const networkToolbarContainer = panel.contentElement.createChild('div', 'network-toolbar-container');
         this.panelToolbar = new UI.Toolbar.Toolbar('', networkToolbarContainer);
         this.panelToolbar.makeWrappable(true);
+        this.panelToolbar.element.setAttribute('jslog', `${VisualLogging.section().context('network-toolbar')}`);
         this.rightToolbar = new UI.Toolbar.Toolbar('', networkToolbarContainer);
         this.filterBar = new UI.FilterBar.FilterBar('networkPanel', true);
         this.filterBar.show(panel.contentElement);
@@ -333,7 +335,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         await action.execute();
     }
     setupToolbarButtons(splitWidget) {
-        const searchToggle = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.search), 'search');
+        const searchToggle = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.search), 'search', undefined, 'search');
         function updateSidebarToggle() {
             const isSidebarShowing = splitWidget.showMode() !== UI.SplitWidget.ShowMode.OnlyMain;
             searchToggle.setToggled(isSidebarShowing);
@@ -364,14 +366,14 @@ export class NetworkPanel extends UI.Panel.Panel {
             width: '20px',
             height: '20px',
         };
-        const networkConditionsButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.moreNetworkConditions), networkConditionsIcon);
+        const networkConditionsButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.moreNetworkConditions), networkConditionsIcon, undefined, 'network-conditions');
         networkConditionsButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
             void UI.ViewManager.ViewManager.instance().showView('network.config');
         }, this);
         this.panelToolbar.appendToolbarItem(networkConditionsButton);
         this.rightToolbar.appendToolbarItem(new UI.Toolbar.ToolbarItem(this.progressBarContainer));
         this.rightToolbar.appendSeparator();
-        this.rightToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.networkSettings), 'gear-filled'));
+        this.rightToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.networkSettings), 'gear-filled', 'network-settings'));
         const settingsToolbarLeft = new UI.Toolbar.Toolbar('', this.settingsPane.element);
         settingsToolbarLeft.makeVertical();
         settingsToolbarLeft.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.networkLogLargeRowsSetting, i18nString(UIStrings.showMoreInformationInRequestRows), i18nString(UIStrings.useLargeRequestRows)));
@@ -381,10 +383,10 @@ export class NetworkPanel extends UI.Panel.Panel {
         settingsToolbarRight.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(Common.Settings.Settings.instance().moduleSetting('network.group-by-frame'), i18nString(UIStrings.groupRequestsByTopLevelRequest), i18nString(UIStrings.groupByFrame)));
         settingsToolbarRight.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.networkRecordFilmStripSetting, i18nString(UIStrings.captureScreenshotsWhenLoadingA), i18nString(UIStrings.captureScreenshots)));
         this.panelToolbar.appendSeparator();
-        const importHarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.importHarFile), 'import');
+        const importHarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.importHarFile), 'import', undefined, 'import-har');
         importHarButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this.fileSelectorElement.click(), this);
         this.panelToolbar.appendToolbarItem(importHarButton);
-        const exportHarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.exportHar), 'download');
+        const exportHarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.exportHar), 'download', undefined, 'export-har');
         exportHarButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
             void this.networkLogView.exportAll();
         }, this);

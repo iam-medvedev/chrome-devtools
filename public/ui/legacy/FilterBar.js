@@ -31,12 +31,13 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import * as ARIAUtils from './ARIAUtils.js';
+import filterStyles from './filter.css.legacy.js';
 import { KeyboardShortcut, Modifiers } from './KeyboardShortcut.js';
 import { bindCheckbox } from './SettingsUI.js';
 import { Events, TextPrompt } from './TextPrompt.js';
-import filterStyles from './filter.css.legacy.js';
 import { ToolbarSettingToggle } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { CheckboxLabel, createTextChild } from './UIUtils.js';
@@ -78,10 +79,11 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
         this.registerRequiredCSS(filterStyles);
         this.enabled = true;
         this.element.classList.add('filter-bar');
+        this.element.setAttribute('jslog', `${VisualLogging.section().context('filter-bar')}`);
         this.stateSetting =
             Common.Settings.Settings.instance().createSetting('filterBar-' + name + '-toggled', Boolean(visibleByDefault));
         this.filterButtonInternal =
-            new ToolbarSettingToggle(this.stateSetting, 'filter', i18nString(UIStrings.filter), 'filter-filled');
+            new ToolbarSettingToggle(this.stateSetting, 'filter', i18nString(UIStrings.filter), 'filter-filled', 'filter');
         this.filters = [];
         this.updateFilterBar();
         this.stateSetting.addChangeListener(this.updateFilterBar.bind(this));
@@ -173,6 +175,7 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         this.filterElement = document.createElement('div');
         this.filterElement.className = 'filter-text-filter';
         const container = this.filterElement.createChild('div', 'filter-input-container');
+        container.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true, keydown: true }).context('text-filter')}`);
         this.filterInputElement = container.createChild('span', 'filter-input-field');
         this.prompt = new TextPrompt();
         this.prompt.initialize(this.completions.bind(this), ' ', true);
@@ -398,7 +401,7 @@ export class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     activeWhenChecked;
     label;
     checkboxElement;
-    constructor(className, title, activeWhenChecked, setting) {
+    constructor(className, title, activeWhenChecked, setting, jslogContext) {
         super();
         this.filterElement = document.createElement('div');
         this.filterElement.classList.add('filter-checkbox-filter');
@@ -413,6 +416,9 @@ export class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper {
             this.checkboxElement.checked = true;
         }
         this.checkboxElement.addEventListener('change', this.fireUpdated.bind(this), false);
+        if (jslogContext) {
+            this.checkboxElement.setAttribute('jslog', `${VisualLogging.toggle().track({ change: true }).context(jslogContext)}`);
+        }
     }
     isActive() {
         return this.activeWhenChecked === this.checkboxElement.checked;

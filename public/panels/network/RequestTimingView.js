@@ -430,8 +430,7 @@ export class RequestTimingView extends UI.Widget.VBox {
         const footer = tableElement.createChild('tr', 'network-timing-footer');
         const note = footer.createChild('td');
         note.colSpan = 1;
-        const explanationLink = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/network/reference/#timing-explanation', i18nString(UIStrings.explanation));
-        explanationLink.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('explanation')}`);
+        const explanationLink = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/network/reference/#timing-explanation', i18nString(UIStrings.explanation), undefined, undefined, 'explanation');
         note.appendChild(explanationLink);
         footer.createChild('td');
         UI.UIUtils.createTextChild(footer.createChild('td'), i18n.TimeUtilities.secondsToString(totalDuration, true));
@@ -448,8 +447,7 @@ export class RequestTimingView extends UI.Widget.VBox {
             const informationRow = tableElement.createChild('tr');
             const information = informationRow.createChild('td');
             information.colSpan = 3;
-            const link = UI.XLink.XLink.create('https://web.dev/custom-metrics/#server-timing-api', i18nString(UIStrings.theServerTimingApi));
-            link.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('server-timing-api')}`);
+            const link = UI.XLink.XLink.create('https://web.dev/custom-metrics/#server-timing-api', i18nString(UIStrings.theServerTimingApi), undefined, undefined, 'server-timing-api');
             information.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.duringDevelopmentYouCanUseSToAdd, { PH1: link }));
             return tableElement;
         }

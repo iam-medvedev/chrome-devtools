@@ -578,7 +578,7 @@ export class ToolbarButton extends ToolbarItem {
 export class ToolbarInput extends ToolbarItem {
     prompt;
     proxyElement;
-    constructor(placeholder, accessiblePlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions) {
+    constructor(placeholder, accessiblePlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext) {
         const element = document.createElement('div');
         element.classList.add('toolbar-input');
         super(element);
@@ -587,6 +587,7 @@ export class ToolbarInput extends ToolbarItem {
         internalPromptElement.addEventListener('focus', () => this.element.classList.add('focused'));
         internalPromptElement.addEventListener('blur', () => this.element.classList.remove('focused'));
         this.prompt = new TextPrompt();
+        this.prompt.jslogContext = jslogContext;
         this.proxyElement = this.prompt.attach(internalPromptElement);
         this.proxyElement.classList.add('toolbar-prompt-proxy');
         this.proxyElement.addEventListener('keydown', (event) => this.onKeydownCallback(event));
@@ -737,8 +738,8 @@ export class ToolbarSettingToggle extends ToolbarToggle {
     defaultTitle;
     setting;
     willAnnounceState;
-    constructor(setting, glyph, title, toggledGlyph) {
-        super(title, glyph, toggledGlyph);
+    constructor(setting, glyph, title, toggledGlyph, jslogContext) {
+        super(title, glyph, toggledGlyph, jslogContext);
         this.defaultTitle = title;
         this.setting = setting;
         this.settingChanged();

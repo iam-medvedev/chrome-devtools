@@ -162,7 +162,7 @@ export class FilesNavigatorView extends NavigatorView {
         this.setPlaceholder(placeholder);
         placeholder.appendParagraph().appendChild(UI.Fragment.html `
   <div>${i18nString(UIStrings.explainWorkspace)}</div><br />
-  ${UI.XLink.XLink.create('https://goo.gle/devtools-workspace', i18nString(UIStrings.learnMore))}
+  ${UI.XLink.XLink.create('https://goo.gle/devtools-workspace', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')}
   `);
         const toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
         void toolbar.appendItemsAtLocation('files-navigator-toolbar').then(() => {
@@ -195,7 +195,7 @@ export class OverridesNavigatorView extends NavigatorView {
         this.setPlaceholder(placeholder);
         placeholder.appendParagraph().appendChild(UI.Fragment.html `
   <div>${i18nString(UIStrings.explainLocalOverrides)}</div><br />
-  ${UI.XLink.XLink.create('https://goo.gle/devtools-overrides', i18nString(UIStrings.learnMore))}
+  ${UI.XLink.XLink.create('https://goo.gle/devtools-overrides', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')}
   `);
         this.toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
         this.contentElement.insertBefore(this.toolbar.element, this.contentElement.firstChild);
@@ -271,7 +271,7 @@ export class ContentScriptsNavigatorView extends NavigatorView {
         this.setPlaceholder(placeholder);
         placeholder.appendParagraph().appendChild(UI.Fragment.html `
   <div>${i18nString(UIStrings.explainContentScripts)}</div><br />
-  ${UI.XLink.XLink.create('https://developer.chrome.com/extensions/content_scripts', i18nString(UIStrings.learnMore))}
+  ${UI.XLink.XLink.create('https://developer.chrome.com/extensions/content_scripts', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')}
   `);
     }
     acceptProject(project) {
@@ -285,7 +285,7 @@ export class SnippetsNavigatorView extends NavigatorView {
         this.setPlaceholder(placeholder);
         placeholder.appendParagraph().appendChild(UI.Fragment.html `
   <div>${i18nString(UIStrings.explainSnippets)}</div><br />
-  ${UI.XLink.XLink.create('https://goo.gle/devtools-snippets', i18nString(UIStrings.learnMore))}
+  ${UI.XLink.XLink.create('https://goo.gle/devtools-snippets', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')}
   `);
         const toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
         const newButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.newSnippet), 'plus', i18nString(UIStrings.newSnippet));
@@ -315,7 +315,7 @@ export class SnippetsNavigatorView extends NavigatorView {
     async handleSaveAs(uiSourceCode) {
         uiSourceCode.commitWorkingCopy();
         const { content } = await uiSourceCode.requestContent();
-        void Workspace.FileManager.FileManager.instance().save(this.addJSExtension(uiSourceCode.url()), content || '', true);
+        await Workspace.FileManager.FileManager.instance().save(this.addJSExtension(uiSourceCode.url()), content || '', true);
         Workspace.FileManager.FileManager.instance().close(uiSourceCode.url());
     }
     addJSExtension(url) {

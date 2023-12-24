@@ -66,6 +66,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     oldTabIndex;
     completeTimeout;
     disableDefaultSuggestionForEmptyInputInternal;
+    jslogContext = undefined;
     constructor() {
         super();
         this.proxyElementDisplay = 'inline-block';
@@ -127,7 +128,11 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
             element.parentElement.insertBefore(this.proxyElement, element);
         }
         this.contentElement.appendChild(element);
-        this.elementInternal.setAttribute('jslog', `${VisualLogging.textField().track({ keydown: true })}`);
+        let jslog = VisualLogging.textField().track({ keydown: true });
+        if (this.jslogContext) {
+            jslog = jslog.context(this.jslogContext);
+        }
+        this.elementInternal.setAttribute('jslog', `${jslog}`);
         this.elementInternal.classList.add('text-prompt');
         ARIAUtils.markAsTextBox(this.elementInternal);
         ARIAUtils.setAutocomplete(this.elementInternal, ARIAUtils.AutocompleteInteractionModel.both);

@@ -235,7 +235,7 @@ styles.replaceSync(
   background-color: var(--sys-color-tonal-container);
 }
 
-.data-grid tbody tr.revealed:not(.data-grid-filler-row):hover {
+.data-grid tbody tr.revealed:not(.data-grid-filler-row):not(.selected):hover {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 

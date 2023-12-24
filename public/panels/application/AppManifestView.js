@@ -4,12 +4,13 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import appManifestViewStyles from './appManifestView.css.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import appManifestViewStyles from './appManifestView.css.js';
 import * as ApplicationComponents from './components/components.js';
 const UIStrings = {
     /**
@@ -459,6 +460,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     constructor(emptyView, reportView, throttler) {
         super(true);
         this.contentElement.classList.add('manifest-container');
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('manifest')}`);
         this.emptyView = emptyView;
         this.emptyView.appendLink('https://web.dev/add-manifest/');
         this.emptyView.show(this.contentElement);
@@ -468,14 +470,21 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.reportView.show(this.contentElement);
         this.reportView.hideWidget();
         this.errorsSection = this.reportView.appendSection(i18nString(UIStrings.errorsAndWarnings));
+        this.errorsSection.element.setAttribute('jslog', `${VisualLogging.section().context('errors-and-warnings')}`);
         this.installabilitySection = this.reportView.appendSection(i18nString(UIStrings.installability));
+        this.installabilitySection.element.setAttribute('jslog', `${VisualLogging.section().context('installability')}`);
         this.identitySection = this.reportView.appendSection(i18nString(UIStrings.identity));
+        this.identitySection.element.setAttribute('jslog', `${VisualLogging.section().context('identity')}`);
         this.presentationSection = this.reportView.appendSection(i18nString(UIStrings.presentation));
+        this.presentationSection.element.setAttribute('jslog', `${VisualLogging.section().context('presentation')}`);
         this.protocolHandlersSection = this.reportView.appendSection(i18nString(UIStrings.protocolHandlers));
+        this.protocolHandlersSection.element.setAttribute('jslog', `${VisualLogging.section().context('protocol-handlers')}`);
         this.protocolHandlersView = new ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView();
         this.protocolHandlersSection.appendFieldWithCustomView(this.protocolHandlersView);
         this.iconsSection = this.reportView.appendSection(i18nString(UIStrings.icons), 'report-section-icons');
+        this.iconsSection.element.setAttribute('jslog', `${VisualLogging.section().context('icons')}`);
         this.windowControlsSection = this.reportView.appendSection(UIStrings.windowControlsOverlay);
+        this.windowControlsSection.element.setAttribute('jslog', `${VisualLogging.section().context('window-controls-overlay')}`);
         this.shortcutSections = [];
         this.screenshotsSections = [];
         this.nameField = this.identitySection.appendField(i18nString(UIStrings.name));
@@ -609,8 +618,10 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             helpIcon.classList.add('inline-icon');
             helpIcon.title = i18nString(UIStrings.appIdExplainer);
             helpIcon.tabIndex = 0;
+            helpIcon.setAttribute('jslog', `${VisualLogging.action().track({ hover: true }).context('help')}`);
             appIdField.appendChild(helpIcon);
-            appIdField.appendChild(UI.XLink.XLink.create('https://developer.chrome.com/blog/pwa-manifest-id/', i18nString(UIStrings.learnMore)));
+            const learnMoreLink = UI.XLink.XLink.create('https://developer.chrome.com/blog/pwa-manifest-id/', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
+            appIdField.appendChild(learnMoreLink);
             if (!stringProperty('id')) {
                 const suggestedIdNote = appIdField.createChild('div', 'multiline-value');
                 const noteSpan = document.createElement('b');
@@ -624,6 +635,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
                 const suggestedIdSpan = document.createElement('code');
                 suggestedIdSpan.textContent = recommendedId;
                 const copyButton = new IconButton.IconButton.IconButton();
+                copyButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('copy')}`);
                 copyButton.title = i18nString(UIStrings.copyToClipboard);
                 copyButton.data = {
                     groups: [{
@@ -652,6 +664,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             if (completeURL) {
                 const link = Components.Linkifier.Linkifier.linkifyURL(completeURL, { text: startURL });
                 link.tabIndex = 0;
+                link.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('start-url')}`);
                 this.startURLField.appendChild(link);
             }
         }
@@ -715,11 +728,12 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         const imageErrors = [];
         const setIconMaskedCheckbox = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.showOnlyTheMinimumSafeAreaFor));
         setIconMaskedCheckbox.classList.add('mask-checkbox');
+        setIconMaskedCheckbox.setAttribute('jslog', `${VisualLogging.toggle().track({ change: true }).context('show-minimal-safe-area-for-maskable-icons')}`);
         setIconMaskedCheckbox.addEventListener('click', () => {
             this.iconsSection.setIconMasked(setIconMaskedCheckbox.checkboxElement.checked);
         });
         this.iconsSection.appendRow().appendChild(setIconMaskedCheckbox);
-        const documentationLink = UI.XLink.XLink.create('https://web.dev/maskable-icon/', i18nString(UIStrings.documentationOnMaskableIcons));
+        const documentationLink = UI.XLink.XLink.create('https://web.dev/maskable-icon/', i18nString(UIStrings.documentationOnMaskableIcons), undefined, undefined, 'learn-more');
         this.iconsSection.appendRow().appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.needHelpReadOurS, { PH1: documentationLink }));
         let squareSizedIconAvailable = false;
         for (const icon of icons) {
@@ -736,6 +750,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         let shortcutIndex = 1;
         for (const shortcut of shortcuts) {
             const shortcutSection = this.reportView.appendSection(i18nString(UIStrings.shortcutS, { PH1: shortcutIndex }));
+            shortcutSection.element.setAttribute('jslog', `${VisualLogging.section().context('shortcuts')}`);
             this.shortcutSections.push(shortcutSection);
             shortcutSection.appendFlexedField(i18nString(UIStrings.name), shortcut.name);
             if (shortcut.short_name) {
@@ -747,6 +762,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             const urlField = shortcutSection.appendFlexedField(i18nString(UIStrings.url));
             const shortcutUrl = Common.ParsedURL.ParsedURL.completeURL(url, shortcut.url);
             const link = Components.Linkifier.Linkifier.linkifyURL(shortcutUrl, { text: shortcut.url });
+            link.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('shortcut')}`);
             link.tabIndex = 0;
             urlField.appendChild(link);
             const shortcutIcons = shortcut.icons || [];
@@ -838,7 +854,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.windowControlsSection.clearContent();
         const displayOverride = parsedManifest['display_override'] || [];
         const hasWco = displayOverride.includes('window-controls-overlay');
-        const displayOverrideLink = UI.XLink.XLink.create('https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override', 'display-override');
+        const displayOverrideLink = UI.XLink.XLink.create('https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override', 'display-override', undefined, undefined, 'display-override');
         const displayOverrideText = document.createElement('code');
         displayOverrideText.appendChild(displayOverrideLink);
         const wcoStatusMessage = this.windowControlsSection.appendRow();
@@ -865,7 +881,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             wcoStatusMessage.appendChild(infoIcon);
             wcoStatusMessage.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.wcoNotFound, { PH1: displayOverrideText }));
         }
-        const wcoDocumentationLink = UI.XLink.XLink.create('https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay', i18nString(UIStrings.customizePwaTitleBar));
+        const wcoDocumentationLink = UI.XLink.XLink.create('https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay', i18nString(UIStrings.customizePwaTitleBar), undefined, undefined, 'customize-pwa-tittle-bar');
         this.windowControlsSection.appendRow().appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.wcoNeedHelpReadMore, { PH1: wcoDocumentationLink }));
         this.dispatchEventToListeners(Events.ManifestRendered);
     }

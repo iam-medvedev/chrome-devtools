@@ -11,6 +11,7 @@ import * as CodeHighlighter from '../../../ui/components/code_highlighter/code_h
 // eslint-disable-next-line rulesdir/es_modules_import
 import codeHighlighterStyles from '../../../ui/components/code_highlighter/codeHighlighter.css.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import contentEditableStyles from './suggestionInput.css.js';
 const mod = (a, n) => {
     return ((a % n) + n) % n;
@@ -259,6 +260,10 @@ let SuggestionInput = class SuggestionInput extends LitElement {
         }
     }
     render() {
+        let jslog = VisualLogging.textField().track({ keydown: true });
+        if (this.jslogContext) {
+            jslog = jslog.context(this.jslogContext);
+        }
         // clang-format off
         return html `<devtools-editable-content
         ?disabled=${this.disabled}
@@ -275,6 +280,7 @@ let SuggestionInput = class SuggestionInput extends LitElement {
         inputmode="text"
         placeholder=${this.placeholder}
         spellcheck="false"
+        jslog=${jslog}
       ></devtools-editable-content>
       <devtools-suggestion-box
         @suggestioninit=${this.#handleSuggestionInitEvent}
@@ -313,6 +319,9 @@ __decorate([
 __decorate([
     property()
 ], SuggestionInput.prototype, "mimeType", void 0);
+__decorate([
+    property()
+], SuggestionInput.prototype, "jslogContext", void 0);
 SuggestionInput = __decorate([
     customElement('devtools-suggestion-input')
 ], SuggestionInput);

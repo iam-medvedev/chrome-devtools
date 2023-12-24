@@ -32,6 +32,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { DOMStorage } from './DOMStorageModel.js';
 import { StorageItemsView } from './StorageItemsView.js';
 const UIStrings = {
@@ -126,6 +127,8 @@ export class DOMStorageItemsView extends StorageItemsView {
     setStorage(domStorage) {
         Common.EventTarget.removeEventListeners(this.eventListeners);
         this.domStorage = domStorage;
+        const storageKind = domStorage.isLocalStorage ? 'local-storage-data' : 'session-storage-data';
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context(storageKind)}`);
         if (domStorage.storageKey) {
             this.setStorageKey(domStorage.storageKey);
         }

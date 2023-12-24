@@ -7,14 +7,21 @@ export declare class AutofillManager extends Common.ObjectWrapper.ObjectWrapper<
     static instance(opts?: {
         forceNew: boolean | null;
     }): AutofillManager;
-    getLastFilledAddressForm(): SDK.AutofillModel.AddressFormFilledEvent | null;
+    getLastFilledAddressForm(): AddressFormFilledEvent | null;
+}
+export interface Match {
+    startIndex: number;
+    endIndex: number;
+    filledFieldIndex: number;
 }
 export declare enum Events {
     AddressFormFilled = "AddressFormFilled"
 }
 export interface AddressFormFilledEvent {
+    address: string;
+    filledFields: Protocol.Autofill.FilledField[];
+    matches: Match[];
     autofillModel: SDK.AutofillModel.AutofillModel;
-    event: Protocol.Autofill.AddressFormFilledEvent;
 }
 export type EventTypes = {
     [Events.AddressFormFilled]: AddressFormFilledEvent;

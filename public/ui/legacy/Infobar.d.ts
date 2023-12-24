@@ -19,7 +19,7 @@ export declare class Infobar {
     private readonly closeButton;
     private closeCallback;
     private parentView?;
-    constructor(type: Type, text: string, actions?: InfobarAction[], disableSetting?: Common.Settings.Setting<any>, isCloseable?: boolean);
+    constructor(type: Type, text: string, actions?: InfobarAction[], disableSetting?: Common.Settings.Setting<any>, isCloseable?: boolean, jsLogContext?: string);
     static create(type: Type, text: string, actions?: InfobarAction[], disableSetting?: Common.Settings.Setting<any>): Infobar | null;
     dispose(): void;
     setText(text: string): void;
@@ -36,6 +36,7 @@ export interface InfobarAction {
     highlight: boolean;
     delegate: (() => void) | null;
     dismiss: boolean;
+    jsLogContext?: string;
 }
 export declare enum Type {
     Warning = "warning",

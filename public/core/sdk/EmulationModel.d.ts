@@ -34,8 +34,8 @@ export declare class Location {
     longitude: number;
     timezoneId: string;
     locale: string;
-    error: boolean;
-    constructor(latitude: number, longitude: number, timezoneId: string, locale: string, error: boolean);
+    unavailable: boolean;
+    constructor(latitude: number, longitude: number, timezoneId: string, locale: string, unavailable: boolean);
     static parseSetting(value: string): Location;
     static parseUserInput(latitudeString: string, longitudeString: string, timezoneId: string, locale: string): Location | null;
     static latitudeValidator(value: string): {

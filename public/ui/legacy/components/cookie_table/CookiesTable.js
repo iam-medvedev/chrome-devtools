@@ -695,10 +695,18 @@ export class DataGridNode extends DataGrid.DataGrid.DataGridNode {
         }
         if (blockedReasonString) {
             const infoElement = new IconButton.Icon.Icon();
-            infoElement.data = { iconName: 'info', color: 'var(--icon-info)', width: '14px', height: '14px' };
-            UI.Tooltip.Tooltip.install(infoElement, blockedReasonString);
+            if (columnId === SDK.Cookie.Attributes.Name &&
+                IssuesManager.RelatedIssue.hasThirdPartyPhaseoutCookieIssue(this.cookie)) {
+                infoElement.data = { iconName: 'warning-filled', color: 'var(--icon-warning)', width: '14px', height: '14px' };
+                infoElement.onclick = () => IssuesManager.RelatedIssue.reveal(this.cookie);
+                infoElement.style.cursor = 'pointer';
+            }
+            else {
+                infoElement.data = { iconName: 'info', color: 'var(--icon-info)', width: '14px', height: '14px' };
+                cell.classList.add('flagged-cookie-attribute-cell');
+            }
+            infoElement.title = blockedReasonString;
             cell.insertBefore(infoElement, cell.firstChild);
-            cell.classList.add('flagged-cookie-attribute-cell');
         }
         return cell;
     }

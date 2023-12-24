@@ -31,6 +31,27 @@ export class BreadcrumbsUI extends HTMLElement {
     #removeBreadcrumb(breadcrumb) {
         this.dispatchEvent(new BreadcrumbRemovedEvent(breadcrumb));
     }
+    #scrollLastCrumbIntoView() {
+        const container = this.#shadow.querySelector('.breadcrumbs');
+        if (!container) {
+            return;
+        }
+        requestAnimationFrame(() => {
+            // If the width of all the elements is greater than the width of the
+            // container, we need to scroll the last element into view.
+            if (container.scrollWidth - container.clientWidth > 0) {
+                requestAnimationFrame(() => {
+                    // For some unknown reason, if we scroll after one rAF, the values
+                    // are slightly off by a few pixels which means that the element does
+                    // not get properly scrolled fully into view. Therefore we wait for a
+                    // second rAF, at which point the values are correct and this will
+                    // scroll the container fully to ensure the last breadcrumb is fully
+                    // visible.
+                    container.scrollLeft = container.scrollWidth - container.clientWidth;
+                });
+            }
+        });
+    }
     #renderElement(breadcrumb, index) {
         const breadcrumbRange = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(breadcrumb.window.range);
         // clang-format off
@@ -63,6 +84,10 @@ export class BreadcrumbsUI extends HTMLElement {
     `;
         // clang-format on
         render(output, this.#shadow, { host: this });
+        if (this.#breadcrumb?.child) {
+            // If we have >1 crumbs, ensure the last one is visible by scrolling the container.
+            this.#scrollLastCrumbIntoView();
+        }
     }
 }
 ComponentHelpers.CustomElements.defineComponent('devtools-breadcrumbs-ui', BreadcrumbsUI);

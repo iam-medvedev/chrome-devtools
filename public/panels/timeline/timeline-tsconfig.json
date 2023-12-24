@@ -98,6 +98,9 @@
       "path": "../../models/trace/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
       "path": "../coverage/bundle-tsconfig.json"
     },
     {

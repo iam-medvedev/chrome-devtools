@@ -19,6 +19,7 @@ styles.replaceSync(
   cursor: pointer;
   display: inline;
   pointer-events: auto;
+  outline-offset: 2px;
 }
 
 .node-link:focus-visible {

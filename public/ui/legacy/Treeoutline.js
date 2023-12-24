@@ -1213,7 +1213,8 @@ export class TreeElement {
 }
 function loggingParentProvider(e) {
     const treeElement = TreeElement.getTreeElementBylistItemNode(e);
-    return treeElement?.parent?.listItemElement || treeElement?.treeOutline?.element;
+    const parentElement = treeElement?.parent?.listItemElement;
+    return parentElement?.isConnected && parentElement || treeElement?.treeOutline?.contentElement;
 }
 VisualLogging.registerParentProvider('parentTreeItem', loggingParentProvider);
 //# sourceMappingURL=Treeoutline.js.map

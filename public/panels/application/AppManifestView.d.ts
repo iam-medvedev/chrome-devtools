@@ -1,8 +1,8 @@
 import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import type * as Protocol from '../../generated/protocol.js';
+import * as UI from '../../ui/legacy/legacy.js';
 export type ParsedSize = {
     any: 'any';
     formatted: string;
@@ -13,7 +13,9 @@ export type ParsedSize = {
 };
 declare const AppManifestView_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<EventTypes, T>; /**
+     *@description Text in App Manifest View of the Application panel
+     */
     once<T_1 extends keyof EventTypes>(eventType: T_1): Promise<EventTypes[T_1]>;
     removeEventListener<T_2 extends keyof EventTypes>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
     hasEventListeners(eventType: keyof EventTypes): boolean;

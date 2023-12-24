@@ -67,7 +67,7 @@ export function buildWarningElementsForEvent(event, traceParsedData) {
         switch (warning) {
             case 'FORCED_STYLE':
             case 'FORCED_LAYOUT': {
-                const forcedReflowLink = UI.XLink.XLink.create('https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts', i18nString(UIStrings.forcedReflow));
+                const forcedReflowLink = UI.XLink.XLink.create('https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts', i18nString(UIStrings.forcedReflow), undefined, undefined, 'forced-reflow');
                 span.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.sIsALikelyPerformanceBottleneck, { PH1: forcedReflowLink }));
                 break;
             }
@@ -80,12 +80,12 @@ export function buildWarningElementsForEvent(event, traceParsedData) {
                 break;
             }
             case 'LONG_TASK': {
-                const longTaskLink = UI.XLink.XLink.create('https://web.dev/optimize-long-tasks/', i18nString(UIStrings.longTask));
+                const longTaskLink = UI.XLink.XLink.create('https://web.dev/optimize-long-tasks/', i18nString(UIStrings.longTask), undefined, undefined, 'long-tasks');
                 span.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.sTookS, { PH1: longTaskLink, PH2: i18n.TimeUtilities.millisToString((duration || 0), true) }));
                 break;
             }
             case 'LONG_INTERACTION': {
-                const longInteractionINPLink = UI.XLink.XLink.create('https://web.dev/inp', i18nString(UIStrings.longInteractionINP));
+                const longInteractionINPLink = UI.XLink.XLink.create('https://web.dev/inp', i18nString(UIStrings.longInteractionINP), undefined, undefined, 'long-interaction');
                 span.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.sIsLikelyPoorPageResponsiveness, { PH1: longInteractionINPLink }));
                 break;
             }
@@ -114,5 +114,70 @@ export function buildRowsForWebSocketEvent(event, traceParsedData) {
         }
     }
     return rows;
+}
+/**
+ * This method does not output any content but instead takes a list of
+ * invalidations and groups them, doing some processing of the data to collect
+ * invalidations grouped by the reason/cause.
+ * It also returns all BackendNodeIds that are related to these invalidations
+ * so that they can be fetched via CDP.
+ * It is exported only for testing purposes.
+ **/
+export function generateInvalidationsList(invalidations) {
+    const groupedByReason = {};
+    const backendNodeIds = new Set();
+    for (const invalidation of invalidations) {
+        backendNodeIds.add(invalidation.nodeId);
+        let reason = invalidation.reason || 'unknown';
+        // ScheduleStyle events do not always have a reason, but if they tell us
+        // via their data what changed, we can update the reason that we show to
+        // the user.
+        if (reason === 'unknown' &&
+            TraceEngine.Types.TraceEvents.isTraceEventScheduleStyleInvalidationTracking(invalidation.rawEvent) &&
+            invalidation.rawEvent.args.data.invalidatedSelectorId) {
+            switch (invalidation.rawEvent.args.data.invalidatedSelectorId) {
+                case 'attribute':
+                    reason = 'Attribute';
+                    if (invalidation.rawEvent.args.data.changedAttribute) {
+                        reason += ` (${invalidation.rawEvent.args.data.changedAttribute})`;
+                    }
+                    break;
+                case 'class':
+                    reason = 'Class';
+                    if (invalidation.rawEvent.args.data.changedClass) {
+                        reason += ` (${invalidation.rawEvent.args.data.changedClass})`;
+                    }
+                    break;
+                case 'id':
+                    reason = 'Id';
+                    if (invalidation.rawEvent.args.data.changedId) {
+                        reason += ` (${invalidation.rawEvent.args.data.changedId})`;
+                    }
+                    break;
+            }
+        }
+        if (reason === 'PseudoClass' &&
+            TraceEngine.Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(invalidation.rawEvent) &&
+            invalidation.rawEvent.args.data.extraData) {
+            // This will append the `:focus` onto the reason.
+            reason += invalidation.rawEvent.args.data.extraData;
+        }
+        if (reason === 'Attribute' &&
+            TraceEngine.Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(invalidation.rawEvent) &&
+            invalidation.rawEvent.args.data.extraData) {
+            // Append the attribute that changed.
+            reason += ` (${invalidation.rawEvent.args.data.extraData})`;
+        }
+        if (reason === 'StyleInvalidator') {
+            // These events give us some extra metadata but are not in isolation that
+            // useful and end up duplicating information from other tracking events,
+            // so we do not include these in the UI.
+            continue;
+        }
+        const existing = groupedByReason[reason] || [];
+        existing.push(invalidation);
+        groupedByReason[reason] = existing;
+    }
+    return { groupedByReason, backendNodeIds };
 }
 //# sourceMappingURL=DetailsView.js.map

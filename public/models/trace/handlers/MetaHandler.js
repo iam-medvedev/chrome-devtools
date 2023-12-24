@@ -18,6 +18,7 @@ let browserThreadId = Types.TraceEvents.ThreadID(-1);
 let gpuProcessId = Types.TraceEvents.ProcessID(-1);
 let gpuThreadId = Types.TraceEvents.ThreadID(-1);
 let viewportRect = null;
+const processNames = new Map();
 const topLevelRendererIds = new Set();
 const traceBounds = {
     min: Types.Timing.MicroSeconds(Number.POSITIVE_INFINITY),
@@ -68,6 +69,7 @@ const CHROME_WEB_TRACE_EVENTS = new Set([
 export function reset() {
     navigationsByFrameId.clear();
     navigationsByNavigationId.clear();
+    processNames.clear();
     mainFrameNavigations.length = 0;
     browserProcessId = Types.TraceEvents.ProcessID(-1);
     browserThreadId = Types.TraceEvents.ThreadID(-1);
@@ -121,6 +123,9 @@ export function handleEvent(event) {
     }
     if (traceIsGeneric && CHROME_WEB_TRACE_EVENTS.has(event.name)) {
         traceIsGeneric = false;
+    }
+    if (Types.TraceEvents.isProcessName(event)) {
+        processNames.set(event.pid, event);
     }
     // If there is a timestamp (which meta events do not have), and the event does
     // not end with ::UMA then it, and the event is in the set of valid phases,
@@ -314,6 +319,7 @@ export function data() {
         traceBounds: { ...traceBounds },
         browserProcessId,
         browserThreadId,
+        processNames: new Map(processNames),
         gpuProcessId,
         gpuThreadId: gpuThreadId === Types.TraceEvents.ThreadID(-1) ? undefined : gpuThreadId,
         viewportRect: viewportRect || undefined,

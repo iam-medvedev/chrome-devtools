@@ -66,7 +66,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
      * file. The result built data is cached and returned.
      */
     timelineData(rebuild?: boolean): PerfUI.FlameChart.FlameChartTimelineData;
-    private processGenericTrace;
     private processInspectorTrace;
     /**
      * Appends a track in the flame chart using the legacy system.
