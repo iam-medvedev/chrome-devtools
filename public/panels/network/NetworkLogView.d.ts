@@ -163,7 +163,8 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     switchViewMode(gridMode: boolean): void;
     handleContextMenuForRequest(contextMenu: UI.ContextMenu.ContextMenu, request: SDK.NetworkRequest.NetworkRequest): void;
     private harRequests;
-    private copyAll;
+    private copyAllAsHAR;
+    private copyAllURLs;
     private copyCurlCommand;
     private copyAllCurlCommand;
     private copyFetchCall;

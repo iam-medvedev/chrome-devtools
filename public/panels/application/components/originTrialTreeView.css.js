@@ -6,28 +6,22 @@
 const styles = new CSSStyleSheet();
 styles.replaceSync(
 `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright (c) 2023 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-:host {
-  grid-column-start: span 2;
-  min-width: min-content;
+.status-badge {
+  border-radius: 4px;
+  padding: 4px;
+  background: var(--sys-color-neutral-container);
+
+  & > devtools-icon {
+    vertical-align: sub;
+  }
 }
 
-.section {
-  padding: 12px;
-  margin-left: 18px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex: auto;
-  overflow-wrap: break-word;
-  overflow: hidden;
-}
-
-/*# sourceURL=reportSection.css */
+/*# sourceURL=originTrialTreeView.css */
 `);
 
 export default styles;

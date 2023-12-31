@@ -109,6 +109,7 @@
       <include file="Images/exclamation.svg" name="IMAGES_EXCLAMATION_SVG" resource_path="Images/exclamation.svg" type="BINDATA" compress="false"/>
       <include file="Images/experiment-check.svg" name="IMAGES_EXPERIMENT_CHECK_SVG" resource_path="Images/experiment-check.svg" type="BINDATA" compress="false"/>
       <include file="Images/experiment.svg" name="IMAGES_EXPERIMENT_SVG" resource_path="Images/experiment.svg" type="BINDATA" compress="false"/>
+      <include file="Images/extension.svg" name="IMAGES_EXTENSION_SVG" resource_path="Images/extension.svg" type="BINDATA" compress="false"/>
       <include file="Images/eye.svg" name="IMAGES_EYE_SVG" resource_path="Images/eye.svg" type="BINDATA" compress="false"/>
       <include file="Images/file-document.svg" name="IMAGES_FILE_DOCUMENT_SVG" resource_path="Images/file-document.svg" type="BINDATA" compress="false"/>
       <include file="Images/file-fetch-xhr.svg" name="IMAGES_FILE_FETCH_XHR_SVG" resource_path="Images/file-fetch-xhr.svg" type="BINDATA" compress="false"/>
@@ -1055,6 +1056,7 @@
       <include file="panels/application/components/frameDetailsReportView.css.js" name="PANELS_APPLICATION_COMPONENTS_FRAMEDETAILSREPORTVIEW_CSS_JS" resource_path="panels/application/components/frameDetailsReportView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/application/components/interestGroupAccessGrid.css.js" name="PANELS_APPLICATION_COMPONENTS_INTERESTGROUPACCESSGRID_CSS_JS" resource_path="panels/application/components/interestGroupAccessGrid.css.js" type="BINDATA" compress="false"/>
       <include file="panels/application/components/originTrialTokenRows.css.js" name="PANELS_APPLICATION_COMPONENTS_ORIGINTRIALTOKENROWS_CSS_JS" resource_path="panels/application/components/originTrialTokenRows.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/application/components/originTrialTreeView.css.js" name="PANELS_APPLICATION_COMPONENTS_ORIGINTRIALTREEVIEW_CSS_JS" resource_path="panels/application/components/originTrialTreeView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/application/components/permissionsPolicySection.css.js" name="PANELS_APPLICATION_COMPONENTS_PERMISSIONSPOLICYSECTION_CSS_JS" resource_path="panels/application/components/permissionsPolicySection.css.js" type="BINDATA" compress="false"/>
       <include file="panels/application/components/protocolHandlersView.css.js" name="PANELS_APPLICATION_COMPONENTS_PROTOCOLHANDLERSVIEW_CSS_JS" resource_path="panels/application/components/protocolHandlersView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/application/components/reportingApiGrid.css.js" name="PANELS_APPLICATION_COMPONENTS_REPORTINGAPIGRID_CSS_JS" resource_path="panels/application/components/reportingApiGrid.css.js" type="BINDATA" compress="false"/>

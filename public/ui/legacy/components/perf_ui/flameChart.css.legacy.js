@@ -43,6 +43,12 @@ export default {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 
+.reveal-ancestors-arrow-highlight-element {
+  position: absolute;
+  pointer-events: none;
+  background-color: var(--sys-color-state-hover-on-subtle);
+}
+
 .flame-chart-selected-element {
   position: absolute;
   pointer-events: none;

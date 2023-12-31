@@ -3128,14 +3128,14 @@
   "panels/application/components/FrameDetailsView.ts | origin": {
     "message": "Ôŕîǵîń"
   },
+  "panels/application/components/FrameDetailsView.ts | originTrialsExplanation": {
+    "message": "Ôŕîǵîń t̂ŕîál̂ś ĝív̂é ŷóû áĉćêśŝ t́ô á n̂éŵ ór̂ éx̂ṕêŕîḿêńt̂ál̂ f́êát̂úr̂é."
+  },
   "panels/application/components/FrameDetailsView.ts | ownerElement": {
     "message": "Ôẃn̂ér̂ Él̂ém̂én̂t́"
   },
   "panels/application/components/FrameDetailsView.ts | parentIsAdExplanation": {
     "message": "T̂h́îś f̂ŕâḿê íŝ ćôńŝíd̂ér̂éd̂ án̂ ád̂ f́r̂ám̂é b̂éĉáûśê ít̂ś p̂ár̂én̂t́ f̂ŕâḿê íŝ án̂ ád̂ f́r̂ám̂é."
-  },
-  "panels/application/components/FrameDetailsView.ts | refresh": {
-    "message": "R̂éf̂ŕêśĥ"
   },
   "panels/application/components/FrameDetailsView.ts | reportingTo": {
     "message": "r̂ép̂ór̂t́îńĝ t́ô"
@@ -3217,6 +3217,9 @@
   },
   "panels/application/components/OriginTrialTreeView.ts | matchSubDomains": {
     "message": "Ŝúb̂d́ôḿâín̂ Ḿât́ĉh́îńĝ"
+  },
+  "panels/application/components/OriginTrialTreeView.ts | noTrialTokens": {
+    "message": "N̂ó t̂ŕîál̂ t́ôḱêńŝ"
   },
   "panels/application/components/OriginTrialTreeView.ts | origin": {
     "message": "Ôŕîǵîń"
@@ -8313,10 +8316,13 @@
     "message": "Ĉóp̂ý âĺl̂ áŝ HAR"
   },
   "panels/network/NetworkLogView.ts | copyAllAsNodejsFetch": {
-    "message": "Ĉóp̂ý âĺl̂ áŝ Node.js fetch"
+    "message": "Ĉóp̂ý âĺl̂ áŝ fetch (Node.js)"
   },
   "panels/network/NetworkLogView.ts | copyAllAsPowershell": {
     "message": "Ĉóp̂ý âĺl̂ áŝ PowerShell"
+  },
+  "panels/network/NetworkLogView.ts | copyAllURLs": {
+    "message": "Ĉóp̂ý âĺl̂ ÚR̂Ĺŝ"
   },
   "panels/network/NetworkLogView.ts | copyAsCurl": {
     "message": "Ĉóp̂ý âś cURL"
@@ -8331,7 +8337,7 @@
     "message": "Ĉóp̂ý âś fetch"
   },
   "panels/network/NetworkLogView.ts | copyAsNodejsFetch": {
-    "message": "Ĉóp̂ý âś Node.js fetch"
+    "message": "Ĉóp̂ý âś fetch (Node.js)"
   },
   "panels/network/NetworkLogView.ts | copyAsPowershell": {
     "message": "Ĉóp̂ý âś PowerShell"
@@ -8347,6 +8353,9 @@
   },
   "panels/network/NetworkLogView.ts | copyStacktrace": {
     "message": "Ĉóp̂ý ŝt́âćk̂ t́r̂áĉé"
+  },
+  "panels/network/NetworkLogView.ts | copyURL": {
+    "message": "Ĉóp̂ý ÛŔL̂"
   },
   "panels/network/NetworkLogView.ts | domcontentloadedS": {
     "message": "D̂ÓM̂Ćôńt̂én̂t́L̂óâd́êd́: {PH1}"
