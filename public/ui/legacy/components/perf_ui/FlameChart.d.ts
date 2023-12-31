@@ -71,9 +71,11 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private entryInfo;
     private readonly markerHighlighElement;
     readonly highlightElement: HTMLElement;
+    readonly revealAncestorsArrowHighlightElement: HTMLElement;
     private readonly selectedElement;
     private rulerEnabled;
     private barHeight;
+    private hitMarginPx;
     private textBaseline;
     private textPadding;
     private readonly headerLeftPadding;
@@ -169,6 +171,11 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      * @returns the index of the entry
      */
     coordinatesToEntryIndex(x: number, y: number): number;
+    /**
+     * Given an entry's index and an X coordinate of a mouse click, returns
+     * whether the mouse is hovering over the arrow button that reveals hidden children
+     */
+    isMouseOverRevealChildrenArrow(x: number, index: number): boolean;
     /**
      * Given an entry's index, returns its coordinates relative to the
      * viewport.
@@ -286,7 +293,13 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private updateLevelPositions;
     private isGroupCollapsible;
     setSelectedEntry(entryIndex: number): void;
+    private entryHasDecoration;
+    /**
+     * Update position of an Element. By default, the element is treated as a full entry and it's dimentions are set to the full entry width/length/height.
+     * If isDecoration parameter is set to true, the element will be positioned on the right side of the entry and have a square shape where width == height of the entry.
+     */
     private updateElementPosition;
+    private updateHiddenChildrenArrowHighlighPosition;
     private timeToPositionClipped;
     /**
      * Returns the amount of pixels a group is vertically offset in the.
@@ -322,6 +335,11 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
 }
 export declare const RulerHeight = 15;
 export declare const MinimalTimeWindowMs = 0.5;
+export declare const enum FlameChartDecorationType {
+    CANDY = "CANDY",
+    WARNING_TRIANGLE = "WARNING_TRIANGLE",
+    HIDDEN_ANCESTORS_ARROW = "HIDDEN_ANCESTORS_ARROW"
+}
 /**
  * Represents a decoration that can be added to event. Each event can have as
  * many decorations as required.
@@ -332,14 +350,14 @@ export declare const MinimalTimeWindowMs = 0.5;
  * This work is being tracked in crbug.com/1434297.
  **/
 export type FlameChartDecoration = {
-    type: 'CANDY';
+    type: FlameChartDecorationType.CANDY;
     startAtTime: TraceEngine.Types.Timing.MicroSeconds;
     endAtTime?: TraceEngine.Types.Timing.MicroSeconds;
 } | {
-    type: 'WARNING_TRIANGLE';
+    type: FlameChartDecorationType.WARNING_TRIANGLE;
     customEndTime?: TraceEngine.Types.Timing.MicroSeconds;
 } | {
-    type: 'HIDDEN_ANCESTORS_ARROW';
+    type: FlameChartDecorationType.HIDDEN_ANCESTORS_ARROW;
 };
 export declare function sortDecorationsForRenderingOrder(decorations: FlameChartDecoration[]): void;
 export declare class FlameChartTimelineData {

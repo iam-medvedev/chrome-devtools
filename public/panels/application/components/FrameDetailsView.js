@@ -227,10 +227,6 @@ const UIStrings = {
      */
     createdByAdScriptExplanation: 'There was an ad script in the `(async) stack` when this frame was created. Examining the creation `stack trace` of this frame might provide more insight.',
     /**
-     *@description Label for a button which when clicked causes some information to be refreshed/updated.
-     */
-    refresh: 'Refresh',
-    /**
      *@description Label for a link to an ad script, which created the current iframe.
      */
     creatorAdScript: 'Creator Ad Script',
@@ -238,6 +234,12 @@ const UIStrings = {
      *@description Text describing the absence of a value.
      */
     none: 'None',
+    /**
+     *@description Explanation of what origin trials are
+     *(https://developer.chrome.com/docs/web-platform/origin-trials/)
+     *(please don't translate 'origin trials').
+     */
+    originTrialsExplanation: 'Origin trials give you access to a new or experimental feature.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/FrameDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -304,33 +306,20 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
             return LitHtml.nothing;
         }
         this.#originTrialTreeView.classList.add('span-cols');
-        const frame = this.#frame;
-        const refreshOriginTrials = () => {
-            void frame.getOriginTrials().then(trials => {
-                this.#originTrialTreeView.data = { trials };
-            });
-        };
-        refreshOriginTrials();
+        void this.#frame.getOriginTrials().then(trials => {
+            this.#originTrialTreeView.data = { trials };
+        });
+        // clang-format off
         return LitHtml.html `
-    <${ReportView.ReportView.ReportSectionHeader.litTagName}>
-      ${i18n.i18n.lockedString('Origin Trials')}
-      <${IconButton.IconButton.IconButton.litTagName} class="inline-button" .data=${{
-            clickHandler: refreshOriginTrials,
-            groups: [
-                {
-                    iconName: 'refresh',
-                    text: i18nString(UIStrings.refresh),
-                    iconColor: 'var(--icon-default-hover)',
-                    iconWidth: '14px',
-                    iconHeight: '14px',
-                },
-            ],
-        }}>
-      </${IconButton.IconButton.IconButton.litTagName}>
-    </${ReportView.ReportView.ReportSectionHeader.litTagName}>
+    <${ReportView.ReportView.ReportSectionHeader.litTagName}>${i18n.i18n.lockedString('Origin trials')}</${ReportView.ReportView.ReportSectionHeader.litTagName}>
+    <div class="span-cols">
+        ${i18nString(UIStrings.originTrialsExplanation)}
+        <x-link href="https://developer.chrome.com/docs/web-platform/origin-trials/" class="link">${i18nString(UIStrings.learnMore)}</x-link>
+    </div>
     ${this.#originTrialTreeView}
     <${ReportView.ReportView.ReportSectionDivider.litTagName}></${ReportView.ReportView.ReportSectionDivider.litTagName}>
     `;
+        // clang-format on
     }
     #renderDocumentSection() {
         if (!this.#frame) {

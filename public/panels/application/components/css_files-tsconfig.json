@@ -10,6 +10,7 @@
         "frameDetailsReportView.css.js",
         "interestGroupAccessGrid.css.js",
         "originTrialTokenRows.css.js",
+        "originTrialTreeView.css.js",
         "permissionsPolicySection.css.js",
         "protocolHandlersView.css.js",
         "reportingApiGrid.css.js",

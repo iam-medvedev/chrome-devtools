@@ -109,6 +109,7 @@ style.setProperty('--image-file-errorWave', 'url(\"' + new URL(new URL('errorWav
 style.setProperty('--image-file-exclamation', 'url(\"' + new URL(new URL('exclamation.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-experiment-check', 'url(\"' + new URL(new URL('experiment-check.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-experiment', 'url(\"' + new URL(new URL('experiment.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-extension', 'url(\"' + new URL(new URL('extension.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-eye', 'url(\"' + new URL(new URL('eye.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-file-document', 'url(\"' + new URL(new URL('file-document.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-file-fetch-xhr', 'url(\"' + new URL(new URL('file-fetch-xhr.svg', import.meta.url).href, import.meta.url).toString() + '\")');

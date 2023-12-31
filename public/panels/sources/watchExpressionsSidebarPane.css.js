@@ -60,6 +60,7 @@ styles.replaceSync(
 
 .watch-expression {
   position: relative;
+  flex: auto;
   min-height: 20px;
 }
 

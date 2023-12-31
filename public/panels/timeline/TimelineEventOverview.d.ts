@@ -14,7 +14,7 @@ export declare class TimelineEventOverviewCPUActivity extends TimelineEventOverv
     private backgroundCanvas;
     constructor(traceParsedData: TraceEngine.Handlers.Types.TraceParseData);
     resetCanvas(): void;
-    update(start?: TraceEngine.Types.Timing.MilliSeconds, end?: TraceEngine.Types.Timing.MilliSeconds): void;
+    update(): void;
 }
 export declare class TimelineEventOverviewResponsiveness extends TimelineEventOverview {
     #private;

@@ -632,7 +632,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 TraceEngine.Helpers.Timing.millisecondsToMicroseconds(eventDuration) >
                     TraceEngine.Handlers.ModelHandlers.Warnings.LONG_MAIN_THREAD_TASK_THRESHOLD) {
                 this.#addDecorationToEvent(index, {
-                    type: 'CANDY',
+                    type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
                     startAtTime: TraceEngine.Handlers.ModelHandlers.Warnings.LONG_MAIN_THREAD_TASK_THRESHOLD,
                 });
             }
