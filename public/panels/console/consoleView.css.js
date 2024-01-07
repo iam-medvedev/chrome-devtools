@@ -186,7 +186,7 @@ styles.replaceSync(
 
 .console-message-repeat-count .expand-group-icon {
   position: static;
-  background-color: var(--sys-color-cdt-base-container);
+  color: var(--sys-color-cdt-base-container);
   margin-left: -1px;
 }
 
@@ -562,9 +562,9 @@ devtools-console-insight {
 
 @media (forced-colors: active) {
   .console-message-expand-icon,
-  .console-warning-level [is="ui-icon"].icon-mask.expand-group-icon {
+  .console-warning-level .expand-group-icon {
     forced-color-adjust: none;
-    background-color: ButtonText;
+    color: ButtonText;
   }
 
   .console-message-wrapper:focus,
@@ -593,17 +593,13 @@ devtools-console-insight {
     color: HighlightText;
   }
 
-  .console-message-wrapper:focus [is="ui-icon"].icon-mask {
-    background-color: HighlightText;
+  .console-message-wrapper:focus devtools-icon {
+    color: HighlightText;
   }
 
   .console-message-wrapper.console-error-level:focus,
   .console-message-wrapper.console-error-level:focus:last-of-type {
     --override-error-text-color: HighlightText;
-  }
-
-  .console-message-anchor .resource-links {
-    --icon-color: ButtonText;
   }
 }
 

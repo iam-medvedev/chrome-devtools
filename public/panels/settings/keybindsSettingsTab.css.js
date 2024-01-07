@@ -25,9 +25,12 @@ h1 {
   margin: 0;
 }
 
-[role="list"],
-.widget.vbox {
-  min-width: 300px;
+[role="list"] {
+  overflow: auto;
+
+  > * {
+    min-width: 300px;
+  }
 }
 
 .keybinds-key {
@@ -109,8 +112,8 @@ h1 {
   background: transparent;
 }
 
-.keybinds-list-item button:hover .icon-mask {
-  background-color: var(--sys-color-on-surface);
+.keybinds-list-item button:hover devtools-icon {
+  color: var(--icon-default-hover);
 }
 
 .keybinds-list-item button:focus-visible {

@@ -1,8 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import type * as IconButton from '../components/icon_button/icon_button.js';
-import { type Icon } from './Icon.js';
 import { type Config } from './InplaceEditor.js';
-type AnyIcon = Icon | IconButton.Icon.Icon;
 export declare enum Events {
     ElementAttached = "ElementAttached",
     ElementsDetached = "ElementsDetached",
@@ -127,8 +125,8 @@ export declare class TreeElement {
     set title(x: string | Node);
     titleAsText(): string;
     startEditingTitle<T>(editingConfig: Config<T>): void;
-    setLeadingIcons(icons: AnyIcon[]): void;
-    setTrailingIcons(icons: AnyIcon[]): void;
+    setLeadingIcons(icons: IconButton.Icon.Icon[]): void;
+    setTrailingIcons(icons: IconButton.Icon.Icon[]): void;
     get tooltip(): string;
     set tooltip(x: string);
     isExpandable(): boolean;
@@ -180,4 +178,3 @@ export declare class TreeElement {
     isEventWithinDisclosureTriangle(event: MouseEvent): boolean;
     setDisableSelectFocus(toggle: boolean): void;
 }
-export {};

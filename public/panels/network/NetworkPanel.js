@@ -39,7 +39,6 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -359,14 +358,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         const disableCacheCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(Common.Settings.Settings.instance().moduleSetting('cacheDisabled'), i18nString(UIStrings.disableCacheWhileDevtoolsIsOpen), i18nString(UIStrings.disableCache));
         this.panelToolbar.appendToolbarItem(disableCacheCheckbox);
         this.panelToolbar.appendToolbarItem(this.throttlingSelect);
-        const networkConditionsIcon = new IconButton.Icon.Icon();
-        networkConditionsIcon.data = {
-            iconName: 'network-settings',
-            color: 'var(--icon-default)',
-            width: '20px',
-            height: '20px',
-        };
-        const networkConditionsButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.moreNetworkConditions), networkConditionsIcon, undefined, 'network-conditions');
+        const networkConditionsButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.moreNetworkConditions), 'network-settings', undefined, 'network-conditions');
         networkConditionsButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
             void UI.ViewManager.ViewManager.instance().showView('network.config');
         }, this);

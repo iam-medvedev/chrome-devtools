@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import * as UI from '../../ui/legacy/legacy.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import { ApplicationPanelTreeElement, ExpandableApplicationPanelTreeElement } from './ApplicationPanelTreeElement.js';
 import { PreloadingAttemptView, PreloadingRuleSetView, PreloadingSummaryView } from './preloading/PreloadingView.js';
 const UIStrings = {
@@ -31,7 +31,7 @@ class PreloadingTreeElementBase extends ApplicationPanelTreeElement {
         super(panel, title, false);
         this.#viewConstructor = viewConstructor;
         this.#path = path;
-        const icon = UI.Icon.Icon.create('arrow-up-down', 'resource-tree-item');
+        const icon = IconButton.Icon.create('arrow-up-down');
         this.setLeadingIcons([icon]);
         this.#selectedInternal = false;
         // TODO(https://crbug.com/1384419): Set link
@@ -67,7 +67,7 @@ export class PreloadingSummaryTreeElement extends ExpandableApplicationPanelTree
     #attempt = null;
     constructor(panel) {
         super(panel, i18nString(UIStrings.speculativeLoads), 'preloading');
-        const icon = UI.Icon.Icon.create('arrow-up-down', 'resource-tree-item');
+        const icon = IconButton.Icon.create('arrow-up-down');
         this.setLeadingIcons([icon]);
         this.#selectedInternal = false;
         // TODO(https://crbug.com/1384419): Set link

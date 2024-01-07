@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import openedWindowDetailsViewStyles from './openedWindowDetailsView.css.js';
 const UIStrings = {
@@ -85,7 +86,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/application/OpenedWindowDetails
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const booleanToYesNo = (b) => b ? i18nString(UIStrings.yes) : i18nString(UIStrings.no);
 function linkifyIcon(iconType, title, eventHandler) {
-    const icon = UI.Icon.Icon.create(iconType, 'icon-link devtools-link');
+    const icon = IconButton.Icon.create(iconType, 'icon-link devtools-link');
     const span = document.createElement('span');
     UI.Tooltip.Tooltip.install(span, title);
     span.classList.add('devtools-link');

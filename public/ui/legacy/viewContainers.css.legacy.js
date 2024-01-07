@@ -82,7 +82,7 @@ export default {
   }
 
   .expandable-view-title:focus-visible .title-expand-icon {
-    background-color: HighlightText;
+    color: HighlightText;
   }
 }
 `

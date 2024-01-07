@@ -35,7 +35,6 @@ import * as IconButton from '../components/icon_button/icon_button.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { ContextMenu } from './ContextMenu.js';
 import { Constraints, Size } from './Geometry.js';
-import { Icon } from './Icon.js';
 import tabbedPaneStyles from './tabbedPane.css.legacy.js';
 import { Toolbar } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
@@ -527,7 +526,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         const dropDownContainer = document.createElement('div');
         dropDownContainer.classList.add('tabbed-pane-header-tabs-drop-down-container');
         dropDownContainer.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('more')}`);
-        const chevronIcon = Icon.create('chevron-double-right', 'chevron-icon');
+        const chevronIcon = IconButton.Icon.create('chevron-double-right', 'chevron-icon');
         const moreTabsString = i18nString(UIStrings.moreTabs);
         dropDownContainer.title = moreTabsString;
         ARIAUtils.markAsMenuButton(dropDownContainer);
@@ -869,8 +868,7 @@ export class TabbedPaneTab {
     shown;
     measuredWidth;
     tabElementInternal;
-    iconContainer;
-    icon;
+    icon = null;
     widthInternal;
     delegate;
     titleElement;
@@ -884,7 +882,6 @@ export class TabbedPaneTab {
         this.tooltipInternal = tooltip;
         this.viewInternal = view;
         this.shown = false;
-        this.iconContainer = null;
     }
     get id() {
         return this.idInternal;
@@ -973,16 +970,13 @@ export class TabbedPaneTab {
         tabIcons.set(tabElement, iconContainer);
     }
     createMeasureClone(original) {
-        if ('data' in original && original.data.width && original.data.height) {
-            // Cloning doesn't work for the icon component because the shadow
-            // root isn't copied, but it is sufficient to create a div styled
-            // to be the same size.
-            const fakeClone = document.createElement('div');
-            fakeClone.style.width = original.data.width;
-            fakeClone.style.height = original.data.height;
-            return fakeClone;
-        }
-        return original.cloneNode(true);
+        // Cloning doesn't work for the icon component because the shadow
+        // root isn't copied, but it is sufficient to create a div styled
+        // to be the same size.
+        const fakeClone = document.createElement('div');
+        fakeClone.style.width = original.style.width;
+        fakeClone.style.height = original.style.height;
+        return fakeClone;
     }
     createTabElement(measuring) {
         const tabElement = document.createElement('div');

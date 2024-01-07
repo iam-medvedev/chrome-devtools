@@ -35,8 +35,6 @@ export declare const flexboxOverlays: () => LoggingConfig.ConfigStringBuilder;
 export declare const gridOverlays: () => LoggingConfig.ConfigStringBuilder;
 export declare const gridSettings: () => LoggingConfig.ConfigStringBuilder;
 export declare const item: () => LoggingConfig.ConfigStringBuilder;
-export declare const jumpToElement: () => LoggingConfig.ConfigStringBuilder;
-export declare const jumpToSource: () => LoggingConfig.ConfigStringBuilder;
 export declare const key: () => LoggingConfig.ConfigStringBuilder;
 /**
  * Visual element to denote a hyper link. Use the context to differentiate between various types
@@ -46,7 +44,6 @@ export declare const link: () => LoggingConfig.ConfigStringBuilder;
 export declare const mediaInspectorView: () => LoggingConfig.ConfigStringBuilder;
 export declare const menu: () => LoggingConfig.ConfigStringBuilder;
 export declare const metricsBox: () => LoggingConfig.ConfigStringBuilder;
-export declare const next: () => LoggingConfig.ConfigStringBuilder;
 export declare const paletteColorShades: () => LoggingConfig.ConfigStringBuilder;
 export declare const pane: () => LoggingConfig.ConfigStringBuilder;
 /**
@@ -60,7 +57,6 @@ export declare const pieChart: () => LoggingConfig.ConfigStringBuilder;
 export declare const pieChartSlice: () => LoggingConfig.ConfigStringBuilder;
 export declare const pieChartTotal: () => LoggingConfig.ConfigStringBuilder;
 export declare const preview: () => LoggingConfig.ConfigStringBuilder;
-export declare const previous: () => LoggingConfig.ConfigStringBuilder;
 export declare const responsivePresets: () => LoggingConfig.ConfigStringBuilder;
 export declare const showAllStyleProperties: () => LoggingConfig.ConfigStringBuilder;
 export declare const showStyleEditor: () => LoggingConfig.ConfigStringBuilder;

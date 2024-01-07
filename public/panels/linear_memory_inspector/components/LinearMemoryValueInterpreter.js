@@ -69,9 +69,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
           <button data-settings="true" class="settings-toolbar-button ${this.#showSettings ? 'active' : ''}"
               title=${i18nString(UIStrings.toggleValueTypeSettings)} @click=${this.#onSettingsToggle}
               jslog=${VisualLogging.action().track({ click: true }).context('linear-memory-inspector.toggle-value-settings')}>
-            <${IconButton.Icon.Icon.litTagName}
-              .data=${{ iconName: 'gear', color: 'var(--icon-default)', width: '20px' }}>
-            </${IconButton.Icon.Icon.litTagName}>
+            <${IconButton.Icon.Icon.litTagName} name=${this.#showSettings ? 'gear-filled' : 'gear'}></${IconButton.Icon.Icon.litTagName}>
           </button>
         </div>
         <span class="divider"></span>

@@ -1049,9 +1049,7 @@ export class NavigatorFolderTreeElement extends UI.TreeOutline.TreeElement {
         else if (type === Types.Deployed) {
             iconType = 'deployed';
         }
-        const icon = new IconButton.Icon.Icon();
-        const iconPath = new URL(`../../Images/${iconType}.svg`, import.meta.url).toString();
-        icon.data = { iconPath: iconPath, color: 'var(--override-folder-tree-item-color)', width: '20px', height: '20px' };
+        const icon = IconButton.Icon.create(iconType);
         this.setLeadingIcons([icon]);
     }
     async onpopulate() {
@@ -1174,12 +1172,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
                 iconType = 'snippet';
             }
         }
-        const icon = new IconButton.Icon.Icon();
-        const iconPath = new URL(`../../Images/${iconType}.svg`, import.meta.url).toString();
-        icon.data = { iconPath: iconPath, color: 'var(--override-file-tree-item-color)', width: '20px', height: '20px' };
-        for (const style of iconStyles) {
-            icon.classList.add(style);
-        }
+        const icon = IconButton.Icon.create(iconType, iconStyles.join(' '));
         if (binding) {
             UI.Tooltip.Tooltip.install(icon, Persistence.PersistenceUtils.PersistenceUtils.tooltipForUISourceCode(this.uiSourceCodeInternal));
         }

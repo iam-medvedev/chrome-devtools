@@ -59,11 +59,11 @@ styles.replaceSync(
 }
 
 .navigator-button:enabled:hover devtools-icon {
-  --icon-color: var(--icon-default-hover);
+  color: var(--icon-default-hover);
 }
 
 .navigator-button:enabled:focus devtools-icon {
-  --icon-color: var(--icon-default-hover);
+  color: var(--icon-default-hover);
 }
 
 /*# sourceURL=linearMemoryNavigator.css */

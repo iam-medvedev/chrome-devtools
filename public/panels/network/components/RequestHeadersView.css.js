@@ -20,7 +20,6 @@ styles.replaceSync(
 }
 
 .header::marker {
-  color: var(--sys-color-state-disabled);
   font-size: 11px;
   line-height: 1;
 }
@@ -174,12 +173,8 @@ x-link .inline-icon { /* stylelint-disable-line selector-type-no-unknown */
   z-index: 1;
 }
 
-summary label {
-  color: var(--sys-color-token-subtle);
-}
-
-summary label:hover {
-  color: var(--sys-color-on-surface);
+summary label input[type="checkbox"] {
+  margin-top: 1px;
 }
 
 /*# sourceURL=RequestHeadersView.css */

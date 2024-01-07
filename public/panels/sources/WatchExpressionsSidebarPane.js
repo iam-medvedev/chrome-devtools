@@ -38,6 +38,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Formatter from '../../models/formatter/formatter.js';
 import * as SourceMapScopes from '../../models/source_map_scopes/source_map_scopes.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
@@ -269,7 +270,6 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     textPrompt;
     result;
     preventClickTimeout;
-    resizeObserver;
     constructor(expression, expandController, linkifier) {
         super();
         this.expressionInternal = expression;
@@ -374,7 +374,6 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
         if (this.expressionInternal) {
             this.expandController.stopWatchSectionsWithId(this.expressionInternal);
         }
-        this.resizeObserver?.disconnect();
         this.expressionInternal = newExpression;
         this.update();
         this.dispatchEventToListeners("ExpressionUpdated" /* Events.ExpressionUpdated */, this);
@@ -398,22 +397,12 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     }
     createWatchExpressionHeader(expressionValue, exceptionDetails) {
         const headerElement = this.element.createChild('div', 'watch-expression-header');
-        const deleteButton = UI.Icon.Icon.create('cross', 'watch-expression-delete-button');
-        deleteButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('delete-watch-expression')}`);
-        this.resizeObserver = new ResizeObserver(entries => {
-            entries.forEach(entry => {
-                // 55 serves as a width threshold here (in px)
-                if (entry.contentRect.width < 55) {
-                    deleteButton.classList.remove('right-aligned');
-                    deleteButton.classList.add('left-aligned');
-                }
-                else {
-                    deleteButton.classList.remove('left-aligned');
-                    deleteButton.classList.add('right-aligned');
-                }
-            });
-        });
-        this.resizeObserver.observe(headerElement);
+        const deleteButton = new Buttons.Button.Button();
+        deleteButton.variant = "round" /* Buttons.Button.Variant.ROUND */;
+        deleteButton.iconName = 'bin';
+        deleteButton.className = 'watch-expression-delete-button';
+        deleteButton.jslogContext = 'delete-watch-expression';
+        deleteButton.size = "SMALL" /* Buttons.Button.Size.SMALL */;
         UI.Tooltip.Tooltip.install(deleteButton, i18nString(UIStrings.deleteWatchExpression));
         deleteButton.addEventListener('click', this.deleteWatchExpression.bind(this), false);
         const titleElement = headerElement.createChild('div', 'watch-expression-title tree-element-title');

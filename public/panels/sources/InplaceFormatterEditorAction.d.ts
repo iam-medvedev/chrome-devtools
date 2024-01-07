@@ -15,8 +15,4 @@ export declare class InplaceFormatterEditorAction implements EditorAction {
     private isFormattable;
     private formatSourceInPlace;
     private contentLoaded;
-    /**
-     * Post-format callback
-     */
-    private formattingComplete;
 }

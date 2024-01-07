@@ -19,6 +19,9 @@ export function calculateWindow(traceBounds, mainThreadEntries) {
         }
         return true;
     });
+    if (entriesWithIdleRemoved.length === 0) {
+        return traceBounds;
+    }
     /**
      * Calculates regions of low utilization and returns the index of the event
      * that is the first event that should be included.

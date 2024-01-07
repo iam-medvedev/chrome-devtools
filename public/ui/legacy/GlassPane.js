@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
-import * as Utils from './utils/utils.js';
-import { Icon } from './Icon.js';
-import { deepElementFromEvent } from './UIUtils.js';
-import { Widget } from './Widget.js';
 import glassPaneStyles from './glassPane.css.legacy.js';
+import { deepElementFromEvent } from './UIUtils.js';
+import * as Utils from './utils/utils.js';
+import { Widget } from './Widget.js';
 export class GlassPane {
     widgetInternal;
     element;
@@ -27,7 +26,8 @@ export class GlassPane {
         this.widgetInternal.markAsRoot();
         this.element = this.widgetInternal.element;
         this.contentElement = this.widgetInternal.contentElement;
-        this.arrowElement = Icon.create('', 'arrow hidden');
+        this.arrowElement = document.createElement('span');
+        this.arrowElement.classList.add('arrow', 'hidden');
         if (this.element.shadowRoot) {
             this.element.shadowRoot.appendChild(this.arrowElement);
         }
@@ -185,7 +185,6 @@ export class GlassPane {
                     else {
                         height = Math.min(height, spaceTop);
                     }
-                    this.arrowElement.setIconType('mediumicon-arrow-bottom');
                     this.arrowElement.classList.add('arrow-bottom');
                     arrowY = anchorBox.y - gutterSize;
                 }
@@ -202,7 +201,6 @@ export class GlassPane {
                     else {
                         height = Math.min(height, spaceBottom);
                     }
-                    this.arrowElement.setIconType('mediumicon-arrow-top');
                     this.arrowElement.classList.add('arrow-top');
                     arrowY = anchorBox.y + anchorBox.height + gutterSize;
                 }
@@ -250,7 +248,6 @@ export class GlassPane {
                     else {
                         width = Math.min(width, spaceLeft);
                     }
-                    this.arrowElement.setIconType('mediumicon-arrow-right');
                     this.arrowElement.classList.add('arrow-right');
                     arrowX = anchorBox.x - gutterSize;
                 }
@@ -267,7 +264,6 @@ export class GlassPane {
                     else {
                         width = Math.min(width, spaceRight);
                     }
-                    this.arrowElement.setIconType('mediumicon-arrow-left');
                     this.arrowElement.classList.add('arrow-left');
                     arrowX = anchorBox.x + anchorBox.width + gutterSize;
                 }

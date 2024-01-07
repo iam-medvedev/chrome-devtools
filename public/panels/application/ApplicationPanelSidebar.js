@@ -36,6 +36,8 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -189,6 +191,11 @@ const UIStrings = {
      * @description Application sidebar panel
      */
     applicationSidebarPanel: 'Application panel sidebar',
+    /**
+     *@description Tooltip in Application Panel Sidebar of the Application panel
+     *@example {https://example.com} PH1
+     */
+    thirdPartyPhaseout: 'Cookies from {PH1} may have been blocked due to third-party cookie phaseout.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/ApplicationPanelSidebar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -270,13 +277,13 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.localStorageListTreeElement =
             new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.localStorage), 'LocalStorage');
         this.localStorageListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/localstorage/?utm_source=devtools');
-        const localStorageIcon = UI.Icon.Icon.create('table', 'resource-tree-item');
+        const localStorageIcon = IconButton.Icon.create('table');
         this.localStorageListTreeElement.setLeadingIcons([localStorageIcon]);
         storageTreeElement.appendChild(this.localStorageListTreeElement);
         this.sessionStorageListTreeElement =
             new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.sessionStorage), 'SessionStorage');
         this.sessionStorageListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/sessionstorage/?utm_source=devtools');
-        const sessionStorageIcon = UI.Icon.Icon.create('table', 'resource-tree-item');
+        const sessionStorageIcon = IconButton.Icon.create('table');
         this.sessionStorageListTreeElement.setLeadingIcons([sessionStorageIcon]);
         storageTreeElement.appendChild(this.sessionStorageListTreeElement);
         this.indexedDBListTreeElement = new IndexedDBTreeElement(panel);
@@ -285,13 +292,13 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.databasesListTreeElement =
             new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.webSql), 'Databases');
         this.databasesListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/websql/?utm_source=devtools');
-        const databaseIcon = UI.Icon.Icon.create('database', 'resource-tree-item');
+        const databaseIcon = IconButton.Icon.create('database');
         this.databasesListTreeElement.setLeadingIcons([databaseIcon]);
         storageTreeElement.appendChild(this.databasesListTreeElement);
         this.cookieListTreeElement =
             new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.cookies), 'Cookies');
         this.cookieListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/cookies/?utm_source=devtools');
-        const cookieIcon = UI.Icon.Icon.create('cookie', 'resource-tree-item');
+        const cookieIcon = IconButton.Icon.create('cookie');
         this.cookieListTreeElement.setLeadingIcons([cookieIcon]);
         storageTreeElement.appendChild(this.cookieListTreeElement);
         this.trustTokensTreeElement = new TrustTokensTreeElement(panel);
@@ -596,7 +603,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         const domain = parsedURL.securityOrigin();
         if (!this.domains[domain]) {
             this.domains[domain] = true;
-            const cookieDomainTreeElement = new CookieTreeElement(this.panel, frame, domain);
+            const cookieDomainTreeElement = new CookieTreeElement(this.panel, frame, parsedURL);
             this.cookieListTreeElement.appendChild(cookieDomainTreeElement);
         }
     }
@@ -808,7 +815,7 @@ export class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
         this.selectedInternal = false;
         this.view = null;
         this.model = null;
-        const backgroundServiceIcon = UI.Icon.Icon.create(this.getIconType(), 'resource-tree-item');
+        const backgroundServiceIcon = IconButton.Icon.create(this.getIconType());
         this.setLeadingIcons([backgroundServiceIcon]);
     }
     getIconType() {
@@ -868,7 +875,7 @@ export class DatabaseTreeElement extends ApplicationPanelTreeElement {
         super(sidebar.panel, database.name, true);
         this.sidebar = sidebar;
         this.database = database;
-        const icon = UI.Icon.Icon.create('database', 'resource-tree-item');
+        const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
     }
     get itemURL() {
@@ -900,7 +907,7 @@ export class DatabaseTableTreeElement extends ApplicationPanelTreeElement {
         this.sidebar = sidebar;
         this.database = database;
         this.tableName = tableName;
-        const icon = UI.Icon.Icon.create('table', 'resource-tree-item');
+        const icon = IconButton.Icon.create('table');
         this.setLeadingIcons([icon]);
     }
     get itemURL() {
@@ -917,7 +924,7 @@ export class ServiceWorkersTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(storagePanel) {
         super(storagePanel, i18n.i18n.lockedString('Service workers'), false);
-        const icon = UI.Icon.Icon.create('gears', 'resource-tree-item');
+        const icon = IconButton.Icon.create('gears');
         this.setLeadingIcons([icon]);
     }
     get itemURL() {
@@ -937,7 +944,7 @@ export class AppManifestTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(storagePanel) {
         super(storagePanel, i18nString(UIStrings.manifest), true);
-        const icon = UI.Icon.Icon.create('document', 'resource-tree-item');
+        const icon = IconButton.Icon.create('document');
         this.setLeadingIcons([icon]);
         self.onInvokeElement(this.listItemElement, this.onInvoke.bind(this));
         const emptyView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noManifestDetected));
@@ -982,7 +989,7 @@ export class ManifestChildTreeElement extends ApplicationPanelTreeElement {
     #sectionFieldElement;
     constructor(storagePanel, element, childTitle, fieldElement) {
         super(storagePanel, childTitle, false);
-        const icon = UI.Icon.Icon.create('document', 'resource-tree-item');
+        const icon = IconButton.Icon.create('document');
         this.setLeadingIcons([icon]);
         this.#sectionElement = element;
         this.#sectionFieldElement = fieldElement;
@@ -1025,7 +1032,7 @@ export class ClearStorageTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(storagePanel) {
         super(storagePanel, i18nString(UIStrings.storage), false);
-        const icon = UI.Icon.Icon.create('database', 'resource-tree-item');
+        const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
     }
     get itemURL() {
@@ -1046,7 +1053,7 @@ export class IndexedDBTreeElement extends ExpandableApplicationPanelTreeElement 
     storageBucket;
     constructor(storagePanel, storageBucket) {
         super(storagePanel, i18nString(UIStrings.indexeddb), 'IndexedDB');
-        const icon = UI.Icon.Icon.create('database', 'resource-tree-item');
+        const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
         this.idbDatabaseTreeElements = [];
         this.storageBucket = storageBucket;
@@ -1156,7 +1163,7 @@ export class IDBDatabaseTreeElement extends ApplicationPanelTreeElement {
         this.model = model;
         this.databaseId = databaseId;
         this.idbObjectStoreTreeElements = new Map();
-        const icon = UI.Icon.Icon.create('database', 'resource-tree-item');
+        const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
         this.model.addEventListener(IndexedDBModelEvents.DatabaseNamesRefreshed, this.refreshIndexedDB, this);
     }
@@ -1264,7 +1271,7 @@ export class IDBObjectStoreTreeElement extends ApplicationPanelTreeElement {
         this.idbIndexTreeElements = new Map();
         this.objectStore = objectStore;
         this.view = null;
-        const icon = UI.Icon.Icon.create('table', 'resource-tree-item');
+        const icon = IconButton.Icon.create('table');
         this.setLeadingIcons([icon]);
     }
     get itemURL() {
@@ -1439,7 +1446,7 @@ export class DOMStorageTreeElement extends ApplicationPanelTreeElement {
         super(storagePanel, domStorage.storageKey ? SDK.StorageKeyManager.parseStorageKey(domStorage.storageKey).origin :
             i18nString(UIStrings.localFiles), false);
         this.domStorage = domStorage;
-        const icon = UI.Icon.Icon.create('table', 'resource-tree-item');
+        const icon = IconButton.Icon.create('table');
         this.setLeadingIcons([icon]);
     }
     get itemURL() {
@@ -1464,12 +1471,18 @@ export class DOMStorageTreeElement extends ApplicationPanelTreeElement {
 export class CookieTreeElement extends ApplicationPanelTreeElement {
     target;
     cookieDomainInternal;
-    constructor(storagePanel, frame, cookieDomain) {
-        super(storagePanel, cookieDomain ? cookieDomain : i18nString(UIStrings.localFiles), false);
+    constructor(storagePanel, frame, cookieUrl) {
+        super(storagePanel, cookieUrl.securityOrigin() || i18nString(UIStrings.localFiles), false);
         this.target = frame.resourceTreeModel().target();
-        this.cookieDomainInternal = cookieDomain;
-        this.tooltip = i18nString(UIStrings.cookiesUsedByFramesFromS, { PH1: cookieDomain });
-        const icon = UI.Icon.Icon.create('cookie', 'resource-tree-item');
+        this.cookieDomainInternal = cookieUrl.securityOrigin();
+        this.tooltip = i18nString(UIStrings.cookiesUsedByFramesFromS, { PH1: this.cookieDomainInternal });
+        const icon = IconButton.Icon.create('cookie');
+        // Note that we cannot use `cookieDomainInternal` here since it contains scheme.
+        if (IssuesManager.RelatedIssue.hasThirdPartyPhaseoutCookieIssueForDomain(cookieUrl.domain())) {
+            icon.name = 'warning-filled';
+            icon.classList.add('warn-icon');
+            this.tooltip = i18nString(UIStrings.thirdPartyPhaseout, { PH1: this.cookieDomainInternal });
+        }
         this.setLeadingIcons([icon]);
     }
     get itemURL() {
@@ -1754,7 +1767,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
         return frame.unreachableUrl() ? 'iframe-crossed' : 'iframe';
     }
     async frameNavigated(frame) {
-        const icon = UI.Icon.Icon.create(this.getIconTypeForFrame(frame));
+        const icon = IconButton.Icon.create(this.getIconTypeForFrame(frame));
         if (frame.unreachableUrl()) {
             icon.classList.add('red-icon');
         }
@@ -1925,7 +1938,7 @@ export class FrameResourceTreeElement extends ApplicationPanelTreeElement {
         this.previewPromise = null;
         this.tooltip = resource.url;
         resourceToFrameResourceTreeElement.set(this.resource, this);
-        const icon = UI.Icon.Icon.create('document', 'navigator-file-tree-item');
+        const icon = IconButton.Icon.create('document', 'navigator-file-tree-item');
         icon.classList.add('navigator-' + resource.resourceType().name() + '-tree-item');
         this.setLeadingIcons([icon]);
     }
@@ -2004,7 +2017,7 @@ class FrameWindowTreeElement extends ApplicationPanelTreeElement {
     }
     updateIcon(canAccessOpener) {
         const iconType = canAccessOpener ? 'popup' : 'frame';
-        const icon = UI.Icon.Icon.create(iconType);
+        const icon = IconButton.Icon.create(iconType);
         this.setLeadingIcons([icon]);
     }
     update(targetInfo) {
@@ -2048,7 +2061,7 @@ class WorkerTreeElement extends ApplicationPanelTreeElement {
         super(storagePanel, targetInfo.title || targetInfo.url || i18nString(UIStrings.worker), false);
         this.targetInfo = targetInfo;
         this.view = null;
-        const icon = UI.Icon.Icon.create('gears', 'navigator-file-tree-item');
+        const icon = IconButton.Icon.create('gears', 'navigator-file-tree-item');
         this.setLeadingIcons([icon]);
     }
     onselect(selectedByUser) {

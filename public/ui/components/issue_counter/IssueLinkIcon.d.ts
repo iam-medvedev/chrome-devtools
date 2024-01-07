@@ -1,4 +1,3 @@
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 export interface IssueLinkIconData {
@@ -15,7 +14,6 @@ export declare class IssueLinkIcon extends HTMLElement {
     set data(data: IssueLinkIconData);
     connectedCallback(): void;
     get data(): IssueLinkIconData;
-    iconData(): IconButton.Icon.IconData;
     handleClick(event: MouseEvent): void;
 }
 declare global {

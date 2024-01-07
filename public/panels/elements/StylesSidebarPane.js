@@ -378,27 +378,16 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.userOperation = userOperation;
     }
     createExclamationMark(property, title) {
-        const exclamationElement = document.createElement('span', { is: 'dt-icon-label' });
-        exclamationElement.className = 'exclamation-mark';
-        if (!StylesSidebarPane.ignoreErrorsForProperty(property)) {
-            exclamationElement
-                .data = { iconName: 'warning-filled', color: 'var(--icon-warning)', width: '14px', height: '14px' };
-        }
-        let invalidMessage;
-        if (typeof title === 'string') {
-            UI.Tooltip.Tooltip.install(exclamationElement, title);
-            invalidMessage = title;
+        const exclamationElement = document.createElement('span');
+        exclamationElement.classList.add('exclamation-mark');
+        const invalidMessage = SDK.CSSMetadata.cssMetadata().isCSSPropertyName(property.name) ?
+            i18nString(UIStrings.invalidPropertyValue) :
+            i18nString(UIStrings.unknownPropertyName);
+        if (title === null) {
+            UI.Tooltip.Tooltip.install(exclamationElement, invalidMessage);
         }
         else {
-            invalidMessage = SDK.CSSMetadata.cssMetadata().isCSSPropertyName(property.name) ?
-                i18nString(UIStrings.invalidPropertyValue) :
-                i18nString(UIStrings.unknownPropertyName);
-            if (!title) {
-                UI.Tooltip.Tooltip.install(exclamationElement, invalidMessage);
-            }
-            else {
-                this.addPopover(exclamationElement, () => title);
-            }
+            this.addPopover(exclamationElement, () => title);
         }
         const invalidString = i18nString(UIStrings.invalidString, { PH1: invalidMessage, PH2: property.name, PH3: property.value });
         // Storing the invalidString for future screen reader support when editing the property
@@ -1367,7 +1356,7 @@ export class SectionBlock {
         this.#expanded = expandedByDefault ?? false;
         if (expandable && titleElement instanceof HTMLElement) {
             this.#icon =
-                UI.Icon.Icon.create(this.#expanded ? 'triangle-down' : 'triangle-right', 'section-block-expand-icon');
+                IconButton.Icon.create(this.#expanded ? 'triangle-down' : 'triangle-right', 'section-block-expand-icon');
             titleElement.classList.toggle('empty-section', !this.#expanded);
             UI.ARIAUtils.setExpanded(titleElement, this.#expanded);
             titleElement.appendChild(this.#icon);
@@ -1381,7 +1370,7 @@ export class SectionBlock {
             return;
         }
         this.titleElementInternal.classList.toggle('empty-section', !expand);
-        this.#icon.setIconType(expand ? 'triangle-down' : 'triangle-right');
+        this.#icon.name = expand ? 'triangle-down' : 'triangle-right';
         UI.ARIAUtils.setExpanded(this.titleElementInternal, expand);
         this.#expanded = expand;
         this.sections.forEach(section => section.element.classList.toggle('hidden', !expand));
@@ -2096,7 +2085,7 @@ export class ButtonProvider {
     button;
     constructor() {
         this.button = UI.Toolbar.Toolbar.createActionButtonForId('elements.new-style-rule');
-        const longclickTriangle = UI.Icon.Icon.create('triangle-bottom-right', 'long-click-glyph');
+        const longclickTriangle = IconButton.Icon.create('triangle-bottom-right', 'long-click-glyph');
         this.button.element.appendChild(longclickTriangle);
         new UI.UIUtils.LongClickController(this.button.element, this.longClicked.bind(this));
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, onNodeChanged.bind(this));

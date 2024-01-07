@@ -137,6 +137,11 @@ const UIStrings = {
      * additional info when hovered or pressed.
      */
     refineInfo: 'Learn how personalizing of insights works',
+    /**
+     * @description Label for screenreaders that is added to the end of the link
+     * title to indicate that the link will be opened in a new tab.
+     */
+    opensInNewTab: '(opens in a new tab)',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/explain/components/ConsoleInsight.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -256,8 +261,7 @@ export class ConsoleInsight extends HTMLElement {
     }
     #onPopoverRequest(event) {
         const hoveredNode = event.composedPath()[0];
-        if (!hoveredNode ||
-            (!hoveredNode?.matches('.info') && !hoveredNode.parentElementOrShadowHost()?.matches('.info'))) {
+        if (!hoveredNode || !hoveredNode.isSelfOrDescendant(this.#shadow.querySelector('.info'))) {
             return null;
         }
         const trapFocus = this.#popoverInitiatedViaKeyboard || event.type !== 'mousemove';
@@ -503,19 +507,16 @@ export class ConsoleInsight extends HTMLElement {
               >
               ${this.#state.type === State.REFINING ? i18nString(UIStrings.refining) : i18nString(UIStrings.refine)}
             </${Buttons.Button.Button.litTagName}>
-            <${IconButton.Icon.Icon.litTagName}
+            <${Buttons.Button.Button.litTagName}
               class="info"
-              role="button"
-              title=${i18nString(UIStrings.refineInfo)}
-              tabindex="0"
-              @keydown=${this.#onInfoKeyDown}
               .data=${{
+                    variant: "round" /* Buttons.Button.Variant.ROUND */,
+                    size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'info',
-                    color: 'var(--icon-default)',
-                    width: '16px',
-                    height: '16px',
-                }}>
-            </${IconButton.Icon.Icon.litTagName}>
+                    title: i18nString(UIStrings.refineInfo),
+                }}
+              @keydown=${this.#onInfoKeyDown}
+            ></${Buttons.Button.Button.litTagName}>
           </div>
           ` : ''}
         </main>`;
@@ -562,15 +563,7 @@ export class ConsoleInsight extends HTMLElement {
         </div>
         <div class="filler"></div>
         ${this.#dogfood ? html `<div class="dogfood-feedback">
-            <${IconButton.Icon.Icon.litTagName}
-              role="presentation"
-              .data=${{
-                    iconName: 'dog-paw',
-                    color: 'var(--icon-default)',
-                    width: '16px',
-                    height: '16px',
-                }}>
-            </${IconButton.Icon.Icon.litTagName}>
+            <${IconButton.Icon.Icon.litTagName} name="dog-paw"></${IconButton.Icon.Icon.litTagName}>
             <span>${i18nString(UIStrings.dogfood)} - </span>
             <x-link href=${DOGFOODFEEDBACK_URL} class="link">${i18nString(UIStrings.submitFeedback)}</x-link>
         </div>` : ''}
@@ -603,15 +596,7 @@ export class ConsoleInsight extends HTMLElement {
       <div class=${topWrapper}>
         <header>
           <div>
-            <${IconButton.Icon.Icon.litTagName}
-              role="presentation"
-              .data=${{
-            iconName: 'spark',
-            color: 'var(--sys-color-primary-bright)',
-            width: '20px',
-            height: '20px',
-        }}>
-            </${IconButton.Icon.Icon.litTagName}>
+            <${IconButton.Icon.Icon.litTagName} name="spark"></${IconButton.Icon.Icon.litTagName}>
           </div>
           <div class="filler">
             <h2>
@@ -709,7 +694,7 @@ class ConsoleInsightSourcesList extends HTMLElement {
         ${Directives.repeat(this.#sources, item => item.value, item => {
             const icon = new IconButton.Icon.Icon();
             icon.data = { iconName: 'open-externally', color: 'var(--sys-color-primary)', width: '14px', height: '14px' };
-            return html `<li><x-link class="link" href=${`data:text/plain,${encodeURIComponent(item.value)}`}>${localizeType(item.type)}${icon}</x-link></li>`;
+            return html `<li><x-link class="link" title="${localizeType(item.type)} ${i18nString(UIStrings.opensInNewTab)}" href=${`data:text/plain,${encodeURIComponent(item.value)}`}>${localizeType(item.type)}${icon}</x-link></li>`;
         })}
       </ul>
     `, this.#shadow, {

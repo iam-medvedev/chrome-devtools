@@ -618,13 +618,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
             </${IconButton.Icon.Icon.litTagName}></x-link>`}
       </${ReportView.ReportView.ReportKey.litTagName}>
       <${ReportView.ReportView.ReportValue.litTagName}>
-        <${IconButton.Icon.Icon.litTagName} class="inline-icon" .data=${{
-            iconName: 'code',
-            color: 'var(--icon-default)',
-            width: '18px',
-            height: '18px',
-        }}>
-        </${IconButton.Icon.Icon.litTagName}>
+        <${IconButton.Icon.Icon.litTagName} class="inline-icon" name="code"></${IconButton.Icon.Icon.litTagName}>
         ${cspInfo.source === "HTTP" /* Protocol.Network.ContentSecurityPolicySource.HTTP */ ? i18n.i18n.lockedString('HTTP header') : i18n.i18n.lockedString('Meta tag')}
         ${this.#renderEffectiveDirectives(cspInfo.effectiveDirectives)}
       </${ReportView.ReportView.ReportValue.litTagName}>

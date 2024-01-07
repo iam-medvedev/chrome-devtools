@@ -58,7 +58,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private onScroll;
     swatchPopoverHelper(): InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper;
     setUserOperation(userOperation: boolean): void;
-    createExclamationMark(property: SDK.CSSProperty.CSSProperty, title: HTMLElement | string | null): Element;
+    createExclamationMark(property: SDK.CSSProperty.CSSProperty, title: HTMLElement | null): Element;
     static ignoreErrorsForProperty(property: SDK.CSSProperty.CSSProperty): boolean;
     static formatLeadingProperties(section: StylePropertiesSection): {
         allDeclarationText: string;

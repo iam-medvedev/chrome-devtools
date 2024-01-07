@@ -1,15 +1,16 @@
 // Copyright (c) 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as i18n from '../../../core/i18n/i18n.js';
 import * as Common from '../../../core/common/common.js';
+import * as i18n from '../../../core/i18n/i18n.js';
+import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import IssueLinkIconStyles from './issueLinkIcon.css.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { getIssueKindIconData } from './IssueCounter.js';
+import IssueLinkIconStyles from './issueLinkIcon.css.js';
 const UIStrings = {
     /**
      * @description Title for a link to show an issue in the issues tab
@@ -40,56 +41,49 @@ export class IssueLinkIcon extends HTMLElement {
     // `undefined` that it is still being resolved.
     #issue;
     #issueTitle = null;
-    #issueTitlePromise = Promise.resolve(undefined);
     #issueId;
     #issueResolver;
     #additionalOnClickAction;
     #reveal = Common.Revealer.reveal;
-    #issueResolvedPromise = Promise.resolve(undefined);
     set data(data) {
         this.#issue = data.issue;
         this.#issueId = data.issueId;
-        if (!this.#issue && !this.#issueId) {
-            throw new Error('Either `issue` or `issueId` must be provided');
-        }
         this.#issueResolver = data.issueResolver;
+        if (!this.#issue) {
+            if (!this.#issueId) {
+                throw new Error('Either `issue` or `issueId` must be provided');
+            }
+            else if (!this.#issueResolver) {
+                throw new Error('An `IssueResolver` must be provided if an `issueId` is provided.');
+            }
+        }
         this.#additionalOnClickAction = data.additionalOnClickAction;
         if (data.revealOverride) {
             this.#reveal = data.revealOverride;
         }
-        if (!this.#issue && this.#issueId) {
-            this.#issueResolvedPromise = this.#resolveIssue(this.#issueId);
-            this.#issueTitlePromise = this.#issueResolvedPromise.then(() => this.#fetchIssueTitle());
-        }
-        else {
-            this.#issueTitlePromise = this.#fetchIssueTitle();
-        }
+        void this.#fetchIssueData();
         void this.#render();
     }
-    async #fetchIssueTitle() {
+    async #fetchIssueData() {
+        if (!this.#issue && this.#issueId) {
+            try {
+                this.#issue = await this.#issueResolver?.waitFor(this.#issueId);
+            }
+            catch {
+                this.#issue = null;
+            }
+        }
         const description = this.#issue?.getDescription();
-        if (!description) {
-            return;
+        if (description) {
+            const title = await IssuesManager.MarkdownIssueDescription.getIssueTitleFromMarkdownDescription(description);
+            if (title) {
+                this.#issueTitle = title;
+            }
         }
-        const title = await IssuesManager.MarkdownIssueDescription.getIssueTitleFromMarkdownDescription(description);
-        if (title) {
-            this.#issueTitle = title;
-        }
+        await this.#render();
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [IssueLinkIconStyles];
-    }
-    #resolveIssue(issueId) {
-        if (!this.#issueResolver) {
-            throw new Error('An `IssueResolver` must be provided if an `issueId` is provided.');
-        }
-        return this.#issueResolver.waitFor(issueId)
-            .then(issue => {
-            this.#issue = issue;
-        })
-            .catch(() => {
-            this.#issue = null;
-        });
     }
     get data() {
         return {
@@ -100,16 +94,6 @@ export class IssueLinkIcon extends HTMLElement {
             revealOverride: this.#reveal !== Common.Revealer.reveal ? this.#reveal : undefined,
         };
     }
-    iconData() {
-        if (this.#issue) {
-            return {
-                ...getIssueKindIconData(this.#issue.getKind()),
-                width: '16px',
-                height: '16px',
-            };
-        }
-        return { iconName: 'issue-questionmark-filled', color: 'var(--icon-default)', width: '16px', height: '16px' };
-    }
     handleClick(event) {
         if (event.button !== 0) {
             return; // Only handle left-click for now.
@@ -118,6 +102,7 @@ export class IssueLinkIcon extends HTMLElement {
             void this.#reveal(this.#issue);
         }
         this.#additionalOnClickAction?.();
+        event.consume();
     }
     #getTooltip() {
         if (this.#issueTitle) {
@@ -128,25 +113,25 @@ export class IssueLinkIcon extends HTMLElement {
         }
         return i18nString(UIStrings.issueUnavailable);
     }
+    #getIconName() {
+        if (!this.#issue) {
+            return 'issue-questionmark-filled';
+        }
+        const { iconName } = getIssueKindIconData(this.#issue.getKind());
+        return iconName;
+    }
     #render() {
         return coordinator.write(() => {
             // clang-format off
             LitHtml.render(LitHtml.html `
-        ${LitHtml.Directives.until(this.#issueTitlePromise.then(() => this.#renderComponent()), this.#issueResolvedPromise.then(() => this.#renderComponent()), this.#renderComponent())}
-      `, this.#shadow, { host: this });
+      <button class=${LitHtml.Directives.classMap({ 'link': Boolean(this.#issue) })}
+              title=${this.#getTooltip()}
+              jslog=${VisualLogging.link().track({ click: true }).context('issue-link')}
+              @click=${this.handleClick}>
+        <${IconButton.Icon.Icon.litTagName} name=${this.#getIconName()}></${IconButton.Icon.Icon.litTagName}>
+      </span>`, this.#shadow, { host: this });
             // clang-format on
         });
-    }
-    #renderComponent() {
-        // clang-format off
-        return LitHtml.html `
-      <span class=${LitHtml.Directives.classMap({ 'link': Boolean(this.#issue) })}
-            tabindex="0"
-            @click=${this.handleClick}>
-        <${IconButton.Icon.Icon.litTagName} .data=${this.iconData()}
-          title=${this.#getTooltip()}></${IconButton.Icon.Icon.litTagName}>
-      </span>`;
-        // clang-format on
     }
 }
 ComponentHelpers.CustomElements.defineComponent('devtools-issue-link-icon', IssueLinkIcon);

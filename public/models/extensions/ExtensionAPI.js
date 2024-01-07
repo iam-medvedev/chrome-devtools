@@ -27,7 +27,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import * as Platform from '../../core/platform/platform.js';
 self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, keysToForward, testHook, injectedScriptId, targetWindowForTest) {
     const keysToForwardSet = new Set(keysToForward);
     const chrome = window.chrome || {};
@@ -92,7 +91,6 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         this.inspectedWindow = new (Constructor(InspectedWindow))();
         this.panels = new (Constructor(Panels))();
         this.network = new (Constructor(Network))();
-        this.timeline = new (Constructor(Timeline))();
         this.languageServices = new (Constructor(LanguageServicesAPI))();
         this.recorder = new (Constructor(RecorderServicesAPI))();
         defineDeprecatedProperty(this, 'webInspector', 'resources', 'network');
@@ -457,7 +455,6 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
     const PanelWithSidebarClass = declareInterfaceClass(PanelWithSidebarImpl);
     const Request = declareInterfaceClass(RequestImpl);
     const Resource = declareInterfaceClass(ResourceImpl);
-    const TraceSession = declareInterfaceClass(TraceSessionImpl);
     class ElementsPanel extends (Constructor(PanelWithSidebarClass)) {
         constructor() {
             super('elements');
@@ -550,42 +547,6 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             });
         },
     };
-    function Timeline() {
-    }
-    Timeline.prototype = {
-        addTraceProvider: function (categoryName, categoryTooltip) {
-            const id = 'extension-trace-provider-' + extensionServer.nextObjectId();
-            extensionServer.sendRequest({
-                command: "addTraceProvider" /* PrivateAPI.Commands.AddTraceProvider */,
-                id: id,
-                categoryName: categoryName,
-                categoryTooltip: categoryTooltip,
-            });
-            return new (Constructor(TraceProvider))(id);
-        },
-    };
-    function TraceSessionImpl(id) {
-        this._id = id;
-    }
-    TraceSessionImpl.prototype = {
-        complete: function (url, timeOffset) {
-            extensionServer.sendRequest({
-                command: "completeTra.eSession" /* PrivateAPI.Commands.CompleteTraceSession */,
-                id: this._id,
-                url: url || Platform.DevToolsPath.EmptyUrlString,
-                timeOffset: timeOffset || 0,
-            });
-        },
-    };
-    function TraceProvider(id) {
-        function dispatchRecordingStarted(message) {
-            const sessionId = message.arguments[0];
-            this._fire(new (Constructor(TraceSession))(sessionId));
-        }
-        this.onRecordingStarted =
-            new (Constructor(EventSink))("trace-recording-started-" /* PrivateAPI.Events.RecordingStarted */ + id, dispatchRecordingStarted);
-        this.onRecordingStopped = new (Constructor(EventSink))("trace-recording-stopped-" /* PrivateAPI.Events.RecordingStopped */ + id);
-    }
     function canAccessResource(resource) {
         try {
             return extensionInfo.allowFileAccess || (new URL(resource.url)).protocol !== 'file:';
@@ -856,4 +817,5 @@ self.buildExtensionAPIInjectedScript = function (extensionInfo, inspectedTabId, 
         '(' + self.injectedExtensionAPI.toString() + ')(' + argumentsJSON + ',' + testHook + ', injectedScriptId);' +
         '})';
 };
+export {};
 //# sourceMappingURL=ExtensionAPI.js.map

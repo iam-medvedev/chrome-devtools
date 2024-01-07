@@ -41,6 +41,12 @@ styles.replaceSync(
 .adorner-with-icon {
   display: flex;
   justify-content: center;
+  overflow: hidden;
+
+  devtools-icon {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 .adorner-with-icon *:not(:last-child) {

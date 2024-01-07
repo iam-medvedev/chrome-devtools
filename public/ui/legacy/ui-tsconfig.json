@@ -46,7 +46,6 @@
     "../../../../../../front_end/ui/legacy/Geometry.ts",
     "../../../../../../front_end/ui/legacy/GlassPane.ts",
     "../../../../../../front_end/ui/legacy/HistoryInput.ts",
-    "../../../../../../front_end/ui/legacy/Icon.ts",
     "../../../../../../front_end/ui/legacy/Infobar.ts",
     "../../../../../../front_end/ui/legacy/InplaceEditor.ts",
     "../../../../../../front_end/ui/legacy/InspectorView.ts",

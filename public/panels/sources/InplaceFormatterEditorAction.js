@@ -83,39 +83,32 @@ export class InplaceFormatterEditorAction {
         return false;
     }
     formatSourceInPlace() {
-        const uiSourceCode = this.sourcesView.currentUISourceCode();
-        if (!uiSourceCode || !this.isFormattable(uiSourceCode)) {
+        const sourceFrame = this.sourcesView.currentSourceFrame();
+        if (!sourceFrame) {
+            return;
+        }
+        const uiSourceCode = sourceFrame.uiSourceCode();
+        if (!this.isFormattable(uiSourceCode)) {
             return;
         }
         if (uiSourceCode.isDirty()) {
-            void this.contentLoaded(uiSourceCode, uiSourceCode.workingCopy());
+            void this.contentLoaded(uiSourceCode, sourceFrame, uiSourceCode.workingCopy());
         }
         else {
             void uiSourceCode.requestContent().then(deferredContent => {
-                void this.contentLoaded(uiSourceCode, deferredContent.content || '');
+                void this.contentLoaded(uiSourceCode, sourceFrame, deferredContent.content || '');
             });
         }
     }
-    async contentLoaded(uiSourceCode, content) {
-        const highlighterType = uiSourceCode.mimeType();
-        const { formattedContent, formattedMapping } = await Formatter.ScriptFormatter.format(uiSourceCode.contentType(), highlighterType, content);
-        this.formattingComplete(uiSourceCode, formattedContent, formattedMapping);
-    }
-    /**
-     * Post-format callback
-     */
-    formattingComplete(uiSourceCode, formattedContent, formatterMapping) {
+    async contentLoaded(uiSourceCode, sourceFrame, content) {
+        const { formattedContent, formattedMapping } = await Formatter.ScriptFormatter.format(uiSourceCode.contentType(), sourceFrame.contentType, content);
         if (uiSourceCode.workingCopy() === formattedContent) {
             return;
         }
-        const sourceFrame = this.sourcesView.viewForFile(uiSourceCode);
-        let start = [0, 0];
-        if (sourceFrame) {
-            const selection = sourceFrame.textEditor.toLineColumn(sourceFrame.textEditor.state.selection.main.head);
-            start = formatterMapping.originalToFormatted(selection.lineNumber, selection.columnNumber);
-        }
+        const selection = sourceFrame.textEditor.toLineColumn(sourceFrame.textEditor.state.selection.main.head);
+        const [lineNumber, columnNumber] = formattedMapping.originalToFormatted(selection.lineNumber, selection.columnNumber);
         uiSourceCode.setWorkingCopy(formattedContent);
-        this.sourcesView.showSourceLocation(uiSourceCode, { lineNumber: start[0], columnNumber: start[1] });
+        this.sourcesView.showSourceLocation(uiSourceCode, { lineNumber, columnNumber });
     }
 }
 registerEditorAction(InplaceFormatterEditorAction.instance);

@@ -591,14 +591,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         // clang-format off
         return LitHtml.html `
     <button data-edit-breakpoint @click=${clickHandler} title=${title} jslog=${VisualLogging.action().track({ click: true }).context('edit-breakpoint')}>
-    <${IconButton.Icon.Icon.litTagName} .data=${{
-            iconName: 'edit',
-            width: '16px',
-            height: '16px',
-            color: 'var(--icon-default)',
-        }}
-      >
-      </${IconButton.Icon.Icon.litTagName}>
+      <${IconButton.Icon.Icon.litTagName} name="edit"></${IconButton.Icon.Icon.litTagName}>
     </button>
       `;
         // clang-format on
@@ -612,14 +605,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         // clang-format off
         return LitHtml.html `
     <button data-remove-breakpoint @click=${clickHandler} title=${tooltipText} aria-label=${tooltipText} jslog=${VisualLogging.action().track({ click: true }).context('remove-breakpoint')}>
-    <${IconButton.Icon.Icon.litTagName} .data=${{
-            iconName: 'cross',
-            width: '20px',
-            height: '20px',
-            color: 'var(--icon-default)',
-        }}
-      }>
-      </${IconButton.Icon.Icon.litTagName}>
+      <${IconButton.Icon.Icon.litTagName} name="bin"></${IconButton.Icon.Icon.litTagName}>
     </button>
       `;
         // clang-format on
@@ -724,9 +710,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     `;
     }
     #renderFileIcon() {
-        return LitHtml.html `
-      <${IconButton.Icon.Icon.litTagName} class='file-icon' .data=${{ iconName: 'file-script', color: 'var(--icon-file-script)', width: '18px', height: '18px' }}></${IconButton.Icon.Icon.litTagName}>
-    `;
+        return LitHtml.html `<${IconButton.Icon.Icon.litTagName} name="file-script"></${IconButton.Icon.Icon.litTagName}>`;
     }
     #onBreakpointEntryContextMenu(event, breakpointItem, editable) {
         const menu = new UI.ContextMenu.ContextMenu(event);
@@ -801,7 +785,7 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
               tabindex=-1
               jslog=${VisualLogging.toggle().track({ change: true }).context('breakpoint')}>
       </label>
-      <span class='code-snippet' @click=${codeSnippetClickHandler} title=${codeSnippetTooltip} jslog=${VisualLogging.jumpToSource().track({ click: true }).context('jump-to-breakpoint')}>${codeSnippet}</span>
+      <span class='code-snippet' @click=${codeSnippetClickHandler} title=${codeSnippetTooltip} jslog=${VisualLogging.action().track({ click: true }).context('sources.jump-to-breakpoint')}>${codeSnippet}</span>
       <span class='breakpoint-item-location-or-actions'>
         ${editable ? this.#renderEditBreakpointButton(breakpointItem) : LitHtml.nothing}
         ${this.#renderRemoveBreakpointButton([breakpointItem], i18nString(UIStrings.removeBreakpoint), Host.UserMetrics.Action.BreakpointRemovedFromRemoveButton)}

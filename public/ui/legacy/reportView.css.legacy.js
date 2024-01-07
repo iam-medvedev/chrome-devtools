@@ -135,11 +135,11 @@ export default {
 
 @media (forced-colors: active) {
   .report-field-value .inline-icon {
-    --icon-color: ButtonText;
+    color: ButtonText;
   }
 
   .report-field-value .multiline-value {
-    --icon-color: ButtonText;
+    color: ButtonText;
   }
 }
 `

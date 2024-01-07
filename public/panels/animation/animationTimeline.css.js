@@ -311,6 +311,10 @@ text.animation-timeline-grid-label {
   position: relative;
 
   & .screenshot-arrow {
+    background-image: var(--image-file-popoverArrows);
+    background-position: 0 76px;
+    width: 19px;
+    height: 19px;
     position: absolute;
     left: 6px;
     top: -19px;
@@ -518,19 +522,22 @@ text.animation-timeline-grid-label {
   right: -3px;
   background: var(--sys-color-token-subtle);
   border-radius: 12px;
+  border: 0;
   height: 16px;
   width: 16px;
-  align-items: center;
-  font-size: 10px;
-  justify-content: center;
   z-index: 100;
   display: none;
-  font-weight: 700;
-  color: var(--sys-color-cdt-base-container);
-}
+  padding: 0;
 
-.animation-remove-button:hover {
-  background: var(--sys-color-on-surface);
+  & > devtools-icon {
+    height: 16px;
+    width: 16px;
+    color: var(--sys-color-cdt-base-container);
+  }
+
+  &:hover {
+    background-color: var(--sys-color-on-surface);
+  }
 }
 
 .animation-buffer-preview:hover .animation-remove-button {

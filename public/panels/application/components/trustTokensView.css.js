@@ -10,6 +10,7 @@ styles.replaceSync(
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
 :host {
   padding: 20px;
 }
@@ -21,10 +22,15 @@ styles.replaceSync(
 devtools-data-grid-controller {
   border: 1px solid var(--sys-color-divider);
   margin-top: 20px;
+
+  & devtools-button {
+    width: 14px;
+    height: 14px;
+  }
 }
 
-.info-icon {
-  vertical-align: text-bottom;
+devtools-icon {
+  width: 14px;
   height: 14px;
 }
 

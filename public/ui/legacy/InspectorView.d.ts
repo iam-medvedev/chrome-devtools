@@ -2,7 +2,6 @@ import type * as IconButton from '../components/icon_button/icon_button.js';
 import { type ActionDelegate as ActionDelegateInterface } from './ActionRegistration.js';
 import { type Context } from './Context.js';
 import { type ContextMenu } from './ContextMenu.js';
-import { type Icon } from './Icon.js';
 import { type Panel } from './Panel.js';
 import { SplitWidget } from './SplitWidget.js';
 import { type TabbedPane, type TabbedPaneTabDelegate } from './TabbedPane.js';
@@ -38,7 +37,7 @@ export declare class InspectorView extends VBox implements ViewLocationResolver 
     onSuspendStateChanged(allTargetsSuspended: boolean): void;
     canSelectPanel(panelName: string): boolean;
     showPanel(panelName: string): Promise<void>;
-    setPanelIcon(tabId: string, icon: Icon | IconButton.Icon.Icon | null): void;
+    setPanelIcon(tabId: string, icon: IconButton.Icon.Icon | null): void;
     private emitDrawerChangeEvent;
     private getTabbedPaneForTabId;
     currentPanelDeprecated(): Widget | null;

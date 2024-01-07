@@ -215,7 +215,7 @@ function renderStackTraceTable(container, stackTraceRows) {
             row.createChild('td', 'function-name').textContent = item.functionName;
             row.createChild('td').textContent = ' @ ';
             if (item.link) {
-                row.createChild('td').appendChild(item.link);
+                row.createChild('td', 'link').appendChild(item.link);
                 links.push(item.link);
             }
             if (item.ignoreListHide) {

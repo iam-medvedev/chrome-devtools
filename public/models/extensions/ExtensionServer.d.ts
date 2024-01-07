@@ -118,8 +118,7 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private disableExtensions;
 }
 export declare enum Events {
-    SidebarPaneAdded = "SidebarPaneAdded",
-    TraceProviderAdded = "TraceProviderAdded"
+    SidebarPaneAdded = "SidebarPaneAdded"
 }
 export type EventTypes = {
     [Events.SidebarPaneAdded]: ExtensionSidebarPane;

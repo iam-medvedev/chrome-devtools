@@ -2207,6 +2207,9 @@
   "panels/application/ApplicationPanelSidebar.ts | theContentOfThisDocumentHasBeen": {
     "message": "T̂h́ê ćôńt̂én̂t́ ôf́ t̂h́îś d̂óĉúm̂én̂t́ ĥáŝ b́êén̂ ǵêńêŕât́êd́ d̂ýn̂ám̂íĉál̂ĺŷ v́îá 'd̂óĉúm̂én̂t́.ŵŕît́ê()'."
   },
+  "panels/application/ApplicationPanelSidebar.ts | thirdPartyPhaseout": {
+    "message": "Ĉóôḱîéŝ f́r̂óm̂ {PH1} ḿâý ĥáv̂é b̂éêń b̂ĺôćk̂éd̂ d́ûé t̂ó t̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîé p̂h́âśêóût́."
+  },
   "panels/application/ApplicationPanelSidebar.ts | versionS": {
     "message": "V̂ér̂śîón̂: {PH1}"
   },
@@ -6352,6 +6355,9 @@
   },
   "panels/explain/components/ConsoleInsight.ts | notHelpful": {
     "message": "N̂ót̂ h́êĺp̂f́ûĺ"
+  },
+  "panels/explain/components/ConsoleInsight.ts | opensInNewTab": {
+    "message": "(ôṕêńŝ ín̂ á n̂éŵ t́âb́)"
   },
   "panels/explain/components/ConsoleInsight.ts | other": {
     "message": "Ôt́ĥér̂"
@@ -14347,6 +14353,9 @@
   },
   "ui/legacy/components/quick_open/FilteredListWidget.ts | quickOpenPrompt": {
     "message": "Q̂úîćk̂ óp̂én̂ ṕr̂óm̂ṕt̂"
+  },
+  "ui/legacy/components/quick_open/FilteredListWidget.ts | sItemSOfS": {
+    "message": "{PH1}, ît́êḿ {PH2} ôf́ {PH3}"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "Ôṕêń f̂íl̂é"

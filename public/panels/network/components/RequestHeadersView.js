@@ -14,12 +14,14 @@ import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
+import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Sources from '../../sources/sources.js';
 import { RequestHeaderSection } from './RequestHeaderSection.js';
-import { ResponseHeaderSection, RESPONSE_HEADER_SECTION_DATA_KEY, } from './ResponseHeaderSection.js';
 import requestHeadersViewStyles from './RequestHeadersView.css.js';
+import { RESPONSE_HEADER_SECTION_DATA_KEY, ResponseHeaderSection, } from './ResponseHeaderSection.js';
 const RAW_HEADER_CUTOFF = 3000;
 const { render, html } = LitHtml;
 const UIStrings = {
@@ -94,6 +96,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/components/RequestHeadersView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #request;
     static litTagName = LitHtml.literal `devtools-request-headers`;
@@ -107,6 +110,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
     constructor(request) {
         super();
         this.#request = request;
+        this.setAttribute('jslog', `${VisualLogging.pane().context('headers')}`);
     }
     wasShown() {
         this.#request.addEventListener(SDK.NetworkRequest.Events.RemoteAddressChanged, this.#refreshHeadersView, this);
@@ -157,14 +161,16 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         if (!this.#request) {
             return;
         }
-        // Disabled until https://crbug.com/1079231 is fixed.
-        // clang-format off
-        render(html `
-      ${this.#renderGeneralSection()}
-      ${this.#renderResponseHeaders()}
-      ${this.#renderRequestHeaders()}
-    `, this.#shadow, { host: this });
-        // clang-format on
+        return coordinator.write(() => {
+            // Disabled until https://crbug.com/1079231 is fixed.
+            // clang-format off
+            render(html `
+        ${this.#renderGeneralSection()}
+        ${this.#renderResponseHeaders()}
+        ${this.#renderRequestHeaders()}
+      `, this.#shadow, { host: this });
+            // clang-format on
+        });
     }
     #renderResponseHeaders() {
         if (!this.#request) {
@@ -227,7 +233,11 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
-      <x-link href="https://goo.gle/devtools-override" class="link devtools-link">
+      <x-link
+          href="https://goo.gle/devtools-override"
+          class="link devtools-link"
+          jslog=${VisualLogging.link().track({ click: true }).context('devtools-override')}
+      >
         <${IconButton.Icon.Icon.litTagName} class="inline-icon" .data=${{
             iconName: 'help',
             color: 'var(--icon-link)',
@@ -236,7 +246,12 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         }}>
         </${IconButton.Icon.Icon.litTagName}
       ></x-link>
-      <x-link @click=${revealHeadersFile} class="link devtools-link" title=${UIStrings.revealHeaderOverrides}>
+      <x-link
+          @click=${revealHeadersFile}
+          class="link devtools-link"
+          title=${UIStrings.revealHeaderOverrides}
+          jslog=${VisualLogging.link().track({ click: true }).context('reveal-header-overrides')}
+      >
         ${fileIcon}${Persistence.NetworkPersistenceManager.HEADERS_FILENAME}
       </x-link>
     `;
@@ -311,6 +326,8 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
                 el.addEventListener('contextmenu', onContextMenuOpen);
             }
         };
+        // Disabled until https://crbug.com/1079231 is fixed.
+        // clang-format off
         return html `
       <div class="row raw-headers-row" on-render=${ComponentHelpers.Directives.nodeRenderedCallback(addContextMenuListener)}>
         <div class="raw-headers">${isShortened ? trimmed.substring(0, RAW_HEADER_CUTOFF) : trimmed}</div>
@@ -319,10 +336,12 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
             .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}
             @click=${showMore}
+            jslog=${VisualLogging.action().track({ click: true }).context('raw-headers-show-more')}
           >${i18nString(UIStrings.showMore)}</${Buttons.Button.Button.litTagName}>
         ` : LitHtml.nothing}
       </div>
     `;
+        // clang-format on
     }
     #renderGeneralSection() {
         if (!this.#request) {
@@ -441,7 +460,12 @@ export class Category extends HTMLElement {
             </div>
             <div class="hide-when-closed">
               ${this.#checked !== undefined ? html `
-                <label><input type="checkbox" .checked=${this.#checked} @change=${this.#onCheckboxToggle} />${i18nString(UIStrings.raw)}</label>
+                <label><input
+                    type="checkbox"
+                    .checked=${this.#checked}
+                    @change=${this.#onCheckboxToggle}
+                    jslog=${VisualLogging.toggle().track({ change: true }).context('raw-headers')}
+                />${i18nString(UIStrings.raw)}</label>
               ` : LitHtml.nothing}
             </div>
             <div class="hide-when-closed">${this.#additionalContent}</div>

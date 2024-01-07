@@ -73,6 +73,7 @@ button.text-link {
 
 .inline-items {
   display: flex;
+  gap: 3px;
 }
 
 .span-cols {
@@ -96,6 +97,9 @@ button.text-link {
 
 .inline-icon {
   margin-bottom: -5px;
+  width: 18px;
+  height: 18px;
+  vertical-align: baseline;
 }
 
 @media (forced-colors: active) {

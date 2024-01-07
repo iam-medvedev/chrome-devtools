@@ -1,6 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Adorners from '../components/adorners/adorners.js';
 import { type Action } from './ActionRegistration.js';
 import { ContextMenu } from './ContextMenu.js';
 import { type Suggestion } from './SuggestBox.js';
@@ -77,15 +78,11 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes>
     private textElement;
     private text?;
     private glyph?;
-    private icon?;
     private adorner?;
-    /**
-     * TODO(crbug.com/1126026): remove glyph parameter in favor of icon.
-     */
-    constructor(title: string, glyphOrIcon?: string | HTMLElement, text?: string, jslogContext?: string);
+    constructor(title: string, glyphOrAdorner?: string | Adorners.Adorner.Adorner, text?: string, jslogContext?: string);
     focus(): void;
     setText(text: string): void;
-    setGlyphOrIcon(glyphOrIcon: string | HTMLElement): void;
+    setGlyphOrAdorner(glyphOrAdorner: string | Adorners.Adorner.Adorner): void;
     setGlyph(glyph: string): void;
     setBackgroundImage(iconURL: string): void;
     setSecondary(): void;
@@ -128,9 +125,9 @@ export declare namespace ToolbarInput {
 }
 export declare class ToolbarToggle extends ToolbarButton {
     private toggledInternal;
-    private readonly untoggledGlyphOrIcon;
-    private readonly toggledGlyphOrIcon;
-    constructor(title: string, glyphOrIcon?: string | HTMLElement, toggledGlyphOrIcon?: string | HTMLElement, jslogContext?: string);
+    private readonly untoggledGlyph;
+    private readonly toggledGlyph;
+    constructor(title: string, glyph?: string, toggledGlyph?: string, jslogContext?: string);
     toggled(): boolean;
     setToggled(toggled: boolean): void;
     setDefaultWithRedColor(withRedColor: boolean): void;

@@ -24,11 +24,9 @@ styles.replaceSync(
   border-radius: 0;
   border: none;
 
-  --icon-color: var(--icon-default);
-}
-
-.hide-issues-menu-btn:hover {
-  --icon-color: var(--icon-default-hover);
+  &:hover > devtools-icon {
+    color: var(--icon-default-hover);
+  }
 }
 
 /*# sourceURL=./hideIssuesMenu.css */

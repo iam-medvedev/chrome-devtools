@@ -43,7 +43,6 @@ export declare class WatchExpression extends Common.ObjectWrapper.ObjectWrapper<
     private textPrompt?;
     private result?;
     private preventClickTimeout?;
-    private resizeObserver?;
     constructor(expression: string | null, expandController: ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController, linkifier: Components.Linkifier.Linkifier);
     treeElement(): UI.TreeOutline.TreeElement;
     expression(): string | null;

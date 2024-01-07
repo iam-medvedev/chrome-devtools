@@ -489,16 +489,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigatorGroupByFolder');
             groupByFolderSetting.set(groupByFolderSetting.get());
         }
-        const previewIcon = new IconButton.Icon.Icon();
-        previewIcon.data = {
-            iconName: 'experiment',
-            color: 'var(--icon-default)',
-            width: '16px',
-        };
-        // <devtools-icon> collapses to 0 width, wrong height otherwise, throwing off alignment and size calculation.
-        previewIcon.style.minHeight = '16px';
-        previewIcon.style.minWidth = '16px';
-        menuSection.appendCheckboxItem(menuItem, toggleExperiment, Root.Runtime.experiments.isEnabled(experiment), false, previewIcon);
+        menuSection.appendCheckboxItem(menuItem, toggleExperiment, Root.Runtime.experiments.isEnabled(experiment), false, IconButton.Icon.create('experiment'));
     }
     populateNavigatorMenu(contextMenu) {
         const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigatorGroupByFolder');

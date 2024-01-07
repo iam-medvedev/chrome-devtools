@@ -66,8 +66,6 @@ styles.replaceSync(
   .icon-button.with-click-handler:hover {
     background-color: Highlight;
     color: HighlightText;
-
-    --icon-color: HighlightText;
   }
 }
 

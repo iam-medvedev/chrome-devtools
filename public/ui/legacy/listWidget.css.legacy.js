@@ -85,7 +85,7 @@ export default {
   flex-direction: column;
   align-items: stretch;
   flex: none;
-  background: var(--sys-color-cdt-base-container);
+  background: var(--sys-color-surface3);
   overflow: hidden;
 }
 

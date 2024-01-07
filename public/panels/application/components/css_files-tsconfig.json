@@ -17,10 +17,8 @@
         "serviceWorkerRouterView.css.js",
         "sharedStorageAccessGrid.css.js",
         "sharedStorageMetadataView.css.js",
-        "sharedStorageMetadataViewResetBudgetButton.css.js",
         "stackTraceLinkButton.css.js",
         "stackTraceRow.css.js",
-        "trustTokensView.css.js",
-        "trustTokensViewDeleteButton.css.js"
+        "trustTokensView.css.js"
     ]
 }

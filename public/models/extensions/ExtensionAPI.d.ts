@@ -1,5 +1,5 @@
-import * as Platform from '../../core/platform/platform.js';
 import type * as PublicAPI from '../../../extension-api/ExtensionAPI';
+import type * as Platform from '../../core/platform/platform.js';
 import type * as HAR from '../har/har.js';
 export declare namespace PrivateAPI {
     export namespace Panels {
@@ -17,8 +17,6 @@ export declare namespace PrivateAPI {
         NetworkRequestFinished = "network-request-finished",
         OpenResource = "open-resource",
         PanelSearch = "panel-search-",
-        RecordingStarted = "trace-recording-started-",
-        RecordingStopped = "trace-recording-stopped-",
         ResourceAdded = "resource-added",
         ResourceContentCommitted = "resource-content-committed",
         ViewShown = "view-shown-",
@@ -27,9 +25,7 @@ export declare namespace PrivateAPI {
     }
     export const enum Commands {
         AddRequestHeaders = "addRequestHeaders",
-        AddTraceProvider = "addTraceProvider",
         ApplyStyleSheet = "applyStyleSheet",
-        CompleteTraceSession = "completeTra.eSession",
         CreatePanel = "createPanel",
         CreateSidebarPane = "createSidebarPane",
         CreateToolbarButton = "createToolbarButton",
@@ -162,12 +158,6 @@ export declare namespace PrivateAPI {
         tooltip?: string;
         disabled?: boolean;
     };
-    type CompleteTraceSessionRequest = {
-        command: Commands.CompleteTraceSession;
-        id: string;
-        url: Platform.DevToolsPath.UrlString;
-        timeOffset: number;
-    };
     type CreateSidebarPaneRequest = {
         command: Commands.CreateSidebarPane;
         id: string;
@@ -233,12 +223,6 @@ export declare namespace PrivateAPI {
         content: string;
         commit: boolean;
     };
-    type AddTraceProviderRequest = {
-        command: Commands.AddTraceProvider;
-        id: string;
-        categoryName: string;
-        categoryTooltip: string;
-    };
     type ForwardKeyboardEventRequest = {
         command: Commands.ForwardKeyboardEvent;
         entries: Array<KeyboardEventInit & {
@@ -272,7 +256,7 @@ export declare namespace PrivateAPI {
         op: number;
         stopId: unknown;
     };
-    export type ServerRequests = ShowRecorderViewRequest | CreateRecorderViewRequest | RegisterRecorderExtensionPluginRequest | RegisterLanguageExtensionPluginRequest | SubscribeRequest | UnsubscribeRequest | AddRequestHeadersRequest | ApplyStyleSheetRequest | CreatePanelRequest | ShowPanelRequest | CreateToolbarButtonRequest | UpdateButtonRequest | CompleteTraceSessionRequest | CreateSidebarPaneRequest | SetSidebarHeightRequest | SetSidebarContentRequest | SetSidebarPageRequest | OpenResourceRequest | SetOpenResourceHandlerRequest | SetThemeChangeHandlerRequest | ReloadRequest | EvaluateOnInspectedPageRequest | GetRequestContentRequest | GetResourceContentRequest | SetResourceContentRequest | AddTraceProviderRequest | ForwardKeyboardEventRequest | GetHARRequest | GetPageResourcesRequest | GetWasmLinearMemoryRequest | GetWasmLocalRequest | GetWasmGlobalRequest | GetWasmOpRequest;
+    export type ServerRequests = ShowRecorderViewRequest | CreateRecorderViewRequest | RegisterRecorderExtensionPluginRequest | RegisterLanguageExtensionPluginRequest | SubscribeRequest | UnsubscribeRequest | AddRequestHeadersRequest | ApplyStyleSheetRequest | CreatePanelRequest | ShowPanelRequest | CreateToolbarButtonRequest | UpdateButtonRequest | CreateSidebarPaneRequest | SetSidebarHeightRequest | SetSidebarContentRequest | SetSidebarPageRequest | OpenResourceRequest | SetOpenResourceHandlerRequest | SetThemeChangeHandlerRequest | ReloadRequest | EvaluateOnInspectedPageRequest | GetRequestContentRequest | GetResourceContentRequest | SetResourceContentRequest | ForwardKeyboardEventRequest | GetHARRequest | GetPageResourcesRequest | GetWasmLinearMemoryRequest | GetWasmLocalRequest | GetWasmGlobalRequest | GetWasmOpRequest;
     export type ExtensionServerRequestMessage = PrivateAPI.ServerRequests & {
         requestId?: number;
     };
@@ -400,7 +384,6 @@ declare namespace APIImpl {
     interface InspectorExtensionAPI {
         languageServices: PublicAPI.Chrome.DevTools.LanguageExtensions;
         recorder: PublicAPI.Chrome.DevTools.RecorderExtensions;
-        timeline: Timeline;
         network: PublicAPI.Chrome.DevTools.Network;
         panels: PublicAPI.Chrome.DevTools.Panels;
         inspectedWindow: PublicAPI.Chrome.DevTools.InspectedWindow;
@@ -482,17 +465,6 @@ declare namespace APIImpl {
     }
     interface Button extends PublicAPI.Chrome.DevTools.Button {
         _id: string;
-    }
-    interface TraceSession {
-        _id: string;
-        complete(url?: string, timeOffset?: number): void;
-    }
-    interface TraceProvider {
-        onRecordingStarted: EventSink<(session: TraceSession) => unknown>;
-        onRecordingStopped: EventSink<() => unknown>;
-    }
-    interface Timeline {
-        addTraceProvider(categoryName: string, categoryTooltip: string): TraceProvider;
     }
     type ResourceData = {
         url: string;

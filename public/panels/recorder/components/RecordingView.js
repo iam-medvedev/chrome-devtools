@@ -629,10 +629,7 @@ export class RecordingView extends HTMLElement {
             ${isEditable
             ? LitHtml.html `<${IconButton.Icon.Icon.litTagName}
                     class="chevron"
-                    .data=${{
-                iconName: 'triangle-down',
-                color: 'var(--sys-color-on-surface)',
-            }}>
+                    name="triangle-down">
                   </${IconButton.Icon.Icon.litTagName}>`
             : ''}
           </div>

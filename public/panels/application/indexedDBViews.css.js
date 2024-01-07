@@ -92,10 +92,6 @@ styles.replaceSync(
   flex-grow: 0;
 }
 
-[is="ui-icon"].warning.icon-mask {
-  background-color: var(--icon-warning);
-}
-
 .source-code.indexed-db-key-path {
   font-size: unset !important; /* stylelint-disable-line declaration-no-important */
 }

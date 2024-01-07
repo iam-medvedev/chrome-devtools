@@ -40,6 +40,7 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   border-bottom: 1px solid var(--sys-color-divider);
+  color: var(--sys-color-on-surface-subtle);
 }
 
 .filter-text-filter {
@@ -165,10 +166,6 @@ export default {
   display: flex;
   background-color: transparent;
   color: var(--sys-color-on-surface-subtle);
-}
-
-.dropdown-filterbar:hover {
-  color: var(--sys-color-on-surface);
 }
 
 .filter-input-field {
