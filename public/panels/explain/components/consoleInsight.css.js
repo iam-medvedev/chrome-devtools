@@ -223,6 +223,15 @@ h2 {
 }
 
 .info {
+  width: 20px;
+  height: 20px;
+}
+
+devtools-icon[name="spark"] {
+  color: var(--sys-color-primary-bright);
+}
+
+devtools-icon[name="dog-paw"] {
   width: 16px;
   height: 16px;
 }

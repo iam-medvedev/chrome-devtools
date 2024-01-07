@@ -1140,7 +1140,6 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
 export var Events;
 (function (Events) {
     Events["SidebarPaneAdded"] = "SidebarPaneAdded";
-    Events["TraceProviderAdded"] = "TraceProviderAdded";
 })(Events || (Events = {}));
 class ExtensionServerPanelView extends UI.View.SimpleView {
     name;

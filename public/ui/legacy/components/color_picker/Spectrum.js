@@ -1437,7 +1437,7 @@ export class Swatch {
         self.onInvokeElement(this.swatchOverlayElement, this.onCopyText.bind(this));
         this.swatchOverlayElement.addEventListener('mouseout', this.onCopyIconMouseout.bind(this));
         this.swatchOverlayElement.addEventListener('blur', this.onCopyIconMouseout.bind(this));
-        this.swatchCopyIcon = UI.Icon.Icon.create('copy', 'copy-color-icon');
+        this.swatchCopyIcon = IconButton.Icon.create('copy', 'copy-color-icon');
         UI.Tooltip.Tooltip.install(this.swatchCopyIcon, i18nString(UIStrings.copyColorToClipboard));
         this.swatchOverlayElement.appendChild(this.swatchCopyIcon);
         UI.ARIAUtils.setLabel(this.swatchOverlayElement, this.swatchCopyIcon.title);
@@ -1456,13 +1456,13 @@ export class Swatch {
         }
     }
     onCopyText(event) {
-        this.swatchCopyIcon.setIconType('checkmark');
+        this.swatchCopyIcon.name = 'checkmark';
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.colorString);
         UI.ARIAUtils.setPressed(this.swatchOverlayElement, true);
         event.consume();
     }
     onCopyIconMouseout() {
-        this.swatchCopyIcon.setIconType('copy');
+        this.swatchCopyIcon.name = 'copy';
         UI.ARIAUtils.setPressed(this.swatchOverlayElement, false);
     }
 }

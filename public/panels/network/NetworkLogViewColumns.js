@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -361,7 +362,8 @@ export class NetworkLogViewColumns {
         this.waterfallHeaderElement.createChild('div', 'hover-layer');
         const innerElement = this.waterfallHeaderElement.createChild('div');
         innerElement.textContent = i18nString(UIStrings.waterfall);
-        this.waterfallColumnSortIcon = UI.Icon.Icon.create('', 'sort-order-icon');
+        this.waterfallColumnSortIcon = new IconButton.Icon.Icon();
+        this.waterfallColumnSortIcon.className = 'sort-order-icon';
         this.waterfallHeaderElement.createChild('div', 'sort-order-icon-container')
             .appendChild(this.waterfallColumnSortIcon);
         function waterfallHeaderClicked() {
@@ -414,17 +416,19 @@ export class NetworkLogViewColumns {
         this.waterfallRequestsAreStale = true;
         if (columnId === 'waterfall') {
             if (this.dataGridInternal.sortOrder() === DataGrid.DataGrid.Order.Ascending) {
-                this.waterfallColumnSortIcon.setIconType('triangle-up');
+                this.waterfallColumnSortIcon.name = 'triangle-up';
             }
             else {
-                this.waterfallColumnSortIcon.setIconType('triangle-down');
+                this.waterfallColumnSortIcon.name = 'triangle-down';
             }
+            this.waterfallColumnSortIcon.hidden = false;
             const sortFunction = NetworkRequestNode.RequestPropertyComparator.bind(null, this.activeWaterfallSortId);
             this.dataGridInternal.sortNodes(sortFunction, !this.dataGridInternal.isSortOrderAscending());
             this.dataGridSortedForTest();
             return;
         }
-        this.waterfallColumnSortIcon.setIconType('');
+        this.waterfallColumnSortIcon.hidden = true;
+        this.waterfallColumnSortIcon.name = null;
         const columnConfig = this.columns.find(columnConfig => columnConfig.id === columnId);
         if (!columnConfig || !columnConfig.sortingFunction) {
             return;

@@ -204,15 +204,9 @@ export default {
   height: 100%;
 }
 
-.tabbed-pane-header-tabs-drop-down-container > .chevron-icon {
-  background-color: var(--icon-default);
-  display: block;
-}
-
 .tabbed-pane-header-tabs-drop-down-container > .chevron-icon:hover,
 .tabbed-pane-header-tabs-drop-down-container > .chevron-icon:focus-visible {
-  background-color: var(--icon-default-hover);
-  display: block;
+  color: var(--icon-default-hover);
 }
 
 .tabbed-pane-header-tabs-drop-down-container:hover,
@@ -388,7 +382,7 @@ export default {
 
   .tabbed-pane-header-tab:hover .tabbed-pane-close-button,
   .tabbed-pane-shadow .tabbed-pane-header-tab:focus-visible .tabbed-pane-close-button {
-    --icon-color: HighlightText;
+    color: HighlightText;
   }
 
   .tabbed-pane-header-tabs-drop-down-container {
@@ -401,12 +395,12 @@ export default {
   }
 
   .tabbed-pane-header-tabs-drop-down-container > .chevron-icon {
-    background-color: ButtonText;
+    color: ButtonText;
   }
 
   .tabbed-pane-header-tabs-drop-down-container:hover > .chevron-icon,
   .tabbed-pane-header-tabs-drop-down-container:focus-visible > .chevron-icon {
-    background-color: HighlightText;
+    color: HighlightText;
   }
 
   .tabbed-pane-header-tabs .tabbed-pane-header-tab .preview-icon {

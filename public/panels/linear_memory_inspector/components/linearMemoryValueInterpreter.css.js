@@ -40,11 +40,10 @@ styles.replaceSync(
   border: none;
   outline: none;
   background-color: transparent;
-  cursor: pointer;
 }
 
 .settings-toolbar-button.active devtools-icon {
-  --icon-color: var(--icon-toggled);
+  color: var(--icon-toggled);
 }
 
 .divider {

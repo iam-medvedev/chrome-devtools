@@ -46,6 +46,7 @@ h1 {
 .icon devtools-icon {
   width: 20px;
   height: 20px;
+  color: var(--sys-color-primary);
 }
 
 .table {

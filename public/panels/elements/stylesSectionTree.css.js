@@ -34,6 +34,12 @@ styles.replaceSync(
   user-select: none;
   cursor: default;
   z-index: 1;
+  mask: var(--image-file-warning-filled) center / 14px no-repeat;
+  background-color: var(--icon-warning);
+}
+
+.tree-outline li.not-parsed-ok.has-ignorable-error .exclamation-mark {
+  background-color: unset;
 }
 
 .tree-outline li {
@@ -242,7 +248,7 @@ ol.expanded {
   cursor: pointer;
 
   &:hover devtools-icon {
-    --icon-color: var(--icon-default-hover);
+    color: var(--icon-default-hover);
   }
 }
 

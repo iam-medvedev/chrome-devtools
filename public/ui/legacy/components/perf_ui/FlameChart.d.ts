@@ -66,6 +66,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private chartViewport;
     private dataProvider;
     private candyStripePattern;
+    private contextMenu?;
     private viewportElement;
     private canvas;
     private entryInfo;
@@ -154,6 +155,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     moveGroupDown(groupIndex: number): void;
     hideGroup(groupIndex: number): void;
     showGroup(groupIndex: number): void;
+    onContextMenu(_event: Event): void;
     private onKeyDown;
     bindCanvasEvent(eventName: string, onEvent: (arg0: Event) => void): void;
     private handleKeyboardGroupNavigation;
@@ -200,6 +202,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      * Returns the y scroll of the chart viewport.
      */
     getScrollOffset(): number;
+    getContextMenu(): UI.ContextMenu.ContextMenu | undefined;
     /**
      * Given offset of the cursor, returns the index of the group.
      * This function is public for test purpose.
@@ -401,6 +404,7 @@ export interface FlameChartDataProvider {
     forceDecoration(entryIndex: number): boolean;
     textColor(entryIndex: number): string;
     mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
+    findPossibleContextMenuActions?(group: Group, node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
 }
 export interface FlameChartMarker {
     startTime(): number;

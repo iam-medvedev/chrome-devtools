@@ -191,6 +191,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         const entry = this.entryData[node];
         this.compatibilityTracksAppender?.modifyTree(group, entry, action, flameChartView);
     }
+    findPossibleContextMenuActions(group, node) {
+        const entry = this.entryData[node];
+        return this.compatibilityTracksAppender?.findPossibleContextMenuActions(group, entry);
+    }
     buildGroupStyle(extra) {
         const defaultGroupStyle = {
             padding: 4,

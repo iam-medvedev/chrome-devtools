@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
+import * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as UI from '../../legacy.js';
-import { ObjectPropertiesSection } from './ObjectPropertiesSection.js';
 import customPreviewComponentStyles from './customPreviewComponent.css.js';
+import { ObjectPropertiesSection } from './ObjectPropertiesSection.js';
 const UIStrings = {
     /**
      *@description A context menu item in the Custom Preview Component
@@ -49,7 +50,7 @@ export class CustomPreviewSection {
                 this.header.classList.add('custom-expandable-section-header');
             }
             this.header.addEventListener('click', this.onClick.bind(this), false);
-            this.expandIcon = UI.Icon.Icon.create('triangle-right', 'custom-expand-icon');
+            this.expandIcon = IconButton.Icon.create('triangle-right', 'custom-expand-icon');
             this.header.insertBefore(this.expandIcon, this.header.firstChild);
         }
         this.sectionElement.appendChild(this.header);
@@ -129,10 +130,10 @@ export class CustomPreviewSection {
         }
         if (this.expandIcon) {
             if (this.expanded) {
-                this.expandIcon.setIconType('triangle-down');
+                this.expandIcon.name = 'triangle-down';
             }
             else {
-                this.expandIcon.setIconType('triangle-right');
+                this.expandIcon.name = 'triangle-right';
             }
         }
     }

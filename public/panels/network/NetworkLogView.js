@@ -49,6 +49,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { Events, NetworkGroupNode, NetworkRequestNode, } from './NetworkDataGridNode.js';
 import { NetworkFrameGrouper } from './NetworkFrameGrouper.js';
 import networkLogViewStyles from './networkLogView.css.js';
@@ -2151,6 +2152,7 @@ export class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper {
         this.items = items;
         this.filterChanged = filterChangedCallback;
         this.filterElement = document.createElement('div');
+        this.filterElement.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('request-types')}`);
         this.typesCountAdorner = new Adorners.Adorner.Adorner();
         this.selectedTypesCount = document.createElement('span');
         this.typesCountAdorner.data = {
@@ -2339,6 +2341,7 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
             Common.Settings.Settings.instance().createSetting('networkOnlyThirdPartySetting', false);
         this.filterElement = document.createElement('div');
         this.filterElement.setAttribute('aria-label', 'Show only/hide requests dropdown');
+        this.filterElement.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('more-filters')}`);
         this.activeFiltersCountAdorner = new Adorners.Adorner.Adorner();
         this.activeFiltersCount = document.createElement('span');
         this.activeFiltersCountAdorner.data = {

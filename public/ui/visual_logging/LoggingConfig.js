@@ -32,7 +32,7 @@ var VisualElements;
     /* 19 used to be CssLayersPane, but free to grab now */
     VisualElements[VisualElements["DropDown"] = 20] = "DropDown";
     /* 21 used to be StylesMetricsPane, but free to grab now */
-    VisualElements[VisualElements["JumpToSource"] = 22] = "JumpToSource";
+    /* 22 used to be JumpToSource, but free to grab now */
     VisualElements[VisualElements["MetricsBox"] = 23] = "MetricsBox";
     VisualElements[VisualElements["MetricsBoxPart"] = 24] = "MetricsBoxPart";
     /* 25 used to be DOMBreakpointsPane, but free to grab now */
@@ -55,11 +55,11 @@ var VisualElements;
     VisualElements[VisualElements["CssGridEditor"] = 42] = "CssGridEditor";
     VisualElements[VisualElements["CssShadowEditor"] = 43] = "CssShadowEditor";
     VisualElements[VisualElements["Link"] = 44] = "Link";
-    VisualElements[VisualElements["Next"] = 45] = "Next";
+    /* 45 used to be Next, but free to grab now */
     VisualElements[VisualElements["Item"] = 46] = "Item";
     VisualElements[VisualElements["PaletteColorShades"] = 47] = "PaletteColorShades";
     VisualElements[VisualElements["Panel"] = 48] = "Panel";
-    VisualElements[VisualElements["Previous"] = 49] = "Previous";
+    /* 49 used to be Previous, but free to grab now */
     VisualElements[VisualElements["ShowStyleEditor"] = 50] = "ShowStyleEditor";
     VisualElements[VisualElements["Slider"] = 51] = "Slider";
     VisualElements[VisualElements["CssColorMix"] = 52] = "CssColorMix";
@@ -68,7 +68,7 @@ var VisualElements;
     VisualElements[VisualElements["GridSettings"] = 55] = "GridSettings";
     VisualElements[VisualElements["FlexboxOverlays"] = 56] = "FlexboxOverlays";
     VisualElements[VisualElements["GridOverlays"] = 57] = "GridOverlays";
-    VisualElements[VisualElements["JumpToElement"] = 58] = "JumpToElement";
+    /* 58 used to be JumpToElement, but free to grab now */
     VisualElements[VisualElements["PieChart"] = 59] = "PieChart";
     VisualElements[VisualElements["PieChartSlice"] = 60] = "PieChartSlice";
     VisualElements[VisualElements["PieChartTotal"] = 61] = "PieChartTotal";

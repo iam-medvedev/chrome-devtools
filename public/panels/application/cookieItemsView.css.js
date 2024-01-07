@@ -16,7 +16,6 @@ styles.replaceSync(
 }
 
 .cookie-preview-widget-header {
-  color: var(--sys-color-token-subtle);
   font-weight: bold;
   user-select: none;
   white-space: nowrap;

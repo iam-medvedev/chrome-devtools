@@ -817,10 +817,10 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return;
         }
         if (this.expanded) {
-            this.expandElement.setIconType('triangle-down');
+            this.expandElement.name = 'triangle-down';
         }
         else {
-            this.expandElement.setIconType('triangle-right');
+            this.expandElement.name = 'triangle-right';
         }
     }
     #getRegisteredPropertyDetails(variableName) {
@@ -850,7 +850,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     innerUpdateTitle() {
         this.updateState();
         if (this.isExpandable()) {
-            this.expandElement = UI.Icon.Icon.create('triangle-right', 'expand-icon');
+            this.expandElement = IconButton.Icon.create('triangle-right', 'expand-icon');
             this.expandElement.setAttribute('jslog', `${VisualLogging.treeItemExpand().track({ click: true })}`);
         }
         const propertyRenderer = new StylesSidebarPropertyRenderer(this.style.parentRule, this.node(), this.name, this.value);
@@ -955,7 +955,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             if (this.nameElement && this.valueElement) {
                 UI.ARIAUtils.setLabel(enabledCheckboxElement, `${this.nameElement.textContent} ${this.valueElement.textContent}`);
             }
-            const copyIcon = UI.Icon.Icon.create('copy', 'copy');
+            const copyIcon = IconButton.Icon.create('copy', 'copy');
             UI.Tooltip.Tooltip.install(copyIcon, i18nString(UIStrings.copyDeclaration));
             copyIcon.addEventListener('click', () => {
                 const propertyText = `${this.property.name}: ${this.property.value};`;

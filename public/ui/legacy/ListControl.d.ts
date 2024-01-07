@@ -55,7 +55,7 @@ export declare class ListControl<T> {
     private onKeyDown;
     private totalHeight;
     private indexAtOffset;
-    private elementAtIndex;
+    elementAtIndex(index: number): Element;
     private refreshARIA;
     private updateElementARIA;
     private offsetAtIndex;

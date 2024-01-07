@@ -2207,6 +2207,9 @@
   "panels/application/ApplicationPanelSidebar.ts | theContentOfThisDocumentHasBeen": {
     "message": "The content of this document has been generated dynamically via 'document.write()'."
   },
+  "panels/application/ApplicationPanelSidebar.ts | thirdPartyPhaseout": {
+    "message": "Cookies from {PH1} may have been blocked due to third-party cookie phaseout."
+  },
   "panels/application/ApplicationPanelSidebar.ts | versionS": {
     "message": "Version: {PH1}"
   },
@@ -6352,6 +6355,9 @@
   },
   "panels/explain/components/ConsoleInsight.ts | notHelpful": {
     "message": "Not helpful"
+  },
+  "panels/explain/components/ConsoleInsight.ts | opensInNewTab": {
+    "message": "(opens in a new tab)"
   },
   "panels/explain/components/ConsoleInsight.ts | other": {
     "message": "Other"
@@ -14347,6 +14353,9 @@
   },
   "ui/legacy/components/quick_open/FilteredListWidget.ts | quickOpenPrompt": {
     "message": "Quick open prompt"
+  },
+  "ui/legacy/components/quick_open/FilteredListWidget.ts | sItemSOfS": {
+    "message": "{PH1}, item {PH2} of {PH3}"
   },
   "ui/legacy/components/quick_open/quick_open-meta.ts | openFile": {
     "message": "Open file"

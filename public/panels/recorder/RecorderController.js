@@ -19,7 +19,6 @@ import * as Tracing from '../../services/tracing/tracing.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../ui/components/helpers/helpers.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as Menus from '../../ui/components/menus/menus.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
@@ -1086,18 +1085,16 @@ let RecorderController = class RecorderController extends LitElement {
         }}
             ></${Buttons.Button.Button.litTagName}>
             <div class="separator"></div>
-            <button class="continue-button"
-              .disabled=${!this.recordingPlayer ||
-            !this.#replayState.isPausedOnBreakpoint}
-              title=${i18nString(UIStrings.continueReplay)}
-              @click=${() => this.recordingPlayer?.continue()}>
-                <${IconButton.Icon.Icon.litTagName}
-                  .data=${{
+            <${Buttons.Button.Button.litTagName}
+              @click=${() => this.recordingPlayer?.continue()}
+              .data=${{
+            variant: "primary_toolbar" /* Buttons.Button.Variant.PRIMARY_TOOLBAR */,
             iconName: 'resume',
-            color: 'var(--icon-color)',
+            disabled: !this.recordingPlayer ||
+                !this.#replayState.isPausedOnBreakpoint,
+            title: i18nString(UIStrings.continueReplay),
         }}
-                ></${IconButton.Icon.Icon.litTagName}>
-            </button>
+            ></${Buttons.Button.Button.litTagName}>
             <${Buttons.Button.Button.litTagName}
               @click=${() => this.recordingPlayer?.stepOver()}
               .data=${{

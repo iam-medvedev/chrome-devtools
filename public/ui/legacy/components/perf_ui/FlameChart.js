@@ -84,6 +84,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     chartViewport;
     dataProvider;
     candyStripePattern;
+    contextMenu;
     viewportElement;
     canvas;
     entryInfo;
@@ -163,7 +164,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.canvas.addEventListener('click', this.onClick.bind(this), false);
         this.canvas.addEventListener('keydown', this.onKeyDown.bind(this), false);
         if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU)) {
-            this.canvas.addEventListener('contextmenu', this.#onContextMenu.bind(this), false);
+            this.canvas.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
         }
         this.entryInfo = this.viewportElement.createChild('div', 'flame-chart-entry-info');
         this.markerHighlighElement = this.viewportElement.createChild('div', 'flame-chart-marker-highlight-element');
@@ -649,7 +650,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             action: treeAction,
         });
     }
-    #onContextMenu(_event) {
+    onContextMenu(_event) {
         // The context menu only applies if the user is hovering over an individual entry.
         if (this.highlightedEntryIndex === -1) {
             return;
@@ -671,21 +672,28 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // represents the entry under the cursor where the user has right clicked
         // to trigger a context menu.
         this.dispatchEventToListeners(Events.EntryInvoked, this.highlightedEntryIndex);
-        const contextMenu = new UI.ContextMenu.ContextMenu(_event);
+        // Before showing the context menu, check which actions are possible on an entry.
+        // If an action would not change the entries (for example it has no children to collapse), we do not need to show it.
+        const possibleActions = this.dataProvider.findPossibleContextMenuActions?.(group, this.highlightedEntryIndex);
+        this.contextMenu = new UI.ContextMenu.ContextMenu(_event);
         // TODO(crbug.com/1469887): Change text/ui to the final designs when they are complete.
-        contextMenu.headerSection().appendItem('Merge function', () => {
+        this.contextMenu.headerSection().appendItem('Merge function', () => {
             this.#dispatchTreeModifiedEvent("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */, this.highlightedEntryIndex);
         });
-        contextMenu.headerSection().appendItem('Collapse function', () => {
-            this.#dispatchTreeModifiedEvent("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */, this.highlightedEntryIndex);
-        });
-        contextMenu.headerSection().appendItem('Collapse repeating descendants', () => {
-            this.#dispatchTreeModifiedEvent("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */, this.highlightedEntryIndex);
-        });
-        contextMenu.headerSection().appendItem('Reset trace', () => {
+        if (possibleActions?.["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */]) {
+            this.contextMenu.headerSection().appendItem('Collapse function', () => {
+                this.#dispatchTreeModifiedEvent("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */, this.highlightedEntryIndex);
+            });
+        }
+        if (possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */]) {
+            this.contextMenu.headerSection().appendItem('Collapse repeating descendants', () => {
+                this.#dispatchTreeModifiedEvent("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */, this.highlightedEntryIndex);
+            });
+        }
+        this.contextMenu.headerSection().appendItem('Reset trace', () => {
             this.#dispatchTreeModifiedEvent("UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterUndoAction.UNDO_ALL_ACTIONS */, this.highlightedEntryIndex);
         });
-        void contextMenu.show();
+        void this.contextMenu.show();
     }
     onKeyDown(e) {
         if (!UI.KeyboardShortcut.KeyboardShortcut.hasNoModifiers(e) || !this.timelineData()) {
@@ -1017,6 +1025,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
      */
     getScrollOffset() {
         return this.chartViewport.scrollOffset();
+    }
+    getContextMenu() {
+        return this.contextMenu;
     }
     /**
      * Given offset of the cursor, returns the index of the group.
@@ -1604,7 +1615,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             let text = this.dataProvider.entryTitle(entryIndex);
             if (text && text.length) {
                 context.font = this.#font;
-                text = UI.UIUtils.trimTextMiddle(context, text, barWidth - 2 * textPadding);
+                const hasArrowDecoration = this.entryHasDecoration(entryIndex, "HIDDEN_ANCESTORS_ARROW" /* FlameChartDecorationType.HIDDEN_ANCESTORS_ARROW */);
+                // Set the max width to be the width of the bar plus some padding. If the bar has an arrow decoration, also substract the width of the decoration.
+                // The decoration is square, therefore it's width is equal to this.barHeight
+                const maxBarWidth = (hasArrowDecoration) ? barWidth - textPadding - this.barHeight : barWidth - 2 * textPadding;
+                text = UI.UIUtils.trimTextMiddle(context, text, maxBarWidth);
             }
             const unclippedBarX = this.chartViewport.timeToPosition(entryStartTime);
             const barHeight = this.#eventBarHeight(timelineData, entryIndex);

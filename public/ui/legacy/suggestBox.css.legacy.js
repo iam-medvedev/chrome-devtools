@@ -82,8 +82,7 @@ export default {
 }
 
 .suggest-box-content-item devtools-icon {
-  --icon-color: var(--sys-color-on-surface-subtle);
-
+  color: var(--sys-color-on-surface-subtle);
   margin-right: 1px;
 }
 

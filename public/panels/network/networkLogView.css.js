@@ -234,16 +234,13 @@ styles.replaceSync(
   filter: none;
 }
 
-.data-grid-data-grid-node [is="ui-icon"].arrow-up-down-circle {
-  transform: scale(0.8);
-}
-
 .network-log-grid.data-grid .network-error-row.data-grid-data-grid-node img.icon,
 .network-log-grid.data-grid .network-error-row.data-grid-data-grid-node.selected img.icon {
   /* This is generated with https://codepen.io/sosuke/pen/Pjoqqp to target var(--color-red) */
   filter: brightness(0) saturate(100%) invert(35%) sepia(76%) saturate(1413%) hue-rotate(338deg) brightness(92%) contrast(103%);
 }
 
+.data-grid-data-grid-node devtools-icon[name="arrow-up-down-circle"],
 .network-log-grid.data-grid.small .icon {
   width: 16px;
   height: 16px;
@@ -445,7 +442,11 @@ styles.replaceSync(
 
   .network-waterfall-header:hover {
     forced-color-adjust: none;
-    background-color: Highlight;
+    background-color: Highlight !important; /* stylelint-disable-line declaration-no-important */
+
+    & > div.hover-layer {
+      display: none;
+    }
   }
 
   .network-waterfall-header.small,
@@ -454,8 +455,12 @@ styles.replaceSync(
     background-color: canvas;
   }
 
-  .network-waterfall-header:hover .sort-order-icon-container [is="ui-icon"].icon-mask {
-    background-color: HighlightText;
+  .network-waterfall-header .sort-order-icon-container devtools-icon {
+    background-color: inherit;
+  }
+
+  .network-waterfall-header:hover .sort-order-icon-container devtools-icon {
+    color: HighlightText;
   }
 }
 

@@ -105,7 +105,6 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/data_grid/DataGri
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const elementToLongTextMap = new WeakMap();
 const nodeToColumnIdMap = new WeakMap();
-const elementToSortIconMap = new WeakMap();
 const elementToPreferedWidthMap = new WeakMap();
 const elementToPositionMap = new WeakMap();
 const elementToIndexMap = new WeakMap();
@@ -380,9 +379,9 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         if (column.sortable) {
             cell.addEventListener('click', this.clickInHeaderCell.bind(this), false);
             cell.classList.add('sortable');
-            const icon = UI.Icon.Icon.create('', 'sort-order-icon');
+            const icon = document.createElement('span');
+            icon.className = 'sort-order-icon';
             cell.createChild('div', 'sort-order-icon-container').appendChild(icon);
-            elementToSortIconMap.set(cell, icon);
         }
     }
     addColumn(column, position) {
@@ -1139,11 +1138,6 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.sortColumnCell = cell;
         cell.classList.add(sortOrder);
-        const icon = elementToSortIconMap.get(cell);
-        if (!icon) {
-            return;
-        }
-        icon.setIconType(sortOrder === Order.Ascending ? 'triangle-up' : 'triangle-down');
         this.dispatchEventToListeners(Events.SortingChanged);
     }
     markColumnAsSortedBy(columnId, sortOrder) {

@@ -1,5 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ConsoleFilter } from './ConsoleFilter.js';
 import { type ConsoleViewMessage } from './ConsoleViewMessage.js';
@@ -9,9 +10,7 @@ declare const ConsoleSidebar_base: (new (...args: any[]) => {
     once<T_1 extends Events.FilterSelected>(eventType: T_1): Promise<EventTypes[T_1]>;
     removeEventListener<T_2 extends Events.FilterSelected>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
     hasEventListeners(eventType: Events.FilterSelected): boolean;
-    dispatchEventToListeners<T_3 extends Events.FilterSelected>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_3>): void; /**
-     *@description Text in Console Sidebar of the Console panel to show how many info messages exist.
-     */
+    dispatchEventToListeners<T_3 extends Events.FilterSelected>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_3>): void;
 }) & typeof UI.Widget.VBox;
 export declare class ConsoleSidebar extends ConsoleSidebar_base {
     private readonly tree;
@@ -47,7 +46,7 @@ export declare class FilterTreeElement extends ConsoleSidebarTreeElement {
     private readonly urlTreeElements;
     private messageCount;
     private uiStringForFilterCount;
-    constructor(filter: ConsoleFilter, icon: UI.Icon.Icon, selectedFilterSetting: Common.Settings.Setting<string>);
+    constructor(filter: ConsoleFilter, icon: IconButton.Icon.Icon, selectedFilterSetting: Common.Settings.Setting<string>);
     clear(): void;
     name(): string;
     onselect(selectedByUser?: boolean): boolean;

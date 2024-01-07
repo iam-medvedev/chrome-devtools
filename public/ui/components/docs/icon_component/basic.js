@@ -29,7 +29,7 @@ const iconName2 = document.createElement('td');
 iconName2.textContent = 'issue-exclamation-filled';
 row2.appendChild(iconName2);
 const otherIcon = new IconButton.Icon.Icon();
-const otherPath = '../../../../Images/src/issue-exclamation-filled.svg';
+const otherPath = 'issue-exclamation-filled';
 otherIcon.data = {
     iconPath: otherPath,
     width: '20px',
@@ -46,12 +46,7 @@ iconName3.textContent = 'select-element';
 row3.appendChild(iconName3);
 const otherIcon2 = new IconButton.Icon.Icon();
 otherIcon2.classList.add('custom-color');
-otherIcon2.data = {
-    iconName: 'select-element',
-    width: '20px',
-    height: '20px',
-    color: 'var(--icon-default)',
-};
+otherIcon2.name = 'select-element';
 const icon3 = document.createElement('td');
 icon3.appendChild(otherIcon2);
 row3.appendChild(icon3);

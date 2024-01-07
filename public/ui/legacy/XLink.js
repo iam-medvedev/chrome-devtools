@@ -57,7 +57,7 @@ export class XLink extends XElement {
     }
     static get observedAttributes() {
         // TODO(dgozman): should be super.observedAttributes, but it does not compile.
-        return XElement.observedAttributes.concat(['href', 'no-click']);
+        return XElement.observedAttributes.concat(['href', 'no-click', 'title']);
     }
     get href() {
         return this.hrefInternal;
@@ -85,7 +85,9 @@ export class XLink extends XElement {
                 href = null;
             }
             this.hrefInternal = href;
-            Tooltip.install(this, newValue);
+            if (!this.hasAttribute('title')) {
+                Tooltip.install(this, newValue);
+            }
             this.updateClick();
             return;
         }

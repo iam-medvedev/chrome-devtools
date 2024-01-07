@@ -28,8 +28,6 @@ interface CommonButtonData {
     type?: ButtonType;
     value?: string;
     title?: string;
-    iconWidth?: string;
-    iconHeight?: string;
     jslogContext?: string;
 }
 export type ButtonData = CommonButtonData & ({
@@ -55,8 +53,6 @@ export declare class Button extends HTMLElement {
     set iconName(iconName: string | undefined);
     set variant(variant: Variant);
     set size(size: Size);
-    set iconWidth(iconWidth: string);
-    set iconHeight(iconHeight: string);
     set type(type: ButtonType);
     set title(title: string);
     set disabled(disabled: boolean);

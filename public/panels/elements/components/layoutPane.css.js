@@ -114,23 +114,11 @@ styles.replaceSync(
   display: flex;
   flex-direction: row;
   align-items: center;
+  gap: 8px;
 }
 
 .show-element {
-  margin: 0 0 0 8px;
-  cursor: pointer;
   flex: none;
-
-  --icon-show-element: var(--icon-default);
-}
-
-.show-element:hover {
-  --icon-show-element: var(--icon-default-hover);
-}
-
-.show-element:focus {
-  outline: 2px solid var(--sys-color-state-focus-ring);
-  border-radius: 2px;
 }
 
 .chrome-select {
@@ -148,7 +136,6 @@ styles.replaceSync(
   display: inline-block;
   flex: none;
   height: 10px;
-  margin: 0 0 0 8px;
   width: 10px;
   position: relative;
 

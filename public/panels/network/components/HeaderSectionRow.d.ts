@@ -1,5 +1,5 @@
-import type * as Protocol from '../../../generated/protocol.js';
 import * as Platform from '../../../core/platform/platform.js';
+import type * as Protocol from '../../../generated/protocol.js';
 import { EditableSpan } from './EditableSpan.js';
 export declare const isValidHeaderName: (headerName: string) => boolean;
 export declare const compareHeaders: (first: string | null | undefined, second: string | null | undefined) => boolean;

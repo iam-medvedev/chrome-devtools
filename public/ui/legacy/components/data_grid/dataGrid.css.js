@@ -173,12 +173,20 @@ styles.replaceSync(
 .data-grid th .sort-order-icon {
   margin-right: 4px;
   margin-bottom: -2px;
+  width: 14px;
+  height: 14px;
   display: none;
+  background-color: var(--icon-default);
 }
 
-.data-grid th.sort-ascending .sort-order-icon,
+.data-grid th.sort-ascending .sort-order-icon {
+  display: inline-block;
+  mask-image: var(--image-file-triangle-up);
+}
+
 .data-grid th.sort-descending .sort-order-icon {
-  display: block;
+  display: inline-block;
+  mask-image: var(--image-file-triangle-down);
 }
 
 .data-grid th.sort-ascending,
@@ -300,10 +308,14 @@ styles.replaceSync(
 }
 
 @media (forced-colors: active) {
-  .sort-order-icon-container [is="ui-icon"].icon-mask,
-  .data-grid td.disclosure::before {
+  .sort-order-icon-container .sort-order-icon {
     forced-color-adjust: none;
     background-color: ButtonText;
+  }
+
+  .data-grid td.disclosure::before {
+    forced-color-adjust: none;
+    color: ButtonText;
   }
 
   .data-grid.no-selection:focus-visible * {
@@ -311,10 +323,13 @@ styles.replaceSync(
   }
 
   .data-grid th.sortable:hover *,
-  .data-grid th.sortable:hover .sort-order-icon-container [is="ui-icon"].icon-mask,
   .data-grid tr.parent.selected td.disclosure::before,
   .data-grid:focus tr.parent.selected td.disclosure::before,
   .data-grid tbody tr.parent.revealed:hover td.disclosure::before {
+    color: HighlightText;
+  }
+
+  .data-grid th.sortable:hover .sort-order-icon-container .sort-order-icon {
     background-color: HighlightText;
   }
 

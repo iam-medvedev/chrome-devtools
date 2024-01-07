@@ -18,7 +18,6 @@ import * as Fragment from './Fragment.js';
 import * as Geometry from './Geometry.js';
 import * as GlassPane from './GlassPane.js';
 import * as HistoryInput from './HistoryInput.js';
-import * as Icon from './Icon.js';
 import * as Infobar from './Infobar.js';
 import * as InplaceEditor from './InplaceEditor.js';
 import * as InspectorView from './InspectorView.js';
@@ -56,5 +55,5 @@ import * as XElement from './XElement.js';
 import * as XLink from './XLink.js';
 import * as XWidget from './XWidget.js';
 import * as ZoomManager from './ZoomManager.js';
-export { ActionRegistration, ActionRegistry, ARIAUtils, Context, ContextFlavorListener, ContextMenu, Dialog, DockController, DropTarget, EmptyWidget, FilterBar, FilterSuggestionBuilder, ForwardedInputEventHandler, Fragment, Geometry, GlassPane, HistoryInput, Icon, Infobar, InplaceEditor, InspectorView, KeyboardShortcut, ListControl, ListModel, ListWidget, Panel, PopoverHelper, ProgressIndicator, RemoteDebuggingTerminatedScreen, ReportView, ResizerWidget, RootView, SearchableView, SettingsUI, ShortcutRegistry, SoftContextMenu, SoftDropDown, SplitWidget, SuggestBox, TabbedPane, TargetCrashedScreen, TextPrompt, ThrottledWidget, Toolbar, Tooltip, TreeOutline, UIUtils, Utils, View, ViewManager, Widget, XElement, XLink, XWidget, ZoomManager, };
+export { ActionRegistration, ActionRegistry, ARIAUtils, Context, ContextFlavorListener, ContextMenu, Dialog, DockController, DropTarget, EmptyWidget, FilterBar, FilterSuggestionBuilder, ForwardedInputEventHandler, Fragment, Geometry, GlassPane, HistoryInput, Infobar, InplaceEditor, InspectorView, KeyboardShortcut, ListControl, ListModel, ListWidget, Panel, PopoverHelper, ProgressIndicator, RemoteDebuggingTerminatedScreen, ReportView, ResizerWidget, RootView, SearchableView, SettingsUI, ShortcutRegistry, SoftContextMenu, SoftDropDown, SplitWidget, SuggestBox, TabbedPane, TargetCrashedScreen, TextPrompt, ThrottledWidget, Toolbar, Tooltip, TreeOutline, UIUtils, Utils, View, ViewManager, Widget, XElement, XLink, XWidget, ZoomManager, };
 //# sourceMappingURL=legacy.js.map

@@ -17,9 +17,15 @@ styles.replaceSync(
   white-space: nowrap;
 }
 
-.info-icon {
+devtools-icon {
   vertical-align: text-bottom;
   margin-left: 2px;
+  width: 16px;
+  height: 16px;
+}
+
+devtools-button {
+  vertical-align: sub;
 }
 
 /*# sourceURL=sharedStorageMetadataView.css */

@@ -103,6 +103,13 @@ export class CompatibilityTracksAppender {
             console.warn('Could not modify tree in not thread track');
         }
     }
+    findPossibleContextMenuActions(group, node) {
+        const threadTrackAppender = this.#trackForGroup.get(group);
+        if (threadTrackAppender instanceof ThreadAppender) {
+            return threadTrackAppender.findPossibleContextMenuActions(node);
+        }
+        console.warn('Could not modify tree in not thread track');
+    }
     #addThreadAppenders() {
         const weight = (appender) => {
             switch (appender.threadType) {

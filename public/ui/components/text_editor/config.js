@@ -293,6 +293,7 @@ export function baseConfiguration(text) {
             parent: getTooltipHost(),
             tooltipSpace: getTooltipSpace,
         }),
+        CM.bidiIsolates(),
     ];
 }
 export const closeBrackets = [

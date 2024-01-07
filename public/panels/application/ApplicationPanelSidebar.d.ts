@@ -253,7 +253,7 @@ export declare class DOMStorageTreeElement extends ApplicationPanelTreeElement {
 export declare class CookieTreeElement extends ApplicationPanelTreeElement {
     private readonly target;
     private readonly cookieDomainInternal;
-    constructor(storagePanel: ResourcesPanel, frame: SDK.ResourceTreeModel.ResourceTreeFrame, cookieDomain: string);
+    constructor(storagePanel: ResourcesPanel, frame: SDK.ResourceTreeModel.ResourceTreeFrame, cookieUrl: Common.ParsedURL.ParsedURL);
     get itemURL(): Platform.DevToolsPath.UrlString;
     cookieDomain(): string;
     onattach(): void;

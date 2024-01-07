@@ -639,10 +639,7 @@ export class StepView extends HTMLElement {
             ${isExpandable
             ? LitHtml.html `<${IconButton.Icon.Icon.litTagName}
                     class="chevron"
-                    .data=${{
-                iconName: 'triangle-down',
-                color: 'var(--sys-color-on-surface)',
-            }}>
+                    name="triangle-down">
                   </${IconButton.Icon.Icon.litTagName}>`
             : ''}
             <div class="title">

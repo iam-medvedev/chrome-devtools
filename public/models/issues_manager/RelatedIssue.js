@@ -50,6 +50,11 @@ export function hasThirdPartyPhaseoutCookieIssue(obj) {
     return issuesAssociatedWith(issues, obj)
         .some(issue => CookieIssue.getSubCategory(issue.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.ThirdPartyPhaseoutCookie */);
 }
+export function hasThirdPartyPhaseoutCookieIssueForDomain(domain) {
+    const issues = Array.from(IssuesManager.instance().issues());
+    const issuesForDomain = issues.filter(issue => Array.from(issue.cookies()).some(cookie => cookie.domain === domain));
+    return issuesForDomain.some(issue => CookieIssue.getSubCategory(issue.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.ThirdPartyPhaseoutCookie */);
+}
 export async function reveal(obj, category) {
     if (typeof obj === 'string') {
         const issue = IssuesManager.instance().getIssueById(obj);

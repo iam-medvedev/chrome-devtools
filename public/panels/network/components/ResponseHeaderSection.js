@@ -1,19 +1,20 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
-import * as NetworkForward from '../../../panels/network/forward/forward.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as Sources from '../../../panels/sources/sources.js';
-import * as UI from '../../../ui/legacy/legacy.js';
-import { compareHeaders, HeaderSectionRow, } from './HeaderSectionRow.js';
-import * as Persistence from '../../../models/persistence/persistence.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as Common from '../../../core/common/common.js';
+import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
+import * as Persistence from '../../../models/persistence/persistence.js';
+import * as NetworkForward from '../../../panels/network/forward/forward.js';
+import * as Sources from '../../../panels/sources/sources.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
+import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
+import * as UI from '../../../ui/legacy/legacy.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import { compareHeaders, HeaderSectionRow, } from './HeaderSectionRow.js';
 import responseHeaderSectionStyles from './ResponseHeaderSection.css.js';
 const { render, html } = LitHtml;
 const UIStrings = {
@@ -401,16 +402,21 @@ export class ResponseHeaderSection extends HTMLElement {
         // clang-format off
         render(html `
       ${headerDescriptors.map((header, index) => html `
-        <${HeaderSectionRow.litTagName} .data=${{ header }} @headeredited=${this.#onHeaderEdited} @headerremoved=${this.#onHeaderRemoved} @enableheaderediting=${this.#onEnableHeaderEditingClick} data-index=${index}></${HeaderSectionRow.litTagName}>
+        <${HeaderSectionRow.litTagName}
+            .data=${{ header }}
+            @headeredited=${this.#onHeaderEdited}
+            @headerremoved=${this.#onHeaderRemoved}
+            @enableheaderediting=${this.#onEnableHeaderEditingClick}
+            data-index=${index}
+        ></${HeaderSectionRow.litTagName}>
       `)}
       ${this.#headersAreOverrideable ? html `
         <${Buttons.Button.Button.litTagName}
           class="add-header-button"
           .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}
           .iconUrl=${plusIconUrl}
-          .iconWidth=${'12px'}
-          .iconHeight=${'12px'}
-          @click=${this.#onAddHeaderClick}>
+          @click=${this.#onAddHeaderClick}
+          jslog=${VisualLogging.action().track({ click: true }).context('add-header')}>
           ${i18nString(UIStrings.addHeader)}
         </${Buttons.Button.Button.litTagName}>
       ` : LitHtml.nothing}

@@ -287,6 +287,7 @@ styles.replaceSync(
   width: 14px;
   height: 14px;
   transform: rotate(-90deg);
+  color: var(--sys-color-on-surface);
 }
 
 .expanded .chevron {

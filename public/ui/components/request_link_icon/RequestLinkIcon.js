@@ -27,12 +27,12 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/components/request_link_icon/RequestLinkIcon.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export const extractShortPath = (path) => {
     // 1st regex matches everything after last '/'
     // if path ends with '/', 2nd regex returns everything between the last two '/'
     return (/[^/]+$/.exec(path) || /[^/]+\/$/.exec(path) || [''])[0];
 };
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export class RequestLinkIcon extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-request-link-icon`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -48,7 +48,6 @@ export class RequestLinkIcon extends HTMLElement {
     #affectedRequest;
     #additionalOnClickAction;
     #reveal = Common.Revealer.reveal;
-    #requestResolvedPromise = Promise.resolve(undefined);
     set data(data) {
         this.#linkToPreflight = data.linkToPreflight;
         this.#request = data.request;
@@ -65,24 +64,22 @@ export class RequestLinkIcon extends HTMLElement {
             this.#reveal = data.revealOverride;
         }
         if (!this.#request && data.affectedRequest) {
-            this.#requestResolvedPromise = this.#resolveRequest(data.affectedRequest.requestId);
+            if (!this.#requestResolver) {
+                throw new Error('A `RequestResolver` must be provided if an `affectedRequest` is provided.');
+            }
+            this.#requestResolver.waitFor(data.affectedRequest.requestId)
+                .then(request => {
+                this.#request = request;
+                return this.#render();
+            })
+                .catch(() => {
+                this.#request = null;
+            });
         }
         void this.#render();
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [requestLinkIconStyles];
-    }
-    #resolveRequest(requestId) {
-        if (!this.#requestResolver) {
-            throw new Error('A `RequestResolver` must be provided if an `affectedRequest` is provided.');
-        }
-        return this.#requestResolver.waitFor(requestId)
-            .then(request => {
-            this.#request = request;
-        })
-            .catch(() => {
-            this.#request = null;
-        });
     }
     get data() {
         return {
@@ -96,20 +93,6 @@ export class RequestLinkIcon extends HTMLElement {
             urlToDisplay: this.#urlToDisplay,
             additionalOnClickAction: this.#additionalOnClickAction,
             revealOverride: this.#reveal !== Common.Revealer.reveal ? this.#reveal : undefined,
-        };
-    }
-    #iconColor() {
-        if (!this.#request) {
-            return '--icon-no-request';
-        }
-        return '--icon-link';
-    }
-    iconData() {
-        return {
-            iconName: 'arrow-up-down-circle',
-            color: `var(${this.#iconColor()})`,
-            width: '16px',
-            height: '16px',
         };
     }
     handleClick(event) {
@@ -129,6 +112,7 @@ export class RequestLinkIcon extends HTMLElement {
             void this.#reveal(requestLocation);
         }
         this.#additionalOnClickAction?.();
+        event.consume();
     }
     #getTooltip() {
         if (this.#request) {
@@ -156,27 +140,19 @@ export class RequestLinkIcon extends HTMLElement {
         const filename = extractShortPath(url);
         return LitHtml.html `<span aria-label=${i18nString(UIStrings.shortenedURL)} title=${url}>${filename}</span>`;
     }
-    #render() {
+    async #render() {
         return coordinator.write(() => {
             // clang-format off
             LitHtml.render(LitHtml.html `
-        ${LitHtml.Directives.until(this.#requestResolvedPromise.then(() => this.#renderComponent()), this.#renderComponent())}
-      `, this.#shadow, { host: this });
+      <button class=${LitHtml.Directives.classMap({ 'link': Boolean(this.#request) })}
+              title=${this.#getTooltip()}
+              jslog=${VisualLogging.link().track({ click: true }).context('request-link')}
+              @click=${this.handleClick}>
+        <${IconButton.Icon.Icon.litTagName} name="arrow-up-down-circle"></${IconButton.Icon.Icon.litTagName}>
+        ${this.#maybeRenderURL()}
+      </button>`, this.#shadow, { host: this });
             // clang-format on
         });
-    }
-    #renderComponent() {
-        // clang-format off
-        return LitHtml.html `
-      <span class=${LitHtml.Directives.classMap({ 'link': Boolean(this.#request) })}
-            tabindex="0"
-            jslog=${VisualLogging.link().track({ click: true }).context('network-request')}
-            @click=${this.handleClick}>
-        <${IconButton.Icon.Icon.litTagName} .data=${this.iconData()}
-          title=${this.#getTooltip()}></${IconButton.Icon.Icon.litTagName}>
-        ${this.#maybeRenderURL()}
-      </span>`;
-        // clang-format on
     }
 }
 ComponentHelpers.CustomElements.defineComponent('devtools-request-link-icon', RequestLinkIcon);

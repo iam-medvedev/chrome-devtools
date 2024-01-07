@@ -80,7 +80,6 @@ export class ShortcutDialog extends HTMLElement {
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
             iconName: 'help',
             title: i18nString(UIStrings.showShortcutTitle),
-            iconWidth: '16px',
         }}
       ></${Buttons.Button.Button.litTagName}>
       <${DialogElement.litTagName}

@@ -52,6 +52,9 @@ styles.replaceSync(
 :host-context(.sources-edit-breakpoint-dialog) devtools-icon.link-icon {
   vertical-align: sub;
   margin-right: 0.5ch;
+  color: var(--icon-link);
+  width: 16px;
+  height: 16px;
 }
 
 :host-context(.sources-edit-breakpoint-dialog) .link-wrapper {
@@ -65,7 +68,7 @@ styles.replaceSync(
 }
 
 :host-context(.sources-edit-breakpoint-dialog) .dialog-header > devtools-icon:hover {
-  --icon-color: var(--icon-default-hover);
+  color: var(--icon-default-hover);
 }
 
 /*# sourceURL=breakpointEditDialog.css */

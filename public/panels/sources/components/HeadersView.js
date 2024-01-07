@@ -376,8 +376,6 @@ export class HeadersViewComponent extends HTMLElement {
           title=${i18nString(UIStrings.addHeader)}
           .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
           .iconUrl=${plusIconUrl}
-          .iconWidth=${'20px'}
-          .iconHeight=${'20px'}
           .variant=${"round" /* Buttons.Button.Variant.ROUND */}
           .jslog=${VisualLogging.action().track({ click: true }).context('headers-view.add-header')}
           class="add-header inline-button"
@@ -386,8 +384,6 @@ export class HeadersViewComponent extends HTMLElement {
           title=${i18nString(UIStrings.removeHeader)}
           .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
           .iconUrl=${trashIconUrl}
-          .iconWidth=${'14px'}
-          .iconHeight=${'14px'}
           .variant=${"round" /* Buttons.Button.Variant.ROUND */}
           ?hidden=${!this.#isDeletable(blockIndex, headerIndex)}
           .jslog=${VisualLogging.action().track({ click: true }).context('headers-view.remove-header')}

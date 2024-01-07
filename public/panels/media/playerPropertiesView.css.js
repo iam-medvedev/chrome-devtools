@@ -55,12 +55,11 @@ styles.replaceSync(
 
 .media-property-renderer-contents {
   position: relative;
-  left: 200px;
-}
 
-.media-property-renderer-contents > .json-view {
-  overflow: hidden;
-  padding: 0;
+  & > .json-view {
+    overflow: hidden;
+    padding: 0;
+  }
 }
 
 .media-properties-frame {

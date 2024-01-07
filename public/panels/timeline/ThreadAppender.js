@@ -190,6 +190,9 @@ export class ThreadAppender {
         this.#entriesFilter.applyAction({ type: action, entry: traceEvent });
         flameChartView.dispatchEventToListeners(PerfUI.FlameChart.Events.EntriesModified);
     }
+    findPossibleContextMenuActions(traceEvent) {
+        return this.#entriesFilter?.findPossibleActions(traceEvent);
+    }
     processId() {
         return this.#processId;
     }

@@ -3,7 +3,6 @@ import * as Platform from '../../core/platform/platform.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import { ContextMenu } from './ContextMenu.js';
 import { Constraints } from './Geometry.js';
-import { Icon } from './Icon.js';
 import { Toolbar } from './Toolbar.js';
 import { VBox, type Widget } from './Widget.js';
 declare const TabbedPane_base: (new (...args: any[]) => {
@@ -75,7 +74,7 @@ export declare class TabbedPane extends TabbedPane_base {
     selectNextTab(): void;
     selectPrevTab(): void;
     lastOpenedTabIds(tabsCount: number): string[];
-    setTabIcon(id: string, icon: Icon | IconButton.Icon.Icon | null): void;
+    setTabIcon(id: string, icon: IconButton.Icon.Icon | null): void;
     setTabEnabled(id: string, enabled: boolean): void;
     toggleTabClass(id: string, className: string, force?: boolean): void;
     private zoomChanged;
@@ -149,8 +148,7 @@ export declare class TabbedPaneTab {
     shown: boolean;
     measuredWidth: number | undefined;
     private tabElementInternal;
-    private readonly iconContainer;
-    private icon?;
+    private icon;
     private widthInternal?;
     private delegate?;
     private titleElement?;
@@ -160,7 +158,7 @@ export declare class TabbedPaneTab {
     get title(): string;
     set title(title: string);
     isCloseable(): boolean;
-    setIcon(icon: Icon | IconButton.Icon.Icon | null): void;
+    setIcon(icon: IconButton.Icon.Icon | null): void;
     toggleClass(className: string, force?: boolean): boolean;
     get view(): Widget;
     set view(view: Widget);

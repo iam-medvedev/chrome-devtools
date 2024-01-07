@@ -1,10 +1,11 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Host from '../../core/host/host.js';
 import { ApplicationPanelTreeElement, ExpandableApplicationPanelTreeElement } from './ApplicationPanelTreeElement.js';
 import { ServiceWorkerCacheView } from './ServiceWorkerCacheViews.js';
 const UIStrings = {
@@ -29,7 +30,7 @@ export class ServiceWorkerCacheTreeElement extends ExpandableApplicationPanelTre
     storageBucket;
     constructor(resourcesPanel, storageBucket) {
         super(resourcesPanel, i18nString(UIStrings.cacheStorage), 'CacheStorage');
-        const icon = UI.Icon.Icon.create('database', 'resource-tree-item');
+        const icon = IconButton.Icon.create('database');
         this.setLink('https://developer.chrome.com/docs/devtools/storage/cache/?utm_source=devtools');
         this.setLeadingIcons([icon]);
         this.swCacheModels = new Set();
@@ -132,7 +133,7 @@ export class SWCacheTreeElement extends ApplicationPanelTreeElement {
         this.model = model;
         this.cache = cache;
         this.view = null;
-        const icon = UI.Icon.Icon.create('table', 'resource-tree-item');
+        const icon = IconButton.Icon.create('table');
         this.setLeadingIcons([icon]);
     }
     get itemURL() {

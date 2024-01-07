@@ -81,6 +81,7 @@ export declare class CompatibilityTracksAppender {
     setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
     modifyTree(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.TraceEntry, action: TraceEngine.EntriesFilter.FilterAction, flameChartView: PerfUI.FlameChart.FlameChart): void;
+    findPossibleContextMenuActions(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.TraceEntry): TraceEngine.EntriesFilter.PossibleFilterActions | void;
     /**
      * Given a trace event returns instantiates a legacy SDK.Event. This should
      * be used for compatibility purposes only.

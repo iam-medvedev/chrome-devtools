@@ -8,4 +8,5 @@ export declare function issuesAssociatedWith(issues: Issue[], obj: IssuesAssocia
 export declare function hasIssues(obj: IssuesAssociatable): boolean;
 export declare function hasIssueOfCategory(obj: IssuesAssociatable, category: IssueCategory): boolean;
 export declare function hasThirdPartyPhaseoutCookieIssue(obj: IssuesAssociatable): boolean;
+export declare function hasThirdPartyPhaseoutCookieIssueForDomain(domain: string): boolean;
 export declare function reveal(obj: IssuesAssociatable, category?: IssueCategory): Promise<void | undefined>;

@@ -1218,12 +1218,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#clientSecurityStateInternal = extraRequestInfo.clientSecurityState;
         this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
         this.#siteHasCookieInOtherPartition = extraRequestInfo.siteHasCookieInOtherPartition ?? false;
-        for (const item of this.#blockedRequestCookiesInternal) {
-            if (item.blockedReasons.includes("ThirdPartyPhaseout" /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */)) {
-                this.#hasThirdPartyCookiePhaseoutIssue = true;
-                break;
-            }
-        }
+        this.#hasThirdPartyCookiePhaseoutIssue = this.#blockedRequestCookiesInternal.some(item => item.blockedReasons.includes("ThirdPartyPhaseout" /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */));
     }
     hasExtraRequestInfo() {
         return this.#hasExtraRequestInfoInternal;

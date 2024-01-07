@@ -124,10 +124,7 @@ export class RecordingListView extends HTMLElement {
             return LitHtml.html `
                   <div role="button" tabindex="0" aria-label=${i18nString(UIStrings.openRecording)} class="row" @keydown=${this.#onKeyDown.bind(this, recording.storageName)} @click=${this.#onOpenClick.bind(this, recording.storageName)}>
                     <div class="icon">
-                      <${IconButton.Icon.Icon.litTagName} .data=${{
-                iconName: 'flow',
-                color: 'var( --sys-color-primary)',
-            }}>
+                      <${IconButton.Icon.Icon.litTagName} name="flow">
                       </${IconButton.Icon.Icon.litTagName}>
                     </div>
                     <div class="title">${recording.name}</div>

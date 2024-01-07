@@ -50,6 +50,7 @@ header > div {
   display: block;
   width: 16px;
   height: 16px;
+  color: var(--sys-color-secondary);
 }
 
 .title {
