@@ -94,10 +94,10 @@ export class CompatibilityTracksAppender {
     getFlameChartTimelineData() {
         return this.#flameChartData;
     }
-    modifyTree(group, node, action, flameChartView) {
+    modifyTree(group, node, action) {
         const threadTrackAppender = this.#trackForGroup.get(group);
         if (threadTrackAppender instanceof ThreadAppender) {
-            threadTrackAppender.modifyTree(node, action, flameChartView);
+            threadTrackAppender.modifyTree(node, action);
         }
         else {
             console.warn('Could not modify tree in not thread track');
@@ -109,6 +109,13 @@ export class CompatibilityTracksAppender {
             return threadTrackAppender.findPossibleContextMenuActions(node);
         }
         console.warn('Could not modify tree in not thread track');
+    }
+    findHiddenDescendantsAmount(group, node) {
+        const threadTrackAppender = this.#trackForGroup.get(group);
+        if (threadTrackAppender instanceof ThreadAppender) {
+            return threadTrackAppender.findHiddenDescendantsAmount(node);
+        }
+        console.warn('Could not find hidden entries because non thread tracks are not modifiable');
     }
     #addThreadAppenders() {
         const weight = (appender) => {

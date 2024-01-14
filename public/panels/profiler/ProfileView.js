@@ -274,7 +274,7 @@ export class ProfileView extends UI.View.SimpleView {
     }
     populateContextMenu(contextMenu, gridNode) {
         const node = gridNode;
-        if (node.linkElement && !contextMenu.containsTarget(node.linkElement)) {
+        if (node.linkElement) {
             contextMenu.appendApplicableItems(node.linkElement);
         }
     }

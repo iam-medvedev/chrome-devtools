@@ -10,8 +10,10 @@ export class ExpandableList extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #expanded = false;
     #rows = [];
+    #title;
     set data(data) {
         this.#rows = data.rows;
+        this.#title = data.title;
         this.#render();
     }
     #onArrowClick() {
@@ -32,7 +34,7 @@ export class ExpandableList extends HTMLElement {
         <div>
           ${this.#rows.length > 1 ?
             LitHtml.html `
-              <button @click=${() => this.#onArrowClick()} class="arrow-icon-button">
+              <button title='${this.#title}' aria-label='${this.#title}' aria-expanded=${this.#expanded ? 'true' : 'false'} @click=${() => this.#onArrowClick()} class="arrow-icon-button">
                 <span class="arrow-icon ${this.#expanded ? 'expanded' : ''}"
                 jslog=${VisualLogging.treeItemExpand().track({ click: true })}></span>
               </button>

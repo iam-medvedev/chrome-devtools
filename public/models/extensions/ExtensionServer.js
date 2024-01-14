@@ -278,19 +278,25 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (message.command !== "getWasmGlobal" /* PrivateAPI.Commands.GetWasmGlobal */) {
             return this.status.E_BADARG('command', `expected ${"getWasmGlobal" /* PrivateAPI.Commands.GetWasmGlobal */}`);
         }
-        return this.loadWasmValue(`globals[${Number(message.global)}]`, message.stopId);
+        const global = Number(message.global);
+        const result = await this.loadWasmValue(`globals[${global}]`, message.stopId);
+        return result ?? this.status.E_BADARG('global', `No global with index ${global}`);
     }
     async onGetWasmLocal(message) {
         if (message.command !== "getWasmLocal" /* PrivateAPI.Commands.GetWasmLocal */) {
             return this.status.E_BADARG('command', `expected ${"getWasmLocal" /* PrivateAPI.Commands.GetWasmLocal */}`);
         }
-        return this.loadWasmValue(`locals[${Number(message.local)}]`, message.stopId);
+        const local = Number(message.local);
+        const result = await this.loadWasmValue(`locals[${local}]`, message.stopId);
+        return result ?? this.status.E_BADARG('local', `No local with index ${local}`);
     }
     async onGetWasmOp(message) {
         if (message.command !== "getWasmOp" /* PrivateAPI.Commands.GetWasmOp */) {
             return this.status.E_BADARG('command', `expected ${"getWasmOp" /* PrivateAPI.Commands.GetWasmOp */}`);
         }
-        return this.loadWasmValue(`stack[${Number(message.op)}]`, message.stopId);
+        const op = Number(message.op);
+        const result = await this.loadWasmValue(`stack[${op}]`, message.stopId);
+        return result ?? this.status.E_BADARG('op', `No operand with index ${op}`);
     }
     registerRecorderExtensionEndpoint(message, _shared_port) {
         if (message.command !== "registerRecorderExtensionPlugin" /* PrivateAPI.Commands.RegisterRecorderExtensionPlugin */) {

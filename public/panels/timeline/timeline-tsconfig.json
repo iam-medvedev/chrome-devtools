@@ -41,6 +41,7 @@
     "../../../../../../front_end/panels/timeline/GPUTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/Initiators.ts",
     "../../../../../../front_end/panels/timeline/InteractionsTrackAppender.ts",
+    "../../../../../../front_end/panels/timeline/IsolateSelector.ts",
     "../../../../../../front_end/panels/timeline/LayoutShiftsTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/NetworkTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/PerformanceModel.ts",
@@ -114,6 +115,9 @@
     },
     {
       "path": "../../services/trace_bounds/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/menus/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/panel_feedback/bundle-tsconfig.json"

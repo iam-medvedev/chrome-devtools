@@ -852,7 +852,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["useSourceMapScopes"] = 76] = "useSourceMapScopes";
     DevtoolsExperiments[DevtoolsExperiments["storageBucketsTree"] = 77] = "storageBucketsTree";
     DevtoolsExperiments[DevtoolsExperiments["networkPanelFilterBarRedesign"] = 79] = "networkPanelFilterBarRedesign";
-    DevtoolsExperiments[DevtoolsExperiments["breadcrumbsPerformancePanel"] = 80] = "breadcrumbsPerformancePanel";
     DevtoolsExperiments[DevtoolsExperiments["trackContextMenu"] = 81] = "trackContextMenu";
     DevtoolsExperiments[DevtoolsExperiments["autofillView"] = 82] = "autofillView";
     DevtoolsExperiments[DevtoolsExperiments["sourcesFrameIndentationMarkersTemporarilyDisable"] = 83] = "sourcesFrameIndentationMarkersTemporarilyDisable";

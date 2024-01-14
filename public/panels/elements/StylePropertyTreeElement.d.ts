@@ -1,6 +1,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
+import { ColorMatch, ColorMatcher, type RenderingContext } from './PropertyParser.js';
 import { type StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
 export declare const activeHints: WeakMap<Element, Hint>;
@@ -12,6 +13,14 @@ interface StylePropertyTreeElementParams {
     inherited: boolean;
     overloaded: boolean;
     newProperty: boolean;
+}
+export declare class ColorRenderer extends ColorMatch {
+    #private;
+    private readonly treeElement;
+    constructor(treeElement: StylePropertyTreeElement, text: string);
+    static matcher(treeElement: StylePropertyTreeElement): ColorMatcher;
+    render(context: RenderingContext): Node[];
+    renderColorSwatch(valueChild?: Node | null): HTMLElement;
 }
 export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     #private;
@@ -37,7 +46,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private contextForTest;
     constructor({ stylesPane, matchedStyles, property, isShorthand, inherited, overloaded, newProperty }: StylePropertyTreeElementParams);
     matchedStyles(): SDK.CSSMatchedStyles.CSSMatchedStyles;
-    private editable;
+    editable(): boolean;
     inherited(): boolean;
     overloaded(): boolean;
     setOverloaded(x: boolean): void;
@@ -46,16 +55,13 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     get name(): string;
     get value(): string;
     updateFilter(): boolean;
-    private renderColorSwatch;
     private processAnimationName;
     private processAnimation;
     private processPositionFallback;
     private processFontPalette;
-    private processColor;
     private processColorMix;
     private processVar;
     private handleVarDefinitionActivate;
-    private addColorContrastInfo;
     renderedPropertyText(): string;
     private processBezier;
     private processFont;
@@ -87,7 +93,9 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private copyCssDeclarationAsJs;
     private copyAllCssDeclarationAsJs;
     private navigateToSource;
-    startEditing(selectElement?: Element | null): void;
+    startEditingValue(): void;
+    startEditingName(): void;
+    startEditing(selectedElement?: HTMLElement): void;
     private editingNameValueKeyDown;
     private editingNameValueKeyPress;
     private applyFreeFlowStyleTextEdit;

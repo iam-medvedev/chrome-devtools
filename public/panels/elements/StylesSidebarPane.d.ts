@@ -8,6 +8,7 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type ComputedStyleChangedEvent } from './ComputedStyleModel.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
+import { type Matcher } from './PropertyParser.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
 import { type StylePropertyTreeElement } from './StylePropertyTreeElement.js';
 export declare const REGISTERED_PROPERTY_SECTION_NAME = "@property";
@@ -177,7 +178,6 @@ export declare class StylesSidebarPropertyRenderer {
     private node;
     readonly propertyName: string;
     readonly propertyValue: string;
-    private colorHandler;
     private colorMixHandler;
     private bezierHandler;
     private fontHandler;
@@ -190,8 +190,8 @@ export declare class StylesSidebarPropertyRenderer {
     private animationHandler;
     private positionFallbackHandler;
     private fontPaletteHandler;
-    constructor(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null, name: string, value: string);
-    setColorHandler(handler: (arg0: string) => Node): void;
+    matchers: Matcher[];
+    constructor(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null, name: string, value: string, matchers?: Matcher[]);
     setColorMixHandler(handler: (arg0: string) => Node): void;
     setBezierHandler(handler: (arg0: string) => Node): void;
     setFontHandler(handler: (arg0: string) => Node): void;

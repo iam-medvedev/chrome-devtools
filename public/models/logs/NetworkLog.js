@@ -350,7 +350,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         }
         if (preserveLog) {
             for (const request of oldRequestsSet) {
-                this.addRequest(request);
+                this.addRequest(request, true);
                 request.preserved = true;
             }
         }
@@ -358,7 +358,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
             this.pageLoadForManager.set(manager, currentPageLoad);
         }
     }
-    addRequest(request) {
+    addRequest(request, preserveLog) {
         this.requestsInternal.push(request);
         this.requestsSet.add(request);
         const requestList = this.requestsMap.get(request.requestId());
@@ -369,7 +369,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
             requestList.push(request);
         }
         this.tryResolvePreflightRequests(request);
-        this.dispatchEventToListeners(Events.RequestAdded, request);
+        this.dispatchEventToListeners(Events.RequestAdded, { request, preserveLog });
     }
     removeRequest(request) {
         const index = this.requestsInternal.indexOf(request);
@@ -378,7 +378,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.requestsSet.delete(request);
         this.requestsMap.delete(request.requestId());
-        this.dispatchEventToListeners(Events.RequestRemoved, request);
+        this.dispatchEventToListeners(Events.RequestRemoved, { request });
     }
     tryResolvePreflightRequests(request) {
         if (request.isPreflightRequest()) {
@@ -405,7 +405,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
                 if (data) {
                     data.info = null;
                 }
-                this.dispatchEventToListeners(Events.RequestUpdated, preflightRequest);
+                this.dispatchEventToListeners(Events.RequestUpdated, { request: preflightRequest });
             }
         }
     }
@@ -451,7 +451,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
             this.removeRequest(request);
             return;
         }
-        this.dispatchEventToListeners(Events.RequestUpdated, request);
+        this.dispatchEventToListeners(Events.RequestUpdated, { request });
     }
     onRequestRedirect(event) {
         this.initiatorData.delete(event.data);

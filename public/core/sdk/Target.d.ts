@@ -37,6 +37,7 @@ export declare enum Type {
     Node = "node",
     Browser = "browser",
     AuctionWorklet = "auction-worklet",
+    Worklet = "worklet",
     Tab = "tab"
 }
 export declare enum Capability {

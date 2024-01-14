@@ -81,18 +81,18 @@ export class ProtocolHandlersView extends HTMLElement {
     #renderStatusMessage() {
         const manifestInTextLink = UI.XLink.XLink.create(this.#manifestLink, i18nString(UIStrings.manifest), undefined, undefined, 'manifest');
         const statusString = this.#protocolHandlers.length > 0 ? UIStrings.protocolDetected : UIStrings.protocolNotDetected;
-        const iconData = this.#protocolHandlers.length > 0 ?
-            { iconName: 'check-circle', color: 'var(--icon-checkmark-green)', width: '16px', height: '16px' } :
-            { iconName: 'info', color: 'var(--icon-default)', width: '16px', height: '16px' };
+        // clang-format off
         return LitHtml.html `
     <div class="protocol-handlers-row status">
-            <${IconButton.Icon.Icon.litTagName} class="inline-icon" .data=${iconData}>
+            <${IconButton.Icon.Icon.litTagName} class="inline-icon"
+                                                name=${this.#protocolHandlers.length > 0 ? 'check-circle' : 'info'}>
             </${IconButton.Icon.Icon.litTagName}>
             ${i18n.i18n.getFormatLocalizedString(str_, statusString, {
             PH1: manifestInTextLink,
         })}
     </div>
     `;
+        // clang-format on
     }
     #renderProtocolTest() {
         if (this.#protocolHandlers.length === 0) {

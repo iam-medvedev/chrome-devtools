@@ -219,7 +219,6 @@ export type Filter = (request: SDK.NetworkRequest.NetworkRequest) => boolean;
 export declare class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper<UI.FilterBar.FilterUIEventTypes> implements UI.FilterBar.FilterUI {
     private readonly filterElement;
     private readonly dropDownButton;
-    private readonly filterChanged;
     private displayedTypes;
     private readonly setting;
     private readonly items;
@@ -227,7 +226,7 @@ export declare class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper<
     private selectedTypesCount;
     private typesCountAdorner;
     private hasChanged;
-    constructor(items: UI.FilterBar.Item[], filterChangedCallback: () => void, setting: Common.Settings.Setting<{
+    constructor(items: UI.FilterBar.Item[], setting: Common.Settings.Setting<{
         [key: string]: boolean;
     }>);
     discard(): void;
@@ -235,6 +234,7 @@ export declare class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper<
     showContextMenu(event: Common.EventTarget.EventTargetEvent<Event>): void;
     private addRequestType;
     private toggleTypeFilter;
+    private filterChanged;
     private settingChanged;
     private update;
     updateSelectedTypesCount(): void;
@@ -250,7 +250,6 @@ export declare class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWr
     #private;
     private readonly filterElement;
     private readonly dropDownButton;
-    private readonly filterChangedCallback;
     private networkHideDataURLSetting;
     private networkHideChromeExtensionsSetting;
     private networkShowBlockedCookiesOnlySetting;
@@ -260,7 +259,7 @@ export declare class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWr
     private activeFiltersCount;
     private activeFiltersCountAdorner;
     private hasChanged;
-    constructor(filterChangedCallback: () => void);
+    constructor();
     emitUMA(): void;
     showMoreFiltersContextMenu(event: Common.EventTarget.EventTargetEvent<Event>): void;
     selectedFilters(): string[];

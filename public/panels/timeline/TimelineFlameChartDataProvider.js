@@ -187,9 +187,9 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             }
         });
     }
-    modifyTree(group, node, action, flameChartView) {
+    modifyTree(group, node, action) {
         const entry = this.entryData[node];
-        this.compatibilityTracksAppender?.modifyTree(group, entry, action, flameChartView);
+        this.compatibilityTracksAppender?.modifyTree(group, entry, action);
     }
     findPossibleContextMenuActions(group, node) {
         const entry = this.entryData[node];
@@ -824,6 +824,21 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         for (const elem of additionalContent) {
             contents.appendChild(elem);
         }
+        return element;
+    }
+    prepareHighlightedHiddenEntriesArrowInfo(group, entryIndex) {
+        const element = document.createElement('div');
+        const root = UI.Utils.createShadowRootWithCoreStyles(element, {
+            cssFile: [timelineFlamechartPopoverStyles],
+            delegatesFocus: undefined,
+        });
+        const entry = this.entryData[entryIndex];
+        const hiddenEntriesAmount = this.compatibilityTracksAppender?.findHiddenDescendantsAmount(group, entry);
+        if (!hiddenEntriesAmount) {
+            return null;
+        }
+        const contents = root.createChild('div', 'timeline-flamechart-popover');
+        contents.createChild('span', 'timeline-info-title').textContent = hiddenEntriesAmount + ' hidden';
         return element;
     }
     entryColor(entryIndex) {

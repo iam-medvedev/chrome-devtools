@@ -47,6 +47,10 @@ export declare class EntriesFilter {
      **/
     findPossibleActions(entry: Types.TraceEvents.TraceEntry): PossibleFilterActions;
     /**
+     * Returns the amount of entry descendants that belong to the hidden entries array.
+     * **/
+    findHiddenDescendantsAmount(entry: Types.TraceEvents.TraceEntry): number;
+    /**
      * Returns the set of entries that are invisible given the set of applied actions.
      **/
     invisibleEntries(): Types.TraceEvents.TraceEventData[];

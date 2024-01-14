@@ -4,9 +4,10 @@
 import * as Common from '../common/common.js';
 import * as Root from '../root/root.js';
 import { Cookie } from './Cookie.js';
-import { ResourceTreeModel } from './ResourceTreeModel.js';
-import { Capability } from './Target.js';
+import { Events as ResourceTreeModelEvents, ResourceTreeModel } from './ResourceTreeModel.js';
 import { SDKModel } from './SDKModel.js';
+import { Capability } from './Target.js';
+import { TargetManager } from './TargetManager.js';
 export class CookieModel extends SDKModel {
     #blockedCookies;
     #cookieToBlockedReasons;
@@ -14,6 +15,7 @@ export class CookieModel extends SDKModel {
         super(target);
         this.#blockedCookies = new Map();
         this.#cookieToBlockedReasons = new Map();
+        TargetManager.instance().addModelListener(ResourceTreeModel, ResourceTreeModelEvents.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     }
     addBlockedCookie(cookie, blockedReasons) {
         const key = cookie.key();
@@ -28,6 +30,10 @@ export class CookieModel extends SDKModel {
         if (previousCookie) {
             this.#cookieToBlockedReasons.delete(previousCookie);
         }
+    }
+    #onPrimaryPageChanged() {
+        this.#blockedCookies.clear();
+        this.#cookieToBlockedReasons.clear();
     }
     getCookieToBlockedReasonsMap() {
         return this.#cookieToBlockedReasons;

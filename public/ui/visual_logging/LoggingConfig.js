@@ -19,7 +19,7 @@ var VisualElements;
     VisualElements[VisualElements["Toggle"] = 6] = "Toggle";
     VisualElements[VisualElements["Tree"] = 7] = "Tree";
     VisualElements[VisualElements["TextField"] = 8] = "TextField";
-    VisualElements[VisualElements["ShowAllStyleProperties"] = 9] = "ShowAllStyleProperties";
+    /* 9 used to be ShowAllStyleProperties, but free to grab now */
     VisualElements[VisualElements["Section"] = 10] = "Section";
     VisualElements[VisualElements["StylePropertiesSectionSeparator"] = 11] = "StylePropertiesSectionSeparator";
     /* 12 used to be StylesPane, but free to grab now */
@@ -46,10 +46,10 @@ var VisualElements;
     VisualElements[VisualElements["BezierEditor"] = 33] = "BezierEditor";
     VisualElements[VisualElements["BezierPresetCategory"] = 34] = "BezierPresetCategory";
     VisualElements[VisualElements["Preview"] = 35] = "Preview";
-    VisualElements[VisualElements["ColorCanvas"] = 36] = "ColorCanvas";
+    VisualElements[VisualElements["Canvas"] = 36] = "Canvas";
     VisualElements[VisualElements["ColorEyeDropper"] = 37] = "ColorEyeDropper";
     VisualElements[VisualElements["ColorPicker"] = 38] = "ColorPicker";
-    VisualElements[VisualElements["CopyColor"] = 39] = "CopyColor";
+    /* 39 used to be CopyColor, but free to grab now */
     VisualElements[VisualElements["CssAngleEditor"] = 40] = "CssAngleEditor";
     VisualElements[VisualElements["CssFlexboxEditor"] = 41] = "CssFlexboxEditor";
     VisualElements[VisualElements["CssGridEditor"] = 42] = "CssGridEditor";
@@ -65,9 +65,9 @@ var VisualElements;
     VisualElements[VisualElements["CssColorMix"] = 52] = "CssColorMix";
     VisualElements[VisualElements["Value"] = 53] = "Value";
     VisualElements[VisualElements["Key"] = 54] = "Key";
-    VisualElements[VisualElements["GridSettings"] = 55] = "GridSettings";
-    VisualElements[VisualElements["FlexboxOverlays"] = 56] = "FlexboxOverlays";
-    VisualElements[VisualElements["GridOverlays"] = 57] = "GridOverlays";
+    /* 55 used to be GridSettings, but free to grab now */
+    /* 56 used to be FlexboxOverlays, but free to grab now */
+    /* 57 used to be GridOverlays, but free to grab now */
     /* 58 used to be JumpToElement, but free to grab now */
     VisualElements[VisualElements["PieChart"] = 59] = "PieChart";
     VisualElements[VisualElements["PieChartSlice"] = 60] = "PieChartSlice";
@@ -81,7 +81,7 @@ var VisualElements;
     /* 68 used to be DeveloperResourcesPanel, but free to grab now */
     VisualElements[VisualElements["TableHeader"] = 69] = "TableHeader";
     VisualElements[VisualElements["TableCell"] = 70] = "TableCell";
-    VisualElements[VisualElements["StylesComputedPane"] = 71] = "StylesComputedPane";
+    /* 71 used to be StylesComputedPane, but free to grab now */
     VisualElements[VisualElements["Pane"] = 72] = "Pane";
     VisualElements[VisualElements["ResponsivePresets"] = 73] = "ResponsivePresets";
     VisualElements[VisualElements["DeviceModeRuler"] = 74] = "DeviceModeRuler";

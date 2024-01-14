@@ -175,8 +175,10 @@ export class StylePropertiesSection {
         // @ts-ignore TODO: fix ad hoc section property in a separate CL to be safe
         this.propertiesTreeOutline.section = this;
         this.innerElement.appendChild(this.propertiesTreeOutline.element);
-        this.showAllButton = UI.UIUtils.createTextButton('', this.showAllItems.bind(this), 'styles-show-all');
-        this.showAllButton.setAttribute('jslog', `${VisualLogging.showAllStyleProperties().track({ click: true })}`);
+        this.showAllButton = UI.UIUtils.createTextButton('', this.showAllItems.bind(this), {
+            className: 'styles-show-all',
+            jslogContext: 'elements.show-all-style-properties',
+        });
         this.innerElement.appendChild(this.showAllButton);
         const selectorContainer = document.createElement('div');
         selectorContainer.classList.add('selector-container');
@@ -466,7 +468,7 @@ export class StylePropertiesSection {
             default:
                 // Filter out non-printable key strokes.
                 if (keyboardEvent.key.length === 1) {
-                    this.addNewBlankProperty(0).startEditing();
+                    this.addNewBlankProperty(0).startEditingName();
                 }
                 break;
         }
@@ -1015,13 +1017,13 @@ export class StylePropertiesSection {
         const deepTarget = UI.UIUtils.deepElementFromEvent(event);
         const treeElement = deepTarget && UI.TreeOutline.TreeElement.getTreeElementBylistItemNode(deepTarget);
         if (treeElement && treeElement instanceof StylePropertyTreeElement) {
-            this.addNewBlankProperty(treeElement.property.index + 1).startEditing();
+            this.addNewBlankProperty(treeElement.property.index + 1).startEditingName();
         }
         else if (target.classList.contains('selector-container') || target.classList.contains('styles-section-subtitle')) {
-            this.addNewBlankProperty(0).startEditing();
+            this.addNewBlankProperty(0).startEditingName();
         }
         else {
-            this.addNewBlankProperty().startEditing();
+            this.addNewBlankProperty().startEditingName();
         }
         event.consume(true);
     }
@@ -1225,10 +1227,10 @@ export class StylePropertiesSection {
                 currentChild = sibling instanceof StylePropertyTreeElement ? sibling : null;
             }
             if (!currentChild) {
-                this.addNewBlankProperty().startEditing();
+                this.addNewBlankProperty().startEditingName();
             }
             else {
-                currentChild.startEditing(currentChild.nameElement);
+                currentChild.startEditingName();
             }
         }
         else {
@@ -1236,7 +1238,7 @@ export class StylePropertiesSection {
             if (!previousSection) {
                 return;
             }
-            previousSection.addNewBlankProperty().startEditing();
+            previousSection.addNewBlankProperty().startEditingName();
         }
     }
     editingSelectorCommitted(element, newContent, oldContent, context, moveDirection) {

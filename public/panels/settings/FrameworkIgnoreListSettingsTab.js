@@ -93,11 +93,11 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         enableIgnoreListing.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.enableIgnoreListing), enabledSetting, true));
         UI.Tooltip.Tooltip.install(enableIgnoreListing, i18nString(UIStrings.enableIgnoreListingTooltip));
         const ignoreListOptions = this.contentElement.createChild('div', 'ignore-list-options');
-        ignoreListOptions.createChild('div', 'ignore-list-option-group').textContent =
-            i18nString(UIStrings.generalExclusionRules);
-        const ignoreListContentScripts = ignoreListOptions.createChild('div', 'ignore-list-option');
+        const generalExclusionGroup = this.createSettingGroup(i18nString(UIStrings.generalExclusionRules));
+        ignoreListOptions.appendChild(generalExclusionGroup);
+        const ignoreListContentScripts = generalExclusionGroup.createChild('div', 'ignore-list-option');
         ignoreListContentScripts.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.ignoreListContentScripts), Common.Settings.Settings.instance().moduleSetting('skipContentScripts'), true));
-        const automaticallyIgnoreList = ignoreListOptions.createChild('div', 'ignore-list-option');
+        const automaticallyIgnoreList = generalExclusionGroup.createChild('div', 'ignore-list-option');
         automaticallyIgnoreList.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.automaticallyIgnoreListKnownThirdPartyScripts), Common.Settings.Settings.instance().moduleSetting('automaticallyIgnoreListKnownThirdPartyScripts'), true));
         const automaticallyIgnoreLink = UI.XLink.XLink.create('http://goo.gle/skip-third-party', undefined, undefined, undefined, 'learn-more');
         automaticallyIgnoreLink.textContent = '';
@@ -106,18 +106,17 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         automaticallyIgnoreLinkIcon.data = { iconName: 'help', color: 'var(--icon-default)', width: '16px', height: '16px' };
         automaticallyIgnoreLink.prepend(automaticallyIgnoreLinkIcon);
         automaticallyIgnoreList.appendChild(automaticallyIgnoreLink);
-        ignoreListOptions.createChild('div', 'ignore-list-option-group').textContent =
-            i18nString(UIStrings.customExclusionRules);
+        const customExclusionGroup = this.createSettingGroup(i18nString(UIStrings.customExclusionRules));
+        ignoreListOptions.appendChild(customExclusionGroup);
         this.list = new UI.ListWidget.ListWidget(this);
         this.list.element.classList.add('ignore-list');
         const placeholder = document.createElement('div');
         placeholder.classList.add('ignore-list-empty');
         this.list.setEmptyPlaceholder(placeholder);
-        this.list.show(ignoreListOptions);
-        const addPatternButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addPattern), this.addButtonClicked.bind(this), 'add-button');
-        addPatternButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('settings.add-ignore-list-pattern')}`);
+        this.list.show(customExclusionGroup);
+        const addPatternButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addPattern), this.addButtonClicked.bind(this), { className: 'add-button', jslogContext: 'settings.add-ignore-list-pattern' });
         UI.ARIAUtils.setLabel(addPatternButton, i18nString(UIStrings.addFilenamePattern));
-        ignoreListOptions.appendChild(addPatternButton);
+        customExclusionGroup.appendChild(addPatternButton);
         this.setting =
             Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern');
         this.setting.addChangeListener(this.settingUpdated, this);
@@ -149,6 +148,16 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
     }
     addButtonClicked() {
         this.list.addNewItem(this.setting.getAsArray().length, { pattern: '', disabled: false });
+    }
+    createSettingGroup(title) {
+        const group = document.createElement('div');
+        group.classList.add('ignore-list-option-group');
+        UI.ARIAUtils.markAsGroup(group);
+        const groupTitle = group.createChild('div', 'ignore-list-option-group-title');
+        UI.ARIAUtils.markAsHeading(groupTitle, 2);
+        UI.ARIAUtils.setLabel(group, title);
+        groupTitle.textContent = title;
+        return group;
     }
     renderItem(item, _editable) {
         const element = document.createElement('div');

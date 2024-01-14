@@ -80,7 +80,7 @@ export class NodeConnectionsView extends UI.Widget.VBox {
         this.#list.setEmptyPlaceholder(placeholder);
         this.#list.show(this.element);
         this.#editor = null;
-        const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addConnection), this.#addNetworkTargetButtonClicked.bind(this), 'add-network-target-button', true /* primary */);
+        const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addConnection), this.#addNetworkTargetButtonClicked.bind(this), { className: 'add-network-target-button', primary: true });
         this.element.appendChild(addButton);
         this.#networkDiscoveryConfig = [];
         this.element.classList.add('node-frontend');

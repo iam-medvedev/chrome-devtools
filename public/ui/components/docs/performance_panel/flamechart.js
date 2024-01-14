@@ -66,27 +66,49 @@ function renderExample2() {
     class FakeProviderWithLongTasksForStriping extends TraceHelpers.FakeFlameChartProvider {
         timelineData() {
             return PerfUI.FlameChart.FlameChartTimelineData.create({
-                entryLevels: [1, 1, 2],
-                entryStartTimes: [5, 80, 5],
-                entryTotalTimes: [70, 10, 80],
+                entryLevels: [1, 1, 1, 2, 2, 2, 2],
+                entryStartTimes: [5, 55, 70, 5, 30, 55, 75],
+                entryTotalTimes: [45, 10, 20, 20, 20, 5, 15],
                 entryDecorations: [
                     [
                         {
                             type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(50_000),
+                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(25_000),
                         },
                         { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
                     ],
                     [{ type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ }],
                     [
+                        { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ },
+                        { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
+                    ],
+                    [
                         {
                             type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(50_000),
+                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(15_000),
                         },
+                    ],
+                    [
+                        {
+                            type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
+                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(10_000),
+                        },
+                        { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ },
+                    ],
+                    [
+                        { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ },
+                    ],
+                    [
+                        {
+                            type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
+                            startAtTime: TraceEngine.Types.Timing.MicroSeconds(10_000),
+                        },
+                        { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ },
+                        { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
                     ],
                 ],
                 groups: [{
-                        name: 'Testing Candy Stripe decorations and warning triangles',
+                        name: 'Testing Candy Stripe, warning triangles and hidden descendants arrow decorations',
                         startLevel: 0,
                         style: defaultGroupStyle,
                     }],

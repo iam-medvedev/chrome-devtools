@@ -18,6 +18,9 @@ export const editorTheme = CM.EditorView.theme({
     '.cm-panels': {
         backgroundColor: 'var(--sys-color-cdt-base-container)',
     },
+    '.cm-panels-bottom': {
+        borderTop: '1px solid var(--sys-color-divider)',
+    },
     '.cm-selectionMatch': {
         backgroundColor: 'var(--sys-color-yellow-container)',
     },

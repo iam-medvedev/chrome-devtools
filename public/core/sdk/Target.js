@@ -61,6 +61,9 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
                 this.#capabilitiesMask = Capability.JS | Capability.Log | Capability.Network | Capability.Target |
                     Capability.IO | Capability.Media | Capability.Emulation | Capability.EventBreakpoints;
                 break;
+            case Type.Worklet:
+                this.#capabilitiesMask = Capability.JS | Capability.Log | Capability.EventBreakpoints;
+                break;
             case Type.Node:
                 this.#capabilitiesMask = Capability.JS;
                 break;
@@ -221,6 +224,7 @@ export var Type;
     Type["Node"] = "node";
     Type["Browser"] = "browser";
     Type["AuctionWorklet"] = "auction-worklet";
+    Type["Worklet"] = "worklet";
     Type["Tab"] = "tab";
 })(Type || (Type = {}));
 // TODO(crbug.com/1167717): Make this a const enum again

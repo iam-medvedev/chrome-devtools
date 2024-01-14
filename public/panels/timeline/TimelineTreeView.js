@@ -470,7 +470,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
     }
     onContextMenu(contextMenu, eventGridNode) {
         const gridNode = eventGridNode;
-        if (gridNode.linkElement && !contextMenu.containsTarget(gridNode.linkElement)) {
+        if (gridNode.linkElement) {
             contextMenu.appendApplicableItems(gridNode.linkElement);
         }
         const profileNode = gridNode.profileNode;

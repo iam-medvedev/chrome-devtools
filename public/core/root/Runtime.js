@@ -230,7 +230,6 @@ export var ExperimentName;
     ExperimentName["USE_SOURCE_MAP_SCOPES"] = "useSourceMapScopes";
     ExperimentName["STORAGE_BUCKETS_TREE"] = "storageBucketsTree";
     ExperimentName["NETWORK_PANEL_FILTER_BAR_REDESIGN"] = "networkPanelFilterBarRedesign";
-    ExperimentName["BREADCRUMBS_PERFORMANCE_PANEL"] = "breadcrumbsPerformancePanel";
     ExperimentName["TRACK_CONTEXT_MENU"] = "trackContextMenu";
     ExperimentName["AUTOFILL_VIEW"] = "autofillView";
     ExperimentName["INDENTATION_MARKERS_TEMP_DISABLE"] = "sourcesFrameIndentationMarkersTemporarilyDisable";

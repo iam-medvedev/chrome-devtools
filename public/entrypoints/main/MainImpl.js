@@ -286,7 +286,6 @@ export class MainImpl {
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.SELF_XSS_WARNING, 'Show warning about Self-XSS when pasting code');
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE, 'Enable Storage Buckets Tree in Application panel', true);
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN, 'Redesign of the filter bar in the Network Panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.BREADCRUMBS_PERFORMANCE_PANEL, 'Enable breadcrumbs in the Performance Panel', false);
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU, 'Enable context menu that allows to modify trees in the Flame Chart', true);
         Root.Runtime.experiments.register(Root.Runtime.ExperimentName.AUTOFILL_VIEW, 'Enable Autofill view');
         if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
@@ -300,6 +299,7 @@ export class MainImpl {
             Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL,
             'evaluateExpressionsWithSourceMaps',
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocolMonitor'] : []),
+            Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN,
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
         const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');

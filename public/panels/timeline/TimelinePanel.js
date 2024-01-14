@@ -47,6 +47,7 @@ import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import { TraceLoadEvent } from './BenchmarkEvents.js';
 import historyToolbarButtonStyles from './historyToolbarButton.css.js';
+import { IsolateSelector } from './IsolateSelector.js';
 import { PerformanceModel } from './PerformanceModel.js';
 import { cpuprofileJsonGenerator, traceJsonGenerator } from './SaveFileFormatter.js';
 import { NodeNamesUpdated, SourceMapsResolver } from './SourceMapsResolver.js';
@@ -464,6 +465,12 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.panelToolbar.appendToolbarItem(this.showMemoryToolbarCheckbox);
         // GC
         this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('components.collect-garbage'));
+        // Isolate selector
+        const isolateSelector = new IsolateSelector();
+        if (isNode) {
+            this.panelToolbar.appendSeparator();
+            this.panelToolbar.appendToolbarItem(isolateSelector);
+        }
         // Settings
         if (!isNode) {
             this.panelRightToolbar.appendSeparator();
@@ -744,17 +751,20 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     async #startCPUProfilingRecording() {
         try {
-            // Only profile the first target devtools connects to. If we profile all target, but this will cause some bugs
-            // like time for the function is calculated wrong, because the profiles will be concated and sorted together,
-            // so the total time will be amplified.
-            // Multiple targets problem might happen when you inspect multiple node servers on different port at same time,
-            // or when you let DevTools listen to both locolhost:9229 & 127.0.0.1:9229.
-            const firstNodeTarget = SDK.TargetManager.TargetManager.instance().targets().find(target => target.type() === SDK.Target.Type.Node);
-            if (!firstNodeTarget) {
-                throw new Error('Could not load any Node target.');
-            }
-            if (firstNodeTarget) {
-                this.cpuProfiler = firstNodeTarget.model(SDK.CPUProfilerModel.CPUProfilerModel);
+            this.cpuProfiler = UI.Context.Context.instance().flavor(SDK.CPUProfilerModel.CPUProfilerModel);
+            if (!this.cpuProfiler) {
+                // If there is no isolate selected, we will profile the first isolate that devtools connects to.
+                // If we profile all target, but this will cause some bugs like time for the function is calculated wrong,
+                // because the profiles will be concated and sorted together, so the total time will be amplified.
+                // Multiple targets problem might happen when you inspect multiple node servers on different port at same time,
+                // or when you let DevTools listen to both locolhost:9229 & 127.0.0.1:9229.
+                const firstNodeTarget = SDK.TargetManager.TargetManager.instance().targets().find(target => target.type() === SDK.Target.Type.Node);
+                if (!firstNodeTarget) {
+                    throw new Error('Could not load any Node target.');
+                }
+                if (firstNodeTarget) {
+                    this.cpuProfiler = firstNodeTarget.model(SDK.CPUProfilerModel.CPUProfilerModel);
+                }
             }
             this.setUIControlsEnabled(false);
             this.hideLandingPage();
@@ -1012,14 +1022,12 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (this.flameChart) {
             this.flameChart.resizeToPreferredHeights();
         }
-        // Set the initial zoom: if we are using breadcrumbs we leave the entire
-        // window visible, but if not we zoom into the biggest period of activity
-        // (we might want to consider doing the same for breadcrumbs)
-        if (this.#minimapComponent.breadcrumbsActivated) {
-            this.#minimapComponent.addInitialBreadcrumb();
-        }
-        else if (traceParsedData) {
-            // We expect traceParsedData to always exist, this check is to keep TS happy.
+        // Set the initial zoom and if we are using breadcrumbs, create the initial breadcrum.
+        // We expect traceParsedData to always exist, this check is to keep TS happy.
+        if (traceParsedData) {
+            if (this.#minimapComponent.breadcrumbsActivated) {
+                this.#minimapComponent.addInitialBreadcrumb();
+            }
             // To calculate the activity we might want to zoom in, we find the last
             // main thread. Or we find the CPU Profile thread, for e.g. Node traces.
             const mainThreadTypes = [
@@ -1448,13 +1456,16 @@ export class StatusPane extends UI.Widget.VBox {
             this.description.innerText = options.description;
         }
         const buttonContainer = this.contentElement.createChild('div', 'stop-button');
-        this.downloadTraceButton = UI.UIUtils.createTextButton(i18nString(UIStrings.downloadAfterError), async () => {
+        this.downloadTraceButton = UI.UIUtils.createTextButton(i18nString(UIStrings.downloadAfterError), () => {
             void this.#downloadRawTraceAfterError();
-        });
+        }, { jslogContext: 'timeline.download-after-error' });
         this.downloadTraceButton.disabled = true;
         this.downloadTraceButton.style.visibility = 'hidden';
         const buttonText = options.buttonText || i18nString(UIStrings.stop);
-        this.button = UI.UIUtils.createTextButton(buttonText, buttonCallback, '', true);
+        this.button = UI.UIUtils.createTextButton(buttonText, buttonCallback, {
+            jslogContext: 'timeline.stop-recording',
+            primary: true,
+        });
         // Profiling can't be stopped during initialization.
         this.button.disabled = !options.buttonDisabled === false;
         buttonContainer.append(this.downloadTraceButton);

@@ -162,13 +162,13 @@ class DataGridNode extends DataGrid.DataGrid.DataGridNode {
             if (this.dataGrid) {
                 this.dataGrid.dispatchEventToListeners("ExportCredential" /* Events.ExportCredential */, this.credential);
             }
-        });
+        }, { jslogContext: 'webauthn.export-credential' });
         cell.appendChild(exportButton);
         const removeButton = UI.UIUtils.createTextButton(i18nString(UIStrings.remove), () => {
             if (this.dataGrid) {
                 this.dataGrid.dispatchEventToListeners("RemoveCredential" /* Events.RemoveCredential */, this.credential);
             }
-        });
+        }, { jslogContext: 'webauthn.remove-credential' });
         cell.appendChild(removeButton);
         return cell;
     }
@@ -507,9 +507,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         this.largeBlobCheckbox.classList.add('authenticator-option-checkbox');
         this.largeBlobCheckbox.name = 'large-blob-checkbox';
         largeBlobGroup.appendChild(this.#largeBlobCheckboxLabel);
-        this.addAuthenticatorButton =
-            UI.UIUtils.createTextButton(i18nString(UIStrings.add), this.#handleAddAuthenticatorButton.bind(this), '');
-        this.addAuthenticatorButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('add-authenticator')}`);
+        this.addAuthenticatorButton = UI.UIUtils.createTextButton(i18nString(UIStrings.add), this.#handleAddAuthenticatorButton.bind(this), { jslogContext: 'webauthn.add-authenticator' });
         addButtonGroup.createChild('div', 'authenticator-option-label');
         addButtonGroup.appendChild(this.addAuthenticatorButton);
         const addAuthenticatorTitle = UI.UIUtils.createLabel(i18nString(UIStrings.addAuthenticator), '');
@@ -554,7 +552,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const removeButton = headerElement.createChild('button', 'text-button');
         removeButton.textContent = i18nString(UIStrings.remove);
         removeButton.addEventListener('click', this.#removeAuthenticator.bind(this, authenticatorId));
-        removeButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('remove-authenticator')}`);
+        removeButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('webauthn.remove-authenticator')}`);
         const toolbar = new UI.Toolbar.Toolbar('edit-name-toolbar', titleElement);
         const editName = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.editName), 'edit', undefined, 'edit-name');
         const saveName = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveName), 'checkmark', undefined, 'save-name');

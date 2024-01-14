@@ -1082,7 +1082,7 @@ export class ContextMenuProvider {
         if (ElementsPanel.instance().element.isAncestor(event.target)) {
             return;
         }
-        contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInElementsPanel), () => Common.Revealer.reveal(object));
+        contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInElementsPanel), () => Common.Revealer.reveal(object), { jslogContext: 'elements.reveal-node' });
     }
 }
 export class DOMNodeRevealer {

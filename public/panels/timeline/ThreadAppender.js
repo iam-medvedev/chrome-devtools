@@ -183,15 +183,22 @@ export class ThreadAppender {
             traceParsedData.Renderer.entryToNode);
         this.#url = this.#traceParsedData.Renderer?.processes.get(this.#processId)?.url || '';
     }
-    modifyTree(traceEvent, action, flameChartView) {
-        if (!this.#entriesFilter) {
-            return;
+    modifyTree(traceEvent, action) {
+        if (this.#entriesFilter) {
+            this.#entriesFilter.applyAction({ type: action, entry: traceEvent });
         }
-        this.#entriesFilter.applyAction({ type: action, entry: traceEvent });
-        flameChartView.dispatchEventToListeners(PerfUI.FlameChart.Events.EntriesModified);
+        else {
+            console.warn('Could not modify tree because entriesFilter does not exist');
+        }
     }
     findPossibleContextMenuActions(traceEvent) {
         return this.#entriesFilter?.findPossibleActions(traceEvent);
+    }
+    findHiddenDescendantsAmount(traceEvent) {
+        if ((this.#entriesFilter)) {
+            return this.#entriesFilter?.findHiddenDescendantsAmount(traceEvent);
+        }
+        console.warn('Could not find hidden entries because entriesFilter does not exist');
     }
     processId() {
         return this.#processId;
@@ -449,7 +456,7 @@ export class ThreadAppender {
     #addDecorationsToEntry(entry, index, childrenCollapsed) {
         const flameChartData = this.#compatibilityBuilder.getFlameChartTimelineData();
         if (childrenCollapsed) {
-            addDecorationToEvent(flameChartData, index, { type: "HIDDEN_ANCESTORS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_ANCESTORS_ARROW */ });
+            addDecorationToEvent(flameChartData, index, { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ });
         }
         const warnings = this.#traceParsedData.Warnings.perEvent.get(entry);
         if (!warnings) {

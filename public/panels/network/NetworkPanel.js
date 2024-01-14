@@ -632,7 +632,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.networkLogView.clearFilmStripFrame();
     }
     onUpdateRequest(event) {
-        const request = event.data;
+        const { request } = event.data;
         this.calculator.updateBoundaries(request);
         // FIXME: Unify all time units across the frontend!
         this.overviewPane.setBounds(TraceEngine.Types.Timing.MilliSeconds(this.calculator.minimumBoundary() * 1000), TraceEngine.Types.Timing.MilliSeconds(this.calculator.maximumBoundary() * 1000));

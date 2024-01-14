@@ -1328,6 +1328,9 @@
   "models/emulation/DeviceModeModel.ts | devicePixelRatioMustBeLessThanOr": {
     "message": "D̂év̂íĉé p̂íx̂él̂ ŕât́îó m̂úŝt́ b̂é l̂éŝś t̂h́âń ôŕ êq́ûál̂ t́ô {PH1}."
   },
+  "models/emulation/DeviceModeModel.ts | heightCannotBeEmpty": {
+    "message": "Ĥéîǵĥt́ ĉán̂ńôt́ b̂é êḿp̂t́ŷ."
+  },
   "models/emulation/DeviceModeModel.ts | heightMustBeANumber": {
     "message": "Ĥéîǵĥt́ m̂úŝt́ b̂é â ńûḿb̂ér̂."
   },
@@ -1336,6 +1339,9 @@
   },
   "models/emulation/DeviceModeModel.ts | heightMustBeLessThanOrEqualToS": {
     "message": "Ĥéîǵĥt́ m̂úŝt́ b̂é l̂éŝś t̂h́âń ôŕ êq́ûál̂ t́ô {PH1}."
+  },
+  "models/emulation/DeviceModeModel.ts | widthCannotBeEmpty": {
+    "message": "Ŵíd̂t́ĥ ćâńn̂ót̂ b́ê ém̂ṕt̂ý."
   },
   "models/emulation/DeviceModeModel.ts | widthMustBeANumber": {
     "message": "Ŵíd̂t́ĥ ḿûśt̂ b́ê á n̂úm̂b́êŕ."
@@ -2259,7 +2265,7 @@
     "message": "Ĉóp̂íêd́ ŝúĝǵêśt̂éd̂ ÍD̂ {PH1} t́ô ćl̂íp̂b́ôár̂d́"
   },
   "panels/application/AppManifestView.ts | copyToClipboard": {
-    "message": "Ĉóp̂ý t̂ó ĉĺîṕb̂óâŕd̂"
+    "message": "Ĉóp̂ý ŝúĝǵêśt̂éd̂ ÍD̂ t́ô ćl̂íp̂b́ôár̂d́"
   },
   "panels/application/AppManifestView.ts | couldNotCheckServiceWorker": {
     "message": "Ĉóûĺd̂ ńôt́ ĉh́êćk̂ service worker ẃît́ĥóût́ â 'start_url' f́îél̂d́ îń t̂h́ê ḿâńîf́êśt̂"
@@ -3358,6 +3364,9 @@
   },
   "panels/application/components/StackTrace.ts | cannotRenderStackTrace": {
     "message": "Ĉán̂ńôt́ r̂én̂d́êŕ ŝt́âćk̂ t́r̂áĉé"
+  },
+  "panels/application/components/StackTrace.ts | creationStackTrace": {
+    "message": "F̂ŕâḿê Ćr̂éât́îón̂ Stack Trace"
   },
   "panels/application/components/StackTrace.ts | showLess": {
     "message": "Ŝh́ôẃ l̂éŝś"
@@ -4538,6 +4547,9 @@
   "panels/browser_debugger/browser_debugger-meta.ts | page": {
     "message": "P̂áĝé"
   },
+  "panels/browser_debugger/browser_debugger-meta.ts | refreshGlobalListeners": {
+    "message": "R̂éf̂ŕêśĥ ǵl̂ób̂ál̂ ĺîśt̂én̂ér̂ś"
+  },
   "panels/browser_debugger/browser_debugger-meta.ts | showContentScripts": {
     "message": "Ŝh́ôẃ Ĉón̂t́êńt̂ śĉŕîṕt̂ś"
   },
@@ -4696,9 +4708,6 @@
   },
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | unchecked": {
     "message": "ûńĉh́êćk̂éd̂"
-  },
-  "panels/browser_debugger/ObjectEventListenersSidebarPane.ts | refreshGlobalListeners": {
-    "message": "R̂éf̂ŕêśĥ ǵl̂ób̂ál̂ ĺîśt̂én̂ér̂ś"
   },
   "panels/browser_debugger/XHRBreakpointsSidebarPane.ts | addBreakpoint": {
     "message": "Âd́d̂ b́r̂éâḱp̂óîńt̂"
@@ -12461,6 +12470,12 @@
   "panels/timeline/InteractionsTrackAppender.ts | interactions": {
     "message": "Îńt̂ér̂áĉt́îón̂ś"
   },
+  "panels/timeline/IsolateSelector.ts | empty": {
+    "message": "(êḿp̂t́ŷ)"
+  },
+  "panels/timeline/IsolateSelector.ts | selectJavascriptVmInstance": {
+    "message": "Ŝél̂éĉt́ Ĵáv̂áŜćr̂íp̂t́ V̂Ḿ îńŝt́âńĉé"
+  },
   "panels/timeline/LayoutShiftsTrackAppender.ts | layoutShifts": {
     "message": "L̂áŷóût́ Ŝh́îf́t̂ś"
   },
@@ -14270,6 +14285,18 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | flameChart": {
     "message": "F̂ĺâḿê Ćĥár̂t́"
   },
+  "ui/legacy/components/perf_ui/FlameChart.ts | hideChildren": {
+    "message": "Ĥíd̂é ĉh́îĺd̂ŕêń"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | hideFunction": {
+    "message": "Ĥíd̂é f̂ún̂ćt̂íôń"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | hideRepeatingChildren": {
+    "message": "Ĥíd̂é r̂ép̂éât́îńĝ ćĥíl̂d́r̂én̂"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | resetTrace": {
+    "message": "R̂éŝét̂ t́r̂áĉé"
+  },
   "ui/legacy/components/perf_ui/FlameChart.ts | sCollapsed": {
     "message": "{PH1} ĉól̂ĺâṕŝéd̂"
   },
@@ -14639,8 +14666,14 @@
   "ui/legacy/ListWidget.ts | cancelString": {
     "message": "Ĉán̂ćêĺ"
   },
+  "ui/legacy/ListWidget.ts | changesSaved": {
+    "message": "Ĉh́âńĝéŝ t́ô ít̂ém̂ h́âv́ê b́êén̂ śâv́êd́"
+  },
   "ui/legacy/ListWidget.ts | editString": {
     "message": "Êd́ît́"
+  },
+  "ui/legacy/ListWidget.ts | removedItem": {
+    "message": "Ît́êḿ ĥáŝ b́êén̂ ŕêḿôv́êd́"
   },
   "ui/legacy/ListWidget.ts | removeString": {
     "message": "R̂ém̂óv̂é"

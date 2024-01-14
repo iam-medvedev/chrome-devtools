@@ -507,7 +507,10 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
         return LitHtml.html `
       <div class="details-list"
       jslog=${VisualLogging.tree().context('frames-per-issue')}>
-        <${ExpandableList.ExpandableList.ExpandableList.litTagName} .data=${{ rows }}
+        <${ExpandableList.ExpandableList.ExpandableList.litTagName} .data=${{
+            rows,
+            title: i18nString(UIStrings.framesPerIssue, { n: frames.length }),
+        }}
         jslog=${VisualLogging.treeItem()}></${ExpandableList.ExpandableList.ExpandableList.litTagName}>
       </div>
     `;

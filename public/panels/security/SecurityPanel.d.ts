@@ -2,7 +2,7 @@ import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { SecurityModel, type PageVisibleSecurityState } from './SecurityModel.js';
+import { type PageVisibleSecurityState, SecurityModel } from './SecurityModel.js';
 export declare class SecurityPanel extends UI.Panel.PanelWithSidebar implements SDK.TargetManager.SDKModelObserver<SecurityModel> {
     readonly mainView: SecurityMainView;
     private readonly sidebarMainViewElement;

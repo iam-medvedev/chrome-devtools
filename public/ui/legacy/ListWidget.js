@@ -31,6 +31,14 @@ const UIStrings = {
      *@description Text to cancel something
      */
     cancelString: 'Cancel',
+    /**
+     * @description Text for screen reader to announce that an item has been saved.
+     */
+    changesSaved: 'Changes to item have been saved',
+    /**
+     * @description Text for screen reader to announce that an item has been removed.
+     */
+    removedItem: 'Item has been removed',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/ListWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -145,6 +153,9 @@ export class ListWidget extends VBox {
             const index = this.elements.indexOf(element);
             this.element.focus();
             this.delegate.removeItemRequested(this.items[index], index);
+            ARIAUtils.alert(i18nString(UIStrings.removedItem));
+            // focus on the next item in the list, or the last item if we're removing the last item
+            this.elements[Math.min(index, this.elements.length - 1)].focus();
         }
     }
     wasShown() {
@@ -185,9 +196,15 @@ export class ListWidget extends VBox {
         const editItem = this.editItem;
         const isNew = !this.editElement;
         const editor = this.editor;
+        // Focus on the current item or the new item after committing
+        const focusElementIndex = this.editElement ? this.elements.indexOf(this.editElement) : this.elements.length - 1;
         this.stopEditing();
         if (editItem !== null) {
             this.delegate.commitEdit(editItem, editor, isNew);
+            ARIAUtils.alert(i18nString(UIStrings.changesSaved));
+            if (this.elements[focusElementIndex]) {
+                this.elements[focusElementIndex].focus();
+            }
         }
     }
     stopEditing() {
@@ -237,11 +254,15 @@ export class Editor {
             return true;
         }, this.commitClicked.bind(this)), false);
         const buttonsRow = this.element.createChild('div', 'editor-buttons');
-        this.commitButton = createTextButton('', this.commitClicked.bind(this), '', true /* primary */);
-        this.commitButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('commit')}`);
+        this.commitButton = createTextButton('', this.commitClicked.bind(this), {
+            jslogContext: 'commit',
+            primary: true,
+        });
         buttonsRow.appendChild(this.commitButton);
-        this.cancelButton =
-            createTextButton(i18nString(UIStrings.cancelString), this.cancelClicked.bind(this), '', true /* primary */);
+        this.cancelButton = createTextButton(i18nString(UIStrings.cancelString), this.cancelClicked.bind(this), {
+            jslogContext: 'cancel',
+            primary: true,
+        });
         this.cancelButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('cancel')}`);
         buttonsRow.appendChild(this.cancelButton);
         this.errorMessageContainer = this.element.createChild('div', 'list-widget-input-validation-error');
@@ -321,8 +342,12 @@ export class Editor {
             else {
                 ARIAUtils.setInvalid(input, true);
             }
-            if (!forceValid && errorMessage && !this.errorMessageContainer.textContent) {
-                this.errorMessageContainer.textContent = errorMessage;
+            if (!forceValid && errorMessage) {
+                if (this.errorMessageContainer.textContent) {
+                    const br = document.createElement('br');
+                    this.errorMessageContainer.append(br);
+                }
+                this.errorMessageContainer.append(errorMessage);
             }
             allValid = allValid && valid;
         }

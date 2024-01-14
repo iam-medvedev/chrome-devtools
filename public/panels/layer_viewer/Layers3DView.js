@@ -31,6 +31,7 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import layers3DViewStyles from './layers3DView.css.js';
 import { LayerSelection, ScrollRectSelection, Selection, SnapshotSelection, } from './LayerViewHost.js';
 import { Events as TransformControllerEvents, TransformController } from './TransformController.js';
@@ -114,6 +115,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     mouseDownY;
     constructor(layerViewHost) {
         super(true);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('layers-3d-view')}`);
         this.contentElement.classList.add('layers-3d-view');
         this.failBanner = new UI.Widget.VBox();
         this.failBanner.element.classList.add('full-widget-dimmed-banner');
@@ -131,6 +133,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.canvasElement.addEventListener('mouseleave', this.onMouseMove.bind(this), false);
         this.canvasElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
         this.canvasElement.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
+        this.canvasElement.setAttribute('jslog', `${VisualLogging.canvas().track({ click: true, drag: true }).context('layers-canvas')}`);
         UI.ARIAUtils.setLabel(this.canvasElement, i18nString(UIStrings.dLayersView));
         this.lastSelection = {};
         this.layerTree = null;
@@ -720,10 +723,14 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     }
     onContextMenu(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetView), () => this.transformController.resetAndNotify());
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetView), () => this.transformController.resetAndNotify(), {
+            jslogContext: 'layers.3d-center',
+        });
         const selection = this.selectionFromEventPoint(event);
         if (selection && selection.type() === "Snapshot" /* Type.Snapshot */) {
-            contextMenu.defaultSection().appendItem(i18nString(UIStrings.showPaintProfiler), () => this.dispatchEventToListeners(Events.PaintProfilerRequested, selection));
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.showPaintProfiler), () => this.dispatchEventToListeners(Events.PaintProfilerRequested, selection), {
+                jslogContext: 'layers.paint-profiler',
+            });
         }
         this.layerViewHost.showContextMenu(contextMenu, selection);
     }

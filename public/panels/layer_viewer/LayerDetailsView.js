@@ -32,6 +32,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import layerDetailsViewStyles from './layerDetailsView.css.js';
 import { ScrollRectSelection, } from './LayerViewHost.js';
 const UIStrings = {
@@ -165,6 +166,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     selection;
     constructor(layerViewHost) {
         super(true);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('layers-details')}`);
         this.layerViewHost = layerViewHost;
         this.layerViewHost.registerView(this);
         this.emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.selectALayerToSeeItsDetails));
@@ -221,6 +223,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
             PH5: scrollRect.rect.y,
         });
         element.addEventListener('click', this.onScrollRectClicked.bind(this, index), false);
+        element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('layers.select-object')}`);
     }
     formatStickyAncestorLayer(title, layer) {
         if (!layer) {
@@ -307,6 +310,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
                 this.invokeProfilerLink();
             }
         });
+        this.paintProfilerLink.setAttribute('jslog', `${VisualLogging.action().track({ click: true, keydown: 'Enter' }).context('layers.paint-profiler')}`);
     }
     createRow(title) {
         const tr = this.tbodyElement.createChild('tr');

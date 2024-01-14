@@ -61,9 +61,16 @@ export interface ResetEvent {
 }
 export type EventTypes = {
     [Events.Reset]: ResetEvent;
-    [Events.RequestAdded]: SDK.NetworkRequest.NetworkRequest;
-    [Events.RequestUpdated]: SDK.NetworkRequest.NetworkRequest;
-    [Events.RequestRemoved]: SDK.NetworkRequest.NetworkRequest;
+    [Events.RequestAdded]: {
+        request: SDK.NetworkRequest.NetworkRequest;
+        preserveLog?: boolean;
+    };
+    [Events.RequestUpdated]: {
+        request: SDK.NetworkRequest.NetworkRequest;
+    };
+    [Events.RequestRemoved]: {
+        request: SDK.NetworkRequest.NetworkRequest;
+    };
 };
 export interface InitiatorData {
     info: InitiatorInfo | null;

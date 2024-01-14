@@ -3,7 +3,7 @@
  * that's potentially `null` you can use this function to assert that it isn't,
  * and satisfy TypeScript that the value is present.
  */
-export declare function assertNotNullOrUndefined<T>(val: T): asserts val is NonNullable<T>;
+export declare function assertNotNullOrUndefined<T>(val: T, message?: string): asserts val is NonNullable<T>;
 export declare function assertNever(type: never, message: string): never;
 /**
  * This is useful to check on the type-level that the unhandled cases of
