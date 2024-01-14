@@ -38,40 +38,94 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('core/common/Revealer.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
-export let reveal = async function reveal(revealable, omitFocus) {
-    const promises = await Promise.all(getApplicableRegisteredRevealers(revealable).map(registration => registration.loadRevealer()));
-    if (!promises.length) {
-        throw new Error('Can\'t reveal ' + revealable);
+let revealerRegistry;
+/**
+ * Registration for revealers, which deals with keeping a list of all possible
+ * revealers, lazily instantiating them as necessary and invoking their `reveal`
+ * methods depending on the _context types_ they were registered for.
+ *
+ * @see Revealer
+ */
+export class RevealerRegistry {
+    registeredRevealers = [];
+    /**
+     * Yields the singleton instance, creating it on-demand when necessary.
+     *
+     * @returns the singleton instance.
+     */
+    static instance() {
+        if (revealerRegistry === undefined) {
+            revealerRegistry = new RevealerRegistry();
+        }
+        return revealerRegistry;
     }
-    return await Promise.race(promises.map(revealer => revealer.reveal(revealable, omitFocus)));
-};
-export function setRevealForTest(newReveal) {
-    reveal = newReveal;
+    /**
+     * Clears the singleton instance (if any).
+     */
+    static removeInstance() {
+        revealerRegistry = undefined;
+    }
+    /**
+     * Register a new `Revealer` as described by the `registration`.
+     *
+     * @param registration the description.
+     */
+    register(registration) {
+        this.registeredRevealers.push(registration);
+    }
+    /**
+     * Reveals the `revealable`.
+     *
+     * @param revealable the object to reveal.
+     * @param omitFocus whether to omit focusing on the presentation of `revealable` afterwards.
+     */
+    async reveal(revealable, omitFocus) {
+        const revealers = await Promise.all(this.getApplicableRegisteredRevealers(revealable).map(registration => registration.loadRevealer()));
+        if (revealers.length < 1) {
+            throw new Error(`No revealers found for ${revealable}`);
+        }
+        if (revealers.length > 1) {
+            throw new Error(`Conflicting reveals found for ${revealable}`);
+        }
+        return await revealers[0].reveal(revealable, omitFocus);
+    }
+    getApplicableRegisteredRevealers(revealable) {
+        return this.registeredRevealers.filter(registration => {
+            for (const contextType of registration.contextTypes()) {
+                if (revealable instanceof contextType) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
 }
 export function revealDestination(revealable) {
-    for (const { destination } of getApplicableRegisteredRevealers(revealable)) {
+    const revealers = RevealerRegistry.instance().getApplicableRegisteredRevealers(revealable);
+    for (const { destination } of revealers) {
         if (destination) {
             return destination();
         }
     }
     return null;
 }
-const registeredRevealers = [];
+/**
+ * Register a new `Revealer` as described by the `registration` on the singleton
+ * {@link RevealerRegistry} instance.
+ *
+ * @param registration the description.
+ */
 export function registerRevealer(registration) {
-    registeredRevealers.push(registration);
+    RevealerRegistry.instance().register(registration);
 }
-function getApplicableRegisteredRevealers(revealable) {
-    return registeredRevealers.filter(revealerRegistration => {
-        if (!revealerRegistration.contextTypes) {
-            return true;
-        }
-        for (const contextType of revealerRegistration.contextTypes()) {
-            if (revealable instanceof contextType) {
-                return true;
-            }
-        }
-        return false;
-    });
+/**
+ * Reveals the `revealable` via the singleton {@link RevealerRegistry} instance.
+ *
+ * @param revealable the object to reveal.
+ * @param omitFocus whether to omit focusing on the presentation of `revealable` afterwards.
+ */
+export async function reveal(revealable, omitFocus = false) {
+    await RevealerRegistry.instance().reveal(revealable, omitFocus);
 }
 export const RevealerDestination = {
     ELEMENTS_PANEL: i18nLazyString(UIStrings.elementsPanel),

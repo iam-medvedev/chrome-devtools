@@ -176,15 +176,22 @@ export class SearchableView extends VBox {
             this.regexButton.addEventListener(ToolbarButton.Events.Click, this.toggleRegexSearch, this);
             toolbar.appendToolbarItem(this.regexButton);
         }
-        const cancelButtonElement = createTextButton(i18nString(UIStrings.cancel), this.closeSearch.bind(this), 'search-action-button');
+        const cancelButtonElement = createTextButton(i18nString(UIStrings.cancel), this.closeSearch.bind(this), {
+            className: 'search-action-button',
+            jslogContext: 'close-search',
+        });
         firstRowButtons.appendChild(cancelButtonElement);
         this.secondRowButtons = this.buttonsContainer.createChild('div', 'second-row-buttons hidden');
-        this.replaceButtonElement =
-            createTextButton(i18nString(UIStrings.replace), this.replace.bind(this), 'search-action-button');
+        this.replaceButtonElement = createTextButton(i18nString(UIStrings.replace), this.replace.bind(this), {
+            className: 'search-action-button',
+            jslogContext: 'replace',
+        });
         this.replaceButtonElement.disabled = true;
         this.secondRowButtons.appendChild(this.replaceButtonElement);
-        this.replaceAllButtonElement =
-            createTextButton(i18nString(UIStrings.replaceAll), this.replaceAll.bind(this), 'search-action-button');
+        this.replaceAllButtonElement = createTextButton(i18nString(UIStrings.replaceAll), this.replaceAll.bind(this), {
+            className: 'search-action-button',
+            jslogContext: 'replace-all',
+        });
         this.secondRowButtons.appendChild(this.replaceAllButtonElement);
         this.replaceAllButtonElement.disabled = true;
         this.minimalSearchQuerySize = 3;

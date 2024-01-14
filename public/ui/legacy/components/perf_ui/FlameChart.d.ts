@@ -72,7 +72,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private entryInfo;
     private readonly markerHighlighElement;
     readonly highlightElement: HTMLElement;
-    readonly revealAncestorsArrowHighlightElement: HTMLElement;
+    readonly revealDescendantsArrowHighlightElement: HTMLElement;
     private readonly selectedElement;
     private rulerEnabled;
     private barHeight;
@@ -155,7 +155,10 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     moveGroupDown(groupIndex: number): void;
     hideGroup(groupIndex: number): void;
     showGroup(groupIndex: number): void;
+    modifyTree(treeAction: TraceEngine.EntriesFilter.FilterAction, index: number): void;
+    getPossibleActions(): TraceEngine.EntriesFilter.PossibleFilterActions | void;
     onContextMenu(_event: Event): void;
+    private handleFlameChartTransformEvent;
     private onKeyDown;
     bindCanvasEvent(eventName: string, onEvent: (arg0: Event) => void): void;
     private handleKeyboardGroupNavigation;
@@ -198,6 +201,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
         x: number;
         y: number;
     };
+    getCanvas(): HTMLCanvasElement;
     /**
      * Returns the y scroll of the chart viewport.
      */
@@ -341,7 +345,7 @@ export declare const MinimalTimeWindowMs = 0.5;
 export declare const enum FlameChartDecorationType {
     CANDY = "CANDY",
     WARNING_TRIANGLE = "WARNING_TRIANGLE",
-    HIDDEN_ANCESTORS_ARROW = "HIDDEN_ANCESTORS_ARROW"
+    HIDDEN_DESCENDANTS_ARROW = "HIDDEN_DESCENDANTS_ARROW"
 }
 /**
  * Represents a decoration that can be added to event. Each event can have as
@@ -360,7 +364,7 @@ export type FlameChartDecoration = {
     type: FlameChartDecorationType.WARNING_TRIANGLE;
     customEndTime?: TraceEngine.Types.Timing.MicroSeconds;
 } | {
-    type: FlameChartDecorationType.HIDDEN_ANCESTORS_ARROW;
+    type: FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW;
 };
 export declare function sortDecorationsForRenderingOrder(decorations: FlameChartDecoration[]): void;
 export declare class FlameChartTimelineData {
@@ -396,6 +400,7 @@ export interface FlameChartDataProvider {
     maxStackDepth(): number;
     timelineData(rebuild?: boolean): FlameChartTimelineData | null;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
+    prepareHighlightedHiddenEntriesArrowInfo?(group: Group, entryIndex: number): Element | null;
     canJumpToEntry(entryIndex: number): boolean;
     entryTitle(entryIndex: number): string | null;
     entryFont(entryIndex: number): string | null;
@@ -404,6 +409,7 @@ export interface FlameChartDataProvider {
     forceDecoration(entryIndex: number): boolean;
     textColor(entryIndex: number): string;
     mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
+    modifyTree?(group: Group, node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
     findPossibleContextMenuActions?(group: Group, node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
 }
 export interface FlameChartMarker {
@@ -442,29 +448,13 @@ export declare enum Events {
      * been hovered on, or -1 if no entry is selected (the user has moved their
      * mouse off the event)
      */
-    EntryHighlighted = "EntryHighlighted",
-    /**
-     * Emitted when a there is a modify actioned(ex. merge, collapse recursion)
-     * chosen from the flame chart context  menu
-     */
-    TreeModified = "TreeModified",
-    /**
-     * Emitted when a there is a modify actioned(ex. merge, collapse recursion)
-     * chosen from the flame chart context  menu
-     */
-    EntriesModified = "EntriesModified"
+    EntryHighlighted = "EntryHighlighted"
 }
 export type EventTypes = {
     [Events.CanvasFocused]: number | void;
     [Events.EntryInvoked]: number;
     [Events.EntrySelected]: number;
     [Events.EntryHighlighted]: number;
-    [Events.TreeModified]: {
-        group: Group;
-        node: number;
-        action: TraceEngine.EntriesFilter.FilterAction;
-    };
-    [Events.EntriesModified]: void;
 };
 export interface Group {
     name: Common.UIString.LocalizedString;

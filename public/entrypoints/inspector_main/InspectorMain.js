@@ -57,15 +57,21 @@ export class InspectorMainImpl {
             const waitForDebuggerInPage = type === SDK.Target.Type.Frame && Root.Runtime.Runtime.queryParam('panel') === 'sources';
             const name = type === SDK.Target.Type.Frame ? i18nString(UIStrings.main) : i18nString(UIStrings.tab);
             const target = SDK.TargetManager.TargetManager.instance().createTarget('main', name, type, null, undefined, waitForDebuggerInPage);
-            const targetManager = SDK.TargetManager.TargetManager.instance();
-            targetManager.observeTargets({
-                targetAdded: (target) => {
-                    if (target === targetManager.primaryPageTarget()) {
-                        target.setName(i18nString(UIStrings.main));
-                    }
-                },
-                targetRemoved: (_) => { },
-            });
+            const waitForPrimaryPageTarget = () => {
+                return new Promise(resolve => {
+                    const targetManager = SDK.TargetManager.TargetManager.instance();
+                    targetManager.observeTargets({
+                        targetAdded: (target) => {
+                            if (target === targetManager.primaryPageTarget()) {
+                                target.setName(i18nString(UIStrings.main));
+                                resolve(target);
+                            }
+                        },
+                        targetRemoved: (_) => { },
+                    });
+                });
+            };
+            await waitForPrimaryPageTarget();
             // Only resume target during the first connection,
             // subsequent connections are due to connection hand-over,
             // there is no need to pause in debugger.

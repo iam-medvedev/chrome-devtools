@@ -61,7 +61,11 @@ export declare function initializeUIUtils(document: Document): void;
 export declare function beautifyFunctionName(name: string): string;
 export declare const createTextChild: (element: Element | DocumentFragment, text: string) => Text;
 export declare const createTextChildren: (element: Element | DocumentFragment, ...childrenText: string[]) => void;
-export declare function createTextButton(text: string, eventHandler?: ((arg0: Event) => void), className?: string, primary?: boolean, alternativeEvent?: string): HTMLButtonElement;
+export declare function createTextButton(text: string, clickHandler?: ((arg0: Event) => void), opts?: {
+    className?: string;
+    jslogContext?: string;
+    primary?: boolean;
+}): HTMLButtonElement;
 export declare function createInput(className?: string, type?: string, jslogContext?: string): HTMLInputElement;
 export declare function createSelect(name: string, options: string[] | Map<string, string[]>[] | Set<string>): HTMLSelectElement;
 export declare function createLabel(title: string, className?: string, associatedControl?: Element): Element;

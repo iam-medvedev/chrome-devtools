@@ -1,5 +1,4 @@
 import * as TraceEngine from '../../models/trace/trace.js';
-import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { type CompatibilityTracksAppender, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 export declare class ThreadAppender implements TrackAppender {
     #private;
@@ -7,8 +6,9 @@ export declare class ThreadAppender implements TrackAppender {
     readonly threadType: TraceEngine.Handlers.Threads.ThreadType;
     readonly isOnMainFrame: boolean;
     constructor(compatibilityBuilder: CompatibilityTracksAppender, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, processId: TraceEngine.Types.TraceEvents.ProcessID, threadId: TraceEngine.Types.TraceEvents.ThreadID, threadName: string | null, type: TraceEngine.Handlers.Threads.ThreadType);
-    modifyTree(traceEvent: TraceEngine.Types.TraceEvents.TraceEntry, action: TraceEngine.EntriesFilter.FilterAction, flameChartView: PerfUI.FlameChart.FlameChart): void;
+    modifyTree(traceEvent: TraceEngine.Types.TraceEvents.TraceEntry, action: TraceEngine.EntriesFilter.FilterAction): void;
     findPossibleContextMenuActions(traceEvent: TraceEngine.Types.TraceEvents.TraceEntry): TraceEngine.EntriesFilter.PossibleFilterActions | void;
+    findHiddenDescendantsAmount(traceEvent: TraceEngine.Types.TraceEvents.TraceEntry): number | void;
     processId(): TraceEngine.Types.TraceEvents.ProcessID;
     threadId(): TraceEngine.Types.TraceEvents.ThreadID;
     /**

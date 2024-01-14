@@ -9,6 +9,11 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { Horizontal, HorizontalSpanned, Vertical, VerticalSpanned, } from './EmulatedDevices.js';
 const UIStrings = {
     /**
+     * @description Error message shown in the Devices settings pane when the user enters an empty
+     * width for a custom device.
+     */
+    widthCannotBeEmpty: 'Width cannot be empty.',
+    /**
      * @description Error message shown in the Devices settings pane when the user enters an invalid
      * width for a custom device.
      */
@@ -25,6 +30,11 @@ const UIStrings = {
      * @example {50} PH1
      */
     widthMustBeGreaterThanOrEqualToS: 'Width must be greater than or equal to {PH1}.',
+    /**
+     * @description Error message shown in the Devices settings pane when the user enters an empty
+     * height for a custom device.
+     */
+    heightCannotBeEmpty: 'Height cannot be empty.',
     /**
      * @description Error message shown in the Devices settings pane when the user enters an invalid
      * height for a custom device.
@@ -153,7 +163,10 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
     static widthValidator(value) {
         let valid = false;
         let errorMessage;
-        if (!/^[\d]+$/.test(value)) {
+        if (!value) {
+            errorMessage = i18nString(UIStrings.widthCannotBeEmpty);
+        }
+        else if (!/^[\d]+$/.test(value)) {
             errorMessage = i18nString(UIStrings.widthMustBeANumber);
         }
         else if (Number(value) > MaxDeviceSize) {
@@ -170,7 +183,10 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
     static heightValidator(value) {
         let valid = false;
         let errorMessage;
-        if (!/^[\d]+$/.test(value)) {
+        if (!value) {
+            errorMessage = i18nString(UIStrings.heightCannotBeEmpty);
+        }
+        else if (!/^[\d]+$/.test(value)) {
             errorMessage = i18nString(UIStrings.heightMustBeANumber);
         }
         else if (Number(value) > MaxDeviceSize) {
@@ -630,7 +646,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
                 deviceMetrics.height = orientation.height;
                 const dispFeature = this.getDisplayFeature();
                 if (dispFeature) {
-                    // @ts-ignore: displayFeature isn't in protocol.d.ts but is an
+                    // @ts-ignore: displayFeature isn't in protocol.ts but is an
                     // experimental flag:
                     // https://chromedevtools.github.io/devtools-protocol/tot/Emulation/#method-setDeviceMetricsOverride
                     deviceMetrics.displayFeature = dispFeature;

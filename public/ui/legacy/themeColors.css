@@ -110,7 +110,6 @@
   --color-error-text: #f00;
   --color-error-border: hsl(0deg 100% 92%);
   --color-error-background: hsl(0deg 100% 97%);
-  --color-checkbox-accent-color: var(--color-primary-old);
   --color-image-preview-background: rgb(255 255 255);
 
   /* Colors for styling inputs */
@@ -270,6 +269,7 @@
   --sys-color-yellow-outline: var(--ref-palette-yellow70);
   --sys-color-error-outline: var(--ref-palette-error80);
   --sys-color-divider: var(--ref-palette-primary90);
+  --sys-color-divider-on-tonal-container: var(--ref-palette-primary80);
   --sys-color-divider-prominent: var(--ref-palette-primary70);
 
   /* States */
@@ -484,7 +484,6 @@
   --color-error-text: hsl(0deg 100% 75%);
   --color-error-border: rgb(92 0 0);
   --color-error-background: hsl(0deg 100% 8%);
-  --color-checkbox-accent-color: rgb(255 165 0);
   /* Colors for styling inputs */
   --color-input-outline: rgb(60 64 67);
   --color-input-outline-active: rgb(138 180 248);
@@ -601,7 +600,7 @@
   --sys-color-on-tertiary-container: var(--ref-palette-tertiary90);
   --sys-color-error-container: var(--ref-palette-error30);
   --sys-color-on-error-container: var(--ref-palette-error90);
-  --sys-color-neutral-container: var(--ref-palette-neutral10);
+  --sys-color-neutral-container: var(--ref-palette-neutral25);
   --sys-color-omnibox-container: var(--ref-palette-neutral15);
 
   /* Prominent accent colors */
@@ -640,6 +639,7 @@
   --sys-color-yellow-outline: var(--ref-palette-yellow40);
   --sys-color-error-outline: var(--ref-palette-error80);
   --sys-color-divider: var(--ref-palette-neutral30);
+  --sys-color-divider-on-tonal-container: var(--ref-palette-neutral40);
   --sys-color-divider-prominent: var(--ref-palette-neutral50);
 
   /* States */

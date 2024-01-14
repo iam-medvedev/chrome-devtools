@@ -256,7 +256,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.contentElement.setAttribute('jslog', `${VisualLogging.colorPicker()}`);
         this.colorElement = this.contentElement.createChild('div', 'spectrum-color');
         this.colorElement.tabIndex = 0;
-        this.colorElement.setAttribute('jslog', `${VisualLogging.colorCanvas().track({ click: true, drag: true })}`);
+        this.colorElement.setAttribute('jslog', `${VisualLogging.canvas().track({ click: true, drag: true }).context('color-canvas')}`);
         this.setDefaultFocusedElement(this.colorElement);
         this.colorElement.addEventListener('keydown', this.onSliderKeydown.bind(this, positionColor.bind(this)));
         const swatchAriaText = i18nString(UIStrings.pressArrowKeysMessage);
@@ -323,7 +323,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         label.textContent = i18nString(UIStrings.hex);
         UI.ARIAUtils.setLabel(this.hexValue, label.textContent);
         const displaySwitcher = toolsContainer.createChild('button', 'spectrum-display-switcher spectrum-switcher');
-        displaySwitcher.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('colorFormat')}`);
+        displaySwitcher.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('color-format')}`);
         appendSwitcherIcon(displaySwitcher);
         UI.UIUtils.setTitle(displaySwitcher, i18nString(UIStrings.changeColorFormat));
         displaySwitcher.tabIndex = 0;
@@ -353,7 +353,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.shadesContainer.setAttribute('jslog', `${VisualLogging.paletteColorShades()}`);
         UI.UIUtils.installDragHandle(this.paletteContainer, this.paletteDragStart.bind(this), this.paletteDrag.bind(this), this.paletteDragEnd.bind(this), 'default');
         const paletteSwitcher = this.paletteSectionContainer.createChild('div', 'spectrum-palette-switcher spectrum-switcher');
-        paletteSwitcher.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('paletteSwitcher')}`);
+        paletteSwitcher.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('palette-switcher')}`);
         appendSwitcherIcon(paletteSwitcher);
         UI.UIUtils.setTitle(paletteSwitcher, i18nString(UIStrings.previewPalettes));
         UI.ARIAUtils.markAsButton(paletteSwitcher);
@@ -1428,7 +1428,7 @@ export class Swatch {
     swatchCopyIcon;
     constructor(parentElement) {
         const swatchElement = parentElement.createChild('span', 'swatch');
-        swatchElement.setAttribute('jslog', `${VisualLogging.copyColor().track({ click: true })}`);
+        swatchElement.setAttribute('jslog', `${VisualLogging.action().context('copy-color').track({ click: true })}`);
         this.swatchInnerElement = swatchElement.createChild('span', 'swatch-inner');
         this.swatchOverlayElement = swatchElement.createChild('span', 'swatch-overlay');
         UI.ARIAUtils.markAsButton(this.swatchOverlayElement);

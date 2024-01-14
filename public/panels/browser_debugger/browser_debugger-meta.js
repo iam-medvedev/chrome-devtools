@@ -1,9 +1,9 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as i18n from '../../core/i18n/i18n.js';
 const UIStrings = {
     /**
      *@description Command for showing the 'Event Listener Breakpoints' tool
@@ -69,6 +69,10 @@ const UIStrings = {
      *@description Command for showing the 'Content scripts' tool in the sources panel
      */
     showContentScripts: 'Show Content scripts',
+    /**
+     *@description Label for a button in the sources panel that refreshes the list of global event listeners.
+     */
+    refreshGlobalListeners: 'Refresh global listeners',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/browser_debugger/browser_debugger-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -78,6 +82,12 @@ async function loadBrowserDebuggerModule() {
         loadedBrowserDebuggerModule = await import('./browser_debugger.js');
     }
     return loadedBrowserDebuggerModule;
+}
+function maybeRetrieveContextTypes(getClassCallBack) {
+    if (loadedBrowserDebuggerModule === undefined) {
+        return [];
+    }
+    return getClassCallBack(loadedBrowserDebuggerModule);
 }
 let loadedSourcesModule;
 //  The sources module is imported here because the view with id `navigator-network`
@@ -143,7 +153,7 @@ UI.ViewManager.registerViewExtension({
 UI.ViewManager.registerViewExtension({
     async loadView() {
         const BrowserDebugger = await loadBrowserDebuggerModule();
-        return BrowserDebugger.ObjectEventListenersSidebarPane.ObjectEventListenersSidebarPane.instance();
+        return new BrowserDebugger.ObjectEventListenersSidebarPane.ObjectEventListenersSidebarPane();
     },
     id: 'sources.globalListeners',
     location: "sources.sidebar-bottom" /* UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM */,
@@ -199,6 +209,20 @@ UI.ViewManager.registerViewExtension({
     async loadView() {
         const Sources = await loadSourcesModule();
         return new Sources.SourcesNavigator.ContentScriptsNavigatorView();
+    },
+});
+UI.ActionRegistration.registerActionExtension({
+    category: UI.ActionRegistration.ActionCategory.DEBUGGER,
+    actionId: 'browser-debugger.refresh-global-event-listeners',
+    async loadActionDelegate() {
+        const BrowserDebugger = await loadBrowserDebuggerModule();
+        return new BrowserDebugger.ObjectEventListenersSidebarPane.ActionDelegate();
+    },
+    title: i18nLazyString(UIStrings.refreshGlobalListeners),
+    iconClass: "refresh" /* UI.ActionRegistration.IconClass.REFRESH */,
+    contextTypes() {
+        return maybeRetrieveContextTypes(BrowserDebugger => [BrowserDebugger.ObjectEventListenersSidebarPane.ObjectEventListenersSidebarPane,
+        ]);
     },
 });
 UI.ContextMenu.registerProvider({

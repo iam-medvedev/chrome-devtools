@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -82,7 +83,7 @@ const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over a button which copies the previous text to the clipboard.
      */
-    copyToClipboard: 'Copy to clipboard',
+    copyToClipboard: 'Copy suggested ID to clipboard',
     /**
      *@description Screen reader announcement string when the user clicks the copy to clipboard button.
      *@example {/index.html} PH1
@@ -613,11 +614,8 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             const appIdField = this.identitySection.appendField(i18nString(UIStrings.computedAppId));
             UI.ARIAUtils.setLabel(appIdField, 'App Id');
             appIdField.textContent = appId;
-            const helpIcon = new IconButton.Icon.Icon();
-            helpIcon.data = { iconName: 'help', color: 'var(--icon-default)', width: '16px', height: '16px' };
-            helpIcon.classList.add('inline-icon');
+            const helpIcon = IconButton.Icon.create('help', 'inline-icon');
             helpIcon.title = i18nString(UIStrings.appIdExplainer);
-            helpIcon.tabIndex = 0;
             helpIcon.setAttribute('jslog', `${VisualLogging.action().track({ hover: true }).context('help')}`);
             appIdField.appendChild(helpIcon);
             const learnMoreLink = UI.XLink.XLink.create('https://developer.chrome.com/blog/pwa-manifest-id/', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
@@ -634,24 +632,17 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
                 startUrlSpan.textContent = 'start_url';
                 const suggestedIdSpan = document.createElement('code');
                 suggestedIdSpan.textContent = recommendedId;
-                const copyButton = new IconButton.IconButton.IconButton();
-                copyButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('copy')}`);
+                const copyButton = new Buttons.Button.Button();
+                copyButton.className = 'inline-button';
+                copyButton.variant = "round" /* Buttons.Button.Variant.ROUND */;
+                copyButton.size = "TINY" /* Buttons.Button.Size.TINY */;
+                copyButton.iconName = 'copy';
+                copyButton.jslogContext = 'manifest.copy-id';
                 copyButton.title = i18nString(UIStrings.copyToClipboard);
-                copyButton.data = {
-                    groups: [{
-                            iconName: 'copy',
-                            iconHeight: '12px',
-                            iconWidth: '12px',
-                            text: '',
-                            iconColor: 'var(--icon-default-hover)',
-                        }],
-                    clickHandler: () => {
-                        UI.ARIAUtils.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
-                        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
-                    },
-                    compact: true,
-                    accessibleName: i18nString(UIStrings.copyToClipboard),
-                };
+                copyButton.addEventListener('click', () => {
+                    UI.ARIAUtils.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
+                    Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
+                });
                 suggestedIdNote.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.appIdNote, { PH1: noteSpan, PH2: idSpan, PH3: startUrlSpan, PH4: idSpan2, PH5: suggestedIdSpan, PH6: copyButton }));
             }
         }
@@ -859,11 +850,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         displayOverrideText.appendChild(displayOverrideLink);
         const wcoStatusMessage = this.windowControlsSection.appendRow();
         if (hasWco) {
-            const checkmarkIcon = new IconButton.Icon.Icon();
-            checkmarkIcon
-                .data = { iconName: 'check-circle', color: 'var(--icon-checkmark-green)', width: '16px', height: '16px' };
-            checkmarkIcon.classList.add('inline-icon');
-            checkmarkIcon.tabIndex = 0;
+            const checkmarkIcon = IconButton.Icon.create('check-circle', 'inline-icon');
             wcoStatusMessage.appendChild(checkmarkIcon);
             const wco = document.createElement('code');
             wco.classList.add('wco');
@@ -874,10 +861,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             }
         }
         else {
-            const infoIcon = new IconButton.Icon.Icon();
-            infoIcon.data = { iconName: 'info', color: 'var(--icon-default)', width: '16px', height: '16px' };
-            infoIcon.classList.add('inline-icon');
-            infoIcon.tabIndex = 0;
+            const infoIcon = IconButton.Icon.create('info', 'inline-icon');
             wcoStatusMessage.appendChild(infoIcon);
             wcoStatusMessage.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.wcoNotFound, { PH1: displayOverrideText }));
         }

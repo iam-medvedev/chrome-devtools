@@ -34,7 +34,6 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private selectedSearchResult?;
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
-    onEntriesModified(): void;
     isNetworkTrackShownForTests(): boolean;
     getMainDataProvider(): TimelineFlameChartDataProvider;
     updateColorMapper(): void;

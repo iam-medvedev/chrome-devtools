@@ -1,15 +1,15 @@
 import * as UI from '../../ui/legacy/legacy.js';
 import * as EventListeners from '../event_listeners/event_listeners.js';
-export declare class ObjectEventListenersSidebarPane extends UI.Widget.VBox implements UI.Toolbar.ItemsProvider {
+export declare class ObjectEventListenersSidebarPane extends UI.ThrottledWidget.ThrottledWidget implements UI.Toolbar.ItemsProvider {
     #private;
-    private constructor();
-    static instance(): ObjectEventListenersSidebarPane;
-    get eventListenersView(): EventListeners.EventListenersView.EventListenersView;
+    readonly eventListenersView: EventListeners.EventListenersView.EventListenersView;
+    constructor();
     toolbarItems(): UI.Toolbar.ToolbarItem[];
-    update(): void;
+    protected doUpdate(): Promise<void>;
     wasShown(): void;
     willHide(): void;
-    private windowObjectInContext;
-    private refreshClick;
+}
+export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
+    handleAction(context: UI.Context.Context, actionId: string): boolean;
 }
 export declare const objectGroupName = "object-event-listeners-sidebar-pane";

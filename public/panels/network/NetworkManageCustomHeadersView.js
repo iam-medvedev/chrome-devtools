@@ -42,7 +42,10 @@ export class NetworkManageCustomHeadersView extends UI.Widget.VBox {
         placeholder.textContent = i18nString(UIStrings.noCustomHeaders);
         this.list.setEmptyPlaceholder(placeholder);
         this.list.show(this.contentElement);
-        this.contentElement.appendChild(UI.UIUtils.createTextButton(i18nString(UIStrings.addCustomHeader), this.addButtonClicked.bind(this), 'add-button'));
+        this.contentElement.appendChild(UI.UIUtils.createTextButton(i18nString(UIStrings.addCustomHeader), this.addButtonClicked.bind(this), {
+            className: 'add-button',
+            jslogContext: 'network.add-custom-header',
+        }));
         this.columnConfigs = new Map();
         columnData.forEach(columnData => this.columnConfigs.set(columnData.title.toLowerCase(), columnData));
         this.addHeaderColumnCallback = addHeaderColumnCallback;

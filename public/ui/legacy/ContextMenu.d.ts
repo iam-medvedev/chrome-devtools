@@ -67,7 +67,6 @@ export interface ContextMenuOptions {
 }
 export declare class ContextMenu extends SubMenu {
     protected contextMenu: this;
-    private pendingPromises;
     private pendingTargets;
     private readonly event;
     private readonly useSoftMenu;
@@ -101,7 +100,13 @@ export declare class ContextMenu extends SubMenu {
     private onItemSelected;
     private itemSelected;
     private menuCleared;
-    containsTarget(target: Object): boolean;
+    /**
+     * Appends the `target` to the list of pending targets for which context menu providers
+     * will be loaded when showing the context menu. If the `target` was already appended
+     * before, it just ignores this call.
+     *
+     * @param target an object for which we can have registered menu item providers.
+     */
     appendApplicableItems(target: unknown): void;
     markAsMenuItemCheckBox(): void;
     private static pendingMenu;

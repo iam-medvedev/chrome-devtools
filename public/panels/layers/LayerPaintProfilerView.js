@@ -1,13 +1,15 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as LayerViewer from '../layer_viewer/layer_viewer.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as LayerViewer from '../layer_viewer/layer_viewer.js';
 export class LayerPaintProfilerView extends UI.SplitWidget.SplitWidget {
     logTreeView;
     paintProfilerView;
     constructor(showImageCallback) {
         super(true, false);
+        this.element.setAttribute('jslog', `${VisualLogging.pane().context('layers-paint-profiler')}`);
         this.logTreeView = new LayerViewer.PaintProfilerView.PaintProfilerCommandLogView();
         this.setSidebarWidget(this.logTreeView);
         this.paintProfilerView = new LayerViewer.PaintProfilerView.PaintProfilerView(showImageCallback);

@@ -63,10 +63,26 @@ const UIStrings = {
      *@example {Network} PH1
      */
     sCollapsed: '{PH1} collapsed',
+    /**
+     *@description Text for Hiding a function from the Flame Chart
+     */
+    hideFunction: 'Hide function',
+    /**
+     *@description Text for Hiding all children of a function from the Flame Chart
+     */
+    hideChildren: 'Hide children',
+    /**
+     *@description Text for Hiding all repeating child entries of a function from the Flame Chart
+     */
+    hideRepeatingChildren: 'Hide repeating children',
+    /**
+     *@description Text for reseting trace and showing all of the hidden children of the Flame Chart
+     */
+    resetTrace: 'Reset trace',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/perf_ui/FlameChart.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const HIDDEN_ANCESTOR_ARROW = 'data:image/jpg;base64,' +
+const HIDDEN_DESCENDANT_ARROW = 'data:image/jpg;base64,' +
     'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABYSURBVHgB7c6xDYBACAVQIM5BWOUmM47iJK5CGATEhMKYK7TyinsV+YEfAKb/YS9k5pWI5J65u5rZ9txdegV5vEfEkaNUpJm11x9cJFUJIGLTBF9JgWlwJyvOFrGul+FpAAAAAElFTkSuQmCC';
 export class FlameChartDelegate {
     windowChanged(_startTime, _endTime, _animate) {
@@ -90,7 +106,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     entryInfo;
     markerHighlighElement;
     highlightElement;
-    revealAncestorsArrowHighlightElement;
+    revealDescendantsArrowHighlightElement;
     selectedElement;
     rulerEnabled;
     barHeight;
@@ -169,8 +185,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.entryInfo = this.viewportElement.createChild('div', 'flame-chart-entry-info');
         this.markerHighlighElement = this.viewportElement.createChild('div', 'flame-chart-marker-highlight-element');
         this.highlightElement = this.viewportElement.createChild('div', 'flame-chart-highlight-element');
-        this.revealAncestorsArrowHighlightElement =
-            this.viewportElement.createChild('div', 'reveal-ancestors-arrow-highlight-element');
+        this.revealDescendantsArrowHighlightElement =
+            this.viewportElement.createChild('div', 'reveal-descendants-arrow-highlight-element');
         this.selectedElement = this.viewportElement.createChild('div', 'flame-chart-selected-element');
         this.canvas.addEventListener('focus', () => {
             this.dispatchEventToListeners(Events.CanvasFocused);
@@ -381,12 +397,17 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.hideHighlight();
     }
     updatePopover(entryIndex) {
-        if (entryIndex === this.highlightedEntryIndex) {
-            this.updatePopoverOffset();
+        this.entryInfo.removeChildren();
+        const data = this.timelineData();
+        if (!data) {
             return;
         }
-        this.entryInfo.removeChildren();
-        const popoverElement = this.dataProvider.prepareHighlightedEntryInfo(entryIndex);
+        const group = data.groups.at(this.selectedGroupIndex);
+        // If the mouse is hovering over the hidden descendants arrow, get an element that shows how many children are hidden, otherwise an element with the event name and length
+        const popoverElement = (this.isMouseOverRevealChildrenArrow(this.lastMouseOffsetX, entryIndex) && group) ?
+            this.dataProvider.prepareHighlightedHiddenEntriesArrowInfo &&
+                this.dataProvider.prepareHighlightedHiddenEntriesArrowInfo(group, entryIndex) :
+            this.dataProvider.prepareHighlightedEntryInfo(entryIndex);
         if (popoverElement) {
             this.entryInfo.appendChild(popoverElement);
             this.updatePopoverOffset();
@@ -635,7 +656,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.resetCanvas();
         this.draw();
     }
-    #dispatchTreeModifiedEvent(treeAction, index) {
+    modifyTree(treeAction, index) {
         const data = this.timelineData();
         if (!data) {
             return;
@@ -644,17 +665,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (!group || !group.expanded || !group.showStackContextMenu) {
             return;
         }
-        this.dispatchEventToListeners(Events.TreeModified, {
-            group: group,
-            node: index,
-            action: treeAction,
-        });
+        this.dataProvider.modifyTree?.(group, index, treeAction);
+        this.dataProvider.timelineData(true);
+        this.update();
     }
-    onContextMenu(_event) {
-        // The context menu only applies if the user is hovering over an individual entry.
-        if (this.highlightedEntryIndex === -1) {
-            return;
-        }
+    getPossibleActions() {
         const data = this.timelineData();
         if (!data) {
             return;
@@ -668,41 +683,86 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (!group || !group.expanded || !group.showStackContextMenu) {
             return;
         }
+        // Check which actions are possible on an entry.
+        // If an action would not change the entries (for example it has no children to collapse), we do not need to show it.
+        return this.dataProvider.findPossibleContextMenuActions?.(group, this.selectedEntryIndex);
+    }
+    onContextMenu(_event) {
+        // The context menu only applies if the user is hovering over an individual entry.
+        if (this.highlightedEntryIndex === -1) {
+            return;
+        }
         // Update the selected index to match the highlighted index, which
         // represents the entry under the cursor where the user has right clicked
         // to trigger a context menu.
         this.dispatchEventToListeners(Events.EntryInvoked, this.highlightedEntryIndex);
-        // Before showing the context menu, check which actions are possible on an entry.
-        // If an action would not change the entries (for example it has no children to collapse), we do not need to show it.
-        const possibleActions = this.dataProvider.findPossibleContextMenuActions?.(group, this.highlightedEntryIndex);
+        this.setSelectedEntry(this.highlightedEntryIndex);
+        const possibleActions = this.getPossibleActions();
+        if (!possibleActions) {
+            return;
+        }
         this.contextMenu = new UI.ContextMenu.ContextMenu(_event);
-        // TODO(crbug.com/1469887): Change text/ui to the final designs when they are complete.
-        this.contextMenu.headerSection().appendItem('Merge function', () => {
-            this.#dispatchTreeModifiedEvent("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */, this.highlightedEntryIndex);
+        this.contextMenu.headerSection().appendItem(i18nString(UIStrings.hideFunction), () => {
+            this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */, this.highlightedEntryIndex);
         });
         if (possibleActions?.["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */]) {
-            this.contextMenu.headerSection().appendItem('Collapse function', () => {
-                this.#dispatchTreeModifiedEvent("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */, this.highlightedEntryIndex);
+            this.contextMenu.headerSection().appendItem(i18nString(UIStrings.hideChildren), () => {
+                this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */, this.highlightedEntryIndex);
             });
         }
         if (possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */]) {
-            this.contextMenu.headerSection().appendItem('Collapse repeating descendants', () => {
-                this.#dispatchTreeModifiedEvent("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */, this.highlightedEntryIndex);
+            this.contextMenu.headerSection().appendItem(i18nString(UIStrings.hideRepeatingChildren), () => {
+                this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */, this.highlightedEntryIndex);
             });
         }
-        this.contextMenu.headerSection().appendItem('Reset trace', () => {
-            this.#dispatchTreeModifiedEvent("UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterUndoAction.UNDO_ALL_ACTIONS */, this.highlightedEntryIndex);
+        this.contextMenu.headerSection().appendItem(i18nString(UIStrings.resetTrace), () => {
+            this.modifyTree("UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterUndoAction.UNDO_ALL_ACTIONS */, this.highlightedEntryIndex);
         });
         void this.contextMenu.show();
+    }
+    handleFlameChartTransformEvent(event) {
+        // TODO(crbug.com/1469887): Indicate Shortcuts to the user when the designs are complete.
+        if (this.selectedEntryIndex === -1) {
+            return;
+        }
+        const possibleActions = this.getPossibleActions();
+        if (!possibleActions) {
+            return;
+        }
+        const keyboardEvent = event;
+        let handled = false;
+        if (keyboardEvent.key === 'h') {
+            this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */, this.selectedEntryIndex);
+            handled = true;
+        }
+        else if (keyboardEvent.key === 'c' && possibleActions["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */]) {
+            this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */, this.selectedEntryIndex);
+            handled = true;
+        }
+        else if (keyboardEvent.key === 'r' &&
+            possibleActions["COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */]) {
+            this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */, this.selectedEntryIndex);
+            handled = true;
+        }
+        else if (keyboardEvent.key === 'u') {
+            this.modifyTree("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterUndoAction.RESET_CHILDREN */, this.selectedEntryIndex);
+            handled = true;
+        }
+        if (handled) {
+            keyboardEvent.consume(true);
+        }
     }
     onKeyDown(e) {
         if (!UI.KeyboardShortcut.KeyboardShortcut.hasNoModifiers(e) || !this.timelineData()) {
             return;
         }
-        const eventHandled = this.handleSelectionNavigation(e);
+        let eventHandled = this.handleSelectionNavigation(e);
         // Handle keyboard navigation in groups
         if (!eventHandled && this.rawTimelineData && this.rawTimelineData.groups) {
-            this.handleKeyboardGroupNavigation(e);
+            eventHandled = this.handleKeyboardGroupNavigation(e);
+        }
+        if (!eventHandled) {
+            this.handleFlameChartTransformEvent(e);
         }
     }
     bindCanvasEvent(eventName, onEvent) {
@@ -741,6 +801,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (handled) {
             keyboardEvent.consume(true);
         }
+        return handled;
     }
     selectFirstEntryInCurrentGroup() {
         if (!this.rawTimelineData) {
@@ -977,6 +1038,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
      * whether the mouse is hovering over the arrow button that reveals hidden children
      */
     isMouseOverRevealChildrenArrow(x, index) {
+        // Check if given entry has an arrow
+        if (!this.entryHasDecoration(index, "HIDDEN_DESCENDANTS_ARROW" /* FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */)) {
+            return false;
+        }
         const timelineData = this.timelineData();
         if (!timelineData) {
             return false;
@@ -1019,6 +1084,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
      */
     getCanvasOffset() {
         return this.canvas.getBoundingClientRect();
+    }
+    getCanvas() {
+        return this.canvas;
     }
     /**
      * Returns the y scroll of the chart viewport.
@@ -1272,7 +1340,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         context.restore();
                         break;
                     }
-                    case "HIDDEN_ANCESTORS_ARROW" /* FlameChartDecorationType.HIDDEN_ANCESTORS_ARROW */: {
+                    case "HIDDEN_DESCENDANTS_ARROW" /* FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */: {
                         const barX = this.timeToPositionClipped(entryStartTime);
                         const barLevel = entryLevels[entryIndex];
                         const barHeight = this.#eventBarHeight(timelineData, entryIndex);
@@ -1284,7 +1352,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         const arrowSize = barHeight;
                         if (barWidth > arrowSize * 2) {
                             const image = new Image();
-                            image.src = HIDDEN_ANCESTOR_ARROW;
+                            image.src = HIDDEN_DESCENDANT_ARROW;
                             context.drawImage(image, barX + barWidth - arrowSize, barY, arrowSize, arrowSize);
                         }
                         context.restore();
@@ -1615,7 +1683,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             let text = this.dataProvider.entryTitle(entryIndex);
             if (text && text.length) {
                 context.font = this.#font;
-                const hasArrowDecoration = this.entryHasDecoration(entryIndex, "HIDDEN_ANCESTORS_ARROW" /* FlameChartDecorationType.HIDDEN_ANCESTORS_ARROW */);
+                const hasArrowDecoration = this.entryHasDecoration(entryIndex, "HIDDEN_DESCENDANTS_ARROW" /* FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */);
                 // Set the max width to be the width of the bar plus some padding. If the bar has an arrow decoration, also substract the width of the decoration.
                 // The decoration is square, therefore it's width is equal to this.barHeight
                 const maxBarWidth = (hasArrowDecoration) ? barWidth - textPadding - this.barHeight : barWidth - 2 * textPadding;
@@ -2211,12 +2279,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         return style.height !== style.itemsHeight;
     }
     setSelectedEntry(entryIndex) {
-        // If the entry has HIDDEN_ANCESTORS_ARROW decoration, check if the button that
-        // resets children of the entry is clicked. We need to check it even if the entry
+        // Check if the button that resets children of the entry is clicked. We need to check it even if the entry
         // clicked is not selected to avoid needing to double click
-        if (this.entryHasDecoration(entryIndex, "HIDDEN_ANCESTORS_ARROW" /* FlameChartDecorationType.HIDDEN_ANCESTORS_ARROW */) &&
-            this.isMouseOverRevealChildrenArrow(this.lastMouseOffsetX, entryIndex)) {
-            this.#dispatchTreeModifiedEvent("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterUndoAction.RESET_CHILDREN */, entryIndex);
+        if (this.isMouseOverRevealChildrenArrow(this.lastMouseOffsetX, entryIndex)) {
+            this.modifyTree("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterUndoAction.RESET_CHILDREN */, entryIndex);
         }
         if (this.selectedEntryIndex === entryIndex) {
             return;
@@ -2299,18 +2365,16 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     // Updates the highlight of an Arrow button that is shown on an entry if it has hidden child entries
     updateHiddenChildrenArrowHighlighPosition(entryIndex) {
-        this.revealAncestorsArrowHighlightElement.classList.add('hidden');
+        this.revealDescendantsArrowHighlightElement.classList.add('hidden');
         /**
-         * No need to update the hidden ancestors arrow highlight if
+         * No need to update the hidden descendants arrow highlight if
          * 1. No entry is highlighted
-         * 2. Entry highlighed does not have a decoration
-         * 3. Mouse is not hovering over the arrow button
+         * 2. Mouse is not hovering over the arrow button
          */
-        if (entryIndex === -1 || !this.entryHasDecoration(entryIndex, "HIDDEN_ANCESTORS_ARROW" /* FlameChartDecorationType.HIDDEN_ANCESTORS_ARROW */) ||
-            !this.isMouseOverRevealChildrenArrow(this.lastMouseOffsetX, entryIndex)) {
+        if (entryIndex === -1 || !this.isMouseOverRevealChildrenArrow(this.lastMouseOffsetX, entryIndex)) {
             return;
         }
-        this.updateElementPosition(this.revealAncestorsArrowHighlightElement, entryIndex, true);
+        this.updateElementPosition(this.revealDescendantsArrowHighlightElement, entryIndex, true);
     }
     timeToPositionClipped(time) {
         return Platform.NumberUtilities.clamp(this.chartViewport.timeToPosition(time), 0, this.offsetWidth);
@@ -2424,7 +2488,7 @@ export const MinimalTimeWindowMs = 0.5;
 const decorationDrawOrder = {
     CANDY: 1,
     WARNING_TRIANGLE: 2,
-    HIDDEN_ANCESTORS_ARROW: 3,
+    HIDDEN_DESCENDANTS_ARROW: 3,
 };
 export function sortDecorationsForRenderingOrder(decorations) {
     decorations.sort((decoration1, decoration2) => {
@@ -2508,15 +2572,5 @@ export var Events;
      * mouse off the event)
      */
     Events["EntryHighlighted"] = "EntryHighlighted";
-    /**
-     * Emitted when a there is a modify actioned(ex. merge, collapse recursion)
-     * chosen from the flame chart context  menu
-     */
-    Events["TreeModified"] = "TreeModified";
-    /**
-     * Emitted when a there is a modify actioned(ex. merge, collapse recursion)
-     * chosen from the flame chart context  menu
-     */
-    Events["EntriesModified"] = "EntriesModified";
 })(Events || (Events = {}));
 //# sourceMappingURL=FlameChart.js.map

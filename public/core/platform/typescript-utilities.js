@@ -6,9 +6,9 @@
  * that's potentially `null` you can use this function to assert that it isn't,
  * and satisfy TypeScript that the value is present.
  */
-export function assertNotNullOrUndefined(val) {
+export function assertNotNullOrUndefined(val, message) {
     if (val === null || val === undefined) {
-        throw new Error(`Expected given value to not be null/undefined but it was: ${val}`);
+        throw new Error(`Expected given value to not be null/undefined but it was: ${val}${message ? `\n${message}` : ''}`);
     }
 }
 export function assertNever(type, message) {

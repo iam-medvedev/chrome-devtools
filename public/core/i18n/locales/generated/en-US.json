@@ -1328,6 +1328,9 @@
   "models/emulation/DeviceModeModel.ts | devicePixelRatioMustBeLessThanOr": {
     "message": "Device pixel ratio must be less than or equal to {PH1}."
   },
+  "models/emulation/DeviceModeModel.ts | heightCannotBeEmpty": {
+    "message": "Height cannot be empty."
+  },
   "models/emulation/DeviceModeModel.ts | heightMustBeANumber": {
     "message": "Height must be a number."
   },
@@ -1336,6 +1339,9 @@
   },
   "models/emulation/DeviceModeModel.ts | heightMustBeLessThanOrEqualToS": {
     "message": "Height must be less than or equal to {PH1}."
+  },
+  "models/emulation/DeviceModeModel.ts | widthCannotBeEmpty": {
+    "message": "Width cannot be empty."
   },
   "models/emulation/DeviceModeModel.ts | widthMustBeANumber": {
     "message": "Width must be a number."
@@ -2259,7 +2265,7 @@
     "message": "Copied suggested ID {PH1} to clipboard"
   },
   "panels/application/AppManifestView.ts | copyToClipboard": {
-    "message": "Copy to clipboard"
+    "message": "Copy suggested ID to clipboard"
   },
   "panels/application/AppManifestView.ts | couldNotCheckServiceWorker": {
     "message": "Could not check service worker without a 'start_url' field in the manifest"
@@ -3358,6 +3364,9 @@
   },
   "panels/application/components/StackTrace.ts | cannotRenderStackTrace": {
     "message": "Cannot render stack trace"
+  },
+  "panels/application/components/StackTrace.ts | creationStackTrace": {
+    "message": "Frame Creation Stack Trace"
   },
   "panels/application/components/StackTrace.ts | showLess": {
     "message": "Show less"
@@ -4538,6 +4547,9 @@
   "panels/browser_debugger/browser_debugger-meta.ts | page": {
     "message": "Page"
   },
+  "panels/browser_debugger/browser_debugger-meta.ts | refreshGlobalListeners": {
+    "message": "Refresh global listeners"
+  },
   "panels/browser_debugger/browser_debugger-meta.ts | showContentScripts": {
     "message": "Show Content scripts"
   },
@@ -4696,9 +4708,6 @@
   },
   "panels/browser_debugger/DOMBreakpointsSidebarPane.ts | unchecked": {
     "message": "unchecked"
-  },
-  "panels/browser_debugger/ObjectEventListenersSidebarPane.ts | refreshGlobalListeners": {
-    "message": "Refresh global listeners"
   },
   "panels/browser_debugger/XHRBreakpointsSidebarPane.ts | addBreakpoint": {
     "message": "Add breakpoint"
@@ -12461,6 +12470,12 @@
   "panels/timeline/InteractionsTrackAppender.ts | interactions": {
     "message": "Interactions"
   },
+  "panels/timeline/IsolateSelector.ts | empty": {
+    "message": "(empty)"
+  },
+  "panels/timeline/IsolateSelector.ts | selectJavascriptVmInstance": {
+    "message": "Select JavaScript VM instance"
+  },
   "panels/timeline/LayoutShiftsTrackAppender.ts | layoutShifts": {
     "message": "Layout Shifts"
   },
@@ -14270,6 +14285,18 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | flameChart": {
     "message": "Flame Chart"
   },
+  "ui/legacy/components/perf_ui/FlameChart.ts | hideChildren": {
+    "message": "Hide children"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | hideFunction": {
+    "message": "Hide function"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | hideRepeatingChildren": {
+    "message": "Hide repeating children"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | resetTrace": {
+    "message": "Reset trace"
+  },
   "ui/legacy/components/perf_ui/FlameChart.ts | sCollapsed": {
     "message": "{PH1} collapsed"
   },
@@ -14639,8 +14666,14 @@
   "ui/legacy/ListWidget.ts | cancelString": {
     "message": "Cancel"
   },
+  "ui/legacy/ListWidget.ts | changesSaved": {
+    "message": "Changes to item have been saved"
+  },
   "ui/legacy/ListWidget.ts | editString": {
     "message": "Edit"
+  },
+  "ui/legacy/ListWidget.ts | removedItem": {
+    "message": "Item has been removed"
   },
   "ui/legacy/ListWidget.ts | removeString": {
     "message": "Remove"

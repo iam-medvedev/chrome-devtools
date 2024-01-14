@@ -947,11 +947,11 @@ export class SelfXssWarningDialog {
             input.placeholder = i18nString(UIStrings.typeAllowPasting, { PH1: i18nString(UIStrings.allowPasting) });
             content.appendChild(input);
             const buttonsBar = content.createChild('div', 'button');
-            const cancelButton = UI.UIUtils.createTextButton(i18nString(UIStrings.cancel), () => resolve(false));
+            const cancelButton = UI.UIUtils.createTextButton(i18nString(UIStrings.cancel), () => resolve(false), { jslogContext: 'cancel' });
             buttonsBar.appendChild(cancelButton);
             const allowButton = UI.UIUtils.createTextButton(i18nString(UIStrings.allow), () => {
                 resolve(input.value === i18nString(UIStrings.allowPasting));
-            }, '', true);
+            }, { jslogContext: 'confirm', primary: true });
             allowButton.disabled = true;
             buttonsBar.appendChild(allowButton);
             input.addEventListener('input', () => {

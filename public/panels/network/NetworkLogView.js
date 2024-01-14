@@ -505,13 +505,14 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         const filterItems = Object.values(Common.ResourceType.resourceCategories)
             .map(category => ({ name: category.title(), label: () => category.shortTitle(), title: category.title() }));
         if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN)) {
-            this.resourceCategoryFilterUI =
-                new DropDownTypesUI(filterItems, this.filterChanged.bind(this), this.networkResourceTypeFiltersSetting);
+            this.resourceCategoryFilterUI = new DropDownTypesUI(filterItems, this.networkResourceTypeFiltersSetting);
+            this.resourceCategoryFilterUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FilterChanged */, this.filterChanged, this);
             UI.ARIAUtils.setLabel(this.resourceCategoryFilterUI.element(), i18nString(UIStrings.requestTypesToInclude));
             this.resourceCategoryFilterUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FilterChanged */, this.filterChanged.bind(this), this);
             filterBar.addFilter(this.resourceCategoryFilterUI);
             filterBar.addDivider();
-            this.moreFiltersDropDownUI = new MoreFiltersDropDownUI(this.filterChanged.bind(this));
+            this.moreFiltersDropDownUI = new MoreFiltersDropDownUI();
+            this.moreFiltersDropDownUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FilterChanged */, this.filterChanged, this);
             filterBar.addFilter(this.moreFiltersDropDownUI);
         }
         else {
@@ -1343,13 +1344,13 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         return !networkManager || SDK.TargetManager.TargetManager.instance().isInScope(networkManager);
     }
     onRequestUpdated(event) {
-        const request = event.data;
-        if (this.isInScope(request)) {
+        const { request, preserveLog } = event.data;
+        if (this.isInScope(request) || preserveLog) {
             this.refreshRequest(request);
         }
     }
     onRequestRemoved(event) {
-        const request = event.data;
+        const { request } = event.data;
         this.staleRequests.delete(request);
         const node = networkRequestToNode.get(request);
         if (node) {
@@ -2139,7 +2140,6 @@ export const overrideFilter = {
 export class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper {
     filterElement;
     dropDownButton;
-    filterChanged;
     displayedTypes;
     setting;
     items;
@@ -2147,10 +2147,9 @@ export class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper {
     selectedTypesCount;
     typesCountAdorner;
     hasChanged = false;
-    constructor(items, filterChangedCallback, setting) {
+    constructor(items, setting) {
         super();
         this.items = items;
-        this.filterChanged = filterChangedCallback;
         this.filterElement = document.createElement('div');
         this.filterElement.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('request-types')}`);
         this.typesCountAdorner = new Adorners.Adorner.Adorner();
@@ -2243,6 +2242,9 @@ export class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.contextMenu?.setChecked(menuItems[0], this.displayedTypes.has('all'));
     }
+    filterChanged() {
+        this.dispatchEventToListeners("FilterChanged" /* UI.FilterBar.FilterUIEvents.FilterChanged */);
+    }
     settingChanged() {
         this.hasChanged = true;
         this.displayedTypes = new Set();
@@ -2317,7 +2319,6 @@ export class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper {
 export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
     filterElement;
     dropDownButton;
-    filterChangedCallback;
     networkHideDataURLSetting;
     networkHideChromeExtensionsSetting;
     networkShowBlockedCookiesOnlySetting;
@@ -2327,9 +2328,8 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
     activeFiltersCount;
     activeFiltersCountAdorner;
     hasChanged = false;
-    constructor(filterChangedCallback) {
+    constructor() {
         super();
-        this.filterChangedCallback = filterChangedCallback;
         this.networkHideDataURLSetting = Common.Settings.Settings.instance().createSetting('networkHideDataURL', false);
         this.networkHideChromeExtensionsSetting =
             Common.Settings.Settings.instance().createSetting('networkHideChromeExtensions', false);
@@ -2369,7 +2369,7 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
     }
     #onSettingChanged() {
         this.hasChanged = true;
-        this.filterChangedCallback();
+        this.dispatchEventToListeners("FilterChanged" /* UI.FilterBar.FilterUIEvents.FilterChanged */);
     }
     showMoreFiltersContextMenu(event) {
         const mouseEvent = event.data;
@@ -2425,7 +2425,7 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     isActive() {
-        return true;
+        return this.selectedFilters().length !== 0;
     }
     element() {
         return this.filterElement;

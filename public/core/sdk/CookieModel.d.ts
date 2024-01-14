@@ -1,6 +1,6 @@
-import { Cookie, type Attributes } from './Cookie.js';
-import { type Target } from './Target.js';
+import { type Attributes, Cookie } from './Cookie.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare class CookieModel extends SDKModel<void> {
     #private;
     constructor(target: Target);
