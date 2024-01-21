@@ -407,8 +407,7 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
     async imageByFrame(frame) {
         let imagePromise = this.frameToImagePromise.get(frame);
         if (!imagePromise) {
-            const data = frame.screenshotAsString;
-            imagePromise = UI.UIUtils.loadImageFromData(data);
+            imagePromise = UI.UIUtils.loadImage(frame.screenshotEvent.args.dataUri);
             this.frameToImagePromise.set(frame, imagePromise);
         }
         return imagePromise;

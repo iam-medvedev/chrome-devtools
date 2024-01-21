@@ -15,7 +15,6 @@ export class WrappableComponent extends HTMLElement {
 export function legacyWrapper(base, component, jsLogContext) {
     return new class extends base {
         #component;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         constructor(..._args) {
             super(/* isWebComponent=*/ true);
             this.#component = component;

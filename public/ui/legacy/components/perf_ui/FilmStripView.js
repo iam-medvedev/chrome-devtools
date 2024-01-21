@@ -43,9 +43,9 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
         this.statusLabel = this.contentElement.createChild('div', 'label');
         this.reset();
     }
-    static setImageData(imageElement, data) {
-        if (data) {
-            imageElement.src = 'data:image/jpg;base64,' + data;
+    static setImageData(imageElement, dataUri) {
+        if (dataUri) {
+            imageElement.src = dataUri;
         }
     }
     setModel(filmStrip) {
@@ -80,7 +80,7 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
                 this.onMouseEvent(Events.FrameSelected, time);
             }
         });
-        FilmStripView.setImageData(imageElement, frame.screenshotAsString);
+        FilmStripView.setImageData(imageElement, frame.screenshotEvent.args.dataUri);
         return element;
     }
     update() {
@@ -229,20 +229,13 @@ export class Dialog {
         this.index = this.#framesCount() - 1;
         void this.render();
     }
-    #currentFrameData() {
-        const frame = this.#data.frames[this.index];
-        return {
-            snapshot: frame.screenshotAsString,
-            timestamp: TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.screenshotEvent.ts),
-        };
-    }
     render() {
-        const currentFrameData = this.#currentFrameData();
-        this.fragment.$('time').textContent =
-            i18n.TimeUtilities.millisToString(currentFrameData.timestamp - this.#zeroTime());
+        const frame = this.#data.frames[this.index];
+        const timestamp = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.screenshotEvent.ts);
+        this.fragment.$('time').textContent = i18n.TimeUtilities.millisToString(timestamp - this.#zeroTime());
         const image = this.fragment.$('image');
         image.setAttribute('data-frame-index', this.index.toString());
-        FilmStripView.setImageData(image, currentFrameData.snapshot);
+        FilmStripView.setImageData(image, frame.screenshotEvent.args.dataUri);
         this.resize();
     }
 }

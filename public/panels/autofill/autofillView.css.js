@@ -11,6 +11,10 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+main {
+  height: 100%;
+}
+
 .placeholder-container {
   height: calc(100% - 29px);
   display: flex;

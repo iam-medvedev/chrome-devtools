@@ -231,6 +231,24 @@ export const countWtf8Bytes = (inputString) => {
 export const stripLineBreaks = (inputStr) => {
     return inputStr.replace(/(\r)?\n/g, '');
 };
+const EXTENDED_KEBAB_CASE_REGEXP = /^([a-z0-9]+(?:-[a-z0-9]+)*\.)*[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/**
+ * Tests if the `inputStr` is following the extended Kebab Case naming convetion,
+ * where words are separated with either a dash (`-`) or a dot (`.`), and all
+ * characters must be lower-case alphanumeric.
+ *
+ * For example, it will yield `true` for `'my.amazing-string.literal'`, but `false`
+ * for `'Another.AmazingLiteral'` or '`another_amazing_literal'`.
+ *
+ * @param inputStr the input string to test.
+ * @return `true` if the `inputStr` follows the extended Kebab Case convention.
+ */
+export const isExtendedKebabCase = (inputStr) => {
+    return EXTENDED_KEBAB_CASE_REGEXP.test(inputStr);
+};
+export function kebab(x) {
+    return x;
+}
 export const toTitleCase = (inputStr) => {
     return inputStr.substring(0, 1).toUpperCase() + inputStr.substring(1);
 };
@@ -442,6 +460,15 @@ class LowerCaseStringTag {
 }
 export const toLowerCaseString = function (input) {
     return input.toLowerCase();
+};
+const WORD = /[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z0-9]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g;
+//            <---1---><-----------2----------> <----------3--------> <-----4---->
+// 1: two or more consecutive uppercase letters. This is useful for identifying acronyms
+// 2: lookahead assertion that matches a word boundary
+// 3: word starting with an optional uppercase letter
+// 4: single uppercase letter or number
+export const toKebabCase = function (input) {
+    return input.match(WORD)?.map(w => w.toLowerCase()).join('-') || input;
 };
 // Replaces the last ocurrence of parameter `search` with parameter `replacement` in `input`
 export const replaceLast = function (input, search, replacement) {

@@ -113,7 +113,7 @@ export class ButtonProvider {
         this.button.setVisible(false);
         this.button.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.clicked, this);
         this.button.element.classList.add('monospace');
-        this.button.element.setAttribute('jslog', `${VisualLogging.toggleSubpane().track({ click: true }).context('cssLayers')}`);
+        this.button.element.setAttribute('jslog', `${VisualLogging.toggleSubpane().track({ click: true }).context('css-layers')}`);
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;

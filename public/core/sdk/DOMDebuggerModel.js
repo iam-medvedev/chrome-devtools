@@ -299,10 +299,7 @@ export class EventListener {
                 }
             }
             return this.#eventTarget
-                .callFunction(
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // @ts-expect-error
-            removeListener, [
+                .callFunction(removeListener, [
                 RemoteObject.toCallArgument(this.#typeInternal),
                 RemoteObject.toCallArgument(this.#originalHandlerInternal),
                 RemoteObject.toCallArgument(this.#useCaptureInternal),
@@ -314,10 +311,7 @@ export class EventListener {
                 this.call(null, type, listener, useCapture, passive);
             }
             return this.#customRemoveFunction
-                .callFunction(
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // @ts-expect-error
-            callCustomRemove, [
+                .callFunction(callCustomRemove, [
                 RemoteObject.toCallArgument(this.#typeInternal),
                 RemoteObject.toCallArgument(this.#originalHandlerInternal),
                 RemoteObject.toCallArgument(this.#useCaptureInternal),
@@ -332,10 +326,7 @@ export class EventListener {
     }
     togglePassive() {
         return this.#eventTarget
-            .callFunction(
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // @ts-expect-error
-        callTogglePassive, [
+            .callFunction(callTogglePassive, [
             RemoteObject.toCallArgument(this.#typeInternal),
             RemoteObject.toCallArgument(this.#originalHandlerInternal),
             RemoteObject.toCallArgument(this.#useCaptureInternal),

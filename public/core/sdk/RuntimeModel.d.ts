@@ -4,8 +4,8 @@ import type * as Platform from '../platform/platform.js';
 import { DebuggerModel } from './DebuggerModel.js';
 import { HeapProfilerModel } from './HeapProfilerModel.js';
 import { RemoteObject, RemoteObjectProperty, type ScopeRef } from './RemoteObject.js';
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare class RuntimeModel extends SDKModel<EventTypes> {
     #private;
     readonly agent: ProtocolProxyApi.RuntimeApi;
@@ -54,7 +54,7 @@ export declare class RuntimeModel extends SDKModel<EventTypes> {
     executionContextForStackTrace(stackTrace: Protocol.Runtime.StackTrace): number;
     hasSideEffectSupport(): boolean | null;
     checkSideEffectSupport(): Promise<boolean>;
-    terminateExecution(): Promise<any>;
+    terminateExecution(): Promise<Protocol.ProtocolResponseWithError>;
     getExceptionDetails(errorObjectId: Protocol.Runtime.RemoteObjectId): Promise<Protocol.Runtime.ExceptionDetails | undefined>;
 }
 export declare enum Events {

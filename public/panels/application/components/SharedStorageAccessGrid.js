@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
@@ -81,10 +82,11 @@ export class SharedStorageAccessGrid extends HTMLElement {
             return LitHtml.html `<div
         class="no-events-message">${i18nString(UIStrings.noEvents)}</div>`;
         }
+        const k = Platform.StringUtilities.kebab;
         const gridData = {
             columns: [
                 {
-                    id: 'event-main-frame-id',
+                    id: k('event-main-frame-id'),
                     title: i18nString(UIStrings.mainFrameId),
                     widthWeighting: 10,
                     hideable: false,
@@ -92,7 +94,7 @@ export class SharedStorageAccessGrid extends HTMLElement {
                     sortable: false,
                 },
                 {
-                    id: 'event-time',
+                    id: k('event-time'),
                     title: i18nString(UIStrings.eventTime),
                     widthWeighting: 10,
                     hideable: false,
@@ -100,7 +102,7 @@ export class SharedStorageAccessGrid extends HTMLElement {
                     sortable: true,
                 },
                 {
-                    id: 'event-type',
+                    id: k('event-type'),
                     title: i18nString(UIStrings.eventType),
                     widthWeighting: 10,
                     hideable: false,
@@ -108,7 +110,7 @@ export class SharedStorageAccessGrid extends HTMLElement {
                     sortable: true,
                 },
                 {
-                    id: 'event-owner-origin',
+                    id: k('event-owner-origin'),
                     title: i18nString(UIStrings.ownerOrigin),
                     widthWeighting: 10,
                     hideable: false,
@@ -116,7 +118,7 @@ export class SharedStorageAccessGrid extends HTMLElement {
                     sortable: true,
                 },
                 {
-                    id: 'event-params',
+                    id: k('event-params'),
                     title: i18nString(UIStrings.eventParams),
                     widthWeighting: 10,
                     hideable: false,

@@ -1290,7 +1290,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting('emulateAutoDarkMode');
         const decorateStatus = (condition, title) => `${condition ? '✓ ' : ''}${title}`;
         const button = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleRenderingEmulations), 'brush', 'brush-filled');
-        button.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('renderingEmulations')}`);
+        button.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('rendering-emulations')}`);
         button.element.addEventListener('click', event => {
             const boundingRect = button.element.getBoundingClientRect();
             const menu = new UI.ContextMenu.ContextMenu(event, {
@@ -1982,9 +1982,6 @@ export class StylesSidebarPropertyRenderer {
         // by colorMixHandler not varHandler.
         if (this.colorMixHandler && metadata.isColorAwareProperty(this.propertyName)) {
             matchers.push(new LegacyRegexMatcher(Common.Color.ColorMixRegex, this.colorMixHandler));
-        }
-        if (this.varHandler) {
-            matchers.push(new LegacyRegexMatcher(SDK.CSSMetadata.VariableRegex, this.varHandler));
         }
         matchers.push(new LegacyRegexMatcher(SDK.CSSMetadata.URLRegex, this.processURL.bind(this)));
         if (this.bezierHandler && metadata.isBezierAwareProperty(this.propertyName)) {

@@ -23,7 +23,7 @@ async function loadQuickOpenModule() {
     return loadedQuickOpenModule;
 }
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'commandMenu.show',
+    actionId: 'quick-open.show-command-menu',
     category: UI.ActionRegistration.ActionCategory.GLOBAL,
     title: i18nLazyString(UIStrings.runCommand),
     async loadActionDelegate() {
@@ -56,7 +56,7 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'quickOpen.show',
+    actionId: 'quick-open.show',
     category: UI.ActionRegistration.ActionCategory.GLOBAL,
     title: i18nLazyString(UIStrings.openFile),
     async loadActionDelegate() {
@@ -101,12 +101,12 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ContextMenu.registerItem({
     location: UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT,
-    actionId: 'commandMenu.show',
+    actionId: 'quick-open.show-command-menu',
     order: undefined,
 });
 UI.ContextMenu.registerItem({
     location: UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT,
-    actionId: 'quickOpen.show',
+    actionId: 'quick-open.show',
     order: undefined,
 });
 //# sourceMappingURL=quick_open-meta.js.map

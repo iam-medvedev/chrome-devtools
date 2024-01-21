@@ -5,6 +5,9 @@ import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
 import { TimelineCategory, TimelineRecordStyle } from './EventUICategory.js';
+interface EventStylesMap {
+    [x: string]: TimelineRecordStyle;
+}
 type LinkifyLocationOptions = {
     scriptId: Protocol.Runtime.ScriptId | null;
     url: string;
@@ -16,14 +19,14 @@ type LinkifyLocationOptions = {
 };
 export declare class TimelineUIUtils {
     private static initEventStyles;
-    static setEventStylesMap(eventStyles: any): void;
+    static setEventStylesMap(eventStyles: EventStylesMap): void;
     static frameDisplayName(frame: Protocol.Runtime.CallFrame): string;
     static testContentMatching(traceEvent: TraceEngine.Legacy.CompatibleTraceEvent, regExp: RegExp, traceParsedData?: TraceEngine.Handlers.Types.TraceParseData): boolean;
     static eventStyle(event: TraceEngine.Legacy.CompatibleTraceEvent): TimelineRecordStyle;
     static eventColor(event: TraceEngine.Legacy.CompatibleTraceEvent): string;
     static eventTitle(event: TraceEngine.Legacy.CompatibleTraceEvent): string;
     static isUserFrame(frame: Protocol.Runtime.CallFrame): boolean;
-    static syntheticNetworkRequestCategory(request: TraceEngine.Types.TraceEvents.TraceEventSyntheticNetworkRequest): NetworkCategory;
+    static syntheticNetworkRequestCategory(request: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest): NetworkCategory;
     static networkCategoryColor(category: NetworkCategory): string;
     static buildDetailsTextForTraceEvent(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): Promise<string | null>;
     static buildDetailsNodeForTraceEvent(event: TraceEngine.Legacy.CompatibleTraceEvent, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Promise<Node | null>;
@@ -39,7 +42,7 @@ export declare class TimelineUIUtils {
     static statsForTimeRange(events: TraceEngine.Legacy.CompatibleTraceEvent[], startTime: number, endTime: number): {
         [x: string]: number;
     };
-    static buildSyntheticNetworkRequestDetails(event: TraceEngine.Types.TraceEvents.TraceEventSyntheticNetworkRequest, model: TimelineModel.TimelineModel.TimelineModelImpl, linkifier: LegacyComponents.Linkifier.Linkifier): Promise<DocumentFragment>;
+    static buildSyntheticNetworkRequestDetails(event: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest, model: TimelineModel.TimelineModel.TimelineModelImpl, linkifier: LegacyComponents.Linkifier.Linkifier): Promise<DocumentFragment>;
     static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | TraceEngine.Types.TraceEvents.TraceEventCallFrame[]): Protocol.Runtime.StackTrace;
     private static generateCauses;
     private static generateInvalidationsList;

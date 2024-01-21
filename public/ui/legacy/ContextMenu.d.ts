@@ -130,7 +130,7 @@ export declare enum ItemLocation {
     TIMELINE_MENU_OPEN = "timelineMenu/open"
 }
 export interface ProviderRegistration<T> {
-    contextTypes: () => Array<abstract new (...any: any) => T>;
+    contextTypes: () => Array<abstract new (...any: any[]) => T>;
     loadProvider: () => Promise<Provider<T>>;
     experiment?: Root.Runtime.ExperimentName;
 }

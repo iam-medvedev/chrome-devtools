@@ -7,7 +7,7 @@ export declare class SourceMapsResolver extends EventTarget {
     #private;
     constructor(traceData: TraceEngine.Handlers.Types.TraceParseData);
     static clearResolvedNodeNames(): void;
-    static resolvedNodeNameForEntry(entry: TraceEngine.Types.TraceEvents.TraceEventSyntheticProfileCall): string | null;
+    static resolvedNodeNameForEntry(entry: TraceEngine.Types.TraceEvents.SyntheticProfileCall): string | null;
     static storeResolvedNodeNameForEntry(pid: TraceEngine.Types.TraceEvents.ProcessID, tid: TraceEngine.Types.TraceEvents.ThreadID, nodeId: number, resolvedFunctionName: string | null): void;
     install(): Promise<void>;
     /**

@@ -134,7 +134,6 @@ export declare function addReferrerToURL(url: Platform.DevToolsPath.UrlString): 
  */
 export declare function addReferrerToURLIfNecessary(url: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString;
 export declare function loadImage(url: string): Promise<HTMLImageElement | null>;
-export declare function loadImageFromData(data: string | null): Promise<HTMLImageElement | null>;
 export declare function createFileSelectorElement(callback: (arg0: File) => void): HTMLInputElement;
 export declare const MaxLengthForDisplayedURLs = 150;
 export declare class MessageDialog {

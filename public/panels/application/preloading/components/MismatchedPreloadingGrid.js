@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
+import * as Platform from '../../../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Diff from '../../../../third_party/diff/diff.js';
@@ -94,10 +95,11 @@ export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.Wrappa
         if (this.#data === null) {
             return;
         }
+        const k = Platform.StringUtilities.kebab;
         const reportsGridData = {
             columns: [
                 {
-                    id: 'url',
+                    id: k('url'),
                     title: i18nString(UIStrings.url),
                     widthWeighting: 40,
                     hideable: false,
@@ -105,7 +107,7 @@ export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.Wrappa
                     sortable: true,
                 },
                 {
-                    id: 'action',
+                    id: k('action'),
                     title: i18nString(UIStrings.action),
                     widthWeighting: 15,
                     hideable: false,
@@ -113,7 +115,7 @@ export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.Wrappa
                     sortable: true,
                 },
                 {
-                    id: 'status',
+                    id: k('status'),
                     title: i18nString(UIStrings.status),
                     widthWeighting: 15,
                     hideable: false,

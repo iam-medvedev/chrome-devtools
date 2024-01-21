@@ -76,7 +76,7 @@ export interface TraceEventSample extends TraceEventData {
  * A fake trace event created to support CDP.Profiler.Profiles in the
  * trace engine.
  */
-export interface SyntheticTraceEventCpuProfile extends TraceEventInstant {
+export interface SyntheticCpuProfile extends TraceEventInstant {
     name: 'CpuProfile';
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
@@ -162,7 +162,7 @@ export interface TraceEventEnd extends TraceEventData {
  * complete event that comprises the data of both from the beginning in
  * the RendererHandler.
  */
-export type TraceEventSyntheticCompleteEvent = TraceEventComplete;
+export type SyntheticCompleteEvent = TraceEventComplete;
 export interface TraceEventEventTiming extends TraceEventData {
     ph: Phase.ASYNC_NESTABLE_START | Phase.ASYNC_NESTABLE_END;
     name: KnownEventName.EventTiming;
@@ -195,14 +195,14 @@ export interface TraceEventGPUTask extends TraceEventComplete {
         };
     };
 }
-export interface TraceEventSyntheticNetworkRedirect {
+export interface SyntheticNetworkRedirect {
     url: string;
     priority: string;
     requestMethod?: string;
     ts: MicroSeconds;
     dur: MicroSeconds;
 }
-interface TraceEventSyntheticArgsData {
+interface SyntheticArgsData {
     dnsLookup: MicroSeconds;
     download: MicroSeconds;
     downloadStart: MicroSeconds;
@@ -224,10 +224,10 @@ interface TraceEventSyntheticArgsData {
     totalTime: MicroSeconds;
     waiting: MicroSeconds;
 }
-export interface TraceEventSyntheticNetworkRequest extends TraceEventComplete {
+export interface SyntheticNetworkRequest extends TraceEventComplete {
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
-            syntheticData: TraceEventSyntheticArgsData;
+            syntheticData: SyntheticArgsData;
             decodedBodyLength: number;
             encodedDataLength: number;
             frame: string;
@@ -239,7 +239,7 @@ export interface TraceEventSyntheticNetworkRequest extends TraceEventComplete {
             priority: Priority;
             initialPriority: Priority;
             protocol: string;
-            redirects: TraceEventSyntheticNetworkRedirect[];
+            redirects: SyntheticNetworkRedirect[];
             renderBlocking: RenderBlocking;
             requestId: string;
             requestingFrameUrl: string;
@@ -312,13 +312,30 @@ export interface TraceEventAuctionWorkletDoneWithProcess extends TraceEventData 
 }
 export declare function isTraceEventAuctionWorkletRunningInProcess(event: TraceEventData): event is TraceEventAuctionWorkletRunningInProcess;
 export declare function isTraceEventAuctionWorkletDoneWithProcess(event: TraceEventData): event is TraceEventAuctionWorkletDoneWithProcess;
-export interface TraceEventSnapshot extends TraceEventData {
+export interface TraceEventScreenshot extends TraceEventData {
+    /**
+     * @deprecated This value is incorrect. Use ScreenshotHandler.getPresentationTimestamp()
+     */
+    ts: MicroSeconds;
+    /** The id is the frame sequence number in hex */
+    id: string;
     args: TraceEventArgs & {
         snapshot: string;
     };
-    name: 'Screenshot';
+    name: KnownEventName.Screenshot;
     cat: 'disabled-by-default-devtools.screenshot';
-    ph: Phase.OBJECT_SNAPSHOT | Phase.INSTANT;
+    ph: Phase.OBJECT_SNAPSHOT;
+}
+export declare function isTraceEventScreenshot(event: TraceEventData): event is TraceEventScreenshot;
+export interface SyntheticScreenshot extends TraceEventData {
+    /** This is the correct presentation timestamp. */
+    ts: MicroSeconds;
+    args: TraceEventArgs & {
+        dataUri: string;
+    };
+    name: KnownEventName.Screenshot;
+    cat: 'disabled-by-default-devtools.screenshot';
+    ph: Phase.OBJECT_SNAPSHOT;
 }
 export interface TraceEventAnimation extends TraceEventData {
     args: TraceEventArgs & {
@@ -801,7 +818,95 @@ export interface TraceEventPerformanceMark extends TraceEventData {
     ph: Phase.INSTANT | Phase.MARK;
     id: string;
 }
-export interface TraceEventSyntheticNestableAsyncEvent extends TraceEventData {
+/** ChromeFrameReporter args for PipelineReporter event.
+    Matching proto: https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/trace/track_event/chrome_frame_reporter.proto
+ */
+interface ChromeFrameReporter {
+    state: State;
+    enum: FrameDropReason;
+    /** The reason is set only if |state| is not |STATE_UPDATED_ALL|. */
+    reason: FrameDropReason;
+    frame_source: number;
+    /**  Identifies a BeginFrameArgs (along with the source_id).
+         See comments in components/viz/common/frame_sinks/begin_frame_args.h. */
+    frame_sequence: number;
+    /**  If this is a droped frame (i.e. if |state| is set to |STATE_DROPPED| or
+         |STATE_PRESENTED_PARTIAL|), then indicates whether this frame impacts smoothness. */
+    affects_smoothness: boolean;
+    /** The type of active scroll. */
+    scroll_state: ScrollState;
+    /** If any main thread animation is active during this frame. */
+    has_main_animation: boolean;
+    /** If any compositor thread animation is active during this frame. */
+    has_compositor_animation: boolean;
+    /** If any touch-driven UX (not scroll) is active during this frame. */
+    has_smooth_input_main: boolean;
+    /**  Whether the frame contained any missing content (i.e. whether there was
+         checkerboarding in the frame). */
+    has_missing_content: boolean;
+    /** The id of layer_tree_host that the frame has been produced for. */
+    layer_tree_host_id: number;
+    /** If total latency of PipelineReporter exceeds a certain limit. */
+    has_high_latency: boolean;
+    /**  Indicate if the frame is "FORKED" (i.e. a PipelineReporter event starts at
+         the same frame sequence as another PipelineReporter) or "BACKFILL"
+         (i.e. dropped frames when there are no partial compositor updates). */
+    frame_type: FrameType;
+    /**  The breakdown stage of PipelineReporter that is most likely accountable for
+         high latency. */
+    high_latency_contribution_stage: string[];
+}
+declare const enum State {
+    /** The frame did not have any updates to present. **/
+    STATE_NO_UPDATE_DESIRED = "STATE_NO_UPDATE_DESIRED",
+    /**  The frame presented all the desired updates (i.e. any updates requested
+         from both the compositor thread and main-threads were handled). **/
+    STATE_PRESENTED_ALL = "STATE_PRESENTED_ALL",
+    /**  The frame was presented with some updates, but also missed some updates
+         (e.g. missed updates from the main-thread, but included updates from the
+          compositor thread). **/
+    STATE_PRESENTED_PARTIAL = "STATE_PRESENTED_PARTIAL",
+    /**  The frame was dropped, i.e. some updates were desired for the frame, but
+         was not presented. **/
+    STATE_DROPPED = "STATE_DROPPED"
+}
+declare const enum FrameDropReason {
+    REASON_UNSPECIFIED = "REASON_UNSPECIFIED",
+    /**  Frame was dropped by the display-compositor.
+           The display-compositor may drop a frame some times (e.g. the frame missed
+          the deadline, or was blocked on surface-sync, etc.) **/
+    REASON_DISPLAY_COMPOSITOR = "REASON_DISPLAY_COMPOSITOR",
+    /**  Frame was dropped because of the main-thread.
+           The main-thread may cause a frame to be dropped, e.g. if the main-thread
+          is running expensive javascript, or doing a lot of layout updates, etc. **/
+    REASON_MAIN_THREAD = "REASON_MAIN_THREAD",
+    /**  Frame was dropped by the client compositor.
+           The client compositor can drop some frames too (e.g. attempting to
+           recover latency, missing the deadline, etc.). **/
+    REASON_CLIENT_COMPOSITOR = "REASON_CLIENT_COMPOSITOR"
+}
+declare const enum ScrollState {
+    SCROLL_NONE = "SCROLL_NONE",
+    SCROLL_MAIN_THREAD = "SCROLL_MAIN_THREAD",
+    SCROLL_COMPOSITOR_THREAD = "SCROLL_COMPOSITOR_THREAD",
+    /** Used when it can't be determined whether a scroll is in progress or not. */
+    SCROLL_UNKNOWN = "SCROLL_UNKNOWN"
+}
+declare const enum FrameType {
+    FORKED = "FORKED",
+    BACKFILL = "BACKFILL"
+}
+export interface TraceEventPipelineReporter extends TraceEventData {
+    id2?: {
+        local?: string;
+    };
+    ph: Phase.ASYNC_NESTABLE_START | Phase.ASYNC_NESTABLE_END;
+    args: TraceEventArgs & {
+        chrome_frame_reporter: ChromeFrameReporter;
+    };
+}
+export declare function isTraceEventPipelineReporter(event: TraceEventData): event is TraceEventPipelineReporter;
+export interface SyntheticNestableAsyncEvent extends TraceEventData {
     id?: string;
     id2?: {
         local?: string;
@@ -815,7 +920,15 @@ export interface TraceEventSyntheticNestableAsyncEvent extends TraceEventData {
         };
     };
 }
-export interface TraceEventSyntheticUserTiming extends TraceEventSyntheticNestableAsyncEvent {
+export interface SyntheticPipelineReporter extends SyntheticNestableAsyncEvent {
+    args: TraceEventArgs & {
+        data: SyntheticNestableAsyncEvent['args']['data'] & {
+            beginEvent: TraceEventPipelineReporter;
+            endEvent: TraceEventPipelineReporter;
+        };
+    };
+}
+export interface SyntheticUserTiming extends SyntheticNestableAsyncEvent {
     id: string;
     dur: MicroSeconds;
     args: TraceEventArgs & {
@@ -825,7 +938,7 @@ export interface TraceEventSyntheticUserTiming extends TraceEventSyntheticNestab
         };
     };
 }
-export interface TraceEventSyntheticConsoleTiming extends TraceEventSyntheticNestableAsyncEvent {
+export interface SyntheticConsoleTiming extends SyntheticNestableAsyncEvent {
     id2: {
         local: string;
     };
@@ -837,7 +950,7 @@ export interface TraceEventSyntheticConsoleTiming extends TraceEventSyntheticNes
         };
     };
 }
-export interface SyntheticInteractionEvent extends TraceEventSyntheticNestableAsyncEvent {
+export interface SyntheticInteractionEvent extends SyntheticNestableAsyncEvent {
     interactionId: number;
     type: string;
     ts: MicroSeconds;
@@ -865,7 +978,7 @@ export interface SyntheticEventWithSelfTime extends TraceEventData {
  * A profile call created in the frontend from samples disguised as a
  * trace event.
  */
-export interface TraceEventSyntheticProfileCall extends SyntheticEventWithSelfTime {
+export interface SyntheticProfileCall extends SyntheticEventWithSelfTime {
     callFrame: Protocol.Runtime.CallFrame;
     nodeId: Protocol.integer;
 }
@@ -874,9 +987,9 @@ export interface TraceEventSyntheticProfileCall extends SyntheticEventWithSelfTi
  * its self time.
  */
 export type SyntheticRendererEvent = TraceEventRendererEvent & SyntheticEventWithSelfTime;
-export type TraceEntry = SyntheticRendererEvent | TraceEventSyntheticProfileCall;
+export type SyntheticTraceEntry = SyntheticRendererEvent | SyntheticProfileCall;
 export declare function isSyntheticInteractionEvent(event: TraceEventData): event is SyntheticInteractionEvent;
-export declare function isRendererEvent(event: TraceEventData): event is TraceEntry;
+export declare function isRendererEvent(event: TraceEventData): event is SyntheticTraceEntry;
 export interface TraceEventDrawFrame extends TraceEventInstant {
     name: KnownEventName.DrawFrame;
     args: TraceEventArgs & {
@@ -984,7 +1097,7 @@ export interface SyntheticInvalidation extends TraceEventInstant {
     reason?: string;
     stackTrace?: TraceEventCallFrame[];
 }
-export declare function isTraceEventSyntheticInvalidation(event: TraceEventData): event is SyntheticInvalidation;
+export declare function isSyntheticInvalidation(event: TraceEventData): event is SyntheticInvalidation;
 export interface TraceEventUpdateLayoutTree extends TraceEventComplete {
     name: KnownEventName.UpdateLayoutTree;
     args: TraceEventArgs & {
@@ -1080,7 +1193,7 @@ export declare function isTraceEventEventTimingEnd(traceEventData: TraceEventDat
 export declare function isTraceEventEventTimingStart(traceEventData: TraceEventData): traceEventData is TraceEventEventTimingBegin;
 export declare function isTraceEventGPUTask(traceEventData: TraceEventData): traceEventData is TraceEventGPUTask;
 export declare function isTraceEventProfile(traceEventData: TraceEventData): traceEventData is TraceEventProfile;
-export declare function isSyntheticTraceEventCpuProfile(traceEventData: TraceEventData): traceEventData is SyntheticTraceEventCpuProfile;
+export declare function isSyntheticCpuProfile(traceEventData: TraceEventData): traceEventData is SyntheticCpuProfile;
 export declare function isTraceEventProfileChunk(traceEventData: TraceEventData): traceEventData is TraceEventProfileChunk;
 export declare function isTraceEventResourceChangePriority(traceEventData: TraceEventData): traceEventData is TraceEventResourceChangePriority;
 export declare function isTraceEventResourceSendRequest(traceEventData: TraceEventData): traceEventData is TraceEventResourceSendRequest;
@@ -1089,12 +1202,12 @@ export declare function isTraceEventResourceMarkAsCached(traceEventData: TraceEv
 export declare function isTraceEventResourceFinish(traceEventData: TraceEventData): traceEventData is TraceEventResourceFinish;
 export declare function isTraceEventResourceWillSendRequest(traceEventData: TraceEventData): traceEventData is TraceEventResourceWillSendRequest;
 export declare function isTraceEventResourceReceivedData(traceEventData: TraceEventData): traceEventData is TraceEventResourceReceivedData;
-export declare function isSyntheticNetworkRequestDetailsEvent(traceEventData: TraceEventData): traceEventData is TraceEventSyntheticNetworkRequest;
+export declare function isSyntheticNetworkRequestDetailsEvent(traceEventData: TraceEventData): traceEventData is SyntheticNetworkRequest;
 export declare function isTraceEventPrePaint(traceEventData: TraceEventData): traceEventData is TraceEventPrePaint;
 export declare function isTraceEventNavigationStartWithURL(event: TraceEventData): event is TraceEventNavigationStart;
 export declare function isTraceEventMainFrameViewport(traceEventData: TraceEventData): traceEventData is TraceEventMainFrameViewport;
-export declare function isSyntheticUserTimingTraceEvent(traceEventData: TraceEventData): traceEventData is TraceEventSyntheticUserTiming;
-export declare function isSyntheticConsoleTimingTraceEvent(traceEventData: TraceEventData): traceEventData is TraceEventSyntheticConsoleTiming;
+export declare function isSyntheticUserTiming(traceEventData: TraceEventData): traceEventData is SyntheticUserTiming;
+export declare function isSyntheticConsoleTiming(traceEventData: TraceEventData): traceEventData is SyntheticConsoleTiming;
 export declare function isTraceEventPerformanceMeasure(traceEventData: TraceEventData): traceEventData is TraceEventPerformanceMeasureBegin | TraceEventPerformanceMeasureEnd;
 export declare function isTraceEventPerformanceMark(traceEventData: TraceEventData): traceEventData is TraceEventPerformanceMark;
 export declare function isTraceEventConsoleTime(traceEventData: TraceEventData): traceEventData is TraceEventConsoleTimeBegin | TraceEventConsoleTimeEnd;
@@ -1105,7 +1218,7 @@ export interface TraceEventAsync extends TraceEventData {
 }
 export declare function isTraceEventAsyncPhase(traceEventData: TraceEventData): boolean;
 export declare function isSyntheticLayoutShift(traceEventData: TraceEventData): traceEventData is SyntheticLayoutShift;
-export declare function isProfileCall(event: TraceEventData): event is TraceEventSyntheticProfileCall;
+export declare function isProfileCall(event: TraceEventData): event is SyntheticProfileCall;
 export interface TraceEventPaint extends TraceEventComplete {
     name: KnownEventName.Paint;
     args: TraceEventArgs & {
@@ -1380,6 +1493,7 @@ export declare const enum KnownEventName {
     MajorGC = "MajorGC",
     MinorGC = "MinorGC",
     GCCollectGarbage = "BlinkGC.AtomicPhase",
+    CPPGCSweep = "CppGC.IncrementalSweep",
     ScheduleStyleRecalculation = "ScheduleStyleRecalculation",
     RecalculateStyles = "RecalculateStyles",
     Layout = "Layout",
@@ -1442,6 +1556,8 @@ export declare const enum KnownEventName {
     DrawFrame = "DrawFrame",
     DroppedFrame = "DroppedFrame",
     FrameStartedLoading = "FrameStartedLoading",
+    PipelineReporter = "PipelineReporter",
+    Screenshot = "Screenshot",
     ResourceWillSendRequest = "ResourceWillSendRequest",
     ResourceSendRequest = "ResourceSendRequest",
     ResourceReceiveResponse = "ResourceReceiveResponse",

@@ -2,11 +2,11 @@ import { type TraceEventHandlerName } from './types.js';
 import * as Types from '../types/types.js';
 interface NetworkRequestData {
     byOrigin: Map<string, {
-        renderBlocking: Types.TraceEvents.TraceEventSyntheticNetworkRequest[];
-        nonRenderBlocking: Types.TraceEvents.TraceEventSyntheticNetworkRequest[];
-        all: Types.TraceEvents.TraceEventSyntheticNetworkRequest[];
+        renderBlocking: Types.TraceEvents.SyntheticNetworkRequest[];
+        nonRenderBlocking: Types.TraceEvents.SyntheticNetworkRequest[];
+        all: Types.TraceEvents.SyntheticNetworkRequest[];
     }>;
-    byTime: Types.TraceEvents.TraceEventSyntheticNetworkRequest[];
+    byTime: Types.TraceEvents.SyntheticNetworkRequest[];
 }
 export declare function reset(): void;
 export declare function initialize(): void;

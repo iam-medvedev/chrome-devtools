@@ -22,7 +22,6 @@ type ScoreRecord = {
 export declare function initialize(): void;
 export declare function reset(): void;
 export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
-export declare function findNextScreenshotEventIndex(screenshots: Types.TraceEvents.TraceEventSnapshot[], timestamp: Types.Timing.MicroSeconds): number | null;
 export declare function finalize(): Promise<void>;
 export declare function data(): LayoutShifts;
 export declare function deps(): TraceEventHandlerName[];

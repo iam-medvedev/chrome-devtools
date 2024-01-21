@@ -81,8 +81,8 @@ export interface EventData {
     id: number;
     timestamp: string;
     origin: string;
-    storageKey: string;
-    swScope: string;
-    eventName: string;
-    instanceId: string;
+    'storage-key': string;
+    'sw-scope': string;
+    'event-name': string;
+    'instance-id': string;
 }

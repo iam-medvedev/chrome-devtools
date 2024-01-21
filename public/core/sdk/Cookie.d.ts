@@ -10,6 +10,7 @@ export declare class Cookie {
     type(): Type | null | undefined;
     httpOnly(): boolean;
     secure(): boolean;
+    partitioned(): boolean;
     sameSite(): Protocol.Network.CookieSameSite;
     partitionKey(): string;
     setPartitionKey(key: string): void;
@@ -47,11 +48,11 @@ export declare enum Attributes {
     Domain = "domain",
     Path = "path",
     Expires = "expires",
-    HttpOnly = "httpOnly",
+    HttpOnly = "http-only",
     Secure = "secure",
-    SameSite = "sameSite",
-    SourceScheme = "sourceScheme",
-    SourcePort = "sourcePort",
+    SameSite = "same-site",
+    SourceScheme = "source-scheme",
+    SourcePort = "source-port",
     Priority = "priority",
-    PartitionKey = "partitionKey"
+    PartitionKey = "partition-key"
 }

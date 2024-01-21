@@ -85,7 +85,6 @@ export declare class Icon extends HTMLElement {
      * @param name the new icon name or `null` to unset.
      */
     set name(name: string | null);
-    connectedCallback(): void;
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
 }
 /**

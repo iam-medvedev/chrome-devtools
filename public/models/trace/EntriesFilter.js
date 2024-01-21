@@ -60,14 +60,17 @@ export class EntriesFilter {
         if (!entryNode) {
             // Invalid node was given, return no possible actions.
             return {
+                ["MERGE_FUNCTION" /* FilterApplyAction.MERGE_FUNCTION */]: false,
                 ["COLLAPSE_FUNCTION" /* FilterApplyAction.COLLAPSE_FUNCTION */]: false,
                 ["COLLAPSE_REPEATING_DESCENDANTS" /* FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */]: false,
             };
         }
+        const entryParent = entryNode.parent;
         const allDescendants = this.#findAllDescendantsOfNode(entryNode);
         const allRepeatingDescendants = this.#findAllRepeatingDescendantsOfNext(entryNode);
         // If there are children to hide, indicate action as possible
         const possibleActions = {
+            ["MERGE_FUNCTION" /* FilterApplyAction.MERGE_FUNCTION */]: entryParent !== null,
             ["COLLAPSE_FUNCTION" /* FilterApplyAction.COLLAPSE_FUNCTION */]: allDescendants.length > 0,
             ["COLLAPSE_REPEATING_DESCENDANTS" /* FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */]: allRepeatingDescendants.length > 0,
         };
@@ -195,7 +198,7 @@ export class EntriesFilter {
         return descendants;
     }
     #findAllRepeatingDescendantsOfNext(root) {
-        // Walk through all the descendants, starting at the root node.
+        // Walk through all the ancestors, starting at the root node.
         const children = [...root.children];
         const repeatingNodes = [];
         const rootIsProfileCall = Types.TraceEvents.isProfileCall(root.entry);
@@ -203,7 +206,7 @@ export class EntriesFilter {
             const childNode = children.shift();
             if (childNode) {
                 const childIsProfileCall = Types.TraceEvents.isProfileCall(childNode.entry);
-                if ( /* Handle TraceEventSyntheticProfileCalls */rootIsProfileCall && childIsProfileCall) {
+                if ( /* Handle SyntheticProfileCalls */rootIsProfileCall && childIsProfileCall) {
                     const rootNodeEntry = root.entry;
                     const childNodeEntry = childNode.entry;
                     if (Helpers.SamplesIntegrator.SamplesIntegrator.framesAreEqual(rootNodeEntry.callFrame, childNodeEntry.callFrame)) {

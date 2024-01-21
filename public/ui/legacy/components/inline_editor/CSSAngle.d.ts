@@ -1,3 +1,4 @@
+import { ValueChangedEvent } from './InlineEditorUtils.js';
 export declare class PopoverToggledEvent extends Event {
     static readonly eventName = "popovertoggled";
     data: {
@@ -11,6 +12,11 @@ export declare class UnitChangedEvent extends Event {
         value: string;
     };
     constructor(value: string);
+}
+interface EventTypes {
+    [PopoverToggledEvent.eventName]: PopoverToggledEvent;
+    [UnitChangedEvent.eventName]: UnitChangedEvent;
+    [ValueChangedEvent.eventName]: ValueChangedEvent;
 }
 export interface CSSAngleData {
     propertyName: string;
@@ -36,6 +42,8 @@ export declare class CSSAngle extends HTMLElement {
     set data(data: CSSAngleData);
     disconnectedCallback(): void;
     popOver(): void;
+    addEventListener<K extends keyof EventTypes>(type: K, listener: (this: CSSAngle, ev: EventTypes[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
+    addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
     minify(): void;
     updateProperty(name: string, value: string): void;
     private updateAngle;
@@ -53,3 +61,4 @@ declare global {
         'devtools-css-angle': CSSAngle;
     }
 }
+export {};

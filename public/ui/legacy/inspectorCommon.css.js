@@ -459,7 +459,7 @@ span[is="dt-icon-label"] {
 }
 
 .dot::before {
-  content: url("Images/empty.svg");
+  content: var(--image-file-empty);
   width: 6px;
   height: 6px;
   border-radius: 50%;

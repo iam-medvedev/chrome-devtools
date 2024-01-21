@@ -1,3 +1,7 @@
+// Copyright 2023 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
 import * as Platform from '../../../core/platform/platform.js';
 // Cache film strips based on:
 // 1. The trace parsed data object
@@ -11,14 +15,13 @@ export function fromTraceData(traceData, customZeroTime) {
     if (fromCache) {
         return fromCache;
     }
-    for (const screenshot of traceData.Screenshots) {
-        if (screenshot.ts < zeroTime) {
+    for (const screenshotEvent of traceData.Screenshots) {
+        if (screenshotEvent.ts < zeroTime) {
             continue;
         }
         const frame = {
             index: frames.length,
-            screenshotEvent: screenshot,
-            screenshotAsString: screenshot.args.snapshot,
+            screenshotEvent: screenshotEvent,
         };
         frames.push(frame);
     }

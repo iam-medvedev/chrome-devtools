@@ -1,11 +1,11 @@
 import * as Protocol from '../../generated/protocol.js';
 import * as Platform from '../platform/platform.js';
 import { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
-export { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
 import { RemoteObject } from './RemoteObject.js';
-import { RuntimeModel, type ExecutionContext } from './RuntimeModel.js';
-import { type Target } from './Target.js';
+import { type ExecutionContext, RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
+export { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
 export declare class ConsoleModel extends SDKModel<EventTypes> {
     #private;
     constructor(target: Target);

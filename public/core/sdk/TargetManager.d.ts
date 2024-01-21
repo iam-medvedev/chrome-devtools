@@ -1,8 +1,8 @@
+import type * as Protocol from '../../generated/protocol.js';
 import * as Common from '../common/common.js';
 import type * as ProtocolClient from '../protocol_client/protocol_client.js';
-import type * as Protocol from '../../generated/protocol.js';
-import { Type as TargetType, Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { Target, Type as TargetType } from './Target.js';
 type ModelClass<T = SDKModel> = new (arg1: Target) => T;
 export declare class TargetManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;

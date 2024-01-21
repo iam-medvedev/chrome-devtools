@@ -128,7 +128,7 @@ export class CoverageView extends UI.Widget.VBox {
         const toolbarContainer = this.contentElement.createChild('div', 'coverage-toolbar-container');
         const toolbar = new UI.Toolbar.Toolbar('coverage-toolbar', toolbarContainer);
         toolbar.makeWrappable(true);
-        this.coverageTypeComboBox = new UI.Toolbar.ToolbarComboBox(this.onCoverageTypeComboBoxSelectionChanged.bind(this), i18nString(UIStrings.chooseCoverageGranularityPer), undefined, 'coverageViewCoverageType');
+        this.coverageTypeComboBox = new UI.Toolbar.ToolbarComboBox(this.onCoverageTypeComboBoxSelectionChanged.bind(this), i18nString(UIStrings.chooseCoverageGranularityPer), undefined, 'coverage-type');
         const coverageTypes = [
             {
                 label: i18nString(UIStrings.perFunction),
@@ -173,7 +173,7 @@ export class CoverageView extends UI.Widget.VBox {
         toolbar.appendToolbarItem(this.filterInput);
         toolbar.appendSeparator();
         this.typeFilterValue = null;
-        this.filterByTypeComboBox = new UI.Toolbar.ToolbarComboBox(this.onFilterByTypeChanged.bind(this), i18nString(UIStrings.filterCoverageByType), undefined, 'coverageViewCoverageByType');
+        this.filterByTypeComboBox = new UI.Toolbar.ToolbarComboBox(this.onFilterByTypeChanged.bind(this), i18nString(UIStrings.filterCoverageByType), undefined, 'coverage-by-type');
         const options = [
             {
                 label: i18nString(UIStrings.all),
@@ -243,7 +243,7 @@ export class CoverageView extends UI.Widget.VBox {
         reasonDiv.textContent = message;
         widget.contentElement.appendChild(reasonDiv);
         this.inlineReloadButton =
-            UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButtonForId('inspector_main.reload'));
+            UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButtonForId('inspector-main.reload'));
         const messageElement = i18n.i18n.getFormatLocalizedString(str_, UIStrings.reloadPrompt, { PH1: this.inlineReloadButton });
         messageElement.classList.add('message');
         widget.contentElement.appendChild(messageElement);

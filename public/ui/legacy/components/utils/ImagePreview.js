@@ -141,8 +141,6 @@ export class ImagePreview {
         if (!object) {
             return;
         }
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // @ts-expect-error
         const featuresObject = await object.callFunctionJSON(features, undefined);
         object.release();
         return featuresObject;

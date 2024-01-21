@@ -36,8 +36,8 @@ export declare class RenderingContext {
 export interface Match {
     readonly text: string;
     readonly type: string;
-    render(context: RenderingContext): Node[];
-    computedText?(): string;
+    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+    computedText?(): string | null;
 }
 type Constructor = (abstract new (...args: any[]) => any) | (new (...args: any[]) => any);
 export type MatchFactory<MatchT extends Constructor> = (...args: ConstructorParameters<MatchT>) => InstanceType<MatchT>;
@@ -56,24 +56,28 @@ export declare class BottomUpTreeMatching extends TreeWalker {
     protected leave({ node }: SyntaxNodeRef): void;
     matchText(node: CodeMirror.SyntaxNode): void;
     getMatch(node: CodeMirror.SyntaxNode): Match | undefined;
+    hasUnresolvedVars(node: CodeMirror.SyntaxNode): boolean;
     getComputedText(node: CodeMirror.SyntaxNode): string;
 }
 export declare class ComputedText {
     #private;
     readonly text: string;
     constructor(text: string);
+    clear(): void;
     get chunkCount(): number;
     push(match: Match, offset: number): void;
+    hasUnresolvedVars(begin: number, end: number): boolean;
     get(begin: number, end: number): string;
 }
+export declare function requiresSpace(a: string, b: string): boolean;
 export declare function requiresSpace(a: Node[], b: Node[]): boolean;
 export declare const CSSControlMap: {
-    new (entries?: readonly (readonly [string, [HTMLElement]])[] | null | undefined): Map<string, [HTMLElement]>;
-    new (iterable?: Iterable<readonly [string, [HTMLElement]]> | null | undefined): Map<string, [HTMLElement]>;
+    new (entries?: readonly (readonly [string, HTMLElement[]])[] | null | undefined): Map<string, HTMLElement[]>;
+    new (iterable?: Iterable<readonly [string, HTMLElement[]]> | null | undefined): Map<string, HTMLElement[]>;
     readonly prototype: Map<any, any>;
     readonly [Symbol.species]: MapConstructor;
 };
-export type CSSControlMap = Map<string, [HTMLElement]>;
+export type CSSControlMap = Map<string, HTMLElement[]>;
 export declare class Renderer extends TreeWalker {
     #private;
     constructor(ast: SyntaxTree, matchedResult: BottomUpTreeMatching, cssControls: CSSControlMap);
@@ -89,11 +93,23 @@ export declare class Renderer extends TreeWalker {
     protected enter({ node }: SyntaxNodeRef): boolean;
 }
 export declare function children(node: CodeMirror.SyntaxNode): CodeMirror.SyntaxNode[];
+export declare abstract class VariableMatch implements Match {
+    readonly text: string;
+    readonly name: string;
+    readonly fallback: CodeMirror.SyntaxNode[];
+    protected readonly matching: BottomUpTreeMatching;
+    readonly type: string;
+    constructor(text: string, name: string, fallback: CodeMirror.SyntaxNode[], matching: BottomUpTreeMatching);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class VariableMatcher extends MatcherBase<typeof VariableMatch> {
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
 export declare abstract class ColorMatch implements Match {
     readonly text: string;
-    get type(): string;
+    readonly type = "color";
     constructor(text: string);
-    abstract render(context: RenderingContext): Node[];
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
 }
 export declare class ColorMatcher extends MatcherBase<typeof ColorMatch> {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;

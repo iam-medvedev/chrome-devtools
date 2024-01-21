@@ -32,16 +32,16 @@ import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
-export { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
 import { CPUProfilerModel, Events as CPUProfilerModelEvents } from './CPUProfilerModel.js';
-import { Events as DebuggerModelEvents, COND_BREAKPOINT_SOURCE_URL, LOGPOINT_SOURCE_URL, } from './DebuggerModel.js';
+import { COND_BREAKPOINT_SOURCE_URL, Events as DebuggerModelEvents, LOGPOINT_SOURCE_URL, } from './DebuggerModel.js';
 import { LogModel } from './LogModel.js';
 import { RemoteObject } from './RemoteObject.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel, } from './ResourceTreeModel.js';
 import { Events as RuntimeModelEvents, RuntimeModel, } from './RuntimeModel.js';
+import { SDKModel } from './SDKModel.js';
 import { Capability, Type } from './Target.js';
 import { TargetManager } from './TargetManager.js';
-import { SDKModel } from './SDKModel.js';
+export { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
 const UIStrings = {
     /**
      *@description Text shown when the main frame (page) of the website was navigated to a different URL.
@@ -376,10 +376,7 @@ export class ConsoleModel extends SDKModel {
             return;
         }
         const globalObject = result.object;
-        const callFunctionResult = 
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // @ts-expect-error
-        await globalObject.callFunction(saveVariable, [RemoteObject.toCallArgument(remoteObject)]);
+        const callFunctionResult = await globalObject.callFunction(saveVariable, [RemoteObject.toCallArgument(remoteObject)]);
         globalObject.release();
         if (callFunctionResult.wasThrown || !callFunctionResult.object || callFunctionResult.object.type !== 'string') {
             failedToSave(callFunctionResult.object || null);
@@ -421,7 +418,6 @@ export var Events;
     Events["MessageUpdated"] = "MessageUpdated";
     Events["CommandEvaluated"] = "CommandEvaluated";
 })(Events || (Events = {}));
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractExceptionMetaData(metaData) {
     if (!metaData) {
         return undefined;

@@ -126,8 +126,9 @@ export class ProfileView extends UI.View.SimpleView {
         this.searchableViewInternal.setPlaceholder(i18nString(UIStrings.findByCostMsNameOrFile));
         this.searchableViewInternal.show(this.element);
         const columns = [];
+        const k = Platform.StringUtilities.kebab;
         columns.push({
-            id: 'self',
+            id: k('self'),
             title: this.columnHeader('self'),
             width: '120px',
             fixedWidth: true,
@@ -145,7 +146,7 @@ export class ProfileView extends UI.View.SimpleView {
             defaultWeight: undefined,
         });
         columns.push({
-            id: 'total',
+            id: k('total'),
             title: this.columnHeader('total'),
             width: '120px',
             fixedWidth: true,
@@ -163,7 +164,7 @@ export class ProfileView extends UI.View.SimpleView {
             defaultWeight: undefined,
         });
         columns.push({
-            id: 'function',
+            id: k('function'),
             title: i18nString(UIStrings.function),
             disclosure: true,
             sortable: true,

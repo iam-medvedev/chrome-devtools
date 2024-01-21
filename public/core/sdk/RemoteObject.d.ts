@@ -3,16 +3,13 @@ import { type DOMPinnedWebIDLProp, type DOMPinnedWebIDLType } from '../common/Ja
 import { type DebuggerModel, type FunctionDetails } from './DebuggerModel.js';
 import { type RuntimeModel } from './RuntimeModel.js';
 export declare class RemoteObject {
-    /**
-     * This may not be an interface due to "instanceof RemoteObject" checks in the code.
-     */
-    static fromLocalObject(value: any): RemoteObject;
+    static fromLocalObject(value: unknown): RemoteObject;
     static type(remoteObject: RemoteObject): string;
     static isNullOrUndefined(remoteObject?: RemoteObject): boolean;
     static arrayNameFromDescription(description: string): string;
     static arrayLength(object: RemoteObject | Protocol.Runtime.RemoteObject | Protocol.Runtime.ObjectPreview): number;
     static arrayBufferByteLength(object: RemoteObject | Protocol.Runtime.RemoteObject | Protocol.Runtime.ObjectPreview): number;
-    static unserializableDescription(object: any): string | null;
+    static unserializableDescription(object: unknown): string | null;
     static toCallArgument(object: string | number | bigint | boolean | RemoteObject | Protocol.Runtime.RemoteObject | null | undefined): Protocol.Runtime.CallArgument;
     static loadFromObjectPerProto(object: RemoteObject, generatePreview: boolean, nonIndexedPropertiesOnly?: boolean): Promise<GetPropertiesResult>;
     customPreview(): Protocol.Runtime.CustomPreview | null;
@@ -32,8 +29,8 @@ export declare class RemoteObject {
     getAllProperties(_accessorPropertiesOnly: boolean, _generatePreview: boolean, _nonIndexedPropertiesOnly?: boolean): Promise<GetPropertiesResult>;
     deleteProperty(_name: Protocol.Runtime.CallArgument): Promise<string | undefined>;
     setPropertyValue(_name: string | Protocol.Runtime.CallArgument, _value: string): Promise<string | undefined>;
-    callFunction<T>(_functionDeclaration: (this: Object, ...arg1: unknown[]) => T, _args?: Protocol.Runtime.CallArgument[]): Promise<CallFunctionResult>;
-    callFunctionJSON<T>(_functionDeclaration: (this: Object, ...arg1: unknown[]) => T, _args: Protocol.Runtime.CallArgument[] | undefined): Promise<T>;
+    callFunction<T, U>(_functionDeclaration: (this: U, ...args: any[]) => T, _args?: Protocol.Runtime.CallArgument[]): Promise<CallFunctionResult>;
+    callFunctionJSON<T, U>(_functionDeclaration: (this: U, ...args: any[]) => T, _args: Protocol.Runtime.CallArgument[] | undefined): Promise<T>;
     release(): void;
     debuggerModel(): DebuggerModel;
     runtimeModel(): RuntimeModel;
@@ -68,8 +65,8 @@ export declare class RemoteObjectImpl extends RemoteObject {
     setPropertyValue(name: string | Protocol.Runtime.CallArgument, value: string): Promise<string | undefined>;
     doSetObjectPropertyValue(result: Protocol.Runtime.RemoteObject, name: Protocol.Runtime.CallArgument): Promise<string | undefined>;
     deleteProperty(name: Protocol.Runtime.CallArgument): Promise<string | undefined>;
-    callFunction<T>(functionDeclaration: (this: Object, ...arg1: unknown[]) => T, args?: Protocol.Runtime.CallArgument[]): Promise<CallFunctionResult>;
-    callFunctionJSON<T>(functionDeclaration: (this: Object, ...arg1: unknown[]) => T, args: Protocol.Runtime.CallArgument[] | undefined): Promise<T>;
+    callFunction<T, U>(functionDeclaration: (this: U, ...args: any[]) => T, args?: Protocol.Runtime.CallArgument[]): Promise<CallFunctionResult>;
+    callFunctionJSON<T, U>(functionDeclaration: (this: U, ...args: any[]) => T, args: Protocol.Runtime.CallArgument[] | undefined): Promise<T>;
     release(): void;
     arrayLength(): number;
     arrayBufferByteLength(): number;
@@ -129,14 +126,14 @@ export declare class LocalJSONObject extends RemoteObject {
     getAllProperties(accessorPropertiesOnly: boolean, generatePreview: boolean, nonIndexedPropertiesOnly?: boolean): Promise<GetPropertiesResult>;
     private children;
     arrayLength(): number;
-    callFunction<T>(functionDeclaration: (this: Object, ...arg1: unknown[]) => T, args?: Protocol.Runtime.CallArgument[]): Promise<CallFunctionResult>;
-    callFunctionJSON<T>(functionDeclaration: (this: Object, ...arg1: unknown[]) => T, args: Protocol.Runtime.CallArgument[] | undefined): Promise<T>;
+    callFunction<T, U>(functionDeclaration: (this: U, ...args: any[]) => T, args?: Protocol.Runtime.CallArgument[]): Promise<CallFunctionResult>;
+    callFunctionJSON<T, U>(functionDeclaration: (this: U, ...args: any[]) => T, args: Protocol.Runtime.CallArgument[] | undefined): Promise<T>;
 }
 export declare class RemoteArrayBuffer {
     #private;
     constructor(object: RemoteObject);
     byteLength(): number;
-    bytes(start?: any, end?: any): Promise<number[]>;
+    bytes(start?: number, end?: number): Promise<number[]>;
     object(): RemoteObject;
 }
 export declare class RemoteArray {

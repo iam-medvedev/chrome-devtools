@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
+import * as Platform from '../../../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
@@ -48,10 +49,11 @@ export class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper
         if (this.#data === null) {
             return;
         }
+        const k = Platform.StringUtilities.kebab;
         const reportsGridData = {
             columns: [
                 {
-                    id: 'headerName',
+                    id: k('header-name'),
                     title: i18nString(UIStrings.headerName),
                     widthWeighting: 30,
                     hideable: false,
@@ -59,7 +61,7 @@ export class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper
                     sortable: true,
                 },
                 {
-                    id: 'initialValue',
+                    id: k('initial-value'),
                     title: i18nString(UIStrings.initialNavigationValue),
                     widthWeighting: 30,
                     hideable: false,
@@ -67,7 +69,7 @@ export class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper
                     sortable: true,
                 },
                 {
-                    id: 'activationValue',
+                    id: k('activation-value'),
                     title: i18nString(UIStrings.activationNavigationValue),
                     widthWeighting: 30,
                     hideable: false,
@@ -94,15 +96,15 @@ export class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper
         return this.#data.mismatchedHeaders.map(mismatchedHeaders => ({
             cells: [
                 {
-                    columnId: 'headerName',
+                    columnId: 'header-name',
                     value: mismatchedHeaders.headerName,
                 },
                 {
-                    columnId: 'initialValue',
+                    columnId: 'initial-value',
                     value: mismatchedHeaders.initialValue ?? i18nString(UIStrings.missing),
                 },
                 {
-                    columnId: 'activationValue',
+                    columnId: 'activation-value',
                     value: mismatchedHeaders.activationValue ?? i18nString(UIStrings.missing),
                 },
             ],

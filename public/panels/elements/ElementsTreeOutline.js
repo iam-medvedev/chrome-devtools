@@ -778,7 +778,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             textNode = null;
         }
         const commentNode = node.enclosingNodeOrSelfWithClass('webkit-html-comment');
-        contextMenu.saveSection().appendItem(i18nString(UIStrings.storeAsGlobalVariable), this.saveNodeToTempVariable.bind(this, treeElement.node()), { jslogContext: 'storeAsGlobalVariable' });
+        contextMenu.saveSection().appendItem(i18nString(UIStrings.storeAsGlobalVariable), this.saveNodeToTempVariable.bind(this, treeElement.node()), { jslogContext: 'store-as-global-variable' });
         if (textNode) {
             treeElement.populateTextContextMenu(contextMenu, textNode);
         }
@@ -793,7 +793,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         }
         contextMenu.viewSection().appendItem(i18nString(UIStrings.adornerSettings), () => {
             ElementsPanel.instance().showAdornerSettingsPane();
-        }, { jslogContext: 'showAdornerSettings' });
+        }, { jslogContext: 'show-adorner-settings' });
         contextMenu.appendApplicableItems(treeElement.node());
         void contextMenu.show();
     }

@@ -146,21 +146,21 @@ function mapPercentToRange(percent, range) {
     return sign * (absPercent * (outMax - outMin) / 100 + outMin);
 }
 export function parse(text) {
-    // Simple - #hex, nickname
-    const value = text.toLowerCase().replace(/\s+/g, '');
-    const simple = /^(?:#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(\w+))$/i;
-    let match = value.match(simple);
-    if (match) {
-        if (match[1]) {
-            return Legacy.fromHex(match[1], text);
+    // #hex, nickname
+    if (!text.match(/\s/)) {
+        const match = text.toLowerCase().match(/^(?:#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})|(\w+))$/i);
+        if (match) {
+            if (match[1]) {
+                return Legacy.fromHex(match[1], text);
+            }
+            if (match[2]) {
+                return Legacy.fromName(match[2], text);
+            }
+            return null;
         }
-        if (match[2]) {
-            return Legacy.fromName(match[2], text);
-        }
-        return null;
     }
     // rgb/rgba(), hsl/hsla(), hwb/hwba(), lch(), oklch(), lab(), oklab() and color()
-    match = text.toLowerCase().match(/^\s*(?:(rgba?)|(hsla?)|(hwba?)|(lch)|(oklch)|(lab)|(oklab)|(color))\((.*)\)\s*$/);
+    const match = text.toLowerCase().match(/^\s*(?:(rgba?)|(hsla?)|(hwba?)|(lch)|(oklch)|(lab)|(oklab)|(color))\((.*)\)\s*$/);
     if (match) {
         const isRgbaMatch = Boolean(match[1]); // rgb/rgba()
         const isHslaMatch = Boolean(match[2]); // hsl/hsla()

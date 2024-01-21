@@ -6,7 +6,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { MaxDeviceSize, MinDeviceSize, Insets } from './DeviceModeModel.js';
+import { Insets, MaxDeviceSize, MinDeviceSize } from './DeviceModeModel.js';
 const UIStrings = {
     /**
      *@description Title of the Laptop with touch device

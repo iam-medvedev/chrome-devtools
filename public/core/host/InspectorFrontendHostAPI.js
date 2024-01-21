@@ -7,6 +7,7 @@ export var Events;
 (function (Events) {
     Events["AppendedToURL"] = "appendedToURL";
     Events["CanceledSaveURL"] = "canceledSaveURL";
+    Events["ColorThemeChanged"] = "colorThemeChanged";
     Events["ContextMenuCleared"] = "contextMenuCleared";
     Events["ContextMenuItemSelected"] = "contextMenuItemSelected";
     Events["DeviceCountUpdated"] = "deviceCountUpdated";
@@ -39,6 +40,7 @@ export var Events;
 export const EventDescriptors = [
     [Events.AppendedToURL, 'appendedToURL', ['url']],
     [Events.CanceledSaveURL, 'canceledSaveURL', ['url']],
+    [Events.ColorThemeChanged, 'colorThemeChanged', []],
     [Events.ContextMenuCleared, 'contextMenuCleared', []],
     [Events.ContextMenuItemSelected, 'contextMenuItemSelected', ['id']],
     [Events.DeviceCountUpdated, 'deviceCountUpdated', ['count']],
@@ -82,6 +84,7 @@ export var EnumeratedHistogram;
     EnumeratedHistogram["BreakpointEditDialogRevealedFrom"] = "DevTools.BreakpointEditDialogRevealedFrom";
     EnumeratedHistogram["PanelClosed"] = "DevTools.PanelClosed";
     EnumeratedHistogram["PanelShown"] = "DevTools.PanelShown";
+    EnumeratedHistogram["PanelShownInLocation"] = "DevTools.PanelShownInLocation";
     EnumeratedHistogram["SidebarPaneShown"] = "DevTools.SidebarPaneShown";
     EnumeratedHistogram["KeyboardShortcutFired"] = "DevTools.KeyboardShortcutFired";
     EnumeratedHistogram["IssueCreated"] = "DevTools.IssueCreated";

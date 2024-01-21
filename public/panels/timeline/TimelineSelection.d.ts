@@ -9,7 +9,7 @@ export declare class TimelineSelection {
     constructor(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, object: PermittedObjectTypes);
     static isFrameObject(object: PermittedObjectTypes): object is TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame;
     static fromFrame(frame: TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): TimelineSelection;
-    static isSyntheticNetworkRequestDetailsEventSelection(object: PermittedObjectTypes): object is TraceEngine.Types.TraceEvents.TraceEventSyntheticNetworkRequest;
+    static isSyntheticNetworkRequestDetailsEventSelection(object: PermittedObjectTypes): object is TraceEngine.Types.TraceEvents.SyntheticNetworkRequest;
     static isTraceEventSelection(object: PermittedObjectTypes): object is TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData;
     static fromTraceEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): TimelineSelection;
     static isRangeSelection(object: PermittedObjectTypes): object is SelectionRange;

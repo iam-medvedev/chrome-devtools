@@ -80,9 +80,9 @@ export declare class CompatibilityTracksAppender {
     constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[], legacyTimelineModel: TimelineModel.TimelineModel.TimelineModelImpl);
     setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
-    modifyTree(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.TraceEntry, action: TraceEngine.EntriesFilter.FilterAction): void;
-    findPossibleContextMenuActions(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.TraceEntry): TraceEngine.EntriesFilter.PossibleFilterActions | void;
-    findHiddenDescendantsAmount(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.TraceEntry): number | void;
+    modifyTree(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.SyntheticTraceEntry, action: TraceEngine.EntriesFilter.FilterAction): void;
+    findPossibleContextMenuActions(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): TraceEngine.EntriesFilter.PossibleFilterActions | void;
+    findHiddenDescendantsAmount(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): number | void;
     /**
      * Given a trace event returns instantiates a legacy SDK.Event. This should
      * be used for compatibility purposes only.

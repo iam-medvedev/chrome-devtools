@@ -18,7 +18,7 @@ import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, }
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { ColorMatch, ColorMatcher, } from './PropertyParser.js';
+import { children, ColorMatch, ColorMatcher, Renderer, VariableMatch, VariableMatcher, } from './PropertyParser.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
 import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, StylesSidebarPropertyRenderer, } from './StylesSidebarPane.js';
@@ -91,6 +91,76 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertyTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const parentMap = new WeakMap();
+export class VariableRenderer extends VariableMatch {
+    #treeElement;
+    #style;
+    constructor(treeElement, style, text, name, fallback, matching) {
+        super(text, name, fallback, matching);
+        this.#treeElement = treeElement;
+        this.#style = style;
+    }
+    resolveVariable() {
+        return this.#matchedStyles.computeCSSVariable(this.#style, this.name);
+    }
+    fallbackValue() {
+        if (this.fallback.length === 0 || this.fallback.some(node => this.matching.hasUnresolvedVars(node))) {
+            return null;
+        }
+        return this.fallback.map(node => this.matching.getComputedText(node)).join(' ');
+    }
+    computedText() {
+        return this.resolveVariable()?.value ?? this.fallbackValue();
+    }
+    render(node, context) {
+        const renderedFallback = this.fallback.length > 0 ? Renderer.render(this.fallback, context) : undefined;
+        const { declaration, value: variableValue } = this.resolveVariable() ?? {};
+        const fromFallback = !variableValue;
+        const computedValue = variableValue ?? this.fallbackValue();
+        const varSwatch = new InlineEditor.LinkSwatch.CSSVarSwatch();
+        UI.UIUtils.createTextChild(varSwatch, this.text);
+        varSwatch.data = {
+            computedValue,
+            variableName: this.name,
+            fromFallback,
+            fallbackHtml: renderedFallback?.nodes ?? [],
+            onLinkActivate: name => this.#handleVarDefinitionActivate(declaration ?? name),
+        };
+        if (varSwatch.link) {
+            this.#pane.addPopover(varSwatch.link, () => this.#treeElement.getVariablePopoverContents(this.name, variableValue ?? null));
+        }
+        const innerSwatches = renderedFallback?.cssControls?.get('color')?.filter(InlineEditor.ColorSwatch.ColorSwatch.isColorSwatch);
+        innerSwatches?.forEach(swatch => swatch.setReadonly(true));
+        if (!computedValue || !Common.Color.parse(computedValue)) {
+            return [varSwatch];
+        }
+        const colorSwatch = new ColorRenderer(this.#treeElement, computedValue).renderColorSwatch(varSwatch);
+        context.addControl('color', colorSwatch);
+        return [colorSwatch];
+    }
+    static matcher(treeElement, style) {
+        return new VariableMatcher((text, name, fallback, matching) => new VariableRenderer(treeElement, style, text, name, fallback, matching));
+    }
+    get #pane() {
+        return this.#treeElement.parentPane();
+    }
+    get #matchedStyles() {
+        return this.#treeElement.matchedStyles();
+    }
+    #handleVarDefinitionActivate(variable) {
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.CustomPropertyLinkClicked);
+        Host.userMetrics.swatchActivated(0 /* Host.UserMetrics.SwatchType.VarLink */);
+        if (variable instanceof SDK.CSSProperty.CSSProperty) {
+            this.#pane.revealProperty(variable);
+        }
+        else if (variable instanceof SDK.CSSMatchedStyles.CSSRegisteredProperty) {
+            this.#pane.jumpToProperty('initial-value', variable.propertyName(), REGISTERED_PROPERTY_SECTION_NAME);
+        }
+        else {
+            this.#pane.jumpToProperty(variable) ||
+                this.#pane.jumpToProperty('initial-value', variable, REGISTERED_PROPERTY_SECTION_NAME);
+        }
+    }
+}
 export class ColorRenderer extends ColorMatch {
     treeElement;
     constructor(treeElement, text) {
@@ -98,20 +168,30 @@ export class ColorRenderer extends ColorMatch {
         this.treeElement = treeElement;
     }
     static matcher(treeElement) {
-        return new ColorMatcher((text) => new ColorRenderer(treeElement, text));
+        return new ColorMatcher(text => new ColorRenderer(treeElement, text));
     }
-    render(context) {
-        const swatch = this.renderColorSwatch();
+    #getValueChild(node, context) {
+        const valueChild = document.createElement('span');
+        if (node.name === 'ColorLiteral' || (node.name === 'ValueName' && Common.Color.Nicknames.has(this.text))) {
+            valueChild.appendChild(document.createTextNode(this.text));
+        }
+        else {
+            Renderer.renderInto(children(node), context, valueChild);
+        }
+        return valueChild;
+    }
+    render(node, context) {
+        const swatch = this.renderColorSwatch(this.#getValueChild(node, context), context.matchedResult.getComputedText(node));
         context.addControl('color', swatch);
         return [swatch];
     }
-    renderColorSwatch(valueChild) {
+    renderColorSwatch(valueChild, text) {
         const editable = this.treeElement.editable();
         const shiftClickMessage = i18nString(UIStrings.shiftClickToChangeColorFormat);
         const tooltip = editable ? i18nString(UIStrings.openColorPickerS, { PH1: shiftClickMessage }) : '';
         const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
         swatch.setReadonly(!editable);
-        swatch.renderColor(this.text, editable, tooltip);
+        swatch.renderColor(text ?? this.text, editable, tooltip);
         if (!valueChild) {
             valueChild = swatch.createChild('span');
             const color = swatch.getColor();
@@ -286,7 +366,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                     Host.userMetrics.swatchActivated(1 /* Host.UserMetrics.SwatchType.AnimationNameLink */);
                     this.parentPaneInternal.jumpToSectionBlock(`@keyframes ${animationName}`);
                 },
-                jslogContext: 'cssAnimationName',
+                jslogContext: 'css-animation-name',
             };
             contentChild.appendChild(swatch);
             if (i !== animationNames.length - 1) {
@@ -337,7 +417,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 Host.userMetrics.swatchActivated(9 /* Host.UserMetrics.SwatchType.PositionFallbackLink */);
                 this.parentPaneInternal.jumpToSectionBlock(`@position-fallback ${propertyText}`);
             },
-            jslogContext: 'cssPositionFallback',
+            jslogContext: 'css-position-fallback',
         };
         contentChild.appendChild(swatch);
         return contentChild;
@@ -353,7 +433,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             onLinkActivate: () => {
                 this.parentPaneInternal.jumpToSectionBlock(`@font-palette-values ${propertyText}`);
             },
-            jslogContext: 'cssFontPalette',
+            jslogContext: 'css-font-palette',
         };
         contentChild.appendChild(swatch);
         return contentChild;
@@ -458,6 +538,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         swatch.setColorMixText(colorMixText);
         return swatch;
     }
+    // TODO(chromium:1504820) Delete once callers are migrated
     processVar(text, { shouldShowColorSwatch = true } = {}) {
         // The regex that matches to variables in `StylesSidebarPropertyRenderer`
         // uses a lazy match. Because of this, when there are multiple right parantheses inside the
@@ -474,10 +555,10 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         const { computedValue, fromFallback } = computedSingleValue;
         let fallbackHtml = null;
         if (fromFallback && fallback?.startsWith('var(')) {
-            fallbackHtml = this.processVar(fallback, { shouldShowColorSwatch: false });
+            fallbackHtml = [this.processVar(fallback, { shouldShowColorSwatch: false })];
         }
         else if (fallback) {
-            fallbackHtml = document.createTextNode(fallback);
+            fallbackHtml = [document.createTextNode(fallback)];
         }
         const varSwatch = new InlineEditor.LinkSwatch.CSSVarSwatch();
         UI.UIUtils.createTextChild(varSwatch, text);
@@ -494,7 +575,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 const computedValueOfLink = textContent ?
                     this.matchedStylesInternal.computeSingleVariableValue(this.style, `var(${textContent})`) :
                     null;
-                this.parentPaneInternal.addPopover(varSwatch.link, () => this.#getVariablePopoverContents(textContent, computedValueOfLink?.computedValue ?? null));
+                this.parentPaneInternal.addPopover(varSwatch.link, () => this.getVariablePopoverContents(textContent, computedValueOfLink?.computedValue ?? null));
             }
         }
         if (!computedValue || !Common.Color.parse(computedValue) || !shouldShowColorSwatch) {
@@ -564,7 +645,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             } // Add back commas and spaces between each shadow.
             // TODO(flandy): editing the property value should use the original value with all spaces.
             const cssShadowSwatch = InlineEditor.Swatches.CSSShadowSwatch.create();
-            cssShadowSwatch.setAttribute('jslog', `${VisualLogging.showStyleEditor().context('cssShadow').track({ click: true })}`);
+            cssShadowSwatch.setAttribute('jslog', `${VisualLogging.showStyleEditor().context('css-shadow').track({ click: true })}`);
             cssShadowSwatch.setCSSShadow(shadows[i]);
             cssShadowSwatch.iconElement().addEventListener('click', () => {
                 Host.userMetrics.swatchActivated(4 /* Host.UserMetrics.SwatchType.Shadow */);
@@ -607,7 +688,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return document.createTextNode(angleText);
         }
         const cssAngle = new InlineEditor.CSSAngle.CSSAngle();
-        cssAngle.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context('cssAngle')}`);
+        cssAngle.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context('css-angle')}`);
         const valueElement = document.createElement('span');
         valueElement.textContent = angleText;
         const computedPropertyValue = this.matchedStylesInternal.computeValue(this.property.ownerStyle, this.property.value) || '';
@@ -618,14 +699,11 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             containingPane: this.parentPaneInternal.element.enclosingNodeOrSelfWithClass('style-panes-wrapper'),
         };
         cssAngle.append(valueElement);
-        const popoverToggled = (event) => {
+        cssAngle.addEventListener('popovertoggled', ({ data }) => {
             const section = this.section();
             if (!section) {
                 return;
             }
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const { data } = event;
             if (data.open) {
                 this.parentPaneInternal.hideAllPopovers();
                 this.parentPaneInternal.activeCSSAngle = cssAngle;
@@ -633,21 +711,16 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             }
             section.element.classList.toggle('has-open-popover', data.open);
             this.parentPaneInternal.setEditingStyle(data.open);
-        };
-        const valueChanged = async (event) => {
-            const { data } = event;
+        });
+        cssAngle.addEventListener('valuechanged', async ({ data }) => {
             valueElement.textContent = data.value;
             await this.applyStyleText(this.renderedPropertyText(), false);
             const computedPropertyValue = this.matchedStylesInternal.computeValue(this.property.ownerStyle, this.property.value) || '';
             cssAngle.updateProperty(this.property.name, computedPropertyValue);
-        };
-        const unitChanged = async (event) => {
-            const { data } = event;
+        });
+        cssAngle.addEventListener('unitchanged', ({ data }) => {
             valueElement.textContent = data.value;
-        };
-        cssAngle.addEventListener('popovertoggled', popoverToggled);
-        cssAngle.addEventListener('valuechanged', valueChanged);
-        cssAngle.addEventListener('unitchanged', unitChanged);
+        });
         return cssAngle;
     }
     processLength(lengthText) {
@@ -831,7 +904,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         const goToDefinition = () => this.parentPaneInternal.jumpToSection(variableName, REGISTERED_PROPERTY_SECTION_NAME);
         return registration ? { registration, goToDefinition } : undefined;
     }
-    #getVariablePopoverContents(variableName, computedValue) {
+    getVariablePopoverContents(variableName, computedValue) {
         return new ElementsComponents.CSSVariableValueView.CSSVariableValueView({
             variableName,
             value: computedValue ?? undefined,
@@ -857,10 +930,10 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             this.expandElement.setAttribute('jslog', `${VisualLogging.treeItemExpand().track({ click: true })}`);
         }
         const propertyRenderer = new StylesSidebarPropertyRenderer(this.style.parentRule, this.node(), this.name, this.value, [
+            VariableRenderer.matcher(this, this.style),
             ColorRenderer.matcher(this),
         ]);
         if (this.property.parsedOk) {
-            propertyRenderer.setVarHandler(this.processVar.bind(this));
             propertyRenderer.setAnimationNameHandler(this.processAnimationName.bind(this));
             propertyRenderer.setAnimationHandler(this.processAnimation.bind(this));
             propertyRenderer.setColorMixHandler(this.processColorMix.bind(this));
@@ -876,7 +949,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.listItemElement.removeChildren();
         this.nameElement = propertyRenderer.renderName();
         if (this.property.name.startsWith('--') && this.nameElement) {
-            this.parentPaneInternal.addPopover(this.nameElement, () => this.#getVariablePopoverContents(this.property.name, this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value ?? null));
+            this.parentPaneInternal.addPopover(this.nameElement, () => this.getVariablePopoverContents(this.property.name, this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value ?? null));
         }
         this.valueElement = propertyRenderer.renderValue();
         if (!this.treeOutline) {
@@ -1174,15 +1247,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             previousContent: this.name.split('\n').map(l => l.trim()).join('\n'),
         };
         this.#startEditing(context);
-    }
-    // TODO(crbug:1504820) Remove once layout tests are migrated
-    startEditing(selectedElement) {
-        if (!selectedElement || selectedElement === this.nameElement) {
-            this.startEditingName();
-        }
-        else {
-            this.startEditingValue();
-        }
     }
     #startEditing(context) {
         this.contextForTest = context;

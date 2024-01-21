@@ -1,7 +1,8 @@
 import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
+import { type LiveObjects, type Profile } from './HeapSnapshot.js';
 export declare class AllocationProfile {
     #private;
-    constructor(profile: any, liveObjectStats: any);
+    constructor(profile: Profile, liveObjectStats: LiveObjects);
     serializeTraceTops(): HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode[];
     serializeCallers(nodeId: number): HeapSnapshotModel.HeapSnapshotModel.AllocationNodeCallers;
     serializeAllocationStack(traceNodeId: number): HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[];

@@ -39,7 +39,7 @@ export declare class ResourceTreeModel extends SDKModel<EventTypes> {
     suspendReload(): void;
     resumeReload(): void;
     reloadPage(ignoreCache?: boolean, scriptToEvaluateOnLoad?: string): void;
-    navigate(url: Platform.DevToolsPath.UrlString): Promise<any>;
+    navigate(url: Platform.DevToolsPath.UrlString): Promise<Protocol.Page.NavigateResponse>;
     navigationHistory(): Promise<{
         currentIndex: number;
         entries: Array<Protocol.Page.NavigationEntry>;

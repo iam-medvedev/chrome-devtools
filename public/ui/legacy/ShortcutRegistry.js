@@ -417,7 +417,7 @@ export const ForwardedActions = new Set([
     'main.toggle-dock',
     'debugger.toggle-breakpoints-active',
     'debugger.toggle-pause',
-    'commandMenu.show',
+    'quick-open.show-command-menu',
     'console.toggle',
 ]);
 export const KeyTimeout = 1000;

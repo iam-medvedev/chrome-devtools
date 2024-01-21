@@ -102,7 +102,7 @@ export default {
   }
 
   devtools-icon {
-    vertical-align: middle;
+    vertical-align: baseline;
     color: var(--sys-color-primary);
   }
 

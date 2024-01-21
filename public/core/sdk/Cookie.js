@@ -68,6 +68,9 @@ export class Cookie {
     secure() {
         return 'secure' in this.#attributes;
     }
+    partitioned() {
+        return 'partitioned' in this.#attributes || Boolean(this.partitionKey()) || this.partitionKeyOpaque();
+    }
     sameSite() {
         // TODO(allada) This should not rely on #attributes and instead store them individually.
         // when #attributes get added via addAttribute() they are lowercased, hence the lowercasing of samesite here
@@ -213,12 +216,12 @@ export var Attributes;
     Attributes["Domain"] = "domain";
     Attributes["Path"] = "path";
     Attributes["Expires"] = "expires";
-    Attributes["HttpOnly"] = "httpOnly";
+    Attributes["HttpOnly"] = "http-only";
     Attributes["Secure"] = "secure";
-    Attributes["SameSite"] = "sameSite";
-    Attributes["SourceScheme"] = "sourceScheme";
-    Attributes["SourcePort"] = "sourcePort";
+    Attributes["SameSite"] = "same-site";
+    Attributes["SourceScheme"] = "source-scheme";
+    Attributes["SourcePort"] = "source-port";
     Attributes["Priority"] = "priority";
-    Attributes["PartitionKey"] = "partitionKey";
+    Attributes["PartitionKey"] = "partition-key";
 })(Attributes || (Attributes = {}));
 //# sourceMappingURL=Cookie.js.map

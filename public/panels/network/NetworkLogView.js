@@ -739,7 +739,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         if (SDK.ContentData.ContentData.isError(contentData)) {
             content = '';
         }
-        else if (!contentData.resourceType.isTextType()) {
+        else if (!contentData.isTextContent) {
             content = contentData.asDataUrl() ?? '';
         }
         else {
@@ -890,7 +890,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         const hintText = this.recordingHint.createChild('div', 'recording-hint');
         if (this.recording) {
             let reloadShortcutNode = null;
-            const reloadShortcut = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('inspector_main.reload')[0];
+            const reloadShortcut = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('inspector-main.reload')[0];
             if (reloadShortcut) {
                 reloadShortcutNode = this.recordingHint.createChild('b');
                 reloadShortcutNode.textContent = reloadShortcut.title();

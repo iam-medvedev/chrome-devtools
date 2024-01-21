@@ -345,6 +345,9 @@ export class MainImpl {
         darkThemeMediaQuery.addEventListener('change', onThemeChange);
         highContrastMediaQuery.addEventListener('change', onThemeChange);
         themeSetting.addChangeListener(onThemeChange);
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged, async () => {
+            await UI.Utils.DynamicTheming.refetchColors(document);
+        }, this);
         UI.UIUtils.installComponentRootStyles(document.body);
         this.#addMainEventListeners(document);
         const canDock = Boolean(Root.Runtime.Runtime.queryParam('can_dock'));
@@ -425,6 +428,7 @@ export class MainImpl {
         const app = appProvider.createApp();
         // It is important to kick controller lifetime after apps are instantiated.
         UI.DockController.DockController.instance().initialize();
+        await UI.Utils.DynamicTheming.refetchColors(document);
         app.presentUI(document);
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-element-search')) {
             const toggleSearchNodeAction = UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
@@ -691,13 +695,13 @@ export class MainMenuItem {
         if (UI.DockController.DockController.instance().dockSide() === "undocked" /* UI.DockController.DockState.UNDOCKED */) {
             const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             if (mainTarget && mainTarget.type() === SDK.Target.Type.Frame) {
-                contextMenu.defaultSection().appendAction('inspector_main.focus-debuggee', i18nString(UIStrings.focusDebuggee));
+                contextMenu.defaultSection().appendAction('inspector-main.focus-debuggee', i18nString(UIStrings.focusDebuggee));
             }
         }
         contextMenu.defaultSection().appendAction('main.toggle-drawer', UI.InspectorView.InspectorView.instance().drawerVisible() ? i18nString(UIStrings.hideConsoleDrawer) :
             i18nString(UIStrings.showConsoleDrawer));
         contextMenu.appendItemsAtLocation('mainMenu');
-        const moreTools = contextMenu.defaultSection().appendSubMenuItem(i18nString(UIStrings.moreTools), false, 'moreTools');
+        const moreTools = contextMenu.defaultSection().appendSubMenuItem(i18nString(UIStrings.moreTools), false, 'more-tools');
         const viewExtensions = UI.ViewManager.getRegisteredViewExtensions();
         viewExtensions.sort((extension1, extension2) => {
             const title1 = extension1.title();

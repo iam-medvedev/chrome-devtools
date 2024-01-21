@@ -44,6 +44,11 @@ export class WidgetElement extends HTMLDivElement {
         super();
     }
 }
+function assert(condition, message) {
+    if (!condition) {
+        throw new Error(message);
+    }
+}
 export class Widget {
     element;
     contentElement;
@@ -117,15 +122,8 @@ export class Widget {
             currentElement = parentWidgetElementOrShadowHost(currentElement);
         }
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/naming-convention
-    static assert(condition, message) {
-        if (!condition) {
-            throw new Error(message);
-        }
-    }
     markAsRoot() {
-        Widget.assert(!this.element.parentElement, 'Attempt to mark as root attached node');
+        assert(!this.element.parentElement, 'Attempt to mark as root attached node');
         this.isRoot = true;
     }
     parentWidget() {
@@ -230,7 +228,7 @@ export class Widget {
     async ownerViewDisposed() {
     }
     show(parentElement, insertBefore) {
-        Widget.assert(parentElement, 'Attempt to attach widget with no parent element');
+        assert(parentElement, 'Attempt to attach widget with no parent element');
         if (!this.isRoot) {
             // Update widget hierarchy.
             let currentParent = parentElement;
@@ -270,10 +268,10 @@ export class Widget {
             currentParent = parentWidgetElementOrShadowHost(currentParent);
         }
         if (this.isRoot) {
-            Widget.assert(!currentParent, 'Attempt to show root widget under another widget');
+            assert(!currentParent, 'Attempt to show root widget under another widget');
         }
         else {
-            Widget.assert(currentParent && currentParent.__widget === this.parentWidgetInternal, 'Attempt to show under node belonging to alien widget');
+            assert(currentParent && currentParent.__widget === this.parentWidgetInternal, 'Attempt to show under node belonging to alien widget');
         }
         const wasVisible = this.visibleInternal;
         if (wasVisible && this.element.parentElement === parentElement) {
@@ -356,7 +354,7 @@ export class Widget {
         // Update widget hierarchy.
         if (this.parentWidgetInternal) {
             const childIndex = this.parentWidgetInternal.childrenInternal.indexOf(this);
-            Widget.assert(childIndex >= 0, 'Attempt to remove non-child widget');
+            assert(childIndex >= 0, 'Attempt to remove non-child widget');
             this.parentWidgetInternal.childrenInternal.splice(childIndex, 1);
             if (this.parentWidgetInternal.defaultFocusedChild === this) {
                 this.parentWidgetInternal.defaultFocusedChild = null;
@@ -365,7 +363,7 @@ export class Widget {
             this.parentWidgetInternal = null;
         }
         else {
-            Widget.assert(this.isRoot, 'Removing non-root widget from DOM');
+            assert(this.isRoot, 'Removing non-root widget from DOM');
         }
     }
     detachChildWidgets() {
@@ -446,7 +444,7 @@ export class Widget {
         this.defaultFocusedElement = element;
     }
     setDefaultFocusedChild(child) {
-        Widget.assert(child.parentWidgetInternal === this, 'Attempt to set non-child widget as default focused.');
+        assert(child.parentWidgetInternal === this, 'Attempt to set non-child widget as default focused.');
         this.defaultFocusedChild = child;
     }
     focus() {
@@ -542,7 +540,7 @@ export class Widget {
     // Also note that this must be called before the widget is shown so that
     // so that its ancestor's widgetCounter is not incremented.
     markAsExternallyManaged() {
-        Widget.assert(!this.parentWidgetInternal, 'Attempt to mark widget as externally managed after insertion to the DOM');
+        assert(!this.parentWidgetInternal, 'Attempt to mark widget as externally managed after insertion to the DOM');
         this.externallyManaged = true;
     }
 }

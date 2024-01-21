@@ -1868,7 +1868,7 @@
       <include file="ui/components/highlighting/highlighting.css.js" name="UI_COMPONENTS_HIGHLIGHTING_HIGHLIGHTING_CSS_JS" resource_path="ui/components/highlighting/highlighting.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/icon_button/Icon.js" name="UI_COMPONENTS_ICON_BUTTON_ICON_JS" resource_path="ui/components/icon_button/Icon.js" type="BINDATA" compress="false"/>
       <include file="ui/components/icon_button/IconButton.js" name="UI_COMPONENTS_ICON_BUTTON_ICONBUTTON_JS" resource_path="ui/components/icon_button/IconButton.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/icon_button/icon.css.js" name="UI_COMPONENTS_ICON_BUTTON_ICON_CSS_JS" resource_path="ui/components/icon_button/icon.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/icon_button/icon.css.legacy.js" name="UI_COMPONENTS_ICON_BUTTON_ICON_CSS_LEGACY_JS" resource_path="ui/components/icon_button/icon.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/components/icon_button/iconButton.css.js" name="UI_COMPONENTS_ICON_BUTTON_ICONBUTTON_CSS_JS" resource_path="ui/components/icon_button/iconButton.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/input/checkbox.css.js" name="UI_COMPONENTS_INPUT_CHECKBOX_CSS_JS" resource_path="ui/components/input/checkbox.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/input/textInput.css.js" name="UI_COMPONENTS_INPUT_TEXTINPUT_CSS_JS" resource_path="ui/components/input/textInput.css.js" type="BINDATA" compress="false"/>
@@ -2143,6 +2143,7 @@
       <include file="ui/legacy/tokens.css.legacy.js" name="UI_LEGACY_TOKENS_CSS_LEGACY_JS" resource_path="ui/legacy/tokens.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/toolbar.css.legacy.js" name="UI_LEGACY_TOOLBAR_CSS_LEGACY_JS" resource_path="ui/legacy/toolbar.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/treeoutline.css.legacy.js" name="UI_LEGACY_TREEOUTLINE_CSS_LEGACY_JS" resource_path="ui/legacy/treeoutline.css.legacy.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/utils/DynamicTheming.js" name="UI_LEGACY_UTILS_DYNAMICTHEMING_JS" resource_path="ui/legacy/utils/DynamicTheming.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/utils/create-shadow-root-with-core-styles.js" name="UI_LEGACY_UTILS_CREATE_SHADOW_ROOT_WITH_CORE_STYLES_JS" resource_path="ui/legacy/utils/create-shadow-root-with-core-styles.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/utils/focus-changed.js" name="UI_LEGACY_UTILS_FOCUS_CHANGED_JS" resource_path="ui/legacy/utils/focus-changed.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/utils/inject-core-styles.js" name="UI_LEGACY_UTILS_INJECT_CORE_STYLES_JS" resource_path="ui/legacy/utils/inject-core-styles.js" type="BINDATA" compress="false"/>

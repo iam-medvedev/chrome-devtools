@@ -69,7 +69,7 @@ export declare function buildHierarchy(processes: Map<Types.TraceEvents.ProcessI
         has: (name: Types.TraceEvents.KnownEventName) => boolean;
     };
 }): void;
-export declare function makeCompleteEvent(event: Types.TraceEvents.TraceEventBegin | Types.TraceEvents.TraceEventEnd): Types.TraceEvents.TraceEventSyntheticCompleteEvent | null;
+export declare function makeCompleteEvent(event: Types.TraceEvents.TraceEventBegin | Types.TraceEvents.TraceEventEnd): Types.TraceEvents.SyntheticCompleteEvent | null;
 export declare function deps(): TraceEventHandlerName[];
 export interface RendererHandlerData {
     processes: Map<Types.TraceEvents.ProcessID, RendererProcess>;
@@ -78,12 +78,12 @@ export interface RendererHandlerData {
      * by the process ID.
      */
     compositorTileWorkers: Map<Types.TraceEvents.ProcessID, Types.TraceEvents.ThreadID[]>;
-    entryToNode: Map<Types.TraceEvents.TraceEntry, Helpers.TreeHelpers.TraceEntryNode>;
+    entryToNode: Map<Types.TraceEvents.SyntheticTraceEntry, Helpers.TreeHelpers.TraceEntryNode>;
     /**
      * All trace events and synthetic profile calls made from
      * samples.
      */
-    allTraceEntries: Types.TraceEvents.TraceEntry[];
+    allTraceEntries: Types.TraceEvents.SyntheticTraceEntry[];
 }
 export interface RendererProcess {
     url: string | null;
@@ -96,6 +96,6 @@ export interface RendererThread {
      * Contains trace events and synthetic profile calls made from
      * samples.
      */
-    entries: Types.TraceEvents.TraceEntry[];
+    entries: Types.TraceEvents.SyntheticTraceEntry[];
     tree?: Helpers.TreeHelpers.TraceEntryTree;
 }
