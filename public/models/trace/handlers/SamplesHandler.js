@@ -100,7 +100,7 @@ export function handleEvent(event) {
      * A fake trace event created to support CDP.Profiler.Profiles in the
      * trace engine.
      */
-    if (Types.TraceEvents.isSyntheticTraceEventCpuProfile(event)) {
+    if (Types.TraceEvents.isSyntheticCpuProfile(event)) {
         // At the moment we are attaching to a single node target so we
         // should only get a single CPU profile. The values of the process
         // id and thread id are not really important, so we use the data

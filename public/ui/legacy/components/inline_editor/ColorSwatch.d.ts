@@ -20,6 +20,7 @@ export declare class ColorSwatch extends HTMLElement {
     private readonly;
     constructor();
     static isColorSwatch(element: Element): element is ColorSwatch;
+    getReadonly(): boolean;
     setReadonly(readonly: boolean): void;
     getColor(): Common.Color.Color | null;
     getFormat(): Common.Color.Format | null;

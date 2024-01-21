@@ -405,6 +405,10 @@ const UIStrings = {
      */
     domGc: 'DOM GC',
     /**
+     *@description Event category in the Performance panel for time spent to perform Garbage Collection for C++: https://chromium.googlesource.com/v8/v8/+/main/include/cppgc/README.md
+     */
+    cppGc: 'CPP GC',
+    /**
      *@description Event category in the Performance panel for time spent to perform encryption
      */
     encrypt: 'Encrypt',
@@ -841,6 +845,14 @@ function maybeInitSylesMap() {
             new TimelineRecordStyle(i18nString(UIStrings.minorGc), defaultCategoryStyles.Scripting),
         ],
         [
+            "V8.GCIncrementalMarking" /* TraceEngine.Types.TraceEvents.KnownEventName.IncrementalGCMarking */,
+            new TimelineRecordStyle(i18nString(UIStrings.gcEvent), defaultCategoryStyles.Scripting),
+        ],
+        [
+            "CppGC.IncrementalSweep" /* TraceEngine.Types.TraceEvents.KnownEventName.CPPGCSweep */,
+            new TimelineRecordStyle(i18nString(UIStrings.cppGc), defaultCategoryStyles.Scripting),
+        ],
+        [
             "RequestAnimationFrame" /* TraceEngine.Types.TraceEvents.KnownEventName.RequestAnimationFrame */,
             new TimelineRecordStyle(i18nString(UIStrings.requestAnimationFrame), defaultCategoryStyles.Scripting),
         ],
@@ -898,6 +910,10 @@ function maybeInitSylesMap() {
         ],
         [
             "BlinkGC.AtomicPhase" /* TraceEngine.Types.TraceEvents.KnownEventName.GCCollectGarbage */,
+            new TimelineRecordStyle(i18nString(UIStrings.domGc), defaultCategoryStyles.Scripting),
+        ],
+        [
+            "BlinkGC.AtomicPhase" /* TraceEngine.Types.TraceEvents.KnownEventName.DOMGC */,
             new TimelineRecordStyle(i18nString(UIStrings.domGc), defaultCategoryStyles.Scripting),
         ],
         [

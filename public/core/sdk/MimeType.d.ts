@@ -11,6 +11,13 @@ export declare const enum MimeType {
     EVENTSTREAM = "text/event-stream"
 }
 /**
+ * @returns true iff `mimeType` has textual content. Concretely we return true if:
+ *   - `mimeType` starts with "text/"
+ *   - `mimeType` ends with "+json" or "+xml"
+ *   - if `mimeType` is one of a predefined list textual mime types.
+ */
+export declare function isTextType(mimeType: string): boolean;
+/**
  * Port of net::HttpUtils::ParseContentType to extract mimeType and charset from
  * the 'Content-Type' header.
  */

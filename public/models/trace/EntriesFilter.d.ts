@@ -1,6 +1,6 @@
 import * as Helpers from './helpers/helpers.js';
 import * as Types from './types/types.js';
-type EntryToNodeMap = Map<Types.TraceEvents.TraceEntry, Helpers.TreeHelpers.TraceEntryNode>;
+type EntryToNodeMap = Map<Types.TraceEvents.SyntheticTraceEntry, Helpers.TreeHelpers.TraceEntryNode>;
 export type FilterAction = FilterApplyAction | FilterUndoAction;
 export declare const enum FilterApplyAction {
     MERGE_FUNCTION = "MERGE_FUNCTION",
@@ -13,13 +13,14 @@ export declare const enum FilterUndoAction {
 }
 export interface UserFilterAction {
     type: FilterAction;
-    entry: Types.TraceEvents.TraceEntry;
+    entry: Types.TraceEvents.SyntheticTraceEntry;
 }
 export interface UserApplyFilterAction {
     type: FilterApplyAction;
-    entry: Types.TraceEvents.TraceEntry;
+    entry: Types.TraceEvents.SyntheticTraceEntry;
 }
 export interface PossibleFilterActions {
+    [FilterApplyAction.MERGE_FUNCTION]: boolean;
     [FilterApplyAction.COLLAPSE_FUNCTION]: boolean;
     [FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS]: boolean;
 }
@@ -45,11 +46,11 @@ export declare class EntriesFilter {
      * Checks which actions can be applied on an entry. This allows us to only show possible actions in the Context Menu.
      * For example, if an entry has no children, COLLAPSE_FUNCTION will not change the FlameChart, therefore there is no need to show this action as an option.
      **/
-    findPossibleActions(entry: Types.TraceEvents.TraceEntry): PossibleFilterActions;
+    findPossibleActions(entry: Types.TraceEvents.SyntheticTraceEntry): PossibleFilterActions;
     /**
      * Returns the amount of entry descendants that belong to the hidden entries array.
      * **/
-    findHiddenDescendantsAmount(entry: Types.TraceEvents.TraceEntry): number;
+    findHiddenDescendantsAmount(entry: Types.TraceEvents.SyntheticTraceEntry): number;
     /**
      * Returns the set of entries that are invisible given the set of applied actions.
      **/

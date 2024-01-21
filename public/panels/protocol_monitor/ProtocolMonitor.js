@@ -177,12 +177,13 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         topToolbar.appendToolbarItem(saveButton);
         this.selector = this.#createTargetSelector();
         this.infoWidget = new InfoWidget();
+        const k = Platform.StringUtilities.kebab;
         const dataGridInitialData = {
             paddingRowsCount: 100,
             showScrollbar: true,
             columns: [
                 {
-                    id: 'type',
+                    id: k('type'),
                     title: i18nString(UIStrings.type),
                     sortable: true,
                     widthWeighting: 1,
@@ -193,7 +194,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     },
                 },
                 {
-                    id: 'method',
+                    id: k('method'),
                     title: i18nString(UIStrings.method),
                     sortable: false,
                     widthWeighting: 5,
@@ -201,7 +202,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     hideable: false,
                 },
                 {
-                    id: 'request',
+                    id: k('request'),
                     title: i18nString(UIStrings.request),
                     sortable: false,
                     widthWeighting: 5,
@@ -209,7 +210,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     hideable: true,
                 },
                 {
-                    id: 'response',
+                    id: k('response'),
                     title: i18nString(UIStrings.response),
                     sortable: false,
                     widthWeighting: 5,
@@ -217,7 +218,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     hideable: true,
                 },
                 {
-                    id: 'elapsedTime',
+                    id: k('elapsed-time'),
                     title: i18nString(UIStrings.elapsedTime),
                     sortable: true,
                     widthWeighting: 2,
@@ -225,7 +226,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     hideable: true,
                 },
                 {
-                    id: 'timestamp',
+                    id: k('timestamp'),
                     title: i18nString(UIStrings.timestamp),
                     sortable: true,
                     widthWeighting: 5,
@@ -233,7 +234,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     hideable: true,
                 },
                 {
-                    id: 'target',
+                    id: k('target'),
                     title: i18nString(UIStrings.target),
                     sortable: true,
                     widthWeighting: 5,
@@ -241,7 +242,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     hideable: true,
                 },
                 {
-                    id: 'session',
+                    id: k('session'),
                     title: i18nString(UIStrings.session),
                     sortable: true,
                     widthWeighting: 5,
@@ -455,7 +456,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                             value: JSON.stringify(message.result || message.error),
                         };
                     }
-                    if (cell.columnId === 'elapsedTime') {
+                    if (cell.columnId === 'elapsed-time') {
                         const requestTime = this.requestTimeForId.get(message.id);
                         if (requestTime) {
                             return {
@@ -495,7 +496,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     value: Date.now() - this.startTime,
                     renderer: timeRenderer,
                 },
-                { columnId: 'elapsedTime', value: '' },
+                { columnId: 'elapsed-time', value: '' },
                 { columnId: 'type', value: responseIcon, title: 'received', renderer: DataGrid.DataGridRenderers.iconRenderer },
                 { columnId: 'target', value: this.targetToString(sdkTarget) },
                 { columnId: 'session', value: message.sessionId || '' },
@@ -529,7 +530,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     value: Date.now() - this.startTime,
                     renderer: timeRenderer,
                 },
-                { columnId: 'elapsedTime', value: '(pending)' },
+                { columnId: 'elapsed-time', value: '(pending)' },
                 {
                     columnId: 'type',
                     value: requestResponseIcon,

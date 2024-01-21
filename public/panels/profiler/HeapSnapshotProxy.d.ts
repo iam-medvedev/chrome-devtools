@@ -13,9 +13,10 @@ export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.Object
     createLoader(profileUid: number, snapshotReceivedCallback: (arg0: HeapSnapshotProxy) => void): HeapSnapshotLoaderProxy;
     dispose(): void;
     disposeObject(objectId: number): void;
-    evaluateForTest(script: string, callback: (arg0: any) => void): void;
-    callFactoryMethod<T extends Object>(callback: ((...arg0: unknown[]) => void) | null, objectId: string, methodName: string, proxyConstructor: new (...arg1: unknown[]) => T): Object | null;
-    callMethod(callback: (arg0: any) => void, objectId: string, methodName: string): void;
+    evaluateForTest(script: string, callback: (...arg0: any[]) => void): void;
+    callFactoryMethod<T extends Object>(callback: null, objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...methodArguments: any[]): T;
+    callFactoryMethod<T extends Object>(callback: ((...arg0: any[]) => void), objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...methodArguments: any[]): null;
+    callMethod(callback: (...arg0: any[]) => void, objectId: string, methodName: string, ...methodArguments: any[]): void;
     startCheckingForLongRunningCalls(): void;
     checkLongRunningCalls(): void;
     messageReceived(event: MessageEvent<any>): void;
@@ -33,11 +34,11 @@ export declare class HeapSnapshotProxyObject {
     readonly worker: HeapSnapshotWorkerProxy;
     readonly objectId: number;
     constructor(worker: HeapSnapshotWorkerProxy, objectId: number);
-    callWorker(workerMethodName: string, args: any[]): any;
     dispose(): void;
     disposeWorker(): void;
-    callFactoryMethod<T>(_callback: ((...arg0: any[]) => void) | null, _methodName: string, _proxyConstructor: new (...arg1: any[]) => T, ..._var_args: any[]): T;
-    callMethodPromise<T>(_methodName: string, ..._var_args: any[]): Promise<T>;
+    callFactoryMethod<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...args: any[]): T;
+    callFactoryMethodPromise<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...args: any[]): Promise<T>;
+    callMethodPromise<T>(methodName: string, ...args: any[]): Promise<T>;
 }
 export declare class HeapSnapshotLoaderProxy extends HeapSnapshotProxyObject implements Common.StringOutputStream.OutputStream {
     readonly profileUid: number;
@@ -65,10 +66,10 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     nodeClassName(snapshotObjectId: number): Promise<string | null>;
     createEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
-    createAddedNodesProvider(baseSnapshotId: string, className: string): HeapSnapshotProviderProxy | null;
-    createDeletedNodesProvider(nodeIndexes: number[]): HeapSnapshotProviderProxy | null;
-    createNodesProvider(filter: (arg0: any) => boolean): HeapSnapshotProviderProxy | null;
-    createNodesProviderForClass(className: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotProviderProxy | null;
+    createAddedNodesProvider(baseSnapshotId: string, className: string): HeapSnapshotProviderProxy;
+    createDeletedNodesProvider(nodeIndexes: number[]): HeapSnapshotProviderProxy;
+    createNodesProvider(filter: (...args: any[]) => boolean): HeapSnapshotProviderProxy;
+    createNodesProviderForClass(className: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotProviderProxy;
     allocationTracesTops(): Promise<HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode[]>;
     allocationNodeCallers(nodeId: number): Promise<HeapSnapshotModel.HeapSnapshotModel.AllocationNodeCallers>;
     allocationStack(nodeIndex: number): Promise<HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[] | null>;

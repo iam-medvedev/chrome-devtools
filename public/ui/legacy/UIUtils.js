@@ -1308,9 +1308,6 @@ export function loadImage(url) {
         image.src = url;
     });
 }
-export function loadImageFromData(data) {
-    return data ? loadImage('data:image/jpg;base64,' + data) : Promise.resolve(null);
-}
 export function createFileSelectorElement(callback) {
     const fileSelectorElement = document.createElement('input');
     fileSelectorElement.type = 'file';

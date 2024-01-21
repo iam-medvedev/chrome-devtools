@@ -16,7 +16,7 @@ export interface InjectedIframe {
     iframe: Protocol.DOM.Node;
 }
 export interface RootCauseRequest {
-    request: Types.TraceEvents.TraceEventSyntheticNetworkRequest;
+    request: Types.TraceEvents.SyntheticNetworkRequest;
     initiator?: Protocol.Network.Initiator;
 }
 export interface FontChange extends RootCauseRequest {

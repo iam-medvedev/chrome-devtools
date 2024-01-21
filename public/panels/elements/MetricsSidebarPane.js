@@ -153,7 +153,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
             value = value.replace(/px$/, '');
             value = Platform.NumberUtilities.toFixedIfFloating(value);
             element.textContent = value;
-            element.setAttribute('jslog', `${VisualLogging.value().track({ dblclick: true }).context('elementValueModification')}`);
+            element.setAttribute('jslog', `${VisualLogging.value().track({ dblclick: true }).context('element-value-modification')}`);
             element.addEventListener('dblclick', this.startEditing.bind(this, element, name, propertyName, style), false);
             return element;
         }
@@ -244,11 +244,11 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
                 const widthElement = document.createElement('span');
                 widthElement.textContent = getContentAreaWidthPx(style);
                 widthElement.addEventListener('dblclick', this.startEditing.bind(this, widthElement, 'width', 'width', style), false);
-                widthElement.setAttribute('jslog', `${VisualLogging.value().track({ 'dblclick': true }).context('elementValueModification')}`);
+                widthElement.setAttribute('jslog', `${VisualLogging.value().track({ 'dblclick': true }).context('element-value-modification')}`);
                 const heightElement = document.createElement('span');
                 heightElement.textContent = getContentAreaHeightPx(style);
                 heightElement.addEventListener('dblclick', this.startEditing.bind(this, heightElement, 'height', 'height', style), false);
-                heightElement.setAttribute('jslog', `${VisualLogging.value().track({ 'dblclick': true }).context('elementValueModification')}`);
+                heightElement.setAttribute('jslog', `${VisualLogging.value().track({ 'dblclick': true }).context('element-value-modification')}`);
                 const timesElement = document.createElement('span');
                 timesElement.textContent = ' × ';
                 boxElement.appendChild(widthElement);

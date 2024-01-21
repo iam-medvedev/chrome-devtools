@@ -447,7 +447,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
           .value=${platformVersion}
           placeholder=${i18nString(UIStrings.platformVersion)}
           aria-label=${i18nString(UIStrings.platformVersion)}
-          jslog=${VisualLogging.textField().track({ keydown: true }).context('platformVersion')}
+          jslog=${VisualLogging.textField().track({ keydown: true }).context('platform-version')}
         />
       </div>
     `;
@@ -524,7 +524,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
             aria-label=${i18nString(UIStrings.brandNameAriaLabel, {
                 PH1: index + 1,
             })}
-            jslog=${VisualLogging.textField().track({ keydown: true }).context('brandName')}
+            jslog=${VisualLogging.textField().track({ keydown: true }).context('brand-name')}
           />
           <input
             class="input-field"
@@ -535,7 +535,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
             aria-label=${i18nString(UIStrings.brandVersionAriaLabel, {
                 PH1: index + 1,
             })}
-            jslog=${VisualLogging.textField().track({ keydown: true }).context('brandVersion')}
+            jslog=${VisualLogging.textField().track({ keydown: true }).context('brand-version')}
           />
           <${IconButton.Icon.Icon.litTagName}
             .data=${{ color: 'var(--icon-default)', iconName: 'bin', width: '16px', height: '16px' }}
@@ -602,7 +602,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
         <div
           class="full-row brand-row"
           aria-label=${i18nString(UIStrings.brandProperties)}
-          jslog=${VisualLogging.section().context('fullVersion')}
+          jslog=${VisualLogging.section().context('full-version')}
           role="group">
           <input
             class="input-field fvl-brand-name-input"
@@ -614,7 +614,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
             aria-label=${i18nString(UIStrings.brandNameAriaLabel, {
                 PH1: index + 1,
             })}
-            jslog=${VisualLogging.textField().track({ keydown: true }).context('brandName')}
+            jslog=${VisualLogging.textField().track({ keydown: true }).context('brand-name')}
           />
           <input
             class="input-field"
@@ -625,7 +625,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
             aria-label=${i18nString(UIStrings.brandVersionAriaLabel, {
                 PH1: index + 1,
             })}
-            jslog=${VisualLogging.textField().track({ keydown: true }).context('brandVersion')}
+            jslog=${VisualLogging.textField().track({ keydown: true }).context('brand-version')}
           />
           <${IconButton.Icon.Icon.litTagName}
             .data=${{ color: 'var(--icon-default)', iconName: 'bin', width: '16px', height: '16px' }}

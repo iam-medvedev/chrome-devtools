@@ -18,6 +18,9 @@ export function isTraceEventAuctionWorkletRunningInProcess(event) {
 export function isTraceEventAuctionWorkletDoneWithProcess(event) {
     return event.name === 'AuctionWorkletDoneWithProcess';
 }
+export function isTraceEventScreenshot(event) {
+    return event.name === "Screenshot" /* KnownEventName.Screenshot */;
+}
 export function isTraceEventTracingSessionIdForWorker(event) {
     return event.name === 'TracingSessionIdForWorker';
 }
@@ -32,6 +35,9 @@ export function isTraceEventStyleInvalidatorInvalidationTracking(event) {
 }
 export function isTraceEventScheduleStyleRecalculation(event) {
     return event.name === "ScheduleStyleRecalculation" /* KnownEventName.ScheduleStyleRecalculation */;
+}
+export function isTraceEventPipelineReporter(event) {
+    return event.name === "PipelineReporter" /* KnownEventName.PipelineReporter */;
 }
 export function isSyntheticInteractionEvent(event) {
     return Boolean('interactionId' in event && event.args?.data && 'beginEvent' in event.args.data && 'endEvent' in event.args.data);
@@ -76,7 +82,7 @@ export function isTraceEventCompositeLayers(event) {
 export function isTraceEventActivateLayerTree(event) {
     return event.name === "ActivateLayerTree" /* KnownEventName.ActivateLayerTree */;
 }
-export function isTraceEventSyntheticInvalidation(event) {
+export function isSyntheticInvalidation(event) {
     return event.name === 'SyntheticInvalidation';
 }
 export function isTraceEventUpdateLayoutTree(event) {
@@ -213,7 +219,7 @@ export function isTraceEventGPUTask(traceEventData) {
 export function isTraceEventProfile(traceEventData) {
     return traceEventData.name === 'Profile';
 }
-export function isSyntheticTraceEventCpuProfile(traceEventData) {
+export function isSyntheticCpuProfile(traceEventData) {
     return traceEventData.name === 'CpuProfile';
 }
 export function isTraceEventProfileChunk(traceEventData) {
@@ -252,7 +258,7 @@ export function isTraceEventNavigationStartWithURL(event) {
 export function isTraceEventMainFrameViewport(traceEventData) {
     return traceEventData.name === 'PaintTimingVisualizer::Viewport';
 }
-export function isSyntheticUserTimingTraceEvent(traceEventData) {
+export function isSyntheticUserTiming(traceEventData) {
     if (traceEventData.cat !== 'blink.user_timing') {
         return false;
     }
@@ -262,7 +268,7 @@ export function isSyntheticUserTimingTraceEvent(traceEventData) {
     }
     return 'beginEvent' in data && 'endEvent' in data;
 }
-export function isSyntheticConsoleTimingTraceEvent(traceEventData) {
+export function isSyntheticConsoleTiming(traceEventData) {
     if (traceEventData.cat !== 'blink.console') {
         return false;
     }

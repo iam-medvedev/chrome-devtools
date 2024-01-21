@@ -157,8 +157,9 @@ const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles,
     return trace;
 };
 class ColorRenderer extends ColorMatch {
-    render(context) {
+    render(_node, context) {
         const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
+        swatch.setReadonly(true);
         swatch.renderColor(this.text, true);
         const valueElement = document.createElement('span');
         valueElement.textContent = swatch.getText();

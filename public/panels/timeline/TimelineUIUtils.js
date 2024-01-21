@@ -1138,8 +1138,6 @@ export class TimelineUIUtils {
         eventStylesMap = eventStyles;
         return eventStyles;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static setEventStylesMap(eventStyles) {
         eventStylesMap = eventStyles;
     }
@@ -2583,7 +2581,7 @@ export class TimelineUIUtils {
         if (filmStrip && filmStripFrame) {
             const filmStripPreview = document.createElement('div');
             filmStripPreview.classList.add('timeline-filmstrip-preview');
-            void UI.UIUtils.loadImageFromData(filmStripFrame.screenshotAsString)
+            void UI.UIUtils.loadImage(filmStripFrame.screenshotEvent.args.dataUri)
                 .then(image => image && filmStripPreview.appendChild(image));
             contentHelper.appendElementRow('', filmStripPreview);
             filmStripPreview.addEventListener('click', frameClicked.bind(null, filmStrip, filmStripFrame), false);

@@ -2,6 +2,7 @@ import type * as Platform from '../../core/platform/platform.js';
 export declare enum Events {
     AppendedToURL = "appendedToURL",
     CanceledSaveURL = "canceledSaveURL",
+    ColorThemeChanged = "colorThemeChanged",
     ContextMenuCleared = "contextMenuCleared",
     ContextMenuItemSelected = "contextMenuItemSelected",
     DeviceCountUpdated = "deviceCountUpdated",
@@ -122,6 +123,7 @@ export interface KeyDownEvent {
 export type EventTypes = {
     [Events.AppendedToURL]: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString;
     [Events.CanceledSaveURL]: Platform.DevToolsPath.UrlString;
+    [Events.ColorThemeChanged]: void;
     [Events.ContextMenuCleared]: void;
     [Events.ContextMenuItemSelected]: number;
     [Events.DeviceCountUpdated]: number;
@@ -287,6 +289,7 @@ export declare enum EnumeratedHistogram {
     BreakpointEditDialogRevealedFrom = "DevTools.BreakpointEditDialogRevealedFrom",
     PanelClosed = "DevTools.PanelClosed",
     PanelShown = "DevTools.PanelShown",
+    PanelShownInLocation = "DevTools.PanelShownInLocation",
     SidebarPaneShown = "DevTools.SidebarPaneShown",
     KeyboardShortcutFired = "DevTools.KeyboardShortcutFired",
     IssueCreated = "DevTools.IssueCreated",

@@ -256,10 +256,8 @@ export class FileBasedSearchResult {
         const range = new TextUtils.TextRange.TextRange(lineNumber, columnNumber, lineNumber, columnNumber + matchLength);
         return new Workspace.UISourceCode.UILocationRange(this.uiSourceCode, range);
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     matchLabel(index) {
-        return this.searchMatches[index].lineNumber + 1;
+        return String(this.searchMatches[index].lineNumber + 1);
     }
     matchColumn(index) {
         return this.searchMatches[index].columnNumber;

@@ -729,9 +729,10 @@ export class ElementDetailsView extends UI.Widget.Widget {
         this.#domModel = domModel;
         this.#cssModel = cssModel;
         this.#linkifier = linkifier;
+        const k = Platform.StringUtilities.kebab;
         this.#elementGridColumns = [
             {
-                id: 'nodeId',
+                id: k('node-id'),
                 title: i18nString(UIStrings.element),
                 sortable: true,
                 weight: 50,
@@ -749,7 +750,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
                 defaultWeight: undefined,
             },
             {
-                id: 'declaration',
+                id: k('declaration'),
                 title: i18nString(UIStrings.declaration),
                 sortable: true,
                 weight: 50,
@@ -767,7 +768,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
                 defaultWeight: undefined,
             },
             {
-                id: 'sourceURL',
+                id: k('source-url'),
                 title: i18nString(UIStrings.source),
                 sortable: false,
                 weight: 100,
@@ -785,7 +786,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
                 defaultWeight: undefined,
             },
             {
-                id: 'contrastRatio',
+                id: k('contrast-ratio'),
                 title: i18nString(UIStrings.contrastRatio),
                 sortable: true,
                 weight: 25,
@@ -841,12 +842,12 @@ export class ElementDetailsView extends UI.Widget.Widget {
         }
         const [firstItem] = data;
         const visibility = new Set();
-        'nodeId' in firstItem && firstItem.nodeId && visibility.add('nodeId');
+        'nodeId' in firstItem && firstItem.nodeId && visibility.add('node-id');
         'declaration' in firstItem && firstItem.declaration && visibility.add('declaration');
-        'sourceURL' in firstItem && firstItem.sourceURL && visibility.add('sourceURL');
-        'contrastRatio' in firstItem && firstItem.contrastRatio && visibility.add('contrastRatio');
+        'sourceURL' in firstItem && firstItem.sourceURL && visibility.add('source-url');
+        'contrastRatio' in firstItem && firstItem.contrastRatio && visibility.add('contrast-ratio');
         let relatedNodesMap;
-        if ('nodeId' in firstItem && visibility.has('nodeId')) {
+        if ('nodeId' in firstItem && visibility.has('node-id')) {
             // Grab the nodes from the frontend, but only those that have not been
             // retrieved already.
             const nodeIds = data.reduce((prev, curr) => {
@@ -861,7 +862,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
         }
         for (const item of data) {
             let frontendNode;
-            if ('nodeId' in item && visibility.has('nodeId')) {
+            if ('nodeId' in item && visibility.has('node-id')) {
                 if (!relatedNodesMap) {
                     continue;
                 }
@@ -892,7 +893,7 @@ export class ElementNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
     createCell(columnId) {
         // Nodes.
         const frontendNode = this.#frontendNode;
-        if (columnId === 'nodeId') {
+        if (columnId === 'node-id') {
             const cell = this.createTD(columnId);
             cell.textContent = '...';
             if (!frontendNode) {
@@ -913,7 +914,7 @@ export class ElementNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
             return cell;
         }
         // Links to CSS.
-        if (columnId === 'sourceURL') {
+        if (columnId === 'source-url') {
             const cell = this.createTD(columnId);
             if (this.data.range) {
                 const link = this.#linkifyRuleLocation(this.#cssModel, this.#linkifier, this.data.styleSheetId, TextUtils.TextRange.TextRange.fromObject(this.data.range));
@@ -929,7 +930,7 @@ export class ElementNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
             }
             return cell;
         }
-        if (columnId === 'contrastRatio') {
+        if (columnId === 'contrast-ratio') {
             const cell = this.createTD(columnId);
             const showAPCA = Root.Runtime.experiments.isEnabled('APCA');
             const contrastRatio = Platform.NumberUtilities.floor(this.data.contrastRatio, 2);

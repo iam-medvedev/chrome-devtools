@@ -1,3 +1,4 @@
+import { type Brand } from './brand.js';
 export declare const escapeCharacters: (inputString: string, charsToEscape: string) => string;
 export declare const formatAsJSLiteral: (content: string) => string;
 /**
@@ -21,6 +22,22 @@ export declare const reverse: (inputString: string) => string;
 export declare const replaceControlCharacters: (inputString: string) => string;
 export declare const countWtf8Bytes: (inputString: string) => number;
 export declare const stripLineBreaks: (inputStr: string) => string;
+/**
+ * Tests if the `inputStr` is following the extended Kebab Case naming convetion,
+ * where words are separated with either a dash (`-`) or a dot (`.`), and all
+ * characters must be lower-case alphanumeric.
+ *
+ * For example, it will yield `true` for `'my.amazing-string.literal'`, but `false`
+ * for `'Another.AmazingLiteral'` or '`another_amazing_literal'`.
+ *
+ * @param inputStr the input string to test.
+ * @return `true` if the `inputStr` follows the extended Kebab Case convention.
+ */
+export declare const isExtendedKebabCase: (inputStr: string) => boolean;
+type KebabChar = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '.' | '-';
+type IsKebab<ToProcess extends string, AlreadyProcessed extends string = ''> = ToProcess extends `${infer FirstChar}${infer Rest}` ? IsKebab<Rest, `${AlreadyProcessed}${FirstChar extends KebabChar ? FirstChar : never}`> : AlreadyProcessed;
+export type KebabString = Brand<string, 'KebabString'>;
+export declare function kebab<T extends string>(x: T extends IsKebab<T> ? T : IsKebab<T>): KebabString;
 export declare const toTitleCase: (inputStr: string) => string;
 export declare const removeURLFragment: (inputStr: string) => string;
 export declare const regexSpecialCharacters: () => string;
@@ -44,6 +61,7 @@ declare class LowerCaseStringTag {
 }
 export type LowerCaseString = string & LowerCaseStringTag;
 export declare const toLowerCaseString: (input: string) => LowerCaseString;
+export declare const toKebabCase: (input: string) => string;
 export declare const replaceLast: (input: string, search: string, replacement: string) => string;
 export declare const stringifyWithPrecision: (s: number, precision?: number) => string;
 export {};

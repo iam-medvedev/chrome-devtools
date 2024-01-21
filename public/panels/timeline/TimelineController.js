@@ -96,6 +96,7 @@ export class TimelineController {
             disabledByDefault('lighthouse'),
             'v8.execute',
             'v8',
+            'cppgc',
         ];
         if (Root.Runtime.experiments.isEnabled('timelineV8RuntimeCallStats') && options.enableJSSampling) {
             categoriesArray.push(disabledByDefault('v8.runtime_stats_sampling'));

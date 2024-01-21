@@ -149,7 +149,7 @@ export class NetworkManager extends SDKModel {
         if (error) {
             return { error };
         }
-        return new ContentDataClass(response.body, response.base64Encoded, request.resourceType(), request.mimeType, request.charset() ?? undefined);
+        return new ContentDataClass(response.body, response.base64Encoded, request.mimeType, request.charset() ?? undefined);
     }
     static async requestPostData(request) {
         const manager = NetworkManager.forRequest(request);

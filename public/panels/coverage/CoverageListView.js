@@ -125,9 +125,10 @@ export class CoverageListView extends UI.Widget.VBox {
         this.nodeForCoverageInfo = new Map();
         this.isVisibleFilter = isVisibleFilter;
         this.highlightRegExp = null;
+        const k = Platform.StringUtilities.kebab;
         const columns = [
             {
-                id: 'url',
+                id: k('url'),
                 title: i18nString(UIStrings.url),
                 width: '250px',
                 weight: 3,
@@ -135,9 +136,9 @@ export class CoverageListView extends UI.Widget.VBox {
                 sortable: true,
                 disclosure: true,
             },
-            { id: 'type', title: i18nString(UIStrings.type), width: '45px', weight: 1, fixedWidth: true, sortable: true },
+            { id: k('type'), title: i18nString(UIStrings.type), width: '45px', weight: 1, fixedWidth: true, sortable: true },
             {
-                id: 'size',
+                id: k('size'),
                 title: i18nString(UIStrings.totalBytes),
                 width: '60px',
                 fixedWidth: true,
@@ -146,7 +147,7 @@ export class CoverageListView extends UI.Widget.VBox {
                 weight: 1,
             },
             {
-                id: 'unusedSize',
+                id: k('unused-size'),
                 title: i18nString(UIStrings.unusedBytes),
                 width: '100px',
                 fixedWidth: true,
@@ -156,7 +157,7 @@ export class CoverageListView extends UI.Widget.VBox {
                 weight: 1,
             },
             {
-                id: 'bars',
+                id: k('bars'),
                 title: i18nString(UIStrings.usageVisualization),
                 width: '250px',
                 fixedWidth: false,
@@ -392,7 +393,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 this.setCellAccessibleName(sizeAccessibleName, cell, columnId);
                 break;
             }
-            case 'unusedSize': {
+            case 'unused-size': {
                 const unusedSize = this.coverageInfo.unusedSize() || 0;
                 const unusedSizeSpan = cell.createChild('span');
                 const unusedPercentsSpan = cell.createChild('span', 'percent-value');
@@ -457,7 +458,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             case 'size':
                 return (a, b) => a.coverageInfo.size() - b.coverageInfo.size() || compareURL(a, b);
             case 'bars':
-            case 'unusedSize':
+            case 'unused-size':
                 return (a, b) => a.coverageInfo.unusedSize() - b.coverageInfo.unusedSize() || compareURL(a, b);
             default:
                 console.assert(false, 'Unknown sort field: ' + columnId);

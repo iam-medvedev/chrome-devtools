@@ -27,7 +27,6 @@ export declare class Widget {
     constructor(isWebComponent?: boolean, delegatesFocus?: boolean);
     private static incrementWidgetCounter;
     private static decrementWidgetCounter;
-    private static assert;
     markAsRoot(): void;
     parentWidget(): Widget | null;
     children(): Widget[];

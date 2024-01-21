@@ -18,5 +18,5 @@ export declare class DeviceModeWrapper extends UI.Widget.VBox {
     private update;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
-    handleAction(_context: UI.Context.Context, actionId: string): boolean;
+    handleAction(context: UI.Context.Context, actionId: string): boolean;
 }

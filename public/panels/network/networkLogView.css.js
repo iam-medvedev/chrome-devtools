@@ -391,7 +391,7 @@ styles.replaceSync(
 
 .network-override-marker::before {
   background-color: var(--sys-color-purple-bright);
-  content: url("Images/empty.svg");
+  content: var(--image-file-empty);
   width: 6px;
   height: 6px;
   border-radius: 50%;

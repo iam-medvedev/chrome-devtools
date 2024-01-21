@@ -2,13 +2,13 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
+import * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
 import { ProfileFlameChartDataProvider } from './CPUProfileFlameChart.js';
 import { HeapTimelineOverview, type IdsRangeChangedEvent } from './HeapTimelineOverview.js';
 import { type Formatter, type ProfileDataGridNode } from './ProfileDataGrid.js';
-import { ProfileType, type ProfileHeader } from './ProfileHeader.js';
+import { type ProfileHeader, ProfileType } from './ProfileHeader.js';
 import { ProfileView, WritableProfileHeader } from './ProfileView.js';
 export declare class HeapProfileView extends ProfileView implements UI.SearchableView.Searchable {
     profileHeader: SamplingHeapProfileHeader;

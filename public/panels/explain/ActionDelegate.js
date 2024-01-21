@@ -10,16 +10,16 @@ export class ActionDelegate {
     handleAction(context, actionId) {
         switch (actionId) {
             case 'explain.consoleMessage:context':
-            case 'explain.consoleMessage:context:error':
-            case 'explain.consoleMessage:context:warning':
-            case 'explain.consoleMessage:context:other':
-            case 'explain.consoleMessage:hover': {
+            case 'explain.console-message.context.error':
+            case 'explain.console-message.context.warning':
+            case 'explain.console-message.context.other':
+            case 'explain.console-message.hover': {
                 const consoleViewMessage = context.flavor(Console.ConsoleViewMessage.ConsoleViewMessage);
                 if (consoleViewMessage) {
                     if (actionId.startsWith('explain.consoleMessage:context')) {
                         Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRequestedViaContextMenu);
                     }
-                    else if (actionId === 'explain.consoleMessage:hover') {
+                    else if (actionId === 'explain.console-message.hover') {
                         Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRequestedViaHoverButton);
                     }
                     const insight = new ConsoleInsight(new PromptBuilder(consoleViewMessage), new InsightProvider());

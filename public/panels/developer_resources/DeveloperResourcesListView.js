@@ -72,12 +72,13 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
         this.nodeForItem = new Map();
         this.isVisibleFilter = isVisibleFilter;
         this.highlightRegExp = null;
+        const k = Platform.StringUtilities.kebab;
         const columns = [
-            { id: 'status', title: i18nString(UIStrings.status), width: '60px', fixedWidth: true, sortable: true },
-            { id: 'url', title: i18nString(UIStrings.url), width: '250px', fixedWidth: false, sortable: true },
-            { id: 'initiator', title: i18nString(UIStrings.initiator), width: '80px', fixedWidth: false, sortable: true },
+            { id: k('status'), title: i18nString(UIStrings.status), width: '60px', fixedWidth: true, sortable: true },
+            { id: k('url'), title: i18nString(UIStrings.url), width: '250px', fixedWidth: false, sortable: true },
+            { id: k('initiator'), title: i18nString(UIStrings.initiator), width: '80px', fixedWidth: false, sortable: true },
             {
-                id: 'size',
+                id: k('size'),
                 title: i18nString(UIStrings.totalBytes),
                 width: '80px',
                 fixedWidth: true,
@@ -85,7 +86,7 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
                 align: DataGrid.DataGrid.Align.Right,
             },
             {
-                id: 'errorMessage',
+                id: k('error-message'),
                 title: i18nString(UIStrings.error),
                 width: '200px',
                 fixedWidth: false,
@@ -254,7 +255,7 @@ class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 }
                 break;
             }
-            case 'errorMessage': {
+            case 'error-message': {
                 cell.classList.add('error-message');
                 if (this.item.errorMessage) {
                     cell.textContent = this.item.errorMessage;
@@ -291,7 +292,7 @@ class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 return (a, b) => nullToNegative(a.item.size) - nullToNegative(b.item.size);
             case 'initiator':
                 return (a, b) => (a.item.initiator.initiatorUrl || '').localeCompare(b.item.initiator.initiatorUrl || '');
-            case 'errorMessage':
+            case 'error-message':
                 return (a, b) => (a.item.errorMessage || '').localeCompare(b.item.errorMessage || '');
             default:
                 console.assert(false, 'Unknown sort field: ' + columnId);

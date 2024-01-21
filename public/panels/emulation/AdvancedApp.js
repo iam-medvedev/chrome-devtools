@@ -14,8 +14,12 @@ export class AdvancedApp {
     toolboxWindow;
     toolboxRootView;
     changingDockSide;
+    toolboxDocument;
     constructor() {
         UI.DockController.DockController.instance().addEventListener("BeforeDockSideChanged" /* UI.DockController.Events.BeforeDockSideChanged */, this.openToolboxWindow, this);
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged, async () => {
+            await UI.Utils.DynamicTheming.refetchColors(this.toolboxDocument);
+        }, this);
     }
     /**
      * Note: it's used by toolbox.ts without real type checks.
@@ -66,6 +70,7 @@ export class AdvancedApp {
         UI.ContextMenu.ContextMenu.installHandler(toolboxDocument);
         this.toolboxRootView = new UI.RootView.RootView();
         this.toolboxRootView.attachToDocument(toolboxDocument);
+        this.toolboxDocument = toolboxDocument;
         this.updateDeviceModeView();
     }
     updateDeviceModeView() {

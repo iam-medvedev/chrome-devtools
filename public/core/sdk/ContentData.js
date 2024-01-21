@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import { isTextType } from './MimeType.js';
 /**
  * This class is a small wrapper around either raw binary or text data.
  * As the binary data can actually contain textual data, we also store the
- * resource type, MIME type, and if applicable, the charset.
+ * MIME type and if applicable, the charset.
  *
  * This information should be generally kept together, as interpreting text
  * from raw bytes requires an encoding.
@@ -19,14 +20,11 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
  * to re-encode text into base64 bytes using a specified charset.
  */
 export class ContentData {
-    resourceType;
-    // We need mimeType on top of `resourceType` so we can turn this content into a data URL.
     mimeType;
     #charset;
     #contentAsBase64;
     #contentAsText;
-    constructor(data, isBase64, resourceType, mimeType, charset) {
-        this.resourceType = resourceType;
+    constructor(data, isBase64, mimeType, charset) {
         this.mimeType = mimeType;
         this.#charset = charset;
         if (isBase64) {
@@ -57,7 +55,7 @@ export class ContentData {
         if (this.#contentAsText !== undefined) {
             return this.#contentAsText;
         }
-        if (!this.resourceType.isTextType()) {
+        if (!this.isTextContent) {
             throw new Error('Cannot interpret binary data as text');
         }
         const charset = this.#charset ?? 'utf-8';
@@ -65,6 +63,9 @@ export class ContentData {
         const bytes = Uint8Array.from(binaryString, m => m.codePointAt(0));
         this.#contentAsText = new TextDecoder(charset).decode(bytes);
         return this.#contentAsText;
+    }
+    get isTextContent() {
+        return isTextType(this.mimeType);
     }
     asDataUrl() {
         // To keep with existing behavior we prefer to return the content

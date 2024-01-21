@@ -702,9 +702,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return;
         }
         this.contextMenu = new UI.ContextMenu.ContextMenu(_event);
-        this.contextMenu.headerSection().appendItem(i18nString(UIStrings.hideFunction), () => {
-            this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */, this.highlightedEntryIndex);
-        });
+        if (possibleActions?.["MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */]) {
+            this.contextMenu.headerSection().appendItem(i18nString(UIStrings.hideFunction), () => {
+                this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */, this.highlightedEntryIndex);
+            });
+        }
         if (possibleActions?.["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */]) {
             this.contextMenu.headerSection().appendItem(i18nString(UIStrings.hideChildren), () => {
                 this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */, this.highlightedEntryIndex);
@@ -731,7 +733,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         const keyboardEvent = event;
         let handled = false;
-        if (keyboardEvent.key === 'h') {
+        if (keyboardEvent.key === 'h' && possibleActions["MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */]) {
             this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */, this.selectedEntryIndex);
             handled = true;
         }

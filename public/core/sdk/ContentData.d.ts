@@ -1,10 +1,9 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import type * as Common from '../common/common.js';
 import { type ContentData as LegacyContentData } from './NetworkRequest.js';
 /**
  * This class is a small wrapper around either raw binary or text data.
  * As the binary data can actually contain textual data, we also store the
- * resource type, MIME type, and if applicable, the charset.
+ * MIME type and if applicable, the charset.
  *
  * This information should be generally kept together, as interpreting text
  * from raw bytes requires an encoding.
@@ -19,9 +18,8 @@ import { type ContentData as LegacyContentData } from './NetworkRequest.js';
  */
 export declare class ContentData {
     #private;
-    readonly resourceType: Common.ResourceType.ResourceType;
     readonly mimeType: string;
-    constructor(data: string, isBase64: boolean, resourceType: Common.ResourceType.ResourceType, mimeType: string, charset?: string);
+    constructor(data: string, isBase64: boolean, mimeType: string, charset?: string);
     /**
      * Returns the data as base64.
      *
@@ -35,6 +33,7 @@ export declare class ContentData {
      * @throws if `resourceType` is not a text type.
      */
     get text(): string;
+    get isTextContent(): boolean;
     asDataUrl(): string | null;
     /**
      * @deprecated Used during migration from `DeferredContent` to `ContentData`.

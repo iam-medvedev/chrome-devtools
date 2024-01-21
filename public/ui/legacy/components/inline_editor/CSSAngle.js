@@ -98,6 +98,9 @@ export class CSSAngle extends HTMLElement {
         this.render();
         this.angleElement.focus();
     }
+    addEventListener(type, listener, options) {
+        super.addEventListener(type, listener, options);
+    }
     minify() {
         if (this.popoverOpen === false) {
             return;

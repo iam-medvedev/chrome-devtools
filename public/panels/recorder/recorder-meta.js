@@ -64,7 +64,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     category: UI.ActionRegistration.ActionCategory.RECORDER,
-    actionId: "chrome_recorder.create-recording" /* Actions.RecorderActions.CreateRecording */,
+    actionId: "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */,
     title: i18nLazyString(UIStrings.createRecording),
     async loadActionDelegate() {
         const Recorder = await loadRecorderModule();
@@ -73,10 +73,10 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     category: UI.ActionRegistration.ActionCategory.RECORDER,
-    actionId: "chrome_recorder.start-recording" /* Actions.RecorderActions.StartRecording */,
+    actionId: "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */,
     title: i18nLazyString(UIStrings.startStopRecording),
     contextTypes() {
-        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome_recorder.start-recording" /* Actions.RecorderActions.StartRecording */);
+        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */);
     },
     async loadActionDelegate() {
         const Recorder = await loadRecorderModule();
@@ -92,10 +92,10 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     category: UI.ActionRegistration.ActionCategory.RECORDER,
-    actionId: "chrome_recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */,
+    actionId: "chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */,
     title: i18nLazyString(UIStrings.replayRecording),
     contextTypes() {
-        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome_recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */);
+        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */);
     },
     async loadActionDelegate() {
         const Recorder = await loadRecorderModule();
@@ -111,10 +111,10 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     category: UI.ActionRegistration.ActionCategory.RECORDER,
-    actionId: "chrome_recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */,
+    actionId: "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */,
     title: i18nLazyString(UIStrings.toggleCode),
     contextTypes() {
-        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome_recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */);
+        return maybeRetrieveContextTypes(Recorder => [Recorder.RecorderPanel.RecorderPanel], "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */);
     },
     async loadActionDelegate() {
         const Recorder = await loadRecorderModule();

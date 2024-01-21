@@ -415,7 +415,7 @@ declare namespace APIImpl {
         sendRequest<ResponseT>(request: PrivateAPI.ServerRequests, callback?: ((response: ResponseT) => unknown), transfers?: unknown[]): void;
         nextObjectId(): string;
     }
-    type Callable = (...args: any) => void;
+    type Callable = (...args: any[]) => void;
     interface EventSink<ListenerT extends Callable> extends PublicAPI.Chrome.DevTools.EventSink<ListenerT> {
         _type: string;
         _listeners: ListenerT[];

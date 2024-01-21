@@ -332,6 +332,8 @@ text.animation-timeline-grid-label {
     border: 1px solid transparent;
     box-shadow: var(--drop-shadow);
     border-radius: 2px;
+    max-width: 220px;
+    max-height: 220px;
   }
 
   & .screenshots-container.to-the-left {
@@ -353,6 +355,10 @@ text.animation-timeline-grid-label {
   }
 
   &:hover .screenshots-container:not(.no-screenshots):hover {
+    display: none;
+  }
+
+  &:has(.selected):hover .screenshots-container:not(.no-screenshots) {
     display: none;
   }
 }

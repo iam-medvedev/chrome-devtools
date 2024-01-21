@@ -327,8 +327,6 @@ export class CounterUI {
     countersPane;
     counter;
     formatter;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setting;
     filter;
     range;

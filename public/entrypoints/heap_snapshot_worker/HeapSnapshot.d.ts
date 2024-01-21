@@ -161,6 +161,13 @@ export interface Profile {
     trace_function_infos: Uint32Array;
     trace_tree: Object;
 }
+export interface LiveObjects {
+    [x: number]: {
+        count: number;
+        size: number;
+        ids: number[];
+    };
+}
 export declare abstract class HeapSnapshot {
     #private;
     nodes: Uint32Array;

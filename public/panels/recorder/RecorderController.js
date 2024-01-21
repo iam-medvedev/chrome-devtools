@@ -663,7 +663,7 @@ let RecorderController = class RecorderController extends LitElement {
             if (!this.currentRecording) {
                 throw new Error('No current recording found');
             }
-            Host.userMetrics.keyboardShortcutFired("chrome_recorder.start-recording" /* Actions.RecorderActions.StartRecording */);
+            Host.userMetrics.keyboardShortcutFired("chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */);
             this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, data));
             await this.#onRecordingFinished();
         });
@@ -802,10 +802,10 @@ let RecorderController = class RecorderController extends LitElement {
             return;
         }
         switch (actionId) {
-            case "chrome_recorder.create-recording" /* Actions.RecorderActions.CreateRecording */:
+            case "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */:
                 this.#onCreateNewRecording();
                 return;
-            case "chrome_recorder.start-recording" /* Actions.RecorderActions.StartRecording */:
+            case "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */:
                 if (this.currentPage !== "CreateRecordingPage" /* Pages.CreateRecordingPage */ && !this.isRecording) {
                     this.#shortcutHelper.handleShortcut(this.#onRecordingStarted.bind(this, new Components.CreateRecordingView.RecordingStartedEvent(this.#recorderSettings.defaultTitle, this.#recorderSettings.defaultSelectors, this.#recorderSettings.selectorAttribute)));
                 }
@@ -819,10 +819,10 @@ let RecorderController = class RecorderController extends LitElement {
                     void this.#onRecordingFinished();
                 }
                 return;
-            case "chrome_recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */:
+            case "chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */:
                 void this.#onPlayRecording(new Components.RecordingView.PlayRecordingEvent({ targetPanel: "chrome_recorder" /* Components.RecordingView.TargetPanel.Default */, speed: this.#recorderSettings.speed }));
                 return;
-            case "chrome_recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */: {
+            case "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */: {
                 const view = this.renderRoot.querySelector('devtools-recording-view');
                 if (view) {
                     view.showCodeToggle();
@@ -833,13 +833,13 @@ let RecorderController = class RecorderController extends LitElement {
     }
     isActionPossible(actionId) {
         switch (actionId) {
-            case "chrome_recorder.create-recording" /* Actions.RecorderActions.CreateRecording */:
+            case "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */:
                 return !this.isRecording && !this.#replayState.isPlaying;
-            case "chrome_recorder.start-recording" /* Actions.RecorderActions.StartRecording */:
+            case "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */:
                 return !this.#replayState.isPlaying;
-            case "chrome_recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */:
+            case "chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */:
                 return (this.currentPage === "RecordingPage" /* Pages.RecordingPage */ && !this.#replayState.isPlaying);
-            case "chrome_recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */:
+            case "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */:
                 return this.currentPage === "RecordingPage" /* Pages.RecordingPage */;
         }
     }
@@ -851,14 +851,14 @@ let RecorderController = class RecorderController extends LitElement {
         return [
             {
                 title: i18nString(UIStrings.startStopRecording),
-                bindings: getBindingForAction("chrome_recorder.start-recording" /* Actions.RecorderActions.StartRecording */),
+                bindings: getBindingForAction("chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */),
             },
             {
                 title: i18nString(UIStrings.replayRecording),
-                bindings: getBindingForAction("chrome_recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */),
+                bindings: getBindingForAction("chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */),
             },
             { title: i18nString(UIStrings.copyShortcut), bindings: [`${Host.Platform.isMac() ? '⌘ C' : 'Ctrl+C'}`] },
-            { title: i18nString(UIStrings.toggleCode), bindings: getBindingForAction("chrome_recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */) },
+            { title: i18nString(UIStrings.toggleCode), bindings: getBindingForAction("chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */) },
         ];
     }
     #renderCurrentPage() {
@@ -1003,7 +1003,7 @@ let RecorderController = class RecorderController extends LitElement {
             disabled: this.#replayState.isPlaying ||
                 this.isRecording ||
                 this.isToggling,
-            title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.createRecording), "chrome_recorder.create-recording" /* Actions.RecorderActions.CreateRecording */),
+            title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.createRecording), "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */),
         }}
             ></${Buttons.Button.Button.litTagName}>
             <div class="separator"></div>

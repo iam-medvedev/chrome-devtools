@@ -28,7 +28,7 @@ export declare class FileBasedSearchResult implements Search.SearchScope.SearchR
     matchesCount(): number;
     matchLineContent(index: number): string;
     matchRevealable(index: number): Object;
-    matchLabel(index: number): any;
+    matchLabel(index: number): string;
     matchColumn(index: number): number;
     matchLength(index: number): number;
 }

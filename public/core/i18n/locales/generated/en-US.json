@@ -17,6 +17,9 @@
   "core/common/ResourceType.ts | fetch": {
     "message": "Fetch"
   },
+  "core/common/ResourceType.ts | fetchAndXHR": {
+    "message": "Fetch and XHR"
+  },
   "core/common/ResourceType.ts | font": {
     "message": "Font"
   },
@@ -76,9 +79,6 @@
   },
   "core/common/ResourceType.ts | ws": {
     "message": "WS"
-  },
-  "core/common/ResourceType.ts | xhrAndFetch": {
-    "message": "XHR and Fetch"
   },
   "core/common/Revealer.ts | applicationPanel": {
     "message": "Application panel"
@@ -4499,6 +4499,9 @@
   "panels/autofill/autofill-meta.ts | showAutofill": {
     "message": "Show Autofill"
   },
+  "panels/autofill/AutofillView.ts | addressPreview": {
+    "message": "Address preview"
+  },
   "panels/autofill/AutofillView.ts | attr": {
     "message": "attr"
   },
@@ -4506,10 +4509,13 @@
     "message": "Autocomplete attribute"
   },
   "panels/autofill/AutofillView.ts | autoShow": {
-    "message": "Automatically open tab on autofill"
+    "message": "Open panel on autofill"
   },
   "panels/autofill/AutofillView.ts | formField": {
     "message": "Form field"
+  },
+  "panels/autofill/AutofillView.ts | formInspector": {
+    "message": "Form inspector"
   },
   "panels/autofill/AutofillView.ts | heur": {
     "message": "heur"
@@ -12196,6 +12202,9 @@
   },
   "panels/timeline/EventUICategory.ts | consoleTime": {
     "message": "Console Time"
+  },
+  "panels/timeline/EventUICategory.ts | cppGc": {
+    "message": "CPP GC"
   },
   "panels/timeline/EventUICategory.ts | createWebsocket": {
     "message": "Create WebSocket"

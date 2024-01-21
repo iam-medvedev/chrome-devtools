@@ -87,8 +87,9 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
         return liveHeapProfileViewInstance;
     }
     createDataGrid() {
+        const k = Platform.StringUtilities.kebab;
         const defaultColumnConfig = {
-            id: '',
+            id: k(''),
             title: Common.UIString.LocalizedEmptyString,
             width: undefined,
             fixedWidth: true,
@@ -108,7 +109,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
         const columns = [
             {
                 ...defaultColumnConfig,
-                id: 'size',
+                id: k('size'),
                 title: i18nString(UIStrings.jsHeap),
                 width: '72px',
                 fixedWidth: true,
@@ -119,7 +120,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
             },
             {
                 ...defaultColumnConfig,
-                id: 'isolates',
+                id: k('isolates'),
                 title: i18nString(UIStrings.vms),
                 width: '40px',
                 fixedWidth: true,
@@ -128,7 +129,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
             },
             {
                 ...defaultColumnConfig,
-                id: 'url',
+                id: k('url'),
                 title: i18nString(UIStrings.scriptUrl),
                 fixedWidth: false,
                 sortable: true,

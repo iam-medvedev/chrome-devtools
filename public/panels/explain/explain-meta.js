@@ -24,7 +24,7 @@ if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
     const Console = await import('../console/console.js');
     UI.ActionRegistration.registerActionExtension({
         experiment: Root.Runtime.ExperimentName.CONSOLE_INSIGHTS,
-        actionId: 'explain.consoleMessage:hover',
+        actionId: 'explain.console-message.hover',
         category: UI.ActionRegistration.ActionCategory.CONSOLE,
         async loadActionDelegate() {
             const Explain = await import('./explain.js');
@@ -37,7 +37,7 @@ if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
     });
     UI.ActionRegistration.registerActionExtension({
         experiment: Root.Runtime.ExperimentName.CONSOLE_INSIGHTS,
-        actionId: 'explain.consoleMessage:context:error',
+        actionId: 'explain.console-message.context.error',
         category: UI.ActionRegistration.ActionCategory.CONSOLE,
         async loadActionDelegate() {
             const Explain = await import('./explain.js');
@@ -50,7 +50,7 @@ if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
     });
     UI.ActionRegistration.registerActionExtension({
         experiment: Root.Runtime.ExperimentName.CONSOLE_INSIGHTS,
-        actionId: 'explain.consoleMessage:context:warning',
+        actionId: 'explain.console-message.context.warning',
         category: UI.ActionRegistration.ActionCategory.CONSOLE,
         async loadActionDelegate() {
             const Explain = await import('./explain.js');
@@ -63,7 +63,7 @@ if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
     });
     UI.ActionRegistration.registerActionExtension({
         experiment: Root.Runtime.ExperimentName.CONSOLE_INSIGHTS,
-        actionId: 'explain.consoleMessage:context:other',
+        actionId: 'explain.console-message.context.other',
         category: UI.ActionRegistration.ActionCategory.CONSOLE,
         async loadActionDelegate() {
             const Explain = await import('./explain.js');

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import { Context } from './Context.js';
 const UIStrings = {
@@ -195,22 +196,22 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
         return this.actionRegistration.order;
     }
 }
-const registeredActionExtensions = [];
-const actionIdSet = new Set();
+const registeredActions = new Map();
 export function registerActionExtension(registration) {
     const actionId = registration.actionId;
-    if (actionIdSet.has(actionId)) {
-        throw new Error(`Duplicate Action id '${actionId}': ${new Error().stack}`);
+    if (registeredActions.has(actionId)) {
+        throw new Error(`Duplicate action ID '${actionId}'`);
     }
-    actionIdSet.add(actionId);
-    registeredActionExtensions.push(new Action(registration));
+    if (!Platform.StringUtilities.isExtendedKebabCase(actionId)) {
+        throw new Error(`Invalid action ID '${actionId}'`);
+    }
+    registeredActions.set(actionId, new Action(registration));
 }
 export function reset() {
-    actionIdSet.clear();
-    registeredActionExtensions.length = 0;
+    registeredActions.clear();
 }
 export function getRegisteredActionExtensions() {
-    return registeredActionExtensions
+    return Array.from(registeredActions.values())
         .filter(action => Root.Runtime.Runtime.isDescriptorEnabled({ experiment: action.experiment(), condition: action.condition() }))
         .sort((firstAction, secondAction) => {
         const order1 = firstAction.order() || 0;
@@ -219,12 +220,7 @@ export function getRegisteredActionExtensions() {
     });
 }
 export function maybeRemoveActionExtension(actionId) {
-    const actionIndex = registeredActionExtensions.findIndex(action => action.id() === actionId);
-    if (actionIndex < 0 || !actionIdSet.delete(actionId)) {
-        return false;
-    }
-    registeredActionExtensions.splice(actionIndex, 1);
-    return true;
+    return registeredActions.delete(actionId);
 }
 // eslint-disable-next-line rulesdir/const_enum
 export var ActionCategory;

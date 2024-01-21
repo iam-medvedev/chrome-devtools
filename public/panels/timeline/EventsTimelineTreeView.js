@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
+import * as TraceEngine from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as TraceEngine from '../../models/trace/trace.js';
 import { Category, IsLong } from './TimelineFilters.js';
 import { TimelineSelection } from './TimelineSelection.js';
 import { TimelineTreeView } from './TimelineTreeView.js';
@@ -45,7 +46,7 @@ export class EventsTimelineTreeView extends TimelineTreeView {
         this.filtersControl.addEventListener("FilterChanged" /* Events.FilterChanged */, this.onFilterChanged, this);
         this.init();
         this.delegate = delegate;
-        this.dataGrid.markColumnAsSortedBy('startTime', DataGrid.DataGrid.Order.Ascending);
+        this.dataGrid.markColumnAsSortedBy('start-time', DataGrid.DataGrid.Order.Ascending);
         this.splitWidget.showBoth();
     }
     filters() {
@@ -107,7 +108,7 @@ export class EventsTimelineTreeView extends TimelineTreeView {
     }
     populateColumns(columns) {
         columns.push({
-            id: 'startTime',
+            id: Platform.StringUtilities.kebab('start-time'),
             title: i18nString(UIStrings.startTime),
             width: '80px',
             fixedWidth: true,

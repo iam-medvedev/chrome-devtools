@@ -17,6 +17,9 @@
   "core/common/ResourceType.ts | fetch": {
     "message": "F̂ét̂ćĥ"
   },
+  "core/common/ResourceType.ts | fetchAndXHR": {
+    "message": "Fetch âńd̂ XHR"
+  },
   "core/common/ResourceType.ts | font": {
     "message": "F̂ón̂t́"
   },
@@ -76,9 +79,6 @@
   },
   "core/common/ResourceType.ts | ws": {
     "message": "ŴŚ"
-  },
-  "core/common/ResourceType.ts | xhrAndFetch": {
-    "message": "XHR âńd̂ Fetch"
   },
   "core/common/Revealer.ts | applicationPanel": {
     "message": "Âṕp̂ĺîćât́îón̂ ṕâńêĺ"
@@ -4499,6 +4499,9 @@
   "panels/autofill/autofill-meta.ts | showAutofill": {
     "message": "Ŝh́ôẃ Âút̂óf̂íl̂ĺ"
   },
+  "panels/autofill/AutofillView.ts | addressPreview": {
+    "message": "Âd́d̂ŕêśŝ ṕr̂év̂íêẃ"
+  },
   "panels/autofill/AutofillView.ts | attr": {
     "message": "ât́t̂ŕ"
   },
@@ -4506,10 +4509,13 @@
     "message": "Âút̂óĉóm̂ṕl̂ét̂é ât́t̂ŕîb́ût́ê"
   },
   "panels/autofill/AutofillView.ts | autoShow": {
-    "message": "Âút̂óm̂át̂íĉál̂ĺŷ óp̂én̂ t́âb́ ôń âút̂óf̂íl̂ĺ"
+    "message": "Ôṕêń p̂án̂él̂ ón̂ áût́ôf́îĺl̂"
   },
   "panels/autofill/AutofillView.ts | formField": {
     "message": "F̂ór̂ḿ f̂íêĺd̂"
+  },
+  "panels/autofill/AutofillView.ts | formInspector": {
+    "message": "F̂ór̂ḿ îńŝṕêćt̂ór̂"
   },
   "panels/autofill/AutofillView.ts | heur": {
     "message": "ĥéûŕ"
@@ -12196,6 +12202,9 @@
   },
   "panels/timeline/EventUICategory.ts | consoleTime": {
     "message": "Ĉón̂śôĺê T́îḿê"
+  },
+  "panels/timeline/EventUICategory.ts | cppGc": {
+    "message": "ĈṔP̂ ǴĈ"
   },
   "panels/timeline/EventUICategory.ts | createWebsocket": {
     "message": "Ĉŕêát̂é Ŵéb̂Śôćk̂ét̂"

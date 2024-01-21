@@ -85,7 +85,7 @@ export declare class CSSMatchedStyles {
     propertyState(property: CSSProperty): PropertyState | null;
     resetActiveProperties(): void;
 }
-interface CSSVariableValue {
+export interface CSSVariableValue {
     value: string;
     declaration: CSSProperty | CSSRegisteredProperty | null;
 }
@@ -93,4 +93,3 @@ export declare enum PropertyState {
     Active = "Active",
     Overloaded = "Overloaded"
 }
-export {};

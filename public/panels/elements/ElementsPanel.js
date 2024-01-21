@@ -859,7 +859,7 @@ export class ElementsPanel extends UI.Panel.Panel {
             showMetricsWidgetInStylesPane();
         });
         this.stylesWidget.addEventListener("InitialUpdateCompleted" /* StylesSidebarPaneEvents.InitialUpdateCompleted */, () => {
-            this.stylesWidget.appendToolbarItem(stylesSplitWidget.createShowHideSidebarButton(i18nString(UIStrings.showComputedStylesSidebar), i18nString(UIStrings.hideComputedStylesSidebar), i18nString(UIStrings.computedStylesShown), i18nString(UIStrings.computedStylesHidden), 'computedStyles'));
+            this.stylesWidget.appendToolbarItem(stylesSplitWidget.createShowHideSidebarButton(i18nString(UIStrings.showComputedStylesSidebar), i18nString(UIStrings.hideComputedStylesSidebar), i18nString(UIStrings.computedStylesShown), i18nString(UIStrings.computedStylesHidden), 'computed-styles'));
         });
         const showMetricsWidgetInComputedPane = () => {
             this.metricsWidget.show(computedStylePanesWrapper.element, this.computedStyleWidget.element);

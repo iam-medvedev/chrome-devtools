@@ -80,7 +80,7 @@ export class QuickOpenImpl {
 export class ShowActionDelegate {
     handleAction(_context, actionId) {
         switch (actionId) {
-            case 'quickOpen.show':
+            case 'quick-open.show':
                 QuickOpenImpl.show('');
                 return true;
         }

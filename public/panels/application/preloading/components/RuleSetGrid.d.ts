@@ -1,5 +1,5 @@
 import * as Common from '../../../../core/common/common.js';
-import type * as Platform from '../../../../core/platform/platform.js';
+import * as Platform from '../../../../core/platform/platform.js';
 import * as Protocol from '../../../../generated/protocol.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import type * as UI from '../../../../ui/legacy/legacy.js';

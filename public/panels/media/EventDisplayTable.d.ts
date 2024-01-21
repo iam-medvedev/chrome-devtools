@@ -8,7 +8,7 @@ export interface EventDisplayColumnConfig {
     weight?: number;
 }
 export declare const enum MediaEventColumnKeys {
-    Timestamp = "displayTimestamp",
+    Timestamp = "display-timestamp",
     Event = "event",
     Value = "value"
 }

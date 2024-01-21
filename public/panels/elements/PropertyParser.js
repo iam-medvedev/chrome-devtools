@@ -118,6 +118,9 @@ export class BottomUpTreeMatching extends TreeWalker {
     getMatch(node) {
         return this.#matchedNodes.get(this.#key(node));
     }
+    hasUnresolvedVars(node) {
+        return this.computedText.hasUnresolvedVars(node.from - this.ast.tree.from, node.to - this.ast.tree.from);
+    }
     getComputedText(node) {
         return this.computedText.get(node.from - this.ast.tree.from, node.to - this.ast.tree.from);
     }
@@ -152,11 +155,37 @@ class ComputedTextChunk {
 export class ComputedText {
     #chunks = [];
     text;
+    #sorted = true;
     constructor(text) {
         this.text = text;
     }
+    clear() {
+        this.#chunks.splice(0);
+    }
     get chunkCount() {
         return this.#chunks.length;
+    }
+    #sortIfNecessary() {
+        if (this.#sorted) {
+            return;
+        }
+        // Sort intervals by offset, with longer intervals first if the offset is identical.
+        this.#chunks.sort((a, b) => {
+            if (a.offset < b.offset) {
+                return -1;
+            }
+            if (b.offset < a.offset) {
+                return 1;
+            }
+            if (a.end > b.end) {
+                return -1;
+            }
+            if (a.end < b.end) {
+                return 1;
+            }
+            return 0;
+        });
+        this.#sorted = true;
     }
     // Add another substitutable match. The match will either be appended to the list of existing matches or it will
     // be substituted for the last match(es) if it encompasses them.
@@ -171,51 +200,70 @@ export class ComputedText {
         if (chunk.end > this.text.length) {
             return;
         }
-        if (this.#chunks.length === 0) {
-            this.#chunks.push(chunk);
-            return;
+        this.#sorted = false;
+        this.#chunks.push(chunk);
+    }
+    *#range(begin, end) {
+        this.#sortIfNecessary();
+        let i = this.#chunks.findIndex(c => c.offset >= begin);
+        while (i >= 0 && i < this.#chunks.length && this.#chunks[i].end > begin && begin < end) {
+            if (this.#chunks[i].end > end) {
+                i++;
+                continue;
+            }
+            yield this.#chunks[i];
+            begin = this.#chunks[i].end;
+            while (begin < end && i < this.#chunks.length && this.#chunks[i].offset < begin) {
+                i++;
+            }
         }
-        const lastChunk = this.#chunks[this.#chunks.length - 1];
-        if (chunk.offset <= lastChunk.offset && lastChunk.end <= chunk.end) {
-            // The new chunk is more general than the last chunk, so drop that and retry.
-            this.#chunks.pop();
-            this.push(match, offset);
+    }
+    hasUnresolvedVars(begin, end) {
+        for (const chunk of this.#range(begin, end)) {
+            if (chunk.computedText === null) {
+                return true;
+            }
         }
-        else if (chunk.offset >= lastChunk.end) {
-            // The new chunk is to be inserted after the last chunk.
-            this.#chunks.push(chunk);
-        }
+        return false;
     }
     // Get a slice of the computed text corresponding to the property text in the range [begin, end). The slice may not
     // start within a substitution chunk, e.g., it's invalid to request the computed text for the property value text
     // slice "1px var(--".
     get(begin, end) {
         const pieces = [];
-        for (let currentChunk = this.#chunks.find(c => c.offset >= begin); begin < end && currentChunk; currentChunk = this.#chunks.find(c => c.offset >= begin)) {
-            pieces.push(this.text.substring(begin, Math.min(currentChunk.offset, end)));
-            if (end >= currentChunk.end) {
-                pieces.push(currentChunk.computedText);
+        const push = (text) => {
+            if (text.length === 0) {
+                return;
             }
-            begin = currentChunk.end;
+            if (pieces.length > 0 && requiresSpace(pieces[pieces.length - 1], text)) {
+                pieces.push(' ');
+            }
+            pieces.push(text);
+        };
+        for (const chunk of this.#range(begin, end)) {
+            const piece = this.text.substring(begin, Math.min(chunk.offset, end));
+            push(piece);
+            if (end >= chunk.end) {
+                push(chunk.computedText ?? chunk.match.text);
+            }
+            begin = chunk.end;
         }
         if (begin < end) {
-            pieces.push(this.text.substring(begin, end));
+            const piece = this.text.substring(begin, end);
+            push(piece);
         }
         return pieces.join('');
     }
 }
-// This function determines whether concatenating two pieces of text requires any spacing inbetween. For example, there
-// shouldn't be any space between 'var' and '(', but there should be a space between '1px' and 'solid'. The node
-// sequences that make up the pieces of text may contain non-text nodes/trees. Any such element inbetween the texts is
-// ignored for the spacing requirement.
 export function requiresSpace(a, b) {
-    const tail = a.findLast(node => node.textContent)?.textContent;
+    const tail = Array.isArray(a) ? a.findLast(node => node.textContent)?.textContent : a;
+    const head = Array.isArray(b) ? b.find(node => node.textContent)?.textContent : b;
     const trailingChar = tail ? tail[tail.length - 1] : '';
-    const head = b.find(node => node.textContent)?.textContent;
     const leadingChar = head ? head[0] : '';
-    const noSpaceAfter = ['', '(', ' ', '{', '}', ';'];
-    const noSpaceBefore = ['', '(', ')', ',', ':', ' ', '*', '{', ';'];
-    return !noSpaceAfter.includes(trailingChar) && !noSpaceBefore.includes(leadingChar);
+    const noSpaceAfter = ['', '(', '{', '}', ';'];
+    const noSpaceBefore = ['', '(', ')', ',', ':', '*', '{', ';'];
+    return !/\s/.test(trailingChar) && !/\s/.test(leadingChar) && !noSpaceAfter.includes(trailingChar) &&
+        !noSpaceBefore.includes(leadingChar);
 }
 function mergeWithSpacing(nodes, merge) {
     const result = [...nodes];
@@ -257,7 +305,7 @@ export class Renderer extends TreeWalker {
     enter({ node }) {
         const match = this.#matchedResult.getMatch(node);
         if (match) {
-            const output = match.render(this.#context);
+            const output = match.render(node, this.#context);
             this.renderedMatchForTest(output, match);
             this.#output = mergeWithSpacing(this.#output, output);
             return false;
@@ -276,11 +324,59 @@ function siblings(node) {
 export function children(node) {
     return siblings(node.firstChild);
 }
+export class VariableMatch {
+    text;
+    name;
+    fallback;
+    matching;
+    type = 'var';
+    constructor(text, name, fallback, matching) {
+        this.text = text;
+        this.name = name;
+        this.fallback = fallback;
+        this.matching = matching;
+    }
+}
+export class VariableMatcher extends MatcherBase {
+    matches(node, matching) {
+        const callee = node.getChild('Callee');
+        const args = node.getChild('ArgList');
+        if (node.name !== 'CallExpression' || !callee || (matching.ast.text(callee) !== 'var') || !args) {
+            return null;
+        }
+        const [lparenNode, nameNode, ...fallbackOrRParenNodes] = children(args);
+        if (lparenNode?.name !== '(' || nameNode?.name !== 'VariableName') {
+            return null;
+        }
+        if (fallbackOrRParenNodes.length <= 1 && fallbackOrRParenNodes[0]?.name !== ')') {
+            return null;
+        }
+        let fallback = [];
+        if (fallbackOrRParenNodes.length > 1) {
+            if (fallbackOrRParenNodes.shift()?.name !== ',') {
+                return null;
+            }
+            if (fallbackOrRParenNodes.pop()?.name !== ')') {
+                return null;
+            }
+            fallback = fallbackOrRParenNodes;
+            if (fallback.length === 0) {
+                return null;
+            }
+            if (fallback.some(n => n.name === ',')) {
+                return null;
+            }
+        }
+        const varName = matching.ast.text(nameNode);
+        if (!varName.startsWith('--')) {
+            return null;
+        }
+        return this.createMatch(matching.ast.text(node), varName, fallback, matching);
+    }
+}
 export class ColorMatch {
     text;
-    get type() {
-        return 'color';
-    }
+    type = 'color';
     constructor(text) {
         this.text = text;
     }

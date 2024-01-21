@@ -58,7 +58,7 @@ export declare function registerRevealer<T>(registration: RevealerRegistration<T
  */
 export declare function reveal(revealable: unknown, omitFocus?: boolean): Promise<void>;
 export interface RevealerRegistration<T> {
-    contextTypes: () => Array<abstract new (...any: any) => T>;
+    contextTypes: () => Array<abstract new (...any: any[]) => T>;
     loadRevealer: () => Promise<Revealer<T>>;
     destination?: RevealerDestination;
 }

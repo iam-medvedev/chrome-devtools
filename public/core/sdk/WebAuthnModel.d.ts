@@ -1,11 +1,15 @@
 import type * as Protocol from '../../generated/protocol.js';
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare const enum Events {
     CredentialAdded = "CredentialAdded",
     CredentialAsserted = "CredentialAsserted"
 }
-export declare class WebAuthnModel extends SDKModel {
+export type EventTypes = {
+    [Events.CredentialAdded]: Protocol.WebAuthn.CredentialAddedEvent;
+    [Events.CredentialAsserted]: Protocol.WebAuthn.CredentialAssertedEvent;
+};
+export declare class WebAuthnModel extends SDKModel<EventTypes> {
     #private;
     constructor(target: Target);
     setVirtualAuthEnvEnabled(enable: boolean): Promise<Object>;

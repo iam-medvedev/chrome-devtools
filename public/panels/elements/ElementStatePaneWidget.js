@@ -123,7 +123,7 @@ export class ButtonProvider {
         this.button.setToggleWithDot(true);
         this.button.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.clicked, this);
         this.button.element.classList.add('monospace');
-        this.button.element.setAttribute('jslog', `${VisualLogging.toggleSubpane().track({ click: true }).context('elementStates')}`);
+        this.button.element.setAttribute('jslog', `${VisualLogging.toggleSubpane().track({ click: true }).context('element-states')}`);
         this.view = new ElementStatePaneWidget();
     }
     static instance(opts = { forceNew: null }) {

@@ -372,7 +372,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
         }
         let sortFunction;
         switch (columnId) {
-            case 'startTime':
+            case 'start-time':
                 sortFunction = compareStartTime;
                 break;
             case 'self':
@@ -582,7 +582,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         return cell;
     }
     createValueCell(columnId) {
-        if (columnId !== 'self' && columnId !== 'total' && columnId !== 'startTime') {
+        if (columnId !== 'self' && columnId !== 'total' && columnId !== 'start-time') {
             return null;
         }
         let showPercents = false;
@@ -590,7 +590,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
         let maxTime;
         let event;
         switch (columnId) {
-            case 'startTime':
+            case 'start-time':
                 {
                     event = this.profileNode.event;
                     const traceParseData = this.treeView.traceParseData();

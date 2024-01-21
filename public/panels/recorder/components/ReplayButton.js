@@ -156,7 +156,7 @@ export class ReplayButton extends HTMLElement {
       .variant=${"primary" /* SelectButtonVariant.PRIMARY */}
       .showItemDivider=${false}
       .disabled=${this.#props.disabled}
-      .action=${"chrome_recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */}
+      .action=${"chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */}
       .value=${this.#settings?.replayExtension || this.#settings?.speed}
       .groups=${groups}>
     </${SelectButton.litTagName}>`, this.#shadow, { host: this });

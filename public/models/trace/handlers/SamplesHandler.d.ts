@@ -2,7 +2,7 @@ import * as CPUProfile from '../../cpu_profile/cpu_profile.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 declare const profilesInProcess: Map<Types.TraceEvents.ProcessID, Map<Types.TraceEvents.ThreadID, ProfileData>>;
-declare const entryToNode: Map<Types.TraceEvents.TraceEntry, Helpers.TreeHelpers.TraceEntryNode>;
+declare const entryToNode: Map<Types.TraceEvents.SyntheticTraceEntry, Helpers.TreeHelpers.TraceEntryNode>;
 export declare function reset(): void;
 export declare function initialize(): void;
 export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
@@ -25,7 +25,7 @@ export type ProfileData = {
      * If you need the profile calls from a CPU profile obtained from a
      * web trace, use the data exported by the RendererHandler instead.
      */
-    profileCalls: Types.TraceEvents.TraceEventSyntheticProfileCall[];
+    profileCalls: Types.TraceEvents.SyntheticProfileCall[];
     /**
      * Contains the call tree built from the CPU profile samples.
      * Similar to the profileCalls field, this tree does not contain nor
@@ -42,5 +42,5 @@ export type ProfileData = {
  * we fall back to the function name that was in the callframe that we got
  * when parsing the profile's trace data.
  */
-export declare function getProfileCallFunctionName(data: SamplesHandlerData, entry: Types.TraceEvents.TraceEventSyntheticProfileCall): string;
+export declare function getProfileCallFunctionName(data: SamplesHandlerData, entry: Types.TraceEvents.SyntheticProfileCall): string;
 export {};

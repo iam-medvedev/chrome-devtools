@@ -710,7 +710,7 @@ export class RecordingView extends HTMLElement {
             })}
               </${Menus.SelectMenu.SelectMenu.litTagName}>
               <${Buttons.Button.Button.litTagName}
-                title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.hideCode), "chrome_recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */)}
+                title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.hideCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */)}
                 .data=${{
                 variant: "round" /* Buttons.Button.Variant.ROUND */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
@@ -846,7 +846,7 @@ export class RecordingView extends HTMLElement {
           class="show-code"
           .data=${{
                 variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
-                title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.showCode), "chrome_recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */),
+                title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.showCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */),
             }}
         >
           ${i18nString(UIStrings.showCode)}
@@ -975,7 +975,7 @@ export class RecordingView extends HTMLElement {
             .disabled=${this.#recordingTogglingInProgress}
             .shape=${'square'}
             .label=${translation}
-            title=${Models.Tooltip.getTooltipForActions(translation, "chrome_recorder.start-recording" /* Actions.RecorderActions.StartRecording */)}
+            title=${Models.Tooltip.getTooltipForActions(translation, "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */)}
           >
           </devtools-control-button>
         </div>

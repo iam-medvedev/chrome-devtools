@@ -480,7 +480,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         }
     }
     resetFilmStripView() {
-        const reloadShortcut = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('inspector_main.reload')[0];
+        const reloadShortcut = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('inspector-main.reload')[0];
         if (this.filmStripView) {
             this.filmStripView.reset();
             if (reloadShortcut) {

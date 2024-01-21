@@ -265,7 +265,7 @@ export class CreateRecordingView extends HTMLElement {
               @click=${this.startRecording}
               .label=${i18nString(UIStrings.startRecording)}
               .shape=${'circle'}
-              title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.startRecording), "chrome_recorder.start-recording" /* Actions.RecorderActions.StartRecording */)}
+              title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.startRecording), "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */)}
             ></devtools-control-button>
           </div>
         </div>

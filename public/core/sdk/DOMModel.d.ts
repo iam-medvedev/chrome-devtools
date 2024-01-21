@@ -1,12 +1,12 @@
-import * as Platform from '../platform/platform.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
+import * as Platform from '../platform/platform.js';
 import { CSSModel } from './CSSModel.js';
 import { OverlayModel } from './OverlayModel.js';
 import { type RemoteObject } from './RemoteObject.js';
 import { RuntimeModel } from './RuntimeModel.js';
-import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
+import { type Target } from './Target.js';
 export declare class DOMNode {
     #private;
     ownerDocument: DOMDocument | null;
@@ -112,7 +112,7 @@ export declare class DOMNode {
     copyTo(targetNode: DOMNode, anchorNode: DOMNode | null, callback?: ((arg0: string | null, arg1: DOMNode | null) => void)): void;
     moveTo(targetNode: DOMNode, anchorNode: DOMNode | null, callback?: ((arg0: string | null, arg1: DOMNode | null) => void)): void;
     isXMLNode(): boolean;
-    setMarker(name: string, value: any): void;
+    setMarker(name: string, value: unknown): void;
     marker<T>(name: string): T | null;
     getMarkerKeysForTest(): string[];
     traverseMarkers(visitor: (arg0: DOMNode, arg1: string) => void): void;

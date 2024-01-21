@@ -5,7 +5,6 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as metaHandlerData } from './MetaHandler.js';
-import { data as screenshotsHandlerData } from './ScreenshotsHandler.js';
 // This represents the maximum #time we will allow a cluster to go before we
 // reset it.
 export const MAX_CLUSTER_DURATION = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(5000));
@@ -90,17 +89,6 @@ function traceWindowFromTime(time) {
 function updateTraceWindowMax(traceWindow, newMax) {
     traceWindow.max = newMax;
     traceWindow.range = Types.Timing.MicroSeconds(traceWindow.max - traceWindow.min);
-}
-function findNextScreenshotSource(timestamp) {
-    const screenshots = screenshotsHandlerData();
-    const screenshotIndex = findNextScreenshotEventIndex(screenshots, timestamp);
-    if (!screenshotIndex) {
-        return undefined;
-    }
-    return `data:img/png;base64,${screenshots[screenshotIndex].args.snapshot}`;
-}
-export function findNextScreenshotEventIndex(screenshots, timestamp) {
-    return Platform.ArrayUtilities.nearestIndexFromBeginning(screenshots, frame => frame.ts > timestamp);
 }
 function buildScoreRecords() {
     const { traceBounds } = metaHandlerData();
@@ -240,7 +228,6 @@ async function buildLayoutShiftsClusters() {
                 },
             },
             parsedData: {
-                screenshotSource: findNextScreenshotSource(event.ts),
                 timeFromNavigation,
                 cumulativeWeightedScoreInWindow: currentCluster.clusterCumulativeScore,
                 // The score of the session window is temporarily set to 0 just

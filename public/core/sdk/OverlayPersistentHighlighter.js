@@ -15,17 +15,12 @@ export class OverlayPersistentHighlighter {
     #isolatedElementHighlights;
     #gridColorGenerator;
     #flexColorGenerator;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    /**
+     * @see `front_end/core/sdk/sdk-meta.ts`
+     */
     #showGridLineLabelsSetting;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #extendGridLinesSetting;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #showGridAreasSetting;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #showGridTrackSizesSetting;
     #callbacks;
     constructor(model, callbacks) {

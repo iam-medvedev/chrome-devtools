@@ -1,13 +1,13 @@
 import * as Types from '../types/types.js';
 export declare const makeTraceEntryNodeId: () => TraceEntryNodeId;
 export declare const makeEmptyTraceEntryTree: () => TraceEntryTree;
-export declare const makeEmptyTraceEntryNode: (entry: Types.TraceEvents.TraceEntry, id: TraceEntryNodeId) => TraceEntryNode;
+export declare const makeEmptyTraceEntryNode: (entry: Types.TraceEvents.SyntheticTraceEntry, id: TraceEntryNodeId) => TraceEntryNode;
 export interface TraceEntryTree {
     roots: Set<TraceEntryNode>;
     maxDepth: number;
 }
 export interface TraceEntryNode {
-    entry: Types.TraceEvents.TraceEntry;
+    entry: Types.TraceEvents.SyntheticTraceEntry;
     depth: number;
     id: TraceEntryNodeId;
     parent: TraceEntryNode | null;
@@ -33,13 +33,13 @@ export type TraceEntryNodeId = number & TraceEntryNodeIdTag;
  *
  * Complexity: O(n), where n = number of events
  */
-export declare function treify(entries: Types.TraceEvents.TraceEntry[], options?: {
+export declare function treify(entries: Types.TraceEvents.SyntheticTraceEntry[], options?: {
     filter: {
         has: (name: Types.TraceEvents.KnownEventName) => boolean;
     };
 }): {
     tree: TraceEntryTree;
-    entryToNode: Map<Types.TraceEvents.TraceEntry, TraceEntryNode>;
+    entryToNode: Map<Types.TraceEvents.SyntheticTraceEntry, TraceEntryNode>;
 };
 /**
  * Iterates events in a tree hierarchically, from top to bottom,
@@ -62,7 +62,7 @@ export declare function treify(entries: Types.TraceEvents.TraceEntry[], options?
  * 9. End A
  *
  */
-export declare function walkTreeFromEntry(entryToNode: Map<Types.TraceEvents.TraceEntry, TraceEntryNode>, rootEntry: Types.TraceEvents.TraceEntry, onEntryStart: (entry: Types.TraceEvents.TraceEntry) => void, onEntryEnd: (entry: Types.TraceEvents.TraceEntry) => void): void;
+export declare function walkTreeFromEntry(entryToNode: Map<Types.TraceEvents.SyntheticTraceEntry, TraceEntryNode>, rootEntry: Types.TraceEvents.SyntheticTraceEntry, onEntryStart: (entry: Types.TraceEvents.SyntheticTraceEntry) => void, onEntryEnd: (entry: Types.TraceEvents.SyntheticTraceEntry) => void): void;
 /**
  * Given a Helpers.TreeHelpers.RendererTree, this will iterates events in hierarchically, visiting
  * each root node and working from top to bottom, calling back on every event's
@@ -86,5 +86,5 @@ export declare function walkTreeFromEntry(entryToNode: Map<Types.TraceEvents.Tra
  * 11. End E
  *
  */
-export declare function walkEntireTree(entryToNode: Map<Types.TraceEvents.TraceEntry, TraceEntryNode>, tree: TraceEntryTree, onEntryStart: (entry: Types.TraceEvents.TraceEntry) => void, onEntryEnd: (entry: Types.TraceEvents.TraceEntry) => void, traceWindowToInclude?: Types.Timing.TraceWindowMicroSeconds, minDuration?: Types.Timing.MicroSeconds): void;
+export declare function walkEntireTree(entryToNode: Map<Types.TraceEvents.SyntheticTraceEntry, TraceEntryNode>, tree: TraceEntryTree, onEntryStart: (entry: Types.TraceEvents.SyntheticTraceEntry) => void, onEntryEnd: (entry: Types.TraceEvents.SyntheticTraceEntry) => void, traceWindowToInclude?: Types.Timing.TraceWindowMicroSeconds, minDuration?: Types.Timing.MicroSeconds): void;
 export {};

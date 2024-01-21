@@ -1,12 +1,8 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// This cannot be an interface due to "instanceof RemoteObject" checks in the code.
 export class RemoteObject {
-    /**
-     * This may not be an interface due to "instanceof RemoteObject" checks in the code.
-     */
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static fromLocalObject(value) {
         return new LocalJSONObject(value);
     }
@@ -53,11 +49,8 @@ export class RemoteObject {
         const matches = object.description && object.description.match(_descriptionLengthParenRegex);
         return matches ? parseInt(matches[1], 10) : 0;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static unserializableDescription(object) {
-        const type = typeof object;
-        if (type === 'number') {
+        if (typeof object === 'number') {
             const description = String(object);
             if (object === 0 && 1 / object < 0) {
                 return "-0" /* UnserializableNumber.Negative0 */;
@@ -67,7 +60,7 @@ export class RemoteObject {
                 return description;
             }
         }
-        if (type === 'bigint') {
+        if (typeof object === 'bigint') {
             return object + 'n';
         }
         return null;
@@ -755,18 +748,10 @@ export class LocalJSONObject extends RemoteObject {
         if (!this.hasChildren) {
             return [];
         }
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const value = this.valueInternal;
-        function buildProperty(propName) {
-            let propValue = value[propName];
-            if (!(propValue instanceof RemoteObject)) {
-                propValue = RemoteObject.fromLocalObject(propValue);
-            }
-            return new RemoteObjectProperty(propName, propValue);
-        }
         if (!this.#cachedChildren) {
-            this.#cachedChildren = Object.keys(value).map(buildProperty);
+            this.#cachedChildren = Object.entries(this.valueInternal).map(([name, value]) => {
+                return new RemoteObjectProperty(name, value instanceof RemoteObject ? value : RemoteObject.fromLocalObject(value));
+            });
         }
         return this.#cachedChildren;
     }
@@ -811,8 +796,6 @@ export class RemoteArrayBuffer {
     byteLength() {
         return this.#objectInternal.arrayBufferByteLength();
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async bytes(start = 0, end = this.byteLength()) {
         if (start < 0 || start >= this.byteLength()) {
             throw new RangeError('start is out of range');
@@ -820,11 +803,7 @@ export class RemoteArrayBuffer {
         if (end < start || end > this.byteLength()) {
             throw new RangeError('end is out of range');
         }
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // @ts-expect-error
         return await this.#objectInternal.callFunctionJSON(bytes, [{ value: start }, { value: end - start }]);
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function bytes(offset, length) {
             return [...new Uint8Array(this, offset, length)];
         }
@@ -844,47 +823,30 @@ export class RemoteArray {
         }
         return new RemoteArray(object);
     }
-    static createFromRemoteObjects(objects) {
+    static async createFromRemoteObjects(objects) {
         if (!objects.length) {
             throw new Error('Input array is empty');
         }
-        const objectArguments = [];
-        for (let i = 0; i < objects.length; ++i) {
-            objectArguments.push(RemoteObject.toCallArgument(objects[i]));
+        const result = await objects[0].callFunction(createArray, objects.map(RemoteObject.toCallArgument));
+        if (result.wasThrown || !result.object) {
+            throw new Error('Call function throws exceptions or returns empty value');
         }
-        return objects[0].callFunction(createArray, objectArguments).then(returnRemoteArray);
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        function createArray() {
-            if (arguments.length > 1) {
-                return new Array(arguments);
-            }
-            return [arguments[0]];
-        }
-        function returnRemoteArray(result) {
-            if (result.wasThrown || !result.object) {
-                throw new Error('Call function throws exceptions or returns empty value');
-            }
-            return RemoteArray.objectAsArray(result.object);
+        return RemoteArray.objectAsArray(result.object);
+        function createArray(...args) {
+            return args;
         }
     }
-    at(index) {
+    async at(index) {
         if (index < 0 || index > this.#objectInternal.arrayLength()) {
             throw new Error('Out of range');
         }
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // @ts-expect-error
-        return this.#objectInternal.callFunction(at, [RemoteObject.toCallArgument(index)]).then(assertCallFunctionResult);
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const result = await this.#objectInternal.callFunction(at, [RemoteObject.toCallArgument(index)]);
+        if (result.wasThrown || !result.object) {
+            throw new Error('Exception in callFunction or result value is empty');
+        }
+        return result.object;
         function at(index) {
             return this[index];
-        }
-        function assertCallFunctionResult(result) {
-            if (result.wasThrown || !result.object) {
-                throw new Error('Exception in callFunction or result value is empty');
-            }
-            return result.object;
         }
     }
     length() {

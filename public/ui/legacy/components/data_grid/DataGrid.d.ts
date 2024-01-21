@@ -1,4 +1,5 @@
 import * as Common from '../../../../core/common/common.js';
+import * as Platform from '../../../../core/platform/platform.js';
 import * as UI from '../../legacy.js';
 export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTypes<T>> {
     element: HTMLDivElement;
@@ -262,7 +263,7 @@ export interface Parameters {
     refreshCallback?: (() => void);
 }
 export interface ColumnDescriptor {
-    id: string;
+    id: Platform.StringUtilities.KebabString;
     title?: Common.UIString.LocalizedString;
     titleDOMFragment?: DocumentFragment | null;
     sortable: boolean;
