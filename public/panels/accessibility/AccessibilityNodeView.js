@@ -180,7 +180,7 @@ export class AXNodeSubPane extends AccessibilitySubPane {
         const role = axNode.role();
         if (role) {
             const roleProperty = {
-                name: SDK.AccessibilityModel.CoreAxPropertyName.Role,
+                name: "role" /* SDK.AccessibilityModel.CoreAxPropertyName.Role */,
                 value: role,
             };
             addProperty(roleProperty);

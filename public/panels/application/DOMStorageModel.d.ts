@@ -17,7 +17,7 @@ export declare class DOMStorage extends Common.ObjectWrapper.ObjectWrapper<DOMSt
     clear(): void;
 }
 export declare namespace DOMStorage {
-    enum Events {
+    const enum Events {
         DOMStorageItemsCleared = "DOMStorageItemsCleared",
         DOMStorageItemRemoved = "DOMStorageItemRemoved",
         DOMStorageItemAdded = "DOMStorageItemAdded",
@@ -63,7 +63,7 @@ export declare class DOMStorageModel extends SDK.SDKModel.SDKModel<EventTypes> {
     storageForId(storageId: Protocol.DOMStorage.StorageId): DOMStorage;
     storages(): DOMStorage[];
 }
-export declare enum Events {
+export declare const enum Events {
     DOMStorageAdded = "DOMStorageAdded",
     DOMStorageRemoved = "DOMStorageRemoved"
 }

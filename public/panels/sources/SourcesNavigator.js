@@ -99,7 +99,7 @@ let networkNavigatorViewInstance;
 export class NetworkNavigatorView extends NavigatorView {
     constructor() {
         super('navigator-network', true);
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this.inspectedURLChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.inspectedURLChanged, this);
         // Record the sources tool load time after the file navigator has loaded.
         Host.userMetrics.panelLoaded('sources', 'DevTools.Launch.Sources');
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
@@ -199,7 +199,7 @@ export class OverridesNavigatorView extends NavigatorView {
   `);
         this.toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
         this.contentElement.insertBefore(this.toolbar.element, this.contentElement.firstChild);
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener(Persistence.NetworkPersistenceManager.Events.ProjectChanged, this.updateProjectAndUI, this);
+        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("ProjectChanged" /* Persistence.NetworkPersistenceManager.Events.ProjectChanged */, this.updateProjectAndUI, this);
         this.workspace().addEventListener(Workspace.Workspace.Events.ProjectAdded, this.onProjectAddOrRemoved, this);
         this.workspace().addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.onProjectAddOrRemoved, this);
         this.updateProjectAndUI();
@@ -235,7 +235,7 @@ export class OverridesNavigatorView extends NavigatorView {
             this.toolbar.appendToolbarItem(enableCheckbox);
             this.toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator(true));
             const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearConfiguration), 'clear');
-            clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+            clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
                 Common.Settings.Settings.instance().moduleSetting('persistenceNetworkOverridesEnabled').set(false);
                 project.remove();
             });
@@ -244,7 +244,7 @@ export class OverridesNavigatorView extends NavigatorView {
         }
         const title = i18nString(UIStrings.selectFolderForOverrides);
         const setupButton = new UI.Toolbar.ToolbarButton(title, 'plus', title);
-        setupButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
+        setupButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, _event => {
             void this.setupNewWorkspace();
         }, this);
         this.toolbar.appendToolbarItem(setupButton);
@@ -289,7 +289,7 @@ export class SnippetsNavigatorView extends NavigatorView {
   `);
         const toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
         const newButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.newSnippet), 'plus', i18nString(UIStrings.newSnippet));
-        newButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, _event => {
+        newButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, _event => {
             void this.create(Snippets.ScriptSnippetFileSystem.findSnippetsProject(), '');
         });
         toolbar.appendToolbarItem(newButton);

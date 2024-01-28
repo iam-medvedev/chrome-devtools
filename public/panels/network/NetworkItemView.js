@@ -147,8 +147,8 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         super();
         this.requestInternal = request;
         this.element.classList.add('network-item-view');
-        const headersTab = NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent;
-        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resourceViewTab', NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent);
+        const headersTab = "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
+        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resourceViewTab', "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
         this.headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
         this.appendTab(headersTab, i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, this.headersViewComponent), i18nString(UIStrings.headers));
         if (this.requestInternal.hasOverriddenHeaders()) {
@@ -156,42 +156,42 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             icon.data =
                 { iconName: 'small-status-dot', color: 'var(--sys-color-purple-bright)', width: '16px', height: '16px' };
             icon.title = i18nString(UIStrings.containsOverriddenHeaders);
-            this.setTabIcon(NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent, icon);
+            this.setTabIcon("headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */, icon);
         }
         this.payloadView = null;
         void this.maybeAppendPayloadPanel();
         this.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         if (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket) {
             const frameView = new ResourceWebSocketFrameView(request);
-            this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.WsFrames, i18nString(UIStrings.messages), frameView, i18nString(UIStrings.websocketMessages));
+            this.appendTab("webSocketFrames" /* NetworkForward.UIRequestLocation.UIRequestTabs.WsFrames */, i18nString(UIStrings.messages), frameView, i18nString(UIStrings.websocketMessages));
         }
         else if (request.mimeType === "text/event-stream" /* SDK.MimeType.MimeType.EVENTSTREAM */) {
-            this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.EventSource, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
+            this.appendTab("eventSource" /* NetworkForward.UIRequestLocation.UIRequestTabs.EventSource */, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
         }
         else {
             this.responseView = new RequestResponseView(request);
             const previewView = new RequestPreviewView(request);
-            this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.Preview, i18nString(UIStrings.preview), previewView, i18nString(UIStrings.responsePreview));
+            this.appendTab("preview" /* NetworkForward.UIRequestLocation.UIRequestTabs.Preview */, i18nString(UIStrings.preview), previewView, i18nString(UIStrings.responsePreview));
             const signedExchangeInfo = request.signedExchangeInfo();
             if (signedExchangeInfo && signedExchangeInfo.errors && signedExchangeInfo.errors.length) {
                 const icon = new IconButton.Icon.Icon();
                 icon.data = { iconName: 'cross-circle-filled', color: 'var(--icon-error)', width: '14px', height: '14px' };
                 UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.signedexchangeError));
-                this.setTabIcon(NetworkForward.UIRequestLocation.UIRequestTabs.Preview, icon);
+                this.setTabIcon("preview" /* NetworkForward.UIRequestLocation.UIRequestTabs.Preview */, icon);
             }
-            this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.Response, i18nString(UIStrings.response), this.responseView, i18nString(UIStrings.rawResponseData));
+            this.appendTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.Response */, i18nString(UIStrings.response), this.responseView, i18nString(UIStrings.rawResponseData));
             if (this.requestInternal.hasOverriddenContent) {
                 const icon = new IconButton.Icon.Icon();
                 icon.title = i18nString(UIStrings.responseIsOverridden);
                 icon.data =
                     { iconName: 'small-status-dot', color: 'var(--sys-color-purple-bright)', width: '16px', height: '16px' };
-                this.setTabIcon(NetworkForward.UIRequestLocation.UIRequestTabs.Response, icon);
+                this.setTabIcon("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.Response */, icon);
             }
         }
-        this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.Initiator, i18nString(UIStrings.initiator), new RequestInitiatorView(request), i18nString(UIStrings.requestInitiatorCallStack));
-        this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.Timing, i18nString(UIStrings.timing), new RequestTimingView(request, calculator), i18nString(UIStrings.requestAndResponseTimeline));
+        this.appendTab("initiator" /* NetworkForward.UIRequestLocation.UIRequestTabs.Initiator */, i18nString(UIStrings.initiator), new RequestInitiatorView(request), i18nString(UIStrings.requestInitiatorCallStack));
+        this.appendTab("timing" /* NetworkForward.UIRequestLocation.UIRequestTabs.Timing */, i18nString(UIStrings.timing), new RequestTimingView(request, calculator), i18nString(UIStrings.requestAndResponseTimeline));
         if (request.trustTokenParams()) {
-            this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.TrustTokens, i18nString(UIStrings.trustTokens), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView(request)), i18nString(UIStrings.trustTokenOperationDetails));
+            this.appendTab("trustTokens" /* NetworkForward.UIRequestLocation.UIRequestTabs.TrustTokens */, i18nString(UIStrings.trustTokens), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView(request)), i18nString(UIStrings.trustTokenOperationDetails));
         }
         this.cookiesView = null;
         this.initialTab = initialTab || this.resourceViewTabSetting.get();
@@ -228,13 +228,13 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         console.assert(cookiesPresent || !this.cookiesView, 'Cookies were introduced in headers and then removed!');
         if (cookiesPresent && !this.cookiesView) {
             this.cookiesView = new RequestCookiesView(this.requestInternal);
-            this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.Cookies, i18nString(UIStrings.cookies), this.cookiesView, i18nString(UIStrings.requestAndResponseCookies));
+            this.appendTab("cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.Cookies */, i18nString(UIStrings.cookies), this.cookiesView, i18nString(UIStrings.requestAndResponseCookies));
         }
         if (this.requestInternal.hasThirdPartyCookiePhaseoutIssue()) {
             const icon = new IconButton.Icon.Icon();
             icon.data = { iconName: 'warning-filled', color: 'var(--icon-warning)', width: '14px', height: '14px' };
             icon.title = i18nString(UIStrings.thirdPartyPhaseout);
-            this.setTabIcon(NetworkForward.UIRequestLocation.UIRequestTabs.Cookies, icon);
+            this.setTabIcon("cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.Cookies */, icon);
         }
     }
     async maybeAppendPayloadPanel() {
@@ -243,7 +243,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         }
         if (this.requestInternal.queryParameters || await this.requestInternal.requestFormData()) {
             this.payloadView = new RequestPayloadView(this.requestInternal);
-            this.appendTab(NetworkForward.UIRequestLocation.UIRequestTabs.Payload, i18nString(UIStrings.payload), this.payloadView, i18nString(UIStrings.payload), /* userGesture=*/ void 0, 
+            this.appendTab("payload" /* NetworkForward.UIRequestLocation.UIRequestTabs.Payload */, i18nString(UIStrings.payload), this.payloadView, i18nString(UIStrings.payload), /* userGesture=*/ void 0, 
             /* isCloseable=*/ void 0, /* isPreviewFeature=*/ void 0, /* index=*/ 1);
         }
     }
@@ -253,7 +253,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             !NetworkComponents.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
             const icon = new IconButton.Icon.Icon();
             icon.data = { iconName: 'cross-circle-filled', color: 'var(--icon-error)', width: '14px', height: '14px' };
-            this.setTabIcon(NetworkForward.UIRequestLocation.UIRequestTabs.TrustTokens, icon);
+            this.setTabIcon("trustTokens" /* NetworkForward.UIRequestLocation.UIRequestTabs.TrustTokens */, icon);
         }
     }
     selectTabInternal(tabId) {
@@ -277,11 +277,11 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         return this.requestInternal;
     }
     async revealResponseBody(position) {
-        this.selectTabInternal(NetworkForward.UIRequestLocation.UIRequestTabs.Response);
+        this.selectTabInternal("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.Response */);
         await this.responseView?.revealPosition(position);
     }
     revealHeader(section, header) {
-        this.selectTabInternal(NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent);
+        this.selectTabInternal("headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
         this.headersViewComponent.revealHeader(section, header);
     }
     getHeadersViewComponent() {

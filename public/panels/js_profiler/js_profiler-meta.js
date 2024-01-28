@@ -72,12 +72,12 @@ function maybeRetrieveTimelineContextTypes(getClassCallBack) {
 }
 UI.ViewManager.registerViewExtension({
     location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
-    id: 'js_profiler',
+    id: 'js-profiler',
     title: i18nLazyString(UIStrings.profiler),
     commandPrompt: i18nLazyString(UIStrings.showProfiler),
     order: 65,
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
-    experiment: Root.Runtime.ExperimentName.JS_PROFILER_TEMP_ENABLE,
+    experiment: "jsProfilerTemporarilyEnable" /* Root.Runtime.ExperimentName.JS_PROFILER_TEMP_ENABLE */,
     async loadView() {
         const Profiler = await loadProfilerModule();
         return Profiler.ProfilesPanel.JSProfilerPanel.instance();
@@ -98,7 +98,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'profiler.js-toggle-recording',
-    category: UI.ActionRegistration.ActionCategory.JAVASCRIPT_PROFILER,
+    category: "JAVASCRIPT_PROFILER" /* UI.ActionRegistration.ActionCategory.JAVASCRIPT_PROFILER */,
     title: i18nLazyString(UIStrings.startStopRecording),
     iconClass: "record-start" /* UI.ActionRegistration.IconClass.START_RECORDING */,
     toggleable: true,
@@ -128,7 +128,7 @@ UI.ActionRegistration.registerActionExtension({
         const Timeline = await loadTimelineModule();
         return new Timeline.TimelinePanel.ActionDelegate();
     },
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     title: i18nLazyString(UIStrings.showRecentTimelineSessions),
     contextTypes() {
         return maybeRetrieveTimelineContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
@@ -146,7 +146,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'timeline.toggle-recording',
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     iconClass: "record-start" /* UI.ActionRegistration.IconClass.START_RECORDING */,
     toggleable: true,
     toggledIconClass: "record-stop" /* UI.ActionRegistration.IconClass.STOP_RECORDING */,
@@ -185,7 +185,7 @@ UI.ActionRegistration.registerActionExtension({
     contextTypes() {
         return maybeRetrieveTimelineContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
     },
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     title: i18nLazyString(UIStrings.startProfilingAndReloadPage),
     async loadActionDelegate() {
         const Timeline = await loadTimelineModule();

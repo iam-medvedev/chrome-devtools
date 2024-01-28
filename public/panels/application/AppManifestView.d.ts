@@ -69,7 +69,7 @@ export declare class AppManifestView extends AppManifestView_base implements SDK
     wasShown(): void;
     private appendWindowControlsToSection;
 }
-export declare enum Events {
+export declare const enum Events {
     ManifestDetected = "ManifestDetected",
     ManifestRendered = "ManifestRendered"
 }

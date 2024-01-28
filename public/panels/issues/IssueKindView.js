@@ -32,22 +32,22 @@ export function issueKindViewSortPriority(a, b) {
     if (a.getKind() === b.getKind()) {
         return 0;
     }
-    if (a.getKind() === IssuesManager.Issue.IssueKind.PageError) {
+    if (a.getKind() === "PageError" /* IssuesManager.Issue.IssueKind.PageError */) {
         return -1;
     }
-    if (a.getKind() === IssuesManager.Issue.IssueKind.BreakingChange &&
-        b.getKind() === IssuesManager.Issue.IssueKind.Improvement) {
+    if (a.getKind() === "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */ &&
+        b.getKind() === "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */) {
         return -1;
     }
     return 1;
 }
 export function getClassNameFromKind(kind) {
     switch (kind) {
-        case IssuesManager.Issue.IssueKind.BreakingChange:
+        case "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */:
             return 'breaking-changes';
-        case IssuesManager.Issue.IssueKind.Improvement:
+        case "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */:
             return 'improvements';
-        case IssuesManager.Issue.IssueKind.PageError:
+        case "PageError" /* IssuesManager.Issue.IssueKind.PageError */:
             return 'page-errors';
     }
 }
@@ -68,11 +68,11 @@ export class IssueKindView extends UI.TreeOutline.TreeElement {
     }
     getHideAllCurrentKindString() {
         switch (this.#kind) {
-            case IssuesManager.Issue.IssueKind.PageError:
+            case "PageError" /* IssuesManager.Issue.IssueKind.PageError */:
                 return i18nString(UIStrings.hideAllCurrentPageErrors);
-            case IssuesManager.Issue.IssueKind.Improvement:
+            case "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */:
                 return i18nString(UIStrings.hideAllCurrentImprovements);
-            case IssuesManager.Issue.IssueKind.BreakingChange:
+            case "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */:
                 return i18nString(UIStrings.hideAllCurrentBreakingChanges);
         }
     }

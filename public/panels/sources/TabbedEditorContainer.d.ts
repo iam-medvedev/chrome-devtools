@@ -68,7 +68,7 @@ export declare class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWr
     private generateTabId;
     currentFile(): Workspace.UISourceCode.UISourceCode | null;
 }
-export declare enum Events {
+export declare const enum Events {
     EditorSelected = "EditorSelected",
     EditorClosed = "EditorClosed"
 }

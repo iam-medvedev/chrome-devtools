@@ -21,6 +21,10 @@ styles.replaceSync(
   border: none;
 }
 
+[slot="insertion-point-main"] {
+  overflow: auto;
+}
+
 .background-service-preview {
   position: absolute;
   background-color: var(--sys-color-cdt-base-container);

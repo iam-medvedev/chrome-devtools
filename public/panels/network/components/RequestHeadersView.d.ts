@@ -25,6 +25,7 @@ export interface CategoryData {
     checked?: boolean;
     additionalContent?: LitHtml.LitTemplate;
     forceOpen?: boolean;
+    loggingContext: string;
 }
 export declare class Category extends HTMLElement {
     #private;

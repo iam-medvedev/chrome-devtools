@@ -41,7 +41,7 @@ export declare class FrameManager extends Common.ObjectWrapper.ObjectWrapper<Eve
     getOrWaitForFrame(frameId: Protocol.Page.FrameId, notInTarget?: Target): Promise<ResourceTreeFrame>;
     private resolveAwaitedFrame;
 }
-export declare enum Events {
+export declare const enum Events {
     FrameAddedToTarget = "FrameAddedToTarget",
     FrameNavigated = "FrameNavigated",
     FrameRemoved = "FrameRemoved",

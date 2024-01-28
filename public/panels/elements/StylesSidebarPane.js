@@ -250,7 +250,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.sectionsContainer.addEventListener('focusout', this.sectionsContainerFocusChanged.bind(this), false);
         this.sectionByElement = new WeakMap();
         this.swatchPopoverHelperInternal = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
-        this.swatchPopoverHelperInternal.addEventListener(InlineEditor.SwatchPopoverHelper.Events.WillShowPopover, this.hideAllPopovers, this);
+        this.swatchPopoverHelperInternal.addEventListener("WillShowPopover" /* InlineEditor.SwatchPopoverHelper.Events.WillShowPopover */, this.hideAllPopovers, this);
         this.linkifier = new Components.Linkifier.Linkifier(MAX_LINK_LENGTH, /* useLinkDecorator */ true);
         this.decorator = new StylePropertyHighlighter(this);
         this.lastRevealedProperty = null;
@@ -643,7 +643,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         if (!this.initialUpdateCompleted) {
             this.initialUpdateCompleted = true;
             this.appendToolbarItem(this.createRenderingShortcuts());
-            if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES)) {
+            if (Root.Runtime.experiments.isEnabled("stylesPaneCSSChanges" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */)) {
                 this.#copyChangesButton = this.createCopyAllChangesButton();
                 this.appendToolbarItem(this.#copyChangesButton);
                 this.#copyChangesButton.element.classList.add('hidden');
@@ -894,7 +894,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         LayersWidget.ButtonProvider.instance().item().setVisible(false);
         const refreshedURLs = new Set();
         for (const style of matchedStyles.nodeStyles()) {
-            if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES) && style.parentRule) {
+            if (Root.Runtime.experiments.isEnabled("stylesPaneCSSChanges" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */) && style.parentRule) {
                 const url = style.parentRule.resourceURL();
                 if (url && !refreshedURLs.has(url)) {
                     await this.trackURLForChanges(url);
@@ -1216,7 +1216,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const hbox = container.createChild('div', 'hbox styles-sidebar-pane-toolbar');
         const toolbar = new UI.Toolbar.Toolbar('styles-pane-toolbar', hbox);
         const filterInput = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), i18nString(UIStrings.filterStyles), 1, 1, undefined, undefined, false);
-        filterInput.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.onFilterChanged, this);
+        filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);
         toolbar.makeToggledGray();
         void toolbar.appendItemsAtLocation('styles-sidebarpane-toolbar');
@@ -1328,10 +1328,10 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         // TODO(1296947): implement a dedicated component to share between all copy buttons
         copyAllChangesButton.element.setAttribute('data-content', i18nString(UIStrings.copiedToClipboard));
         let timeout;
-        copyAllChangesButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, async () => {
+        copyAllChangesButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, async () => {
             const allChanges = await this.getFormattedChanges();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
-            Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane);
+            Host.userMetrics.styleTextCopied(2 /* Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane */);
             if (timeout) {
                 clearTimeout(timeout);
                 timeout = undefined;
@@ -1995,7 +1995,7 @@ export class StylesSidebarPropertyRenderer {
             matchers.push(new LegacyRegexMatcher(this.propertyName === 'font-family' ? InlineEditor.FontEditorUtils.FontFamilyRegex :
                 InlineEditor.FontEditorUtils.FontPropertiesRegex, this.fontHandler));
         }
-        if (this.lengthHandler) {
+        if (Root.Runtime.experiments.isEnabled('cssTypeComponentLength') && this.lengthHandler) {
             // TODO(changhaohan): crbug.com/1138628 refactor this to handle unitless 0 cases
             matchers.push(new LegacyRegexMatcher(asLineMatch(InlineEditor.CSSLengthUtils.CSSLengthRegex), this.lengthHandler));
         }

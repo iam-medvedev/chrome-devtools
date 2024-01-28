@@ -44,7 +44,7 @@ import { CallStackSidebarPane } from './CallStackSidebarPane.js';
 import { DebuggerPausedMessage } from './DebuggerPausedMessage.js';
 import { NavigatorView } from './NavigatorView.js';
 import sourcesPanelStyles from './sourcesPanel.css.js';
-import { Events, SourcesView } from './SourcesView.js';
+import { SourcesView } from './SourcesView.js';
 import { ThreadsSidebarPane } from './ThreadsSidebarPane.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
 const UIStrings = {
@@ -242,7 +242,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             this.editorView.setSidebarWidget(tabbedPane);
         }
         this.sourcesViewInternal = new SourcesView();
-        this.sourcesViewInternal.addEventListener(Events.EditorSelected, this.editorSelected.bind(this));
+        this.sourcesViewInternal.addEventListener("EditorSelected" /* Events.EditorSelected */, this.editorSelected.bind(this));
         this.toggleNavigatorSidebarButton = this.editorView.createShowHideSidebarButton(i18nString(UIStrings.showNavigator), i18nString(UIStrings.hideNavigator), i18nString(UIStrings.navigatorShown), i18nString(UIStrings.navigatorHidden));
         this.toggleDebuggerSidebarButton = this.splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showDebugger), i18nString(UIStrings.hideDebugger), i18nString(UIStrings.debuggerShown), i18nString(UIStrings.debuggerHidden));
         this.editorView.setMainWidget(this.sourcesViewInternal);
@@ -266,7 +266,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebugInfoAttached, this.debugInfoAttached, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, event => this.debuggerResumed(event.data));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, event => this.debuggerResumed(event.data));
-        Extensions.ExtensionServer.ExtensionServer.instance().addEventListener(Extensions.ExtensionServer.Events.SidebarPaneAdded, this.extensionSidebarPaneAdded, this);
+        Extensions.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded" /* Extensions.ExtensionServer.Events.SidebarPaneAdded */, this.extensionSidebarPaneAdded, this);
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
         this.lastModificationTime = -Infinity;
     }
@@ -495,8 +495,8 @@ export class SourcesPanel extends UI.Panel.Panel {
         const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigatorGroupByFolder');
         contextMenu.appendItemsAtLocation('navigatorMenu');
         contextMenu.viewSection().appendCheckboxItem(i18nString(UIStrings.groupByFolder), () => groupByFolderSetting.set(!groupByFolderSetting.get()), groupByFolderSetting.get());
-        this.addExperimentMenuItem(contextMenu.viewSection(), Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING, i18nString(UIStrings.groupByAuthored));
-        this.addExperimentMenuItem(contextMenu.viewSection(), Root.Runtime.ExperimentName.JUST_MY_CODE, i18nString(UIStrings.hideIgnoreListed));
+        this.addExperimentMenuItem(contextMenu.viewSection(), "authoredDeployedGrouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, i18nString(UIStrings.groupByAuthored));
+        this.addExperimentMenuItem(contextMenu.viewSection(), "justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, i18nString(UIStrings.hideIgnoreListed));
     }
     setIgnoreExecutionLineEvents(ignoreExecutionLineEvents) {
         this.ignoreExecutionLineEvents = ignoreExecutionLineEvents;
@@ -697,9 +697,9 @@ export class SourcesPanel extends UI.Panel.Panel {
     createDebugToolbar() {
         const debugToolbar = new UI.Toolbar.Toolbar('scripts-debug-toolbar');
         const longResumeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.resumeWithAllPausesBlockedForMs), 'play');
-        longResumeButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.longResume, this);
+        longResumeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.longResume, this);
         const terminateExecutionButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.terminateCurrentJavascriptCall), 'stop');
-        terminateExecutionButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.terminateExecution, this);
+        terminateExecutionButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.terminateExecution, this);
         debugToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createLongPressActionButton(this.togglePauseAction, [terminateExecutionButton, longResumeButton], []));
         debugToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.stepOverAction));
         debugToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.stepIntoAction));
@@ -743,7 +743,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         const eventTarget = event.target;
         if (!uiSourceCode.project().isServiceProject() &&
             !eventTarget.isSelfOrDescendant(this.navigatorTabbedLocation.widget().element) &&
-            !(Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.JUST_MY_CODE) &&
+            !(Root.Runtime.experiments.isEnabled("justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */) &&
                 Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode))) {
             contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSidebar), this.revealInNavigator.bind(this, uiSourceCode), {
                 jslogContext: 'sources.reveal-in-navigator-sidebar',
@@ -941,8 +941,8 @@ export class SourcesPanel extends UI.Panel.Panel {
         if (this.threadsSidebarPane) {
             this.sidebarPaneStack.appendView(this.threadsSidebarPane);
         }
-        const jsBreakpoints = UI.ViewManager.ViewManager.instance().view('sources.jsBreakpoints');
-        const scopeChainView = UI.ViewManager.ViewManager.instance().view('sources.scopeChain');
+        const jsBreakpoints = UI.ViewManager.ViewManager.instance().view('sources.js-breakpoints');
+        const scopeChainView = UI.ViewManager.ViewManager.instance().view('sources.scope-chain');
         if (this.tabbedLocationHeader) {
             this.splitWidget.uninstallResizer(this.tabbedLocationHeader);
             this.tabbedLocationHeader = null;

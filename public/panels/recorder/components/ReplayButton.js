@@ -75,10 +75,10 @@ const items = [
     },
 ];
 const replaySpeedToMetricSpeedMap = {
-    ["normal" /* PlayRecordingSpeed.Normal */]: Host.UserMetrics.RecordingReplaySpeed.Normal,
-    ["slow" /* PlayRecordingSpeed.Slow */]: Host.UserMetrics.RecordingReplaySpeed.Slow,
-    ["very_slow" /* PlayRecordingSpeed.VerySlow */]: Host.UserMetrics.RecordingReplaySpeed.VerySlow,
-    ["extremely_slow" /* PlayRecordingSpeed.ExtremelySlow */]: Host.UserMetrics.RecordingReplaySpeed.ExtremelySlow,
+    ["normal" /* PlayRecordingSpeed.Normal */]: 1 /* Host.UserMetrics.RecordingReplaySpeed.Normal */,
+    ["slow" /* PlayRecordingSpeed.Slow */]: 2 /* Host.UserMetrics.RecordingReplaySpeed.Slow */,
+    ["very_slow" /* PlayRecordingSpeed.VerySlow */]: 3 /* Host.UserMetrics.RecordingReplaySpeed.VerySlow */,
+    ["extremely_slow" /* PlayRecordingSpeed.ExtremelySlow */]: 4 /* Host.UserMetrics.RecordingReplaySpeed.ExtremelySlow */,
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/components/ReplayButton.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);

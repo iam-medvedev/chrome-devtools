@@ -126,7 +126,7 @@ export declare const ChangeSource: {
     Model: string;
     Other: string;
 };
-export declare enum Events {
+export declare const enum Events {
     ColorChanged = "ColorChanged",
     SizeChanged = "SizeChanged"
 }

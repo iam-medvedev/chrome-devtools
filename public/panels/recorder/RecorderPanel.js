@@ -1,14 +1,16 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as VisualLogging from '../../../front_end/ui/visual_logging/visual_logging.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { RecorderController } from './RecorderController.js';
 let recorderPanelInstance;
 export class RecorderPanel extends UI.Panel.Panel {
-    static panelName = 'chrome_recorder';
+    static panelName = 'chrome-recorder';
     #controller;
     constructor() {
         super(RecorderPanel.panelName);
+        this.element.setAttribute('jslog', `${VisualLogging.panel().context('chrome-recorder')}`);
         this.#controller = new RecorderController();
         this.contentElement.append(this.#controller);
         this.contentElement.style.minWidth = '400px';

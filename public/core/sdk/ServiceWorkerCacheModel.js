@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
-import { Capability } from './Target.js';
 import { SDKModel } from './SDKModel.js';
 import { StorageBucketsModel } from './StorageBucketsModel.js';
 const UIStrings = {
@@ -174,10 +173,10 @@ export class ServiceWorkerCacheModel extends SDKModel {
         this.removeStorageBucket(bucket);
     }
     cacheAdded(cache) {
-        this.dispatchEventToListeners(Events.CacheAdded, { model: this, cache: cache });
+        this.dispatchEventToListeners("CacheAdded" /* Events.CacheAdded */, { model: this, cache: cache });
     }
     cacheRemoved(cache) {
-        this.dispatchEventToListeners(Events.CacheRemoved, { model: this, cache: cache });
+        this.dispatchEventToListeners("CacheRemoved" /* Events.CacheRemoved */, { model: this, cache: cache });
     }
     async requestEntries(cache, skipCount, pageSize, pathFilter, callback) {
         const response = await this.cacheAgent.invoke_requestEntries({ cacheId: cache.cacheId, skipCount, pageSize, pathFilter });
@@ -209,12 +208,16 @@ export class ServiceWorkerCacheModel extends SDKModel {
     cacheStorageContentUpdated({ bucketId, cacheName }) {
         const storageBucket = this.#storageBucketModel.getBucketById(bucketId)?.bucket;
         if (storageBucket) {
-            this.dispatchEventToListeners(Events.CacheStorageContentUpdated, { storageBucket, cacheName });
+            this.dispatchEventToListeners("CacheStorageContentUpdated" /* Events.CacheStorageContentUpdated */, { storageBucket, cacheName });
         }
+    }
+    attributionReportingTriggerRegistered(_event) {
     }
     indexedDBListUpdated(_event) {
     }
     indexedDBContentUpdated(_event) {
+    }
+    interestGroupAuctionEventOccurred(_event) {
     }
     interestGroupAccessed(_event) {
     }
@@ -230,14 +233,6 @@ export class ServiceWorkerCacheModel extends SDKModel {
     attributionReportingSourceRegistered(_event) {
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["CacheAdded"] = "CacheAdded";
-    Events["CacheRemoved"] = "CacheRemoved";
-    Events["CacheStorageContentUpdated"] = "CacheStorageContentUpdated";
-})(Events || (Events = {}));
 export class Cache {
     #model;
     storageKey;
@@ -268,5 +263,5 @@ export class Cache {
         return response.response;
     }
 }
-SDKModel.register(ServiceWorkerCacheModel, { capabilities: Capability.Storage, autostart: false });
+SDKModel.register(ServiceWorkerCacheModel, { capabilities: 8192 /* Capability.Storage */, autostart: false });
 //# sourceMappingURL=ServiceWorkerCacheModel.js.map

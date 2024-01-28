@@ -359,7 +359,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
             if (resource && resource.request) {
                 const request = resource.request;
                 return renderIconLink('arrow-up-down-circle', i18nString(UIStrings.clickToRevealInNetworkPanel), () => {
-                    const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(request, NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent);
+                    const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(request, "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
                     return Common.Revealer.reveal(requestLocation);
                 }, 'reveal-in-network');
             }

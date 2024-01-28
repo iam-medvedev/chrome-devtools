@@ -41,7 +41,7 @@ export declare class TransformController extends Common.ObjectWrapper.ObjectWrap
     private onDragStart;
     private onDragEnd;
 }
-export declare enum Events {
+export declare const enum Events {
     TransformChanged = "TransformChanged"
 }
 export type EventTypes = {

@@ -110,7 +110,7 @@ export declare enum Type {
     Responsive = "Responsive",
     Device = "Device"
 }
-export declare enum UA {
+export declare const enum UA {
     Mobile = "Mobile",
     MobileNoTouch = "Mobile (no touch)",
     Desktop = "Desktop",

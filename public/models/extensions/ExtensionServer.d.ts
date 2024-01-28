@@ -117,7 +117,7 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     static canInspectURL(url: Platform.DevToolsPath.UrlString): boolean;
     private disableExtensions;
 }
-export declare enum Events {
+export declare const enum Events {
     SidebarPaneAdded = "SidebarPaneAdded"
 }
 export type EventTypes = {

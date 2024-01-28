@@ -58,7 +58,7 @@ export class WarningErrorCounter {
         countersWrapper.appendChild(this.issueCounter);
         this.issueCounter.data = {
             clickHandler: () => {
-                Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.StatusBarIssuesCounter);
+                Host.userMetrics.issuesPanelOpenedFrom(2 /* Host.UserMetrics.IssueOpener.StatusBarIssuesCounter */);
                 void UI.ViewManager.ViewManager.instance().showView('issues-pane');
             },
             issuesManager,

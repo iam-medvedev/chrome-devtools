@@ -73,7 +73,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         this.#pageResources = keptResources;
-        this.dispatchEventToListeners(Events.Update);
+        this.dispatchEventToListeners("Update" /* Events.Update */);
     }
     getResourcesLoaded() {
         return this.#pageResources;
@@ -142,7 +142,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         const key = PageResourceLoader.makeKey(url, initiator);
         const pageResource = { success: null, size: null, errorMessage: undefined, url, initiator };
         this.#pageResources.set(key, pageResource);
-        this.dispatchEventToListeners(Events.Update);
+        this.dispatchEventToListeners("Update" /* Events.Update */);
         try {
             await this.acquireLoadSlot(initiator.target);
             const resultPromise = this.dispatchLoad(url, initiator);
@@ -166,7 +166,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         }
         finally {
             this.releaseLoadSlot(initiator.target);
-            this.dispatchEventToListeners(Events.Update);
+            this.dispatchEventToListeners("Update" /* Events.Update */);
         }
     }
     async dispatchLoad(url, initiator) {
@@ -181,33 +181,33 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         if (eligibleForLoadFromTarget) {
             try {
                 if (initiator.target) {
-                    Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaTarget);
+                    Host.userMetrics.developerResourceLoaded(0 /* Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaTarget */);
                     const result = await this.loadFromTarget(initiator.target, initiator.frameId, url);
                     return result;
                 }
                 const frame = FrameManager.instance().getFrame(initiator.frameId);
                 if (frame) {
-                    Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaFrame);
+                    Host.userMetrics.developerResourceLoaded(1 /* Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaFrame */);
                     const result = await this.loadFromTarget(frame.resourceTreeModel().target(), initiator.frameId, url);
                     return result;
                 }
             }
             catch (e) {
                 if (e instanceof Error) {
-                    Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageFailure);
+                    Host.userMetrics.developerResourceLoaded(2 /* Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageFailure */);
                     failureReason = e.message;
                 }
             }
-            Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageFallback);
+            Host.userMetrics.developerResourceLoaded(3 /* Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageFallback */);
         }
         else {
-            const code = getLoadThroughTargetSetting().get() ? Host.UserMetrics.DeveloperResourceLoaded.FallbackPerProtocol :
-                Host.UserMetrics.DeveloperResourceLoaded.FallbackPerOverride;
+            const code = getLoadThroughTargetSetting().get() ? 6 /* Host.UserMetrics.DeveloperResourceLoaded.FallbackPerProtocol */ :
+                5 /* Host.UserMetrics.DeveloperResourceLoaded.FallbackPerOverride */;
             Host.userMetrics.developerResourceLoaded(code);
         }
         const result = await MultitargetNetworkManager.instance().loadResource(url);
         if (eligibleForLoadFromTarget && !result.success) {
-            Host.userMetrics.developerResourceLoaded(Host.UserMetrics.DeveloperResourceLoaded.FallbackFailure);
+            Host.userMetrics.developerResourceLoaded(7 /* Host.UserMetrics.DeveloperResourceLoaded.FallbackFailure */);
         }
         if (failureReason) {
             // In case we have a success, add a note about why the load through the target failed.
@@ -218,24 +218,24 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     }
     getDeveloperResourceScheme(parsedURL) {
         if (!parsedURL || parsedURL.scheme === '') {
-            return Host.UserMetrics.DeveloperResourceScheme.SchemeUnknown;
+            return 1 /* Host.UserMetrics.DeveloperResourceScheme.SchemeUnknown */;
         }
         const isLocalhost = parsedURL.host === 'localhost' || parsedURL.host.endsWith('.localhost');
         switch (parsedURL.scheme) {
             case 'file':
-                return Host.UserMetrics.DeveloperResourceScheme.SchemeFile;
+                return 7 /* Host.UserMetrics.DeveloperResourceScheme.SchemeFile */;
             case 'data':
-                return Host.UserMetrics.DeveloperResourceScheme.SchemeData;
+                return 6 /* Host.UserMetrics.DeveloperResourceScheme.SchemeData */;
             case 'blob':
-                return Host.UserMetrics.DeveloperResourceScheme.SchemeBlob;
+                return 8 /* Host.UserMetrics.DeveloperResourceScheme.SchemeBlob */;
             case 'http':
-                return isLocalhost ? Host.UserMetrics.DeveloperResourceScheme.SchemeHttpLocalhost :
-                    Host.UserMetrics.DeveloperResourceScheme.SchemeHttp;
+                return isLocalhost ? 4 /* Host.UserMetrics.DeveloperResourceScheme.SchemeHttpLocalhost */ :
+                    2 /* Host.UserMetrics.DeveloperResourceScheme.SchemeHttp */;
             case 'https':
-                return isLocalhost ? Host.UserMetrics.DeveloperResourceScheme.SchemeHttpsLocalhost :
-                    Host.UserMetrics.DeveloperResourceScheme.SchemeHttps;
+                return isLocalhost ? 5 /* Host.UserMetrics.DeveloperResourceScheme.SchemeHttpsLocalhost */ :
+                    3 /* Host.UserMetrics.DeveloperResourceScheme.SchemeHttps */;
         }
-        return Host.UserMetrics.DeveloperResourceScheme.SchemeOther;
+        return 0 /* Host.UserMetrics.DeveloperResourceScheme.SchemeOther */;
     }
     async loadFromTarget(target, frameId, url) {
         const networkManager = target.model(NetworkManager);
@@ -267,10 +267,4 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
 export function getLoadThroughTargetSetting() {
     return Common.Settings.Settings.instance().createSetting('loadThroughTarget', true);
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["Update"] = "Update";
-})(Events || (Events = {}));
 //# sourceMappingURL=PageResourceLoader.js.map

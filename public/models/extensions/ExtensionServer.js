@@ -200,7 +200,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     dispose() {
         ThemeSupport.ThemeSupport.instance().removeEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
         // Set up by this.initExtensions in the constructor.
-        SDK.TargetManager.TargetManager.instance().removeEventListener(SDK.TargetManager.Events.InspectedURLChanged, this.inspectedURLChanged, this);
+        SDK.TargetManager.TargetManager.instance().removeEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.inspectedURLChanged, this);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(Host.InspectorFrontendHostAPI.Events.SetInspectedTabId, this.setInspectedTabId, this);
         window.removeEventListener('message', this.onWindowMessage, false);
     }
@@ -546,7 +546,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         const sidebar = new ExtensionSidebarPane(this, message.panel, i18n.i18n.lockedString(message.title), id);
         this.sidebarPanesInternal.push(sidebar);
         this.clientObjects.set(id, sidebar);
-        this.dispatchEventToListeners(Events.SidebarPaneAdded, sidebar);
+        this.dispatchEventToListeners("SidebarPaneAdded" /* Events.SidebarPaneAdded */, sidebar);
         return this.status.OK();
     }
     sidebarPanes() {
@@ -849,7 +849,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.registerSubscriptionHandler("panel-objectSelected-" /* PrivateAPI.Events.PanelObjectSelected */ + 'elements', onElementsSubscriptionStarted.bind(this), onElementsSubscriptionStopped.bind(this));
         this.registerResourceContentCommittedHandler(this.notifyUISourceCodeContentCommitted);
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this.inspectedURLChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.inspectedURLChanged, this);
     }
     notifyResourceAdded(event) {
         const uiSourceCode = event.data;
@@ -1141,12 +1141,6 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         this.extensionsEnabled = false;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["SidebarPaneAdded"] = "SidebarPaneAdded";
-})(Events || (Events = {}));
 class ExtensionServerPanelView extends UI.View.SimpleView {
     name;
     panel;

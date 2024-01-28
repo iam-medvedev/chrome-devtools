@@ -105,7 +105,7 @@ export class Infobar {
         this.closeButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('close')}`);
         ARIAUtils.setDescription(this.closeButton, i18nString(UIStrings.close));
         self.onInvokeElement(this.closeButton, this.dispose.bind(this));
-        if (type !== Type.Issue) {
+        if (type !== "issue" /* Type.Issue */) {
             this.contentElement.tabIndex = 0;
         }
         ARIAUtils.setLabel(this.contentElement, text);
@@ -203,13 +203,4 @@ export class Infobar {
         return detailsRowMessage;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Type;
-(function (Type) {
-    Type["Warning"] = "warning";
-    Type["Info"] = "info";
-    Type["Issue"] = "issue";
-    Type["Error"] = "error";
-})(Type || (Type = {}));
 //# sourceMappingURL=Infobar.js.map

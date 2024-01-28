@@ -33,7 +33,6 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { DOMStorage } from './DOMStorageModel.js';
 import { StorageItemsView } from './StorageItemsView.js';
 const UIStrings = {
     /**
@@ -99,10 +98,10 @@ export class DOMStorageItemsView extends StorageItemsView {
             deleteCallback: this.deleteCallback.bind(this),
             refreshCallback: this.refreshItems.bind(this),
         });
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
+        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, event => {
             void this.previewEntry(event.data);
         });
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, () => {
+        this.dataGrid.addEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DeselectedNode */, () => {
             void this.previewEntry(null);
         });
         this.dataGrid.setStriped(true);
@@ -133,10 +132,10 @@ export class DOMStorageItemsView extends StorageItemsView {
             this.setStorageKey(domStorage.storageKey);
         }
         this.eventListeners = [
-            this.domStorage.addEventListener(DOMStorage.Events.DOMStorageItemsCleared, this.domStorageItemsCleared, this),
-            this.domStorage.addEventListener(DOMStorage.Events.DOMStorageItemRemoved, this.domStorageItemRemoved, this),
-            this.domStorage.addEventListener(DOMStorage.Events.DOMStorageItemAdded, this.domStorageItemAdded, this),
-            this.domStorage.addEventListener(DOMStorage.Events.DOMStorageItemUpdated, this.domStorageItemUpdated, this),
+            this.domStorage.addEventListener("DOMStorageItemsCleared" /* DOMStorage.Events.DOMStorageItemsCleared */, this.domStorageItemsCleared, this),
+            this.domStorage.addEventListener("DOMStorageItemRemoved" /* DOMStorage.Events.DOMStorageItemRemoved */, this.domStorageItemRemoved, this),
+            this.domStorage.addEventListener("DOMStorageItemAdded" /* DOMStorage.Events.DOMStorageItemAdded */, this.domStorageItemAdded, this),
+            this.domStorage.addEventListener("DOMStorageItemUpdated" /* DOMStorage.Events.DOMStorageItemUpdated */, this.domStorageItemUpdated, this),
         ];
         this.refreshItems();
     }

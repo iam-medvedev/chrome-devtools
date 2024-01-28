@@ -72,7 +72,7 @@ export declare class NetworkPersistenceManager extends Common.ObjectWrapper.Obje
     private interceptionHandler;
 }
 export declare const HEADERS_FILENAME = ".headers";
-export declare enum Events {
+export declare const enum Events {
     ProjectChanged = "ProjectChanged",
     RequestsForHeaderOverridesFileChanged = "RequestsForHeaderOverridesFileChanged",
     LocalOverridesProjectUpdated = "LocalOverridesProjectUpdated"

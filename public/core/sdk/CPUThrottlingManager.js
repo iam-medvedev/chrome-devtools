@@ -29,14 +29,14 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         for (const emulationModel of TargetManager.instance().models(EmulationModel)) {
             void emulationModel.setCPUThrottlingRate(this.#cpuThrottlingRateInternal);
         }
-        this.dispatchEventToListeners(Events.RateChanged, this.#cpuThrottlingRateInternal);
+        this.dispatchEventToListeners("RateChanged" /* Events.RateChanged */, this.#cpuThrottlingRateInternal);
     }
     setHardwareConcurrency(concurrency) {
         this.#hardwareConcurrencyInternal = concurrency;
         for (const emulationModel of TargetManager.instance().models(EmulationModel)) {
             void emulationModel.setHardwareConcurrency(concurrency);
         }
-        this.dispatchEventToListeners(Events.HardwareConcurrencyChanged, this.#hardwareConcurrencyInternal);
+        this.dispatchEventToListeners("HardwareConcurrencyChanged" /* Events.HardwareConcurrencyChanged */, this.#hardwareConcurrencyInternal);
     }
     hasPrimaryPageTargetSet() {
         // In some environments, such as Node, trying to check if we have a page
@@ -95,18 +95,9 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         // Implemented as a requirement for being a SDKModelObserver.
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["RateChanged"] = "RateChanged";
-    Events["HardwareConcurrencyChanged"] = "HardwareConcurrencyChanged";
-})(Events || (Events = {}));
 export function throttlingManager() {
     return CPUThrottlingManager.instance();
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var CPUThrottlingRates;
 (function (CPUThrottlingRates) {
     CPUThrottlingRates[CPUThrottlingRates["NoThrottling"] = 1] = "NoThrottling";

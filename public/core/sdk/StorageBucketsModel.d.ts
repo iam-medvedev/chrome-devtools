@@ -26,7 +26,9 @@ export declare class StorageBucketsModel extends SDKModel<EventTypes> implements
     private bucketInfosAreEqual;
     storageBucketCreatedOrUpdated({ bucketInfo }: Protocol.Storage.StorageBucketCreatedOrUpdatedEvent): void;
     storageBucketDeleted({ bucketId }: Protocol.Storage.StorageBucketDeletedEvent): void;
+    attributionReportingTriggerRegistered(_event: Protocol.Storage.AttributionReportingTriggerRegisteredEvent): void;
     interestGroupAccessed(_event: Protocol.Storage.InterestGroupAccessedEvent): void;
+    interestGroupAuctionEventOccurred(_event: Protocol.Storage.InterestGroupAuctionEventOccurredEvent): void;
     indexedDBListUpdated(_event: Protocol.Storage.IndexedDBListUpdatedEvent): void;
     indexedDBContentUpdated(_event: Protocol.Storage.IndexedDBContentUpdatedEvent): void;
     cacheStorageListUpdated(_event: Protocol.Storage.CacheStorageListUpdatedEvent): void;

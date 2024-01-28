@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import { ViewManager } from './ViewManager.js';
 import { VBox } from './Widget.js';
 export class SimpleView extends VBox {
@@ -9,7 +10,12 @@ export class SimpleView extends VBox {
     constructor(title, isWebComponent, viewId) {
         super(isWebComponent);
         this.#title = title;
-        this.#viewId = viewId ?? title;
+        if (viewId) {
+            if (!Platform.StringUtilities.isExtendedKebabCase(viewId)) {
+                throw new Error(`Invalid view ID '${viewId}'`);
+            }
+        }
+        this.#viewId = viewId ?? Platform.StringUtilities.toKebabCase(title);
     }
     viewId() {
         return this.#viewId;

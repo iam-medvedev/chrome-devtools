@@ -110,27 +110,27 @@ class IssueCategoryView extends UI.TreeOutline.TreeElement {
     }
     getCategoryName() {
         switch (this.#category) {
-            case IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy:
+            case "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy */:
                 return i18nString(UIStrings.crossOriginEmbedderPolicy);
-            case IssuesManager.Issue.IssueCategory.MixedContent:
+            case "MixedContent" /* IssuesManager.Issue.IssueCategory.MixedContent */:
                 return i18nString(UIStrings.mixedContent);
-            case IssuesManager.Issue.IssueCategory.Cookie:
+            case "Cookie" /* IssuesManager.Issue.IssueCategory.Cookie */:
                 return i18nString(UIStrings.samesiteCookie);
-            case IssuesManager.Issue.IssueCategory.HeavyAd:
+            case "HeavyAd" /* IssuesManager.Issue.IssueCategory.HeavyAd */:
                 return i18nString(UIStrings.heavyAds);
-            case IssuesManager.Issue.IssueCategory.ContentSecurityPolicy:
+            case "ContentSecurityPolicy" /* IssuesManager.Issue.IssueCategory.ContentSecurityPolicy */:
                 return i18nString(UIStrings.contentSecurityPolicy);
-            case IssuesManager.Issue.IssueCategory.LowTextContrast:
+            case "LowTextContrast" /* IssuesManager.Issue.IssueCategory.LowTextContrast */:
                 return i18nString(UIStrings.lowTextContrast);
-            case IssuesManager.Issue.IssueCategory.Cors:
+            case "Cors" /* IssuesManager.Issue.IssueCategory.Cors */:
                 return i18nString(UIStrings.cors);
-            case IssuesManager.Issue.IssueCategory.AttributionReporting:
+            case "AttributionReporting" /* IssuesManager.Issue.IssueCategory.AttributionReporting */:
                 return i18nString(UIStrings.attributionReporting);
-            case IssuesManager.Issue.IssueCategory.QuirksMode:
+            case "QuirksMode" /* IssuesManager.Issue.IssueCategory.QuirksMode */:
                 return i18nString(UIStrings.quirksMode);
-            case IssuesManager.Issue.IssueCategory.Generic:
+            case "Generic" /* IssuesManager.Issue.IssueCategory.Generic */:
                 return i18nString(UIStrings.generic);
-            case IssuesManager.Issue.IssueCategory.Other:
+            case "Other" /* IssuesManager.Issue.IssueCategory.Other */:
                 return i18nString(UIStrings.other);
         }
     }

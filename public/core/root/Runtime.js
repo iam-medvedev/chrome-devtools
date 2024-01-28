@@ -204,42 +204,4 @@ export class Experiment {
 }
 // This must be constructed after the query parameters have been parsed.
 export const experiments = new ExperimentsSupport();
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var ExperimentName;
-(function (ExperimentName) {
-    ExperimentName["CAPTURE_NODE_CREATION_STACKS"] = "captureNodeCreationStacks";
-    ExperimentName["CSS_OVERVIEW"] = "cssOverview";
-    ExperimentName["LIVE_HEAP_PROFILE"] = "liveHeapProfile";
-    ExperimentName["ALL"] = "*";
-    ExperimentName["PROTOCOL_MONITOR"] = "protocolMonitor";
-    ExperimentName["FULL_ACCESSIBILITY_TREE"] = "fullAccessibilityTree";
-    ExperimentName["STYLES_PANE_CSS_CHANGES"] = "stylesPaneCSSChanges";
-    ExperimentName["HEADER_OVERRIDES"] = "headerOverrides";
-    ExperimentName["INSTRUMENTATION_BREAKPOINTS"] = "instrumentationBreakpoints";
-    ExperimentName["AUTHORED_DEPLOYED_GROUPING"] = "authoredDeployedGrouping";
-    ExperimentName["IMPORTANT_DOM_PROPERTIES"] = "importantDOMProperties";
-    ExperimentName["JUST_MY_CODE"] = "justMyCode";
-    ExperimentName["PRELOADING_STATUS_PANEL"] = "preloadingStatusPanel";
-    ExperimentName["TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL"] = "timelineAsConsoleProfileResultPanel";
-    ExperimentName["OUTERMOST_TARGET_SELECTOR"] = "outermostTargetSelector";
-    ExperimentName["JS_PROFILER_TEMP_ENABLE"] = "jsProfilerTemporarilyEnable";
-    ExperimentName["HIGHLIGHT_ERRORS_ELEMENTS_PANEL"] = "highlightErrorsElementsPanel";
-    ExperimentName["SET_ALL_BREAKPOINTS_EAGERLY"] = "setAllBreakpointsEagerly";
-    ExperimentName["SELF_XSS_WARNING"] = "selfXssWarning";
-    ExperimentName["USE_SOURCE_MAP_SCOPES"] = "useSourceMapScopes";
-    ExperimentName["STORAGE_BUCKETS_TREE"] = "storageBucketsTree";
-    ExperimentName["NETWORK_PANEL_FILTER_BAR_REDESIGN"] = "networkPanelFilterBarRedesign";
-    ExperimentName["TRACK_CONTEXT_MENU"] = "trackContextMenu";
-    ExperimentName["AUTOFILL_VIEW"] = "autofillView";
-    ExperimentName["INDENTATION_MARKERS_TEMP_DISABLE"] = "sourcesFrameIndentationMarkersTemporarilyDisable";
-    ExperimentName["CONSOLE_INSIGHTS"] = "consoleInsights";
-})(ExperimentName || (ExperimentName = {}));
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var ConditionName;
-(function (ConditionName) {
-    ConditionName["CAN_DOCK"] = "can_dock";
-    ConditionName["NOT_SOURCES_HIDE_ADD_FOLDER"] = "!sources.hide_add_folder";
-})(ConditionName || (ConditionName = {}));
 //# sourceMappingURL=Runtime.js.map

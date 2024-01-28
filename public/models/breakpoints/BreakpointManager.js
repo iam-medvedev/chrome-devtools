@@ -59,7 +59,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#workspace = workspace;
         this.targetManager = targetManager;
         this.debuggerWorkspaceBinding = debuggerWorkspaceBinding;
-        if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.SET_ALL_BREAKPOINTS_EAGERLY)) {
+        if (Root.Runtime.experiments.isEnabled("setAllBreakpointsEagerly" /* Root.Runtime.ExperimentName.SET_ALL_BREAKPOINTS_EAGERLY */)) {
             this.storage.mute();
             this.#setInitialBreakpoints(restoreInitialBreakpointCount ?? INITIAL_RESTORE_BREAKPOINT_COUNT);
             this.storage.unmute();
@@ -93,7 +93,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         return breakpointManagerInstance;
     }
     modelAdded(debuggerModel) {
-        if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS)) {
+        if (Root.Runtime.experiments.isEnabled("instrumentationBreakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */)) {
             debuggerModel.setSynchronizeBreakpointsCallback(this.restoreBreakpointsForScript.bind(this));
         }
     }
@@ -122,7 +122,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
     // This method explicitly awaits the source map (if necessary) and the uiSourceCodes
     // required to set all breakpoints that are related to this script.
     async restoreBreakpointsForScript(script) {
-        if (!Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS)) {
+        if (!Root.Runtime.experiments.isEnabled("instrumentationBreakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */)) {
             return;
         }
         if (!script.sourceURL) {
@@ -401,8 +401,6 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         return this.debuggerWorkspaceBinding.supportsConditionalBreakpoints(uiSourceCode);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["BreakpointAdded"] = "breakpoint-added";
@@ -469,7 +467,7 @@ export class Breakpoint {
     }
     updateLastResolvedState(locations) {
         this.#lastResolvedState = locations;
-        if (!Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.SET_ALL_BREAKPOINTS_EAGERLY)) {
+        if (!Root.Runtime.experiments.isEnabled("setAllBreakpointsEagerly" /* Root.Runtime.ExperimentName.SET_ALL_BREAKPOINTS_EAGERLY */)) {
             return;
         }
         let locationsOrUndefined = undefined;
@@ -837,7 +835,7 @@ export class ModelBreakpoint {
                 }));
                 newState = positions.slice(0); // Create a copy
             }
-            else if (!Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS)) {
+            else if (!Root.Runtime.experiments.isEnabled("instrumentationBreakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */)) {
                 // Use this fallback if we do not have instrumentation breakpoints enabled yet. This currently makes
                 // sure that v8 knows about the breakpoint and is able to restore it whenever the script is parsed.
                 const lastResolvedState = this.#breakpoint.getLastResolvedState();

@@ -72,7 +72,7 @@ export class SourceFrameIssuesManager {
 export class IssueMessage extends Workspace.UISourceCode.Message {
     #kind;
     constructor(title, kind, clickHandler) {
-        super(Workspace.UISourceCode.Message.Level.Issue, title, clickHandler);
+        super("Issue" /* Workspace.UISourceCode.Message.Level.Issue */, title, clickHandler);
         this.#kind = kind;
     }
     getIssueKind() {

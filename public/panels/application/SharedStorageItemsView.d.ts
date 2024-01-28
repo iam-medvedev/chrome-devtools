@@ -5,7 +5,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { SharedStorageForOrigin } from './SharedStorageModel.js';
 import { StorageItemsView } from './StorageItemsView.js';
 export declare namespace SharedStorageItemsDispatcher {
-    enum Events {
+    const enum Events {
         FilteredItemsCleared = "FilteredItemsCleared",
         ItemDeleted = "ItemDeleted",
         ItemEdited = "ItemEdited",

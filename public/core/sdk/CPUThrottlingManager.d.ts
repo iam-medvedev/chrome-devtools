@@ -15,7 +15,7 @@ export declare class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWra
     modelAdded(emulationModel: EmulationModel): void;
     modelRemoved(_emulationModel: EmulationModel): void;
 }
-export declare enum Events {
+export declare const enum Events {
     RateChanged = "RateChanged",
     HardwareConcurrencyChanged = "HardwareConcurrencyChanged"
 }

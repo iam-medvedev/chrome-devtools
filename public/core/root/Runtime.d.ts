@@ -57,7 +57,7 @@ export declare class Experiment {
     setEnabled(enabled: boolean): void;
 }
 export declare const experiments: ExperimentsSupport;
-export declare enum ExperimentName {
+export declare const enum ExperimentName {
     CAPTURE_NODE_CREATION_STACKS = "captureNodeCreationStacks",
     CSS_OVERVIEW = "cssOverview",
     LIVE_HEAP_PROFILE = "liveHeapProfile",
@@ -85,7 +85,7 @@ export declare enum ExperimentName {
     INDENTATION_MARKERS_TEMP_DISABLE = "sourcesFrameIndentationMarkersTemporarilyDisable",
     CONSOLE_INSIGHTS = "consoleInsights"
 }
-export declare enum ConditionName {
+export declare const enum ConditionName {
     CAN_DOCK = "can_dock",
     NOT_SOURCES_HIDE_ADD_FOLDER = "!sources.hide_add_folder"
 }

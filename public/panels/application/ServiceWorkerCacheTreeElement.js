@@ -65,15 +65,15 @@ export class ServiceWorkerCacheTreeElement extends ExpandableApplicationPanelTre
         for (const cache of model.caches()) {
             this.addCache(model, cache);
         }
-        model.addEventListener(SDK.ServiceWorkerCacheModel.Events.CacheAdded, this.cacheAdded, this);
-        model.addEventListener(SDK.ServiceWorkerCacheModel.Events.CacheRemoved, this.cacheRemoved, this);
+        model.addEventListener("CacheAdded" /* SDK.ServiceWorkerCacheModel.Events.CacheAdded */, this.cacheAdded, this);
+        model.addEventListener("CacheRemoved" /* SDK.ServiceWorkerCacheModel.Events.CacheRemoved */, this.cacheRemoved, this);
     }
     serviceWorkerCacheModelRemoved(model) {
         for (const cache of model.caches()) {
             this.removeCache(model, cache);
         }
-        model.removeEventListener(SDK.ServiceWorkerCacheModel.Events.CacheAdded, this.cacheAdded, this);
-        model.removeEventListener(SDK.ServiceWorkerCacheModel.Events.CacheRemoved, this.cacheRemoved, this);
+        model.removeEventListener("CacheAdded" /* SDK.ServiceWorkerCacheModel.Events.CacheAdded */, this.cacheAdded, this);
+        model.removeEventListener("CacheRemoved" /* SDK.ServiceWorkerCacheModel.Events.CacheRemoved */, this.cacheRemoved, this);
         this.swCacheModels.delete(model);
     }
     cacheAdded(event) {

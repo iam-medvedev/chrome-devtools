@@ -104,10 +104,10 @@ export class ServiceWorkerUpdateCycleView {
         }
         const versions = this.registration.versionsByMode();
         const modes = [
-            SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active,
-            SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting,
-            SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing,
-            SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant,
+            "active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active */,
+            "waiting" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting */,
+            "installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing */,
+            "redundant" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant */,
         ];
         for (const mode of modes) {
             const version = versions.get(mode);

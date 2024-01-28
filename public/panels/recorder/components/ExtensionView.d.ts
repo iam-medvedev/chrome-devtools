@@ -15,6 +15,7 @@ export declare class ClosedEvent extends Event {
 export declare class ExtensionView extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
+    constructor();
     connectedCallback(): void;
     disconnectedCallback(): void;
     set descriptor(descriptor: PublicExtensions.RecorderPluginManager.ViewDescriptor);

@@ -184,12 +184,12 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
         });
         device.capabilities = [];
         const uaType = editor.control('ua-type').value;
-        if (uaType === EmulationModel.DeviceModeModel.UA.Mobile ||
-            uaType === EmulationModel.DeviceModeModel.UA.MobileNoTouch) {
+        if (uaType === "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */ ||
+            uaType === "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */) {
             device.capabilities.push(EmulationModel.EmulatedDevices.Capability.Mobile);
         }
-        if (uaType === EmulationModel.DeviceModeModel.UA.Mobile ||
-            uaType === EmulationModel.DeviceModeModel.UA.DesktopTouch) {
+        if (uaType === "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */ ||
+            uaType === "Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */) {
             device.capabilities.push(EmulationModel.EmulatedDevices.Capability.Touch);
         }
         const userAgentControlValue = editor.control('ua-metadata')
@@ -197,8 +197,8 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
         if (userAgentControlValue) {
             device.userAgentMetadata = {
                 ...userAgentControlValue,
-                mobile: (uaType === EmulationModel.DeviceModeModel.UA.Mobile ||
-                    uaType === EmulationModel.DeviceModeModel.UA.MobileNoTouch),
+                mobile: (uaType === "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */ ||
+                    uaType === "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */),
             };
         }
         if (isNew) {
@@ -221,11 +221,11 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
         let uaType;
         if (device.mobile()) {
             uaType =
-                device.touch() ? EmulationModel.DeviceModeModel.UA.Mobile : EmulationModel.DeviceModeModel.UA.MobileNoTouch;
+                device.touch() ? "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */ : "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */;
         }
         else {
             uaType =
-                device.touch() ? EmulationModel.DeviceModeModel.UA.DesktopTouch : EmulationModel.DeviceModeModel.UA.Desktop;
+                device.touch() ? "Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */ : "Desktop" /* EmulationModel.DeviceModeModel.UA.Desktop */;
         }
         editor.control('ua-type').value = uaType;
         editor.control('ua-metadata')
@@ -257,10 +257,10 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
             return { valid: true, errorMessage: undefined };
         }));
         const uaTypeOptions = [
-            EmulationModel.DeviceModeModel.UA.Mobile,
-            EmulationModel.DeviceModeModel.UA.MobileNoTouch,
-            EmulationModel.DeviceModeModel.UA.Desktop,
-            EmulationModel.DeviceModeModel.UA.DesktopTouch,
+            "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */,
+            "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */,
+            "Desktop" /* EmulationModel.DeviceModeModel.UA.Desktop */,
+            "Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */,
         ];
         const uaType = editor.createSelect('ua-type', uaTypeOptions, () => {
             return { valid: true, errorMessage: undefined };

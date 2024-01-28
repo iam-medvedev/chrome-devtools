@@ -142,12 +142,12 @@ export const createCustomSetting = function (name, element) {
 export const createControlForSetting = function (setting, subtitle) {
     const uiTitle = setting.title();
     switch (setting.type()) {
-        case Common.Settings.SettingType.BOOLEAN: {
+        case "boolean" /* Common.Settings.SettingType.BOOLEAN */: {
             const component = new Settings.SettingCheckbox.SettingCheckbox();
             component.data = { setting: setting };
             return component;
         }
-        case Common.Settings.SettingType.ENUM:
+        case "enum" /* Common.Settings.SettingType.ENUM */:
             if (Array.isArray(setting.options())) {
                 return createSettingSelect(uiTitle, setting.options(), setting.reloadRequired(), setting, subtitle);
             }

@@ -119,7 +119,7 @@ export interface Provider<T> {
 export declare function registerProvider<T>(registration: ProviderRegistration<T>): void;
 export declare function registerItem(registration: ContextMenuItemRegistration): void;
 export declare function maybeRemoveItem(registration: ContextMenuItemRegistration): boolean;
-export declare enum ItemLocation {
+export declare const enum ItemLocation {
     DEVICE_MODE_MENU_SAVE = "deviceModeMenu/save",
     MAIN_MENU = "mainMenu",
     MAIN_MENU_DEFAULT = "mainMenu/default",

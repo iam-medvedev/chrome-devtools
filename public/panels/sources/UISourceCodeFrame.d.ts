@@ -60,7 +60,7 @@ export declare class UISourceCodeFrame extends UISourceCodeFrame_base {
     toolbarItems(): Promise<UI.Toolbar.ToolbarItem[]>;
     private getErrorPopoverContent;
 }
-export declare enum Events {
+export declare const enum Events {
     ToolbarItemsChanged = "ToolbarItemsChanged"
 }
 export type EventTypes = {

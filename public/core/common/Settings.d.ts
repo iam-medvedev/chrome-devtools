@@ -1,13 +1,13 @@
-import type * as Platform from '../platform/platform.js';
+import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
-import { type GenericEvents, type EventDescriptor, type EventTargetEvent } from './EventTarget.js';
+import { type EventDescriptor, type EventTargetEvent, type GenericEvents } from './EventTarget.js';
 import { ObjectWrapper } from './Object.js';
 import { getLocalizedSettingsCategory, getRegisteredSettings, maybeRemoveSettingExtension, type RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, type SettingExtensionOption, type SettingRegistration, SettingType } from './SettingRegistration.js';
 export declare class Settings {
     #private;
-    private readonly syncedStorage;
+    readonly syncedStorage: SettingsStorage;
     readonly globalStorage: SettingsStorage;
-    private readonly localStorage;
+    readonly localStorage: SettingsStorage;
     settingNameSet: Set<string>;
     orderValuesBySettingCategory: Map<SettingCategory, Set<number>>;
     readonly moduleSettings: Map<string, Setting<unknown>>;
@@ -21,6 +21,7 @@ export declare class Settings {
     }): Settings;
     static removeInstance(): void;
     private registerModuleSetting;
+    static normalizeSettingName(name: string): string;
     moduleSetting<T = any>(settingName: string): Setting<T>;
     settingForTest(settingName: string): Setting<unknown>;
     createSetting<T>(key: string, defaultValue: T, storageType?: SettingStorageType): Setting<T>;
@@ -50,6 +51,7 @@ export declare class SettingsStorage {
     forceGet(originalName: string): Promise<string>;
     remove(name: string): void;
     removeAll(): void;
+    keys(): string[];
     dumpSizes(): void;
 }
 export declare class Deprecation {
@@ -60,10 +62,10 @@ export declare class Deprecation {
 }
 export declare class Setting<V> {
     #private;
-    readonly name: string;
     readonly defaultValue: V;
     private readonly eventSupport;
     readonly storage: SettingsStorage;
+    readonly name: string;
     constructor(name: string, defaultValue: V, eventSupport: ObjectWrapper<GenericEvents>, storage: SettingsStorage);
     setSerializer(serializer: Serializer<unknown, V>): void;
     addChangeListener(listener: (arg0: EventTargetEvent<V>) => void, thisObject?: Object): EventDescriptor;
@@ -101,7 +103,7 @@ export declare class VersionController {
     static readonly GLOBAL_VERSION_SETTING_NAME = "inspectorVersion";
     static readonly SYNCED_VERSION_SETTING_NAME = "syncedInspectorVersion";
     static readonly LOCAL_VERSION_SETTING_NAME = "localInspectorVersion";
-    static readonly CURRENT_VERSION = 36;
+    static readonly CURRENT_VERSION = 37;
     constructor();
     /**
      * Force re-sets all version number settings to the current version without
@@ -153,10 +155,11 @@ export declare class VersionController {
     updateVersionFrom33To34(): void;
     updateVersionFrom34To35(): void;
     updateVersionFrom35To36(): void;
+    updateVersionFrom36To37(): void;
     private migrateSettingsFromLocalStorage;
     private clearBreakpointsWhenTooMany;
 }
-export declare enum SettingStorageType {
+export declare const enum SettingStorageType {
     /**
      * Synced storage persists settings with the active Chrome profile but also
      * syncs the settings across devices via Chrome Sync.

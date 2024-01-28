@@ -1673,7 +1673,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 if (style.parentRule && style.parentRule.isUserAgent()) {
                     continue;
                 }
-                if (cascade.propertyState(property) !== SDK.CSSMatchedStyles.PropertyState.Active) {
+                if (cascade.propertyState(property) !== "Active" /* SDK.CSSMatchedStyles.PropertyState.Active */) {
                     continue;
                 }
                 lines.push(`${indent}${property.name}: ${property.value};`);
@@ -1876,7 +1876,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             ariaLabelDefault: i18nString(UIStrings.enableGridMode),
             ariaLabelActive: i18nString(UIStrings.disableGridMode),
         });
-        node.domModel().overlayModel().addEventListener(SDK.OverlayModel.Events.PersistentGridOverlayStateChanged, event => {
+        node.domModel().overlayModel().addEventListener("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentGridOverlayStateChanged */, event => {
             const { nodeId: eventNodeId, enabled } = event.data;
             if (eventNodeId !== nodeId) {
                 return;
@@ -1913,7 +1913,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             ariaLabelDefault: i18nString(UIStrings.enableScrollSnap),
             ariaLabelActive: i18nString(UIStrings.disableScrollSnap),
         });
-        node.domModel().overlayModel().addEventListener(SDK.OverlayModel.Events.PersistentScrollSnapOverlayStateChanged, event => {
+        node.domModel().overlayModel().addEventListener("PersistentScrollSnapOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentScrollSnapOverlayStateChanged */, event => {
             const { nodeId: eventNodeId, enabled } = event.data;
             if (eventNodeId !== nodeId) {
                 return;
@@ -1950,7 +1950,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             ariaLabelDefault: i18nString(UIStrings.enableFlexMode),
             ariaLabelActive: i18nString(UIStrings.disableFlexMode),
         });
-        node.domModel().overlayModel().addEventListener(SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged, event => {
+        node.domModel().overlayModel().addEventListener("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged */, event => {
             const { nodeId: eventNodeId, enabled } = event.data;
             if (eventNodeId !== nodeId) {
                 return;
@@ -1987,7 +1987,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             ariaLabelDefault: i18nString(UIStrings.enableScrollSnap),
             ariaLabelActive: i18nString(UIStrings.disableScrollSnap),
         });
-        node.domModel().overlayModel().addEventListener(SDK.OverlayModel.Events.PersistentContainerQueryOverlayStateChanged, event => {
+        node.domModel().overlayModel().addEventListener("PersistentContainerQueryOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentContainerQueryOverlayStateChanged */, event => {
             const { nodeId: eventNodeId, enabled } = event.data;
             if (eventNodeId !== nodeId) {
                 return;

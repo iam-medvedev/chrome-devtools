@@ -55,7 +55,7 @@ export class SyncSection extends HTMLElement {
         // clang-format off
         LitHtml.render(LitHtml.html `
       <fieldset>
-        <legend>${Common.Settings.getLocalizedSettingsCategory(Common.Settings.SettingCategory.SYNC)}</legend>
+        <legend>${Common.Settings.getLocalizedSettingsCategory("SYNC" /* Common.Settings.SettingCategory.SYNC */)}</legend>
         ${renderAccountInfoOrWarning(this.#syncInfo)}
         <${Settings.SettingCheckbox.SettingCheckbox.litTagName} .data=${{ setting: this.#syncSetting, disabled: checkboxDisabled }}>
         </${Settings.SettingCheckbox.SettingCheckbox.litTagName}>

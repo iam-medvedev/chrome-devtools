@@ -39,9 +39,11 @@ export declare class IndexedDBModel extends SDK.SDKModel.SDKModel<EventTypes> im
     private refreshDatabaseListForStorageBucket;
     indexedDBListUpdated({ storageKey, bucketId }: Protocol.Storage.IndexedDBListUpdatedEvent): void;
     indexedDBContentUpdated({ bucketId, databaseName, objectStoreName }: Protocol.Storage.IndexedDBContentUpdatedEvent): void;
+    attributionReportingTriggerRegistered(_event: Protocol.Storage.AttributionReportingTriggerRegisteredEvent): void;
     cacheStorageListUpdated(_event: Protocol.Storage.CacheStorageListUpdatedEvent): void;
     cacheStorageContentUpdated(_event: Protocol.Storage.CacheStorageContentUpdatedEvent): void;
     interestGroupAccessed(_event: Protocol.Storage.InterestGroupAccessedEvent): void;
+    interestGroupAuctionEventOccurred(_event: Protocol.Storage.InterestGroupAuctionEventOccurredEvent): void;
     sharedStorageAccessed(_event: Protocol.Storage.SharedStorageAccessedEvent): void;
     storageBucketCreatedOrUpdated(_event: Protocol.Storage.StorageBucketCreatedOrUpdatedEvent): void;
     storageBucketDeleted(_event: Protocol.Storage.StorageBucketDeletedEvent): void;

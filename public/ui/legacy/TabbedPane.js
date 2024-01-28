@@ -848,8 +848,6 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         nextTabElement.focus();
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["TabInvoked"] = "TabInvoked";

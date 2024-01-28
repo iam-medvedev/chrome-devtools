@@ -30,7 +30,7 @@ export declare class PreloadingModel extends SDKModel<EventTypes> {
     onPrerenderStatusUpdated(event: Protocol.Preload.PrerenderStatusUpdatedEvent): void;
     onPreloadEnabledStateUpdated(event: Protocol.Preload.PreloadEnabledStateUpdatedEvent): void;
 }
-export declare enum Events {
+export declare const enum Events {
     ModelUpdated = "ModelUpdated",
     WarningsUpdated = "WarningsUpdated"
 }

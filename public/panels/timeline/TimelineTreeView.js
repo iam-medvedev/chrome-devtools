@@ -237,19 +237,19 @@ export class TimelineTreeView extends UI.Widget.VBox {
             editCallback: undefined,
             deleteCallback: undefined,
         });
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.sortingChanged, this);
+        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortingChanged, this);
         this.dataGrid.element.addEventListener('mousemove', this.onMouseMove.bind(this), true);
-        this.dataGrid.setResizeMethod(DataGrid.DataGrid.ResizeMethod.Last);
+        this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.Last */);
         this.dataGrid.setRowContextMenuCallback(this.onContextMenu.bind(this));
         this.dataGrid.asWidget().show(mainView.element);
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, this.updateDetailsForSelection, this);
+        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, this.updateDetailsForSelection, this);
         this.detailsView = new UI.Widget.VBox();
         this.detailsView.element.classList.add('timeline-details-view', 'timeline-details-view-body');
         this.splitWidget.setMainWidget(mainView);
         this.splitWidget.setSidebarWidget(this.detailsView);
         this.splitWidget.hideSidebar();
         this.splitWidget.show(this.element);
-        this.splitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, this.onShowModeChanged, this);
+        this.splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.ShowModeChanged */, this.onShowModeChanged, this);
         this.lastSelectedNodeInternal;
     }
     lastSelectedNode() {
@@ -278,24 +278,24 @@ export class TimelineTreeView extends UI.Widget.VBox {
     populateToolbar(toolbar) {
         this.caseSensitiveButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchCase));
         this.caseSensitiveButton.setText('Aa');
-        this.caseSensitiveButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+        this.caseSensitiveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             this.#toggleFilterButton(this.caseSensitiveButton);
         }, this);
         toolbar.appendToolbarItem(this.caseSensitiveButton);
         this.regexButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.useRegularExpression));
         this.regexButton.setText('.*');
-        this.regexButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+        this.regexButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             this.#toggleFilterButton(this.regexButton);
         }, this);
         toolbar.appendToolbarItem(this.regexButton);
         this.matchWholeWord = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchWholeWord), 'match-whole-word');
-        this.matchWholeWord.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+        this.matchWholeWord.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             this.#toggleFilterButton(this.matchWholeWord);
         }, this);
         toolbar.appendToolbarItem(this.matchWholeWord);
         const textFilterUI = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), this.getToolbarInputAccessiblePlaceHolder());
         this.textFilterUI = textFilterUI;
-        textFilterUI.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.#filterChanged, this);
+        textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.#filterChanged, this);
         toolbar.appendToolbarItem(textFilterUI);
     }
     modelEvents() {
@@ -429,7 +429,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
         this.#filterChanged();
     }
     onShowModeChanged() {
-        if (this.splitWidget.showMode() === UI.SplitWidget.ShowMode.OnlyMain) {
+        if (this.splitWidget.showMode() === "OnlyMain" /* UI.SplitWidget.ShowMode.OnlyMain */) {
             return;
         }
         this.lastSelectedNodeInternal = undefined;
@@ -441,7 +441,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
             return;
         }
         this.lastSelectedNodeInternal = selectedNode;
-        if (this.splitWidget.showMode() === UI.SplitWidget.ShowMode.OnlyMain) {
+        if (this.splitWidget.showMode() === "OnlyMain" /* UI.SplitWidget.ShowMode.OnlyMain */) {
             return;
         }
         this.detailsView.detachChildWidgets();
@@ -663,7 +663,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         this.groupBySetting.addChangeListener(this.refreshTree.bind(this));
         this.init();
         this.stackView = new TimelineStackView(this);
-        this.stackView.addEventListener(TimelineStackView.Events.SelectionChanged, this.onStackViewSelectionChanged, this);
+        this.stackView.addEventListener("SelectionChanged" /* TimelineStackView.Events.SelectionChanged */, this.onStackViewSelectionChanged, this);
     }
     setGroupBySettingForTests(groupBy) {
         this.groupBySetting.set(groupBy);
@@ -871,8 +871,6 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
     static v8NativePrefix = 'native ';
 }
 (function (AggregatedTimelineTreeView) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
     let GroupBy;
     (function (GroupBy) {
         GroupBy["None"] = "None";
@@ -928,8 +926,8 @@ export class TimelineStackView extends Common.ObjectWrapper.eventMixin(UI.Widget
             editCallback: undefined,
             refreshCallback: undefined,
         });
-        this.dataGrid.setResizeMethod(DataGrid.DataGrid.ResizeMethod.Last);
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, this.onSelectionChanged, this);
+        this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.Last */);
+        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, this.onSelectionChanged, this);
         this.dataGrid.asWidget().show(this.element);
     }
     setStack(stack, selectedNode) {
@@ -953,15 +951,7 @@ export class TimelineStackView extends Common.ObjectWrapper.eventMixin(UI.Widget
         return selectedNode && selectedNode.profileNode;
     }
     onSelectionChanged() {
-        this.dispatchEventToListeners(TimelineStackView.Events.SelectionChanged);
+        this.dispatchEventToListeners("SelectionChanged" /* TimelineStackView.Events.SelectionChanged */);
     }
 }
-(function (TimelineStackView) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
-    let Events;
-    (function (Events) {
-        Events["SelectionChanged"] = "SelectionChanged";
-    })(Events = TimelineStackView.Events || (TimelineStackView.Events = {}));
-})(TimelineStackView || (TimelineStackView = {}));
 //# sourceMappingURL=TimelineTreeView.js.map

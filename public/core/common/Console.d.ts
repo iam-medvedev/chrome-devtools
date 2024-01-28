@@ -17,13 +17,13 @@ export declare class Console extends ObjectWrapper<EventTypes> {
     show(): void;
     showPromise(): Promise<void>;
 }
-export declare enum Events {
+export declare const enum Events {
     MessageAdded = "messageAdded"
 }
 export type EventTypes = {
     [Events.MessageAdded]: Message;
 };
-export declare enum MessageLevel {
+export declare const enum MessageLevel {
     Info = "info",
     Warning = "warning",
     Error = "error"

@@ -93,7 +93,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     static setLinkDecorator(linkDecorator) {
         console.assert(!decorator, 'Cannot re-register link decorator.');
         decorator = linkDecorator;
-        linkDecorator.addEventListener(LinkDecorator.Events.LinkIconChanged, onLinkIconChanged);
+        linkDecorator.addEventListener("LinkIconChanged" /* LinkDecorator.Events.LinkIconChanged */, onLinkIconChanged);
         for (const linkifier of instances) {
             linkifier.updateAllAnchorDecorations();
         }
@@ -709,15 +709,6 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         return result;
     }
 }
-export var LinkDecorator;
-(function (LinkDecorator) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
-    let Events;
-    (function (Events) {
-        Events["LinkIconChanged"] = "LinkIconChanged";
-    })(Events = LinkDecorator.Events || (LinkDecorator.Events = {}));
-})(LinkDecorator || (LinkDecorator = {}));
 export class LinkContextMenuProvider {
     appendApplicableItems(_event, contextMenu, target) {
         let targetNode = target;

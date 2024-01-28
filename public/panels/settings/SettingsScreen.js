@@ -146,7 +146,7 @@ export class SettingsScreen extends UI.Widget.VBox {
         dialog.addCloseButton();
         dialog.setOutsideClickCallback(() => { });
         dialog.setPointerEventsBehavior("PierceGlassPane" /* UI.GlassPane.PointerEventsBehavior.PierceGlassPane */);
-        dialog.setOutsideTabIndexBehavior(UI.Dialog.OutsideTabIndexBehavior.PreserveMainViewTabIndex);
+        dialog.setOutsideTabIndexBehavior("PreserveMainViewTabIndex" /* UI.Dialog.OutsideTabIndexBehavior.PreserveMainViewTabIndex */);
         settingsScreen.show(dialog.contentElement);
         dialog.setEscapeKeyCallback(settingsScreen.onEscapeKeyPressed.bind(settingsScreen));
         dialog.setMarginBehavior("NoMargin" /* UI.GlassPane.MarginBehavior.NoMargin */);
@@ -239,19 +239,19 @@ export class GenericSettingsTab extends SettingsTab {
         this.element.setAttribute('jslog', `${VisualLogging.pane().context('preferences')}`);
         // GRID, MOBILE, EMULATION, and RENDERING are intentionally excluded from this list.
         const explicitSectionOrder = [
-            Common.Settings.SettingCategory.NONE,
-            Common.Settings.SettingCategory.APPEARANCE,
-            Common.Settings.SettingCategory.SOURCES,
-            Common.Settings.SettingCategory.ELEMENTS,
-            Common.Settings.SettingCategory.NETWORK,
-            Common.Settings.SettingCategory.PERFORMANCE,
-            Common.Settings.SettingCategory.MEMORY,
-            Common.Settings.SettingCategory.CONSOLE,
-            Common.Settings.SettingCategory.EXTENSIONS,
-            Common.Settings.SettingCategory.PERSISTENCE,
-            Common.Settings.SettingCategory.DEBUGGER,
-            Common.Settings.SettingCategory.GLOBAL,
-            Common.Settings.SettingCategory.SYNC,
+            "" /* Common.Settings.SettingCategory.NONE */,
+            "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
+            "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
+            "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
+            "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
+            "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
+            "MEMORY" /* Common.Settings.SettingCategory.MEMORY */,
+            "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
+            "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */,
+            "PERSISTENCE" /* Common.Settings.SettingCategory.PERSISTENCE */,
+            "DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */,
+            "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
+            "SYNC" /* Common.Settings.SettingCategory.SYNC */,
         ];
         // Some settings define their initial ordering.
         const preRegisteredSettings = Common.Settings.getRegisteredSettings().sort((firstSetting, secondSetting) => {
@@ -301,7 +301,7 @@ export class GenericSettingsTab extends SettingsTab {
         });
     }
     createExtensionSection(settings) {
-        const sectionName = Common.Settings.SettingCategory.EXTENSIONS;
+        const sectionName = "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */;
         const settingUI = Components.Linkifier.LinkHandlerSettingUI.instance();
         const element = settingUI.settingElement();
         if (element) {
@@ -311,10 +311,10 @@ export class GenericSettingsTab extends SettingsTab {
     }
     createSectionElement(category, settings) {
         // Always create the EXTENSIONS section and append the link handling control.
-        if (category === Common.Settings.SettingCategory.EXTENSIONS) {
+        if (category === "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */) {
             this.createExtensionSection(settings);
         }
-        else if (category === Common.Settings.SettingCategory.SYNC && settings.length > 0) {
+        else if (category === "SYNC" /* Common.Settings.SettingCategory.SYNC */ && settings.length > 0) {
             this.containerElement.appendChild(this.syncSection);
         }
         else if (settings.length > 0) {

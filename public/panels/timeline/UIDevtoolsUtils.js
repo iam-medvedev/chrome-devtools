@@ -131,8 +131,6 @@ export class UIDevtoolsUtils {
         return ['idle', 'drawing', 'painting', 'rasterizing', 'layout', 'other'];
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var RecordType;
 (function (RecordType) {
     RecordType["ViewPaint"] = "View::Paint";

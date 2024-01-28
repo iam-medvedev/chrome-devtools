@@ -34,7 +34,7 @@ SDK.CPUThrottlingManager.CPUThrottlingManager.instance().setHardwareConcurrency(
 UI.ActionRegistration.registerActionExtension({
     actionId: 'timeline.record-reload',
     iconClass: "refresh" /* UI.ActionRegistration.IconClass.REFRESH */,
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     contextTypes() {
         return [Timeline.TimelinePanel.TimelinePanel];
     },
@@ -51,7 +51,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'timeline.show-history',
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     contextTypes() {
         return [Timeline.TimelinePanel.TimelinePanel];
     },
@@ -61,13 +61,13 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'components.collect-garbage',
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'timeline.toggle-recording',
     title: () => 'Toggle recording',
     toggleable: true,
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     iconClass: "record-start" /* UI.ActionRegistration.IconClass.START_RECORDING */,
     contextTypes() {
         return [Timeline.TimelinePanel.TimelinePanel];

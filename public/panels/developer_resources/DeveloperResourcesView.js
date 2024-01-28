@@ -56,7 +56,7 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         const accessiblePlaceholder = ''; // Indicates that ToobarInput should use the placeholder as ARIA label.
         this.filterInput =
             new UI.Toolbar.ToolbarInput(i18nString(UIStrings.enterTextToSearchTheUrlAndError), accessiblePlaceholder, 1);
-        this.filterInput.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.onFilterChanged, this);
+        this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(this.filterInput);
         const loadThroughTarget = SDK.PageResourceLoader.getLoadThroughTargetSetting();
         const loadThroughTargetCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(loadThroughTarget, i18nString(UIStrings.loadHttpsDeveloperResources), i18nString(UIStrings.enableLoadingThroughTarget));
@@ -67,7 +67,7 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         this.statusToolbarElement = this.contentElement.createChild('div', 'developer-resource-view-toolbar-summary');
         this.statusMessageElement = this.statusToolbarElement.createChild('div', 'developer-resource-view-message');
         this.loader = SDK.PageResourceLoader.PageResourceLoader.instance();
-        this.loader.addEventListener(SDK.PageResourceLoader.Events.Update, this.update, this);
+        this.loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.Update */, this.update, this);
         this.update();
     }
     async doUpdate() {

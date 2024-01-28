@@ -4,8 +4,7 @@ export declare enum SourceType {
     MESSAGE = "message",
     STACKTRACE = "stacktrace",
     NETWORK_REQUEST = "networkRequest",
-    RELATED_CODE = "relatedCode",
-    SEARCH_ANSWERS = "searchAnswers"
+    RELATED_CODE = "relatedCode"
 }
 export interface Source {
     type: SourceType;
@@ -14,7 +13,6 @@ export interface Source {
 export declare class PromptBuilder {
     #private;
     constructor(consoleMessage: Console.ConsoleViewMessage.ConsoleViewMessage);
-    getSearchAnswers(): Promise<string>;
     getNetworkRequest(): Promise<SDK.NetworkRequest.NetworkRequest | undefined>;
     /**
      * Gets the source file associated with the top of the message's stacktrace.
@@ -29,11 +27,10 @@ export declare class PromptBuilder {
         prompt: string;
         sources: Source[];
     }>;
-    formatPrompt({ message, relatedCode, relatedRequest, searchAnswers }: {
+    formatPrompt({ message, relatedCode, relatedRequest }: {
         message: string;
         relatedCode: string;
         relatedRequest: string;
-        searchAnswers: string;
     }): string;
 }
 export declare function allowHeader(header: SDK.NetworkRequest.NameValue): boolean;

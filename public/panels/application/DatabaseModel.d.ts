@@ -28,7 +28,7 @@ export declare class DatabaseModel extends SDK.SDKModel.SDKModel<EventTypes> {
     databases(): Database[];
     addDatabase(database: Database): void;
 }
-export declare enum Events {
+export declare const enum Events {
     DatabaseAdded = "DatabaseAdded",
     DatabasesRemoved = "DatabasesRemoved"
 }

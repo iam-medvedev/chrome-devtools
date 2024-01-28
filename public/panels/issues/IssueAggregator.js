@@ -19,7 +19,7 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     #corsIssues = new Set();
     #cspIssues = new Set();
     #deprecationIssues = new Set();
-    #issueKind = IssuesManager.Issue.IssueKind.Improvement;
+    #issueKind = "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */;
     #lowContrastIssues = new Set();
     #metadataAllowedSites = new Set();
     #mixedContentIssues = new Set();
@@ -104,7 +104,7 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
         if (this.#representative) {
             return this.#representative.getCategory();
         }
-        return IssuesManager.Issue.IssueCategory.Other;
+        return "Other" /* IssuesManager.Issue.IssueCategory.Other */;
     }
     getAggregatedIssuesCount() {
         return this.#aggregatedIssuesCount;

@@ -14,7 +14,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { CountersGraph } from './CountersGraph.js';
 import { TimelineDetailsView } from './TimelineDetailsView.js';
 import { TimelineRegExp } from './TimelineFilters.js';
-import { Events as TimelineFlameChartDataProviderEvents, TimelineFlameChartDataProvider, } from './TimelineFlameChartDataProvider.js';
+import { TimelineFlameChartDataProvider, } from './TimelineFlameChartDataProvider.js';
 import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
 import { TimelineSelection } from './TimelineSelection.js';
 import { AggregatedTimelineTreeView } from './TimelineTreeView.js';
@@ -79,7 +79,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.networkSplitWidget.sidebarElement().style.zIndex = '120';
         const mainViewGroupExpansionSetting = Common.Settings.Settings.instance().createSetting('timelineFlamechartMainViewGroupExpansion', {});
         this.mainDataProvider = new TimelineFlameChartDataProvider();
-        this.mainDataProvider.addEventListener(TimelineFlameChartDataProviderEvents.DataChanged, () => this.mainFlameChart.scheduleUpdate());
+        this.mainDataProvider.addEventListener("DataChanged" /* TimelineFlameChartDataProviderEvents.DataChanged */, () => this.mainFlameChart.scheduleUpdate());
         this.mainFlameChart = new PerfUI.FlameChart.FlameChart(this.mainDataProvider, this, mainViewGroupExpansionSetting);
         this.mainFlameChart.alwaysShowVerticalScroll();
         this.mainFlameChart.enableRuler(false);
@@ -115,11 +115,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.detailsSplitWidget.show(this.element);
         this.onMainEntrySelected = this.onEntrySelected.bind(this, this.mainDataProvider);
         this.onNetworkEntrySelected = this.onEntrySelected.bind(this, this.networkDataProvider);
-        this.mainFlameChart.addEventListener(PerfUI.FlameChart.Events.EntrySelected, this.onMainEntrySelected, this);
-        this.mainFlameChart.addEventListener(PerfUI.FlameChart.Events.EntryInvoked, this.onMainEntrySelected, this);
-        this.networkFlameChart.addEventListener(PerfUI.FlameChart.Events.EntrySelected, this.onNetworkEntrySelected, this);
-        this.networkFlameChart.addEventListener(PerfUI.FlameChart.Events.EntryInvoked, this.onNetworkEntrySelected, this);
-        this.mainFlameChart.addEventListener(PerfUI.FlameChart.Events.EntryHighlighted, this.onEntryHighlighted, this);
+        this.mainFlameChart.addEventListener("EntrySelected" /* PerfUI.FlameChart.Events.EntrySelected */, this.onMainEntrySelected, this);
+        this.mainFlameChart.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.EntryInvoked */, this.onMainEntrySelected, this);
+        this.networkFlameChart.addEventListener("EntrySelected" /* PerfUI.FlameChart.Events.EntrySelected */, this.onNetworkEntrySelected, this);
+        this.networkFlameChart.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.EntryInvoked */, this.onNetworkEntrySelected, this);
+        this.mainFlameChart.addEventListener("EntryHighlighted" /* PerfUI.FlameChart.Events.EntryHighlighted */, this.onEntryHighlighted, this);
         this.boundRefresh = this.#reset.bind(this);
         this.#selectedEvents = null;
         this.mainDataProvider.setEventColorMapping(TimelineUIUtils.eventColor);
@@ -142,7 +142,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.updateSearchResults(false, false);
     }
     isNetworkTrackShownForTests() {
-        return this.networkSplitWidget.showMode() !== UI.SplitWidget.ShowMode.OnlyMain;
+        return this.networkSplitWidget.showMode() !== "OnlyMain" /* UI.SplitWidget.ShowMode.OnlyMain */;
     }
     getMainDataProvider() {
         return this.mainDataProvider;
@@ -441,10 +441,4 @@ export class TimelineFlameChartMarker {
         context.restore();
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var ColorBy;
-(function (ColorBy) {
-    ColorBy["URL"] = "URL";
-})(ColorBy || (ColorBy = {}));
 //# sourceMappingURL=TimelineFlameChartView.js.map

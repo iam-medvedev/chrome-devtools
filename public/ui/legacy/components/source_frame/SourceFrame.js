@@ -150,7 +150,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.rawContent = null;
         this.formattedMap = null;
         this.prettyToggle = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.prettyPrint), 'brackets');
-        this.prettyToggle.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+        this.prettyToggle.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             void this.setPretty(!this.prettyToggle.toggled());
         });
         this.shouldAutoPrettyPrint = false;
@@ -182,7 +182,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.contentRequested = false;
         this.wasmDisassemblyInternal = null;
         this.contentSet = false;
-        this.selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disableSelfXssWarning', false, Common.Settings.SettingStorageType.Synced);
+        this.selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disableSelfXssWarning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
         Common.Settings.Settings.instance()
             .moduleSetting('textEditorIndent')
             .addChangeListener(this.#textEditorIndentChanged, this);
@@ -246,7 +246,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
             this.wasmDisassemblyInternal ? markNonBreakableLines(this.wasmDisassemblyInternal) : nonBreakableLines,
             this.options.lineWrapping ? CodeMirror.EditorView.lineWrapping : [],
             this.options.lineNumbers !== false ? CodeMirror.lineNumbers() : [],
-            Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE) ?
+            Root.Runtime.experiments.isEnabled("sourcesFrameIndentationMarkersTemporarilyDisable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */) ?
                 [] :
                 CodeMirror.indentationMarkers({
                     colors: {
@@ -264,7 +264,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.resetCurrentSearchResultIndex();
     }
     onPaste() {
-        if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.SELF_XSS_WARNING) &&
+        if (Root.Runtime.experiments.isEnabled("selfXssWarning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */) &&
             !Root.Runtime.Runtime.queryParam('isChromeForTesting') && !this.selfXssWarningDisabledSetting.get()) {
             void this.showSelfXssWarning();
             return true;
@@ -970,14 +970,6 @@ export class SelfXssWarningDialog {
         return result;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var DecoratorType;
-(function (DecoratorType) {
-    DecoratorType["PERFORMANCE"] = "performance";
-    DecoratorType["MEMORY"] = "memory";
-    DecoratorType["COVERAGE"] = "coverage";
-})(DecoratorType || (DecoratorType = {}));
 const config = {
     editable: new CodeMirror.Compartment(),
     language: new CodeMirror.Compartment(),

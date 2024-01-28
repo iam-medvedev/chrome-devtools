@@ -37,7 +37,7 @@ import * as ARIAUtils from './ARIAUtils.js';
 import filterStyles from './filter.css.legacy.js';
 import { KeyboardShortcut, Modifiers } from './KeyboardShortcut.js';
 import { bindCheckbox } from './SettingsUI.js';
-import { Events, TextPrompt } from './TextPrompt.js';
+import { TextPrompt } from './TextPrompt.js';
 import { ToolbarSettingToggle } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { CheckboxLabel, createTextChild } from './UIUtils.js';
@@ -182,7 +182,7 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         this.proxyElement = this.prompt.attach(this.filterInputElement);
         Tooltip.install(this.proxyElement, i18nString(UIStrings.egSmalldUrlacomb));
         this.prompt.setPlaceholder(i18nString(UIStrings.filter));
-        this.prompt.addEventListener(Events.TextChanged, this.valueChanged.bind(this));
+        this.prompt.addEventListener("TextChanged" /* Events.TextChanged */, this.valueChanged.bind(this));
         this.suggestionProvider = null;
         const clearButton = container.createChild('button', 'filter-input-clear-button');
         Tooltip.install(clearButton, i18nString(UIStrings.clearFilter));

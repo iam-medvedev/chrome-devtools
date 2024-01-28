@@ -106,8 +106,8 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
         if (!frame || !frame.url) {
             this.#unresolvedFrameIds.add(frameId);
             if (!this.#frameListeners.length) {
-                const addListener = SDK.FrameManager.FrameManager.instance().addEventListener(SDK.FrameManager.Events.FrameAddedToTarget, this.#onFrameChanged, this);
-                const navigateListener = SDK.FrameManager.FrameManager.instance().addEventListener(SDK.FrameManager.Events.FrameNavigated, this.#onFrameChanged, this);
+                const addListener = SDK.FrameManager.FrameManager.instance().addEventListener("FrameAddedToTarget" /* SDK.FrameManager.Events.FrameAddedToTarget */, this.#onFrameChanged, this);
+                const navigateListener = SDK.FrameManager.FrameManager.instance().addEventListener("FrameNavigated" /* SDK.FrameManager.Events.FrameNavigated */, this.#onFrameChanged, this);
                 this.#frameListeners = [addListener, navigateListener];
             }
         }

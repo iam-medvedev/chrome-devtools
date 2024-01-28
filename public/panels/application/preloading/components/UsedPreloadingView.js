@@ -111,17 +111,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/application/preloading/components/UsedPreloadingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var UsedKind;
-(function (UsedKind) {
-    UsedKind["DowngradedPrerenderToPrefetchAndUsed"] = "DowngradedPrerenderToPrefetchAndUsed";
-    UsedKind["PrefetchUsed"] = "PrefetchUsed";
-    UsedKind["PrerenderUsed"] = "PrerenderUsed";
-    UsedKind["PrefetchFailed"] = "PrefetchFailed";
-    UsedKind["PrerenderFailed"] = "PrerenderFailed";
-    UsedKind["NoPreloads"] = "NoPreloads";
-})(UsedKind || (UsedKind = {}));
 // TODO(kenoss): Rename this class and file once https://crrev.com/c/4933567 landed.
 // This also shows summary of speculations initiated by this page.
 export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
@@ -169,64 +158,64 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
         const forThisPage = this.#data.previousAttempts.filter(attempt => Common.ParsedURL.ParsedURL.urlWithoutHash(attempt.key.url) === pageURL);
         const prefetch = forThisPage.filter(attempt => attempt.key.action === "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */)[0];
         const prerender = forThisPage.filter(attempt => attempt.key.action === "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */)[0];
-        let kind = UsedKind.NoPreloads;
+        let kind = "NoPreloads" /* UsedKind.NoPreloads */;
         // Prerender -> prefetch downgrade case
         //
         // This code does not handle the case SpecRules designate these preloads rather than prerenderer automatically downgrade prerendering.
         // TODO(https://crbug.com/1410709): Improve this logic once automatic downgrade implemented.
         if (prerender?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */ &&
             prefetch?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.Success */) {
-            kind = UsedKind.DowngradedPrerenderToPrefetchAndUsed;
+            kind = "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DowngradedPrerenderToPrefetchAndUsed */;
         }
         else if (prefetch?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.Success */) {
-            kind = UsedKind.PrefetchUsed;
+            kind = "PrefetchUsed" /* UsedKind.PrefetchUsed */;
         }
         else if (prerender?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.Success */) {
-            kind = UsedKind.PrerenderUsed;
+            kind = "PrerenderUsed" /* UsedKind.PrerenderUsed */;
         }
         else if (prefetch?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */) {
-            kind = UsedKind.PrefetchFailed;
+            kind = "PrefetchFailed" /* UsedKind.PrefetchFailed */;
         }
         else if (prerender?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */) {
-            kind = UsedKind.PrerenderFailed;
+            kind = "PrerenderFailed" /* UsedKind.PrerenderFailed */;
         }
         else {
-            kind = UsedKind.NoPreloads;
+            kind = "NoPreloads" /* UsedKind.NoPreloads */;
         }
         let badge;
         let basicMessage;
         switch (kind) {
-            case UsedKind.DowngradedPrerenderToPrefetchAndUsed:
+            case "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DowngradedPrerenderToPrefetchAndUsed */:
                 badge = this.#badgeSuccess();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.downgradedPrefetchUsed)}`;
                 break;
-            case UsedKind.PrefetchUsed:
+            case "PrefetchUsed" /* UsedKind.PrefetchUsed */:
                 badge = this.#badgeSuccess();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.prefetchUsed)}`;
                 break;
-            case UsedKind.PrerenderUsed:
+            case "PrerenderUsed" /* UsedKind.PrerenderUsed */:
                 badge = this.#badgeSuccess();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.prerenderUsed)}`;
                 break;
-            case UsedKind.PrefetchFailed:
+            case "PrefetchFailed" /* UsedKind.PrefetchFailed */:
                 badge = this.#badgeFailure();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.prefetchFailed)}`;
                 break;
-            case UsedKind.PrerenderFailed:
+            case "PrerenderFailed" /* UsedKind.PrerenderFailed */:
                 badge = this.#badgeFailure();
                 basicMessage = LitHtml.html `${i18nString(UIStrings.prerenderFailed)}`;
                 break;
-            case UsedKind.NoPreloads:
+            case "NoPreloads" /* UsedKind.NoPreloads */:
                 badge = this.#badgeNeutral(i18nString(UIStrings.badgeNoSpeculativeLoads));
                 basicMessage = LitHtml.html `${i18nString(UIStrings.noPreloads)}`;
                 break;
         }
         let maybeFailureReasonMessage;
-        if (kind === UsedKind.PrefetchFailed) {
+        if (kind === "PrefetchFailed" /* UsedKind.PrefetchFailed */) {
             assertNotNullOrUndefined(prefetch);
             maybeFailureReasonMessage = prefetchFailureReason(prefetch);
         }
-        else if (kind === UsedKind.PrerenderFailed || kind === UsedKind.DowngradedPrerenderToPrefetchAndUsed) {
+        else if (kind === "PrerenderFailed" /* UsedKind.PrerenderFailed */ || kind === "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DowngradedPrerenderToPrefetchAndUsed */) {
             assertNotNullOrUndefined(prerender);
             maybeFailureReasonMessage = prerenderFailureReason(prerender);
         }
@@ -265,7 +254,7 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
         // clang-format on
     }
     #maybeMismatchedSections(kind) {
-        if (kind !== UsedKind.NoPreloads || this.#data.previousAttempts.length === 0) {
+        if (kind !== "NoPreloads" /* UsedKind.NoPreloads */ || this.#data.previousAttempts.length === 0) {
             return LitHtml.nothing;
         }
         const rows = this.#data.previousAttempts.map(attempt => {

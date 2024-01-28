@@ -1,4 +1,4 @@
-import type * as Platform from '../../core/platform/platform.js';
+import * as Platform from '../../core/platform/platform.js';
 import { type TabbedPane } from './TabbedPane.js';
 import { type ToolbarItem, type ToolbarMenuButton } from './Toolbar.js';
 import { VBox, type Widget } from './Widget.js';
@@ -14,7 +14,7 @@ export interface View {
 }
 export declare class SimpleView extends VBox implements View {
     #private;
-    constructor(title: Platform.UIString.LocalizedString, isWebComponent?: boolean, viewId?: string);
+    constructor(title: Platform.UIString.LocalizedString, isWebComponent?: boolean, viewId?: Lowercase<string>);
     viewId(): string;
     title(): Platform.UIString.LocalizedString;
     isCloseable(): boolean;

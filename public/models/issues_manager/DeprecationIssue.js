@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Deprecation from '../../generated/Deprecation.js';
-import { Issue, IssueCategory, IssueKind } from './Issue.js';
+import { Issue } from './Issue.js';
 import { resolveLazyDescription } from './MarkdownIssueDescription.js';
 const UIStrings = {
     /**
@@ -36,7 +36,7 @@ export class DeprecationIssue extends Issue {
         this.#issueDetails = issueDetails;
     }
     getCategory() {
-        return IssueCategory.Other;
+        return "Other" /* IssueCategory.Other */;
     }
     details() {
         return this.#issueDetails;
@@ -82,7 +82,7 @@ export class DeprecationIssue extends Issue {
         return JSON.stringify(this.#issueDetails);
     }
     getKind() {
-        return IssueKind.BreakingChange;
+        return "BreakingChange" /* IssueKind.BreakingChange */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const details = inspectorIssue.details.deprecationIssueDetails;

@@ -80,7 +80,7 @@ export class ExtensionButton {
     constructor(server, id, iconURL, tooltip, disabled) {
         this.id = id;
         this.toolbarButtonInternal = new UI.Toolbar.ToolbarButton('', '');
-        this.toolbarButtonInternal.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, server.notifyButtonClicked.bind(server, this.id));
+        this.toolbarButtonInternal.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, server.notifyButtonClicked.bind(server, this.id));
         this.update(iconURL, tooltip, disabled);
     }
     update(iconURL, tooltip, disabled) {

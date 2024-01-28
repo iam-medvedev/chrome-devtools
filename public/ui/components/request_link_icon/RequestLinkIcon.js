@@ -108,7 +108,7 @@ export class RequestLinkIcon extends HTMLElement {
             void this.#reveal(requestLocation);
         }
         else {
-            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(linkedRequest, this.#networkTab ?? NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent);
+            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(linkedRequest, this.#networkTab ?? "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
             void this.#reveal(requestLocation);
         }
         this.#additionalOnClickAction?.();

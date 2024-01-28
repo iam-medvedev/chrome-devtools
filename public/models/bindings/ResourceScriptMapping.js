@@ -72,7 +72,7 @@ export class ResourceScriptMapping {
             this.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, event => this.addScript(event.data), this),
             this.debuggerModel.addEventListener(SDK.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this),
             runtimeModel.addEventListener(SDK.RuntimeModel.Events.ExecutionContextDestroyed, this.executionContextDestroyed, this),
-            runtimeModel.target().targetManager().addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this.inspectedURLChanged, this),
+            runtimeModel.target().targetManager().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.inspectedURLChanged, this),
         ];
     }
     project(script) {
@@ -320,11 +320,11 @@ export class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper {
         if (!exceptionDetails) {
             // TODO(crbug.com/1334484): Instead of to the console, report these errors in an "info bar" at the bottom
             //                          of the text editor, similar to e.g. source mapping errors.
-            Common.Console.Console.instance().addMessage(i18nString(UIStrings.liveEditFailed, { PH1: getErrorText(status) }), Common.Console.MessageLevel.Warning);
+            Common.Console.Console.instance().addMessage(i18nString(UIStrings.liveEditFailed, { PH1: getErrorText(status) }), "warning" /* Common.Console.MessageLevel.Warning */);
             return;
         }
         const messageText = i18nString(UIStrings.liveEditCompileFailed, { PH1: exceptionDetails.text });
-        this.#uiSourceCodeInternal.addLineMessage(Workspace.UISourceCode.Message.Level.Error, messageText, exceptionDetails.lineNumber, exceptionDetails.columnNumber);
+        this.#uiSourceCodeInternal.addLineMessage("Error" /* Workspace.UISourceCode.Message.Level.Error */, messageText, exceptionDetails.lineNumber, exceptionDetails.columnNumber);
         function getErrorText(status) {
             switch (status) {
                 case "BlockedByActiveFunction" /* Protocol.Debugger.SetScriptSourceResponseStatus.BlockedByActiveFunction */:

@@ -80,15 +80,15 @@ export class IsolateSelector extends UI.Widget.VBox {
         UI.Tooltip.Tooltip.install(this.totalTrendDiv, i18nString(UIStrings.totalPageJsHeapSizeChangeTrend, { PH1: trendIntervalMinutes }));
         UI.Tooltip.Tooltip.install(this.totalValueDiv, i18nString(UIStrings.totalPageJsHeapSizeAcrossAllVm));
         SDK.IsolateManager.IsolateManager.instance().observeIsolates(this);
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.NameChanged, this.targetChanged, this);
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this.targetChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NameChanged */, this.targetChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.targetChanged, this);
     }
     wasShown() {
         super.wasShown();
-        SDK.IsolateManager.IsolateManager.instance().addEventListener(SDK.IsolateManager.Events.MemoryChanged, this.heapStatsChanged, this);
+        SDK.IsolateManager.IsolateManager.instance().addEventListener("MemoryChanged" /* SDK.IsolateManager.Events.MemoryChanged */, this.heapStatsChanged, this);
     }
     willHide() {
-        SDK.IsolateManager.IsolateManager.instance().removeEventListener(SDK.IsolateManager.Events.MemoryChanged, this.heapStatsChanged, this);
+        SDK.IsolateManager.IsolateManager.instance().removeEventListener("MemoryChanged" /* SDK.IsolateManager.Events.MemoryChanged */, this.heapStatsChanged, this);
     }
     isolateAdded(isolate) {
         this.list.element.tabIndex = 0;

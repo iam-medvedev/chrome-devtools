@@ -8,7 +8,6 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components/components.js';
-import { SharedStorageForOrigin } from './SharedStorageModel.js';
 import { StorageItemsView } from './StorageItemsView.js';
 const UIStrings = {
     /**
@@ -61,19 +60,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/SharedStorageItemsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export var SharedStorageItemsDispatcher;
-(function (SharedStorageItemsDispatcher) {
-    // TODO(crbug.com/1167717): Make this a const enum.
-    // eslint-disable-next-line rulesdir/const_enum
-    let Events;
-    (function (Events) {
-        Events["FilteredItemsCleared"] = "FilteredItemsCleared";
-        Events["ItemDeleted"] = "ItemDeleted";
-        Events["ItemEdited"] = "ItemEdited";
-        Events["ItemsCleared"] = "ItemsCleared";
-        Events["ItemsRefreshed"] = "ItemsRefreshed";
-    })(Events = SharedStorageItemsDispatcher.Events || (SharedStorageItemsDispatcher.Events = {}));
-})(SharedStorageItemsDispatcher || (SharedStorageItemsDispatcher = {}));
 export class SharedStorageItemsView extends StorageItemsView {
     #sharedStorage;
     outerSplitWidget;
@@ -98,10 +84,10 @@ export class SharedStorageItemsView extends StorageItemsView {
             deleteCallback: this.#deleteCallback.bind(this),
             refreshCallback: this.refreshItems.bind(this),
         });
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
+        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, event => {
             void this.#previewEntry(event.data);
         });
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.DeselectedNode, () => {
+        this.dataGrid.addEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DeselectedNode */, () => {
             void this.#previewEntry(null);
         });
         this.dataGrid.setStriped(true);
@@ -132,7 +118,7 @@ export class SharedStorageItemsView extends StorageItemsView {
         Common.EventTarget.removeEventListeners(this.#eventListeners);
         this.#sharedStorage = sharedStorage;
         this.#eventListeners = [
-            this.#sharedStorage.addEventListener(SharedStorageForOrigin.Events.SharedStorageChanged, this.#sharedStorageChanged, this),
+            this.#sharedStorage.addEventListener("SharedStorageChanged" /* SharedStorageForOrigin.Events.SharedStorageChanged */, this.#sharedStorageChanged, this),
         ];
         this.sharedStorageItemsDispatcher =
             new Common.ObjectWrapper.ObjectWrapper();
@@ -161,7 +147,7 @@ export class SharedStorageItemsView extends StorageItemsView {
         }
         await this.#metadataView.getComponent().render();
         await this.updateEntriesOnly();
-        this.sharedStorageItemsDispatcher.dispatchEventToListeners(SharedStorageItemsDispatcher.Events.ItemsRefreshed);
+        this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemsRefreshed" /* SharedStorageItemsDispatcher.Events.ItemsRefreshed */);
     }
     async deleteSelectedItem() {
         if (!this.dataGrid.selectedNode) {
@@ -173,7 +159,7 @@ export class SharedStorageItemsView extends StorageItemsView {
         if (!this.hasFilter()) {
             await this.#sharedStorage.clear();
             await this.refreshItems();
-            this.sharedStorageItemsDispatcher.dispatchEventToListeners(SharedStorageItemsDispatcher.Events.ItemsCleared);
+            this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemsCleared" /* SharedStorageItemsDispatcher.Events.ItemsCleared */);
             UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageItemsCleared));
             return;
         }
@@ -181,7 +167,7 @@ export class SharedStorageItemsView extends StorageItemsView {
             .children.filter(node => node.data.key)
             .map(node => this.#sharedStorage.deleteEntry(node.data.key)));
         await this.refreshItems();
-        this.sharedStorageItemsDispatcher.dispatchEventToListeners(SharedStorageItemsDispatcher.Events.FilteredItemsCleared);
+        this.sharedStorageItemsDispatcher.dispatchEventToListeners("FilteredItemsCleared" /* SharedStorageItemsDispatcher.Events.FilteredItemsCleared */);
         UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageFilteredItemsCleared));
     }
     async #editingCallback(editingNode, columnIdentifier, oldText, newText) {
@@ -200,7 +186,7 @@ export class SharedStorageItemsView extends StorageItemsView {
             await this.#sharedStorage.setEntry(editingNode.data.key || ' ', newText, false);
         }
         await this.refreshItems();
-        this.sharedStorageItemsDispatcher.dispatchEventToListeners(SharedStorageItemsDispatcher.Events.ItemEdited, { columnIdentifier, oldText, newText });
+        this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemEdited" /* SharedStorageItemsDispatcher.Events.ItemEdited */, { columnIdentifier, oldText, newText });
         UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageItemEdited));
     }
     #showSharedStorageItems(items) {
@@ -232,7 +218,7 @@ export class SharedStorageItemsView extends StorageItemsView {
         const key = node.data.key;
         await this.#sharedStorage.deleteEntry(key);
         await this.refreshItems();
-        this.sharedStorageItemsDispatcher.dispatchEventToListeners(SharedStorageItemsDispatcher.Events.ItemDeleted, { key });
+        this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemDeleted" /* SharedStorageItemsDispatcher.Events.ItemDeleted */, { key });
         UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageItemDeleted));
     }
     async #previewEntry(entry) {

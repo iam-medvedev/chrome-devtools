@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
-import { EdgeTypes, EdgeView, generateEdgePortIdsByData } from './EdgeView.js';
+import { EdgeView, generateEdgePortIdsByData } from './EdgeView.js';
 import { NodeLabelGenerator, NodeView } from './NodeView.js';
 // A class that tracks all the nodes and edges of an audio graph.
 export class GraphView extends Common.ObjectWrapper.ObjectWrapper {
@@ -79,7 +79,7 @@ export class GraphView extends Common.ObjectWrapper.ObjectWrapper {
      * Add a Node-to-Node connection to the graph.
      */
     addNodeToNodeConnection(edgeData) {
-        const edge = new EdgeView(edgeData, EdgeTypes.NodeToNode);
+        const edge = new EdgeView(edgeData, "NodeToNode" /* EdgeTypes.NodeToNode */);
         this.addEdge(edge);
     }
     /**
@@ -88,7 +88,7 @@ export class GraphView extends Common.ObjectWrapper.ObjectWrapper {
     removeNodeToNodeConnection(edgeData) {
         if (edgeData.destinationId) {
             // Remove a single edge if destinationId is specified.
-            const edgePortIds = generateEdgePortIdsByData(edgeData, EdgeTypes.NodeToNode);
+            const edgePortIds = generateEdgePortIdsByData(edgeData, "NodeToNode" /* EdgeTypes.NodeToNode */);
             if (!edgePortIds) {
                 throw new Error('Unable to generate edge port IDs');
             }
@@ -104,14 +104,14 @@ export class GraphView extends Common.ObjectWrapper.ObjectWrapper {
      * Add a Node-to-Param connection to the graph.
      */
     addNodeToParamConnection(edgeData) {
-        const edge = new EdgeView(edgeData, EdgeTypes.NodeToParam);
+        const edge = new EdgeView(edgeData, "NodeToParam" /* EdgeTypes.NodeToParam */);
         this.addEdge(edge);
     }
     /**
      * Remove a Node-to-Param connection from the graph.
      */
     removeNodeToParamConnection(edgeData) {
-        const edgePortIds = generateEdgePortIdsByData(edgeData, EdgeTypes.NodeToParam);
+        const edgePortIds = generateEdgePortIdsByData(edgeData, "NodeToParam" /* EdgeTypes.NodeToParam */);
         if (!edgePortIds) {
             throw new Error('Unable to generate edge port IDs');
         }

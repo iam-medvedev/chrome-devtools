@@ -55,7 +55,7 @@ export declare class PaintProfilerView extends PaintProfilerView_base {
     private reset;
     wasShown(): void;
 }
-export declare enum Events {
+export declare const enum Events {
     WindowChanged = "WindowChanged"
 }
 export type EventTypes = {

@@ -51,7 +51,7 @@ function maybeRetrieveContextTypes(getClassCallBack, actionId) {
 UI.ViewManager.defaultOptionsForTabs.chrome_recorder = true;
 UI.ViewManager.registerViewExtension({
     location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
-    id: 'chrome_recorder',
+    id: 'chrome-recorder',
     commandPrompt: i18nLazyString(UIStrings.showRecorder),
     title: i18nLazyString(UIStrings.recorder),
     order: 90,
@@ -63,7 +63,7 @@ UI.ViewManager.registerViewExtension({
     },
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.RECORDER,
+    category: "RECORDER" /* UI.ActionRegistration.ActionCategory.RECORDER */,
     actionId: "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */,
     title: i18nLazyString(UIStrings.createRecording),
     async loadActionDelegate() {
@@ -72,7 +72,7 @@ UI.ActionRegistration.registerActionExtension({
     },
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.RECORDER,
+    category: "RECORDER" /* UI.ActionRegistration.ActionCategory.RECORDER */,
     actionId: "chrome-recorder.start-recording" /* Actions.RecorderActions.StartRecording */,
     title: i18nLazyString(UIStrings.startStopRecording),
     contextTypes() {
@@ -91,7 +91,7 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.RECORDER,
+    category: "RECORDER" /* UI.ActionRegistration.ActionCategory.RECORDER */,
     actionId: "chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */,
     title: i18nLazyString(UIStrings.replayRecording),
     contextTypes() {
@@ -110,7 +110,7 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.RECORDER,
+    category: "RECORDER" /* UI.ActionRegistration.ActionCategory.RECORDER */,
     actionId: "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */,
     title: i18nLazyString(UIStrings.toggleCode),
     contextTypes() {

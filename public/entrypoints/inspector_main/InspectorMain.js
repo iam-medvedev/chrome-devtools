@@ -134,7 +134,7 @@ export class NodeIndicator {
         element.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend(), false);
         this.#button = new UI.Toolbar.ToolbarItem(element);
         this.#button.setTitle(i18nString(UIStrings.openDedicatedTools));
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.AvailableTargetsChanged, event => this.#update(event.data));
+        SDK.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AvailableTargetsChanged */, event => this.#update(event.data));
         this.#button.setVisible(false);
         this.#update([]);
     }

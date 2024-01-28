@@ -89,7 +89,7 @@ export interface CSSVariableValue {
     value: string;
     declaration: CSSProperty | CSSRegisteredProperty | null;
 }
-export declare enum PropertyState {
+export declare const enum PropertyState {
     Active = "Active",
     Overloaded = "Overloaded"
 }

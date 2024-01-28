@@ -11,7 +11,7 @@ await FrontendHelpers.initializeGlobalVars();
 await ComponentSetup.ComponentServerSetup.setup();
 UI.ActionRegistration.registerActionExtension({
     actionId: 'timeline.show-history',
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     contextTypes() {
         return [Timeline.TimelinePanel.TimelinePanel];
     },

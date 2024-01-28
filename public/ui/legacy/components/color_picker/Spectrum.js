@@ -273,7 +273,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         const definedShortcutKey = toggleEyeDropperShortcut[0]?.descriptors.flatMap(descriptor => descriptor.name.split(' + '))[0];
         this.colorPickerButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleColorPicker, { PH1: definedShortcutKey || '' }), 'color-picker', 'color-picker-filled', 'color-eye-dropper');
         this.colorPickerButton.setToggled(true);
-        this.colorPickerButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.toggleColorPicker.bind(this, undefined));
+        this.colorPickerButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.toggleColorPicker.bind(this, undefined));
         toolbar.appendToolbarItem(this.colorPickerButton);
         this.colorPickerButton.element.setAttribute('jslog', `${VisualLogging.colorEyeDropper().track({ click: true })}`);
         this.swatch = new Swatch(toolsContainer);
@@ -369,7 +369,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         overlay.addEventListener('click', this.togglePalettePanel.bind(this, false));
         this.addColorToolbar = new UI.Toolbar.Toolbar('add-color-toolbar');
         const addColorButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addToPalette), 'plus', undefined, 'add-color');
-        addColorButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.onAddColorMousedown.bind(this));
+        addColorButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.onAddColorMousedown.bind(this));
         addColorButton.element.addEventListener('keydown', this.onAddColorKeydown.bind(this));
         this.addColorToolbar.appendToolbarItem(addColorButton);
         this.colorPickedBound = this.colorPicked.bind(this);
@@ -512,7 +512,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         title.textContent = i18nString(UIStrings.colorPalettes);
         const toolbar = new UI.Toolbar.Toolbar('', this.palettePanel);
         this.closeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.returnToColorPicker), 'cross');
-        this.closeButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.togglePalettePanel.bind(this, false));
+        this.closeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.togglePalettePanel.bind(this, false));
         this.closeButton.element.addEventListener('keydown', this.onCloseBtnKeydown.bind(this));
         toolbar.appendToolbarItem(this.closeButton);
         for (const palette of this.palettes.values()) {
@@ -823,7 +823,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
             }
         }
         this.element.style.height = (paletteTop + paletteMargin + (paletteColorHeight + paletteMargin) * rowsNeeded) + 'px';
-        this.dispatchEventToListeners(Events.SizeChanged);
+        this.dispatchEventToListeners("SizeChanged" /* Events.SizeChanged */);
     }
     paletteColorSelected(colorText, colorName, matchUserFormat) {
         const color = Common.Color.parse(colorText);
@@ -987,7 +987,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
             this.updateInput();
         }
         if (changeSource !== ChangeSource.Model) {
-            this.dispatchEventToListeners(Events.ColorChanged, this.colorString());
+            this.dispatchEventToListeners("ColorChanged" /* Events.ColorChanged */, this.colorString());
         }
     }
     colorName() {
@@ -1255,13 +1255,6 @@ export const ChangeSource = {
     Model: 'Model',
     Other: 'Other',
 };
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ColorChanged"] = "ColorChanged";
-    Events["SizeChanged"] = "SizeChanged";
-})(Events || (Events = {}));
 const COLOR_CHIP_SIZE = 24;
 const ITEMS_PER_PALETTE_ROW = 8;
 const GeneratedPaletteTitle = 'Page colors';

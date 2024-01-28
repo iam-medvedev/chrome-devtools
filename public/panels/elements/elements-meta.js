@@ -191,7 +191,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'elements.show-styles',
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     title: i18nLazyString(UIStrings.showStyles),
     async loadActionDelegate() {
         const Elements = await loadElementsModule();
@@ -200,7 +200,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'elements.show-computed',
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     title: i18nLazyString(UIStrings.showComputedStyles),
     async loadActionDelegate() {
         const Elements = await loadElementsModule();
@@ -209,7 +209,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ViewManager.registerViewExtension({
     location: "elements-sidebar" /* UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR */,
-    id: 'elements.eventListeners',
+    id: 'elements.event-listeners',
     commandPrompt: i18nLazyString(UIStrings.showEventListeners),
     title: i18nLazyString(UIStrings.eventListeners),
     order: 5,
@@ -222,7 +222,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ViewManager.registerViewExtension({
     location: "elements-sidebar" /* UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR */,
-    id: 'elements.domProperties',
+    id: 'elements.dom-properties',
     commandPrompt: i18nLazyString(UIStrings.showProperties),
     title: i18nLazyString(UIStrings.properties),
     order: 7,
@@ -233,9 +233,9 @@ UI.ViewManager.registerViewExtension({
     },
 });
 UI.ViewManager.registerViewExtension({
-    experiment: Root.Runtime.ExperimentName.CAPTURE_NODE_CREATION_STACKS,
+    experiment: "captureNodeCreationStacks" /* Root.Runtime.ExperimentName.CAPTURE_NODE_CREATION_STACKS */,
     location: "elements-sidebar" /* UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR */,
-    id: 'elements.domCreation',
+    id: 'elements.dom-creation',
     commandPrompt: i18nLazyString(UIStrings.showStackTrace),
     title: i18nLazyString(UIStrings.stackTrace),
     order: 10,
@@ -259,7 +259,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'elements.hide-element',
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     title: i18nLazyString(UIStrings.hideElement),
     async loadActionDelegate() {
         const Elements = await loadElementsModule();
@@ -276,7 +276,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'elements.toggle-eye-dropper',
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     title: i18nLazyString(UIStrings.toggleEyeDropper),
     async loadActionDelegate() {
         const Elements = await loadElementsModule();
@@ -293,7 +293,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'elements.edit-as-html',
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     title: i18nLazyString(UIStrings.editAsHtml),
     async loadActionDelegate() {
         const Elements = await loadElementsModule();
@@ -310,7 +310,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'elements.duplicate-element',
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     title: i18nLazyString(UIStrings.duplicateElement),
     async loadActionDelegate() {
         const Elements = await loadElementsModule();
@@ -327,7 +327,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'elements.copy-styles',
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     title: i18nLazyString(UIStrings.copyStyles),
     async loadActionDelegate() {
         const Elements = await loadElementsModule();
@@ -349,7 +349,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'elements.undo',
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     title: i18nLazyString(UIStrings.undo),
     async loadActionDelegate() {
         const Elements = await loadElementsModule();
@@ -371,7 +371,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'elements.redo',
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     title: i18nLazyString(UIStrings.redo),
     async loadActionDelegate() {
         const Elements = await loadElementsModule();
@@ -397,12 +397,12 @@ UI.ActionRegistration.registerActionExtension({
         const Elements = await loadElementsModule();
         return new Elements.InspectElementModeController.ToggleSearchActionDelegate();
     },
-    condition: Root.Runtime.ConditionName.CAN_DOCK,
+    condition: "can_dock" /* Root.Runtime.ConditionName.CAN_DOCK */,
     title: i18nLazyString(UIStrings.captureAreaScreenshot),
-    category: UI.ActionRegistration.ActionCategory.SCREENSHOT,
+    category: "SCREENSHOT" /* UI.ActionRegistration.ActionCategory.SCREENSHOT */,
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     actionId: 'elements.toggle-element-search',
     toggleable: true,
     async loadActionDelegate() {
@@ -423,7 +423,7 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     actionId: 'elements.new-style-rule',
     title: i18nLazyString(UIStrings.newStyleRule),
     iconClass: "plus" /* UI.ActionRegistration.IconClass.PLUS */,
@@ -436,7 +436,7 @@ UI.ActionRegistration.registerActionExtension({
     },
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ActionRegistration.ActionCategory.ELEMENTS */,
     actionId: 'elements.refresh-event-listeners',
     title: i18nLazyString(UIStrings.refreshEventListeners),
     iconClass: "refresh" /* UI.ActionRegistration.IconClass.REFRESH */,
@@ -449,21 +449,21 @@ UI.ActionRegistration.registerActionExtension({
     },
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.ELEMENTS,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     order: 1,
     title: i18nLazyString(UIStrings.showUserAgentShadowDOM),
     settingName: 'showUAShadowDOM',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.ELEMENTS,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     order: 2,
     title: i18nLazyString(UIStrings.wordWrap),
     settingName: 'domWordWrap',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     options: [
         {
             value: true,
@@ -477,12 +477,12 @@ Common.Settings.registerSettingExtension({
     defaultValue: true,
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.ELEMENTS,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     order: 3,
     title: i18nLazyString(UIStrings.showHtmlComments),
     settingName: 'showHTMLComments',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
         {
@@ -496,41 +496,41 @@ Common.Settings.registerSettingExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.ELEMENTS,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     order: 4,
     title: i18nLazyString(UIStrings.revealDomNodeOnHover),
     settingName: 'highlightNodeOnHoverInOverlay',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.ELEMENTS,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     order: 5,
     title: i18nLazyString(UIStrings.showDetailedInspectTooltip),
     settingName: 'showDetailedInspectTooltip',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
 });
 Common.Settings.registerSettingExtension({
     settingName: 'showEventListenersForAncestors',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.ADORNER,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "ADORNER" /* Common.Settings.SettingCategory.ADORNER */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     settingName: 'adornerSettings',
-    settingType: Common.Settings.SettingType.ARRAY,
+    settingType: "array" /* Common.Settings.SettingType.ARRAY */,
     defaultValue: [],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.ELEMENTS,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.showCSSDocumentationTooltip),
     settingName: 'showCSSPropertyDocumentationOnHover',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
 });
 UI.ContextMenu.registerProvider({
@@ -549,7 +549,7 @@ UI.ContextMenu.registerProvider({
 });
 UI.ViewManager.registerLocationResolver({
     name: "elements-sidebar" /* UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR */,
-    category: UI.ViewManager.ViewLocationCategory.ELEMENTS,
+    category: "ELEMENTS" /* UI.ViewManager.ViewLocationCategory.ELEMENTS */,
     async loadResolver() {
         const Elements = await loadElementsModule();
         return Elements.ElementsPanel.ElementsPanel.instance();
@@ -587,7 +587,7 @@ UI.Toolbar.registerToolbarItem({
         return Elements.LayersWidget.ButtonProvider.instance();
     },
     order: 1,
-    location: UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR,
+    location: "styles-sidebarpane-toolbar" /* UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,
@@ -599,7 +599,7 @@ UI.Toolbar.registerToolbarItem({
         return Elements.ElementStatePaneWidget.ButtonProvider.instance();
     },
     order: 2,
-    location: UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR,
+    location: "styles-sidebarpane-toolbar" /* UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,
@@ -611,7 +611,7 @@ UI.Toolbar.registerToolbarItem({
         return Elements.ClassesPaneWidget.ButtonProvider.instance();
     },
     order: 3,
-    location: UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR,
+    location: "styles-sidebarpane-toolbar" /* UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,
@@ -623,7 +623,7 @@ UI.Toolbar.registerToolbarItem({
         return Elements.StylesSidebarPane.ButtonProvider.instance();
     },
     order: 100,
-    location: UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR,
+    location: "styles-sidebarpane-toolbar" /* UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,
@@ -631,7 +631,7 @@ UI.Toolbar.registerToolbarItem({
 });
 UI.Toolbar.registerToolbarItem({
     actionId: 'elements.toggle-element-search',
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT,
+    location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
     order: 0,
     showLabel: undefined,
     condition: undefined,

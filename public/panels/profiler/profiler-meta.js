@@ -72,7 +72,7 @@ function maybeRetrieveContextTypes(getClassCallBack) {
 }
 UI.ViewManager.registerViewExtension({
     location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
-    id: 'heap_profiler',
+    id: 'heap-profiler',
     commandPrompt: i18nLazyString(UIStrings.showMemory),
     title: i18nLazyString(UIStrings.memory),
     order: 60,
@@ -83,7 +83,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ViewManager.registerViewExtension({
     location: "drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */,
-    id: 'live_heap_profile',
+    id: 'live-heap-profile',
     commandPrompt: i18nLazyString(UIStrings.showLiveHeapProfile),
     title: i18nLazyString(UIStrings.liveHeapProfile),
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
@@ -92,7 +92,7 @@ UI.ViewManager.registerViewExtension({
         const Profiler = await loadProfilerModule();
         return Profiler.LiveHeapProfileView.LiveHeapProfileView.instance();
     },
-    experiment: Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE,
+    experiment: "liveHeapProfile" /* Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE */,
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'live-heap-profile.toggle-recording',
@@ -104,8 +104,8 @@ UI.ActionRegistration.registerActionExtension({
         const Profiler = await loadProfilerModule();
         return new Profiler.LiveHeapProfileView.ActionDelegate();
     },
-    category: UI.ActionRegistration.ActionCategory.MEMORY,
-    experiment: Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE,
+    category: "MEMORY" /* UI.ActionRegistration.ActionCategory.MEMORY */,
+    experiment: "liveHeapProfile" /* Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE */,
     options: [
         {
             value: true,
@@ -124,13 +124,13 @@ UI.ActionRegistration.registerActionExtension({
         const Profiler = await loadProfilerModule();
         return new Profiler.LiveHeapProfileView.ActionDelegate();
     },
-    category: UI.ActionRegistration.ActionCategory.MEMORY,
-    experiment: Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE,
+    category: "MEMORY" /* UI.ActionRegistration.ActionCategory.MEMORY */,
+    experiment: "liveHeapProfile" /* Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE */,
     title: i18nLazyString(UIStrings.startRecordingHeapAllocationsAndReload),
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'profiler.heap-toggle-recording',
-    category: UI.ActionRegistration.ActionCategory.MEMORY,
+    category: "MEMORY" /* UI.ActionRegistration.ActionCategory.MEMORY */,
     iconClass: "record-start" /* UI.ActionRegistration.IconClass.START_RECORDING */,
     title: i18nLazyString(UIStrings.startStopRecording),
     toggleable: true,
@@ -156,7 +156,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'profiler.clear-all',
-    category: UI.ActionRegistration.ActionCategory.MEMORY,
+    category: "MEMORY" /* UI.ActionRegistration.ActionCategory.MEMORY */,
     iconClass: "clear" /* UI.ActionRegistration.IconClass.CLEAR */,
     contextTypes() {
         return maybeRetrieveContextTypes(Profiler => [Profiler.ProfilesPanel.ProfilesPanel]);
@@ -169,7 +169,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'profiler.load-from-file',
-    category: UI.ActionRegistration.ActionCategory.MEMORY,
+    category: "MEMORY" /* UI.ActionRegistration.ActionCategory.MEMORY */,
     iconClass: "import" /* UI.ActionRegistration.IconClass.IMPORT */,
     contextTypes() {
         return maybeRetrieveContextTypes(Profiler => [Profiler.ProfilesPanel.ProfilesPanel]);
@@ -192,7 +192,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'profiler.save-to-file',
-    category: UI.ActionRegistration.ActionCategory.MEMORY,
+    category: "MEMORY" /* UI.ActionRegistration.ActionCategory.MEMORY */,
     iconClass: "download" /* UI.ActionRegistration.IconClass.DOWNLOAD */,
     contextTypes() {
         return maybeRetrieveContextTypes(Profiler => [Profiler.ProfileHeader.ProfileHeader]);
@@ -215,7 +215,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'profiler.delete-profile',
-    category: UI.ActionRegistration.ActionCategory.MEMORY,
+    category: "MEMORY" /* UI.ActionRegistration.ActionCategory.MEMORY */,
     iconClass: "download" /* UI.ActionRegistration.IconClass.DOWNLOAD */,
     contextTypes() {
         return maybeRetrieveContextTypes(Profiler => [Profiler.ProfileHeader.ProfileHeader]);
@@ -239,12 +239,12 @@ UI.ContextMenu.registerProvider({
     experiment: undefined,
 });
 UI.ContextMenu.registerItem({
-    location: UI.ContextMenu.ItemLocation.PROFILER_MENU_DEFAULT,
+    location: "profilerMenu/default" /* UI.ContextMenu.ItemLocation.PROFILER_MENU_DEFAULT */,
     actionId: 'profiler.save-to-file',
     order: 10,
 });
 UI.ContextMenu.registerItem({
-    location: UI.ContextMenu.ItemLocation.PROFILER_MENU_DEFAULT,
+    location: "profilerMenu/default" /* UI.ContextMenu.ItemLocation.PROFILER_MENU_DEFAULT */,
     actionId: 'profiler.delete-profile',
     order: 11,
 });

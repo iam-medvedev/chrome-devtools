@@ -66,7 +66,7 @@ export class OverviewGrid {
         this.window = new Window(this.element, this.grid.dividersLabelBarElement, calculator);
     }
     enableCreateBreadcrumbsButton() {
-        this.window.enableCreateBreadcrumbsButton();
+        return this.window.enableCreateBreadcrumbsButton();
     }
     set showingScreenshots(isShowing) {
         this.window.showingScreenshots = isShowing;
@@ -187,6 +187,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.#changeBreadcrumbButtonVisibilityOnInteraction(this.parentElement);
         this.#changeBreadcrumbButtonVisibilityOnInteraction(this.rightResizeElement);
         this.#changeBreadcrumbButtonVisibilityOnInteraction(this.leftResizeElement);
+        return this.breadcrumbButtonContainerElement;
     }
     set showingScreenshots(isShowing) {
         this.breadcrumbButtonContainerElement.classList.toggle('with-screenshots', isShowing);
@@ -427,9 +428,9 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.windowRight = windowRight;
         this.updateCurtains();
         if (this.calculator) {
-            this.dispatchEventToListeners(Events.WindowChangedWithPosition, this.calculateWindowPosition());
+            this.dispatchEventToListeners("WindowChangedWithPosition" /* Events.WindowChangedWithPosition */, this.calculateWindowPosition());
         }
-        this.dispatchEventToListeners(Events.WindowChanged);
+        this.dispatchEventToListeners("WindowChanged" /* Events.WindowChanged */);
         this.#changeBreadcrumbButtonVisibility(windowLeft, windowRight);
     }
     // "Create breadcrumb" button is only visible when the window is set to
@@ -446,7 +447,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     #createBreadcrumb() {
-        this.dispatchEventToListeners(Events.BreadcrumbAdded, this.calculateWindowPosition());
+        this.dispatchEventToListeners("BreadcrumbAdded" /* Events.BreadcrumbAdded */, this.calculateWindowPosition());
     }
     updateCurtains() {
         const windowLeft = this.windowLeft || 0;
@@ -560,14 +561,6 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.setWindow(left, right);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["WindowChanged"] = "WindowChanged";
-    Events["WindowChangedWithPosition"] = "WindowChangedWithPosition";
-    Events["BreadcrumbAdded"] = "BreadcrumbAdded";
-})(Events || (Events = {}));
 export class WindowSelector {
     startPosition;
     width;

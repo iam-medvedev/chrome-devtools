@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { RuntimeModel } from './RuntimeModel.js';
-import { Capability } from './Target.js';
 import { SDKModel } from './SDKModel.js';
 export class HeapProfilerModel extends SDKModel {
     #enabled;
@@ -92,31 +91,21 @@ export class HeapProfilerModel extends SDKModel {
         return Boolean(response.getError());
     }
     heapStatsUpdate(samples) {
-        this.dispatchEventToListeners(Events.HeapStatsUpdate, samples);
+        this.dispatchEventToListeners("HeapStatsUpdate" /* Events.HeapStatsUpdate */, samples);
     }
     lastSeenObjectId(lastSeenObjectId, timestamp) {
-        this.dispatchEventToListeners(Events.LastSeenObjectId, { lastSeenObjectId: lastSeenObjectId, timestamp: timestamp });
+        this.dispatchEventToListeners("LastSeenObjectId" /* Events.LastSeenObjectId */, { lastSeenObjectId: lastSeenObjectId, timestamp: timestamp });
     }
     addHeapSnapshotChunk(chunk) {
-        this.dispatchEventToListeners(Events.AddHeapSnapshotChunk, chunk);
+        this.dispatchEventToListeners("AddHeapSnapshotChunk" /* Events.AddHeapSnapshotChunk */, chunk);
     }
     reportHeapSnapshotProgress(done, total, finished) {
-        this.dispatchEventToListeners(Events.ReportHeapSnapshotProgress, { done: done, total: total, finished: finished });
+        this.dispatchEventToListeners("ReportHeapSnapshotProgress" /* Events.ReportHeapSnapshotProgress */, { done: done, total: total, finished: finished });
     }
     resetProfiles() {
-        this.dispatchEventToListeners(Events.ResetProfiles, this);
+        this.dispatchEventToListeners("ResetProfiles" /* Events.ResetProfiles */, this);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["HeapStatsUpdate"] = "HeapStatsUpdate";
-    Events["LastSeenObjectId"] = "LastSeenObjectId";
-    Events["AddHeapSnapshotChunk"] = "AddHeapSnapshotChunk";
-    Events["ReportHeapSnapshotProgress"] = "ReportHeapSnapshotProgress";
-    Events["ResetProfiles"] = "ResetProfiles";
-})(Events || (Events = {}));
 class HeapProfilerDispatcher {
     #heapProfilerModel;
     constructor(model) {
@@ -138,5 +127,5 @@ class HeapProfilerDispatcher {
         this.#heapProfilerModel.resetProfiles();
     }
 }
-SDKModel.register(HeapProfilerModel, { capabilities: Capability.JS, autostart: false });
+SDKModel.register(HeapProfilerModel, { capabilities: 4 /* Capability.JS */, autostart: false });
 //# sourceMappingURL=HeapProfilerModel.js.map

@@ -7,7 +7,7 @@ import { CategorizedBreakpointsSidebarPane } from './CategorizedBreakpointsSideb
 export class CSPViolationBreakpointsSidebarPane extends CategorizedBreakpointsSidebarPane {
     constructor() {
         const breakpoints = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().cspViolationBreakpoints();
-        super(breakpoints, 'sources.cspViolationBreakpoints', "CSPViolation" /* Protocol.Debugger.PausedEventReason.CSPViolation */);
+        super(breakpoints, 'sources.csp-violation-breakpoints', "CSPViolation" /* Protocol.Debugger.PausedEventReason.CSPViolation */);
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('debugger-csp-breakpoints')}`);
     }
     getBreakpointFromPausedDetails(details) {

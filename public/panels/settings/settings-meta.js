@@ -74,7 +74,7 @@ UI.ViewManager.registerViewExtension({
     title: i18nLazyString(UIStrings.experiments),
     commandPrompt: i18nLazyString(UIStrings.showExperiments),
     order: 3,
-    experiment: Root.Runtime.ExperimentName.ALL,
+    experiment: "*" /* Root.Runtime.ExperimentName.ALL */,
     async loadView() {
         const Settings = await loadSettingsModule();
         return new Settings.SettingsScreen.ExperimentsSettingsTab();
@@ -103,7 +103,7 @@ UI.ViewManager.registerViewExtension({
     },
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.SETTINGS,
+    category: "SETTINGS" /* UI.ActionRegistration.ActionCategory.SETTINGS */,
     actionId: 'settings.show',
     title: i18nLazyString(UIStrings.settings),
     async loadActionDelegate() {
@@ -138,7 +138,7 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.SETTINGS,
+    category: "SETTINGS" /* UI.ActionRegistration.ActionCategory.SETTINGS */,
     actionId: 'settings.documentation',
     title: i18nLazyString(UIStrings.documentation),
     async loadActionDelegate() {
@@ -147,7 +147,7 @@ UI.ActionRegistration.registerActionExtension({
     },
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.SETTINGS,
+    category: "SETTINGS" /* UI.ActionRegistration.ActionCategory.SETTINGS */,
     actionId: 'settings.shortcuts',
     title: i18nLazyString(UIStrings.showShortcuts),
     async loadActionDelegate() {
@@ -173,7 +173,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ViewManager.registerLocationResolver({
     name: "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */,
-    category: UI.ViewManager.ViewLocationCategory.SETTINGS,
+    category: "SETTINGS" /* UI.ViewManager.ViewLocationCategory.SETTINGS */,
     async loadResolver() {
         const Settings = await loadSettingsModule();
         return Settings.SettingsScreen.SettingsScreen.instance();
@@ -193,12 +193,12 @@ Common.Revealer.registerRevealer({
     },
 });
 UI.ContextMenu.registerItem({
-    location: UI.ContextMenu.ItemLocation.MAIN_MENU_FOOTER,
+    location: "mainMenu/footer" /* UI.ContextMenu.ItemLocation.MAIN_MENU_FOOTER */,
     actionId: 'settings.shortcuts',
     order: undefined,
 });
 UI.ContextMenu.registerItem({
-    location: UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT,
+    location: "mainMenuHelp/default" /* UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT */,
     actionId: 'settings.documentation',
     order: undefined,
 });

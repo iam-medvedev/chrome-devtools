@@ -104,7 +104,7 @@ let JSONEditor = class JSONEditor extends LitElement {
         this.#hintPopoverHelper.setTimeout(300);
         this.#hintPopoverHelper.setHasPadding(true);
         const targetManager = SDK.TargetManager.TargetManager.instance();
-        targetManager.addEventListener(SDK.TargetManager.Events.AvailableTargetsChanged, this.#handleAvailableTargetsChanged, this);
+        targetManager.addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AvailableTargetsChanged */, this.#handleAvailableTargetsChanged, this);
         this.#handleAvailableTargetsChanged();
     }
     disconnectedCallback() {
@@ -112,7 +112,7 @@ let JSONEditor = class JSONEditor extends LitElement {
         this.#hintPopoverHelper?.hidePopover();
         this.#hintPopoverHelper?.dispose();
         const targetManager = SDK.TargetManager.TargetManager.instance();
-        targetManager.removeEventListener(SDK.TargetManager.Events.AvailableTargetsChanged, this.#handleAvailableTargetsChanged, this);
+        targetManager.removeEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AvailableTargetsChanged */, this.#handleAvailableTargetsChanged, this);
     }
     #handleAvailableTargetsChanged() {
         this.targets = SDK.TargetManager.TargetManager.instance().targets();

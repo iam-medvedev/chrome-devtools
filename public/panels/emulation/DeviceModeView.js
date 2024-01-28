@@ -186,9 +186,9 @@ export class DeviceModeView extends UI.Widget.VBox {
             cursor = 'nesw-resize';
         }
         resizer.setCursor(cursor);
-        resizer.addEventListener(UI.ResizerWidget.Events.ResizeStart, this.onResizeStart, this);
-        resizer.addEventListener(UI.ResizerWidget.Events.ResizeUpdateXY, this.onResizeUpdate.bind(this, widthFactor, heightFactor));
-        resizer.addEventListener(UI.ResizerWidget.Events.ResizeEnd, this.onResizeEnd, this);
+        resizer.addEventListener("ResizeStart" /* UI.ResizerWidget.Events.ResizeStart */, this.onResizeStart, this);
+        resizer.addEventListener("ResizeUpdateXY" /* UI.ResizerWidget.Events.ResizeUpdateXY */, this.onResizeUpdate.bind(this, widthFactor, heightFactor));
+        resizer.addEventListener("ResizeEnd" /* UI.ResizerWidget.Events.ResizeEnd */, this.onResizeEnd, this);
         return resizer;
     }
     onResizeStart() {

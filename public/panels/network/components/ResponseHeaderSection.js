@@ -85,11 +85,11 @@ export class ResponseHeaderSection extends HTMLElement {
         if (this.#request.wasBlocked()) {
             const headerWithIssues = BlockedReasonDetails.get(this.#request.blockedReason());
             if (headerWithIssues) {
-                if (IssuesManager.RelatedIssue.hasIssueOfCategory(this.#request, IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy)) {
+                if (IssuesManager.RelatedIssue.hasIssueOfCategory(this.#request, "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy */)) {
                     const followLink = () => {
-                        Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.LearnMoreLinkCOEP);
+                        Host.userMetrics.issuesPanelOpenedFrom(1 /* Host.UserMetrics.IssueOpener.LearnMoreLinkCOEP */);
                         if (this.#request) {
-                            void IssuesManager.RelatedIssue.reveal(this.#request, IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy);
+                            void IssuesManager.RelatedIssue.reveal(this.#request, "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy */);
                         }
                     };
                     if (headerWithIssues.blockedDetails) {
@@ -132,7 +132,7 @@ export class ResponseHeaderSection extends HTMLElement {
                 }
             }
         }
-        if (data.toReveal?.section === NetworkForward.UIRequestLocation.UIHeaderSection.Response) {
+        if (data.toReveal?.section === "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */) {
             this.#headerDetails.filter(header => compareHeaders(header.name, data.toReveal?.header?.toLowerCase()))
                 .forEach(header => {
                 header.highlight = true;
@@ -408,6 +408,7 @@ export class ResponseHeaderSection extends HTMLElement {
             @headerremoved=${this.#onHeaderRemoved}
             @enableheaderediting=${this.#onEnableHeaderEditingClick}
             data-index=${index}
+            jslog=${VisualLogging.value().context('response-header')}
         ></${HeaderSectionRow.litTagName}>
       `)}
       ${this.#headersAreOverrideable ? html `

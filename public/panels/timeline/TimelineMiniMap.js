@@ -32,7 +32,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.element.classList.add('timeline-minimap');
         this.#breadcrumbsUI = new TimelineComponents.BreadcrumbsUI.BreadcrumbsUI();
         this.#overviewComponent.show(this.element);
-        this.#overviewComponent.addEventListener(PerfUI.TimelineOverviewPane.Events.OverviewPaneWindowChanged, event => {
+        this.#overviewComponent.addEventListener("OverviewPaneWindowChanged" /* PerfUI.TimelineOverviewPane.Events.OverviewPaneWindowChanged */, event => {
             this.#onOverviewPanelWindowChanged(event);
         });
         this.#activateBreadcrumbs();
@@ -64,7 +64,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     #activateBreadcrumbs() {
         this.breadcrumbsActivated = true;
         this.element.prepend(this.#breadcrumbsUI);
-        this.#overviewComponent.addEventListener(PerfUI.TimelineOverviewPane.Events.OverviewPaneBreadcrumbAdded, event => {
+        this.#overviewComponent.addEventListener("OverviewPaneBreadcrumbAdded" /* PerfUI.TimelineOverviewPane.Events.OverviewPaneBreadcrumbAdded */, event => {
             this.#addBreadcrumb(event.data);
         });
         this.#breadcrumbsUI.addEventListener(TimelineComponents.BreadcrumbsUI.BreadcrumbRemovedEvent.eventName, event => {

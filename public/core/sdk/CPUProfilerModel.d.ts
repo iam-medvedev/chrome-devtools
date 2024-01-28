@@ -24,7 +24,7 @@ export declare class CPUProfilerModel extends SDKModel<EventTypes> implements Pr
     stopPreciseCoverage(): Promise<unknown>;
     preciseCoverageDeltaUpdate({ timestamp, occasion, result }: Protocol.Profiler.PreciseCoverageDeltaUpdateEvent): void;
 }
-export declare enum Events {
+export declare const enum Events {
     ConsoleProfileStarted = "ConsoleProfileStarted",
     ConsoleProfileFinished = "ConsoleProfileFinished"
 }

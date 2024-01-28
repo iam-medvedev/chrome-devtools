@@ -389,8 +389,6 @@ export class HeapSnapshotGridNode extends Common.ObjectWrapper.eventMixin(HeapSn
     }
 }
 (function (HeapSnapshotGridNode) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
     let Events;
     (function (Events) {
         Events["PopulateComplete"] = "PopulateComplete";

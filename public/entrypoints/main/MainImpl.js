@@ -245,6 +245,7 @@ export class MainImpl {
         Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor', undefined, 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor');
         Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
         Root.Runtime.experiments.register('showOptionToExposeInternalsInHeapSnapshot', 'Show option to expose internals in heap snapshots');
+        Root.Runtime.experiments.register('heapSnapshotTreatBackingStoreAsContainingObject', 'In heap snapshots, treat backing store size as part of the containing object');
         // Timeline
         Root.Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
         Root.Runtime.experiments.register('timelineShowAllEvents', 'Timeline: show all events', true);
@@ -253,7 +254,7 @@ export class MainImpl {
         // JS Profiler
         Root.Runtime.experiments.register('jsProfilerTemporarilyEnable', 'Enable JavaScript Profiler temporarily', /* unstable= */ false, 'https://goo.gle/js-profiler-deprecation', 'https://crbug.com/1354548');
         // Sources
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE, 'Disable Indentation Markers temporarily', 
+        Root.Runtime.experiments.register("sourcesFrameIndentationMarkersTemporarilyDisable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */, 'Disable Indentation Markers temporarily', 
         /* unstable= */ false, 'https://developer.chrome.com/blog/new-in-devtools-121/#indentation', 'https://crbug.com/1479986');
         // Debugging
         Root.Runtime.experiments.register('evaluateExpressionsWithSourceMaps', 'Resolve variable names in expressions using source maps', undefined, 'https://goo.gle/evaluate-source-var-default', 'https://crbug.com/1504123');
@@ -270,36 +271,39 @@ export class MainImpl {
         Root.Runtime.experiments.register('contrastIssues', 'Enable automatic contrast issue reporting via the Issues panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast');
         // New cookie features.
         Root.Runtime.experiments.register('experimentalCookieFeatures', 'Enable experimental cookie features');
+        // CSS <length> authoring tool.
+        Root.Runtime.experiments.register('cssTypeComponentLength', 'Enable CSS <length> authoring tool in the Styles pane', undefined, 'https://developer.chrome.com/blog/new-in-devtools-96/#length', 'https://g.co/devtools/length-feedback');
         // Integrate CSS changes in the Styles pane.
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES, 'Sync CSS changes in the Styles pane');
+        Root.Runtime.experiments.register("stylesPaneCSSChanges" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */, 'Sync CSS changes in the Styles pane');
         // Highlights a violating node or attribute by rendering a squiggly line under it and adding a tooltip linking to the issues panel.
         // Right now violating nodes are exclusively form fields that contain an HTML issue, for example, and <input /> whose id is duplicate inside the form.
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL, 'Highlights a violating node or attribute in the Elements panel DOM tree');
+        Root.Runtime.experiments.register("highlightErrorsElementsPanel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */, 'Highlights a violating node or attribute in the Elements panel DOM tree');
         // Change grouping of sources panel to use Authored/Deployed trees
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING, 'Group sources into Authored and Deployed trees', undefined, 'https://goo.gle/authored-deployed', 'https://goo.gle/authored-deployed-feedback');
+        Root.Runtime.experiments.register("authoredDeployedGrouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, 'Group sources into Authored and Deployed trees', undefined, 'https://goo.gle/authored-deployed', 'https://goo.gle/authored-deployed-feedback');
         // Hide third party code (as determined by ignore lists or source maps)
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.JUST_MY_CODE, 'Hide ignore-listed code in sources tree view');
+        Root.Runtime.experiments.register("justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, 'Hide ignore-listed code in sources tree view');
         // Highlight important DOM properties in the Object Properties viewer.
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.IMPORTANT_DOM_PROPERTIES, 'Highlight important DOM properties in the Object Properties viewer');
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL, 'Enable Speculative Loads Panel in Application panel', true);
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR, 'Enable background page selector (e.g. for prerendering debugging)', false);
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.SELF_XSS_WARNING, 'Show warning about Self-XSS when pasting code');
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE, 'Enable Storage Buckets Tree in Application panel', true);
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN, 'Redesign of the filter bar in the Network Panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU, 'Enable context menu that allows to modify trees in the Flame Chart', true);
-        Root.Runtime.experiments.register(Root.Runtime.ExperimentName.AUTOFILL_VIEW, 'Enable Autofill view');
+        Root.Runtime.experiments.register("importantDOMProperties" /* Root.Runtime.ExperimentName.IMPORTANT_DOM_PROPERTIES */, 'Highlight important DOM properties in the Object Properties viewer');
+        Root.Runtime.experiments.register("preloadingStatusPanel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */, 'Enable Speculative Loads Panel in Application panel', true);
+        Root.Runtime.experiments.register("outermostTargetSelector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */, 'Enable background page selector (e.g. for prerendering debugging)', false);
+        Root.Runtime.experiments.register("selfXssWarning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */, 'Show warning about Self-XSS when pasting code');
+        Root.Runtime.experiments.register("storageBucketsTree" /* Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE */, 'Enable Storage Buckets Tree in Application panel', true);
+        Root.Runtime.experiments.register("networkPanelFilterBarRedesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network Panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
+        Root.Runtime.experiments.register("trackContextMenu" /* Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU */, 'Enable context menu that allows to modify trees in the Flame Chart', true);
+        Root.Runtime.experiments.register("autofillView" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Enable Autofill view');
         if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
-            Root.Runtime.experiments.register(Root.Runtime.ExperimentName.CONSOLE_INSIGHTS, 'Enable Console Insights. This implies consent to collect and process data', false, 'http://go/console-insights-experiment', 'http://go/console-insights-experiment-general-feedback');
+            Root.Runtime.experiments.register("consoleInsights" /* Root.Runtime.ExperimentName.CONSOLE_INSIGHTS */, 'Enable Console Insights. This implies consent to collect and process data', false, 'http://go/console-insights-experiment', 'http://go/console-insights-experiment-general-feedback');
         }
         Root.Runtime.experiments.enableExperimentsByDefault([
+            'cssTypeComponentLength',
             'setAllBreakpointsEagerly',
-            Root.Runtime.ExperimentName.TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL,
-            Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR,
-            Root.Runtime.ExperimentName.SELF_XSS_WARNING,
-            Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL,
+            "timelineAsConsoleProfileResultPanel" /* Root.Runtime.ExperimentName.TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL */,
+            "outermostTargetSelector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
+            "selfXssWarning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */,
+            "preloadingStatusPanel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
             'evaluateExpressionsWithSourceMaps',
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocolMonitor'] : []),
-            Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN,
+            "networkPanelFilterBarRedesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
         const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
@@ -368,7 +372,7 @@ export class MainImpl {
         UI.DockController.DockController.instance({ forceNew: true, canDock });
         SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
         SDK.DOMDebuggerModel.DOMDebuggerManager.instance({ forceNew: true });
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this.#onSuspendStateChanged.bind(this));
+        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SuspendStateChanged */, this.#onSuspendStateChanged.bind(this));
         Workspace.FileManager.FileManager.instance({ forceNew: true });
         Workspace.Workspace.WorkspaceImpl.instance();
         Bindings.NetworkProject.NetworkProjectManager.instance();
@@ -499,7 +503,7 @@ export class MainImpl {
         return this.#readyForTestPromise;
     }
     #registerMessageSinkListener() {
-        Common.Console.Console.instance().addEventListener(Common.Console.Events.MessageAdded, messageAdded);
+        Common.Console.Console.instance().addEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, messageAdded);
         function messageAdded({ data: message }) {
             if (message.show) {
                 Common.Console.Console.instance().show();
@@ -644,14 +648,14 @@ export class MainMenuItem {
             const bottom = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToBottom), 'dock-bottom');
             const right = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToRight), 'dock-right');
             const left = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToLeft), 'dock-left');
-            undock.addEventListener(UI.Toolbar.ToolbarButton.Events.MouseDown, event => event.data.consume());
-            bottom.addEventListener(UI.Toolbar.ToolbarButton.Events.MouseDown, event => event.data.consume());
-            right.addEventListener(UI.Toolbar.ToolbarButton.Events.MouseDown, event => event.data.consume());
-            left.addEventListener(UI.Toolbar.ToolbarButton.Events.MouseDown, event => event.data.consume());
-            undock.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, "undocked" /* UI.DockController.DockState.UNDOCKED */));
-            bottom.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, "bottom" /* UI.DockController.DockState.BOTTOM */));
-            right.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, "right" /* UI.DockController.DockState.RIGHT */));
-            left.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, setDockSide.bind(null, "left" /* UI.DockController.DockState.LEFT */));
+            undock.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
+            bottom.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
+            right.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
+            left.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
+            undock.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, setDockSide.bind(null, "undocked" /* UI.DockController.DockState.UNDOCKED */));
+            bottom.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, setDockSide.bind(null, "bottom" /* UI.DockController.DockState.BOTTOM */));
+            right.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, setDockSide.bind(null, "right" /* UI.DockController.DockState.RIGHT */));
+            left.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, setDockSide.bind(null, "left" /* UI.DockController.DockState.LEFT */));
             undock.setToggled(UI.DockController.DockController.instance().dockSide() === "undocked" /* UI.DockController.DockState.UNDOCKED */);
             bottom.setToggled(UI.DockController.DockController.instance().dockSide() === "bottom" /* UI.DockController.DockState.BOTTOM */);
             right.setToggled(UI.DockController.DockController.instance().dockSide() === "right" /* UI.DockController.DockState.RIGHT */);
@@ -715,7 +719,7 @@ export class MainMenuItem {
             const id = viewExtension.viewId();
             if (id === 'issues-pane') {
                 moreTools.defaultSection().appendItem(title, () => {
-                    Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.HamburgerMenu);
+                    Host.userMetrics.issuesPanelOpenedFrom(3 /* Host.UserMetrics.IssueOpener.HamburgerMenu */);
                     void UI.ViewManager.ViewManager.instance().showView('issues-pane', /* userGesture */ true);
                 }, { jslogContext: id });
                 continue;

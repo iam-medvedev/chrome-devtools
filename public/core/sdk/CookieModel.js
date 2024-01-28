@@ -6,7 +6,6 @@ import * as Root from '../root/root.js';
 import { Cookie } from './Cookie.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel } from './ResourceTreeModel.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability } from './Target.js';
 import { TargetManager } from './TargetManager.js';
 export class CookieModel extends SDKModel {
     #blockedCookies;
@@ -44,7 +43,11 @@ export class CookieModel extends SDKModel {
             return [];
         }
         const normalCookies = response.cookies.map(Cookie.fromProtocolCookie);
-        return normalCookies.concat(Array.from(this.#blockedCookies.values()));
+        const blockedCookieArray = Array.from(this.#blockedCookies.values());
+        const matchesBlockedCookie = (cookie) => {
+            return blockedCookieArray.some(blockedCookie => cookie.isEqual(blockedCookie));
+        };
+        return normalCookies.filter(cookie => !matchesBlockedCookie(cookie)).concat(blockedCookieArray);
     }
     async deleteCookie(cookie) {
         await this.deleteCookies([cookie]);
@@ -124,5 +127,5 @@ export class CookieModel extends SDKModel {
         await Promise.all(cookies.map(cookie => networkAgent.invoke_deleteCookies({ name: cookie.name(), url: undefined, domain: cookie.domain(), path: cookie.path() })));
     }
 }
-SDKModel.register(CookieModel, { capabilities: Capability.Network, autostart: false });
+SDKModel.register(CookieModel, { capabilities: 16 /* Capability.Network */, autostart: false });
 //# sourceMappingURL=CookieModel.js.map

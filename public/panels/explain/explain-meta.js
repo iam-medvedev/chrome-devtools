@@ -23,9 +23,9 @@ const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined
 if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
     const Console = await import('../console/console.js');
     UI.ActionRegistration.registerActionExtension({
-        experiment: Root.Runtime.ExperimentName.CONSOLE_INSIGHTS,
+        experiment: "consoleInsights" /* Root.Runtime.ExperimentName.CONSOLE_INSIGHTS */,
         actionId: 'explain.console-message.hover',
-        category: UI.ActionRegistration.ActionCategory.CONSOLE,
+        category: "CONSOLE" /* UI.ActionRegistration.ActionCategory.CONSOLE */,
         async loadActionDelegate() {
             const Explain = await import('./explain.js');
             return new Explain.ActionDelegate();
@@ -36,9 +36,9 @@ if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
         },
     });
     UI.ActionRegistration.registerActionExtension({
-        experiment: Root.Runtime.ExperimentName.CONSOLE_INSIGHTS,
+        experiment: "consoleInsights" /* Root.Runtime.ExperimentName.CONSOLE_INSIGHTS */,
         actionId: 'explain.console-message.context.error',
-        category: UI.ActionRegistration.ActionCategory.CONSOLE,
+        category: "CONSOLE" /* UI.ActionRegistration.ActionCategory.CONSOLE */,
         async loadActionDelegate() {
             const Explain = await import('./explain.js');
             return new Explain.ActionDelegate();
@@ -49,9 +49,9 @@ if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
         },
     });
     UI.ActionRegistration.registerActionExtension({
-        experiment: Root.Runtime.ExperimentName.CONSOLE_INSIGHTS,
+        experiment: "consoleInsights" /* Root.Runtime.ExperimentName.CONSOLE_INSIGHTS */,
         actionId: 'explain.console-message.context.warning',
-        category: UI.ActionRegistration.ActionCategory.CONSOLE,
+        category: "CONSOLE" /* UI.ActionRegistration.ActionCategory.CONSOLE */,
         async loadActionDelegate() {
             const Explain = await import('./explain.js');
             return new Explain.ActionDelegate();
@@ -62,9 +62,9 @@ if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
         },
     });
     UI.ActionRegistration.registerActionExtension({
-        experiment: Root.Runtime.ExperimentName.CONSOLE_INSIGHTS,
+        experiment: "consoleInsights" /* Root.Runtime.ExperimentName.CONSOLE_INSIGHTS */,
         actionId: 'explain.console-message.context.other',
-        category: UI.ActionRegistration.ActionCategory.CONSOLE,
+        category: "CONSOLE" /* UI.ActionRegistration.ActionCategory.CONSOLE */,
         async loadActionDelegate() {
             const Explain = await import('./explain.js');
             return new Explain.ActionDelegate();

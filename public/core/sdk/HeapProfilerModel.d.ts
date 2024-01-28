@@ -27,7 +27,7 @@ export declare class HeapProfilerModel extends SDKModel<EventTypes> {
     reportHeapSnapshotProgress(done: number, total: number, finished?: boolean): void;
     resetProfiles(): void;
 }
-export declare enum Events {
+export declare const enum Events {
     HeapStatsUpdate = "HeapStatsUpdate",
     LastSeenObjectId = "LastSeenObjectId",
     AddHeapSnapshotChunk = "AddHeapSnapshotChunk",

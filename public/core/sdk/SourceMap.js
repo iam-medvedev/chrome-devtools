@@ -392,7 +392,7 @@ export class SourceMap {
             nameIndex += this.decodeVLQ(stringCharIterator);
             this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
         }
-        if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES)) {
+        if (Root.Runtime.experiments.isEnabled("useSourceMapScopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */)) {
             this.parseScopes(map);
         }
     }

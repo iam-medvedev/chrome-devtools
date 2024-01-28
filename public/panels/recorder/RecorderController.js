@@ -106,10 +106,10 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const GET_EXTENSIONS_MENU_ITEM = 'get-extensions-link';
 const GET_EXTENSIONS_URL = 'https://goo.gle/recorder-extension-list';
 const CONVERTER_ID_TO_METRIC = {
-    ["json" /* Models.ConverterIds.ConverterIds.JSON */]: Host.UserMetrics.RecordingExported.ToJSON,
-    ["@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */]: Host.UserMetrics.RecordingExported.ToPuppeteerReplay,
-    ["puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */]: Host.UserMetrics.RecordingExported.ToPuppeteer,
-    ["lighthouse" /* Models.ConverterIds.ConverterIds.Lighthouse */]: Host.UserMetrics.RecordingExported.ToLighthouse,
+    ["json" /* Models.ConverterIds.ConverterIds.JSON */]: 2 /* Host.UserMetrics.RecordingExported.ToJSON */,
+    ["@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */]: 3 /* Host.UserMetrics.RecordingExported.ToPuppeteerReplay */,
+    ["puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */]: 1 /* Host.UserMetrics.RecordingExported.ToPuppeteer */,
+    ["lighthouse" /* Models.ConverterIds.ConverterIds.Lighthouse */]: 5 /* Host.UserMetrics.RecordingExported.ToLighthouse */,
 };
 let RecorderController = class RecorderController extends LitElement {
     static styles = [recorderControllerStyles];
@@ -143,7 +143,7 @@ let RecorderController = class RecorderController extends LitElement {
         ]);
         const extensionManager = Extensions.ExtensionManager.ExtensionManager.instance();
         this.#updateExtensions(extensionManager.extensions());
-        extensionManager.addEventListener(Extensions.ExtensionManager.Events.ExtensionsUpdated, event => {
+        extensionManager.addEventListener("extensionsUpdated" /* Extensions.ExtensionManager.Events.ExtensionsUpdated */, event => {
             this.#updateExtensions(event.data);
         });
         // used in e2e tests only.
@@ -307,11 +307,11 @@ let RecorderController = class RecorderController extends LitElement {
             return;
         }
         const pluginManager = PublicExtensions.RecorderPluginManager.RecorderPluginManager.instance();
-        const promise = pluginManager.once(PublicExtensions.RecorderPluginManager.Events.ShowViewRequested);
+        const promise = pluginManager.once("showViewRequested" /* PublicExtensions.RecorderPluginManager.Events.ShowViewRequested */);
         extension.replay(this.currentRecording.flow);
         const descriptor = await promise;
         this.viewDescriptor = descriptor;
-        Host.userMetrics.recordingReplayStarted(Host.UserMetrics.RecordingReplayStarted.ReplayViaExtension);
+        Host.userMetrics.recordingReplayStarted(3 /* Host.UserMetrics.RecordingReplayStarted.ReplayViaExtension */);
     }
     async #onPlayRecording(event) {
         if (!this.currentRecording || !this.#replayAllowed) {
@@ -323,9 +323,9 @@ let RecorderController = class RecorderController extends LitElement {
         if (event.data.extension) {
             return this.#onPlayViaExtension(event.data.extension);
         }
-        Host.userMetrics.recordingReplayStarted(event.data.targetPanel !== "chrome_recorder" /* Components.RecordingView.TargetPanel.Default */ ?
-            Host.UserMetrics.RecordingReplayStarted.ReplayWithPerformanceTracing :
-            Host.UserMetrics.RecordingReplayStarted.ReplayOnly);
+        Host.userMetrics.recordingReplayStarted(event.data.targetPanel !== "chrome-recorder" /* Components.RecordingView.TargetPanel.Default */ ?
+            2 /* Host.UserMetrics.RecordingReplayStarted.ReplayWithPerformanceTracing */ :
+            1 /* Host.UserMetrics.RecordingReplayStarted.ReplayOnly */);
         this.#replayState.isPlaying = true;
         this.currentStep = undefined;
         this.recordingError = undefined;
@@ -365,13 +365,13 @@ let RecorderController = class RecorderController extends LitElement {
             this.lastReplayResult = "Failure" /* Models.RecordingPlayer.ReplayResult.Failure */;
             const errorMessage = error.message.toLowerCase();
             if (errorMessage.startsWith('could not find element')) {
-                Host.userMetrics.recordingReplayFinished(Host.UserMetrics.RecordingReplayFinished.TimeoutErrorSelectors);
+                Host.userMetrics.recordingReplayFinished(2 /* Host.UserMetrics.RecordingReplayFinished.TimeoutErrorSelectors */);
             }
             else if (errorMessage.startsWith('waiting for target failed')) {
-                Host.userMetrics.recordingReplayFinished(Host.UserMetrics.RecordingReplayFinished.TimeoutErrorTarget);
+                Host.userMetrics.recordingReplayFinished(3 /* Host.UserMetrics.RecordingReplayFinished.TimeoutErrorTarget */);
             }
             else {
-                Host.userMetrics.recordingReplayFinished(Host.UserMetrics.RecordingReplayFinished.OtherError);
+                Host.userMetrics.recordingReplayFinished(4 /* Host.UserMetrics.RecordingReplayFinished.OtherError */);
             }
         });
         this.recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.Done */, () => {
@@ -382,7 +382,7 @@ let RecorderController = class RecorderController extends LitElement {
             this.lastReplayResult = "Success" /* Models.RecordingPlayer.ReplayResult.Success */;
             // Dispatch an event for e2e testing.
             this.dispatchEvent(new Events.ReplayFinishedEvent());
-            Host.userMetrics.recordingReplayFinished(Host.UserMetrics.RecordingReplayFinished.Success);
+            Host.userMetrics.recordingReplayFinished(1 /* Host.UserMetrics.RecordingReplayFinished.Success */);
         });
         this.recordingPlayer.addEventListener("Abort" /* Models.RecordingPlayer.Events.Abort */, () => {
             this.currentStep = undefined;
@@ -510,7 +510,7 @@ let RecorderController = class RecorderController extends LitElement {
         const indexToInsertAt = currentIndex + (position === "before" /* Components.StepView.AddStepPosition.BEFORE */ ? 0 : 1);
         steps.splice(indexToInsertAt, 0, { type: Models.Schema.StepType.WaitForElement, selectors: ['body'] });
         const recording = { ...this.currentRecording, flow: { ...this.currentRecording.flow, steps } };
-        Host.userMetrics.recordingEdited(Host.UserMetrics.RecordingEdited.StepAdded);
+        Host.userMetrics.recordingEdited(2 /* Host.UserMetrics.RecordingEdited.StepAdded */);
         this.#stepBreakpointIndexes = new Set([...this.#stepBreakpointIndexes.values()].map(breakpointIndex => {
             if (indexToInsertAt > breakpointIndex) {
                 return breakpointIndex;
@@ -534,7 +534,7 @@ let RecorderController = class RecorderController extends LitElement {
         const currentIndex = steps.indexOf(event.step);
         steps.splice(currentIndex, 1);
         const flow = { ...this.currentRecording.flow, steps };
-        Host.userMetrics.recordingEdited(Host.UserMetrics.RecordingEdited.StepRemoved);
+        Host.userMetrics.recordingEdited(3 /* Host.UserMetrics.RecordingEdited.StepRemoved */);
         this.#stepBreakpointIndexes = new Set([...this.#stepBreakpointIndexes.values()]
             .map(breakpointIndex => {
             if (currentIndex > breakpointIndex) {
@@ -623,7 +623,7 @@ let RecorderController = class RecorderController extends LitElement {
         this.isToggling = true;
         this.#clearError();
         // -- Recording logic starts here --
-        Host.userMetrics.recordingToggled(Host.UserMetrics.RecordingToggled.RecordingStarted);
+        Host.userMetrics.recordingToggled(1 /* Host.UserMetrics.RecordingToggled.RecordingStarted */);
         this.currentRecordingSession = new Models.RecordingSession.RecordingSession(this.#getMainTarget(), {
             title: event.name,
             selectorAttribute: event.selectorAttribute,
@@ -684,7 +684,7 @@ let RecorderController = class RecorderController extends LitElement {
         this.isToggling = true;
         this.#clearError();
         // -- Recording logic starts here --
-        Host.userMetrics.recordingToggled(Host.UserMetrics.RecordingToggled.RecordingFinished);
+        Host.userMetrics.recordingToggled(2 /* Host.UserMetrics.RecordingToggled.RecordingFinished */);
         await this.currentRecordingSession.stop();
         this.currentRecordingSession = undefined;
         // -- Recording logic ends here --
@@ -739,7 +739,7 @@ let RecorderController = class RecorderController extends LitElement {
             Host.userMetrics.recordingExported(builtInMetric);
         }
         else if (converter.getId().startsWith(Converters.ExtensionConverter.EXTENSION_PREFIX)) {
-            Host.userMetrics.recordingExported(Host.UserMetrics.RecordingExported.ToExtension);
+            Host.userMetrics.recordingExported(4 /* Host.UserMetrics.RecordingExported.ToExtension */);
         }
         else {
             throw new Error('Could not find a metric for the export option with id = ' + id);
@@ -767,7 +767,7 @@ let RecorderController = class RecorderController extends LitElement {
         const flow = this.currentRecordingSession.cloneUserFlow();
         flow.steps.push({ type: 'waitForElement', selectors: [['.cls']] });
         this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, flow), { keepBreakpoints: true, updateSession: true });
-        Host.userMetrics.recordingAssertion(Host.UserMetrics.RecordingAssertion.AssertionAdded);
+        Host.userMetrics.recordingAssertion(1 /* Host.UserMetrics.RecordingAssertion.AssertionAdded */);
         await this.updateComplete;
         this.renderRoot.querySelector('devtools-recording-view')
             ?.shadowRoot?.querySelector('.section:last-child devtools-step-view:last-of-type')
@@ -782,7 +782,7 @@ let RecorderController = class RecorderController extends LitElement {
     }
     async #onPlayRecordingByName(event) {
         await this.#onRecordingSelected(event);
-        await this.#onPlayRecording(new Components.RecordingView.PlayRecordingEvent({ targetPanel: "chrome_recorder" /* Components.RecordingView.TargetPanel.Default */, speed: this.#recorderSettings.speed }));
+        await this.#onPlayRecording(new Components.RecordingView.PlayRecordingEvent({ targetPanel: "chrome-recorder" /* Components.RecordingView.TargetPanel.Default */, speed: this.#recorderSettings.speed }));
     }
     #onAddBreakpoint = (event) => {
         this.#stepBreakpointIndexes.add(event.index);
@@ -820,7 +820,7 @@ let RecorderController = class RecorderController extends LitElement {
                 }
                 return;
             case "chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */:
-                void this.#onPlayRecording(new Components.RecordingView.PlayRecordingEvent({ targetPanel: "chrome_recorder" /* Components.RecordingView.TargetPanel.Default */, speed: this.#recorderSettings.speed }));
+                void this.#onPlayRecording(new Components.RecordingView.PlayRecordingEvent({ targetPanel: "chrome-recorder" /* Components.RecordingView.TargetPanel.Default */, speed: this.#recorderSettings.speed }));
                 return;
             case "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */: {
                 const view = this.renderRoot.querySelector('devtools-recording-view');
@@ -841,6 +841,10 @@ let RecorderController = class RecorderController extends LitElement {
                 return (this.currentPage === "RecordingPage" /* Pages.RecordingPage */ && !this.#replayState.isPlaying);
             case "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */:
                 return this.currentPage === "RecordingPage" /* Pages.RecordingPage */;
+            case "chrome-recorder.copy-recording-or-step" /* Actions.RecorderActions.CopyRecordingOrStep */:
+                // This action is handled in the RecordingView
+                // It relies on browser `copy` event.
+                return false;
         }
     }
     #getShortcutsInfo() {

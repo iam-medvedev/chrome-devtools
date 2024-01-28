@@ -5,7 +5,7 @@ export declare class OverviewGrid {
     private readonly grid;
     private readonly window;
     constructor(prefix: string, calculator?: Calculator);
-    enableCreateBreadcrumbsButton(): void;
+    enableCreateBreadcrumbsButton(): HTMLElement;
     set showingScreenshots(isShowing: boolean);
     clientWidth(): number;
     updateDividers(calculator: Calculator): void;
@@ -47,7 +47,7 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     private clickHandler?;
     private resizerParentOffsetLeft?;
     constructor(parentElement: Element, dividersLabelBarElement?: Element, calculator?: Calculator);
-    enableCreateBreadcrumbsButton(): void;
+    enableCreateBreadcrumbsButton(): HTMLElement;
     set showingScreenshots(isShowing: boolean);
     private onRightResizeElementFocused;
     reset(): void;
@@ -79,7 +79,7 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     private onMouseWheel;
     zoom(factor: number, reference: number): void;
 }
-export declare enum Events {
+export declare const enum Events {
     WindowChanged = "WindowChanged",
     WindowChangedWithPosition = "WindowChangedWithPosition",
     BreadcrumbAdded = "BreadcrumbAdded"

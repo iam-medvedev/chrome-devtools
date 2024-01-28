@@ -171,7 +171,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
             chain: null,
             request: undefined,
         };
-        let type = SDK.NetworkRequest.InitiatorType.Other;
+        let type = "other" /* SDK.NetworkRequest.InitiatorType.Other */;
         let url = Platform.DevToolsPath.EmptyUrlString;
         let lineNumber = undefined;
         let columnNumber = undefined;
@@ -181,12 +181,12 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         const initiator = request.initiator();
         const redirectSource = request.redirectSource();
         if (redirectSource) {
-            type = SDK.NetworkRequest.InitiatorType.Redirect;
+            type = "redirect" /* SDK.NetworkRequest.InitiatorType.Redirect */;
             url = redirectSource.url();
         }
         else if (initiator) {
             if (initiator.type === "parser" /* Protocol.Network.InitiatorType.Parser */) {
-                type = SDK.NetworkRequest.InitiatorType.Parser;
+                type = "parser" /* SDK.NetworkRequest.InitiatorType.Parser */;
                 url = initiator.url ? initiator.url : url;
                 lineNumber = initiator.lineNumber;
                 columnNumber = initiator.columnNumber;
@@ -198,7 +198,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
                         stack = stack.parent;
                         continue;
                     }
-                    type = SDK.NetworkRequest.InitiatorType.Script;
+                    type = "script" /* SDK.NetworkRequest.InitiatorType.Script */;
                     url = (topFrame.url || i18nString(UIStrings.anonymous));
                     lineNumber = topFrame.lineNumber;
                     columnNumber = topFrame.columnNumber;
@@ -206,7 +206,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
                     break;
                 }
                 if (!initiator.stack && initiator.url) {
-                    type = SDK.NetworkRequest.InitiatorType.Script;
+                    type = "script" /* SDK.NetworkRequest.InitiatorType.Script */;
                     url = initiator.url;
                     lineNumber = initiator.lineNumber;
                 }
@@ -215,14 +215,14 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
                 }
             }
             else if (initiator.type === "preload" /* Protocol.Network.InitiatorType.Preload */) {
-                type = SDK.NetworkRequest.InitiatorType.Preload;
+                type = "preload" /* SDK.NetworkRequest.InitiatorType.Preload */;
             }
             else if (initiator.type === "preflight" /* Protocol.Network.InitiatorType.Preflight */) {
-                type = SDK.NetworkRequest.InitiatorType.Preflight;
+                type = "preflight" /* SDK.NetworkRequest.InitiatorType.Preflight */;
                 initiatorRequest = request.preflightInitiatorRequest();
             }
             else if (initiator.type === "SignedExchange" /* Protocol.Network.InitiatorType.SignedExchange */) {
-                type = SDK.NetworkRequest.InitiatorType.SignedExchange;
+                type = "signedExchange" /* SDK.NetworkRequest.InitiatorType.SignedExchange */;
                 url = initiator.url || Platform.DevToolsPath.EmptyUrlString;
             }
         }
@@ -519,8 +519,6 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     }
 }
 const consoleMessageToRequest = new WeakMap();
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["Reset"] = "Reset";

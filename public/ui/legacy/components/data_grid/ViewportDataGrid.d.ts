@@ -33,7 +33,7 @@ export declare class ViewportDataGrid<T> extends ViewportDataGrid_base<ViewportD
     private update;
     revealViewportNode(node: ViewportDataGridNode<T>): void;
 }
-export declare enum Events {
+export declare const enum Events {
     ViewportCalculated = "ViewportCalculated"
 }
 export type EventTypes = {

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AutofillManager from '../../models/autofill_manager/autofill_manager.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
@@ -91,7 +90,7 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
                 autofillModel: this.#autofillModel,
             } = formFilledEvent);
         }
-        autofillManager.addEventListener(AutofillManager.AutofillManager.Events.AddressFormFilled, this.#onAddressFormFilled, this);
+        autofillManager.addEventListener("AddressFormFilled" /* AutofillManager.AutofillManager.Events.AddressFormFilled */, this.#onAddressFormFilled, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         this.#autoOpenViewSetting = Common.Settings.Settings.instance().createSetting('autoOpenAutofillViewOnEvent', true);
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
@@ -213,11 +212,10 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
         if (!this.#filledFields.length) {
             return LitHtml.nothing;
         }
-        const k = Platform.StringUtilities.kebab;
         const gridData = {
             columns: [
                 {
-                    id: k('name'),
+                    id: 'name',
                     title: i18nString(UIStrings.formField),
                     widthWeighting: 50,
                     hideable: false,
@@ -225,7 +223,7 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
                     sortable: true,
                 },
                 {
-                    id: k('autofill-type'),
+                    id: 'autofill-type',
                     title: i18nString(UIStrings.predictedAutofillValue),
                     widthWeighting: 50,
                     hideable: false,
@@ -233,7 +231,7 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
                     sortable: true,
                 },
                 {
-                    id: k('value'),
+                    id: 'value',
                     title: i18nString(UIStrings.value),
                     widthWeighting: 50,
                     hideable: false,
@@ -241,7 +239,7 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
                     sortable: true,
                 },
                 {
-                    id: k('filled-field-index'),
+                    id: 'filled-field-index',
                     title: 'filledFieldIndex',
                     widthWeighting: 50,
                     hideable: true,

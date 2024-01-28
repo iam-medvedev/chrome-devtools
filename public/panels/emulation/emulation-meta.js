@@ -66,14 +66,14 @@ async function loadEmulationModule() {
     return loadedEmulationModule;
 }
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.MOBILE,
+    category: "MOBILE" /* UI.ActionRegistration.ActionCategory.MOBILE */,
     actionId: 'emulation.toggle-device-mode',
     toggleable: true,
     async loadActionDelegate() {
         const Emulation = await loadEmulationModule();
         return new Emulation.DeviceModeWrapper.ActionDelegate();
     },
-    condition: Root.Runtime.ConditionName.CAN_DOCK,
+    condition: "can_dock" /* Root.Runtime.ConditionName.CAN_DOCK */,
     title: i18nLazyString(UIStrings.toggleDeviceToolbar),
     iconClass: "devices" /* UI.ActionRegistration.IconClass.LARGEICON_PHONE */,
     bindings: [
@@ -89,38 +89,38 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'emulation.capture-screenshot',
-    category: UI.ActionRegistration.ActionCategory.SCREENSHOT,
+    category: "SCREENSHOT" /* UI.ActionRegistration.ActionCategory.SCREENSHOT */,
     async loadActionDelegate() {
         const Emulation = await loadEmulationModule();
         return new Emulation.DeviceModeWrapper.ActionDelegate();
     },
-    condition: Root.Runtime.ConditionName.CAN_DOCK,
+    condition: "can_dock" /* Root.Runtime.ConditionName.CAN_DOCK */,
     title: i18nLazyString(UIStrings.captureScreenshot),
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'emulation.capture-full-height-screenshot',
-    category: UI.ActionRegistration.ActionCategory.SCREENSHOT,
+    category: "SCREENSHOT" /* UI.ActionRegistration.ActionCategory.SCREENSHOT */,
     async loadActionDelegate() {
         const Emulation = await loadEmulationModule();
         return new Emulation.DeviceModeWrapper.ActionDelegate();
     },
-    condition: Root.Runtime.ConditionName.CAN_DOCK,
+    condition: "can_dock" /* Root.Runtime.ConditionName.CAN_DOCK */,
     title: i18nLazyString(UIStrings.captureFullSizeScreenshot),
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'emulation.capture-node-screenshot',
-    category: UI.ActionRegistration.ActionCategory.SCREENSHOT,
+    category: "SCREENSHOT" /* UI.ActionRegistration.ActionCategory.SCREENSHOT */,
     async loadActionDelegate() {
         const Emulation = await loadEmulationModule();
         return new Emulation.DeviceModeWrapper.ActionDelegate();
     },
-    condition: Root.Runtime.ConditionName.CAN_DOCK,
+    condition: "can_dock" /* Root.Runtime.ConditionName.CAN_DOCK */,
     title: i18nLazyString(UIStrings.captureNodeScreenshot),
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.MOBILE,
+    category: "MOBILE" /* Common.Settings.SettingCategory.MOBILE */,
     settingName: 'showMediaQueryInspector',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [
         {
@@ -135,9 +135,9 @@ Common.Settings.registerSettingExtension({
     tags: [i18nLazyString(UIStrings.device)],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.MOBILE,
+    category: "MOBILE" /* Common.Settings.SettingCategory.MOBILE */,
     settingName: 'emulation.showRulers',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [
         {
@@ -152,9 +152,9 @@ Common.Settings.registerSettingExtension({
     tags: [i18nLazyString(UIStrings.device)],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.MOBILE,
+    category: "MOBILE" /* Common.Settings.SettingCategory.MOBILE */,
     settingName: 'emulation.showDeviceOutline',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [
         {
@@ -170,8 +170,8 @@ Common.Settings.registerSettingExtension({
 });
 UI.Toolbar.registerToolbarItem({
     actionId: 'emulation.toggle-device-mode',
-    condition: Root.Runtime.ConditionName.CAN_DOCK,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT,
+    condition: "can_dock" /* Root.Runtime.ConditionName.CAN_DOCK */,
+    location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
     order: 1,
     showLabel: undefined,
     loadItem: undefined,
@@ -182,16 +182,16 @@ Common.AppProvider.registerAppProvider({
         const Emulation = await loadEmulationModule();
         return Emulation.AdvancedApp.AdvancedAppProvider.instance();
     },
-    condition: Root.Runtime.ConditionName.CAN_DOCK,
+    condition: "can_dock" /* Root.Runtime.ConditionName.CAN_DOCK */,
     order: 0,
 });
 UI.ContextMenu.registerItem({
-    location: UI.ContextMenu.ItemLocation.DEVICE_MODE_MENU_SAVE,
+    location: "deviceModeMenu/save" /* UI.ContextMenu.ItemLocation.DEVICE_MODE_MENU_SAVE */,
     order: 12,
     actionId: 'emulation.capture-screenshot',
 });
 UI.ContextMenu.registerItem({
-    location: UI.ContextMenu.ItemLocation.DEVICE_MODE_MENU_SAVE,
+    location: "deviceModeMenu/save" /* UI.ContextMenu.ItemLocation.DEVICE_MODE_MENU_SAVE */,
     order: 13,
     actionId: 'emulation.capture-full-height-screenshot',
 });

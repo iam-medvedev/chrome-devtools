@@ -72,19 +72,8 @@ export declare class NetworkLogViewColumns {
     clearFilmStripFrame(): void;
 }
 export declare const _initialSortColumn = "waterfall";
-export declare enum _calculatorTypes {
-    Duration = "Duration",
-    Time = "Time"
-}
 export declare const _defaultColumnConfig: Object;
 export declare const _filmStripDividerColor = "#fccc49";
-export declare enum WaterfallSortIds {
-    StartTime = "startTime",
-    ResponseTime = "responseReceivedTime",
-    EndTime = "endTime",
-    Duration = "duration",
-    Latency = "latency"
-}
 export interface Descriptor {
     id: string;
     title: string | (() => string);

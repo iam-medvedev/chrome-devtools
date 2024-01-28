@@ -135,7 +135,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.elementInternal.setAttribute('jslog', `${jslog}`);
         this.elementInternal.classList.add('text-prompt');
         ARIAUtils.markAsTextBox(this.elementInternal);
-        ARIAUtils.setAutocomplete(this.elementInternal, ARIAUtils.AutocompleteInteractionModel.both);
+        ARIAUtils.setAutocomplete(this.elementInternal, "both" /* ARIAUtils.AutocompleteInteractionModel.Both */);
         ARIAUtils.setHasPopup(this.elementInternal, "listbox" /* ARIAUtils.PopupRole.ListBox */);
         this.elementInternal.setAttribute('contenteditable', 'plaintext-only');
         this.element().addEventListener('keydown', this.boundOnKeyDown, false);
@@ -387,7 +387,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.refreshGhostText();
         this.previousText = text;
-        this.dispatchEventToListeners(Events.TextChanged);
+        this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
         this.autoCompleteSoon();
     }
     acceptAutoComplete() {
@@ -413,7 +413,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.queryRange = null;
         this.refreshGhostText();
         if (beforeText !== this.textWithCurrentSuggestion()) {
-            this.dispatchEventToListeners(Events.TextChanged);
+            this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
         }
     }
     refreshGhostText() {
@@ -528,7 +528,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.currentSuggestion = suggestion;
         this.refreshGhostText();
         if (isIntermediateSuggestion) {
-            this.dispatchEventToListeners(Events.TextChanged);
+            this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
         }
     }
     acceptSuggestion() {
@@ -546,7 +546,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.setDOMSelection(this.queryRange.startColumn + startColumn, this.queryRange.startColumn + endColumn);
         this.updateLeftParenthesesIndices();
         this.clearAutocomplete();
-        this.dispatchEventToListeners(Events.TextChanged);
+        this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
         return true;
     }
     ariaControlledBy() {
@@ -680,10 +680,4 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     }
 }
 const DefaultAutocompletionTimeout = 250;
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["TextChanged"] = "TextChanged";
-})(Events || (Events = {}));
 //# sourceMappingURL=TextPrompt.js.map

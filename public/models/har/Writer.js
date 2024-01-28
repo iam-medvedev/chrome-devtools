@@ -90,8 +90,8 @@ export class Writer {
         }
         function contentLoaded(entry, contentDataOrError) {
             progress.incrementWorked();
-            const contentData = SDK.ContentData.ContentData.asLegacyContentData(contentDataOrError);
-            let encoded = contentData.encoded;
+            const contentData = SDK.ContentData.ContentData.asDeferredContent(contentDataOrError);
+            let encoded = contentData.isEncoded;
             if (contentData.content !== null) {
                 let content = contentData.content;
                 if (content && !encoded && needsEncoding(content)) {

@@ -67,6 +67,10 @@ export class ContentData {
     get isTextContent() {
         return isTextType(this.mimeType);
     }
+    get isEmpty() {
+        // Don't trigger unnecessary decoding. Only check if both of the strings are empty.
+        return !Boolean(this.#contentAsBase64) && !Boolean(this.#contentAsText);
+    }
     asDataUrl() {
         // To keep with existing behavior we prefer to return the content
         // encoded if that is how this ContentData was constructed with.
@@ -86,17 +90,6 @@ export class ContentData {
         }
         return { content: this.text, isEncoded: false };
     }
-    /**
-     * @deprecated Used during migration from `NetworkRequest.ContentData` to `ContentData`.
-     */
-    asLegacyContentData() {
-        // To keep with existing behavior we prefer to return the content
-        // encoded if that is how this ContentData was constructed with.
-        if (this.#contentAsBase64 !== undefined) {
-            return { error: null, content: this.#contentAsBase64, encoded: true };
-        }
-        return { error: null, content: this.text, encoded: false };
-    }
     static isError(contentDataOrError) {
         return 'error' in contentDataOrError;
     }
@@ -108,15 +101,6 @@ export class ContentData {
             return { error: contentDataOrError.error, content: null, isEncoded: false };
         }
         return contentDataOrError.asDeferedContent();
-    }
-    /**
-     * @deprecated Used during migration from `DeferredContent` to `ContentData`.
-     */
-    static asLegacyContentData(contentDataOrError) {
-        if (ContentData.isError(contentDataOrError)) {
-            return { error: contentDataOrError.error, content: null, encoded: false };
-        }
-        return contentDataOrError.asLegacyContentData();
     }
 }
 //# sourceMappingURL=ContentData.js.map

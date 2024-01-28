@@ -72,6 +72,6 @@ export declare class InspectorViewTabDelegate implements TabbedPaneTabDelegate {
     moveToMainPanel(tabId: string): void;
     onContextMenu(tabId: string, contextMenu: ContextMenu): void;
 }
-export declare enum Events {
+export declare const enum Events {
     DrawerChange = "drawerchange"
 }

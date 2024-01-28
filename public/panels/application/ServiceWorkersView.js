@@ -255,7 +255,7 @@ export class ServiceWorkersView extends UI.Widget.VBox {
                 }
             }
         };
-        document.body.addEventListener(UI.InspectorView.Events.DrawerChange, drawerChangeHandler);
+        document.body.addEventListener("drawerchange" /* UI.InspectorView.Events.DrawerChange */, drawerChangeHandler);
     }
     modelAdded(serviceWorkerManager) {
         if (serviceWorkerManager.target() !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
@@ -268,8 +268,8 @@ export class ServiceWorkersView extends UI.Widget.VBox {
             this.updateRegistration(registration);
         }
         this.eventListeners.set(serviceWorkerManager, [
-            this.manager.addEventListener(SDK.ServiceWorkerManager.Events.RegistrationUpdated, this.registrationUpdated, this),
-            this.manager.addEventListener(SDK.ServiceWorkerManager.Events.RegistrationDeleted, this.registrationDeleted, this),
+            this.manager.addEventListener("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, this.registrationUpdated, this),
+            this.manager.addEventListener("RegistrationDeleted" /* SDK.ServiceWorkerManager.Events.RegistrationDeleted */, this.registrationDeleted, this),
             this.securityOriginManager.addEventListener(SDK.SecurityOriginManager.Events.SecurityOriginAdded, this.updateSectionVisibility, this),
             this.securityOriginManager.addEventListener(SDK.SecurityOriginManager.Events.SecurityOriginRemoved, this.updateSectionVisibility, this),
         ]);
@@ -286,10 +286,10 @@ export class ServiceWorkersView extends UI.Widget.VBox {
     getTimeStamp(registration) {
         const versions = registration.versionsByMode();
         let timestamp = 0;
-        const active = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active);
-        const installing = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing);
-        const waiting = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting);
-        const redundant = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant);
+        const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active */);
+        const installing = versions.get("installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing */);
+        const waiting = versions.get("waiting" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting */);
+        const redundant = versions.get("redundant" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant */);
         if (active) {
             timestamp = active.scriptResponseTime;
         }
@@ -460,16 +460,16 @@ export class Section {
         this.updateCycleView = new ServiceWorkerUpdateCycleView(registration);
         this.routerView = new ApplicationComponents.ServiceWorkerRouterView.ServiceWorkerRouterView();
         this.networkRequests = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.networkRequests), undefined, i18nString(UIStrings.networkRequests));
-        this.networkRequests.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.networkRequestsClicked, this);
+        this.networkRequests.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.networkRequestsClicked, this);
         this.networkRequests.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('show-network-requests')}`);
         this.toolbar.appendToolbarItem(this.networkRequests);
         this.updateButton =
             new UI.Toolbar.ToolbarButton(i18nString(UIStrings.update), undefined, i18nString(UIStrings.update));
-        this.updateButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.updateButtonClicked, this);
+        this.updateButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.updateButtonClicked, this);
         this.updateButton.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('update')}`);
         this.toolbar.appendToolbarItem(this.updateButton);
         this.deleteButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.unregisterServiceWorker), undefined, i18nString(UIStrings.unregister));
-        this.deleteButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.unregisterButtonClicked, this);
+        this.deleteButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.unregisterButtonClicked, this);
         this.deleteButton.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('unregister')}`);
         this.toolbar.appendToolbarItem(this.deleteButton);
         // Preserve the order.
@@ -574,10 +574,10 @@ export class Section {
         const scopeURL = this.registration.scopeURL;
         const title = this.registration.isDeleted ? i18nString(UIStrings.sDeleted, { PH1: scopeURL }) : scopeURL;
         this.section.setTitle(title);
-        const active = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active);
-        const waiting = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting);
-        const installing = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing);
-        const redundant = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant);
+        const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active */);
+        const waiting = versions.get("waiting" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting */);
+        const installing = versions.get("installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing */);
+        const redundant = versions.get("redundant" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant */);
         this.statusField.removeChildren();
         const versionsStack = this.statusField.createChild('div', 'service-worker-version-stack');
         versionsStack.createChild('div', 'service-worker-version-stack-bar');
@@ -651,7 +651,7 @@ export class Section {
     }
     maybeCreateRouterField() {
         const versions = this.registration.versionsByMode();
-        const active = versions.get(SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active);
+        const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active */);
         const title = i18nString(UIStrings.routers);
         if (active && active.routerRules && active.routerRules.length > 0) {
             // If there is at least one registered rule in the active version, append the router filed.
@@ -679,7 +679,7 @@ export class Section {
         void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
             {
                 filterType: NetworkForward.UIFilter.FilterType.Is,
-                filterValue: NetworkForward.UIFilter.IsFilterType.ServiceWorkerIntercepted,
+                filterValue: "service-worker-intercepted" /* NetworkForward.UIFilter.IsFilterType.ServiceWorkerIntercepted */,
             },
         ]));
         const requests = Logs.NetworkLog.NetworkLog.instance().requests();
@@ -696,7 +696,7 @@ export class Section {
             }
         }
         if (lastRequest) {
-            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(lastRequest, NetworkForward.UIRequestLocation.UIRequestTabs.Timing, { clearFilter: false });
+            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(lastRequest, "timing" /* NetworkForward.UIRequestLocation.UIRequestTabs.Timing */, { clearFilter: false });
             void Common.Revealer.reveal(requestLocation);
         }
         this.manager.serviceWorkerNetworkRequestsPanelStatus = {

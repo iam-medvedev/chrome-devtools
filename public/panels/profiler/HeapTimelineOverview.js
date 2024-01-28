@@ -34,7 +34,7 @@ export class HeapTimelineOverview extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.overviewCanvas =
             this.overviewContainer.createChild('canvas', 'heap-recording-overview-canvas');
         this.overviewContainer.appendChild(this.overviewGrid.element);
-        this.overviewGrid.addEventListener(PerfUI.OverviewGrid.Events.WindowChanged, this.onWindowChanged, this);
+        this.overviewGrid.addEventListener("WindowChanged" /* PerfUI.OverviewGrid.Events.WindowChanged */, this.onWindowChanged, this);
         this.windowLeft = 0.0;
         this.windowRight = 1.0;
         this.overviewGrid.setWindow(this.windowLeft, this.windowRight);

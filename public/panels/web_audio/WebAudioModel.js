@@ -84,5 +84,5 @@ export class WebAudioModel extends SDK.SDKModel.SDKModel {
         return realtimeResponse.realtimeData;
     }
 }
-SDK.SDKModel.SDKModel.register(WebAudioModel, { capabilities: SDK.Target.Capability.DOM, autostart: false });
+SDK.SDKModel.SDKModel.register(WebAudioModel, { capabilities: 2 /* SDK.Target.Capability.DOM */, autostart: false });
 //# sourceMappingURL=WebAudioModel.js.map

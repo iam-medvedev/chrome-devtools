@@ -35,7 +35,7 @@ export declare class BezierEditor extends BezierEditor_base {
     private presetModifyClicked;
     private startPreviewAnimation;
 }
-export declare enum Events {
+export declare const enum Events {
     BezierChanged = "BezierChanged"
 }
 export type EventTypes = {

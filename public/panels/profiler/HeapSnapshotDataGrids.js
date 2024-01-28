@@ -173,7 +173,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
         this.nameFilter = null;
         this.nodeFilterInternal = new HeapSnapshotModel.HeapSnapshotModel.NodeFilter();
         this.addEventListener(HeapSnapshotSortableDataGridEvents.SortingComplete, this.sortingComplete, this);
-        this.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.sortingChanged, this);
+        this.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortingChanged, this);
         this.setRowContextMenuCallback(this.populateContextMenu.bind(this));
     }
     async setDataSource(_snapshot, _nodeIndex) {
@@ -209,7 +209,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
     }
     wasShown() {
         if (this.nameFilter) {
-            this.nameFilter.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.onNameFilterChanged, this);
+            this.nameFilter.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onNameFilterChanged, this);
             this.updateVisibleNodes(true);
         }
         if (this.populatedAndSorted) {
@@ -223,7 +223,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
     }
     willHide() {
         if (this.nameFilter) {
-            this.nameFilter.removeEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.onNameFilterChanged, this);
+            this.nameFilter.removeEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onNameFilterChanged, this);
         }
     }
     populateContextMenu(contextMenu, gridNode) {
@@ -347,8 +347,6 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
         parent.removeChildren();
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var HeapSnapshotSortableDataGridEvents;
 (function (HeapSnapshotSortableDataGridEvents) {
     HeapSnapshotSortableDataGridEvents["ContentShown"] = "ContentShown";
@@ -639,9 +637,7 @@ export class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainmentDataG
         this.rootNode().expand();
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
 // TODO(crbug.com/1228674): Remove this enum, it is only used in web tests.
-// eslint-disable-next-line rulesdir/const_enum
 export var HeapSnapshotRetainmentDataGridEvents;
 (function (HeapSnapshotRetainmentDataGridEvents) {
     HeapSnapshotRetainmentDataGridEvents["ExpandRetainersComplete"] = "ExpandRetainersComplete";

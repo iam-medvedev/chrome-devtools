@@ -19,7 +19,7 @@ interface CSSVarSwatchRenderData {
     variableName: string;
     computedValue: string | null;
     fromFallback: boolean;
-    fallbackHtml: Node[] | null;
+    fallbackText: string | null;
     onLinkActivate: (linkText: string) => void;
 }
 export declare class CSSVarSwatch extends HTMLElement {

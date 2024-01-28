@@ -55,7 +55,7 @@ export interface ViewRegistration {
     /**
      * Unique identifier of the view.
      */
-    id: string;
+    id: Lowercase<string>;
     /**
      * An identifier for the location of the view. The location is resolved by
      * an extension of type '@UI.ViewLocationResolver'.
@@ -110,7 +110,7 @@ export declare function maybeRemoveViewExtension(viewId: string): boolean;
 export declare function registerLocationResolver(registration: LocationResolverRegistration): void;
 export declare function getRegisteredLocationResolvers(): Array<LocationResolverRegistration>;
 export declare function resetViewRegistration(): void;
-export declare enum ViewLocationCategory {
+export declare const enum ViewLocationCategory {
     NONE = "",
     ELEMENTS = "ELEMENTS",
     DRAWER = "DRAWER",

@@ -78,9 +78,7 @@ const getOrCreateSecurityStateOrdinalMap = () => {
     }
     return securityStateToOrdinal;
 };
-SDK.SDKModel.SDKModel.register(SecurityModel, { capabilities: SDK.Target.Capability.Security, autostart: false });
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
+SDK.SDKModel.SDKModel.register(SecurityModel, { capabilities: 512 /* SDK.Target.Capability.Security */, autostart: false });
 export var Events;
 (function (Events) {
     Events["VisibleSecurityStateChanged"] = "VisibleSecurityStateChanged";

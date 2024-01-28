@@ -7,7 +7,7 @@ export interface UsedPreloadingViewData {
     previousAttempts: SDK.PreloadingModel.PreloadingAttempt[];
     currentAttempts: SDK.PreloadingModel.PreloadingAttempt[];
 }
-export declare enum UsedKind {
+export declare const enum UsedKind {
     DowngradedPrerenderToPrefetchAndUsed = "DowngradedPrerenderToPrefetchAndUsed",
     PrefetchUsed = "PrefetchUsed",
     PrerenderUsed = "PrerenderUsed",

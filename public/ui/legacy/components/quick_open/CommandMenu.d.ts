@@ -37,7 +37,7 @@ export interface CreateCommandOptions {
     deprecationWarning?: Platform.UIString.LocalizedString;
     isPanelOrDrawer?: PanelOrDrawer;
 }
-export declare enum PanelOrDrawer {
+export declare const enum PanelOrDrawer {
     PANEL = "PANEL",
     DRAWER = "DRAWER"
 }

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../platform/platform.js';
-import { Capability } from './Target.js';
 import { SDKModel } from './SDKModel.js';
 export class PerformanceMetricsModel extends SDKModel {
     #agent;
@@ -62,5 +61,5 @@ export class PerformanceMetricsModel extends SDKModel {
         return { metrics: metrics, timestamp: timestamp };
     }
 }
-SDKModel.register(PerformanceMetricsModel, { capabilities: Capability.DOM, autostart: false });
+SDKModel.register(PerformanceMetricsModel, { capabilities: 2 /* Capability.DOM */, autostart: false });
 //# sourceMappingURL=PerformanceMetricsModel.js.map

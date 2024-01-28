@@ -285,8 +285,6 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
         this.callbacks.delete(requestId);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["FileSystemAdded"] = "FileSystemAdded";

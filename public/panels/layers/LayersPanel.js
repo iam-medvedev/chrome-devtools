@@ -71,12 +71,12 @@ export class LayersPanel extends UI.Panel.PanelWithSidebar {
         this.splitWidget().setMainWidget(this.rightSplitWidget);
         this.layers3DView = new LayerViewer.Layers3DView.Layers3DView(this.layerViewHost);
         this.rightSplitWidget.setMainWidget(this.layers3DView);
-        this.layers3DView.addEventListener(LayerViewer.Layers3DView.Events.PaintProfilerRequested, this.onPaintProfileRequested, this);
-        this.layers3DView.addEventListener(LayerViewer.Layers3DView.Events.ScaleChanged, this.onScaleChanged, this);
+        this.layers3DView.addEventListener("PaintProfilerRequested" /* LayerViewer.Layers3DView.Events.PaintProfilerRequested */, this.onPaintProfileRequested, this);
+        this.layers3DView.addEventListener("ScaleChanged" /* LayerViewer.Layers3DView.Events.ScaleChanged */, this.onScaleChanged, this);
         this.tabbedPane = new UI.TabbedPane.TabbedPane();
         this.rightSplitWidget.setSidebarWidget(this.tabbedPane);
         this.layerDetailsView = new LayerViewer.LayerDetailsView.LayerDetailsView(this.layerViewHost);
-        this.layerDetailsView.addEventListener(LayerViewer.LayerDetailsView.Events.PaintProfilerRequested, this.onPaintProfileRequested, this);
+        this.layerDetailsView.addEventListener("PaintProfilerRequested" /* LayerViewer.LayerDetailsView.Events.PaintProfilerRequested */, this.onPaintProfileRequested, this);
         this.tabbedPane.appendTab(DetailsViewTabs.Details, i18nString(UIStrings.details), this.layerDetailsView);
         this.paintProfilerView = new LayerPaintProfilerView(this.showImage.bind(this));
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabClosed, this.onTabClosed, this);

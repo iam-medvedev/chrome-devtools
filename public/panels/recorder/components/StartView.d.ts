@@ -13,5 +13,6 @@ export declare class CreateRecordingEvent extends Event {
 export declare class StartView extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
+    constructor();
     connectedCallback(): void;
 }

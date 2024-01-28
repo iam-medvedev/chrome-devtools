@@ -31,7 +31,7 @@ export declare class ServiceWorkerManager extends SDKModel<EventTypes> {
     forceUpdateOnReloadSetting(): Common.Settings.Setting<boolean>;
     private forceUpdateSettingChanged;
 }
-export declare enum Events {
+export declare const enum Events {
     RegistrationUpdated = "RegistrationUpdated",
     RegistrationErrorAdded = "RegistrationErrorAdded",
     RegistrationDeleted = "RegistrationDeleted"
@@ -110,7 +110,7 @@ export declare namespace ServiceWorkerVersion {
         new: () => Common.UIString.LocalizedString;
         redundant: () => Common.UIString.LocalizedString;
     };
-    enum Modes {
+    const enum Modes {
         Installing = "installing",
         Waiting = "waiting",
         Active = "active",

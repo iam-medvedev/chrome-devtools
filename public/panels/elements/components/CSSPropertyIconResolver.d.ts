@@ -1,4 +1,4 @@
-export declare enum PhysicalDirection {
+export declare const enum PhysicalDirection {
     LEFT_TO_RIGHT = "left-to-right",
     RIGHT_TO_LEFT = "right-to-left",
     BOTTOM_TO_TOP = "bottom-to-top",

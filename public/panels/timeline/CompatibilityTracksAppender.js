@@ -12,7 +12,7 @@ import { GPUTrackAppender } from './GPUTrackAppender.js';
 import { InteractionsTrackAppender } from './InteractionsTrackAppender.js';
 import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
-import { EntryType, InstantEventVisibleDurationMs, } from './TimelineFlameChartDataProvider.js';
+import { InstantEventVisibleDurationMs, } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
 export const TrackNames = ['Animations', 'Timings', 'Interactions', 'GPU', 'LayoutShifts', 'Thread', 'Thread_AuctionWorklet'];
 export class CompatibilityTracksAppender {
@@ -380,7 +380,7 @@ export class CompatibilityTracksAppender {
         this.#trackForLevel.set(level, appender);
         const index = this.#entryData.length;
         this.#entryData.push(event);
-        this.#legacyEntryTypeByLevel[level] = EntryType.TrackAppender;
+        this.#legacyEntryTypeByLevel[level] = "TrackAppender" /* EntryType.TrackAppender */;
         this.#flameChartData.entryLevels[index] = level;
         this.#flameChartData.entryStartTimes[index] = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts);
         const msDuration = event.dur ||
@@ -417,7 +417,7 @@ export class CompatibilityTracksAppender {
             eventAppendedCallback?.(event, index);
         }
         this.#legacyEntryTypeByLevel.length = trackStartLevel + lastUsedTimeByLevel.length;
-        this.#legacyEntryTypeByLevel.fill(EntryType.TrackAppender, trackStartLevel);
+        this.#legacyEntryTypeByLevel.fill("TrackAppender" /* EntryType.TrackAppender */, trackStartLevel);
         return trackStartLevel + lastUsedTimeByLevel.length;
     }
     entryIsVisibleInTimeline(entry) {

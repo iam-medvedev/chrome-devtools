@@ -157,7 +157,7 @@ export declare class Message {
     isEqual(another: Message): boolean;
 }
 export declare namespace Message {
-    enum Level {
+    const enum Level {
         Error = "Error",
         Issue = "Issue",
         Warning = "Warning"

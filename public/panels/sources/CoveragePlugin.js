@@ -43,7 +43,7 @@ export class CoveragePlugin extends Plugin {
         this.#transformer = transformer;
         this.infoInToolbar = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clickToShowCoveragePanel));
         this.infoInToolbar.setSecondary();
-        this.infoInToolbar.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+        this.infoInToolbar.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             void UI.ViewManager.ViewManager.instance().showView('coverage');
         });
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -98,7 +98,7 @@ export class CoveragePlugin extends Plugin {
         return coverageCompartment.of([]);
     }
     getCoverageManager() {
-        return this.uiSourceCode.getDecorationData(SourceFrame.SourceFrame.DecoratorType.COVERAGE);
+        return this.uiSourceCode.getDecorationData("coverage" /* SourceFrame.SourceFrame.DecoratorType.COVERAGE */);
     }
     editorInitialized(editor) {
         if (this.getCoverageManager()) {
@@ -106,7 +106,7 @@ export class CoveragePlugin extends Plugin {
         }
     }
     decorationChanged(type, editor) {
-        if (type === SourceFrame.SourceFrame.DecoratorType.COVERAGE) {
+        if (type === "coverage" /* SourceFrame.SourceFrame.DecoratorType.COVERAGE */) {
             this.startDecoUpdate(editor);
         }
     }

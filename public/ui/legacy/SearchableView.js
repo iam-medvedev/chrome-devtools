@@ -38,7 +38,7 @@ import * as ARIAUtils from './ARIAUtils.js';
 import { HistoryInput } from './HistoryInput.js';
 import { InspectorView } from './InspectorView.js';
 import searchableViewStyles from './searchableView.css.legacy.js';
-import { Toolbar, ToolbarButton, ToolbarToggle } from './Toolbar.js';
+import { Toolbar, ToolbarToggle } from './Toolbar.js';
 import { Tooltip } from './Tooltip.js';
 import { createTextButton } from './UIUtils.js';
 import { VBox } from './Widget.js';
@@ -132,7 +132,7 @@ export class SearchableView extends VBox {
         this.footerElement = this.footerElementContainer.createChild('div', 'toolbar-search');
         const replaceToggleToolbar = new Toolbar('replace-toggle-toolbar', this.footerElement);
         this.replaceToggleButton = new ToolbarToggle(i18nString(UIStrings.replace), 'replace');
-        this.replaceToggleButton.addEventListener(ToolbarButton.Events.Click, this.toggleReplace, this);
+        this.replaceToggleButton.addEventListener("Click" /* ToolbarButton.Events.Click */, this.toggleReplace, this);
         replaceToggleToolbar.appendToolbarItem(this.replaceToggleButton);
         const searchInputElements = this.footerElement.createChild('div', 'toolbar-search-inputs');
         const searchControlElement = searchInputElements.createChild('div', 'toolbar-search-control');
@@ -167,13 +167,13 @@ export class SearchableView extends VBox {
         if (this.searchProvider.supportsCaseSensitiveSearch()) {
             this.caseSensitiveButton = new ToolbarToggle(i18nString(UIStrings.matchCase));
             this.caseSensitiveButton.setText('Aa');
-            this.caseSensitiveButton.addEventListener(ToolbarButton.Events.Click, this.toggleCaseSensitiveSearch, this);
+            this.caseSensitiveButton.addEventListener("Click" /* ToolbarButton.Events.Click */, this.toggleCaseSensitiveSearch, this);
             toolbar.appendToolbarItem(this.caseSensitiveButton);
         }
         if (this.searchProvider.supportsRegexSearch()) {
             this.regexButton = new ToolbarToggle(i18nString(UIStrings.useRegularExpression));
             this.regexButton.setText('.*');
-            this.regexButton.addEventListener(ToolbarButton.Events.Click, this.toggleRegexSearch, this);
+            this.regexButton.addEventListener("Click" /* ToolbarButton.Events.Click */, this.toggleRegexSearch, this);
             toolbar.appendToolbarItem(this.regexButton);
         }
         const cancelButtonElement = createTextButton(i18nString(UIStrings.cancel), this.closeSearch.bind(this), {

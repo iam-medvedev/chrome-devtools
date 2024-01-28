@@ -36,7 +36,7 @@ export declare const enum Events {
 export type EventTypes = {
     [Events.Hidden]: void;
 };
-export declare enum OutsideTabIndexBehavior {
+export declare const enum OutsideTabIndexBehavior {
     DisableAllOutsideTabIndex = "DisableAllTabIndex",
     PreserveMainViewTabIndex = "PreserveMainViewTabIndex",
     PreserveTabIndex = "PreserveTabIndex"

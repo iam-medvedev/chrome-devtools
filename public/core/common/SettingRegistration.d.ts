@@ -6,7 +6,7 @@ export declare function getRegisteredSettings(): Array<SettingRegistration>;
 export declare function registerSettingsForTest(settings: Array<SettingRegistration>, forceReset?: boolean): void;
 export declare function resetSettings(): void;
 export declare function maybeRemoveSettingExtension(settingName: string): boolean;
-export declare enum SettingCategory {
+export declare const enum SettingCategory {
     NONE = "",
     ELEMENTS = "ELEMENTS",
     APPEARANCE = "APPEARANCE",
@@ -27,7 +27,7 @@ export declare enum SettingCategory {
     SYNC = "SYNC"
 }
 export declare function getLocalizedSettingsCategory(category: SettingCategory): Platform.UIString.LocalizedString;
-export declare enum SettingType {
+export declare const enum SettingType {
     ARRAY = "array",
     REGEX = "regex",
     ENUM = "enum",

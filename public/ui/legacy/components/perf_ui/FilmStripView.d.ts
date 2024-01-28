@@ -23,7 +23,7 @@ export declare class FilmStripView extends FilmStripView_base {
     reset(): void;
     setStatusText(text: string): void;
 }
-export declare enum Events {
+export declare const enum Events {
     FrameSelected = "FrameSelected",
     FrameEnter = "FrameEnter",
     FrameExit = "FrameExit"

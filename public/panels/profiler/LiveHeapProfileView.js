@@ -87,14 +87,13 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
         return liveHeapProfileViewInstance;
     }
     createDataGrid() {
-        const k = Platform.StringUtilities.kebab;
         const defaultColumnConfig = {
-            id: k(''),
+            id: '',
             title: Common.UIString.LocalizedEmptyString,
             width: undefined,
             fixedWidth: true,
             sortable: true,
-            align: DataGrid.DataGrid.Align.Right,
+            align: "right" /* DataGrid.DataGrid.Align.Right */,
             sort: DataGrid.DataGrid.Order.Descending,
             titleDOMFragment: undefined,
             editable: undefined,
@@ -109,27 +108,27 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
         const columns = [
             {
                 ...defaultColumnConfig,
-                id: k('size'),
+                id: 'size',
                 title: i18nString(UIStrings.jsHeap),
                 width: '72px',
                 fixedWidth: true,
                 sortable: true,
-                align: DataGrid.DataGrid.Align.Right,
+                align: "right" /* DataGrid.DataGrid.Align.Right */,
                 sort: DataGrid.DataGrid.Order.Descending,
                 tooltip: i18nString(UIStrings.allocatedJsHeapSizeCurrentlyIn),
             },
             {
                 ...defaultColumnConfig,
-                id: k('isolates'),
+                id: 'isolates',
                 title: i18nString(UIStrings.vms),
                 width: '40px',
                 fixedWidth: true,
-                align: DataGrid.DataGrid.Align.Right,
+                align: "right" /* DataGrid.DataGrid.Align.Right */,
                 tooltip: i18nString(UIStrings.numberOfVmsSharingTheSameScript),
             },
             {
                 ...defaultColumnConfig,
-                id: k('url'),
+                id: 'url',
                 title: i18nString(UIStrings.scriptUrl),
                 fixedWidth: false,
                 sortable: true,
@@ -143,11 +142,11 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
             deleteCallback: undefined,
             refreshCallback: undefined,
         });
-        dataGrid.setResizeMethod(DataGrid.DataGrid.ResizeMethod.Last);
+        dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.Last */);
         dataGrid.element.classList.add('flex-auto');
         dataGrid.element.addEventListener('keydown', this.onKeyDown.bind(this), false);
-        dataGrid.addEventListener(DataGrid.DataGrid.Events.OpenedNode, this.revealSourceForSelectedNode, this);
-        dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.sortingChanged, this);
+        dataGrid.addEventListener("OpenedNode" /* DataGrid.DataGrid.Events.OpenedNode */, this.revealSourceForSelectedNode, this);
+        dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortingChanged, this);
         for (const info of columns) {
             const headerCell = dataGrid.headerTableHeader(info.id);
             if (headerCell) {

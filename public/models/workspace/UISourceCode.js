@@ -438,8 +438,6 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return this.disableEditInternal;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["WorkingCopyChanged"] = "WorkingCopyChanged";
@@ -568,16 +566,6 @@ export class Message {
         return this.text() === another.text() && this.level() === another.level() && this.range.equal(another.range);
     }
 }
-(function (Message) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
-    let Level;
-    (function (Level) {
-        Level["Error"] = "Error";
-        Level["Issue"] = "Issue";
-        Level["Warning"] = "Warning";
-    })(Level = Message.Level || (Message.Level = {}));
-})(Message || (Message = {}));
 export class LineMarker {
     rangeInternal;
     typeInternal;

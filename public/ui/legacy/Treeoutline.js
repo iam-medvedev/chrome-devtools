@@ -42,8 +42,6 @@ import treeoutlineStyles from './treeoutline.css.legacy.js';
 import { deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, isEditing } from './UIUtils.js';
 import * as Utils from './utils/utils.js';
 const nodeToParentTreeElementMap = new WeakMap();
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["ElementAttached"] = "ElementAttached";

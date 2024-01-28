@@ -30,7 +30,7 @@ export interface Layer {
     snapshots(): Promise<SnapshotWithRect | null>[];
 }
 export declare namespace Layer {
-    enum ScrollRectType {
+    const enum ScrollRectType {
         NonFastScrollable = "NonFastScrollable",
         TouchEventHandler = "TouchEventHandler",
         WheelEventHandler = "WheelEventHandler",

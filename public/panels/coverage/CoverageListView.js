@@ -125,10 +125,9 @@ export class CoverageListView extends UI.Widget.VBox {
         this.nodeForCoverageInfo = new Map();
         this.isVisibleFilter = isVisibleFilter;
         this.highlightRegExp = null;
-        const k = Platform.StringUtilities.kebab;
         const columns = [
             {
-                id: k('url'),
+                id: 'url',
                 title: i18nString(UIStrings.url),
                 width: '250px',
                 weight: 3,
@@ -136,28 +135,28 @@ export class CoverageListView extends UI.Widget.VBox {
                 sortable: true,
                 disclosure: true,
             },
-            { id: k('type'), title: i18nString(UIStrings.type), width: '45px', weight: 1, fixedWidth: true, sortable: true },
+            { id: 'type', title: i18nString(UIStrings.type), width: '45px', weight: 1, fixedWidth: true, sortable: true },
             {
-                id: k('size'),
+                id: 'size',
                 title: i18nString(UIStrings.totalBytes),
                 width: '60px',
                 fixedWidth: true,
                 sortable: true,
-                align: DataGrid.DataGrid.Align.Right,
+                align: "right" /* DataGrid.DataGrid.Align.Right */,
                 weight: 1,
             },
             {
-                id: k('unused-size'),
+                id: 'unused-size',
                 title: i18nString(UIStrings.unusedBytes),
                 width: '100px',
                 fixedWidth: true,
                 sortable: true,
-                align: DataGrid.DataGrid.Align.Right,
+                align: "right" /* DataGrid.DataGrid.Align.Right */,
                 sort: DataGrid.DataGrid.Order.Descending,
                 weight: 1,
             },
             {
-                id: k('bars'),
+                id: 'bars',
                 title: i18nString(UIStrings.usageVisualization),
                 width: '250px',
                 fixedWidth: false,
@@ -172,12 +171,12 @@ export class CoverageListView extends UI.Widget.VBox {
             refreshCallback: undefined,
             deleteCallback: undefined,
         });
-        this.dataGrid.setResizeMethod(DataGrid.DataGrid.ResizeMethod.Last);
+        this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.Last */);
         this.dataGrid.setStriped(true);
         this.dataGrid.element.classList.add('flex-auto');
         this.dataGrid.element.addEventListener('keydown', this.onKeyDown.bind(this), false);
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.OpenedNode, this.onOpenedNode, this);
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.sortingChanged, this);
+        this.dataGrid.addEventListener("OpenedNode" /* DataGrid.DataGrid.Events.OpenedNode */, this.onOpenedNode, this);
+        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortingChanged, this);
         const dataGridWidget = this.dataGrid.asWidget();
         dataGridWidget.show(this.contentElement);
         this.setDefaultFocusedChild(dataGridWidget);

@@ -137,9 +137,9 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
         UI.ARIAUtils.markAsList(this.#list.element);
         UI.ARIAUtils.setLabel(this.#list.element, i18nString(UIStrings.domBreakpointsList));
         this.#emptyElement.tabIndex = -1;
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, SDK.DOMDebuggerModel.Events.DOMBreakpointAdded, this.breakpointAdded, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, SDK.DOMDebuggerModel.Events.DOMBreakpointToggled, this.breakpointToggled, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, SDK.DOMDebuggerModel.Events.DOMBreakpointsRemoved, this.breakpointsRemoved, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointAdded" /* SDK.DOMDebuggerModel.Events.DOMBreakpointAdded */, this.breakpointAdded, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointToggled" /* SDK.DOMDebuggerModel.Events.DOMBreakpointToggled */, this.breakpointToggled, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointsRemoved" /* SDK.DOMDebuggerModel.Events.DOMBreakpointsRemoved */, this.breakpointsRemoved, this);
         for (const domDebuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DOMDebuggerModel.DOMDebuggerModel)) {
             domDebuggerModel.retrieveDOMBreakpoints();
             for (const breakpoint of domDebuggerModel.domBreakpoints()) {
@@ -326,7 +326,7 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
         if (this.#highlightedBreakpoint) {
             this.#list.refreshItem(this.#highlightedBreakpoint);
         }
-        void UI.ViewManager.ViewManager.instance().showView('sources.domBreakpoints');
+        void UI.ViewManager.ViewManager.instance().showView('sources.dom-breakpoints');
     }
     wasShown() {
         super.wasShown();

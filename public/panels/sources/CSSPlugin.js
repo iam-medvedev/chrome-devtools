@@ -206,9 +206,9 @@ function createCSSTooltip(active) {
             if (active.type === 0 /* TooltipType.Color */) {
                 const spectrum = new ColorPicker.Spectrum.Spectrum();
                 addListener = (handler) => {
-                    spectrum.addEventListener(ColorPicker.Spectrum.Events.ColorChanged, handler);
+                    spectrum.addEventListener("ColorChanged" /* ColorPicker.Spectrum.Events.ColorChanged */, handler);
                 };
-                spectrum.addEventListener(ColorPicker.Spectrum.Events.SizeChanged, () => view.requestMeasure());
+                spectrum.addEventListener("SizeChanged" /* ColorPicker.Spectrum.Events.SizeChanged */, () => view.requestMeasure());
                 spectrum.setColor(active.color, active.color.format());
                 widget = spectrum;
                 Host.userMetrics.colorPickerOpenedFrom(0 /* Host.UserMetrics.ColorPickerOpenedFrom.SourcesPanel */);
@@ -217,7 +217,7 @@ function createCSSTooltip(active) {
                 const spectrum = new InlineEditor.BezierEditor.BezierEditor(active.curve);
                 widget = spectrum;
                 addListener = (handler) => {
-                    spectrum.addEventListener(InlineEditor.BezierEditor.Events.BezierChanged, handler);
+                    spectrum.addEventListener("BezierChanged" /* InlineEditor.BezierEditor.Events.BezierChanged */, handler);
                 };
             }
             const dom = document.createElement('div');

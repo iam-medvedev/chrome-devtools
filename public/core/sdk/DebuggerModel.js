@@ -12,7 +12,7 @@ import { RuntimeModel } from './RuntimeModel.js';
 import { Script } from './Script.js';
 import { SDKModel } from './SDKModel.js';
 import { SourceMapManager } from './SourceMapManager.js';
-import { Capability, Type } from './Target.js';
+import { Type } from './Target.js';
 const UIStrings = {
     /**
      *@description Title of a section in the debugger showing local JavaScript variables.
@@ -103,14 +103,6 @@ export function sortAndMergeRanges(locationRanges) {
     merged.push(prev);
     return merged;
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var StepMode;
-(function (StepMode) {
-    StepMode["StepInto"] = "StepInto";
-    StepMode["StepOut"] = "StepOut";
-    StepMode["StepOver"] = "StepOver";
-})(StepMode || (StepMode = {}));
 export class DebuggerModel extends SDKModel {
     agent;
     runtimeModelInternal;
@@ -208,7 +200,7 @@ export class DebuggerModel extends SDKModel {
         const maxScriptsCacheSize = isRemoteFrontend ? 10e6 : 100e6;
         const enablePromise = this.agent.invoke_enable({ maxScriptsCacheSize });
         let instrumentationPromise;
-        if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS)) {
+        if (Root.Runtime.experiments.isEnabled("instrumentationBreakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */)) {
             instrumentationPromise = this.agent.invoke_setInstrumentationBreakpoint({
                 instrumentation: "beforeScriptExecution" /* Protocol.Debugger.SetInstrumentationBreakpointRequestInstrumentation.BeforeScriptExecution */,
             });
@@ -338,16 +330,16 @@ export class DebuggerModel extends SDKModel {
         return sortAndMergeRanges(skipList);
     }
     async stepInto() {
-        const skipList = await this.computeAutoStepSkipList(StepMode.StepInto);
+        const skipList = await this.computeAutoStepSkipList("StepInto" /* StepMode.StepInto */);
         void this.agent.invoke_stepInto({ breakOnAsyncCall: false, skipList });
     }
     async stepOver() {
         this.#autoSteppingContext = this.#debuggerPausedDetailsInternal?.callFrames[0]?.functionLocation() ?? null;
-        const skipList = await this.computeAutoStepSkipList(StepMode.StepOver);
+        const skipList = await this.computeAutoStepSkipList("StepOver" /* StepMode.StepOver */);
         void this.agent.invoke_stepOver({ skipList });
     }
     async stepOut() {
-        const skipList = await this.computeAutoStepSkipList(StepMode.StepOut);
+        const skipList = await this.computeAutoStepSkipList("StepOut" /* StepMode.StepOut */);
         if (skipList.length !== 0) {
             void this.agent.invoke_stepOver({ skipList });
         }
@@ -356,7 +348,7 @@ export class DebuggerModel extends SDKModel {
         }
     }
     scheduleStepIntoAsync() {
-        void this.computeAutoStepSkipList(StepMode.StepInto).then(skipList => {
+        void this.computeAutoStepSkipList("StepInto" /* StepMode.StepInto */).then(skipList => {
             void this.agent.invoke_stepInto({ breakOnAsyncCall: true, skipList });
         });
     }
@@ -765,8 +757,6 @@ export const _debuggerIdToModel = new Map();
 /**
  * Keep these in sync with WebCore::V8Debugger
  */
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var PauseOnExceptionsState;
 (function (PauseOnExceptionsState) {
     PauseOnExceptionsState["DontPauseOnExceptions"] = "none";
@@ -774,8 +764,6 @@ export var PauseOnExceptionsState;
     PauseOnExceptionsState["PauseOnCaughtExceptions"] = "caught";
     PauseOnExceptionsState["PauseOnUncaughtExceptions"] = "uncaught";
 })(PauseOnExceptionsState || (PauseOnExceptionsState = {}));
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["DebuggerWasEnabled"] = "DebuggerWasEnabled";
@@ -1145,7 +1133,7 @@ export class DebuggerPausedDetails {
         return asyncStackTrace;
     }
 }
-SDKModel.register(DebuggerModel, { capabilities: Capability.JS, autostart: true });
+SDKModel.register(DebuggerModel, { capabilities: 4 /* Capability.JS */, autostart: true });
 export const LOGPOINT_SOURCE_URL = 'debugger://logpoint';
 export const COND_BREAKPOINT_SOURCE_URL = 'debugger://breakpoint';
 //# sourceMappingURL=DebuggerModel.js.map

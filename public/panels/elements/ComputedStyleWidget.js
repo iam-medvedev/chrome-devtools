@@ -219,7 +219,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         const hbox = this.contentElement.createChild('div', 'hbox styles-sidebar-pane-toolbar');
         const toolbar = new UI.Toolbar.Toolbar('styles-pane-toolbar', hbox);
         const filterInput = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), i18nString(UIStrings.filterComputedStyles), 1, 1, undefined, undefined, false);
-        filterInput.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.onFilterChanged, this);
+        filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);
         this.input = filterInput;
         this.filterRegex = null;
@@ -385,7 +385,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
             const data = node.treeNodeData;
             if (data.tag === 'property') {
                 const trace = propertyTraces.get(data.propertyName);
-                const activeProperty = trace?.find(property => matchedStyles.propertyState(property) === SDK.CSSMatchedStyles.PropertyState.Active);
+                const activeProperty = trace?.find(property => matchedStyles.propertyState(property) === "Active" /* SDK.CSSMatchedStyles.PropertyState.Active */);
                 const propertyElement = createPropertyElement(domNode, data.propertyName, data.propertyValue, propertyTraces.has(data.propertyName), data.inherited, activeProperty, event => {
                     if (activeProperty) {
                         this.handleContextMenuEvent(matchedStyles, activeProperty, event);
@@ -394,7 +394,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
                 return propertyElement;
             }
             if (data.tag === 'traceElement') {
-                const isPropertyOverloaded = matchedStyles.propertyState(data.property) === SDK.CSSMatchedStyles.PropertyState.Overloaded;
+                const isPropertyOverloaded = matchedStyles.propertyState(data.property) === "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.Overloaded */;
                 const traceElement = createTraceElement(domNode, data.property, isPropertyOverloaded, matchedStyles, this.linkifier);
                 traceElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this, matchedStyles, data.property));
                 return LitHtml.html `${traceElement}`;

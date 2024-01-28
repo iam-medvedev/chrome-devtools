@@ -32,14 +32,14 @@ import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
-import { CPUProfilerModel, Events as CPUProfilerModelEvents } from './CPUProfilerModel.js';
+import { CPUProfilerModel } from './CPUProfilerModel.js';
 import { COND_BREAKPOINT_SOURCE_URL, Events as DebuggerModelEvents, LOGPOINT_SOURCE_URL, } from './DebuggerModel.js';
 import { LogModel } from './LogModel.js';
 import { RemoteObject } from './RemoteObject.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel, } from './ResourceTreeModel.js';
 import { Events as RuntimeModelEvents, RuntimeModel, } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability, Type } from './Target.js';
+import { Type } from './Target.js';
 import { TargetManager } from './TargetManager.js';
 export { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
 const UIStrings = {
@@ -104,8 +104,8 @@ export class ConsoleModel extends SDKModel {
         const eventListeners = [];
         const cpuProfilerModel = target.model(CPUProfilerModel);
         if (cpuProfilerModel) {
-            eventListeners.push(cpuProfilerModel.addEventListener(CPUProfilerModelEvents.ConsoleProfileStarted, this.consoleProfileStarted.bind(this, cpuProfilerModel)));
-            eventListeners.push(cpuProfilerModel.addEventListener(CPUProfilerModelEvents.ConsoleProfileFinished, this.consoleProfileFinished.bind(this, cpuProfilerModel)));
+            eventListeners.push(cpuProfilerModel.addEventListener("ConsoleProfileStarted" /* CPUProfilerModelEvents.ConsoleProfileStarted */, this.consoleProfileStarted.bind(this, cpuProfilerModel)));
+            eventListeners.push(cpuProfilerModel.addEventListener("ConsoleProfileFinished" /* CPUProfilerModelEvents.ConsoleProfileFinished */, this.consoleProfileFinished.bind(this, cpuProfilerModel)));
         }
         const resourceTreeModel = target.model(ResourceTreeModel);
         if (resourceTreeModel && target.parentTarget()?.type() !== Type.Frame) {
@@ -409,8 +409,6 @@ export class ConsoleModel extends SDKModel {
         }
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["ConsoleCleared"] = "ConsoleCleared";
@@ -644,7 +642,7 @@ export class ConsoleMessage {
         return { callFrame: callFrames[lastBreakpointFrameIndex + 1], type };
     }
 }
-SDKModel.register(ConsoleModel, { capabilities: Capability.JS, autostart: true });
+SDKModel.register(ConsoleModel, { capabilities: 4 /* Capability.JS */, autostart: true });
 export const MessageSourceDisplayName = new Map(([
     ["xml" /* Protocol.Log.LogEntrySource.XML */, 'xml'],
     ["javascript" /* Protocol.Log.LogEntrySource.Javascript */, 'javascript'],

@@ -4,10 +4,7 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import { Events as ListModelEvents } from './ListModel.js';
 import { measurePreferredSize } from './UIUtils.js';
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var ListMode;
 (function (ListMode) {
     ListMode["NonViewport"] = "UI.ListMode.NonViewport";
@@ -42,7 +39,7 @@ export class ListControl {
         this.topHeight = 0;
         this.bottomHeight = 0;
         this.model = model;
-        this.model.addEventListener(ListModelEvents.ItemsReplaced, this.replacedItemsInRange, this);
+        this.model.addEventListener("ItemsReplaced" /* ListModelEvents.ItemsReplaced */, this.replacedItemsInRange, this);
         this.itemToElement = new Map();
         this.selectedIndexInternal = -1;
         this.selectedItemInternal = null;
@@ -64,9 +61,9 @@ export class ListControl {
     setModel(model) {
         this.itemToElement.clear();
         const length = this.model.length;
-        this.model.removeEventListener(ListModelEvents.ItemsReplaced, this.replacedItemsInRange, this);
+        this.model.removeEventListener("ItemsReplaced" /* ListModelEvents.ItemsReplaced */, this.replacedItemsInRange, this);
         this.model = model;
-        this.model.addEventListener(ListModelEvents.ItemsReplaced, this.replacedItemsInRange, this);
+        this.model.addEventListener("ItemsReplaced" /* ListModelEvents.ItemsReplaced */, this.replacedItemsInRange, this);
         this.invalidateRange(0, length);
     }
     replacedItemsInRange(event) {

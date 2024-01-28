@@ -32,7 +32,7 @@ export declare class FontEditor extends FontEditor_base {
     private updatePropertyValue;
     private resizePopout;
 }
-export declare enum Events {
+export declare const enum Events {
     FontChanged = "FontChanged",
     FontEditorResized = "FontEditorResized"
 }

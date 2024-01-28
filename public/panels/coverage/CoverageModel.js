@@ -6,8 +6,6 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["CoverageUpdated"] = "CoverageUpdated";
@@ -548,7 +546,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel {
         void fos.close();
     }
 }
-SDK.SDKModel.SDKModel.register(CoverageModel, { capabilities: SDK.Target.Capability.None, autostart: false });
+SDK.SDKModel.SDKModel.register(CoverageModel, { capabilities: 0 /* SDK.Target.Capability.None */, autostart: false });
 function locationCompare(a, b) {
     const [aLine, aPos] = a.split(':');
     const [bLine, bPos] = b.split(':');
@@ -721,8 +719,6 @@ export class SourceURLCoverageInfo extends URLCoverageInfo {
     }
 }
 (function (URLCoverageInfo) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
     let Events;
     (function (Events) {
         Events["SizesChanged"] = "SizesChanged";

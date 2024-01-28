@@ -15,7 +15,6 @@ import { DOMModel } from './DOMModel.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel, } from './ResourceTreeModel.js';
 import { SDKModel } from './SDKModel.js';
 import { SourceMapManager } from './SourceMapManager.js';
-import { Capability } from './Target.js';
 export class CSSModel extends SDKModel {
     agent;
     #domModel;
@@ -690,7 +689,7 @@ export class CSSModel extends SDKModel {
                 return;
             }
             if (this.#cssPropertyTracker) {
-                this.#cssPropertyTracker.dispatchEventToListeners(CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, result.nodeIds.map(nodeId => this.#domModel.nodeForId(nodeId)));
+                this.#cssPropertyTracker.dispatchEventToListeners("TrackedCSSPropertiesUpdated" /* CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated */, result.nodeIds.map(nodeId => this.#domModel.nodeForId(nodeId)));
             }
         }
         if (this.#isCSSPropertyTrackingEnabled) {
@@ -706,8 +705,6 @@ export class CSSModel extends SDKModel {
         return this.agent;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["FontsUpdated"] = "FontsUpdated";
@@ -828,11 +825,5 @@ export class CSSPropertyTracker extends Common.ObjectWrapper.ObjectWrapper {
     }
 }
 const StylePollingInterval = 1000; // throttling interval for style polling, in milliseconds
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var CSSPropertyTrackerEvents;
-(function (CSSPropertyTrackerEvents) {
-    CSSPropertyTrackerEvents["TrackedCSSPropertiesUpdated"] = "TrackedCSSPropertiesUpdated";
-})(CSSPropertyTrackerEvents || (CSSPropertyTrackerEvents = {}));
-SDKModel.register(CSSModel, { capabilities: Capability.DOM, autostart: true });
+SDKModel.register(CSSModel, { capabilities: 2 /* Capability.DOM */, autostart: true });
 //# sourceMappingURL=CSSModel.js.map

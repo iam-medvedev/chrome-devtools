@@ -7,7 +7,7 @@ import * as Formatter from '../../models/formatter/formatter.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { Events, registerEditorAction, } from './SourcesView.js';
+import { registerEditorAction, } from './SourcesView.js';
 const UIStrings = {
     /**
      *@description Title of the format button in the Sources panel
@@ -63,10 +63,10 @@ export class InplaceFormatterEditorAction {
             return this.button;
         }
         this.sourcesView = sourcesView;
-        this.sourcesView.addEventListener(Events.EditorSelected, this.editorSelected.bind(this));
-        this.sourcesView.addEventListener(Events.EditorClosed, this.editorClosed.bind(this));
+        this.sourcesView.addEventListener("EditorSelected" /* Events.EditorSelected */, this.editorSelected.bind(this));
+        this.sourcesView.addEventListener("EditorClosed" /* Events.EditorClosed */, this.editorClosed.bind(this));
         this.button = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.format), 'brackets');
-        this.button.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.formatSourceInPlace, this);
+        this.button.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.formatSourceInPlace, this);
         this.updateButton(sourcesView.currentUISourceCode());
         return this.button;
     }

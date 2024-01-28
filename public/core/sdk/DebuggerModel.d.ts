@@ -9,7 +9,7 @@ import { SDKModel } from './SDKModel.js';
 import { SourceMapManager } from './SourceMapManager.js';
 import { type Target } from './Target.js';
 export declare function sortAndMergeRanges(locationRanges: Protocol.Debugger.LocationRange[]): Protocol.Debugger.LocationRange[];
-export declare enum StepMode {
+export declare const enum StepMode {
     StepInto = "StepInto",
     StepOut = "StepOut",
     StepOver = "StepOver"

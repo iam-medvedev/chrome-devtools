@@ -495,6 +495,21 @@ const UIStrings = {
      * @description Undefined.
      */
     CookieFlushed: 'Undefined',
+    // TODO(kprokopenko, leimy): Please provide meaningful description.
+    /**
+     * @description Undefined.
+     */
+    SmartCard: 'Undefined',
+    // TODO(kprokopenko, leimy): Please provide meaningful description.
+    /**
+     * @description Undefined.
+     */
+    LiveMediaStreamTrack: 'Undefined',
+    // TODO(kprokopenko, leimy): Please provide meaningful description.
+    /**
+     * @description Undefined.
+     */
+    UnloadHandler: 'Undefined',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/BackForwardCacheStrings.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -634,5 +649,8 @@ export const NotRestoredReasonDescription = {
     'WebSocketSticky': { name: i18nLazyString(UIStrings.webSocketSticky) },
     'HTTPAuthRequired': { name: i18nLazyString(UIStrings.HTTPAuthRequired) },
     'CookieFlushed': { name: i18nLazyString(UIStrings.CookieFlushed) },
+    'SmartCard': { name: i18nLazyString(UIStrings.SmartCard) },
+    'LiveMediaStreamTrack': { name: i18nLazyString(UIStrings.LiveMediaStreamTrack) },
+    'UnloadHandler': { name: i18nLazyString(UIStrings.UnloadHandler) },
 };
 //# sourceMappingURL=BackForwardCacheStrings.js.map

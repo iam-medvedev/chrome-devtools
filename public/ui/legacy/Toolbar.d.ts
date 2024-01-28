@@ -92,7 +92,7 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes>
     protected mouseDown(event: MouseEvent): void;
 }
 export declare namespace ToolbarButton {
-    enum Events {
+    const enum Events {
         Click = "Click",
         MouseDown = "MouseDown"
     }
@@ -114,7 +114,7 @@ export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
     private updateEmptyStyles;
 }
 export declare namespace ToolbarInput {
-    enum Event {
+    const enum Event {
         TextChanged = "TextChanged",
         EnterPressed = "EnterPressed"
     }
@@ -216,7 +216,7 @@ export interface ToolbarItemRegistration {
     experiment?: string;
     jslog?: string;
 }
-export declare enum ToolbarItemLocation {
+export declare const enum ToolbarItemLocation {
     FILES_NAVIGATION_TOOLBAR = "files-navigator-toolbar",
     MAIN_TOOLBAR_RIGHT = "main-toolbar-right",
     MAIN_TOOLBAR_LEFT = "main-toolbar-left",

@@ -172,7 +172,7 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
     }
     boundaryChanged() {
         void this.boundryChangedEventThrottler.schedule(async () => {
-            this.dispatchEventToListeners(Events.BoundariesChanged);
+            this.dispatchEventToListeners("BoundariesChanged" /* Events.BoundariesChanged */);
         });
     }
     updateBoundariesForEventTime(eventTime) {
@@ -253,12 +253,6 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const _minimumSpread = 0.1;
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["BoundariesChanged"] = "BoundariesChanged";
-})(Events || (Events = {}));
 export class NetworkTransferTimeCalculator extends NetworkTimeCalculator {
     constructor() {
         super(false);

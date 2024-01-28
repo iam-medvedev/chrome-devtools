@@ -49,17 +49,17 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectedURLChanged(target.inspectedURL() || Platform.DevToolsPath.EmptyUrlString);
-        this.dispatchEventToListeners(Events.InspectedURLChanged, target);
+        this.dispatchEventToListeners("InspectedURLChanged" /* Events.InspectedURLChanged */, target);
     }
     onNameChange(target) {
-        this.dispatchEventToListeners(Events.NameChanged, target);
+        this.dispatchEventToListeners("NameChanged" /* Events.NameChanged */, target);
     }
     async suspendAllTargets(reason) {
         if (this.#isSuspended) {
             return;
         }
         this.#isSuspended = true;
-        this.dispatchEventToListeners(Events.SuspendStateChanged);
+        this.dispatchEventToListeners("SuspendStateChanged" /* Events.SuspendStateChanged */);
         const suspendPromises = Array.from(this.#targetsInternal.values(), target => target.suspend(reason));
         await Promise.all(suspendPromises);
     }
@@ -68,7 +68,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.#isSuspended = false;
-        this.dispatchEventToListeners(Events.SuspendStateChanged);
+        this.dispatchEventToListeners("SuspendStateChanged" /* Events.SuspendStateChanged */);
         const resumePromises = Array.from(this.#targetsInternal.values(), target => target.resume());
         await Promise.all(resumePromises);
     }
@@ -347,15 +347,6 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         return this.#scopeTarget;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["AvailableTargetsChanged"] = "AvailableTargetsChanged";
-    Events["InspectedURLChanged"] = "InspectedURLChanged";
-    Events["NameChanged"] = "NameChanged";
-    Events["SuspendStateChanged"] = "SuspendStateChanged";
-})(Events || (Events = {}));
 export class Observer {
     targetAdded(_target) {
     }

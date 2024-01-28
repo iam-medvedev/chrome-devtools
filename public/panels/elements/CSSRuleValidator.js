@@ -87,7 +87,7 @@ export class Hint {
 }
 export class CSSRuleValidator {
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.Other;
+        return 0 /* Host.UserMetrics.CSSHintType.Other */;
     }
     #affectedProperties;
     constructor(affectedProperties) {
@@ -102,7 +102,7 @@ export class AlignContentValidator extends CSSRuleValidator {
         super(['align-content']);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.AlignContent;
+        return 1 /* Host.UserMetrics.CSSHintType.AlignContent */;
     }
     getHint(_propertyName, computedStyles) {
         if (!computedStyles) {
@@ -142,7 +142,7 @@ export class FlexItemValidator extends CSSRuleValidator {
         super(['flex', 'flex-basis', 'flex-grow', 'flex-shrink']);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.FlexItem;
+        return 2 /* Host.UserMetrics.CSSHintType.FlexItem */;
     }
     getHint(propertyName, computedStyles, parentComputedStyles) {
         if (!parentComputedStyles) {
@@ -168,7 +168,7 @@ export class FlexContainerValidator extends CSSRuleValidator {
         super(['flex-direction', 'flex-flow', 'flex-wrap']);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.FlexContainer;
+        return 3 /* Host.UserMetrics.CSSHintType.FlexContainer */;
     }
     getHint(propertyName, computedStyles) {
         if (!computedStyles) {
@@ -203,7 +203,7 @@ export class GridContainerValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.GridContainer;
+        return 4 /* Host.UserMetrics.CSSHintType.GridContainer */;
     }
     getHint(propertyName, computedStyles) {
         if (isGridContainer(computedStyles)) {
@@ -237,7 +237,7 @@ export class GridItemValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.GridItem;
+        return 5 /* Host.UserMetrics.CSSHintType.GridItem */;
     }
     getHint(propertyName, computedStyles, parentComputedStyles) {
         if (!parentComputedStyles) {
@@ -267,7 +267,7 @@ export class FlexOrGridItemValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.FlexOrGridItem;
+        return 12 /* Host.UserMetrics.CSSHintType.FlexOrGridItem */;
     }
     getHint(propertyName, computedStyles, parentComputedStyles) {
         if (!parentComputedStyles) {
@@ -297,7 +297,7 @@ export class FlexGridValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.FlexGrid;
+        return 6 /* Host.UserMetrics.CSSHintType.FlexGrid */;
     }
     getHint(propertyName, computedStyles, parentComputedStyles) {
         if (!computedStyles) {
@@ -342,7 +342,7 @@ export class MulticolFlexGridValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.MulticolFlexGrid;
+        return 7 /* Host.UserMetrics.CSSHintType.MulticolFlexGrid */;
     }
     getHint(propertyName, computedStyles) {
         if (!computedStyles) {
@@ -373,7 +373,7 @@ export class PaddingValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.Padding;
+        return 8 /* Host.UserMetrics.CSSHintType.Padding */;
     }
     getHint(propertyName, computedStyles) {
         const display = computedStyles?.get('display');
@@ -412,7 +412,7 @@ export class PositionValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.Position;
+        return 9 /* Host.UserMetrics.CSSHintType.Position */;
     }
     getHint(propertyName, computedStyles) {
         const position = computedStyles?.get('position');
@@ -440,7 +440,7 @@ export class ZIndexValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.ZIndex;
+        return 10 /* Host.UserMetrics.CSSHintType.ZIndex */;
     }
     getHint(propertyName, computedStyles, parentComputedStyles) {
         const position = computedStyles?.get('position');
@@ -475,7 +475,7 @@ export class SizingValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.Sizing;
+        return 11 /* Host.UserMetrics.CSSHintType.Sizing */;
     }
     getHint(propertyName, computedStyles, parentComputedStyles, nodeName) {
         if (!computedStyles || !nodeName) {
@@ -509,7 +509,7 @@ export class FontVariationSettingsValidator extends CSSRuleValidator {
         ]);
     }
     getMetricType() {
-        return Host.UserMetrics.CSSHintType.FontVariationSettings;
+        return 13 /* Host.UserMetrics.CSSHintType.FontVariationSettings */;
     }
     getHint(propertyName, computedStyles, parentComputedStyles, nodeName, fontFaces) {
         if (!computedStyles) {

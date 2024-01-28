@@ -32,8 +32,8 @@ export class IsolateSelector extends UI.Toolbar.ToolbarItem {
         menu.style.whiteSpace = 'normal';
         menu.addEventListener('selectmenuselected', this.#onSelectMenuSelected.bind(this));
         SDK.IsolateManager.IsolateManager.instance().observeIsolates(this);
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.NameChanged, this.targetChanged, this);
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this.targetChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NameChanged */, this.targetChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.targetChanged, this);
     }
     #updateIsolateItem(isolate, itemForIsolate) {
         const modelCountByName = new Map();

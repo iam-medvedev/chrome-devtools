@@ -169,7 +169,7 @@ export class CoverageView extends UI.Widget.VBox {
         toolbar.appendSeparator();
         this.filterInput = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.urlFilter), '', 0.4, 1);
         this.filterInput.setEnabled(false);
-        this.filterInput.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.onFilterChanged, this);
+        this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(this.filterInput);
         toolbar.appendSeparator();
         this.typeFilterValue = null;

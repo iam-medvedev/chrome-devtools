@@ -4,8 +4,7 @@
 import * as Common from '../common/common.js';
 import { CSSModel } from './CSSModel.js';
 import { MultitargetNetworkManager } from './NetworkManager.js';
-import { Events, OverlayModel } from './OverlayModel.js';
-import { Capability } from './Target.js';
+import { OverlayModel } from './OverlayModel.js';
 import { SDKModel } from './SDKModel.js';
 export class EmulationModel extends SDKModel {
     #emulationAgent;
@@ -25,7 +24,7 @@ export class EmulationModel extends SDKModel {
         this.#cssModel = target.model(CSSModel);
         this.#overlayModelInternal = target.model(OverlayModel);
         if (this.#overlayModelInternal) {
-            this.#overlayModelInternal.addEventListener(Events.InspectModeWillBeToggled, () => {
+            this.#overlayModelInternal.addEventListener("InspectModeWillBeToggled" /* Events.InspectModeWillBeToggled */, () => {
                 void this.updateTouch();
             }, this);
         }
@@ -156,7 +155,7 @@ export class EmulationModel extends SDKModel {
         this.#touchEmulationAllowed = touchEmulationAllowed;
     }
     supportsDeviceEmulation() {
-        return this.target().hasAllCapabilities(Capability.DeviceEmulation);
+        return this.target().hasAllCapabilities(4096 /* Capability.DeviceEmulation */);
     }
     async resetPageScaleFactor() {
         await this.#emulationAgent.invoke_resetPageScaleFactor();
@@ -469,5 +468,5 @@ export class DeviceOrientation {
         return JSON.stringify(this);
     }
 }
-SDKModel.register(EmulationModel, { capabilities: Capability.Emulation, autostart: true });
+SDKModel.register(EmulationModel, { capabilities: 256 /* Capability.Emulation */, autostart: true });
 //# sourceMappingURL=EmulationModel.js.map

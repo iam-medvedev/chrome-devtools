@@ -49,7 +49,7 @@ async function loadPerfUIModule() {
 }
 UI.ActionRegistration.registerActionExtension({
     actionId: 'components.collect-garbage',
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     title: i18nLazyString(UIStrings.collectGarbage),
     iconClass: "mop" /* UI.ActionRegistration.IconClass.MOP */,
     async loadActionDelegate() {
@@ -58,11 +58,11 @@ UI.ActionRegistration.registerActionExtension({
     },
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.PERFORMANCE,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.flamechartMouseWheelAction),
     settingName: 'flamechartMouseWheelAction',
-    settingType: Common.Settings.SettingType.ENUM,
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'zoom',
     options: [
         {
@@ -78,11 +78,11 @@ Common.Settings.registerSettingExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.MEMORY,
-    experiment: Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE,
+    category: "MEMORY" /* Common.Settings.SettingCategory.MEMORY */,
+    experiment: "liveHeapProfile" /* Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE */,
     title: i18nLazyString(UIStrings.liveMemoryAllocationAnnotations),
     settingName: 'memoryLiveHeapProfile',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [
         {

@@ -264,7 +264,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
                 scrollIntoView: true,
             });
             Common.Settings.Settings.instance()
-                .createSetting('disableSelfXssWarning', false, Common.Settings.SettingStorageType.Synced)
+                .createSetting('disableSelfXssWarning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */)
                 .set(true);
             this.#selfXssWarningShown = false;
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssAllowPastingInConsole);

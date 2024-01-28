@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability } from './Target.js';
 import { TargetManager } from './TargetManager.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel, } from './ResourceTreeModel.js';
 // Holds preloading related information.
@@ -149,7 +148,7 @@ export class PreloadingModel extends SDKModel {
                 this.documents.delete(loaderId);
             }
         }
-        this.dispatchEventToListeners(Events.ModelUpdated);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
     }
     onRuleSetUpdated(event) {
         const ruleSet = event.ruleSet;
@@ -161,14 +160,14 @@ export class PreloadingModel extends SDKModel {
         }
         this.ensureDocumentPreloadingData(loaderId);
         this.documents.get(loaderId)?.ruleSets.upsert(ruleSet);
-        this.dispatchEventToListeners(Events.ModelUpdated);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
     }
     onRuleSetRemoved(event) {
         const id = event.id;
         for (const document of this.documents.values()) {
             document.ruleSets.delete(id);
         }
-        this.dispatchEventToListeners(Events.ModelUpdated);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
     }
     onPreloadingAttemptSourcesUpdated(event) {
         const loaderId = event.loaderId;
@@ -179,7 +178,7 @@ export class PreloadingModel extends SDKModel {
         }
         document.sources.update(event.preloadingAttemptSources);
         document.preloadingAttempts.maybeRegisterNotTriggered(document.sources);
-        this.dispatchEventToListeners(Events.ModelUpdated);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
     }
     onPrefetchStatusUpdated(event) {
         const loaderId = event.key.loaderId;
@@ -192,7 +191,7 @@ export class PreloadingModel extends SDKModel {
             requestId: event.requestId,
         };
         this.documents.get(loaderId)?.preloadingAttempts.upsert(attempt);
-        this.dispatchEventToListeners(Events.ModelUpdated);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
     }
     onPrerenderStatusUpdated(event) {
         const loaderId = event.key.loaderId;
@@ -206,20 +205,13 @@ export class PreloadingModel extends SDKModel {
             mismatchedHeaders: event.mismatchedHeaders || null,
         };
         this.documents.get(loaderId)?.preloadingAttempts.upsert(attempt);
-        this.dispatchEventToListeners(Events.ModelUpdated);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
     }
     onPreloadEnabledStateUpdated(event) {
-        this.dispatchEventToListeners(Events.WarningsUpdated, event);
+        this.dispatchEventToListeners("WarningsUpdated" /* Events.WarningsUpdated */, event);
     }
 }
-SDKModel.register(PreloadingModel, { capabilities: Capability.DOM, autostart: false });
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ModelUpdated"] = "ModelUpdated";
-    Events["WarningsUpdated"] = "WarningsUpdated";
-})(Events || (Events = {}));
+SDKModel.register(PreloadingModel, { capabilities: 2 /* Capability.DOM */, autostart: false });
 class PreloadDispatcher {
     model;
     constructor(model) {

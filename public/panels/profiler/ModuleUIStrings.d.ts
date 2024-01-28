@@ -31,6 +31,10 @@ export declare const UIStrings: {
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
+    calculatingShallowSizes: string;
+    /**
+     *@description Text to indicate the status of a heap snapshot in the Performance Pane
+     */
     calculatingRetainedSizes: string;
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane

@@ -54,7 +54,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
             event.consume(true);
         });
         ARIAUtils.markAsModalDialog(this.contentElement);
-        this.tabIndexBehavior = OutsideTabIndexBehavior.DisableAllOutsideTabIndex;
+        this.tabIndexBehavior = "DisableAllTabIndex" /* OutsideTabIndexBehavior.DisableAllOutsideTabIndex */;
         this.tabIndexMap = new Map();
         this.focusRestorer = null;
         this.closeOnEscape = true;
@@ -102,11 +102,11 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         this.tabIndexBehavior = tabIndexBehavior;
     }
     disableTabIndexOnElements(document) {
-        if (this.tabIndexBehavior === OutsideTabIndexBehavior.PreserveTabIndex) {
+        if (this.tabIndexBehavior === "PreserveTabIndex" /* OutsideTabIndexBehavior.PreserveTabIndex */) {
             return;
         }
         let exclusionSet = null;
-        if (this.tabIndexBehavior === OutsideTabIndexBehavior.PreserveMainViewTabIndex) {
+        if (this.tabIndexBehavior === "PreserveMainViewTabIndex" /* OutsideTabIndexBehavior.PreserveMainViewTabIndex */) {
             exclusionSet = this.getMainWidgetTabIndexElements(InspectorView.instance().ownerSplit());
         }
         this.tabIndexMap.clear();
@@ -174,12 +174,4 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
     }
     static instance = null;
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var OutsideTabIndexBehavior;
-(function (OutsideTabIndexBehavior) {
-    OutsideTabIndexBehavior["DisableAllOutsideTabIndex"] = "DisableAllTabIndex";
-    OutsideTabIndexBehavior["PreserveMainViewTabIndex"] = "PreserveMainViewTabIndex";
-    OutsideTabIndexBehavior["PreserveTabIndex"] = "PreserveTabIndex";
-})(OutsideTabIndexBehavior || (OutsideTabIndexBehavior = {}));
 //# sourceMappingURL=Dialog.js.map

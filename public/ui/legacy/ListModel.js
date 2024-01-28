@@ -85,13 +85,7 @@ export class ListModel extends Common.ObjectWrapper.ObjectWrapper {
         return this.items.some(callback);
     }
     replaced(index, removed, inserted, keepSelectedIndex) {
-        this.dispatchEventToListeners(Events.ItemsReplaced, { index, removed, inserted, keepSelectedIndex });
+        this.dispatchEventToListeners("ItemsReplaced" /* Events.ItemsReplaced */, { index, removed, inserted, keepSelectedIndex });
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ItemsReplaced"] = "ItemsReplaced";
-})(Events || (Events = {}));
 //# sourceMappingURL=ListModel.js.map

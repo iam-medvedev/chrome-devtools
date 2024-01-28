@@ -329,11 +329,11 @@ export class DeviceModeToolbar {
     fillModeToolbar(toolbar) {
         toolbar.appendToolbarItem(this.wrapToolbarItem(this.createEmptyToolbarElement()));
         this.modeButton = new UI.Toolbar.ToolbarButton('', 'screen-rotation', undefined, 'screen-rotation');
-        this.modeButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.modeMenuClicked, this);
+        this.modeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.modeMenuClicked, this);
         toolbar.appendToolbarItem(this.modeButton);
         // Show dual screen toolbar.
         this.spanButton = new UI.Toolbar.ToolbarButton('', 'device-fold', undefined, 'device-fold');
-        this.spanButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.spanClicked, this);
+        this.spanButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.spanClicked, this);
         toolbar.appendToolbarItem(this.spanButton);
         // Show posture toolbar menu for foldable devices.
         toolbar.appendToolbarItem(this.wrapToolbarItem(this.createEmptyToolbarElement()));
@@ -354,7 +354,7 @@ export class DeviceModeToolbar {
         this.experimentalButton = new UI.Toolbar.ToolbarToggle(title, 'experiment-check');
         this.experimentalButton.setToggled(this.model.webPlatformExperimentalFeaturesEnabled());
         this.experimentalButton.setEnabled(true);
-        this.experimentalButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.experimentalClicked, this);
+        this.experimentalButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.experimentalClicked, this);
         toolbar.appendToolbarItem(this.experimentalButton);
     }
     experimentalClicked() {
@@ -404,8 +404,8 @@ export class DeviceModeToolbar {
     }
     appendDeviceScaleMenuItems(contextMenu) {
         const deviceScaleFactorSetting = this.model.deviceScaleFactorSetting();
-        const defaultValue = this.model.uaSetting().get() === EmulationModel.DeviceModeModel.UA.Mobile ||
-            this.model.uaSetting().get() === EmulationModel.DeviceModeModel.UA.MobileNoTouch ?
+        const defaultValue = this.model.uaSetting().get() === "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */ ||
+            this.model.uaSetting().get() === "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */ ?
             EmulationModel.DeviceModeModel.defaultMobileScaleFactor :
             window.devicePixelRatio;
         appendDeviceScaleFactorItem(contextMenu.headerSection(), i18nString(UIStrings.defaultF, { PH1: defaultValue }), 0, 'DPR: default');
@@ -418,10 +418,10 @@ export class DeviceModeToolbar {
     }
     appendUserAgentMenuItems(contextMenu) {
         const uaSetting = this.model.uaSetting();
-        appendUAItem(EmulationModel.DeviceModeModel.UA.Mobile, EmulationModel.DeviceModeModel.UA.Mobile);
-        appendUAItem(EmulationModel.DeviceModeModel.UA.MobileNoTouch, EmulationModel.DeviceModeModel.UA.MobileNoTouch);
-        appendUAItem(EmulationModel.DeviceModeModel.UA.Desktop, EmulationModel.DeviceModeModel.UA.Desktop);
-        appendUAItem(EmulationModel.DeviceModeModel.UA.DesktopTouch, EmulationModel.DeviceModeModel.UA.DesktopTouch);
+        appendUAItem("Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */, "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */);
+        appendUAItem("Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */, "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */);
+        appendUAItem("Desktop" /* EmulationModel.DeviceModeModel.UA.Desktop */, "Desktop" /* EmulationModel.DeviceModeModel.UA.Desktop */);
+        appendUAItem("Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */, "Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */);
         function appendUAItem(title, value) {
             contextMenu.defaultSection().appendCheckboxItem(title, uaSetting.set.bind(uaSetting, value), uaSetting.get() === value, undefined, undefined, undefined, value);
         }

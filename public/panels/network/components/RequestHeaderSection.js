@@ -1,12 +1,13 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as NetworkForward from '../forward/forward.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
+import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import * as NetworkForward from '../forward/forward.js';
 import { HeaderSectionRow } from './HeaderSectionRow.js';
 import requestHeaderSectionStyles from './RequestHeaderSection.css.js';
 const { render, html } = LitHtml;
@@ -45,7 +46,7 @@ export class RequestHeaderSection extends HTMLElement {
             value: header.value,
         }));
         this.#headers.sort((a, b) => Platform.StringUtilities.compare(a.name, b.name));
-        if (data.toReveal?.section === NetworkForward.UIRequestLocation.UIHeaderSection.Request) {
+        if (data.toReveal?.section === "Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.Request */) {
             this.#headers.filter(header => header.name === data.toReveal?.header?.toLowerCase()).forEach(header => {
                 header.highlight = true;
             });
@@ -61,9 +62,10 @@ export class RequestHeaderSection extends HTMLElement {
         render(html `
       ${this.#maybeRenderProvisionalHeadersWarning()}
       ${this.#headers.map(header => html `
-        <${HeaderSectionRow.litTagName} .data=${{
-            header: header,
-        }}></${HeaderSectionRow.litTagName}>
+        <${HeaderSectionRow.litTagName}
+          .data=${{ header: header }}
+          jslog=${VisualLogging.value().context('request-header')}
+        ></${HeaderSectionRow.litTagName}>
       `)}
     `, this.#shadow, { host: this });
         // clang-format on

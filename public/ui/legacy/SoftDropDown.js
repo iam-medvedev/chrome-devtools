@@ -8,7 +8,6 @@ import * as ARIAUtils from './ARIAUtils.js';
 import { Size } from './Geometry.js';
 import { GlassPane } from './GlassPane.js';
 import { ListControl, ListMode } from './ListControl.js';
-import { Events as ListModelEvents } from './ListModel.js';
 import softDropDownStyles from './softDropDown.css.legacy.js';
 import softDropDownButtonStyles from './softDropDownButton.css.legacy.js';
 import * as ThemeSupport from './theme_support/theme_support.js';
@@ -87,7 +86,7 @@ export class SoftDropDown {
             this.selectHighlightedItem();
             this.hide(event);
         }, false);
-        model.addEventListener(ListModelEvents.ItemsReplaced, this.itemsReplaced, this);
+        model.addEventListener("ItemsReplaced" /* ListModelEvents.ItemsReplaced */, this.itemsReplaced, this);
     }
     show(event) {
         if (this.glassPane.isShowing()) {

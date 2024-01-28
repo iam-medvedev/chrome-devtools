@@ -183,7 +183,7 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
             const enabled = (id === typeId);
             profileType.setCustomContentEnabled(enabled);
         }
-        this.dispatchEventToListeners(Events.ProfileTypeSelected, type);
+        this.dispatchEventToListeners("ProfileTypeSelected" /* Events.ProfileTypeSelected */, type);
     }
     controlButtonClicked() {
         this.panel.toggleRecord();
@@ -193,7 +193,7 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
         const type = this.typeIdToOptionElementAndProfileType.get(typeId).profileType;
         type.setCustomContentEnabled(false);
         profileType.setCustomContentEnabled(true);
-        this.dispatchEventToListeners(Events.ProfileTypeSelected, profileType);
+        this.dispatchEventToListeners("ProfileTypeSelected" /* Events.ProfileTypeSelected */, profileType);
         this.isInstantProfile = profileType.isInstantProfile();
         this.isEnabled = profileType.isEnabled();
         this.updateControls();
@@ -204,10 +204,4 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.registerCSSFiles([profileLauncherViewStyles]);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ProfileTypeSelected"] = "ProfileTypeSelected";
-})(Events || (Events = {}));
 //# sourceMappingURL=ProfileLauncherView.js.map

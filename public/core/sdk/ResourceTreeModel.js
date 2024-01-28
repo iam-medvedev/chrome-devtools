@@ -37,7 +37,7 @@ import { DOMModel } from './DOMModel.js';
 import { Events as NetworkManagerEvents, NetworkManager } from './NetworkManager.js';
 import { Resource } from './Resource.js';
 import { ExecutionContext, RuntimeModel } from './RuntimeModel.js';
-import { Capability, Type } from './Target.js';
+import { Type } from './Target.js';
 import { SDKModel } from './SDKModel.js';
 import { TargetManager } from './TargetManager.js';
 import { SecurityOriginManager } from './SecurityOriginManager.js';
@@ -506,8 +506,6 @@ export class ResourceTreeModel extends SDKModel {
         // No need to dispatch events here as this method call is followed by a `PrimaryPageChanged` event.
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["FrameAdded"] = "FrameAdded";
@@ -950,5 +948,5 @@ export class PageDispatcher {
     downloadProgress() {
     }
 }
-SDKModel.register(ResourceTreeModel, { capabilities: Capability.DOM, autostart: true, early: true });
+SDKModel.register(ResourceTreeModel, { capabilities: 2 /* Capability.DOM */, autostart: true, early: true });
 //# sourceMappingURL=ResourceTreeModel.js.map

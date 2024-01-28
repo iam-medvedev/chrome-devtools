@@ -3,7 +3,7 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import { DeferredDOMNode, type DOMNode } from './DOMModel.js';
 import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
-export declare enum CoreAxPropertyName {
+export declare const enum CoreAxPropertyName {
     Name = "name",
     Description = "description",
     Value = "value",
@@ -37,7 +37,7 @@ export declare class AccessibilityNode {
     hasUnloadedChildren(): boolean;
     getFrameId(): Protocol.Page.FrameId | null;
 }
-export declare enum Events {
+export declare const enum Events {
     TreeUpdated = "TreeUpdated"
 }
 export type EventTypes = {

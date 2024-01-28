@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Host from '../host/host.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability } from './Target.js';
 export class AutofillModel extends SDKModel {
     agent;
     #enabled;
@@ -28,14 +27,8 @@ export class AutofillModel extends SDKModel {
         void this.agent.invoke_disable();
     }
     addressFormFilled(addressFormFilledEvent) {
-        this.dispatchEventToListeners(Events.AddressFormFilled, { autofillModel: this, event: addressFormFilledEvent });
+        this.dispatchEventToListeners("AddressFormFilled" /* Events.AddressFormFilled */, { autofillModel: this, event: addressFormFilledEvent });
     }
 }
-SDKModel.register(AutofillModel, { capabilities: Capability.DOM, autostart: true });
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["AddressFormFilled"] = "AddressFormFilled";
-})(Events || (Events = {}));
+SDKModel.register(AutofillModel, { capabilities: 2 /* Capability.DOM */, autostart: true });
 //# sourceMappingURL=AutofillModel.js.map

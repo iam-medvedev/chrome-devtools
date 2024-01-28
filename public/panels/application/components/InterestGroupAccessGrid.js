@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Platform from '../../../core/platform/platform.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
@@ -76,11 +75,10 @@ export class InterestGroupAccessGrid extends HTMLElement {
         if (this.#datastores.length === 0) {
             return LitHtml.html `<div class="no-events-message">${i18nString(UIStrings.noEvents)}</div>`;
         }
-        const k = Platform.StringUtilities.kebab;
         const gridData = {
             columns: [
                 {
-                    id: k('event-time'),
+                    id: 'event-time',
                     title: i18nString(UIStrings.eventTime),
                     widthWeighting: 10,
                     hideable: false,
@@ -88,7 +86,7 @@ export class InterestGroupAccessGrid extends HTMLElement {
                     sortable: true,
                 },
                 {
-                    id: k('event-type'),
+                    id: 'event-type',
                     title: i18nString(UIStrings.eventType),
                     widthWeighting: 5,
                     hideable: false,
@@ -96,7 +94,7 @@ export class InterestGroupAccessGrid extends HTMLElement {
                     sortable: true,
                 },
                 {
-                    id: k('event-group-owner'),
+                    id: 'event-group-owner',
                     title: i18nString(UIStrings.groupOwner),
                     widthWeighting: 10,
                     hideable: false,
@@ -104,7 +102,7 @@ export class InterestGroupAccessGrid extends HTMLElement {
                     sortable: true,
                 },
                 {
-                    id: k('event-group-name'),
+                    id: 'event-group-name',
                     title: i18nString(UIStrings.groupName),
                     widthWeighting: 10,
                     hideable: false,

@@ -1,5 +1,5 @@
-import { type RecorderExtensionEndpoint } from './RecorderExtensionEndpoint.js';
 import * as Common from '../../core/common/common.js';
+import { type RecorderExtensionEndpoint } from './RecorderExtensionEndpoint.js';
 export type ViewDescriptor = {
     id: string;
     title: string;
@@ -18,7 +18,7 @@ export declare class RecorderPluginManager extends Common.ObjectWrapper.ObjectWr
     getViewDescriptor(id: string): ViewDescriptor | undefined;
     showView(id: string): void;
 }
-export declare enum Events {
+export declare const enum Events {
     PluginAdded = "pluginAdded",
     PluginRemoved = "pluginRemoved",
     ViewRegistered = "viewRegistered",

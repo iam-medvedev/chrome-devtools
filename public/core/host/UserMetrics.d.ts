@@ -32,8 +32,6 @@ export declare class UserMetrics {
     developerResourceScheme(developerResourceScheme: DeveloperResourceScheme): void;
     inlineScriptParsed(inlineScriptType: VMInlineScriptType): void;
     vmInlineScriptContentShown(inlineScriptType: VMInlineScriptType): void;
-    linearMemoryInspectorRevealedFrom(linearMemoryInspectorRevealedFrom: LinearMemoryInspectorRevealedFrom): void;
-    linearMemoryInspectorTarget(linearMemoryInspectorTarget: LinearMemoryInspectorTarget): void;
     language(language: Intl.UnicodeBCP47LocaleIdentifier): void;
     syncSetting(devtoolsSyncSettingEnabled: boolean): void;
     recordingAssertion(value: RecordingAssertion): void;
@@ -243,7 +241,7 @@ export declare enum PanelCodes {
     'issues-pane' = 37,
     'settings-keybinds' = 38,
     'cssoverview' = 39,
-    'chrome_recorder' = 40,
+    'chrome-recorder' = 40,
     'trust_tokens' = 41,
     'reporting_api' = 42,
     'interest_groups' = 43,
@@ -410,12 +408,12 @@ export declare enum PanelWithLocation {
 }
 export declare enum ElementsSidebarTabCodes {
     'OtherSidebarPane' = 0,
-    'Styles' = 1,
-    'Computed' = 2,
+    'styles' = 1,
+    'computed' = 2,
     'elements.layout' = 3,
-    'elements.eventListeners' = 4,
-    'elements.domBreakpoints' = 5,
-    'elements.domProperties' = 6,
+    'elements.event-listeners' = 4,
+    'elements.dom-breakpoints' = 5,
+    'elements.dom-properties' = 6,
     'accessibility.view' = 7,
     MaxValue = 8
 }
@@ -424,7 +422,7 @@ export declare enum SourcesSidebarTabCodes {
     'navigator-network' = 1,
     'navigator-files' = 2,
     'navigator-overrides' = 3,
-    'navigator-contentScripts' = 4,
+    'navigator-content-scripts' = 4,
     'navigator-snippets' = 5,
     MaxValue = 6
 }
@@ -583,7 +581,7 @@ export declare enum KeyboardShortcutAction {
     'chrome-recorder.start-recording' = 108,
     'chrome-recorder.replay-recording' = 109,
     'chrome-recorder.toggle-code-view' = 110,
-    'chrome_recorder.copy-recording-or-step' = 111,
+    'chrome-recorder.copy-recording-or-step' = 111,
     'changes.revert' = 112,
     'changes.copy' = 113,
     'elements.new-style-rule' = 114,
@@ -592,7 +590,7 @@ export declare enum KeyboardShortcutAction {
     'coverage.export' = 117,
     MaxValue = 118
 }
-export declare enum IssueOpener {
+export declare const enum IssueOpener {
     ConsoleInfoBar = 0,
     LearnMoreLinkCOEP = 1,
     StatusBarIssuesCounter = 2,
@@ -621,6 +619,7 @@ export declare enum DevtoolsExperiments {
     'ignoreListJSFramesOnTimeline' = 43,
     'contrastIssues' = 44,
     'experimentalCookieFeatures' = 45,
+    'cssTypeComponentLength' = 52,
     'stylesPaneCSSChanges' = 55,
     'evaluateExpressionsWithSourceMaps' = 58,
     'instrumentationBreakpoints' = 61,
@@ -640,7 +639,8 @@ export declare enum DevtoolsExperiments {
     'trackContextMenu' = 81,
     'autofillView' = 82,
     'sourcesFrameIndentationMarkersTemporarilyDisable' = 83,
-    'MaxValue' = 84
+    'heapSnapshotTreatBackingStoreAsContainingObject' = 84,
+    'MaxValue' = 85
 }
 export declare const enum BreakpointWithConditionAdded {
     Logpoint = 0,
@@ -802,7 +802,7 @@ export declare enum IssueCreated {
     'CookieIssue::ExcludeThirdPartyPhaseout::SetCookie' = 85,
     MaxValue = 86
 }
-export declare enum DeveloperResourceLoaded {
+export declare const enum DeveloperResourceLoaded {
     LoadThroughPageViaTarget = 0,
     LoadThroughPageViaFrame = 1,
     LoadThroughPageFailure = 2,
@@ -813,7 +813,7 @@ export declare enum DeveloperResourceLoaded {
     FallbackFailure = 7,
     MaxValue = 8
 }
-export declare enum DeveloperResourceScheme {
+export declare const enum DeveloperResourceScheme {
     SchemeOther = 0,
     SchemeUnknown = 1,
     SchemeHttp = 2,
@@ -846,19 +846,6 @@ export declare enum NetworkPanelMoreFilters {
     'Blocked response cookies' = 2,
     'Blocked requests' = 3,
     '3rd-party requests' = 4,
-    MaxValue = 5
-}
-export declare enum LinearMemoryInspectorRevealedFrom {
-    ContextMenu = 0,
-    MemoryIcon = 1,
-    MaxValue = 2
-}
-export declare enum LinearMemoryInspectorTarget {
-    DWARFInspectableAddress = 0,
-    ArrayBuffer = 1,
-    DataView = 2,
-    TypedArray = 3,
-    WebAssemblyMemory = 4,
     MaxValue = 5
 }
 export declare const enum VMInlineScriptType {
@@ -951,45 +938,45 @@ export declare enum Language {
     'zu' = 82,
     MaxValue = 83
 }
-export declare enum SyncSetting {
+export declare const enum SyncSetting {
     ChromeSyncDisabled = 1,
     ChromeSyncSettingsDisabled = 2,
     DevToolsSyncSettingDisabled = 3,
     DevToolsSyncSettingEnabled = 4,
     MaxValue = 5
 }
-export declare enum RecordingToggled {
+export declare const enum RecordingToggled {
     RecordingStarted = 1,
     RecordingFinished = 2,
     MaxValue = 3
 }
-export declare enum RecordingAssertion {
+export declare const enum RecordingAssertion {
     AssertionAdded = 1,
     PropertyAssertionEdited = 2,
     AttributeAssertionEdited = 3,
     MaxValue = 4
 }
-export declare enum RecordingReplayFinished {
+export declare const enum RecordingReplayFinished {
     Success = 1,
     TimeoutErrorSelectors = 2,
     TimeoutErrorTarget = 3,
     OtherError = 4,
     MaxValue = 5
 }
-export declare enum RecordingReplaySpeed {
+export declare const enum RecordingReplaySpeed {
     Normal = 1,
     Slow = 2,
     VerySlow = 3,
     ExtremelySlow = 4,
     MaxValue = 5
 }
-export declare enum RecordingReplayStarted {
+export declare const enum RecordingReplayStarted {
     ReplayOnly = 1,
     ReplayWithPerformanceTracing = 2,
     ReplayViaExtension = 3,
     MaxValue = 4
 }
-export declare enum RecordingEdited {
+export declare const enum RecordingEdited {
     SelectorPickerUsed = 1,
     StepAdded = 2,
     StepRemoved = 3,
@@ -1002,7 +989,7 @@ export declare enum RecordingEdited {
     OtherEditing = 10,
     MaxValue = 11
 }
-export declare enum RecordingExported {
+export declare const enum RecordingExported {
     ToPuppeteer = 1,
     ToJSON = 2,
     ToPuppeteerReplay = 3,
@@ -1010,12 +997,12 @@ export declare enum RecordingExported {
     ToLighthouse = 5,
     MaxValue = 6
 }
-export declare enum RecordingCodeToggled {
+export declare const enum RecordingCodeToggled {
     CodeShown = 1,
     CodeHidden = 2,
     MaxValue = 3
 }
-export declare enum RecordingCopiedToClipboard {
+export declare const enum RecordingCopiedToClipboard {
     CopiedRecordingWithPuppeteer = 1,
     CopiedRecordingWithJSON = 2,
     CopiedRecordingWithReplay = 3,
@@ -1026,12 +1013,7 @@ export declare enum RecordingCopiedToClipboard {
     CopiedStepWithExtension = 8,
     MaxValue = 9
 }
-export declare enum ConsoleShowsCorsErrors {
-    'false' = 0,
-    'true' = 1,
-    MaxValue = 2
-}
-export declare enum StyleTextCopied {
+export declare const enum StyleTextCopied {
     DeclarationViaChangedLine = 1,
     AllChangesViaStylesPane = 2,
     DeclarationViaContextMenu = 3,
@@ -1053,7 +1035,7 @@ export declare enum ManifestSectionCodes {
     'Window Controls Overlay' = 5,
     MaxValue = 6
 }
-export declare enum CSSHintType {
+export declare const enum CSSHintType {
     Other = 0,
     AlignContent = 1,
     FlexItem = 2,
@@ -1070,14 +1052,14 @@ export declare enum CSSHintType {
     FontVariationSettings = 13,
     MaxValue = 14
 }
-export declare enum LighthouseModeRun {
+export declare const enum LighthouseModeRun {
     Navigation = 0,
     Timespan = 1,
     Snapshot = 2,
     LegacyNavigation = 3,
     MaxValue = 4
 }
-export declare enum LighthouseCategoryUsed {
+export declare const enum LighthouseCategoryUsed {
     Performance = 0,
     Accessibility = 1,
     BestPractices = 2,

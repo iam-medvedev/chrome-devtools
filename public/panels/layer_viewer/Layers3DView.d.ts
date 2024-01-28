@@ -94,7 +94,7 @@ export declare enum OutlineType {
     Hovered = "hovered",
     Selected = "selected"
 }
-export declare enum Events {
+export declare const enum Events {
     PaintProfilerRequested = "PaintProfilerRequested",
     ScaleChanged = "ScaleChanged"
 }

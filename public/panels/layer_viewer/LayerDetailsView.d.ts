@@ -41,7 +41,7 @@ export declare class LayerDetailsView extends LayerDetailsView_base implements L
     private createRow;
     private updateCompositingReasons;
 }
-export declare enum Events {
+export declare const enum Events {
     PaintProfilerRequested = "PaintProfilerRequested"
 }
 export type EventTypes = {

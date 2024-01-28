@@ -43,13 +43,6 @@ export class NetworkProjectManager extends Common.ObjectWrapper.ObjectWrapper {
         return networkProjectManagerInstance;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["FrameAttributionAdded"] = "FrameAttributionAdded";
-    Events["FrameAttributionRemoved"] = "FrameAttributionRemoved";
-})(Events || (Events = {}));
 export class NetworkProject {
     static resolveFrame(uiSourceCode, frameId) {
         const target = NetworkProject.targetForUISourceCode(uiSourceCode);
@@ -98,7 +91,7 @@ export class NetworkProject {
             return;
         }
         const data = { uiSourceCode: uiSourceCode, frame: frame };
-        NetworkProjectManager.instance().dispatchEventToListeners(Events.FrameAttributionAdded, data);
+        NetworkProjectManager.instance().dispatchEventToListeners("FrameAttributionAdded" /* Events.FrameAttributionAdded */, data);
     }
     static removeFrameAttribution(uiSourceCode, frameId) {
         const frameAttribution = uiSourceCodeToAttributionMap.get(uiSourceCode);
@@ -116,7 +109,7 @@ export class NetworkProject {
         }
         frameAttribution.delete(frameId);
         const data = { uiSourceCode: uiSourceCode, frame: attributionInfo.frame };
-        NetworkProjectManager.instance().dispatchEventToListeners(Events.FrameAttributionRemoved, data);
+        NetworkProjectManager.instance().dispatchEventToListeners("FrameAttributionRemoved" /* Events.FrameAttributionRemoved */, data);
     }
     static targetForUISourceCode(uiSourceCode) {
         return projectToTargetMap.get(uiSourceCode.project()) || null;

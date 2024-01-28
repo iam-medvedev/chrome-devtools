@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as Platform from '../../../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
@@ -47,11 +46,10 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
         if (this.#data === null) {
             return;
         }
-        const k = Platform.StringUtilities.kebab;
         const reportsGridData = {
             columns: [
                 {
-                    id: k('url'),
+                    id: 'url',
                     title: i18n.i18n.lockedString('URL'),
                     widthWeighting: 40,
                     hideable: false,
@@ -59,7 +57,7 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
                     sortable: true,
                 },
                 {
-                    id: k('action'),
+                    id: 'action',
                     title: i18nString(UIStrings.action),
                     widthWeighting: 15,
                     hideable: false,
@@ -67,7 +65,7 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
                     sortable: true,
                 },
                 {
-                    id: k('rule-set'),
+                    id: 'rule-set',
                     title: i18nString(UIStrings.ruleSet),
                     widthWeighting: 20,
                     hideable: false,
@@ -75,7 +73,7 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
                     sortable: true,
                 },
                 {
-                    id: k('status'),
+                    id: 'status',
                     title: i18nString(UIStrings.status),
                     widthWeighting: 40,
                     hideable: false,

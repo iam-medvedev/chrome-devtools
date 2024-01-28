@@ -921,8 +921,6 @@ export class TimelineModelImpl {
         return frameId ? this.pageFrames.get(frameId) || null : null;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var RecordType;
 (function (RecordType) {
     RecordType["Task"] = "RunTask";
@@ -1202,8 +1200,6 @@ export class Track {
         return this.eventsForTreeViewInternal;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var TrackType;
 (function (TrackType) {
     TrackType["MainThread"] = "MainThread";

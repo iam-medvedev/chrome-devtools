@@ -326,10 +326,10 @@ export class ConsoleView extends UI.Widget.VBox {
         this.splitWidget.show(this.element);
         this.splitWidget.hideSidebar();
         this.splitWidget.enableShowModeSaving();
-        this.isSidebarOpen = this.splitWidget.showMode() === UI.SplitWidget.ShowMode.Both;
+        this.isSidebarOpen = this.splitWidget.showMode() === "Both" /* UI.SplitWidget.ShowMode.Both */;
         this.filter.setLevelMenuOverridden(this.isSidebarOpen);
-        this.splitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, event => {
-            this.isSidebarOpen = event.data === UI.SplitWidget.ShowMode.Both;
+        this.splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.ShowModeChanged */, event => {
+            this.isSidebarOpen = event.data === "Both" /* UI.SplitWidget.ShowMode.Both */;
             if (this.isSidebarOpen) {
                 if (!this.userHasOpenedSidebarAtLeastOnce) {
                     /**
@@ -391,7 +391,7 @@ export class ConsoleView extends UI.Widget.VBox {
         const issuesToolbarItem = new UI.Toolbar.ToolbarItem(this.issueCounter);
         this.issueCounter.data = {
             clickHandler: () => {
-                Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.StatusBarIssuesCounter);
+                Host.userMetrics.issuesPanelOpenedFrom(2 /* Host.UserMetrics.IssueOpener.StatusBarIssuesCounter */);
                 void UI.ViewManager.ViewManager.instance().showView('issues-pane');
             },
             issuesManager: IssuesManager.IssuesManager.IssuesManager.instance(),
@@ -406,7 +406,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.timestampsSetting = Common.Settings.Settings.instance().moduleSetting('consoleTimestampsEnabled');
         this.consoleHistoryAutocompleteSetting =
             Common.Settings.Settings.instance().moduleSetting('consoleHistoryAutocomplete');
-        this.selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disableSelfXssWarning', false, Common.Settings.SettingStorageType.Synced);
+        this.selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disableSelfXssWarning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
         const settingsPane = new UI.Widget.HBox();
         settingsPane.show(this.contentsElement);
         settingsPane.element.classList.add('console-settings-pane');
@@ -571,20 +571,20 @@ export class ConsoleView extends UI.Widget.VBox {
     }
     registerWithMessageSink() {
         Common.Console.Console.instance().messages().forEach(this.addSinkMessage, this);
-        Common.Console.Console.instance().addEventListener(Common.Console.Events.MessageAdded, ({ data: message }) => {
+        Common.Console.Console.instance().addEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, ({ data: message }) => {
             this.addSinkMessage(message);
         }, this);
     }
     addSinkMessage(message) {
         let level = "verbose" /* Protocol.Log.LogEntryLevel.Verbose */;
         switch (message.level) {
-            case Common.Console.MessageLevel.Info:
+            case "info" /* Common.Console.MessageLevel.Info */:
                 level = "info" /* Protocol.Log.LogEntryLevel.Info */;
                 break;
-            case Common.Console.MessageLevel.Error:
+            case "error" /* Common.Console.MessageLevel.Error */:
                 level = "error" /* Protocol.Log.LogEntryLevel.Error */;
                 break;
-            case Common.Console.MessageLevel.Warning:
+            case "warning" /* Common.Console.MessageLevel.Warning */:
                 level = "warning" /* Protocol.Log.LogEntryLevel.Warning */;
                 break;
         }
@@ -1139,7 +1139,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.focusPrompt();
     }
     messagesPasted(event) {
-        if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.SELF_XSS_WARNING) &&
+        if (Root.Runtime.experiments.isEnabled("selfXssWarning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */) &&
             !Root.Runtime.Runtime.queryParam('isChromeForTesting') && !this.selfXssWarningDisabledSetting.get()) {
             event.preventDefault();
             this.prompt.showSelfXssWarning();
@@ -1381,7 +1381,7 @@ export class ConsoleViewFilter {
         if (this.textFilterSetting.get()) {
             this.textFilterUI.setValue(this.textFilterSetting.get());
         }
-        this.textFilterUI.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, () => {
+        this.textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, () => {
             this.textFilterSetting.set(this.textFilterUI.value());
             this.onFilterChanged();
         });
@@ -1396,7 +1396,7 @@ export class ConsoleViewFilter {
         ]));
         this.levelMenuButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.logLevels));
         this.levelMenuButton.turnIntoSelect();
-        this.levelMenuButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.showLevelContextMenu.bind(this));
+        this.levelMenuButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.showLevelContextMenu.bind(this));
         UI.ARIAUtils.markAsMenuButton(this.levelMenuButton.element);
         this.levelMenuButton.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('log-level')}`);
         this.updateLevelMenuButtonText();

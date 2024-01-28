@@ -7,7 +7,7 @@ import { DebuggerModel } from './DebuggerModel.js';
 import { HeapProfilerModel } from './HeapProfilerModel.js';
 import { RemoteFunction, RemoteObject, RemoteObjectImpl, RemoteObjectProperty, ScopeRemoteObject, } from './RemoteObject.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability, Type } from './Target.js';
+import { Type } from './Target.js';
 export class RuntimeModel extends SDKModel {
     agent;
     #executionContextById;
@@ -343,8 +343,6 @@ export class RuntimeModel extends SDKModel {
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _sideEffectTestExpression = '(async function(){ await 1; })()';
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["BindingCalled"] = "BindingCalled";
@@ -553,5 +551,5 @@ export class ExecutionContext {
         this.#labelInternal = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : '';
     }
 }
-SDKModel.register(RuntimeModel, { capabilities: Capability.JS, autostart: true });
+SDKModel.register(RuntimeModel, { capabilities: 4 /* Capability.JS */, autostart: true });
 //# sourceMappingURL=RuntimeModel.js.map

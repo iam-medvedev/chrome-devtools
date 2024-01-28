@@ -6,12 +6,11 @@ import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import { ContentData as ContentDataClass } from './ContentData.js';
-import { Attributes } from './Cookie.js';
 import { CookieModel } from './CookieModel.js';
 import { CookieParser } from './CookieParser.js';
 import * as HttpReasonPhraseStrings from './HttpReasonPhraseStrings.js';
-import { parseContentType } from './MimeType.js';
 import { Events as NetworkManagerEvents, NetworkManager } from './NetworkManager.js';
+import { ServerSentEvents } from './ServerSentEvents.js';
 import { ServerTiming } from './ServerTiming.js';
 import { Type } from './Target.js';
 // clang-format off
@@ -196,7 +195,6 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #resourceTypeInternal;
     #contentDataInternal;
     #framesInternal;
-    #eventSourceMessagesInternal;
     #responseHeaderValues;
     #responseHeadersTextInternal;
     #originalResponseHeaders;
@@ -233,6 +231,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #canceledInternal;
     #preservedInternal;
     #mimeTypeInternal;
+    #charset;
     #parsedURLInternal;
     #nameInternal;
     #pathInternal;
@@ -263,6 +262,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #associatedData = new Map();
     #hasOverriddenContent;
     #hasThirdPartyCookiePhaseoutIssue;
+    #serverSentEvents;
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         super();
         this.#requestIdInternal = requestId;
@@ -298,7 +298,6 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#resourceTypeInternal = Common.ResourceType.resourceTypes.Other;
         this.#contentDataInternal = null;
         this.#framesInternal = [];
-        this.#eventSourceMessagesInternal = [];
         this.#responseHeaderValues = {};
         this.#responseHeadersTextInternal = '';
         this.#originalResponseHeaders = [];
@@ -627,6 +626,10 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     set mimeType(x) {
         this.#mimeTypeInternal = x;
+        if (x === "text/event-stream" /* MimeType.EVENTSTREAM */ && !this.#serverSentEvents) {
+            const parseFromStreamedData = this.resourceType() !== Common.ResourceType.resourceTypes.EventSource;
+            this.#serverSentEvents = new ServerSentEvents(this, parseFromStreamedData);
+        }
     }
     get displayName() {
         return this.#parsedURLInternal.displayName;
@@ -1188,12 +1191,10 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.dispatchEventToListeners(Events.WebsocketFrameAdded, frame);
     }
     eventSourceMessages() {
-        return this.#eventSourceMessagesInternal;
+        return this.#serverSentEvents?.eventSourceMessages ?? [];
     }
     addEventSourceMessage(time, eventName, eventId, data) {
-        const message = { time: this.pseudoWallTime(time), eventName: eventName, eventId: eventId, data: data };
-        this.#eventSourceMessagesInternal.push(message);
-        this.dispatchEventToListeners(Events.EventSourceMessageAdded, message);
+        this.#serverSentEvents?.onProtocolEventSourceMessageReceived(eventName, data, eventId, this.pseudoWallTime(time));
     }
     markAsRedirect(redirectCount) {
         this.#isRedirectInternal = true;
@@ -1207,11 +1208,10 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#requestIdInternal = requestId;
     }
     charset() {
-        const contentTypeHeader = this.responseHeaderValue('content-type');
-        if (!contentTypeHeader) {
-            return null;
-        }
-        return parseContentType(contentTypeHeader)?.charset;
+        return this.#charset ?? null;
+    }
+    setCharset(charset) {
+        this.#charset = charset;
     }
     addExtraRequestInfo(extraRequestInfo) {
         this.#blockedRequestCookiesInternal = extraRequestInfo.blockedRequestCookies;
@@ -1304,6 +1304,33 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
             })));
         }
     }
+    // This is called by `NetworkManager.finishNetworkRequest()` and not earlier
+    // to ensure that the correct `CookieModel` is used. If we did this in
+    // `addExtraRequestInfo()`, we would be storing blocked cookies in the wrong
+    // `CookieModel` for OOPIFs.
+    addBlockedRequestCookiesToModel() {
+        const networkManager = NetworkManager.forRequest(this);
+        if (!networkManager) {
+            return;
+        }
+        const cookieModel = networkManager.target().model(CookieModel);
+        if (!cookieModel) {
+            return;
+        }
+        for (const blockedCookie of this.#blockedRequestCookiesInternal) {
+            const cookie = blockedCookie.cookie;
+            if (!cookie) {
+                continue;
+            }
+            if (blockedCookie.blockedReasons.includes("ThirdPartyPhaseout" /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */)) {
+                this.#hasThirdPartyCookiePhaseoutIssue = true;
+            }
+            cookieModel.addBlockedCookie(cookie, blockedCookie.blockedReasons.map(blockedReason => ({
+                attribute: cookieBlockedReasonToAttribute(blockedReason),
+                uiString: cookieBlockedReasonToUiString(blockedReason),
+            })));
+        }
+    }
     hasExtraResponseInfo() {
         return this.#hasExtraResponseInfoInternal;
     }
@@ -1368,9 +1395,17 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     hasThirdPartyCookiePhaseoutIssue() {
         return this.#hasThirdPartyCookiePhaseoutIssue;
     }
+    addDataReceivedEvent({ timestamp, dataLength, encodedDataLength, data }) {
+        this.resourceSize += dataLength;
+        if (encodedDataLength !== -1) {
+            this.increaseTransferSize(encodedDataLength);
+        }
+        this.endTime = timestamp;
+        if (data) {
+            this.#serverSentEvents?.dataReceived(data, timestamp);
+        }
+    }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["FinishedLoading"] = "FinishedLoading";
@@ -1382,20 +1417,6 @@ export var Events;
     Events["EventSourceMessageAdded"] = "EventSourceMessageAdded";
     Events["TrustTokenResultAdded"] = "TrustTokenResultAdded";
 })(Events || (Events = {}));
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var InitiatorType;
-(function (InitiatorType) {
-    InitiatorType["Other"] = "other";
-    InitiatorType["Parser"] = "parser";
-    InitiatorType["Redirect"] = "redirect";
-    InitiatorType["Script"] = "script";
-    InitiatorType["Preload"] = "preload";
-    InitiatorType["SignedExchange"] = "signedExchange";
-    InitiatorType["Preflight"] = "preflight";
-})(InitiatorType || (InitiatorType = {}));
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var WebSocketFrameType;
 (function (WebSocketFrameType) {
     WebSocketFrameType["Send"] = "send";
@@ -1485,11 +1506,11 @@ export const setCookieBlockedReasonToUiString = function (blockedReason) {
 export const cookieBlockedReasonToAttribute = function (blockedReason) {
     switch (blockedReason) {
         case "SecureOnly" /* Protocol.Network.CookieBlockedReason.SecureOnly */:
-            return Attributes.Secure;
+            return "secure" /* Attributes.Secure */;
         case "NotOnPath" /* Protocol.Network.CookieBlockedReason.NotOnPath */:
-            return Attributes.Path;
+            return "path" /* Attributes.Path */;
         case "DomainMismatch" /* Protocol.Network.CookieBlockedReason.DomainMismatch */:
-            return Attributes.Domain;
+            return "domain" /* Attributes.Domain */;
         case "SameSiteStrict" /* Protocol.Network.CookieBlockedReason.SameSiteStrict */:
         case "SameSiteLax" /* Protocol.Network.CookieBlockedReason.SameSiteLax */:
         case "SameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.CookieBlockedReason.SameSiteUnspecifiedTreatedAsLax */:
@@ -1497,7 +1518,7 @@ export const cookieBlockedReasonToAttribute = function (blockedReason) {
         case "SchemefulSameSiteStrict" /* Protocol.Network.CookieBlockedReason.SchemefulSameSiteStrict */:
         case "SchemefulSameSiteLax" /* Protocol.Network.CookieBlockedReason.SchemefulSameSiteLax */:
         case "SchemefulSameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.CookieBlockedReason.SchemefulSameSiteUnspecifiedTreatedAsLax */:
-            return Attributes.SameSite;
+            return "same-site" /* Attributes.SameSite */;
         case "SamePartyFromCrossPartyContext" /* Protocol.Network.CookieBlockedReason.SamePartyFromCrossPartyContext */:
         case "NameValuePairExceedsMaxSize" /* Protocol.Network.CookieBlockedReason.NameValuePairExceedsMaxSize */:
         case "UserPreferences" /* Protocol.Network.CookieBlockedReason.UserPreferences */:
@@ -1511,7 +1532,7 @@ export const setCookieBlockedReasonToAttribute = function (blockedReason) {
     switch (blockedReason) {
         case "SecureOnly" /* Protocol.Network.SetCookieBlockedReason.SecureOnly */:
         case "OverwriteSecure" /* Protocol.Network.SetCookieBlockedReason.OverwriteSecure */:
-            return Attributes.Secure;
+            return "secure" /* Attributes.Secure */;
         case "SameSiteStrict" /* Protocol.Network.SetCookieBlockedReason.SameSiteStrict */:
         case "SameSiteLax" /* Protocol.Network.SetCookieBlockedReason.SameSiteLax */:
         case "SameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.SetCookieBlockedReason.SameSiteUnspecifiedTreatedAsLax */:
@@ -1519,11 +1540,11 @@ export const setCookieBlockedReasonToAttribute = function (blockedReason) {
         case "SchemefulSameSiteStrict" /* Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteStrict */:
         case "SchemefulSameSiteLax" /* Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteLax */:
         case "SchemefulSameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteUnspecifiedTreatedAsLax */:
-            return Attributes.SameSite;
+            return "same-site" /* Attributes.SameSite */;
         case "InvalidDomain" /* Protocol.Network.SetCookieBlockedReason.InvalidDomain */:
-            return Attributes.Domain;
+            return "domain" /* Attributes.Domain */;
         case "InvalidPrefix" /* Protocol.Network.SetCookieBlockedReason.InvalidPrefix */:
-            return Attributes.Name;
+            return "name" /* Attributes.Name */;
         case "SamePartyConflictsWithOtherAttributes" /* Protocol.Network.SetCookieBlockedReason.SamePartyConflictsWithOtherAttributes */:
         case "SamePartyFromCrossPartyContext" /* Protocol.Network.SetCookieBlockedReason.SamePartyFromCrossPartyContext */:
         case "NameValuePairExceedsMaxSize" /* Protocol.Network.SetCookieBlockedReason.NameValuePairExceedsMaxSize */:

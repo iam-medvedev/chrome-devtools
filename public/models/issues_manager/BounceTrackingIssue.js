@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import { Issue, IssueCategory, IssueKind } from './Issue.js';
+import { Issue } from './Issue.js';
 const UIStrings = {
     /**
      *@description Title for Bounce Tracking Mitigation explainer url link.
@@ -18,7 +18,7 @@ export class BounceTrackingIssue extends Issue {
         this.#issueDetails = issueDetails;
     }
     getCategory() {
-        return IssueCategory.Other;
+        return "Other" /* IssueCategory.Other */;
     }
     getDescription() {
         return {
@@ -35,7 +35,7 @@ export class BounceTrackingIssue extends Issue {
         return this.#issueDetails;
     }
     getKind() {
-        return IssueKind.BreakingChange;
+        return "BreakingChange" /* IssueKind.BreakingChange */;
     }
     primaryKey() {
         return JSON.stringify(this.#issueDetails);

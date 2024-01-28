@@ -418,7 +418,7 @@ export interface FlameChartMarker {
     title(): string | null;
     draw(context: CanvasRenderingContext2D, x: number, height: number, pixelsPerMillisecond: number): void;
 }
-export declare enum Events {
+export declare const enum Events {
     /**
      * Emitted when the <canvas> element of the FlameChart is focused by the user.
      **/

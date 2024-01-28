@@ -35,6 +35,7 @@ styles.replaceSync(
   justify-content: center;
   font-size: 13px;
   color: var(--sys-color-token-subtle);
+  min-width: min-content;
 }
 
 devtools-data-grid-controller {

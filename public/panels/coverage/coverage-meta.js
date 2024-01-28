@@ -70,7 +70,7 @@ UI.ActionRegistration.registerActionExtension({
         const Coverage = await loadCoverageModule();
         return new Coverage.CoverageView.ActionDelegate();
     },
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     options: [
         {
             value: true,
@@ -89,13 +89,13 @@ UI.ActionRegistration.registerActionExtension({
         const Coverage = await loadCoverageModule();
         return new Coverage.CoverageView.ActionDelegate();
     },
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     title: i18nLazyString(UIStrings.startInstrumentingCoverageAnd),
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'coverage.clear',
     iconClass: "clear" /* UI.ActionRegistration.IconClass.CLEAR */,
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     title: i18nLazyString(UIStrings.clearCoverage),
     async loadActionDelegate() {
         const Coverage = await loadCoverageModule();
@@ -108,7 +108,7 @@ UI.ActionRegistration.registerActionExtension({
 UI.ActionRegistration.registerActionExtension({
     actionId: 'coverage.export',
     iconClass: "download" /* UI.ActionRegistration.IconClass.DOWNLOAD */,
-    category: UI.ActionRegistration.ActionCategory.PERFORMANCE,
+    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
     title: i18nLazyString(UIStrings.exportCoverage),
     async loadActionDelegate() {
         const Coverage = await loadCoverageModule();

@@ -136,8 +136,6 @@ export class AnimationModel extends SDK.SDKModel.SDKModel {
         this.#enabled = true;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["AnimationGroupStarted"] = "AnimationGroupStarted";
@@ -519,5 +517,5 @@ export class ScreenshotCapture {
         this.#screenCaptureModel.stopScreencast();
     }
 }
-SDK.SDKModel.SDKModel.register(AnimationModel, { capabilities: SDK.Target.Capability.DOM, autostart: false });
+SDK.SDKModel.SDKModel.register(AnimationModel, { capabilities: 2 /* SDK.Target.Capability.DOM */, autostart: false });
 //# sourceMappingURL=AnimationModel.js.map

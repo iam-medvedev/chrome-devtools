@@ -7,11 +7,28 @@ import * as Types from '../types/types.js';
 import { data as userInteractionsHandlerData } from './UserInteractionsHandler.js';
 const warningsPerEvent = new Map();
 const eventsPerWarning = new Map();
-export const FORCED_LAYOUT_AND_STYLES_THRESHOLD = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(10));
+/**
+ * Tracks the stack formed by nested trace events up to a given point
+ */
+const allEventsStack = [];
+/**
+ * Tracks the stack formed by JS invocation trace events up to a given point.
+ * F.e. FunctionCall, EvaluateScript, V8Execute.
+ * Not to be confused with ProfileCalls.
+ */
+const jsInvokeStack = [];
+/**
+ * Tracks reflow events in a task.
+ */
+const taskReflowEvents = [];
+export const FORCED_REFLOW_THRESHOLD = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(30));
 export const LONG_MAIN_THREAD_TASK_THRESHOLD = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(50));
 export function reset() {
     warningsPerEvent.clear();
     eventsPerWarning.clear();
+    allEventsStack.length = 0;
+    jsInvokeStack.length = 0;
+    taskReflowEvents.length = 0;
 }
 function storeWarning(event, warning) {
     const existingWarnings = Platform.MapUtilities.getWithDefault(warningsPerEvent, event, () => []);
@@ -22,6 +39,7 @@ function storeWarning(event, warning) {
     eventsPerWarning.set(warning, existingEvents);
 }
 export function handleEvent(event) {
+    processForcedReflowWarning(event);
     if (event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RunTask */) {
         const { duration } = Helpers.Timing.eventTimingsMicroSeconds(event);
         if (duration > LONG_MAIN_THREAD_TASK_THRESHOLD) {
@@ -36,19 +54,53 @@ export function handleEvent(event) {
         }
         return;
     }
-    if (event.name === "Layout" /* Types.TraceEvents.KnownEventName.Layout */) {
-        if (event.dur && event.dur >= FORCED_LAYOUT_AND_STYLES_THRESHOLD) {
-            storeWarning(event, 'FORCED_LAYOUT');
+}
+/**
+ * Reflows* are added a warning to if:
+ * 1. They are forced/sync, meaning they are invoked by JS and finish
+ *    during the Script execution.
+ * 2. Their duration exceeds a threshold.
+ * - *Reflow: The style recalculation and layout steps in a render task.
+ */
+function processForcedReflowWarning(event) {
+    // Update the event and the JS invocation stacks.
+    accomodateEventInStack(event, allEventsStack);
+    accomodateEventInStack(event, jsInvokeStack, /* pushEventToStack */ Types.TraceEvents.isJSInvocationEvent(event));
+    if (jsInvokeStack.length) {
+        // Current event falls inside a JS call.
+        if (event.name === "Layout" /* Types.TraceEvents.KnownEventName.Layout */ ||
+            event.name === "RecalculateStyles" /* Types.TraceEvents.KnownEventName.RecalculateStyles */ ||
+            event.name === "UpdateLayoutTree" /* Types.TraceEvents.KnownEventName.UpdateLayoutTree */) {
+            // A forced reflow happened. However we need to check if
+            // the threshold is surpassed to add a warning. Accumulate the
+            // event to check for this after the current Task is over.
+            taskReflowEvents.push(event);
+            return;
         }
+    }
+    if (allEventsStack.length === 1) {
+        // We hit a new task. Check if the forced reflows in the previous
+        // task exceeded the threshold and add a warning if so.
+        const totalTime = taskReflowEvents.reduce((time, event) => time + (event.dur || 0), 0);
+        if (totalTime >= FORCED_REFLOW_THRESHOLD) {
+            taskReflowEvents.forEach(reflowEvent => storeWarning(reflowEvent, 'FORCED_REFLOW'));
+        }
+        taskReflowEvents.length = 0;
+    }
+}
+/**
+ * Updates a given trace event stack given a new event.
+ */
+function accomodateEventInStack(event, stack, pushEventToStack = true) {
+    let nextItem = stack.at(-1);
+    while (nextItem && event.ts > nextItem.ts + (nextItem.dur || 0)) {
+        stack.pop();
+        nextItem = stack.at(-1);
+    }
+    if (!pushEventToStack) {
         return;
     }
-    if (event.name === "RecalculateStyles" /* Types.TraceEvents.KnownEventName.RecalculateStyles */ ||
-        event.name === "UpdateLayoutTree" /* Types.TraceEvents.KnownEventName.UpdateLayoutTree */) {
-        if (event.dur && event.dur >= FORCED_LAYOUT_AND_STYLES_THRESHOLD) {
-            storeWarning(event, 'FORCED_STYLE');
-        }
-        return;
-    }
+    stack.push(event);
 }
 export function deps() {
     return ['UserInteractions'];

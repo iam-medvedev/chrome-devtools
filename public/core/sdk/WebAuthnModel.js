@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { SDKModel } from './SDKModel.js';
-import { Capability } from './Target.js';
 export class WebAuthnModel extends SDKModel {
     #agent;
     constructor(target) {
@@ -52,5 +51,5 @@ class WebAuthnDispatcher {
         this.#model.credentialAsserted(params);
     }
 }
-SDKModel.register(WebAuthnModel, { capabilities: Capability.WebAuthn, autostart: false });
+SDKModel.register(WebAuthnModel, { capabilities: 65536 /* Capability.WebAuthn */, autostart: false });
 //# sourceMappingURL=WebAuthnModel.js.map

@@ -5,8 +5,8 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as NetworkForward from './forward/forward.js';
 const UIStrings = {
     /**
      *@description Command for showing the 'Network' tool
@@ -187,7 +187,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'network.toggle-recording',
-    category: UI.ActionRegistration.ActionCategory.NETWORK,
+    category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
     iconClass: "record-start" /* UI.ActionRegistration.IconClass.START_RECORDING */,
     toggleable: true,
     toggledIconClass: "record-stop" /* UI.ActionRegistration.IconClass.STOP_RECORDING */,
@@ -222,7 +222,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'network.clear',
-    category: UI.ActionRegistration.ActionCategory.NETWORK,
+    category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
     title: i18nLazyString(UIStrings.clear),
     iconClass: "clear" /* UI.ActionRegistration.IconClass.CLEAR */,
     async loadActionDelegate() {
@@ -244,7 +244,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'network.hide-request-details',
-    category: UI.ActionRegistration.ActionCategory.NETWORK,
+    category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
     title: i18nLazyString(UIStrings.hideRequestDetails),
     contextTypes() {
         return maybeRetrieveContextTypes(Network => [Network.NetworkPanel.NetworkPanel]);
@@ -261,7 +261,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'network.search',
-    category: UI.ActionRegistration.ActionCategory.NETWORK,
+    category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
     title: i18nLazyString(UIStrings.search),
     contextTypes() {
         return maybeRetrieveContextTypes(Network => [Network.NetworkPanel.NetworkPanel]);
@@ -291,7 +291,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'network.add-network-request-blocking-pattern',
-    category: UI.ActionRegistration.ActionCategory.NETWORK,
+    category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
     title: i18nLazyString(UIStrings.addNetworkRequestBlockingPattern),
     iconClass: "plus" /* UI.ActionRegistration.IconClass.PLUS */,
     contextTypes() {
@@ -304,7 +304,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'network.remove-all-network-request-blocking-patterns',
-    category: UI.ActionRegistration.ActionCategory.NETWORK,
+    category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
     title: i18nLazyString(UIStrings.removeAllNetworkRequestBlockingPatterns),
     iconClass: "clear" /* UI.ActionRegistration.IconClass.CLEAR */,
     contextTypes() {
@@ -316,11 +316,11 @@ UI.ActionRegistration.registerActionExtension({
     },
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.NETWORK,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.colorcodeResourceTypes),
     settingName: 'networkColorCodeResourceTypes',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     tags: [
         i18nLazyString(UIStrings.colorCode),
@@ -338,11 +338,11 @@ Common.Settings.registerSettingExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.NETWORK,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.groupNetworkLogByFrame),
     settingName: 'network.group-by-frame',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     tags: [
         i18nLazyString(UIStrings.netWork),
@@ -362,7 +362,7 @@ Common.Settings.registerSettingExtension({
 });
 UI.ViewManager.registerLocationResolver({
     name: "network-sidebar" /* UI.ViewManager.ViewLocationValues.NETWORK_SIDEBAR */,
-    category: UI.ViewManager.ViewLocationCategory.NETWORK,
+    category: "NETWORK" /* UI.ViewManager.ViewLocationCategory.NETWORK */,
     async loadResolver() {
         const Network = await loadNetworkModule();
         return Network.NetworkPanel.NetworkPanel.instance();

@@ -16,7 +16,7 @@ UI.Toolbar.registerToolbarItem({
         return Screencast.ScreencastApp.ToolbarButtonProvider.instance();
     },
     order: 1,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT,
+    location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,
@@ -31,7 +31,7 @@ Common.AppProvider.registerAppProvider({
     condition: undefined,
 });
 UI.ContextMenu.registerItem({
-    location: UI.ContextMenu.ItemLocation.MAIN_MENU,
+    location: "mainMenu" /* UI.ContextMenu.ItemLocation.MAIN_MENU */,
     order: 10,
     actionId: 'components.request-app-banner',
 });

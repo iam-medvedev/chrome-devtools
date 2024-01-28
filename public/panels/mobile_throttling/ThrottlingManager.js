@@ -98,7 +98,7 @@ export class ThrottlingManager {
         this.customNetworkConditionsSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
         this.currentNetworkThrottlingConditionsSetting = Common.Settings.Settings.instance().createSetting('preferredNetworkCondition', SDK.NetworkManager.NoThrottlingConditions);
         this.currentNetworkThrottlingConditionsSetting.setSerializer(new SDK.NetworkManager.ConditionsSerializer());
-        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener(SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged, () => {
+        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, () => {
             this.lastNetworkThrottlingConditions = this.currentNetworkThrottlingConditionsSetting.get();
             this.currentNetworkThrottlingConditionsSetting.set(SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions());
         });
@@ -165,7 +165,7 @@ export class ThrottlingManager {
     createOfflineToolbarCheckbox() {
         const checkbox = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.offline), i18nString(UIStrings.forceDisconnectedFromNetwork), forceOffline.bind(this));
         checkbox.element.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true }).context('disconnect-from-network')}`);
-        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener(SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged, networkConditionsChanged);
+        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, networkConditionsChanged);
         checkbox.setChecked(SDK.NetworkManager.MultitargetNetworkManager.instance().isOffline());
         function forceOffline() {
             if (checkbox.checked()) {
@@ -307,7 +307,7 @@ export class ThrottlingManager {
                 input.setEnabled(this.hardwareConcurrencyOverrideEnabled);
                 setHardwareConcurrency(this.hardwareConcurrencyOverrideEnabled ? Number(inputElement.value) : defaultValue);
             });
-            reset.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+            reset.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
                 inputElement.value = `${defaultValue}`;
                 setHardwareConcurrency(defaultValue);
             });

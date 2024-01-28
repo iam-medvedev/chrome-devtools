@@ -364,4 +364,25 @@ export function isWebSocketTraceEvent(event) {
 export function isTraceEventV8Compile(event) {
     return event.name === "v8.compile" /* KnownEventName.Compile */;
 }
+/**
+ * Generally, before JS is executed, a trace event is dispatched that
+ * parents the JS calls. These we call "invocation" events. This
+ * function determines if an event is one of such.
+ */
+export function isJSInvocationEvent(event) {
+    switch (event.name) {
+        case "RunMicrotasks" /* KnownEventName.RunMicrotasks */:
+        case "FunctionCall" /* KnownEventName.FunctionCall */:
+        case "EvaluateScript" /* KnownEventName.EvaluateScript */:
+        case "v8.evaluateModule" /* KnownEventName.EvaluateModule */:
+        case "EventDispatch" /* KnownEventName.EventDispatch */:
+        case "V8.Execute" /* KnownEventName.V8Execute */:
+            return true;
+    }
+    // Also consider any new v8 trace events. (eg 'V8.RunMicrotasks' and 'v8.run')
+    if (event.name.startsWith('v8') || event.name.startsWith('V8')) {
+        return true;
+    }
+    return false;
+}
 //# sourceMappingURL=TraceEvents.js.map

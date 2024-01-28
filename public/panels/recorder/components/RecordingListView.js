@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as VisualLogging from '../../../../front_end/ui/visual_logging/visual_logging.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
@@ -69,6 +70,10 @@ export class RecordingListView extends HTMLElement {
         recordings: [],
         replayAllowed: true,
     };
+    constructor() {
+        super();
+        this.setAttribute('jslog', `${VisualLogging.section().context('recording-list-view')}`);
+    }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [recordingListViewStyles];
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
@@ -115,6 +120,7 @@ export class RecordingListView extends HTMLElement {
               .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}
               @click=${this.#onCreateClick}
               title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.createRecording), "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */)}
+              .jslogContext=${'create-recording'}
             >
               ${i18nString(UIStrings.createRecording)}
             </${Buttons.Button.Button.litTagName}>
@@ -122,7 +128,16 @@ export class RecordingListView extends HTMLElement {
           <div class="table">
             ${this.#props.recordings.map(recording => {
             return LitHtml.html `
-                  <div role="button" tabindex="0" aria-label=${i18nString(UIStrings.openRecording)} class="row" @keydown=${this.#onKeyDown.bind(this, recording.storageName)} @click=${this.#onOpenClick.bind(this, recording.storageName)}>
+                  <div
+                    role="button"
+                    tabindex="0"
+                    aria-label=${i18nString(UIStrings.openRecording)}
+                    class="row"
+                    @keydown=${this.#onKeyDown.bind(this, recording.storageName)}
+                    @click=${this.#onOpenClick.bind(this, recording.storageName)}
+                    jslog=${VisualLogging.action()
+                .track({ click: true, keydown: true })
+                .context('open-recording')}>
                     <div class="icon">
                       <${IconButton.Icon.Icon.litTagName} name="flow">
                       </${IconButton.Icon.Icon.litTagName}>
@@ -133,6 +148,7 @@ export class RecordingListView extends HTMLElement {
                 ? LitHtml.html `
                               <${Buttons.Button.Button.litTagName}
                                 title=${i18nString(UIStrings.playRecording)}
+                                .jslogContext=${'play-recording'}
                                 .data=${{
                     variant: "round" /* Buttons.Button.Variant.ROUND */,
                     iconName: 'play',
@@ -145,6 +161,7 @@ export class RecordingListView extends HTMLElement {
                       <${Buttons.Button.Button.litTagName}
                         class="delete-recording-button"
                         title=${i18nString(UIStrings.deleteRecording)}
+                        .jslogContext=${'delete-recording'}
                         .data=${{
                 variant: "round" /* Buttons.Button.Variant.ROUND */,
                 iconName: 'bin',

@@ -5,7 +5,6 @@ export declare class RequestResponseView extends UI.Widget.VBox {
     request: SDK.NetworkRequest.NetworkRequest;
     private contentViewPromise;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
-    private static hasTextContent;
     static sourceViewForRequest(request: SDK.NetworkRequest.NetworkRequest): Promise<UI.Widget.Widget | null>;
     wasShown(): void;
     private doShowPreview;

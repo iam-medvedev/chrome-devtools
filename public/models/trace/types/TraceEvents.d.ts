@@ -1432,6 +1432,12 @@ export interface TraceEventV8Compile extends TraceEventComplete {
 }
 export declare function isTraceEventV8Compile(event: TraceEventData): event is TraceEventV8Compile;
 /**
+ * Generally, before JS is executed, a trace event is dispatched that
+ * parents the JS calls. These we call "invocation" events. This
+ * function determines if an event is one of such.
+ */
+export declare function isJSInvocationEvent(event: TraceEventData): boolean;
+/**
  * This is an exhaustive list of events we track in the Performance
  * panel. Note not all of them are necessarliry shown in the flame
  * chart, some of them we only use for parsing.

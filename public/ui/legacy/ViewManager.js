@@ -4,13 +4,14 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { Events as TabbedPaneEvents, TabbedPane } from './TabbedPane.js';
 import { Toolbar, ToolbarMenuButton } from './Toolbar.js';
 import { createTextChild } from './UIUtils.js';
 import viewContainersStyles from './viewContainers.css.legacy.js';
-import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, } from './ViewRegistration.js';
+import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, } from './ViewRegistration.js';
 import { VBox } from './Widget.js';
 const UIStrings = {
     /**
@@ -56,7 +57,8 @@ export class PreRegisteredView {
         return this.viewRegistration.order;
     }
     settings() {
-        return this.viewRegistration.settings;
+        // TODO(b/320405843): remove kebab mapping here once the migration is complete
+        return this.viewRegistration.settings?.map(s => Platform.StringUtilities.toKebabCase(s));
     }
     tags() {
         if (this.viewRegistration.tags) {
@@ -104,7 +106,7 @@ export class ViewManager {
         this.views = new Map();
         this.locationNameByViewId = new Map();
         // Read override setting for location
-        this.locationOverrideSetting = Common.Settings.Settings.instance().createSetting('viewsLocationOverride', {});
+        this.locationOverrideSetting = Common.Settings.Settings.instance().createSetting('views-location-override', {});
         const preferredExtensionLocations = this.locationOverrideSetting.get();
         // Views may define their initial ordering within a location. When the user has not reordered, we use the
         // default ordering as defined by the views themselves.
@@ -132,6 +134,9 @@ export class ViewManager {
             const location = view.location();
             if (this.views.has(viewId)) {
                 throw new Error(`Duplicate view id '${viewId}'`);
+            }
+            if (!Platform.StringUtilities.isExtendedKebabCase(viewId)) {
+                throw new Error(`Invalid view ID '${viewId}'`);
             }
             this.views.set(viewId, view);
             // Use the preferred user location if available
@@ -479,14 +484,14 @@ class TabbedLocation extends Location {
         this.allowReorder = allowReorder;
         this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.TabSelected, this.tabSelected, this);
         this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.TabClosed, this.tabClosed, this);
-        this.closeableTabSetting = Common.Settings.Settings.instance().createSetting('closeableTabs', {});
+        this.closeableTabSetting = Common.Settings.Settings.instance().createSetting('closeable-tabs', {});
         // As we give tabs the capability to be closed we also need to add them to the setting so they are still open
         // until the user decide to close them
         this.setOrUpdateCloseableTabsSetting();
-        this.tabOrderSetting = Common.Settings.Settings.instance().createSetting(location + '-tabOrder', {});
+        this.tabOrderSetting = Common.Settings.Settings.instance().createSetting(location + '-tab-order', {});
         this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.TabOrderChanged, this.persistTabOrder, this);
         if (restoreSelection) {
-            this.lastSelectedTabSetting = Common.Settings.Settings.instance().createSetting(location + '-selectedTab', '');
+            this.lastSelectedTabSetting = Common.Settings.Settings.instance().createSetting(location + '-selected-tab', '');
         }
         this.defaultTab = defaultTab;
         this.views = new Map();
@@ -568,7 +573,7 @@ class TabbedLocation extends Location {
             const title = view.title();
             if (view.viewId() === 'issues-pane') {
                 contextMenu.defaultSection().appendItem(title, () => {
-                    Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.HamburgerMenu);
+                    Host.userMetrics.issuesPanelOpenedFrom(3 /* Host.UserMetrics.IssueOpener.HamburgerMenu */);
                     void this.showView(view, undefined, true);
                 });
                 continue;
@@ -738,5 +743,5 @@ class StackLocation extends Location {
         }
     }
 }
-export { getRegisteredViewExtensions, maybeRemoveViewExtension, registerViewExtension, getRegisteredLocationResolvers, registerLocationResolver, ViewLocationCategory, getLocalizedViewLocationCategory, resetViewRegistration, };
+export { getRegisteredViewExtensions, maybeRemoveViewExtension, registerViewExtension, getRegisteredLocationResolvers, registerLocationResolver, getLocalizedViewLocationCategory, resetViewRegistration, };
 //# sourceMappingURL=ViewManager.js.map
