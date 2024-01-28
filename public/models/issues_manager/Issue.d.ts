@@ -3,7 +3,7 @@ import type * as Platform from '../../core/platform/platform.js';
 import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
-export declare enum IssueCategory {
+export declare const enum IssueCategory {
     CrossOriginEmbedderPolicy = "CrossOriginEmbedderPolicy",
     Generic = "Generic",
     MixedContent = "MixedContent",
@@ -16,7 +16,7 @@ export declare enum IssueCategory {
     QuirksMode = "QuirksMode",
     Other = "Other"
 }
-export declare enum IssueKind {
+export declare const enum IssueKind {
     /**
      * Something is not working in the page right now. Issues of this kind need
      * usually be fixed right away. They usually indicate that a Web API is being

@@ -96,7 +96,7 @@ export class BezierEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     }
     onchange() {
         this.updateUI();
-        this.dispatchEventToListeners(Events.BezierChanged, this.model.asCSSText());
+        this.dispatchEventToListeners("BezierChanged" /* Events.BezierChanged */, this.model.asCSSText());
     }
     updateUI() {
         const labelText = this.selectedCategory ? this.selectedCategory.presets[this.selectedCategory.presetIndex].name :
@@ -189,12 +189,6 @@ export class BezierEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         }
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["BezierChanged"] = "BezierChanged";
-})(Events || (Events = {}));
 export const Presets = [
     [
         { name: 'linear', value: 'linear' },

@@ -97,8 +97,8 @@ export class CommandMenu {
             throw new Error(`Creating '${action.title()}' action command failed. Action has no category.`);
         }
         let panelOrDrawer = undefined;
-        if (category === UI.ActionRegistration.ActionCategory.DRAWER) {
-            panelOrDrawer = PanelOrDrawer.DRAWER;
+        if (category === "DRAWER" /* UI.ActionRegistration.ActionCategory.DRAWER */) {
+            panelOrDrawer = "DRAWER" /* PanelOrDrawer.DRAWER */;
         }
         const shortcut = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(action.id()) || '';
         return CommandMenu.createCommand({
@@ -118,15 +118,15 @@ export class CommandMenu {
             throw new Error(`Creating '${title}' reveal view command failed. Reveal view has no category.`);
         }
         let panelOrDrawer = undefined;
-        if (category === UI.ViewManager.ViewLocationCategory.PANEL) {
-            panelOrDrawer = PanelOrDrawer.PANEL;
+        if (category === "PANEL" /* UI.ViewManager.ViewLocationCategory.PANEL */) {
+            panelOrDrawer = "PANEL" /* PanelOrDrawer.PANEL */;
         }
-        else if (category === UI.ViewManager.ViewLocationCategory.DRAWER) {
-            panelOrDrawer = PanelOrDrawer.DRAWER;
+        else if (category === "DRAWER" /* UI.ViewManager.ViewLocationCategory.DRAWER */) {
+            panelOrDrawer = "DRAWER" /* PanelOrDrawer.DRAWER */;
         }
         const executeHandler = () => {
             if (id === 'issues-pane') {
-                Host.userMetrics.issuesPanelOpenedFrom(Host.UserMetrics.IssueOpener.CommandMenu);
+                Host.userMetrics.issuesPanelOpenedFrom(5 /* Host.UserMetrics.IssueOpener.CommandMenu */);
             }
             return UI.ViewManager.ViewManager.instance().showView(id, /* userGesture */ true);
         };
@@ -181,12 +181,6 @@ export class CommandMenu {
         return this.commandsInternal;
     }
 }
-// eslint-disable-next-line rulesdir/const_enum
-export var PanelOrDrawer;
-(function (PanelOrDrawer) {
-    PanelOrDrawer["PANEL"] = "PANEL";
-    PanelOrDrawer["DRAWER"] = "DRAWER";
-})(PanelOrDrawer || (PanelOrDrawer = {}));
 export class CommandMenuProvider extends Provider {
     commands;
     constructor(commandsForTest = []) {
@@ -233,10 +227,10 @@ export class CommandMenuProvider extends Provider {
         const command = this.commands[itemIndex];
         let score = Diff.Diff.DiffWrapper.characterScore(query.toLowerCase(), command.title.toLowerCase());
         // Score panel/drawer reveals above regular actions.
-        if (command.isPanelOrDrawer === PanelOrDrawer.PANEL) {
+        if (command.isPanelOrDrawer === "PANEL" /* PanelOrDrawer.PANEL */) {
             score += 2;
         }
-        else if (command.isPanelOrDrawer === PanelOrDrawer.DRAWER) {
+        else if (command.isPanelOrDrawer === "DRAWER" /* PanelOrDrawer.DRAWER */) {
             score += 1;
         }
         return score;

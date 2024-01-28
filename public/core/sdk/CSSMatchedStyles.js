@@ -651,14 +651,14 @@ class NodeCascade {
                     continue;
                 }
                 if (!property.activeInStyle()) {
-                    this.propertiesState.set(property, PropertyState.Overloaded);
+                    this.propertiesState.set(property, "Overloaded" /* PropertyState.Overloaded */);
                     continue;
                 }
                 // If the custom property was registered with `inherits: false;`, inherited properties are invalid.
                 if (this.#isInherited) {
                     const registration = this.#matchedStyles.getRegisteredProperty(property.name);
                     if (registration && !registration.inherits()) {
-                        this.propertiesState.set(property, PropertyState.Overloaded);
+                        this.propertiesState.set(property, "Overloaded" /* PropertyState.Overloaded */);
                         continue;
                     }
                 }
@@ -675,13 +675,13 @@ class NodeCascade {
     updatePropertyState(propertyWithHigherSpecificity, canonicalName) {
         const activeProperty = this.activeProperties.get(canonicalName);
         if (activeProperty?.important && !propertyWithHigherSpecificity.important) {
-            this.propertiesState.set(propertyWithHigherSpecificity, PropertyState.Overloaded);
+            this.propertiesState.set(propertyWithHigherSpecificity, "Overloaded" /* PropertyState.Overloaded */);
             return;
         }
         if (activeProperty) {
-            this.propertiesState.set(activeProperty, PropertyState.Overloaded);
+            this.propertiesState.set(activeProperty, "Overloaded" /* PropertyState.Overloaded */);
         }
-        this.propertiesState.set(propertyWithHigherSpecificity, PropertyState.Active);
+        this.propertiesState.set(propertyWithHigherSpecificity, "Active" /* PropertyState.Active */);
         this.activeProperties.set(canonicalName, propertyWithHigherSpecificity);
     }
 }
@@ -829,17 +829,17 @@ class DOMInheritanceCascade {
         for (const nodeCascade of this.#nodeCascades) {
             nodeCascade.computeActiveProperties();
             for (const [property, state] of nodeCascade.propertiesState) {
-                if (state === PropertyState.Overloaded) {
-                    this.#propertiesState.set(property, PropertyState.Overloaded);
+                if (state === "Overloaded" /* PropertyState.Overloaded */) {
+                    this.#propertiesState.set(property, "Overloaded" /* PropertyState.Overloaded */);
                     continue;
                 }
                 const canonicalName = cssMetadata().canonicalPropertyName(property.name);
                 if (activeProperties.has(canonicalName)) {
-                    this.#propertiesState.set(property, PropertyState.Overloaded);
+                    this.#propertiesState.set(property, "Overloaded" /* PropertyState.Overloaded */);
                     continue;
                 }
                 activeProperties.set(canonicalName, property);
-                this.#propertiesState.set(property, PropertyState.Active);
+                this.#propertiesState.set(property, "Active" /* PropertyState.Active */);
             }
         }
         // If every longhand of the shorthand is not active, then the shorthand is not active too.
@@ -865,7 +865,7 @@ class DOMInheritanceCascade {
                 continue;
             }
             activeProperties.delete(canonicalName);
-            this.#propertiesState.set(shorthandProperty, PropertyState.Overloaded);
+            this.#propertiesState.set(shorthandProperty, "Overloaded" /* PropertyState.Overloaded */);
         }
         // Work inheritance chain backwards to compute visible CSS Variables.
         const accumulatedCSSVariables = new Map();
@@ -900,11 +900,4 @@ class DOMInheritanceCascade {
         }
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var PropertyState;
-(function (PropertyState) {
-    PropertyState["Active"] = "Active";
-    PropertyState["Overloaded"] = "Overloaded";
-})(PropertyState || (PropertyState = {}));
 //# sourceMappingURL=CSSMatchedStyles.js.map

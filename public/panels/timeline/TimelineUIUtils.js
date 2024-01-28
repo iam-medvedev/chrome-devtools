@@ -1146,11 +1146,10 @@ export class TimelineUIUtils {
             return UI.UIUtils.beautifyFunctionName(frame.functionName);
         }
         const nativeGroup = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.nativeGroup(frame.functionName);
-        const groups = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.NativeGroups;
         switch (nativeGroup) {
-            case groups.Compile:
+            case "Compile" /* TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.NativeGroups.Compile */:
                 return i18nString(UIStrings.compile);
-            case groups.Parse:
+            case "Parse" /* TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.NativeGroups.Parse */:
                 return i18nString(UIStrings.parse);
         }
         return frame.functionName;
@@ -1282,16 +1281,15 @@ export class TimelineUIUtils {
         return frame.scriptId !== '0' && !(frame.url && frame.url.startsWith('native '));
     }
     static syntheticNetworkRequestCategory(request) {
-        const categories = NetworkCategory;
         switch (request.args.data.mimeType) {
             case 'text/html':
-                return categories.HTML;
+                return "HTML" /* NetworkCategory.HTML */;
             case 'application/javascript':
             case 'application/x-javascript':
             case 'text/javascript':
-                return categories.Script;
+                return "Script" /* NetworkCategory.Script */;
             case 'text/css':
-                return categories.Style;
+                return "Style" /* NetworkCategory.Style */;
             case 'audio/ogg':
             case 'image/gif':
             case 'image/jpeg':
@@ -1303,25 +1301,24 @@ export class TimelineUIUtils {
             case 'font/woff2':
             case 'font/ttf':
             case 'application/font-woff':
-                return categories.Media;
+                return "Media" /* NetworkCategory.Media */;
             default:
-                return categories.Other;
+                return "Other" /* NetworkCategory.Other */;
         }
     }
     static networkCategoryColor(category) {
-        const categories = NetworkCategory;
         let cssVarName = '--app-color-system';
         switch (category) {
-            case categories.HTML:
+            case "HTML" /* NetworkCategory.HTML */:
                 cssVarName = '--app-color-loading';
                 break;
-            case categories.Script:
+            case "Script" /* NetworkCategory.Script */:
                 cssVarName = '--app-color-scripting';
                 break;
-            case categories.Style:
+            case "Style" /* NetworkCategory.Style */:
                 cssVarName = '--app-color-rendering';
                 break;
-            case categories.Media:
+            case "Media" /* NetworkCategory.Media */:
                 cssVarName = '--app-color-painting';
                 break;
             default:
@@ -2720,16 +2717,6 @@ export class TimelineUIUtils {
             frame.url.trimEnd(trimAt);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var NetworkCategory;
-(function (NetworkCategory) {
-    NetworkCategory["HTML"] = "HTML";
-    NetworkCategory["Script"] = "Script";
-    NetworkCategory["Style"] = "Style";
-    NetworkCategory["Media"] = "Media";
-    NetworkCategory["Other"] = "Other";
-})(NetworkCategory || (NetworkCategory = {}));
 export const aggregatedStatsKey = Symbol('aggregatedStats');
 export const previewElementSymbol = Symbol('previewElement');
 export class EventDispatchTypeDescriptor {

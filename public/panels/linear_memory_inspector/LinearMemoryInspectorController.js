@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -232,22 +231,6 @@ export class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelO
             memoryAddress = response.address;
             memoryObject = response.obj;
         }
-        if (memoryAddress !== undefined) {
-            Host.userMetrics.linearMemoryInspectorTarget(Host.UserMetrics.LinearMemoryInspectorTarget.DWARFInspectableAddress);
-        }
-        else if (memoryObject.subtype === "arraybuffer" /* Protocol.Runtime.RemoteObjectSubtype.Arraybuffer */) {
-            Host.userMetrics.linearMemoryInspectorTarget(Host.UserMetrics.LinearMemoryInspectorTarget.ArrayBuffer);
-        }
-        else if (memoryObject.subtype === "dataview" /* Protocol.Runtime.RemoteObjectSubtype.Dataview */) {
-            Host.userMetrics.linearMemoryInspectorTarget(Host.UserMetrics.LinearMemoryInspectorTarget.DataView);
-        }
-        else if (memoryObject.subtype === "typedarray" /* Protocol.Runtime.RemoteObjectSubtype.Typedarray */) {
-            Host.userMetrics.linearMemoryInspectorTarget(Host.UserMetrics.LinearMemoryInspectorTarget.TypedArray);
-        }
-        else {
-            console.assert(memoryObject.subtype === "webassemblymemory" /* Protocol.Runtime.RemoteObjectSubtype.Webassemblymemory */);
-            Host.userMetrics.linearMemoryInspectorTarget(Host.UserMetrics.LinearMemoryInspectorTarget.WebAssemblyMemory);
-        }
         const buffer = await getBufferFromObject(memoryObject);
         const { internalProperties } = await buffer.object().getOwnProperties(false);
         const idProperty = internalProperties?.find(({ name }) => name === '[[ArrayBufferData]]');
@@ -279,10 +262,7 @@ export class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelO
         if (target.property.value?.isLinearMemoryInspectable()) {
             const expression = target.path();
             const object = target.property.value;
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.revealInMemoryInspectorPanel), () => {
-                Host.userMetrics.linearMemoryInspectorRevealedFrom(Host.UserMetrics.LinearMemoryInspectorRevealedFrom.ContextMenu);
-                void this.reveal(new SDK.RemoteObject.LinearMemoryInspectable(object, expression));
-            });
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.revealInMemoryInspectorPanel), this.reveal.bind(this, new SDK.RemoteObject.LinearMemoryInspectable(object, expression)));
         }
     }
     static extractHighlightInfo(obj, expression) {

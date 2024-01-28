@@ -540,7 +540,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             this.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.DOMContentLoaded, () => {
                 void this.updateManifest(true);
             }),
-            this.serviceWorkerManager.addEventListener(SDK.ServiceWorkerManager.Events.RegistrationUpdated, () => {
+            this.serviceWorkerManager.addEventListener("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, () => {
                 void this.updateManifest(false);
             }),
         ];
@@ -574,12 +574,12 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         if (!data && !errors.length) {
             this.emptyView.showWidget();
             this.reportView.hideWidget();
-            this.dispatchEventToListeners(Events.ManifestDetected, false);
+            this.dispatchEventToListeners("ManifestDetected" /* Events.ManifestDetected */, false);
             return;
         }
         this.emptyView.hideWidget();
         this.reportView.showWidget();
-        this.dispatchEventToListeners(Events.ManifestDetected, true);
+        this.dispatchEventToListeners("ManifestDetected" /* Events.ManifestDetected */, true);
         const link = Components.Linkifier.Linkifier.linkifyURL(url);
         link.tabIndex = 0;
         this.reportView.setURL(link);
@@ -867,7 +867,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         }
         const wcoDocumentationLink = UI.XLink.XLink.create('https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay', i18nString(UIStrings.customizePwaTitleBar), undefined, undefined, 'customize-pwa-tittle-bar');
         this.windowControlsSection.appendRow().appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.wcoNeedHelpReadMore, { PH1: wcoDocumentationLink }));
-        this.dispatchEventToListeners(Events.ManifestRendered);
+        this.dispatchEventToListeners("ManifestRendered" /* Events.ManifestRendered */);
     }
     getInstallabilityErrorMessages(installabilityErrors) {
         const errorMessages = [];
@@ -1137,11 +1137,4 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         overlayModel.setWindowControlsThemeColor(themeColor);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ManifestDetected"] = "ManifestDetected";
-    Events["ManifestRendered"] = "ManifestRendered";
-})(Events || (Events = {}));
 //# sourceMappingURL=AppManifestView.js.map

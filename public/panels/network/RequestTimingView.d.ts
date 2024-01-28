@@ -18,7 +18,7 @@ export declare class RequestTimingView extends UI.Widget.VBox {
     private refresh;
     private boundaryChanged;
 }
-export declare enum RequestTimeRangeNames {
+export declare const enum RequestTimeRangeNames {
     Push = "push",
     Queueing = "queueing",
     Blocking = "blocking",

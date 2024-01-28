@@ -50,6 +50,15 @@ export class Cookie {
         cookie.setSize(protocolCookie['size']);
         return cookie;
     }
+    isEqual(other) {
+        return this.name() === other.name() && this.value() === other.value() && this.size() === other.size() &&
+            this.domain() === other.domain() && this.path() === other.path() && this.expires() === other.expires() &&
+            this.httpOnly() === other.httpOnly() && this.secure() === other.secure() &&
+            this.sameSite() === other.sameSite() && this.sourceScheme() === other.sourceScheme() &&
+            this.sourcePort() === other.sourcePort() && this.priority() === other.priority() &&
+            this.partitionKey() === other.partitionKey() && this.type() === other.type() &&
+            this.getCookieLine() === other.getCookieLine();
+    }
     key() {
         return (this.domain() || '-') + ' ' + this.name() + ' ' + (this.path() || '-') + ' ' + (this.partitionKey() || '-');
     }
@@ -199,29 +208,4 @@ export class Cookie {
         return hostname.length > domain.length && hostname.endsWith(domain);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Type;
-(function (Type) {
-    Type[Type["Request"] = 0] = "Request";
-    Type[Type["Response"] = 1] = "Response";
-})(Type || (Type = {}));
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Attributes;
-(function (Attributes) {
-    Attributes["Name"] = "name";
-    Attributes["Value"] = "value";
-    Attributes["Size"] = "size";
-    Attributes["Domain"] = "domain";
-    Attributes["Path"] = "path";
-    Attributes["Expires"] = "expires";
-    Attributes["HttpOnly"] = "http-only";
-    Attributes["Secure"] = "secure";
-    Attributes["SameSite"] = "same-site";
-    Attributes["SourceScheme"] = "source-scheme";
-    Attributes["SourcePort"] = "source-port";
-    Attributes["Priority"] = "priority";
-    Attributes["PartitionKey"] = "partition-key";
-})(Attributes || (Attributes = {}));
 //# sourceMappingURL=Cookie.js.map

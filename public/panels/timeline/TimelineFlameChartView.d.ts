@@ -85,6 +85,6 @@ export declare class TimelineFlameChartMarker implements PerfUI.FlameChart.Flame
     title(): string | null;
     draw(context: CanvasRenderingContext2D, x: number, height: number, pixelsPerMillisecond: number): void;
 }
-export declare enum ColorBy {
+export declare const enum ColorBy {
     URL = "URL"
 }

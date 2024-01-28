@@ -313,7 +313,7 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const deleteButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteS, { PH1: label }), 'bin');
         deleteToolbar.appendToolbarItem(deleteButton);
         const fontSelectorObject = { label: selectLabel, input: selectInput, deleteButton, index };
-        deleteButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+        deleteButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             this.deleteFontSelector(fontSelectorObject.index);
         });
         deleteButton.element.addEventListener('keydown', (event) => {
@@ -353,19 +353,12 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updatePropertyValue('font-family', value);
     }
     updatePropertyValue(propertyName, value) {
-        this.dispatchEventToListeners(Events.FontChanged, { propertyName, value });
+        this.dispatchEventToListeners("FontChanged" /* Events.FontChanged */, { propertyName, value });
     }
     resizePopout() {
-        this.dispatchEventToListeners(Events.FontEditorResized);
+        this.dispatchEventToListeners("FontEditorResized" /* Events.FontEditorResized */);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["FontChanged"] = "FontChanged";
-    Events["FontEditorResized"] = "FontEditorResized";
-})(Events || (Events = {}));
 class FontPropertyInputs {
     showSliderMode;
     errorText;

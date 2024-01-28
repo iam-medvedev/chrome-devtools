@@ -6,7 +6,7 @@ import { type Serializer } from '../common/Settings.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import { type ContentDataOrError } from './ContentData.js';
-import { type ContentData, NetworkRequest } from './NetworkRequest.js';
+import { NetworkRequest } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
 import { type SDKModelObserver } from './TargetManager.js';
@@ -20,6 +20,11 @@ export declare class NetworkManager extends SDKModel<EventTypes> {
     static replayRequest(request: NetworkRequest): void;
     static searchInRequest(request: NetworkRequest, query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
     static requestContentData(request: NetworkRequest): Promise<ContentDataOrError>;
+    /**
+     * Returns the already received bytes for an in-flight request. After calling this method
+     * "dataReceived" events will contain additional data.
+     */
+    static streamResponseBody(request: NetworkRequest): Promise<ContentDataOrError>;
     static requestPostData(request: NetworkRequest): Promise<string | null>;
     static connectionType(conditions: Conditions): Protocol.Network.ConnectionType;
     static lowercaseHeaders(headers: Protocol.Network.Headers): Protocol.Network.Headers;
@@ -97,7 +102,7 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     requestWillBeSent({ requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, redirectResponse, type, frameId, hasUserGesture, }: Protocol.Network.RequestWillBeSentEvent): void;
     requestServedFromCache({ requestId }: Protocol.Network.RequestServedFromCacheEvent): void;
     responseReceived({ requestId, loaderId, timestamp, type, response, frameId }: Protocol.Network.ResponseReceivedEvent): void;
-    dataReceived({ requestId, timestamp, dataLength, encodedDataLength }: Protocol.Network.DataReceivedEvent): void;
+    dataReceived(event: Protocol.Network.DataReceivedEvent): void;
     loadingFinished({ requestId, timestamp: finishTime, encodedDataLength }: Protocol.Network.LoadingFinishedEvent): void;
     loadingFailed({ requestId, timestamp: time, type: resourceType, errorText: localizedDescription, canceled, blockedReason, corsErrorStatus, }: Protocol.Network.LoadingFailedEvent): void;
     webSocketCreated({ requestId, url: requestURL, initiator }: Protocol.Network.WebSocketCreatedEvent): void;
@@ -184,7 +189,7 @@ export declare class MultitargetNetworkManager extends Common.ObjectWrapper.Obje
     }>;
 }
 export declare namespace MultitargetNetworkManager {
-    enum Events {
+    const enum Events {
         BlockedPatternsChanged = "BlockedPatternsChanged",
         ConditionsChanged = "ConditionsChanged",
         UserAgentChanged = "UserAgentChanged",
@@ -217,8 +222,17 @@ export declare class InterceptedRequest {
     continueRequestWithContent(contentBlob: Blob, encoded: boolean, responseHeaders: Protocol.Fetch.HeaderEntry[], isBodyOverridden: boolean): Promise<void>;
     continueRequestWithoutChange(): void;
     continueRequestWithError(errorReason: Protocol.Network.ErrorReason): void;
-    responseBody(): Promise<ContentData>;
+    responseBody(): Promise<ContentDataOrError>;
     isRedirect(): boolean;
+    /**
+     * Tries to determine the MIME type and charset for this intercepted request.
+     * Looks at the interecepted response headers first (for Content-Type header), then
+     * checks the `NetworkRequest` if we have one.
+     */
+    getMimeTypeAndCharset(): {
+        mimeType: string | null;
+        charset: string | null;
+    };
 }
 export declare class ConditionsSerializer implements Serializer<Conditions, Conditions> {
     stringify(value: unknown): string;

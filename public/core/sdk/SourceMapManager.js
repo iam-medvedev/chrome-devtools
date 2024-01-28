@@ -4,7 +4,7 @@
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import { Type } from './Target.js';
-import { Events as TargetManagerEvents, TargetManager } from './TargetManager.js';
+import { TargetManager } from './TargetManager.js';
 import { PageResourceLoader } from './PageResourceLoader.js';
 import { parseSourceMap, SourceMap } from './SourceMap.js';
 export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
@@ -20,7 +20,7 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#attachingClient = null;
         this.#clientData = new Map();
         this.#sourceMaps = new Map();
-        TargetManager.instance().addEventListener(TargetManagerEvents.InspectedURLChanged, this.inspectedURLChanged, this);
+        TargetManager.instance().addEventListener("InspectedURLChanged" /* TargetManagerEvents.InspectedURLChanged */, this.inspectedURLChanged, this);
     }
     setEnabled(isEnabled) {
         if (isEnabled === this.#isEnabled) {
@@ -169,7 +169,7 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     dispose() {
-        TargetManager.instance().removeEventListener(TargetManagerEvents.InspectedURLChanged, this.inspectedURLChanged, this);
+        TargetManager.instance().removeEventListener("InspectedURLChanged" /* TargetManagerEvents.InspectedURLChanged */, this.inspectedURLChanged, this);
     }
 }
 async function loadSourceMap(url, initiator) {
@@ -181,8 +181,6 @@ async function loadSourceMap(url, initiator) {
         throw new Error(`Could not load content for ${url}: ${cause.message}`, { cause });
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["SourceMapWillAttach"] = "SourceMapWillAttach";

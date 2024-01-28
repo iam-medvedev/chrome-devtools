@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../../../front_end/ui/visual_logging/visual_logging.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
@@ -48,6 +49,10 @@ export class CreateRecordingEvent extends Event {
 export class StartView extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-start-view`;
     #shadow = this.attachShadow({ mode: 'open' });
+    constructor() {
+        super();
+        this.setAttribute('jslog', `${VisualLogging.section().context('start-view')}`);
+    }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [startViewStyles];
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);

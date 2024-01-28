@@ -31,7 +31,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import emptyWidgetStyles from './emptyWidget.css.legacy.js';
-import { Infobar, Type } from './Infobar.js';
+import { Infobar } from './Infobar.js';
 import { VBox } from './Widget.js';
 import { XLink } from './XLink.js';
 const UIStrings = {
@@ -72,7 +72,7 @@ export class EmptyWidget extends VBox {
                 jsLogContext: 'learn-more',
             }] :
             undefined;
-        const warningBar = new Infobar(Type.Warning, message, actions, undefined, undefined, jsLogContext);
+        const warningBar = new Infobar("warning" /* Type.Warning */, message, actions, undefined, undefined, jsLogContext);
         warningBar.element.classList.add('warning');
         this.element.prepend(warningBar.element);
         return warningBar;

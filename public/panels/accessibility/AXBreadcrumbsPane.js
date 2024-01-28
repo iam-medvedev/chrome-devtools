@@ -60,7 +60,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
         const previewToggle = new Feedback.PreviewToggle.PreviewToggle();
         previewToggle.setAttribute('jslog', `${VisualLogging.toggle().context('full-accessibility-tree')}`);
         const name = i18nString(UIStrings.fullTreeExperimentName);
-        const experiment = Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE;
+        const experiment = "fullAccessibilityTree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */;
         const onChangeCallback = checked => {
             Host.userMetrics.experimentChanged(experiment, checked);
             UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.reloadRequired));

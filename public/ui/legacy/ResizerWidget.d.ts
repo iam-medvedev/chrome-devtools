@@ -23,7 +23,7 @@ export declare class ResizerWidget extends Common.ObjectWrapper.ObjectWrapper<Ev
     sendDragMove(startX: number, currentX: number, startY: number, currentY: number, shiftKey: boolean): void;
     private dragEnd;
 }
-export declare enum Events {
+export declare const enum Events {
     ResizeStart = "ResizeStart",
     ResizeUpdateXY = "ResizeUpdateXY",
     ResizeUpdatePosition = "ResizeUpdatePosition",

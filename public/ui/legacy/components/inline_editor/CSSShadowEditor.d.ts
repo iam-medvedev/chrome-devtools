@@ -48,7 +48,7 @@ export declare class CSSShadowEditor extends CSSShadowEditor_base {
     private snapToClosestDirection;
     private sliderThumbPosition;
 }
-export declare enum Events {
+export declare const enum Events {
     ShadowChanged = "ShadowChanged"
 }
 export type EventTypes = {

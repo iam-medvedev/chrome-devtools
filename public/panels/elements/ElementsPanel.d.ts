@@ -10,8 +10,8 @@ import { StylesSidebarPane } from './StylesSidebarPane.js';
  * collects usage metrics for the different sidebar tabs.
  */
 export declare const enum SidebarPaneTabId {
-    Computed = "Computed",
-    Styles = "Styles"
+    Computed = "computed",
+    Styles = "styles"
 }
 export declare class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.Searchable, SDK.TargetManager.SDKModelObserver<SDK.DOMModel.DOMModel>, UI.View.ViewLocationResolver {
     private splitWidget;

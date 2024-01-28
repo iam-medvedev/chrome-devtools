@@ -40,7 +40,7 @@ import * as ARIAUtils from './ARIAUtils.js';
 import { ContextMenu } from './ContextMenu.js';
 import { GlassPane } from './GlassPane.js';
 import { bindCheckbox } from './SettingsUI.js';
-import { Events as TextPromptEvents, TextPrompt } from './TextPrompt.js';
+import { TextPrompt } from './TextPrompt.js';
 import toolbarStyles from './toolbar.css.legacy.js';
 import { Tooltip } from './Tooltip.js';
 import { CheckboxLabel, LongClickController } from './UIUtils.js';
@@ -204,7 +204,7 @@ export class Toolbar {
                 void action.execute();
             };
         }
-        button.addEventListener(ToolbarButton.Events.Click, handler, action);
+        button.addEventListener("Click" /* ToolbarButton.Events.Click */, handler, action);
         action.addEventListener("Enabled" /* ActionEvents.Enabled */, enabledChanged);
         button.setEnabled(action.enabled());
         return button;
@@ -542,25 +542,16 @@ export class ToolbarButton extends ToolbarItem {
         if (!this.enabled) {
             return;
         }
-        this.dispatchEventToListeners(ToolbarButton.Events.Click, event);
+        this.dispatchEventToListeners("Click" /* ToolbarButton.Events.Click */, event);
         event.consume();
     }
     mouseDown(event) {
         if (!this.enabled) {
             return;
         }
-        this.dispatchEventToListeners(ToolbarButton.Events.MouseDown, event);
+        this.dispatchEventToListeners("MouseDown" /* ToolbarButton.Events.MouseDown */, event);
     }
 }
-(function (ToolbarButton) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
-    let Events;
-    (function (Events) {
-        Events["Click"] = "Click";
-        Events["MouseDown"] = "MouseDown";
-    })(Events = ToolbarButton.Events || (ToolbarButton.Events = {}));
-})(ToolbarButton || (ToolbarButton = {}));
 export class ToolbarInput extends ToolbarItem {
     prompt;
     proxyElement;
@@ -582,7 +573,7 @@ export class ToolbarInput extends ToolbarItem {
             this.prompt.setTitle(tooltip);
         }
         this.prompt.setPlaceholder(placeholder, accessiblePlaceholder);
-        this.prompt.addEventListener(TextPromptEvents.TextChanged, this.onChangeCallback.bind(this));
+        this.prompt.addEventListener("TextChanged" /* TextPromptEvents.TextChanged */, this.onChangeCallback.bind(this));
         if (growFactor) {
             this.element.style.flexGrow = String(growFactor);
         }
@@ -619,7 +610,7 @@ export class ToolbarInput extends ToolbarItem {
     }
     onKeydownCallback(event) {
         if (event.key === 'Enter' && this.prompt.text()) {
-            this.dispatchEventToListeners(ToolbarInput.Event.EnterPressed, this.prompt.text());
+            this.dispatchEventToListeners("EnterPressed" /* ToolbarInput.Event.EnterPressed */, this.prompt.text());
         }
         if (!Platform.KeyboardUtilities.isEscKey(event) || !this.prompt.text()) {
             return;
@@ -629,21 +620,12 @@ export class ToolbarInput extends ToolbarItem {
     }
     onChangeCallback() {
         this.updateEmptyStyles();
-        this.dispatchEventToListeners(ToolbarInput.Event.TextChanged, this.prompt.text());
+        this.dispatchEventToListeners("TextChanged" /* ToolbarInput.Event.TextChanged */, this.prompt.text());
     }
     updateEmptyStyles() {
         this.element.classList.toggle('toolbar-input-empty', !this.prompt.text());
     }
 }
-(function (ToolbarInput) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
-    let Event;
-    (function (Event) {
-        Event["TextChanged"] = "TextChanged";
-        Event["EnterPressed"] = "EnterPressed";
-    })(Event = ToolbarInput.Event || (ToolbarInput.Event = {}));
-})(ToolbarInput || (ToolbarInput = {}));
 export class ToolbarToggle extends ToolbarButton {
     toggledInternal;
     untoggledGlyph;
@@ -923,13 +905,4 @@ export function registerToolbarItem(registration) {
 function getRegisteredToolbarItems() {
     return registeredToolbarItems.filter(item => Root.Runtime.Runtime.isDescriptorEnabled({ experiment: item.experiment, condition: item.condition }));
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var ToolbarItemLocation;
-(function (ToolbarItemLocation) {
-    ToolbarItemLocation["FILES_NAVIGATION_TOOLBAR"] = "files-navigator-toolbar";
-    ToolbarItemLocation["MAIN_TOOLBAR_RIGHT"] = "main-toolbar-right";
-    ToolbarItemLocation["MAIN_TOOLBAR_LEFT"] = "main-toolbar-left";
-    ToolbarItemLocation["STYLES_SIDEBARPANE_TOOLBAR"] = "styles-sidebarpane-toolbar";
-})(ToolbarItemLocation || (ToolbarItemLocation = {}));
 //# sourceMappingURL=Toolbar.js.map

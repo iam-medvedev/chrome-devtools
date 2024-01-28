@@ -302,7 +302,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
                 this.plugins.push(new pluginType(pluginUISourceCode, this));
             }
         }
-        this.dispatchEventToListeners(Events.ToolbarItemsChanged);
+        this.dispatchEventToListeners("ToolbarItemsChanged" /* Events.ToolbarItemsChanged */);
     }
     disposePlugins() {
         for (const plugin of this.plugins) {
@@ -416,7 +416,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
             return null;
         }
         const issues = anchorElement.classList.contains('cm-messageIcon-issue');
-        const messages = row.filter(msg => (msg.level() === Workspace.UISourceCode.Message.Level.Issue) === issues);
+        const messages = row.filter(msg => (msg.level() === "Issue" /* Workspace.UISourceCode.Message.Level.Issue */) === issues);
         if (!messages.length) {
             return null;
         }
@@ -453,32 +453,32 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
     }
 }
 function getIconDataForLevel(level) {
-    if (level === Workspace.UISourceCode.Message.Level.Error) {
+    if (level === "Error" /* Workspace.UISourceCode.Message.Level.Error */) {
         return { color: 'var(--icon-error)', width: '16px', height: '14px', iconName: 'cross-circle-filled' };
     }
-    if (level === Workspace.UISourceCode.Message.Level.Warning) {
+    if (level === "Warning" /* Workspace.UISourceCode.Message.Level.Warning */) {
         return { color: 'var(--icon-warning)', width: '18px', height: '14px', iconName: 'warning-filled' };
     }
-    if (level === Workspace.UISourceCode.Message.Level.Issue) {
+    if (level === "Issue" /* Workspace.UISourceCode.Message.Level.Issue */) {
         return { color: 'var(--icon-warning)', width: '17px', height: '14px', iconName: 'issue-exclamation-filled' };
     }
     return { color: 'var(--icon-error)', width: '16px', height: '14px', iconName: 'cross-circle-filled' };
 }
 function getBubbleTypePerLevel(level) {
     switch (level) {
-        case Workspace.UISourceCode.Message.Level.Error:
+        case "Error" /* Workspace.UISourceCode.Message.Level.Error */:
             return 'error';
-        case Workspace.UISourceCode.Message.Level.Warning:
+        case "Warning" /* Workspace.UISourceCode.Message.Level.Warning */:
             return 'warning';
-        case Workspace.UISourceCode.Message.Level.Issue:
+        case "Issue" /* Workspace.UISourceCode.Message.Level.Issue */:
             return 'warning';
     }
 }
 function messageLevelComparator(a, b) {
     const messageLevelPriority = {
-        [Workspace.UISourceCode.Message.Level.Issue]: 2,
-        [Workspace.UISourceCode.Message.Level.Warning]: 3,
-        [Workspace.UISourceCode.Message.Level.Error]: 4,
+        ["Issue" /* Workspace.UISourceCode.Message.Level.Issue */]: 2,
+        ["Warning" /* Workspace.UISourceCode.Message.Level.Warning */]: 3,
+        ["Error" /* Workspace.UISourceCode.Message.Level.Error */]: 4,
     };
     return messageLevelPriority[a.level()] - messageLevelPriority[b.level()];
 }
@@ -492,12 +492,6 @@ function getIconDataForMessage(message) {
     }
     return getIconDataForLevel(message.level());
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ToolbarItemsChanged"] = "ToolbarItemsChanged";
-})(Events || (Events = {}));
 const pluginCompartment = new CodeMirror.Compartment();
 // Row message management and display logic. The frame manages a
 // collection of messages, organized by line (row), as a wavy
@@ -598,17 +592,17 @@ class MessageWidget extends CodeMirror.WidgetType {
     toDOM() {
         const wrap = document.createElement('span');
         wrap.classList.add('cm-messageIcon');
-        const nonIssues = this.messages.filter(msg => msg.level() !== Workspace.UISourceCode.Message.Level.Issue);
+        const nonIssues = this.messages.filter(msg => msg.level() !== "Issue" /* Workspace.UISourceCode.Message.Level.Issue */);
         if (nonIssues.length) {
             const maxIssue = nonIssues.sort(messageLevelComparator)[nonIssues.length - 1];
             const errorIcon = wrap.appendChild(new IconButton.Icon.Icon());
             errorIcon.data = getIconDataForLevel(maxIssue.level());
             errorIcon.classList.add('cm-messageIcon-error');
         }
-        const issue = this.messages.find(m => m.level() === Workspace.UISourceCode.Message.Level.Issue);
+        const issue = this.messages.find(m => m.level() === "Issue" /* Workspace.UISourceCode.Message.Level.Issue */);
         if (issue) {
             const issueIcon = wrap.appendChild(new IconButton.Icon.Icon());
-            issueIcon.data = getIconDataForLevel(Workspace.UISourceCode.Message.Level.Issue);
+            issueIcon.data = getIconDataForLevel("Issue" /* Workspace.UISourceCode.Message.Level.Issue */);
             issueIcon.classList.add('cm-messageIcon-issue');
             issueIcon.addEventListener('click', () => (issue.clickHandler() || Math.min)());
         }

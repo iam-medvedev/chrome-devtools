@@ -135,5 +135,5 @@ export class NodeConnection {
         await this.#targetAgent.invoke_detachFromTarget({ sessionId: this.#sessionId });
     }
 }
-SDK.SDKModel.SDKModel.register(NodeChildTargetManager, { capabilities: SDK.Target.Capability.Target, autostart: true });
+SDK.SDKModel.SDKModel.register(NodeChildTargetManager, { capabilities: 32 /* SDK.Target.Capability.Target */, autostart: true });
 //# sourceMappingURL=NodeMain.js.map

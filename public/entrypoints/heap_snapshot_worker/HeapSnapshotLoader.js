@@ -67,10 +67,10 @@ export class HeapSnapshotLoader {
             this.#dataCallback('');
         }
     }
-    buildSnapshot() {
+    buildSnapshot(options) {
         this.#snapshot = this.#snapshot || {};
         this.#progress.updateStatus('Processing snapshot…');
-        const result = new JSHeapSnapshot(this.#snapshot, this.#progress);
+        const result = new JSHeapSnapshot(this.#snapshot, this.#progress, options);
         this.#reset();
         return result;
     }

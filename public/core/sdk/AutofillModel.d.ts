@@ -10,7 +10,7 @@ export declare class AutofillModel extends SDKModel<EventTypes> implements Proto
     disable(): void;
     addressFormFilled(addressFormFilledEvent: Protocol.Autofill.AddressFormFilledEvent): void;
 }
-export declare enum Events {
+export declare const enum Events {
     AddressFormFilled = "AddressFormFilled"
 }
 export interface AddressFormFilledEvent {

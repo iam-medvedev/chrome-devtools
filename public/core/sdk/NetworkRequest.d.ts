@@ -205,12 +205,13 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     addProtocolFrameError(errorMessage: string, time: number): void;
     addProtocolFrame(response: Protocol.Network.WebSocketFrame, time: number, sent: boolean): void;
     addFrame(frame: WebSocketFrame): void;
-    eventSourceMessages(): EventSourceMessage[];
+    eventSourceMessages(): readonly EventSourceMessage[];
     addEventSourceMessage(time: number, eventName: string, eventId: string, data: string): void;
     markAsRedirect(redirectCount: number): void;
     isRedirect(): boolean;
     setRequestIdForTest(requestId: Protocol.Network.RequestId): void;
     charset(): string | null;
+    setCharset(charset: string): void;
     addExtraRequestInfo(extraRequestInfo: ExtraRequestInfo): void;
     hasExtraRequestInfo(): boolean;
     blockedRequestCookies(): BlockedCookieWithReason[];
@@ -219,6 +220,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     siteHasCookieInOtherPartition(): boolean;
     static parseStatusTextFromResponseHeadersText(responseHeadersText: string): string;
     addExtraResponseInfo(extraResponseInfo: ExtraResponseInfo): void;
+    addBlockedRequestCookiesToModel(): void;
     hasExtraResponseInfo(): boolean;
     blockedResponseCookies(): BlockedSetCookieWithReason[];
     nonBlockedResponseCookies(): Cookie[];
@@ -236,6 +238,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     setAssociatedData(key: string, data: object): void;
     deleteAssociatedData(key: string): void;
     hasThirdPartyCookiePhaseoutIssue(): boolean;
+    addDataReceivedEvent({ timestamp, dataLength, encodedDataLength, data }: Protocol.Network.DataReceivedEvent): void;
 }
 export declare enum Events {
     FinishedLoading = "FinishedLoading",
@@ -257,7 +260,7 @@ export type EventTypes = {
     [Events.EventSourceMessageAdded]: EventSourceMessage;
     [Events.TrustTokenResultAdded]: void;
 };
-export declare enum InitiatorType {
+export declare const enum InitiatorType {
     Other = "other",
     Parser = "parser",
     Redirect = "redirect",
@@ -294,11 +297,6 @@ export interface BlockedSetCookieWithReason {
 export interface BlockedCookieWithReason {
     blockedReasons: Protocol.Network.CookieBlockedReason[];
     cookie: Cookie;
-}
-export interface ContentData {
-    error: string | null;
-    content: string | null;
-    encoded: boolean;
 }
 export interface EventSourceMessage {
     time: number;

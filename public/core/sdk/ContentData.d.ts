@@ -1,5 +1,4 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import { type ContentData as LegacyContentData } from './NetworkRequest.js';
 /**
  * This class is a small wrapper around either raw binary or text data.
  * As the binary data can actually contain textual data, we also store the
@@ -34,15 +33,12 @@ export declare class ContentData {
      */
     get text(): string;
     get isTextContent(): boolean;
+    get isEmpty(): boolean;
     asDataUrl(): string | null;
     /**
      * @deprecated Used during migration from `DeferredContent` to `ContentData`.
      */
     asDeferedContent(): TextUtils.ContentProvider.DeferredContent;
-    /**
-     * @deprecated Used during migration from `NetworkRequest.ContentData` to `ContentData`.
-     */
-    asLegacyContentData(): LegacyContentData;
     static isError(contentDataOrError: ContentDataOrError): contentDataOrError is {
         error: string;
     };
@@ -50,10 +46,6 @@ export declare class ContentData {
      * @deprecated Used during migration from `DeferredContent` to `ContentData`.
      */
     static asDeferredContent(contentDataOrError: ContentDataOrError): TextUtils.ContentProvider.DeferredContent;
-    /**
-     * @deprecated Used during migration from `DeferredContent` to `ContentData`.
-     */
-    static asLegacyContentData(contentDataOrError: ContentDataOrError): LegacyContentData;
 }
 export type ContentDataOrError = ContentData | {
     error: string;

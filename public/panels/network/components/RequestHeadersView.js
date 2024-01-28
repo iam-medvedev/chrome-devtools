@@ -191,7 +191,8 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             headerCount: this.#request.sortedResponseHeaders.length,
             checked: this.#request.responseHeadersText ? this.#showResponseHeadersText : undefined,
             additionalContent: this.#renderHeaderOverridesLink(),
-            forceOpen: this.#toReveal?.section === NetworkForward.UIRequestLocation.UIHeaderSection.Response,
+            forceOpen: this.#toReveal?.section === "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */,
+            loggingContext: 'details-response-headers',
         }}
         aria-label=${i18nString(UIStrings.responseHeaders)}
       >
@@ -284,7 +285,8 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             title: i18nString(UIStrings.requestHeaders),
             headerCount: this.#request.requestHeaders().length,
             checked: requestHeadersText ? this.#showRequestHeadersText : undefined,
-            forceOpen: this.#toReveal?.section === NetworkForward.UIRequestLocation.UIHeaderSection.Request,
+            forceOpen: this.#toReveal?.section === "Request" /* NetworkForward.UIRequestLocation.UIHeaderSection.Request */,
+            loggingContext: 'details-request-headers',
         }}
         aria-label=${i18nString(UIStrings.requestHeaders)}
       >
@@ -387,7 +389,8 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         .data=${{
             name: 'general',
             title: i18nString(UIStrings.general),
-            forceOpen: this.#toReveal?.section === NetworkForward.UIRequestLocation.UIHeaderSection.General,
+            forceOpen: this.#toReveal?.section === "General" /* NetworkForward.UIRequestLocation.UIHeaderSection.General */,
+            loggingContext: 'details-general',
         }}
         aria-label=${i18nString(UIStrings.general)}
       >
@@ -401,7 +404,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         // clang-format on
     }
     #renderGeneralRow(name, value, classNames) {
-        const isHighlighted = this.#toReveal?.section === NetworkForward.UIRequestLocation.UIHeaderSection.General &&
+        const isHighlighted = this.#toReveal?.section === "General" /* NetworkForward.UIRequestLocation.UIHeaderSection.General */ &&
             name.toLowerCase() === this.#toReveal?.header?.toLowerCase();
         return html `
       <div class="row ${isHighlighted ? 'header-highlight' : ''}">
@@ -429,6 +432,7 @@ export class Category extends HTMLElement {
     #checked = undefined;
     #additionalContent = undefined;
     #forceOpen = undefined;
+    #loggingContext = '';
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [requestHeadersViewStyles, Input.checkboxStyles];
     }
@@ -440,6 +444,7 @@ export class Category extends HTMLElement {
         this.#checked = data.checked;
         this.#additionalContent = data.additionalContent;
         this.#forceOpen = data.forceOpen;
+        this.#loggingContext = data.loggingContext;
         this.#render();
     }
     #onCheckboxToggle() {
@@ -451,7 +456,11 @@ export class Category extends HTMLElement {
         // clang-format off
         render(html `
       <details ?open=${isOpen} @toggle=${this.#onToggle}>
-        <summary class="header" @keydown=${this.#onSummaryKeyDown}>
+        <summary
+          class="header"
+          @keydown=${this.#onSummaryKeyDown}
+          jslog=${VisualLogging.action().track({ click: true }).context(this.#loggingContext)}
+        >
           <div class="header-grid-container">
             <div>
               ${this.#title}${this.#headerCount !== undefined ?

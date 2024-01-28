@@ -19,7 +19,7 @@ export declare class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrap
     hide(commitEdit?: boolean): void;
     private onKeyDown;
 }
-export declare enum Events {
+export declare const enum Events {
     WillShowPopover = "WillShowPopover"
 }
 export type EventTypes = {

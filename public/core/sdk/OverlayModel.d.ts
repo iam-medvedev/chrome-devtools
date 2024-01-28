@@ -108,7 +108,7 @@ export declare class WindowControls {
     toggleEmulatedOverlay(showOverlay: boolean): Promise<void>;
     transformStyleSheetforTesting(x: number, y: number, width: number, height: number, originalStyleSheet: string | undefined): string | undefined;
 }
-export declare enum Events {
+export declare const enum Events {
     InspectModeWillBeToggled = "InspectModeWillBeToggled",
     ExitedInspectMode = "InspectModeExited",
     HighlightNodeRequested = "HighlightNodeRequested",

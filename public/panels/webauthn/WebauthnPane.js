@@ -180,7 +180,7 @@ class WebauthnDataGrid extends Common.ObjectWrapper.eventMixin(WebauthnDataGridB
 class EmptyDataGridNode extends DataGrid.DataGrid.DataGridNode {
     createCells(element) {
         element.removeChildren();
-        const td = this.createTDWithClass(DataGrid.DataGrid.Align.Center);
+        const td = this.createTDWithClass("center" /* DataGrid.DataGrid.Align.Center */);
         if (this.dataGrid) {
             td.colSpan = this.dataGrid.visibleColumnsArray.length;
         }
@@ -295,7 +295,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
             {
                 id: 'isResidentCredential',
                 title: i18nString(UIStrings.isResident),
-                dataType: DataGrid.DataGrid.DataType.Boolean,
+                dataType: "Boolean" /* DataGrid.DataGrid.DataType.Boolean */,
                 weight: 10,
             },
             {
@@ -564,8 +564,8 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const userFriendlyName = authenticatorId.slice(-5); // User friendly name defaults to last 5 chars of UUID.
         nameField.value = i18nString(UIStrings.authenticatorS, { PH1: userFriendlyName });
         this.#updateActiveLabelTitle(activeLabel, nameField.value);
-        editName.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this.#handleEditNameButton(titleElement, nameField, editName, saveName));
-        saveName.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this.#handleSaveNameButton(titleElement, nameField, editName, saveName, activeLabel));
+        editName.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.#handleEditNameButton(titleElement, nameField, editName, saveName));
+        saveName.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.#handleSaveNameButton(titleElement, nameField, editName, saveName, activeLabel));
         nameField.addEventListener('focusout', () => this.#handleSaveNameButton(titleElement, nameField, editName, saveName, activeLabel));
         nameField.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {

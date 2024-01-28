@@ -283,7 +283,7 @@ export interface SyncInformation {
  * front_end/devtools_compatibility.js
  * @readonly
  */
-export declare enum EnumeratedHistogram {
+export declare const enum EnumeratedHistogram {
     ActionTaken = "DevTools.ActionTaken",
     BreakpointWithConditionAdded = "DevTools.BreakpointWithConditionAdded",
     BreakpointEditDialogRevealedFrom = "DevTools.BreakpointEditDialogRevealedFrom",
@@ -304,8 +304,6 @@ export declare enum EnumeratedHistogram {
     ExperimentDisabled = "DevTools.ExperimentDisabled",
     DeveloperResourceLoaded = "DevTools.DeveloperResourceLoaded",
     DeveloperResourceScheme = "DevTools.DeveloperResourceScheme",
-    LinearMemoryInspectorRevealedFrom = "DevTools.LinearMemoryInspector.RevealedFrom",
-    LinearMemoryInspectorTarget = "DevTools.LinearMemoryInspector.Target",
     Language = "DevTools.Language",
     SyncSetting = "DevTools.SyncSetting",
     RecordingAssertion = "DevTools.RecordingAssertion",

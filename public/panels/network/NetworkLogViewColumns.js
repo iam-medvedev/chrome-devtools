@@ -181,8 +181,8 @@ export class NetworkLogViewColumns {
         this.waterfallScrollerWidthIsStale = true;
         this.popupLinkifier = new Components.Linkifier.Linkifier();
         this.calculatorsMap = new Map();
-        this.calculatorsMap.set(_calculatorTypes.Time, timeCalculator);
-        this.calculatorsMap.set(_calculatorTypes.Duration, durationCalculator);
+        this.calculatorsMap.set("Time" /* CalculatorTypes.Time */, timeCalculator);
+        this.calculatorsMap.set("Duration" /* CalculatorTypes.Duration */, durationCalculator);
         this.lastWheelTime = 0;
         this.setupDataGrid();
         this.setupWaterfall();
@@ -250,7 +250,7 @@ export class NetworkLogViewColumns {
         }, true);
         this.dataGridScroller = this.dataGridInternal.scrollContainer;
         this.updateColumns();
-        this.dataGridInternal.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.sortHandler, this);
+        this.dataGridInternal.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortHandler, this);
         this.dataGridInternal.setHeaderContextMenuCallback(this.innerHeaderContextMenu.bind(this));
         this.activeWaterfallSortId = WaterfallSortIds.StartTime;
         this.dataGridInternal.markColumnAsSortedBy(_initialSortColumn, DataGrid.DataGrid.Order.Ascending);
@@ -274,11 +274,11 @@ export class NetworkLogViewColumns {
             this.waterfallColumn.contentElement.createChild('div', 'network-waterfall-v-scroll');
         this.waterfallScrollerContent =
             this.waterfallScroller.createChild('div', 'network-waterfall-v-scroll-content');
-        this.dataGridInternal.addEventListener(DataGrid.DataGrid.Events.PaddingChanged, () => {
+        this.dataGridInternal.addEventListener("PaddingChanged" /* DataGrid.DataGrid.Events.PaddingChanged */, () => {
             this.waterfallScrollerWidthIsStale = true;
             this.syncScrollers();
         });
-        this.dataGridInternal.addEventListener(DataGrid.ViewportDataGrid.Events.ViewportCalculated, this.redrawWaterfallColumn.bind(this));
+        this.dataGridInternal.addEventListener("ViewportCalculated" /* DataGrid.ViewportDataGrid.Events.ViewportCalculated */, this.redrawWaterfallColumn.bind(this));
         this.createWaterfallHeader();
         this.waterfallColumn.contentElement.classList.add('network-waterfall-view');
         this.waterfallColumn.setMinimumSize(100, 0);
@@ -578,10 +578,10 @@ export class NetworkLogViewColumns {
         waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.totalDuration), setWaterfallMode.bind(this, waterfallSortIds.Duration), this.activeWaterfallSortId === waterfallSortIds.Duration);
         waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.latency), setWaterfallMode.bind(this, waterfallSortIds.Latency), this.activeWaterfallSortId === waterfallSortIds.Latency);
         function setWaterfallMode(sortId) {
-            let calculator = this.calculatorsMap.get(_calculatorTypes.Time);
+            let calculator = this.calculatorsMap.get("Time" /* CalculatorTypes.Time */);
             const waterfallSortIds = WaterfallSortIds;
             if (sortId === waterfallSortIds.Duration || sortId === waterfallSortIds.Latency) {
-                calculator = this.calculatorsMap.get(_calculatorTypes.Duration);
+                calculator = this.calculatorsMap.get("Duration" /* CalculatorTypes.Duration */);
             }
             this.networkLogView.setCalculator(calculator);
             this.activeWaterfallSortId = sortId;
@@ -733,13 +733,6 @@ export class NetworkLogViewColumns {
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const _initialSortColumn = 'waterfall';
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum, @typescript-eslint/naming-convention
-export var _calculatorTypes;
-(function (_calculatorTypes) {
-    _calculatorTypes["Duration"] = "Duration";
-    _calculatorTypes["Time"] = "Time";
-})(_calculatorTypes || (_calculatorTypes = {}));
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const _defaultColumnConfig = {
@@ -812,7 +805,7 @@ const _temporaryDefaultColumns = [
         id: 'remoteaddress',
         title: i18nLazyString(UIStrings.remoteAddress),
         weight: 10,
-        align: DataGrid.DataGrid.Align.Right,
+        align: "right" /* DataGrid.DataGrid.Align.Right */,
         sortingFunction: NetworkRequestNode.RemoteAddressComparator,
     },
     {
@@ -845,13 +838,13 @@ const _temporaryDefaultColumns = [
     {
         id: 'cookies',
         title: i18nLazyString(UIStrings.cookies),
-        align: DataGrid.DataGrid.Align.Right,
+        align: "right" /* DataGrid.DataGrid.Align.Right */,
         sortingFunction: NetworkRequestNode.RequestCookiesCountComparator,
     },
     {
         id: 'setcookies',
         title: i18nLazyString(UIStrings.setCookies),
-        align: DataGrid.DataGrid.Align.Right,
+        align: "right" /* DataGrid.DataGrid.Align.Right */,
         sortingFunction: NetworkRequestNode.ResponseCookiesCountComparator,
     },
     {
@@ -859,7 +852,7 @@ const _temporaryDefaultColumns = [
         title: i18nLazyString(UIStrings.size),
         visible: true,
         subtitle: i18nLazyString(UIStrings.content),
-        align: DataGrid.DataGrid.Align.Right,
+        align: "right" /* DataGrid.DataGrid.Align.Right */,
         sortingFunction: NetworkRequestNode.SizeComparator,
     },
     {
@@ -867,7 +860,7 @@ const _temporaryDefaultColumns = [
         title: i18nLazyString(UIStrings.time),
         visible: true,
         subtitle: i18nLazyString(UIStrings.latency),
-        align: DataGrid.DataGrid.Align.Right,
+        align: "right" /* DataGrid.DataGrid.Align.Right */,
         sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, 'duration'),
     },
     { id: 'priority', title: i18nLazyString(UIStrings.priority), sortingFunction: NetworkRequestNode.PriorityComparator },
@@ -898,7 +891,7 @@ const _temporaryDefaultColumns = [
         id: 'content-length',
         isResponseHeader: true,
         title: i18n.i18n.lockedLazyString('Content-Length'),
-        align: DataGrid.DataGrid.Align.Right,
+        align: "right" /* DataGrid.DataGrid.Align.Right */,
         sortingFunction: NetworkRequestNode.ResponseHeaderNumberComparator.bind(null, 'content-length'),
     },
     {
@@ -951,9 +944,7 @@ const _defaultColumns = _temporaryDefaultColumns;
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const _filmStripDividerColor = '#fccc49';
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var WaterfallSortIds;
+var WaterfallSortIds;
 (function (WaterfallSortIds) {
     WaterfallSortIds["StartTime"] = "startTime";
     WaterfallSortIds["ResponseTime"] = "responseReceivedTime";

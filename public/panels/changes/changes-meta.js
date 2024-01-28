@@ -49,7 +49,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'changes.revert',
-    category: UI.ActionRegistration.ActionCategory.CHANGES,
+    category: "CHANGES" /* UI.ActionRegistration.ActionCategory.CHANGES */,
     title: i18nLazyString(UIStrings.revertAllChangesToCurrentFile),
     iconClass: "undo" /* UI.ActionRegistration.IconClass.UNDO */,
     async loadActionDelegate() {
@@ -62,7 +62,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'changes.copy',
-    category: UI.ActionRegistration.ActionCategory.CHANGES,
+    category: "CHANGES" /* UI.ActionRegistration.ActionCategory.CHANGES */,
     title: i18nLazyString(UIStrings.copyAllChangesFromCurrentFile),
     iconClass: "copy" /* UI.ActionRegistration.IconClass.COPY */,
     async loadActionDelegate() {

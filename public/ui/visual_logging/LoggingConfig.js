@@ -8,7 +8,6 @@ export function needsLogging(element) {
 export function getLoggingConfig(element) {
     return parseJsLog(element.getAttribute(LOGGING_ATTRIBUTE) || '');
 }
-// eslint-disable-next-line rulesdir/const_enum
 var VisualElements;
 (function (VisualElements) {
     VisualElements[VisualElements["TreeItem"] = 1] = "TreeItem";

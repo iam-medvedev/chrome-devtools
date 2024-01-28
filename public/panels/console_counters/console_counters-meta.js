@@ -15,7 +15,7 @@ UI.Toolbar.registerToolbarItem({
         return ConsoleCounters.WarningErrorCounter.WarningErrorCounter.instance();
     },
     order: 1,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT,
+    location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,

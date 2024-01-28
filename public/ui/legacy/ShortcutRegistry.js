@@ -7,7 +7,7 @@ import * as Platform from '../../core/platform/platform.js';
 import { getRegisteredActionExtensions } from './ActionRegistration.js';
 import { Context } from './Context.js';
 import { Dialog } from './Dialog.js';
-import { KeyboardShortcut, Modifiers, Type } from './KeyboardShortcut.js';
+import { KeyboardShortcut, Modifiers } from './KeyboardShortcut.js';
 import { isEditing } from './UIUtils.js';
 let shortcutRegistryInstance;
 export class ShortcutRegistry {
@@ -253,8 +253,8 @@ export class ShortcutRegistry {
         this.addShortcutToSetting(shortcut);
     }
     removeShortcut(shortcut) {
-        if (shortcut.type === Type.DefaultShortcut || shortcut.type === Type.KeybindSetShortcut) {
-            this.addShortcutToSetting(shortcut.changeType(Type.DisabledDefault));
+        if (shortcut.type === "DefaultShortcut" /* Type.DefaultShortcut */ || shortcut.type === "KeybindSetShortcut" /* Type.KeybindSetShortcut */) {
+            this.addShortcutToSetting(shortcut.changeType("DisabledDefault" /* Type.DisabledDefault */));
         }
         else {
             this.removeShortcutFromSetting(shortcut);
@@ -290,7 +290,7 @@ export class ShortcutRegistry {
         const userShortcuts = this.userShortcutsSetting.get();
         for (const userShortcut of userShortcuts) {
             const shortcut = KeyboardShortcut.createShortcutFromSettingObject(userShortcut);
-            if (shortcut.type === Type.DisabledDefault) {
+            if (shortcut.type === "DisabledDefault" /* Type.DisabledDefault */) {
                 this.disabledDefaultShortcutsForAction.set(shortcut.action, shortcut);
             }
             else {
@@ -320,13 +320,13 @@ export class ShortcutRegistry {
                     }
                     if (!keybindSets) {
                         this.devToolsDefaultShortcutActions.add(actionId);
-                        this.registerShortcut(new KeyboardShortcut(shortcutDescriptors, actionId, Type.DefaultShortcut));
+                        this.registerShortcut(new KeyboardShortcut(shortcutDescriptors, actionId, "DefaultShortcut" /* Type.DefaultShortcut */));
                     }
                     else {
                         if (keybindSets.includes("devToolsDefault" /* KeybindSet.DEVTOOLS_DEFAULT */)) {
                             this.devToolsDefaultShortcutActions.add(actionId);
                         }
-                        this.registerShortcut(new KeyboardShortcut(shortcutDescriptors, actionId, Type.KeybindSetShortcut, new Set(keybindSets)));
+                        this.registerShortcut(new KeyboardShortcut(shortcutDescriptors, actionId, "KeybindSetShortcut" /* Type.KeybindSetShortcut */, new Set(keybindSets)));
                     }
                 }
             }

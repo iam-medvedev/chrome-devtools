@@ -33,7 +33,7 @@ export declare class ChildTargetManager extends SDKModel<EventTypes> implements 
     private static lastAnonymousTargetId;
     private static attachCallback?;
 }
-export declare enum Events {
+export declare const enum Events {
     TargetCreated = "TargetCreated",
     TargetDestroyed = "TargetDestroyed",
     TargetInfoChanged = "TargetInfoChanged"

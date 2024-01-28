@@ -74,7 +74,7 @@ export class DebuggerWorkspaceBinding {
         }
         const pluginManager = this.pluginManager;
         let ranges = [];
-        if (mode === SDK.DebuggerModel.StepMode.StepOut) {
+        if (mode === "StepOut" /* SDK.DebuggerModel.StepMode.StepOut */) {
             // Step out of inline function.
             return await pluginManager.getInlinedFunctionRanges(rawLocation);
         }
@@ -84,7 +84,7 @@ export class DebuggerWorkspaceBinding {
                 [];
             // TODO(bmeurer): Remove the {rawLocation} from the {ranges}?
             ranges = ranges.filter(range => contained(rawLocation, range));
-            if (mode === SDK.DebuggerModel.StepMode.StepOver) {
+            if (mode === "StepOver" /* SDK.DebuggerModel.StepMode.StepOver */) {
                 // Step over an inlined function.
                 ranges = ranges.concat(await pluginManager.getInlinedCalleesRanges(rawLocation));
             }

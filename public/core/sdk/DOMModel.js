@@ -11,7 +11,6 @@ import { OverlayModel } from './OverlayModel.js';
 import { ResourceTreeModel } from './ResourceTreeModel.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability } from './Target.js';
 import { TargetManager } from './TargetManager.js';
 export class DOMNode {
     #domModelInternal;
@@ -822,8 +821,6 @@ export class DOMNode {
     }
 }
 (function (DOMNode) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
     let ShadowRootTypes;
     (function (ShadowRootTypes) {
         ShadowRootTypes["UserAgent"] = "user-agent";
@@ -1333,8 +1330,6 @@ export class DOMModel extends SDKModel {
         this.idToDOMNode.set(node.id, node);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["AttrModified"] = "AttrModified";
@@ -1473,5 +1468,5 @@ export class DOMModelUndoStack {
         }
     }
 }
-SDKModel.register(DOMModel, { capabilities: Capability.DOM, autostart: true });
+SDKModel.register(DOMModel, { capabilities: 2 /* Capability.DOM */, autostart: true });
 //# sourceMappingURL=DOMModel.js.map

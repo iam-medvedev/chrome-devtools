@@ -8,9 +8,9 @@ import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import { ContentData as ContentDataClass } from './ContentData.js';
 import { Cookie } from './Cookie.js';
+import { parseContentType } from './MimeType.js';
 import { Events as NetworkRequestEvents, NetworkRequest, } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability } from './Target.js';
 import { TargetManager } from './TargetManager.js';
 const UIStrings = {
     /**
@@ -151,6 +151,29 @@ export class NetworkManager extends SDKModel {
         }
         return new ContentDataClass(response.body, response.base64Encoded, request.mimeType, request.charset() ?? undefined);
     }
+    /**
+     * Returns the already received bytes for an in-flight request. After calling this method
+     * "dataReceived" events will contain additional data.
+     */
+    static async streamResponseBody(request) {
+        if (request.finished) {
+            return { error: 'Streaming the response body is only available for in-flight requests.' };
+        }
+        const manager = NetworkManager.forRequest(request);
+        if (!manager) {
+            return { error: 'No network manager for request' };
+        }
+        const requestId = request.backendRequestId();
+        if (!requestId) {
+            return { error: 'No backend request id for request' };
+        }
+        const response = await manager.#networkAgent.invoke_streamResourceContent({ requestId });
+        const error = response.getError();
+        if (error) {
+            return { error };
+        }
+        return new ContentDataClass(response.bufferedData, /* isBase64=*/ true, request.mimeType, request.charset() ?? undefined);
+    }
     static async requestPostData(request) {
         const manager = NetworkManager.forRequest(request);
         if (!manager) {
@@ -230,8 +253,6 @@ export class NetworkManager extends SDKModel {
         this.dispatcher.clearRequests();
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["RequestStarted"] = "RequestStarted";
@@ -316,7 +337,7 @@ export class NetworkDispatcher {
          * once it is created in `requestWillBeSent`.
          */
         this.#requestIdToTrustTokenEvent = new Map();
-        MultitargetNetworkManager.instance().addEventListener(MultitargetNetworkManager.Events.RequestIntercepted, this.#markAsIntercepted.bind(this));
+        MultitargetNetworkManager.instance().addEventListener("RequestIntercepted" /* MultitargetNetworkManager.Events.RequestIntercepted */, this.#markAsIntercepted.bind(this));
     }
     #markAsIntercepted(event) {
         const request = this.requestForId(event.data);
@@ -348,6 +369,7 @@ export class NetworkDispatcher {
             networkRequest.setUrl(response.url);
         }
         networkRequest.mimeType = response.mimeType;
+        networkRequest.setCharset(response.charset);
         if (!networkRequest.statusCode || networkRequest.wasIntercepted()) {
             networkRequest.statusCode = response.status;
         }
@@ -522,19 +544,15 @@ export class NetworkDispatcher {
         this.updateNetworkRequest(networkRequest);
         this.#manager.dispatchEventToListeners(Events.ResponseReceived, { request: networkRequest, response });
     }
-    dataReceived({ requestId, timestamp, dataLength, encodedDataLength }) {
-        let networkRequest = this.#requestsById.get(requestId);
+    dataReceived(event) {
+        let networkRequest = this.#requestsById.get(event.requestId);
         if (!networkRequest) {
-            networkRequest = this.maybeAdoptMainResourceRequest(requestId);
+            networkRequest = this.maybeAdoptMainResourceRequest(event.requestId);
         }
         if (!networkRequest) {
             return;
         }
-        networkRequest.resourceSize += dataLength;
-        if (encodedDataLength !== -1) {
-            networkRequest.increaseTransferSize(encodedDataLength);
-        }
-        networkRequest.endTime = timestamp;
+        networkRequest.addDataReceivedEvent(event);
         this.updateNetworkRequest(networkRequest);
     }
     loadingFinished({ requestId, timestamp: finishTime, encodedDataLength }) {
@@ -772,6 +790,7 @@ export class NetworkDispatcher {
                 networkRequest.setTransferSize(encodedDataLength);
             }
         }
+        networkRequest.addBlockedRequestCookiesToModel();
         this.#manager.dispatchEventToListeners(Events.RequestFinished, networkRequest);
         MultitargetNetworkManager.instance().inflightMainResourceRequests.delete(networkRequest.requestId());
         if (Common.Settings.Settings.instance().moduleSetting('monitoringXHREnabled').get() &&
@@ -1033,7 +1052,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         for (const agent of this.#networkAgents) {
             this.updateNetworkConditions(agent);
         }
-        this.dispatchEventToListeners(MultitargetNetworkManager.Events.ConditionsChanged);
+        this.dispatchEventToListeners("ConditionsChanged" /* MultitargetNetworkManager.Events.ConditionsChanged */);
     }
     networkConditions() {
         return this.#networkConditionsInternal;
@@ -1079,7 +1098,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
             this.#userAgentMetadataOverride = null;
         }
         if (uaChanged) {
-            this.dispatchEventToListeners(MultitargetNetworkManager.Events.UserAgentChanged);
+            this.dispatchEventToListeners("UserAgentChanged" /* MultitargetNetworkManager.Events.UserAgentChanged */);
         }
     }
     userAgentOverride() {
@@ -1093,12 +1112,12 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     setCustomAcceptedEncodingsOverride(acceptedEncodings) {
         this.#customAcceptedEncodings = acceptedEncodings;
         this.updateAcceptedEncodingsOverride();
-        this.dispatchEventToListeners(MultitargetNetworkManager.Events.AcceptedEncodingsChanged);
+        this.dispatchEventToListeners("AcceptedEncodingsChanged" /* MultitargetNetworkManager.Events.AcceptedEncodingsChanged */);
     }
     clearCustomAcceptedEncodingsOverride() {
         this.#customAcceptedEncodings = null;
         this.updateAcceptedEncodingsOverride();
-        this.dispatchEventToListeners(MultitargetNetworkManager.Events.AcceptedEncodingsChanged);
+        this.dispatchEventToListeners("AcceptedEncodingsChanged" /* MultitargetNetworkManager.Events.AcceptedEncodingsChanged */);
     }
     isAcceptedEncodingOverrideSet() {
         return this.#customAcceptedEncodings !== null;
@@ -1127,7 +1146,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     setBlockedPatterns(patterns) {
         this.#blockedPatternsSetting.set(patterns);
         this.updateBlockedPatterns();
-        this.dispatchEventToListeners(MultitargetNetworkManager.Events.BlockedPatternsChanged);
+        this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BlockedPatternsChanged */);
     }
     setBlockingEnabled(enabled) {
         if (this.#blockingEnabledSetting.get() === enabled) {
@@ -1135,7 +1154,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         }
         this.#blockingEnabledSetting.set(enabled);
         this.updateBlockedPatterns();
-        this.dispatchEventToListeners(MultitargetNetworkManager.Events.BlockedPatternsChanged);
+        this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BlockedPatternsChanged */);
     }
     updateBlockedPatterns() {
         const urls = [];
@@ -1181,14 +1200,14 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         for (const agent of this.#fetchAgents) {
             promises.push(agent.invoke_enable({ patterns: this.#urlsForRequestInterceptor.valuesArray() }));
         }
-        this.dispatchEventToListeners(MultitargetNetworkManager.Events.InterceptorsChanged);
+        this.dispatchEventToListeners("InterceptorsChanged" /* MultitargetNetworkManager.Events.InterceptorsChanged */);
         await Promise.all(promises);
     }
     async requestIntercepted(interceptedRequest) {
         for (const requestInterceptor of this.#urlsForRequestInterceptor.keysArray()) {
             await requestInterceptor(interceptedRequest);
             if (interceptedRequest.hasResponded() && interceptedRequest.networkRequest) {
-                this.dispatchEventToListeners(MultitargetNetworkManager.Events.RequestIntercepted, interceptedRequest.networkRequest.requestId());
+                this.dispatchEventToListeners("RequestIntercepted" /* MultitargetNetworkManager.Events.RequestIntercepted */, interceptedRequest.networkRequest.requestId());
                 return;
             }
         }
@@ -1232,20 +1251,6 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         }, allowRemoteFilePaths));
     }
 }
-(function (MultitargetNetworkManager) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
-    let Events;
-    (function (Events) {
-        Events["BlockedPatternsChanged"] = "BlockedPatternsChanged";
-        Events["ConditionsChanged"] = "ConditionsChanged";
-        Events["UserAgentChanged"] = "UserAgentChanged";
-        Events["InterceptorsChanged"] = "InterceptorsChanged";
-        Events["AcceptedEncodingsChanged"] = "AcceptedEncodingsChanged";
-        Events["RequestIntercepted"] = "RequestIntercepted";
-        Events["RequestFulfilled"] = "RequestFulfilled";
-    })(Events = MultitargetNetworkManager.Events || (MultitargetNetworkManager.Events = {}));
-})(MultitargetNetworkManager || (MultitargetNetworkManager = {}));
 export class InterceptedRequest {
     #fetchAgent;
     #hasRespondedInternal;
@@ -1338,7 +1343,7 @@ export class InterceptedRequest {
             this.networkRequest.hasOverriddenContent = isBodyOverridden;
         }
         void this.#fetchAgent.invoke_fulfillRequest({ requestId: this.requestId, responseCode, body, responseHeaders });
-        MultitargetNetworkManager.instance().dispatchEventToListeners(MultitargetNetworkManager.Events.RequestFulfilled, this.request.url);
+        MultitargetNetworkManager.instance().dispatchEventToListeners("RequestFulfilled" /* MultitargetNetworkManager.Events.RequestFulfilled */, this.request.url);
         async function blobToBase64(blob) {
             const reader = new FileReader();
             const fileContentsLoadedPromise = new Promise(resolve => {
@@ -1370,11 +1375,30 @@ export class InterceptedRequest {
     }
     async responseBody() {
         const response = await this.#fetchAgent.invoke_getResponseBody({ requestId: this.requestId });
-        const error = response.getError() || null;
-        return { error: error, content: error ? null : response.body, encoded: response.base64Encoded };
+        const error = response.getError();
+        if (error) {
+            return { error };
+        }
+        const { mimeType, charset } = this.getMimeTypeAndCharset();
+        return new ContentDataClass(response.body, response.base64Encoded, mimeType ?? 'application/octet-stream', charset ?? undefined);
     }
     isRedirect() {
         return this.responseStatusCode !== undefined && this.responseStatusCode >= 300 && this.responseStatusCode < 400;
+    }
+    /**
+     * Tries to determine the MIME type and charset for this intercepted request.
+     * Looks at the interecepted response headers first (for Content-Type header), then
+     * checks the `NetworkRequest` if we have one.
+     */
+    getMimeTypeAndCharset() {
+        for (const header of this.responseHeaders ?? []) {
+            if (header.name.toLowerCase() === 'content-type') {
+                return parseContentType(header.value);
+            }
+        }
+        const mimeType = this.networkRequest?.mimeType ?? null;
+        const charset = this.networkRequest?.charset() ?? null;
+        return { mimeType, charset };
     }
 }
 /**
@@ -1455,7 +1479,7 @@ class ExtraInfoBuilder {
         finalRequest?.setWebBundleInnerRequestInfo(this.#webBundleInnerRequestInfo);
     }
 }
-SDKModel.register(NetworkManager, { capabilities: Capability.Network, autostart: true });
+SDKModel.register(NetworkManager, { capabilities: 16 /* Capability.Network */, autostart: true });
 export class ConditionsSerializer {
     stringify(value) {
         const conditions = value;

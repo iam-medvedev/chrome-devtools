@@ -574,6 +574,8 @@ export class HeapSnapshot {
         // Actually it is array that maps node ordinal number to dominator node ordinal number.
         this.#progress.updateStatus('Building dominator tree…');
         this.dominatorsTree = this.buildDominatorTree(result.postOrderIndex2NodeOrdinal, result.nodeOrdinal2PostOrderIndex);
+        this.#progress.updateStatus('Calculating shallow sizes…');
+        this.calculateShallowSizes();
         this.#progress.updateStatus('Calculating retained sizes…');
         this.calculateRetainedSizes(result.postOrderIndex2NodeOrdinal);
         this.#progress.updateStatus('Building dominated nodes…');
@@ -828,6 +830,8 @@ export class HeapSnapshot {
     }
     isUserRoot(_node) {
         return true;
+    }
+    calculateShallowSizes() {
     }
     calculateDistances(filter) {
         const nodeCount = this.nodeCount;
@@ -1928,7 +1932,8 @@ export class JSHeapSnapshot extends HeapSnapshot {
     lazyStringCache;
     flags;
     #statistics;
-    constructor(profile, progress) {
+    #options;
+    constructor(profile, progress, options) {
         super(profile, progress);
         this.nodeFlags = {
             // bit flags
@@ -1937,6 +1942,7 @@ export class JSHeapSnapshot extends HeapSnapshot {
             pageObject: 4, // The idea is to track separately the objects owned by the page and the objects owned by debugger.
         };
         this.lazyStringCache = {};
+        this.#options = options ?? { heapSnapshotTreatBackingStoreAsContainingObject: false };
         this.initialize();
     }
     createNode(nodeIndex) {
@@ -1963,6 +1969,97 @@ export class JSHeapSnapshot extends HeapSnapshot {
         this.markDetachedDOMTreeNodes();
         this.markQueriableHeapObjects();
         this.markPageOwnedNodes();
+    }
+    // Updates the shallow sizes for "owned" objects of types kArray or kHidden to
+    // zero, and add their sizes to the "owner" object instead.
+    calculateShallowSizes() {
+        if (!this.#options.heapSnapshotTreatBackingStoreAsContainingObject) {
+            return;
+        }
+        const { nodeCount, nodes, nodeFieldCount, nodeSelfSizeOffset } = this;
+        const kUnvisited = 0xffffffff;
+        const kHasMultipleOwners = 0xfffffffe;
+        if (nodeCount >= kHasMultipleOwners) {
+            throw new Error('Too many nodes for calculateShallowSizes');
+        }
+        // For each node in order, `owners` will contain the index of the owning
+        // node or one of the two values kUnvisited or kHasMultipleOwners. The
+        // indexes in this array are NOT already multiplied by nodeFieldCount.
+        const owners = new Uint32Array(nodeCount);
+        // The worklist contains the indexes of nodes which should be visited during
+        // the second loop below. The order of visiting doesn't matter. The indexes
+        // in this array are NOT already multiplied by nodeFieldCount.
+        const worklist = [];
+        const node = this.createNode(0);
+        for (let i = 0; i < nodeCount; ++i) {
+            if (node.isHidden() || node.isArray()) {
+                owners[i] = kUnvisited;
+            }
+            else {
+                // The node owns itself.
+                owners[i] = i;
+                worklist.push(i);
+            }
+            node.nodeIndex = node.nextNodeIndex();
+        }
+        while (worklist.length !== 0) {
+            const id = worklist.pop();
+            const owner = owners[id];
+            node.nodeIndex = id * nodeFieldCount;
+            for (let iter = node.edges(); iter.hasNext(); iter.next()) {
+                const edge = iter.edge;
+                if (edge.isWeak()) {
+                    continue;
+                }
+                const targetId = edge.nodeIndex() / nodeFieldCount;
+                switch (owners[targetId]) {
+                    case kUnvisited:
+                        owners[targetId] = owner;
+                        worklist.push(targetId);
+                        break;
+                    case targetId:
+                    case owner:
+                    case kHasMultipleOwners:
+                        // There is no change necessary if the target is already marked as:
+                        // * owned by itself,
+                        // * owned by the owner of the current source node, or
+                        // * owned by multiple nodes.
+                        break;
+                    default:
+                        owners[targetId] = kHasMultipleOwners;
+                        // It is possible that this node is already in the worklist
+                        // somewhere, but visiting it an extra time is not harmful. The
+                        // iteration is guaranteed to complete because each node can only be
+                        // added twice to the worklist: once when changing from kUnvisited
+                        // to a specific owner, and a second time when changing from that
+                        // owner to kHasMultipleOwners.
+                        worklist.push(targetId);
+                        break;
+                }
+            }
+        }
+        for (let i = 0; i < nodeCount; ++i) {
+            const ownerId = owners[i];
+            switch (ownerId) {
+                case kUnvisited:
+                case kHasMultipleOwners:
+                case i:
+                    break;
+                default: {
+                    const ownedNodeIndex = i * nodeFieldCount;
+                    const ownerNodeIndex = ownerId * nodeFieldCount;
+                    node.nodeIndex = ownerNodeIndex;
+                    if (node.isSynthetic()) {
+                        // Adding shallow size to synthetic nodes is not useful.
+                        break;
+                    }
+                    const sizeToTransfer = nodes[ownedNodeIndex + nodeSelfSizeOffset];
+                    nodes[ownedNodeIndex + nodeSelfSizeOffset] = 0;
+                    nodes[ownerNodeIndex + nodeSelfSizeOffset] += sizeToTransfer;
+                    break;
+                }
+            }
+        }
     }
     calculateDistances() {
         function filter(node, edge) {

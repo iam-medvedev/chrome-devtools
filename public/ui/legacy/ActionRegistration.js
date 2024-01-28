@@ -222,77 +222,51 @@ export function getRegisteredActionExtensions() {
 export function maybeRemoveActionExtension(actionId) {
     return registeredActions.delete(actionId);
 }
-// eslint-disable-next-line rulesdir/const_enum
-export var ActionCategory;
-(function (ActionCategory) {
-    ActionCategory["NONE"] = "";
-    ActionCategory["ELEMENTS"] = "ELEMENTS";
-    ActionCategory["SCREENSHOT"] = "SCREENSHOT";
-    ActionCategory["NETWORK"] = "NETWORK";
-    ActionCategory["MEMORY"] = "MEMORY";
-    ActionCategory["JAVASCRIPT_PROFILER"] = "JAVASCRIPT_PROFILER";
-    ActionCategory["CONSOLE"] = "CONSOLE";
-    ActionCategory["PERFORMANCE"] = "PERFORMANCE";
-    ActionCategory["MOBILE"] = "MOBILE";
-    ActionCategory["HELP"] = "HELP";
-    ActionCategory["LAYERS"] = "LAYERS";
-    ActionCategory["NAVIGATION"] = "NAVIGATION";
-    ActionCategory["DRAWER"] = "DRAWER";
-    ActionCategory["GLOBAL"] = "GLOBAL";
-    ActionCategory["RESOURCES"] = "RESOURCES";
-    ActionCategory["BACKGROUND_SERVICES"] = "BACKGROUND_SERVICES";
-    ActionCategory["SETTINGS"] = "SETTINGS";
-    ActionCategory["DEBUGGER"] = "DEBUGGER";
-    ActionCategory["SOURCES"] = "SOURCES";
-    ActionCategory["RENDERING"] = "RENDERING";
-    ActionCategory["RECORDER"] = "RECORDER";
-    ActionCategory["CHANGES"] = "CHANGES";
-})(ActionCategory || (ActionCategory = {}));
 export function getLocalizedActionCategory(category) {
     switch (category) {
-        case ActionCategory.ELEMENTS:
+        case "ELEMENTS" /* ActionCategory.ELEMENTS */:
             return i18nString(UIStrings.elements);
-        case ActionCategory.SCREENSHOT:
+        case "SCREENSHOT" /* ActionCategory.SCREENSHOT */:
             return i18nString(UIStrings.screenshot);
-        case ActionCategory.NETWORK:
+        case "NETWORK" /* ActionCategory.NETWORK */:
             return i18nString(UIStrings.network);
-        case ActionCategory.MEMORY:
+        case "MEMORY" /* ActionCategory.MEMORY */:
             return i18nString(UIStrings.memory);
-        case ActionCategory.JAVASCRIPT_PROFILER:
+        case "JAVASCRIPT_PROFILER" /* ActionCategory.JAVASCRIPT_PROFILER */:
             return i18nString(UIStrings.javascript_profiler);
-        case ActionCategory.CONSOLE:
+        case "CONSOLE" /* ActionCategory.CONSOLE */:
             return i18nString(UIStrings.console);
-        case ActionCategory.PERFORMANCE:
+        case "PERFORMANCE" /* ActionCategory.PERFORMANCE */:
             return i18nString(UIStrings.performance);
-        case ActionCategory.MOBILE:
+        case "MOBILE" /* ActionCategory.MOBILE */:
             return i18nString(UIStrings.mobile);
-        case ActionCategory.HELP:
+        case "HELP" /* ActionCategory.HELP */:
             return i18nString(UIStrings.help);
-        case ActionCategory.LAYERS:
+        case "LAYERS" /* ActionCategory.LAYERS */:
             return i18nString(UIStrings.layers);
-        case ActionCategory.NAVIGATION:
+        case "NAVIGATION" /* ActionCategory.NAVIGATION */:
             return i18nString(UIStrings.navigation);
-        case ActionCategory.DRAWER:
+        case "DRAWER" /* ActionCategory.DRAWER */:
             return i18nString(UIStrings.drawer);
-        case ActionCategory.GLOBAL:
+        case "GLOBAL" /* ActionCategory.GLOBAL */:
             return i18nString(UIStrings.global);
-        case ActionCategory.RESOURCES:
+        case "RESOURCES" /* ActionCategory.RESOURCES */:
             return i18nString(UIStrings.resources);
-        case ActionCategory.BACKGROUND_SERVICES:
+        case "BACKGROUND_SERVICES" /* ActionCategory.BACKGROUND_SERVICES */:
             return i18nString(UIStrings.background_services);
-        case ActionCategory.SETTINGS:
+        case "SETTINGS" /* ActionCategory.SETTINGS */:
             return i18nString(UIStrings.settings);
-        case ActionCategory.DEBUGGER:
+        case "DEBUGGER" /* ActionCategory.DEBUGGER */:
             return i18nString(UIStrings.debugger);
-        case ActionCategory.SOURCES:
+        case "SOURCES" /* ActionCategory.SOURCES */:
             return i18nString(UIStrings.sources);
-        case ActionCategory.RENDERING:
+        case "RENDERING" /* ActionCategory.RENDERING */:
             return i18nString(UIStrings.rendering);
-        case ActionCategory.RECORDER:
+        case "RECORDER" /* ActionCategory.RECORDER */:
             return i18nString(UIStrings.recorder);
-        case ActionCategory.CHANGES:
+        case "CHANGES" /* ActionCategory.CHANGES */:
             return i18nString(UIStrings.changes);
-        case ActionCategory.NONE:
+        case "" /* ActionCategory.NONE */:
             return i18n.i18n.lockedString('');
     }
     // Not all categories are cleanly typed yet. Return the category as-is in this case.

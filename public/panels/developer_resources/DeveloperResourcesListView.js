@@ -72,21 +72,20 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
         this.nodeForItem = new Map();
         this.isVisibleFilter = isVisibleFilter;
         this.highlightRegExp = null;
-        const k = Platform.StringUtilities.kebab;
         const columns = [
-            { id: k('status'), title: i18nString(UIStrings.status), width: '60px', fixedWidth: true, sortable: true },
-            { id: k('url'), title: i18nString(UIStrings.url), width: '250px', fixedWidth: false, sortable: true },
-            { id: k('initiator'), title: i18nString(UIStrings.initiator), width: '80px', fixedWidth: false, sortable: true },
+            { id: 'status', title: i18nString(UIStrings.status), width: '60px', fixedWidth: true, sortable: true },
+            { id: 'url', title: i18nString(UIStrings.url), width: '250px', fixedWidth: false, sortable: true },
+            { id: 'initiator', title: i18nString(UIStrings.initiator), width: '80px', fixedWidth: false, sortable: true },
             {
-                id: k('size'),
+                id: 'size',
                 title: i18nString(UIStrings.totalBytes),
                 width: '80px',
                 fixedWidth: true,
                 sortable: true,
-                align: DataGrid.DataGrid.Align.Right,
+                align: "right" /* DataGrid.DataGrid.Align.Right */,
             },
             {
-                id: k('error-message'),
+                id: 'error-message',
                 title: i18nString(UIStrings.error),
                 width: '200px',
                 fixedWidth: false,
@@ -100,10 +99,10 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
             refreshCallback: undefined,
             deleteCallback: undefined,
         });
-        this.dataGrid.setResizeMethod(DataGrid.DataGrid.ResizeMethod.Last);
+        this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.Last */);
         this.dataGrid.setStriped(true);
         this.dataGrid.element.classList.add('flex-auto');
-        this.dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.sortingChanged, this);
+        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortingChanged, this);
         this.dataGrid.setRowContextMenuCallback(this.populateContextMenu.bind(this));
         const dataGridWidget = this.dataGrid.asWidget();
         dataGridWidget.show(this.contentElement);

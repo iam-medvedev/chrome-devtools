@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { CategorizedBreakpoint } from './CategorizedBreakpoint.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability } from './Target.js';
 import { TargetManager } from './TargetManager.js';
 export class EventBreakpointsModel extends SDKModel {
     agent;
@@ -123,5 +122,5 @@ export class EventBreakpointsManager {
     modelRemoved(_eventBreakpointModel) {
     }
 }
-SDKModel.register(EventBreakpointsModel, { capabilities: Capability.EventBreakpoints, autostart: false });
+SDKModel.register(EventBreakpointsModel, { capabilities: 524288 /* Capability.EventBreakpoints */, autostart: false });
 //# sourceMappingURL=EventBreakpointsModel.js.map

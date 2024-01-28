@@ -79,7 +79,7 @@ export declare class SourcesView extends SourcesView_base implements TabbedEdito
     private saveSourceFrame;
     toggleBreakpointsActiveState(active: boolean): void;
 }
-export declare enum Events {
+export declare const enum Events {
     EditorClosed = "EditorClosed",
     EditorSelected = "EditorSelected"
 }

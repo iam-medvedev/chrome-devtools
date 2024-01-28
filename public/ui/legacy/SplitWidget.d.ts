@@ -107,12 +107,12 @@ export declare class SplitWidget extends SplitWidget_base {
     toggleSidebar(): void;
     private updateShowHideSidebarButton;
 }
-export declare enum ShowMode {
+export declare const enum ShowMode {
     Both = "Both",
     OnlyMain = "OnlyMain",
     OnlySidebar = "OnlySidebar"
 }
-export declare enum Events {
+export declare const enum Events {
     SidebarSizeChanged = "SidebarSizeChanged",
     ShowModeChanged = "ShowModeChanged"
 }

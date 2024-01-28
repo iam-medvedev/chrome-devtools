@@ -28,53 +28,53 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         this.#capabilitiesMask = 0;
         switch (type) {
             case Type.Frame:
-                this.#capabilitiesMask = Capability.Browser | Capability.Storage | Capability.DOM | Capability.JS |
-                    Capability.Log | Capability.Network | Capability.Target | Capability.Tracing | Capability.Emulation |
-                    Capability.Input | Capability.Inspector | Capability.Audits | Capability.WebAuthn | Capability.IO |
-                    Capability.Media | Capability.EventBreakpoints;
+                this.#capabilitiesMask = 1 /* Capability.Browser */ | 8192 /* Capability.Storage */ | 2 /* Capability.DOM */ | 4 /* Capability.JS */ |
+                    8 /* Capability.Log */ | 16 /* Capability.Network */ | 32 /* Capability.Target */ | 128 /* Capability.Tracing */ | 256 /* Capability.Emulation */ |
+                    1024 /* Capability.Input */ | 2048 /* Capability.Inspector */ | 32768 /* Capability.Audits */ | 65536 /* Capability.WebAuthn */ | 131072 /* Capability.IO */ |
+                    262144 /* Capability.Media */ | 524288 /* Capability.EventBreakpoints */;
                 if (parentTarget?.type() !== Type.Frame) {
                     // This matches backend exposing certain capabilities only for the main frame.
                     this.#capabilitiesMask |=
-                        Capability.DeviceEmulation | Capability.ScreenCapture | Capability.Security | Capability.ServiceWorker;
+                        4096 /* Capability.DeviceEmulation */ | 64 /* Capability.ScreenCapture */ | 512 /* Capability.Security */ | 16384 /* Capability.ServiceWorker */;
                     if (Common.ParsedURL.schemeIs(targetInfo?.url, 'chrome-extension:')) {
-                        this.#capabilitiesMask &= ~Capability.Security;
+                        this.#capabilitiesMask &= ~512 /* Capability.Security */;
                     }
                     // TODO(dgozman): we report service workers for the whole frame tree on the main frame,
                     // while we should be able to only cover the subtree corresponding to the target.
                 }
                 break;
             case Type.ServiceWorker:
-                this.#capabilitiesMask = Capability.JS | Capability.Log | Capability.Network | Capability.Target |
-                    Capability.Inspector | Capability.IO | Capability.EventBreakpoints;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 16 /* Capability.Network */ | 32 /* Capability.Target */ |
+                    2048 /* Capability.Inspector */ | 131072 /* Capability.IO */ | 524288 /* Capability.EventBreakpoints */;
                 if (parentTarget?.type() !== Type.Frame) {
-                    this.#capabilitiesMask |= Capability.Browser;
+                    this.#capabilitiesMask |= 1 /* Capability.Browser */;
                 }
                 break;
             case Type.SharedWorker:
-                this.#capabilitiesMask = Capability.JS | Capability.Log | Capability.Network | Capability.Target |
-                    Capability.IO | Capability.Media | Capability.Inspector | Capability.EventBreakpoints;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 16 /* Capability.Network */ | 32 /* Capability.Target */ |
+                    131072 /* Capability.IO */ | 262144 /* Capability.Media */ | 2048 /* Capability.Inspector */ | 524288 /* Capability.EventBreakpoints */;
                 break;
             case Type.SharedStorageWorklet:
-                this.#capabilitiesMask = Capability.JS | Capability.Log | Capability.Inspector | Capability.EventBreakpoints;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 2048 /* Capability.Inspector */ | 524288 /* Capability.EventBreakpoints */;
                 break;
             case Type.Worker:
-                this.#capabilitiesMask = Capability.JS | Capability.Log | Capability.Network | Capability.Target |
-                    Capability.IO | Capability.Media | Capability.Emulation | Capability.EventBreakpoints;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 16 /* Capability.Network */ | 32 /* Capability.Target */ |
+                    131072 /* Capability.IO */ | 262144 /* Capability.Media */ | 256 /* Capability.Emulation */ | 524288 /* Capability.EventBreakpoints */;
                 break;
             case Type.Worklet:
-                this.#capabilitiesMask = Capability.JS | Capability.Log | Capability.EventBreakpoints;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 524288 /* Capability.EventBreakpoints */;
                 break;
             case Type.Node:
-                this.#capabilitiesMask = Capability.JS;
+                this.#capabilitiesMask = 4 /* Capability.JS */;
                 break;
             case Type.AuctionWorklet:
-                this.#capabilitiesMask = Capability.JS | Capability.EventBreakpoints;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 524288 /* Capability.EventBreakpoints */;
                 break;
             case Type.Browser:
-                this.#capabilitiesMask = Capability.Target | Capability.IO;
+                this.#capabilitiesMask = 32 /* Capability.Target */ | 131072 /* Capability.IO */;
                 break;
             case Type.Tab:
-                this.#capabilitiesMask = Capability.Target | Capability.Tracing;
+                this.#capabilitiesMask = 32 /* Capability.Target */ | 128 /* Capability.Tracing */;
                 break;
         }
         this.#typeInternal = type;
@@ -212,8 +212,6 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         return this.#targetInfoInternal;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Type;
 (function (Type) {
     Type["Frame"] = "frame";
@@ -227,30 +225,4 @@ export var Type;
     Type["Worklet"] = "worklet";
     Type["Tab"] = "tab";
 })(Type || (Type = {}));
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Capability;
-(function (Capability) {
-    Capability[Capability["Browser"] = 1] = "Browser";
-    Capability[Capability["DOM"] = 2] = "DOM";
-    Capability[Capability["JS"] = 4] = "JS";
-    Capability[Capability["Log"] = 8] = "Log";
-    Capability[Capability["Network"] = 16] = "Network";
-    Capability[Capability["Target"] = 32] = "Target";
-    Capability[Capability["ScreenCapture"] = 64] = "ScreenCapture";
-    Capability[Capability["Tracing"] = 128] = "Tracing";
-    Capability[Capability["Emulation"] = 256] = "Emulation";
-    Capability[Capability["Security"] = 512] = "Security";
-    Capability[Capability["Input"] = 1024] = "Input";
-    Capability[Capability["Inspector"] = 2048] = "Inspector";
-    Capability[Capability["DeviceEmulation"] = 4096] = "DeviceEmulation";
-    Capability[Capability["Storage"] = 8192] = "Storage";
-    Capability[Capability["ServiceWorker"] = 16384] = "ServiceWorker";
-    Capability[Capability["Audits"] = 32768] = "Audits";
-    Capability[Capability["WebAuthn"] = 65536] = "WebAuthn";
-    Capability[Capability["IO"] = 131072] = "IO";
-    Capability[Capability["Media"] = 262144] = "Media";
-    Capability[Capability["EventBreakpoints"] = 524288] = "EventBreakpoints";
-    Capability[Capability["None"] = 0] = "None";
-})(Capability || (Capability = {}));
 //# sourceMappingURL=Target.js.map

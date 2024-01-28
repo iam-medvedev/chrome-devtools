@@ -299,8 +299,6 @@ const mutedWorkingCopies = new WeakSet();
 export const NodePrefix = '(function (exports, require, module, __filename, __dirname) { ';
 export const NodeSuffix = '\n});';
 export const NodeShebang = '#!/usr/bin/env node';
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["BindingCreated"] = "BindingCreated";

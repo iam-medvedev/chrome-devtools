@@ -134,9 +134,9 @@ UI.ViewManager.registerViewExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    storageType: Common.Settings.SettingStorageType.Synced,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     settingName: 'emulation.locations',
-    settingType: Common.Settings.SettingType.ARRAY,
+    settingType: "array" /* Common.Settings.SettingType.ARRAY */,
     // TODO(crbug.com/1136655): http://crrev.com/c/2666426 regressed localization of city titles.
     // These titles should be localized since they are displayed to users.
     defaultValue: [
@@ -209,7 +209,7 @@ Common.Settings.registerSettingExtension({
     title: i18nLazyString(UIStrings.touch),
     reloadRequired: true,
     settingName: 'emulation.touch',
-    settingType: Common.Settings.SettingType.ENUM,
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'none',
     options: [
         {
@@ -227,7 +227,7 @@ Common.Settings.registerSettingExtension({
 Common.Settings.registerSettingExtension({
     title: i18nLazyString(UIStrings.emulateIdleDetectorState),
     settingName: 'emulation.idleDetection',
-    settingType: Common.Settings.SettingType.ENUM,
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'none',
     options: [
         {

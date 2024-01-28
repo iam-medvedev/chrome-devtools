@@ -93,7 +93,7 @@ export class CSSStyleSheetHeader {
     }
     resourceURL() {
         const url = this.isViaInspector() ? this.viaInspectorResourceURL() : this.sourceURL;
-        if (!url && Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES)) {
+        if (!url && Root.Runtime.experiments.isEnabled("stylesPaneCSSChanges" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */)) {
             return this.dynamicStyleURL();
         }
         return url;

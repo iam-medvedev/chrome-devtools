@@ -14,7 +14,7 @@ export interface Match {
     endIndex: number;
     filledFieldIndex: number;
 }
-export declare enum Events {
+export declare const enum Events {
     AddressFormFilled = "AddressFormFilled"
 }
 export interface AddressFormFilledEvent {

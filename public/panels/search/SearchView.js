@@ -156,8 +156,8 @@ export class SearchView extends UI.Widget.VBox {
         const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear', undefined, 'search.clear');
         toolbar.appendToolbarItem(refreshButton);
         toolbar.appendToolbarItem(clearButton);
-        refreshButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => this.onAction());
-        clearButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+        refreshButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.onAction());
+        clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             this.resetSearch();
             this.onSearchInputClear();
         });
@@ -172,7 +172,7 @@ export class SearchView extends UI.Widget.VBox {
     static appendToolbarToggle(toolbar, text, tooltip, jslogContext) {
         const toggle = new UI.Toolbar.ToolbarToggle(tooltip, undefined, undefined, jslogContext);
         toggle.setText(text);
-        toggle.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => toggle.setToggled(!toggle.toggled()));
+        toggle.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => toggle.setToggled(!toggle.toggled()));
         toolbar.appendToolbarItem(toggle);
         return toggle;
     }

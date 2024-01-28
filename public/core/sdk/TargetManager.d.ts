@@ -49,7 +49,7 @@ export declare class TargetManager extends Common.ObjectWrapper.ObjectWrapper<Ev
     removeScopeChangeListener(listener: () => void): void;
     scopeTarget(): Target | null;
 }
-export declare enum Events {
+export declare const enum Events {
     AvailableTargetsChanged = "AvailableTargetsChanged",
     InspectedURLChanged = "InspectedURLChanged",
     NameChanged = "NameChanged",

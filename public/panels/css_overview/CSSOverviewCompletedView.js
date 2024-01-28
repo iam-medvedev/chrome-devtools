@@ -729,10 +729,9 @@ export class ElementDetailsView extends UI.Widget.Widget {
         this.#domModel = domModel;
         this.#cssModel = cssModel;
         this.#linkifier = linkifier;
-        const k = Platform.StringUtilities.kebab;
         this.#elementGridColumns = [
             {
-                id: k('node-id'),
+                id: 'node-id',
                 title: i18nString(UIStrings.element),
                 sortable: true,
                 weight: 50,
@@ -750,7 +749,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
                 defaultWeight: undefined,
             },
             {
-                id: k('declaration'),
+                id: 'declaration',
                 title: i18nString(UIStrings.declaration),
                 sortable: true,
                 weight: 50,
@@ -768,7 +767,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
                 defaultWeight: undefined,
             },
             {
-                id: k('source-url'),
+                id: 'source-url',
                 title: i18nString(UIStrings.source),
                 sortable: false,
                 weight: 100,
@@ -786,7 +785,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
                 defaultWeight: undefined,
             },
             {
-                id: k('contrast-ratio'),
+                id: 'contrast-ratio',
                 title: i18nString(UIStrings.contrastRatio),
                 sortable: true,
                 weight: 25,
@@ -814,7 +813,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
         this.#elementGrid.element.classList.add('element-grid');
         this.#elementGrid.element.addEventListener('mouseover', this.#onMouseOver.bind(this));
         this.#elementGrid.setStriped(true);
-        this.#elementGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.#sortMediaQueryDataGrid.bind(this));
+        this.#elementGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.#sortMediaQueryDataGrid.bind(this));
         this.#elementGrid.asWidget().show(this.element);
     }
     #sortMediaQueryDataGrid() {

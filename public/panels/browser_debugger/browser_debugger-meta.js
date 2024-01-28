@@ -106,7 +106,7 @@ UI.ViewManager.registerViewExtension({
         const BrowserDebugger = await loadBrowserDebuggerModule();
         return BrowserDebugger.EventListenerBreakpointsSidebarPane.EventListenerBreakpointsSidebarPane.instance();
     },
-    id: 'sources.eventListenerBreakpoints',
+    id: 'sources.event-listener-breakpoints',
     location: "sources.sidebar-bottom" /* UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM */,
     commandPrompt: i18nLazyString(UIStrings.showEventListenerBreakpoints),
     title: i18nLazyString(UIStrings.eventListenerBreakpoints),
@@ -118,7 +118,7 @@ UI.ViewManager.registerViewExtension({
         const BrowserDebugger = await loadBrowserDebuggerModule();
         return new BrowserDebugger.CSPViolationBreakpointsSidebarPane.CSPViolationBreakpointsSidebarPane();
     },
-    id: 'sources.cspViolationBreakpoints',
+    id: 'sources.csp-violation-breakpoints',
     location: "sources.sidebar-bottom" /* UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM */,
     commandPrompt: i18nLazyString(UIStrings.showCspViolationBreakpoints),
     title: i18nLazyString(UIStrings.cspViolationBreakpoints),
@@ -130,7 +130,7 @@ UI.ViewManager.registerViewExtension({
         const BrowserDebugger = await loadBrowserDebuggerModule();
         return BrowserDebugger.XHRBreakpointsSidebarPane.XHRBreakpointsSidebarPane.instance();
     },
-    id: 'sources.xhrBreakpoints',
+    id: 'sources.xhr-breakpoints',
     location: "sources.sidebar-bottom" /* UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM */,
     commandPrompt: i18nLazyString(UIStrings.showXhrfetchBreakpoints),
     title: i18nLazyString(UIStrings.xhrfetchBreakpoints),
@@ -143,7 +143,7 @@ UI.ViewManager.registerViewExtension({
         const BrowserDebugger = await loadBrowserDebuggerModule();
         return BrowserDebugger.DOMBreakpointsSidebarPane.DOMBreakpointsSidebarPane.instance();
     },
-    id: 'sources.domBreakpoints',
+    id: 'sources.dom-breakpoints',
     location: "sources.sidebar-bottom" /* UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM */,
     commandPrompt: i18nLazyString(UIStrings.showDomBreakpoints),
     title: i18nLazyString(UIStrings.domBreakpoints),
@@ -155,7 +155,7 @@ UI.ViewManager.registerViewExtension({
         const BrowserDebugger = await loadBrowserDebuggerModule();
         return new BrowserDebugger.ObjectEventListenersSidebarPane.ObjectEventListenersSidebarPane();
     },
-    id: 'sources.globalListeners',
+    id: 'sources.global-listeners',
     location: "sources.sidebar-bottom" /* UI.ViewManager.ViewLocationValues.SOURCES_SIDEBAR_BOTTOM */,
     commandPrompt: i18nLazyString(UIStrings.showGlobalListeners),
     title: i18nLazyString(UIStrings.globalListeners),
@@ -168,7 +168,7 @@ UI.ViewManager.registerViewExtension({
         const BrowserDebugger = await loadBrowserDebuggerModule();
         return BrowserDebugger.DOMBreakpointsSidebarPane.DOMBreakpointsSidebarPane.instance();
     },
-    id: 'elements.domBreakpoints',
+    id: 'elements.dom-breakpoints',
     location: "elements-sidebar" /* UI.ViewManager.ViewLocationValues.ELEMENTS_SIDEBAR */,
     commandPrompt: i18nLazyString(UIStrings.showDomBreakpoints),
     title: i18nLazyString(UIStrings.domBreakpoints),
@@ -201,7 +201,7 @@ UI.ViewManager.registerViewExtension({
 });
 UI.ViewManager.registerViewExtension({
     location: "navigator-view" /* UI.ViewManager.ViewLocationValues.NAVIGATOR_VIEW */,
-    id: 'navigator-contentScripts',
+    id: 'navigator-content-scripts',
     title: i18nLazyString(UIStrings.contentScripts),
     commandPrompt: i18nLazyString(UIStrings.showContentScripts),
     order: 5,
@@ -212,7 +212,7 @@ UI.ViewManager.registerViewExtension({
     },
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.DEBUGGER,
+    category: "DEBUGGER" /* UI.ActionRegistration.ActionCategory.DEBUGGER */,
     actionId: 'browser-debugger.refresh-global-event-listeners',
     async loadActionDelegate() {
         const BrowserDebugger = await loadBrowserDebuggerModule();

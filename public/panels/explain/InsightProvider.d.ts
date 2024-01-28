@@ -2,7 +2,8 @@ export interface AidaRequest {
     input: string;
     client: string;
     options?: {
-        temperature: Number;
+        temperature?: Number;
+        model_id?: string;
     };
 }
 export declare class InsightProvider {

@@ -18,7 +18,7 @@ export declare class Context {
     flavor<T>(flavorType: ConstructorFn<T>): T | null;
     flavors(): Set<ConstructorFn<unknown>>;
 }
-declare enum Events {
+declare const enum Events {
     FlavorChanged = "FlavorChanged"
 }
 export type EventTypes = {

@@ -57,13 +57,13 @@ export declare function setExpanded(element: Element, value: boolean): void;
 export declare function unsetExpandable(element: Element): void;
 export declare function setHidden(element: Element, value: boolean): void;
 export declare function setLevel(element: Element, level: number): void;
-export declare enum AutocompleteInteractionModel {
-    inline = "inline",
-    list = "list",
-    both = "both",
-    none = "none"
+export declare const enum AutocompleteInteractionModel {
+    Inline = "inline",
+    List = "list",
+    Both = "both",
+    None = "none"
 }
-export declare function setAutocomplete(element: Element, interactionModel?: AutocompleteInteractionModel | undefined): void;
+export declare function setAutocomplete(element: Element, interactionModel?: AutocompleteInteractionModel): void;
 export declare function clearAutocomplete(element: Element): void;
 export declare const enum PopupRole {
     False = "false",

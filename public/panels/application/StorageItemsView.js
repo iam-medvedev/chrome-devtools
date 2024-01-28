@@ -48,7 +48,7 @@ export class StorageItemsView extends UI.Widget.VBox {
         this.refreshButton.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('storage-items-view.refresh')}`);
         this.mainToolbar = new UI.Toolbar.Toolbar('top-resources-toolbar', this.element);
         this.filterItem = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), '', 0.4);
-        this.filterItem.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, this.filterChanged, this);
+        this.filterItem.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.filterChanged, this);
         const toolbarSeparator = new UI.Toolbar.ToolbarSeparator();
         this.deleteAllButton = this.addButton(i18nString(UIStrings.clearAll), 'clear', this.deleteAllItems);
         this.deleteSelectedButton = this.addButton(i18nString(UIStrings.deleteSelected), 'cross', this.deleteSelectedItem);
@@ -75,7 +75,7 @@ export class StorageItemsView extends UI.Widget.VBox {
     }
     addButton(label, glyph, callback) {
         const button = new UI.Toolbar.ToolbarButton(label, glyph);
-        button.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, callback, this);
+        button.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, callback, this);
         return button;
     }
     filterChanged({ data: text }) {

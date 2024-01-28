@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { Issue, IssueCategory, IssueKind } from './Issue.js';
+import { Issue } from './Issue.js';
 function getIssueCode(details) {
     switch (details.violationType) {
         case "PermissionPolicyDisabled" /* Protocol.Audits.AttributionReportingIssueType.PermissionPolicyDisabled */:
@@ -47,7 +47,7 @@ export class AttributionReportingIssue extends Issue {
         this.issueDetails = issueDetails;
     }
     getCategory() {
-        return IssueCategory.AttributionReporting;
+        return "AttributionReporting" /* IssueCategory.AttributionReporting */;
     }
     getHeaderValidatorLink(name) {
         const url = new URL('https://wicg.github.io/attribution-reporting-api/validate-headers');
@@ -156,7 +156,7 @@ export class AttributionReportingIssue extends Issue {
             case "AttributionReportingIssue::OsTriggerIgnored" /* IssueCode.OsTriggerIgnored */:
             case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation" /* IssueCode.NavigationRegistrationWithoutTransientUserActivation */:
             case "AttributionReportingIssue::Unknown" /* IssueCode.Unknown */:
-                return IssueKind.PageError;
+                return "PageError" /* IssueKind.PageError */;
         }
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {

@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as VisualLogging from '../../../../front_end/ui/visual_logging/visual_logging.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -135,7 +136,7 @@ export class PlayRecordingEvent extends Event {
     static eventName = 'playrecording';
     data;
     constructor(data = {
-        targetPanel: "chrome_recorder" /* TargetPanel.Default */,
+        targetPanel: "chrome-recorder" /* TargetPanel.Default */,
         speed: "normal" /* PlayRecordingSpeed.Normal */,
     }) {
         super(PlayRecordingEvent.eventName);
@@ -198,25 +199,25 @@ const networkConditionPresets = [
 function converterIdToFlowMetric(converterId) {
     switch (converterId) {
         case "puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */:
-            return Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithPuppeteer;
+            return 1 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithPuppeteer */;
         case "json" /* Models.ConverterIds.ConverterIds.JSON */:
-            return Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithJSON;
+            return 2 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithJSON */;
         case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */:
-            return Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithReplay;
+            return 3 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithReplay */;
         default:
-            return Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithExtension;
+            return 4 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithExtension */;
     }
 }
 function converterIdToStepMetric(converterId) {
     switch (converterId) {
         case "puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */:
-            return Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithPuppeteer;
+            return 5 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithPuppeteer */;
         case "json" /* Models.ConverterIds.ConverterIds.JSON */:
-            return Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithJSON;
+            return 6 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithJSON */;
         case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */:
-            return Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithReplay;
+            return 7 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithReplay */;
         default:
-            return Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithExtension;
+            return 8 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithExtension */;
     }
 }
 export class RecordingView extends HTMLElement {
@@ -248,6 +249,10 @@ export class RecordingView extends HTMLElement {
     #sourceMap;
     #extensionDescriptor;
     #onCopyBound = this.#onCopy.bind(this);
+    constructor() {
+        super();
+        this.setAttribute('jslog', `${VisualLogging.section().context('recording-list-view')}`);
+    }
     set data(data) {
         this.#isRecording = data.isRecording;
         this.#replayState = data.replayState;
@@ -300,7 +305,7 @@ export class RecordingView extends HTMLElement {
     }
     #handleTogglePlaying(event) {
         this.dispatchEvent(new PlayRecordingEvent({
-            targetPanel: "chrome_recorder" /* TargetPanel.Default */,
+            targetPanel: "chrome-recorder" /* TargetPanel.Default */,
             speed: event.speed,
             extension: event.extension,
         }));
@@ -373,6 +378,7 @@ export class RecordingView extends HTMLElement {
             isSelected: this.#selectedStep === step,
             recorderSettings: this.#recorderSettings,
         }}
+      jslog=${VisualLogging.action().track({ click: true }).context('step')}
       ></${StepView.litTagName}>
     `;
         // clang-format on
@@ -497,7 +503,7 @@ export class RecordingView extends HTMLElement {
         }
         event.preventDefault();
         await this.#copyCurrentSelection(this.#selectedStep);
-        Host.userMetrics.keyboardShortcutFired('chrome_recorder.copy-recording-or-step');
+        Host.userMetrics.keyboardShortcutFired("chrome-recorder.copy-recording-or-step" /* Actions.RecorderActions.CopyRecordingOrStep */);
     }
     #renderSettings() {
         if (!this.#settings) {
@@ -599,6 +605,7 @@ export class RecordingView extends HTMLElement {
             min=${Models.SchemaUtils.minTimeout}
             max=${Models.SchemaUtils.maxTimeout}
             value=${this.#settings.timeout || Models.RecordingPlayer.defaultTimeout}
+            jslog=${VisualLogging.textField().track({ keydown: true }).context('timeout')}
             class="devtools-text-input"
             type="number">
         </label>
@@ -624,6 +631,7 @@ export class RecordingView extends HTMLElement {
             @click=${isEditable && this.#onToggleReplaySettings}
             tabindex="0"
             role="button"
+            jslog=${VisualLogging.action().track({ click: true }).context('replay-settings')}
             aria-label=${i18nString(UIStrings.editReplaySettings)}>
             <span>${i18nString(UIStrings.replaySettings)}</span>
             ${isEditable
@@ -696,6 +704,7 @@ export class RecordingView extends HTMLElement {
                 return LitHtml.html `<${Menus.Menu.MenuItem.litTagName}
                     .value=${converter.getId()}
                     .selected=${this.#converterId === converter.getId()}
+                    jslog=${VisualLogging.action().track({ click: true }).context(`converter-${converter.getFormatName()}`)}
                   >
                     ${converter.getFormatName()}
                   </${Menus.Menu.MenuItem.litTagName}>`;
@@ -704,6 +713,7 @@ export class RecordingView extends HTMLElement {
                 return LitHtml.html `<${Menus.Menu.MenuItem.litTagName}
                     .value=${converter.getId()}
                     .selected=${this.#converterId === converter.getId()}
+                    jslog=${VisualLogging.action().track({ click: true }).context(`converter-${converter.getFormatName()}`)}
                   >
                     ${converter.getFormatName()}
                   </${Menus.Menu.MenuItem.litTagName}>`;
@@ -717,6 +727,7 @@ export class RecordingView extends HTMLElement {
                 iconName: 'cross',
             }}
                 @click=${this.showCodeToggle}
+                .jslogContext=${'show-code'}
               ></${Buttons.Button.Button.litTagName}>
             </div>
             <div class="text-editor">
@@ -740,7 +751,7 @@ export class RecordingView extends HTMLElement {
     #renderReplayOrAbortButton() {
         if (this.#replayState.isPlaying) {
             return LitHtml.html `
-        <${Buttons.Button.Button.litTagName} @click=${this.#handleAbortReplay} .iconName=${'pause'} .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}>
+        <${Buttons.Button.Button.litTagName} .jslogContext=${'abort-replay'} @click=${this.#handleAbortReplay} .iconName=${'pause'} .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}>
           ${i18nString(UIStrings.cancelReplay)}
         </${Buttons.Button.Button.litTagName}>`;
         }
@@ -752,6 +763,7 @@ export class RecordingView extends HTMLElement {
         }}
         .disabled=${this.#replayState.isPlaying}
         @startreplay=${this.#handleTogglePlaying}
+        jslog=${VisualLogging.action().track({ click: true }).context('replay')}
         >
       </${ReplayButton.litTagName}>`;
         // clang-format on
@@ -765,8 +777,8 @@ export class RecordingView extends HTMLElement {
     }
     showCodeToggle = () => {
         this.#showCodeView = !this.#showCodeView;
-        Host.userMetrics.recordingCodeToggled(this.#showCodeView ? Host.UserMetrics.RecordingCodeToggled.CodeShown :
-            Host.UserMetrics.RecordingCodeToggled.CodeHidden);
+        Host.userMetrics.recordingCodeToggled(this.#showCodeView ? 1 /* Host.UserMetrics.RecordingCodeToggled.CodeShown */ :
+            2 /* Host.UserMetrics.RecordingCodeToggled.CodeHidden */);
         void this.#convertToCode();
     };
     #convertToCode = async () => {
@@ -848,6 +860,7 @@ export class RecordingView extends HTMLElement {
                 variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
                 title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.showCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */),
             }}
+          .jslogContext=${'show-code'}
         >
           ${i18nString(UIStrings.showCode)}
         </${Buttons.Button.Button.litTagName}>
@@ -862,6 +875,7 @@ export class RecordingView extends HTMLElement {
                 <div class="steps">
                   <${StepView.litTagName}
                     @click=${this.#onStepClick}
+                    jslog=${VisualLogging.action().track({ click: true }).context('step')}
                     @mouseover=${this.#onStepHover}
                     .data=${{
             section,
@@ -890,6 +904,7 @@ export class RecordingView extends HTMLElement {
             variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
             title: i18nString(UIStrings.addAssertion),
         }}
+                    .jslogContext=${'add-assertion'}
                     @click=${this.#dispatchAddAssertionEvent}
                   >${i18nString(UIStrings.addAssertion)}</devtools-button>` : undefined}
                   ${this.#isRecording && i === this.#sections.length - 1
@@ -932,6 +947,7 @@ export class RecordingView extends HTMLElement {
             iconName: 'edit',
             title: i18nString(UIStrings.editTitle),
         }}
+                .jslogContext=${'edit-title'}
               ></${Buttons.Button.Button.litTagName}>
             </div>
           </div>
@@ -945,6 +961,7 @@ export class RecordingView extends HTMLElement {
             ? LitHtml.html `<div class="actions">
                 <${Buttons.Button.Button.litTagName}
                   @click=${this.#handleMeasurePerformanceClickEvent}
+                  .jslogContext=${'measure-performance'}
                   .data=${{
                 disabled: this.#replayState.isPlaying,
                 variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
@@ -971,6 +988,7 @@ export class RecordingView extends HTMLElement {
       <div class="footer">
         <div class="controls">
           <devtools-control-button
+            jslog=${VisualLogging.toggle().track({ click: true }).context('toggle-recording')}
             @click=${this.#dispatchRecordingFinished}
             .disabled=${this.#recordingTogglingInProgress}
             .shape=${'square'}

@@ -14,7 +14,7 @@ export declare class SharedStorageForOrigin extends Common.ObjectWrapper.ObjectW
     resetBudget(): Promise<void>;
 }
 export declare namespace SharedStorageForOrigin {
-    enum Events {
+    const enum Events {
         SharedStorageChanged = "SharedStorageChanged"
     }
     interface SharedStorageChangedEvent {
@@ -39,16 +39,18 @@ export declare class SharedStorageModel extends SDK.SDKModel.SDKModel<EventTypes
     numStoragesForTesting(): number;
     isChangeEvent(event: Protocol.Storage.SharedStorageAccessedEvent): boolean;
     sharedStorageAccessed(event: Protocol.Storage.SharedStorageAccessedEvent): void;
+    attributionReportingTriggerRegistered(_event: Protocol.Storage.AttributionReportingTriggerRegisteredEvent): void;
     indexedDBListUpdated(_event: Protocol.Storage.IndexedDBListUpdatedEvent): void;
     indexedDBContentUpdated(_event: Protocol.Storage.IndexedDBContentUpdatedEvent): void;
     cacheStorageListUpdated(_event: Protocol.Storage.CacheStorageListUpdatedEvent): void;
     cacheStorageContentUpdated(_event: Protocol.Storage.CacheStorageContentUpdatedEvent): void;
     interestGroupAccessed(_event: Protocol.Storage.InterestGroupAccessedEvent): void;
+    interestGroupAuctionEventOccurred(_event: Protocol.Storage.InterestGroupAuctionEventOccurredEvent): void;
     storageBucketCreatedOrUpdated(_event: Protocol.Storage.StorageBucketCreatedOrUpdatedEvent): void;
     storageBucketDeleted(_event: Protocol.Storage.StorageBucketDeletedEvent): void;
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
 }
-export declare enum Events {
+export declare const enum Events {
     SharedStorageAccess = "SharedStorageAccess",
     SharedStorageAdded = "SharedStorageAdded",
     SharedStorageRemoved = "SharedStorageRemoved"

@@ -16,7 +16,7 @@ export declare class FileManager extends Common.ObjectWrapper.ObjectWrapper<Even
     close(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString): void;
     private appendedToURL;
 }
-export declare enum Events {
+export declare const enum Events {
     AppendedToURL = "AppendedToURL"
 }
 export type EventTypes = {

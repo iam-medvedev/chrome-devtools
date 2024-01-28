@@ -1,6 +1,6 @@
 import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as TextUtils from '../../../models/text_utils/text_utils.js';
-export declare enum UIHeaderSection {
+export declare const enum UIHeaderSection {
     General = "General",
     Request = "Request",
     Response = "Response"
@@ -9,7 +9,7 @@ interface UIHeaderLocation {
     section: UIHeaderSection;
     header: SDK.NetworkRequest.NameValue | null;
 }
-export declare enum UIRequestTabs {
+export declare const enum UIRequestTabs {
     Cookies = "cookies",
     EventSource = "eventSource",
     HeadersComponent = "headersComponent",

@@ -50,7 +50,7 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
             this.hide(true);
         }
         this.popover.registerCSSFiles([swatchPopoverStyles]);
-        this.dispatchEventToListeners(Events.WillShowPopover);
+        this.dispatchEventToListeners("WillShowPopover" /* Events.WillShowPopover */);
         this.isHidden = false;
         this.anchorElement = anchorElement;
         this.view = view;
@@ -126,10 +126,4 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["WillShowPopover"] = "WillShowPopover";
-})(Events || (Events = {}));
 //# sourceMappingURL=SwatchPopoverHelper.js.map

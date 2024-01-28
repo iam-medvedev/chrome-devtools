@@ -872,6 +872,12 @@
   "entrypoints/js_app/js_app.ts | main": {
     "message": "Main"
   },
+  "entrypoints/js_app/js_app.ts | networkTitle": {
+    "message": "Scripts"
+  },
+  "entrypoints/js_app/js_app.ts | showNode": {
+    "message": "Show Scripts"
+  },
   "entrypoints/main/main-meta.ts | auto": {
     "message": "auto"
   },
@@ -1162,9 +1168,6 @@
   },
   "generated/Deprecation.ts | MediaSourceDurationTruncatingBuffered": {
     "message": "Setting MediaSource.duration below the highest presentation timestamp of any buffered coded frames is deprecated due to specification change. Support for implicit removal of truncated buffered media will be removed in the future. You should instead perform explicit remove(newDuration, oldDuration) on all sourceBuffers, where newDuration < oldDuration."
-  },
-  "generated/Deprecation.ts | NonStandardDeclarativeShadowDOM": {
-    "message": "The older, non-standardized shadowroot attribute is deprecated, and will *no longer function* in M119. Please use the new, standardized shadowrootmode attribute instead."
   },
   "generated/Deprecation.ts | NoSysexWebMIDIWithoutPermission": {
     "message": "Web MIDI will ask a permission to use even if the sysex is not specified in the MIDIOptions."
@@ -2768,6 +2771,9 @@
   "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
     "message": "Pages that use Keyboard lock are not currently eligible for back/forward cache."
   },
+  "panels/application/components/BackForwardCacheStrings.ts | LiveMediaStreamTrack": {
+    "message": "Undefined"
+  },
   "panels/application/components/BackForwardCacheStrings.ts | loading": {
     "message": "The page did not finish loading before navigating away."
   },
@@ -2876,6 +2882,9 @@
   "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
     "message": "Pages that use SharedWorker are not currently eligible for back/forward cache."
   },
+  "panels/application/components/BackForwardCacheStrings.ts | SmartCard": {
+    "message": "Undefined"
+  },
   "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
     "message": "Pages that use SpeechRecognizer are not currently eligible for back/forward cache."
   },
@@ -2896,6 +2905,9 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
     "message": "The page timed out entering back/forward cache (likely due to long-running pagehide handlers)."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | UnloadHandler": {
+    "message": "Undefined"
   },
   "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
     "message": "The page has an unload handler in the main frame."
@@ -6395,9 +6407,6 @@
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "Related code"
   },
-  "panels/explain/components/ConsoleInsight.ts | searchAnswers": {
-    "message": "Google search answers"
-  },
   "panels/explain/components/ConsoleInsight.ts | sources": {
     "message": "Sources"
   },
@@ -9530,6 +9539,9 @@
   "panels/profiler/ModuleUIStrings.ts | calculatingSamples": {
     "message": "Calculating samples…"
   },
+  "panels/profiler/ModuleUIStrings.ts | calculatingShallowSizes": {
+    "message": "Calculating shallow sizes…"
+  },
   "panels/profiler/ModuleUIStrings.ts | calculatingStatistics": {
     "message": "Calculating statistics…"
   },
@@ -11246,6 +11258,9 @@
   "panels/sources/components/BreakpointsView.ts | conditionCode": {
     "message": "Condition: {PH1}"
   },
+  "panels/sources/components/BreakpointsView.ts | disableAllBreakpoints": {
+    "message": "Disable all breakpoints"
+  },
   "panels/sources/components/BreakpointsView.ts | disableAllBreakpointsInFile": {
     "message": "Disable all breakpoints in file"
   },
@@ -11254,6 +11269,9 @@
   },
   "panels/sources/components/BreakpointsView.ts | editLogpoint": {
     "message": "Edit logpoint"
+  },
+  "panels/sources/components/BreakpointsView.ts | enableAllBreakpoints": {
+    "message": "Enable all breakpoints"
   },
   "panels/sources/components/BreakpointsView.ts | enableAllBreakpointsInFile": {
     "message": "Enable all breakpoints in file"

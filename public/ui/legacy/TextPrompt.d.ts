@@ -96,7 +96,7 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private updateLeftParenthesesIndices;
     suggestBoxForTest(): SuggestBox | undefined;
 }
-export declare enum Events {
+export declare const enum Events {
     TextChanged = "TextChanged"
 }
 export type EventTypes = {

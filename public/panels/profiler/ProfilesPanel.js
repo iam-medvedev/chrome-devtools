@@ -34,8 +34,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import heapProfilerStyles from './heapProfiler.css.js';
-import { ProfileEvents as ProfileTypeEvents, ProfileHeader, } from './ProfileHeader.js';
-import { Events as ProfileLauncherEvents, ProfileLauncherView } from './ProfileLauncherView.js';
+import { ProfileHeader, } from './ProfileHeader.js';
+import { ProfileLauncherView } from './ProfileLauncherView.js';
 import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
 import profilesPanelStyles from './profilesPanel.css.js';
 import profilesSidebarTreeStyles from './profilesSidebarTree.css.js';
@@ -135,7 +135,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         this.profileViewToolbar.makeWrappable(true);
         this.profileGroups = {};
         this.launcherView = new ProfileLauncherView(this);
-        this.launcherView.addEventListener(ProfileLauncherEvents.ProfileTypeSelected, this.onProfileTypeSelected, this);
+        this.launcherView.addEventListener("ProfileTypeSelected" /* ProfileLauncherEvents.ProfileTypeSelected */, this.onProfileTypeSelected, this);
         this.profileToView = [];
         this.typeIdToSidebarSection = {};
         const types = this.profileTypes;
@@ -146,7 +146,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         this.profilesItemTreeElement.select();
         this.showLauncherView();
         this.createFileSelectorElement();
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.SuspendStateChanged, this.onSuspendStateChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SuspendStateChanged */, this.onSuspendStateChanged, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.CPUProfilerModel.CPUProfilerModel, this.updateProfileTypeSpecificUI, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.HeapProfilerModel.HeapProfilerModel, this.updateProfileTypeSpecificUI, this);
     }
@@ -287,10 +287,10 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         function profileComplete(event) {
             this.showProfile(event.data);
         }
-        profileType.addEventListener(ProfileTypeEvents.ViewUpdated, this.updateProfileTypeSpecificUI, this);
-        profileType.addEventListener(ProfileTypeEvents.AddProfileHeader, onAddProfileHeader, this);
-        profileType.addEventListener(ProfileTypeEvents.RemoveProfileHeader, onRemoveProfileHeader, this);
-        profileType.addEventListener(ProfileTypeEvents.ProfileComplete, profileComplete, this);
+        profileType.addEventListener("view-updated" /* ProfileTypeEvents.ViewUpdated */, this.updateProfileTypeSpecificUI, this);
+        profileType.addEventListener("add-profile-header" /* ProfileTypeEvents.AddProfileHeader */, onAddProfileHeader, this);
+        profileType.addEventListener("remove-profile-header" /* ProfileTypeEvents.RemoveProfileHeader */, onRemoveProfileHeader, this);
+        profileType.addEventListener("profile-complete" /* ProfileTypeEvents.ProfileComplete */, profileComplete, this);
         const profiles = profileType.getProfiles();
         for (let i = 0; i < profiles.length; i++) {
             this.addProfileHeader(profiles[i]);
@@ -568,7 +568,7 @@ let jsProfilerPanelInstance;
 export class JSProfilerPanel extends ProfilesPanel {
     constructor() {
         const registry = instance;
-        super('js_profiler', [registry.cpuProfileType], 'profiler.js-toggle-recording');
+        super('js-profiler', [registry.cpuProfileType], 'profiler.js-toggle-recording');
         this.splitWidget().mainWidget()?.setMinimumSize(350, 0);
         this.#showDeprecationInfobar();
     }
@@ -586,7 +586,7 @@ export class JSProfilerPanel extends ProfilesPanel {
         async function openPerformancePanel() {
             await UI.InspectorView.InspectorView.instance().showPanel('timeline');
         }
-        const infobar = new UI.Infobar.Infobar(UI.Infobar.Type.Warning, /* text */ i18nString(UIStrings.deprecationWarnMsg), /* actions? */ [
+        const infobar = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.Warning */, /* text */ i18nString(UIStrings.deprecationWarnMsg), /* actions? */ [
             {
                 text: i18nString(UIStrings.feedback),
                 highlight: false,

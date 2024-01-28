@@ -48,7 +48,7 @@ export declare const Modifiers: {
 export declare const Keys: {
     [x: string]: Key;
 };
-export declare enum Type {
+export declare const enum Type {
     UserShortcut = "UserShortcut",
     DefaultShortcut = "DefaultShortcut",
     DisabledDefault = "DisabledDefault",

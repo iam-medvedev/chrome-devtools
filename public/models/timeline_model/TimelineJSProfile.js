@@ -20,10 +20,10 @@ export class TimelineJSProfileProcessor {
     }
     static nativeGroup(nativeName) {
         if (nativeName.startsWith('Parse')) {
-            return TimelineJSProfileProcessor.NativeGroups.Parse;
+            return "Parse" /* TimelineJSProfileProcessor.NativeGroups.Parse */;
         }
         if (nativeName.startsWith('Compile') || nativeName.startsWith('Recompile')) {
-            return TimelineJSProfileProcessor.NativeGroups.Compile;
+            return "Compile" /* TimelineJSProfileProcessor.NativeGroups.Compile */;
         }
         return null;
     }
@@ -55,13 +55,4 @@ export class TimelineJSProfileProcessor {
         }
     }
 }
-(function (TimelineJSProfileProcessor) {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line rulesdir/const_enum
-    let NativeGroups;
-    (function (NativeGroups) {
-        NativeGroups["Compile"] = "Compile";
-        NativeGroups["Parse"] = "Parse";
-    })(NativeGroups = TimelineJSProfileProcessor.NativeGroups || (TimelineJSProfileProcessor.NativeGroups = {}));
-})(TimelineJSProfileProcessor || (TimelineJSProfileProcessor = {}));
 //# sourceMappingURL=TimelineJSProfile.js.map

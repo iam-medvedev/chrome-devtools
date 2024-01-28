@@ -5,6 +5,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import filmStripViewStyles from './filmStripView.css.legacy.js';
 const UIStrings = {
@@ -65,19 +66,20 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
         UI.Tooltip.Tooltip.install(element, i18nString(UIStrings.doubleclickToZoomImageClickTo));
         element.createChild('div', 'time').textContent = frameTime;
         element.tabIndex = 0;
+        element.setAttribute('jslog', `${VisualLogging.preview().track({ click: true, dblclick: true }).context('film-strip')}`);
         element.setAttribute('aria-label', i18nString(UIStrings.screenshotForSSelectToView, { PH1: frameTime }));
         UI.ARIAUtils.markAsButton(element);
         const imageElement = element.createChild('div', 'thumbnail').createChild('img');
         imageElement.alt = i18nString(UIStrings.screenshot);
-        element.addEventListener('mousedown', this.onMouseEvent.bind(this, Events.FrameSelected, time), false);
-        element.addEventListener('mouseenter', this.onMouseEvent.bind(this, Events.FrameEnter, time), false);
-        element.addEventListener('mouseout', this.onMouseEvent.bind(this, Events.FrameExit, time), false);
+        element.addEventListener('mousedown', this.onMouseEvent.bind(this, "FrameSelected" /* Events.FrameSelected */, time), false);
+        element.addEventListener('mouseenter', this.onMouseEvent.bind(this, "FrameEnter" /* Events.FrameEnter */, time), false);
+        element.addEventListener('mouseout', this.onMouseEvent.bind(this, "FrameExit" /* Events.FrameExit */, time), false);
         element.addEventListener('dblclick', this.onDoubleClick.bind(this, frame), false);
-        element.addEventListener('focusin', this.onMouseEvent.bind(this, Events.FrameEnter, time), false);
-        element.addEventListener('focusout', this.onMouseEvent.bind(this, Events.FrameExit, time), false);
+        element.addEventListener('focusin', this.onMouseEvent.bind(this, "FrameEnter" /* Events.FrameEnter */, time), false);
+        element.addEventListener('focusout', this.onMouseEvent.bind(this, "FrameExit" /* Events.FrameExit */, time), false);
         element.addEventListener('keydown', event => {
             if (event.code === 'Enter' || event.code === 'Space') {
-                this.onMouseEvent(Events.FrameSelected, time);
+                this.onMouseEvent("FrameSelected" /* Events.FrameSelected */, time);
             }
         });
         FilmStripView.setImageData(imageElement, frame.screenshotEvent.args.dataUri);
@@ -114,14 +116,6 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
         this.statusLabel.textContent = text;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["FrameSelected"] = "FrameSelected";
-    Events["FrameEnter"] = "FrameEnter";
-    Events["FrameExit"] = "FrameExit";
-})(Events || (Events = {}));
 export class Dialog {
     fragment;
     widget;

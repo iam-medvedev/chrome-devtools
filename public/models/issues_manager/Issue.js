@@ -32,59 +32,23 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/issues_manager/Issue.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// eslint-disable-next-line rulesdir/const_enum
-export var IssueCategory;
-(function (IssueCategory) {
-    IssueCategory["CrossOriginEmbedderPolicy"] = "CrossOriginEmbedderPolicy";
-    IssueCategory["Generic"] = "Generic";
-    IssueCategory["MixedContent"] = "MixedContent";
-    IssueCategory["Cookie"] = "Cookie";
-    IssueCategory["HeavyAd"] = "HeavyAd";
-    IssueCategory["ContentSecurityPolicy"] = "ContentSecurityPolicy";
-    IssueCategory["LowTextContrast"] = "LowTextContrast";
-    IssueCategory["Cors"] = "Cors";
-    IssueCategory["AttributionReporting"] = "AttributionReporting";
-    IssueCategory["QuirksMode"] = "QuirksMode";
-    IssueCategory["Other"] = "Other";
-})(IssueCategory || (IssueCategory = {}));
-// eslint-disable-next-line rulesdir/const_enum
-export var IssueKind;
-(function (IssueKind) {
-    /**
-     * Something is not working in the page right now. Issues of this kind need
-     * usually be fixed right away. They usually indicate that a Web API is being
-     * used in a wrong way, or that a network request was misconfigured.
-     */
-    IssueKind["PageError"] = "PageError";
-    /**
-     * The page is using a Web API or relying on browser behavior that is going
-     * to change in the future. If possible, the message associated with issues
-     * of this kind should include a time when the behavior is going to change.
-     */
-    IssueKind["BreakingChange"] = "BreakingChange";
-    /**
-     * Anything that can be improved about the page, but isn't urgent and doesn't
-     * impair functionality in a major way.
-     */
-    IssueKind["Improvement"] = "Improvement";
-})(IssueKind || (IssueKind = {}));
 export function getIssueKindName(issueKind) {
     switch (issueKind) {
-        case IssueKind.BreakingChange:
+        case "BreakingChange" /* IssueKind.BreakingChange */:
             return i18nString(UIStrings.breakingChanges);
-        case IssueKind.Improvement:
+        case "Improvement" /* IssueKind.Improvement */:
             return i18nString(UIStrings.improvements);
-        case IssueKind.PageError:
+        case "PageError" /* IssueKind.PageError */:
             return i18nString(UIStrings.pageErrors);
     }
 }
 export function getIssueKindDescription(issueKind) {
     switch (issueKind) {
-        case IssueKind.PageError:
+        case "PageError" /* IssueKind.PageError */:
             return i18nString(UIStrings.pageErrorIssue);
-        case IssueKind.BreakingChange:
+        case "BreakingChange" /* IssueKind.BreakingChange */:
             return i18nString(UIStrings.breakingChangeIssue);
-        case IssueKind.Improvement:
+        case "Improvement" /* IssueKind.Improvement */:
             return i18nString(UIStrings.improvementIssue);
     }
 }
@@ -93,13 +57,13 @@ export function getIssueKindDescription(issueKind) {
  * important kind on aggregated issues that union issues of different kinds.
  */
 export function unionIssueKind(a, b) {
-    if (a === IssueKind.PageError || b === IssueKind.PageError) {
-        return IssueKind.PageError;
+    if (a === "PageError" /* IssueKind.PageError */ || b === "PageError" /* IssueKind.PageError */) {
+        return "PageError" /* IssueKind.PageError */;
     }
-    if (a === IssueKind.BreakingChange || b === IssueKind.BreakingChange) {
-        return IssueKind.BreakingChange;
+    if (a === "BreakingChange" /* IssueKind.BreakingChange */ || b === "BreakingChange" /* IssueKind.BreakingChange */) {
+        return "BreakingChange" /* IssueKind.BreakingChange */;
     }
-    return IssueKind.Improvement;
+    return "Improvement" /* IssueKind.Improvement */;
 }
 export function getShowThirdPartyIssuesSetting() {
     return Common.Settings.Settings.instance().createSetting('showThirdPartyIssues', true);

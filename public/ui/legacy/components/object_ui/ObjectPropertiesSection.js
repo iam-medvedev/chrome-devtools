@@ -403,7 +403,6 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         };
         memoryIcon.addEventListener('click', event => {
             event.consume();
-            Host.userMetrics.linearMemoryInspectorRevealedFrom(Host.UserMetrics.LinearMemoryInspectorRevealedFrom.MemoryIcon);
             void Common.Revealer.reveal(new SDK.RemoteObject.LinearMemoryInspectable(object, expression));
         });
         const revealText = i18nString(UIStrings.revealInMemoryInpector);
@@ -988,7 +987,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (this.property.value && valueText && !this.property.wasThrown) {
             this.expandedValueElement = this.createExpandedValueElement(this.property.value, this.property.synthetic);
         }
-        const experiment = Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.IMPORTANT_DOM_PROPERTIES);
+        const experiment = Root.Runtime.experiments.isEnabled("importantDOMProperties" /* Root.Runtime.ExperimentName.IMPORTANT_DOM_PROPERTIES */);
         let adorner = '';
         let container;
         if (this.property.webIdl?.applicable && experiment) {

@@ -80,7 +80,7 @@ export class LinkDecorator extends Common.ObjectWrapper.ObjectWrapper {
     }
     bindingChanged(event) {
         const binding = event.data;
-        this.dispatchEventToListeners(Components.Linkifier.LinkDecorator.Events.LinkIconChanged, binding.network);
+        this.dispatchEventToListeners("LinkIconChanged" /* Components.Linkifier.LinkDecorator.Events.LinkIconChanged */, binding.network);
     }
     linkIcon(uiSourceCode) {
         return PersistenceUtils.iconForUISourceCode(uiSourceCode);

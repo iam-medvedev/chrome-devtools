@@ -225,7 +225,6 @@ export class HTMLModel {
     #build(text) {
         const tokenizer = createTokenizer('text/html');
         let baseOffset = 0, lastOffset = 0;
-        const lowerCaseText = text.toLowerCase();
         let pendingToken = null;
         const pushToken = (token) => {
             this.#tokens.push(token);
@@ -295,9 +294,16 @@ export class HTMLModel {
             if (!element) {
                 break;
             }
-            lastOffset = lowerCaseText.indexOf('</' + element.name, lastOffset);
-            if (lastOffset === -1) {
-                lastOffset = text.length;
+            while (true) {
+                lastOffset = text.indexOf('</', lastOffset);
+                if (lastOffset === -1) {
+                    lastOffset = text.length;
+                    break;
+                }
+                if (text.substring(lastOffset + 2).toLowerCase().startsWith(element.name)) {
+                    break;
+                }
+                lastOffset += 2;
             }
             if (!element.openTag) {
                 break;

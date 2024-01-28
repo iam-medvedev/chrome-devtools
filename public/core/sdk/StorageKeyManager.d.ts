@@ -23,7 +23,7 @@ export interface StorageKey {
     origin: Platform.DevToolsPath.UrlString;
     components: Map<StorageKeyComponent, string>;
 }
-export declare enum Events {
+export declare const enum Events {
     StorageKeyAdded = "StorageKeyAdded",
     StorageKeyRemoved = "StorageKeyRemoved",
     MainStorageKeyChanged = "MainStorageKeyChanged"

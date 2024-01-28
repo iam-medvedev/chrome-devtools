@@ -30,7 +30,7 @@
 import * as Common from '../../../../core/common/common.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
-import { Events as OverviewGridEvents, OverviewGrid } from './OverviewGrid.js';
+import { OverviewGrid } from './OverviewGrid.js';
 import { TimelineOverviewCalculator } from './TimelineOverviewCalculator.js';
 import timelineOverviewInfoStyles from './timelineOverviewInfo.css.js';
 export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
@@ -59,8 +59,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.cursorArea.addEventListener('mousemove', this.onMouseMove.bind(this), true);
         this.cursorArea.addEventListener('mouseleave', this.hideCursor.bind(this), true);
         this.overviewGrid.setResizeEnabled(false);
-        this.overviewGrid.addEventListener(OverviewGridEvents.WindowChangedWithPosition, this.onWindowChanged, this);
-        this.overviewGrid.addEventListener(OverviewGridEvents.BreadcrumbAdded, this.onBreadcrumbAdded, this);
+        this.overviewGrid.addEventListener("WindowChangedWithPosition" /* OverviewGridEvents.WindowChangedWithPosition */, this.onWindowChanged, this);
+        this.overviewGrid.addEventListener("BreadcrumbAdded" /* OverviewGridEvents.BreadcrumbAdded */, this.onBreadcrumbAdded, this);
         this.overviewGrid.setClickHandler(this.onClick.bind(this));
         this.overviewControls = [];
         this.markers = new Map();
@@ -74,7 +74,9 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.muteOnWindowChanged = false;
     }
     enableCreateBreadcrumbsButton() {
-        this.overviewGrid.enableCreateBreadcrumbsButton();
+        const breacrumbsElement = this.overviewGrid.enableCreateBreadcrumbsButton();
+        breacrumbsElement.addEventListener('mousemove', this.onMouseMove.bind(this), true);
+        breacrumbsElement.addEventListener('mouseleave', this.hideCursor.bind(this), true);
     }
     onMouseMove(event) {
         if (!this.cursorEnabled) {
@@ -82,7 +84,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         }
         const mouseEvent = event;
         const target = event.target;
-        this.cursorPosition = mouseEvent.offsetX + target.offsetLeft;
+        const offsetLeftRelativeToCursorArea = target.getBoundingClientRect().left - this.cursorArea.getBoundingClientRect().left;
+        this.cursorPosition = mouseEvent.offsetX + offsetLeftRelativeToCursorArea;
         this.cursorElement.style.left = this.cursorPosition + 'px';
         this.cursorElement.style.visibility = 'visible';
         void this.overviewInfo.setContent(this.buildOverviewInfo());
@@ -198,7 +201,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         return this.overviewControls.some(control => control.onClick(event));
     }
     onBreadcrumbAdded() {
-        this.dispatchEventToListeners(Events.OverviewPaneBreadcrumbAdded, {
+        this.dispatchEventToListeners("OverviewPaneBreadcrumbAdded" /* Events.OverviewPaneBreadcrumbAdded */, {
             startTime: TraceEngine.Types.Timing.MilliSeconds(this.windowStartTime),
             endTime: TraceEngine.Types.Timing.MilliSeconds(this.windowEndTime),
         });
@@ -219,7 +222,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
             startTime: TraceEngine.Types.Timing.MilliSeconds(this.windowStartTime),
             endTime: TraceEngine.Types.Timing.MilliSeconds(this.windowEndTime),
         };
-        this.dispatchEventToListeners(Events.OverviewPaneWindowChanged, windowTimes);
+        this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OverviewPaneWindowChanged */, windowTimes);
     }
     setWindowTimes(startTime, endTime) {
         if (startTime === this.windowStartTime && endTime === this.windowEndTime) {
@@ -228,7 +231,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.windowStartTime = startTime;
         this.windowEndTime = endTime;
         this.updateWindow();
-        this.dispatchEventToListeners(Events.OverviewPaneWindowChanged, {
+        this.dispatchEventToListeners("OverviewPaneWindowChanged" /* Events.OverviewPaneWindowChanged */, {
             startTime: TraceEngine.Types.Timing.MilliSeconds(startTime),
             endTime: TraceEngine.Types.Timing.MilliSeconds(endTime),
         });
@@ -247,13 +250,6 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.muteOnWindowChanged = false;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["OverviewPaneWindowChanged"] = "OverviewPaneWindowChanged";
-    Events["OverviewPaneBreadcrumbAdded"] = "OverviewPaneBreadcrumbAdded";
-})(Events || (Events = {}));
 export class TimelineOverviewBase extends UI.Widget.VBox {
     calculatorInternal;
     canvas;

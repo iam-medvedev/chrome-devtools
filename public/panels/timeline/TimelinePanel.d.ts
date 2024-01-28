@@ -110,7 +110,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     highlightEvent(event: TraceEngine.Legacy.Event | null): void;
     private handleDrop;
 }
-export declare enum State {
+export declare const enum State {
     Idle = "Idle",
     StartPending = "StartPending",
     Recording = "Recording",

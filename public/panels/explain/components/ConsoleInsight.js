@@ -56,10 +56,6 @@ const UIStrings = {
      */
     relatedCode: 'Related code',
     /**
-     * @description The title of the insight source "Google search answers".
-     */
-    searchAnswers: 'Google search answers',
-    /**
      * @description The text appearing before the list of sources that DevTools
      * could collect based on a console message. If the user clicks the button
      * related to the text, these sources will be used to generate insights.
@@ -171,8 +167,6 @@ function localizeType(sourceType) {
             return i18nString(UIStrings.networkRequest);
         case SourceType.RELATED_CODE:
             return i18nString(UIStrings.relatedCode);
-        case SourceType.SEARCH_ANSWERS:
-            return i18nString(UIStrings.searchAnswers);
     }
 }
 const DOGFOODFEEDBACK_URL = 'http://go/console-insights-experiment-general-feedback';
@@ -199,15 +193,6 @@ function buildRatingFormLink(rating, comment, explanation, consoleMessage, stack
     })
         .join('&')}`;
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-var State;
-(function (State) {
-    State["INSIGHT"] = "insight";
-    State["LOADING"] = "loading";
-    State["REFINING"] = "refining";
-    State["ERROR"] = "error";
-})(State || (State = {}));
 let nextInstanceId = 0;
 export class ConsoleInsight extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-console-insight`;
@@ -222,7 +207,7 @@ export class ConsoleInsight extends HTMLElement {
     #renderer = new MarkdownRenderer();
     // Main state.
     #state = {
-        type: State.LOADING,
+        type: "loading" /* State.LOADING */,
     };
     // Rating sub-form state.
     #ratingFormOpened = false;
@@ -353,25 +338,25 @@ export class ConsoleInsight extends HTMLElement {
     #transitionTo(newState) {
         const previousState = this.#state;
         this.#state = newState;
-        if (newState.type !== previousState.type && previousState.type === State.LOADING) {
+        if (newState.type !== previousState.type && previousState.type === "loading" /* State.LOADING */) {
             this.classList.add('loaded');
         }
         this.#render();
     }
     async update(includeContext = this.#refinedByDefault) {
-        this.#transitionTo(this.#state.type === State.INSIGHT ? {
+        this.#transitionTo(this.#state.type === "insight" /* State.INSIGHT */ ? {
             ...this.#state,
-            type: State.REFINING,
+            type: "refining" /* State.REFINING */,
         } :
             {
-                type: State.LOADING,
+                type: "loading" /* State.LOADING */,
             });
         try {
             const requestedSources = includeContext ? undefined : [SourceType.MESSAGE];
             const { prompt, sources } = await this.#promptBuilder.buildPrompt(requestedSources);
             const explanation = await this.#insightProvider.getInsights(prompt);
             this.#transitionTo({
-                type: State.INSIGHT,
+                type: "insight" /* State.INSIGHT */,
                 tokens: Marked.Marked.lexer(explanation),
                 explanation,
                 sources,
@@ -381,7 +366,7 @@ export class ConsoleInsight extends HTMLElement {
         catch (err) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightErrored);
             this.#transitionTo({
-                type: State.ERROR,
+                type: "error" /* State.ERROR */,
                 error: err.message,
             });
         }
@@ -403,7 +388,7 @@ export class ConsoleInsight extends HTMLElement {
         this.#onCloseRating();
     }
     #openFeedbackFrom() {
-        if (this.#state.type !== State.INSIGHT) {
+        if (this.#state.type !== "insight" /* State.INSIGHT */) {
             throw new Error('Unexpected state');
         }
         const link = buildRatingFormLink(this.#selectedRating ? 'Positive' : 'Negative', this.#shadow.querySelector('textarea')?.value || '', this.#state.explanation, this.#state.sources.filter(s => s.type === SourceType.MESSAGE).map(s => s.value).join('\n'), this.#state.sources.filter(s => s.type === SourceType.STACKTRACE).map(s => s.value).join('\n'), this.#state.sources.filter(s => s.type === SourceType.RELATED_CODE).map(s => s.value).join('\n'), this.#state.sources.filter(s => s.type === SourceType.NETWORK_REQUEST).map(s => s.value).join('\n'));
@@ -435,7 +420,7 @@ export class ConsoleInsight extends HTMLElement {
         this.#render();
     }
     #onRefine() {
-        if (this.#state.type !== State.INSIGHT) {
+        if (this.#state.type !== "insight" /* State.INSIGHT */) {
             throw new Error('Unexpected state');
         }
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRefined);
@@ -471,7 +456,7 @@ export class ConsoleInsight extends HTMLElement {
     #renderMain() {
         // clang-format off
         switch (this.#state.type) {
-            case State.LOADING:
+            case "loading" /* State.LOADING */:
                 return html `<main>
             <div role="presentation" class="loader" style="clip-path: url('#clipPath');">
               <svg width="100%" height="64">
@@ -483,8 +468,8 @@ export class ConsoleInsight extends HTMLElement {
               </svg>
             </div>
           </main>`;
-            case State.REFINING:
-            case State.INSIGHT:
+            case "refining" /* State.REFINING */:
+            case "insight" /* State.INSIGHT */:
                 return html `
         <main>
           <${MarkdownView.MarkdownView.MarkdownView.litTagName}
@@ -505,7 +490,7 @@ export class ConsoleInsight extends HTMLElement {
                 }}
                 @click=${this.#onRefine}
               >
-              ${this.#state.type === State.REFINING ? i18nString(UIStrings.refining) : i18nString(UIStrings.refine)}
+              ${this.#state.type === "refining" /* State.REFINING */ ? i18nString(UIStrings.refining) : i18nString(UIStrings.refine)}
             </${Buttons.Button.Button.litTagName}>
             <${Buttons.Button.Button.litTagName}
               class="info"
@@ -520,7 +505,7 @@ export class ConsoleInsight extends HTMLElement {
           </div>
           ` : ''}
         </main>`;
-            case State.ERROR:
+            case "error" /* State.ERROR */:
                 return html `
         <main>
           <div class="error">${this.#state.error}</div>
@@ -531,11 +516,11 @@ export class ConsoleInsight extends HTMLElement {
     #renderFooter() {
         // clang-format off
         switch (this.#state.type) {
-            case State.LOADING:
-            case State.ERROR:
+            case "loading" /* State.LOADING */:
+            case "error" /* State.ERROR */:
                 return LitHtml.nothing;
-            case State.INSIGHT:
-            case State.REFINING:
+            case "insight" /* State.INSIGHT */:
+            case "refining" /* State.REFINING */:
                 return html `<footer>
         <div>
           <${Buttons.Button.Button.litTagName}
@@ -573,12 +558,12 @@ export class ConsoleInsight extends HTMLElement {
     }
     #getHeader() {
         switch (this.#state.type) {
-            case State.LOADING:
+            case "loading" /* State.LOADING */:
                 return i18nString(UIStrings.generating);
-            case State.INSIGHT:
-            case State.REFINING:
+            case "insight" /* State.INSIGHT */:
+            case "refining" /* State.REFINING */:
                 return i18nString(UIStrings.insight);
-            case State.ERROR:
+            case "error" /* State.ERROR */:
                 return i18nString(UIStrings.error);
         }
     }

@@ -23,18 +23,18 @@ export class Console extends ObjectWrapper {
         consoleInstance = undefined;
     }
     addMessage(text, level, show) {
-        const message = new Message(text, level || MessageLevel.Info, Date.now(), show || false);
+        const message = new Message(text, level || "info" /* MessageLevel.Info */, Date.now(), show || false);
         this.#messagesInternal.push(message);
-        this.dispatchEventToListeners(Events.MessageAdded, message);
+        this.dispatchEventToListeners("messageAdded" /* Events.MessageAdded */, message);
     }
     log(text) {
-        this.addMessage(text, MessageLevel.Info);
+        this.addMessage(text, "info" /* MessageLevel.Info */);
     }
     warn(text) {
-        this.addMessage(text, MessageLevel.Warning);
+        this.addMessage(text, "warning" /* MessageLevel.Warning */);
     }
     error(text) {
-        this.addMessage(text, MessageLevel.Error, true);
+        this.addMessage(text, "error" /* MessageLevel.Error */, true);
     }
     messages() {
         return this.#messagesInternal;
@@ -46,20 +46,6 @@ export class Console extends ObjectWrapper {
         return reveal(this);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["MessageAdded"] = "messageAdded";
-})(Events || (Events = {}));
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var MessageLevel;
-(function (MessageLevel) {
-    MessageLevel["Info"] = "info";
-    MessageLevel["Warning"] = "warning";
-    MessageLevel["Error"] = "error";
-})(MessageLevel || (MessageLevel = {}));
 export class Message {
     text;
     level;

@@ -38,7 +38,7 @@ export declare class DatabaseQueryView extends DatabaseQueryView_base {
     private scrollResultIntoView;
     private appendQueryResult;
 }
-export declare enum Events {
+export declare const enum Events {
     SchemaUpdated = "SchemaUpdated"
 }
 export type EventTypes = {

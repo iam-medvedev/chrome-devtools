@@ -55,7 +55,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
         this.prompt.renderAsBlock();
         const proxyElement = this.prompt.attach(this.input);
         this.prompt.setPlaceholder(i18nString(UIStrings.addNewClass));
-        this.prompt.addEventListener(UI.TextPrompt.Events.TextChanged, this.onTextChanged, this);
+        this.prompt.addEventListener("TextChanged" /* UI.TextPrompt.Events.TextChanged */, this.onTextChanged, this);
         proxyElement.addEventListener('keydown', this.onKeyDown.bind(this), false);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.DOMMutated, this.onDOMMutated, this, { scoped: true });
         this.mutatingNodes = new Set();
@@ -230,7 +230,7 @@ export class ButtonProvider {
         this.button.setText('.cls');
         this.button.element.classList.add('monospace');
         this.button.element.setAttribute('jslog', `${VisualLogging.toggleSubpane().track({ click: true }).context('elements-classes')}`);
-        this.button.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.clicked, this);
+        this.button.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.clicked, this);
         this.view = new ClassesPaneWidget();
     }
     static instance(opts = { forceNew: null }) {

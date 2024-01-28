@@ -227,7 +227,7 @@ export class DebuggerPlugin extends Plugin {
         this.uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
         this.scriptFileForDebuggerModel = new Map();
         this.loader = SDK.PageResourceLoader.PageResourceLoader.instance();
-        this.loader.addEventListener(SDK.PageResourceLoader.Events.Update, this.showSourceMapInfobarIfNeeded.bind(this), this);
+        this.loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.Update */, this.showSourceMapInfobarIfNeeded.bind(this), this);
         this.ignoreListCallback = this.showIgnoreListInfobarIfNeeded.bind(this);
         Bindings.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListCallback);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.callFrameChanged, this);
@@ -368,7 +368,7 @@ export class DebuggerPlugin extends Plugin {
         function unIgnoreList() {
             Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiSourceCode);
         }
-        const infobar = new UI.Infobar.Infobar(UI.Infobar.Type.Warning, i18nString(UIStrings.thisScriptIsOnTheDebuggersIgnore), [
+        const infobar = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.Warning */, i18nString(UIStrings.thisScriptIsOnTheDebuggersIgnore), [
             { text: i18nString(UIStrings.removeFromIgnoreList), highlight: false, delegate: unIgnoreList, dismiss: true },
             {
                 text: i18nString(UIStrings.configure),
@@ -1273,7 +1273,7 @@ export class DebuggerPlugin extends Plugin {
             this.missingDebugInfoBar = null;
             return;
         }
-        this.missingDebugInfoBar = UI.Infobar.Infobar.create(UI.Infobar.Type.Error, warning.details, []);
+        this.missingDebugInfoBar = UI.Infobar.Infobar.create("error" /* UI.Infobar.Type.Error */, warning.details, []);
         if (!this.missingDebugInfoBar) {
             return;
         }
@@ -1331,7 +1331,7 @@ export class DebuggerPlugin extends Plugin {
             return;
         }
         if (!resource) {
-            this.sourceMapInfobar = UI.Infobar.Infobar.create(UI.Infobar.Type.Info, i18nString(UIStrings.sourceMapSkipped), [], Common.Settings.Settings.instance().createSetting('sourceMapSkippedInfobarDisabled', false));
+            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.Info */, i18nString(UIStrings.sourceMapSkipped), [], Common.Settings.Settings.instance().createSetting('sourceMapSkippedInfobarDisabled', false));
             if (!this.sourceMapInfobar) {
                 return;
             }
@@ -1339,7 +1339,7 @@ export class DebuggerPlugin extends Plugin {
             this.sourceMapInfobar.createDetailsRowMessage(i18nString(UIStrings.reloadForSourceMap));
         }
         else if (resource.success) {
-            this.sourceMapInfobar = UI.Infobar.Infobar.create(UI.Infobar.Type.Info, i18nString(UIStrings.sourceMapLoaded), [], Common.Settings.Settings.instance().createSetting('sourceMapInfobarDisabled', false));
+            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.Info */, i18nString(UIStrings.sourceMapLoaded), [], Common.Settings.Settings.instance().createSetting('sourceMapInfobarDisabled', false));
             if (!this.sourceMapInfobar) {
                 return;
             }
@@ -1361,7 +1361,7 @@ export class DebuggerPlugin extends Plugin {
                 delegate = ignoreListManager.ignoreListUISourceCode.bind(ignoreListManager, this.uiSourceCode);
             }
             this.sourceMapInfobar =
-                UI.Infobar.Infobar.create(UI.Infobar.Type.Warning, i18nString(UIStrings.sourceMapFailed), [
+                UI.Infobar.Infobar.create("warning" /* UI.Infobar.Type.Warning */, i18nString(UIStrings.sourceMapFailed), [
                     { text, highlight: false, delegate, dismiss: true },
                 ]);
             if (!this.sourceMapInfobar) {

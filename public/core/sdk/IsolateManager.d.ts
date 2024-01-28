@@ -22,7 +22,7 @@ export interface Observer {
     isolateRemoved(isolate: Isolate): void;
     isolateChanged(isolate: Isolate): void;
 }
-export declare enum Events {
+export declare const enum Events {
     MemoryChanged = "MemoryChanged"
 }
 export type EventTypes = {

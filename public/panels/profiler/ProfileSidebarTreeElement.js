@@ -5,7 +5,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { Events as ProfileHeaderEvents, } from './ProfileHeader.js';
 const UIStrings = {
     /**
      *@description Tooltip for the 3-dots menu in the Memory panel profiles list.
@@ -48,7 +47,7 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
         this.small = false;
         this.dataDisplayDelegate = dataDisplayDelegate;
         this.profile = profile;
-        profile.addEventListener(ProfileHeaderEvents.UpdateStatus, this.updateStatus, this);
+        profile.addEventListener("UpdateStatus" /* ProfileHeaderEvents.UpdateStatus */, this.updateStatus, this);
     }
     updateStatus(event) {
         const statusUpdate = event.data;
@@ -84,7 +83,7 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
         delete this.editing;
     }
     dispose() {
-        this.profile.removeEventListener(ProfileHeaderEvents.UpdateStatus, this.updateStatus, this);
+        this.profile.removeEventListener("UpdateStatus" /* ProfileHeaderEvents.UpdateStatus */, this.updateStatus, this);
     }
     onselect() {
         this.dataDisplayDelegate.showProfile(this.profile);

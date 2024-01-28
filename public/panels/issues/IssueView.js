@@ -85,7 +85,7 @@ class AffectedRequestsView extends AffectedResourcesView {
             const element = document.createElement('tr');
             element.classList.add('affected-resource-request');
             const category = this.issue.getCategory();
-            const tab = issueTypeToNetworkHeaderMap.get(category) || NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent;
+            const tab = issueTypeToNetworkHeaderMap.get(category) || "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
             element.appendChild(this.createRequestCell(affectedRequest, {
                 networkTab: tab,
                 additionalOnClickAction() {
@@ -109,7 +109,7 @@ class AffectedRequestsView extends AffectedResourcesView {
             this.updateAffectedResourceCount(0);
             return;
         }
-        if (this.issue.getCategory() === IssuesManager.Issue.IssueCategory.MixedContent) {
+        if (this.issue.getCategory() === "MixedContent" /* IssuesManager.Issue.IssueCategory.MixedContent */) {
             // The AffectedMixedContentView takes care of displaying the resources.
             this.updateAffectedResourceCount(0);
             return;
@@ -119,16 +119,16 @@ class AffectedRequestsView extends AffectedResourcesView {
 }
 const issueTypeToNetworkHeaderMap = new Map([
     [
-        IssuesManager.Issue.IssueCategory.Cookie,
-        NetworkForward.UIRequestLocation.UIRequestTabs.Cookies,
+        "Cookie" /* IssuesManager.Issue.IssueCategory.Cookie */,
+        "cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.Cookies */,
     ],
     [
-        IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy,
-        NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent,
+        "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy */,
+        "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
     ],
     [
-        IssuesManager.Issue.IssueCategory.MixedContent,
-        NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent,
+        "MixedContent" /* IssuesManager.Issue.IssueCategory.MixedContent */,
+        "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
     ],
 ]);
 class AffectedMixedContentView extends AffectedResourcesView {
@@ -153,11 +153,11 @@ class AffectedMixedContentView extends AffectedResourcesView {
         element.classList.add('affected-resource-mixed-content');
         if (mixedContent.request) {
             const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) ||
-                NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent;
+                "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
             element.appendChild(this.createRequestCell(mixedContent.request, {
                 networkTab,
                 additionalOnClickAction() {
-                    Host.userMetrics.issuesPanelResourceOpened(IssuesManager.Issue.IssueCategory.MixedContent, "Request" /* AffectedItem.Request */);
+                    Host.userMetrics.issuesPanelResourceOpened("MixedContent" /* IssuesManager.Issue.IssueCategory.MixedContent */, "Request" /* AffectedItem.Request */);
                 },
             }));
         }
@@ -244,11 +244,11 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     }
     static getBodyCSSClass(issueKind) {
         switch (issueKind) {
-            case IssuesManager.Issue.IssueKind.BreakingChange:
+            case "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */:
                 return 'issue-kind-breaking-change';
-            case IssuesManager.Issue.IssueKind.PageError:
+            case "PageError" /* IssuesManager.Issue.IssueKind.PageError */:
                 return 'issue-kind-page-error';
-            case IssuesManager.Issue.IssueKind.Improvement:
+            case "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */:
                 return 'issue-kind-improvement';
         }
     }
@@ -316,7 +316,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     onexpand() {
         const category = this.#issue.getCategory();
         // Handle sub type for cookie issues.
-        if (category === IssuesManager.Issue.IssueCategory.Cookie) {
+        if (category === "Cookie" /* IssuesManager.Issue.IssueCategory.Cookie */) {
             const cookieIssueSubCatagory = IssuesManager.CookieIssue.CookieIssue.getSubCategory(this.#issue.code());
             Host.userMetrics.issuesPanelIssueExpanded(cookieIssueSubCatagory);
         }

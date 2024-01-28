@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import { Issue, IssueCategory, IssueKind } from './Issue.js';
+import { Issue } from './Issue.js';
 const UIStrings = {
     /**
      *@description Title for a learn more link in Heavy Ads issue description
@@ -36,14 +36,14 @@ export class HeavyAdIssue extends Issue {
         };
     }
     getCategory() {
-        return IssueCategory.HeavyAd;
+        return "HeavyAd" /* IssueCategory.HeavyAd */;
     }
     getKind() {
         switch (this.#issueDetails.resolution) {
             case "HeavyAdBlocked" /* Protocol.Audits.HeavyAdResolutionStatus.HeavyAdBlocked */:
-                return IssueKind.PageError;
+                return "PageError" /* IssueKind.PageError */;
             case "HeavyAdWarning" /* Protocol.Audits.HeavyAdResolutionStatus.HeavyAdWarning */:
-                return IssueKind.BreakingChange;
+                return "BreakingChange" /* IssueKind.BreakingChange */;
         }
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {

@@ -404,4 +404,13 @@ export declare const NotRestoredReasonDescription: {
     CookieFlushed: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    SmartCard: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
+    LiveMediaStreamTrack: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
+    UnloadHandler: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
 };

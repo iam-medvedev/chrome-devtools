@@ -85,7 +85,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingCreated, this.onBindingCreated, this);
         Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingRemoved, this.onBindingRemoved, this);
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener(Persistence.NetworkPersistenceManager.Events.RequestsForHeaderOverridesFileChanged, this.#onRequestsForHeaderOverridesFileChanged, this);
+        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("RequestsForHeaderOverridesFileChanged" /* Persistence.NetworkPersistenceManager.Events.RequestsForHeaderOverridesFileChanged */, this.#onRequestsForHeaderOverridesFileChanged, this);
         this.tabIds = new Map();
         this.files = new Map();
         this.previouslyViewedFilesSetting = setting;
@@ -289,7 +289,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             previousView: previousView,
             userGesture: userGesture,
         };
-        this.dispatchEventToListeners(Events.EditorSelected, eventData);
+        this.dispatchEventToListeners("EditorSelected" /* Events.EditorSelected */, eventData);
     }
     titleForFile(uiSourceCode) {
         const maxDisplayNameLength = 30;
@@ -497,7 +497,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         this.files.delete(tabId);
         if (uiSourceCode) {
             this.removeUISourceCodeListeners(uiSourceCode);
-            this.dispatchEventToListeners(Events.EditorClosed, uiSourceCode);
+            this.dispatchEventToListeners("EditorClosed" /* Events.EditorClosed */, uiSourceCode);
             if (isUserGesture) {
                 this.editorClosedByUserAction(uiSourceCode);
             }
@@ -577,13 +577,6 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         return this.currentFileInternal || null;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["EditorSelected"] = "EditorSelected";
-    Events["EditorClosed"] = "EditorClosed";
-})(Events || (Events = {}));
 const MAX_PREVIOUSLY_VIEWED_FILES_COUNT = 30;
 const MAX_SERIALIZABLE_URL_LENGTH = 4096;
 function historyItemKey(uiSourceCode) {

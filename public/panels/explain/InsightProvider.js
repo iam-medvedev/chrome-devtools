@@ -11,7 +11,13 @@ export class InsightProvider {
         };
         const temperature = parseFloat(Root.Runtime.Runtime.queryParam('aidaTemperature') || '');
         if (!isNaN(temperature)) {
-            request.options = { temperature };
+            request.options ??= {};
+            request.options.temperature = temperature;
+        }
+        const modelId = Root.Runtime.Runtime.queryParam('aidaModelId');
+        if (modelId) {
+            request.options ??= {};
+            request.options.model_id = modelId;
         }
         return request;
     }

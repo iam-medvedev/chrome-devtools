@@ -189,7 +189,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     constructor() {
         super('elements');
         this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'elementsPanelSplitViewState', 325, 325);
-        this.splitWidget.addEventListener(UI.SplitWidget.Events.SidebarSizeChanged, this.updateTreeOutlineVisibleWidth.bind(this));
+        this.splitWidget.addEventListener("SidebarSizeChanged" /* UI.SplitWidget.Events.SidebarSizeChanged */, this.updateTreeOutlineVisibleWidth.bind(this));
         this.splitWidget.show(this.element);
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this, null);
         this.searchableViewInternal.setMinimalSearchQuerySize(0);
@@ -238,11 +238,11 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.updateSidebarPosition();
         this.cssStyleTrackerByCSSModel = new Map();
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.DOMModel.DOMModel, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.NameChanged, event => this.targetNameChanged(event.data));
+        SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NameChanged */, event => this.targetNameChanged(event.data));
         Common.Settings.Settings.instance()
             .moduleSetting('showUAShadowDOM')
             .addChangeListener(this.showUAShadowDOMChanged.bind(this));
-        Extensions.ExtensionServer.ExtensionServer.instance().addEventListener(Extensions.ExtensionServer.Events.SidebarPaneAdded, this.extensionSidebarPaneAdded, this);
+        Extensions.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded" /* Extensions.ExtensionServer.Events.SidebarPaneAdded */, this.extensionSidebarPaneAdded, this);
         this.currentSearchResultIndex = -1; // -1 represents the initial invalid state
         this.pendingNodeReveal = false;
         this.adornerManager = new ElementsComponents.AdornerManager.AdornerManager(Common.Settings.Settings.instance().moduleSetting('adornerSettings'));
@@ -855,7 +855,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         stylesSplitWidget.setMainWidget(matchedStylePanesWrapper);
         stylesSplitWidget.hideSidebar();
         stylesSplitWidget.enableShowModeSaving();
-        stylesSplitWidget.addEventListener(UI.SplitWidget.Events.ShowModeChanged, () => {
+        stylesSplitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.ShowModeChanged */, () => {
             showMetricsWidgetInStylesPane();
         });
         this.stylesWidget.addEventListener("InitialUpdateCompleted" /* StylesSidebarPaneEvents.InitialUpdateCompleted */, () => {
@@ -867,7 +867,7 @@ export class ElementsPanel extends UI.Panel.Panel {
             this.stylesWidget.removeEventListener("StylesUpdateCompleted" /* StylesSidebarPaneEvents.StylesUpdateCompleted */, toggleMetricsWidget);
         };
         const showMetricsWidgetInStylesPane = () => {
-            const showMergedComputedPane = stylesSplitWidget.showMode() === UI.SplitWidget.ShowMode.Both;
+            const showMergedComputedPane = stylesSplitWidget.showMode() === "Both" /* UI.SplitWidget.ShowMode.Both */;
             if (showMergedComputedPane) {
                 showMetricsWidgetInComputedPane();
             }
@@ -885,11 +885,11 @@ export class ElementsPanel extends UI.Panel.Panel {
         };
         const tabSelected = (event) => {
             const { tabId } = event.data;
-            if (tabId === "Computed" /* SidebarPaneTabId.Computed */) {
+            if (tabId === "computed" /* SidebarPaneTabId.Computed */) {
                 computedStylePanesWrapper.show(computedView.element);
                 showMetricsWidgetInComputedPane();
             }
-            else if (tabId === "Styles" /* SidebarPaneTabId.Styles */) {
+            else if (tabId === "styles" /* SidebarPaneTabId.Styles */) {
                 stylesSplitWidget.setSidebarWidget(computedStylePanesWrapper);
                 showMetricsWidgetInStylesPane();
             }
@@ -913,11 +913,11 @@ export class ElementsPanel extends UI.Panel.Panel {
         const contentElement = tabbedPane.tabbedPaneContentElement();
         UI.ARIAUtils.markAsComplementary(contentElement);
         UI.ARIAUtils.setLabel(contentElement, i18nString(UIStrings.sidePanelContent));
-        const stylesView = new UI.View.SimpleView(i18nString(UIStrings.styles), /* isWebComponent */ undefined, "Styles" /* SidebarPaneTabId.Styles */);
+        const stylesView = new UI.View.SimpleView(i18nString(UIStrings.styles), /* isWebComponent */ undefined, "styles" /* SidebarPaneTabId.Styles */);
         this.sidebarPaneView.appendView(stylesView);
         stylesView.element.classList.add('flex-auto');
         stylesSplitWidget.show(stylesView.element);
-        const computedView = new UI.View.SimpleView(i18nString(UIStrings.computed), /* isWebComponent */ undefined, "Computed" /* SidebarPaneTabId.Computed */);
+        const computedView = new UI.View.SimpleView(i18nString(UIStrings.computed), /* isWebComponent */ undefined, "computed" /* SidebarPaneTabId.Computed */);
         computedView.element.classList.add('composite', 'fill');
         tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, tabSelected, this);
         this.sidebarPaneView.appendView(computedView);
@@ -970,7 +970,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         const cssPropertyTracker = cssModel.createCSSPropertyTracker(TrackedCSSProperties);
         cssPropertyTracker.start();
         this.cssStyleTrackerByCSSModel.set(cssModel, cssPropertyTracker);
-        cssPropertyTracker.addEventListener(SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, this.trackedCSSPropertiesUpdated, this);
+        cssPropertyTracker.addEventListener("TrackedCSSPropertiesUpdated" /* SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated */, this.trackedCSSPropertiesUpdated, this);
     }
     removeStyleTracking(cssModel) {
         const cssPropertyTracker = this.cssStyleTrackerByCSSModel.get(cssModel);
@@ -979,7 +979,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         }
         cssPropertyTracker.stop();
         this.cssStyleTrackerByCSSModel.delete(cssModel);
-        cssPropertyTracker.removeEventListener(SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated, this.trackedCSSPropertiesUpdated, this);
+        cssPropertyTracker.removeEventListener("TrackedCSSPropertiesUpdated" /* SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated */, this.trackedCSSPropertiesUpdated, this);
     }
     trackedCSSPropertiesUpdated({ data: domNodes }) {
         for (const domNode of domNodes) {
@@ -1200,10 +1200,10 @@ export class ElementsActionDelegate {
                 ElementsPanel.instance().stylesWidget.forceUpdate();
                 return true;
             case 'elements.show-styles':
-                ElementsPanel.instance().selectAndShowSidebarTab("Styles" /* SidebarPaneTabId.Styles */);
+                ElementsPanel.instance().selectAndShowSidebarTab("styles" /* SidebarPaneTabId.Styles */);
                 return true;
             case 'elements.show-computed':
-                ElementsPanel.instance().selectAndShowSidebarTab("Computed" /* SidebarPaneTabId.Computed */);
+                ElementsPanel.instance().selectAndShowSidebarTab("computed" /* SidebarPaneTabId.Computed */);
                 return true;
             case 'elements.toggle-eye-dropper': {
                 const colorSwatchPopoverIcon = UI.Context.Context.instance().flavor(ColorSwatchPopoverIcon);

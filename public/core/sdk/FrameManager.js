@@ -83,7 +83,7 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper {
         if (frameSet) {
             frameSet.add(frame.id);
         }
-        this.dispatchEventToListeners(Events.FrameAddedToTarget, { frame });
+        this.dispatchEventToListeners("FrameAddedToTarget" /* Events.FrameAddedToTarget */, { frame });
         this.resolveAwaitedFrame(frame);
     }
     frameDetached(event) {
@@ -109,13 +109,13 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     frameNavigated(event) {
         const frame = event.data;
-        this.dispatchEventToListeners(Events.FrameNavigated, { frame });
+        this.dispatchEventToListeners("FrameNavigated" /* Events.FrameNavigated */, { frame });
         if (frame.isOutermostFrame()) {
-            this.dispatchEventToListeners(Events.OutermostFrameNavigated, { frame });
+            this.dispatchEventToListeners("OutermostFrameNavigated" /* Events.OutermostFrameNavigated */, { frame });
         }
     }
     resourceAdded(event) {
-        this.dispatchEventToListeners(Events.ResourceAdded, { resource: event.data });
+        this.dispatchEventToListeners("ResourceAdded" /* Events.ResourceAdded */, { resource: event.data });
     }
     decreaseOrRemoveFrame(frameId) {
         const frameData = this.#frames.get(frameId);
@@ -123,7 +123,7 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper {
             if (frameData.count === 1) {
                 this.#frames.delete(frameId);
                 this.resetOutermostFrame();
-                this.dispatchEventToListeners(Events.FrameRemoved, { frameId });
+                this.dispatchEventToListeners("FrameRemoved" /* Events.FrameRemoved */, { frameId });
             }
             else {
                 frameData.count--;
@@ -194,19 +194,4 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    // The FrameAddedToTarget event is sent whenever a frame is added to a target.
-    // This means that for OOPIFs it is sent twice: once when it's added to a
-    // parent target and a second time when it's added to its own target.
-    Events["FrameAddedToTarget"] = "FrameAddedToTarget";
-    Events["FrameNavigated"] = "FrameNavigated";
-    // The FrameRemoved event is only sent when a frame has been detached from
-    // all targets.
-    Events["FrameRemoved"] = "FrameRemoved";
-    Events["ResourceAdded"] = "ResourceAdded";
-    Events["OutermostFrameNavigated"] = "OutermostFrameNavigated";
-})(Events || (Events = {}));
 //# sourceMappingURL=FrameManager.js.map

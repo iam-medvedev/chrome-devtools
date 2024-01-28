@@ -180,7 +180,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         }
         this.model.setInset(insetClicked);
         this.updateButtons();
-        this.dispatchEventToListeners(Events.ShadowChanged, this.model);
+        this.dispatchEventToListeners("ShadowChanged" /* Events.ShadowChanged */, this.model);
     }
     handleValueModification(event) {
         const target = event.currentTarget;
@@ -231,7 +231,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             this.model.setSpreadRadius(length);
             this.spreadSlider.value = length.amount.toString();
         }
-        this.dispatchEventToListeners(Events.ShadowChanged, this.model);
+        this.dispatchEventToListeners("ShadowChanged" /* Events.ShadowChanged */, this.model);
     }
     onTextBlur() {
         if (!this.changedElement) {
@@ -270,7 +270,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             this.spreadSlider.value = length.amount.toString();
         }
         this.changedElement = null;
-        this.dispatchEventToListeners(Events.ShadowChanged, this.model);
+        this.dispatchEventToListeners("ShadowChanged" /* Events.ShadowChanged */, this.model);
     }
     onSliderInput(event) {
         if (event.currentTarget === this.blurSlider) {
@@ -283,7 +283,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             this.spreadInput.value = this.model.spreadRadius().asCSSText();
             this.spreadInput.classList.remove('invalid');
         }
-        this.dispatchEventToListeners(Events.ShadowChanged, this.model);
+        this.dispatchEventToListeners("ShadowChanged" /* Events.ShadowChanged */, this.model);
     }
     dragStart(event) {
         this.xySlider.focus();
@@ -321,7 +321,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.xInput.classList.remove('invalid');
         this.yInput.classList.remove('invalid');
         this.updateCanvas(true);
-        this.dispatchEventToListeners(Events.ShadowChanged, this.model);
+        this.dispatchEventToListeners("ShadowChanged" /* Events.ShadowChanged */, this.model);
     }
     onCanvasBlur() {
         this.updateCanvas(false);
@@ -367,7 +367,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             this.yInput.classList.remove('invalid');
         }
         this.updateCanvas(true);
-        this.dispatchEventToListeners(Events.ShadowChanged, this.model);
+        this.dispatchEventToListeners("ShadowChanged" /* Events.ShadowChanged */, this.model);
     }
     constrainPoint(point, max) {
         if (Math.abs(point.x) <= max && Math.abs(point.y) <= max) {
@@ -398,10 +398,4 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         return this.constrainPoint(new UI.Geometry.Point(x, y), this.innerCanvasSize);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ShadowChanged"] = "ShadowChanged";
-})(Events || (Events = {}));
 //# sourceMappingURL=CSSShadowEditor.js.map

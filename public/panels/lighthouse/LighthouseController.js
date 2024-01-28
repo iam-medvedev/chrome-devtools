@@ -4,7 +4,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as Emulation from '../emulation/emulation.js';
@@ -192,7 +191,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         const javaScriptDisabledSetting = Common.Settings.Settings.instance().moduleSetting('javaScriptDisabled');
         javaScriptDisabledSetting.addChangeListener(this.recomputePageAuditability.bind(this));
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
-        SDK.TargetManager.TargetManager.instance().addEventListener(SDK.TargetManager.Events.InspectedURLChanged, this.recomputePageAuditability, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.recomputePageAuditability, this);
     }
     modelAdded(serviceWorkerManager) {
         if (serviceWorkerManager.target() !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
@@ -200,8 +199,8 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.manager = serviceWorkerManager;
         this.serviceWorkerListeners = [
-            this.manager.addEventListener(SDK.ServiceWorkerManager.Events.RegistrationUpdated, this.recomputePageAuditability, this),
-            this.manager.addEventListener(SDK.ServiceWorkerManager.Events.RegistrationDeleted, this.recomputePageAuditability, this),
+            this.manager.addEventListener("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, this.recomputePageAuditability, this),
+            this.manager.addEventListener("RegistrationDeleted" /* SDK.ServiceWorkerManager.Events.RegistrationDeleted */, this.recomputePageAuditability, this),
         ];
         this.recomputePageAuditability();
     }
@@ -312,10 +311,10 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         return '';
     }
     async evaluateInspectedURL() {
-        if (!this.manager) {
-            return Platform.DevToolsPath.EmptyUrlString;
+        const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        if (!mainTarget) {
+            throw new Error('Unable to find main target required for Lighthouse');
         }
-        const mainTarget = this.manager.target();
         // target.inspectedURL is reliably populated, however it lacks any url #hash
         const inspectedURL = mainTarget.inspectedURL();
         // We'll use the navigationHistory to acquire the current URL including hash
@@ -389,13 +388,13 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         }
         switch (flags.mode) {
             case 'navigation':
-                Host.userMetrics.lighthouseModeRun(Host.UserMetrics.LighthouseModeRun.Navigation);
+                Host.userMetrics.lighthouseModeRun(0 /* Host.UserMetrics.LighthouseModeRun.Navigation */);
                 break;
             case 'timespan':
-                Host.userMetrics.lighthouseModeRun(Host.UserMetrics.LighthouseModeRun.Timespan);
+                Host.userMetrics.lighthouseModeRun(1 /* Host.UserMetrics.LighthouseModeRun.Timespan */);
                 break;
             case 'snapshot':
-                Host.userMetrics.lighthouseModeRun(Host.UserMetrics.LighthouseModeRun.Snapshot);
+                Host.userMetrics.lighthouseModeRun(2 /* Host.UserMetrics.LighthouseModeRun.Snapshot */);
                 break;
         }
     }
@@ -532,63 +531,63 @@ const STORAGE_TYPE_NAMES = new Map([
 export const Presets = [
     // configID maps to Lighthouse's Object.keys(config.categories)[0] value
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_perf', true, Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_perf', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'performance',
         title: i18nLazyString(UIStrings.performance),
         description: i18nLazyString(UIStrings.howLongDoesThisAppTakeToShow),
         plugin: false,
         supportedModes: ['navigation', 'timespan', 'snapshot'],
-        userMetric: Host.UserMetrics.LighthouseCategoryUsed.Performance,
+        userMetric: 0 /* Host.UserMetrics.LighthouseCategoryUsed.Performance */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_a11y', true, Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_a11y', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'accessibility',
         title: i18nLazyString(UIStrings.accessibility),
         description: i18nLazyString(UIStrings.isThisPageUsableByPeopleWith),
         plugin: false,
         supportedModes: ['navigation', 'snapshot'],
-        userMetric: Host.UserMetrics.LighthouseCategoryUsed.Accessibility,
+        userMetric: 1 /* Host.UserMetrics.LighthouseCategoryUsed.Accessibility */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_best_practices', true, Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_best_practices', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'best-practices',
         title: i18nLazyString(UIStrings.bestPractices),
         description: i18nLazyString(UIStrings.doesThisPageFollowBestPractices),
         plugin: false,
         supportedModes: ['navigation', 'timespan', 'snapshot'],
-        userMetric: Host.UserMetrics.LighthouseCategoryUsed.BestPractices,
+        userMetric: 2 /* Host.UserMetrics.LighthouseCategoryUsed.BestPractices */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_seo', true, Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_seo', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'seo',
         title: i18nLazyString(UIStrings.seo),
         description: i18nLazyString(UIStrings.isThisPageOptimizedForSearch),
         plugin: false,
         supportedModes: ['navigation', 'snapshot'],
-        userMetric: Host.UserMetrics.LighthouseCategoryUsed.SEO,
+        userMetric: 3 /* Host.UserMetrics.LighthouseCategoryUsed.SEO */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pwa', true, Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pwa', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'pwa',
         title: i18nLazyString(UIStrings.progressiveWebApp),
         description: i18nLazyString(UIStrings.doesThisPageMeetTheStandardOfA),
         plugin: false,
         supportedModes: ['navigation'],
-        userMetric: Host.UserMetrics.LighthouseCategoryUsed.PWA,
+        userMetric: 4 /* Host.UserMetrics.LighthouseCategoryUsed.PWA */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pubads', false, Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pubads', false, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         plugin: true,
         configID: 'lighthouse-plugin-publisher-ads',
         title: i18nLazyString(UIStrings.publisherAds),
         description: i18nLazyString(UIStrings.isThisPageOptimizedForAdSpeedAnd),
         supportedModes: ['navigation'],
-        userMetric: Host.UserMetrics.LighthouseCategoryUsed.PubAds,
+        userMetric: 5 /* Host.UserMetrics.LighthouseCategoryUsed.PubAds */,
     },
 ];
 export const RuntimeSettings = [
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.device_type', 'mobile', Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.device_type', 'mobile', "Synced" /* Common.Settings.SettingStorageType.Synced */),
         title: i18nLazyString(UIStrings.applyMobileEmulation),
         description: i18nLazyString(UIStrings.applyMobileEmulationDuring),
         setFlags: (flags, value) => {
@@ -602,7 +601,7 @@ export const RuntimeSettings = [
         learnMore: undefined,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.mode', 'navigation', Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.mode', 'navigation', "Synced" /* Common.Settings.SettingStorageType.Synced */),
         title: i18nLazyString(UIStrings.lighthouseMode),
         description: i18nLazyString(UIStrings.runLighthouseInMode),
         setFlags: (flags, value) => {
@@ -629,7 +628,7 @@ export const RuntimeSettings = [
     },
     {
         // This setting is disabled, but we keep it around to show in the UI.
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.throttling', 'simulate', Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.throttling', 'simulate', "Synced" /* Common.Settings.SettingStorageType.Synced */),
         title: i18nLazyString(UIStrings.throttlingMethod),
         // We will disable this when we have a Lantern trace viewer within DevTools.
         learnMore: 'https://github.com/GoogleChrome/lighthouse/blob/master/docs/throttling.md#devtools-lighthouse-panel-throttling',
@@ -648,7 +647,7 @@ export const RuntimeSettings = [
         ],
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.clear_storage', true, Common.Settings.SettingStorageType.Synced),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.clear_storage', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         title: i18nLazyString(UIStrings.clearStorage),
         description: i18nLazyString(UIStrings.resetStorageLocalstorage),
         setFlags: (flags, value) => {
@@ -658,8 +657,6 @@ export const RuntimeSettings = [
         learnMore: undefined,
     },
 ];
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["PageAuditabilityChanged"] = "PageAuditabilityChanged";

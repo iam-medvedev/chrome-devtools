@@ -81,6 +81,7 @@ export declare class RemoveBreakpointEvent extends Event {
 export declare class StepView extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
+    constructor();
     set data(data: StepViewData);
     get step(): Models.Schema.Step | undefined;
     get section(): Models.Section.Section | undefined;

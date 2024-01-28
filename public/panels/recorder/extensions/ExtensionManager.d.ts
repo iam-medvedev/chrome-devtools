@@ -24,7 +24,7 @@ declare class ExtensionIframe {
     hide(): void;
     frame(): HTMLIFrameElement;
 }
-export declare enum Events {
+export declare const enum Events {
     ExtensionsUpdated = "extensionsUpdated"
 }
 export type EventTypes = {

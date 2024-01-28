@@ -228,7 +228,7 @@ export class DatabaseQueryView extends Common.ObjectWrapper.eventMixin(UI.Widget
         }
         this.appendViewQueryResult(trimmedQuery, view);
         if (trimmedQuery.match(/^create /i) || trimmedQuery.match(/^drop table /i)) {
-            this.dispatchEventToListeners(Events.SchemaUpdated, this.database);
+            this.dispatchEventToListeners("SchemaUpdated" /* Events.SchemaUpdated */, this.database);
         }
     }
     appendViewQueryResult(query, view) {
@@ -277,12 +277,6 @@ export class DatabaseQueryView extends Common.ObjectWrapper.eventMixin(UI.Widget
         return resultElement;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["SchemaUpdated"] = "SchemaUpdated";
-})(Events || (Events = {}));
 export const SQL_BUILT_INS = [
     'SELECT ',
     'FROM ',

@@ -6,7 +6,7 @@ export declare class TimelineJSProfileProcessor {
     static createFakeTraceFromCpuProfile(profile: any, tid: number, injectPageEvent: boolean, name?: string | null): TraceEngine.TracingManager.EventPayload[];
 }
 export declare namespace TimelineJSProfileProcessor {
-    enum NativeGroups {
+    const enum NativeGroups {
         Compile = "Compile",
         Parse = "Parse"
     }

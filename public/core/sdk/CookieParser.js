@@ -33,7 +33,7 @@
 // plumbing, and at least some platforms lack support for parsing Cookie,
 // which is in a format slightly different from Set-Cookie and is normally
 // only required on the server side.
-import { Cookie, Type } from './Cookie.js';
+import { Cookie } from './Cookie.js';
 export class CookieParser {
     #domain;
     #cookiesInternal;
@@ -66,7 +66,7 @@ export class CookieParser {
                 this.#lastCookie.addAttribute(kv.key, kv.value);
             }
             else {
-                this.addCookie(kv, Type.Response);
+                this.addCookie(kv, 1 /* Type.Response */);
             }
             if (this.advanceAndCheckCookieDelimiter()) {
                 this.flushCookie();

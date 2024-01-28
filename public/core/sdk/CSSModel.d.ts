@@ -141,7 +141,7 @@ export declare class CSSPropertyTracker extends Common.ObjectWrapper.ObjectWrapp
     stop(): void;
     getTrackedProperties(): Protocol.CSS.CSSComputedStyleProperty[];
 }
-export declare enum CSSPropertyTrackerEvents {
+export declare const enum CSSPropertyTrackerEvents {
     TrackedCSSPropertiesUpdated = "TrackedCSSPropertiesUpdated"
 }
 export type CSSPropertyTrackerEventTypes = {

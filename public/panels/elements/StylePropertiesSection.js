@@ -195,7 +195,7 @@ export class StylePropertiesSection {
         closeBrace.textContent = '}';
         if (this.styleInternal.parentRule) {
             const newRuleButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.insertStyleRuleBelow), 'plus', undefined, 'elements.new-style-rule');
-            newRuleButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, this.onNewRuleClick, this);
+            newRuleButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.onNewRuleClick, this);
             newRuleButton.element.tabIndex = -1;
             if (!this.newStyleRuleToolbar) {
                 this.newStyleRuleToolbar =
@@ -208,7 +208,7 @@ export class StylePropertiesSection {
             this.fontEditorToolbar = new UI.Toolbar.Toolbar('sidebar-pane-section-toolbar', this.innerElement);
             this.fontEditorSectionManager = new FontEditorSectionManager(this.parentPane.swatchPopoverHelper(), this);
             this.fontEditorButton = new UI.Toolbar.ToolbarButton('Font Editor', 'custom-typography');
-            this.fontEditorButton.addEventListener(UI.Toolbar.ToolbarButton.Events.Click, () => {
+            this.fontEditorButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
                 this.onFontEditorButtonClicked();
             }, this);
             this.fontEditorButton.element.addEventListener('keydown', event => {
@@ -904,7 +904,7 @@ export class StylePropertiesSection {
         }
     }
     isPropertyOverloaded(property) {
-        return this.matchedStyles.propertyState(property) === SDK.CSSMatchedStyles.PropertyState.Overloaded;
+        return this.matchedStyles.propertyState(property) === "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.Overloaded */;
     }
     updateFilter() {
         let hasMatchingChild = false;
@@ -1140,23 +1140,23 @@ export class StylePropertiesSection {
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copySelector), () => {
             const selectorText = this.headerText();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(selectorText);
-            Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.SelectorViaContextMenu);
+            Host.userMetrics.styleTextCopied(10 /* Host.UserMetrics.StyleTextCopied.SelectorViaContextMenu */);
         });
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyRule), () => {
             const ruleText = StylesSidebarPane.formatLeadingProperties(this).ruleText;
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(ruleText);
-            Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.RuleViaContextMenu);
+            Host.userMetrics.styleTextCopied(7 /* Host.UserMetrics.StyleTextCopied.RuleViaContextMenu */);
         });
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllDeclarations), () => {
             const allDeclarationText = StylesSidebarPane.formatLeadingProperties(this).allDeclarationText;
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allDeclarationText);
-            Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.AllDeclarationsViaContextMenu);
+            Host.userMetrics.styleTextCopied(8 /* Host.UserMetrics.StyleTextCopied.AllDeclarationsViaContextMenu */);
         });
         // TODO(changhaohan): conditionally add this item only when there are changes to copy
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllCSSChanges), async () => {
             const allChanges = await this.parentPane.getFormattedChanges();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
-            Host.userMetrics.styleTextCopied(Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane);
+            Host.userMetrics.styleTextCopied(2 /* Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane */);
         });
         void contextMenu.show();
     }

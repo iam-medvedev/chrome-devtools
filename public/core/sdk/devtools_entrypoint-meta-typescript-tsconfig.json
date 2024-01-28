@@ -39,6 +39,12 @@
   "references": [
     {
       "path": "./bundle-tsconfig.json"
+    },
+    {
+      "path": "../common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../i18n/bundle-tsconfig.json"
     }
   ]
 }

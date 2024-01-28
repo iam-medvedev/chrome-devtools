@@ -1,7 +1,6 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { Capability } from './Target.js';
 import { SDKModel } from './SDKModel.js';
 export class SecurityOriginManager extends SDKModel {
     #mainSecurityOriginInternal;
@@ -49,8 +48,6 @@ export class SecurityOriginManager extends SDKModel {
         });
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["SecurityOriginAdded"] = "SecurityOriginAdded";
@@ -58,5 +55,5 @@ export var Events;
     Events["MainSecurityOriginChanged"] = "MainSecurityOriginChanged";
 })(Events || (Events = {}));
 // TODO(jarhar): this is the one of the two usages of Capability.None. Do something about it!
-SDKModel.register(SecurityOriginManager, { capabilities: Capability.None, autostart: false });
+SDKModel.register(SecurityOriginManager, { capabilities: 0 /* Capability.None */, autostart: false });
 //# sourceMappingURL=SecurityOriginManager.js.map

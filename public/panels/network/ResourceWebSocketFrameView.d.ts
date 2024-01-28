@@ -32,7 +32,7 @@ export declare class ResourceWebSocketFrameView extends UI.Widget.VBox {
     refresh(): void;
     private sortItems;
 }
-export declare enum OpCodes {
+declare const enum OpCodes {
     ContinuationFrame = 0,
     TextFrame = 1,
     BinaryFrame = 2,
@@ -56,3 +56,4 @@ export declare class ResourceWebSocketFrameNode extends DataGrid.SortableDataGri
     binaryView(): BinaryResourceView | null;
 }
 export declare function ResourceWebSocketFrameNodeTimeComparator(a: ResourceWebSocketFrameNode, b: ResourceWebSocketFrameNode): number;
+export {};

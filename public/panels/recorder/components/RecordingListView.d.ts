@@ -33,6 +33,7 @@ interface Recording {
 export declare class RecordingListView extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
+    constructor();
     connectedCallback(): void;
     set recordings(recordings: Recording[]);
     set replayAllowed(value: boolean);

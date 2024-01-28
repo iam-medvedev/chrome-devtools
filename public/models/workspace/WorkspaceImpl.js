@@ -29,8 +29,7 @@
  */
 import * as Common from '../../core/common/common.js';
 import { UISourceCode } from './UISourceCode.js';
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum, @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export var projectTypes;
 (function (projectTypes) {
     projectTypes["Debugger"] = "debugger";
@@ -213,8 +212,6 @@ export class WorkspaceImpl extends Common.ObjectWrapper.ObjectWrapper {
         return this.hasResourceContentTrackingExtensionsInternal;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var Events;
 (function (Events) {
     Events["UISourceCodeAdded"] = "UISourceCodeAdded";

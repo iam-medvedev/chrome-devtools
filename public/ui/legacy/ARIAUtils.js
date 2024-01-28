@@ -197,24 +197,7 @@ export function setHidden(element, value) {
 export function setLevel(element, level) {
     element.setAttribute('aria-level', level.toString());
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var AutocompleteInteractionModel;
-(function (AutocompleteInteractionModel) {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    AutocompleteInteractionModel["inline"] = "inline";
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    AutocompleteInteractionModel["list"] = "list";
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    AutocompleteInteractionModel["both"] = "both";
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    AutocompleteInteractionModel["none"] = "none";
-})(AutocompleteInteractionModel || (AutocompleteInteractionModel = {}));
-export function setAutocomplete(element, interactionModel = AutocompleteInteractionModel.none) {
+export function setAutocomplete(element, interactionModel = "none" /* AutocompleteInteractionModel.None */) {
     element.setAttribute('aria-autocomplete', interactionModel);
 }
 export function clearAutocomplete(element) {

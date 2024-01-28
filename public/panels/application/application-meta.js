@@ -64,7 +64,7 @@ UI.ViewManager.registerViewExtension({
     tags: [i18nLazyString(UIStrings.pwa)],
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.RESOURCES,
+    category: "RESOURCES" /* UI.ActionRegistration.ActionCategory.RESOURCES */,
     actionId: 'resources.clear',
     title: i18nLazyString(UIStrings.clearSiteData),
     async loadActionDelegate() {
@@ -73,7 +73,7 @@ UI.ActionRegistration.registerActionExtension({
     },
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.RESOURCES,
+    category: "RESOURCES" /* UI.ActionRegistration.ActionCategory.RESOURCES */,
     actionId: 'resources.clear-incl-third-party-cookies',
     title: i18nLazyString(UIStrings.clearSiteDataIncludingThirdparty),
     async loadActionDelegate() {
@@ -94,7 +94,7 @@ UI.ActionRegistration.registerActionExtension({
         const Resources = await loadResourcesModule();
         return new Resources.BackgroundServiceView.ActionDelegate();
     },
-    category: UI.ActionRegistration.ActionCategory.BACKGROUND_SERVICES,
+    category: "BACKGROUND_SERVICES" /* UI.ActionRegistration.ActionCategory.BACKGROUND_SERVICES */,
     options: [
         {
             value: true,

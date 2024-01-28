@@ -134,7 +134,7 @@ export class DatabaseModel extends SDK.SDKModel.SDKModel {
         this.enabled = false;
         this.databasesInternal = [];
         void this.agent.invoke_disable();
-        this.dispatchEventToListeners(Events.DatabasesRemoved);
+        this.dispatchEventToListeners("DatabasesRemoved" /* Events.DatabasesRemoved */);
     }
     databases() {
         const result = [];
@@ -145,17 +145,10 @@ export class DatabaseModel extends SDK.SDKModel.SDKModel {
     }
     addDatabase(database) {
         this.databasesInternal.push(database);
-        this.dispatchEventToListeners(Events.DatabaseAdded, database);
+        this.dispatchEventToListeners("DatabaseAdded" /* Events.DatabaseAdded */, database);
     }
 }
-SDK.SDKModel.SDKModel.register(DatabaseModel, { capabilities: SDK.Target.Capability.DOM, autostart: false });
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["DatabaseAdded"] = "DatabaseAdded";
-    Events["DatabasesRemoved"] = "DatabasesRemoved";
-})(Events || (Events = {}));
+SDK.SDKModel.SDKModel.register(DatabaseModel, { capabilities: 2 /* SDK.Target.Capability.DOM */, autostart: false });
 export class DatabaseDispatcher {
     model;
     constructor(model) {

@@ -45,7 +45,7 @@ export declare class DOMDebuggerModel extends SDKModel<EventTypes> {
     private nodeRemoved;
     private saveDOMBreakpoints;
 }
-export declare enum Events {
+export declare const enum Events {
     DOMBreakpointAdded = "DOMBreakpointAdded",
     DOMBreakpointToggled = "DOMBreakpointToggled",
     DOMBreakpointsRemoved = "DOMBreakpointsRemoved"
@@ -83,7 +83,7 @@ export declare class EventListener {
     isScrollBlockingType(): boolean;
 }
 export declare namespace EventListener {
-    enum Origin {
+    const enum Origin {
         Raw = "Raw",
         Framework = "Framework",
         FrameworkUser = "FrameworkUser"

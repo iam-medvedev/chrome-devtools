@@ -4,7 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { Issue, IssueCategory, IssueKind } from './Issue.js';
+import { Issue } from './Issue.js';
 import { resolveLazyDescription, } from './MarkdownIssueDescription.js';
 const UIStrings = {
     /**
@@ -164,7 +164,7 @@ export class CookieIssue extends Issue {
         return [];
     }
     getCategory() {
-        return IssueCategory.Cookie;
+        return "Cookie" /* IssueCategory.Cookie */;
     }
     getDescription() {
         const description = issueDescriptions.get(this.code());
@@ -179,9 +179,9 @@ export class CookieIssue extends Issue {
     }
     getKind() {
         if (this.#issueDetails.cookieExclusionReasons?.length > 0) {
-            return IssueKind.PageError;
+            return "PageError" /* IssueKind.PageError */;
         }
-        return IssueKind.BreakingChange;
+        return "BreakingChange" /* IssueKind.BreakingChange */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const cookieIssueDetails = inspectorIssue.details.cookieIssueDetails;

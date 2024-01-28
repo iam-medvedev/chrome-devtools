@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { Issue, IssueCategory, IssueKind } from './Issue.js';
+import { Issue } from './Issue.js';
 export class PropertyRuleIssue extends Issue {
     #issueDetails;
     #primaryKey;
@@ -47,10 +47,10 @@ export class PropertyRuleIssue extends Issue {
         };
     }
     getCategory() {
-        return IssueCategory.Other;
+        return "Other" /* IssueCategory.Other */;
     }
     getKind() {
-        return IssueKind.PageError;
+        return "PageError" /* IssueKind.PageError */;
     }
     static fromInspectorIssue(issueModel, inspectorIssue) {
         const propertyRuleIssueDetails = inspectorIssue.details.propertyRuleIssueDetails;

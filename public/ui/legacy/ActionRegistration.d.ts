@@ -50,7 +50,7 @@ export type EventTypes = {
     [Events.Enabled]: boolean;
     [Events.Toggled]: boolean;
 };
-export declare enum ActionCategory {
+export declare const enum ActionCategory {
     NONE = "",
     ELEMENTS = "ELEMENTS",
     SCREENSHOT = "SCREENSHOT",

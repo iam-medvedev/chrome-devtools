@@ -133,7 +133,7 @@ UI.ViewManager.registerViewExtension({
     ],
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.NAVIGATION,
+    category: "NAVIGATION" /* UI.ActionRegistration.ActionCategory.NAVIGATION */,
     actionId: 'inspector-main.reload',
     async loadActionDelegate() {
         const InspectorMain = await loadInspectorMainModule();
@@ -157,7 +157,7 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.NAVIGATION,
+    category: "NAVIGATION" /* UI.ActionRegistration.ActionCategory.NAVIGATION */,
     actionId: 'inspector-main.hard-reload',
     async loadActionDelegate() {
         const InspectorMain = await loadInspectorMainModule();
@@ -189,7 +189,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'rendering.toggle-prefers-color-scheme',
-    category: UI.ActionRegistration.ActionCategory.RENDERING,
+    category: "RENDERING" /* UI.ActionRegistration.ActionCategory.RENDERING */,
     title: i18nLazyString(UIStrings.toggleCssPrefersColorSchemeMedia),
     async loadActionDelegate() {
         const InspectorMain = await loadInspectorMainModule();
@@ -197,11 +197,11 @@ UI.ActionRegistration.registerActionExtension({
     },
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.NETWORK,
+    category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
     title: i18nLazyString(UIStrings.forceAdBlocking),
     settingName: 'network.adBlockingEnabled',
-    settingType: Common.Settings.SettingType.BOOLEAN,
-    storageType: Common.Settings.SettingStorageType.Session,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    storageType: "Session" /* Common.Settings.SettingStorageType.Session */,
     defaultValue: false,
     options: [
         {
@@ -215,11 +215,11 @@ Common.Settings.registerSettingExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.GLOBAL,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.autoOpenDevTools),
     settingName: 'autoAttachToCreatedPages',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     order: 2,
     defaultValue: false,
     options: [
@@ -234,11 +234,11 @@ Common.Settings.registerSettingExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.APPEARANCE,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.disablePaused),
     settingName: 'disablePausedStateOverlay',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
 });
 UI.Toolbar.registerToolbarItem({
@@ -247,7 +247,7 @@ UI.Toolbar.registerToolbarItem({
         return InspectorMain.InspectorMain.NodeIndicator.instance();
     },
     order: 2,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT,
+    location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,
@@ -259,11 +259,11 @@ UI.Toolbar.registerToolbarItem({
         return InspectorMain.OutermostTargetSelector.OutermostTargetSelector.instance();
     },
     order: 98,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT,
+    location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,
     actionId: undefined,
-    experiment: Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR,
+    experiment: "outermostTargetSelector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
 });
 //# sourceMappingURL=inspector_main-meta.js.map

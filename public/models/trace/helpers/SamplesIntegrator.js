@@ -178,7 +178,7 @@ export class SamplesIntegrator {
         this.#lockedJsStackDepth.push(this.#currentJSStack.length);
     }
     #onProfileCall(event, parent) {
-        if ((parent && SamplesIntegrator.isJSInvocationEvent(parent)) || this.#fakeJSInvocation) {
+        if ((parent && Types.TraceEvents.isJSInvocationEvent(parent)) || this.#fakeJSInvocation) {
             this.#extractStackTrace(event);
         }
         else if (Types.TraceEvents.isProfileCall(event) && this.#currentJSStack.length === 0) {
@@ -350,27 +350,6 @@ export class SamplesIntegrator {
             this.#currentJSStack[k].dur = Types.Timing.MicroSeconds(Math.max(time - this.#currentJSStack[k].ts, 0));
         }
         this.#currentJSStack.length = depth;
-    }
-    /**
-     * Generally, before JS is executed, a trace event is dispatched that
-     * parents the JS calls. These we call "invocation" events. This
-     * function determines if an event is one of such.
-     */
-    static isJSInvocationEvent(event) {
-        switch (event.name) {
-            case "RunMicrotasks" /* Types.TraceEvents.KnownEventName.RunMicrotasks */:
-            case "FunctionCall" /* Types.TraceEvents.KnownEventName.FunctionCall */:
-            case "EvaluateScript" /* Types.TraceEvents.KnownEventName.EvaluateScript */:
-            case "v8.evaluateModule" /* Types.TraceEvents.KnownEventName.EvaluateModule */:
-            case "EventDispatch" /* Types.TraceEvents.KnownEventName.EventDispatch */:
-            case "V8.Execute" /* Types.TraceEvents.KnownEventName.V8Execute */:
-                return true;
-        }
-        // Also consider any new v8 trace events. (eg 'V8.RunMicrotasks' and 'v8.run')
-        if (event.name.startsWith('v8') || event.name.startsWith('V8')) {
-            return true;
-        }
-        return false;
     }
     static framesAreEqual(frame1, frame2) {
         return frame1.scriptId === frame2.scriptId && frame1.functionName === frame2.functionName &&

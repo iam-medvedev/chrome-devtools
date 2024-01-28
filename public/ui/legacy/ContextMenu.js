@@ -563,17 +563,4 @@ export function maybeRemoveItem(registration) {
 function getRegisteredItems() {
     return registeredItemsProviders;
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var ItemLocation;
-(function (ItemLocation) {
-    ItemLocation["DEVICE_MODE_MENU_SAVE"] = "deviceModeMenu/save";
-    ItemLocation["MAIN_MENU"] = "mainMenu";
-    ItemLocation["MAIN_MENU_DEFAULT"] = "mainMenu/default";
-    ItemLocation["MAIN_MENU_FOOTER"] = "mainMenu/footer";
-    ItemLocation["MAIN_MENU_HELP_DEFAULT"] = "mainMenuHelp/default";
-    ItemLocation["NAVIGATOR_MENU_DEFAULT"] = "navigatorMenu/default";
-    ItemLocation["PROFILER_MENU_DEFAULT"] = "profilerMenu/default";
-    ItemLocation["TIMELINE_MENU_OPEN"] = "timelineMenu/open";
-})(ItemLocation || (ItemLocation = {}));
 //# sourceMappingURL=ContextMenu.js.map

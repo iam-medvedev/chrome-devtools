@@ -43,7 +43,7 @@ export declare class TimelineLoader implements Common.StringOutputStream.OutputS
     private parseCPUProfileFormat;
 }
 export declare const TransferChunkLengthBytes = 5000000;
-export declare enum State {
+export declare const enum State {
     Initial = "Initial",
     LookingForEvents = "LookingForEvents",
     ReadingEvents = "ReadingEvents",

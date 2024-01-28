@@ -59,7 +59,7 @@ export class TimelineLoader {
         this.client = client;
         this.tracingModel = new TraceEngine.Legacy.TracingModel(title);
         this.canceledCallback = null;
-        this.state = State.Initial;
+        this.state = "Initial" /* State.Initial */;
         this.buffer = '';
         this.firstRawChunk = true;
         this.firstChunk = true;
@@ -102,7 +102,7 @@ export class TimelineLoader {
     }
     static loadFromCpuProfile(profile, client, title) {
         const loader = new TimelineLoader(client, title);
-        loader.state = State.LoadingCPUProfileFromRecording;
+        loader.state = "LoadingCPUProfileFromRecording" /* State.LoadingCPUProfileFromRecording */;
         try {
             const events = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, /* tid */ 1, /* injectPageEvent */ true);
             loader.filter = TimelineLoader.getCpuProfileFilter();
@@ -128,7 +128,7 @@ export class TimelineLoader {
             const txt = stream.data();
             const trace = JSON.parse(txt);
             if (Array.isArray(trace.nodes)) {
-                loader.state = State.LoadingCPUProfileFromFile;
+                loader.state = "LoadingCPUProfileFromFile" /* State.LoadingCPUProfileFromFile */;
                 loader.buffer = txt;
                 await loader.close();
                 return;
@@ -182,26 +182,26 @@ export class TimelineLoader {
             await this.client.loadingProgress(progress);
         }
         this.firstRawChunk = false;
-        if (this.state === State.Initial) {
+        if (this.state === "Initial" /* State.Initial */) {
             if (chunk.match(/^{(\s)*"nodes":(\s)*\[/)) {
-                this.state = State.LoadingCPUProfileFromFile;
+                this.state = "LoadingCPUProfileFromFile" /* State.LoadingCPUProfileFromFile */;
             }
             else if (chunk[0] === '{') {
-                this.state = State.LookingForEvents;
+                this.state = "LookingForEvents" /* State.LookingForEvents */;
             }
             else if (chunk[0] === '[') {
-                this.state = State.ReadingEvents;
+                this.state = "ReadingEvents" /* State.ReadingEvents */;
             }
             else {
                 this.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineDataUnknownJson));
                 return Promise.resolve();
             }
         }
-        if (this.state === State.LoadingCPUProfileFromFile) {
+        if (this.state === "LoadingCPUProfileFromFile" /* State.LoadingCPUProfileFromFile */) {
             this.buffer += chunk;
             return Promise.resolve();
         }
-        if (this.state === State.LookingForEvents) {
+        if (this.state === "LookingForEvents" /* State.LookingForEvents */) {
             const objectName = '"traceEvents":';
             const startPos = this.buffer.length - objectName.length;
             this.buffer += chunk;
@@ -210,9 +210,9 @@ export class TimelineLoader {
                 return Promise.resolve();
             }
             chunk = this.buffer.slice(pos + objectName.length);
-            this.state = State.ReadingEvents;
+            this.state = "ReadingEvents" /* State.ReadingEvents */;
         }
-        if (this.state !== State.ReadingEvents) {
+        if (this.state !== "ReadingEvents" /* State.ReadingEvents */) {
             return Promise.resolve();
         }
         // This is where we actually do the loading of events from JSON: the JSON
@@ -223,7 +223,7 @@ export class TimelineLoader {
         if (this.jsonTokenizer.write(chunk)) {
             return Promise.resolve();
         }
-        this.state = State.SkippingTail;
+        this.state = "SkippingTail" /* State.SkippingTail */;
         if (this.firstChunk) {
             this.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineInputWrongJson));
         }
@@ -278,10 +278,10 @@ export class TimelineLoader {
         await this.finalizeTrace();
     }
     isCpuProfile() {
-        return this.state === State.LoadingCPUProfileFromFile || this.state === State.LoadingCPUProfileFromRecording;
+        return this.state === "LoadingCPUProfileFromFile" /* State.LoadingCPUProfileFromFile */ || this.state === "LoadingCPUProfileFromRecording" /* State.LoadingCPUProfileFromRecording */;
     }
     async finalizeTrace() {
-        if (this.state === State.LoadingCPUProfileFromFile) {
+        if (this.state === "LoadingCPUProfileFromFile" /* State.LoadingCPUProfileFromFile */) {
             this.parseCPUProfileFormat(this.buffer);
             this.buffer = '';
         }
@@ -314,15 +314,4 @@ export class TimelineLoader {
     }
 }
 export const TransferChunkLengthBytes = 5000000;
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var State;
-(function (State) {
-    State["Initial"] = "Initial";
-    State["LookingForEvents"] = "LookingForEvents";
-    State["ReadingEvents"] = "ReadingEvents";
-    State["SkippingTail"] = "SkippingTail";
-    State["LoadingCPUProfileFromFile"] = "LoadingCPUProfileFromFile";
-    State["LoadingCPUProfileFromRecording"] = "LoadingCPUProfileFromRecording";
-})(State || (State = {}));
 //# sourceMappingURL=TimelineLoader.js.map

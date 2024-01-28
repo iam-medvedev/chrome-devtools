@@ -31,7 +31,7 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
         this.logAndImageSplitWidget.setMainWidget(this.imageView);
         this.paintProfilerView =
             new LayerViewer.PaintProfilerView.PaintProfilerView(this.imageView.showImage.bind(this.imageView));
-        this.paintProfilerView.addEventListener(LayerViewer.PaintProfilerView.Events.WindowChanged, this.onWindowChanged, this);
+        this.paintProfilerView.addEventListener("WindowChanged" /* LayerViewer.PaintProfilerView.Events.WindowChanged */, this.onWindowChanged, this);
         this.setSidebarWidget(this.paintProfilerView);
         this.logTreeView = new LayerViewer.PaintProfilerView.PaintProfilerCommandLogView();
         this.logAndImageSplitWidget.setSidebarWidget(this.logTreeView);
@@ -181,7 +181,7 @@ export class TimelinePaintImageView extends UI.Widget.Widget {
         this.imageElement.addEventListener('load', this.updateImagePosition.bind(this), false);
         this.transformController =
             new LayerViewer.TransformController.TransformController(this.contentElement, true);
-        this.transformController.addEventListener(LayerViewer.TransformController.Events.TransformChanged, this.updateImagePosition, this);
+        this.transformController.addEventListener("TransformChanged" /* LayerViewer.TransformController.Events.TransformChanged */, this.updateImagePosition, this);
     }
     onResize() {
         if (this.imageElement.src) {

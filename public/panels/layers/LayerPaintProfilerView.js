@@ -14,7 +14,7 @@ export class LayerPaintProfilerView extends UI.SplitWidget.SplitWidget {
         this.setSidebarWidget(this.logTreeView);
         this.paintProfilerView = new LayerViewer.PaintProfilerView.PaintProfilerView(showImageCallback);
         this.setMainWidget(this.paintProfilerView);
-        this.paintProfilerView.addEventListener(LayerViewer.PaintProfilerView.Events.WindowChanged, this.onWindowChanged, this);
+        this.paintProfilerView.addEventListener("WindowChanged" /* LayerViewer.PaintProfilerView.Events.WindowChanged */, this.onWindowChanged, this);
         this.logTreeView.focus();
     }
     reset() {

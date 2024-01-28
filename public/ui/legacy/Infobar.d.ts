@@ -38,7 +38,7 @@ export interface InfobarAction {
     dismiss: boolean;
     jsLogContext?: string;
 }
-export declare enum Type {
+export declare const enum Type {
     Warning = "warning",
     Info = "info",
     Issue = "issue",

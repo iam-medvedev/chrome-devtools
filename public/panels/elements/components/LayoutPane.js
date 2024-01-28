@@ -136,10 +136,10 @@ const flexContainerNodesToElements = (nodes) => {
     });
 };
 function isEnumSetting(setting) {
-    return setting.type === Common.Settings.SettingType.ENUM;
+    return setting.type === "enum" /* Common.Settings.SettingType.ENUM */;
 }
 function isBooleanSetting(setting) {
-    return setting.type === Common.Settings.SettingType.BOOLEAN;
+    return setting.type === "boolean" /* Common.Settings.SettingType.BOOLEAN */;
 }
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 let layoutPaneWrapperInstance;
@@ -169,14 +169,14 @@ export class LayoutPane extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     }
     modelAdded(domModel) {
         const overlayModel = domModel.overlayModel();
-        overlayModel.addEventListener(SDK.OverlayModel.Events.PersistentGridOverlayStateChanged, this.render, this);
-        overlayModel.addEventListener(SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged, this.render, this);
+        overlayModel.addEventListener("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentGridOverlayStateChanged */, this.render, this);
+        overlayModel.addEventListener("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged */, this.render, this);
         this.#domModels.push(domModel);
     }
     modelRemoved(domModel) {
         const overlayModel = domModel.overlayModel();
-        overlayModel.removeEventListener(SDK.OverlayModel.Events.PersistentGridOverlayStateChanged, this.render, this);
-        overlayModel.removeEventListener(SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged, this.render, this);
+        overlayModel.removeEventListener("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentGridOverlayStateChanged */, this.render, this);
+        overlayModel.removeEventListener("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged */, this.render, this);
         this.#domModels = this.#domModels.filter(model => model !== domModel);
     }
     async #fetchNodesByStyle(style) {
@@ -216,7 +216,7 @@ export class LayoutPane extends LegacyWrapper.LegacyWrapper.WrappableComponent {
             if (!settingType) {
                 throw new Error('A setting provided to LayoutSidebarPane does not have a setting type');
             }
-            if (settingType !== Common.Settings.SettingType.BOOLEAN && settingType !== Common.Settings.SettingType.ENUM) {
+            if (settingType !== "boolean" /* Common.Settings.SettingType.BOOLEAN */ && settingType !== "enum" /* Common.Settings.SettingType.ENUM */) {
                 throw new Error('A setting provided to LayoutSidebarPane does not have a supported setting type');
             }
             const mappedSetting = {

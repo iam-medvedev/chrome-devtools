@@ -73,7 +73,7 @@ export declare class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapp
     private loadFromTarget;
 }
 export declare function getLoadThroughTargetSetting(): Common.Settings.Setting<boolean>;
-export declare enum Events {
+export declare const enum Events {
     Update = "Update"
 }
 export type EventTypes = {

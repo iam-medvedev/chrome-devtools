@@ -102,6 +102,10 @@ styles.replaceSync(
   font-weight: 400;
 }
 
+devtools-icon + .link {
+  margin-inline-start: 2px;
+}
+
 .hide-container {
   display: none;
 }

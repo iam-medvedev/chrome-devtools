@@ -87,7 +87,7 @@ export declare class InfoWidget extends UI.Widget.VBox {
         selectedTab: 'request' | 'response' | undefined;
     } | null): void;
 }
-export declare enum Events {
+export declare const enum Events {
     CommandSent = "CommandSent",
     CommandChange = "CommandChange"
 }

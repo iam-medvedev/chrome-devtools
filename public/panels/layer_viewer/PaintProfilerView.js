@@ -101,7 +101,7 @@ export class PaintProfilerView extends Common.ObjectWrapper.eventMixin(UI.Widget
         this.canvas = this.canvasContainer.createChild('canvas', 'fill');
         this.context = this.canvas.getContext('2d');
         this.selectionWindowInternal = new PerfUI.OverviewGrid.Window(this.canvasContainer);
-        this.selectionWindowInternal.addEventListener(PerfUI.OverviewGrid.Events.WindowChanged, this.onWindowChanged, this);
+        this.selectionWindowInternal.addEventListener("WindowChanged" /* PerfUI.OverviewGrid.Events.WindowChanged */, this.onWindowChanged, this);
         this.innerBarWidth = 4 * window.devicePixelRatio;
         this.minBarHeight = window.devicePixelRatio;
         this.barPaddingWidth = 2 * window.devicePixelRatio;
@@ -275,7 +275,7 @@ export class PaintProfilerView extends Common.ObjectWrapper.eventMixin(UI.Widget
         }
     }
     onWindowChanged() {
-        this.dispatchEventToListeners(Events.WindowChanged);
+        this.dispatchEventToListeners("WindowChanged" /* Events.WindowChanged */);
         this.updatePieChart();
         if (this.updateImageTimer) {
             return;
@@ -369,12 +369,6 @@ export class PaintProfilerView extends Common.ObjectWrapper.eventMixin(UI.Widget
         this.registerCSSFiles([paintProfilerStyles]);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["WindowChanged"] = "WindowChanged";
-})(Events || (Events = {}));
 export class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWidget {
     treeOutline;
     log;

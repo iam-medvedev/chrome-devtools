@@ -81,7 +81,7 @@ class PerformanceMarker extends CodeMirror.GutterMarker {
     }
 }
 function markersFromProfileData(map, state, type) {
-    const markerType = type === SourceFrame.SourceFrame.DecoratorType.PERFORMANCE ? PerformanceMarker : MemoryMarker;
+    const markerType = type === "performance" /* SourceFrame.SourceFrame.DecoratorType.PERFORMANCE */ ? PerformanceMarker : MemoryMarker;
     const markers = [];
     for (const [line, value] of map) {
         if (line <= state.doc.lines) {
@@ -162,6 +162,6 @@ const theme = CodeMirror.EditorView.baseTheme({
         marginLeft: '3px',
     },
 });
-export const MemoryProfilePlugin = makeLineLevelProfilePlugin(SourceFrame.SourceFrame.DecoratorType.MEMORY);
-export const PerformanceProfilePlugin = makeLineLevelProfilePlugin(SourceFrame.SourceFrame.DecoratorType.PERFORMANCE);
+export const MemoryProfilePlugin = makeLineLevelProfilePlugin("memory" /* SourceFrame.SourceFrame.DecoratorType.MEMORY */);
+export const PerformanceProfilePlugin = makeLineLevelProfilePlugin("performance" /* SourceFrame.SourceFrame.DecoratorType.PERFORMANCE */);
 //# sourceMappingURL=ProfilePlugin.js.map

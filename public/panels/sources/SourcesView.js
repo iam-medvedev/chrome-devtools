@@ -15,8 +15,8 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Components from './components/components.js';
 import { EditingLocationHistoryManager } from './EditingLocationHistoryManager.js';
 import sourcesViewStyles from './sourcesView.css.js';
-import { Events as TabbedEditorContainerEvents, TabbedEditorContainer, } from './TabbedEditorContainer.js';
-import { Events as UISourceCodeFrameEvents, UISourceCodeFrame } from './UISourceCodeFrame.js';
+import { TabbedEditorContainer, } from './TabbedEditorContainer.js';
+import { UISourceCodeFrame } from './UISourceCodeFrame.js';
 const UIStrings = {
     /**
      *@description Text to open a file
@@ -67,8 +67,8 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.sourceViewByUISourceCode = new Map();
         this.editorContainer = new TabbedEditorContainer(this, Common.Settings.Settings.instance().createLocalSetting('previouslyViewedFiles', []), this.placeholderElement(), this.focusedPlaceholderElement);
         this.editorContainer.show(this.searchableViewInternal.element);
-        this.editorContainer.addEventListener(TabbedEditorContainerEvents.EditorSelected, this.editorSelected, this);
-        this.editorContainer.addEventListener(TabbedEditorContainerEvents.EditorClosed, this.editorClosed, this);
+        this.editorContainer.addEventListener("EditorSelected" /* TabbedEditorContainerEvents.EditorSelected */, this.editorSelected, this);
+        this.editorContainer.addEventListener("EditorClosed" /* TabbedEditorContainerEvents.EditorClosed */, this.editorClosed, this);
         this.historyManager = new EditingLocationHistoryManager(this);
         this.toolbarContainerElementInternal = this.element.createChild('div', 'sources-toolbar');
         this.scriptViewToolbar = new UI.Toolbar.Toolbar('', this.toolbarContainerElementInternal);
@@ -231,6 +231,9 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     #onScopeChange() {
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         for (const uiSourceCode of workspace.uiSourceCodes()) {
+            if (uiSourceCode.project().type() !== Workspace.Workspace.projectTypes.Network) {
+                continue;
+            }
             const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
             if (SDK.TargetManager.TargetManager.instance().isInScope(target)) {
                 this.addUISourceCode(uiSourceCode);
@@ -245,17 +248,23 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.addUISourceCode(uiSourceCode);
     }
     addUISourceCode(uiSourceCode) {
-        if (uiSourceCode.project().isServiceProject()) {
+        const project = uiSourceCode.project();
+        if (project.isServiceProject()) {
             return;
         }
-        if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem &&
-            Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(uiSourceCode.project()) ===
-                'overrides') {
-            return;
-        }
-        const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
-        if (!SDK.TargetManager.TargetManager.instance().isInScope(target)) {
-            return;
+        switch (project.type()) {
+            case Workspace.Workspace.projectTypes.FileSystem: {
+                if (Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) === 'overrides') {
+                    return;
+                }
+                break;
+            }
+            case Workspace.Workspace.projectTypes.Network: {
+                const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
+                if (!SDK.TargetManager.TargetManager.instance().isInScope(target)) {
+                    return;
+                }
+            }
         }
         this.editorContainer.addUISourceCode(uiSourceCode);
     }
@@ -324,28 +333,28 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     }
     #sourceViewTypeForWidget(widget) {
         if (widget instanceof SourceFrame.ImageView.ImageView) {
-            return SourceViewType.ImageView;
+            return "ImageView" /* SourceViewType.ImageView */;
         }
         if (widget instanceof SourceFrame.FontView.FontView) {
-            return SourceViewType.FontView;
+            return "FontView" /* SourceViewType.FontView */;
         }
         if (widget instanceof Components.HeadersView.HeadersView) {
-            return SourceViewType.HeadersView;
+            return "HeadersView" /* SourceViewType.HeadersView */;
         }
-        return SourceViewType.SourceView;
+        return "SourceView" /* SourceViewType.SourceView */;
     }
     #sourceViewTypeForUISourceCode(uiSourceCode) {
         if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
-            return SourceViewType.HeadersView;
+            return "HeadersView" /* SourceViewType.HeadersView */;
         }
         const contentType = uiSourceCode.contentType();
         switch (contentType) {
             case Common.ResourceType.resourceTypes.Image:
-                return SourceViewType.ImageView;
+                return "ImageView" /* SourceViewType.ImageView */;
             case Common.ResourceType.resourceTypes.Font:
-                return SourceViewType.FontView;
+                return "FontView" /* SourceViewType.FontView */;
             default:
-                return SourceViewType.SourceView;
+                return "SourceView" /* SourceViewType.SourceView */;
         }
     }
     #uiSourceCodeTitleChanged(event) {
@@ -398,7 +407,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
             uiSourceCode: uiSourceCode,
             wasSelected: wasSelected,
         };
-        this.dispatchEventToListeners(Events.EditorClosed, data);
+        this.dispatchEventToListeners("EditorClosed" /* Events.EditorClosed */, data);
     }
     editorSelected(event) {
         const previousSourceFrame = event.data.previousView instanceof UISourceCodeFrame ? event.data.previousView : null;
@@ -415,7 +424,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.updateScriptViewToolbarItems();
         const currentFile = this.editorContainer.currentFile();
         if (currentFile) {
-            this.dispatchEventToListeners(Events.EditorSelected, currentFile);
+            this.dispatchEventToListeners("EditorSelected" /* Events.EditorSelected */, currentFile);
         }
     }
     removeToolbarChangedListener() {
@@ -430,7 +439,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         if (!sourceFrame) {
             return;
         }
-        this.toolbarChangedListener = sourceFrame.addEventListener(UISourceCodeFrameEvents.ToolbarItemsChanged, this.updateScriptViewToolbarItems, this);
+        this.toolbarChangedListener = sourceFrame.addEventListener("ToolbarItemsChanged" /* UISourceCodeFrameEvents.ToolbarItemsChanged */, this.updateScriptViewToolbarItems, this);
     }
     onSearchCanceled() {
         if (this.searchView) {
@@ -519,12 +528,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.editorContainer.view.element.classList.toggle('breakpoints-deactivated', !active);
     }
 }
-export // TODO(crbug.com/1167717): Make this a const enum again
- var Events;
-(function (Events) {
-    Events["EditorClosed"] = "EditorClosed";
-    Events["EditorSelected"] = "EditorSelected";
-})(Events || (Events = {}));
 const registeredEditorActions = [];
 export function registerEditorAction(editorAction) {
     registeredEditorActions.push(editorAction);
@@ -615,12 +618,4 @@ export class ActionDelegate {
     }
 }
 const HEADER_OVERRIDES_FILENAME = '.headers';
-// eslint-disable-next-line rulesdir/const_enum
-var SourceViewType;
-(function (SourceViewType) {
-    SourceViewType["ImageView"] = "ImageView";
-    SourceViewType["FontView"] = "FontView";
-    SourceViewType["HeadersView"] = "HeadersView";
-    SourceViewType["SourceView"] = "SourceView";
-})(SourceViewType || (SourceViewType = {}));
 //# sourceMappingURL=SourcesView.js.map

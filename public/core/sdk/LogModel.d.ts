@@ -8,7 +8,7 @@ export declare class LogModel extends SDKModel<EventTypes> implements ProtocolPr
     entryAdded({ entry }: Protocol.Log.EntryAddedEvent): void;
     requestClear(): void;
 }
-export declare enum Events {
+export declare const enum Events {
     EntryAdded = "EntryAdded"
 }
 export interface EntryAddedEvent {

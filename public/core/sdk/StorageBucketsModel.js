@@ -27,9 +27,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import { Capability } from './Target.js';
 import { SDKModel } from './SDKModel.js';
-import { Events as StorageKeyManagerEvents, StorageKeyManager } from './StorageKeyManager.js';
+import { StorageKeyManager } from './StorageKeyManager.js';
 export class StorageBucketsModel extends SDKModel {
     enabled = false;
     storageAgent;
@@ -71,8 +70,8 @@ export class StorageBucketsModel extends SDKModel {
             return;
         }
         if (this.storageKeyManager) {
-            this.storageKeyManager.addEventListener(StorageKeyManagerEvents.StorageKeyAdded, this.storageKeyAdded, this);
-            this.storageKeyManager.addEventListener(StorageKeyManagerEvents.StorageKeyRemoved, this.storageKeyRemoved, this);
+            this.storageKeyManager.addEventListener("StorageKeyAdded" /* StorageKeyManagerEvents.StorageKeyAdded */, this.storageKeyAdded, this);
+            this.storageKeyManager.addEventListener("StorageKeyRemoved" /* StorageKeyManagerEvents.StorageKeyRemoved */, this.storageKeyRemoved, this);
             for (const storageKey of this.storageKeyManager.storageKeys()) {
                 this.addStorageKey(storageKey);
             }
@@ -140,7 +139,11 @@ export class StorageBucketsModel extends SDKModel {
             throw new Error(`Received an event that Storage Bucket '${bucketId}' was deleted, but it wasn't in the StorageBucketsModel.`);
         }
     }
+    attributionReportingTriggerRegistered(_event) {
+    }
     interestGroupAccessed(_event) {
+    }
+    interestGroupAuctionEventOccurred(_event) {
     }
     indexedDBListUpdated(_event) {
     }
@@ -155,5 +158,5 @@ export class StorageBucketsModel extends SDKModel {
     attributionReportingSourceRegistered(_event) {
     }
 }
-SDKModel.register(StorageBucketsModel, { capabilities: Capability.Storage, autostart: false });
+SDKModel.register(StorageBucketsModel, { capabilities: 8192 /* Capability.Storage */, autostart: false });
 //# sourceMappingURL=StorageBucketsModel.js.map

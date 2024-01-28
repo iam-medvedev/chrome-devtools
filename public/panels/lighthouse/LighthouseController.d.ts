@@ -1,6 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import * as Platform from '../../core/platform/platform.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { type LighthouseRun, type ProtocolService } from './LighthouseProtocolService.js';
 import { type RunnerResult } from './LighthouseReporterTypes.js';

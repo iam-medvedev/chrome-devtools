@@ -29,7 +29,6 @@
  */
 import * as i18n from '../i18n/i18n.js';
 import { DebuggerModel, Location } from './DebuggerModel.js';
-import { Capability } from './Target.js';
 import { SDKModel } from './SDKModel.js';
 const UIStrings = {
     /**
@@ -71,7 +70,7 @@ export class CPUProfilerModel extends SDKModel {
             this.#anonymousConsoleProfileIdToTitle.set(id, title);
         }
         const eventData = this.createEventDataFrom(id, location, title);
-        this.dispatchEventToListeners(Events.ConsoleProfileStarted, eventData);
+        this.dispatchEventToListeners("ConsoleProfileStarted" /* Events.ConsoleProfileStarted */, eventData);
     }
     consoleProfileFinished({ id, location, profile, title }) {
         if (!title) {
@@ -83,7 +82,7 @@ export class CPUProfilerModel extends SDKModel {
             cpuProfile: profile,
         };
         this.registeredConsoleProfileMessages.push(eventData);
-        this.dispatchEventToListeners(Events.ConsoleProfileFinished, eventData);
+        this.dispatchEventToListeners("ConsoleProfileFinished" /* Events.ConsoleProfileFinished */, eventData);
     }
     createEventDataFrom(id, scriptLocation, title) {
         const debuggerLocation = Location.fromPayload(this.#debuggerModelInternal, scriptLocation);
@@ -130,12 +129,5 @@ export class CPUProfilerModel extends SDKModel {
         }
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ConsoleProfileStarted"] = "ConsoleProfileStarted";
-    Events["ConsoleProfileFinished"] = "ConsoleProfileFinished";
-})(Events || (Events = {}));
-SDKModel.register(CPUProfilerModel, { capabilities: Capability.JS, autostart: true });
+SDKModel.register(CPUProfilerModel, { capabilities: 4 /* Capability.JS */, autostart: true });
 //# sourceMappingURL=CPUProfilerModel.js.map

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as UI from '../../legacy.js';
+import * as UI from '../../../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
      *@description Title of action that opens a file
@@ -24,7 +24,7 @@ async function loadQuickOpenModule() {
 }
 UI.ActionRegistration.registerActionExtension({
     actionId: 'quick-open.show-command-menu',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.runCommand),
     async loadActionDelegate() {
         const QuickOpen = await loadQuickOpenModule();
@@ -57,7 +57,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'quick-open.show',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.openFile),
     async loadActionDelegate() {
         const QuickOpen = await loadQuickOpenModule();
@@ -100,12 +100,12 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 UI.ContextMenu.registerItem({
-    location: UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT,
+    location: "mainMenu/default" /* UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT */,
     actionId: 'quick-open.show-command-menu',
     order: undefined,
 });
 UI.ContextMenu.registerItem({
-    location: UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT,
+    location: "mainMenu/default" /* UI.ContextMenu.ItemLocation.MAIN_MENU_DEFAULT */,
     actionId: 'quick-open.show',
     order: undefined,
 });

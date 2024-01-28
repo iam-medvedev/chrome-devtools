@@ -31,7 +31,7 @@ export declare class StatusUpdate {
     wait: boolean | undefined;
     constructor(subtitle: string | null, wait: boolean | undefined);
 }
-export declare enum Events {
+export declare const enum Events {
     UpdateStatus = "UpdateStatus",
     ProfileTitleChanged = "ProfileTitleChanged"
 }
@@ -74,7 +74,7 @@ export declare class ProfileType extends Common.ObjectWrapper.ObjectWrapper<Prof
     reset(): void;
     disposeProfile(profile: ProfileHeader): void;
 }
-export declare enum ProfileEvents {
+export declare const enum ProfileEvents {
     AddProfileHeader = "add-profile-header",
     ProfileComplete = "profile-complete",
     RemoveProfileHeader = "remove-profile-header",

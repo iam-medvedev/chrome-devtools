@@ -82,8 +82,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/perf_ui/FlameChart.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const HIDDEN_DESCENDANT_ARROW = 'data:image/jpg;base64,' +
-    'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAABYSURBVHgB7c6xDYBACAVQIM5BWOUmM47iJK5CGATEhMKYK7TyinsV+YEfAKb/YS9k5pWI5J65u5rZ9txdegV5vEfEkaNUpJm11x9cJFUJIGLTBF9JgWlwJyvOFrGul+FpAAAAAElFTkSuQmCC';
 export class FlameChartDelegate {
     windowChanged(_startTime, _endTime, _animate) {
     }
@@ -179,7 +177,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.canvas.addEventListener('mouseout', this.onMouseOut.bind(this), false);
         this.canvas.addEventListener('click', this.onClick.bind(this), false);
         this.canvas.addEventListener('keydown', this.onKeyDown.bind(this), false);
-        if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU)) {
+        if (Root.Runtime.experiments.isEnabled("trackContextMenu" /* Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU */)) {
             this.canvas.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
         }
         this.entryInfo = this.viewportElement.createChild('div', 'flame-chart-entry-info');
@@ -189,7 +187,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.viewportElement.createChild('div', 'reveal-descendants-arrow-highlight-element');
         this.selectedElement = this.viewportElement.createChild('div', 'flame-chart-selected-element');
         this.canvas.addEventListener('focus', () => {
-            this.dispatchEventToListeners(Events.CanvasFocused);
+            this.dispatchEventToListeners("CanvasFocused" /* Events.CanvasFocused */);
         }, false);
         UI.UIUtils.installDragHandle(this.viewportElement, this.startDragging.bind(this), this.dragging.bind(this), this.endDragging.bind(this), null);
         this.rulerEnabled = true;
@@ -246,7 +244,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.highlightedEntryIndex = entryIndex;
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
-        this.dispatchEventToListeners(Events.EntryHighlighted, entryIndex);
+        this.dispatchEventToListeners("EntryHighlighted" /* Events.EntryHighlighted */, entryIndex);
     }
     hideHighlight() {
         this.entryInfo.removeChildren();
@@ -255,7 +253,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.highlightedEntryIndex = -1;
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
-        this.dispatchEventToListeners(Events.EntryHighlighted, -1);
+        this.dispatchEventToListeners("EntryHighlighted" /* Events.EntryHighlighted */, -1);
     }
     createCandyStripePattern() {
         // Set the candy stripe pattern to 17px so it repeats well.
@@ -456,7 +454,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         else {
             this.chartViewport.onClick(mouseEvent);
-            this.dispatchEventToListeners(Events.EntryInvoked, this.highlightedEntryIndex);
+            this.dispatchEventToListeners("EntryInvoked" /* Events.EntryInvoked */, this.highlightedEntryIndex);
         }
     }
     selectGroup(groupIndex) {
@@ -695,31 +693,35 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // Update the selected index to match the highlighted index, which
         // represents the entry under the cursor where the user has right clicked
         // to trigger a context menu.
-        this.dispatchEventToListeners(Events.EntryInvoked, this.highlightedEntryIndex);
+        this.dispatchEventToListeners("EntryInvoked" /* Events.EntryInvoked */, this.highlightedEntryIndex);
         this.setSelectedEntry(this.highlightedEntryIndex);
         const possibleActions = this.getPossibleActions();
         if (!possibleActions) {
             return;
         }
-        this.contextMenu = new UI.ContextMenu.ContextMenu(_event);
+        this.contextMenu = new UI.ContextMenu.ContextMenu(_event, { useSoftMenu: true });
         if (possibleActions?.["MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */]) {
-            this.contextMenu.headerSection().appendItem(i18nString(UIStrings.hideFunction), () => {
-                this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */, this.highlightedEntryIndex);
+            const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideFunction), () => {
+                this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.MERGE_FUNCTION */, this.selectedEntryIndex);
             });
+            item.setShortcut('H');
         }
         if (possibleActions?.["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */]) {
-            this.contextMenu.headerSection().appendItem(i18nString(UIStrings.hideChildren), () => {
-                this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */, this.highlightedEntryIndex);
+            const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideChildren), () => {
+                this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_FUNCTION */, this.selectedEntryIndex);
             });
+            item.setShortcut('C');
         }
         if (possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */]) {
-            this.contextMenu.headerSection().appendItem(i18nString(UIStrings.hideRepeatingChildren), () => {
-                this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */, this.highlightedEntryIndex);
+            const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideRepeatingChildren), () => {
+                this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */, this.selectedEntryIndex);
             });
+            item.setShortcut('R');
         }
-        this.contextMenu.headerSection().appendItem(i18nString(UIStrings.resetTrace), () => {
-            this.modifyTree("UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterUndoAction.UNDO_ALL_ACTIONS */, this.highlightedEntryIndex);
+        const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetTrace), () => {
+            this.modifyTree("UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterUndoAction.UNDO_ALL_ACTIONS */, this.selectedEntryIndex);
         });
+        item.setShortcut('U');
         void this.contextMenu.show();
     }
     handleFlameChartTransformEvent(event) {
@@ -917,7 +919,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             indexOnLevel += keyboardEvent.keyCode === keys.Left.code ? -1 : 1;
             event.consume(true);
             if (indexOnLevel >= 0 && indexOnLevel < levelIndexes.length) {
-                this.dispatchEventToListeners(Events.EntrySelected, levelIndexes[indexOnLevel]);
+                this.dispatchEventToListeners("EntrySelected" /* Events.EntrySelected */, levelIndexes[indexOnLevel]);
             }
             return true;
         }
@@ -947,12 +949,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 }
             }
             keyboardEvent.consume(true);
-            this.dispatchEventToListeners(Events.EntrySelected, levelIndexes[indexOnLevel]);
+            this.dispatchEventToListeners("EntrySelected" /* Events.EntrySelected */, levelIndexes[indexOnLevel]);
             return true;
         }
         if (event.key === 'Enter') {
             event.consume(true);
-            this.dispatchEventToListeners(Events.EntryInvoked, this.selectedEntryIndex);
+            this.dispatchEventToListeners("EntryInvoked" /* Events.EntryInvoked */, this.selectedEntryIndex);
             return true;
         }
         return false;
@@ -1352,11 +1354,28 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         context.beginPath();
                         context.rect(barX, barY, barWidth, barHeight);
                         const arrowSize = barHeight;
+                        // If the bar is wider than double the arrow button, draw the button. Otherwise, draw a corner triangle to indicate some entries are hidden
                         if (barWidth > arrowSize * 2) {
-                            const image = new Image();
-                            image.src = HIDDEN_DESCENDANT_ARROW;
-                            context.drawImage(image, barX + barWidth - arrowSize, barY, arrowSize, arrowSize);
+                            const triangleSize = 7;
+                            const triangleHorizontalPadding = 5;
+                            const triangleVerrticalPadding = 6;
+                            context.clip();
+                            context.beginPath();
+                            context.fillStyle = '#474747';
+                            context.moveTo(barX + barWidth - triangleSize - triangleHorizontalPadding, barY + triangleVerrticalPadding);
+                            context.lineTo(barX + barWidth - triangleHorizontalPadding, barY + triangleVerrticalPadding);
+                            context.lineTo(barX + barWidth - triangleHorizontalPadding - triangleSize / 2, barY + barHeight - triangleVerrticalPadding);
                         }
+                        else {
+                            const triangleSize = 8;
+                            context.clip();
+                            context.beginPath();
+                            context.fillStyle = '#474747';
+                            context.moveTo(barX + barWidth - triangleSize, barY + barHeight);
+                            context.lineTo(barX + barWidth, barY + barHeight);
+                            context.lineTo(barX + barWidth, barY + triangleSize);
+                        }
+                        context.fill();
                         context.restore();
                         break;
                     }
@@ -1579,13 +1598,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         });
         context.restore();
         context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-token-subtle');
-        context.beginPath();
         this.forEachGroupInViewport((offset, index, group) => {
             if (this.isGroupCollapsible(index)) {
                 drawExpansionArrow.call(this, this.expansionArrowIndent * (group.style.nestingLevel + 1), offset + group.style.height - this.textBaseline - this.arrowSide / 2, Boolean(group.expanded));
             }
         });
-        context.fill();
         context.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-neutral-outline');
         context.beginPath();
         context.stroke();
@@ -1609,11 +1626,13 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const arrowHeight = this.arrowSide * Math.sqrt(3) / 2;
             const arrowCenterOffset = Math.round(arrowHeight / 2);
             context.save();
+            context.beginPath();
             context.translate(x, y);
             context.rotate(expanded ? Math.PI / 2 : 0);
             context.moveTo(-arrowCenterOffset, -this.arrowSide / 2);
             context.lineTo(-arrowCenterOffset, this.arrowSide / 2);
             context.lineTo(arrowHeight - arrowCenterOffset, 0);
+            context.fill();
             context.restore();
         }
     }
@@ -1683,16 +1702,18 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const barLevel = entryLevels[entryIndex];
             const barY = this.levelToOffset(barLevel);
             let text = this.dataProvider.entryTitle(entryIndex);
+            const barHeight = this.#eventBarHeight(timelineData, entryIndex);
             if (text && text.length) {
                 context.font = this.#font;
                 const hasArrowDecoration = this.entryHasDecoration(entryIndex, "HIDDEN_DESCENDANTS_ARROW" /* FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */);
-                // Set the max width to be the width of the bar plus some padding. If the bar has an arrow decoration, also substract the width of the decoration.
-                // The decoration is square, therefore it's width is equal to this.barHeight
-                const maxBarWidth = (hasArrowDecoration) ? barWidth - textPadding - this.barHeight : barWidth - 2 * textPadding;
+                // Set the max width to be the width of the bar plus some padding. If the bar has an arrow decoration and the bar is wide enough for the larger
+                // version of the decoration that is a square button, also substract the width of the decoration.
+                // Because the decoration is square, it's width is equal to this.barHeight
+                const maxBarWidth = (hasArrowDecoration && barWidth > barHeight * 2) ? barWidth - textPadding - this.barHeight :
+                    barWidth - 2 * textPadding;
                 text = UI.UIUtils.trimTextMiddle(context, text, maxBarWidth);
             }
             const unclippedBarX = this.chartViewport.timeToPosition(entryStartTime);
-            const barHeight = this.#eventBarHeight(timelineData, entryIndex);
             if (this.dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixel)) {
                 continue;
             }
@@ -2540,39 +2561,4 @@ export class FlameChartTimelineData {
         []);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    /**
-     * Emitted when the <canvas> element of the FlameChart is focused by the user.
-     **/
-    Events["CanvasFocused"] = "CanvasFocused";
-    /**
-     * Emitted when an event is selected by either mouse click, or hitting
-     * <enter> on the keyboard - e.g. the same actions that would invoke a
-     * <button> element.
-     *
-     * Will be emitted with a number which is the index of the entry that has
-     * been selected, or -1 if no entry is selected (e.g the user has clicked
-     * away from any events)
-     */
-    Events["EntryInvoked"] = "EntryInvoked";
-    /**
-     * Emitted when an event is selected via keyboard navigation using the arrow
-     * keys.
-     *
-     * Will be emitted with a number which is the index of the entry that has
-     * been selected, or -1 if no entry is selected.
-     */
-    Events["EntrySelected"] = "EntrySelected";
-    /**
-     * Emitted when an event is hovered over with the mouse.
-     *
-     * Will be emitted with a number which is the index of the entry that has
-     * been hovered on, or -1 if no entry is selected (the user has moved their
-     * mouse off the event)
-     */
-    Events["EntryHighlighted"] = "EntryHighlighted";
-})(Events || (Events = {}));
 //# sourceMappingURL=FlameChart.js.map

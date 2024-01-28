@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Platform from '../../../core/platform/platform.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
@@ -31,25 +30,24 @@ export class EndpointsGrid extends HTMLElement {
         this.#render();
     }
     #render() {
-        const k = Platform.StringUtilities.kebab;
         const endpointsGridData = {
             columns: [
                 {
-                    id: k('origin'),
+                    id: 'origin',
                     title: i18n.i18n.lockedString('Origin'),
                     widthWeighting: 30,
                     hideable: false,
                     visible: true,
                 },
                 {
-                    id: k('name'),
+                    id: 'name',
                     title: i18n.i18n.lockedString('Name'),
                     widthWeighting: 20,
                     hideable: false,
                     visible: true,
                 },
                 {
-                    id: k('url'),
+                    id: 'url',
                     title: i18n.i18n.lockedString('URL'),
                     widthWeighting: 30,
                     hideable: false,

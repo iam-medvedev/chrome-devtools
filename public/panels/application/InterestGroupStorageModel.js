@@ -50,11 +50,15 @@ export class InterestGroupStorageModel extends SDK.SDKModel.SDKModel {
         void this.storageAgent.invoke_setInterestGroupTracking({ enable: false });
     }
     interestGroupAccessed(event) {
-        this.dispatchEventToListeners(Events.InterestGroupAccess, event);
+        this.dispatchEventToListeners("InterestGroupAccess" /* Events.InterestGroupAccess */, event);
+    }
+    attributionReportingTriggerRegistered(_event) {
     }
     indexedDBListUpdated(_event) {
     }
     indexedDBContentUpdated(_event) {
+    }
+    interestGroupAuctionEventOccurred(_event) {
     }
     cacheStorageListUpdated(_event) {
     }
@@ -69,10 +73,5 @@ export class InterestGroupStorageModel extends SDK.SDKModel.SDKModel {
     attributionReportingSourceRegistered(_event) {
     }
 }
-SDK.SDKModel.SDKModel.register(InterestGroupStorageModel, { capabilities: SDK.Target.Capability.Storage, autostart: false });
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["InterestGroupAccess"] = "InterestGroupAccess";
-})(Events || (Events = {}));
+SDK.SDKModel.SDKModel.register(InterestGroupStorageModel, { capabilities: 8192 /* SDK.Target.Capability.Storage */, autostart: false });
 //# sourceMappingURL=InterestGroupStorageModel.js.map

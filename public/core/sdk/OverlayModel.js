@@ -8,7 +8,6 @@ import { DebuggerModel, Events as DebuggerModelEvents } from './DebuggerModel.js
 import { DeferredDOMNode, DOMModel, Events as DOMModelEvents } from './DOMModel.js';
 import { OverlayPersistentHighlighter } from './OverlayPersistentHighlighter.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability } from './Target.js';
 import { TargetManager } from './TargetManager.js';
 const UIStrings = {
     /**
@@ -79,10 +78,10 @@ export class OverlayModel extends SDKModel {
             void this.wireAgentToSettings();
         }
         this.#persistentHighlighter = new OverlayPersistentHighlighter(this, {
-            onGridOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners(Events.PersistentGridOverlayStateChanged, { nodeId, enabled }),
-            onFlexOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners(Events.PersistentFlexContainerOverlayStateChanged, { nodeId, enabled }),
-            onContainerQueryOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners(Events.PersistentContainerQueryOverlayStateChanged, { nodeId, enabled }),
-            onScrollSnapOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners(Events.PersistentScrollSnapOverlayStateChanged, { nodeId, enabled }),
+            onGridOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentGridOverlayStateChanged" /* Events.PersistentGridOverlayStateChanged */, { nodeId, enabled }),
+            onFlexOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentFlexContainerOverlayStateChanged" /* Events.PersistentFlexContainerOverlayStateChanged */, { nodeId, enabled }),
+            onContainerQueryOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentContainerQueryOverlayStateChanged" /* Events.PersistentContainerQueryOverlayStateChanged */, { nodeId, enabled }),
+            onScrollSnapOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentScrollSnapOverlayStateChanged" /* Events.PersistentScrollSnapOverlayStateChanged */, { nodeId, enabled }),
         });
         this.#domModel.addEventListener(DOMModelEvents.NodeRemoved, () => {
             if (!this.#persistentHighlighter) {
@@ -212,7 +211,7 @@ export class OverlayModel extends SDKModel {
     async setInspectMode(mode, showDetailedTooltip = true) {
         await this.#domModel.requestDocument();
         this.#inspectModeEnabledInternal = mode !== "none" /* Protocol.Overlay.InspectMode.None */;
-        this.dispatchEventToListeners(Events.InspectModeWillBeToggled, this);
+        this.dispatchEventToListeners("InspectModeWillBeToggled" /* Events.InspectModeWillBeToggled */, this);
         void this.#highlighter.setInspectMode(mode, this.buildHighlightConfig('all', showDetailedTooltip));
     }
     inspectModeEnabled() {
@@ -622,7 +621,7 @@ export class OverlayModel extends SDKModel {
     nodeHighlightRequested({ nodeId }) {
         const node = this.#domModel.nodeForId(nodeId);
         if (node) {
-            this.dispatchEventToListeners(Events.HighlightNodeRequested, node);
+            this.dispatchEventToListeners("HighlightNodeRequested" /* Events.HighlightNodeRequested */, node);
         }
     }
     static setInspectNodeHandler(handler) {
@@ -640,14 +639,14 @@ export class OverlayModel extends SDKModel {
         else {
             void Common.Revealer.reveal(deferredNode);
         }
-        this.dispatchEventToListeners(Events.ExitedInspectMode);
+        this.dispatchEventToListeners("InspectModeExited" /* Events.ExitedInspectMode */);
     }
     screenshotRequested({ viewport }) {
-        this.dispatchEventToListeners(Events.ScreenshotRequested, viewport);
-        this.dispatchEventToListeners(Events.ExitedInspectMode);
+        this.dispatchEventToListeners("ScreenshotRequested" /* Events.ScreenshotRequested */, viewport);
+        this.dispatchEventToListeners("InspectModeExited" /* Events.ExitedInspectMode */);
     }
     inspectModeCanceled() {
-        this.dispatchEventToListeners(Events.ExitedInspectMode);
+        this.dispatchEventToListeners("InspectModeExited" /* Events.ExitedInspectMode */);
     }
     static inspectNodeHandler = null;
     getOverlayAgent() {
@@ -751,19 +750,6 @@ export class WindowControls {
         return WindowControls.#transformStyleSheet(x, y, width, height, originalStyleSheet);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["InspectModeWillBeToggled"] = "InspectModeWillBeToggled";
-    Events["ExitedInspectMode"] = "InspectModeExited";
-    Events["HighlightNodeRequested"] = "HighlightNodeRequested";
-    Events["ScreenshotRequested"] = "ScreenshotRequested";
-    Events["PersistentGridOverlayStateChanged"] = "PersistentGridOverlayStateChanged";
-    Events["PersistentFlexContainerOverlayStateChanged"] = "PersistentFlexContainerOverlayStateChanged";
-    Events["PersistentScrollSnapOverlayStateChanged"] = "PersistentScrollSnapOverlayStateChanged";
-    Events["PersistentContainerQueryOverlayStateChanged"] = "PersistentContainerQueryOverlayStateChanged";
-})(Events || (Events = {}));
 class DefaultHighlighter {
     #model;
     constructor(model) {
@@ -808,5 +794,5 @@ export class SourceOrderHighlighter {
         void this.#model.clearHighlight();
     }
 }
-SDKModel.register(OverlayModel, { capabilities: Capability.DOM, autostart: true });
+SDKModel.register(OverlayModel, { capabilities: 2 /* Capability.DOM */, autostart: true });
 //# sourceMappingURL=OverlayModel.js.map

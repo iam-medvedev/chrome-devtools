@@ -4,6 +4,7 @@ export declare class Cookie {
     #private;
     constructor(name: string, value: string, type?: Type | null, priority?: Protocol.Network.CookiePriority);
     static fromProtocolCookie(protocolCookie: Protocol.Network.Cookie): Cookie;
+    isEqual(other: Cookie): boolean;
     key(): string;
     name(): string;
     value(): string;
@@ -37,11 +38,11 @@ export declare class Cookie {
     matchesSecurityOrigin(securityOrigin: string): boolean;
     static isDomainMatch(domain: string, hostname: string): boolean;
 }
-export declare enum Type {
+export declare const enum Type {
     Request = 0,
     Response = 1
 }
-export declare enum Attributes {
+export declare const enum Attributes {
     Name = "name",
     Value = "value",
     Size = "size",

@@ -19,7 +19,7 @@ import { SharedStorageListTreeElement } from './SharedStorageListTreeElement.js'
 import { StorageBucketsTreeParentElement } from './StorageBucketsTreeElement.js';
 import { TrustTokensTreeElement } from './TrustTokensTreeElement.js';
 export declare namespace SharedStorageTreeElementDispatcher {
-    enum Events {
+    const enum Events {
         SharedStorageTreeElementAdded = "SharedStorageTreeElementAdded"
     }
     interface SharedStorageTreeElementAddedEvent {

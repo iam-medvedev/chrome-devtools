@@ -100,10 +100,6 @@ export declare const UIStrings: {
      */
     MediaSourceDurationTruncatingBuffered: string;
     /**
-     * @description This warning is displayed when a site contains a `<template>` element with the `shadowroot` attribute.
-     */
-    NonStandardDeclarativeShadowDOM: string;
-    /**
      * @description This warning occurs when the browser requests Web MIDI access as sysex (system exclusive messages) can be allowed via prompt even if the browser did not specifically request it.
      */
     NoSysexWebMIDIWithoutPermission: string;

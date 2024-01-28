@@ -7,26 +7,18 @@ const writingModesAffectingFlexDirection = new Set([
     'vertical-lr',
     'vertical-rl',
 ]);
-// eslint-disable-next-line rulesdir/const_enum
-export var PhysicalDirection;
-(function (PhysicalDirection) {
-    PhysicalDirection["LEFT_TO_RIGHT"] = "left-to-right";
-    PhysicalDirection["RIGHT_TO_LEFT"] = "right-to-left";
-    PhysicalDirection["BOTTOM_TO_TOP"] = "bottom-to-top";
-    PhysicalDirection["TOP_TO_BOTTOM"] = "top-to-bottom";
-})(PhysicalDirection || (PhysicalDirection = {}));
 export function reverseDirection(direction) {
-    if (direction === PhysicalDirection.LEFT_TO_RIGHT) {
-        return PhysicalDirection.RIGHT_TO_LEFT;
+    if (direction === "left-to-right" /* PhysicalDirection.LEFT_TO_RIGHT */) {
+        return "right-to-left" /* PhysicalDirection.RIGHT_TO_LEFT */;
     }
-    if (direction === PhysicalDirection.RIGHT_TO_LEFT) {
-        return PhysicalDirection.LEFT_TO_RIGHT;
+    if (direction === "right-to-left" /* PhysicalDirection.RIGHT_TO_LEFT */) {
+        return "left-to-right" /* PhysicalDirection.LEFT_TO_RIGHT */;
     }
-    if (direction === PhysicalDirection.TOP_TO_BOTTOM) {
-        return PhysicalDirection.BOTTOM_TO_TOP;
+    if (direction === "top-to-bottom" /* PhysicalDirection.TOP_TO_BOTTOM */) {
+        return "bottom-to-top" /* PhysicalDirection.BOTTOM_TO_TOP */;
     }
-    if (direction === PhysicalDirection.BOTTOM_TO_TOP) {
-        return PhysicalDirection.TOP_TO_BOTTOM;
+    if (direction === "bottom-to-top" /* PhysicalDirection.BOTTOM_TO_TOP */) {
+        return "top-to-bottom" /* PhysicalDirection.TOP_TO_BOTTOM */;
     }
     throw new Error('Unknown PhysicalFlexDirection');
 }
@@ -47,13 +39,13 @@ export function getPhysicalDirections(computedStyles) {
     const isVertical = writingMode && writingModesAffectingFlexDirection.has(writingMode);
     if (isVertical) {
         return extendWithReverseDirections({
-            row: isRtl ? PhysicalDirection.BOTTOM_TO_TOP : PhysicalDirection.TOP_TO_BOTTOM,
-            column: writingMode === 'vertical-lr' ? PhysicalDirection.LEFT_TO_RIGHT : PhysicalDirection.RIGHT_TO_LEFT,
+            row: isRtl ? "bottom-to-top" /* PhysicalDirection.BOTTOM_TO_TOP */ : "top-to-bottom" /* PhysicalDirection.TOP_TO_BOTTOM */,
+            column: writingMode === 'vertical-lr' ? "left-to-right" /* PhysicalDirection.LEFT_TO_RIGHT */ : "right-to-left" /* PhysicalDirection.RIGHT_TO_LEFT */,
         });
     }
     return extendWithReverseDirections({
-        row: isRtl ? PhysicalDirection.RIGHT_TO_LEFT : PhysicalDirection.LEFT_TO_RIGHT,
-        column: PhysicalDirection.TOP_TO_BOTTOM,
+        row: isRtl ? "right-to-left" /* PhysicalDirection.RIGHT_TO_LEFT */ : "left-to-right" /* PhysicalDirection.LEFT_TO_RIGHT */,
+        column: "top-to-bottom" /* PhysicalDirection.TOP_TO_BOTTOM */,
     });
 }
 /**
@@ -68,17 +60,17 @@ export function rotateFlexDirectionIcon(direction) {
     let flipX = true;
     let flipY = false;
     let rotate = -90;
-    if (direction === PhysicalDirection.RIGHT_TO_LEFT) {
+    if (direction === "right-to-left" /* PhysicalDirection.RIGHT_TO_LEFT */) {
         rotate = 90;
         flipY = false;
         flipX = false;
     }
-    else if (direction === PhysicalDirection.TOP_TO_BOTTOM) {
+    else if (direction === "top-to-bottom" /* PhysicalDirection.TOP_TO_BOTTOM */) {
         rotate = 0;
         flipX = false;
         flipY = false;
     }
-    else if (direction === PhysicalDirection.BOTTOM_TO_TOP) {
+    else if (direction === "bottom-to-top" /* PhysicalDirection.BOTTOM_TO_TOP */) {
         rotate = 0;
         flipX = false;
         flipY = true;
@@ -93,8 +85,8 @@ export function rotateFlexDirectionIcon(direction) {
 export function rotateAlignContentIcon(iconName, direction) {
     return {
         iconName,
-        rotate: direction === PhysicalDirection.RIGHT_TO_LEFT ? 90 :
-            (direction === PhysicalDirection.LEFT_TO_RIGHT ? -90 : 0),
+        rotate: direction === "right-to-left" /* PhysicalDirection.RIGHT_TO_LEFT */ ? 90 :
+            (direction === "left-to-right" /* PhysicalDirection.LEFT_TO_RIGHT */ ? -90 : 0),
         scaleX: 1,
         scaleY: 1,
     };
@@ -102,26 +94,26 @@ export function rotateAlignContentIcon(iconName, direction) {
 export function rotateJustifyContentIcon(iconName, direction) {
     return {
         iconName,
-        rotate: direction === PhysicalDirection.TOP_TO_BOTTOM ? 90 :
-            (direction === PhysicalDirection.BOTTOM_TO_TOP ? -90 : 0),
-        scaleX: direction === PhysicalDirection.RIGHT_TO_LEFT ? -1 : 1,
+        rotate: direction === "top-to-bottom" /* PhysicalDirection.TOP_TO_BOTTOM */ ? 90 :
+            (direction === "bottom-to-top" /* PhysicalDirection.BOTTOM_TO_TOP */ ? -90 : 0),
+        scaleX: direction === "right-to-left" /* PhysicalDirection.RIGHT_TO_LEFT */ ? -1 : 1,
         scaleY: 1,
     };
 }
 export function rotateJustifyItemsIcon(iconName, direction) {
     return {
         iconName,
-        rotate: direction === PhysicalDirection.TOP_TO_BOTTOM ? 90 :
-            (direction === PhysicalDirection.BOTTOM_TO_TOP ? -90 : 0),
-        scaleX: direction === PhysicalDirection.RIGHT_TO_LEFT ? -1 : 1,
+        rotate: direction === "top-to-bottom" /* PhysicalDirection.TOP_TO_BOTTOM */ ? 90 :
+            (direction === "bottom-to-top" /* PhysicalDirection.BOTTOM_TO_TOP */ ? -90 : 0),
+        scaleX: direction === "right-to-left" /* PhysicalDirection.RIGHT_TO_LEFT */ ? -1 : 1,
         scaleY: 1,
     };
 }
 export function rotateAlignItemsIcon(iconName, direction) {
     return {
         iconName,
-        rotate: direction === PhysicalDirection.RIGHT_TO_LEFT ? 90 :
-            (direction === PhysicalDirection.LEFT_TO_RIGHT ? -90 : 0),
+        rotate: direction === "right-to-left" /* PhysicalDirection.RIGHT_TO_LEFT */ ? 90 :
+            (direction === "left-to-right" /* PhysicalDirection.LEFT_TO_RIGHT */ ? -90 : 0),
         scaleX: 1,
         scaleY: 1,
     };
@@ -232,7 +224,7 @@ function gridAlignSelfIcon(iconName) {
 export function roateFlexWrapIcon(iconName, direction) {
     return {
         iconName,
-        rotate: direction === PhysicalDirection.BOTTOM_TO_TOP || direction === PhysicalDirection.TOP_TO_BOTTOM ? 90 : 0,
+        rotate: direction === "bottom-to-top" /* PhysicalDirection.BOTTOM_TO_TOP */ || direction === "top-to-bottom" /* PhysicalDirection.TOP_TO_BOTTOM */ ? 90 : 0,
         scaleX: 1,
         scaleY: 1,
     };

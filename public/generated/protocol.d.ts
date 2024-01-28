@@ -717,6 +717,7 @@ export declare namespace Audits {
         Frame = "Frame",
         Image = "Image",
         Import = "Import",
+        JSON = "JSON",
         Manifest = "Manifest",
         Ping = "Ping",
         PluginData = "PluginData",
@@ -1498,6 +1499,7 @@ export declare namespace Browser {
         AudioCapture = "audioCapture",
         BackgroundSync = "backgroundSync",
         BackgroundFetch = "backgroundFetch",
+        CapturedSurfaceControl = "capturedSurfaceControl",
         ClipboardReadWrite = "clipboardReadWrite",
         ClipboardSanitizedWrite = "clipboardSanitizedWrite",
         DisplayCapture = "displayCapture",
@@ -2665,6 +2667,12 @@ export declare namespace CSS {
          * Text position of a new rule in the target style sheet.
          */
         location: SourceRange;
+        /**
+         * NodeId for the DOM node in whose context custom property declarations for registered properties should be
+         * validated. If omitted, declarations in the new rule text can only be validated statically, which may produce
+         * incorrect results if the declaration contains a var() for example.
+         */
+        nodeForPropertySyntaxValidation?: DOM.NodeId;
     }
     interface AddRuleResponse extends ProtocolResponseWithError {
         /**
@@ -2936,6 +2944,12 @@ export declare namespace CSS {
     }
     interface SetStyleTextsRequest {
         edits: StyleDeclarationEdit[];
+        /**
+         * NodeId for the DOM node in whose context custom property declarations for registered properties should be
+         * validated. If omitted, declarations in the new rule text can only be validated statically, which may produce
+         * incorrect results if the declaration contains a var() for example.
+         */
+        nodeForPropertySyntaxValidation?: DOM.NodeId;
     }
     interface SetStyleTextsResponse extends ProtocolResponseWithError {
         /**
@@ -7587,6 +7601,10 @@ export declare namespace Network {
          */
         mimeType: string;
         /**
+         * Resource charset as determined by the browser (if applicable).
+         */
+        charset: string;
+        /**
          * Refined HTTP request headers that were actually transmitted over the network.
          */
         requestHeaders?: Headers;
@@ -10185,6 +10203,7 @@ export declare namespace Page {
         Bluetooth = "bluetooth",
         BrowsingTopics = "browsing-topics",
         Camera = "camera",
+        CapturedSurfaceControl = "captured-surface-control",
         ChDpr = "ch-dpr",
         ChDeviceMemory = "ch-device-memory",
         ChDownlink = "ch-downlink",
@@ -10240,6 +10259,7 @@ export declare namespace Page {
         PrivateAggregation = "private-aggregation",
         PrivateStateTokenIssuance = "private-state-token-issuance",
         PrivateStateTokenRedemption = "private-state-token-redemption",
+        PublickeyCredentialsCreate = "publickey-credentials-create",
         PublickeyCredentialsGet = "publickey-credentials-get",
         RunAdAuction = "run-ad-auction",
         ScreenWakeLock = "screen-wake-lock",
@@ -10249,6 +10269,7 @@ export declare namespace Page {
         SharedStorageSelectUrl = "shared-storage-select-url",
         SmartCard = "smart-card",
         StorageAccess = "storage-access",
+        SubApps = "sub-apps",
         SyncXhr = "sync-xhr",
         Unload = "unload",
         Usb = "usb",
@@ -10908,6 +10929,9 @@ export declare namespace Page {
         WebRTCSticky = "WebRTCSticky",
         WebTransportSticky = "WebTransportSticky",
         WebSocketSticky = "WebSocketSticky",
+        SmartCard = "SmartCard",
+        LiveMediaStreamTrack = "LiveMediaStreamTrack",
+        UnloadHandler = "UnloadHandler",
         ContentSecurityHandler = "ContentSecurityHandler",
         ContentWebAuthenticationAPI = "ContentWebAuthenticationAPI",
         ContentFileChooser = "ContentFileChooser",
@@ -12583,6 +12607,10 @@ export declare namespace Storage {
         count: number;
     }
     /**
+     * Protected audience interest group auction identifier.
+     */
+    type InterestGroupAuctionId = OpaqueIdentifier<string, 'Protocol.Storage.InterestGroupAuctionId'>;
+    /**
      * Enum of interest group access types.
      */
     const enum InterestGroupAccessType {
@@ -12594,7 +12622,16 @@ export declare namespace Storage {
         Win = "win",
         AdditionalBid = "additionalBid",
         AdditionalBidWin = "additionalBidWin",
+        TopLevelBid = "topLevelBid",
+        TopLevelAdditionalBid = "topLevelAdditionalBid",
         Clear = "clear"
+    }
+    /**
+     * Enum of auction events.
+     */
+    const enum InterestGroupAuctionEventType {
+        Started = "started",
+        ConfigResolved = "configResolved"
     }
     /**
      * Ad advertising element inside an interest group.
@@ -12762,6 +12799,17 @@ export declare namespace Storage {
         key: string;
         values: string[];
     }
+    interface AttributionReportingFilterConfig {
+        filterValues: AttributionReportingFilterDataEntry[];
+        /**
+         * duration in seconds
+         */
+        lookbackWindow?: integer;
+    }
+    interface AttributionReportingFilterPair {
+        filters: AttributionReportingFilterConfig[];
+        notFilters: AttributionReportingFilterConfig[];
+    }
     interface AttributionReportingAggregationKeysEntry {
         key: string;
         value: UnsignedInt128AsBase16;
@@ -12823,6 +12871,82 @@ export declare namespace Storage {
         DestinationBothLimitsReached = "destinationBothLimitsReached",
         ReportingOriginsPerSiteLimitReached = "reportingOriginsPerSiteLimitReached",
         ExceedsMaxChannelCapacity = "exceedsMaxChannelCapacity"
+    }
+    const enum AttributionReportingSourceRegistrationTimeConfig {
+        Include = "include",
+        Exclude = "exclude"
+    }
+    interface AttributionReportingAggregatableValueEntry {
+        key: string;
+        /**
+         * number instead of integer because not all uint32 can be represented by
+         * int
+         */
+        value: number;
+    }
+    interface AttributionReportingEventTriggerData {
+        data: UnsignedInt64AsBase10;
+        priority: SignedInt64AsBase10;
+        dedupKey?: UnsignedInt64AsBase10;
+        filters: AttributionReportingFilterPair;
+    }
+    interface AttributionReportingAggregatableTriggerData {
+        keyPiece: UnsignedInt128AsBase16;
+        sourceKeys: string[];
+        filters: AttributionReportingFilterPair;
+    }
+    interface AttributionReportingAggregatableDedupKey {
+        dedupKey?: UnsignedInt64AsBase10;
+        filters: AttributionReportingFilterPair;
+    }
+    interface AttributionReportingTriggerRegistration {
+        filters: AttributionReportingFilterPair;
+        debugKey?: UnsignedInt64AsBase10;
+        aggregatableDedupKeys: AttributionReportingAggregatableDedupKey[];
+        eventTriggerData: AttributionReportingEventTriggerData[];
+        aggregatableTriggerData: AttributionReportingAggregatableTriggerData[];
+        aggregatableValues: AttributionReportingAggregatableValueEntry[];
+        debugReporting: boolean;
+        aggregationCoordinatorOrigin?: string;
+        sourceRegistrationTimeConfig: AttributionReportingSourceRegistrationTimeConfig;
+        triggerContextId?: string;
+    }
+    const enum AttributionReportingEventLevelResult {
+        Success = "success",
+        SuccessDroppedLowerPriority = "successDroppedLowerPriority",
+        InternalError = "internalError",
+        NoCapacityForAttributionDestination = "noCapacityForAttributionDestination",
+        NoMatchingSources = "noMatchingSources",
+        Deduplicated = "deduplicated",
+        ExcessiveAttributions = "excessiveAttributions",
+        PriorityTooLow = "priorityTooLow",
+        NeverAttributedSource = "neverAttributedSource",
+        ExcessiveReportingOrigins = "excessiveReportingOrigins",
+        NoMatchingSourceFilterData = "noMatchingSourceFilterData",
+        ProhibitedByBrowserPolicy = "prohibitedByBrowserPolicy",
+        NoMatchingConfigurations = "noMatchingConfigurations",
+        ExcessiveReports = "excessiveReports",
+        FalselyAttributedSource = "falselyAttributedSource",
+        ReportWindowPassed = "reportWindowPassed",
+        NotRegistered = "notRegistered",
+        ReportWindowNotStarted = "reportWindowNotStarted",
+        NoMatchingTriggerData = "noMatchingTriggerData"
+    }
+    const enum AttributionReportingAggregatableResult {
+        Success = "success",
+        InternalError = "internalError",
+        NoCapacityForAttributionDestination = "noCapacityForAttributionDestination",
+        NoMatchingSources = "noMatchingSources",
+        ExcessiveAttributions = "excessiveAttributions",
+        ExcessiveReportingOrigins = "excessiveReportingOrigins",
+        NoHistograms = "noHistograms",
+        InsufficientBudget = "insufficientBudget",
+        NoMatchingSourceFilterData = "noMatchingSourceFilterData",
+        NotRegistered = "notRegistered",
+        ProhibitedByBrowserPolicy = "prohibitedByBrowserPolicy",
+        Deduplicated = "deduplicated",
+        ReportWindowPassed = "reportWindowPassed",
+        ExcessiveReports = "excessiveReports"
     }
     interface GetStorageKeyForFrameRequest {
         frameId: Page.FrameId;
@@ -12988,6 +13112,9 @@ export declare namespace Storage {
     interface SetInterestGroupTrackingRequest {
         enable: boolean;
     }
+    interface SetInterestGroupAuctionTrackingRequest {
+        enable: boolean;
+    }
     interface GetSharedStorageMetadataRequest {
         ownerOrigin: string;
     }
@@ -13123,13 +13250,45 @@ export declare namespace Storage {
         bucketId: string;
     }
     /**
-     * One of the interest groups was accessed by the associated page.
+     * One of the interest groups was accessed. Note that these events are global
+     * to all targets sharing an interest group store.
      */
     interface InterestGroupAccessedEvent {
         accessTime: Network.TimeSinceEpoch;
         type: InterestGroupAccessType;
         ownerOrigin: string;
         name: string;
+        /**
+         * For topLevelBid/topLevelAdditionalBid, and when appropriate,
+         * win and additionalBidWin
+         */
+        componentSellerOrigin?: string;
+        /**
+         * For bid or somethingBid event, if done locally and not on a server.
+         */
+        bid?: number;
+        bidCurrency?: string;
+        /**
+         * For non-global events --- links to interestGroupAuctionEvent
+         */
+        uniqueAuctionId?: InterestGroupAuctionId;
+    }
+    /**
+     * An auction involving interest groups is taking place. These events are
+     * target-specific.
+     */
+    interface InterestGroupAuctionEventOccurredEvent {
+        eventTime: Network.TimeSinceEpoch;
+        type: InterestGroupAuctionEventType;
+        uniqueAuctionId: InterestGroupAuctionId;
+        /**
+         * Set for child auctions.
+         */
+        parentAuctionId?: InterestGroupAuctionId;
+        /**
+         * Set for started and configResolved
+         */
+        auctionConfig?: any;
     }
     /**
      * Shared storage was accessed by the associated page.
@@ -13164,13 +13323,14 @@ export declare namespace Storage {
     interface StorageBucketDeletedEvent {
         bucketId: string;
     }
-    /**
-     * TODO(crbug.com/1458532): Add other Attribution Reporting events, e.g.
-     * trigger registration.
-     */
     interface AttributionReportingSourceRegisteredEvent {
         registration: AttributionReportingSourceRegistration;
         result: AttributionReportingSourceRegistrationResult;
+    }
+    interface AttributionReportingTriggerRegisteredEvent {
+        registration: AttributionReportingTriggerRegistration;
+        eventLevel: AttributionReportingEventLevelResult;
+        aggregatable: AttributionReportingAggregatableResult;
     }
 }
 /**

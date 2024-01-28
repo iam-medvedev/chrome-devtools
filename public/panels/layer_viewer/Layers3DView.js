@@ -34,7 +34,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import layers3DViewStyles from './layers3DView.css.js';
 import { LayerSelection, ScrollRectSelection, Selection, SnapshotSelection, } from './LayerViewHost.js';
-import { Events as TransformControllerEvents, TransformController } from './TransformController.js';
+import { TransformController } from './TransformController.js';
 const UIStrings = {
     /**
      *@description Text of a DOM element in DView of the Layers panel
@@ -123,7 +123,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.layerViewHost = layerViewHost;
         this.layerViewHost.registerView(this);
         this.transformController = new TransformController(this.contentElement);
-        this.transformController.addEventListener(TransformControllerEvents.TransformChanged, this.update, this);
+        this.transformController.addEventListener("TransformChanged" /* TransformControllerEvents.TransformChanged */, this.update, this);
         this.initToolbar();
         this.canvasElement = this.contentElement.createChild('canvas');
         this.canvasElement.tabIndex = 0;
@@ -285,7 +285,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         if (textureScale !== this.oldTextureScale) {
             this.oldTextureScale = textureScale;
             this.textureManager.setScale(textureScale);
-            this.dispatchEventToListeners(Events.ScaleChanged, textureScale);
+            this.dispatchEventToListeners("ScaleChanged" /* Events.ScaleChanged */, textureScale);
         }
         const scaleAndRotationMatrix = new WebKitCSSMatrix()
             .scale(scale, scale, scale)
@@ -728,7 +728,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         });
         const selection = this.selectionFromEventPoint(event);
         if (selection && selection.type() === "Snapshot" /* Type.Snapshot */) {
-            contextMenu.defaultSection().appendItem(i18nString(UIStrings.showPaintProfiler), () => this.dispatchEventToListeners(Events.PaintProfilerRequested, selection), {
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.showPaintProfiler), () => this.dispatchEventToListeners("PaintProfilerRequested" /* Events.PaintProfilerRequested */, selection), {
                 jslogContext: 'layers.paint-profiler',
             });
         }
@@ -760,7 +760,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     onDoubleClick(event) {
         const selection = this.selectionFromEventPoint(event);
         if (selection && (selection.type() === "Snapshot" /* Type.Snapshot */ || selection.layer())) {
-            this.dispatchEventToListeners(Events.PaintProfilerRequested, selection);
+            this.dispatchEventToListeners("PaintProfilerRequested" /* Events.PaintProfilerRequested */, selection);
         }
         event.stopPropagation();
     }
@@ -778,20 +778,11 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         return this.showPaintsSetting ? this.showPaintsSetting.get() : false;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
 export var OutlineType;
 (function (OutlineType) {
     OutlineType["Hovered"] = "hovered";
     OutlineType["Selected"] = "selected";
 })(OutlineType || (OutlineType = {}));
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["PaintProfilerRequested"] = "PaintProfilerRequested";
-    Events["ScaleChanged"] = "ScaleChanged";
-})(Events || (Events = {}));
 export const FragmentShader = '' +
     'precision mediump float;\n' +
     'varying vec4 vColor;\n' +

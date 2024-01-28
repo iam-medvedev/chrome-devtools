@@ -112,13 +112,13 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     get performanceModel(): PerformanceModel | null;
 }
 export declare const InstantEventVisibleDurationMs = 0.001;
-export declare enum Events {
+export declare const enum Events {
     DataChanged = "DataChanged"
 }
 export type EventTypes = {
     [Events.DataChanged]: void;
 };
-export declare enum EntryType {
+export declare const enum EntryType {
     Frame = "Frame",
     Event = "Event",
     TrackAppender = "TrackAppender",

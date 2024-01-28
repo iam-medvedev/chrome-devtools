@@ -12,7 +12,7 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ProfileFlameChartDataProvider } from './CPUProfileFlameChart.js';
 import { HeapTimelineOverview } from './HeapTimelineOverview.js';
-import { ProfileEvents, ProfileType } from './ProfileHeader.js';
+import { ProfileType } from './ProfileHeader.js';
 import { ProfileView, WritableProfileHeader } from './ProfileView.js';
 const UIStrings = {
     /**
@@ -143,7 +143,7 @@ export class HeapProfileView extends ProfileView {
             this.timelineOverview.show(this.element, this.element.firstChild);
             this.timelineOverview.start();
             this.profileType.addEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.StatsUpdate */, this.onStatsUpdate, this);
-            void this.profileType.once(ProfileEvents.ProfileComplete).then(() => {
+            void this.profileType.once("profile-complete" /* ProfileEvents.ProfileComplete */).then(() => {
                 this.profileType.removeEventListener("StatsUpdate" /* SamplingHeapProfileType.Events.StatsUpdate */, this.onStatsUpdate, this);
                 this.timelineOverview.stop();
                 this.timelineOverview.updateGrid();
@@ -250,7 +250,7 @@ export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin
         this.addProfile(profileHeader);
         profileHeader.updateStatus(i18nString(UIStrings.recording));
         const warnings = [i18nString(UIStrings.heapProfilerIsRecording)];
-        UI.InspectorView.InspectorView.instance().setPanelWarnings('heap_profiler', warnings);
+        UI.InspectorView.InspectorView.instance().setPanelWarnings('heap-profiler', warnings);
         this.recording = true;
         this.startSampling();
     }
@@ -270,7 +270,7 @@ export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin
             recordedProfile.updateStatus('');
             this.setProfileBeingRecorded(null);
         }
-        UI.InspectorView.InspectorView.instance().setPanelWarnings('heap_profiler', []);
+        UI.InspectorView.InspectorView.instance().setPanelWarnings('heap-profiler', []);
         // If the data was cleared during the middle of the recording we no
         // longer treat the profile as being completed. This means we avoid
         // a change of view to the profile list.
@@ -279,7 +279,7 @@ export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin
         if (wasClearedDuringRecording) {
             return;
         }
-        this.dispatchEventToListeners(ProfileEvents.ProfileComplete, recordedProfile);
+        this.dispatchEventToListeners("profile-complete" /* ProfileEvents.ProfileComplete */, recordedProfile);
     }
     createProfileLoadedFromFile(title) {
         return new SamplingHeapProfileHeader(null, this, title);

@@ -66,17 +66,6 @@ export class DOMStorage extends Common.ObjectWrapper.ObjectWrapper {
         void this.model.agent.invoke_clear({ storageId: this.id });
     }
 }
-(function (DOMStorage) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
-    let Events;
-    (function (Events) {
-        Events["DOMStorageItemsCleared"] = "DOMStorageItemsCleared";
-        Events["DOMStorageItemRemoved"] = "DOMStorageItemRemoved";
-        Events["DOMStorageItemAdded"] = "DOMStorageItemAdded";
-        Events["DOMStorageItemUpdated"] = "DOMStorageItemUpdated";
-    })(Events = DOMStorage.Events || (DOMStorage.Events = {}));
-})(DOMStorage || (DOMStorage = {}));
 export class DOMStorageModel extends SDK.SDKModel.SDKModel {
     storageKeyManagerInternal;
     storagesInternal;
@@ -97,8 +86,8 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
         }
         this.target().registerDOMStorageDispatcher(new DOMStorageDispatcher(this));
         if (this.storageKeyManagerInternal) {
-            this.storageKeyManagerInternal.addEventListener(SDK.StorageKeyManager.Events.StorageKeyAdded, this.storageKeyAdded, this);
-            this.storageKeyManagerInternal.addEventListener(SDK.StorageKeyManager.Events.StorageKeyRemoved, this.storageKeyRemoved, this);
+            this.storageKeyManagerInternal.addEventListener("StorageKeyAdded" /* SDK.StorageKeyManager.Events.StorageKeyAdded */, this.storageKeyAdded, this);
+            this.storageKeyManagerInternal.addEventListener("StorageKeyRemoved" /* SDK.StorageKeyManager.Events.StorageKeyRemoved */, this.storageKeyRemoved, this);
             for (const storageKey of this.storageKeyManagerInternal.storageKeys()) {
                 this.addStorageKey(storageKey);
             }
@@ -130,7 +119,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
             console.assert(!this.storagesInternal[key]);
             const storage = new DOMStorage(this, storageKey, isLocal);
             this.storagesInternal[key] = storage;
-            this.dispatchEventToListeners(Events.DOMStorageAdded, storage);
+            this.dispatchEventToListeners("DOMStorageAdded" /* Events.DOMStorageAdded */, storage);
         }
     }
     storageKeyRemoved(event) {
@@ -144,7 +133,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
                 continue;
             }
             delete this.storagesInternal[key];
-            this.dispatchEventToListeners(Events.DOMStorageRemoved, storage);
+            this.dispatchEventToListeners("DOMStorageRemoved" /* Events.DOMStorageRemoved */, storage);
         }
     }
     storageKey(storageKey, isLocalStorage) {
@@ -155,7 +144,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
         if (!domStorage) {
             return;
         }
-        domStorage.dispatchEventToListeners(DOMStorage.Events.DOMStorageItemsCleared);
+        domStorage.dispatchEventToListeners("DOMStorageItemsCleared" /* DOMStorage.Events.DOMStorageItemsCleared */);
     }
     domStorageItemRemoved(storageId, key) {
         const domStorage = this.storageForId(storageId);
@@ -163,7 +152,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
             return;
         }
         const eventData = { key: key };
-        domStorage.dispatchEventToListeners(DOMStorage.Events.DOMStorageItemRemoved, eventData);
+        domStorage.dispatchEventToListeners("DOMStorageItemRemoved" /* DOMStorage.Events.DOMStorageItemRemoved */, eventData);
     }
     domStorageItemAdded(storageId, key, value) {
         const domStorage = this.storageForId(storageId);
@@ -171,7 +160,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
             return;
         }
         const eventData = { key: key, value: value };
-        domStorage.dispatchEventToListeners(DOMStorage.Events.DOMStorageItemAdded, eventData);
+        domStorage.dispatchEventToListeners("DOMStorageItemAdded" /* DOMStorage.Events.DOMStorageItemAdded */, eventData);
     }
     domStorageItemUpdated(storageId, key, oldValue, value) {
         const domStorage = this.storageForId(storageId);
@@ -179,7 +168,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
             return;
         }
         const eventData = { key: key, oldValue: oldValue, value: value };
-        domStorage.dispatchEventToListeners(DOMStorage.Events.DOMStorageItemUpdated, eventData);
+        domStorage.dispatchEventToListeners("DOMStorageItemUpdated" /* DOMStorage.Events.DOMStorageItemUpdated */, eventData);
     }
     storageForId(storageId) {
         console.assert(Boolean(storageId.storageKey));
@@ -193,14 +182,7 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
         return result;
     }
 }
-SDK.SDKModel.SDKModel.register(DOMStorageModel, { capabilities: SDK.Target.Capability.DOM, autostart: false });
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["DOMStorageAdded"] = "DOMStorageAdded";
-    Events["DOMStorageRemoved"] = "DOMStorageRemoved";
-})(Events || (Events = {}));
+SDK.SDKModel.SDKModel.register(DOMStorageModel, { capabilities: 2 /* SDK.Target.Capability.DOM */, autostart: false });
 export class DOMStorageDispatcher {
     model;
     constructor(model) {

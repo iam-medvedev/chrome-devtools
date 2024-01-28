@@ -233,7 +233,7 @@ export class PlayerMessagesView extends UI.Widget.VBox {
     }
     createFilterInput() {
         const filterInput = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filterLogMessages));
-        filterInput.addEventListener(UI.Toolbar.ToolbarInput.Event.TextChanged, (data) => {
+        filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, (data) => {
             this.filterByString(data);
         }, this);
         return filterInput;

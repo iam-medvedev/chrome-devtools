@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as i18n from '../../core/i18n/i18n.js';
 const UIStrings = {
     /**
      *@description Text in Main
@@ -221,7 +221,7 @@ async function loadInspectorMainModule() {
     return loadedInspectorMainModule;
 }
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.DRAWER,
+    category: "DRAWER" /* UI.ActionRegistration.ActionCategory.DRAWER */,
     actionId: 'inspector-main.focus-debuggee',
     async loadActionDelegate() {
         const InspectorMain = await loadInspectorMainModule();
@@ -231,7 +231,7 @@ UI.ActionRegistration.registerActionExtension({
     title: i18nLazyString(UIStrings.focusDebuggee),
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.DRAWER,
+    category: "DRAWER" /* UI.ActionRegistration.ActionCategory.DRAWER */,
     actionId: 'main.toggle-drawer',
     async loadActionDelegate() {
         return new UI.InspectorView.ActionDelegate();
@@ -246,7 +246,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.next-tab',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.nextPanel),
     async loadActionDelegate() {
         return new UI.InspectorView.ActionDelegate();
@@ -264,7 +264,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.previous-tab',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.previousPanel),
     async loadActionDelegate() {
         return new UI.InspectorView.ActionDelegate();
@@ -282,7 +282,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.debug-reload',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.reloadDevtools),
     async loadActionDelegate() {
         const Main = await loadMainModule();
@@ -295,7 +295,7 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 UI.ActionRegistration.registerActionExtension({
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.restoreLastDockPosition),
     actionId: 'main.toggle-dock',
     async loadActionDelegate() {
@@ -314,7 +314,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.zoom-in',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.zoomIn),
     async loadActionDelegate() {
         const Main = await loadMainModule();
@@ -365,7 +365,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.zoom-out',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.zoomOut),
     async loadActionDelegate() {
         const Main = await loadMainModule();
@@ -416,7 +416,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.zoom-reset',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.resetZoomLevel),
     async loadActionDelegate() {
         const Main = await loadMainModule();
@@ -443,7 +443,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.search-in-panel.find',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.searchInPanel),
     async loadActionDelegate() {
         const Main = await loadMainModule();
@@ -474,7 +474,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.search-in-panel.cancel',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.cancelSearch),
     async loadActionDelegate() {
         const Main = await loadMainModule();
@@ -489,7 +489,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.search-in-panel.find-next',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.findNextResult),
     async loadActionDelegate() {
         const Main = await loadMainModule();
@@ -520,7 +520,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'main.search-in-panel.find-previous',
-    category: UI.ActionRegistration.ActionCategory.GLOBAL,
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.findPreviousResult),
     async loadActionDelegate() {
         const Main = await loadMainModule();
@@ -550,11 +550,11 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.APPEARANCE,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.theme),
     settingName: 'uiTheme',
-    settingType: Common.Settings.SettingType.ENUM,
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'systemPreferred',
     reloadRequired: false,
     options: [
@@ -580,11 +580,11 @@ Common.Settings.registerSettingExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.APPEARANCE,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.panelLayout),
     settingName: 'sidebarPosition',
-    settingType: Common.Settings.SettingType.ENUM,
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'auto',
     options: [
         {
@@ -605,10 +605,10 @@ Common.Settings.registerSettingExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.APPEARANCE,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     settingName: 'language',
-    settingType: Common.Settings.SettingType.ENUM,
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     title: i18nLazyString(UIStrings.language),
     defaultValue: 'en-US',
     options: [
@@ -622,18 +622,18 @@ Common.Settings.registerSettingExtension({
     reloadRequired: true,
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.APPEARANCE,
-    storageType: Common.Settings.SettingStorageType.Synced,
+    category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels),
     titleMac: i18nLazyString(UIStrings.enableShortcutToSwitchPanels),
     settingName: 'shortcutPanelSwitch',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.GLOBAL,
+    category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
     settingName: 'currentDockState',
-    settingType: Common.Settings.SettingType.ENUM,
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'right',
     options: [
         {
@@ -659,9 +659,9 @@ Common.Settings.registerSettingExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    storageType: Common.Settings.SettingStorageType.Synced,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     settingName: 'activeKeybindSet',
-    settingType: Common.Settings.SettingType.ENUM,
+    settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'devToolsDefault',
     options: [
         {
@@ -687,26 +687,26 @@ function createOptionForLocale(localeString) {
     };
 }
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.SYNC,
+    category: "SYNC" /* Common.Settings.SettingCategory.SYNC */,
     // This name must be kept in sync with DevToolsSettings::kSyncDevToolsPreferencesFrontendName.
     settingName: 'sync_preferences',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     title: i18nLazyString(UIStrings.enableSync),
     defaultValue: false,
     reloadRequired: true,
 });
 Common.Settings.registerSettingExtension({
-    storageType: Common.Settings.SettingStorageType.Synced,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     settingName: 'userShortcuts',
-    settingType: Common.Settings.SettingType.ARRAY,
+    settingType: "array" /* Common.Settings.SettingType.ARRAY */,
     defaultValue: [],
 });
 Common.Settings.registerSettingExtension({
-    category: Common.Settings.SettingCategory.GLOBAL,
-    storageType: Common.Settings.SettingStorageType.Local,
+    category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
+    storageType: "Local" /* Common.Settings.SettingStorageType.Local */,
     title: i18nLazyString(UIStrings.searchAsYouTypeSetting),
     settingName: 'searchAsYouType',
-    settingType: Common.Settings.SettingType.BOOLEAN,
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     order: 3,
     defaultValue: true,
     options: [
@@ -722,21 +722,21 @@ Common.Settings.registerSettingExtension({
 });
 UI.ViewManager.registerLocationResolver({
     name: "drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */,
-    category: UI.ViewManager.ViewLocationCategory.DRAWER,
+    category: "DRAWER" /* UI.ViewManager.ViewLocationCategory.DRAWER */,
     async loadResolver() {
         return UI.InspectorView.InspectorView.instance();
     },
 });
 UI.ViewManager.registerLocationResolver({
     name: "drawer-sidebar" /* UI.ViewManager.ViewLocationValues.DRAWER_SIDEBAR */,
-    category: UI.ViewManager.ViewLocationCategory.DRAWER_SIDEBAR,
+    category: "DRAWER_SIDEBAR" /* UI.ViewManager.ViewLocationCategory.DRAWER_SIDEBAR */,
     async loadResolver() {
         return UI.InspectorView.InspectorView.instance();
     },
 });
 UI.ViewManager.registerLocationResolver({
     name: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
-    category: UI.ViewManager.ViewLocationCategory.PANEL,
+    category: "PANEL" /* UI.ViewManager.ViewLocationCategory.PANEL */,
     async loadResolver() {
         return UI.InspectorView.InspectorView.instance();
     },
@@ -778,7 +778,7 @@ UI.ContextMenu.registerProvider({
 });
 UI.Toolbar.registerToolbarItem({
     separator: true,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT,
+    location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
     order: 100,
     showLabel: undefined,
     actionId: undefined,
@@ -788,7 +788,7 @@ UI.Toolbar.registerToolbarItem({
 UI.Toolbar.registerToolbarItem({
     separator: true,
     order: 97,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT,
+    location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
     showLabel: undefined,
     actionId: undefined,
     condition: undefined,
@@ -800,7 +800,7 @@ UI.Toolbar.registerToolbarItem({
         return Main.MainImpl.SettingsButtonProvider.instance();
     },
     order: 99,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT,
+    location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,
@@ -812,7 +812,7 @@ UI.Toolbar.registerToolbarItem({
         return Main.MainImpl.MainMenuItem.instance();
     },
     order: 100,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT,
+    location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,
@@ -823,7 +823,7 @@ UI.Toolbar.registerToolbarItem({
         return UI.DockController.CloseButtonProvider.instance();
     },
     order: 101,
-    location: UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT,
+    location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
     showLabel: undefined,
     condition: undefined,
     separator: undefined,

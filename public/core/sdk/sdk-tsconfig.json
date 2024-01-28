@@ -93,6 +93,7 @@
     "../../../../../../front_end/core/sdk/ScreenCaptureModel.ts",
     "../../../../../../front_end/core/sdk/Script.ts",
     "../../../../../../front_end/core/sdk/SecurityOriginManager.ts",
+    "../../../../../../front_end/core/sdk/ServerSentEvents.ts",
     "../../../../../../front_end/core/sdk/ServerSentEventsProtocol.ts",
     "../../../../../../front_end/core/sdk/ServerTiming.ts",
     "../../../../../../front_end/core/sdk/ServiceWorkerCacheModel.ts",

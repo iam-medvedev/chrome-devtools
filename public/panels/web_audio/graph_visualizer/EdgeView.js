@@ -44,11 +44,11 @@ export const generateEdgePortIdsByData = (data, type) => {
      * Get the destination portId based on connection type.
      */
     function getDestinationPortId(data, type) {
-        if (type === EdgeTypes.NodeToNode) {
+        if (type === "NodeToNode" /* EdgeTypes.NodeToNode */) {
             const portData = data;
             return generateInputPortId(data.destinationId, portData.destinationInputIndex);
         }
-        if (type === EdgeTypes.NodeToParam) {
+        if (type === "NodeToParam" /* EdgeTypes.NodeToParam */) {
             const portData = data;
             return generateParamPortId(data.destinationId, portData.destinationParamId);
         }
@@ -56,14 +56,4 @@ export const generateEdgePortIdsByData = (data, type) => {
         return '';
     }
 };
-/**
- * Supported edge types.
- */
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var EdgeTypes;
-(function (EdgeTypes) {
-    EdgeTypes["NodeToNode"] = "NodeToNode";
-    EdgeTypes["NodeToParam"] = "NodeToParam";
-})(EdgeTypes || (EdgeTypes = {}));
 //# sourceMappingURL=EdgeView.js.map

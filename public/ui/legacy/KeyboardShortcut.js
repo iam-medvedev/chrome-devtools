@@ -46,8 +46,8 @@ export class KeyboardShortcut {
         return this.descriptors.map(descriptor => descriptor.name).join(' ');
     }
     isDefault() {
-        return this.type === Type.DefaultShortcut || this.type === Type.DisabledDefault ||
-            (this.type === Type.KeybindSetShortcut && this.keybindSets.has(DefaultShortcutSetting));
+        return this.type === "DefaultShortcut" /* Type.DefaultShortcut */ || this.type === "DisabledDefault" /* Type.DisabledDefault */ ||
+            (this.type === "KeybindSetShortcut" /* Type.KeybindSetShortcut */ && this.keybindSets.has(DefaultShortcutSetting));
     }
     changeType(type) {
         return new KeyboardShortcut(this.descriptors, this.action, type);
@@ -305,16 +305,6 @@ export const Keys = {
         return Host.Platform.isMac() ? this.Meta : this.Ctrl;
     },
 };
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Type;
-(function (Type) {
-    Type["UserShortcut"] = "UserShortcut";
-    Type["DefaultShortcut"] = "DefaultShortcut";
-    Type["DisabledDefault"] = "DisabledDefault";
-    Type["UnsetShortcut"] = "UnsetShortcut";
-    Type["KeybindSetShortcut"] = "KeybindSetShortcut";
-})(Type || (Type = {}));
 export const KeyBindings = {};
 (function () {
     for (const key in Keys) {

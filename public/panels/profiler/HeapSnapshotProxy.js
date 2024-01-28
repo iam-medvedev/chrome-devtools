@@ -29,6 +29,7 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Root from '../../core/root/root.js';
 const UIStrings = {
     /**
      *@description Text in Heap Snapshot Proxy of a profiler tool
@@ -212,7 +213,9 @@ export class HeapSnapshotLoaderProxy extends HeapSnapshotProxyObject {
     }
     async close() {
         await this.callMethodPromise('close');
-        const snapshotProxy = await this.callFactoryMethodPromise('buildSnapshot', HeapSnapshotProxy);
+        const snapshotProxy = await this.callFactoryMethodPromise('buildSnapshot', HeapSnapshotProxy, {
+            heapSnapshotTreatBackingStoreAsContainingObject: Root.Runtime.experiments.isEnabled('heapSnapshotTreatBackingStoreAsContainingObject'),
+        });
         this.dispose();
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
         // @ts-expect-error

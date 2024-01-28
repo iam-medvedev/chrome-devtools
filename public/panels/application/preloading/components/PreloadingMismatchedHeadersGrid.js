@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as Platform from '../../../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
@@ -49,11 +48,10 @@ export class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper
         if (this.#data === null) {
             return;
         }
-        const k = Platform.StringUtilities.kebab;
         const reportsGridData = {
             columns: [
                 {
-                    id: k('header-name'),
+                    id: 'header-name',
                     title: i18nString(UIStrings.headerName),
                     widthWeighting: 30,
                     hideable: false,
@@ -61,7 +59,7 @@ export class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper
                     sortable: true,
                 },
                 {
-                    id: k('initial-value'),
+                    id: 'initial-value',
                     title: i18nString(UIStrings.initialNavigationValue),
                     widthWeighting: 30,
                     hideable: false,
@@ -69,7 +67,7 @@ export class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper
                     sortable: true,
                 },
                 {
-                    id: k('activation-value'),
+                    id: 'activation-value',
                     title: i18nString(UIStrings.activationNavigationValue),
                     widthWeighting: 30,
                     hideable: false,

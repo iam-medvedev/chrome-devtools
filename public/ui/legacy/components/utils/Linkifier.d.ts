@@ -65,7 +65,7 @@ export interface LinkDecorator extends Common.EventTarget.EventTarget<LinkDecora
     linkIcon(uiSourceCode: Workspace.UISourceCode.UISourceCode): IconButton.Icon.Icon | null;
 }
 export declare namespace LinkDecorator {
-    enum Events {
+    const enum Events {
         LinkIconChanged = "LinkIconChanged"
     }
     type EventTypes = {

@@ -27,10 +27,10 @@ export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
         return this.uiSourceCodeDiff(uiSourceCode).requestDiff(diffRequestOptions);
     }
     subscribeToDiffChange(uiSourceCode, callback, thisObj) {
-        this.uiSourceCodeDiff(uiSourceCode).addEventListener(UISourceCodeDiffEvents.DiffChanged, callback, thisObj);
+        this.uiSourceCodeDiff(uiSourceCode).addEventListener("DiffChanged" /* UISourceCodeDiffEvents.DiffChanged */, callback, thisObj);
     }
     unsubscribeFromDiffChange(uiSourceCode, callback, thisObj) {
-        this.uiSourceCodeDiff(uiSourceCode).removeEventListener(UISourceCodeDiffEvents.DiffChanged, callback, thisObj);
+        this.uiSourceCodeDiff(uiSourceCode).removeEventListener("DiffChanged" /* UISourceCodeDiffEvents.DiffChanged */, callback, thisObj);
     }
     modifiedUISourceCodes() {
         return Array.from(this.modifiedUISourceCodesInternal);
@@ -160,7 +160,7 @@ export class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper {
             if (this.dispose) {
                 return;
             }
-            this.dispatchEventToListeners(UISourceCodeDiffEvents.DiffChanged);
+            this.dispatchEventToListeners("DiffChanged" /* UISourceCodeDiffEvents.DiffChanged */);
             this.pendingChanges = null;
         }
     }
@@ -222,12 +222,6 @@ export class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper {
         };
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var UISourceCodeDiffEvents;
-(function (UISourceCodeDiffEvents) {
-    UISourceCodeDiffEvents["DiffChanged"] = "DiffChanged";
-})(UISourceCodeDiffEvents || (UISourceCodeDiffEvents = {}));
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let _instance = null;

@@ -49,7 +49,7 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     setWindowTimes(startTime: number, endTime: number): void;
     private updateWindow;
 }
-export declare enum Events {
+export declare const enum Events {
     OverviewPaneWindowChanged = "OverviewPaneWindowChanged",
     OverviewPaneBreadcrumbAdded = "OverviewPaneBreadcrumbAdded"
 }

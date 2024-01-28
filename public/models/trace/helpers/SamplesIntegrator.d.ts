@@ -41,12 +41,6 @@ export declare class SamplesIntegrator {
      * can be updated as the SampleIntegrator callbacks are invoked.
      */
     callsFromProfileSamples(): Types.TraceEvents.SyntheticProfileCall[];
-    /**
-     * Generally, before JS is executed, a trace event is dispatched that
-     * parents the JS calls. These we call "invocation" events. This
-     * function determines if an event is one of such.
-     */
-    static isJSInvocationEvent(event: Types.TraceEvents.TraceEventData): boolean;
     static framesAreEqual(frame1: Protocol.Runtime.CallFrame, frame2: Protocol.Runtime.CallFrame): boolean;
     static showNativeName(name: string, runtimeCallStatsEnabled: boolean): boolean;
     static nativeGroup(nativeName: string): 'Parse' | 'Compile' | null;

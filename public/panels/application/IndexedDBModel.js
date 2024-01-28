@@ -377,11 +377,15 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
             this.dispatchEventToListeners(Events.IndexedDBContentUpdated, { databaseId: databaseId, objectStoreName: objectStoreName, model: this });
         }
     }
+    attributionReportingTriggerRegistered(_event) {
+    }
     cacheStorageListUpdated(_event) {
     }
     cacheStorageContentUpdated(_event) {
     }
     interestGroupAccessed(_event) {
+    }
+    interestGroupAuctionEventOccurred(_event) {
     }
     sharedStorageAccessed(_event) {
     }
@@ -392,9 +396,7 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
     attributionReportingSourceRegistered(_event) {
     }
 }
-SDK.SDKModel.SDKModel.register(IndexedDBModel, { capabilities: SDK.Target.Capability.Storage, autostart: false });
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
+SDK.SDKModel.SDKModel.register(IndexedDBModel, { capabilities: 8192 /* SDK.Target.Capability.Storage */, autostart: false });
 export var Events;
 (function (Events) {
     Events["DatabaseAdded"] = "DatabaseAdded";

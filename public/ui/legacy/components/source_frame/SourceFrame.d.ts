@@ -151,7 +151,7 @@ export interface Transformer {
         columnNumber: number;
     };
 }
-export declare enum DecoratorType {
+export declare const enum DecoratorType {
     PERFORMANCE = "performance",
     MEMORY = "memory",
     COVERAGE = "coverage"

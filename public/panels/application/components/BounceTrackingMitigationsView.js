@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ChromeLink from '../../../ui/components/chrome_link/chrome_link.js';
@@ -148,7 +147,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
         const gridData = {
             columns: [
                 {
-                    id: Platform.StringUtilities.kebab('sites'),
+                    id: 'sites',
                     title: i18nString(UIStrings.stateDeletedFor),
                     widthWeighting: 10,
                     hideable: false,

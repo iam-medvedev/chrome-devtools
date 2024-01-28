@@ -172,7 +172,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
             this.updateWidths();
         }
         this.visibleNodes = visibleNodes;
-        this.dispatchEventToListeners(Events.ViewportCalculated);
+        this.dispatchEventToListeners("ViewportCalculated" /* Events.ViewportCalculated */);
     }
     revealViewportNode(node) {
         const nodes = this.rootNode().flatChildren();
@@ -197,12 +197,6 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         this.scrollContainer.scrollTop = scrollTop;
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ViewportCalculated"] = "ViewportCalculated";
-})(Events || (Events = {}));
 export class ViewportDataGridNode extends DataGridNode {
     stale;
     flatNodes;

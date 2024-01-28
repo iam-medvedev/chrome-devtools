@@ -163,7 +163,7 @@ export declare class TimelineStackView extends TimelineStackView_base {
     private onSelectionChanged;
 }
 export declare namespace TimelineStackView {
-    enum Events {
+    const enum Events {
         SelectionChanged = "SelectionChanged"
     }
     type EventTypes = {

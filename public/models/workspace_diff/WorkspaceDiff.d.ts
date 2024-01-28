@@ -53,7 +53,7 @@ export declare class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper
     originalContent(): Promise<string | null>;
     private innerRequestDiff;
 }
-export declare enum UISourceCodeDiffEvents {
+export declare const enum UISourceCodeDiffEvents {
     DiffChanged = "DiffChanged"
 }
 export type UISourceCodeDiffEventTypes = {

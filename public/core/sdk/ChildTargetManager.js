@@ -7,8 +7,8 @@ import * as Host from '../host/host.js';
 import { ParallelConnection } from './Connections.js';
 import { ResourceTreeModel } from './ResourceTreeModel.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability, Type } from './Target.js';
-import { Events as TargetManagerEvents, TargetManager } from './TargetManager.js';
+import { Type } from './Target.js';
+import { TargetManager } from './TargetManager.js';
 const UIStrings = {
     /**
      * @description Text that refers to the main target. The main target is the primary webpage that
@@ -51,7 +51,7 @@ export class ChildTargetManager extends SDKModel {
     }
     static install(attachCallback) {
         ChildTargetManager.attachCallback = attachCallback;
-        SDKModel.register(ChildTargetManager, { capabilities: Capability.Target, autostart: true });
+        SDKModel.register(ChildTargetManager, { capabilities: 32 /* Capability.Target */, autostart: true });
     }
     childTargets() {
         return Array.from(this.#childTargetsBySessionId.values());
@@ -70,7 +70,7 @@ export class ChildTargetManager extends SDKModel {
     targetCreated({ targetInfo }) {
         this.#targetInfosInternal.set(targetInfo.targetId, targetInfo);
         this.fireAvailableTargetsChanged();
-        this.dispatchEventToListeners(Events.TargetCreated, targetInfo);
+        this.dispatchEventToListeners("TargetCreated" /* Events.TargetCreated */, targetInfo);
     }
     targetInfoChanged({ targetInfo }) {
         this.#targetInfosInternal.set(targetInfo.targetId, targetInfo);
@@ -89,18 +89,18 @@ export class ChildTargetManager extends SDKModel {
             }
         }
         this.fireAvailableTargetsChanged();
-        this.dispatchEventToListeners(Events.TargetInfoChanged, targetInfo);
+        this.dispatchEventToListeners("TargetInfoChanged" /* Events.TargetInfoChanged */, targetInfo);
     }
     targetDestroyed({ targetId }) {
         this.#targetInfosInternal.delete(targetId);
         this.fireAvailableTargetsChanged();
-        this.dispatchEventToListeners(Events.TargetDestroyed, targetId);
+        this.dispatchEventToListeners("TargetDestroyed" /* Events.TargetDestroyed */, targetId);
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     targetCrashed({ targetId, status, errorCode }) {
     }
     fireAvailableTargetsChanged() {
-        TargetManager.instance().dispatchEventToListeners(TargetManagerEvents.AvailableTargetsChanged, [...this.#targetInfosInternal.values()]);
+        TargetManager.instance().dispatchEventToListeners("AvailableTargetsChanged" /* TargetManagerEvents.AvailableTargetsChanged */, [...this.#targetInfosInternal.values()]);
     }
     async getParentTargetId() {
         if (!this.#parentTargetId) {
@@ -218,12 +218,4 @@ export class ChildTargetManager extends SDKModel {
     static lastAnonymousTargetId = 0;
     static attachCallback;
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["TargetCreated"] = "TargetCreated";
-    Events["TargetDestroyed"] = "TargetDestroyed";
-    Events["TargetInfoChanged"] = "TargetInfoChanged";
-})(Events || (Events = {}));
 //# sourceMappingURL=ChildTargetManager.js.map

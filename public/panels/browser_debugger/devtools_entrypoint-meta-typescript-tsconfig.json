@@ -41,10 +41,13 @@
       "path": "./bundle-tsconfig.json"
     },
     {
-      "path": "../../core/platform/bundle-tsconfig.json"
+      "path": "../../core/i18n/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/root/bundle-tsconfig.json"
+      "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../sources/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

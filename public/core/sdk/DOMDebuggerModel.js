@@ -8,7 +8,6 @@ import { DOMModel, Events as DOMModelEvents } from './DOMModel.js';
 import { RemoteObject } from './RemoteObject.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
-import { Capability } from './Target.js';
 import { TargetManager } from './TargetManager.js';
 export class DOMDebuggerModel extends SDKModel {
     agent;
@@ -75,7 +74,7 @@ export class DOMDebuggerModel extends SDKModel {
         this.#domBreakpointsInternal.push(breakpoint);
         this.saveDOMBreakpoints();
         this.enableDOMBreakpoint(breakpoint);
-        this.dispatchEventToListeners(Events.DOMBreakpointAdded, breakpoint);
+        this.dispatchEventToListeners("DOMBreakpointAdded" /* Events.DOMBreakpointAdded */, breakpoint);
         return breakpoint;
     }
     removeDOMBreakpoint(node, type) {
@@ -95,7 +94,7 @@ export class DOMDebuggerModel extends SDKModel {
         else {
             this.disableDOMBreakpoint(breakpoint);
         }
-        this.dispatchEventToListeners(Events.DOMBreakpointToggled, breakpoint);
+        this.dispatchEventToListeners("DOMBreakpointToggled" /* Events.DOMBreakpointToggled */, breakpoint);
     }
     enableDOMBreakpoint(breakpoint) {
         if (breakpoint.node.id) {
@@ -141,7 +140,7 @@ export class DOMDebuggerModel extends SDKModel {
         }
         const removed = this.#domBreakpointsInternal;
         this.#domBreakpointsInternal = [];
-        this.dispatchEventToListeners(Events.DOMBreakpointsRemoved, removed);
+        this.dispatchEventToListeners("DOMBreakpointsRemoved" /* Events.DOMBreakpointsRemoved */, removed);
         // this.currentURL() is empty when the page is reloaded because the
         // new document has not been requested yet and the old one has been
         // removed. Therefore, we need to request the document and wait for it.
@@ -164,7 +163,7 @@ export class DOMDebuggerModel extends SDKModel {
             if (breakpoint.enabled) {
                 this.enableDOMBreakpoint(domBreakpoint);
             }
-            this.dispatchEventToListeners(Events.DOMBreakpointAdded, domBreakpoint);
+            this.dispatchEventToListeners("DOMBreakpointAdded" /* Events.DOMBreakpointAdded */, domBreakpoint);
         }
     }
     removeDOMBreakpoints(filter) {
@@ -187,7 +186,7 @@ export class DOMDebuggerModel extends SDKModel {
         }
         this.#domBreakpointsInternal = left;
         this.saveDOMBreakpoints();
-        this.dispatchEventToListeners(Events.DOMBreakpointsRemoved, removed);
+        this.dispatchEventToListeners("DOMBreakpointsRemoved" /* Events.DOMBreakpointsRemoved */, removed);
     }
     nodeRemoved(event) {
         if (this.suspended) {
@@ -206,14 +205,6 @@ export class DOMDebuggerModel extends SDKModel {
         this.#domBreakpointsSetting.set(breakpoints);
     }
 }
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["DOMBreakpointAdded"] = "DOMBreakpointAdded";
-    Events["DOMBreakpointToggled"] = "DOMBreakpointToggled";
-    Events["DOMBreakpointsRemoved"] = "DOMBreakpointsRemoved";
-})(Events || (Events = {}));
 const Marker = 'breakpoint-marker';
 export class DOMBreakpoint {
     domDebuggerModel;
@@ -253,7 +244,7 @@ export class EventListener {
         const script = location.script();
         this.#sourceURLInternal = script ? script.contentURL() : Platform.DevToolsPath.EmptyUrlString;
         this.#customRemoveFunction = customRemoveFunction;
-        this.#originInternal = origin || EventListener.Origin.Raw;
+        this.#originInternal = origin || "Raw" /* EventListener.Origin.Raw */;
     }
     domDebuggerModel() {
         return this.#domDebuggerModelInternal;
@@ -283,13 +274,13 @@ export class EventListener {
         return this.#originalHandlerInternal;
     }
     canRemove() {
-        return Boolean(this.#customRemoveFunction) || this.#originInternal !== EventListener.Origin.FrameworkUser;
+        return Boolean(this.#customRemoveFunction) || this.#originInternal !== "FrameworkUser" /* EventListener.Origin.FrameworkUser */;
     }
     remove() {
         if (!this.canRemove()) {
             return Promise.resolve(undefined);
         }
-        if (this.#originInternal !== EventListener.Origin.FrameworkUser) {
+        if (this.#originInternal !== "FrameworkUser" /* EventListener.Origin.FrameworkUser */) {
             function removeListener(type, listener, useCapture) {
                 this.removeEventListener(type, listener, useCapture);
                 // @ts-ignore:
@@ -322,7 +313,7 @@ export class EventListener {
         return Promise.resolve(undefined);
     }
     canTogglePassive() {
-        return this.#originInternal !== EventListener.Origin.FrameworkUser;
+        return this.#originInternal !== "FrameworkUser" /* EventListener.Origin.FrameworkUser */;
     }
     togglePassive() {
         return this.#eventTarget
@@ -342,23 +333,13 @@ export class EventListener {
         return this.#originInternal;
     }
     markAsFramework() {
-        this.#originInternal = EventListener.Origin.Framework;
+        this.#originInternal = "Framework" /* EventListener.Origin.Framework */;
     }
     isScrollBlockingType() {
         return this.#typeInternal === 'touchstart' || this.#typeInternal === 'touchmove' ||
             this.#typeInternal === 'mousewheel' || this.#typeInternal === 'wheel';
     }
 }
-(function (EventListener) {
-    // TODO(crbug.com/1167717): Make this a const enum again
-    // eslint-disable-next-line rulesdir/const_enum
-    let Origin;
-    (function (Origin) {
-        Origin["Raw"] = "Raw";
-        Origin["Framework"] = "Framework";
-        Origin["FrameworkUser"] = "FrameworkUser";
-    })(Origin = EventListener.Origin || (EventListener.Origin = {}));
-})(EventListener || (EventListener = {}));
 export class CSPViolationBreakpoint extends CategorizedBreakpoint {
     #typeInternal;
     constructor(category, type) {
@@ -594,5 +575,5 @@ export class DOMDebuggerManager {
     modelRemoved(_domDebuggerModel) {
     }
 }
-SDKModel.register(DOMDebuggerModel, { capabilities: Capability.DOM, autostart: false });
+SDKModel.register(DOMDebuggerModel, { capabilities: 2 /* Capability.DOM */, autostart: false });
 //# sourceMappingURL=DOMDebuggerModel.js.map

@@ -73,7 +73,7 @@ export declare class TimelineUIUtils {
     static colorForId(id: string): string;
     static displayNameForFrame(frame: TimelineModel.TimelineModel.PageFrame, trimAt?: number): string;
 }
-export declare enum NetworkCategory {
+export declare const enum NetworkCategory {
     HTML = "HTML",
     Script = "Script",
     Style = "Style",

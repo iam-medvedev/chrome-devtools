@@ -8,7 +8,7 @@ export declare class NetworkProjectManager extends Common.ObjectWrapper.ObjectWr
         forceNew: boolean;
     }): NetworkProjectManager;
 }
-export declare enum Events {
+export declare const enum Events {
     FrameAttributionAdded = "FrameAttributionAdded",
     FrameAttributionRemoved = "FrameAttributionRemoved"
 }

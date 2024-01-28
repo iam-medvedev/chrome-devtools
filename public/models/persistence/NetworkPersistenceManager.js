@@ -117,7 +117,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             Common.EventTarget.removeEventListeners(this.eventDescriptors);
             await this.updateActiveProject();
         }
-        this.dispatchEventToListeners(Events.LocalOverridesProjectUpdated, this.enabled);
+        this.dispatchEventToListeners("LocalOverridesProjectUpdated" /* Events.LocalOverridesProjectUpdated */, this.enabled);
     }
     async uiSourceCodeRenamedListener(event) {
         const uiSourceCode = event.data.uiSourceCode;
@@ -255,7 +255,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             await mutex.run(this.#innerUnbind.bind(this, binding));
         }
         else if (headerBinding) {
-            this.dispatchEventToListeners(Events.RequestsForHeaderOverridesFileChanged, uiSourceCode);
+            this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged" /* Events.RequestsForHeaderOverridesFileChanged */, uiSourceCode);
         }
     }
     async #unbindUnguarded(uiSourceCode) {
@@ -342,7 +342,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         if (!this.enabledSetting.get()) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.OverrideContentContextMenuActivateDisabled);
             this.enabledSetting.set(true);
-            await this.once(Events.LocalOverridesProjectUpdated);
+            await this.once("LocalOverridesProjectUpdated" /* Events.LocalOverridesProjectUpdated */);
         }
         // Save new file
         if (!this.#isUISourceCodeAlreadyOverridden(uiSourceCode)) {
@@ -633,7 +633,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
     }
     #dispatchRequestsForHeaderOverridesFileChanged() {
         for (const headersFileUiSourceCode of this.#headerOverridesForEventDispatch) {
-            this.dispatchEventToListeners(Events.RequestsForHeaderOverridesFileChanged, headersFileUiSourceCode);
+            this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged" /* Events.RequestsForHeaderOverridesFileChanged */, headersFileUiSourceCode);
         }
         this.#headerOverridesForEventDispatch.clear();
         return Promise.resolve();
@@ -668,7 +668,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             await Promise.all([...this.projectInternal.uiSourceCodes()].map(uiSourceCode => this.filesystemUISourceCodeAdded(uiSourceCode)));
         }
         await this.updateActiveProject();
-        this.dispatchEventToListeners(Events.ProjectChanged, this.projectInternal);
+        this.dispatchEventToListeners("ProjectChanged" /* Events.ProjectChanged */, this.projectInternal);
     }
     async onProjectAdded(project) {
         if (project.type() !== Workspace.Workspace.projectTypes.FileSystem ||
@@ -760,15 +760,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         if (!responseHeaders.length) {
             responseHeaders = interceptedRequest.responseHeaders || [];
         }
-        let mimeType = '';
-        if (interceptedRequest.responseHeaders) {
-            for (const header of interceptedRequest.responseHeaders) {
-                if (header.name.toLowerCase() === 'content-type') {
-                    mimeType = header.value;
-                    break;
-                }
-            }
-        }
+        let { mimeType } = interceptedRequest.getMimeTypeAndCharset();
         if (!mimeType) {
             const expectedResourceType = Common.ResourceType.resourceTypes[interceptedRequest.resourceType] || Common.ResourceType.resourceTypes.Other;
             mimeType = fileSystemUISourceCode?.mimeType() || '';
@@ -778,18 +770,10 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         }
         if (fileSystemUISourceCode) {
             this.originalResponseContentPromises.set(fileSystemUISourceCode, interceptedRequest.responseBody().then(response => {
-                if (response.error || response.content === null) {
+                if (SDK.ContentData.ContentData.isError(response) || !response.isTextContent) {
                     return null;
                 }
-                if (response.encoded) {
-                    const text = atob(response.content);
-                    const data = new Uint8Array(text.length);
-                    for (let i = 0; i < text.length; ++i) {
-                        data[i] = text.charCodeAt(i);
-                    }
-                    return new TextDecoder('utf-8').decode(data);
-                }
-                return response.content;
+                return response.text;
             }));
             const project = fileSystemUISourceCode.project();
             const blob = await project.requestFileBlob(fileSystemUISourceCode);
@@ -802,8 +786,9 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         }
         else {
             const responseBody = await interceptedRequest.responseBody();
-            if (!responseBody.error && responseBody.content) {
-                void interceptedRequest.continueRequestWithContent(new Blob([responseBody.content], { type: mimeType }), /* encoded */ true, responseHeaders, 
+            if (!SDK.ContentData.ContentData.isError(responseBody)) {
+                const content = responseBody.isTextContent ? responseBody.text : responseBody.base64;
+                void interceptedRequest.continueRequestWithContent(new Blob([content], { type: mimeType }), /* encoded */ true, responseHeaders, 
                 /* isBodyOverridden */ false);
             }
         }
@@ -814,14 +799,6 @@ const RESERVED_FILENAMES = new Set([
     'com8', 'com9', 'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9',
 ]);
 export const HEADERS_FILENAME = '.headers';
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export var Events;
-(function (Events) {
-    Events["ProjectChanged"] = "ProjectChanged";
-    Events["RequestsForHeaderOverridesFileChanged"] = "RequestsForHeaderOverridesFileChanged";
-    Events["LocalOverridesProjectUpdated"] = "LocalOverridesProjectUpdated";
-})(Events || (Events = {}));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isHeaderOverride(arg) {
     if (!(arg && typeof arg.applyTo === 'string' && arg.headers && arg.headers.length && Array.isArray(arg.headers))) {

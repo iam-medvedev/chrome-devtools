@@ -10,7 +10,7 @@ export class EventListenerBreakpointsSidebarPane extends CategorizedBreakpointsS
         let breakpoints = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().eventListenerBreakpoints();
         const nonDomBreakpoints = SDK.EventBreakpointsModel.EventBreakpointsManager.instance().eventListenerBreakpoints();
         breakpoints = breakpoints.concat(nonDomBreakpoints);
-        super(breakpoints, 'sources.eventListenerBreakpoints', "EventListener" /* Protocol.Debugger.PausedEventReason.EventListener */);
+        super(breakpoints, 'sources.event-listener-breakpoints', "EventListener" /* Protocol.Debugger.PausedEventReason.EventListener */);
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('debugger-event-breakpoints')}`);
     }
     static instance() {
