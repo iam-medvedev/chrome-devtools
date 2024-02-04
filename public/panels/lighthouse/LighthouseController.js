@@ -188,7 +188,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         for (const runtimeSetting of RuntimeSettings) {
             runtimeSetting.setting.addChangeListener(this.recomputePageAuditability.bind(this));
         }
-        const javaScriptDisabledSetting = Common.Settings.Settings.instance().moduleSetting('javaScriptDisabled');
+        const javaScriptDisabledSetting = Common.Settings.Settings.instance().moduleSetting('java-script-disabled');
         javaScriptDisabledSetting.addChangeListener(this.recomputePageAuditability.bind(this));
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
         SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.recomputePageAuditability, this);
@@ -279,10 +279,10 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         return null;
     }
     javaScriptDisabled() {
-        return Common.Settings.Settings.instance().moduleSetting('javaScriptDisabled').get();
+        return Common.Settings.Settings.instance().moduleSetting('java-script-disabled').get();
     }
     async hasImportantResourcesNotCleared() {
-        const clearStorageSetting = RuntimeSettings.find(runtimeSetting => runtimeSetting.setting.name === 'lighthouse.clear_storage');
+        const clearStorageSetting = RuntimeSettings.find(runtimeSetting => runtimeSetting.setting.name === 'lighthouse.clear-storage');
         if (clearStorageSetting && !clearStorageSetting.setting.get()) {
             return '';
         }
@@ -531,7 +531,7 @@ const STORAGE_TYPE_NAMES = new Map([
 export const Presets = [
     // configID maps to Lighthouse's Object.keys(config.categories)[0] value
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_perf', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat-perf', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'performance',
         title: i18nLazyString(UIStrings.performance),
         description: i18nLazyString(UIStrings.howLongDoesThisAppTakeToShow),
@@ -540,7 +540,7 @@ export const Presets = [
         userMetric: 0 /* Host.UserMetrics.LighthouseCategoryUsed.Performance */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_a11y', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat-a11y', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'accessibility',
         title: i18nLazyString(UIStrings.accessibility),
         description: i18nLazyString(UIStrings.isThisPageUsableByPeopleWith),
@@ -549,7 +549,7 @@ export const Presets = [
         userMetric: 1 /* Host.UserMetrics.LighthouseCategoryUsed.Accessibility */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_best_practices', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat-best-practices', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'best-practices',
         title: i18nLazyString(UIStrings.bestPractices),
         description: i18nLazyString(UIStrings.doesThisPageFollowBestPractices),
@@ -558,7 +558,7 @@ export const Presets = [
         userMetric: 2 /* Host.UserMetrics.LighthouseCategoryUsed.BestPractices */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_seo', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat-seo', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'seo',
         title: i18nLazyString(UIStrings.seo),
         description: i18nLazyString(UIStrings.isThisPageOptimizedForSearch),
@@ -567,7 +567,7 @@ export const Presets = [
         userMetric: 3 /* Host.UserMetrics.LighthouseCategoryUsed.SEO */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pwa', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat-pwa', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         configID: 'pwa',
         title: i18nLazyString(UIStrings.progressiveWebApp),
         description: i18nLazyString(UIStrings.doesThisPageMeetTheStandardOfA),
@@ -576,7 +576,7 @@ export const Presets = [
         userMetric: 4 /* Host.UserMetrics.LighthouseCategoryUsed.PWA */,
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat_pubads', false, "Synced" /* Common.Settings.SettingStorageType.Synced */),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.cat-pubads', false, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         plugin: true,
         configID: 'lighthouse-plugin-publisher-ads',
         title: i18nLazyString(UIStrings.publisherAds),
@@ -587,7 +587,7 @@ export const Presets = [
 ];
 export const RuntimeSettings = [
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.device_type', 'mobile', "Synced" /* Common.Settings.SettingStorageType.Synced */),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.device-type', 'mobile', "Synced" /* Common.Settings.SettingStorageType.Synced */),
         title: i18nLazyString(UIStrings.applyMobileEmulation),
         description: i18nLazyString(UIStrings.applyMobileEmulationDuring),
         setFlags: (flags, value) => {
@@ -647,7 +647,7 @@ export const RuntimeSettings = [
         ],
     },
     {
-        setting: Common.Settings.Settings.instance().createSetting('lighthouse.clear_storage', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
+        setting: Common.Settings.Settings.instance().createSetting('lighthouse.clear-storage', true, "Synced" /* Common.Settings.SettingStorageType.Synced */),
         title: i18nLazyString(UIStrings.clearStorage),
         description: i18nLazyString(UIStrings.resetStorageLocalstorage),
         setFlags: (flags, value) => {

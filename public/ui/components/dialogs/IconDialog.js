@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { Dialog as DialogElement, } from './Dialog.js';
 import iconDialogStyles from './iconDialog.css.js';
 const UIStrings = {
@@ -74,6 +75,7 @@ export class IconDialog extends HTMLElement {
                 width: '16px',
                 height: '16px',
             }}
+              jslog=${VisualLogging.close().track({ click: true })}
               title=${i18nString(UIStrings.close)}
             ></${IconButton.Icon.Icon.litTagName}>
           </div>

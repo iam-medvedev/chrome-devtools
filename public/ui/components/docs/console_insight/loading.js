@@ -26,5 +26,6 @@ Images: ![https://example.com](https://example.com)
 `;
     },
 });
+component.actionName = 'Explain this error';
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=loading.js.map

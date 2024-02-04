@@ -33,7 +33,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
     constructor(request) {
         super();
         this.element.classList.add('request-initiator-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('initiator')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('initiator')}`);
         this.linkifier = new Components.Linkifier.Linkifier();
         this.request = request;
         this.emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoInitiatorData));
@@ -54,7 +54,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
         const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         treeOutline.registerCSSFiles([requestInitiatorViewTreeStyles]);
         treeOutline.contentElement.classList.add('request-initiator-view-tree');
-        treeOutline.contentElement.setAttribute('jslog', `${VisualLogging.tree().context('initiator-tree')}`);
+        treeOutline.contentElement.setAttribute('jslog', `${VisualLogging.tree('initiator-tree')}`);
         return treeOutline;
     }
     buildRequestChainTree(initiatorGraph, title, tree) {

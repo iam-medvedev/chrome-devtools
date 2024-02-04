@@ -21,11 +21,11 @@ export class RuntimeModel extends SDKModel {
         this.#executionContextById = new Map();
         this.#executionContextComparatorInternal = ExecutionContext.comparator;
         this.#hasSideEffectSupportInternal = null;
-        if (Common.Settings.Settings.instance().moduleSetting('customFormatters').get()) {
+        if (Common.Settings.Settings.instance().moduleSetting('custom-formatters').get()) {
             void this.agent.invoke_setCustomObjectFormatterEnabled({ enabled: true });
         }
         Common.Settings.Settings.instance()
-            .moduleSetting('customFormatters')
+            .moduleSetting('custom-formatters')
             .addChangeListener(this.customFormattersStateChanged.bind(this));
     }
     static isSideEffectFailure(response) {
@@ -225,7 +225,7 @@ export class RuntimeModel extends SDKModel {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(object.unserializableValue() || object.value);
             return;
         }
-        const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
+        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
         void object
             .callFunctionJSON(toStringForClipboard, [{
                 value: {

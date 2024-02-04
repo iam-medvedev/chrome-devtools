@@ -70,7 +70,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
         // clang-format off
         LitHtml.render(LitHtml.html `
       <${ReportView.ReportView.Report.litTagName} .data=${{ reportTitle: i18nString(UIStrings.bounceTrackingMitigationsTitle) }}
-      jslog=${VisualLogging.pane().context('bounce-tracking-mitigations')}>
+      jslog=${VisualLogging.pane('bounce-tracking-mitigations')}>
         ${await this.#renderMainFrameInformation()}
       </${ReportView.ReportView.Report.litTagName}>
     `, this.#shadow, { host: this });
@@ -102,7 +102,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
       </${ReportView.ReportView.ReportSectionDivider.litTagName}>
       <${ReportView.ReportView.ReportSection.litTagName}>
         <x-link href="https://privacycg.github.io/nav-tracking-mitigations/#bounce-tracking-mitigations" class="link"
-        jslog=${VisualLogging.link().track({ click: true }).context('learn-more')}>
+        jslog=${VisualLogging.link('learn-more').track({ click: true })}>
           ${i18nString(UIStrings.learnMore)}
         </x-link>
       </${ReportView.ReportView.ReportSection.litTagName}>
@@ -119,7 +119,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
         .spinner=${isMitigationRunning}
         .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}
         @click=${this.#runMitigations}
-        jslog=${VisualLogging.action().track({ click: true }).context('force-run')}>
+        jslog=${VisualLogging.action('force-run').track({ click: true })}>
         ${isMitigationRunning ? LitHtml.html `
           ${i18nString(UIStrings.runningMitigations)}` : `
           ${i18nString(UIStrings.forceRun)}

@@ -1,5 +1,5 @@
 import * as Common from '../../core/common/common.js';
-import * as SDK from '../../core/sdk/sdk.js';
+import type * as SDK from '../../core/sdk/sdk.js';
 export declare class Writer {
     static write(stream: Common.StringOutputStream.OutputStream, requests: SDK.NetworkRequest.NetworkRequest[], progress: Common.Progress.Progress): Promise<void>;
     static harStringForRequests(requests: SDK.NetworkRequest.NetworkRequest[], compositeProgress: Common.Progress.CompositeProgress): Promise<string>;

@@ -6,9 +6,7 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
-import { ContentData as ContentDataClass } from './ContentData.js';
 import { Cookie } from './Cookie.js';
-import { parseContentType } from './MimeType.js';
 import { Events as NetworkRequestEvents, NetworkRequest, } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
 import { TargetManager } from './TargetManager.js';
@@ -85,18 +83,19 @@ export class NetworkManager extends SDKModel {
         this.#networkAgent = target.networkAgent();
         target.registerNetworkDispatcher(this.dispatcher);
         target.registerFetchDispatcher(this.fetchDispatcher);
-        if (Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get()) {
+        if (Common.Settings.Settings.instance().moduleSetting('cache-disabled').get()) {
             void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: true });
         }
         void this.#networkAgent.invoke_enable({ maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH });
         void this.#networkAgent.invoke_setAttachDebugStack({ enabled: true });
-        this.#bypassServiceWorkerSetting = Common.Settings.Settings.instance().createSetting('bypassServiceWorker', false);
+        this.#bypassServiceWorkerSetting =
+            Common.Settings.Settings.instance().createSetting('bypass-service-worker', false);
         if (this.#bypassServiceWorkerSetting.get()) {
             this.bypassServiceWorkerChanged();
         }
         this.#bypassServiceWorkerSetting.addChangeListener(this.bypassServiceWorkerChanged, this);
         Common.Settings.Settings.instance()
-            .moduleSetting('cacheDisabled')
+            .moduleSetting('cache-disabled')
             .addChangeListener(this.cacheDisabledSettingChanged, this);
     }
     static forRequest(request) {
@@ -149,7 +148,7 @@ export class NetworkManager extends SDKModel {
         if (error) {
             return { error };
         }
-        return new ContentDataClass(response.body, response.base64Encoded, request.mimeType, request.charset() ?? undefined);
+        return new TextUtils.ContentData.ContentData(response.body, response.base64Encoded, request.mimeType, request.charset() ?? undefined);
     }
     /**
      * Returns the already received bytes for an in-flight request. After calling this method
@@ -172,7 +171,7 @@ export class NetworkManager extends SDKModel {
         if (error) {
             return { error };
         }
-        return new ContentDataClass(response.bufferedData, /* isBase64=*/ true, request.mimeType, request.charset() ?? undefined);
+        return new TextUtils.ContentData.ContentData(response.bufferedData, /* isBase64=*/ true, request.mimeType, request.charset() ?? undefined);
     }
     static async requestPostData(request) {
         const manager = NetworkManager.forRequest(request);
@@ -226,7 +225,7 @@ export class NetworkManager extends SDKModel {
     }
     dispose() {
         Common.Settings.Settings.instance()
-            .moduleSetting('cacheDisabled')
+            .moduleSetting('cache-disabled')
             .removeChangeListener(this.cacheDisabledSettingChanged, this);
     }
     bypassServiceWorkerChanged() {
@@ -793,7 +792,7 @@ export class NetworkDispatcher {
         networkRequest.addBlockedRequestCookiesToModel();
         this.#manager.dispatchEventToListeners(Events.RequestFinished, networkRequest);
         MultitargetNetworkManager.instance().inflightMainResourceRequests.delete(networkRequest.requestId());
-        if (Common.Settings.Settings.instance().moduleSetting('monitoringXHREnabled').get() &&
+        if (Common.Settings.Settings.instance().moduleSetting('monitoring-xhr-enabled').get() &&
             networkRequest.resourceType().category() === Common.ResourceType.resourceCategories.XHR) {
             let message;
             const failedToLoad = networkRequest.failed || networkRequest.hasErrorStatusCode();
@@ -944,8 +943,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         this.#networkConditionsInternal = NoThrottlingConditions;
         this.#updatingInterceptionPatternsPromise = null;
         // TODO(allada) Remove these and merge it with request interception.
-        this.#blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('requestBlockingEnabled');
-        this.#blockedPatternsSetting = Common.Settings.Settings.instance().createSetting('networkBlockedPatterns', []);
+        this.#blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
+        this.#blockedPatternsSetting = Common.Settings.Settings.instance().createSetting('network-blocked-patterns', []);
         this.#effectiveBlockedURLs = [];
         this.updateBlockedPatterns();
         this.#urlsForRequestInterceptor = new Platform.MapUtilities.Multimap();
@@ -1192,8 +1191,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         return this.#updatingInterceptionPatternsPromise;
     }
     async updateInterceptionPatterns() {
-        if (!Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get()) {
-            Common.Settings.Settings.instance().moduleSetting('cacheDisabled').set(true);
+        if (!Common.Settings.Settings.instance().moduleSetting('cache-disabled').get()) {
+            Common.Settings.Settings.instance().moduleSetting('cache-disabled').set(true);
         }
         this.#updatingInterceptionPatternsPromise = null;
         const promises = [];
@@ -1242,7 +1241,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         if (currentUserAgent) {
             headers['User-Agent'] = currentUserAgent;
         }
-        if (Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get()) {
+        if (Common.Settings.Settings.instance().moduleSetting('cache-disabled').get()) {
             headers['Cache-Control'] = 'no-cache';
         }
         const allowRemoteFilePaths = Common.Settings.Settings.instance().moduleSetting('network.enable-remote-file-loading').get();
@@ -1380,7 +1379,7 @@ export class InterceptedRequest {
             return { error };
         }
         const { mimeType, charset } = this.getMimeTypeAndCharset();
-        return new ContentDataClass(response.body, response.base64Encoded, mimeType ?? 'application/octet-stream', charset ?? undefined);
+        return new TextUtils.ContentData.ContentData(response.body, response.base64Encoded, mimeType ?? 'application/octet-stream', charset ?? undefined);
     }
     isRedirect() {
         return this.responseStatusCode !== undefined && this.responseStatusCode >= 300 && this.responseStatusCode < 400;
@@ -1393,7 +1392,7 @@ export class InterceptedRequest {
     getMimeTypeAndCharset() {
         for (const header of this.responseHeaders ?? []) {
             if (header.name.toLowerCase() === 'content-type') {
-                return parseContentType(header.value);
+                return Platform.MimeType.parseContentType(header.value);
             }
         }
         const mimeType = this.networkRequest?.mimeType ?? null;

@@ -30,7 +30,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -53,7 +52,7 @@ export class RequestResponseView extends UI.Widget.VBox {
     constructor(request) {
         super();
         this.element.classList.add('request-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('response')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('response')}`);
         this.request = request;
         this.contentViewPromise = null;
     }
@@ -63,7 +62,7 @@ export class RequestResponseView extends UI.Widget.VBox {
             return sourceView;
         }
         const contentData = await request.contentData();
-        if (SDK.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
+        if (TextUtils.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
             requestToSourceView.delete(request);
             return null;
         }
@@ -98,7 +97,7 @@ export class RequestResponseView extends UI.Widget.VBox {
     }
     async createPreview() {
         const contentData = await this.request.contentData();
-        if (SDK.ContentData.ContentData.isError(contentData)) {
+        if (TextUtils.ContentData.ContentData.isError(contentData)) {
             return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData) + ': ' + contentData.error);
         }
         const sourceView = await RequestResponseView.sourceViewForRequest(this.request);

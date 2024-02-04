@@ -153,14 +153,13 @@ export function matchBeginningAndEndEvents(unpairedEvents) {
     const matchedPairs = new Map();
     // looking for start and end
     for (const event of unpairedEvents) {
-        const id = extractId(event);
-        if (id === undefined) {
+        const syntheticId = getSyntheticId(event);
+        if (syntheticId === undefined) {
             continue;
         }
         // Create a synthetic id to prevent collisions across categories.
         // Console timings can be dispatched with the same id, so use the
         // event name as well to generate unique ids.
-        const syntheticId = `${event.cat}:${id}:${event.name}`;
         const otherEventsWithID = Platform.MapUtilities.getWithDefault(matchedPairs, syntheticId, () => {
             return { begin: null, end: null };
         });
@@ -175,31 +174,42 @@ export function matchBeginningAndEndEvents(unpairedEvents) {
     }
     return matchedPairs;
 }
+function getSyntheticId(event) {
+    const id = extractId(event);
+    return id && `${event.cat}:${id}:${event.name}`;
+}
 export function createSortedSyntheticEvents(matchedPairs) {
     const syntheticEvents = [];
     for (const [id, eventsPair] of matchedPairs.entries()) {
-        if (!eventsPair.begin || !eventsPair.end) {
+        const beginEvent = eventsPair.begin;
+        const endEvent = eventsPair.end;
+        if (!beginEvent || !endEvent) {
             // This should never happen, the backend only creates the events once it
             // has them both, so we should never get into this state.
             // If we do, something is very wrong, so let's just drop that problematic event.
             continue;
         }
+        const pair = { beginEvent, endEvent };
+        function eventsArePairable(data) {
+            return Boolean(getSyntheticId(data.beginEvent)) &&
+                getSyntheticId(data.beginEvent) === getSyntheticId(data.endEvent);
+        }
+        if (!eventsArePairable(pair)) {
+            continue;
+        }
         const event = {
-            cat: eventsPair.end.cat,
-            ph: eventsPair.end.ph,
-            pid: eventsPair.end.pid,
-            tid: eventsPair.end.tid,
+            cat: endEvent.cat,
+            ph: endEvent.ph,
+            pid: endEvent.pid,
+            tid: endEvent.tid,
             id,
             // Both events have the same name, so it doesn't matter which we pick to
             // use as the description
-            name: eventsPair.begin.name,
-            dur: Types.Timing.MicroSeconds(eventsPair.end.ts - eventsPair.begin.ts),
-            ts: eventsPair.begin.ts,
+            name: beginEvent.name,
+            dur: Types.Timing.MicroSeconds(endEvent.ts - beginEvent.ts),
+            ts: beginEvent.ts,
             args: {
-                data: {
-                    beginEvent: eventsPair.begin,
-                    endEvent: eventsPair.end,
-                },
+                data: pair,
             },
         };
         if (event.dur < 0) {

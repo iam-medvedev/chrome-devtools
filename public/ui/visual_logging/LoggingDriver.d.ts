@@ -5,6 +5,7 @@ export declare function startLogging(options?: {
     keyboardLogThrottler?: Common.Throttler.Throttler;
     hoverLogThrottler?: Common.Throttler.Throttler;
     dragLogThrottler?: Common.Throttler.Throttler;
+    clickLogThrottler?: Common.Throttler.Throttler;
 }): Promise<void>;
 export declare function addDocument(document: Document): Promise<void>;
 export declare function stopLogging(): void;

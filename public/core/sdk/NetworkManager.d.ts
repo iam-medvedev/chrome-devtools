@@ -5,7 +5,6 @@ import * as Common from '../common/common.js';
 import { type Serializer } from '../common/Settings.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
-import { type ContentDataOrError } from './ContentData.js';
 import { NetworkRequest } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
@@ -19,12 +18,12 @@ export declare class NetworkManager extends SDKModel<EventTypes> {
     static canReplayRequest(request: NetworkRequest): boolean;
     static replayRequest(request: NetworkRequest): void;
     static searchInRequest(request: NetworkRequest, query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
-    static requestContentData(request: NetworkRequest): Promise<ContentDataOrError>;
+    static requestContentData(request: NetworkRequest): Promise<TextUtils.ContentData.ContentDataOrError>;
     /**
      * Returns the already received bytes for an in-flight request. After calling this method
      * "dataReceived" events will contain additional data.
      */
-    static streamResponseBody(request: NetworkRequest): Promise<ContentDataOrError>;
+    static streamResponseBody(request: NetworkRequest): Promise<TextUtils.ContentData.ContentDataOrError>;
     static requestPostData(request: NetworkRequest): Promise<string | null>;
     static connectionType(conditions: Conditions): Protocol.Network.ConnectionType;
     static lowercaseHeaders(headers: Protocol.Network.Headers): Protocol.Network.Headers;
@@ -222,7 +221,7 @@ export declare class InterceptedRequest {
     continueRequestWithContent(contentBlob: Blob, encoded: boolean, responseHeaders: Protocol.Fetch.HeaderEntry[], isBodyOverridden: boolean): Promise<void>;
     continueRequestWithoutChange(): void;
     continueRequestWithError(errorReason: Protocol.Network.ErrorReason): void;
-    responseBody(): Promise<ContentDataOrError>;
+    responseBody(): Promise<TextUtils.ContentData.ContentDataOrError>;
     isRedirect(): boolean;
     /**
      * Tries to determine the MIME type and charset for this intercepted request.

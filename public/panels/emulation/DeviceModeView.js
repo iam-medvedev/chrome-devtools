@@ -93,9 +93,9 @@ export class DeviceModeView extends UI.Widget.VBox {
         this.model = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
         this.model.addEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.Updated */, this.updateUI, this);
         this.mediaInspector = new MediaQueryInspector(() => this.model.appliedDeviceSize().width, this.model.setWidth.bind(this.model), new Common.Throttler.Throttler(0));
-        this.showMediaInspectorSetting = Common.Settings.Settings.instance().moduleSetting('showMediaQueryInspector');
+        this.showMediaInspectorSetting = Common.Settings.Settings.instance().moduleSetting('show-media-query-inspector');
         this.showMediaInspectorSetting.addChangeListener(this.updateUI, this);
-        this.showRulersSetting = Common.Settings.Settings.instance().moduleSetting('emulation.showRulers');
+        this.showRulersSetting = Common.Settings.Settings.instance().moduleSetting('emulation.show-rulers');
         this.showRulersSetting.addChangeListener(this.updateUI, this);
         this.topRuler = new Ruler(true, this.model.setWidthAndScaleToFit.bind(this.model));
         this.topRuler.element.classList.add('device-mode-ruler-top');
@@ -176,7 +176,7 @@ export class DeviceModeView extends UI.Widget.VBox {
     }
     createResizer(element, widthFactor, heightFactor) {
         const resizer = new UI.ResizerWidget.ResizerWidget();
-        element.setAttribute('jslog', `${VisualLogging.slider().context('device-mode-resizer').track({ drag: true })}`);
+        element.setAttribute('jslog', `${VisualLogging.slider('device-mode-resizer').track({ drag: true })}`);
         resizer.addElement(element);
         let cursor = widthFactor ? 'ew-resize' : 'ns-resize';
         if (widthFactor * heightFactor > 0) {

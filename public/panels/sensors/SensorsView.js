@@ -201,15 +201,15 @@ export class SensorsView extends UI.Widget.VBox {
     originalBoxMatrix;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('sensors')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('sensors')}`);
         this.contentElement.classList.add('sensors-view');
-        this.LocationSetting = Common.Settings.Settings.instance().createSetting('emulation.locationOverride', '');
+        this.LocationSetting = Common.Settings.Settings.instance().createSetting('emulation.location-override', '');
         this.Location = SDK.EmulationModel.Location.parseSetting(this.LocationSetting.get());
         this.LocationOverrideEnabled = false;
         this.createLocationSection(this.Location);
         this.createPanelSeparator();
         this.deviceOrientationSetting =
-            Common.Settings.Settings.instance().createSetting('emulation.deviceOrientationOverride', '');
+            Common.Settings.Settings.instance().createSetting('emulation.device-orientation-override', '');
         this.deviceOrientation = SDK.EmulationModel.DeviceOrientation.parseSetting(this.deviceOrientationSetting.get());
         this.deviceOrientationOverrideEnabled = false;
         this.createDeviceOrientationSection();
@@ -228,7 +228,7 @@ export class SensorsView extends UI.Widget.VBox {
     }
     createLocationSection(location) {
         const geogroup = this.contentElement.createChild('section', 'sensors-group');
-        geogroup.setAttribute('jslog', `${VisualLogging.section().context('location')}`);
+        geogroup.setAttribute('jslog', `${VisualLogging.section('location')}`);
         const geogroupTitle = UI.UIUtils.createLabel(i18nString(UIStrings.location), 'sensors-group-title');
         geogroup.appendChild(geogroupTitle);
         const fields = geogroup.createChild('div', 'geo-fields');
@@ -386,7 +386,7 @@ export class SensorsView extends UI.Widget.VBox {
     }
     createDeviceOrientationSection() {
         const orientationGroup = this.contentElement.createChild('section', 'sensors-group');
-        orientationGroup.setAttribute('jslog', `${VisualLogging.section().context('device-orientation')}`);
+        orientationGroup.setAttribute('jslog', `${VisualLogging.section('device-orientation')}`);
         const orientationTitle = UI.UIUtils.createLabel(i18nString(UIStrings.orientation), 'sensors-group-title');
         orientationGroup.appendChild(orientationTitle);
         const orientationContent = orientationGroup.createChild('div', 'orientation-content');
@@ -639,7 +639,7 @@ export class SensorsView extends UI.Widget.VBox {
     }
     appendIdleEmulator() {
         const container = this.contentElement.createChild('div', 'idle-section');
-        const control = UI.SettingsUI.createControlForSetting(Common.Settings.Settings.instance().moduleSetting('emulation.idleDetection'), i18nString(UIStrings.forcesSelectedIdleStateEmulation));
+        const control = UI.SettingsUI.createControlForSetting(Common.Settings.Settings.instance().moduleSetting('emulation.idle-detection'), i18nString(UIStrings.forcesSelectedIdleStateEmulation));
         if (control) {
             container.appendChild(control);
         }

@@ -33,7 +33,7 @@ export class PlayerListView extends UI.Widget.VBox {
     currentlySelectedEntry;
     constructor(mainContainer) {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('player-list')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('player-list')}`);
         this.playerEntryFragments = new Map();
         this.playerEntriesWithHostnameFrameTitle = new Set();
         // Container where new panels can be added based on clicks.
@@ -52,7 +52,7 @@ export class PlayerListView extends UI.Widget.VBox {
     </div>
     `;
         const element = entry.element();
-        element.setAttribute('jslog', `${VisualLogging.item().track({ click: true }).context('player')}`);
+        element.setAttribute('jslog', `${VisualLogging.item('player').track({ click: true })}`);
         element.addEventListener('click', this.selectPlayer.bind(this, playerID, element));
         element.addEventListener('contextmenu', this.rightClickPlayer.bind(this, playerID));
         entry.$('icon').appendChild(IconButton.Icon.create('pause', 'media-player'));

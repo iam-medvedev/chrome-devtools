@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/legacy/legacy.js';
-import * as VisualLogging from '../../../../front_end/ui/visual_logging/visual_logging.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as PanelFeedback from '../../../ui/components/panel_feedback/panel_feedback.js';
 import * as PanelIntroductionSteps from '../../../ui/components/panel_introduction_steps/panel_introduction_steps.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import startViewStyles from './startView.css.js';
 const UIStrings = {
     /**
@@ -51,7 +51,7 @@ export class StartView extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     constructor() {
         super();
-        this.setAttribute('jslog', `${VisualLogging.section().context('start-view')}`);
+        this.setAttribute('jslog', `${VisualLogging.section('start-view')}`);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [startViewStyles];

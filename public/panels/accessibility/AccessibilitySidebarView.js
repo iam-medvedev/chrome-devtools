@@ -4,7 +4,6 @@
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AXNodeSubPane } from './AccessibilityNodeView.js';
 import { ARIAAttributesPane } from './ARIAAttributesView.js';
 import { AXBreadcrumbsPane } from './AXBreadcrumbsPane.js';
@@ -34,7 +33,6 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
         this.sourceOrderSubPane = new SourceOrderPane();
         void this.sidebarPaneStack.showView(this.sourceOrderSubPane);
         this.sidebarPaneStack.widget().show(this.element);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('accessibility')}`);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.pullNode, this);
         this.pullNode();
     }

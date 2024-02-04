@@ -6,6 +6,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
+import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { Events as TabbedPaneEvents, TabbedPane } from './TabbedPane.js';
 import { Toolbar, ToolbarMenuButton } from './Toolbar.js';
@@ -341,6 +342,7 @@ class ExpandableContainerWidget extends VBox {
         this.registerRequiredCSS(viewContainersStyles);
         this.titleElement = document.createElement('div');
         this.titleElement.classList.add('expandable-view-title');
+        this.titleElement.setAttribute('jslog', `${VisualLogging.sectionHeader().context(view.viewId()).track({ click: true })}`);
         ARIAUtils.markAsTreeitem(this.titleElement);
         this.titleExpandIcon = IconButton.Icon.create('triangle-right', 'title-expand-icon');
         this.titleElement.appendChild(this.titleExpandIcon);
@@ -515,7 +517,7 @@ class TabbedLocation extends Location {
         return this.tabbedPaneInternal;
     }
     enableMoreTabsButton() {
-        const moreTabsButton = new ToolbarMenuButton(this.appendTabsToMenu.bind(this));
+        const moreTabsButton = new ToolbarMenuButton(this.appendTabsToMenu.bind(this), undefined, 'more-tabs');
         this.tabbedPaneInternal.leftToolbar().appendToolbarItem(moreTabsButton);
         this.tabbedPaneInternal.disableOverflowMenu();
         return moreTabsButton;
@@ -693,6 +695,7 @@ class StackLocation extends Location {
     expandableContainers;
     constructor(manager, revealCallback, location) {
         const vbox = new VBox();
+        vbox.element.setAttribute('jslog', `${VisualLogging.pane('sidebar')}`);
         super(manager, vbox, revealCallback);
         this.vbox = vbox;
         ARIAUtils.markAsTree(vbox.element);

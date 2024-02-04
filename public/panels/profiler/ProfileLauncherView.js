@@ -80,7 +80,7 @@ export class ProfileLauncherView extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.contentElementInternal =
             this.element.createChild('div', 'profile-launcher-view-content vbox');
         const profileTypeSelectorElement = this.contentElementInternal.createChild('div', 'vbox');
-        this.selectedProfileTypeSetting = Common.Settings.Settings.instance().createSetting('selectedProfileType', 'CPU');
+        this.selectedProfileTypeSetting = Common.Settings.Settings.instance().createSetting('selected-profile-type', 'CPU');
         this.profileTypeHeaderElement = profileTypeSelectorElement.createChild('h1');
         this.profileTypeSelectorForm = profileTypeSelectorElement.createChild('form');
         UI.ARIAUtils.markAsRadioGroup(this.profileTypeSelectorForm);

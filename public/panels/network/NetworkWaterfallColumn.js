@@ -189,7 +189,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         if (!request) {
             return null;
         }
-        const useTimingBars = !Common.Settings.Settings.instance().moduleSetting('networkColorCodeResourceTypes').get() &&
+        const useTimingBars = !Common.Settings.Settings.instance().moduleSetting('network-color-code-resource-types').get() &&
             !this.calculator.startAtZero;
         let range;
         let start;
@@ -324,7 +324,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     didDrawForTest() {
     }
     draw() {
-        const useTimingBars = !Common.Settings.Settings.instance().moduleSetting('networkColorCodeResourceTypes').get() &&
+        const useTimingBars = !Common.Settings.Settings.instance().moduleSetting('network-color-code-resource-types').get() &&
             !this.calculator.startAtZero;
         const nodes = this.nodes;
         const context = this.canvas.getContext('2d');

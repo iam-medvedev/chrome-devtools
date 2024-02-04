@@ -398,14 +398,11 @@ export class IssueView extends UI.TreeOutline.TreeElement {
         const linkList = linkWrapper.listItemElement.createChild('ul', 'link-list');
         for (const description of this.#description.links) {
             const link = UI.Fragment.html `<x-link class="link devtools-link" tabindex="0" href=${description.link}>${i18nString(UIStrings.learnMoreS, { PH1: description.linkTitle })}</x-link>`;
-            link.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('learn-more')}`);
+            link.setAttribute('jslog', `${VisualLogging.link('learn-more').track({ click: true })}`);
             const linkIcon = new IconButton.Icon.Icon();
             linkIcon.data = { iconName: 'open-externally', color: 'var(--icon-link)', width: '16px', height: '16px' };
             linkIcon.classList.add('link-icon');
             link.prepend(linkIcon);
-            link.addEventListener('x-link-invoke', () => {
-                Host.userMetrics.issuesPanelResourceOpened(this.#issue.getCategory(), "LearnMore" /* AffectedItem.LearnMore */);
-            });
             const linkListItem = linkList.createChild('li');
             linkListItem.appendChild(link);
         }

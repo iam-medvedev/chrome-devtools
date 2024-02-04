@@ -107,7 +107,7 @@ export function eventTimingsMicroSeconds(event) {
         duration: Types.Timing.MicroSeconds(event.dur || 0),
         // TODO(crbug.com/1434599): Implement selfTime calculation for events
         // from the new engine.
-        selfTime: Types.TraceEvents.isRendererEvent(event) ? Types.Timing.MicroSeconds(event.selfTime || 0) :
+        selfTime: Types.TraceEvents.isSyntheticTraceEntry(event) ? Types.Timing.MicroSeconds(event.selfTime || 0) :
             Types.Timing.MicroSeconds(event.dur || 0),
     };
 }

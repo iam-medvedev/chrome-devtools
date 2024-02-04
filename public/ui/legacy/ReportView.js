@@ -60,7 +60,7 @@ export class ReportView extends VBox {
         if (link) {
             this.urlElement.appendChild(link);
         }
-        this.urlElement.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('source-location')}`);
+        this.urlElement.setAttribute('jslog', `${VisualLogging.link('source-location').track({ click: true })}`);
     }
     createToolbar() {
         const toolbar = new Toolbar('');

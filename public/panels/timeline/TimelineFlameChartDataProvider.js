@@ -1203,6 +1203,12 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.#eventIndexByEvent.set(targetEvent, result);
         return result;
     }
+    /**
+     * Build the |flowStartTimes|, |flowStartLevels|, |flowEndTimes| and
+     * |flowEndLevels| data for the initiator arrows of given entry.
+     * @param entryIndex
+     * @returns if we should re-render the flame chart (canvas)
+     */
     buildFlowForInitiator(entryIndex) {
         if (this.lastInitiatorEntry === entryIndex) {
             return false;
@@ -1216,6 +1222,20 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (!this.compatibilityTracksAppender) {
             return false;
         }
+        const previousInitiatorPairsLength = this.timelineDataInternal.flowStartTimes.length;
+        // |entryIndex| equals -1 means there is no entry selected, just clear the
+        // initiator cache if there is any previous arrow and return true to
+        // re-render.
+        if (entryIndex === -1) {
+            this.lastInitiatorEntry = entryIndex;
+            if (previousInitiatorPairsLength === 0) {
+                // This means there is no arrow before, so we don't need to re-render.
+                return false;
+            }
+            // Reset to clear any previous arrows from the last event.
+            this.timelineDataInternal.resetFlowData();
+            return true;
+        }
         const entryType = this.entryType(entryIndex);
         if (entryType !== "TrackAppender" /* EntryType.TrackAppender */) {
             return false;
@@ -1228,13 +1248,11 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             return false;
         }
         // Reset to clear any previous arrows from the last event.
-        this.timelineDataInternal.flowStartTimes = [];
-        this.timelineDataInternal.flowStartLevels = [];
-        this.timelineDataInternal.flowEndTimes = [];
-        this.timelineDataInternal.flowEndLevels = [];
+        this.timelineDataInternal.resetFlowData();
         this.lastInitiatorEntry = entryIndex;
         const initiatorPairs = eventInitiatorPairsToDraw(this.traceEngineData, event);
-        if (initiatorPairs.length === 0) {
+        // This means there is no change for arrows.
+        if (previousInitiatorPairsLength === 0 && initiatorPairs.length === 0) {
             return false;
         }
         for (const pair of initiatorPairs) {

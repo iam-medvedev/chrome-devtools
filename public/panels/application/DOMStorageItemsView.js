@@ -105,9 +105,9 @@ export class DOMStorageItemsView extends StorageItemsView {
             void this.previewEntry(null);
         });
         this.dataGrid.setStriped(true);
-        this.dataGrid.setName('DOMStorageItemsView');
+        this.dataGrid.setName('dom-storage-items-view');
         this.splitWidget = new UI.SplitWidget.SplitWidget(
-        /* isVertical: */ false, /* secondIsSidebar: */ true, 'domStorageSplitViewState');
+        /* isVertical: */ false, /* secondIsSidebar: */ true, 'dom-storage-split-view-state');
         this.splitWidget.show(this.element);
         this.previewPanel = new UI.Widget.VBox();
         this.previewPanel.setMinimumSize(0, 50);

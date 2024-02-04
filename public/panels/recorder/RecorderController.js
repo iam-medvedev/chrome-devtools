@@ -22,6 +22,7 @@ import * as ComponentHelpers from '../../ui/components/helpers/helpers.js';
 import * as Menus from '../../ui/components/menus/menus.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Components from './components/components.js';
 import * as Converters from './converters/converters.js';
 import * as Extensions from './extensions/extensions.js';
@@ -134,7 +135,7 @@ let RecorderController = class RecorderController extends LitElement {
         if (this.#storage.getRecordings().length) {
             this.#setCurrentPage("AllRecordingsPage" /* Pages.AllRecordingsPage */);
         }
-        const textEditorIndent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
+        const textEditorIndent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
         this.#builtInConverters = Object.freeze([
             new Converters.JSONConverter.JSONConverter(textEditorIndent),
             new Converters.PuppeteerReplayConverter.PuppeteerReplayConverter(textEditorIndent),
@@ -998,7 +999,7 @@ let RecorderController = class RecorderController extends LitElement {
         ];
         return html `
         <div class="wrapper">
-          <div class="header">
+          <div class="header" jslog=${VisualLogging.toolbar()}>
             <${Buttons.Button.Button.litTagName}
               @click=${this.#onCreateNewRecording}
               .data=${{

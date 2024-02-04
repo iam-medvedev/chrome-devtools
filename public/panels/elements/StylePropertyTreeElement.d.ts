@@ -3,7 +3,7 @@ import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.n
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { type BottomUpTreeMatching, ColorMatch, ColorMatcher, type RenderingContext, VariableMatch, VariableMatcher } from './PropertyParser.js';
+import { type BottomUpTreeMatching, ColorMatch, ColorMatcher, RenderingContext, VariableMatch, VariableMatcher } from './PropertyParser.js';
 import { type StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
 export declare const activeHints: WeakMap<Element, Hint>;

@@ -59,7 +59,7 @@ export class BlockedURLsPane extends UI.Widget.VBox {
     blockedCountForUrl;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('network.blocked-urls')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('network.blocked-urls')}`);
         this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
         this.manager.addEventListener("BlockedPatternsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged */, this.update, this);
         this.toolbar = new UI.Toolbar.Toolbar('', this.contentElement);
@@ -68,6 +68,7 @@ export class BlockedURLsPane extends UI.Widget.VBox {
         this.toolbar.appendSeparator();
         this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('network.add-network-request-blocking-pattern'));
         this.toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('network.remove-all-network-request-blocking-patterns'));
+        this.toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.list = new UI.ListWidget.ListWidget(this);
         this.list.element.classList.add('blocked-urls');
         this.list.setEmptyPlaceholder(this.createEmptyPlaceholder());

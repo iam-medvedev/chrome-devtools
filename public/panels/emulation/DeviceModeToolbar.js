@@ -224,12 +224,13 @@ export class DeviceModeToolbar {
         this.showRulersSetting = showRulersSetting;
         this.deviceOutlineSetting = this.model.deviceOutlineSetting();
         this.showDeviceScaleFactorSetting =
-            Common.Settings.Settings.instance().createSetting('emulation.showDeviceScaleFactor', false);
+            Common.Settings.Settings.instance().createSetting('emulation.show-device-scale-factor', false);
         this.showDeviceScaleFactorSetting.addChangeListener(this.updateDeviceScaleFactorVisibility, this);
         this.showUserAgentTypeSetting =
-            Common.Settings.Settings.instance().createSetting('emulation.showUserAgentType', false);
+            Common.Settings.Settings.instance().createSetting('emulation.show-user-agent-type', false);
         this.showUserAgentTypeSetting.addChangeListener(this.updateUserAgentTypeVisibility, this);
-        this.autoAdjustScaleSetting = Common.Settings.Settings.instance().createSetting('emulation.autoAdjustScale', true);
+        this.autoAdjustScaleSetting =
+            Common.Settings.Settings.instance().createSetting('emulation.auto-adjust-scale', true);
         this.lastMode = new Map();
         this.elementInternal = document.createElement('div');
         this.elementInternal.classList.add('device-mode-toolbar');
@@ -262,7 +263,7 @@ export class DeviceModeToolbar {
         this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
         this.emulatedDevicesList.addEventListener("CustomDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.CustomDevicesUpdated */, this.deviceListChanged, this);
         this.emulatedDevicesList.addEventListener("StandardDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.StandardDevicesUpdated */, this.deviceListChanged, this);
-        this.persistenceSetting = Common.Settings.Settings.instance().createSetting('emulation.deviceModeValue', { device: '', orientation: '', mode: '' });
+        this.persistenceSetting = Common.Settings.Settings.instance().createSetting('emulation.device-mode-value', { device: '', orientation: '', mode: '' });
         this.model.toolbarControlsEnabledSetting().addChangeListener(updateToolbarsEnabled);
         updateToolbarsEnabled();
         function updateToolbarsEnabled() {
@@ -315,7 +316,7 @@ export class DeviceModeToolbar {
         this.deviceScaleItem.setDarkText();
         toolbar.appendToolbarItem(this.deviceScaleItem);
         toolbar.appendToolbarItem(this.wrapToolbarItem(this.createEmptyToolbarElement()));
-        this.uaItem = new UI.Toolbar.ToolbarMenuButton(this.appendUserAgentMenuItems.bind(this));
+        this.uaItem = new UI.Toolbar.ToolbarMenuButton(this.appendUserAgentMenuItems.bind(this), undefined, 'device-type');
         this.uaItem.setVisible(this.showUserAgentTypeSetting.get());
         setTitleForButton(this.uaItem, i18nString(UIStrings.deviceType));
         this.uaItem.setGlyph('');

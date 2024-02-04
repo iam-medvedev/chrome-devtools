@@ -14,7 +14,7 @@ export class RecordingStorage {
     #mutex = new Common.Mutex.Mutex();
     #idGenerator = new UUIDGenerator();
     constructor() {
-        this.#recordingsSetting = Common.Settings.Settings.instance().createSetting('recorder_recordings_ng', []);
+        this.#recordingsSetting = Common.Settings.Settings.instance().createSetting('recorder-recordings-ng', []);
     }
     clearForTest() {
         this.#recordingsSetting.set([]);

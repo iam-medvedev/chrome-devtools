@@ -36,7 +36,7 @@ export class AffectedSourcesView extends AffectedResourcesView {
         // track when the user use the context menu too.
         // TODO(crbug.com/1108503): Add some mechanism to be able to add telemetry to this element.
         const anchorElement = Components.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
-        anchorElement.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('source-location')}`);
+        anchorElement.setAttribute('jslog', `${VisualLogging.link('source-location').track({ click: true })}`);
         cellElement.appendChild(anchorElement);
         const rowElement = document.createElement('tr');
         rowElement.classList.add('affected-resource-source');

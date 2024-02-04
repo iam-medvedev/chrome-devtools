@@ -40,14 +40,14 @@ export class NetworkPanelIndicator {
         manager.addEventListener("BlockedPatternsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged */, updateVisibility);
         manager.addEventListener("InterceptorsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.InterceptorsChanged */, updateVisibility);
         manager.addEventListener("AcceptedEncodingsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.AcceptedEncodingsChanged */, updateVisibility);
-        Common.Settings.Settings.instance().moduleSetting('cacheDisabled').addChangeListener(updateVisibility, this);
+        Common.Settings.Settings.instance().moduleSetting('cache-disabled').addChangeListener(updateVisibility, this);
         updateVisibility();
         function updateVisibility() {
             const warnings = [];
             if (manager.isThrottling()) {
                 warnings.push(i18nString(UIStrings.networkThrottlingIsEnabled));
             }
-            if (Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get()) {
+            if (Common.Settings.Settings.instance().moduleSetting('cache-disabled').get()) {
                 warnings.push(i18nString(UIStrings.browserCacheDisabled));
             }
             if (SDK.NetworkManager.MultitargetNetworkManager.instance().isIntercepting()) {

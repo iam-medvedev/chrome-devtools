@@ -5,7 +5,6 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
-import { ContentData as ContentDataClass } from './ContentData.js';
 import { CookieModel } from './CookieModel.js';
 import { CookieParser } from './CookieParser.js';
 import * as HttpReasonPhraseStrings from './HttpReasonPhraseStrings.js';
@@ -194,6 +193,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #webBundleInnerRequestInfoInternal;
     #resourceTypeInternal;
     #contentDataInternal;
+    #streamingContentData;
     #framesInternal;
     #responseHeaderValues;
     #responseHeadersTextInternal;
@@ -297,6 +297,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#webBundleInnerRequestInfoInternal = null;
         this.#resourceTypeInternal = Common.ResourceType.resourceTypes.Other;
         this.#contentDataInternal = null;
+        this.#streamingContentData = null;
         this.#framesInternal = [];
         this.#responseHeaderValues = {};
         this.#responseHeadersTextInternal = '';
@@ -626,7 +627,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     set mimeType(x) {
         this.#mimeTypeInternal = x;
-        if (x === "text/event-stream" /* MimeType.EVENTSTREAM */ && !this.#serverSentEvents) {
+        if (x === "text/event-stream" /* Platform.MimeType.MimeType.EVENTSTREAM */ && !this.#serverSentEvents) {
             const parseFromStreamedData = this.resourceType() !== Common.ResourceType.resourceTypes.EventSource;
             this.#serverSentEvents = new ServerSentEvents(this, parseFromStreamedData);
         }
@@ -1090,6 +1091,21 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         console.assert(!this.#contentDataInternal, 'contentData can only be set once.');
         this.#contentDataProvider = dataProvider;
     }
+    requestStreamingContent() {
+        if (this.#streamingContentData) {
+            return this.#streamingContentData;
+        }
+        const contentPromise = this.finished ? this.contentData() : NetworkManager.streamResponseBody(this);
+        this.#streamingContentData = contentPromise.then(contentData => {
+            if (TextUtils.ContentData.ContentData.isError(contentData)) {
+                return contentData;
+            }
+            // Note that this is save: "streamResponseBody()" always creates base64-based ContentData and
+            // for "contentData()" we'll never call "addChunk".
+            return TextUtils.StreamingContentData.StreamingContentData.from(contentData);
+        });
+        return this.#streamingContentData;
+    }
     contentURL() {
         return this.#urlInternal;
     }
@@ -1097,14 +1113,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return this.#resourceTypeInternal;
     }
     async requestContent() {
-        return ContentDataClass.asDeferredContent(await this.contentData());
+        return TextUtils.ContentData.ContentData.asDeferredContent(await this.contentData());
     }
     async searchInContent(query, caseSensitive, isRegex) {
         if (!this.#contentDataProvider) {
             return NetworkManager.searchInRequest(this, query, caseSensitive, isRegex);
         }
         const contentData = await this.contentData();
-        if (ContentDataClass.isError(contentData) || !contentData.isTextContent) {
+        if (TextUtils.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
             return [];
         }
         return TextUtils.TextUtils.performSearchInContent(contentData.text, query, caseSensitive, isRegex);
@@ -1150,7 +1166,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     async populateImageSource(image) {
         const contentData = await this.contentData();
-        if (ContentDataClass.isError(contentData)) {
+        if (TextUtils.ContentData.ContentData.isError(contentData)) {
             return;
         }
         let imageSrc = contentData.asDataUrl();
@@ -1402,7 +1418,11 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.endTime = timestamp;
         if (data) {
-            this.#serverSentEvents?.dataReceived(data, timestamp);
+            void this.#streamingContentData?.then(contentData => {
+                if (!TextUtils.StreamingContentData.isError(contentData)) {
+                    contentData.addChunk(data);
+                }
+            });
         }
     }
 }

@@ -32,6 +32,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -188,7 +189,7 @@ export class HeapSnapshotGridNode extends Common.ObjectWrapper.eventMixin(HeapSn
         return null;
     }
     createValueCell(columnId) {
-        const jslog = VisualLogging.tableCell().track({ click: true }).context('numeric-column');
+        const jslog = VisualLogging.tableCell('numeric-column').track({ click: true });
         const cell = UI.Fragment.html `<td class="numeric-column" jslog=${jslog} />`;
         const dataGrid = this.dataGrid;
         if (dataGrid.snapshot && dataGrid.snapshot.totalSize !== 0) {
@@ -490,7 +491,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         return this.createObjectCellWithValue(valueStyle, value || '');
     }
     createObjectCellWithValue(valueStyle, value) {
-        const jslog = VisualLogging.tableCell().track({ click: true }).context('object-column');
+        const jslog = VisualLogging.tableCell('object-column').track({ click: true });
         const fragment = UI.Fragment.Fragment.build `
   <td class="object-column disclosure" jslog=${jslog}>
   <div class="source-code event-properties" style="overflow: visible;" $="container">
@@ -501,10 +502,14 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         const div = fragment.$('container');
         this.prefixObjectCell(div);
         if (this.reachableFromWindow) {
-            div.appendChild(UI.Fragment.html `<span class="heap-object-tag" title="${i18nString(UIStrings.userObjectReachableFromWindow)}">🗖</span>`);
+            const frameIcon = IconButton.Icon.create('frame', 'heap-object-tag');
+            UI.Tooltip.Tooltip.install(frameIcon, i18nString(UIStrings.userObjectReachableFromWindow));
+            div.appendChild(frameIcon);
         }
         if (this.detachedDOMTreeNode) {
-            div.appendChild(UI.Fragment.html `<span class="heap-object-tag" title="${i18nString(UIStrings.detachedFromDomTree)}">✀</span>`);
+            const frameIcon = IconButton.Icon.create('scissors', 'heap-object-tag');
+            UI.Tooltip.Tooltip.install(frameIcon, i18nString(UIStrings.detachedFromDomTree));
+            div.appendChild(frameIcon);
         }
         void this.appendSourceLocation(div);
         const cell = fragment.element();

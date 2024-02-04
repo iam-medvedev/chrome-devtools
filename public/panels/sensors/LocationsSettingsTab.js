@@ -98,7 +98,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
     editor;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('emulation-locations')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('emulation-locations')}`);
         this.contentElement.createChild('div', 'header').textContent = i18nString(UIStrings.customLocations);
         const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addLocation), this.addButtonClicked.bind(this), { className: 'add-locations-button', jslogContext: 'emulation.add-location' });
         this.contentElement.appendChild(addButton);

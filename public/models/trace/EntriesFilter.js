@@ -63,16 +63,18 @@ export class EntriesFilter {
                 ["MERGE_FUNCTION" /* FilterApplyAction.MERGE_FUNCTION */]: false,
                 ["COLLAPSE_FUNCTION" /* FilterApplyAction.COLLAPSE_FUNCTION */]: false,
                 ["COLLAPSE_REPEATING_DESCENDANTS" /* FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */]: false,
+                ["UNDO_ALL_ACTIONS" /* FilterUndoAction.UNDO_ALL_ACTIONS */]: false,
             };
         }
         const entryParent = entryNode.parent;
-        const allDescendants = this.#findAllDescendantsOfNode(entryNode);
-        const allRepeatingDescendants = this.#findAllRepeatingDescendantsOfNext(entryNode);
+        const allVisibleDescendants = this.#findAllDescendantsOfNode(entryNode).filter(descendant => !this.#invisibleEntries.includes(descendant));
+        const allVisibleRepeatingDescendants = this.#findAllRepeatingDescendantsOfNext(entryNode).filter(descendant => !this.#invisibleEntries.includes(descendant));
         // If there are children to hide, indicate action as possible
         const possibleActions = {
             ["MERGE_FUNCTION" /* FilterApplyAction.MERGE_FUNCTION */]: entryParent !== null,
-            ["COLLAPSE_FUNCTION" /* FilterApplyAction.COLLAPSE_FUNCTION */]: allDescendants.length > 0,
-            ["COLLAPSE_REPEATING_DESCENDANTS" /* FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */]: allRepeatingDescendants.length > 0,
+            ["COLLAPSE_FUNCTION" /* FilterApplyAction.COLLAPSE_FUNCTION */]: allVisibleDescendants.length > 0,
+            ["COLLAPSE_REPEATING_DESCENDANTS" /* FilterApplyAction.COLLAPSE_REPEATING_DESCENDANTS */]: allVisibleRepeatingDescendants.length > 0,
+            ["UNDO_ALL_ACTIONS" /* FilterUndoAction.UNDO_ALL_ACTIONS */]: this.#invisibleEntries.length > 0,
         };
         return possibleActions;
     }

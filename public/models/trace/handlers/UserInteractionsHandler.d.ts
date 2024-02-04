@@ -6,7 +6,7 @@ export interface UserInteractionsData {
     /** All the interaction events we found in the trace that had an
      * interactionId and a duration > 0
      **/
-    interactionEvents: readonly Types.TraceEvents.SyntheticInteractionEvent[];
+    interactionEvents: readonly Types.TraceEvents.SyntheticInteractionPair[];
     /** If the user rapidly generates interaction events (think typing into a
      * text box), in the UI we only really want to show the user the longest
      * interaction in that set.
@@ -21,14 +21,14 @@ export interface UserInteractionsData {
      * all the interaction events filtered down, removing any nested interactions
      * entirely.
      **/
-    interactionEventsWithNoNesting: readonly Types.TraceEvents.SyntheticInteractionEvent[];
-    longestInteractionEvent: Readonly<Types.TraceEvents.SyntheticInteractionEvent> | null;
-    interactionsOverThreshold: Readonly<Set<Types.TraceEvents.SyntheticInteractionEvent>>;
+    interactionEventsWithNoNesting: readonly Types.TraceEvents.SyntheticInteractionPair[];
+    longestInteractionEvent: Readonly<Types.TraceEvents.SyntheticInteractionPair> | null;
+    interactionsOverThreshold: Readonly<Set<Types.TraceEvents.SyntheticInteractionPair>>;
 }
 export declare function reset(): void;
 export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
 export type InteractionCategory = 'KEYBOARD' | 'POINTER' | 'OTHER';
-export declare function categoryOfInteraction(interaction: Types.TraceEvents.SyntheticInteractionEvent): InteractionCategory;
+export declare function categoryOfInteraction(interaction: Types.TraceEvents.SyntheticInteractionPair): InteractionCategory;
 /**
  * We define a set of interactions as nested where:
  * 1. Their end times align.
@@ -52,6 +52,6 @@ export declare function categoryOfInteraction(interaction: Types.TraceEvents.Syn
  *    ====C=[pointerdown]=
  *         =D=[pointerup]=
  **/
-export declare function removeNestedInteractions(interactions: readonly Types.TraceEvents.SyntheticInteractionEvent[]): readonly Types.TraceEvents.SyntheticInteractionEvent[];
+export declare function removeNestedInteractions(interactions: readonly Types.TraceEvents.SyntheticInteractionPair[]): readonly Types.TraceEvents.SyntheticInteractionPair[];
 export declare function finalize(): Promise<void>;
 export declare function data(): UserInteractionsData;

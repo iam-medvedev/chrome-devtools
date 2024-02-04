@@ -115,7 +115,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     mouseDownY;
     constructor(layerViewHost) {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('layers-3d-view')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('layers-3d-view')}`);
         this.contentElement.classList.add('layers-3d-view');
         this.failBanner = new UI.Widget.VBox();
         this.failBanner.element.classList.add('full-widget-dimmed-banner');
@@ -133,7 +133,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.canvasElement.addEventListener('mouseleave', this.onMouseMove.bind(this), false);
         this.canvasElement.addEventListener('mousemove', this.onMouseMove.bind(this), false);
         this.canvasElement.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
-        this.canvasElement.setAttribute('jslog', `${VisualLogging.canvas().track({ click: true, drag: true }).context('layers-canvas')}`);
+        this.canvasElement.setAttribute('jslog', `${VisualLogging.canvas('layers').track({ click: true, drag: true })}`);
         UI.ARIAUtils.setLabel(this.canvasElement, i18nString(UIStrings.dLayersView));
         this.lastSelection = {};
         this.layerTree = null;
@@ -572,7 +572,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         if (!viewport) {
             return;
         }
-        const drawChrome = !Common.Settings.Settings.instance().moduleSetting('frameViewerHideChromeWindow').get() &&
+        const drawChrome = !Common.Settings.Settings.instance().moduleSetting('frame-viewer-hide-chrome-window').get() &&
             this.chromeTextures.length >= 3 && this.chromeTextures.indexOf(undefined) < 0;
         const z = (this.maxDepth + 1) * LayerSpacing;
         const borderWidth = Math.ceil(ViewportBorderWidth * this.scale);
@@ -713,12 +713,11 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     initToolbar() {
         this.panelToolbar = this.transformController.toolbar();
         this.contentElement.appendChild(this.panelToolbar.element);
-        this.showPaintsSetting =
-            this.createVisibilitySetting(i18nString(UIStrings.paints), 'frameViewerShowPaints', false, this.panelToolbar);
-        this.showSlowScrollRectsSetting = this.createVisibilitySetting(i18nString(UIStrings.slowScrollRects), 'frameViewerShowSlowScrollRects', true, this.panelToolbar);
+        this.showPaintsSetting = this.createVisibilitySetting(i18nString(UIStrings.paints), 'frame-viewer-show-paints', false, this.panelToolbar);
+        this.showSlowScrollRectsSetting = this.createVisibilitySetting(i18nString(UIStrings.slowScrollRects), 'frame-viewer-show-slow-scroll-rects', true, this.panelToolbar);
         this.showPaintsSetting.addChangeListener(this.updatePaints, this);
         Common.Settings.Settings.instance()
-            .moduleSetting('frameViewerHideChromeWindow')
+            .moduleSetting('frame-viewer-hide-chrome-window')
             .addChangeListener(this.update, this);
     }
     onContextMenu(event) {

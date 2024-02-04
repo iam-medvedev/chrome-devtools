@@ -617,7 +617,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     static linkHandlerSetting() {
         if (!linkHandlerSettingInstance) {
             linkHandlerSettingInstance =
-                Common.Settings.Settings.instance().createSetting('openLinkHandler', i18nString(UIStrings.auto));
+                Common.Settings.Settings.instance().createSetting('open-link-handler', i18nString(UIStrings.auto));
         }
         return linkHandlerSettingInstance;
     }

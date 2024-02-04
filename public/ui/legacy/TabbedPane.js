@@ -525,7 +525,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     createDropDownButton() {
         const dropDownContainer = document.createElement('div');
         dropDownContainer.classList.add('tabbed-pane-header-tabs-drop-down-container');
-        dropDownContainer.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('more')}`);
+        dropDownContainer.setAttribute('jslog', `${VisualLogging.dropDown('more-tabs').track({ click: true })}`);
         const chevronIcon = IconButton.Icon.create('chevron-double-right', 'chevron-icon');
         const moreTabsString = i18nString(UIStrings.moreTabs);
         dropDownContainer.title = moreTabsString;
@@ -1018,6 +1018,7 @@ export class TabbedPaneTab {
     createCloseIconButton() {
         const closeIconContainer = document.createElement('div');
         closeIconContainer.classList.add('close-button', 'tabbed-pane-close-button');
+        closeIconContainer.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         const closeIcon = new IconButton.Icon.Icon();
         closeIcon.data = {
             iconName: 'cross',

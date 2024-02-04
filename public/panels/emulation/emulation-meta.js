@@ -119,7 +119,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "MOBILE" /* Common.Settings.SettingCategory.MOBILE */,
-    settingName: 'showMediaQueryInspector',
+    settingName: 'show-media-query-inspector',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [
@@ -136,7 +136,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "MOBILE" /* Common.Settings.SettingCategory.MOBILE */,
-    settingName: 'emulation.showRulers',
+    settingName: 'emulation.show-rulers',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [
@@ -153,7 +153,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "MOBILE" /* Common.Settings.SettingCategory.MOBILE */,
-    settingName: 'emulation.showDeviceOutline',
+    settingName: 'emulation.show-device-outline',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [

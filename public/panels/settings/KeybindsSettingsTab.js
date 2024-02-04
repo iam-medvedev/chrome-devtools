@@ -82,11 +82,11 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
     editingRow;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('keybinds')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('keybinds')}`);
         const header = this.contentElement.createChild('header');
         header.createChild('h1').textContent = i18nString(UIStrings.shortcuts);
-        const keybindsSetSetting = Common.Settings.Settings.instance().moduleSetting('activeKeybindSet');
-        const userShortcutsSetting = Common.Settings.Settings.instance().moduleSetting('userShortcuts');
+        const keybindsSetSetting = Common.Settings.Settings.instance().moduleSetting('active-keybind-set');
+        const userShortcutsSetting = Common.Settings.Settings.instance().moduleSetting('user-shortcuts');
         userShortcutsSetting.addChangeListener(this.update, this);
         keybindsSetSetting.addChangeListener(this.update, this);
         const keybindsSetSelect = UI.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString(UIStrings.matchShortcutsFromPreset));
@@ -318,7 +318,7 @@ export class ShortcutListItem {
     setupEditor() {
         this.addShortcutLinkContainer = this.element.createChild('div', 'keybinds-shortcut devtools-link');
         const addShortcutLink = this.addShortcutLinkContainer.createChild('span', 'devtools-link');
-        addShortcutLink.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('add-shortcut')}`);
+        addShortcutLink.setAttribute('jslog', `${VisualLogging.action('add-shortcut').track({ click: true })}`);
         addShortcutLink.textContent = i18nString(UIStrings.addAShortcut);
         addShortcutLink.tabIndex = 0;
         UI.ARIAUtils.markAsLink(addShortcutLink);

@@ -221,11 +221,11 @@ export class TimelineTreeView extends UI.Widget.VBox {
         this.taskFilter =
             new TimelineModel.TimelineModelFilter.ExclusiveNameFilter([TimelineModel.TimelineModel.RecordType.Task]);
         this.textFilterInternal = new TimelineRegExp();
-        this.currentThreadSetting = Common.Settings.Settings.instance().createSetting('timelineTreeCurrentThread', 0);
+        this.currentThreadSetting = Common.Settings.Settings.instance().createSetting('timeline-tree-current-thread', 0);
         this.currentThreadSetting.addChangeListener(this.refreshTree, this);
         const columns = [];
         this.populateColumns(columns);
-        this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'timelineTreeViewDetailsSplitWidget');
+        this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'timeline-tree-view-details-split-widget');
         const mainView = new UI.Widget.VBox();
         const toolbar = new UI.Toolbar.Toolbar('', mainView.element);
         toolbar.makeWrappable(true);
@@ -659,7 +659,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
     executionContextNamesByOrigin = new Map();
     constructor() {
         super();
-        this.groupBySetting = Common.Settings.Settings.instance().createSetting('timelineTreeGroupBy', AggregatedTimelineTreeView.GroupBy.None);
+        this.groupBySetting = Common.Settings.Settings.instance().createSetting('timeline-tree-group-by', AggregatedTimelineTreeView.GroupBy.None);
         this.groupBySetting.addChangeListener(this.refreshTree.bind(this));
         this.init();
         this.stackView = new TimelineStackView(this);

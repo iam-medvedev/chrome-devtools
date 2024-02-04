@@ -58,7 +58,7 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         const selectedFilterSetting = 
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
         // @ts-expect-error
-        Common.Settings.Settings.instance().createSetting('console.sidebarSelectedFilter', null);
+        Common.Settings.Settings.instance().createSetting('console.sidebar-selected-filter', null);
         const consoleAPIParsedFilters = [{
                 key: FilterType.Source,
                 text: SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI,

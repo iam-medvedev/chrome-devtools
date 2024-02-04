@@ -80,7 +80,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     lastRequestedNode;
     constructor(throttlingTimeout) {
         super(true /* isWebComponent */, throttlingTimeout);
-        this.showAllPropertiesSetting = Common.Settings.Settings.instance().createSetting('showAllProperties', false);
+        this.showAllPropertiesSetting = Common.Settings.Settings.instance().createSetting('show-all-properties', false);
         this.showAllPropertiesSetting.addChangeListener(this.filterList.bind(this));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.onNodeChange, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.onNodeChange, this, { scoped: true });
@@ -94,7 +94,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
         filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.showAllPropertiesSetting, i18nString(UIStrings.showAllTooltip), i18nString(UIStrings.showAll)));
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('element-properties')}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('element-properties')}`);
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message hidden');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingProperty);
         this.treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline({ readOnly: true });

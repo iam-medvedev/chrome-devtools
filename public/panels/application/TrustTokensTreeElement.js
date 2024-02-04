@@ -33,7 +33,7 @@ export class TrustTokensTreeElement extends ApplicationPanelTreeElement {
             this.view = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, new ApplicationComponents.TrustTokensView.TrustTokensView(), 'trust-tokens');
         }
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.trust_tokens]);
+        Host.userMetrics.panelShown('trust-tokens');
         return false;
     }
 }

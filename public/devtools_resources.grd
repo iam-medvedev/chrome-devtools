@@ -168,6 +168,7 @@
       <include file="Images/layers.svg" name="IMAGES_LAYERS_SVG" resource_path="Images/layers.svg" type="BINDATA" compress="false"/>
       <include file="Images/left-panel-close.svg" name="IMAGES_LEFT_PANEL_CLOSE_SVG" resource_path="Images/left-panel-close.svg" type="BINDATA" compress="false"/>
       <include file="Images/left-panel-open.svg" name="IMAGES_LEFT_PANEL_OPEN_SVG" resource_path="Images/left-panel-open.svg" type="BINDATA" compress="false"/>
+      <include file="Images/lightbulb-spark.svg" name="IMAGES_LIGHTBULB_SPARK_SVG" resource_path="Images/lightbulb-spark.svg" type="BINDATA" compress="false"/>
       <include file="Images/lighthouse_logo.svg" name="IMAGES_LIGHTHOUSE_LOGO_SVG" resource_path="Images/lighthouse_logo.svg" type="BINDATA" compress="false"/>
       <include file="Images/list.svg" name="IMAGES_LIST_SVG" resource_path="Images/list.svg" type="BINDATA" compress="false"/>
       <include file="Images/match-whole-word.svg" name="IMAGES_MATCH_WHOLE_WORD_SVG" resource_path="Images/match-whole-word.svg" type="BINDATA" compress="false"/>
@@ -202,6 +203,7 @@
       <include file="Images/review.svg" name="IMAGES_REVIEW_SVG" resource_path="Images/review.svg" type="BINDATA" compress="false"/>
       <include file="Images/right-panel-close.svg" name="IMAGES_RIGHT_PANEL_CLOSE_SVG" resource_path="Images/right-panel-close.svg" type="BINDATA" compress="false"/>
       <include file="Images/right-panel-open.svg" name="IMAGES_RIGHT_PANEL_OPEN_SVG" resource_path="Images/right-panel-open.svg" type="BINDATA" compress="false"/>
+      <include file="Images/scissors.svg" name="IMAGES_SCISSORS_SVG" resource_path="Images/scissors.svg" type="BINDATA" compress="false"/>
       <include file="Images/screen-rotation.svg" name="IMAGES_SCREEN_ROTATION_SVG" resource_path="Images/screen-rotation.svg" type="BINDATA" compress="false"/>
       <include file="Images/search.svg" name="IMAGES_SEARCH_SVG" resource_path="Images/search.svg" type="BINDATA" compress="false"/>
       <include file="Images/securityIcons.svg" name="IMAGES_SECURITYICONS_SVG" resource_path="Images/securityIcons.svg" type="BINDATA" compress="false"/>
@@ -693,6 +695,7 @@
       <include file="core/i18n/locales/en-XL.json" name="CORE_I18N_LOCALES_EN_XL_JSON" resource_path="core/i18n/locales/en-XL.json" type="BINDATA" compress="false"/>
       <include file="core/i18n/time-utilities.js" name="CORE_I18N_TIME_UTILITIES_JS" resource_path="core/i18n/time-utilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/DevToolsPath.js" name="CORE_PLATFORM_DEVTOOLSPATH_JS" resource_path="core/platform/DevToolsPath.js" type="BINDATA" compress="false"/>
+      <include file="core/platform/MimeType.js" name="CORE_PLATFORM_MIMETYPE_JS" resource_path="core/platform/MimeType.js" type="BINDATA" compress="false"/>
       <include file="core/platform/Timing.js" name="CORE_PLATFORM_TIMING_JS" resource_path="core/platform/Timing.js" type="BINDATA" compress="false"/>
       <include file="core/platform/UIString.js" name="CORE_PLATFORM_UISTRING_JS" resource_path="core/platform/UIString.js" type="BINDATA" compress="false"/>
       <include file="core/platform/UserVisibleError.js" name="CORE_PLATFORM_USERVISIBLEERROR_JS" resource_path="core/platform/UserVisibleError.js" type="BINDATA" compress="false"/>
@@ -737,7 +740,6 @@
       <include file="core/sdk/Connections.js" name="CORE_SDK_CONNECTIONS_JS" resource_path="core/sdk/Connections.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/ConsoleModel.js" name="CORE_SDK_CONSOLEMODEL_JS" resource_path="core/sdk/ConsoleModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/ConsoleModelTypes.js" name="CORE_SDK_CONSOLEMODELTYPES_JS" resource_path="core/sdk/ConsoleModelTypes.js" type="BINDATA" compress="false"/>
-      <include file="core/sdk/ContentData.js" name="CORE_SDK_CONTENTDATA_JS" resource_path="core/sdk/ContentData.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/Cookie.js" name="CORE_SDK_COOKIE_JS" resource_path="core/sdk/Cookie.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CookieModel.js" name="CORE_SDK_COOKIEMODEL_JS" resource_path="core/sdk/CookieModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/CookieParser.js" name="CORE_SDK_COOKIEPARSER_JS" resource_path="core/sdk/CookieParser.js" type="BINDATA" compress="false"/>
@@ -755,7 +757,6 @@
       <include file="core/sdk/IssuesModel.js" name="CORE_SDK_ISSUESMODEL_JS" resource_path="core/sdk/IssuesModel.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/LayerTreeBase.js" name="CORE_SDK_LAYERTREEBASE_JS" resource_path="core/sdk/LayerTreeBase.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/LogModel.js" name="CORE_SDK_LOGMODEL_JS" resource_path="core/sdk/LogModel.js" type="BINDATA" compress="false"/>
-      <include file="core/sdk/MimeType.js" name="CORE_SDK_MIMETYPE_JS" resource_path="core/sdk/MimeType.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/NetworkManager.js" name="CORE_SDK_NETWORKMANAGER_JS" resource_path="core/sdk/NetworkManager.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/NetworkRequest.js" name="CORE_SDK_NETWORKREQUEST_JS" resource_path="core/sdk/NetworkRequest.js" type="BINDATA" compress="false"/>
       <include file="core/sdk/OverlayColorGenerator.js" name="CORE_SDK_OVERLAYCOLORGENERATOR_JS" resource_path="core/sdk/OverlayColorGenerator.js" type="BINDATA" compress="false"/>
@@ -913,8 +914,10 @@
       <include file="models/source_map_scopes/NamesResolver.js" name="MODELS_SOURCE_MAP_SCOPES_NAMESRESOLVER_JS" resource_path="models/source_map_scopes/NamesResolver.js" type="BINDATA" compress="false"/>
       <include file="models/source_map_scopes/ScopeTreeCache.js" name="MODELS_SOURCE_MAP_SCOPES_SCOPETREECACHE_JS" resource_path="models/source_map_scopes/ScopeTreeCache.js" type="BINDATA" compress="false"/>
       <include file="models/text_utils/CodeMirrorUtils.js" name="MODELS_TEXT_UTILS_CODEMIRRORUTILS_JS" resource_path="models/text_utils/CodeMirrorUtils.js" type="BINDATA" compress="false"/>
+      <include file="models/text_utils/ContentData.js" name="MODELS_TEXT_UTILS_CONTENTDATA_JS" resource_path="models/text_utils/ContentData.js" type="BINDATA" compress="false"/>
       <include file="models/text_utils/ContentProvider.js" name="MODELS_TEXT_UTILS_CONTENTPROVIDER_JS" resource_path="models/text_utils/ContentProvider.js" type="BINDATA" compress="false"/>
       <include file="models/text_utils/StaticContentProvider.js" name="MODELS_TEXT_UTILS_STATICCONTENTPROVIDER_JS" resource_path="models/text_utils/StaticContentProvider.js" type="BINDATA" compress="false"/>
+      <include file="models/text_utils/StreamingContentData.js" name="MODELS_TEXT_UTILS_STREAMINGCONTENTDATA_JS" resource_path="models/text_utils/StreamingContentData.js" type="BINDATA" compress="false"/>
       <include file="models/text_utils/Text.js" name="MODELS_TEXT_UTILS_TEXT_JS" resource_path="models/text_utils/Text.js" type="BINDATA" compress="false"/>
       <include file="models/text_utils/TextCursor.js" name="MODELS_TEXT_UTILS_TEXTCURSOR_JS" resource_path="models/text_utils/TextCursor.js" type="BINDATA" compress="false"/>
       <include file="models/text_utils/TextRange.js" name="MODELS_TEXT_UTILS_TEXTRANGE_JS" resource_path="models/text_utils/TextRange.js" type="BINDATA" compress="false"/>

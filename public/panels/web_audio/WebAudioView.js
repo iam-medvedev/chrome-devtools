@@ -27,7 +27,7 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
     summaryBarContainer;
     constructor() {
         super(true, 1000);
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('web-audio')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('web-audio')}`);
         this.element.classList.add('web-audio-drawer');
         // Creates the toolbar.
         const toolbarContainer = this.contentElement.createChild('div', 'web-audio-toolbar-container vbox');
@@ -36,6 +36,7 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButtonForId('components.collect-garbage'));
         toolbar.appendSeparator();
         toolbar.appendToolbarItem(this.contextSelector.toolbarItem());
+        toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         // Create content container
         this.contentContainer = this.contentElement.createChild('div', 'web-audio-content-container vbox flex-auto');
         // Creates the detail view.

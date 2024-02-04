@@ -27,7 +27,7 @@ export class SharedStorageEventsView extends UI.SplitWidget.SplitWidget {
     #defaultId = '';
     constructor() {
         super(/* isVertical */ false, /* secondIsSidebar: */ true);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('shared-storage-events')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('shared-storage-events')}`);
         const topPanel = new UI.Widget.VBox();
         this.#noDisplayView = new UI.Widget.VBox();
         topPanel.setMinimumSize(0, 80);
@@ -36,7 +36,7 @@ export class SharedStorageEventsView extends UI.SplitWidget.SplitWidget {
         this.setSidebarWidget(this.#noDisplayView);
         topPanel.contentElement.appendChild(this.#sharedStorageEventGrid);
         this.#sharedStorageEventGrid.addEventListener('cellfocused', this.#onFocus.bind(this));
-        this.#sharedStorageEventGrid.setAttribute('jslog', `${VisualLogging.section().context('events-table')}`);
+        this.#sharedStorageEventGrid.setAttribute('jslog', `${VisualLogging.section('events-table')}`);
         this.#getMainFrameResourceTreeModel()?.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.clearEvents, this);
         this.#noDisplayView.contentElement.classList.add('placeholder');
         const noDisplayDiv = this.#noDisplayView.contentElement.createChild('div');

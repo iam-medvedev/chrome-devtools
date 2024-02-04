@@ -1,8 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { ContentData } from './ContentData.js';
-import { NetworkManager } from './NetworkManager.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { Events } from './NetworkRequest.js';
 import { ServerSentEventsParser } from './ServerSentEventsProtocol.js';
 /**
@@ -28,21 +27,21 @@ export class ServerSentEvents {
         if (parseFromStreamedData) {
             this.#lastDataReceivedTime = request.pseudoWallTime(request.startTime);
             this.#parser = new ServerSentEventsParser(this.#onParserEvent.bind(this), request.charset() ?? undefined);
-            void NetworkManager.streamResponseBody(this.#request).then(contentData => {
-                if (!ContentData.isError(contentData)) {
-                    // Partial data is always base64 encoded.
-                    void this.#parser?.addBase64Chunk(contentData.base64);
+            // Get the streaming content and add the already received bytes if someone else started
+            // the streaming earlier.
+            void this.#request.requestStreamingContent().then(streamingContentData => {
+                if (!TextUtils.StreamingContentData.isError(streamingContentData)) {
+                    void this.#parser?.addBase64Chunk(streamingContentData.content().base64);
+                    streamingContentData.addEventListener("ChunkAdded" /* TextUtils.StreamingContentData.Events.ChunkAdded */, ({ data: { chunk } }) => {
+                        this.#lastDataReceivedTime = request.pseudoWallTime(request.endTime);
+                        void this.#parser?.addBase64Chunk(chunk);
+                    });
                 }
             });
         }
     }
     get eventSourceMessages() {
         return this.#eventSourceMessages;
-    }
-    /** Forwarded Network.dataReceived events */
-    dataReceived(data, time) {
-        this.#lastDataReceivedTime = this.#request.pseudoWallTime(time);
-        void this.#parser?.addBase64Chunk(data);
     }
     /** Forwarded Network.eventSourceMessage received */
     onProtocolEventSourceMessageReceived(eventName, data, eventId, time) {

@@ -1,10 +1,11 @@
 import type * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
-export declare abstract class ContentProvider {
-    abstract contentURL(): Platform.DevToolsPath.UrlString;
-    abstract contentType(): Common.ResourceType.ResourceType;
-    abstract requestContent(): Promise<DeferredContent>;
-    abstract searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<SearchMatch[]>;
+import { type StreamingContentDataOrError } from './StreamingContentData.js';
+export interface ContentProvider {
+    contentURL(): Platform.DevToolsPath.UrlString;
+    contentType(): Common.ResourceType.ResourceType;
+    requestContent(): Promise<DeferredContent>;
+    searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<SearchMatch[]>;
 }
 export declare class SearchMatch {
     readonly lineNumber: number;
@@ -27,3 +28,6 @@ export type DeferredContent = {
     error: string;
     isEncoded: boolean;
 };
+export interface StreamingContentProvider extends ContentProvider {
+    requestStreamingContent(): Promise<StreamingContentDataOrError>;
+}

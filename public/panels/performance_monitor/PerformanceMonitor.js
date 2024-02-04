@@ -72,7 +72,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
     pollTimer;
     constructor(pollIntervalMs = 500) {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('performance-monitor')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('performance-monitor')}`);
         this.contentElement.classList.add('perfmon-pane');
         this.metricsBuffer = [];
         /** @const */
@@ -402,7 +402,7 @@ export class ControlPane extends Common.ObjectWrapper.ObjectWrapper {
     constructor(parent) {
         super();
         this.element = parent.createChild('div', 'perfmon-control-pane');
-        this.enabledChartsSetting = Common.Settings.Settings.instance().createSetting('perfmonActiveIndicators2', ['TaskDuration', 'JSHeapTotalSize', 'Nodes']);
+        this.enabledChartsSetting = Common.Settings.Settings.instance().createSetting('perfmon-active-indicators2', ['TaskDuration', 'JSHeapTotalSize', 'Nodes']);
         this.enabledCharts = new Set(this.enabledChartsSetting.get());
     }
     instantiateMetricData() {

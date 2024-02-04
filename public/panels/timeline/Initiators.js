@@ -17,13 +17,13 @@ export function eventInitiatorPairsToDraw(traceEngineData, selectedEvent) {
         if (currentInitiator) {
             // Store the current pair, and then set the initiator to
             // be the current event, so we work back through the
-            // trace and find the initator of the initiator, and so
+            // trace and find the initiator of the initiator, and so
             // on...
             pairs.push({ event: currentEvent, initiator: currentInitiator });
             currentEvent = currentInitiator;
             continue;
         }
-        if (!TraceEngine.Types.TraceEvents.isRendererEvent(currentEvent)) {
+        if (!TraceEngine.Types.TraceEvents.isSyntheticTraceEntry(currentEvent)) {
             // If the current event is not a renderer, we have no
             // concept of a parent event, so we can bail.
             currentEvent = null;

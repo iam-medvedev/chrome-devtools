@@ -124,7 +124,7 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
             return LitHtml.nothing;
         }
         return LitHtml.html `
-      <${ReportView.ReportView.ReportSectionHeader.litTagName} jslog=${VisualLogging.pane().context('trust-tokens')}>${i18nString(UIStrings.parameters)}</${ReportView.ReportView.ReportSectionHeader.litTagName}>
+      <${ReportView.ReportView.ReportSectionHeader.litTagName} jslog=${VisualLogging.pane('trust-tokens')}>${i18nString(UIStrings.parameters)}</${ReportView.ReportView.ReportSectionHeader.litTagName}>
       ${renderRowWithCodeValue(i18nString(UIStrings.type), trustTokenParams.operation.toString())}
       ${this.#renderRefreshPolicy(trustTokenParams)}
       ${this.#renderIssuers(trustTokenParams)}

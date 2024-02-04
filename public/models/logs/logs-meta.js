@@ -44,7 +44,7 @@ const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined
 Common.Settings.registerSettingExtension({
     category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
     title: i18nLazyString(UIStrings.preserveLog),
-    settingName: 'network_log.preserve-log',
+    settingName: 'network-log.preserve-log',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     tags: [
@@ -66,7 +66,7 @@ Common.Settings.registerSettingExtension({
 Common.Settings.registerSettingExtension({
     category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
     title: i18nLazyString(UIStrings.recordNetworkLog),
-    settingName: 'network_log.record-log',
+    settingName: 'network-log.record-log',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     storageType: "Session" /* Common.Settings.SettingStorageType.Session */,

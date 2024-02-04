@@ -67,7 +67,7 @@ export declare class CounterUI {
     private readonly verticalPadding;
     private currentValueLabel;
     private marker;
-    constructor(countersPane: CountersGraph, title: string, graphColor: string, counter: Counter, formatter?: (arg0: number) => string);
+    constructor(countersPane: CountersGraph, title: string, settingsKey: string, graphColor: string, counter: Counter, formatter?: (arg0: number) => string);
     reset(): void;
     setRange(minValue: number, maxValue: number): void;
     private toggleCounterGraph;

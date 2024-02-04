@@ -228,7 +228,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
     #isEnabling;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('webauthn')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('webauthn')}`);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.WebAuthnModel.WebAuthnModel, this, { scoped: true });
         this.contentElement.classList.add('webauthn-pane');
         this.#availableAuthenticatorSetting =
@@ -277,11 +277,12 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
     }
     #createToolbar() {
         this.#topToolbarContainer = this.contentElement.createChild('div', 'webauthn-toolbar-container');
+        this.#topToolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.#topToolbar = new UI.Toolbar.Toolbar('webauthn-toolbar', this.#topToolbarContainer);
         const enableCheckboxTitle = i18nString(UIStrings.enableVirtualAuthenticator);
         this.#enableCheckbox =
             new UI.Toolbar.ToolbarCheckbox(enableCheckboxTitle, enableCheckboxTitle, this.#handleCheckboxToggle.bind(this));
-        this.#enableCheckbox.inputElement.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true }).context('virtual-authenticators')}`);
+        this.#enableCheckbox.inputElement.setAttribute('jslog', `${VisualLogging.toggle('virtual-authenticators').track({ click: true })}`);
         this.#topToolbar.appendToolbarItem(this.#enableCheckbox);
     }
     #createCredentialsDataGrid(authenticatorId) {
@@ -455,7 +456,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const newAuthenticatorTitle = UI.UIUtils.createLabel(i18nString(UIStrings.newAuthenticator), 'new-authenticator-title');
         this.#newAuthenticatorSection.appendChild(newAuthenticatorTitle);
         this.#newAuthenticatorForm = this.#newAuthenticatorSection.createChild('div', 'new-authenticator-form');
-        this.#newAuthenticatorForm.setAttribute('jslog', `${VisualLogging.section().context('new-authenticator')}`);
+        this.#newAuthenticatorForm.setAttribute('jslog', `${VisualLogging.section('new-authenticator')}`);
         const protocolGroup = this.#newAuthenticatorForm.createChild('div', 'authenticator-option');
         const transportGroup = this.#newAuthenticatorForm.createChild('div', 'authenticator-option');
         const residentKeyGroup = this.#newAuthenticatorForm.createChild('div', 'authenticator-option');
@@ -465,7 +466,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const protocolSelectTitle = UI.UIUtils.createLabel(i18nString(UIStrings.protocol), 'authenticator-option-label');
         protocolGroup.appendChild(protocolSelectTitle);
         this.#protocolSelect = protocolGroup.createChild('select', 'chrome-select');
-        this.#protocolSelect.setAttribute('jslog', `${VisualLogging.dropDown().track({ change: true }).context('protocol')}`);
+        this.#protocolSelect.setAttribute('jslog', `${VisualLogging.dropDown('protocol').track({ change: true })}`);
         UI.ARIAUtils.bindLabelToControl(protocolSelectTitle, this.#protocolSelect);
         Object.values(PROTOCOL_AUTHENTICATOR_VALUES)
             .sort()
@@ -480,7 +481,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const transportSelectTitle = UI.UIUtils.createLabel(i18nString(UIStrings.transport), 'authenticator-option-label');
         transportGroup.appendChild(transportSelectTitle);
         this.#transportSelect = transportGroup.createChild('select', 'chrome-select');
-        this.#transportSelect.setAttribute('jslog', `${VisualLogging.dropDown().track({ change: true }).context('transport')}`);
+        this.#transportSelect.setAttribute('jslog', `${VisualLogging.dropDown('transport').track({ change: true })}`);
         UI.ARIAUtils.bindLabelToControl(transportSelectTitle, this.#transportSelect);
         // transportSelect will be populated in updateNewAuthenticatorSectionOptions.
         this.#residentKeyCheckboxLabel =
@@ -537,7 +538,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const section = document.createElement('div');
         section.classList.add('authenticator-section');
         section.setAttribute('data-authenticator-id', authenticatorId);
-        section.setAttribute('jslog', `${VisualLogging.section().context('authenticator')}`);
+        section.setAttribute('jslog', `${VisualLogging.section('authenticator')}`);
         this.#authenticatorsView.appendChild(section);
         const headerElement = section.createChild('div', 'authenticator-section-header');
         const titleElement = headerElement.createChild('div', 'authenticator-section-title');
@@ -552,7 +553,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const removeButton = headerElement.createChild('button', 'text-button');
         removeButton.textContent = i18nString(UIStrings.remove);
         removeButton.addEventListener('click', this.#removeAuthenticator.bind(this, authenticatorId));
-        removeButton.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('webauthn.remove-authenticator')}`);
+        removeButton.setAttribute('jslog', `${VisualLogging.action('webauthn.remove-authenticator').track({ click: true })}`);
         const toolbar = new UI.Toolbar.Toolbar('edit-name-toolbar', titleElement);
         const editName = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.editName), 'edit', undefined, 'edit-name');
         const saveName = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveName), 'checkmark', undefined, 'save-name');
@@ -560,7 +561,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const nameField = titleElement.createChild('input', 'authenticator-name-field');
         nameField.placeholder = i18nString(UIStrings.enterNewName);
         nameField.disabled = true;
-        nameField.setAttribute('jslog', `${VisualLogging.textField().track({ keydown: true }).context('name')}`);
+        nameField.setAttribute('jslog', `${VisualLogging.textField('name').track({ keydown: true })}`);
         const userFriendlyName = authenticatorId.slice(-5); // User friendly name defaults to last 5 chars of UUID.
         nameField.value = i18nString(UIStrings.authenticatorS, { PH1: userFriendlyName });
         this.#updateActiveLabelTitle(activeLabel, nameField.value);

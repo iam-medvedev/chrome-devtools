@@ -39,16 +39,16 @@ export class IgnoreListManager {
         this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this.clearCacheIfNeeded.bind(this), this);
         Common.Settings.Settings.instance()
-            .moduleSetting('skipStackFramesPattern')
+            .moduleSetting('skip-stack-frames-pattern')
             .addChangeListener(this.patternChanged.bind(this));
         Common.Settings.Settings.instance()
-            .moduleSetting('skipContentScripts')
+            .moduleSetting('skip-content-scripts')
             .addChangeListener(this.patternChanged.bind(this));
         Common.Settings.Settings.instance()
-            .moduleSetting('automaticallyIgnoreListKnownThirdPartyScripts')
+            .moduleSetting('automatically-ignore-list-known-third-party-scripts')
             .addChangeListener(this.patternChanged.bind(this));
         Common.Settings.Settings.instance()
-            .moduleSetting('enableIgnoreListing')
+            .moduleSetting('enable-ignore-listing')
             .addChangeListener(this.patternChanged.bind(this));
         this.#listeners = new Set();
         this.#isIgnoreListedURLCache = new Map();
@@ -91,7 +91,7 @@ export class IgnoreListManager {
         }
     }
     getSkipStackFramesPatternSetting() {
-        return Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern');
+        return Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
     }
     setIgnoreListPatterns(debuggerModel) {
         const regexPatterns = this.enableIgnoreListing ? this.getSkipStackFramesPatternSetting().getAsArray() : [];
@@ -200,35 +200,35 @@ export class IgnoreListManager {
         this.unIgnoreListURL(this.uiSourceCodeURL(uiSourceCode), this.getGeneralRulesForUISourceCode(uiSourceCode));
     }
     get enableIgnoreListing() {
-        return Common.Settings.Settings.instance().moduleSetting('enableIgnoreListing').get();
+        return Common.Settings.Settings.instance().moduleSetting('enable-ignore-listing').get();
     }
     set enableIgnoreListing(value) {
-        Common.Settings.Settings.instance().moduleSetting('enableIgnoreListing').set(value);
+        Common.Settings.Settings.instance().moduleSetting('enable-ignore-listing').set(value);
     }
     get skipContentScripts() {
-        return this.enableIgnoreListing && Common.Settings.Settings.instance().moduleSetting('skipContentScripts').get();
+        return this.enableIgnoreListing && Common.Settings.Settings.instance().moduleSetting('skip-content-scripts').get();
     }
     get automaticallyIgnoreListKnownThirdPartyScripts() {
         return this.enableIgnoreListing &&
-            Common.Settings.Settings.instance().moduleSetting('automaticallyIgnoreListKnownThirdPartyScripts').get();
+            Common.Settings.Settings.instance().moduleSetting('automatically-ignore-list-known-third-party-scripts').get();
     }
     ignoreListContentScripts() {
         if (!this.enableIgnoreListing) {
             this.enableIgnoreListing = true;
         }
-        Common.Settings.Settings.instance().moduleSetting('skipContentScripts').set(true);
+        Common.Settings.Settings.instance().moduleSetting('skip-content-scripts').set(true);
     }
     unIgnoreListContentScripts() {
-        Common.Settings.Settings.instance().moduleSetting('skipContentScripts').set(false);
+        Common.Settings.Settings.instance().moduleSetting('skip-content-scripts').set(false);
     }
     ignoreListThirdParty() {
         if (!this.enableIgnoreListing) {
             this.enableIgnoreListing = true;
         }
-        Common.Settings.Settings.instance().moduleSetting('automaticallyIgnoreListKnownThirdPartyScripts').set(true);
+        Common.Settings.Settings.instance().moduleSetting('automatically-ignore-list-known-third-party-scripts').set(true);
     }
     unIgnoreListThirdParty() {
-        Common.Settings.Settings.instance().moduleSetting('automaticallyIgnoreListKnownThirdPartyScripts').set(false);
+        Common.Settings.Settings.instance().moduleSetting('automatically-ignore-list-known-third-party-scripts').set(false);
     }
     ignoreListURL(url) {
         const regexValue = this.urlToRegExpString(url);

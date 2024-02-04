@@ -33,4 +33,4 @@ export declare class InteractionsTrackAppender implements TrackAppender {
  * Return the title to use for a given interaction event.
  * Exported so the title in the DetailsView can re-use the same logic
  **/
-export declare function titleForInteractionEvent(event: TraceEngine.Types.TraceEvents.SyntheticInteractionEvent): string;
+export declare function titleForInteractionEvent(event: TraceEngine.Types.TraceEvents.SyntheticInteractionPair): string;

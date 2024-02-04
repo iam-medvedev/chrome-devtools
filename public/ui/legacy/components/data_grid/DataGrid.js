@@ -942,6 +942,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
                 resizer = document.createElement('div');
                 elementToIndexMap.set(resizer, i);
                 resizer.classList.add('data-grid-resizer');
+                resizer.setAttribute('jslog', `${VisualLogging.resizer(this.visibleColumnsArray[i].id).track({ drag: true })}`);
                 // This resizer is associated with the column to its right.
                 UI.UIUtils.installDragHandle(resizer, this.startResizerDragging.bind(this), this.resizerDragging.bind(this), this.endResizerDragging.bind(this), 'col-resize');
                 this.element.appendChild(resizer);

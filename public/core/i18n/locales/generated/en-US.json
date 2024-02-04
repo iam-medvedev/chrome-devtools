@@ -425,6 +425,9 @@
   "core/sdk/sdk-meta.ts | captureAsyncStackTraces": {
     "message": "Capture async stack traces"
   },
+  "core/sdk/sdk-meta.ts | customFormatters": {
+    "message": "Custom formatters"
+  },
   "core/sdk/sdk-meta.ts | deuteranopia": {
     "message": "Deuteranopia (no green)"
   },
@@ -533,9 +536,6 @@
   "core/sdk/sdk-meta.ts | enableCache": {
     "message": "Enable cache"
   },
-  "core/sdk/sdk-meta.ts | enableCustomFormatters": {
-    "message": "Enable custom formatters"
-  },
   "core/sdk/sdk-meta.ts | enableJavascript": {
     "message": "Enable JavaScript"
   },
@@ -577,6 +577,9 @@
   },
   "core/sdk/sdk-meta.ts | highlightAdFrames": {
     "message": "Highlight ad frames"
+  },
+  "core/sdk/sdk-meta.ts | networkRequestBlocking": {
+    "message": "Network request blocking"
   },
   "core/sdk/sdk-meta.ts | noEmulation": {
     "message": "No emulation"
@@ -795,7 +798,7 @@
     "message": "Enable automatic dark mode"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAFocusedPage": {
-    "message": "Emulates a focused page."
+    "message": "Keep page focused. Commonly used for debugging disappearing elements."
   },
   "entrypoints/inspector_main/RenderingOptions.ts | emulatesAutoDarkMode": {
     "message": "Enables automatic dark mode and sets prefers-color-scheme to dark."
@@ -4886,6 +4889,9 @@
   "panels/console/console-meta.ts | showTimestamps": {
     "message": "Show timestamps"
   },
+  "panels/console/console-meta.ts | timestamps": {
+    "message": "Timestamps"
+  },
   "panels/console/console-meta.ts | toggleConsole": {
     "message": "Toggle Console"
   },
@@ -4932,7 +4938,7 @@
     "message": "Console prompt"
   },
   "panels/console/ConsolePrompt.ts | selfXssWarning": {
-    "message": "Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘{PH1}’ below to allow pasting."
+    "message": "Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘{PH1}’ below and hit Enter to allow pasting."
   },
   "panels/console/ConsoleSidebar.ts | dErrors": {
     "message": "{n, plural, =0 {No errors} =1 {# error} other {# errors}}"
@@ -5816,6 +5822,12 @@
   "panels/elements/ElementsPanel.ts | theRemoteObjectCouldNotBe": {
     "message": "The remote object could not be resolved to a valid node."
   },
+  "panels/elements/ElementStatePaneWidget.ts | emulateFocusedPage": {
+    "message": "Emulate a focused page"
+  },
+  "panels/elements/ElementStatePaneWidget.ts | emulatesAFocusedPage": {
+    "message": "Keep page focused. Commonly used for debugging disappearing elements."
+  },
   "panels/elements/ElementStatePaneWidget.ts | forceElementState": {
     "message": "Force element state"
   },
@@ -6344,17 +6356,17 @@
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Toggle whether event listener is passive or blocking"
   },
-  "panels/explain/components/ConsoleInsight.ts | additionalFeedback": {
-    "message": "Provide additional feedback (optional)"
-  },
-  "panels/explain/components/ConsoleInsight.ts | close": {
-    "message": "Close"
-  },
   "panels/explain/components/ConsoleInsight.ts | closeInsight": {
     "message": "Close insight"
   },
+  "panels/explain/components/ConsoleInsight.ts | consentButton": {
+    "message": "Continue"
+  },
   "panels/explain/components/ConsoleInsight.ts | consoleMessage": {
     "message": "Console message"
+  },
+  "panels/explain/components/ConsoleInsight.ts | disclaimer": {
+    "message": "The following data will be sent to Google servers to generate tailored tips and suggestions. It may be stored, reviewed by humans, or used to train AI models."
   },
   "panels/explain/components/ConsoleInsight.ts | dogfood": {
     "message": "Dogfood"
@@ -6365,44 +6377,17 @@
   "panels/explain/components/ConsoleInsight.ts | generating": {
     "message": "Generating…"
   },
-  "panels/explain/components/ConsoleInsight.ts | inaccurate": {
-    "message": "Inaccurate"
-  },
-  "panels/explain/components/ConsoleInsight.ts | inappropriate": {
-    "message": "Inappropriate"
-  },
   "panels/explain/components/ConsoleInsight.ts | insight": {
     "message": "Insight"
   },
-  "panels/explain/components/ConsoleInsight.ts | irrelevant": {
-    "message": "Irrelevant"
+  "panels/explain/components/ConsoleInsight.ts | learnMore": {
+    "message": "Learn more"
   },
   "panels/explain/components/ConsoleInsight.ts | networkRequest": {
     "message": "Network request"
   },
-  "panels/explain/components/ConsoleInsight.ts | notHelpful": {
-    "message": "Not helpful"
-  },
   "panels/explain/components/ConsoleInsight.ts | opensInNewTab": {
     "message": "(opens in a new tab)"
-  },
-  "panels/explain/components/ConsoleInsight.ts | other": {
-    "message": "Other"
-  },
-  "panels/explain/components/ConsoleInsight.ts | reason": {
-    "message": "Why did you choose this rating? (optional)"
-  },
-  "panels/explain/components/ConsoleInsight.ts | refine": {
-    "message": "Give context to personalize insight"
-  },
-  "panels/explain/components/ConsoleInsight.ts | refineButtonHint": {
-    "message": "Click this button to send the following data to the AI model running on Google's servers, so it can generate a more accurate and relevant response:"
-  },
-  "panels/explain/components/ConsoleInsight.ts | refineInfo": {
-    "message": "Learn how personalizing of insights works"
-  },
-  "panels/explain/components/ConsoleInsight.ts | refining": {
-    "message": "Personalizing insight…"
   },
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "Related code"
@@ -6412,9 +6397,6 @@
   },
   "panels/explain/components/ConsoleInsight.ts | stackTrace": {
     "message": "Stacktrace"
-  },
-  "panels/explain/components/ConsoleInsight.ts | submit": {
-    "message": "Submit"
   },
   "panels/explain/components/ConsoleInsight.ts | submitFeedback": {
     "message": "Submit feedback"
@@ -11687,6 +11669,9 @@
   "panels/sources/sources-meta.ts | createNewSnippet": {
     "message": "Create new snippet"
   },
+  "panels/sources/sources-meta.ts | cssSourceMaps": {
+    "message": "CSS source maps"
+  },
   "panels/sources/sources-meta.ts | deactivateBreakpoints": {
     "message": "Deactivate breakpoints"
   },
@@ -11711,7 +11696,7 @@
   "panels/sources/sources-meta.ts | disableCssSourceMaps": {
     "message": "Disable CSS source maps"
   },
-  "panels/sources/sources-meta.ts | disableJavascriptSourceMaps": {
+  "panels/sources/sources-meta.ts | disableJavaScriptSourceMaps": {
     "message": "Disable JavaScript source maps"
   },
   "panels/sources/sources-meta.ts | disableTabMovesFocus": {
@@ -11756,7 +11741,7 @@
   "panels/sources/sources-meta.ts | enableCssSourceMaps": {
     "message": "Enable CSS source maps"
   },
-  "panels/sources/sources-meta.ts | enableJavascriptSourceMaps": {
+  "panels/sources/sources-meta.ts | enableJavaScriptSourceMaps": {
     "message": "Enable JavaScript source maps"
   },
   "panels/sources/sources-meta.ts | enableTabMovesFocus": {
@@ -11782,6 +11767,9 @@
   },
   "panels/sources/sources-meta.ts | incrementCssUnitBy": {
     "message": "Increment CSS unit by {PH1}"
+  },
+  "panels/sources/sources-meta.ts | javaScriptSourceMaps": {
+    "message": "JavaScript source maps"
   },
   "panels/sources/sources-meta.ts | jumpToNextEditingLocation": {
     "message": "Jump to next editing location"
@@ -11902,6 +11890,9 @@
   },
   "panels/sources/sources-meta.ts | symbol": {
     "message": "Symbol"
+  },
+  "panels/sources/sources-meta.ts | tabMovesFocus": {
+    "message": "Tab moves focus"
   },
   "panels/sources/sources-meta.ts | threads": {
     "message": "Threads"
@@ -14320,6 +14311,9 @@
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | hideRepeatingChildren": {
     "message": "Hide repeating children"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | resetChildren": {
+    "message": "Reset children"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | resetTrace": {
     "message": "Reset trace"

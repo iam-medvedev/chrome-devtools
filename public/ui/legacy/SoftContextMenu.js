@@ -190,7 +190,7 @@ export class SoftContextMenu {
             return this.createSeparator();
         }
         if (item.type === 'subMenu') {
-            return this.createSubMenu(item);
+            return this.createSubMenu(item, menuContainsCheckbox);
         }
         const menuItemElement = document.createElement('div');
         menuItemElement.classList.add('soft-context-menu-item');
@@ -268,7 +268,7 @@ export class SoftContextMenu {
         this.detailsForElementMap.set(menuItemElement, detailsForElement);
         return menuItemElement;
     }
-    createSubMenu(item) {
+    createSubMenu(item, menuContainsCheckbox) {
         const menuItemElement = document.createElement('div');
         menuItemElement.classList.add('soft-context-menu-item');
         menuItemElement.tabIndex = -1;
@@ -280,9 +280,11 @@ export class SoftContextMenu {
             customElement: undefined,
             subMenuTimer: undefined,
         });
-        // Occupy the same space on the left in all items.
-        const checkMarkElement = IconButton.Icon.create('checkmark', 'checkmark soft-context-menu-item-checkmark');
-        menuItemElement.appendChild(checkMarkElement);
+        // If the menu contains a checkbox, add checkbox space in front of the label to align the items
+        if (menuContainsCheckbox) {
+            const checkMarkElement = IconButton.Icon.create('checkmark', 'checkmark soft-context-menu-item-checkmark');
+            menuItemElement.appendChild(checkMarkElement);
+        }
         createTextChild(menuItemElement, item.label || '');
         ARIAUtils.setExpanded(menuItemElement, false);
         // TODO: Consider removing this branch and use the same icon on all platforms.

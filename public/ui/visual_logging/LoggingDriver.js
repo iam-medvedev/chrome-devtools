@@ -14,10 +14,12 @@ const PROCESS_DOM_INTERVAL = 500;
 const KEYBOARD_LOG_INTERVAL = 3000;
 const HOVER_LOG_INTERVAL = 1000;
 const DRAG_LOG_INTERVAL = 500;
+const CLICK_LOG_INTERVAL = 500;
 let processingThrottler;
 let keyboardLogThrottler;
 let hoverLogThrottler;
 let dragLogThrottler;
+let clickLogThrottler;
 const mutationObservers = new WeakMap();
 const documents = [];
 function observeMutations(roots) {
@@ -39,6 +41,7 @@ export async function startLogging(options) {
     keyboardLogThrottler = options?.keyboardLogThrottler || new Common.Throttler.Throttler(KEYBOARD_LOG_INTERVAL);
     hoverLogThrottler = options?.hoverLogThrottler || new Common.Throttler.Throttler(HOVER_LOG_INTERVAL);
     dragLogThrottler = options?.dragLogThrottler || new Common.Throttler.Throttler(DRAG_LOG_INTERVAL);
+    clickLogThrottler = options?.clickLogThrottler || new Common.Throttler.Throttler(CLICK_LOG_INTERVAL);
     await addDocument(document);
 }
 export async function addDocument(document) {
@@ -116,10 +119,16 @@ async function process() {
         }
         if (!loggingState.processed) {
             if (loggingState.config.track?.has('click')) {
-                element.addEventListener('click', e => logClick(e.currentTarget, e), { capture: true });
+                element.addEventListener('click', e => {
+                    const loggable = e.currentTarget;
+                    void clickLogThrottler.schedule(async () => logClick(loggable, e));
+                }, { capture: true });
             }
             if (loggingState.config.track?.has('dblclick')) {
-                element.addEventListener('dblclick', e => logClick(e.currentTarget, e, { doubleClick: true }), { capture: true });
+                element.addEventListener('dblclick', e => {
+                    const loggable = e.currentTarget;
+                    void clickLogThrottler.schedule(async () => logClick(loggable, e, { doubleClick: true }));
+                }, { capture: true });
             }
             const trackHover = loggingState.config.track?.has('hover');
             if (trackHover) {

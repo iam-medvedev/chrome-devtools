@@ -19,6 +19,7 @@ export declare class HeapSnapshotEdge implements HeapSnapshotItem {
     itemIndex(): number;
     serialize(): HeapSnapshotModel.HeapSnapshotModel.Edge;
     rawType(): number;
+    isInternal(): boolean;
     isInvisible(): boolean;
     isWeak(): boolean;
 }

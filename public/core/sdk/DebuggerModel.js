@@ -151,26 +151,26 @@ export class DebuggerModel extends SDKModel {
         this.#autoSteppingContext = null;
         this.#isPausingInternal = false;
         Common.Settings.Settings.instance()
-            .moduleSetting('pauseOnExceptionEnabled')
+            .moduleSetting('pause-on-exception-enabled')
             .addChangeListener(this.pauseOnExceptionStateChanged, this);
         Common.Settings.Settings.instance()
-            .moduleSetting('pauseOnCaughtException')
+            .moduleSetting('pause-on-caught-exception')
             .addChangeListener(this.pauseOnExceptionStateChanged, this);
         Common.Settings.Settings.instance()
-            .moduleSetting('pauseOnUncaughtException')
+            .moduleSetting('pause-on-uncaught-exception')
             .addChangeListener(this.pauseOnExceptionStateChanged, this);
         Common.Settings.Settings.instance()
-            .moduleSetting('disableAsyncStackTraces')
+            .moduleSetting('disable-async-stack-traces')
             .addChangeListener(this.asyncStackTracesStateChanged, this);
         Common.Settings.Settings.instance()
-            .moduleSetting('breakpointsActive')
+            .moduleSetting('breakpoints-active')
             .addChangeListener(this.breakpointsActiveChanged, this);
         if (!target.suspended()) {
             void this.enableDebugger();
         }
-        this.#sourceMapManagerInternal.setEnabled(Common.Settings.Settings.instance().moduleSetting('jsSourceMapsEnabled').get());
+        this.#sourceMapManagerInternal.setEnabled(Common.Settings.Settings.instance().moduleSetting('js-source-maps-enabled').get());
         Common.Settings.Settings.instance()
-            .moduleSetting('jsSourceMapsEnabled')
+            .moduleSetting('js-source-maps-enabled')
             .addChangeListener(event => this.#sourceMapManagerInternal.setEnabled(event.data));
         const resourceTreeModel = target.model(ResourceTreeModel);
         if (resourceTreeModel) {
@@ -207,7 +207,7 @@ export class DebuggerModel extends SDKModel {
         }
         this.pauseOnExceptionStateChanged();
         void this.asyncStackTracesStateChanged();
-        if (!Common.Settings.Settings.instance().moduleSetting('breakpointsActive').get()) {
+        if (!Common.Settings.Settings.instance().moduleSetting('breakpoints-active').get()) {
             this.breakpointsActiveChanged();
         }
         this.dispatchEventToListeners(Events.DebuggerWasEnabled, this);
@@ -285,9 +285,9 @@ export class DebuggerModel extends SDKModel {
         this.#skipAllPausesTimeout = window.setTimeout(this.skipAllPauses.bind(this, false), timeout);
     }
     pauseOnExceptionStateChanged() {
-        const pauseOnCaughtEnabled = Common.Settings.Settings.instance().moduleSetting('pauseOnCaughtException').get();
+        const pauseOnCaughtEnabled = Common.Settings.Settings.instance().moduleSetting('pause-on-caught-exception').get();
         let state;
-        const pauseOnUncaughtEnabled = Common.Settings.Settings.instance().moduleSetting('pauseOnUncaughtException').get();
+        const pauseOnUncaughtEnabled = Common.Settings.Settings.instance().moduleSetting('pause-on-uncaught-exception').get();
         if (pauseOnCaughtEnabled && pauseOnUncaughtEnabled) {
             state = "all" /* Protocol.Debugger.SetPauseOnExceptionsRequestState.All */;
         }
@@ -304,13 +304,13 @@ export class DebuggerModel extends SDKModel {
     }
     asyncStackTracesStateChanged() {
         const maxAsyncStackChainDepth = 32;
-        const enabled = !Common.Settings.Settings.instance().moduleSetting('disableAsyncStackTraces').get() &&
+        const enabled = !Common.Settings.Settings.instance().moduleSetting('disable-async-stack-traces').get() &&
             this.#debuggerEnabledInternal;
         const maxDepth = enabled ? maxAsyncStackChainDepth : 0;
         return this.agent.invoke_setAsyncCallStackDepth({ maxDepth });
     }
     breakpointsActiveChanged() {
-        void this.agent.invoke_setBreakpointsActive({ active: Common.Settings.Settings.instance().moduleSetting('breakpointsActive').get() });
+        void this.agent.invoke_setBreakpointsActive({ active: Common.Settings.Settings.instance().moduleSetting('breakpoints-active').get() });
     }
     setComputeAutoStepRangesCallback(callback) {
         this.#computeAutoStepRangesCallback = callback;
@@ -728,13 +728,13 @@ export class DebuggerModel extends SDKModel {
             _debuggerIdToModel.delete(this.#debuggerId);
         }
         Common.Settings.Settings.instance()
-            .moduleSetting('pauseOnExceptionEnabled')
+            .moduleSetting('pause-on-exception-enabled')
             .removeChangeListener(this.pauseOnExceptionStateChanged, this);
         Common.Settings.Settings.instance()
-            .moduleSetting('pauseOnCaughtException')
+            .moduleSetting('pause-on-caught-exception')
             .removeChangeListener(this.pauseOnExceptionStateChanged, this);
         Common.Settings.Settings.instance()
-            .moduleSetting('disableAsyncStackTraces')
+            .moduleSetting('disable-async-stack-traces')
             .removeChangeListener(this.asyncStackTracesStateChanged, this);
     }
     async suspendModel() {

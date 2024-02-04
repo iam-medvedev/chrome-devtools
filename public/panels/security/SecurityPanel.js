@@ -724,7 +724,7 @@ export class SecurityPanelSidebarTree extends UI.TreeOutline.TreeOutlineInShadow
     mainViewReloadMessage;
     constructor(mainViewElement, showOriginInPanel) {
         super();
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('security.sidebar')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('security.sidebar')}`);
         this.appendChild(mainViewElement);
         this.registerCSSFiles([lockIconStyles, sidebarStyles]);
         this.showOriginInPanel = showOriginInPanel;
@@ -890,7 +890,7 @@ export class SecurityMainView extends UI.Widget.VBox {
     securityState;
     constructor(panel) {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('security.main-view')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('security.main-view')}`);
         this.setMinimumSize(200, 100);
         this.contentElement.classList.add('security-main-view');
         this.panel = panel;
@@ -1226,7 +1226,7 @@ export class SecurityOriginView extends UI.Widget.VBox {
     originLockIcon;
     constructor(panel, origin, originState) {
         super();
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('security.origin-view')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('security.origin-view')}`);
         this.panel = panel;
         this.setMinimumSize(200, 100);
         this.element.classList.add('security-origin-view');

@@ -64,6 +64,9 @@
     },
     {
       "path": "../../ui/legacy/components/inline_editor/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/visual_logging/bundle-tsconfig.json"
     }
   ]
 }

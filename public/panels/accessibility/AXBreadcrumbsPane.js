@@ -51,6 +51,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
         super(i18nString(UIStrings.accessibilityTree));
         this.element.classList.add('ax-subpane');
         this.element.tabIndex = -1;
+        this.element.setAttribute('jslog', `${VisualLogging.section('accessibility-tree')}`);
         this.axSidebarView = axSidebarView;
         this.preselectedBreadcrumb = null;
         this.inspectedNodeBreadcrumb = null;
@@ -58,7 +59,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
         this.rootElement = this.element.createChild('div', 'ax-breadcrumbs');
         this.hoveredBreadcrumb = null;
         const previewToggle = new Feedback.PreviewToggle.PreviewToggle();
-        previewToggle.setAttribute('jslog', `${VisualLogging.toggle().context('full-accessibility-tree')}`);
+        previewToggle.setAttribute('jslog', `${VisualLogging.toggle('full-accessibility-tree')}`);
         const name = i18nString(UIStrings.fullTreeExperimentName);
         const experiment = "fullAccessibilityTree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */;
         const onChangeCallback = checked => {

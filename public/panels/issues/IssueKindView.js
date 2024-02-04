@@ -26,7 +26,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/issues/IssueKindView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function getGroupIssuesByKindSetting() {
-    return Common.Settings.Settings.instance().createSetting('groupIssuesByKind', false);
+    return Common.Settings.Settings.instance().createSetting('group-issues-by-kind', false);
 }
 export function issueKindViewSortPriority(a, b) {
     if (a.getKind() === b.getKind()) {

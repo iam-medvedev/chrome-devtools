@@ -79,7 +79,7 @@ export class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelO
             valueTypeModes: Array.from(defaultValueTypeModes),
             endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */,
         };
-        this.#settings = Common.Settings.Settings.instance().createSetting('lmiInterpreterSettings', defaultSettings);
+        this.#settings = Common.Settings.Settings.instance().createSetting('lmi-interpreter-settings', defaultSettings);
     }
     static instance() {
         if (controllerInstance) {

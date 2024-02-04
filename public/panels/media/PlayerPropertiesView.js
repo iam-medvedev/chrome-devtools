@@ -405,7 +405,7 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
     textTracksTabs;
     constructor() {
         super();
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('properties')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('properties')}`);
         this.contentElement.classList.add('media-properties-frame');
         this.mediaElements = [];
         this.videoDecoderElements = [];

@@ -26,7 +26,7 @@ export class ARIAAttributesPane extends AccessibilitySubPane {
         super(i18nString(UIStrings.ariaAttributes));
         this.noPropertiesInfo = this.createInfo(i18nString(UIStrings.noAriaAttributes));
         this.treeOutline = this.createTreeOutline();
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('aria-attributes')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.section('aria-attributes')}`);
     }
     setNode(node) {
         super.setNode(node);

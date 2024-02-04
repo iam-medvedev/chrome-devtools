@@ -25,7 +25,7 @@ export class PlayerEventsTimeline extends TickingFlameChart {
     videoBufferingStateEvent;
     constructor() {
         super();
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('timeline')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('timeline')}`);
         this.normalizedTimestamp = NO_NORMALIZED_TIMESTAMP;
         this.addGroup(i18nString(UIStrings.playbackStatus), 2);
         this.addGroup(i18nString(UIStrings.bufferingStatus), 2); // video on top, audio on bottom

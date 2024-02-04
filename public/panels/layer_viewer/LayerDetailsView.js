@@ -166,7 +166,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     selection;
     constructor(layerViewHost) {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('layers-details')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('layers-details')}`);
         this.layerViewHost = layerViewHost;
         this.layerViewHost.registerView(this);
         this.emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.selectALayerToSeeItsDetails));
@@ -223,7 +223,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
             PH5: scrollRect.rect.y,
         });
         element.addEventListener('click', this.onScrollRectClicked.bind(this, index), false);
-        element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('layers.select-object')}`);
+        element.setAttribute('jslog', `${VisualLogging.action('layers.select-object').track({ click: true })}`);
     }
     formatStickyAncestorLayer(title, layer) {
         if (!layer) {
@@ -310,7 +310,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
                 this.invokeProfilerLink();
             }
         });
-        this.paintProfilerLink.setAttribute('jslog', `${VisualLogging.action().track({ click: true, keydown: 'Enter' }).context('layers.paint-profiler')}`);
+        this.paintProfilerLink.setAttribute('jslog', `${VisualLogging.action('layers.paint-profiler').track({ click: true, keydown: 'Enter' })}`);
     }
     createRow(title) {
         const tr = this.tbodyElement.createChild('tr');

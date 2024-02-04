@@ -42,7 +42,7 @@ export function isTraceEventPipelineReporter(event) {
 export function isSyntheticInteractionEvent(event) {
     return Boolean('interactionId' in event && event.args?.data && 'beginEvent' in event.args.data && 'endEvent' in event.args.data);
 }
-export function isRendererEvent(event) {
+export function isSyntheticTraceEntry(event) {
     return isTraceEventRendererEvent(event) || isProfileCall(event);
 }
 export function isTraceEventDrawFrame(event) {

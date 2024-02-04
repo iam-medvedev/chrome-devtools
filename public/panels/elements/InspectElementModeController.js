@@ -45,7 +45,7 @@ export class InspectElementModeController {
         SDK.OverlayModel.OverlayModel.setInspectNodeHandler(this.inspectNode.bind(this));
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.OverlayModel.OverlayModel, this, { scoped: true });
         this.showDetailedInspectTooltipSetting =
-            Common.Settings.Settings.instance().moduleSetting('showDetailedInspectTooltip');
+            Common.Settings.Settings.instance().moduleSetting('show-detailed-inspect-tooltip');
         this.showDetailedInspectTooltipSetting.addChangeListener(this.showDetailedInspectTooltipChanged.bind(this));
         document.addEventListener('keydown', event => {
             if (event.keyCode !== UI.KeyboardShortcut.Keys.Esc.code) {
@@ -83,7 +83,7 @@ export class InspectElementModeController {
             mode = "none" /* Protocol.Overlay.InspectMode.None */;
         }
         else {
-            mode = Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get() ?
+            mode = Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get() ?
                 "searchForUAShadowDOM" /* Protocol.Overlay.InspectMode.SearchForUAShadowDOM */ :
                 "searchForNode" /* Protocol.Overlay.InspectMode.SearchForNode */;
         }

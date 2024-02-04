@@ -2,10 +2,9 @@ import * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
-import { type ContentDataOrError } from './ContentData.js';
 import { Attributes, type Cookie } from './Cookie.js';
 import { ServerTiming } from './ServerTiming.js';
-export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements TextUtils.ContentProvider.ContentProvider {
+export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements TextUtils.ContentProvider.StreamingContentProvider {
     #private;
     statusCode: number;
     statusText: string;
@@ -179,8 +178,9 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
      */
     private parseMultipartFormDataParameters;
     private computeHeaderValue;
-    contentData(): Promise<ContentDataOrError>;
-    setContentDataProvider(dataProvider: () => Promise<ContentDataOrError>): void;
+    contentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
+    setContentDataProvider(dataProvider: () => Promise<TextUtils.ContentData.ContentDataOrError>): void;
+    requestStreamingContent(): Promise<TextUtils.StreamingContentData.StreamingContentDataOrError>;
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
     requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;

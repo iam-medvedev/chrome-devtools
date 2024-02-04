@@ -51,7 +51,7 @@ export class OverlayModel extends SDKModel {
         this.#debuggerModel = target.model(DebuggerModel);
         if (this.#debuggerModel) {
             Common.Settings.Settings.instance()
-                .moduleSetting('disablePausedStateOverlay')
+                .moduleSetting('disable-paused-state-overlay')
                 .addChangeListener(this.updatePausedInDebuggerMessage, this);
             this.#debuggerModel.addEventListener(DebuggerModelEvents.DebuggerPaused, this.updatePausedInDebuggerMessage, this);
             this.#debuggerModel.addEventListener(DebuggerModelEvents.DebuggerResumed, this.updatePausedInDebuggerMessage, this);
@@ -62,15 +62,15 @@ export class OverlayModel extends SDKModel {
         this.#hideHighlightTimeout = null;
         this.#defaultHighlighter = new DefaultHighlighter(this);
         this.#highlighter = this.#defaultHighlighter;
-        this.#showPaintRectsSetting = Common.Settings.Settings.instance().moduleSetting('showPaintRects');
+        this.#showPaintRectsSetting = Common.Settings.Settings.instance().moduleSetting('show-paint-rects');
         this.#showLayoutShiftRegionsSetting =
-            Common.Settings.Settings.instance().moduleSetting('showLayoutShiftRegions');
-        this.#showAdHighlightsSetting = Common.Settings.Settings.instance().moduleSetting('showAdHighlights');
-        this.#showDebugBordersSetting = Common.Settings.Settings.instance().moduleSetting('showDebugBorders');
-        this.#showFPSCounterSetting = Common.Settings.Settings.instance().moduleSetting('showFPSCounter');
+            Common.Settings.Settings.instance().moduleSetting('show-layout-shift-regions');
+        this.#showAdHighlightsSetting = Common.Settings.Settings.instance().moduleSetting('show-ad-highlights');
+        this.#showDebugBordersSetting = Common.Settings.Settings.instance().moduleSetting('show-debug-borders');
+        this.#showFPSCounterSetting = Common.Settings.Settings.instance().moduleSetting('show-fps-counter');
         this.#showScrollBottleneckRectsSetting =
-            Common.Settings.Settings.instance().moduleSetting('showScrollBottleneckRects');
-        this.#showWebVitalsSetting = Common.Settings.Settings.instance().moduleSetting('showWebVitals');
+            Common.Settings.Settings.instance().moduleSetting('show-scroll-bottleneck-rects');
+        this.#showWebVitalsSetting = Common.Settings.Settings.instance().moduleSetting('show-web-vitals');
         this.#registeredListeners = [];
         this.#showViewportSizeOnResize = true;
         if (!target.suspended()) {
@@ -200,7 +200,7 @@ export class OverlayModel extends SDKModel {
             return;
         }
         const message = this.#debuggerModel && this.#debuggerModel.isPaused() &&
-            !Common.Settings.Settings.instance().moduleSetting('disablePausedStateOverlay').get() ?
+            !Common.Settings.Settings.instance().moduleSetting('disable-paused-state-overlay').get() ?
             i18nString(UIStrings.pausedInDebugger) :
             undefined;
         void this.overlayAgent.invoke_setPausedInDebuggerMessage({ message });
@@ -417,7 +417,7 @@ export class OverlayModel extends SDKModel {
         this.setShowViewportSizeOnResize(!show);
     }
     buildHighlightConfig(mode = 'all', showDetailedToolip = false) {
-        const showRulers = Common.Settings.Settings.instance().moduleSetting('showMetricsRulers').get();
+        const showRulers = Common.Settings.Settings.instance().moduleSetting('show-metrics-rulers').get();
         const highlightConfig = {
             showInfo: mode === 'all' || mode === 'container-outline',
             showRulers: showRulers,

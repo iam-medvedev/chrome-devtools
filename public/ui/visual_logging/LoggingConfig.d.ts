@@ -8,14 +8,22 @@ export declare function needsLogging(element: Element): boolean;
 export declare function getLoggingConfig(element: Element): LoggingConfig;
 declare enum VisualElements {
     TreeItem = 1,
+    Close = 2,
+    Counter = 3,
+    Drawer = 4,
+    Resizer = 5,
     Toggle = 6,
     Tree = 7,
     TextField = 8,
+    AnimationClip = 9,
     Section = 10,
-    StylePropertiesSectionSeparator = 11,
+    SectionHeader = 11,
+    Timeline = 12,
     StylesSelector = 13,
     TreeItemExpand = 14,
     ToggleSubpane = 15,
+    ControlPoint = 16,
+    Toolbar = 17,
     DropDown = 20,
     MetricsBox = 23,
     MetricsBoxPart = 24,
@@ -96,5 +104,5 @@ export interface ConfigStringBuilder {
      */
     toString: () => string;
 }
-export declare function makeConfigStringBuilder(veName: VisualElementName): ConfigStringBuilder;
+export declare function makeConfigStringBuilder(veName: VisualElementName, context?: string): ConfigStringBuilder;
 export {};

@@ -60,6 +60,8 @@ export class InterestGroupStorageModel extends SDK.SDKModel.SDKModel {
     }
     interestGroupAuctionEventOccurred(_event) {
     }
+    interestGroupAuctionNetworkRequestCreated(_event) {
+    }
     cacheStorageListUpdated(_event) {
     }
     cacheStorageContentUpdated(_event) {

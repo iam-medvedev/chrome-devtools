@@ -33,7 +33,7 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
         }
         this.#webBundleInfo = webBundleInfo;
         this.#webBundleName = request.parsedURL.lastPathComponent;
-        this.setAttribute('jslog', `${VisualLogging.pane().context('webbundle')}`);
+        this.setAttribute('jslog', `${VisualLogging.pane('webbundle')}`);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [webBundleInfoViewStyles];
@@ -69,7 +69,9 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
         </${IconButton.Icon.Icon.litTagName}>
         <span>${this.#webBundleName}</span>
         <x-link href="https://web.dev/web-bundles/#explaining-web-bundles"
-          jslog=${VisualLogging.link().track({ click: true }).context('webbundle-explainer')}>
+          jslog=${VisualLogging.link('webbundle-explainer').track({
+            click: true,
+        })}>
           <${IconButton.Icon.Icon.litTagName} class="icon"
             .data=${{ color: 'var(--icon-default)', iconName: 'help', width: '16px' }}>
           </${IconButton.Icon.Icon.litTagName}>

@@ -362,7 +362,7 @@ Common.Settings.registerSettingExtension({
     category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.hideChromeFrameInLayersView),
-    settingName: 'frameViewerHideChromeWindow',
+    settingName: 'frame-viewer-hide-chrome-window',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
 });

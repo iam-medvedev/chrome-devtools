@@ -116,7 +116,7 @@ export class StartView extends UI.Widget.Widget {
     populateFormControls(fragment, mode) {
         // Populate the device type
         const deviceTypeFormElements = fragment.$('device-type-form-elements');
-        this.populateRuntimeSettingAsRadio('lighthouse.device_type', i18nString(UIStrings.device), deviceTypeFormElements);
+        this.populateRuntimeSettingAsRadio('lighthouse.device-type', i18nString(UIStrings.device), deviceTypeFormElements);
         // Populate the categories
         const categoryFormElements = fragment.$('categories-form-elements');
         const pluginFormElements = fragment.$('plugins-form-elements');
@@ -140,7 +140,7 @@ export class StartView extends UI.Widget.Widget {
         UI.ARIAUtils.setLabel(pluginFormElements, i18nString(UIStrings.plugins));
     }
     render() {
-        this.populateRuntimeSettingAsToolbarCheckbox('lighthouse.clear_storage', this.settingsToolbarInternal);
+        this.populateRuntimeSettingAsToolbarCheckbox('lighthouse.clear-storage', this.settingsToolbarInternal);
         this.populateRuntimeSettingAsToolbarDropdown('lighthouse.throttling', this.settingsToolbarInternal);
         const { mode } = this.controller.getFlags();
         this.populateStartButton(mode);

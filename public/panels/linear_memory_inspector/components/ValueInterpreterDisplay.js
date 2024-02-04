@@ -122,7 +122,7 @@ export class ValueInterpreterDisplay extends HTMLElement {
         <span class="selectable-text">${unsignedValue}</span>
           ${html `
               <button class="jump-to-button" data-jump="true" title=${buttonTitle} ?disabled=${jumpDisabled}
-                jslog=${VisualLogging.action().track({ click: true }).context('linear-memory-inspector.jump-to-address')}
+                jslog=${VisualLogging.action('linear-memory-inspector.jump-to-address').track({ click: true })}
                 @click=${this.#onJumpToAddressClicked.bind(this, Number(address))}>
                 <${IconButton.Icon.Icon.litTagName} .data=${{ iconName: 'open-externally', color: iconColor, width: '16px' }}>
                 </${IconButton.Icon.Icon.litTagName}>
@@ -145,7 +145,7 @@ export class ValueInterpreterDisplay extends HTMLElement {
           data-mode-settings="true"
           class="chrome-select"
           style="border: none; background-color: transparent; cursor: pointer; color: var(--sys-color-token-subtle);"
-          jslog=${VisualLogging.toggle().track({ change: true }).context('linear-memory-inspector.value-type-mode')}
+          jslog=${VisualLogging.toggle('linear-memory-inspector.value-type-mode').track({ change: true })}
           @change=${this.#onValueTypeModeChange.bind(this, type)}>
             ${VALUE_TYPE_MODE_LIST.filter(x => isValidMode(type, x)).map(mode => {
             return html `

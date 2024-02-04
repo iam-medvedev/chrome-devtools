@@ -31,8 +31,9 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import { ToolbarButton } from './Toolbar.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { alert } from './ARIAUtils.js';
+import { ToolbarButton } from './Toolbar.js';
 const UIStrings = {
     /**
      *@description Text to close something
@@ -79,10 +80,11 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
         super();
         this.canDockInternal = canDock;
         this.closeButton = new ToolbarButton(i18nString(UIStrings.close), 'cross');
+        this.closeButton.element.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         this.closeButton.element.classList.add('close-devtools');
         this.closeButton.addEventListener("Click" /* ToolbarButton.Events.Click */, Host.InspectorFrontendHost.InspectorFrontendHostInstance.closeWindow.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance));
         this.currentDockStateSetting = Common.Settings.Settings.instance().moduleSetting('currentDockState');
-        this.lastDockStateSetting = Common.Settings.Settings.instance().createSetting('lastDockState', "bottom" /* DockState.BOTTOM */);
+        this.lastDockStateSetting = Common.Settings.Settings.instance().createSetting('last-dock-state', "bottom" /* DockState.BOTTOM */);
         if (!canDock) {
             this.dockSideInternal = "undocked" /* DockState.UNDOCKED */;
             this.closeButton.setVisible(false);

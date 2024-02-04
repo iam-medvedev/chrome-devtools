@@ -26,7 +26,7 @@ const UIStrings = {
      *@description Warning shown to users when pasting text into the DevTools console.
      *@example {allow pasting} PH1
      */
-    selfXssWarning: 'Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘{PH1}’ below to allow pasting.',
+    selfXssWarning: 'Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘{PH1}’ below and hit Enter to allow pasting.',
     /**
      *@description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools console.
      */
@@ -56,10 +56,29 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     #argumentHintsState;
     #editorHistory;
     #selfXssWarningShown = false;
+    #javaScriptCompletionCompartment = new CodeMirror.Compartment();
+    #getJavaScriptCompletionExtensions() {
+        if (this.#selfXssWarningShown) {
+            // No (JavaScript) completions at all while showing the self-XSS warning.
+            return [];
+        }
+        if (Root.Runtime.Runtime.queryParam('noJavaScriptCompletion') !== 'true') {
+            return [
+                CodeMirror.javascript.javascript(),
+                TextEditor.JavaScript.completion(),
+            ];
+        }
+        return [CodeMirror.javascript.javascriptLanguage];
+    }
+    #updateJavaScriptCompletionCompartment() {
+        const extensions = this.#getJavaScriptCompletionExtensions();
+        const effects = this.#javaScriptCompletionCompartment.reconfigure(extensions);
+        this.editor.dispatch({ effects });
+    }
     constructor() {
         super();
         this.addCompletionsFromHistory = true;
-        this.historyInternal = new TextEditor.AutocompleteHistory.AutocompleteHistory(Common.Settings.Settings.instance().createLocalSetting('consoleHistory', []));
+        this.historyInternal = new TextEditor.AutocompleteHistory.AutocompleteHistory(Common.Settings.Settings.instance().createLocalSetting('console-history', []));
         this.initialText = '';
         this.eagerPreviewElement = document.createElement('div');
         this.eagerPreviewElement.classList.add('console-eager-preview');
@@ -78,7 +97,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.promptIcon.classList.add('console-prompt-icon');
         this.element.appendChild(this.promptIcon);
         this.iconThrottler = new Common.Throttler.Throttler(0);
-        this.eagerEvalSetting = Common.Settings.Settings.instance().moduleSetting('consoleEagerEval');
+        this.eagerEvalSetting = Common.Settings.Settings.instance().moduleSetting('console-eager-eval');
         this.eagerEvalSetting.addChangeListener(this.eagerSettingChanged.bind(this));
         this.eagerPreviewElement.classList.toggle('hidden', !this.eagerEvalSetting.get());
         this.element.tabIndex = 0;
@@ -86,7 +105,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.highlightingNode = false;
         const argumentHints = TextEditor.JavaScript.argumentHints();
         this.#argumentHintsState = argumentHints[0];
-        const autocompleteOnEnter = TextEditor.Config.DynamicSetting.bool('consoleAutocompleteOnEnter', [], TextEditor.Config.conservativeCompletion);
+        const autocompleteOnEnter = TextEditor.Config.DynamicSetting.bool('console-autocomplete-on-enter', [], TextEditor.Config.conservativeCompletion);
         const extensions = [
             CodeMirror.keymap.of(this.editorKeymap()),
             CodeMirror.EditorView.updateListener.of(update => this.editorUpdate(update)),
@@ -101,13 +120,8 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             CodeMirror.EditorView.contentAttributes.of({ 'aria-label': i18nString(UIStrings.consolePrompt) }),
             CodeMirror.EditorView.lineWrapping,
             CodeMirror.autocompletion({ aboveCursor: true }),
+            this.#javaScriptCompletionCompartment.of(this.#getJavaScriptCompletionExtensions()),
         ];
-        if (Root.Runtime.Runtime.queryParam('noJavaScriptCompletion') !== 'true') {
-            extensions.push(CodeMirror.javascript.javascript(), TextEditor.JavaScript.completion());
-        }
-        else {
-            extensions.push(CodeMirror.javascript.javascriptLanguage);
-        }
         const doc = this.initialText;
         const editorState = CodeMirror.EditorState.create({ doc, extensions });
         this.editor = new TextEditor.TextEditor.TextEditor(editorState);
@@ -125,7 +139,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.editorSetForTest();
         // Record the console tool load time after the console prompt constructor is complete.
         Host.userMetrics.panelLoaded('console', 'DevTools.Launch.Console');
-        this.element.setAttribute('jslog', `${VisualLogging.action().track({ keydown: 'Enter' }).context('console-prompt')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.action('console-prompt').track({ keydown: 'Enter' })}`);
     }
     eagerSettingChanged() {
         const enabled = this.eagerEvalSetting.get();
@@ -255,6 +269,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         Common.Console.Console.instance().warn(i18nString(UIStrings.selfXssWarning, { PH1: i18nString(UIStrings.allowPasting) }));
         this.#selfXssWarningShown = true;
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssWarningConsoleMessageShown);
+        this.#updateJavaScriptCompletionCompartment();
     }
     async handleEnter(forceEvaluate) {
         if (this.#selfXssWarningShown && this.text() === i18nString(UIStrings.allowPasting)) {
@@ -264,10 +279,11 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
                 scrollIntoView: true,
             });
             Common.Settings.Settings.instance()
-                .createSetting('disableSelfXssWarning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */)
+                .createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */)
                 .set(true);
             this.#selfXssWarningShown = false;
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssAllowPastingInConsole);
+            this.#updateJavaScriptCompletionCompartment();
             return;
         }
         if (await this.enterWillEvaluate(forceEvaluate)) {

@@ -98,8 +98,8 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     muteActivateItem;
     lastDebuggerModel = null;
     constructor() {
-        super(i18nString(UIStrings.callStack), true);
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('debugger-callstack')}`);
+        super(i18nString(UIStrings.callStack), true, 'sources.callstack');
+        this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.callstack')}`);
         ({ element: this.ignoreListMessageElement, checkbox: this.ignoreListCheckboxElement } =
             this.createIgnoreListMessageElementAndCheckbox());
         this.contentElement.appendChild(this.ignoreListMessageElement);

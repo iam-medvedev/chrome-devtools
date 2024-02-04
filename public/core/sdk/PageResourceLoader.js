@@ -240,7 +240,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     async loadFromTarget(target, frameId, url) {
         const networkManager = target.model(NetworkManager);
         const ioModel = target.model(IOModel);
-        const disableCache = Common.Settings.Settings.instance().moduleSetting('cacheDisabled').get();
+        const disableCache = Common.Settings.Settings.instance().moduleSetting('cache-disabled').get();
         const resource = await networkManager.loadNetworkResource(frameId, url, { disableCache, includeCredentials: true });
         try {
             const content = resource.stream ? await ioModel.readToString(resource.stream) : '';
@@ -265,6 +265,6 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     }
 }
 export function getLoadThroughTargetSetting() {
-    return Common.Settings.Settings.instance().createSetting('loadThroughTarget', true);
+    return Common.Settings.Settings.instance().createSetting('load-through-target', true);
 }
 //# sourceMappingURL=PageResourceLoader.js.map

@@ -161,7 +161,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             LitHtml.render(LitHtml.html `
-        <${ReportView.ReportView.Report.litTagName} .data=${{ reportTitle: i18nString(UIStrings.backForwardCacheTitle) }} jslog=${VisualLogging.pane().context('back-forward-cache')}>
+        <${ReportView.ReportView.Report.litTagName} .data=${{ reportTitle: i18nString(UIStrings.backForwardCacheTitle) }} jslog=${VisualLogging.pane('back-forward-cache')}>
 
           ${this.#renderMainFrameInformation()}
         </${ReportView.ReportView.Report.litTagName}>
@@ -252,7 +252,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
           .spinner=${isTestRunning}
           .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}
           @click=${this.#navigateAwayAndBack}
-          jslog=${VisualLogging.action().track({ click: true }).context('back-forward-cache.run-test')}>
+          jslog=${VisualLogging.action('back-forward-cache.run-test').track({ click: true })}>
           ${isTestRunning ? LitHtml.html `
             ${i18nString(UIStrings.runningTest)}` : `
             ${i18nString(UIStrings.runTest)}
@@ -264,7 +264,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
       ${this.#maybeRenderExplanations(frame.backForwardCacheDetails.explanations, frame.backForwardCacheDetails.explanationsTree)}
       <${ReportView.ReportView.ReportSection.litTagName}>
         <x-link href="https://web.dev/bfcache/" class="link"
-        jslog=${VisualLogging.action().track({ click: true }).context('learn-more.eligibility')}>
+        jslog=${VisualLogging.action('learn-more.eligibility').track({ click: true })}>
           ${i18nString(UIStrings.learnMore)}
         </x-link>
       </${ReportView.ReportView.ReportSection.litTagName}>
@@ -315,7 +315,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
         // clang-format off
         return LitHtml.html `
       <div class="report-line"
-      jslog=${VisualLogging.section().context('frames')}>
+      jslog=${VisualLogging.section('frames')}>
         <div class="report-key">
           ${i18nString(UIStrings.framesTitle)}
         </div>
@@ -506,7 +506,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
     jslog=${VisualLogging.treeItem()}>${url}</div>`));
         return LitHtml.html `
       <div class="details-list"
-      jslog=${VisualLogging.tree().context('frames-per-issue')}>
+      jslog=${VisualLogging.tree('frames-per-issue')}>
         <${ExpandableList.ExpandableList.ExpandableList.litTagName} .data=${{
             rows,
             title: i18nString(UIStrings.framesPerIssue, { n: frames.length }),
@@ -520,7 +520,9 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
             explanation.reason === "UnloadHandlerExistsInSubFrame" /* Protocol.Page.BackForwardCacheNotRestoredReason.UnloadHandlerExistsInSubFrame */) {
             return LitHtml.html `
         <x-link href="https://web.dev/bfcache/#never-use-the-unload-event" class="link"
-        jslog=${VisualLogging.action().track({ click: true }).context('learn-more.never-use-unload')}>
+        jslog=${VisualLogging.action('learn-more.never-use-unload').track({
+                click: true,
+            })}>
           ${i18nString(UIStrings.neverUseUnload)}
         </x-link>`;
         }

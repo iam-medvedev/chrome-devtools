@@ -33,8 +33,8 @@ UI.ViewManager.registerViewExtension({
     },
     id: 'devices',
     settings: [
-        'standardEmulatedDeviceList',
-        'customEmulatedDeviceList',
+        'standard-emulated-device-list',
+        'custom-emulated-device-list',
     ],
 });
 //# sourceMappingURL=emulation-meta.js.map

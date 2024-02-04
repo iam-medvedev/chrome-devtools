@@ -106,6 +106,12 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     canJumpToEntry(_entryIndex: number): boolean;
     entryIndexForSelection(selection: TimelineSelection | null): number;
     getIndexForEvent(targetEvent: TraceEngine.Types.TraceEvents.TraceEventData): number | null;
+    /**
+     * Build the |flowStartTimes|, |flowStartLevels|, |flowEndTimes| and
+     * |flowEndLevels| data for the initiator arrows of given entry.
+     * @param entryIndex
+     * @returns if we should re-render the flame chart (canvas)
+     */
     buildFlowForInitiator(entryIndex: number): boolean;
     eventByIndex(entryIndex: number): TraceEngine.Legacy.CompatibleTraceEvent | null;
     setEventColorMapping(colorForEvent: (arg0: TraceEngine.Legacy.Event) => string): void;

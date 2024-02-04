@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/legacy/legacy.js';
-import * as VisualLogging from '../../../../front_end/ui/visual_logging/visual_logging.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Extensions from '../extensions/extensions.js';
 import extensionViewStyles from './extensionView.css.js';
 const UIStrings = {
@@ -34,7 +34,7 @@ export class ExtensionView extends HTMLElement {
     #descriptor;
     constructor() {
         super();
-        this.setAttribute('jslog', `${VisualLogging.section().context('extension-view')}`);
+        this.setAttribute('jslog', `${VisualLogging.section('extension-view')}`);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [extensionViewStyles];
@@ -73,10 +73,10 @@ export class ExtensionView extends HTMLElement {
             </div>
             <${Buttons.Button.Button.litTagName}
               title=${i18nString(UIStrings.closeView)}
-              .jslogContext=${'close-view'}
+              jslog=${VisualLogging.close().track({ click: true })}
               .data=${{
             variant: "round" /* Buttons.Button.Variant.ROUND */,
-            size: "TINY" /* Buttons.Button.Size.TINY */,
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
             iconName: 'cross',
         }}
               @click=${this.#closeView}

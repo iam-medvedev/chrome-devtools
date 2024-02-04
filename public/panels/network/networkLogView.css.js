@@ -244,6 +244,7 @@ styles.replaceSync(
 .network-log-grid.data-grid.small .icon {
   width: 16px;
   height: 16px;
+  vertical-align: sub;
 }
 
 .image-network-icon-preview {

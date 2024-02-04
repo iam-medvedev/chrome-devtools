@@ -145,6 +145,8 @@ export class StorageBucketsModel extends SDKModel {
     }
     interestGroupAuctionEventOccurred(_event) {
     }
+    interestGroupAuctionNetworkRequestCreated(_event) {
+    }
     indexedDBListUpdated(_event) {
     }
     indexedDBContentUpdated(_event) {

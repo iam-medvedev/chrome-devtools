@@ -31,21 +31,36 @@ export class InsightProvider {
                 console.timeEnd('request');
                 try {
                     const results = JSON.parse(result.response);
-                    const text = results
-                        .map((result) => {
+                    const text = [];
+                    let inCodeChunk = false;
+                    const CODE_CHUNK_SEPARATOR = '\n`````\n';
+                    for (const result of results) {
                         if ('textChunk' in result) {
-                            return result.textChunk.text;
+                            if (inCodeChunk) {
+                                text.push(CODE_CHUNK_SEPARATOR);
+                                inCodeChunk = false;
+                            }
+                            text.push(result.textChunk.text);
                         }
-                        if ('codeChunk' in result) {
-                            return '\n`````\n' + result.codeChunk.code + '\n`````\n';
+                        else if ('codeChunk' in result) {
+                            if (!inCodeChunk) {
+                                text.push(CODE_CHUNK_SEPARATOR);
+                                inCodeChunk = true;
+                            }
+                            text.push(result.codeChunk.code);
                         }
-                        if ('error' in result) {
+                        else if ('error' in result) {
                             throw new Error(`${result['error']}: ${result['detail']}`);
                         }
-                        throw new Error('Unknown chunk result');
-                    })
-                        .join('');
-                    resolve(text);
+                        else {
+                            throw new Error('Unknown chunk result');
+                        }
+                    }
+                    if (inCodeChunk) {
+                        text.push(CODE_CHUNK_SEPARATOR);
+                        inCodeChunk = false;
+                    }
+                    resolve(text.join(''));
                 }
                 catch (err) {
                     reject(err);

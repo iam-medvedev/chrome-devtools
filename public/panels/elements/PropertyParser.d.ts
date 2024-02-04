@@ -30,7 +30,12 @@ export declare class RenderingContext {
     readonly ast: SyntaxTree;
     readonly matchedResult: BottomUpTreeMatching;
     readonly cssControls?: CSSControlMap | undefined;
-    constructor(ast: SyntaxTree, matchedResult: BottomUpTreeMatching, cssControls?: CSSControlMap | undefined);
+    readonly options: {
+        readonly: boolean;
+    };
+    constructor(ast: SyntaxTree, matchedResult: BottomUpTreeMatching, cssControls?: CSSControlMap | undefined, options?: {
+        readonly: boolean;
+    });
     addControl(cssType: string, control: HTMLElement): void;
 }
 export interface Match {
@@ -80,7 +85,9 @@ export declare const CSSControlMap: {
 export type CSSControlMap = Map<string, HTMLElement[]>;
 export declare class Renderer extends TreeWalker {
     #private;
-    constructor(ast: SyntaxTree, matchedResult: BottomUpTreeMatching, cssControls: CSSControlMap);
+    constructor(ast: SyntaxTree, matchedResult: BottomUpTreeMatching, cssControls: CSSControlMap, options: {
+        readonly: boolean;
+    });
     static render(nodeOrNodes: CodeMirror.SyntaxNode | CodeMirror.SyntaxNode[], context: RenderingContext): {
         nodes: Node[];
         cssControls: CSSControlMap;
@@ -114,10 +121,11 @@ export declare abstract class ColorMatch implements Match {
 export declare class ColorMatcher extends MatcherBase<typeof ColorMatch> {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
+type LegacyRegexHandler = (text: string, readonly: boolean) => Node | null;
 export declare class LegacyRegexMatcher implements Matcher {
     readonly regexp: RegExp;
-    readonly processor: (text: string) => Node | null;
-    constructor(regexp: RegExp, processor: (text: string) => Node | null);
+    readonly processor: LegacyRegexHandler;
+    constructor(regexp: RegExp, processor: LegacyRegexHandler);
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export declare class TextMatch implements Match {

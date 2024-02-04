@@ -4,7 +4,7 @@ export interface UserTimingsData {
      * Events triggered with the performance.measure() API.
      * https://developer.mozilla.org/en-US/docs/Web/API/Performance/measure
      */
-    performanceMeasures: readonly Types.TraceEvents.SyntheticNestableAsyncEvent[];
+    performanceMeasures: readonly Types.TraceEvents.SyntheticUserTimingPair[];
     /**
      * Events triggered with the performance.mark() API.
      * https://developer.mozilla.org/en-US/docs/Web/API/Performance/mark
@@ -15,7 +15,7 @@ export interface UserTimingsData {
      * console.timeLog() API.
      * https://developer.mozilla.org/en-US/docs/Web/API/console/time
      */
-    consoleTimings: readonly Types.TraceEvents.SyntheticNestableAsyncEvent[];
+    consoleTimings: readonly Types.TraceEvents.SyntheticConsoleTimingPair[];
     /**
      * Events triggered with the console.timeStamp() API
      * https://developer.mozilla.org/en-US/docs/Web/API/console/timeStamp

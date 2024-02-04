@@ -122,10 +122,11 @@ export class CoverageView extends UI.Widget.VBox {
     statusMessageElement;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('coverage')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('coverage')}`);
         this.model = null;
         this.decorationManager = null;
         const toolbarContainer = this.contentElement.createChild('div', 'coverage-toolbar-container');
+        toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         const toolbar = new UI.Toolbar.Toolbar('coverage-toolbar', toolbarContainer);
         toolbar.makeWrappable(true);
         this.coverageTypeComboBox = new UI.Toolbar.ToolbarComboBox(this.onCoverageTypeComboBoxSelectionChanged.bind(this), i18nString(UIStrings.chooseCoverageGranularityPer), undefined, 'coverage-type');
@@ -142,7 +143,8 @@ export class CoverageView extends UI.Widget.VBox {
         for (const type of coverageTypes) {
             this.coverageTypeComboBox.addOption(this.coverageTypeComboBox.createOption(type.label, `${type.value}`));
         }
-        this.coverageTypeComboBoxSetting = Common.Settings.Settings.instance().createSetting('coverageViewCoverageType', 0);
+        this.coverageTypeComboBoxSetting =
+            Common.Settings.Settings.instance().createSetting('coverage-view-coverage-type', 0);
         this.coverageTypeComboBox.setSelectedIndex(this.coverageTypeComboBoxSetting.get());
         this.coverageTypeComboBox.setEnabled(true);
         toolbar.appendToolbarItem(this.coverageTypeComboBox);
@@ -195,7 +197,7 @@ export class CoverageView extends UI.Widget.VBox {
         this.filterByTypeComboBox.setEnabled(false);
         toolbar.appendToolbarItem(this.filterByTypeComboBox);
         toolbar.appendSeparator();
-        this.showContentScriptsSetting = Common.Settings.Settings.instance().createSetting('showContentScripts', false);
+        this.showContentScriptsSetting = Common.Settings.Settings.instance().createSetting('show-content-scripts', false);
         this.showContentScriptsSetting.addChangeListener(this.onFilterChanged, this);
         this.contentScriptsCheckbox = new UI.Toolbar.ToolbarSettingCheckbox(this.showContentScriptsSetting, i18nString(UIStrings.includeExtensionContentScripts), i18nString(UIStrings.contentScripts));
         this.contentScriptsCheckbox.setEnabled(false);
