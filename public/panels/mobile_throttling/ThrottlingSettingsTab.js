@@ -81,7 +81,7 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox {
     editor;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('throttling-conditions')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('throttling-conditions')}`);
         const header = this.contentElement.createChild('div', 'header');
         header.textContent = i18nString(UIStrings.networkThrottlingProfiles);
         UI.ARIAUtils.markAsHeading(header, 1);
@@ -93,7 +93,7 @@ export class ThrottlingSettingsTab extends UI.Widget.VBox {
         this.list = new UI.ListWidget.ListWidget(this);
         this.list.element.classList.add('conditions-list');
         this.list.show(this.contentElement);
-        this.customSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
+        this.customSetting = Common.Settings.Settings.instance().moduleSetting('custom-network-conditions');
         this.customSetting.addChangeListener(this.conditionsUpdated, this);
         this.setDefaultFocusedElement(addButton);
     }

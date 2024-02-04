@@ -199,7 +199,7 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
             // TODO(crbug.com/1108503): Add some mechanism to be able to add telemetry to this element.
             const linkifier = new Components.Linkifier.Linkifier(maxLengthForDisplayedURLs);
             const sourceAnchor = linkifier.linkifyScriptLocation(target || null, sourceLocation.scriptId || null, sourceLocation.url, sourceLocation.lineNumber, { columnNumber: sourceLocation.columnNumber, inlineFrameIndex: 0 });
-            sourceAnchor.setAttribute('jslog', `${VisualLogging.link().track({ click: true }).context('source-location')}`);
+            sourceAnchor.setAttribute('jslog', `${VisualLogging.link('source-location').track({ click: true })}`);
             sourceCodeLocation.appendChild(sourceAnchor);
         }
         element.appendChild(sourceCodeLocation);

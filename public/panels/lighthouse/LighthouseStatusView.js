@@ -260,7 +260,7 @@ export class StatusView {
         if (phase.message()) {
             return phase.message();
         }
-        const deviceTypeSetting = RuntimeSettings.find(item => item.setting.name === 'lighthouse.device_type');
+        const deviceTypeSetting = RuntimeSettings.find(item => item.setting.name === 'lighthouse.device-type');
         const throttleSetting = RuntimeSettings.find(item => item.setting.name === 'lighthouse.throttling');
         const deviceType = deviceTypeSetting ? deviceTypeSetting.setting.get() : '';
         const throttling = throttleSetting ? throttleSetting.setting.get() : '';

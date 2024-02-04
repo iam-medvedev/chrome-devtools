@@ -63,10 +63,12 @@ export class RenderingContext {
     ast;
     matchedResult;
     cssControls;
-    constructor(ast, matchedResult, cssControls) {
+    options;
+    constructor(ast, matchedResult, cssControls, options = { readonly: false }) {
         this.ast = ast;
         this.matchedResult = matchedResult;
         this.cssControls = cssControls;
+        this.options = options;
     }
     addControl(cssType, control) {
         if (this.cssControls) {
@@ -278,17 +280,17 @@ export class Renderer extends TreeWalker {
     #matchedResult;
     #output = [];
     #context;
-    constructor(ast, matchedResult, cssControls) {
+    constructor(ast, matchedResult, cssControls, options) {
         super(ast);
         this.#matchedResult = matchedResult;
-        this.#context = new RenderingContext(this.ast, this.#matchedResult, cssControls);
+        this.#context = new RenderingContext(this.ast, this.#matchedResult, cssControls, options);
     }
     static render(nodeOrNodes, context) {
         if (!Array.isArray(nodeOrNodes)) {
             return this.render([nodeOrNodes], context);
         }
         const cssControls = new CSSControlMap();
-        const renderers = nodeOrNodes.map(node => this.walkExcludingSuccessors(context.ast.subtree(node), context.matchedResult, cssControls));
+        const renderers = nodeOrNodes.map(node => this.walkExcludingSuccessors(context.ast.subtree(node), context.matchedResult, cssControls, context.options));
         const nodes = renderers.map(node => node.#output).reduce(mergeWithSpacing);
         return { nodes, cssControls };
     }
@@ -417,8 +419,8 @@ class LegacyRegexMatch {
         this.#suffix = suffix;
         this.processor = processor;
     }
-    render() {
-        const rendered = this.processor(this.#matchedText);
+    render(_node, context) {
+        const rendered = this.processor(this.#matchedText, context.options.readonly);
         return rendered ? [rendered, document.createTextNode(this.#suffix)] : [];
     }
 }

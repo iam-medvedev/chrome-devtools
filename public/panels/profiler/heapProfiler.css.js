@@ -150,6 +150,11 @@ styles.replaceSync(
   }
 }
 
+.heap-object-tag {
+  height: 14px;
+  width: 14px;
+}
+
 .heap-snapshot-view tr:not(.selected) td.object-column span.heap-object-tag,
 .heap-snapshot-view tr:not(.selected) td.object-column span.grayed {
   color: var(--sys-color-token-subtle);

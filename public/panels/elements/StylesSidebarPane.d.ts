@@ -200,7 +200,7 @@ export declare class StylesSidebarPropertyRenderer {
     setVarHandler(handler: (arg0: string) => Node): void;
     setAnimationNameHandler(handler: (arg0: string) => Node): void;
     setAnimationHandler(handler: (arg0: string) => Node): void;
-    setAngleHandler(handler: (arg0: string) => Node): void;
+    setAngleHandler(handler: (arg0: string, readonly: boolean) => Node): void;
     setLengthHandler(handler: (arg0: string) => Node): void;
     setPositionFallbackHandler(handler: (arg0: string) => Node): void;
     setFontPaletteHandler(handler: (arg0: string) => Node): void;

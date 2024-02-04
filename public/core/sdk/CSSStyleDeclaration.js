@@ -161,15 +161,20 @@ export class CSSStyleDeclaration {
         // 2. longhand components from shorthands, in the order of their shorthands.
         const processedLonghands = new Set();
         for (const property of this.#allPropertiesInternal) {
+            const metadata = cssMetadata();
+            const canonicalName = metadata.canonicalPropertyName(property.name);
             if (property.disabled || !property.parsedOk) {
+                if (property.name.startsWith('--')) {
+                    // Variable declarations that aren't parsedOk still "overload" other previous active declarations.
+                    activeProperties.get(canonicalName)?.setActive(false);
+                    activeProperties.delete(canonicalName);
+                }
                 property.setActive(false);
                 continue;
             }
             if (processedLonghands.has(property)) {
                 continue;
             }
-            const metadata = cssMetadata();
-            const canonicalName = metadata.canonicalPropertyName(property.name);
             for (const longhand of property.getLonghandProperties()) {
                 const activeLonghand = activeProperties.get(longhand.name);
                 if (!activeLonghand) {

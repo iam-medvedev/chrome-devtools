@@ -29,6 +29,7 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
@@ -148,7 +149,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         this.requestInternal = request;
         this.element.classList.add('network-item-view');
         const headersTab = "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
-        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resourceViewTab', "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
+        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resource-view-tab', "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
         this.headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
         this.appendTab(headersTab, i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, this.headersViewComponent), i18nString(UIStrings.headers));
         if (this.requestInternal.hasOverriddenHeaders()) {
@@ -165,7 +166,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             const frameView = new ResourceWebSocketFrameView(request);
             this.appendTab("webSocketFrames" /* NetworkForward.UIRequestLocation.UIRequestTabs.WsFrames */, i18nString(UIStrings.messages), frameView, i18nString(UIStrings.websocketMessages));
         }
-        else if (request.mimeType === "text/event-stream" /* SDK.MimeType.MimeType.EVENTSTREAM */) {
+        else if (request.mimeType === "text/event-stream" /* Platform.MimeType.MimeType.EVENTSTREAM */) {
             this.appendTab("eventSource" /* NetworkForward.UIRequestLocation.UIRequestTabs.EventSource */, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
         }
         else {

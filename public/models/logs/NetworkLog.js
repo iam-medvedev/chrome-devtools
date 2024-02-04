@@ -64,9 +64,9 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         this.modelListeners = new WeakMap();
         this.initiatorData = new WeakMap();
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.NetworkManager.NetworkManager, this);
-        const recordLogSetting = Common.Settings.Settings.instance().moduleSetting('network_log.record-log');
+        const recordLogSetting = Common.Settings.Settings.instance().moduleSetting('network-log.record-log');
         recordLogSetting.addChangeListener(() => {
-            const preserveLogSetting = Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log');
+            const preserveLogSetting = Common.Settings.Settings.instance().moduleSetting('network-log.preserve-log');
             if (!preserveLogSetting.get() && recordLogSetting.get()) {
                 this.reset(true);
             }
@@ -285,7 +285,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         return initiatorData.request;
     }
     willReloadPage() {
-        if (!Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log').get()) {
+        if (!Common.Settings.Settings.instance().moduleSetting('network-log.preserve-log').get()) {
             this.reset(true);
         }
     }
@@ -301,7 +301,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         if (mainFrame.url !== mainFrame.unreachableUrl() && Common.ParsedURL.schemeIs(mainFrame.url, 'chrome-error:')) {
             return;
         }
-        const preserveLog = Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log').get();
+        const preserveLog = Common.Settings.Settings.instance().moduleSetting('network-log.preserve-log').get();
         const oldRequests = this.requestsInternal;
         const oldManagerRequests = this.requestsInternal.filter(request => SDK.NetworkManager.NetworkManager.forRequest(request) === manager);
         const oldRequestsSet = this.requestsSet;

@@ -693,7 +693,7 @@ let JSONEditor = class JSONEditor extends LitElement {
             .showConnector=${false}
             .position=${"bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */}
             .buttonTitle=${targetLabel}
-            jslog=${VisualLogging.dropDown().track({ click: true }).context('targets')}
+            jslog=${VisualLogging.dropDown('targets').track({ click: true })}
           >
           ${repeat(this.targets, target => {
             return LitHtml.html `

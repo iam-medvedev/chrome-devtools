@@ -166,8 +166,7 @@ export class Button extends HTMLElement {
             'text-with-icon': hasIcon && !this.#isEmpty,
             'only-icon': hasIcon && this.#isEmpty,
             'only-text': !hasIcon && !this.#isEmpty,
-            small: Boolean(this.#props.size === "SMALL" /* Size.SMALL */ || this.#props.size === "TINY" /* Size.TINY */),
-            tiny: Boolean(this.#props.size === "TINY" /* Size.TINY */),
+            small: Boolean(this.#props.size === "SMALL" /* Size.SMALL */),
             active: this.#props.active,
         };
         const spinnerClasses = {

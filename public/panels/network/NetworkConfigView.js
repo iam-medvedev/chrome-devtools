@@ -62,7 +62,7 @@ let networkConfigViewInstance;
 export class NetworkConfigView extends UI.Widget.VBox {
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('network-conditions')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('network-conditions')}`);
         this.contentElement.classList.add('network-config');
         this.createCacheSection();
         this.contentElement.createChild('div').classList.add('panel-section-separator');
@@ -80,8 +80,8 @@ export class NetworkConfigView extends UI.Widget.VBox {
         return networkConfigViewInstance;
     }
     static createUserAgentSelectAndInput(title) {
-        const userAgentSetting = Common.Settings.Settings.instance().createSetting('customUserAgent', '');
-        const userAgentMetadataSetting = Common.Settings.Settings.instance().createSetting('customUserAgentMetadata', null);
+        const userAgentSetting = Common.Settings.Settings.instance().createSetting('custom-user-agent', '');
+        const userAgentMetadataSetting = Common.Settings.Settings.instance().createSetting('custom-user-agent-metadata', null);
         const userAgentSelectElement = document.createElement('select');
         userAgentSelectElement.setAttribute('jslog', `${VisualLogging.dropDown().track({ change: true }).context(userAgentSetting.name)}`);
         UI.ARIAUtils.setLabel(userAgentSelectElement, title);
@@ -170,7 +170,7 @@ export class NetworkConfigView extends UI.Widget.VBox {
     }
     createCacheSection() {
         const section = this.createSection(i18nString(UIStrings.caching), 'network-config-disable-cache');
-        section.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.disableCache), Common.Settings.Settings.instance().moduleSetting('cacheDisabled'), true));
+        section.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.disableCache), Common.Settings.Settings.instance().moduleSetting('cache-disabled'), true));
     }
     createNetworkThrottlingSection() {
         const title = i18nString(UIStrings.networkThrottling);
@@ -180,8 +180,8 @@ export class NetworkConfigView extends UI.Widget.VBox {
         UI.ARIAUtils.setLabel(networkThrottlingSelect, title);
     }
     createUserAgentSection() {
-        const userAgentMetadataSetting = Common.Settings.Settings.instance().createSetting('customUserAgentMetadata', null);
-        const customUserAgentSetting = Common.Settings.Settings.instance().createSetting('customUserAgent', '');
+        const userAgentMetadataSetting = Common.Settings.Settings.instance().createSetting('custom-user-agent-metadata', null);
+        const customUserAgentSetting = Common.Settings.Settings.instance().createSetting('custom-user-agent', '');
         const title = i18nString(UIStrings.userAgent);
         const section = this.createSection(title, 'network-config-ua');
         const checkboxLabel = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectAutomatically), true, undefined, customUserAgentSetting.name);
@@ -249,8 +249,8 @@ export class NetworkConfigView extends UI.Widget.VBox {
         }
     }
     createAcceptedEncodingSection() {
-        const useCustomAcceptedEncodingSetting = Common.Settings.Settings.instance().createSetting('useCustomAcceptedEncodings', false);
-        const customAcceptedEncodingSetting = Common.Settings.Settings.instance().createSetting('customAcceptedEncodings', `${"gzip" /* Protocol.Network.ContentEncoding.Gzip */},${"br" /* Protocol.Network.ContentEncoding.Br */},${"deflate" /* Protocol.Network.ContentEncoding.Deflate */}`);
+        const useCustomAcceptedEncodingSetting = Common.Settings.Settings.instance().createSetting('use-custom-accepted-encodings', false);
+        const customAcceptedEncodingSetting = Common.Settings.Settings.instance().createSetting('custom-accepted-encodings', `${"gzip" /* Protocol.Network.ContentEncoding.Gzip */},${"br" /* Protocol.Network.ContentEncoding.Br */},${"deflate" /* Protocol.Network.ContentEncoding.Deflate */}`);
         const title = i18nString(UIStrings.acceptedEncoding);
         const section = this.createSection(title, 'network-config-accepted-encoding');
         const checkboxLabel = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectAutomatically), true, undefined, useCustomAcceptedEncodingSetting.name);

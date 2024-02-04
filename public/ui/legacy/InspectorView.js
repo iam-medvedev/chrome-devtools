@@ -32,6 +32,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
+import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { Dialog } from './Dialog.js';
 import { DockController } from './DockController.js';
@@ -138,7 +139,7 @@ export class InspectorView extends VBox {
         GlassPane.setContainer(this.element);
         this.setMinimumSize(250, 72);
         // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
-        this.drawerSplitWidget = new SplitWidget(false, true, 'Inspector.drawerSplitViewState', 200, 200);
+        this.drawerSplitWidget = new SplitWidget(false, true, 'inspector.drawer-split-view-state', 200, 200);
         this.drawerSplitWidget.hideSidebar();
         this.drawerSplitWidget.enableShowModeSaving();
         this.drawerSplitWidget.show(this.element);
@@ -153,7 +154,9 @@ export class InspectorView extends VBox {
         this.drawerTabbedPane = this.drawerTabbedLocation.tabbedPane();
         this.drawerTabbedPane.setMinimumSize(0, 27);
         this.drawerTabbedPane.element.classList.add('drawer-tabbed-pane');
+        this.drawerTabbedPane.element.setAttribute('jslog', `${VisualLogging.drawer()}`);
         const closeDrawerButton = new ToolbarButton(i18nString(UIStrings.closeDrawer), 'cross');
+        closeDrawerButton.element.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         closeDrawerButton.addEventListener("Click" /* ToolbarButton.Events.Click */, this.closeDrawer, this);
         this.drawerTabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId, 'drawer'), this);
         const selectedDrawerTab = this.drawerTabbedPane.selectedTabId;
@@ -168,6 +171,7 @@ export class InspectorView extends VBox {
         this.drawerSplitWidget.installResizer(this.drawerTabbedPane.headerElement());
         this.drawerSplitWidget.setSidebarWidget(this.drawerTabbedPane);
         this.drawerTabbedPane.rightToolbar().appendToolbarItem(closeDrawerButton);
+        this.drawerTabbedPane.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('drawer').track({ drag: true })}`);
         // Create main area tabbed pane.
         this.tabbedLocation = ViewManager.instance().createTabbedLocation(Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance), 'panel', true, true, Root.Runtime.Runtime.queryParam('panel'));
         this.tabbedPane = this.tabbedLocation.tabbedPane();
@@ -190,6 +194,7 @@ export class InspectorView extends VBox {
         const mainHeaderElement = this.tabbedPane.headerElement();
         ARIAUtils.markAsNavigation(mainHeaderElement);
         ARIAUtils.setLabel(mainHeaderElement, i18nString(UIStrings.mainToolbar));
+        mainHeaderElement.setAttribute('jslog', `${VisualLogging.toolbar('main').track({ drag: true })}`);
         // Store the initial selected panel for use in launch histograms
         Host.userMetrics.setLaunchPanel(this.tabbedPane.selectedTabId);
         if (Host.InspectorFrontendHost.isUnderTest()) {
@@ -343,7 +348,7 @@ export class InspectorView extends VBox {
             return;
         }
         // Ctrl/Cmd + 1-9 should show corresponding panel.
-        const panelShortcutEnabled = Common.Settings.moduleSetting('shortcutPanelSwitch').get();
+        const panelShortcutEnabled = Common.Settings.moduleSetting('shortcut-panel-switch').get();
         if (panelShortcutEnabled) {
             let panelIndex = -1;
             if (keyboardEvent.keyCode > 0x30 && keyboardEvent.keyCode < 0x3A) {
@@ -442,7 +447,7 @@ export class InspectorView extends VBox {
     }
 }
 function getDisableLocaleInfoBarSetting() {
-    return Common.Settings.Settings.instance().createSetting('disableLocaleInfoBar', false);
+    return Common.Settings.Settings.instance().createSetting('disable-locale-info-bar', false);
 }
 function shouldShowLocaleInfobar() {
     if (getDisableLocaleInfoBarSetting().get()) {

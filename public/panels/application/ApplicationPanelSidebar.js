@@ -266,13 +266,13 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         const storageSectionTitle = i18nString(UIStrings.storage);
         const storageTreeElement = this.addSidebarSection(storageSectionTitle);
         this.localStorageListTreeElement =
-            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.localStorage), 'LocalStorage');
+            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.localStorage), 'local-storage');
         this.localStorageListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/localstorage/?utm_source=devtools');
         const localStorageIcon = IconButton.Icon.create('table');
         this.localStorageListTreeElement.setLeadingIcons([localStorageIcon]);
         storageTreeElement.appendChild(this.localStorageListTreeElement);
         this.sessionStorageListTreeElement =
-            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.sessionStorage), 'SessionStorage');
+            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.sessionStorage), 'session-storage');
         this.sessionStorageListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/sessionstorage/?utm_source=devtools');
         const sessionStorageIcon = IconButton.Icon.create('table');
         this.sessionStorageListTreeElement.setLeadingIcons([sessionStorageIcon]);
@@ -281,13 +281,13 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.indexedDBListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/indexeddb/?utm_source=devtools');
         storageTreeElement.appendChild(this.indexedDBListTreeElement);
         this.databasesListTreeElement =
-            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.webSql), 'Databases');
+            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.webSql), 'databases');
         this.databasesListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/websql/?utm_source=devtools');
         const databaseIcon = IconButton.Icon.create('database');
         this.databasesListTreeElement.setLeadingIcons([databaseIcon]);
         storageTreeElement.appendChild(this.databasesListTreeElement);
         this.cookieListTreeElement =
-            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.cookies), 'Cookies');
+            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.cookies), 'cookies');
         this.cookieListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/cookies/?utm_source=devtools');
         const cookieIcon = IconButton.Icon.create('cookie');
         this.cookieListTreeElement.setLeadingIcons([cookieIcon]);
@@ -875,7 +875,7 @@ export class DatabaseTreeElement extends ApplicationPanelTreeElement {
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
         this.sidebar.showDatabase(this.database);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.web_sql]);
+        Host.userMetrics.panelShown('web-sql');
         return false;
     }
     onexpand() {
@@ -907,7 +907,7 @@ export class DatabaseTableTreeElement extends ApplicationPanelTreeElement {
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
         this.sidebar.showDatabase(this.database, this.tableName);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.web_sql]);
+        Host.userMetrics.panelShown('web-sql');
         return false;
     }
 }
@@ -927,7 +927,7 @@ export class ServiceWorkersTreeElement extends ApplicationPanelTreeElement {
             this.view = new ServiceWorkersView();
         }
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.service_workers]);
+        Host.userMetrics.panelShown('service-workers');
         return false;
     }
 }
@@ -954,7 +954,7 @@ export class AppManifestTreeElement extends ApplicationPanelTreeElement {
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.app_manifest]);
+        Host.userMetrics.panelShown('app-manifest');
         return false;
     }
     generateChildren() {
@@ -1043,7 +1043,7 @@ export class IndexedDBTreeElement extends ExpandableApplicationPanelTreeElement 
     idbDatabaseTreeElements;
     storageBucket;
     constructor(storagePanel, storageBucket) {
-        super(storagePanel, i18nString(UIStrings.indexeddb), 'IndexedDB');
+        super(storagePanel, i18nString(UIStrings.indexeddb), 'indexed-db');
         const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
         this.idbDatabaseTreeElements = [];
@@ -1231,7 +1231,7 @@ export class IDBDatabaseTreeElement extends ApplicationPanelTreeElement {
             this.view = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new IDBDatabaseView(this.model, this.database), 'indexeddb-data');
         }
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.indexed_db]);
+        Host.userMetrics.panelShown('indexed-db');
         return false;
     }
     objectStoreRemoved(objectStoreName) {
@@ -1346,7 +1346,7 @@ export class IDBObjectStoreTreeElement extends ApplicationPanelTreeElement {
                 new IDBDataView(this.model, this.databaseId, this.objectStore, null, this.refreshObjectStore.bind(this));
         }
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.indexed_db]);
+        Host.userMetrics.panelShown('indexed-db');
         return false;
     }
     indexRemoved(indexName) {
@@ -1422,7 +1422,7 @@ export class IDBIndexTreeElement extends ApplicationPanelTreeElement {
             this.view = new IDBDataView(this.model, this.databaseId, this.objectStore, this.index, this.refreshObjectStore);
         }
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.indexed_db]);
+        Host.userMetrics.panelShown('indexed-db');
         return false;
     }
     clear() {
@@ -1445,7 +1445,7 @@ export class DOMStorageTreeElement extends ApplicationPanelTreeElement {
     }
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.dom_storage]);
+        Host.userMetrics.panelShown('dom-storage');
         this.resourcesPanel.showDOMStorage(this.domStorage);
         return false;
     }
@@ -1816,7 +1816,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
         if (!this.view) {
             this.view = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, new ApplicationComponents.FrameDetailsView.FrameDetailsReportView(this.frame));
         }
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.frame_details]);
+        Host.userMetrics.panelShown('frame-details');
         this.showView(this.view);
         this.listItemElement.classList.remove('hovered');
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
@@ -1850,7 +1850,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
         this.treeElementForResource.set(resource.url, resourceTreeElement);
     }
     windowOpened(targetInfo) {
-        const categoryKey = 'OpenedWindows';
+        const categoryKey = 'opened-windows';
         let categoryElement = this.categoryElements.get(categoryKey);
         if (!categoryElement) {
             categoryElement = new ExpandableApplicationPanelTreeElement(this.section.panel, i18nString(UIStrings.openedWindows), categoryKey);
@@ -1864,7 +1864,7 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
         }
     }
     workerCreated(targetInfo) {
-        const categoryKey = targetInfo.type === 'service_worker' ? 'Service Workers' : 'Web Workers';
+        const categoryKey = targetInfo.type === 'service_worker' ? 'service-workers' : 'web-workers';
         const categoryName = targetInfo.type === 'service_worker' ? i18n.i18n.lockedString('Service workers') :
             i18nString(UIStrings.webWorkers);
         let categoryElement = this.categoryElements.get(categoryKey);
@@ -1960,7 +1960,7 @@ export class FrameResourceTreeElement extends ApplicationPanelTreeElement {
         else {
             void this.panel.scheduleShowView(this.preparePreview());
         }
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.frame_resource]);
+        Host.userMetrics.panelShown('frame-resource');
         return false;
     }
     ondblclick(_event) {
@@ -2038,7 +2038,7 @@ class FrameWindowTreeElement extends ApplicationPanelTreeElement {
             this.view.update();
         }
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.frame_window]);
+        Host.userMetrics.panelShown('frame-window');
         return false;
     }
     get itemURL() {
@@ -2064,7 +2064,7 @@ class WorkerTreeElement extends ApplicationPanelTreeElement {
             this.view.update();
         }
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.frame_worker]);
+        Host.userMetrics.panelShown('frame-worker');
         return false;
     }
     get itemURL() {

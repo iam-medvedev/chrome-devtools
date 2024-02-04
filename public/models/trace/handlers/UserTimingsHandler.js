@@ -8,7 +8,7 @@ import * as Types from '../types/types.js';
  * See UserTimings.md in this directory for some handy documentation on
  * UserTimings and the trace events we parse currently.
  **/
-const syntheticEvents = [];
+let syntheticEvents = [];
 const performanceMeasureEvents = [];
 const performanceMarkEvents = [];
 const consoleTimings = [];
@@ -91,7 +91,7 @@ export async function finalize() {
         throw new Error('UserTimings handler is not initialized');
     }
     const asyncEvents = [...performanceMeasureEvents, ...consoleTimings];
-    syntheticEvents.push(...Helpers.Trace.createMatchedSortedSyntheticEvents(asyncEvents));
+    syntheticEvents = Helpers.Trace.createMatchedSortedSyntheticEvents(asyncEvents);
     handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
@@ -99,8 +99,8 @@ export function data() {
         throw new Error('UserTimings handler is not finalized');
     }
     return {
-        performanceMeasures: syntheticEvents.filter(Types.TraceEvents.isTraceEventPerformanceMeasure),
-        consoleTimings: syntheticEvents.filter(Types.TraceEvents.isTraceEventConsoleTime),
+        performanceMeasures: syntheticEvents.filter(e => e.cat === 'blink.user_timing'),
+        consoleTimings: syntheticEvents.filter(e => e.cat === 'blink.console'),
         performanceMarks: [...performanceMarkEvents],
         timestampEvents: [...timestampEvents],
     };

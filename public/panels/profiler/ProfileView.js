@@ -224,7 +224,7 @@ export class ProfileView extends UI.View.SimpleView {
     }
     initialize(nodeFormatter) {
         this.nodeFormatter = nodeFormatter;
-        this.viewType = Common.Settings.Settings.instance().createSetting('profileView', "Heavy" /* ViewTypes.Heavy */);
+        this.viewType = Common.Settings.Settings.instance().createSetting('profile-view', "Heavy" /* ViewTypes.Heavy */);
         const viewTypes = ["Flame" /* ViewTypes.Flame */, "Heavy" /* ViewTypes.Heavy */, "Tree" /* ViewTypes.Tree */];
         const optionNames = new Map([
             ["Flame" /* ViewTypes.Flame */, i18nString(UIStrings.chart)],

@@ -221,6 +221,8 @@ export class ServiceWorkerCacheModel extends SDKModel {
     }
     interestGroupAccessed(_event) {
     }
+    interestGroupAuctionNetworkRequestCreated(_event) {
+    }
     sharedStorageAccessed(_event) {
     }
     storageBucketCreatedOrUpdated(_event) {

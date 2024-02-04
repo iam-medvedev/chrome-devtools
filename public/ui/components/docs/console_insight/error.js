@@ -16,6 +16,7 @@ const component = new ConsoleInsight({
         throw new Error('Could not connect to the server');
     },
 });
+component.actionName = 'Explain this error';
 void component.update();
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=error.js.map

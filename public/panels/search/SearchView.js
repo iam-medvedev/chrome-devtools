@@ -121,7 +121,7 @@ export class SearchView extends UI.Widget.VBox {
         this.progressIndicator = null;
         this.visiblePane = null;
         this.#throttler = throttler;
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('search')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('search')}`);
         this.contentElement.classList.add('search-view');
         this.contentElement.addEventListener('keydown', event => {
             this.onKeyDownOnPanel(event);
@@ -130,10 +130,7 @@ export class SearchView extends UI.Widget.VBox {
         this.searchResultsElement = this.contentElement.createChild('div');
         this.searchResultsElement.className = 'search-results';
         const searchContainer = document.createElement('div');
-        searchContainer.style.flex = 'auto';
-        searchContainer.style.justifyContent = 'start';
-        searchContainer.style.maxWidth = '300px';
-        searchContainer.style.overflow = 'revert';
+        searchContainer.classList.add('toolbar-item-search');
         this.search = UI.HistoryInput.HistoryInput.create();
         this.search.addEventListener('keydown', event => {
             this.onKeyDown(event);
@@ -148,6 +145,7 @@ export class SearchView extends UI.Widget.VBox {
         UI.ARIAUtils.setLabel(this.search, i18nString(UIStrings.searchQuery));
         const searchItem = new UI.Toolbar.ToolbarItem(searchContainer);
         const toolbar = new UI.Toolbar.Toolbar('search-toolbar', this.searchPanelElement);
+        toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.matchCaseButton = SearchView.appendToolbarToggle(toolbar, 'Aa', i18nString(UIStrings.matchCase), 'match-case');
         this.regexButton =
             SearchView.appendToolbarToggle(toolbar, '.*', i18nString(UIStrings.useRegularExpression), 'use-regex');
@@ -165,7 +163,7 @@ export class SearchView extends UI.Widget.VBox {
         this.searchMessageElement = searchStatusBarElement.createChild('div', 'search-message');
         this.searchProgressPlaceholderElement = searchStatusBarElement.createChild('div', 'flex-centered');
         this.searchResultsMessageElement = searchStatusBarElement.createChild('div', 'search-message');
-        this.advancedSearchConfig = Common.Settings.Settings.instance().createLocalSetting(settingKey + 'SearchConfig', new Workspace.SearchConfig.SearchConfig('', true, false).toPlainObject());
+        this.advancedSearchConfig = Common.Settings.Settings.instance().createLocalSetting(settingKey + '-search-config', new Workspace.SearchConfig.SearchConfig('', true, false).toPlainObject());
         this.load();
         this.searchScope = null;
     }

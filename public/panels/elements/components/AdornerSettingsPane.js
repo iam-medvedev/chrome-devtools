@@ -6,6 +6,7 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import adornerSettingsPaneStyles from './adornerSettingsPane.css.js';
 const UIStrings = {
     /**
@@ -90,6 +91,7 @@ export class AdornerSettingsPane extends HTMLElement {
                                              .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
                                              .title=${i18nString(UIStrings.closeButton)}
                                              .variant=${"round" /* Buttons.Button.Variant.ROUND */}
+                                             jslog=${VisualLogging.close().track({ click: true })}
                                              @click=${this.hide}></${Buttons.Button.Button.litTagName}>
       </div>
     `, this.#shadow, {

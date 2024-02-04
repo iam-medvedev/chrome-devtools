@@ -387,6 +387,8 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
     }
     interestGroupAuctionEventOccurred(_event) {
     }
+    interestGroupAuctionNetworkRequestCreated(_event) {
+    }
     sharedStorageAccessed(_event) {
     }
     storageBucketCreatedOrUpdated(_event) {

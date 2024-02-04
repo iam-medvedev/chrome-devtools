@@ -112,7 +112,9 @@ export class PermissionsPolicySection extends HTMLElement {
         <${ReportView.ReportView.ReportValue.litTagName}>
           ${disallowed.map(p => p.feature).join(', ')}
           <button class="link" @click=${() => this.#toggleShowPermissionsDisallowedDetails()}
-          jslog=${VisualLogging.action().track({ click: true }).context('show-disabled-features-details')}>
+          jslog=${VisualLogging.action('show-disabled-features-details').track({
+                click: true,
+            })}>
             ${i18nString(UIStrings.showDetails)}
           </button>
         </${ReportView.ReportView.ReportValue.litTagName}>
@@ -179,7 +181,9 @@ export class PermissionsPolicySection extends HTMLElement {
         ${featureRows}
         <div class="permissions-row">
           <button class="link" @click=${() => this.#toggleShowPermissionsDisallowedDetails()}
-          jslog=${VisualLogging.action().track({ click: true }).context('hide-disabled-features-details')}>
+          jslog=${VisualLogging.action('hide-disabled-features-details').track({
+            click: true,
+        })}>
             ${i18nString(UIStrings.hideDetails)}
           </button>
         </div>

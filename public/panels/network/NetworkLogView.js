@@ -451,18 +451,18 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.setMinimumSize(50, 64);
         this.element.id = 'network-container';
         this.element.classList.add('no-node-selected');
-        this.networkInvertFilterSetting = Common.Settings.Settings.instance().createSetting('networkInvertFilter', false);
-        this.networkHideDataURLSetting = Common.Settings.Settings.instance().createSetting('networkHideDataURL', false);
+        this.networkInvertFilterSetting = Common.Settings.Settings.instance().createSetting('network-invert-filter', false);
+        this.networkHideDataURLSetting = Common.Settings.Settings.instance().createSetting('network-hide-data-url', false);
         this.networkHideChromeExtensions =
-            Common.Settings.Settings.instance().createSetting('networkHideChromeExtensions', false);
+            Common.Settings.Settings.instance().createSetting('network-hide-chrome-extensions', false);
         this.networkShowBlockedCookiesOnlySetting =
-            Common.Settings.Settings.instance().createSetting('networkShowBlockedCookiesOnlySetting', false);
+            Common.Settings.Settings.instance().createSetting('network-show-blocked-cookies-only-setting', false);
         this.networkOnlyBlockedRequestsSetting =
-            Common.Settings.Settings.instance().createSetting('networkOnlyBlockedRequests', false);
+            Common.Settings.Settings.instance().createSetting('network-only-blocked-requests', false);
         this.networkOnlyThirdPartySetting =
-            Common.Settings.Settings.instance().createSetting('networkOnlyThirdPartySetting', false);
+            Common.Settings.Settings.instance().createSetting('network-only-third-party-setting', false);
         this.networkResourceTypeFiltersSetting =
-            Common.Settings.Settings.instance().createSetting('networkResourceTypeFilters', {});
+            Common.Settings.Settings.instance().createSetting('network-resource-type-filters', {});
         this.rawRowHeight = 0;
         this.progressBarContainer = progressBarContainer;
         this.networkLogLargeRowsSetting = networkLogLargeRowsSetting;
@@ -554,7 +554,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.summaryToolbarInternal.element.setAttribute('role', 'status');
         new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.File], i18nString(UIStrings.dropHarFilesHere), this.handleDrop.bind(this));
         Common.Settings.Settings.instance()
-            .moduleSetting('networkColorCodeResourceTypes')
+            .moduleSetting('network-color-code-resource-types')
             .addChangeListener(this.invalidateAllItems.bind(this, false), this);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.NetworkManager.NetworkManager, this, { scoped: true });
         Logs.NetworkLog.NetworkLog.instance().addEventListener(Logs.NetworkLog.Events.RequestAdded, this.onRequestUpdated, this);
@@ -566,7 +566,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             .moduleSetting('network.group-by-frame')
             .addChangeListener(() => this.updateGroupByFrame());
         this.filterBar = filterBar;
-        this.textFilterSetting = Common.Settings.Settings.instance().createSetting('networkTextFilter', '');
+        this.textFilterSetting = Common.Settings.Settings.instance().createSetting('network-text-filter', '');
         if (this.textFilterSetting.get()) {
             this.textFilterUI.setValue(this.textFilterSetting.get());
         }
@@ -736,7 +736,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     static async copyResponse(request) {
         const contentData = await request.contentData();
         let content;
-        if (SDK.ContentData.ContentData.isError(contentData)) {
+        if (TextUtils.ContentData.ContentData.isError(contentData)) {
             content = '';
         }
         else if (!contentData.isTextContent) {
@@ -836,7 +836,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.Load, this.loadEventFired, this);
             resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.DOMContentLoaded, this.domContentLoadedEventFired, this);
         }
-        const preserveLog = Common.Settings.Settings.instance().moduleSetting('network_log.preserve-log').get();
+        const preserveLog = Common.Settings.Settings.instance().moduleSetting('network-log.preserve-log').get();
         if (!preserveLog) {
             this.reset();
         }
@@ -942,7 +942,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             }
         });
         this.dataGrid.setStickToBottom(true);
-        this.dataGrid.setName('networkLog');
+        this.dataGrid.setName('network-log');
         this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.Last */);
         this.dataGrid.element.classList.add('network-log-grid');
         this.dataGrid.element.addEventListener('mousedown', this.dataGridMouseDown.bind(this), true);
@@ -1565,7 +1565,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.responseHeaderMatch(request, { name: '', value: '' });
         const networkPersistanceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
         if (networkPersistanceManager.project()) {
-            Common.Settings.Settings.instance().moduleSetting('persistenceNetworkOverridesEnabled').set(true);
+            Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').set(true);
             await networkPersistanceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
             await Common.Revealer.reveal(requestLocation);
         }
@@ -1908,7 +1908,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         let command = [];
         // Most of these headers are derived from the URL and are automatically added by cURL.
         // The |Accept-Encoding| header is ignored to prevent decompression errors. crbug.com/1015321
-        const ignoredHeaders = new Set(['accept-encoding', 'host', 'method', 'path', 'scheme', 'version']);
+        const ignoredHeaders = new Set(['accept-encoding', 'host', 'method', 'path', 'scheme', 'version', 'authority', 'protocol']);
         function escapeStringWin(str) {
             /* Only escape the " characters when necessary.
       
@@ -2151,7 +2151,7 @@ export class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper {
         super();
         this.items = items;
         this.filterElement = document.createElement('div');
-        this.filterElement.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('request-types')}`);
+        this.filterElement.setAttribute('jslog', `${VisualLogging.dropDown('request-types').track({ click: true })}`);
         this.typesCountAdorner = new Adorners.Adorner.Adorner();
         this.selectedTypesCount = document.createElement('span');
         this.typesCountAdorner.data = {
@@ -2330,18 +2330,18 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
     hasChanged = false;
     constructor() {
         super();
-        this.networkHideDataURLSetting = Common.Settings.Settings.instance().createSetting('networkHideDataURL', false);
+        this.networkHideDataURLSetting = Common.Settings.Settings.instance().createSetting('network-hide-data-url', false);
         this.networkHideChromeExtensionsSetting =
-            Common.Settings.Settings.instance().createSetting('networkHideChromeExtensions', false);
+            Common.Settings.Settings.instance().createSetting('network-hide-chrome-extensions', false);
         this.networkShowBlockedCookiesOnlySetting =
-            Common.Settings.Settings.instance().createSetting('networkShowBlockedCookiesOnlySetting', false);
+            Common.Settings.Settings.instance().createSetting('network-show-blocked-cookies-only-setting', false);
         this.networkOnlyBlockedRequestsSetting =
-            Common.Settings.Settings.instance().createSetting('networkOnlyBlockedRequests', false);
+            Common.Settings.Settings.instance().createSetting('network-only-blocked-requests', false);
         this.networkOnlyThirdPartySetting =
-            Common.Settings.Settings.instance().createSetting('networkOnlyThirdPartySetting', false);
+            Common.Settings.Settings.instance().createSetting('network-only-third-party-setting', false);
         this.filterElement = document.createElement('div');
         this.filterElement.setAttribute('aria-label', 'Show only/hide requests dropdown');
-        this.filterElement.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('more-filters')}`);
+        this.filterElement.setAttribute('jslog', `${VisualLogging.dropDown('more-filters').track({ click: true })}`);
         this.activeFiltersCountAdorner = new Adorners.Adorner.Adorner();
         this.activeFiltersCount = document.createElement('span');
         this.activeFiltersCountAdorner.data = {

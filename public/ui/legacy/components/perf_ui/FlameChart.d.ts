@@ -392,6 +392,7 @@ export declare class FlameChartTimelineData {
         entryDecorations?: FlameChartDecoration[][];
     }): FlameChartTimelineData;
     static createEmpty(): FlameChartTimelineData;
+    resetFlowData(): void;
 }
 export interface FlameChartDataProvider {
     minimumBoundary(): number;

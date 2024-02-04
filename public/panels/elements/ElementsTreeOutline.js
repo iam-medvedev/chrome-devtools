@@ -141,7 +141,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         this.elementInternal.addEventListener('keydown', this.onKeyDown.bind(this), false);
         outlineDisclosureElement.appendChild(this.elementInternal);
         this.element = shadowContainer;
-        this.element.setAttribute('jslog', `${VisualLogging.tree().context('elements-tree-outline')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.tree('elements')}`);
         this.includeRootDOMNode = !omitRootDOMNode;
         this.selectEnabled = selectEnabled;
         this.rootDOMNodeInternal = null;
@@ -167,7 +167,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         this.updateRecords = new Map();
         this.treeElementsBeingUpdated = new Set();
         this.decoratorExtensions = null;
-        this.showHTMLCommentsSetting = Common.Settings.Settings.instance().moduleSetting('showHTMLComments');
+        this.showHTMLCommentsSetting = Common.Settings.Settings.instance().moduleSetting('show-html-comments');
         this.showHTMLCommentsSetting.addChangeListener(this.onShowHTMLCommentsChange.bind(this));
         this.setUseLightSelectionColor(true);
         if (Root.Runtime.experiments.isEnabled("highlightErrorsElementsPanel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {

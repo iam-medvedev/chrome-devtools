@@ -11,22 +11,22 @@ export function getLoggingConfig(element) {
 var VisualElements;
 (function (VisualElements) {
     VisualElements[VisualElements["TreeItem"] = 1] = "TreeItem";
-    /* 2 used to be AriaAttributes, but free to grab now */
-    /* 3 used to be AccessibilityComputedProperties, but free to grab now */
-    /* 4 used to be AccessibilityPane, but free to grab now */
-    /* 5 used to be AccessibilitySourceOrder, but free to grab now */
+    VisualElements[VisualElements["Close"] = 2] = "Close";
+    VisualElements[VisualElements["Counter"] = 3] = "Counter";
+    VisualElements[VisualElements["Drawer"] = 4] = "Drawer";
+    VisualElements[VisualElements["Resizer"] = 5] = "Resizer";
     VisualElements[VisualElements["Toggle"] = 6] = "Toggle";
     VisualElements[VisualElements["Tree"] = 7] = "Tree";
     VisualElements[VisualElements["TextField"] = 8] = "TextField";
-    /* 9 used to be ShowAllStyleProperties, but free to grab now */
+    VisualElements[VisualElements["AnimationClip"] = 9] = "AnimationClip";
     VisualElements[VisualElements["Section"] = 10] = "Section";
-    VisualElements[VisualElements["StylePropertiesSectionSeparator"] = 11] = "StylePropertiesSectionSeparator";
-    /* 12 used to be StylesPane, but free to grab now */
+    VisualElements[VisualElements["SectionHeader"] = 11] = "SectionHeader";
+    VisualElements[VisualElements["Timeline"] = 12] = "Timeline";
     VisualElements[VisualElements["StylesSelector"] = 13] = "StylesSelector";
     VisualElements[VisualElements["TreeItemExpand"] = 14] = "TreeItemExpand";
     VisualElements[VisualElements["ToggleSubpane"] = 15] = "ToggleSubpane";
-    /* 16 used to be ElementClassesPane, but free to grab now */
-    /* 17 used to be AddElementClassPrompt, but free to grab now */
+    VisualElements[VisualElements["ControlPoint"] = 16] = "ControlPoint";
+    VisualElements[VisualElements["Toolbar"] = 17] = "Toolbar";
     /* 18 used to be ElementStatesPan, but free to grab now */
     /* 19 used to be CssLayersPane, but free to grab now */
     VisualElements[VisualElements["DropDown"] = 20] = "DropDown";
@@ -124,8 +124,11 @@ export function debugString(config) {
     }
     return components.join('; ');
 }
-export function makeConfigStringBuilder(veName) {
+export function makeConfigStringBuilder(veName, context) {
     const components = [veName];
+    if (typeof context !== 'undefined') {
+        components.push(`context: ${context}`);
+    }
     return {
         context: function (value) {
             if (typeof value !== 'undefined') {

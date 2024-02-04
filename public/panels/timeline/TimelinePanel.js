@@ -43,6 +43,7 @@ import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PanelFeedback from '../../ui/components/panel_feedback/panel_feedback.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import { TraceLoadEvent } from './BenchmarkEvents.js';
@@ -313,19 +314,20 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.performanceModel = null;
         this.traceLoadStart = null;
         this.disableCaptureJSProfileSetting =
-            Common.Settings.Settings.instance().createSetting('timelineDisableJSSampling', false);
+            Common.Settings.Settings.instance().createSetting('timeline-disable-js-sampling', false);
         this.disableCaptureJSProfileSetting.setTitle(i18nString(UIStrings.disableJavascriptSamples));
         this.captureLayersAndPicturesSetting =
-            Common.Settings.Settings.instance().createSetting('timelineCaptureLayersAndPictures', false);
+            Common.Settings.Settings.instance().createSetting('timeline-capture-layers-and-pictures', false);
         this.captureLayersAndPicturesSetting.setTitle(i18nString(UIStrings.enableAdvancedPaint));
         this.showScreenshotsSetting =
-            Common.Settings.Settings.instance().createSetting('timelineShowScreenshots', isNode ? false : true);
+            Common.Settings.Settings.instance().createSetting('timeline-show-screenshots', isNode ? false : true);
         this.showScreenshotsSetting.setTitle(i18nString(UIStrings.screenshots));
         this.showScreenshotsSetting.addChangeListener(this.updateOverviewControls, this);
-        this.showMemorySetting = Common.Settings.Settings.instance().createSetting('timelineShowMemory', false);
+        this.showMemorySetting = Common.Settings.Settings.instance().createSetting('timeline-show-memory', false);
         this.showMemorySetting.setTitle(i18nString(UIStrings.memory));
         this.showMemorySetting.addChangeListener(this.onModeChanged, this);
         const timelineToolbarContainer = this.element.createChild('div', 'timeline-toolbar-container');
+        timelineToolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.panelToolbar = new UI.Toolbar.Toolbar('timeline-main-toolbar', timelineToolbarContainer);
         this.panelToolbar.makeWrappable(true);
         this.panelRightToolbar = new UI.Toolbar.Toolbar('', timelineToolbarContainer);
@@ -479,7 +481,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     createSettingsPane() {
         this.showSettingsPaneSetting =
-            Common.Settings.Settings.instance().createSetting('timelineShowSettingsToolbar', false);
+            Common.Settings.Settings.instance().createSetting('timeline-show-settings-toolbar', false);
         this.showSettingsPaneButton = new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.captureSettings), 'gear-filled');
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, this.updateShowSettingsToolbarButton, this);
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RateChanged */, this.updateShowSettingsToolbarButton, this);

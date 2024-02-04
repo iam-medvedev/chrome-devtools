@@ -474,7 +474,7 @@ styles.replaceSync(
 
 .timeline-details-view-body > div {
   overflow-y: hidden;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 .timeline-landing-page > div {

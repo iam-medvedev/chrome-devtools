@@ -17,6 +17,7 @@ styles.replaceSync(
   font-size: 13px;
   color: var(--sys-color-token-subtle);
   overflow: auto;
+  text-align: center;
 
   & div {
     width: 100%;

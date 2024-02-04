@@ -122,7 +122,7 @@ export function defaultHideIssueByCodeSetting() {
     return setting;
 }
 export function getHideIssueByCodeSetting() {
-    return Common.Settings.Settings.instance().createSetting('HideIssueByCodeSetting-Experiment-2021', defaultHideIssueByCodeSetting());
+    return Common.Settings.Settings.instance().createSetting('hide-issue-by-code-setting-experiment-2021', defaultHideIssueByCodeSetting());
 }
 /**
  * The `IssuesManager` is the central storage for issues. It collects issues from all the
@@ -154,7 +154,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.IssuesModel.IssuesModel, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         SDK.FrameManager.FrameManager.instance().addEventListener("FrameAddedToTarget" /* SDK.FrameManager.Events.FrameAddedToTarget */, this.#onFrameAddedToTarget, this);
-        // issueFilter uses the 'showThirdPartyIssues' setting. Clients of IssuesManager need
+        // issueFilter uses the 'show-third-party-issues' setting. Clients of IssuesManager need
         // a full update when the setting changes to get an up-to-date issues list.
         this.showThirdPartyIssuesSetting?.addChangeListener(() => this.#updateFilteredIssues());
         this.hideIssueSetting?.addChangeListener(() => this.#updateFilteredIssues());

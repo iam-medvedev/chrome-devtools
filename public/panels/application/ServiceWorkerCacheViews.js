@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -93,8 +94,9 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         this.entriesForTest = null;
         this.element.classList.add('service-worker-cache-data-view');
         this.element.classList.add('storage-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('cache-storage-data')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('cache-storage-data')}`);
         const editorToolbar = new UI.Toolbar.Toolbar('data-view-toolbar', this.element);
+        editorToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.element.appendChild(this.metadataView);
         this.splitWidget = new UI.SplitWidget.SplitWidget(false, false);
         this.splitWidget.show(this.element);
@@ -363,9 +365,9 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         request.setRequestHeadersText('');
         request.endTime = entry.responseTime;
         let header = entry.responseHeaders.find(header => header.name.toLowerCase() === 'content-type');
-        let mimeType = "text/plain" /* SDK.MimeType.MimeType.PLAIN */;
+        let mimeType = "text/plain" /* Platform.MimeType.MimeType.PLAIN */;
         if (header) {
-            const result = SDK.MimeType.parseContentType(header.value);
+            const result = Platform.MimeType.parseContentType(header.value);
             if (result.mimeType) {
                 mimeType = result.mimeType;
             }
@@ -387,7 +389,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         if (!response) {
             return { error: 'No cached response found' };
         }
-        return new SDK.ContentData.ContentData(response.body, /* isBase64=*/ true, request.mimeType, request.charset() ?? undefined);
+        return new TextUtils.ContentData.ContentData(response.body, /* isBase64=*/ true, request.mimeType, request.charset() ?? undefined);
     }
     updatedForTest() {
     }
@@ -468,9 +470,10 @@ export class RequestView extends UI.Widget.VBox {
     constructor(request) {
         super();
         this.tabbedPane = new UI.TabbedPane.TabbedPane();
-        this.tabbedPane.element.setAttribute('jslog', `${VisualLogging.section().context('network-item-preview')}`);
+        this.tabbedPane.element.setAttribute('jslog', `${VisualLogging.section('network-item-preview')}`);
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
-        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('cacheStorageViewTab', 'preview');
+        this.resourceViewTabSetting =
+            Common.Settings.Settings.instance().createSetting('cache-storage-view-tab', 'preview');
         this.tabbedPane.appendTab('headers', i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new NetworkComponents.RequestHeadersView.RequestHeadersView(request)));
         this.tabbedPane.appendTab('preview', i18nString(UIStrings.preview), new Network.RequestPreviewView.RequestPreviewView(request));
         this.tabbedPane.show(this.element);

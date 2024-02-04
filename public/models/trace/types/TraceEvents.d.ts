@@ -763,44 +763,47 @@ export declare function isTraceEventScheduleStyleRecalculation(event: TraceEvent
 export interface TraceEventPrePaint extends TraceEventComplete {
     name: 'PrePaint';
 }
-export type TraceEventNestableAsync = TraceEventNestableAsyncBegin | TraceEventNestableAsyncEnd;
-export interface TraceEventNestableAsyncBegin extends TraceEventData {
+export interface TraceEventPairableAsync extends TraceEventData {
+    ph: Phase.ASYNC_NESTABLE_START | Phase.ASYNC_NESTABLE_END;
+    id2?: {
+        local?: string;
+        global?: string;
+    };
+    id?: string;
+}
+export interface TraceEventPairableAsyncBegin extends TraceEventPairableAsync {
     ph: Phase.ASYNC_NESTABLE_START;
-    id2?: {
-        local?: string;
-        global?: string;
-    };
-    id?: string;
 }
-export interface TraceEventNestableAsyncEnd extends TraceEventData {
+export interface TraceEventPairableAsyncEnd extends TraceEventPairableAsync {
     ph: Phase.ASYNC_NESTABLE_END;
+}
+export interface TraceEventUserTiming extends TraceEventData {
     id2?: {
         local?: string;
         global?: string;
     };
     id?: string;
-}
-export type TraceEventAsyncPerformanceMeasure = TraceEventPerformanceMeasureBegin | TraceEventPerformanceMeasureEnd;
-export interface TraceEventPerformanceMeasureBegin extends TraceEventNestableAsyncBegin {
     cat: 'blink.user_timing';
-    id: string;
 }
-export interface TraceEventPerformanceMeasureEnd extends TraceEventNestableAsyncEnd {
-    cat: 'blink.user_timing';
-    id: string;
-}
-export interface TraceEventConsoleTimeBegin extends TraceEventNestableAsyncBegin {
-    cat: 'blink.console';
-    id2: {
-        local: string;
+export type TraceEventPairableUserTiming = TraceEventUserTiming & TraceEventPairableAsync;
+export interface TraceEventPerformanceMeasureBegin extends TraceEventPairableUserTiming {
+    args: TraceEventArgs & {
+        detail?: string;
     };
+    ph: Phase.ASYNC_NESTABLE_START;
 }
-export interface TraceEventConsoleTimeEnd extends TraceEventNestableAsyncEnd {
+export type TraceEventPerformanceMeasureEnd = TraceEventPairableUserTiming & TraceEventPairableAsyncEnd;
+export type TraceEventPerformanceMeasure = TraceEventPerformanceMeasureBegin | TraceEventPerformanceMeasureEnd;
+export interface TraceEventPerformanceMark extends TraceEventUserTiming {
+    ph: Phase.INSTANT | Phase.MARK;
+}
+export interface TraceEventConsoleTimeBegin extends TraceEventPairableAsyncBegin {
     cat: 'blink.console';
-    id2: {
-        local: string;
-    };
 }
+export interface TraceEventConsoleTimeEnd extends TraceEventPairableAsyncEnd {
+    cat: 'blink.console';
+}
+export type TraceEventConsoleTime = TraceEventConsoleTimeBegin | TraceEventConsoleTimeEnd;
 export interface TraceEventTimeStamp extends TraceEventData {
     cat: 'devtools.timeline';
     name: 'TimeStamp';
@@ -813,11 +816,17 @@ export interface TraceEventTimeStamp extends TraceEventData {
         };
     };
 }
-export interface TraceEventPerformanceMark extends TraceEventData {
-    cat: 'blink.user_timing';
-    ph: Phase.INSTANT | Phase.MARK;
-    id: string;
+export interface TraceEventExtensionMeasureBegin extends TraceEventPerformanceMeasureBegin {
+    name: `devtools-entry-${string}`;
 }
+export interface TraceEventExtensionMeasureEnd extends TraceEventPerformanceMeasureEnd {
+    name: `devtools-entry-${string}`;
+}
+export interface TraceEventExtensionMark extends TraceEventPerformanceMark {
+    name: `devtools-entry-${string}`;
+    ph: Phase.INSTANT | Phase.MARK;
+}
+export type TraceEventExtensionMeasure = TraceEventExtensionMeasureBegin | TraceEventExtensionMeasureEnd;
 /** ChromeFrameReporter args for PipelineReporter event.
     Matching proto: https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/trace/track_event/chrome_frame_reporter.proto
  */
@@ -906,7 +915,8 @@ export interface TraceEventPipelineReporter extends TraceEventData {
     };
 }
 export declare function isTraceEventPipelineReporter(event: TraceEventData): event is TraceEventPipelineReporter;
-export interface SyntheticNestableAsyncEvent extends TraceEventData {
+export interface SyntheticEventPair<T extends TraceEventPairableAsync = TraceEventPairableAsync> extends TraceEventData {
+    cat: T['cat'];
     id?: string;
     id2?: {
         local?: string;
@@ -914,43 +924,17 @@ export interface SyntheticNestableAsyncEvent extends TraceEventData {
     };
     dur: MicroSeconds;
     args: TraceEventArgs & {
-        data: TraceEventArgsData & {
-            beginEvent: TraceEventNestableAsyncBegin;
-            endEvent: TraceEventNestableAsyncEnd;
+        data: {
+            beginEvent: T & TraceEventPairableAsyncBegin;
+            endEvent: T & TraceEventPairableAsyncEnd;
         };
     };
 }
-export interface SyntheticPipelineReporter extends SyntheticNestableAsyncEvent {
-    args: TraceEventArgs & {
-        data: SyntheticNestableAsyncEvent['args']['data'] & {
-            beginEvent: TraceEventPipelineReporter;
-            endEvent: TraceEventPipelineReporter;
-        };
-    };
-}
-export interface SyntheticUserTiming extends SyntheticNestableAsyncEvent {
-    id: string;
-    dur: MicroSeconds;
-    args: TraceEventArgs & {
-        data: TraceEventArgsData & {
-            beginEvent: TraceEventPerformanceMeasureBegin;
-            endEvent: TraceEventPerformanceMeasureEnd;
-        };
-    };
-}
-export interface SyntheticConsoleTiming extends SyntheticNestableAsyncEvent {
-    id2: {
-        local: string;
-    };
-    dur: MicroSeconds;
-    args: TraceEventArgs & {
-        data: TraceEventArgsData & {
-            beginEvent: TraceEventConsoleTimeBegin;
-            endEvent: TraceEventConsoleTimeEnd;
-        };
-    };
-}
-export interface SyntheticInteractionEvent extends SyntheticNestableAsyncEvent {
+export type SyntheticPipelineReporterPair = SyntheticEventPair<TraceEventPipelineReporter>;
+export type SyntheticUserTimingPair = SyntheticEventPair<TraceEventPerformanceMeasure>;
+export type SyntheticConsoleTimingPair = SyntheticEventPair<TraceEventConsoleTime>;
+export type SyntheticAnimationPair = SyntheticEventPair<TraceEventAnimation>;
+export interface SyntheticInteractionPair extends SyntheticEventPair<TraceEventEventTiming> {
     interactionId: number;
     type: string;
     ts: MicroSeconds;
@@ -960,25 +944,19 @@ export interface SyntheticInteractionEvent extends SyntheticNestableAsyncEvent {
     inputDelay: MicroSeconds;
     mainThreadHandling: MicroSeconds;
     presentationDelay: MicroSeconds;
-    args: TraceEventArgs & {
-        data: TraceEventArgsData & {
-            beginEvent: TraceEventEventTimingBegin;
-            endEvent: TraceEventEventTimingEnd;
-        };
-    };
 }
 /**
  * An event created synthetically in the frontend that has a self time
  * (the time spent running the task itself).
  */
-export interface SyntheticEventWithSelfTime extends TraceEventData {
+export interface SyntheticTraceEntry extends TraceEventData {
     selfTime?: MicroSeconds;
 }
 /**
  * A profile call created in the frontend from samples disguised as a
  * trace event.
  */
-export interface SyntheticProfileCall extends SyntheticEventWithSelfTime {
+export interface SyntheticProfileCall extends SyntheticTraceEntry {
     callFrame: Protocol.Runtime.CallFrame;
     nodeId: Protocol.integer;
 }
@@ -986,10 +964,9 @@ export interface SyntheticProfileCall extends SyntheticEventWithSelfTime {
  * A trace event augmented synthetically in the frontend to contain
  * its self time.
  */
-export type SyntheticRendererEvent = TraceEventRendererEvent & SyntheticEventWithSelfTime;
-export type SyntheticTraceEntry = SyntheticRendererEvent | SyntheticProfileCall;
-export declare function isSyntheticInteractionEvent(event: TraceEventData): event is SyntheticInteractionEvent;
-export declare function isRendererEvent(event: TraceEventData): event is SyntheticTraceEntry;
+export type SyntheticRendererEvent = TraceEventRendererEvent & SyntheticTraceEntry;
+export declare function isSyntheticInteractionEvent(event: TraceEventData): event is SyntheticInteractionPair;
+export declare function isSyntheticTraceEntry(event: TraceEventData): event is SyntheticTraceEntry;
 export interface TraceEventDrawFrame extends TraceEventInstant {
     name: KnownEventName.DrawFrame;
     args: TraceEventArgs & {
@@ -1206,11 +1183,11 @@ export declare function isSyntheticNetworkRequestDetailsEvent(traceEventData: Tr
 export declare function isTraceEventPrePaint(traceEventData: TraceEventData): traceEventData is TraceEventPrePaint;
 export declare function isTraceEventNavigationStartWithURL(event: TraceEventData): event is TraceEventNavigationStart;
 export declare function isTraceEventMainFrameViewport(traceEventData: TraceEventData): traceEventData is TraceEventMainFrameViewport;
-export declare function isSyntheticUserTiming(traceEventData: TraceEventData): traceEventData is SyntheticUserTiming;
-export declare function isSyntheticConsoleTiming(traceEventData: TraceEventData): traceEventData is SyntheticConsoleTiming;
-export declare function isTraceEventPerformanceMeasure(traceEventData: TraceEventData): traceEventData is TraceEventPerformanceMeasureBegin | TraceEventPerformanceMeasureEnd;
+export declare function isSyntheticUserTiming(traceEventData: TraceEventData): traceEventData is SyntheticUserTimingPair;
+export declare function isSyntheticConsoleTiming(traceEventData: TraceEventData): traceEventData is SyntheticConsoleTimingPair;
+export declare function isTraceEventPerformanceMeasure(traceEventData: TraceEventData): traceEventData is TraceEventPerformanceMeasure;
 export declare function isTraceEventPerformanceMark(traceEventData: TraceEventData): traceEventData is TraceEventPerformanceMark;
-export declare function isTraceEventConsoleTime(traceEventData: TraceEventData): traceEventData is TraceEventConsoleTimeBegin | TraceEventConsoleTimeEnd;
+export declare function isTraceEventConsoleTime(traceEventData: TraceEventData): traceEventData is TraceEventConsoleTime;
 export declare function isTraceEventTimeStamp(traceEventData: TraceEventData): traceEventData is TraceEventTimeStamp;
 export declare function isTraceEventParseHTML(traceEventData: TraceEventData): traceEventData is TraceEventParseHTML;
 export interface TraceEventAsync extends TraceEventData {

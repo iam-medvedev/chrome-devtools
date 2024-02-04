@@ -210,9 +210,9 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         this.computedStyleModel = new ComputedStyleModel();
         this.computedStyleModel.addEventListener("ComputedStyleChanged" /* Events.ComputedStyleChanged */, this.update, this);
         this.showInheritedComputedStylePropertiesSetting =
-            Common.Settings.Settings.instance().createSetting('showInheritedComputedStyleProperties', false);
+            Common.Settings.Settings.instance().createSetting('show-inherited-computed-style-properties', false);
         this.showInheritedComputedStylePropertiesSetting.addChangeListener(this.update.bind(this));
-        this.groupComputedStylesSetting = Common.Settings.Settings.instance().createSetting('groupComputedStyles', false);
+        this.groupComputedStylesSetting = Common.Settings.Settings.instance().createSetting('group-computed-styles', false);
         this.groupComputedStylesSetting.addChangeListener(() => {
             this.update();
         });
@@ -225,7 +225,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         this.filterRegex = null;
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.showInheritedComputedStylePropertiesSetting, undefined, i18nString(UIStrings.showAll)));
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.groupComputedStylesSetting, undefined, i18nString(UIStrings.group)));
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('computed')}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('computed')}`);
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingProperty);
         this.contentElement.appendChild(this.#computedStylesTree);

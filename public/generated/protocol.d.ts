@@ -7919,6 +7919,20 @@ export declare namespace Network {
         NameValuePairExceedsMaxSize = "NameValuePairExceedsMaxSize"
     }
     /**
+     * Types of reasons why a cookie should have been blocked by 3PCD but is exempted for the request.
+     */
+    const enum CookieExemptionReason {
+        None = "None",
+        UserSetting = "UserSetting",
+        TPCDMetadata = "TPCDMetadata",
+        TPCDDeprecationTrial = "TPCDDeprecationTrial",
+        TPCDHeuristics = "TPCDHeuristics",
+        EnterprisePolicy = "EnterprisePolicy",
+        StorageAccess = "StorageAccess",
+        TopLevelStorageAccess = "TopLevelStorageAccess",
+        CorsOptIn = "CorsOptIn"
+    }
+    /**
      * A cookie which was not stored from a response with the corresponding reason.
      */
     interface BlockedSetCookieWithReason {
@@ -7939,17 +7953,37 @@ export declare namespace Network {
         cookie?: Cookie;
     }
     /**
-     * A cookie with was not sent with a request with the corresponding reason.
+     * A cookie should have been blocked by 3PCD but is exempted and stored from a response with the
+     * corresponding reason. A cookie could only have at most one exemption reason.
      */
-    interface BlockedCookieWithReason {
+    interface ExemptedSetCookieWithReason {
         /**
-         * The reason(s) the cookie was blocked.
+         * The reason the cookie was exempted.
          */
-        blockedReasons: CookieBlockedReason[];
+        exemptionReason: CookieExemptionReason;
+        /**
+         * The cookie object representing the cookie.
+         */
+        cookie: Cookie;
+    }
+    /**
+     * A cookie associated with the request which may or may not be sent with it.
+     * Includes the cookies itself and reasons for blocking or exemption.
+     */
+    interface AssociatedCookie {
         /**
          * The cookie object representing the cookie which was not sent.
          */
         cookie: Cookie;
+        /**
+         * The reason(s) the cookie was blocked. If empty means the cookie is included.
+         */
+        blockedReasons: CookieBlockedReason[];
+        /**
+         * The reason the cookie should have been blocked by 3PCD but is exempted. A cookie could
+         * only have at most one exemption reason.
+         */
+        exemptionReason?: CookieExemptionReason;
     }
     /**
      * Cookie parameter object
@@ -8444,6 +8478,11 @@ export declare namespace Network {
          * If specified, deletes only cookies with the exact path.
          */
         path?: string;
+        /**
+         * If specified, deletes only cookies with the the given name and partitionKey where domain
+         * matches provided URL.
+         */
+        partitionKey?: string;
     }
     interface EmulateNetworkConditionsRequest {
         /**
@@ -9232,9 +9271,9 @@ export declare namespace Network {
         requestId: RequestId;
         /**
          * A list of cookies potentially associated to the requested URL. This includes both cookies sent with
-         * the request and the ones not sent; the latter are distinguished by having blockedReason field set.
+         * the request and the ones not sent; the latter are distinguished by having blockedReasons field set.
          */
-        associatedCookies: BlockedCookieWithReason[];
+        associatedCookies: AssociatedCookie[];
         /**
          * Raw request headers as they will be sent over the wire.
          */
@@ -9297,6 +9336,11 @@ export declare namespace Network {
          * True if partitioned cookies are enabled, but the partition key is not serializeable to string.
          */
         cookiePartitionKeyOpaque?: boolean;
+        /**
+         * A list of cookies which should have been blocked by 3PCD but are exempted and stored from
+         * the response with the corresponding reason.
+         */
+        exemptedCookies?: ExemptedSetCookieWithReason[];
     }
     const enum TrustTokenOperationDoneEventStatus {
         Ok = "Ok",
@@ -12634,6 +12678,16 @@ export declare namespace Storage {
         ConfigResolved = "configResolved"
     }
     /**
+     * Enum of network fetches auctions can do.
+     */
+    const enum InterestGroupAuctionFetchType {
+        BidderJs = "bidderJs",
+        BidderWasm = "bidderWasm",
+        SellerJs = "sellerJs",
+        BidderTrustedSignals = "bidderTrustedSignals",
+        SellerTrustedSignals = "sellerTrustedSignals"
+    }
+    /**
      * Ad advertising element inside an interest group.
      */
     interface InterestGroupAd {
@@ -13289,6 +13343,22 @@ export declare namespace Storage {
          * Set for started and configResolved
          */
         auctionConfig?: any;
+    }
+    /**
+     * Specifies which auctions a particular network fetch may be related to, and
+     * in what role. Note that it is not ordered with respect to
+     * Network.requestWillBeSent (but will happen before loadingFinished
+     * loadingFailed).
+     */
+    interface InterestGroupAuctionNetworkRequestCreatedEvent {
+        type: InterestGroupAuctionFetchType;
+        requestId: Network.RequestId;
+        /**
+         * This is the set of the auctions using the worklet that issued this
+         * request.  In the case of trusted signals, it's possible that only some of
+         * them actually care about the keys being queried.
+         */
+        auctions: InterestGroupAuctionId[];
     }
     /**
      * Shared storage was accessed by the associated page.
@@ -15344,6 +15414,13 @@ export declare namespace FedCm {
         ErrorMoreDetails = "ErrorMoreDetails"
     }
     /**
+     * The URLs that each account has
+     */
+    const enum AccountUrlType {
+        TermsOfService = "TermsOfService",
+        PrivacyPolicy = "PrivacyPolicy"
+    }
+    /**
      * Corresponds to IdentityRequestAccount
      */
     interface Account {
@@ -15376,6 +15453,11 @@ export declare namespace FedCm {
     interface ClickDialogButtonRequest {
         dialogId: string;
         dialogButton: DialogButton;
+    }
+    interface OpenUrlRequest {
+        dialogId: string;
+        accountIndex: integer;
+        accountUrlType: AccountUrlType;
     }
     interface DismissDialogRequest {
         dialogId: string;

@@ -84,7 +84,7 @@ class CookiePreviewWidget extends UI.Widget.VBox {
         super();
         this.setMinimumSize(230, 45);
         this.cookie = null;
-        this.showDecodedSetting = Common.Settings.Settings.instance().createSetting('cookieViewShowDecoded', false);
+        this.showDecodedSetting = Common.Settings.Settings.instance().createSetting('cookie-view-show-decoded', false);
         const header = document.createElement('div');
         header.classList.add('cookie-preview-widget-header');
         const span = document.createElement('span');
@@ -103,7 +103,7 @@ class CookiePreviewWidget extends UI.Widget.VBox {
         value.addEventListener('dblclick', this.handleDblClickOnCookieValue.bind(this));
         this.value = value;
         this.contentElement.classList.add('cookie-preview-widget');
-        this.contentElement.setAttribute('jslog', `${VisualLogging.section().context('cookie-preview')}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.section('cookie-preview')}`);
         this.contentElement.appendChild(value);
     }
     showDecoded(decoded) {
@@ -160,7 +160,7 @@ export class CookieItemsView extends StorageItemsView {
     constructor(model, cookieDomain) {
         super(i18nString(UIStrings.cookies), 'cookiesPanel');
         this.element.classList.add('storage-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('cookies-data')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('cookies-data')}`);
         this.model = model;
         this.cookieDomain = cookieDomain;
         this.totalSize = 0;
@@ -168,7 +168,7 @@ export class CookieItemsView extends StorageItemsView {
         /* renderInline */ false, this.saveCookie.bind(this), this.refreshItems.bind(this), this.handleCookieSelected.bind(this), this.deleteCookie.bind(this));
         this.cookiesTable.setMinimumSize(0, 50);
         this.splitWidget = new UI.SplitWidget.SplitWidget(
-        /* isVertical: */ false, /* secondIsSidebar: */ true, 'cookieItemsSplitViewState');
+        /* isVertical: */ false, /* secondIsSidebar: */ true, 'cookie-items-split-view-state');
         this.splitWidget.show(this.element);
         this.previewPanel = new UI.Widget.VBox();
         const resizer = this.previewPanel.element.createChild('div', 'preview-panel-resizer');

@@ -144,7 +144,7 @@ export class MainImpl {
         this.#initializeGlobalsForLayoutTests();
         this.createSettings(prefs);
         await this.requestAndRegisterLocaleData();
-        Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting('sync_preferences').get());
+        Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting('sync-preferences').get());
         if (Root.Runtime.Runtime.queryParam('veLogging')) {
             void VisualLogging.startLogging();
         }
@@ -266,13 +266,13 @@ export class MainImpl {
         // Full Accessibility Tree
         Root.Runtime.experiments.register('fullAccessibilityTree', 'Enable full accessibility tree view in the Elements panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#accesibility-tree', 'https://g.co/devtools/a11y-tree-feedback');
         // Font Editor
-        Root.Runtime.experiments.register('fontEditor', 'Enable new Font Editor tool within the Styles Pane.', undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#font');
+        Root.Runtime.experiments.register('fontEditor', 'Enable new Font Editor tool within the Styles tab.', undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#font');
         // Contrast issues reported via the Issues panel.
         Root.Runtime.experiments.register('contrastIssues', 'Enable automatic contrast issue reporting via the Issues panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast');
         // New cookie features.
         Root.Runtime.experiments.register('experimentalCookieFeatures', 'Enable experimental cookie features');
         // CSS <length> authoring tool.
-        Root.Runtime.experiments.register('cssTypeComponentLength', 'Enable CSS <length> authoring tool in the Styles pane', undefined, 'https://developer.chrome.com/blog/new-in-devtools-96/#length', 'https://g.co/devtools/length-feedback');
+        Root.Runtime.experiments.register('cssTypeComponentLengthDeprecate', 'Deprecate CSS <length> authoring tool in the Styles tab', undefined, 'https://goo.gle/devtools-deprecate-length-tools', 'https://crbug.com/1522657');
         // Integrate CSS changes in the Styles pane.
         Root.Runtime.experiments.register("stylesPaneCSSChanges" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */, 'Sync CSS changes in the Styles pane');
         // Highlights a violating node or attribute by rendering a squiggly line under it and adding a tooltip linking to the issues panel.
@@ -295,7 +295,7 @@ export class MainImpl {
             Root.Runtime.experiments.register("consoleInsights" /* Root.Runtime.ExperimentName.CONSOLE_INSIGHTS */, 'Enable Console Insights. This implies consent to collect and process data', false, 'http://go/console-insights-experiment', 'http://go/console-insights-experiment-general-feedback');
         }
         Root.Runtime.experiments.enableExperimentsByDefault([
-            'cssTypeComponentLength',
+            'cssTypeComponentLengthDeprecate',
             'setAllBreakpointsEagerly',
             "timelineAsConsoleProfileResultPanel" /* Root.Runtime.ExperimentName.TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL */,
             "outermostTargetSelector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
@@ -303,7 +303,8 @@ export class MainImpl {
             "preloadingStatusPanel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
             'evaluateExpressionsWithSourceMaps',
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocolMonitor'] : []),
-            "networkPanelFilterBarRedesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
+            ...(Root.Runtime.Runtime.queryParam('enableAida') === 'true' ? ["consoleInsights" /* Root.Runtime.ExperimentName.CONSOLE_INSIGHTS */] :
+                []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
         const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
@@ -331,7 +332,7 @@ export class MainImpl {
         // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
         Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
         const defaultThemeSetting = 'systemPreferred';
-        const themeSetting = Common.Settings.Settings.instance().createSetting('uiTheme', defaultThemeSetting);
+        const themeSetting = Common.Settings.Settings.instance().createSetting('ui-theme', defaultThemeSetting);
         UI.UIUtils.initializeUIUtils(document);
         // Initialize theme support and apply it.
         if (!ThemeSupport.ThemeSupport.hasInstance()) {
@@ -350,7 +351,7 @@ export class MainImpl {
         highContrastMediaQuery.addEventListener('change', onThemeChange);
         themeSetting.addChangeListener(onThemeChange);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged, async () => {
-            await UI.Utils.DynamicTheming.refetchColors(document);
+            await UI.Utils.DynamicTheming.fetchColors(document);
         }, this);
         UI.UIUtils.installComponentRootStyles(document.body);
         this.#addMainEventListeners(document);
@@ -432,7 +433,7 @@ export class MainImpl {
         const app = appProvider.createApp();
         // It is important to kick controller lifetime after apps are instantiated.
         UI.DockController.DockController.instance().initialize();
-        await UI.Utils.DynamicTheming.refetchColors(document);
+        await UI.Utils.DynamicTheming.fetchColors(document);
         app.presentUI(document);
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-element-search')) {
             const toggleSearchNodeAction = UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
@@ -478,7 +479,7 @@ export class MainImpl {
             return runnable.run();
         });
         if (Root.Runtime.experiments.isEnabled('liveHeapProfile')) {
-            const setting = 'memoryLiveHeapProfile';
+            const setting = 'memory-live-heap-profile';
             if (Common.Settings.Settings.instance().moduleSetting(setting).get()) {
                 promises.push(PerfUI.LiveHeapProfile.LiveHeapProfile.instance().run());
             }
@@ -615,7 +616,7 @@ let mainMenuItemInstance;
 export class MainMenuItem {
     #itemInternal;
     constructor() {
-        this.#itemInternal = new UI.Toolbar.ToolbarMenuButton(this.#handleContextMenu.bind(this), true);
+        this.#itemInternal = new UI.Toolbar.ToolbarMenuButton(this.#handleContextMenu.bind(this), true, 'main-menu');
         this.#itemInternal.element.classList.add('main-menu');
         this.#itemInternal.setTitle(i18nString(UIStrings.customizeAndControlDevtools));
     }

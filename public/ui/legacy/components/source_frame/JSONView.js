@@ -58,7 +58,7 @@ export class JSONView extends UI.Widget.VBox {
         this.parsedJSON = parsedJSON;
         this.startCollapsed = Boolean(startCollapsed);
         this.element.classList.add('json-view');
-        this.element.setAttribute('jslog', `${VisualLogging.section().context('json-view')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.section('json-view')}`);
         this.currentSearchFocusIndex = 0;
         this.currentSearchTreeElements = [];
         this.searchRegex = null;

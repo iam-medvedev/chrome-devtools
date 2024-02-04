@@ -231,7 +231,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         super(true /* delegatesFocus */);
         this.setMinimumSize(96, 26);
         this.registerCSSFiles([stylesSidebarPaneStyles]);
-        Common.Settings.Settings.instance().moduleSetting('textEditorIndent').addChangeListener(this.update.bind(this));
+        Common.Settings.Settings.instance().moduleSetting('text-editor-indent').addChangeListener(this.update.bind(this));
         this.currentToolbarPane = null;
         this.animatedToolbarPane = null;
         this.pendingWidget = null;
@@ -261,7 +261,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.initialUpdateCompleted = false;
         this.hasMatchedStyles = false;
         this.contentElement.classList.add('styles-pane');
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('styles')}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('styles')}`);
         this.sectionBlocks = [];
         this.idleCallbackManager = null;
         this.needsForceUpdate = false;
@@ -278,7 +278,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             return null;
         }, () => this.node());
         this.activeCSSAngle = null;
-        const showDocumentationSetting = Common.Settings.Settings.instance().moduleSetting('showCSSPropertyDocumentationOnHover');
+        const showDocumentationSetting = Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover');
         showDocumentationSetting.addChangeListener(event => {
             const metricType = Boolean(event.data) ? 1 /* Host.UserMetrics.CSSPropertyDocumentation.ToggledOn */ :
                 2 /* Host.UserMetrics.CSSPropertyDocumentation.ToggledOff */;
@@ -427,7 +427,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     }
     static formatLeadingProperties(section) {
         const selectorText = section.headerText();
-        const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
+        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
         const style = section.style();
         const lines = [];
         // Invalid property should also be copied.
@@ -1286,11 +1286,11 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }
     }
     createRenderingShortcuts() {
-        const prefersColorSchemeSetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme');
-        const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting('emulateAutoDarkMode');
+        const prefersColorSchemeSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-color-scheme');
+        const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting('emulate-auto-dark-mode');
         const decorateStatus = (condition, title) => `${condition ? '✓ ' : ''}${title}`;
         const button = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleRenderingEmulations), 'brush', 'brush-filled');
-        button.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context('rendering-emulations')}`);
+        button.element.setAttribute('jslog', `${VisualLogging.dropDown('rendering-emulations').track({ click: true })}`);
         button.element.addEventListener('click', event => {
             const boundingRect = button.element.getBoundingClientRect();
             const menu = new UI.ContextMenu.ContextMenu(event, {
@@ -1379,7 +1379,7 @@ export class SectionBlock {
     static createPseudoTypeBlock(pseudoType, pseudoArgument) {
         const separatorElement = document.createElement('div');
         separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.stylePropertiesSectionSeparator().context('pseudotype')}`);
+        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('pseudotype')}`);
         const pseudoArgumentString = pseudoArgument ? `(${pseudoArgument})` : '';
         const pseudoTypeString = `${pseudoType}${pseudoArgumentString}`;
         separatorElement.textContent = i18nString(UIStrings.pseudoSElement, { PH1: pseudoTypeString });
@@ -1388,7 +1388,7 @@ export class SectionBlock {
     static async createInheritedPseudoTypeBlock(pseudoType, pseudoArgument, node) {
         const separatorElement = document.createElement('div');
         separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.stylePropertiesSectionSeparator().context('inherited-pseudotype')}`);
+        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('inherited-pseudotype')}`);
         const pseudoArgumentString = pseudoArgument ? `(${pseudoArgument})` : '';
         const pseudoTypeString = `${pseudoType}${pseudoArgumentString}`;
         UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFromSPseudoOf, { PH1: pseudoTypeString }));
@@ -1409,7 +1409,7 @@ export class SectionBlock {
     static createKeyframesBlock(keyframesName) {
         const separatorElement = document.createElement('div');
         separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.stylePropertiesSectionSeparator().context('keyframes')}`);
+        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('keyframes')}`);
         separatorElement.textContent = `@keyframes ${keyframesName}`;
         return new SectionBlock(separatorElement);
     }
@@ -1422,14 +1422,14 @@ export class SectionBlock {
     static createPositionFallbackBlock(positionFallbackName) {
         const separatorElement = document.createElement('div');
         separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.stylePropertiesSectionSeparator().context('position-fallback')}`);
+        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('position-fallback')}`);
         separatorElement.textContent = `@position-fallback ${positionFallbackName}`;
         return new SectionBlock(separatorElement);
     }
     static async createInheritedNodeBlock(node) {
         const separatorElement = document.createElement('div');
         separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.stylePropertiesSectionSeparator().context('inherited')}`);
+        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('inherited')}`);
         UI.UIUtils.createTextChild(separatorElement, i18nString(UIStrings.inheritedFroms));
         const link = await Common.Linkifier.Linkifier.linkify(node, {
             preventKeyboardFocus: true,
@@ -1441,7 +1441,7 @@ export class SectionBlock {
     static createLayerBlock(rule) {
         const separatorElement = document.createElement('div');
         separatorElement.className = 'sidebar-separator layer-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.stylePropertiesSectionSeparator().context('layer')}`);
+        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('layer')}`);
         UI.UIUtils.createTextChild(separatorElement.createChild('div'), i18nString(UIStrings.layer));
         const layers = rule.layers;
         if (!layers.length && rule.origin === "user-agent" /* Protocol.CSS.StyleSheetOrigin.UserAgent */) {
@@ -1995,7 +1995,7 @@ export class StylesSidebarPropertyRenderer {
             matchers.push(new LegacyRegexMatcher(this.propertyName === 'font-family' ? InlineEditor.FontEditorUtils.FontFamilyRegex :
                 InlineEditor.FontEditorUtils.FontPropertiesRegex, this.fontHandler));
         }
-        if (Root.Runtime.experiments.isEnabled('cssTypeComponentLength') && this.lengthHandler) {
+        if (!Root.Runtime.experiments.isEnabled('cssTypeComponentLengthDeprecate') && this.lengthHandler) {
             // TODO(changhaohan): crbug.com/1138628 refactor this to handle unitless 0 cases
             matchers.push(new LegacyRegexMatcher(asLineMatch(InlineEditor.CSSLengthUtils.CSSLengthRegex), this.lengthHandler));
         }

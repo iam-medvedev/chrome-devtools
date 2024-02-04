@@ -35,11 +35,12 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     constructor() {
         super('resources');
         this.resourcesLastSelectedItemSetting =
-            Common.Settings.Settings.instance().createSetting('resourcesLastSelectedElementPath', []);
+            Common.Settings.Settings.instance().createSetting('resources-last-selected-element-path', []);
         this.visibleView = null;
         this.pendingViewPromise = null;
         this.categoryView = null;
         const mainContainer = new UI.Widget.VBox();
+        mainContainer.setMinimumSize(100, 0);
         this.storageViews = mainContainer.element.createChild('div', 'vbox flex-auto');
         this.storageViewToolbar = new UI.Toolbar.Toolbar('resources-toolbar', mainContainer.element);
         this.splitWidget().setMainWidget(mainContainer);

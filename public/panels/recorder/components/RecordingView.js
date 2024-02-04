@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as VisualLogging from '../../../../front_end/ui/visual_logging/visual_logging.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -17,6 +16,7 @@ import * as Menus from '../../../ui/components/menus/menus.js';
 import * as SplitView from '../../../ui/components/split_view/split_view.js';
 import * as TextEditor from '../../../ui/components/text_editor/text_editor.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
 import { ExtensionView } from './ExtensionView.js';
 import recordingViewStyles from './recordingView.css.js';
@@ -251,7 +251,7 @@ export class RecordingView extends HTMLElement {
     #onCopyBound = this.#onCopy.bind(this);
     constructor() {
         super();
-        this.setAttribute('jslog', `${VisualLogging.section().context('recording-list-view')}`);
+        this.setAttribute('jslog', `${VisualLogging.section('recording-list-view')}`);
     }
     set data(data) {
         this.#isRecording = data.isRecording;
@@ -378,7 +378,7 @@ export class RecordingView extends HTMLElement {
             isSelected: this.#selectedStep === step,
             recorderSettings: this.#recorderSettings,
         }}
-      jslog=${VisualLogging.action().track({ click: true }).context('step')}
+      jslog=${VisualLogging.action('step').track({ click: true })}
       ></${StepView.litTagName}>
     `;
         // clang-format on
@@ -605,7 +605,7 @@ export class RecordingView extends HTMLElement {
             min=${Models.SchemaUtils.minTimeout}
             max=${Models.SchemaUtils.maxTimeout}
             value=${this.#settings.timeout || Models.RecordingPlayer.defaultTimeout}
-            jslog=${VisualLogging.textField().track({ keydown: true }).context('timeout')}
+            jslog=${VisualLogging.textField('timeout').track({ keydown: true })}
             class="devtools-text-input"
             type="number">
         </label>
@@ -631,7 +631,7 @@ export class RecordingView extends HTMLElement {
             @click=${isEditable && this.#onToggleReplaySettings}
             tabindex="0"
             role="button"
-            jslog=${VisualLogging.action().track({ click: true }).context('replay-settings')}
+            jslog=${VisualLogging.action('replay-settings').track({ click: true })}
             aria-label=${i18nString(UIStrings.editReplaySettings)}>
             <span>${i18nString(UIStrings.replaySettings)}</span>
             ${isEditable
@@ -727,7 +727,7 @@ export class RecordingView extends HTMLElement {
                 iconName: 'cross',
             }}
                 @click=${this.showCodeToggle}
-                .jslogContext=${'show-code'}
+                jslog=${VisualLogging.close().track({ click: true })}
               ></${Buttons.Button.Button.litTagName}>
             </div>
             <div class="text-editor">
@@ -763,7 +763,7 @@ export class RecordingView extends HTMLElement {
         }}
         .disabled=${this.#replayState.isPlaying}
         @startreplay=${this.#handleTogglePlaying}
-        jslog=${VisualLogging.action().track({ click: true }).context('replay')}
+        jslog=${VisualLogging.action('replay').track({ click: true })}
         >
       </${ReplayButton.litTagName}>`;
         // clang-format on
@@ -875,7 +875,7 @@ export class RecordingView extends HTMLElement {
                 <div class="steps">
                   <${StepView.litTagName}
                     @click=${this.#onStepClick}
-                    jslog=${VisualLogging.action().track({ click: true }).context('step')}
+                    jslog=${VisualLogging.action('step').track({ click: true })}
                     @mouseover=${this.#onStepHover}
                     .data=${{
             section,
@@ -988,7 +988,7 @@ export class RecordingView extends HTMLElement {
       <div class="footer">
         <div class="controls">
           <devtools-control-button
-            jslog=${VisualLogging.toggle().track({ click: true }).context('toggle-recording')}
+            jslog=${VisualLogging.toggle('toggle-recording').track({ click: true })}
             @click=${this.#dispatchRecordingFinished}
             .disabled=${this.#recordingTogglingInProgress}
             .shape=${'square'}

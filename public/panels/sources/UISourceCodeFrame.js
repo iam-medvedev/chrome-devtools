@@ -74,7 +74,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
     #sourcesPanelOpenedMetricsRecorded = false;
     constructor(uiSourceCode) {
         super(() => this.workingCopy());
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('source-code-frame')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('source-code-frame')}`);
         this.uiSourceCodeInternal = uiSourceCode;
         this.muteSourceCodeEvents = false;
         this.persistenceBinding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
@@ -82,7 +82,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         this.messageAndDecorationListeners = [];
         this.boundOnBindingChanged = this.onBindingChanged.bind(this);
         Common.Settings.Settings.instance()
-            .moduleSetting('persistenceNetworkOverridesEnabled')
+            .moduleSetting('persistence-network-overrides-enabled')
             .addChangeListener(this.onNetworkPersistenceChanged, this);
         this.errorPopoverHelper =
             new UI.PopoverHelper.PopoverHelper(this.textEditor.editor.contentDOM, this.getErrorPopoverContent.bind(this));
@@ -356,7 +356,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         this.textEditor.editor.destroy();
         this.detach();
         Common.Settings.Settings.instance()
-            .moduleSetting('persistenceNetworkOverridesEnabled')
+            .moduleSetting('persistence-network-overrides-enabled')
             .removeChangeListener(this.onNetworkPersistenceChanged, this);
     }
     onMessageAdded(event) {

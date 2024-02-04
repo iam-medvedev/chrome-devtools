@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { Dialog as DialogElement, } from './Dialog.js';
 import shortcutDialogStyles from './shortcutDialog.css.js';
 const UIStrings = {
@@ -107,6 +108,7 @@ export class ShortcutDialog extends HTMLElement {
             iconName: 'cross',
             title: i18nString(UIStrings.close),
         }}
+            jslog=${VisualLogging.close().track({ click: true })}
           ></${Buttons.Button.Button.litTagName}>
         </div>
         <ul class="keybinds-list">

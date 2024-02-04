@@ -7,6 +7,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { StepTimingFunction } from './AnimationTimeline.js';
 const UIStrings = {
     /**
@@ -57,6 +58,7 @@ export class AnimationUI {
         this.#svg.style.marginLeft = '-' + Options.AnimationMargin + 'px';
         this.#svg.addEventListener('contextmenu', this.onContextMenu.bind(this));
         this.#activeIntervalGroup = UI.UIUtils.createSVGChild(this.#svg, 'g');
+        this.#activeIntervalGroup.setAttribute('jslog', `${VisualLogging.animationClip().track({ drag: true })}`);
         UI.UIUtils.installDragHandle(this.#activeIntervalGroup, this.mouseDown.bind(this, "AnimationDrag" /* Events.AnimationDrag */, null), this.mouseMove.bind(this), this.mouseUp.bind(this), '-webkit-grabbing', '-webkit-grab');
         AnimationUI.installDragHandleKeyboard(this.#activeIntervalGroup, this.keydownMove.bind(this, "AnimationDrag" /* Events.AnimationDrag */, null));
         this.#cachedElements = [];
@@ -138,6 +140,7 @@ export class AnimationUI {
         circle.setAttribute('cy', Options.AnimationHeight.toString());
         circle.style.stroke = this.#color;
         circle.setAttribute('r', (Options.AnimationMargin / 2).toString());
+        circle.setAttribute('jslog', `${VisualLogging.controlPoint('animations.keyframe').track({ drag: true })}`);
         circle.tabIndex = 0;
         UI.ARIAUtils.setLabel(circle, keyframeIndex <= 0 ? i18nString(UIStrings.animationEndpointSlider) :
             i18nString(UIStrings.animationKeyframeSlider));

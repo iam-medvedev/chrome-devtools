@@ -75,7 +75,7 @@ export const linkifyNodeReference = function (node, options = {
     root.classList.add('monospace');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(root, { cssFile: [domLinkifierStyles], delegatesFocus: undefined });
     const link = shadowRoot.createChild('div', 'node-link');
-    link.setAttribute('jslog', `${VisualLogging.link().track({ click: true, keydown: 'Enter' }).context('node-link')}`);
+    link.setAttribute('jslog', `${VisualLogging.link('node').track({ click: true, keydown: 'Enter' })}`);
     decorateNodeLabel(node, link, options.tooltip);
     link.addEventListener('click', () => {
         void Common.Revealer.reveal(node, false);
@@ -101,7 +101,7 @@ export const linkifyDeferredNodeReference = function (deferredNode, options = {
     const root = document.createElement('div');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(root, { cssFile: [domLinkifierStyles], delegatesFocus: undefined });
     const link = shadowRoot.createChild('div', 'node-link');
-    link.setAttribute('jslog', `${VisualLogging.link().track({ click: true, keydown: 'Enter' }).context('node-link')}`);
+    link.setAttribute('jslog', `${VisualLogging.link('node').track({ click: true, keydown: 'Enter' })}`);
     link.createChild('slot');
     link.addEventListener('click', deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);
     link.addEventListener('mousedown', e => e.consume(), false);

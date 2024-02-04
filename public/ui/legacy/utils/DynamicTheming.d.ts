@@ -1,3 +1,3 @@
 export declare class DynamicTheming {
-    static refetchColors(document: Document | undefined): Promise<void>;
+    static fetchColors(document: Document | undefined): Promise<void>;
 }

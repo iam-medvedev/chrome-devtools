@@ -112,11 +112,11 @@ export class CountersGraph extends UI.Widget.VBox {
         this.counters = [];
         this.counterUI = [];
         this.countersByName = new Map();
-        this.countersByName.set('jsHeapSizeUsed', this.createCounter(i18nString(UIStrings.jsHeap), 'hsl(220, 90%, 43%)', Platform.NumberUtilities.bytesToString));
-        this.countersByName.set('documents', this.createCounter(i18nString(UIStrings.documents), 'hsl(0, 90%, 43%)'));
-        this.countersByName.set('nodes', this.createCounter(i18nString(UIStrings.nodes), 'hsl(120, 90%, 43%)'));
-        this.countersByName.set('jsEventListeners', this.createCounter(i18nString(UIStrings.listeners), 'hsl(38, 90%, 43%)'));
-        this.gpuMemoryCounter = this.createCounter(i18nString(UIStrings.gpuMemory), 'hsl(300, 90%, 43%)', Platform.NumberUtilities.bytesToString);
+        this.countersByName.set('jsHeapSizeUsed', this.createCounter(i18nString(UIStrings.jsHeap), 'js-heap-size-used', 'hsl(220, 90%, 43%)', Platform.NumberUtilities.bytesToString));
+        this.countersByName.set('documents', this.createCounter(i18nString(UIStrings.documents), 'documents', 'hsl(0, 90%, 43%)'));
+        this.countersByName.set('nodes', this.createCounter(i18nString(UIStrings.nodes), 'nodes', 'hsl(120, 90%, 43%)'));
+        this.countersByName.set('jsEventListeners', this.createCounter(i18nString(UIStrings.listeners), 'js-event-listeners', 'hsl(38, 90%, 43%)'));
+        this.gpuMemoryCounter = this.createCounter(i18nString(UIStrings.gpuMemory), 'gpu-memory-used-kb', 'hsl(300, 90%, 43%)', Platform.NumberUtilities.bytesToString);
         this.countersByName.set('gpuMemoryUsedKB', this.gpuMemoryCounter);
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
     }
@@ -164,10 +164,10 @@ export class CountersGraph extends UI.Widget.VBox {
         this.currentValuesBar = this.graphsContainer.element.createChild('div');
         this.currentValuesBar.id = 'counter-values-bar';
     }
-    createCounter(uiName, color, formatter) {
+    createCounter(uiName, settingsKey, color, formatter) {
         const counter = new Counter();
         this.counters.push(counter);
-        this.counterUI.push(new CounterUI(this, uiName, color, counter, formatter));
+        this.counterUI.push(new CounterUI(this, uiName, settingsKey, color, counter, formatter));
         return counter;
     }
     resizerElement() {
@@ -337,11 +337,11 @@ export class CounterUI {
     verticalPadding;
     currentValueLabel;
     marker;
-    constructor(countersPane, title, graphColor, counter, formatter) {
+    constructor(countersPane, title, settingsKey, graphColor, counter, formatter) {
         this.countersPane = countersPane;
         this.counter = counter;
         this.formatter = formatter || Platform.NumberUtilities.withThousandsSeparator;
-        this.setting = Common.Settings.Settings.instance().createSetting('timelineCountersGraph-' + title, true);
+        this.setting = Common.Settings.Settings.instance().createSetting('timeline-counters-graph-' + settingsKey, true);
         this.setting.setTitle(title);
         this.filter = new UI.Toolbar.ToolbarSettingCheckbox(this.setting, title);
         this.filter.inputElement.classList.add('-theme-preserve-input');

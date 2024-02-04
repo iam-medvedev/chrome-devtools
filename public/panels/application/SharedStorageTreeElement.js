@@ -12,7 +12,7 @@ export class SharedStorageTreeElement extends ApplicationPanelTreeElement {
     static async createElement(resourcesPanel, sharedStorage) {
         const treeElement = new SharedStorageTreeElement(resourcesPanel, sharedStorage);
         treeElement.view = await SharedStorageItemsView.createView(sharedStorage);
-        treeElement.view.element.setAttribute('jslog', `${VisualLogging.pane().context('shared-storage-data')}`);
+        treeElement.view.element.setAttribute('jslog', `${VisualLogging.pane('shared-storage-data')}`);
         return treeElement;
     }
     get itemURL() {

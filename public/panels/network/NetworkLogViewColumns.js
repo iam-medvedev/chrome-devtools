@@ -170,7 +170,7 @@ export class NetworkLogViewColumns {
     scrollerTouchStartPos;
     constructor(networkLogView, timeCalculator, durationCalculator, networkLogLargeRowsSetting) {
         this.networkLogView = networkLogView;
-        this.persistantSettings = Common.Settings.Settings.instance().createSetting('networkLogColumns', {});
+        this.persistantSettings = Common.Settings.Settings.instance().createSetting('network-log-columns', {});
         this.networkLogLargeRowsSetting = networkLogLargeRowsSetting;
         this.networkLogLargeRowsSetting.addChangeListener(this.updateRowsSize, this);
         this.eventDividers = new Map();
@@ -254,7 +254,7 @@ export class NetworkLogViewColumns {
         this.dataGridInternal.setHeaderContextMenuCallback(this.innerHeaderContextMenu.bind(this));
         this.activeWaterfallSortId = WaterfallSortIds.StartTime;
         this.dataGridInternal.markColumnAsSortedBy(_initialSortColumn, DataGrid.DataGrid.Order.Ascending);
-        this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'networkPanelSplitViewWaterfall', 200);
+        this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'network-panel-split-view-waterfall', 200);
         const widget = this.dataGridInternal.asWidget();
         widget.setMinimumSize(150, 0);
         this.splitWidget.setMainWidget(widget);
@@ -356,7 +356,7 @@ export class NetworkLogViewColumns {
     createWaterfallHeader() {
         this.waterfallHeaderElement =
             this.waterfallColumn.contentElement.createChild('div', 'network-waterfall-header');
-        this.waterfallHeaderElement.setAttribute('jslog', `${VisualLogging.tableHeader().track({ click: true }).context('waterfall')}`);
+        this.waterfallHeaderElement.setAttribute('jslog', `${VisualLogging.tableHeader('waterfall').track({ click: true })}`);
         this.waterfallHeaderElement.addEventListener('click', waterfallHeaderClicked.bind(this));
         this.waterfallHeaderElement.addEventListener('contextmenu', event => this.innerHeaderContextMenu(new UI.ContextMenu.ContextMenu(event)));
         this.waterfallHeaderElement.createChild('div', 'hover-layer');

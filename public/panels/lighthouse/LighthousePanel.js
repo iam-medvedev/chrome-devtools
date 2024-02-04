@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { Events, LighthouseController, } from './LighthouseController.js';
 import lighthousePanelStyles from './lighthousePanel.css.js';
 import { ProtocolService } from './LighthouseProtocolService.js';
@@ -164,6 +165,7 @@ export class LighthousePanel extends UI.Panel.Panel {
     }
     renderToolbar() {
         const lighthouseToolbarContainer = this.element.createChild('div', 'lighthouse-toolbar-container');
+        lighthouseToolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         const toolbar = new UI.Toolbar.Toolbar('', lighthouseToolbarContainer);
         this.newButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.performAnAudit), 'plus');
         toolbar.appendToolbarItem(this.newButton);
@@ -178,7 +180,7 @@ export class LighthousePanel extends UI.Panel.Panel {
         this.settingsPane.show(this.contentElement);
         this.settingsPane.element.classList.add('lighthouse-settings-pane');
         this.settingsPane.element.appendChild(this.startView.settingsToolbar().element);
-        this.showSettingsPaneSetting = Common.Settings.Settings.instance().createSetting('lighthouseShowSettingsToolbar', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
+        this.showSettingsPaneSetting = Common.Settings.Settings.instance().createSetting('lighthouse-show-settings-toolbar', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
         this.rightToolbar = new UI.Toolbar.Toolbar('', lighthouseToolbarContainer);
         this.rightToolbar.appendSeparator();
         this.rightToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.lighthouseSettings), 'gear-filled'));

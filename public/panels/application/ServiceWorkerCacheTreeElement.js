@@ -29,7 +29,7 @@ export class ServiceWorkerCacheTreeElement extends ExpandableApplicationPanelTre
     swCacheTreeElements;
     storageBucket;
     constructor(resourcesPanel, storageBucket) {
-        super(resourcesPanel, i18nString(UIStrings.cacheStorage), 'CacheStorage');
+        super(resourcesPanel, i18nString(UIStrings.cacheStorage), 'cache-storage');
         const icon = IconButton.Icon.create('database');
         this.setLink('https://developer.chrome.com/docs/devtools/storage/cache/?utm_source=devtools');
         this.setLeadingIcons([icon]);
@@ -164,7 +164,7 @@ export class SWCacheTreeElement extends ApplicationPanelTreeElement {
             this.view = new ServiceWorkerCacheView(this.model, this.cache);
         }
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.service_worker_cache]);
+        Host.userMetrics.panelShown('service-worker-cache');
         return false;
     }
     hasModelAndCache(model, cache) {

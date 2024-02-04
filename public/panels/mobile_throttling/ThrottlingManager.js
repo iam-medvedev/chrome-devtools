@@ -95,8 +95,9 @@ export class ThrottlingManager {
         this.cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
         this.cpuThrottlingControls = new Set();
         this.cpuThrottlingRates = ThrottlingPresets.cpuThrottlingPresets;
-        this.customNetworkConditionsSetting = Common.Settings.Settings.instance().moduleSetting('customNetworkConditions');
-        this.currentNetworkThrottlingConditionsSetting = Common.Settings.Settings.instance().createSetting('preferredNetworkCondition', SDK.NetworkManager.NoThrottlingConditions);
+        this.customNetworkConditionsSetting =
+            Common.Settings.Settings.instance().moduleSetting('custom-network-conditions');
+        this.currentNetworkThrottlingConditionsSetting = Common.Settings.Settings.instance().createSetting('preferred-network-condition', SDK.NetworkManager.NoThrottlingConditions);
         this.currentNetworkThrottlingConditionsSetting.setSerializer(new SDK.NetworkManager.ConditionsSerializer());
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, () => {
             this.lastNetworkThrottlingConditions = this.currentNetworkThrottlingConditionsSetting.get();
@@ -164,7 +165,7 @@ export class ThrottlingManager {
     }
     createOfflineToolbarCheckbox() {
         const checkbox = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.offline), i18nString(UIStrings.forceDisconnectedFromNetwork), forceOffline.bind(this));
-        checkbox.element.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true }).context('disconnect-from-network')}`);
+        checkbox.element.setAttribute('jslog', `${VisualLogging.toggle('disconnect-from-network').track({ click: true })}`);
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, networkConditionsChanged);
         checkbox.setChecked(SDK.NetworkManager.MultitargetNetworkManager.instance().isOffline());
         function forceOffline() {

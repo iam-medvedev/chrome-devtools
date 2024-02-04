@@ -369,7 +369,7 @@ export class DebuggerWorkspaceBinding {
         }
         const functionLocation = frame.functionLocation();
         if (!autoSteppingContext || debuggerPausedDetails.reason !== "step" /* Protocol.Debugger.PausedEventReason.Step */ ||
-            !functionLocation || !frame.script.isWasm() || !Common.Settings.moduleSetting('wasmAutoStepping').get() ||
+            !functionLocation || !frame.script.isWasm() || !Common.Settings.moduleSetting('wasm-auto-stepping').get() ||
             !this.pluginManager.hasPluginForScript(frame.script)) {
             return true;
         }

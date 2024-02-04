@@ -27,7 +27,7 @@ export class ElementsTreeElementHighlighter {
         this.isModifyingTreeOutline = false;
     }
     highlightNode(event) {
-        if (!Common.Settings.Settings.instance().moduleSetting('highlightNodeOnHoverInOverlay').get()) {
+        if (!Common.Settings.Settings.instance().moduleSetting('highlight-node-on-hover-in-overlay').get()) {
             return;
         }
         const domNode = event.data;

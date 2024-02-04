@@ -1148,6 +1148,7 @@ export class DevToolsCloseButton extends HTMLDivElement {
         super();
         const root = Utils.createShadowRootWithCoreStyles(this, { cssFile: closeButtonStyles, delegatesFocus: undefined });
         this.buttonElement = root.createChild('div', 'close-button');
+        this.buttonElement.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         Tooltip.install(this.buttonElement, i18nString(UIStrings.close));
         ARIAUtils.setLabel(this.buttonElement, i18nString(UIStrings.close));
         ARIAUtils.markAsButton(this.buttonElement);

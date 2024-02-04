@@ -83,12 +83,12 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
     editor;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('blackbox')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('blackbox')}`);
         const header = this.contentElement.createChild('div', 'header');
         header.textContent = i18nString(UIStrings.frameworkIgnoreList);
         UI.ARIAUtils.markAsHeading(header, 1);
         this.contentElement.createChild('div', 'intro').textContent = i18nString(UIStrings.debuggerWillSkipThroughThe);
-        const enabledSetting = Common.Settings.Settings.instance().moduleSetting('enableIgnoreListing');
+        const enabledSetting = Common.Settings.Settings.instance().moduleSetting('enable-ignore-listing');
         const enableIgnoreListing = this.contentElement.createChild('div', 'ignore-list-global-enable');
         enableIgnoreListing.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.enableIgnoreListing), enabledSetting, true));
         UI.Tooltip.Tooltip.install(enableIgnoreListing, i18nString(UIStrings.enableIgnoreListingTooltip));
@@ -96,9 +96,9 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         const generalExclusionGroup = this.createSettingGroup(i18nString(UIStrings.generalExclusionRules));
         ignoreListOptions.appendChild(generalExclusionGroup);
         const ignoreListContentScripts = generalExclusionGroup.createChild('div', 'ignore-list-option');
-        ignoreListContentScripts.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.ignoreListContentScripts), Common.Settings.Settings.instance().moduleSetting('skipContentScripts'), true));
+        ignoreListContentScripts.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.ignoreListContentScripts), Common.Settings.Settings.instance().moduleSetting('skip-content-scripts'), true));
         const automaticallyIgnoreList = generalExclusionGroup.createChild('div', 'ignore-list-option');
-        automaticallyIgnoreList.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.automaticallyIgnoreListKnownThirdPartyScripts), Common.Settings.Settings.instance().moduleSetting('automaticallyIgnoreListKnownThirdPartyScripts'), true));
+        automaticallyIgnoreList.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.automaticallyIgnoreListKnownThirdPartyScripts), Common.Settings.Settings.instance().moduleSetting('automatically-ignore-list-known-third-party-scripts'), true));
         const automaticallyIgnoreLink = UI.XLink.XLink.create('http://goo.gle/skip-third-party', undefined, undefined, undefined, 'learn-more');
         automaticallyIgnoreLink.textContent = '';
         automaticallyIgnoreLink.setAttribute('aria-label', i18nString(UIStrings.learnMore));
@@ -118,7 +118,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         UI.ARIAUtils.setLabel(addPatternButton, i18nString(UIStrings.addFilenamePattern));
         customExclusionGroup.appendChild(addPatternButton);
         this.setting =
-            Common.Settings.Settings.instance().moduleSetting('skipStackFramesPattern');
+            Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
         this.setting.addChangeListener(this.settingUpdated, this);
         this.setDefaultFocusedElement(addPatternButton);
         enabledSetting.addChangeListener(enabledChanged);

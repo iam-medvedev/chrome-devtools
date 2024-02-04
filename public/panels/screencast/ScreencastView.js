@@ -291,7 +291,7 @@ export class ScreencastView extends UI.Widget.VBox {
             return;
         }
         const position = this.convertIntoScreenSpace(event);
-        const node = await this.domModel.nodeForLocation(Math.floor(position.x / this.pageScaleFactor + this.scrollOffsetX), Math.floor(position.y / this.pageScaleFactor + this.scrollOffsetY), Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get());
+        const node = await this.domModel.nodeForLocation(Math.floor(position.x / this.pageScaleFactor + this.scrollOffsetX), Math.floor(position.y / this.pageScaleFactor + this.scrollOffsetY), Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get());
         if (!node) {
             return;
         }

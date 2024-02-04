@@ -123,7 +123,7 @@ export class AXNodeSubPane extends AccessibilitySubPane {
         super(i18nString(UIStrings.computedProperties));
         this.axNode = null;
         this.contentElement.classList.add('ax-subpane');
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context('computed-properties')}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.section('computed-properties')}`);
         this.noNodeInfo = this.createInfo(i18nString(UIStrings.noAccessibilityNode));
         this.ignoredInfo = this.createInfo(i18nString(UIStrings.accessibilityNodeNotExposed), 'ax-ignored-info hidden');
         this.treeOutline = this.createTreeOutline();

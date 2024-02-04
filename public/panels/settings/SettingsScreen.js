@@ -102,7 +102,7 @@ export class SettingsScreen extends UI.Widget.VBox {
     reportTabOnReveal;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('settings')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('settings')}`);
         this.contentElement.classList.add('settings-window-main');
         this.contentElement.classList.add('vbox');
         const settingsLabelElement = document.createElement('div');
@@ -236,7 +236,7 @@ export class GenericSettingsTab extends SettingsTab {
     settingToControl = new Map();
     constructor() {
         super(i18nString(UIStrings.preferences), 'preferences-tab-content');
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('preferences')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('preferences')}`);
         // GRID, MOBILE, EMULATION, and RENDERING are intentionally excluded from this list.
         const explicitSectionOrder = [
             "" /* Common.Settings.SettingCategory.NONE */,
@@ -296,7 +296,7 @@ export class GenericSettingsTab extends SettingsTab {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
             this.syncSection.data = {
                 syncInfo,
-                syncSetting: Common.Settings.moduleSetting('sync_preferences'),
+                syncSetting: Common.Settings.moduleSetting('sync-preferences'),
             };
         });
     }
@@ -352,7 +352,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
         super(i18nString(UIStrings.experiments), 'experiments-tab-content');
         const filterSection = this.appendSection();
         filterSection.classList.add('experiments-filter');
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('experiments')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('experiments')}`);
         const labelElement = filterSection.createChild('label');
         labelElement.textContent = i18nString(UIStrings.filterExperimentsLabel);
         this.#inputElement = UI.UIUtils.createInput('', 'text', 'experiments-filter');

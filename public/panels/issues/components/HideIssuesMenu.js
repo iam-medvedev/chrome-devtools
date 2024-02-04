@@ -7,6 +7,7 @@ import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import hideIssuesMenuStyles from './hideIssuesMenu.css.js';
 const UIStrings = {
     /**
@@ -49,7 +50,7 @@ export class HideIssuesMenu extends HTMLElement {
         // clang-format off
         LitHtml.render(LitHtml.html `
       <button class="hide-issues-menu-btn" @click=${this.onMenuOpen.bind(this)} title=${i18nString(UIStrings.tooltipTitle)}>
-        <${IconButton.Icon.Icon.litTagName} name="dots-vertical"></${IconButton.Icon.Icon.litTagName}>
+        <${IconButton.Icon.Icon.litTagName} name="dots-vertical" jslog=${VisualLogging.dropDown('hide-issues').track({ click: true })}></${IconButton.Icon.Icon.litTagName}>
       </button>
     `, this.#shadow, { host: this });
     }

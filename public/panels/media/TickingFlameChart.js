@@ -164,7 +164,7 @@ export class TickingFlameChart extends UI.Widget.VBox {
         this.delegate = new TickingFlameChartDelegate();
         // Chart settings.
         this.chartGroupExpansionSetting =
-            Common.Settings.Settings.instance().createSetting('mediaFlameChartGroupExpansion', {});
+            Common.Settings.Settings.instance().createSetting('media-flame-chart-group-expansion', {});
         // Create the chart.
         this.chart =
             // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration

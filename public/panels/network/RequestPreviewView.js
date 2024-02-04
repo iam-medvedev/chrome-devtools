@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as i18n from '../../core/i18n/i18n.js';
-import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -52,7 +52,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class RequestPreviewView extends RequestResponseView {
     constructor(request) {
         super(request);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('preview')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('preview')}`);
     }
     async showPreview() {
         const view = await super.showPreview();
@@ -67,7 +67,7 @@ export class RequestPreviewView extends RequestResponseView {
     }
     async htmlPreview() {
         const contentData = await this.request.contentData();
-        if (SDK.ContentData.ContentData.isError(contentData)) {
+        if (TextUtils.ContentData.ContentData.isError(contentData)) {
             return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData) + ': ' + contentData.error);
         }
         const allowlist = new Set(['text/html', 'text/plain', 'application/xhtml+xml']);

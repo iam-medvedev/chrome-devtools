@@ -32,7 +32,9 @@ export class CSSPropertyDocsView extends HTMLElement {
     }
     #dontShowChanged(e) {
         const showDocumentation = !e.target.checked;
-        Common.Settings.Settings.instance().moduleSetting('showCSSPropertyDocumentationOnHover').set(showDocumentation);
+        Common.Settings.Settings.instance()
+            .moduleSetting('show-css-property-documentation-on-hover')
+            .set(showDocumentation);
     }
     #render() {
         const description = this.#cssProperty.description;

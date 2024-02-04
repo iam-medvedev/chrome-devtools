@@ -23,7 +23,7 @@ export class ScreencastApp {
     screencastView;
     rootView;
     constructor() {
-        this.enabledSetting = Common.Settings.Settings.instance().createSetting('screencastEnabled', true);
+        this.enabledSetting = Common.Settings.Settings.instance().createSetting('screencast-enabled', true);
         this.toggleButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleScreencast), 'devices');
         this.toggleButton.setToggled(this.enabledSetting.get());
         this.toggleButton.setEnabled(false);
@@ -39,7 +39,7 @@ export class ScreencastApp {
     presentUI(document) {
         this.rootView = new UI.RootView.RootView();
         this.rootSplitWidget =
-            new UI.SplitWidget.SplitWidget(false, true, 'InspectorView.screencastSplitViewState', 300, 300);
+            new UI.SplitWidget.SplitWidget(false, true, 'inspector-view.screencast-split-view-state', 300, 300);
         this.rootSplitWidget.setVertical(true);
         this.rootSplitWidget.setSecondIsSidebar(true);
         this.rootSplitWidget.show(this.rootView.element);

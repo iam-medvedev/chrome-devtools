@@ -1,5 +1,5 @@
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
-import { type DialogVerticalPosition, type DialogHorizontalAlignment } from './Dialog.js';
+import { type DialogHorizontalAlignment, type DialogVerticalPosition } from './Dialog.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-icon-dialog': IconDialog;

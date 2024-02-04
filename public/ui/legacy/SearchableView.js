@@ -488,7 +488,7 @@ export class SearchableView extends VBox {
         this.replaceProvider.replaceAllWith(searchConfig, this.replaceInputElement.value);
     }
     onInput(_event) {
-        if (!Common.Settings.Settings.instance().moduleSetting('searchAsYouType').get()) {
+        if (!Common.Settings.Settings.instance().moduleSetting('search-as-you-type').get()) {
             this.clearSearch();
             return;
         }

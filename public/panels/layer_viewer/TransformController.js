@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over largeicon pan button in Transform Controller of the Layers panel
@@ -55,6 +56,7 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
         this.minScale = 0;
         this.maxScale = Infinity;
         this.controlPanelToolbar = new UI.Toolbar.Toolbar('transform-control-panel');
+        this.controlPanelToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.modeButtons = {};
         if (!disableRotate) {
             const panModeButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.panModeX), '3d-pan', undefined, 'layers.3d-pan');

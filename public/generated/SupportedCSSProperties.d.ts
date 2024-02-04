@@ -617,6 +617,9 @@ export const generatedPropertyValues: {
     "position-fallback-bounds": {
         values: string[];
     };
+    "position-try-order": {
+        values: string[];
+    };
     quotes: {
         values: string[];
     };
@@ -822,6 +825,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "vertical-align": {
+        values: string[];
+    };
+    "view-transition-class": {
         values: string[];
     };
     "view-transition-name": {

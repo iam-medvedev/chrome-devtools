@@ -28,7 +28,7 @@ export class EmulationModel extends SDKModel {
                 void this.updateTouch();
             }, this);
         }
-        const disableJavascriptSetting = Common.Settings.Settings.instance().moduleSetting('javaScriptDisabled');
+        const disableJavascriptSetting = Common.Settings.Settings.instance().moduleSetting('java-script-disabled');
         disableJavascriptSetting.addChangeListener(async () => await this.#emulationAgent.invoke_setScriptExecutionDisabled({ value: disableJavascriptSetting.get() }));
         if (disableJavascriptSetting.get()) {
             void this.#emulationAgent.invoke_setScriptExecutionDisabled({ value: true });
@@ -38,7 +38,7 @@ export class EmulationModel extends SDKModel {
             const settingValue = touchSetting.get();
             void this.overrideEmulateTouch(settingValue === 'force');
         });
-        const idleDetectionSetting = Common.Settings.Settings.instance().moduleSetting('emulation.idleDetection');
+        const idleDetectionSetting = Common.Settings.Settings.instance().moduleSetting('emulation.idle-detection');
         idleDetectionSetting.addChangeListener(async () => {
             const settingValue = idleDetectionSetting.get();
             if (settingValue === 'none') {
@@ -48,14 +48,14 @@ export class EmulationModel extends SDKModel {
             const emulationParams = JSON.parse(settingValue);
             await this.setIdleOverride(emulationParams);
         });
-        const mediaTypeSetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMedia');
-        const mediaFeatureColorGamutSetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeatureColorGamut');
-        const mediaFeaturePrefersColorSchemeSetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersColorScheme');
-        const mediaFeatureForcedColorsSetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeatureForcedColors');
-        const mediaFeaturePrefersContrastSetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersContrast');
-        const mediaFeaturePrefersReducedDataSetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedData');
-        const mediaFeaturePrefersReducedTransparencySetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedTransparency');
-        const mediaFeaturePrefersReducedMotionSetting = Common.Settings.Settings.instance().moduleSetting('emulatedCSSMediaFeaturePrefersReducedMotion');
+        const mediaTypeSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media');
+        const mediaFeatureColorGamutSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-color-gamut');
+        const mediaFeaturePrefersColorSchemeSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-color-scheme');
+        const mediaFeatureForcedColorsSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-forced-colors');
+        const mediaFeaturePrefersContrastSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-contrast');
+        const mediaFeaturePrefersReducedDataSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-reduced-data');
+        const mediaFeaturePrefersReducedTransparencySetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-reduced-transparency');
+        const mediaFeaturePrefersReducedMotionSetting = Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-prefers-reduced-motion');
         // Note: this uses a different format than what the CDP API expects,
         // because we want to update these values per media type/feature
         // without having to search the `features` array (inefficient) or
@@ -103,7 +103,7 @@ export class EmulationModel extends SDKModel {
             void this.updateCssMedia();
         });
         void this.updateCssMedia();
-        const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting('emulateAutoDarkMode');
+        const autoDarkModeSetting = Common.Settings.Settings.instance().moduleSetting('emulate-auto-dark-mode');
         autoDarkModeSetting.addChangeListener(() => {
             const enabled = autoDarkModeSetting.get();
             mediaFeaturePrefersColorSchemeSetting.setDisabled(enabled);
@@ -115,18 +115,18 @@ export class EmulationModel extends SDKModel {
             mediaFeaturePrefersColorSchemeSetting.set('dark');
             void this.emulateAutoDarkMode(true);
         }
-        const visionDeficiencySetting = Common.Settings.Settings.instance().moduleSetting('emulatedVisionDeficiency');
+        const visionDeficiencySetting = Common.Settings.Settings.instance().moduleSetting('emulated-vision-deficiency');
         visionDeficiencySetting.addChangeListener(() => this.emulateVisionDeficiency(visionDeficiencySetting.get()));
         if (visionDeficiencySetting.get()) {
             void this.emulateVisionDeficiency(visionDeficiencySetting.get());
         }
-        const localFontsDisabledSetting = Common.Settings.Settings.instance().moduleSetting('localFontsDisabled');
+        const localFontsDisabledSetting = Common.Settings.Settings.instance().moduleSetting('local-fonts-disabled');
         localFontsDisabledSetting.addChangeListener(() => this.setLocalFontsDisabled(localFontsDisabledSetting.get()));
         if (localFontsDisabledSetting.get()) {
             this.setLocalFontsDisabled(localFontsDisabledSetting.get());
         }
-        const avifFormatDisabledSetting = Common.Settings.Settings.instance().moduleSetting('avifFormatDisabled');
-        const webpFormatDisabledSetting = Common.Settings.Settings.instance().moduleSetting('webpFormatDisabled');
+        const avifFormatDisabledSetting = Common.Settings.Settings.instance().moduleSetting('avif-format-disabled');
+        const webpFormatDisabledSetting = Common.Settings.Settings.instance().moduleSetting('webp-format-disabled');
         const updateDisabledImageFormats = () => {
             const types = [];
             if (avifFormatDisabledSetting.get()) {

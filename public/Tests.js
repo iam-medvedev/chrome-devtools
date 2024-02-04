@@ -802,7 +802,7 @@
       this.releaseControl();
     });
 
-    Common.Settings.moduleSetting('activeKeybindSet').set('vsCode');
+    Common.Settings.moduleSetting('active-keybind-set').set('vsCode');
   };
 
   TestSuite.prototype.testDispatchKeyEventDoesNotCrash = function() {
@@ -989,7 +989,7 @@
     }
 
     const captureFilmStripSetting =
-        Common.Settings.Settings.instance().createSetting('timelineCaptureFilmStrip', false);
+        Common.Settings.Settings.instance().createSetting('timeline-capture-film-strip', false);
     captureFilmStripSetting.set(true);
     test.evaluateInConsole_(performActionsInPage.toString(), function() {});
     test.invokeAsyncWithTimeline_('performActionsInPage', onTimelineDone);

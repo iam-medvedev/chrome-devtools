@@ -6300,6 +6300,10 @@ export const NativeFunctions = [
         signatures: [['html']]
     },
     {
+        name: 'caretPositionFromPoint',
+        signatures: [['x', 'y']]
+    },
+    {
         name: 'requestStorageAccessFor',
         signatures: [['requestedOrigin']]
     },
@@ -6332,6 +6336,10 @@ export const NativeFunctions = [
         signatures: [['?options']]
     },
     {
+        name: 'getHTML',
+        signatures: [['?options']]
+    },
+    {
         name: 'scrollIntoViewIfNeeded',
         signatures: [['?centerIfNeeded']]
     },
@@ -6358,6 +6366,10 @@ export const NativeFunctions = [
     {
         name: 'Observable',
         signatures: [['callback']]
+    },
+    {
+        name: 'takeUntil',
+        signatures: [['notifier']]
     },
     {
         name: 'getPartNode',
@@ -7008,6 +7020,10 @@ export const NativeFunctions = [
         signatures: [['attributionReporting']]
     },
     {
+        name: 'queryFeatureSupport',
+        signatures: [['feature']]
+    },
+    {
         name: 'registerAnimator',
         signatures: [['name', 'animatorCtor']]
     },
@@ -7177,6 +7193,10 @@ export const NativeFunctions = [
     {
         name: 'drawMesh',
         signatures: [['vertex_buffer', 'uv_buffer', 'index_buffer', 'image']]
+    },
+    {
+        name: 'beginWebGPUAccess',
+        signatures: [['options']]
     },
     {
         name: 'Path2D',
@@ -7934,7 +7954,7 @@ export const NativeFunctions = [
     },
     {
         name: 'RTCPeerConnection',
-        signatures: [['?configuration', '?mediaConstraints']]
+        signatures: [['?configuration']]
     },
     {
         name: 'generateCertificate',
@@ -8683,6 +8703,10 @@ export const NativeFunctions = [
     {
         name: 'CloseEvent',
         signatures: [['type', '?eventInitDict']]
+    },
+    {
+        name: 'WebSocketError',
+        signatures: [['?message', '?init']]
     },
     {
         name: 'WebSocketStream',

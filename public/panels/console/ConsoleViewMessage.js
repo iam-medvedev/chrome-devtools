@@ -317,7 +317,7 @@ export class ConsoleViewMessage {
                 case "clear" /* Protocol.Runtime.ConsoleAPICalledEventType.Clear */:
                     messageElement = document.createElement('span');
                     messageElement.classList.add('console-info');
-                    if (Common.Settings.Settings.instance().moduleSetting('preserveConsoleLog').get()) {
+                    if (Common.Settings.Settings.instance().moduleSetting('preserve-console-log').get()) {
                         messageElement.textContent = i18nString(UIStrings.consoleclearWasPreventedDueTo);
                     }
                     else {
@@ -547,7 +547,7 @@ export class ConsoleViewMessage {
         };
         clickableElement.addEventListener('click', toggleStackTrace, false);
         if (this.message.type === "trace" /* Protocol.Runtime.ConsoleAPICalledEventType.Trace */ &&
-            Common.Settings.Settings.instance().moduleSetting('consoleTraceExpand').get()) {
+            Common.Settings.Settings.instance().moduleSetting('console-trace-expand').get()) {
             this.expandTrace(true);
         }
         // @ts-ignore
@@ -898,7 +898,7 @@ export class ConsoleViewMessage {
         if (!this.contentElementInternal) {
             return;
         }
-        if (Common.Settings.Settings.instance().moduleSetting('consoleTimestampsEnabled').get()) {
+        if (Common.Settings.Settings.instance().moduleSetting('console-timestamps-enabled').get()) {
             if (!this.timestampElement) {
                 this.timestampElement = document.createElement('span');
                 this.timestampElement.classList.add('console-timestamp');
@@ -1119,7 +1119,7 @@ export class ConsoleViewMessage {
         }
         this.nestingLevelMarkers = [];
         for (let i = 0; i < this.nestingLevel(); ++i) {
-            this.nestingLevelMarkers.push(this.elementInternal.createChild('div', 'nesting-level-marker'));
+            this.nestingLevelMarkers.push(this.consoleRowWrapper.createChild('div', 'nesting-level-marker'));
         }
         this.updateCloseGroupDecorations();
         elementToMessage.set(this.elementInternal, this);

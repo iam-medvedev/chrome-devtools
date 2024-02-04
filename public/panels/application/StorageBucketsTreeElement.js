@@ -23,7 +23,7 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class StorageBucketsTreeParentElement extends ExpandableApplicationPanelTreeElement {
     bucketTreeElements = new Set();
     constructor(storagePanel) {
-        super(storagePanel, i18nString(UIStrings.storageBuckets), 'StorageBuckets');
+        super(storagePanel, i18nString(UIStrings.storageBuckets), 'storage-buckets');
         const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
         this.setLink('https://github.com/WICG/storage-buckets/blob/gh-pages/explainer.md');
@@ -97,7 +97,7 @@ export class StorageBucketsTreeElement extends ExpandableApplicationPanelTreeEle
     constructor(resourcesPanel, model, bucketInfo) {
         const { bucket } = bucketInfo;
         const { origin } = SDK.StorageKeyManager.parseStorageKey(bucketInfo.bucket.storageKey);
-        super(resourcesPanel, `${bucket.name} - ${origin}`, `StorageBucket_${bucket.name}_${bucket.storageKey}`);
+        super(resourcesPanel, `${bucket.name} - ${origin}`, `storage-bucket-${bucket.name}-${bucket.storageKey}`);
         this.bucketModel = model;
         this.storageBucketInfo = bucketInfo;
         const icon = IconButton.Icon.create('database');

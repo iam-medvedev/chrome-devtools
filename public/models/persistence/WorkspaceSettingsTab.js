@@ -40,7 +40,7 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
     mappingViewByPath;
     constructor() {
         super();
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('workspace')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('workspace')}`);
         this.element.classList.add('workspace-settings-tab');
         const header = this.element.createChild('header');
         UI.UIUtils.createTextChild(header.createChild('h1'), i18nString(UIStrings.workspace));

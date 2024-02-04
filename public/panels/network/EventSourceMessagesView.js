@@ -42,7 +42,7 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
     constructor(request) {
         super();
         this.element.classList.add('event-source-messages-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('event-stream')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('event-stream')}`);
         this.request = request;
         const columns = [
             { id: 'id', title: i18nString(UIStrings.id), sortable: true, weight: 8 },
@@ -63,7 +63,7 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
         this.dataGrid.markColumnAsSortedBy('time', DataGrid.DataGrid.Order.Ascending);
         this.sortItems();
         this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortItems, this);
-        this.dataGrid.setName('EventSourceMessagesView');
+        this.dataGrid.setName('event-source-messages-view');
         this.dataGrid.asWidget().show(this.element);
     }
     wasShown() {

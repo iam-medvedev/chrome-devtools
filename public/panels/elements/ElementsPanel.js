@@ -188,7 +188,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     cssStyleTrackerByCSSModel;
     constructor() {
         super('elements');
-        this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'elementsPanelSplitViewState', 325, 325);
+        this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'elements-panel-split-view-state', 325, 325);
         this.splitWidget.addEventListener("SidebarSizeChanged" /* UI.SplitWidget.Events.SidebarSizeChanged */, this.updateTreeOutlineVisibleWidth.bind(this));
         this.splitWidget.show(this.element);
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this, null);
@@ -213,11 +213,11 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.domTreeContainer.id = 'elements-content';
         this.domTreeContainer.tabIndex = -1;
         // FIXME: crbug.com/425984
-        if (Common.Settings.Settings.instance().moduleSetting('domWordWrap').get()) {
+        if (Common.Settings.Settings.instance().moduleSetting('dom-word-wrap').get()) {
             this.domTreeContainer.classList.add('elements-wrap');
         }
         Common.Settings.Settings.instance()
-            .moduleSetting('domWordWrap')
+            .moduleSetting('dom-word-wrap')
             .addChangeListener(this.domWordWrapSettingChanged.bind(this));
         crumbsContainer.id = 'elements-crumbs';
         if (this.domTreeButton) {
@@ -233,19 +233,19 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.computedStyleWidget = new ComputedStyleWidget();
         this.metricsWidget = new MetricsSidebarPane();
         Common.Settings.Settings.instance()
-            .moduleSetting('sidebarPosition')
+            .moduleSetting('sidebar-position')
             .addChangeListener(this.updateSidebarPosition.bind(this));
         this.updateSidebarPosition();
         this.cssStyleTrackerByCSSModel = new Map();
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.DOMModel.DOMModel, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NameChanged */, event => this.targetNameChanged(event.data));
         Common.Settings.Settings.instance()
-            .moduleSetting('showUAShadowDOM')
+            .moduleSetting('show-ua-shadow-dom')
             .addChangeListener(this.showUAShadowDOMChanged.bind(this));
         Extensions.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded" /* Extensions.ExtensionServer.Events.SidebarPaneAdded */, this.extensionSidebarPaneAdded, this);
         this.currentSearchResultIndex = -1; // -1 represents the initial invalid state
         this.pendingNodeReveal = false;
-        this.adornerManager = new ElementsComponents.AdornerManager.AdornerManager(Common.Settings.Settings.instance().moduleSetting('adornerSettings'));
+        this.adornerManager = new ElementsComponents.AdornerManager.AdornerManager(Common.Settings.Settings.instance().moduleSetting('adorner-settings'));
         this.adornerSettingsPane = null;
         this.adornersByName = new Map();
     }
@@ -300,7 +300,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         let treeOutline = parentModel ? ElementsTreeOutline.forDOMModel(parentModel) : null;
         if (!treeOutline) {
             treeOutline = new ElementsTreeOutline(true, true);
-            treeOutline.setWordWrap(Common.Settings.Settings.instance().moduleSetting('domWordWrap').get());
+            treeOutline.setWordWrap(Common.Settings.Settings.instance().moduleSetting('dom-word-wrap').get());
             treeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, this.selectedNodeChanged, this);
             treeOutline.addEventListener(ElementsTreeOutline.Events.ElementsTreeUpdated, this.updateBreadcrumbIfNeeded, this);
             new ElementsTreeElementHighlighter(treeOutline, new Common.Throttler.Throttler(100));
@@ -569,7 +569,7 @@ export class ElementsPanel extends UI.Panel.Panel {
             this.hideSearchHighlights();
         }
         this.searchConfig = searchConfig;
-        const showUAShadowDOM = Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get();
+        const showUAShadowDOM = Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get();
         const domModels = SDK.TargetManager.TargetManager.instance().models(SDK.DOMModel.DOMModel, { scoped: true });
         const promises = domModels.map(domModel => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
         void Promise.all(promises).then(resultCounts => {
@@ -775,7 +775,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     }
     async revealAndSelectNode(nodeToReveal, focus, omitHighlight) {
         this.omitDefaultSelection = true;
-        const node = Common.Settings.Settings.instance().moduleSetting('showUAShadowDOM').get() ?
+        const node = Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get() ?
             nodeToReveal :
             this.leaveUserAgentShadowDOM(nodeToReveal);
         if (!omitHighlight) {
@@ -902,7 +902,7 @@ export class ElementsPanel extends UI.Panel.Panel {
                 skippedInitialTabSelectedEvent = true;
             }
         };
-        this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => UI.ViewManager.ViewManager.instance().showView('elements'), 'Styles-pane-sidebar', true, true);
+        this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => UI.ViewManager.ViewManager.instance().showView('elements'), 'styles-pane-sidebar', true, true);
         const tabbedPane = this.sidebarPaneView.tabbedPane();
         if (this.splitMode !== "Vertical" /* _splitMode.Vertical */) {
             this.splitWidget.installResizer(tabbedPane.headerElement());
@@ -933,7 +933,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         if (this.sidebarPaneView && this.sidebarPaneView.tabbedPane().shouldHideOnDetach()) {
             return;
         } // We can't reparent extension iframes.
-        const position = Common.Settings.Settings.instance().moduleSetting('sidebarPosition').get();
+        const position = Common.Settings.Settings.instance().moduleSetting('sidebar-position').get();
         let splitMode = "Horizontal" /* _splitMode.Horizontal */;
         if (position === 'right' ||
             (position === 'auto' && UI.InspectorView.InspectorView.instance().element.offsetWidth > 680)) {

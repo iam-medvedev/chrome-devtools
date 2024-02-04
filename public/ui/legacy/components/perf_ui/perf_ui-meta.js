@@ -61,7 +61,7 @@ Common.Settings.registerSettingExtension({
     category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.flamechartMouseWheelAction),
-    settingName: 'flamechartMouseWheelAction',
+    settingName: 'flamechart-mouse-wheel-action',
     settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'zoom',
     options: [
@@ -81,7 +81,7 @@ Common.Settings.registerSettingExtension({
     category: "MEMORY" /* Common.Settings.SettingCategory.MEMORY */,
     experiment: "liveHeapProfile" /* Root.Runtime.ExperimentName.LIVE_HEAP_PROFILE */,
     title: i18nLazyString(UIStrings.liveMemoryAllocationAnnotations),
-    settingName: 'memoryLiveHeapProfile',
+    settingName: 'memory-live-heap-profile',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [

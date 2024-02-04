@@ -110,11 +110,11 @@ body {
 }
 
 .platform-mac {
-  --default-font-family: ".SFNSDisplay-Regular", "Helvetica Neue", "Lucida Grande", sans-serif;
+  --default-font-family: system-ui, sans-serif;
 }
 
 .platform-windows {
-  --default-font-family: "Segoe UI", tahoma, sans-serif;
+  --default-font-family: system-ui, sans-serif;
 }
 
 :focus {
@@ -125,17 +125,17 @@ body {
 .platform-mac,
 :host-context(.platform-mac) {
   --monospace-font-size: 11px;
-  --monospace-font-family: menlo, monospace;
+  --monospace-font-family: monospace;
   --source-code-font-size: 11px;
-  --source-code-font-family: menlo, monospace;
+  --source-code-font-family: monospace;
 }
 
 .platform-windows,
 :host-context(.platform-windows) {
   --monospace-font-size: 12px;
-  --monospace-font-family: consolas, lucida console, courier new, monospace;
+  --monospace-font-family: monospace;
   --source-code-font-size: 12px;
-  --source-code-font-family: consolas, lucida console, courier new, monospace;
+  --source-code-font-family: monospace;
 }
 
 .platform-linux,

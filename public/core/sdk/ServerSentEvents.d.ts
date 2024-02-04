@@ -13,8 +13,6 @@ export declare class ServerSentEvents {
     #private;
     constructor(request: NetworkRequest, parseFromStreamedData: boolean);
     get eventSourceMessages(): readonly EventSourceMessage[];
-    /** Forwarded Network.dataReceived events */
-    dataReceived(data: string, time: number): void;
     /** Forwarded Network.eventSourceMessage received */
     onProtocolEventSourceMessageReceived(eventName: string, data: string, eventId: string, time: number): void;
 }

@@ -91,14 +91,14 @@ export class SharedStorageItemsView extends StorageItemsView {
             void this.#previewEntry(null);
         });
         this.dataGrid.setStriped(true);
-        this.dataGrid.setName('SharedStorageItemsView');
+        this.dataGrid.setName('shared-storage-items-view');
         const dataGridWidget = this.dataGrid.asWidget();
         dataGridWidget.setMinimumSize(0, 100);
         this.#metadataView = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new ApplicationComponents.SharedStorageMetadataView.SharedStorageMetadataView(sharedStorage, sharedStorage.securityOrigin));
         this.#metadataView.setMinimumSize(0, 275);
         const innerResizer = this.#metadataView.element.createChild('div', 'metadata-view-resizer');
         this.innerSplitWidget = new UI.SplitWidget.SplitWidget(
-        /* isVertical: */ false, /* secondIsSidebar: */ false, 'sharedStorageInnerSplitViewState');
+        /* isVertical: */ false, /* secondIsSidebar: */ false, 'shared-storage-inner-split-view-state');
         this.innerSplitWidget.setSidebarWidget(this.#metadataView);
         this.innerSplitWidget.setMainWidget(dataGridWidget);
         this.innerSplitWidget.installResizer(innerResizer);
@@ -106,7 +106,7 @@ export class SharedStorageItemsView extends StorageItemsView {
         this.#noDisplayView.setMinimumSize(0, 25);
         const outerResizer = this.#noDisplayView.element.createChild('div', 'preview-panel-resizer');
         this.outerSplitWidget = new UI.SplitWidget.SplitWidget(
-        /* isVertical: */ false, /* secondIsSidebar: */ true, 'sharedStorageOuterSplitViewState');
+        /* isVertical: */ false, /* secondIsSidebar: */ true, 'shared-storage-outer-split-view-state');
         this.outerSplitWidget.show(this.element);
         this.outerSplitWidget.setMainWidget(this.innerSplitWidget);
         this.outerSplitWidget.setSidebarWidget(this.#noDisplayView);

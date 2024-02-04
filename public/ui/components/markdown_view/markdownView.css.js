@@ -30,6 +30,10 @@ styles.replaceSync(
   padding-inline-start: 0;
 }
 
+.message ul ul {
+  padding-inline-start: 19px;
+}
+
 .message li {
   margin-top: 8px;
   display: list-item;

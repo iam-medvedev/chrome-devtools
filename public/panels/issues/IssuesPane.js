@@ -148,7 +148,7 @@ class IssueCategoryView extends UI.TreeOutline.TreeElement {
     }
 }
 export function getGroupIssuesByCategorySetting() {
-    return Common.Settings.Settings.instance().createSetting('groupIssuesByCategory', false);
+    return Common.Settings.Settings.instance().createSetting('group-issues-by-category', false);
 }
 export class IssuesPane extends UI.Widget.VBox {
     #categoryViews;
@@ -163,7 +163,7 @@ export class IssuesPane extends UI.Widget.VBox {
     #issueViewUpdatePromise = Promise.resolve();
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel().context('issues')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('issues')}`);
         this.contentElement.classList.add('issues-pane');
         this.#categoryViews = new Map();
         this.#kindViews = new Map();
@@ -192,6 +192,7 @@ export class IssuesPane extends UI.Widget.VBox {
     }
     #createToolbars() {
         const toolbarContainer = this.contentElement.createChild('div', 'issues-toolbar-container');
+        toolbarContainer.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         new UI.Toolbar.Toolbar('issues-toolbar-left', toolbarContainer);
         const rightToolbar = new UI.Toolbar.Toolbar('issues-toolbar-right', toolbarContainer);
         const groupByCategorySetting = getGroupIssuesByCategorySetting();
@@ -224,6 +225,7 @@ export class IssuesPane extends UI.Widget.VBox {
             issuesManager: IssuesManager.IssuesManager.IssuesManager.instance(),
         };
         issueCounter.id = 'console-issues-counter';
+        issueCounter.setAttribute('jslog', `${VisualLogging.counter('issues')}`);
         const issuesToolbarItem = new UI.Toolbar.ToolbarItem(issueCounter);
         rightToolbar.appendToolbarItem(issuesToolbarItem);
         return { toolbarContainer };

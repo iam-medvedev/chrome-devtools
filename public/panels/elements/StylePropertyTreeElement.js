@@ -18,7 +18,7 @@ import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, }
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { children, ColorMatch, ColorMatcher, Renderer, VariableMatch, VariableMatcher, } from './PropertyParser.js';
+import { children, ColorMatch, ColorMatcher, Renderer, RenderingContext, VariableMatch, VariableMatcher, } from './PropertyParser.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
 import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, StylesSidebarPropertyRenderer, } from './StylesSidebarPane.js';
@@ -186,7 +186,9 @@ export class ColorRenderer extends ColorMatch {
             valueChild.appendChild(document.createTextNode(this.text));
         }
         else {
-            Renderer.renderInto(children(node), context, valueChild);
+            const { ast, matchedResult, cssControls } = context;
+            const childContext = new RenderingContext(ast, matchedResult, cssControls, { readonly: true });
+            Renderer.renderInto(children(node), childContext, valueChild);
         }
         return valueChild;
     }
@@ -667,7 +669,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             } // Add back commas and spaces between each shadow.
             // TODO(flandy): editing the property value should use the original value with all spaces.
             const cssShadowSwatch = InlineEditor.Swatches.CSSShadowSwatch.create();
-            cssShadowSwatch.setAttribute('jslog', `${VisualLogging.showStyleEditor().context('css-shadow').track({ click: true })}`);
+            cssShadowSwatch.setAttribute('jslog', `${VisualLogging.showStyleEditor('css-shadow').track({ click: true })}`);
             cssShadowSwatch.setCSSShadow(shadows[i]);
             cssShadowSwatch.iconElement().addEventListener('click', () => {
                 Host.userMetrics.swatchActivated(4 /* Host.UserMetrics.SwatchType.Shadow */);
@@ -696,7 +698,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (splitResult.length <= 1) {
             return document.createTextNode(propertyValue);
         }
-        const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
+        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
         const container = document.createDocumentFragment();
         for (const result of splitResult) {
             const value = result.value.trim();
@@ -705,12 +707,12 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         return container;
     }
-    processAngle(angleText) {
-        if (!this.editable()) {
+    processAngle(angleText, readonly) {
+        if (!this.editable() || readonly) {
             return document.createTextNode(angleText);
         }
         const cssAngle = new InlineEditor.CSSAngle.CSSAngle();
-        cssAngle.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context('css-angle')}`);
+        cssAngle.setAttribute('jslog', `${VisualLogging.showStyleEditor('css-angle').track({ click: true })}`);
         const valueElement = document.createElement('span');
         valueElement.textContent = angleText;
         const computedPropertyValue = this.matchedStylesInternal.computeValue(this.property.ownerStyle, this.property.value) || '';
@@ -977,7 +979,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (!this.treeOutline) {
             return;
         }
-        const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
+        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
         UI.UIUtils.createTextChild(this.listItemElement.createChild('span', 'styles-clipboard-only'), indent + (this.property.disabled ? '/* ' : ''));
         if (this.nameElement) {
             this.listItemElement.appendChild(this.nameElement);

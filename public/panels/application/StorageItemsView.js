@@ -45,16 +45,17 @@ export class StorageItemsView extends UI.Widget.VBox {
             this.refreshItems();
             UI.ARIAUtils.alert(i18nString(UIStrings.refreshedStatus));
         });
-        this.refreshButton.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('storage-items-view.refresh')}`);
+        this.refreshButton.element.setAttribute('jslog', `${VisualLogging.action('storage-items-view.refresh').track({ click: true })}`);
         this.mainToolbar = new UI.Toolbar.Toolbar('top-resources-toolbar', this.element);
+        this.mainToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.filterItem = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), '', 0.4);
         this.filterItem.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.filterChanged, this);
         const toolbarSeparator = new UI.Toolbar.ToolbarSeparator();
         this.deleteAllButton = this.addButton(i18nString(UIStrings.clearAll), 'clear', this.deleteAllItems);
         this.deleteSelectedButton = this.addButton(i18nString(UIStrings.deleteSelected), 'cross', this.deleteSelectedItem);
-        this.deleteSelectedButton.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('storage-items-view.delete-selected')}`);
+        this.deleteSelectedButton.element.setAttribute('jslog', `${VisualLogging.action('storage-items-view.delete-selected').track({ click: true })}`);
         this.deleteAllButton.element.id = 'storage-items-delete-all';
-        this.deleteAllButton.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('storage-items-view.clear-all')}`);
+        this.deleteAllButton.element.setAttribute('jslog', `${VisualLogging.action('storage-items-view.clear-all').track({ click: true })}`);
         const toolbarItems = [this.refreshButton, this.filterItem, toolbarSeparator, this.deleteAllButton, this.deleteSelectedButton];
         for (const item of toolbarItems) {
             this.mainToolbar.appendToolbarItem(item);

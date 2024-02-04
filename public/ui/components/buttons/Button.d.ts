@@ -13,8 +13,7 @@ export declare const enum Variant {
 }
 export declare const enum Size {
     SMALL = "SMALL",
-    MEDIUM = "MEDIUM",
-    TINY = "TINY"
+    MEDIUM = "MEDIUM"
 }
 type ButtonType = 'button' | 'submit' | 'reset';
 interface CommonButtonData {

@@ -227,13 +227,25 @@ const UIStrings = {
      */
     doNotAutomaticallyRevealFilesIn: 'Do not automatically reveal files in sidebar',
     /**
-     *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+     *@description Setting under the Sources category to toggle usage of JavaScript source maps.
      */
-    enableJavascriptSourceMaps: 'Enable JavaScript source maps',
+    javaScriptSourceMaps: 'JavaScript source maps',
     /**
      *@description Title of a setting under the Sources category that can be invoked through the Command Menu
      */
-    disableJavascriptSourceMaps: 'Disable JavaScript source maps',
+    enableJavaScriptSourceMaps: 'Enable JavaScript source maps',
+    /**
+     *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+     */
+    disableJavaScriptSourceMaps: 'Disable JavaScript source maps',
+    /**
+     *@description Title of a setting under the Sources category.
+     *'tab moves focus' is the name of the setting, which means that when the user
+     *hits the tab key, the focus in the UI will be moved to the next part of the
+     *text editor, as opposed to inserting a tab character into the text in the
+     *text editor.
+     */
+    tabMovesFocus: 'Tab moves focus',
     /**
      *@description Title of a setting that can be invoked through the Command Menu.
      *'tab moves focus' is the name of the setting, which means that when the user
@@ -331,6 +343,10 @@ const UIStrings = {
      *@description Title of a setting under the Sources category that can be invoked through the Command Menu
      */
     doNotDisplayVariableValuesInline: 'Do not display variable values inline while debugging',
+    /**
+     *@description Title of a setting under the Sources category
+     */
+    cssSourceMaps: 'CSS source maps',
     /**
      *@description Title of a setting under the Sources category that can be invoked through the Command Menu
      */
@@ -1378,12 +1394,12 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    settingName: 'navigatorGroupByFolder',
+    settingName: 'navigator-group-by-folder',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
 });
 Common.Settings.registerSettingExtension({
-    settingName: 'navigatorGroupByAuthored',
+    settingName: 'navigator-group-by-authored',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
 });
@@ -1391,7 +1407,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.searchInAnonymousAndContent),
-    settingName: 'searchInAnonymousAndContentScripts',
+    settingName: 'search-in-anonymous-and-content-scripts',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [
@@ -1409,7 +1425,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.automaticallyRevealFilesIn),
-    settingName: 'autoRevealInNavigator',
+    settingName: 'auto-reveal-in-navigator',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
@@ -1426,26 +1442,26 @@ Common.Settings.registerSettingExtension({
 Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
-    title: i18nLazyString(UIStrings.enableJavascriptSourceMaps),
-    settingName: 'jsSourceMapsEnabled',
+    title: i18nLazyString(UIStrings.javaScriptSourceMaps),
+    settingName: 'js-source-maps-enabled',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
         {
             value: true,
-            title: i18nLazyString(UIStrings.enableJavascriptSourceMaps),
+            title: i18nLazyString(UIStrings.enableJavaScriptSourceMaps),
         },
         {
             value: false,
-            title: i18nLazyString(UIStrings.disableJavascriptSourceMaps),
+            title: i18nLazyString(UIStrings.disableJavaScriptSourceMaps),
         },
     ],
 });
 Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
-    title: i18nLazyString(UIStrings.enableTabMovesFocus),
-    settingName: 'textEditorTabMovesFocus',
+    title: i18nLazyString(UIStrings.tabMovesFocus),
+    settingName: 'text-editor-tab-moves-focus',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     options: [
@@ -1463,7 +1479,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.detectIndentation),
-    settingName: 'textEditorAutoDetectIndent',
+    settingName: 'text-editor-auto-detect-indent',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
@@ -1481,7 +1497,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.autocompletion),
-    settingName: 'textEditorAutocompletion',
+    settingName: 'text-editor-autocompletion',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
@@ -1498,7 +1514,7 @@ Common.Settings.registerSettingExtension({
 Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     title: i18nLazyString(UIStrings.bracketMatching),
-    settingName: 'textEditorBracketMatching',
+    settingName: 'text-editor-bracket-matching',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
@@ -1516,7 +1532,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.codeFolding),
-    settingName: 'textEditorCodeFolding',
+    settingName: 'text-editor-code-folding',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
@@ -1534,7 +1550,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.showWhitespaceCharacters),
-    settingName: 'showWhitespacesInEditor',
+    settingName: 'show-whitespaces-in-editor',
     settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'original',
     options: [
@@ -1559,7 +1575,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.displayVariableValuesInlineWhile),
-    settingName: 'inlineVariableValues',
+    settingName: 'inline-variable-values',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
@@ -1577,7 +1593,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.enableAutoFocusOnDebuggerPaused),
-    settingName: 'autoFocusOnDebuggerPausedEnabled',
+    settingName: 'auto-focus-on-debugger-paused-enabled',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
@@ -1594,8 +1610,8 @@ Common.Settings.registerSettingExtension({
 Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
-    title: i18nLazyString(UIStrings.enableCssSourceMaps),
-    settingName: 'cssSourceMapsEnabled',
+    title: i18nLazyString(UIStrings.cssSourceMaps),
+    settingName: 'css-source-maps-enabled',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
@@ -1613,7 +1629,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.allowScrollingPastEndOfFile),
-    settingName: 'allowScrollPastEof',
+    settingName: 'allow-scroll-past-eof',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [
@@ -1631,7 +1647,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Local" /* Common.Settings.SettingStorageType.Local */,
     title: i18nLazyString(UIStrings.wasmAutoStepping),
-    settingName: 'wasmAutoStepping',
+    settingName: 'wasm-auto-stepping',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
     options: [

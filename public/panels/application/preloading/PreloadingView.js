@@ -181,7 +181,7 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
             ${this.ruleSetGrid}
           </div>
           <div slot="sidebar" class="overflow-auto" style="height: 100%"
-          jslog=${VisualLogging.section().context('rule-set-details')}>
+          jslog=${VisualLogging.section('rule-set-details')}>
             ${this.ruleSetDetails}
           </div>
         </${SplitView.SplitView.SplitView.litTagName}>`, this.contentElement, { host: this });
@@ -253,7 +253,7 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
     ruleSetSelector;
     constructor(model) {
         super(/* isWebComponent */ true, /* delegatesFocus */ false);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('preloading-speculations')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('preloading-speculations')}`);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.ModelUpdated */, this.render, this, { scoped: true });
@@ -277,6 +277,7 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
         this.warningsView.show(this.warningsContainer);
         const vbox = new UI.Widget.VBox();
         const toolbar = new UI.Toolbar.Toolbar('preloading-toolbar', vbox.contentElement);
+        toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.ruleSetSelector = new PreloadingRuleSetSelector(() => this.render());
         toolbar.appendToolbarItem(this.ruleSetSelector.item());
         this.preloadingGrid.addEventListener('cellfocused', this.onPreloadingGridCellFocused.bind(this));
@@ -368,7 +369,7 @@ export class PreloadingSummaryView extends UI.Widget.VBox {
     usedPreloading = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
     constructor(model) {
         super(/* isWebComponent */ true, /* delegatesFocus */ false);
-        this.element.setAttribute('jslog', `${VisualLogging.pane().context('speculative-loads')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('speculative-loads')}`);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.ModelUpdated */, this.render, this, { scoped: true });
@@ -424,7 +425,7 @@ class PreloadingRuleSetSelector {
         this.toolbarItem = new UI.Toolbar.ToolbarItem(this.dropDown.element);
         this.toolbarItem.setTitle(i18nString(UIStrings.filterFilterByRuleSet));
         this.toolbarItem.element.classList.add('toolbar-has-dropdown');
-        this.toolbarItem.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context('filter-by-rule-set')}`);
+        this.toolbarItem.element.setAttribute('jslog', `${VisualLogging.action('filter-by-rule-set').track({ click: true })}`);
         // Initializes `listModel` and `dropDown` using data of the model.
         this.onModelUpdated();
         // Prevents emitting onSelectionChanged on the first call of `this.onModelUpdated()` for initialization.
@@ -447,6 +448,16 @@ class PreloadingRuleSetSelector {
         else {
             this.dropDown.selectItem(selected);
         }
+        this.updateWidth(items);
+    }
+    // Updates the width for the DropDown element.
+    updateWidth(items) {
+        // Width set by `UI.SoftDropDown`.
+        const DEFAULT_WIDTH = 315;
+        const urlLengths = items.map(x => this.titleFor(x).length);
+        const maxLength = Math.max(...urlLengths);
+        const width = Math.min(maxLength * 6 + 16, DEFAULT_WIDTH);
+        this.dropDown.setWidth(width);
     }
     // AllRuleSetRootId is used within the selector to indicate the root item. When interacting with PreloadingModel,
     // it should be translated to null.

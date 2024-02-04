@@ -40,7 +40,7 @@ export class InterestGroupTreeElement extends ApplicationPanelTreeElement {
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
         this.showView(this.view);
-        Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.interest_groups]);
+        Host.userMetrics.panelShown('interest-groups');
         return false;
     }
     addEvent(event) {

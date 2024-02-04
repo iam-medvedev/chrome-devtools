@@ -47,7 +47,7 @@ Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.defaultIndentation),
-    settingName: 'textEditorIndent',
+    settingName: 'text-editor-indent',
     settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: '    ',
     options: [

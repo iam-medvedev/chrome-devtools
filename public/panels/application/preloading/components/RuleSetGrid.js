@@ -86,7 +86,7 @@ export class RuleSetGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent 
         // clang-format off
         LitHtml.render(LitHtml.html `
       <div class="ruleset-container"
-      jslog=${VisualLogging.pane().context('preloading-rules')}>
+      jslog=${VisualLogging.pane('preloading-rules')}>
         <${DataGrid.DataGridController.DataGridController.litTagName} .data=${reportsGridData}>
         </${DataGrid.DataGridController.DataGridController.litTagName}>
       </div>
@@ -140,7 +140,7 @@ function ruleSetRenderer(ruleSet, pageURL) {
             'padding-inline-start': '0',
             'padding-inline-end': '0',
         })}
-        jslog=${VisualLogging.action().track({ click: true }).context('reveal-in-elements-panel')}
+        jslog=${VisualLogging.action('reveal-in-elements-panel').track({ click: true })}
       >
         <${IconButton.Icon.Icon.litTagName}
           .data=${{
@@ -237,7 +237,7 @@ function statusRenderer(preloadsStatusSummary, ruleSet) {
             'padding-inline-start': '0',
             'padding-inline-end': '0',
         })}
-        jslog=${VisualLogging.action().track({ click: true }).context('reveal-preloads')}>
+        jslog=${VisualLogging.action('reveal-preloads').track({ click: true })}>
         ${preloadsStatusSummary}
       </button>
     `;

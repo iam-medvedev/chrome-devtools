@@ -319,7 +319,7 @@ Common.Settings.registerSettingExtension({
     category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
     title: i18nLazyString(UIStrings.colorcodeResourceTypes),
-    settingName: 'networkColorCodeResourceTypes',
+    settingName: 'network-color-code-resource-types',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
     tags: [

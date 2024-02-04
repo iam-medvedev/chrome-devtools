@@ -39,6 +39,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Snippets from '../snippets/snippets.js';
 import { CallStackSidebarPane } from './CallStackSidebarPane.js';
 import { DebuggerPausedMessage } from './DebuggerPausedMessage.js';
@@ -210,13 +211,13 @@ export class SourcesPanel extends UI.Panel.Panel {
         this.debuggerPausedMessage = new DebuggerPausedMessage();
         const initialDebugSidebarWidth = 225;
         this.splitWidget =
-            new UI.SplitWidget.SplitWidget(true, true, 'sourcesPanelSplitViewState', initialDebugSidebarWidth);
+            new UI.SplitWidget.SplitWidget(true, true, 'sources-panel-split-view-state', initialDebugSidebarWidth);
         this.splitWidget.enableShowModeSaving();
         this.splitWidget.show(this.element);
         // Create scripts navigator
         const initialNavigatorWidth = 225;
         this.editorView =
-            new UI.SplitWidget.SplitWidget(true, false, 'sourcesPanelNavigatorSplitViewState', initialNavigatorWidth);
+            new UI.SplitWidget.SplitWidget(true, false, 'sources-panel-navigator-split-view-state', initialNavigatorWidth);
         this.editorView.enableShowModeSaving();
         this.splitWidget.setMainWidget(this.editorView);
         // Create navigator tabbed pane with toolbar.
@@ -224,12 +225,13 @@ export class SourcesPanel extends UI.Panel.Panel {
         const tabbedPane = this.navigatorTabbedLocation.tabbedPane();
         tabbedPane.setMinimumSize(100, 25);
         tabbedPane.element.classList.add('navigator-tabbed-pane');
-        const navigatorMenuButton = new UI.Toolbar.ToolbarMenuButton(this.populateNavigatorMenu.bind(this), true);
+        tabbedPane.element.setAttribute('jslog', `${VisualLogging.toolbar('navigator')}`);
+        const navigatorMenuButton = new UI.Toolbar.ToolbarMenuButton(this.populateNavigatorMenu.bind(this), true, 'more-options');
         navigatorMenuButton.setTitle(i18nString(UIStrings.moreOptions));
         tabbedPane.rightToolbar().appendToolbarItem(navigatorMenuButton);
         tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, ({ data: { tabId } }) => Host.userMetrics.sourcesSidebarTabShown(tabId));
         if (UI.ViewManager.ViewManager.instance().hasViewsForLocation('run-view-sidebar')) {
-            const navigatorSplitWidget = new UI.SplitWidget.SplitWidget(false, true, 'sourcePanelNavigatorSidebarSplitViewState');
+            const navigatorSplitWidget = new UI.SplitWidget.SplitWidget(false, true, 'source-panel-navigator-sidebar-split-view-state');
             navigatorSplitWidget.setMainWidget(tabbedPane);
             const runViewTabbedPane = UI.ViewManager.ViewManager.instance()
                 .createTabbedLocation(this.revealNavigatorSidebar.bind(this), 'run-view-sidebar')
@@ -250,14 +252,14 @@ export class SourcesPanel extends UI.Panel.Panel {
         this.watchSidebarPane = UI.ViewManager.ViewManager.instance().view('sources.watch');
         this.callstackPane = CallStackSidebarPane.instance();
         Common.Settings.Settings.instance()
-            .moduleSetting('sidebarPosition')
+            .moduleSetting('sidebar-position')
             .addChangeListener(this.updateSidebarPosition.bind(this));
         this.updateSidebarPosition();
         void this.updateDebuggerButtonsAndStatus();
         this.liveLocationPool = new Bindings.LiveLocation.LiveLocationPool();
         this.setTarget(UI.Context.Context.instance().flavor(SDK.Target.Target));
         Common.Settings.Settings.instance()
-            .moduleSetting('breakpointsActive')
+            .moduleSetting('breakpoints-active')
             .addChangeListener(this.breakpointsActiveStateChanged, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, this.onCurrentTargetChanged, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.callFrameChanged, this);
@@ -373,7 +375,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         return true;
     }
     onResize() {
-        if (Common.Settings.Settings.instance().moduleSetting('sidebarPosition').get() === 'auto') {
+        if (Common.Settings.Settings.instance().moduleSetting('sidebar-position').get() === 'auto') {
             this.element.window().requestAnimationFrame(this.updateSidebarPosition.bind(this));
         } // Do not force layout.
     }
@@ -390,7 +392,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         const debuggerModel = event.data;
         const details = debuggerModel.debuggerPausedDetails();
         if (!this.pausedInternal &&
-            Common.Settings.Settings.instance().moduleSetting('autoFocusOnDebuggerPausedEnabled').get()) {
+            Common.Settings.Settings.instance().moduleSetting('auto-focus-on-debugger-paused-enabled').get()) {
             void this.setAsCurrentPanel();
         }
         if (UI.Context.Context.instance().flavor(SDK.Target.Target) === debuggerModel.target()) {
@@ -486,13 +488,13 @@ export class SourcesPanel extends UI.Panel.Panel {
             // with it, so we will convince it a different grouping setting changed. When we switch
             // from using an experiment to a setting, it will listen to that setting and we
             // won't need to do this.
-            const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigatorGroupByFolder');
+            const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigator-group-by-folder');
             groupByFolderSetting.set(groupByFolderSetting.get());
         }
         menuSection.appendCheckboxItem(menuItem, toggleExperiment, Root.Runtime.experiments.isEnabled(experiment), false, IconButton.Icon.create('experiment'));
     }
     populateNavigatorMenu(contextMenu) {
-        const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigatorGroupByFolder');
+        const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigator-group-by-folder');
         contextMenu.appendItemsAtLocation('navigatorMenu');
         contextMenu.viewSection().appendCheckboxItem(i18nString(UIStrings.groupByFolder), () => groupByFolderSetting.set(!groupByFolderSetting.get()), groupByFolderSetting.get());
         this.addExperimentMenuItem(contextMenu.viewSection(), "authoredDeployedGrouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, i18nString(UIStrings.groupByAuthored));
@@ -597,7 +599,7 @@ export class SourcesPanel extends UI.Panel.Panel {
     editorSelected(event) {
         const uiSourceCode = event.data;
         if (this.editorView.mainWidget() &&
-            Common.Settings.Settings.instance().moduleSetting('autoRevealInNavigator').get()) {
+            Common.Settings.Settings.instance().moduleSetting('auto-reveal-in-navigator').get()) {
             void this.revealInNavigator(uiSourceCode, true);
         }
     }
@@ -686,16 +688,17 @@ export class SourcesPanel extends UI.Panel.Panel {
     }
     toggleBreakpointsActive() {
         Common.Settings.Settings.instance()
-            .moduleSetting('breakpointsActive')
-            .set(!Common.Settings.Settings.instance().moduleSetting('breakpointsActive').get());
+            .moduleSetting('breakpoints-active')
+            .set(!Common.Settings.Settings.instance().moduleSetting('breakpoints-active').get());
     }
     breakpointsActiveStateChanged() {
-        const active = Common.Settings.Settings.instance().moduleSetting('breakpointsActive').get();
+        const active = Common.Settings.Settings.instance().moduleSetting('breakpoints-active').get();
         this.toggleBreakpointsActiveAction.setToggled(!active);
         this.sourcesViewInternal.toggleBreakpointsActiveState(active);
     }
     createDebugToolbar() {
         const debugToolbar = new UI.Toolbar.Toolbar('scripts-debug-toolbar');
+        debugToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar('debug')}`);
         const longResumeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.resumeWithAllPausesBlockedForMs), 'play');
         longResumeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.longResume, this);
         const terminateExecutionButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.terminateCurrentJavascriptCall), 'stop');
@@ -713,7 +716,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         const debugToolbarDrawer = document.createElement('div');
         debugToolbarDrawer.classList.add('scripts-debug-toolbar-drawer');
         const label = i18nString(UIStrings.pauseOnCaughtExceptions);
-        const setting = Common.Settings.Settings.instance().moduleSetting('pauseOnCaughtException');
+        const setting = Common.Settings.Settings.instance().moduleSetting('pause-on-caught-exception');
         debugToolbarDrawer.appendChild(UI.SettingsUI.createSettingCheckbox(label, setting, true));
         return debugToolbarDrawer;
     }
@@ -782,7 +785,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         }
     }
     appendRemoteObjectItems(contextMenu, remoteObject) {
-        const indent = Common.Settings.Settings.instance().moduleSetting('textEditorIndent').get();
+        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
         const executionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
         function getObjectTitle() {
             if (remoteObject.type === 'wasm') {
@@ -897,7 +900,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         this.editorView.showBoth(true);
     }
     revealDebuggerSidebar() {
-        if (!Common.Settings.Settings.instance().moduleSetting('autoFocusOnDebuggerPausedEnabled').get()) {
+        if (!Common.Settings.Settings.instance().moduleSetting('auto-focus-on-debugger-paused-enabled').get()) {
             return;
         }
         void this.setAsCurrentPanel();
@@ -905,7 +908,7 @@ export class SourcesPanel extends UI.Panel.Panel {
     }
     updateSidebarPosition() {
         let vertically;
-        const position = Common.Settings.Settings.instance().moduleSetting('sidebarPosition').get();
+        const position = Common.Settings.Settings.instance().moduleSetting('sidebar-position').get();
         if (position === 'right') {
             vertically = false;
         }
@@ -958,7 +961,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             this.splitWidget.uninstallResizer(this.debugToolbar.gripElementForResize());
         }
         else {
-            const splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'sourcesPanelDebuggerSidebarSplitViewState', 0.5);
+            const splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'sources-panel-debugger-sidebar-split-view-state', 0.5);
             splitWidget.setMainWidget(vbox);
             // Populate the left stack.
             void this.sidebarPaneStack.showView(jsBreakpoints);
@@ -1043,7 +1046,7 @@ export class UISourceCodeRevealer {
 }
 export class DebuggerPausedDetailsRevealer {
     async reveal(_object) {
-        if (Common.Settings.Settings.instance().moduleSetting('autoFocusOnDebuggerPausedEnabled').get()) {
+        if (Common.Settings.Settings.instance().moduleSetting('auto-focus-on-debugger-paused-enabled').get()) {
             return SourcesPanel.instance().setAsCurrentPanel();
         }
     }
@@ -1075,7 +1078,7 @@ export class RevealingActionDelegate {
                 // Do not trigger a resume action, if: the shortcut was forwarded and the
                 // paused overlay is enabled.
                 const actionHandledInPausedOverlay = context.flavor(UI.ShortcutRegistry.ForwardedShortcut) &&
-                    !Common.Settings.Settings.instance().moduleSetting('disablePausedStateOverlay').get();
+                    !Common.Settings.Settings.instance().moduleSetting('disable-paused-state-overlay').get();
                 if (actionHandledInPausedOverlay) {
                     // Taken care of by inspector overlay: handled set to true to
                     // register user metric.
