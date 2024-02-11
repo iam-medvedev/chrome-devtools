@@ -740,7 +740,7 @@ export class TreeElement {
             ARIAUtils.unsetExpandable(this.listItemNode);
         }
         else {
-            VisualLogging.registerLoggable(this.expandLoggable, `${VisualLogging.treeItemExpand()}`, this.listItemNode);
+            VisualLogging.registerLoggable(this.expandLoggable, `${VisualLogging.expand()}`, this.listItemNode);
             ARIAUtils.setExpanded(this.listItemNode, false);
         }
     }

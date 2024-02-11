@@ -54,6 +54,42 @@ export class CookieParser {
     static parseSetCookie(header, domain) {
         return (new CookieParser(domain)).parseSetCookie(header);
     }
+    getCookieAttribute(header) {
+        if (!header) {
+            return null;
+        }
+        switch (header.toLowerCase()) {
+            case 'domain':
+                return "domain" /* Attribute.Domain */;
+            case 'expires':
+                return "expires" /* Attribute.Expires */;
+            case 'max-age':
+                return "max-age" /* Attribute.MaxAge */;
+            case 'httponly':
+                return "http-only" /* Attribute.HttpOnly */;
+            case 'name':
+                return "name" /* Attribute.Name */;
+            case 'path':
+                return "path" /* Attribute.Path */;
+            case 'samesite':
+                return "same-site" /* Attribute.SameSite */;
+            case 'secure':
+                return "secure" /* Attribute.Secure */;
+            case 'value':
+                return "value" /* Attribute.Value */;
+            case 'priority':
+                return "priority" /* Attribute.Priority */;
+            case 'sourceport':
+                return "source-port" /* Attribute.SourcePort */;
+            case 'sourcescheme':
+                return "source-scheme" /* Attribute.SourceScheme */;
+            case 'partitioned':
+                return "partitioned" /* Attribute.Partitioned */;
+            default:
+                console.error('Failed getting cookie attribute: ' + header);
+                return null;
+        }
+    }
     cookies() {
         return this.#cookiesInternal;
     }
@@ -63,7 +99,7 @@ export class CookieParser {
         }
         for (let kv = this.extractKeyValue(); kv; kv = this.extractKeyValue()) {
             if (this.#lastCookie) {
-                this.#lastCookie.addAttribute(kv.key, kv.value);
+                this.#lastCookie.addAttribute(this.getCookieAttribute(kv.key), kv.value);
             }
             else {
                 this.addCookie(kv, 1 /* Type.Response */);
@@ -135,7 +171,7 @@ export class CookieParser {
         this.#lastCookie = typeof keyValue.value === 'string' ? new Cookie(keyValue.key, keyValue.value, type) :
             new Cookie('', keyValue.key, type);
         if (this.#domain) {
-            this.#lastCookie.addAttribute('domain', this.#domain);
+            this.#lastCookie.addAttribute("domain" /* Attribute.Domain */, this.#domain);
         }
         this.#lastCookiePosition = keyValue.position;
         this.#cookiesInternal.push(this.#lastCookie);

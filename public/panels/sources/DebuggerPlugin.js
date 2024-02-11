@@ -43,6 +43,7 @@ import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.j
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AddDebugInfoURLDialog } from './AddSourceMapURLDialog.js';
 import { BreakpointEditDialog } from './BreakpointEditDialog.js';
 import * as SourceComponents from './components/components.js';
@@ -345,7 +346,8 @@ export class DebuggerPlugin extends Plugin {
         }
         void this.callFrameChanged();
         this.popoverHelper?.dispose();
-        this.popoverHelper = new UI.PopoverHelper.PopoverHelper(editor, this.getPopoverRequest.bind(this));
+        this.popoverHelper =
+            new UI.PopoverHelper.PopoverHelper(editor, this.getPopoverRequest.bind(this), 'sources.object-properties');
         this.popoverHelper.setDisableOnClick(true);
         this.popoverHelper.setTimeout(250, 250);
         this.popoverHelper.setHasPadding(true);
@@ -1106,7 +1108,7 @@ export class DebuggerPlugin extends Plugin {
             else if (main.condition()) {
                 gutterClass += ' cm-breakpoint-conditional';
             }
-            gutterMarkers.push((new BreakpointGutterMarker(gutterClass)).range(lineStart));
+            gutterMarkers.push((new BreakpointGutterMarker(gutterClass, lineStart)).range(lineStart));
         }
         const addPossibleBreakpoints = (line, locations) => {
             for (const location of locations) {
@@ -1579,7 +1581,7 @@ function muteGutterMarkers(markers, doc) {
         if (!/cm-breakpoint-disabled/.test(className)) {
             className += ' cm-breakpoint-disabled';
         }
-        newMarkers.push(new BreakpointGutterMarker(className).range(from));
+        newMarkers.push(new BreakpointGutterMarker(className, from).range(from));
     });
     return CodeMirror.RangeSet.of(newMarkers, false);
 }
@@ -1637,6 +1639,7 @@ class BreakpointInlineMarker extends CodeMirror.WidgetType {
     toDOM() {
         const span = document.createElement('span');
         span.className = this.class;
+        span.setAttribute('jslog', `${VisualLogging.breakpointMarker('inline').track({ click: true })}`);
         span.addEventListener('click', (event) => {
             this.parent.onInlineBreakpointMarkerClick(event, this.breakpoint);
             event.consume();
@@ -1653,12 +1656,22 @@ class BreakpointInlineMarker extends CodeMirror.WidgetType {
 }
 class BreakpointGutterMarker extends CodeMirror.GutterMarker {
     elementClass;
-    constructor(elementClass) {
+    #position;
+    constructor(elementClass, position) {
         super();
         this.elementClass = elementClass;
+        this.#position = position;
     }
     eq(other) {
         return other.elementClass === this.elementClass;
+    }
+    toDOM(view) {
+        const div = document.createElement('div'); // We want {display: block} so it uses all of the space.
+        div.setAttribute('jslog', `${VisualLogging.breakpointMarker('gutter').track({ click: true })}`);
+        const line = view.state.doc.lineAt(this.#position).number;
+        const formatNumber = view.state.facet(SourceFrame.SourceFrame.LINE_NUMBER_FORMATTER);
+        div.textContent = formatNumber(line, view.state);
+        return div;
     }
 }
 function mostSpecificBreakpoint(a, b) {

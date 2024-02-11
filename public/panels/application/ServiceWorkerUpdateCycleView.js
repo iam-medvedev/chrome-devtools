@@ -167,7 +167,7 @@ export class ServiceWorkerUpdateCycleView {
             timingBarVersionElement.addEventListener('focus', (event) => {
                 this.onFocus(event);
             });
-            timingBarVersionElement.setAttribute('jslog', `${VisualLogging.treeItemExpand('timing-info').track({ click: true })}`);
+            timingBarVersionElement.setAttribute('jslog', `${VisualLogging.expand('timing-info').track({ click: true })}`);
             UI.ARIAUtils.setChecked(timingBarVersionElement, false);
             const timingBarTitleElement = tr.createChild('td');
             UI.UIUtils.createTextChild(timingBarTitleElement, phaseName);

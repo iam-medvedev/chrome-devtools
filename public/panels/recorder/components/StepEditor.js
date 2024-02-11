@@ -13,6 +13,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as SuggestionInput from '../../../ui/components/suggestion_input/suggestion_input.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Controllers from '../controllers/controllers.js';
 import * as Models from '../models/models.js';
 import * as Util from '../util/util.js';
@@ -402,6 +403,9 @@ let RecorderSelectorPickerButton = class RecorderSelectorPickerButton extends Li
       .iconName=${'select-element'}
       .active=${this.#picker.active}
       .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}
+      jslog=${VisualLogging.toggle('selector-picker').track({
+            click: true,
+        })}
     ></devtools-button>`;
     }
 };
@@ -533,6 +537,9 @@ let StepEditor = class StepEditor extends LitElement {
         .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
         .iconName=${opts.iconName}
         .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}
+        jslog=${VisualLogging.action(opts.class).track({
+            click: true,
+        })}
         class="inline-button ${opts.class}"
         @click=${opts.onClick}
       ></devtools-button>
@@ -555,6 +562,7 @@ let StepEditor = class StepEditor extends LitElement {
       .title=${i18nString(UIStrings.deleteRow)}
       class="inline-button delete-row"
       data-attribute=${attribute}
+      jslog=${VisualLogging.action('delete').track({ click: true })}
       @click=${(event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -566,7 +574,7 @@ let StepEditor = class StepEditor extends LitElement {
     #renderTypeRow(editable) {
         this.#renderedAttributes.add('type');
         // clang-format off
-        return html `<div class="row attribute" data-attribute="type">
+        return html `<div class="row attribute" data-attribute="type" jslog=${VisualLogging.treeItem('type')}>
       <div>type<span class="separator">:</span></div>
       <devtools-suggestion-input
         .disabled=${!editable || this.disabled}
@@ -585,7 +593,7 @@ let StepEditor = class StepEditor extends LitElement {
             return;
         }
         // clang-format off
-        return html `<div class="row attribute" data-attribute=${attribute}>
+        return html `<div class="row attribute" data-attribute=${attribute} jslog=${VisualLogging.treeItem(Platform.StringUtilities.toKebabCase(attribute))}>
       <div>${attribute}<span class="separator">:</span></div>
       <devtools-suggestion-input
         .disabled=${this.disabled}
@@ -628,7 +636,7 @@ let StepEditor = class StepEditor extends LitElement {
         }
         // clang-format off
         return html `
-      <div class="attribute" data-attribute="frame">
+      <div class="attribute" data-attribute="frame" jslog=${VisualLogging.treeItem('frame')}>
         <div class="row">
           <div>frame<span class="separator">:</span></div>
           ${this.#renderDeleteButton('frame')}
@@ -685,7 +693,7 @@ let StepEditor = class StepEditor extends LitElement {
             return;
         }
         // clang-format off
-        return html `<div class="attribute" data-attribute="selectors">
+        return html `<div class="attribute" data-attribute="selectors" jslog=${VisualLogging.treeItem('selectors')}>
       <div class="row">
         <div>selectors<span class="separator">:</span></div>
         <devtools-recorder-selector-picker-button
@@ -777,17 +785,17 @@ let StepEditor = class StepEditor extends LitElement {
             return;
         }
         // clang-format off
-        return html `<div class="attribute" data-attribute="assertedEvents">
+        return html `<div class="attribute" data-attribute="assertedEvents" jslog=${VisualLogging.treeItem('asserted-events')}>
       <div class="row">
         <div>asserted events<span class="separator">:</span></div>
         ${this.#renderDeleteButton('assertedEvents')}
       </div>
       ${this.state.assertedEvents.map((event, index) => {
-            return html ` <div class="padded row">
+            return html ` <div class="padded row" jslog=${VisualLogging.treeItem('event-type')}>
             <div>type<span class="separator">:</span></div>
             <div>${event.type}</div>
           </div>
-          <div class="padded row">
+          <div class="padded row" jslog=${VisualLogging.treeItem('event-title')}>
             <div>title<span class="separator">:</span></div>
             <devtools-suggestion-input
               .disabled=${this.disabled}
@@ -809,7 +817,7 @@ let StepEditor = class StepEditor extends LitElement {
             })}
             ></devtools-suggestion-input>
           </div>
-          <div class="padded row">
+          <div class="padded row" jslog=${VisualLogging.treeItem('event-url')}>
             <div>url<span class="separator">:</span></div>
             <devtools-suggestion-input
               .disabled=${this.disabled}
@@ -841,18 +849,19 @@ let StepEditor = class StepEditor extends LitElement {
             return;
         }
         // clang-format off
-        return html `<div class="attribute" data-attribute="attributes">
+        return html `<div class="attribute" data-attribute="attributes" jslog=${VisualLogging.treeItem('attributes')}>
       <div class="row">
         <div>attributes<span class="separator">:</span></div>
         ${this.#renderDeleteButton('attributes')}
       </div>
       ${this.state.attributes.map(({ name, value }, index, attributes) => {
-            return html `<div class="padded row">
+            return html `<div class="padded row" jslog=${VisualLogging.treeItem('attribute')}>
           <devtools-suggestion-input
             .disabled=${this.disabled}
             .placeholder=${defaultValuesByAttribute.attributes[0].name}
             .value=${live(name)}
             data-path=${`attributes.${index}.name`}
+            jslog=${VisualLogging.key().track({ change: true })}
             @blur=${this.#handleInputBlur({
                 attribute: 'attributes',
                 from(name) {
@@ -928,6 +937,7 @@ let StepEditor = class StepEditor extends LitElement {
           .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}
           class="add-row"
           data-attribute=${attr}
+          jslog=${VisualLogging.action(`add-${Platform.StringUtilities.toKebabCase(attr)}`)}
           @click=${this.#handleAddRowClickEvent}
         >
           ${i18nString(UIStrings.addAttribute, {
@@ -947,7 +957,7 @@ let StepEditor = class StepEditor extends LitElement {
         this.#renderedAttributes = new Set();
         // clang-format off
         const result = html `
-      <div class="wrapper">
+      <div class="wrapper" jslog=${VisualLogging.tree('step-editor')}>
         ${this.#renderTypeRow(this.isTypeEditable)} ${this.#renderRow('target')}
         ${this.#renderFrameRow()} ${this.#renderSelectorsRow()}
         ${this.#renderRow('deviceType')} ${this.#renderRow('button')}

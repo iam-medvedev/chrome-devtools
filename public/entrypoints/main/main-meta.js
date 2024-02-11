@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -624,8 +625,8 @@ Common.Settings.registerSettingExtension({
 Common.Settings.registerSettingExtension({
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
-    title: i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels),
-    titleMac: i18nLazyString(UIStrings.enableShortcutToSwitchPanels),
+    title: Host.Platform.platform() === 'mac' ? i18nLazyString(UIStrings.enableShortcutToSwitchPanels) :
+        i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels),
     settingName: 'shortcut-panel-switch',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: false,
@@ -780,19 +781,11 @@ UI.Toolbar.registerToolbarItem({
     separator: true,
     location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
     order: 100,
-    showLabel: undefined,
-    actionId: undefined,
-    condition: undefined,
-    loadItem: undefined,
 });
 UI.Toolbar.registerToolbarItem({
     separator: true,
     order: 97,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
-    showLabel: undefined,
-    actionId: undefined,
-    condition: undefined,
-    loadItem: undefined,
 });
 UI.Toolbar.registerToolbarItem({
     async loadItem() {
@@ -801,10 +794,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 99,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
 });
 UI.Toolbar.registerToolbarItem({
     async loadItem() {
@@ -813,10 +802,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 100,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
 });
 UI.Toolbar.registerToolbarItem({
     async loadItem() {
@@ -824,10 +809,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 101,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
 });
 Common.AppProvider.registerAppProvider({
     async loadAppProvider() {
@@ -835,6 +816,5 @@ Common.AppProvider.registerAppProvider({
         return Main.SimpleApp.SimpleAppProvider.instance();
     },
     order: 10,
-    condition: undefined,
 });
 //# sourceMappingURL=main-meta.js.map

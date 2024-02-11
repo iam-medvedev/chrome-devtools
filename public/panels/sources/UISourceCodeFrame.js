@@ -74,7 +74,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
     #sourcesPanelOpenedMetricsRecorded = false;
     constructor(uiSourceCode) {
         super(() => this.workingCopy());
-        this.element.setAttribute('jslog', `${VisualLogging.pane('source-code-frame')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.textField()}`);
         this.uiSourceCodeInternal = uiSourceCode;
         this.muteSourceCodeEvents = false;
         this.persistenceBinding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
@@ -84,8 +84,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         Common.Settings.Settings.instance()
             .moduleSetting('persistence-network-overrides-enabled')
             .addChangeListener(this.onNetworkPersistenceChanged, this);
-        this.errorPopoverHelper =
-            new UI.PopoverHelper.PopoverHelper(this.textEditor.editor.contentDOM, this.getErrorPopoverContent.bind(this));
+        this.errorPopoverHelper = new UI.PopoverHelper.PopoverHelper(this.textEditor.editor.contentDOM, this.getErrorPopoverContent.bind(this), 'sources.error');
         this.errorPopoverHelper.setHasPadding(true);
         this.errorPopoverHelper.setTimeout(100, 100);
         this.initializeUISourceCode();

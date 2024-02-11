@@ -20,10 +20,12 @@ declare enum VisualElements {
     SectionHeader = 11,
     Timeline = 12,
     StylesSelector = 13,
-    TreeItemExpand = 14,
+    Expand = 14,
     ToggleSubpane = 15,
     ControlPoint = 16,
     Toolbar = 17,
+    Popover = 18,
+    BreakpointMarker = 19,
     DropDown = 20,
     MetricsBox = 23,
     MetricsBoxPart = 24,
@@ -96,6 +98,7 @@ export interface ConfigStringBuilder {
         drag?: boolean;
         change?: boolean;
         keydown?: boolean | string;
+        resize?: boolean;
     }) => ConfigStringBuilder;
     /**
      * Serializes the configuration into a `jslog` string.

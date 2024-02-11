@@ -80,8 +80,9 @@ document.querySelector('test').style = 'black';
 \`\`\`
 `;
     },
+}, 'Explain this error', {
+    isSyncActive: true,
+    accountEmail: 'some-email',
 });
-component.actionName = 'Explain this error';
-void component.update();
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=basic.js.map

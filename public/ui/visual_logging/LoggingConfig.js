@@ -23,12 +23,12 @@ var VisualElements;
     VisualElements[VisualElements["SectionHeader"] = 11] = "SectionHeader";
     VisualElements[VisualElements["Timeline"] = 12] = "Timeline";
     VisualElements[VisualElements["StylesSelector"] = 13] = "StylesSelector";
-    VisualElements[VisualElements["TreeItemExpand"] = 14] = "TreeItemExpand";
+    VisualElements[VisualElements["Expand"] = 14] = "Expand";
     VisualElements[VisualElements["ToggleSubpane"] = 15] = "ToggleSubpane";
     VisualElements[VisualElements["ControlPoint"] = 16] = "ControlPoint";
     VisualElements[VisualElements["Toolbar"] = 17] = "Toolbar";
-    /* 18 used to be ElementStatesPan, but free to grab now */
-    /* 19 used to be CssLayersPane, but free to grab now */
+    VisualElements[VisualElements["Popover"] = 18] = "Popover";
+    VisualElements[VisualElements["BreakpointMarker"] = 19] = "BreakpointMarker";
     VisualElements[VisualElements["DropDown"] = 20] = "DropDown";
     /* 21 used to be StylesMetricsPane, but free to grab now */
     /* 22 used to be JumpToSource, but free to grab now */

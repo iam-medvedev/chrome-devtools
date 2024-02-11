@@ -62,10 +62,10 @@ export declare class Deprecation {
 }
 export declare class Setting<V> {
     #private;
+    readonly name: string;
     readonly defaultValue: V;
     private readonly eventSupport;
     readonly storage: SettingsStorage;
-    readonly name: string;
     constructor(name: string, defaultValue: V, eventSupport: ObjectWrapper<GenericEvents>, storage: SettingsStorage);
     setSerializer(serializer: Serializer<unknown, V>): void;
     addChangeListener(listener: (arg0: EventTargetEvent<V>) => void, thisObject?: Object): EventDescriptor;

@@ -24,6 +24,7 @@ export declare class StreamingContentData extends Common.ObjectWrapper.ObjectWra
      * only supports UTF-8. We can't convert text with arbitrary encoding back to base64 for concatenation.
      */
     static from(content: ContentData): StreamingContentData;
+    get isTextContent(): boolean;
     /** @param chunk base64 encoded data */
     addChunk(chunk: string): void;
     /** @returns An immutable ContentData with all the bytes received so far */

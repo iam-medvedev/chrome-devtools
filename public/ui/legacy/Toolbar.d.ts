@@ -1,6 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as Adorners from '../components/adorners/adorners.js';
 import { type Action } from './ActionRegistration.js';
 import { ContextMenu } from './ContextMenu.js';
@@ -211,7 +212,7 @@ export interface ToolbarItemRegistration {
     label?: () => Platform.UIString.LocalizedString;
     showLabel?: boolean;
     actionId?: string;
-    condition?: string;
+    condition?: Root.Runtime.Condition;
     loadItem?: (() => Promise<Provider>);
     experiment?: string;
     jslog?: string;

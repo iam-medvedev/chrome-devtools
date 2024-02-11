@@ -99,7 +99,7 @@ let JSONEditor = class JSONEditor extends LitElement {
     }
     connectedCallback() {
         super.connectedCallback();
-        this.#hintPopoverHelper = new UI.PopoverHelper.PopoverHelper(this, event => this.#handlePopoverDescriptions(event));
+        this.#hintPopoverHelper = new UI.PopoverHelper.PopoverHelper(this, event => this.#handlePopoverDescriptions(event), 'protocol-monitor.hint');
         this.#hintPopoverHelper.setDisableOnClick(true);
         this.#hintPopoverHelper.setTimeout(300);
         this.#hintPopoverHelper.setHasPadding(true);

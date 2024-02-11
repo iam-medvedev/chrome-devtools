@@ -1526,11 +1526,11 @@ export const setCookieBlockedReasonToUiString = function (blockedReason) {
 export const cookieBlockedReasonToAttribute = function (blockedReason) {
     switch (blockedReason) {
         case "SecureOnly" /* Protocol.Network.CookieBlockedReason.SecureOnly */:
-            return "secure" /* Attributes.Secure */;
+            return "secure" /* Attribute.Secure */;
         case "NotOnPath" /* Protocol.Network.CookieBlockedReason.NotOnPath */:
-            return "path" /* Attributes.Path */;
+            return "path" /* Attribute.Path */;
         case "DomainMismatch" /* Protocol.Network.CookieBlockedReason.DomainMismatch */:
-            return "domain" /* Attributes.Domain */;
+            return "domain" /* Attribute.Domain */;
         case "SameSiteStrict" /* Protocol.Network.CookieBlockedReason.SameSiteStrict */:
         case "SameSiteLax" /* Protocol.Network.CookieBlockedReason.SameSiteLax */:
         case "SameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.CookieBlockedReason.SameSiteUnspecifiedTreatedAsLax */:
@@ -1538,7 +1538,7 @@ export const cookieBlockedReasonToAttribute = function (blockedReason) {
         case "SchemefulSameSiteStrict" /* Protocol.Network.CookieBlockedReason.SchemefulSameSiteStrict */:
         case "SchemefulSameSiteLax" /* Protocol.Network.CookieBlockedReason.SchemefulSameSiteLax */:
         case "SchemefulSameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.CookieBlockedReason.SchemefulSameSiteUnspecifiedTreatedAsLax */:
-            return "same-site" /* Attributes.SameSite */;
+            return "same-site" /* Attribute.SameSite */;
         case "SamePartyFromCrossPartyContext" /* Protocol.Network.CookieBlockedReason.SamePartyFromCrossPartyContext */:
         case "NameValuePairExceedsMaxSize" /* Protocol.Network.CookieBlockedReason.NameValuePairExceedsMaxSize */:
         case "UserPreferences" /* Protocol.Network.CookieBlockedReason.UserPreferences */:
@@ -1552,7 +1552,7 @@ export const setCookieBlockedReasonToAttribute = function (blockedReason) {
     switch (blockedReason) {
         case "SecureOnly" /* Protocol.Network.SetCookieBlockedReason.SecureOnly */:
         case "OverwriteSecure" /* Protocol.Network.SetCookieBlockedReason.OverwriteSecure */:
-            return "secure" /* Attributes.Secure */;
+            return "secure" /* Attribute.Secure */;
         case "SameSiteStrict" /* Protocol.Network.SetCookieBlockedReason.SameSiteStrict */:
         case "SameSiteLax" /* Protocol.Network.SetCookieBlockedReason.SameSiteLax */:
         case "SameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.SetCookieBlockedReason.SameSiteUnspecifiedTreatedAsLax */:
@@ -1560,11 +1560,11 @@ export const setCookieBlockedReasonToAttribute = function (blockedReason) {
         case "SchemefulSameSiteStrict" /* Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteStrict */:
         case "SchemefulSameSiteLax" /* Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteLax */:
         case "SchemefulSameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteUnspecifiedTreatedAsLax */:
-            return "same-site" /* Attributes.SameSite */;
+            return "same-site" /* Attribute.SameSite */;
         case "InvalidDomain" /* Protocol.Network.SetCookieBlockedReason.InvalidDomain */:
-            return "domain" /* Attributes.Domain */;
+            return "domain" /* Attribute.Domain */;
         case "InvalidPrefix" /* Protocol.Network.SetCookieBlockedReason.InvalidPrefix */:
-            return "name" /* Attributes.Name */;
+            return "name" /* Attribute.Name */;
         case "SamePartyConflictsWithOtherAttributes" /* Protocol.Network.SetCookieBlockedReason.SamePartyConflictsWithOtherAttributes */:
         case "SamePartyFromCrossPartyContext" /* Protocol.Network.SetCookieBlockedReason.SamePartyFromCrossPartyContext */:
         case "NameValuePairExceedsMaxSize" /* Protocol.Network.SetCookieBlockedReason.NameValuePairExceedsMaxSize */:

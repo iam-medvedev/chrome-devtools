@@ -225,7 +225,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         const tabbedPane = this.navigatorTabbedLocation.tabbedPane();
         tabbedPane.setMinimumSize(100, 25);
         tabbedPane.element.classList.add('navigator-tabbed-pane');
-        tabbedPane.element.setAttribute('jslog', `${VisualLogging.toolbar('navigator')}`);
+        tabbedPane.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('navigator')}`);
         const navigatorMenuButton = new UI.Toolbar.ToolbarMenuButton(this.populateNavigatorMenu.bind(this), true, 'more-options');
         navigatorMenuButton.setTitle(i18nString(UIStrings.moreOptions));
         tabbedPane.rightToolbar().appendToolbarItem(navigatorMenuButton);
@@ -245,8 +245,8 @@ export class SourcesPanel extends UI.Panel.Panel {
         }
         this.sourcesViewInternal = new SourcesView();
         this.sourcesViewInternal.addEventListener("EditorSelected" /* Events.EditorSelected */, this.editorSelected.bind(this));
-        this.toggleNavigatorSidebarButton = this.editorView.createShowHideSidebarButton(i18nString(UIStrings.showNavigator), i18nString(UIStrings.hideNavigator), i18nString(UIStrings.navigatorShown), i18nString(UIStrings.navigatorHidden));
-        this.toggleDebuggerSidebarButton = this.splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showDebugger), i18nString(UIStrings.hideDebugger), i18nString(UIStrings.debuggerShown), i18nString(UIStrings.debuggerHidden));
+        this.toggleNavigatorSidebarButton = this.editorView.createShowHideSidebarButton(i18nString(UIStrings.showNavigator), i18nString(UIStrings.hideNavigator), i18nString(UIStrings.navigatorShown), i18nString(UIStrings.navigatorHidden), 'navigator');
+        this.toggleDebuggerSidebarButton = this.splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showDebugger), i18nString(UIStrings.hideDebugger), i18nString(UIStrings.debuggerShown), i18nString(UIStrings.debuggerHidden), 'debugger');
         this.editorView.setMainWidget(this.sourcesViewInternal);
         this.threadsSidebarPane = null;
         this.watchSidebarPane = UI.ViewManager.ViewManager.instance().view('sources.watch');
@@ -491,12 +491,12 @@ export class SourcesPanel extends UI.Panel.Panel {
             const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigator-group-by-folder');
             groupByFolderSetting.set(groupByFolderSetting.get());
         }
-        menuSection.appendCheckboxItem(menuItem, toggleExperiment, Root.Runtime.experiments.isEnabled(experiment), false, IconButton.Icon.create('experiment'));
+        menuSection.appendCheckboxItem(menuItem, toggleExperiment, Root.Runtime.experiments.isEnabled(experiment), false, IconButton.Icon.create('experiment'), undefined, Platform.StringUtilities.toKebabCase(experiment));
     }
     populateNavigatorMenu(contextMenu) {
         const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigator-group-by-folder');
         contextMenu.appendItemsAtLocation('navigatorMenu');
-        contextMenu.viewSection().appendCheckboxItem(i18nString(UIStrings.groupByFolder), () => groupByFolderSetting.set(!groupByFolderSetting.get()), groupByFolderSetting.get());
+        contextMenu.viewSection().appendCheckboxItem(i18nString(UIStrings.groupByFolder), () => groupByFolderSetting.set(!groupByFolderSetting.get()), groupByFolderSetting.get(), undefined, undefined, undefined, groupByFolderSetting.name);
         this.addExperimentMenuItem(contextMenu.viewSection(), "authoredDeployedGrouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, i18nString(UIStrings.groupByAuthored));
         this.addExperimentMenuItem(contextMenu.viewSection(), "justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, i18nString(UIStrings.hideIgnoreListed));
     }
@@ -1159,6 +1159,7 @@ export class QuickSourceView extends UI.Widget.VBox {
     constructor() {
         super();
         this.element.classList.add('sources-view-wrapper');
+        this.element.setAttribute('jslog', `${VisualLogging.panel('sources.quick').track({ resize: true })}`);
         this.view = SourcesPanel.instance().sourcesView();
     }
     wasShown() {

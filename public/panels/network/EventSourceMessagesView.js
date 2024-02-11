@@ -1,6 +1,7 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -33,17 +34,45 @@ const UIStrings = {
      *@description A context menu item in the Resource Web Socket Frame View of the Network panel
      */
     copyMessage: 'Copy message',
+    /**
+     *@description Text to clear everything
+     */
+    clearAll: 'Clear all',
+    /**
+     *@description Example for placeholder text
+     */
+    enterRegex: 'Enter regex, for example: https?',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/EventSourceMessagesView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class EventSourceMessagesView extends UI.Widget.VBox {
     request;
     dataGrid;
+    mainToolbar;
+    clearAllButton;
+    filterTextInput;
+    filterRegex;
+    messageFilterSetting = Common.Settings.Settings.instance().createSetting('networkEventSourceMessageFilter', '');
     constructor(request) {
         super();
         this.element.classList.add('event-source-messages-view');
         this.element.setAttribute('jslog', `${VisualLogging.pane('event-stream')}`);
         this.request = request;
+        this.mainToolbar = new UI.Toolbar.Toolbar('');
+        this.clearAllButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearAll), 'clear');
+        this.clearAllButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.clearMessages, this);
+        this.mainToolbar.appendToolbarItem(this.clearAllButton);
+        const placeholder = i18nString(UIStrings.enterRegex);
+        this.filterTextInput = new UI.Toolbar.ToolbarInput(placeholder, '', 0.4);
+        this.filterTextInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.updateFilterSetting, this);
+        const filter = this.messageFilterSetting.get();
+        this.filterRegex = null;
+        this.setFilter(filter);
+        if (filter) {
+            this.filterTextInput.setValue(filter);
+        }
+        this.mainToolbar.appendToolbarItem(this.filterTextInput);
+        this.element.appendChild(this.mainToolbar.element);
         const columns = [
             { id: 'id', title: i18nString(UIStrings.id), sortable: true, weight: 8 },
             { id: 'type', title: i18nString(UIStrings.type), sortable: true, weight: 8 },
@@ -67,12 +96,8 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
         this.dataGrid.asWidget().show(this.element);
     }
     wasShown() {
-        this.dataGrid.rootNode().removeChildren();
+        this.refresh();
         this.registerCSSFiles([eventSourceMessagesViewStyles]);
-        const messages = this.request.eventSourceMessages();
-        for (let i = 0; i < messages.length; ++i) {
-            this.dataGrid.insertChild(new EventSourceMessageNode(messages[i]));
-        }
         this.request.addEventListener(SDK.NetworkRequest.Events.EventSourceMessageAdded, this.messageAdded, this);
     }
     willHide() {
@@ -80,7 +105,36 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
     }
     messageAdded(event) {
         const message = event.data;
+        if (!this.messageFilter(message)) {
+            return;
+        }
         this.dataGrid.insertChild(new EventSourceMessageNode(message));
+    }
+    messageFilter(message) {
+        return !this.filterRegex || this.filterRegex.test(message.eventName) || this.filterRegex.test(message.eventId) ||
+            this.filterRegex.test(message.data);
+    }
+    clearMessages() {
+        clearMessageOffsets.set(this.request, this.request.eventSourceMessages().length);
+        this.refresh();
+    }
+    updateFilterSetting() {
+        const text = this.filterTextInput.value();
+        this.messageFilterSetting.set(text);
+        this.setFilter(text);
+        this.refresh();
+    }
+    setFilter(text) {
+        this.filterRegex = null;
+        if (text) {
+            try {
+                this.filterRegex = new RegExp(text, 'i');
+            }
+            catch (e) {
+                // this regex will never match any input
+                this.filterRegex = new RegExp('(?!)', 'i');
+            }
+        }
     }
     sortItems() {
         const sortColumnId = this.dataGrid.sortColumnId();
@@ -95,6 +149,14 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
     }
     onRowContextMenu(contextMenu, node) {
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyMessage), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, node.data.data));
+    }
+    refresh() {
+        this.dataGrid.rootNode().removeChildren();
+        let messages = this.request.eventSourceMessages();
+        const offset = clearMessageOffsets.get(this.request) || 0;
+        messages = messages.slice(offset);
+        messages = messages.filter(this.messageFilter.bind(this));
+        messages.forEach(message => this.dataGrid.insertChild(new EventSourceMessageNode(message)));
     }
 }
 export class EventSourceMessageNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
@@ -122,4 +184,5 @@ export const Comparators = {
     'type': EventSourceMessageNodeComparator.bind(null, message => message.eventName),
     'time': EventSourceMessageNodeComparator.bind(null, message => message.time),
 };
+const clearMessageOffsets = new WeakMap();
 //# sourceMappingURL=EventSourceMessagesView.js.map

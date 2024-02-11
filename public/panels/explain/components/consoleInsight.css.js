@@ -124,12 +124,12 @@ devtools-markdown-view {
 footer {
   display: flex;
   flex-direction: row;
+  align-items: flex-end;
   color: var(--sys-color-on-surface);
-  font-size: 13px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  margin-top: 10px;
+  margin-top: 16px;
 }
 
 footer > .filler {
@@ -156,15 +156,24 @@ textarea {
   margin-bottom: 16px;
 }
 
-.dogfood-feedback {
+.disclaimer {
   display: flex;
   gap: 2px;
-  align-items: center;
+  color: var(--sys-color-on-surface-subtle);
+  font-size: 12px;
+  align-items: flex-start;
+  flex-direction: column;
 }
 
 .link {
   color: var(--sys-color-primary);
   text-decoration-line: underline;
+
+  devtools-icon {
+    color: var(--sys-color-primary);
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .loader {

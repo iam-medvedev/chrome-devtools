@@ -70,12 +70,11 @@ export class CSSStyleSheetHeader {
             const lazyContent = (async () => {
                 const originalText = await this.#cssModelInternal.originalStyleSheetText(this);
                 if (originalText === null) {
-                    return { content: null, error: i18nString(UIStrings.couldNotFindTheOriginalStyle), isEncoded: false };
+                    return { error: i18nString(UIStrings.couldNotFindTheOriginalStyle) };
                 }
-                return { content: originalText, isEncoded: false };
+                return new TextUtils.ContentData.ContentData(originalText, /* isBase64=*/ false, 'text/css');
             });
-            this.#originalContentProviderInternal =
-                new TextUtils.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), lazyContent);
+            this.#originalContentProviderInternal = new TextUtils.StaticContentProvider.SafeStaticContentProvider(this.contentURL(), this.contentType(), lazyContent);
         }
         return this.#originalContentProviderInternal;
     }
@@ -143,25 +142,19 @@ export class CSSStyleSheetHeader {
     contentType() {
         return Common.ResourceType.resourceTypes.Stylesheet;
     }
-    async requestContent() {
-        try {
-            const cssText = await this.#cssModelInternal.getStyleSheetText(this.id);
-            return { content: cssText, isEncoded: false };
+    requestContent() {
+        return this.requestContentData().then(TextUtils.ContentData.ContentData.asDeferredContent.bind(undefined));
+    }
+    async requestContentData() {
+        const cssText = await this.#cssModelInternal.getStyleSheetText(this.id);
+        if (cssText === null) {
+            return { error: i18nString(UIStrings.thereWasAnErrorRetrievingThe) };
         }
-        catch (err) {
-            return {
-                content: null,
-                error: i18nString(UIStrings.thereWasAnErrorRetrievingThe),
-                isEncoded: false,
-            };
-        }
+        return new TextUtils.ContentData.ContentData(cssText, /* isBase64=*/ false, 'text/css');
     }
     async searchInContent(query, caseSensitive, isRegex) {
-        const requestedContent = await this.requestContent();
-        if (requestedContent.content === null) {
-            return [];
-        }
-        return TextUtils.TextUtils.performSearchInContent(requestedContent.content, query, caseSensitive, isRegex);
+        const contentData = await this.requestContentData();
+        return TextUtils.TextUtils.performSearchInContentData(contentData, query, caseSensitive, isRegex);
     }
     isViaInspector() {
         return this.origin === 'inspector';

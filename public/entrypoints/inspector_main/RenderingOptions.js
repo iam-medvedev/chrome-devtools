@@ -205,7 +205,7 @@ const supportsPrefersContrast = () => {
 export class RenderingOptionsView extends UI.Widget.VBox {
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel('rendering')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('rendering').track({ resize: true })}`);
         this.#appendCheckbox(i18nString(UIStrings.paintFlashing), i18nString(UIStrings.highlightsAreasOfThePageGreen), Common.Settings.Settings.instance().moduleSetting('show-paint-rects'));
         this.#appendCheckbox(i18nString(UIStrings.layoutShiftRegions), i18nString(UIStrings.highlightsAreasOfThePageBlueThat), Common.Settings.Settings.instance().moduleSetting('show-layout-shift-regions'));
         this.#appendCheckbox(i18nString(UIStrings.layerBorders), i18nString(UIStrings.showsLayerBordersOrangeoliveAnd), Common.Settings.Settings.instance().moduleSetting('show-debug-borders'));

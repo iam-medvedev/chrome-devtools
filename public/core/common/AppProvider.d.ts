@@ -7,6 +7,6 @@ export declare function registerAppProvider(registration: AppProviderRegistratio
 export declare function getRegisteredAppProviders(): AppProviderRegistration[];
 export interface AppProviderRegistration {
     loadAppProvider: () => Promise<AppProvider>;
-    condition?: Root.Runtime.ConditionName;
+    condition?: Root.Runtime.Condition;
     order: number;
 }

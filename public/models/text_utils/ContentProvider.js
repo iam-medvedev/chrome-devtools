@@ -51,4 +51,7 @@ export const contentAsDataURL = function (content, mimeType, contentEncoded, cha
     return 'data:' + mimeType + (charset ? ';charset=' + charset : '') + (contentEncoded ? ';base64' : '') + ',' +
         content;
 };
+export const isStreamingContentProvider = function (provider) {
+    return 'requestStreamingContent' in provider;
+};
 //# sourceMappingURL=ContentProvider.js.map

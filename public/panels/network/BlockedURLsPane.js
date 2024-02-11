@@ -59,7 +59,7 @@ export class BlockedURLsPane extends UI.Widget.VBox {
     blockedCountForUrl;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel('network.blocked-urls')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('network.blocked-urls').track({ resize: true })}`);
         this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
         this.manager.addEventListener("BlockedPatternsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged */, this.update, this);
         this.toolbar = new UI.Toolbar.Toolbar('', this.contentElement);

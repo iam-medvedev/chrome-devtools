@@ -288,7 +288,7 @@ export class SnippetsNavigatorView extends NavigatorView {
   ${UI.XLink.XLink.create('https://goo.gle/devtools-snippets', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')}
   `);
         const toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
-        const newButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.newSnippet), 'plus', i18nString(UIStrings.newSnippet));
+        const newButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.newSnippet), 'plus', i18nString(UIStrings.newSnippet), 'sources.new-snippet');
         newButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, _event => {
             void this.create(Snippets.ScriptSnippetFileSystem.findSnippetsProject(), '');
         });

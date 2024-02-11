@@ -248,10 +248,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 2,
     location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
 });
 UI.Toolbar.registerToolbarItem({
     async loadItem() {
@@ -260,10 +256,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 98,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
     experiment: "outermostTargetSelector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
 });
 //# sourceMappingURL=inspector_main-meta.js.map

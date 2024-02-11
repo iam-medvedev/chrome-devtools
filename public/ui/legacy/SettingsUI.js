@@ -155,6 +155,9 @@ export const createControlForSetting = function (setting, subtitle) {
         case "boolean" /* Common.Settings.SettingType.BOOLEAN */: {
             const component = new Settings.SettingCheckbox.SettingCheckbox();
             component.data = { setting: setting };
+            component.onchange = () => {
+                InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.oneOrMoreSettingsHaveChanged));
+            };
             return component;
         }
         case "enum" /* Common.Settings.SettingType.ENUM */:

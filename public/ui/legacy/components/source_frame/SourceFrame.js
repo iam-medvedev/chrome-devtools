@@ -110,6 +110,14 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/source_frame/SourceFrame.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const LINE_NUMBER_FORMATTER = CodeMirror.Facet.define({
+    combine(value) {
+        if (value.length === 0) {
+            return (lineNo) => lineNo.toString();
+        }
+        return value[0];
+    },
+});
 export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.SimpleView) {
     options;
     lazyContent;
@@ -378,7 +386,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
                 return '-';
             };
         }
-        return formatNumber ? CodeMirror.lineNumbers({ formatNumber }) : [];
+        return formatNumber ? [CodeMirror.lineNumbers({ formatNumber }), LINE_NUMBER_FORMATTER.of(formatNumber)] : [];
     }
     updateLineNumberFormatter() {
         this.textEditor.dispatch({ effects: config.lineNumbers.reconfigure(this.getLineNumberFormatter()) });

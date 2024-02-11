@@ -1,3 +1,4 @@
+import { type ContentDataOrError } from './ContentData.js';
 import { SearchMatch } from './ContentProvider.js';
 export declare const Utils: {
     readonly _keyValueFilterRegex: RegExp;
@@ -60,6 +61,13 @@ export declare const detectIndentation: (lines: Iterable<string>) => string | nu
  * @returns
  */
 export declare const isMinified: (text: string) => boolean;
+/**
+ * Small wrapper around {@link performSearchInContent} to reduce boilerplate when searching
+ * in {@link ContentDataOrError}.
+ *
+ * @returns empty search matches if `contentData` is an error or not text content.
+ */
+export declare const performSearchInContentData: (contentData: ContentDataOrError, query: string, caseSensitive: boolean, isRegex: boolean) => SearchMatch[];
 /**
  * @returns One {@link SearchMatch} per match. Multiple matches on the same line each
  * result in their own `SearchMatchExact` instance.

@@ -291,9 +291,6 @@ export class MainImpl {
         Root.Runtime.experiments.register("networkPanelFilterBarRedesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network Panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
         Root.Runtime.experiments.register("trackContextMenu" /* Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU */, 'Enable context menu that allows to modify trees in the Flame Chart', true);
         Root.Runtime.experiments.register("autofillView" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Enable Autofill view');
-        if (Root.Runtime.Runtime.queryParam('enableAida') === 'true') {
-            Root.Runtime.experiments.register("consoleInsights" /* Root.Runtime.ExperimentName.CONSOLE_INSIGHTS */, 'Enable Console Insights. This implies consent to collect and process data', false, 'http://go/console-insights-experiment', 'http://go/console-insights-experiment-general-feedback');
-        }
         Root.Runtime.experiments.enableExperimentsByDefault([
             'cssTypeComponentLengthDeprecate',
             'setAllBreakpointsEagerly',
@@ -303,8 +300,6 @@ export class MainImpl {
             "preloadingStatusPanel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
             'evaluateExpressionsWithSourceMaps',
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocolMonitor'] : []),
-            ...(Root.Runtime.Runtime.queryParam('enableAida') === 'true' ? ["consoleInsights" /* Root.Runtime.ExperimentName.CONSOLE_INSIGHTS */] :
-                []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
         const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');

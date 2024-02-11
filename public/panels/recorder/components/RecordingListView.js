@@ -72,7 +72,6 @@ export class RecordingListView extends HTMLElement {
     };
     constructor() {
         super();
-        this.setAttribute('jslog', `${VisualLogging.section('recording-list-view')}`);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [recordingListViewStyles];
@@ -135,9 +134,9 @@ export class RecordingListView extends HTMLElement {
                     class="row"
                     @keydown=${this.#onKeyDown.bind(this, recording.storageName)}
                     @click=${this.#onOpenClick.bind(this, recording.storageName)}
-                    jslog=${VisualLogging.action()
-                .track({ click: true, keydown: true })
-                .context('open-recording')}>
+                    jslog=${VisualLogging.item()
+                .track({ click: true })
+                .context('recording')}>
                     <div class="icon">
                       <${IconButton.Icon.Icon.litTagName} name="flow">
                       </${IconButton.Icon.Icon.litTagName}>
@@ -148,10 +147,10 @@ export class RecordingListView extends HTMLElement {
                 ? LitHtml.html `
                               <${Buttons.Button.Button.litTagName}
                                 title=${i18nString(UIStrings.playRecording)}
-                                .jslogContext=${'play-recording'}
                                 .data=${{
                     variant: "round" /* Buttons.Button.Variant.ROUND */,
                     iconName: 'play',
+                    jslogContext: 'play-recording',
                 }}
                                 @click=${this.#onPlayRecordingClick.bind(this, recording.storageName)}
                                 @keydown=${this.#stopPropagation}
@@ -161,10 +160,10 @@ export class RecordingListView extends HTMLElement {
                       <${Buttons.Button.Button.litTagName}
                         class="delete-recording-button"
                         title=${i18nString(UIStrings.deleteRecording)}
-                        .jslogContext=${'delete-recording'}
                         .data=${{
                 variant: "round" /* Buttons.Button.Variant.ROUND */,
                 iconName: 'bin',
+                jslogContext: 'delete-recording',
             }}
                         @click=${this.#onDeleteClick.bind(this, recording.storageName)}
                         @keydown=${this.#stopPropagation}

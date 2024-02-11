@@ -189,7 +189,7 @@ export class HeapSnapshotGridNode extends Common.ObjectWrapper.eventMixin(HeapSn
         return null;
     }
     createValueCell(columnId) {
-        const jslog = VisualLogging.tableCell('numeric-column').track({ click: true });
+        const jslog = VisualLogging.tableCell('numeric-column').track({ click: true, resize: true });
         const cell = UI.Fragment.html `<td class="numeric-column" jslog=${jslog} />`;
         const dataGrid = this.dataGrid;
         if (dataGrid.snapshot && dataGrid.snapshot.totalSize !== 0) {
@@ -451,6 +451,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         return this.snapshotNodeIndex === undefined ? null : {
             snapshot: this.dataGridInternal.snapshot,
             snapshotNodeIndex: this.snapshotNodeIndex,
+            snapshotNodeId: this.snapshotNodeId,
         };
     }
     createCell(columnId) {
@@ -491,7 +492,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         return this.createObjectCellWithValue(valueStyle, value || '');
     }
     createObjectCellWithValue(valueStyle, value) {
-        const jslog = VisualLogging.tableCell('object-column').track({ click: true });
+        const jslog = VisualLogging.tableCell('object-column').track({ click: true, resize: true });
         const fragment = UI.Fragment.Fragment.build `
   <td class="object-column disclosure" jslog=${jslog}>
   <div class="source-code event-properties" style="overflow: visible;" $="container">
@@ -615,8 +616,9 @@ export class HeapSnapshotObjectNode extends HeapSnapshotGenericObjectNode {
         data['sizeDelta'] = '';
     }
     retainersDataSource() {
-        return this.snapshotNodeIndex === undefined ? null :
-            { snapshot: this.snapshot, snapshotNodeIndex: this.snapshotNodeIndex };
+        return this.snapshotNodeIndex === undefined ?
+            null :
+            { snapshot: this.snapshot, snapshotNodeIndex: this.snapshotNodeIndex, snapshotNodeId: this.snapshotNodeId };
     }
     createProvider() {
         if (this.snapshotNodeIndex === undefined) {
@@ -675,7 +677,7 @@ export class HeapSnapshotObjectNode extends HeapSnapshotGenericObjectNode {
                 break;
         }
         if (this.cycledWithAncestorGridNode) {
-            div.classList.add('cycled-ancessor-node');
+            div.classList.add('cycled-ancestor-node');
         }
         div.prepend(UI.Fragment.html `<span class="property-name ${nameClass}">${name}</span>
   <span class="grayed">${this.edgeNodeSeparator()}</span>`);
@@ -748,9 +750,11 @@ export class HeapSnapshotInstanceNode extends HeapSnapshotGenericObjectNode {
         }
     }
     retainersDataSource() {
-        return this.snapshotNodeIndex === undefined ?
-            null :
-            { snapshot: this.baseSnapshotOrSnapshot, snapshotNodeIndex: this.snapshotNodeIndex };
+        return this.snapshotNodeIndex === undefined ? null : {
+            snapshot: this.baseSnapshotOrSnapshot,
+            snapshotNodeIndex: this.snapshotNodeIndex,
+            snapshotNodeId: this.snapshotNodeId,
+        };
     }
     createProvider() {
         if (this.snapshotNodeIndex === undefined) {

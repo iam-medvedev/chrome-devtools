@@ -26,7 +26,7 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
     #globalStyleStats;
     #textColorContrastIssues;
     constructor(controller) {
-        super('css_overview');
+        super('css-overview');
         this.element.classList.add('css-overview-panel');
         this.#controller = controller;
         this.#startView = new CSSOverviewComponents.CSSOverviewStartView.CSSOverviewStartView();

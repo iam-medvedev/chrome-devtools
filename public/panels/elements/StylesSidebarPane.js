@@ -340,7 +340,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 };
             }
             return null;
-        });
+        }, 'elements.css-property-doc');
         this.#hintPopoverHelper.setDisableOnClick(true);
         this.#hintPopoverHelper.setTimeout(300);
         this.#hintPopoverHelper.setHasPadding(true);
@@ -362,7 +362,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 }
             }
             return null;
-        });
+        }, 'elements.css-var');
         this.#evaluatedCSSVarPopoverHelper.setDisableOnClick(true);
         this.#evaluatedCSSVarPopoverHelper.setTimeout(500, 200);
     }

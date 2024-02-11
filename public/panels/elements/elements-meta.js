@@ -397,7 +397,7 @@ UI.ActionRegistration.registerActionExtension({
         const Elements = await loadElementsModule();
         return new Elements.InspectElementModeController.ToggleSearchActionDelegate();
     },
-    condition: "can_dock" /* Root.Runtime.ConditionName.CAN_DOCK */,
+    condition: Root.Runtime.conditions.canDock,
     title: i18nLazyString(UIStrings.captureAreaScreenshot),
     category: "SCREENSHOT" /* UI.ActionRegistration.ActionCategory.SCREENSHOT */,
 });
@@ -588,10 +588,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 1,
     location: "styles-sidebarpane-toolbar" /* UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
 });
 UI.Toolbar.registerToolbarItem({
     async loadItem() {
@@ -600,10 +596,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 2,
     location: "styles-sidebarpane-toolbar" /* UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
 });
 UI.Toolbar.registerToolbarItem({
     async loadItem() {
@@ -612,10 +604,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 3,
     location: "styles-sidebarpane-toolbar" /* UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
 });
 UI.Toolbar.registerToolbarItem({
     async loadItem() {
@@ -624,19 +612,11 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 100,
     location: "styles-sidebarpane-toolbar" /* UI.Toolbar.ToolbarItemLocation.STYLES_SIDEBARPANE_TOOLBAR */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
 });
 UI.Toolbar.registerToolbarItem({
     actionId: 'elements.toggle-element-search',
     location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
     order: 0,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    loadItem: undefined,
 });
 UI.UIUtils.registerRenderer({
     contextTypes() {

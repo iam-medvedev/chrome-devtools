@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ConsoleView } from './ConsoleView.js';
 let consolePanelInstance;
 export class ConsolePanel extends UI.Panel.Panel {
@@ -50,6 +51,7 @@ export class WrapperView extends UI.Widget.VBox {
     constructor() {
         super();
         this.view = ConsoleView.instance();
+        this.element.setAttribute('jslog', `${VisualLogging.panel('console').track({ resize: true })}`);
     }
     static instance() {
         if (!wrapperViewInstance) {

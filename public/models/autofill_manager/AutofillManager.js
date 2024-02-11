@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 let autofillManagerInstance;
@@ -25,7 +26,8 @@ export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
         return autofillManagerInstance;
     }
     async #addressFormFilled({ data }) {
-        if (this.#autoOpenViewSetting.get()) {
+        if (Root.Runtime.experiments.isEnabled("autofillView" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */) &&
+            this.#autoOpenViewSetting.get()) {
             await UI.ViewManager.ViewManager.instance().showView('autofill-view');
         }
         this.#autofillModel = data.autofillModel;

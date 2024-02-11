@@ -1,4 +1,4 @@
-import { type Attributes, Cookie } from './Cookie.js';
+import { type Attribute, Cookie } from './Cookie.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
 export declare class CookieModel extends SDKModel<void> {
@@ -18,5 +18,5 @@ export declare class CookieModel extends SDKModel<void> {
 }
 export interface BlockedReason {
     uiString: string;
-    attribute: Attributes | null;
+    attribute: Attribute | null;
 }
