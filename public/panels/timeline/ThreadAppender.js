@@ -183,22 +183,8 @@ export class ThreadAppender {
             traceParsedData.Renderer.entryToNode);
         this.#url = this.#traceParsedData.Renderer?.processes.get(this.#processId)?.url || '';
     }
-    modifyTree(traceEvent, action) {
-        if (this.#entriesFilter) {
-            this.#entriesFilter.applyAction({ type: action, entry: traceEvent });
-        }
-        else {
-            console.warn('Could not modify tree because entriesFilter does not exist');
-        }
-    }
-    findPossibleContextMenuActions(traceEvent) {
-        return this.#entriesFilter?.findPossibleActions(traceEvent);
-    }
-    findHiddenDescendantsAmount(traceEvent) {
-        if ((this.#entriesFilter)) {
-            return this.#entriesFilter?.findHiddenDescendantsAmount(traceEvent);
-        }
-        console.warn('Could not find hidden entries because entriesFilter does not exist');
+    entriesFilter() {
+        return this.#entriesFilter;
     }
     processId() {
         return this.#processId;
@@ -440,7 +426,7 @@ export class ThreadAppender {
             // stack.
             const skipEventDueToIgnoreListing = entryIsIgnoreListed && parentIsIgnoredListed;
             if (entryIsVisible && !skipEventDueToIgnoreListing) {
-                this.#appendEntryAtLevel(entry, startingLevel, this.#entriesFilter?.isEntryModified(entry));
+                this.#appendEntryAtLevel(entry, startingLevel);
                 nextLevel++;
             }
             const depthInChildTree = this.#appendNodesAtLevel(node.children, nextLevel, entryIsIgnoreListed);
@@ -448,14 +434,14 @@ export class ThreadAppender {
         }
         return maxDepthInTree;
     }
-    #appendEntryAtLevel(entry, level, childrenCollapsed) {
+    #appendEntryAtLevel(entry, level) {
         this.#ensureTrackHeaderAppended(level);
         const index = this.#compatibilityBuilder.appendEventAtLevel(entry, level, this);
-        this.#addDecorationsToEntry(entry, index, childrenCollapsed);
+        this.#addDecorationsToEntry(entry, index);
     }
-    #addDecorationsToEntry(entry, index, childrenCollapsed) {
+    #addDecorationsToEntry(entry, index) {
         const flameChartData = this.#compatibilityBuilder.getFlameChartTimelineData();
-        if (childrenCollapsed) {
+        if (this.#entriesFilter?.isEntryModified(entry)) {
             addDecorationToEvent(flameChartData, index, { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ });
         }
         const warnings = this.#traceParsedData.Warnings.perEvent.get(entry);

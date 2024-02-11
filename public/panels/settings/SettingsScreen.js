@@ -102,7 +102,7 @@ export class SettingsScreen extends UI.Widget.VBox {
     reportTabOnReveal;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel('settings')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('settings').track({ resize: true })}`);
         this.contentElement.classList.add('settings-window-main');
         this.contentElement.classList.add('vbox');
         const settingsLabelElement = document.createElement('div');
@@ -278,10 +278,7 @@ export class GenericSettingsTab extends SettingsTab {
         }
     }
     static isSettingVisible(setting) {
-        const titleMac = setting.titleMac && setting.titleMac();
-        const defaultTitle = setting.title && setting.title();
-        const title = titleMac || defaultTitle;
-        return Boolean(title && setting.category);
+        return Boolean(setting.title?.()) && Boolean(setting.category);
     }
     wasShown() {
         UI.Context.Context.instance().setFlavor(GenericSettingsTab, this);

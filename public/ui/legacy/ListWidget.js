@@ -54,7 +54,8 @@ export class ListWidget extends VBox {
     editItem;
     editElement;
     emptyPlaceholder;
-    constructor(delegate, delegatesFocus = true) {
+    isTable;
+    constructor(delegate, delegatesFocus = true, isTable = false) {
         super(true, delegatesFocus);
         this.registerRequiredCSS(listWidgetStyles);
         this.delegate = delegate;
@@ -68,6 +69,10 @@ export class ListWidget extends VBox {
         this.editItem = null;
         this.editElement = null;
         this.emptyPlaceholder = null;
+        this.isTable = isTable;
+        if (isTable) {
+            this.list.role = 'table';
+        }
         this.updatePlaceholder();
     }
     clear() {
@@ -83,12 +88,18 @@ export class ListWidget extends VBox {
         if (this.lastSeparator && this.items.length) {
             const element = document.createElement('div');
             element.classList.add('list-separator');
+            if (this.isTable) {
+                element.role = 'rowgroup';
+            }
             this.list.appendChild(element);
         }
         this.lastSeparator = false;
         this.items.push(item);
         this.editable.push(editable);
         const element = this.list.createChild('div', 'list-item');
+        if (this.isTable) {
+            element.role = 'rowgroup';
+        }
         element.setAttribute('jslog', `${VisualLogging.item()}`);
         element.appendChild(this.delegate.renderItem(item, editable));
         if (editable) {

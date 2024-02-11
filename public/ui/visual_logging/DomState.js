@@ -6,9 +6,9 @@ export function getDomState(documents) {
     const loggables = [];
     const shadowRoots = [];
     const queue = [];
-    const enqueue = (children, parent) => {
+    const enqueue = (children, parent, slot) => {
         for (const child of children) {
-            queue.push({ element: child, parent });
+            queue.push({ element: child, parent, slot });
         }
     };
     for (const document of documents) {
@@ -21,13 +21,21 @@ export function getDomState(documents) {
         if (!top) {
             break;
         }
-        const { element } = top;
+        const { element, slot } = top;
         let { parent } = top;
+        if (element.assignedSlot && element.assignedSlot !== slot) {
+            continue;
+        }
         if (needsLogging(element)) {
             loggables.push({ element, parent });
             parent = element;
         }
-        enqueue(element.children, parent);
+        if (element.localName === 'slot' && element.assignedElements().length) {
+            enqueue(element.assignedElements(), parent, element);
+        }
+        else {
+            enqueue(element.children, parent);
+        }
         if (element.shadowRoot) {
             shadowRoots.push(element.shadowRoot);
             enqueue(element.shadowRoot.children, parent);
@@ -36,11 +44,14 @@ export function getDomState(documents) {
     return { loggables, shadowRoots };
 }
 const MIN_ELEMENT_SIZE_FOR_IMPRESSIONS = 10;
-export function isVisible(element, viewportRect) {
+export function visibleOverlap(element, viewportRect) {
     const elementRect = element.getBoundingClientRect();
     const overlap = intersection(viewportRect, elementRect);
-    return Boolean(overlap && overlap.width >= MIN_ELEMENT_SIZE_FOR_IMPRESSIONS &&
-        overlap.height >= MIN_ELEMENT_SIZE_FOR_IMPRESSIONS);
+    if (!overlap || overlap.width < MIN_ELEMENT_SIZE_FOR_IMPRESSIONS ||
+        overlap.height < MIN_ELEMENT_SIZE_FOR_IMPRESSIONS) {
+        return null;
+    }
+    return overlap;
 }
 function intersection(a, b) {
     const x0 = Math.max(a.left, b.left);

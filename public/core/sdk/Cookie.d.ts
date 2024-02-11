@@ -32,7 +32,7 @@ export declare class Cookie {
     url(): Platform.DevToolsPath.UrlString | null;
     setSize(size: number): void;
     expiresDate(requestDate: Date): Date | null;
-    addAttribute(key: string, value?: string | number | boolean): void;
+    addAttribute(key: Attribute | null, value?: string | number | boolean): void;
     setCookieLine(cookieLine: string): void;
     getCookieLine(): string | null;
     matchesSecurityOrigin(securityOrigin: string): boolean;
@@ -42,18 +42,20 @@ export declare const enum Type {
     Request = 0,
     Response = 1
 }
-export declare const enum Attributes {
+export declare const enum Attribute {
     Name = "name",
     Value = "value",
     Size = "size",
     Domain = "domain",
     Path = "path",
     Expires = "expires",
+    MaxAge = "max-age",
     HttpOnly = "http-only",
     Secure = "secure",
     SameSite = "same-site",
     SourceScheme = "source-scheme",
     SourcePort = "source-port",
     Priority = "priority",
+    Partitioned = "partitioned",
     PartitionKey = "partition-key"
 }

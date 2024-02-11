@@ -1022,7 +1022,20 @@ export class HeapSnapshot {
      * The function checks is the edge should be considered during building
      * postorder iterator and dominator tree.
      */
-    isEssentialEdge(nodeIndex, edgeType) {
+    isEssentialEdge(nodeIndex, edgeIndex) {
+        const edgeType = this.containmentEdges[edgeIndex + this.edgeTypeOffset];
+        // Values in WeakMaps are retained by the key and table together. Removing
+        // either the key or the table would be sufficient to remove the edge from
+        // the other one, so we needn't use both of those edges when computing
+        // dominators. We've found that the edge from the key generally produces
+        // more useful results, so here we skip the edge from the table.
+        if (edgeType === this.edgeInternalType) {
+            const match = this.strings[this.containmentEdges[edgeIndex + this.edgeNameOffset]].match(/^\d+ \/ part of key \(.*? @\d+\) -> value \(.*? @\d+\) pair in WeakMap \(table @(?<tableId>\d+)\)$/);
+            if (match) {
+                const nodeId = this.nodes[nodeIndex + this.nodeIdOffset];
+                return nodeId !== parseInt(match.groups.tableId, 10);
+            }
+        }
         // Shortcuts at the root node have special meaning of marking user global objects.
         return edgeType !== this.edgeWeakType &&
             (edgeType !== this.edgeShortcutType || nodeIndex === this.rootNodeIndexInternal);
@@ -1032,7 +1045,6 @@ export class HeapSnapshot {
         const nodeCount = this.nodeCount;
         const rootNodeOrdinal = this.rootNodeIndexInternal / nodeFieldCount;
         const edgeFieldsCount = this.edgeFieldsCount;
-        const edgeTypeOffset = this.edgeTypeOffset;
         const edgeToNodeOffset = this.edgeToNodeOffset;
         const firstEdgeIndexes = this.firstEdgeIndexes;
         const containmentEdges = this.containmentEdges;
@@ -1058,8 +1070,7 @@ export class HeapSnapshot {
                 const edgesEnd = firstEdgeIndexes[nodeOrdinal + 1];
                 if (edgeIndex < edgesEnd) {
                     stackCurrentEdge[stackTop] += edgeFieldsCount;
-                    const edgeType = containmentEdges[edgeIndex + edgeTypeOffset];
-                    if (!this.isEssentialEdge(nodeOrdinal * nodeFieldCount, edgeType)) {
+                    if (!this.isEssentialEdge(nodeOrdinal * nodeFieldCount, edgeIndex)) {
                         continue;
                     }
                     const childNodeIndex = containmentEdges[edgeIndex + edgeToNodeOffset];
@@ -1166,7 +1177,6 @@ export class HeapSnapshot {
         const retainingNodes = this.retainingNodes;
         const retainingEdges = this.retainingEdges;
         const edgeFieldsCount = this.edgeFieldsCount;
-        const edgeTypeOffset = this.edgeTypeOffset;
         const edgeToNodeOffset = this.edgeToNodeOffset;
         const firstEdgeIndexes = this.firstEdgeIndexes;
         const containmentEdges = this.containmentEdges;
@@ -1190,8 +1200,7 @@ export class HeapSnapshot {
             nodeOrdinal = this.rootNodeIndexInternal / nodeFieldCount;
             const endEdgeIndex = firstEdgeIndexes[nodeOrdinal + 1];
             for (let edgeIndex = firstEdgeIndexes[nodeOrdinal]; edgeIndex < endEdgeIndex; edgeIndex += edgeFieldsCount) {
-                const edgeType = containmentEdges[edgeIndex + edgeTypeOffset];
-                if (!this.isEssentialEdge(this.rootNodeIndexInternal, edgeType)) {
+                if (!this.isEssentialEdge(this.rootNodeIndexInternal, edgeIndex)) {
                     continue;
                 }
                 const childNodeOrdinal = containmentEdges[edgeIndex + edgeToNodeOffset] / nodeFieldCount;
@@ -1219,9 +1228,8 @@ export class HeapSnapshot {
                 let orphanNode = true;
                 for (let retainerIndex = beginRetainerIndex; retainerIndex < endRetainerIndex; ++retainerIndex) {
                     const retainerEdgeIndex = retainingEdges[retainerIndex];
-                    const retainerEdgeType = containmentEdges[retainerEdgeIndex + edgeTypeOffset];
                     const retainerNodeIndex = retainingNodes[retainerIndex];
-                    if (!this.isEssentialEdge(retainerNodeIndex, retainerEdgeType)) {
+                    if (!this.isEssentialEdge(retainerNodeIndex, retainerEdgeIndex)) {
                         continue;
                     }
                     orphanNode = false;

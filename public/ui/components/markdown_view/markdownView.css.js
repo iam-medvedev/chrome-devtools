@@ -40,7 +40,7 @@ styles.replaceSync(
 }
 
 .message li::before {
-  content: "→";
+  content: "•";
   mask-image: none;
   padding-right: 5px;
   position: relative;

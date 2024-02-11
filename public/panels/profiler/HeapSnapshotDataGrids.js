@@ -574,9 +574,9 @@ export class HeapSnapshotContainmentDataGrid extends HeapSnapshotSortableDataGri
         const dataGridParameters = { displayName, columns };
         super(heapProfilerModel, dataDisplayDelegate, dataGridParameters);
     }
-    async setDataSource(snapshot, nodeIndex) {
+    async setDataSource(snapshot, nodeIndex, nodeId) {
         this.snapshot = snapshot;
-        const node = new HeapSnapshotModel.HeapSnapshotModel.Node(-1, 'root', 0, nodeIndex || snapshot.rootNodeIndex, 0, 0, '');
+        const node = new HeapSnapshotModel.HeapSnapshotModel.Node(nodeId ?? -1, 'root', 0, nodeIndex || snapshot.rootNodeIndex, 0, 0, '');
         this.setRootNode(this.createRootNode(snapshot, node));
         void this.rootNode().sort();
     }
@@ -632,8 +632,8 @@ export class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainmentDataG
         this.rootNode().removeChildren();
         this.resetSortingCache();
     }
-    async setDataSource(snapshot, nodeIndex) {
-        await super.setDataSource(snapshot, nodeIndex);
+    async setDataSource(snapshot, nodeIndex, nodeId) {
+        await super.setDataSource(snapshot, nodeIndex, nodeId);
         this.rootNode().expand();
     }
 }

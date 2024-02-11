@@ -10,7 +10,7 @@ import { PromptBuilder } from './PromptBuilder.js';
 export class ActionDelegate {
     handleAction(context, actionId) {
         switch (actionId) {
-            case 'explain.consoleMessage:context':
+            case 'explain.console-message.context':
             case 'explain.console-message.context.error':
             case 'explain.console-message.context.warning':
             case 'explain.console-message.context.other':
@@ -18,18 +18,17 @@ export class ActionDelegate {
                 const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
                 const consoleViewMessage = context.flavor(Console.ConsoleViewMessage.ConsoleViewMessage);
                 if (consoleViewMessage) {
-                    if (actionId.startsWith('explain.consoleMessage:context')) {
+                    if (actionId.startsWith('explain.console-message.context')) {
                         Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRequestedViaContextMenu);
                     }
                     else if (actionId === 'explain.console-message.hover') {
                         Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRequestedViaHoverButton);
                     }
-                    const insight = new ConsoleInsight(new PromptBuilder(consoleViewMessage), new InsightProvider());
-                    if (action) {
-                        insight.actionName = action.title();
-                    }
-                    consoleViewMessage.setInsight(insight);
-                    void insight.update();
+                    const promptBuilder = new PromptBuilder(consoleViewMessage);
+                    const insightProvider = new InsightProvider();
+                    void ConsoleInsight.create(promptBuilder, insightProvider, action?.title()).then(insight => {
+                        consoleViewMessage.setInsight(insight);
+                    });
                     return true;
                 }
                 return false;

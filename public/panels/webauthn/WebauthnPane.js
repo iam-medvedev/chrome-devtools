@@ -228,7 +228,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
     #isEnabling;
     constructor() {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel('webauthn')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('webauthn').track({ resize: true })}`);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.WebAuthnModel.WebAuthnModel, this, { scoped: true });
         this.contentElement.classList.add('webauthn-pane');
         this.#availableAuthenticatorSetting =

@@ -95,7 +95,7 @@ export declare class HeapSnapshotViewportDataGrid extends HeapSnapshotSortableDa
 }
 export declare class HeapSnapshotContainmentDataGrid extends HeapSnapshotSortableDataGrid {
     constructor(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null, dataDisplayDelegate: DataDisplayDelegate, displayName: string, columns?: DataGrid.DataGrid.ColumnDescriptor[]);
-    setDataSource(snapshot: HeapSnapshotProxy, nodeIndex: number): Promise<void>;
+    setDataSource(snapshot: HeapSnapshotProxy, nodeIndex: number, nodeId?: number): Promise<void>;
     createRootNode(snapshot: HeapSnapshotProxy, node: HeapSnapshotModel.HeapSnapshotModel.Node): HeapSnapshotObjectNode;
     sortingChanged(): void;
 }
@@ -104,7 +104,7 @@ export declare class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainm
     createRootNode(snapshot: HeapSnapshotProxy, node: HeapSnapshotModel.HeapSnapshotModel.Node): HeapSnapshotRetainingObjectNode;
     sortFields(sortColumn: string, sortAscending: boolean): HeapSnapshotModel.HeapSnapshotModel.ComparatorConfig;
     reset(): void;
-    setDataSource(snapshot: HeapSnapshotProxy, nodeIndex: number): Promise<void>;
+    setDataSource(snapshot: HeapSnapshotProxy, nodeIndex: number, nodeId?: number): Promise<void>;
 }
 export declare enum HeapSnapshotRetainmentDataGridEvents {
     ExpandRetainersComplete = "ExpandRetainersComplete"

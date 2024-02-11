@@ -189,6 +189,9 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
     experiment() {
         return this.actionRegistration.experiment;
     }
+    setting() {
+        return this.actionRegistration.setting;
+    }
     condition() {
         return this.actionRegistration.condition;
     }
@@ -212,7 +215,13 @@ export function reset() {
 }
 export function getRegisteredActionExtensions() {
     return Array.from(registeredActions.values())
-        .filter(action => Root.Runtime.Runtime.isDescriptorEnabled({ experiment: action.experiment(), condition: action.condition() }))
+        .filter(action => {
+        const settingName = action.setting();
+        if (settingName && !Common.Settings.moduleSetting(settingName).get()) {
+            return false;
+        }
+        return Root.Runtime.Runtime.isDescriptorEnabled({ experiment: action.experiment(), condition: action.condition() });
+    })
         .sort((firstAction, secondAction) => {
         const order1 = firstAction.order() || 0;
         const order2 = secondAction.order() || 0;

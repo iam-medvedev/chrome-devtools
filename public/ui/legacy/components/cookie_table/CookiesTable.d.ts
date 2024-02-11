@@ -39,6 +39,7 @@ export declare class CookiesTable extends UI.Widget.VBox {
     private isValidDomain;
     private isValidPath;
     private isValidDate;
+    private isValidPartitionKey;
     private refresh;
     private populateContextMenu;
 }

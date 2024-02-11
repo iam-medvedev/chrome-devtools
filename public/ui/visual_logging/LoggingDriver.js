@@ -5,9 +5,9 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Coordinator from '../components/render_coordinator/render_coordinator.js';
-import { getDomState, isVisible } from './DomState.js';
+import { getDomState, visibleOverlap } from './DomState.js';
 import { debugString, getLoggingConfig } from './LoggingConfig.js';
-import { logChange, logClick, logDrag, logHover, logImpressions, logKeyDown } from './LoggingEvents.js';
+import { logChange, logClick, logDrag, logHover, logImpressions, logKeyDown, logResize } from './LoggingEvents.js';
 import { getOrCreateLoggingState } from './LoggingState.js';
 import { getNonDomState, unregisterAllLoggables, unregisterLoggable } from './NonDomState.js';
 const PROCESS_DOM_INTERVAL = 500;
@@ -15,11 +15,14 @@ const KEYBOARD_LOG_INTERVAL = 3000;
 const HOVER_LOG_INTERVAL = 1000;
 const DRAG_LOG_INTERVAL = 500;
 const CLICK_LOG_INTERVAL = 500;
+const RESIZE_LOG_INTERVAL = 1000;
+const RESIZE_REPORT_THRESHOLD = 50;
 let processingThrottler;
 let keyboardLogThrottler;
 let hoverLogThrottler;
 let dragLogThrottler;
 let clickLogThrottler;
+let resizeLogThrottler;
 const mutationObservers = new WeakMap();
 const documents = [];
 function observeMutations(roots) {
@@ -42,6 +45,7 @@ export async function startLogging(options) {
     hoverLogThrottler = options?.hoverLogThrottler || new Common.Throttler.Throttler(HOVER_LOG_INTERVAL);
     dragLogThrottler = options?.dragLogThrottler || new Common.Throttler.Throttler(DRAG_LOG_INTERVAL);
     clickLogThrottler = options?.clickLogThrottler || new Common.Throttler.Throttler(CLICK_LOG_INTERVAL);
+    resizeLogThrottler = options?.resizeLogThrottler || new Common.Throttler.Throttler(RESIZE_LOG_INTERVAL);
     await addDocument(document);
 }
 export async function addDocument(document) {
@@ -78,10 +82,12 @@ export function scheduleProcessing() {
 }
 let veDebuggingEnabled = false;
 let debugPopover = null;
+const nonDomDebugElements = new WeakMap();
 function setVeDebuggingEnabled(enabled) {
     veDebuggingEnabled = enabled;
     if (enabled && !debugPopover) {
         debugPopover = document.createElement('div');
+        debugPopover.classList.add('ve-debug');
         debugPopover.style.position = 'absolute';
         debugPopover.style.bottom = '100px';
         debugPopover.style.left = '100px';
@@ -112,7 +118,9 @@ async function process() {
     for (const { element, parent } of loggables) {
         const loggingState = getOrCreateLoggingState(element, getLoggingConfig(element), parent);
         if (!loggingState.impressionLogged) {
-            if (isVisible(element, viewportRectFor(element))) {
+            const overlap = visibleOverlap(element, viewportRectFor(element));
+            if (overlap) {
+                loggingState.size = overlap;
                 visibleLoggables.push(element);
                 loggingState.impressionLogged = true;
             }
@@ -150,6 +158,19 @@ async function process() {
             if (trackKeyDown) {
                 element.addEventListener('keydown', logKeyDown(codes, keyboardLogThrottler), { capture: true });
             }
+            if (loggingState.config.track?.has('resize')) {
+                new ResizeObserver(_ => {
+                    const overlap = visibleOverlap(element, viewportRectFor(element));
+                    if (!loggingState.size || !overlap) {
+                        return;
+                    }
+                    if (Math.abs(overlap.width - loggingState.size.width) >= RESIZE_REPORT_THRESHOLD ||
+                        Math.abs(overlap.height - loggingState.size.height) >= RESIZE_REPORT_THRESHOLD) {
+                        loggingState.size = overlap;
+                        void logResize(resizeLogThrottler)(element);
+                    }
+                }).observe(element);
+            }
             loggingState.processed = true;
         }
         if (veDebuggingEnabled && !loggingState.processedForDebugging) {
@@ -177,6 +198,28 @@ async function process() {
         const visible = !loggingState.parent || loggingState.parent.impressionLogged;
         if (!visible) {
             continue;
+        }
+        if (veDebuggingEnabled) {
+            let debugElement = nonDomDebugElements.get(loggable);
+            if (!debugElement) {
+                debugElement = document.createElement('div');
+                debugElement.classList.add('ve-debug');
+                debugElement.style.background = 'black';
+                debugElement.style.color = 'white';
+                debugElement.style.zIndex = '100000';
+                debugElement.textContent = debugString(config);
+                nonDomDebugElements.set(loggable, debugElement);
+            }
+            const parentDebugElement = parent instanceof HTMLElement ? parent : nonDomDebugElements.get(parent) || debugPopover;
+            assertNotNullOrUndefined(parentDebugElement);
+            if (!parentDebugElement.classList.contains('ve-debug')) {
+                debugElement.style.position = 'absolute';
+                parentDebugElement.insertBefore(debugElement, parentDebugElement.firstChild);
+            }
+            else {
+                debugElement.style.marginLeft = '10px';
+                parentDebugElement.appendChild(debugElement);
+            }
         }
         visibleLoggables.push(loggable);
         loggingState.impressionLogged = true;

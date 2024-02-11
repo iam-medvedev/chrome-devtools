@@ -6,6 +6,7 @@ export declare function startLogging(options?: {
     hoverLogThrottler?: Common.Throttler.Throttler;
     dragLogThrottler?: Common.Throttler.Throttler;
     clickLogThrottler?: Common.Throttler.Throttler;
+    resizeLogThrottler?: Common.Throttler.Throttler;
 }): Promise<void>;
 export declare function addDocument(document: Document): Promise<void>;
 export declare function stopLogging(): void;

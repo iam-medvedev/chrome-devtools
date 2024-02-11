@@ -1,6 +1,6 @@
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Dialogs from '../dialogs/dialogs.js';
-import { type MenuItemValue, MenuGroup } from './Menu.js';
+import { MenuGroup, type MenuItemValue } from './Menu.js';
 export interface SelectMenuData {
     /**
      * Determines where the dialog with the menu will show relative to
@@ -57,6 +57,10 @@ export interface SelectMenuData {
      * Defaults to true.
      */
     showSelectedItem: boolean;
+    /**
+     * Specifies a context for the visual element.
+     */
+    jslogContext: string;
 }
 type TitleCallback = () => LitHtml.TemplateResult;
 export declare class SelectMenu extends HTMLElement {
@@ -80,6 +84,8 @@ export declare class SelectMenu extends HTMLElement {
     set showDivider(showDivider: boolean);
     get showSelectedItem(): boolean;
     set showSelectedItem(showSelectedItem: boolean);
+    get jslogContext(): string;
+    set jslogContext(jslogContext: string);
     connectedCallback(): void;
     click(): void;
 }
@@ -88,6 +94,7 @@ export interface SelectMenuButtonData {
     arrowDirection: Dialogs.Dialog.DialogVerticalPosition;
     disabled: boolean;
     singleArrow: boolean;
+    jslogContext: string;
 }
 export declare class SelectMenuButton extends HTMLElement {
     #private;
@@ -101,6 +108,8 @@ export declare class SelectMenuButton extends HTMLElement {
     set disabled(disabled: boolean);
     set open(open: boolean);
     set singleArrow(singleArrow: boolean);
+    get jslogContext(): string;
+    set jslogContext(jslogContext: string);
     click(): void;
 }
 declare global {

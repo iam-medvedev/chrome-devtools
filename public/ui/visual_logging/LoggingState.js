@@ -1,3 +1,4 @@
+import { needsLogging } from './LoggingConfig.js';
 const state = new WeakMap();
 function nextVeId() {
     const result = new Uint32Array(1);
@@ -6,10 +7,17 @@ function nextVeId() {
 }
 export function getOrCreateLoggingState(loggable, config, parent) {
     if (state.has(loggable)) {
-        return state.get(loggable);
+        const currentState = state.get(loggable);
+        if (parent && !config.parent && currentState.parent !== getLoggingState(parent)) {
+            currentState.parent = getLoggingState(parent);
+        }
+        return currentState;
     }
     if (config.parent && parentProviders.has(config.parent) && loggable instanceof Element) {
         parent = parentProviders.get(config.parent)?.(loggable);
+        while (parent instanceof Element && !needsLogging(parent)) {
+            parent = parent.parentElementOrShadowHost() ?? undefined;
+        }
     }
     const loggableState = {
         impressionLogged: false,

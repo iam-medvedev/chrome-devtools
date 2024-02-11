@@ -1009,6 +1009,7 @@ let RecorderController = class RecorderController extends LitElement {
                 this.isRecording ||
                 this.isToggling,
             title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.createRecording), "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */),
+            jslogContext: "chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */,
         }}
             ></${Buttons.Button.Button.litTagName}>
             <div class="separator"></div>
@@ -1019,6 +1020,7 @@ let RecorderController = class RecorderController extends LitElement {
             this.isToggling}
               @click=${(e) => e.stopPropagation()}
               @change=${this.#onRecordingSelected}
+              jslog=${VisualLogging.dropDown('recordings').track({ change: true })}
             >
               ${LitHtml.Directives.repeat(values, item => item.value, item => {
             return html `<option .selected=${item.selected} value=${item.value}>${item.name}</option>`;
@@ -1031,6 +1033,7 @@ let RecorderController = class RecorderController extends LitElement {
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
             iconName: 'import',
             title: i18nString(UIStrings.importRecording),
+            jslogContext: 'import-recording',
         }}
             ></${Buttons.Button.Button.litTagName}>
             <${Buttons.Button.Button.litTagName}
@@ -1045,6 +1048,7 @@ let RecorderController = class RecorderController extends LitElement {
             title: i18nString(UIStrings.exportRecording),
             disabled: !this.currentRecording,
         }}
+              jslog=${VisualLogging.dropDown('export-recording').track({ click: true })}
             ></${Buttons.Button.Button.litTagName}>
             <${Menus.Menu.Menu.litTagName}
               @menucloserequest=${this.#onExportMenuClosed}
@@ -1058,7 +1062,8 @@ let RecorderController = class RecorderController extends LitElement {
               <${Menus.Menu.MenuGroup.litTagName} .name=${i18nString(UIStrings.export)}>
                 ${LitHtml.Directives.repeat(this.#builtInConverters, converter => {
             return html `
-                    <${Menus.Menu.MenuItem.litTagName} .value=${converter.getId()}>
+                    <${Menus.Menu.MenuItem.litTagName} .value=${converter.getId()}
+                      jslog=${VisualLogging.item(`converter-${converter.getFormatName()}`).track({ click: true })}>
                       ${converter.getFormatName()}
                     </${Menus.Menu.MenuItem.litTagName}>
                   `;
@@ -1067,7 +1072,8 @@ let RecorderController = class RecorderController extends LitElement {
               <${Menus.Menu.MenuGroup.litTagName} .name=${i18nString(UIStrings.exportViaExtensions)}>
                 ${LitHtml.Directives.repeat(this.extensionConverters, converter => {
             return html `
-                    <${Menus.Menu.MenuItem.litTagName} .value=${converter.getId()}>
+                    <${Menus.Menu.MenuItem.litTagName} .value=${converter.getId()}
+                      jslog=${VisualLogging.item(`converter-${converter.getFormatName()}`).track({ click: true })}>
                     ${converter.getFormatName()}
                     </${Menus.Menu.MenuItem.litTagName}>
                   `;
@@ -1087,6 +1093,7 @@ let RecorderController = class RecorderController extends LitElement {
                 this.isRecording ||
                 this.isToggling,
             title: i18nString(UIStrings.deleteRecording),
+            jslogContext: 'delete-recording',
         }}
             ></${Buttons.Button.Button.litTagName}>
             <div class="separator"></div>
@@ -1098,6 +1105,7 @@ let RecorderController = class RecorderController extends LitElement {
             disabled: !this.recordingPlayer ||
                 !this.#replayState.isPausedOnBreakpoint,
             title: i18nString(UIStrings.continueReplay),
+            jslogContext: 'continue-replay',
         }}
             ></${Buttons.Button.Button.litTagName}>
             <${Buttons.Button.Button.litTagName}
@@ -1108,16 +1116,17 @@ let RecorderController = class RecorderController extends LitElement {
             disabled: !this.recordingPlayer ||
                 !this.#replayState.isPausedOnBreakpoint,
             title: i18nString(UIStrings.stepOverReplay),
+            jslogContext: 'step-over',
         }}
             ></${Buttons.Button.Button.litTagName}>
             <div class="feedback">
-              <x-link class="x-link" href=${Components.StartView.FEEDBACK_URL}>${i18nString(UIStrings.sendFeedback)}</x-link>
+              <x-link class="x-link" href=${Components.StartView.FEEDBACK_URL} jslog=${VisualLogging.link('feedback').track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
             </div>
             <div class="separator"></div>
             <${Dialogs.ShortcutDialog.ShortcutDialog.litTagName}
               .data=${{
             shortcuts: this.#getShortcutsInfo(),
-        }}
+        }} jslog=${VisualLogging.action('show-shortcuts').track({ click: true })}
             ></${Dialogs.ShortcutDialog.ShortcutDialog.litTagName}>
           </div>
           ${this.importError

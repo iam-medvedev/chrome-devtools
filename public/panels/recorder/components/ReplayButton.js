@@ -5,6 +5,7 @@ import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { SelectButton, } from './SelectButton.js';
 const UIStrings = {
     /**
@@ -158,7 +159,8 @@ export class ReplayButton extends HTMLElement {
       .disabled=${this.#props.disabled}
       .action=${"chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */}
       .value=${this.#settings?.replayExtension || this.#settings?.speed}
-      .groups=${groups}>
+      .groups=${groups}
+      jslog=${VisualLogging.action("chrome-recorder.replay-recording" /* Actions.RecorderActions.ReplayRecording */).track({ click: true })}>
     </${SelectButton.litTagName}>`, this.#shadow, { host: this });
         // clang-format on
     }

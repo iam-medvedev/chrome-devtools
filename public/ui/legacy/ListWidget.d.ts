@@ -11,7 +11,8 @@ export declare class ListWidget<T> extends VBox {
     private editItem;
     private editElement;
     private emptyPlaceholder;
-    constructor(delegate: Delegate<T>, delegatesFocus?: boolean | undefined);
+    private isTable;
+    constructor(delegate: Delegate<T>, delegatesFocus?: boolean | undefined, isTable?: boolean);
     clear(): void;
     appendItem(item: T, editable: boolean): void;
     appendSeparator(): void;

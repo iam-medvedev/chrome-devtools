@@ -6366,25 +6366,40 @@
     "message": "Ĉón̂śôĺê ḿêśŝáĝé"
   },
   "panels/explain/components/ConsoleInsight.ts | disclaimer": {
-    "message": "T̂h́ê f́ôĺl̂óŵín̂ǵ d̂át̂á ŵíl̂ĺ b̂é ŝén̂t́ t̂ó Ĝóôǵl̂é ŝér̂v́êŕŝ t́ô ǵêńêŕât́ê t́âíl̂ór̂éd̂ t́îṕŝ án̂d́ ŝúĝǵêśt̂íôńŝ. Ít̂ ḿâý b̂é ŝt́ôŕêd́, r̂év̂íêẃêd́ b̂ý ĥúm̂án̂ś, ôŕ ûśêd́ t̂ó t̂ŕâín̂ ÁÎ ḿôd́êĺŝ."
-  },
-  "panels/explain/components/ConsoleInsight.ts | dogfood": {
-    "message": "D̂óĝf́ôód̂"
+    "message": "T̂h́ê f́ôĺl̂óŵín̂ǵ d̂át̂á ŵíl̂ĺ b̂é ŝén̂t́ t̂ó Ĝóôǵl̂é t̂ó f̂ín̂d́ âń êx́p̂ĺâńât́îón̂ f́ôŕ t̂h́ê ćôńŝól̂é m̂éŝśâǵê. T́ĥéŷ ḿâý b̂é r̂év̂íêẃêd́ b̂ý ĥúm̂án̂ś âńd̂ úŝéd̂ t́ô ím̂ṕr̂óv̂é p̂ŕôd́ûćt̂ś."
   },
   "panels/explain/components/ConsoleInsight.ts | error": {
     "message": "Ŝóm̂ét̂h́îńĝ ẃêńt̂ ẃr̂ón̂ǵ…"
   },
+  "panels/explain/components/ConsoleInsight.ts | finePrint": {
+    "message": "T̂h́îś îś âń êx́p̂ér̂ím̂én̂t́âĺ ÂÍ îńŝíĝh́t̂ś t̂óôĺ âńd̂ ẃôń’t̂ ál̂ẃâýŝ ǵêt́ ît́ r̂íĝh́t̂."
+  },
   "panels/explain/components/ConsoleInsight.ts | generating": {
-    "message": "Ĝén̂ér̂át̂ín̂ǵ…"
+    "message": "Ĉóm̂ín̂ǵ ûṕ ŵít̂h́ âń êx́p̂ĺâńât́îón̂…"
+  },
+  "panels/explain/components/ConsoleInsight.ts | goToSettings": {
+    "message": "Ĝó t̂ó ŝét̂t́îńĝś"
+  },
+  "panels/explain/components/ConsoleInsight.ts | inputData": {
+    "message": "D̂át̂á ûśêd́ t̂ó ĉŕêát̂é t̂h́îś îńŝíĝh́t̂"
   },
   "panels/explain/components/ConsoleInsight.ts | insight": {
     "message": "Îńŝíĝh́t̂"
   },
   "panels/explain/components/ConsoleInsight.ts | learnMore": {
-    "message": "L̂éâŕn̂ ḿôŕê"
+    "message": "L̂éâŕn̂ ḿôŕê áb̂óût́ ÂÍ îń D̂év̂T́ôól̂ś"
   },
   "panels/explain/components/ConsoleInsight.ts | networkRequest": {
     "message": "N̂ét̂ẃôŕk̂ ŕêq́ûéŝt́"
+  },
+  "panels/explain/components/ConsoleInsight.ts | notAvailable": {
+    "message": "Ĉón̂śôĺê ín̂śîǵĥt́ŝ íŝ ńôt́ âv́âíl̂áb̂ĺê"
+  },
+  "panels/explain/components/ConsoleInsight.ts | notLoggedIn": {
+    "message": "T̂h́îś f̂éât́ûŕê íŝ ón̂ĺŷ áv̂áîĺâb́l̂é îf́ ŷóû ár̂é ŝíĝńêd́ îńt̂ó Ĉh́r̂óm̂é ŵít̂h́ ŷóûŕ Ĝóôǵl̂é âćĉóûńt̂."
+  },
+  "panels/explain/components/ConsoleInsight.ts | offline": {
+    "message": "Îńt̂ér̂ńêt́ ĉón̂ńêćt̂íôń îś ĉúr̂ŕêńt̂ĺŷ ńôt́ âv́âíl̂áb̂ĺê."
   },
   "panels/explain/components/ConsoleInsight.ts | opensInNewTab": {
     "message": "(ôṕêńŝ ín̂ á n̂éŵ t́âb́)"
@@ -6392,20 +6407,23 @@
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "R̂él̂át̂éd̂ ćôd́ê"
   },
-  "panels/explain/components/ConsoleInsight.ts | sources": {
-    "message": "Ŝóûŕĉéŝ"
-  },
   "panels/explain/components/ConsoleInsight.ts | stackTrace": {
     "message": "Ŝt́âćk̂t́r̂áĉé"
   },
   "panels/explain/components/ConsoleInsight.ts | submitFeedback": {
     "message": "Ŝúb̂ḿît́ f̂éêd́b̂áĉḱ"
   },
-  "panels/explain/components/ConsoleInsight.ts | thumbDown": {
-    "message": "T̂h́ûḿb̂ d́ôẃn̂"
+  "panels/explain/components/ConsoleInsight.ts | syncIsOff": {
+    "message": "T̂h́îś f̂éât́ûŕê íŝ ón̂ĺŷ áv̂áîĺâb́l̂é îf́ ŷóû h́âv́ê Ćĥŕôḿê śŷńĉ t́ûŕn̂éd̂ ón̂."
   },
-  "panels/explain/components/ConsoleInsight.ts | thumbUp": {
-    "message": "T̂h́ûḿb̂ úp̂"
+  "panels/explain/components/ConsoleInsight.ts | thumbsDown": {
+    "message": "T̂h́ûḿb̂ś d̂óŵń"
+  },
+  "panels/explain/components/ConsoleInsight.ts | thumbsUp": {
+    "message": "T̂h́ûḿb̂ś ûṕ"
+  },
+  "panels/explain/explain-meta.ts | enableConsoleInsights": {
+    "message": "Êńâb́l̂é Ĉón̂śôĺê Ín̂śîǵĥt́ŝ"
   },
   "panels/explain/explain-meta.ts | explainThisError": {
     "message": "Êx́p̂ĺâín̂ t́ĥíŝ ér̂ŕôŕ"
@@ -7919,11 +7937,17 @@
   "panels/network/components/WebBundleInfoView.ts | bundledResource": {
     "message": "B̂ún̂d́l̂éd̂ ŕêśôúr̂ćê"
   },
+  "panels/network/EventSourceMessagesView.ts | clearAll": {
+    "message": "Ĉĺêár̂ ál̂ĺ"
+  },
   "panels/network/EventSourceMessagesView.ts | copyMessage": {
     "message": "Ĉóp̂ý m̂éŝśâǵê"
   },
   "panels/network/EventSourceMessagesView.ts | data": {
     "message": "D̂át̂á"
+  },
+  "panels/network/EventSourceMessagesView.ts | enterRegex": {
+    "message": "Êńt̂ér̂ ŕêǵêx́, f̂ór̂ éx̂ám̂ṕl̂é: ĥt́t̂ṕŝ?"
   },
   "panels/network/EventSourceMessagesView.ts | eventSource": {
     "message": "Êv́êńt̂ Śôúr̂ćê"
@@ -9808,6 +9832,9 @@
   },
   "panels/recorder/components/CreateRecordingView.ts | includeNecessarySelectors": {
     "message": "Ŷóû ḿûśt̂ ćĥóôśê ĆŜŚ, P̂íêŕĉé, ôŕ X̂Ṕât́ĥ áŝ ón̂é ôf́ ŷóûŕ ôṕt̂íôńŝ. Ón̂ĺŷ t́ĥéŝé ŝél̂éĉt́ôŕŝ ár̂é ĝúâŕâńt̂éêd́ t̂ó b̂é r̂éĉór̂d́êd́ ŝín̂ćê ÁR̂ÍÂ án̂d́ t̂éx̂t́ ŝél̂éĉt́ôŕŝ ḿâý n̂ót̂ b́ê ún̂íq̂úê."
+  },
+  "panels/recorder/components/CreateRecordingView.ts | learnMore": {
+    "message": "L̂éâŕn̂ ḿôŕê"
   },
   "panels/recorder/components/CreateRecordingView.ts | recordingName": {
     "message": "R̂éĉór̂d́îńĝ ńâḿê"

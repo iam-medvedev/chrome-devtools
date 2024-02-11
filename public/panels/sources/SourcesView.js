@@ -12,6 +12,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Components from './components/components.js';
 import { EditingLocationHistoryManager } from './EditingLocationHistoryManager.js';
 import sourcesViewStyles from './sourcesView.css.js';
@@ -58,6 +59,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     constructor() {
         super();
         this.element.id = 'sources-panel-sources-view';
+        this.element.setAttribute('jslog', `${VisualLogging.pane('editor')}`);
         this.setMinimumAndPreferredSizes(88, 52, 150, 100);
         this.selectedIndex = 0;
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
@@ -71,6 +73,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.editorContainer.addEventListener("EditorClosed" /* TabbedEditorContainerEvents.EditorClosed */, this.editorClosed, this);
         this.historyManager = new EditingLocationHistoryManager(this);
         this.toolbarContainerElementInternal = this.element.createChild('div', 'sources-toolbar');
+        this.toolbarContainerElementInternal.setAttribute('jslog', `${VisualLogging.toolbar('bottom')}`);
         this.scriptViewToolbar = new UI.Toolbar.Toolbar('', this.toolbarContainerElementInternal);
         this.scriptViewToolbar.element.style.flex = 'auto';
         this.bottomToolbarInternal = new UI.Toolbar.Toolbar('', this.toolbarContainerElementInternal);

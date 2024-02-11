@@ -160,7 +160,7 @@ styles.replaceSync(
   color: var(--sys-color-token-subtle);
 }
 
-.heap-snapshot-view tr:not(.selected) .cycled-ancessor-node {
+.heap-snapshot-view tr:not(.selected) .cycled-ancestor-node {
   opacity: 60%;
 }
 
@@ -222,7 +222,7 @@ styles.replaceSync(
 }
 
 @media (forced-colors: active) {
-  .cycled-ancessor-node {
+  .cycled-ancestor-node {
     opacity: 100%;
   }
 

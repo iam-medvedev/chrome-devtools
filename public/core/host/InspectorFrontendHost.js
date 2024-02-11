@@ -361,6 +361,8 @@ export class InspectorFrontendHostStub {
     }
     recordImpression(event) {
     }
+    recordResize(event) {
+    }
     recordClick(event) {
     }
     recordHover(event) {
@@ -420,6 +422,10 @@ class InspectorFrontendAPIImpl {
             if ('doAidaConversationForTesting' in globalThis) {
                 InspectorFrontendHostInstance['doAidaConversation'] =
                     globalThis.doAidaConversationForTesting;
+            }
+            if ('getSyncInformationForTesting' in globalThis) {
+                InspectorFrontendHostInstance['getSyncInformation'] =
+                    globalThis.getSyncInformationForTesting;
             }
         }
         else {

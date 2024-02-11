@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
@@ -34,7 +35,7 @@ const UIStrings = {
     /**
      * @description The title that is shown while the insight is being generated.
      */
-    generating: 'Generating…',
+    generating: 'Coming up with an explanation…',
     /**
      * @description The header that indicates that the content shown is a console
      * insight.
@@ -47,25 +48,21 @@ const UIStrings = {
     /**
      * @description The title of the list of source data that was used to generate the insight.
      */
-    sources: 'Sources',
+    inputData: 'Data used to create this insight',
     /**
      * @description The title of the button that allows submitting positive
      * feedback about the console insight.
      */
-    thumbUp: 'Thumb up',
+    thumbsUp: 'Thumbs up',
     /**
      * @description The title of the button that allows submitting negative
      * feedback about the console insight.
      */
-    thumbDown: 'Thumb down',
+    thumbsDown: 'Thumbs down',
     /**
      * @description The title of the link that allows submitting more feedback.
      */
     submitFeedback: 'Submit feedback',
-    /**
-     * @description The title indicating the dogfood phase of the feature.
-     */
-    dogfood: 'Dogfood',
     /**
      * @description The text of the header inside the console insight pane when there was an error generating an insight.
      */
@@ -78,7 +75,7 @@ const UIStrings = {
     /**
      * @description The legal disclaimer for using the Console Insights feature.
      */
-    disclaimer: 'The following data will be sent to Google servers to generate tailored tips and suggestions. It may be stored, reviewed by humans, or used to train AI models.',
+    disclaimer: 'The following data will be sent to Google to find an explanation for the console message. They may be reviewed by humans and used to improve products.',
     /**
      * @description The title of the button that records the consent of the user
      * to send the data to the backend.
@@ -88,7 +85,31 @@ const UIStrings = {
      * @description The title of a link that allows the user to learn more about
      * the feature.
      */
-    learnMore: 'Learn more',
+    learnMore: 'Learn more about AI in DevTools',
+    /**
+     * @description The title of the message when the console insight is not available for some reason.
+     */
+    notAvailable: 'Console insights is not available',
+    /**
+     * @description The error message when the user is not logged in into Chrome.
+     */
+    notLoggedIn: 'This feature is only available if you are signed into Chrome with your Google account.',
+    /**
+     * @description The error message when the user is not logged in into Chrome.
+     */
+    syncIsOff: 'This feature is only available if you have Chrome sync turned on.',
+    /**
+     * @description The title of the button that opens Chrome settings.
+     */
+    goToSettings: 'Go to settings',
+    /**
+     * @description Fine print to set expectations for users.
+     */
+    finePrint: 'This is an experimental AI insights tool and won’t always get it right.',
+    /**
+     * @description Message shown when the user is offline.
+     */
+    offline: 'Internet connection is currently not available.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/explain/components/ConsoleInsight.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -137,23 +158,53 @@ function buildRatingFormLink(rating, comment, explanation, consoleMessage, stack
         .join('&')}`;
 }
 export class ConsoleInsight extends HTMLElement {
+    static async create(promptBuilder, insightProvider, actionTitle) {
+        const syncData = await new Promise(resolve => {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
+                resolve(syncInfo);
+            });
+        });
+        return new ConsoleInsight(promptBuilder, insightProvider, actionTitle, syncData);
+    }
     static litTagName = LitHtml.literal `devtools-console-insight`;
     #shadow = this.attachShadow({ mode: 'open' });
-    #actionName = '';
+    #actionTitle = '';
     #promptBuilder;
     #insightProvider;
     #renderer = new MarkdownRenderer();
     // Main state.
-    #state = {
-        type: "loading" /* State.LOADING */,
-        consentGiven: false,
-    };
+    #state;
     // Rating sub-form state.
     #selectedRating;
-    constructor(promptBuilder, insightProvider) {
+    constructor(promptBuilder, insightProvider, actionTitle, syncInfo) {
         super();
         this.#promptBuilder = promptBuilder;
         this.#insightProvider = insightProvider;
+        this.#actionTitle = actionTitle ?? '';
+        this.#state = {
+            type: "not-logged-in" /* State.NOT_LOGGED_IN */,
+        };
+        if (syncInfo?.accountEmail && syncInfo.isSyncActive) {
+            this.#state = {
+                type: "loading" /* State.LOADING */,
+                consentGiven: false,
+            };
+        }
+        else if (!syncInfo?.accountEmail) {
+            this.#state = {
+                type: "not-logged-in" /* State.NOT_LOGGED_IN */,
+            };
+        }
+        else if (!syncInfo?.isSyncActive) {
+            this.#state = {
+                type: "sync-is-off" /* State.SYNC_IS_OFF */,
+            };
+        }
+        if (!navigator.onLine) {
+            this.#state = {
+                type: "offline" /* State.OFFLINE */,
+            };
+        }
         this.#render();
         // Stop keyboard event propagation to avoid Console acting on the events
         // inside the insight component.
@@ -164,6 +215,9 @@ export class ConsoleInsight extends HTMLElement {
             e.stopPropagation();
         });
         this.addEventListener('keypress', e => {
+            e.stopPropagation();
+        });
+        this.addEventListener('click', e => {
             e.stopPropagation();
         });
         this.tabIndex = 0;
@@ -177,10 +231,7 @@ export class ConsoleInsight extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
         this.classList.add('opening');
-    }
-    set actionName(value) {
-        this.#actionName = value;
-        this.#render();
+        void this.#generateInsightIfNeeded();
     }
     #transitionTo(newState) {
         const previousState = this.#state;
@@ -190,7 +241,13 @@ export class ConsoleInsight extends HTMLElement {
         }
         this.#render();
     }
-    async update() {
+    async #generateInsightIfNeeded() {
+        if (this.#state.type !== "loading" /* State.LOADING */) {
+            return;
+        }
+        if (this.#state.consentGiven) {
+            return;
+        }
         const { sources } = await this.#promptBuilder.buildPrompt();
         this.#transitionTo({
             type: "consent" /* State.CONSENT */,
@@ -224,14 +281,17 @@ export class ConsoleInsight extends HTMLElement {
             consentGiven: true,
         });
         try {
-            const { prompt, sources } = await this.#promptBuilder.buildPrompt();
-            const explanation = await this.#insightProvider.getInsights(prompt);
+            const { sources, explanation } = await this.#getInsight();
+            const tokens = this.#validateMarkdown(explanation);
+            const valid = tokens !== false;
             this.#transitionTo({
                 type: "insight" /* State.INSIGHT */,
-                tokens: Marked.Marked.lexer(explanation),
+                tokens: valid ? tokens : [],
+                validMarkdown: valid,
                 explanation,
                 sources,
             });
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightGenerated);
         }
         catch (err) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightErrored);
@@ -240,6 +300,45 @@ export class ConsoleInsight extends HTMLElement {
                 error: err.message,
             });
         }
+    }
+    /**
+     * Validates the markdown by trying to render it.
+     */
+    #validateMarkdown(text) {
+        try {
+            const tokens = Marked.Marked.lexer(text);
+            for (const token of tokens) {
+                this.#renderer.renderToken(token);
+            }
+            return tokens;
+        }
+        catch {
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightErroredMarkdown);
+            return false;
+        }
+    }
+    async #getInsight() {
+        try {
+            const { prompt, sources } = await this.#promptBuilder.buildPrompt();
+            const explanation = await this.#insightProvider.getInsights(prompt);
+            return { sources, explanation };
+        }
+        catch (err) {
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightErroredApi);
+            throw err;
+        }
+    }
+    #onGoToSettings() {
+        const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
+        if (rootTarget === null) {
+            return;
+        }
+        const url = 'chrome://settings';
+        void rootTarget.targetAgent().invoke_createTarget({ url }).then(result => {
+            if (result.getError()) {
+                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(url);
+            }
+        });
     }
     #renderMain() {
         // clang-format off
@@ -259,11 +358,11 @@ export class ConsoleInsight extends HTMLElement {
             case "insight" /* State.INSIGHT */:
                 return html `
         <main>
-          <${MarkdownView.MarkdownView.MarkdownView.litTagName}
-            .data=${{ tokens: this.#state.tokens, renderer: this.#renderer }}>
-          </${MarkdownView.MarkdownView.MarkdownView.litTagName}>
+          ${this.#state.validMarkdown ? html `<${MarkdownView.MarkdownView.MarkdownView.litTagName}
+              .data=${{ tokens: this.#state.tokens, renderer: this.#renderer }}>
+            </${MarkdownView.MarkdownView.MarkdownView.litTagName}>` : this.#state.explanation}
           <details style="--list-height: ${this.#state.sources.length * 20}px;">
-            <summary>${i18nString(UIStrings.sources)}</summary>
+            <summary>${i18nString(UIStrings.inputData)}</summary>
             <${ConsoleInsightSourcesList.litTagName} .sources=${this.#state.sources}>
             </${ConsoleInsightSourcesList.litTagName}>
           </details>
@@ -276,11 +375,26 @@ export class ConsoleInsight extends HTMLElement {
             case "consent" /* State.CONSENT */:
                 return html `
           <main>
-            <p>${i18nString(UIStrings.disclaimer)} <x-link href=${DOGFOODINFO_URL} class="link">${i18nString(UIStrings.learnMore)}</x-link></p>
+            <p>${i18nString(UIStrings.disclaimer)}</p>
             <${ConsoleInsightSourcesList.litTagName} .sources=${this.#state.sources}>
             </${ConsoleInsightSourcesList.litTagName}>
           </main>
         `;
+            case "not-logged-in" /* State.NOT_LOGGED_IN */:
+                return html `
+          <main>
+            <div class="error">${i18nString(UIStrings.notLoggedIn)}</div>
+          </main>`;
+            case "sync-is-off" /* State.SYNC_IS_OFF */:
+                return html `
+          <main>
+            <div class="error">${i18nString(UIStrings.syncIsOff)}</div>
+          </main>`;
+            case "offline" /* State.OFFLINE */:
+                return html `
+          <main>
+            <div class="error">${i18nString(UIStrings.offline)}</div>
+          </main>`;
         }
         // clang-format on
     }
@@ -289,11 +403,30 @@ export class ConsoleInsight extends HTMLElement {
         switch (this.#state.type) {
             case "loading" /* State.LOADING */:
             case "error" /* State.ERROR */:
+            case "offline" /* State.OFFLINE */:
                 return LitHtml.nothing;
+            case "not-logged-in" /* State.NOT_LOGGED_IN */:
+            case "sync-is-off" /* State.SYNC_IS_OFF */:
+                return html `<footer>
+        <div class="filler"></div>
+        <div>
+          <${Buttons.Button.Button.litTagName}
+            @click=${this.#onGoToSettings}
+            .data=${{
+                    variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
+                }}
+          >
+            ${UIStrings.goToSettings}
+          </${Buttons.Button.Button.litTagName}>
+        </div>
+      </footer>`;
             case "consent" /* State.CONSENT */:
                 return html `<footer>
-          <div class="filler">
+          <div class="disclaimer">
+            <span>${i18nString(UIStrings.finePrint)}</span>
+            <span><x-link href=${DOGFOODINFO_URL} class="link">${i18nString(UIStrings.learnMore)}</x-link></span>
           </div>
+          <div class="filler"></div>
           <div>
             <${Buttons.Button.Button.litTagName}
               class="consent-button"
@@ -309,9 +442,9 @@ export class ConsoleInsight extends HTMLElement {
         </footer>`;
             case "insight" /* State.INSIGHT */:
                 return html `<footer>
-        <div class="dogfood-feedback">
-          <${IconButton.Icon.Icon.litTagName} name="dog-paw"></${IconButton.Icon.Icon.litTagName}>
-          <span>${i18nString(UIStrings.dogfood)} - <x-link href=${DOGFOODFEEDBACK_URL} class="link">${i18nString(UIStrings.submitFeedback)}</x-link></span>
+        <div class="disclaimer">
+          <span>${i18nString(UIStrings.finePrint)}</span>
+          <span><x-link href=${DOGFOODINFO_URL} class="link">${i18nString(UIStrings.learnMore)}</x-link> - <x-link href=${DOGFOODFEEDBACK_URL} class="link">${i18nString(UIStrings.submitFeedback)}</x-link></span>
         </div>
         <div class="filler"></div>
         <div class="rating">
@@ -322,7 +455,7 @@ export class ConsoleInsight extends HTMLElement {
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-up',
                     active: this.#selectedRating,
-                    title: i18nString(UIStrings.thumbUp),
+                    title: i18nString(UIStrings.thumbsUp),
                 }}
             @click=${this.#onRating}
           ></${Buttons.Button.Button.litTagName}>
@@ -333,7 +466,7 @@ export class ConsoleInsight extends HTMLElement {
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-down',
                     active: this.#selectedRating !== undefined && !this.#selectedRating,
-                    title: i18nString(UIStrings.thumbDown),
+                    title: i18nString(UIStrings.thumbsDown),
                 }}
             @click=${this.#onRating}
           ></${Buttons.Button.Button.litTagName}>
@@ -345,6 +478,10 @@ export class ConsoleInsight extends HTMLElement {
     }
     #getHeader() {
         switch (this.#state.type) {
+            case "sync-is-off" /* State.SYNC_IS_OFF */:
+            case "not-logged-in" /* State.NOT_LOGGED_IN */:
+            case "offline" /* State.OFFLINE */:
+                return i18nString(UIStrings.notAvailable);
             case "loading" /* State.LOADING */:
                 return i18nString(UIStrings.generating);
             case "insight" /* State.INSIGHT */:
@@ -352,7 +489,7 @@ export class ConsoleInsight extends HTMLElement {
             case "error" /* State.ERROR */:
                 return i18nString(UIStrings.error);
             case "consent" /* State.CONSENT */:
-                return this.#actionName;
+                return this.#actionTitle;
         }
     }
     #render() {
@@ -400,9 +537,11 @@ class ConsoleInsightSourcesList extends HTMLElement {
         render(html `
       <ul>
         ${Directives.repeat(this.#sources, item => item.value, item => {
-            const icon = new IconButton.Icon.Icon();
-            icon.data = { iconName: 'open-externally', color: 'var(--sys-color-primary)', width: '14px', height: '14px' };
-            return html `<li><x-link class="link" title="${localizeType(item.type)} ${i18nString(UIStrings.opensInNewTab)}" href=${`data:text/plain,${encodeURIComponent(item.value)}`}>${localizeType(item.type)}${icon}</x-link></li>`;
+            return html `<li><x-link class="link" title="${localizeType(item.type)} ${i18nString(UIStrings.opensInNewTab)}" href=${`data:text/plain,${encodeURIComponent(item.value)}`}>
+            ${localizeType(item.type)}
+            <${IconButton.Icon.Icon.litTagName} name="open-externally">
+            </${IconButton.Icon.Icon.litTagName}>
+          </x-link></li>`;
         })}
       </ul>
     `, this.#shadow, {
@@ -421,8 +560,7 @@ export class MarkdownRenderer extends MarkdownView.MarkdownView.MarkdownLitRende
     renderToken(token) {
         const template = this.templateForToken(token);
         if (template === null) {
-            console.warn(`Markdown token type '${token.type}' not supported.`);
-            return LitHtml.html ``;
+            return LitHtml.html `${token.raw}`;
         }
         return template;
     }

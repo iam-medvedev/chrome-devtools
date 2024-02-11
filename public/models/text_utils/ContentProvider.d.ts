@@ -1,5 +1,6 @@
 import type * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
+import { type ContentDataOrError } from './ContentData.js';
 import { type StreamingContentDataOrError } from './StreamingContentData.js';
 export interface ContentProvider {
     contentURL(): Platform.DevToolsPath.UrlString;
@@ -30,4 +31,12 @@ export type DeferredContent = {
 };
 export interface StreamingContentProvider extends ContentProvider {
     requestStreamingContent(): Promise<StreamingContentDataOrError>;
+}
+export declare const isStreamingContentProvider: (provider: ContentProvider) => provider is StreamingContentProvider;
+/**
+ * Temporary interface to migrate ContentProvider#requestContent to return
+ * {@link ContentData} instead of a DefferedContent.
+ */
+export interface SafeContentProvider extends ContentProvider {
+    requestContentData(): Promise<ContentDataOrError>;
 }

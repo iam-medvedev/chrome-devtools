@@ -6,7 +6,7 @@ import { type CSSModel } from './CSSModel.js';
 import { DeferredDOMNode } from './DOMModel.js';
 import { type FrameAssociated } from './FrameAssociated.js';
 import { type PageResourceLoadInitiator } from './PageResourceLoader.js';
-export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentProvider, FrameAssociated {
+export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.SafeContentProvider, FrameAssociated {
     #private;
     id: Protocol.CSS.StyleSheetId;
     frameId: Protocol.Page.FrameId;
@@ -27,7 +27,7 @@ export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.Co
     sourceMapURL: Platform.DevToolsPath.UrlString | undefined;
     readonly loadingFailed: boolean;
     constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSStyleSheetHeader);
-    originalContentProvider(): TextUtils.ContentProvider.ContentProvider;
+    originalContentProvider(): TextUtils.ContentProvider.SafeContentProvider;
     setSourceMapURL(sourceMapURL?: Platform.DevToolsPath.UrlString): void;
     cssModel(): CSSModel;
     isAnonymousInlineStyleSheet(): boolean;
@@ -46,6 +46,7 @@ export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.Co
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
     requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
+    requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
     isViaInspector(): boolean;
     createPageResourceLoadInitiator(): PageResourceLoadInitiator;

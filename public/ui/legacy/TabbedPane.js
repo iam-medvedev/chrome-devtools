@@ -210,7 +210,8 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         console.assert(!this.tabsById.has(id), `Tabbed pane already contains a tab with id '${id}'`);
         this.tabsById.set(id, tab);
         tab.tabElement.tabIndex = -1;
-        tab.tabElement.setAttribute('jslog', `${VisualLogging.panelTabHeader().track({ click: true, drag: true }).context(id)}`);
+        const context = id === 'console-view' ? 'console' : id;
+        tab.tabElement.setAttribute('jslog', `${VisualLogging.panelTabHeader().track({ click: true, drag: true }).context(context)}`);
         if (index !== undefined) {
             this.tabs.splice(index, 0, tab);
         }

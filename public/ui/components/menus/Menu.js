@@ -5,6 +5,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Dialogs from '../dialogs/dialogs.js';
 import menuStyles from './menu.css.js';
 import menuGroupStyles from './menuGroup.css.js';
@@ -319,7 +320,7 @@ export class Menu extends HTMLElement {
             this.#dialog = domNode;
         })}
         >
-        <span id="container" role="menu" tabIndex="0" @keydown=${this.#handleDialogKeyDown}>
+        <span id="container" role="menu" tabIndex="0" @keydown=${this.#handleDialogKeyDown} jslog=${VisualLogging.menu()}>
           <slot @click=${this.#handleItemClick}>
           </slot>
         </span>

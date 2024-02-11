@@ -190,7 +190,6 @@ export declare enum Action {
     InsightConsoleMessageShown = 113,
     InsightRequestedViaContextMenu = 114,
     InsightRequestedViaHoverButton = 115,
-    InsightRefined = 116,
     InsightRatedPositive = 117,
     InsightRatedNegative = 118,
     InsightClosed = 119,
@@ -204,7 +203,10 @@ export declare enum Action {
     ToggleEmulateFocusedPageFromStylesPaneOff = 127,
     ToggleEmulateFocusedPageFromRenderingTab = 128,
     ToggleEmulateFocusedPageFromCommandMenu = 129,
-    MaxValue = 130
+    InsightGenerated = 130,
+    InsightErroredApi = 131,
+    InsightErroredMarkdown = 132,
+    MaxValue = 133
 }
 export declare enum PanelCodes {
     elements = 1,

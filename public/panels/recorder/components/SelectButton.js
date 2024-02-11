@@ -1,11 +1,13 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
 import selectButtonStyles from './selectButton.css.js';
 export class SelectButtonClickEvent extends Event {
@@ -77,7 +79,7 @@ export class SelectButton extends HTMLElement {
     #renderSelectItem(item, selectedItem) {
         // clang-format off
         return LitHtml.html `
-      <${Menus.Menu.MenuItem.litTagName} .value=${item.value} .selected=${item.value === selectedItem.value}>
+      <${Menus.Menu.MenuItem.litTagName} .value=${item.value} .selected=${item.value === selectedItem.value} jslog=${VisualLogging.item(Platform.StringUtilities.toKebabCase(item.value)).track({ click: true })}>
         ${item.label()}
       </${Menus.Menu.MenuItem.litTagName}>
     `;

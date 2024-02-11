@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Platform from '../../core/platform/platform.js';
+import { ContentData } from './ContentData.js';
 import { SearchMatch } from './ContentProvider.js';
 import { Text } from './Text.js';
 export const Utils = {
@@ -327,6 +328,18 @@ export const isMinified = function (text) {
         lastIndex = eolIndex + 1;
     }
     return (text.length - lineCount) / lineCount >= 80;
+};
+/**
+ * Small wrapper around {@link performSearchInContent} to reduce boilerplate when searching
+ * in {@link ContentDataOrError}.
+ *
+ * @returns empty search matches if `contentData` is an error or not text content.
+ */
+export const performSearchInContentData = function (contentData, query, caseSensitive, isRegex) {
+    if (ContentData.isError(contentData) || !contentData.isTextContent) {
+        return [];
+    }
+    return performSearchInContent(contentData.text, query, caseSensitive, isRegex);
 };
 /**
  * @returns One {@link SearchMatch} per match. Multiple matches on the same line each

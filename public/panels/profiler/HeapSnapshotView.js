@@ -376,7 +376,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         this.constructorsDataGrid.setNameFilter(this.classNameFilter);
         this.diffDataGrid.setNameFilter(this.classNameFilter);
         this.selectedSizeText = new UI.Toolbar.ToolbarText();
-        this.popoverHelper = new UI.PopoverHelper.PopoverHelper(this.element, this.getPopoverRequest.bind(this));
+        this.popoverHelper = new UI.PopoverHelper.PopoverHelper(this.element, this.getPopoverRequest.bind(this), 'profiler.heap-snapshot-object');
         this.popoverHelper.setDisableOnClick(true);
         this.popoverHelper.setHasPadding(true);
         this.element.addEventListener('scroll', this.popoverHelper.hidePopover.bind(this.popoverHelper), true);
@@ -652,7 +652,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     setSelectedNodeForDetailsView(nodeItem) {
         const dataSource = nodeItem && nodeItem.retainersDataSource();
         if (dataSource) {
-            void this.retainmentDataGrid.setDataSource(dataSource.snapshot, dataSource.snapshotNodeIndex);
+            void this.retainmentDataGrid.setDataSource(dataSource.snapshot, dataSource.snapshotNodeIndex, dataSource.snapshotNodeId);
             if (this.allocationStackView) {
                 void this.allocationStackView.setAllocatedObject(dataSource.snapshot, dataSource.snapshotNodeIndex);
             }

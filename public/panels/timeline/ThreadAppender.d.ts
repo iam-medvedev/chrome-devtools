@@ -6,9 +6,7 @@ export declare class ThreadAppender implements TrackAppender {
     readonly threadType: TraceEngine.Handlers.Threads.ThreadType;
     readonly isOnMainFrame: boolean;
     constructor(compatibilityBuilder: CompatibilityTracksAppender, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, processId: TraceEngine.Types.TraceEvents.ProcessID, threadId: TraceEngine.Types.TraceEvents.ThreadID, threadName: string | null, type: TraceEngine.Handlers.Threads.ThreadType);
-    modifyTree(traceEvent: TraceEngine.Types.TraceEvents.SyntheticTraceEntry, action: TraceEngine.EntriesFilter.FilterAction): void;
-    findPossibleContextMenuActions(traceEvent: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): TraceEngine.EntriesFilter.PossibleFilterActions | void;
-    findHiddenDescendantsAmount(traceEvent: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): number | void;
+    entriesFilter(): TraceEngine.EntriesFilter.EntriesFilter;
     processId(): TraceEngine.Types.TraceEvents.ProcessID;
     threadId(): TraceEngine.Types.TraceEvents.ThreadID;
     /**

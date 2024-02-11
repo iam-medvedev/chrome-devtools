@@ -1,4 +1,5 @@
 import * as Common from '../../core/common/common.js';
+import type * as Root from '../../core/root/root.js';
 import { type ToolbarItem } from './Toolbar.js';
 import { type TabbedViewLocation, type View, type ViewLocation } from './View.js';
 import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, ViewLocationValues, ViewPersistence, type ViewRegistration } from './ViewRegistration.js';
@@ -25,7 +26,7 @@ export declare class PreRegisteredView implements View {
     widget(): Promise<Widget>;
     disposeView(): Promise<void>;
     experiment(): string | undefined;
-    condition(): string | undefined;
+    condition(): Root.Runtime.Condition | undefined;
 }
 export declare class ViewManager {
     readonly views: Map<string, View>;

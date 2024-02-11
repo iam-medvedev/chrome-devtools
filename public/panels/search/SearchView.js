@@ -121,7 +121,7 @@ export class SearchView extends UI.Widget.VBox {
         this.progressIndicator = null;
         this.visiblePane = null;
         this.#throttler = throttler;
-        this.element.setAttribute('jslog', `${VisualLogging.panel('search')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('search').track({ resize: true })}`);
         this.contentElement.classList.add('search-view');
         this.contentElement.addEventListener('keydown', event => {
             this.onKeyDownOnPanel(event);

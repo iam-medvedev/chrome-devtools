@@ -39,6 +39,7 @@ export declare class HeapSnapshotGridNode extends HeapSnapshotGridNode_base {
     retainersDataSource(): {
         snapshot: HeapSnapshotProxy;
         snapshotNodeIndex: number;
+        snapshotNodeId: number | undefined;
     } | null;
     provider(): ChildrenProvider;
     createCell(columnId: string): HTMLElement;
@@ -85,6 +86,7 @@ export declare abstract class HeapSnapshotGenericObjectNode extends HeapSnapshot
     retainersDataSource(): {
         snapshot: HeapSnapshotProxy;
         snapshotNodeIndex: number;
+        snapshotNodeId: number | undefined;
     } | null;
     createCell(columnId: string): HTMLElement;
     createObjectCell(): HTMLElement;
@@ -108,6 +110,7 @@ export declare class HeapSnapshotObjectNode extends HeapSnapshotGenericObjectNod
     retainersDataSource(): {
         snapshot: HeapSnapshotProxy;
         snapshotNodeIndex: number;
+        snapshotNodeId: number | undefined;
     } | null;
     createProvider(): HeapSnapshotProviderProxy;
     findAncestorWithSameSnapshotNodeId(): HeapSnapshotObjectNode | null;
@@ -132,6 +135,7 @@ export declare class HeapSnapshotInstanceNode extends HeapSnapshotGenericObjectN
     retainersDataSource(): {
         snapshot: HeapSnapshotProxy;
         snapshotNodeIndex: number;
+        snapshotNodeId: number | undefined;
     } | null;
     createProvider(): HeapSnapshotProviderProxy;
     createChildNode(item: HeapSnapshotModel.HeapSnapshotModel.Node | HeapSnapshotModel.HeapSnapshotModel.Edge): HeapSnapshotObjectNode;

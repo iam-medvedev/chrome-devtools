@@ -4,12 +4,22 @@ import * as UI from '../../ui/legacy/legacy.js';
 export declare class EventSourceMessagesView extends UI.Widget.VBox {
     private readonly request;
     private dataGrid;
+    private readonly mainToolbar;
+    private readonly clearAllButton;
+    private readonly filterTextInput;
+    private filterRegex;
+    private messageFilterSetting;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
     wasShown(): void;
     willHide(): void;
     private messageAdded;
+    private messageFilter;
+    private clearMessages;
+    private updateFilterSetting;
+    private setFilter;
     private sortItems;
     private onRowContextMenu;
+    refresh(): void;
 }
 export declare class EventSourceMessageNode extends DataGrid.SortableDataGrid.SortableDataGridNode<EventSourceMessageNode> {
     readonly message: SDK.NetworkRequest.EventSourceMessage;

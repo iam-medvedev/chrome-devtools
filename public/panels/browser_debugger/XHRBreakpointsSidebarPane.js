@@ -79,7 +79,7 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
         this.#emptyElement = this.contentElement.createChild('div', 'gray-info-message');
         this.#emptyElement.textContent = i18nString(UIStrings.noBreakpoints);
         this.#breakpointElements = new Map();
-        this.#addButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addXhrfetchBreakpoint), 'plus');
+        this.#addButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.addXhrfetchBreakpoint), 'plus', undefined, 'sources.add-xhr-fetch-breakpoint');
         this.#addButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             void this.addButtonClicked();
         });
@@ -99,7 +99,7 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
     }
     emptyElementContextMenu(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.addBreakpoint), this.addButtonClicked.bind(this));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.addBreakpoint), this.addButtonClicked.bind(this), { jslogContext: 'sources.add-xhr-fetch-breakpoint' });
         void contextMenu.show();
     }
     async addButtonClicked() {
@@ -255,9 +255,10 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
             this.update();
         }
         const removeAllTitle = i18nString(UIStrings.removeAllBreakpoints);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.addBreakpoint), this.addButtonClicked.bind(this));
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeBreakpoint), removeBreakpoint.bind(this));
-        contextMenu.defaultSection().appendItem(removeAllTitle, removeAllBreakpoints.bind(this));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.addBreakpoint), this.addButtonClicked.bind(this), { jslogContext: 'sources.add-xhr-fetch-breakpoint' });
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeBreakpoint), removeBreakpoint.bind(this)),
+            { jslogContext: 'sources.remove-xhr-fetch-breakpoint' };
+        contextMenu.defaultSection().appendItem(removeAllTitle, removeAllBreakpoints.bind(this), { jslogContext: 'sources.remove-all-xhr-fetch-breakpoints' });
         void contextMenu.show();
     }
     checkboxClicked(breakKeyword, checked) {

@@ -1,6 +1,7 @@
 import type * as Common from '../../core/common/common.js';
 import { type Loggable } from './Loggable.js';
 export declare function logImpressions(loggables: Loggable[]): Promise<void>;
+export declare const logResize: (resizeLogThrottler: Common.Throttler.Throttler) => (loggable: Loggable) => Promise<void>;
 export declare function logClick(loggable: Loggable, event: Event, options?: {
     doubleClick?: boolean;
 }): Promise<void>;

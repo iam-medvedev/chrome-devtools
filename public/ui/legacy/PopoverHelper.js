@@ -27,11 +27,13 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import * as VisualLogging from '../visual_logging/visual_logging.js';
 import { GlassPane } from './GlassPane.js';
 import popoverStyles from './popover.css.legacy.js';
+const CONTENT_ELEMENT_TO_POPOVER_HELPER = new WeakMap();
 export class PopoverHelper {
-    static createPopover = () => {
-        const popover = new GlassPane();
+    static createPopover = (jslogContext) => {
+        const popover = new GlassPane(`${VisualLogging.popover(jslogContext).parent('popoverParent')}`);
         popover.registerRequiredCSS(popoverStyles);
         popover.setSizeBehavior("MeasureContent" /* SizeBehavior.MeasureContent */);
         popover.setMarginBehavior("Arrow" /* MarginBehavior.Arrow */);
@@ -50,10 +52,12 @@ export class PopoverHelper {
     boundMouseDown;
     boundMouseMove;
     boundMouseOut;
-    constructor(container, getRequest) {
+    #jslogContext;
+    constructor(container, getRequest, jslogContext) {
         this.disableOnClick = false;
         this.hasPadding = false;
         this.getRequest = getRequest;
+        this.#jslogContext = jslogContext;
         this.scheduledRequest = null;
         this.hidePopoverCallback = null;
         this.container = container;
@@ -178,7 +182,7 @@ export class PopoverHelper {
         this.hidePopoverCallback = null;
     }
     showPopover(document) {
-        const popover = PopoverHelper.createPopover();
+        const popover = PopoverHelper.createPopover(this.#jslogContext);
         const request = this.scheduledRequest;
         if (!request) {
             return;
@@ -198,6 +202,7 @@ export class PopoverHelper {
                 popoverHelperInstance.hidePopover();
             }
             popoverHelperInstance = this;
+            CONTENT_ELEMENT_TO_POPOVER_HELPER.set(popover.contentElement, this);
             popover.contentElement.classList.toggle('has-padding', this.hasPadding);
             popover.contentElement.addEventListener('mousemove', this.popoverMouseMove.bind(this), true);
             popover.contentElement.addEventListener('mouseout', this.popoverMouseOut.bind(this, popover), true);
@@ -229,4 +234,5 @@ export class PopoverHelper {
     }
 }
 let popoverHelperInstance = null;
+VisualLogging.registerParentProvider('popoverParent', (e => CONTENT_ELEMENT_TO_POPOVER_HELPER.get(e)?.container));
 //# sourceMappingURL=PopoverHelper.js.map

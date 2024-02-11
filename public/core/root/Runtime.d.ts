@@ -18,7 +18,7 @@ export declare class Runtime {
     static platform(): string;
     static isDescriptorEnabled(descriptor: {
         experiment: ((string | undefined) | null);
-        condition: ((string | undefined) | null);
+        condition?: Condition;
     }): boolean;
     loadLegacyModule(modulePath: string): Promise<void>;
 }
@@ -82,10 +82,13 @@ export declare const enum ExperimentName {
     NETWORK_PANEL_FILTER_BAR_REDESIGN = "networkPanelFilterBarRedesign",
     TRACK_CONTEXT_MENU = "trackContextMenu",
     AUTOFILL_VIEW = "autofillView",
-    INDENTATION_MARKERS_TEMP_DISABLE = "sourcesFrameIndentationMarkersTemporarilyDisable",
-    CONSOLE_INSIGHTS = "consoleInsights"
+    INDENTATION_MARKERS_TEMP_DISABLE = "sourcesFrameIndentationMarkersTemporarilyDisable"
 }
-export declare const enum ConditionName {
-    CAN_DOCK = "can_dock",
-    NOT_SOURCES_HIDE_ADD_FOLDER = "!sources.hide_add_folder"
-}
+/**
+ * When defining conditions make sure that objects used by the function have
+ * been instantiated.
+ */
+export type Condition = () => boolean;
+export declare const conditions: {
+    canDock: () => boolean;
+};

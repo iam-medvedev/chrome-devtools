@@ -341,6 +341,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (this.searchResults) {
             this.selectedSearchResult = this.searchResults[index];
             this.delegate.select(this.mainDataProvider.createSelection(this.selectedSearchResult));
+            this.mainFlameChart.showPopoverForSearchResult(this.selectedSearchResult);
         }
     }
     updateSearchResults(shouldJump, jumpBackwards) {

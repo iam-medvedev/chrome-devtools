@@ -94,28 +94,28 @@ export class CompatibilityTracksAppender {
     getFlameChartTimelineData() {
         return this.#flameChartData;
     }
-    modifyTree(group, node, action) {
-        const threadTrackAppender = this.#trackForGroup.get(group);
-        if (threadTrackAppender instanceof ThreadAppender) {
-            threadTrackAppender.modifyTree(node, action);
+    modifyTree(group, entry, type) {
+        const appender = this.#trackForGroup.get(group);
+        if (appender && appender.entriesFilter) {
+            appender.entriesFilter().applyFilterAction({ entry, type });
         }
         else {
-            console.warn('Could not modify tree in not thread track');
+            console.warn('Could not modify tree on a track.');
         }
     }
     findPossibleContextMenuActions(group, node) {
-        const threadTrackAppender = this.#trackForGroup.get(group);
-        if (threadTrackAppender instanceof ThreadAppender) {
-            return threadTrackAppender.findPossibleContextMenuActions(node);
+        const appender = this.#trackForGroup.get(group);
+        if (appender && appender.entriesFilter) {
+            return appender.entriesFilter().findPossibleActions(node);
         }
-        console.warn('Could not modify tree in not thread track');
+        console.warn('Could not modify tree on a track.');
     }
     findHiddenDescendantsAmount(group, node) {
-        const threadTrackAppender = this.#trackForGroup.get(group);
-        if (threadTrackAppender instanceof ThreadAppender) {
-            return threadTrackAppender.findHiddenDescendantsAmount(node);
+        const appender = this.#trackForGroup.get(group);
+        if (appender && appender.entriesFilter) {
+            return appender.entriesFilter().findHiddenDescendantsAmount(node);
         }
-        console.warn('Could not find hidden entries because non thread tracks are not modifiable');
+        console.warn('Could not find hidden entries on a track.');
     }
     #addThreadAppenders() {
         const weight = (appender) => {

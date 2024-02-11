@@ -4,7 +4,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -514,7 +513,6 @@ UI.ViewManager.registerViewExtension({
     commandPrompt: i18nLazyString(UIStrings.showThreads),
     title: i18nLazyString(UIStrings.threads),
     persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
-    condition: "!sources.hide_add_folder" /* Root.Runtime.ConditionName.NOT_SOURCES_HIDE_ADD_FOLDER */,
     async loadView() {
         const Sources = await loadSourcesModule();
         return new Sources.ThreadsSidebarPane.ThreadsSidebarPane();
@@ -1193,7 +1191,6 @@ if (!Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
         },
         iconClass: "plus" /* UI.ActionRegistration.IconClass.PLUS */,
         title: i18nLazyString(UIStrings.addFolderToWorkspace),
-        condition: "!sources.hide_add_folder" /* Root.Runtime.ConditionName.NOT_SOURCES_HIDE_ADD_FOLDER */,
     });
 }
 UI.ActionRegistration.registerActionExtension({
@@ -1809,7 +1806,6 @@ UI.Toolbar.registerToolbarItem({
     location: "files-navigator-toolbar" /* UI.Toolbar.ToolbarItemLocation.FILES_NAVIGATION_TOOLBAR */,
     label: i18nLazyString(UIStrings.addFolder),
     showLabel: true,
-    condition: "!sources.hide_add_folder" /* Root.Runtime.ConditionName.NOT_SOURCES_HIDE_ADD_FOLDER */,
     loadItem: undefined,
     order: undefined,
     separator: undefined,

@@ -168,6 +168,8 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         }
         else if (request.mimeType === "text/event-stream" /* Platform.MimeType.MimeType.EVENTSTREAM */) {
             this.appendTab("eventSource" /* NetworkForward.UIRequestLocation.UIRequestTabs.EventSource */, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
+            this.responseView = new RequestResponseView(request);
+            this.appendTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.Response */, i18nString(UIStrings.response), this.responseView, i18nString(UIStrings.rawResponseData));
         }
         else {
             this.responseView = new RequestResponseView(request);
@@ -263,7 +265,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             // it makes sense to retry on the next tick
             window.setTimeout(() => {
                 if (!this.selectTab(tabId)) {
-                    this.selectTab('headers');
+                    this.selectTab("headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
                 }
             }, 0);
         }

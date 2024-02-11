@@ -6366,25 +6366,40 @@
     "message": "Console message"
   },
   "panels/explain/components/ConsoleInsight.ts | disclaimer": {
-    "message": "The following data will be sent to Google servers to generate tailored tips and suggestions. It may be stored, reviewed by humans, or used to train AI models."
-  },
-  "panels/explain/components/ConsoleInsight.ts | dogfood": {
-    "message": "Dogfood"
+    "message": "The following data will be sent to Google to find an explanation for the console message. They may be reviewed by humans and used to improve products."
   },
   "panels/explain/components/ConsoleInsight.ts | error": {
     "message": "Something went wrong…"
   },
+  "panels/explain/components/ConsoleInsight.ts | finePrint": {
+    "message": "This is an experimental AI insights tool and won’t always get it right."
+  },
   "panels/explain/components/ConsoleInsight.ts | generating": {
-    "message": "Generating…"
+    "message": "Coming up with an explanation…"
+  },
+  "panels/explain/components/ConsoleInsight.ts | goToSettings": {
+    "message": "Go to settings"
+  },
+  "panels/explain/components/ConsoleInsight.ts | inputData": {
+    "message": "Data used to create this insight"
   },
   "panels/explain/components/ConsoleInsight.ts | insight": {
     "message": "Insight"
   },
   "panels/explain/components/ConsoleInsight.ts | learnMore": {
-    "message": "Learn more"
+    "message": "Learn more about AI in DevTools"
   },
   "panels/explain/components/ConsoleInsight.ts | networkRequest": {
     "message": "Network request"
+  },
+  "panels/explain/components/ConsoleInsight.ts | notAvailable": {
+    "message": "Console insights is not available"
+  },
+  "panels/explain/components/ConsoleInsight.ts | notLoggedIn": {
+    "message": "This feature is only available if you are signed into Chrome with your Google account."
+  },
+  "panels/explain/components/ConsoleInsight.ts | offline": {
+    "message": "Internet connection is currently not available."
   },
   "panels/explain/components/ConsoleInsight.ts | opensInNewTab": {
     "message": "(opens in a new tab)"
@@ -6392,20 +6407,23 @@
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "Related code"
   },
-  "panels/explain/components/ConsoleInsight.ts | sources": {
-    "message": "Sources"
-  },
   "panels/explain/components/ConsoleInsight.ts | stackTrace": {
     "message": "Stacktrace"
   },
   "panels/explain/components/ConsoleInsight.ts | submitFeedback": {
     "message": "Submit feedback"
   },
-  "panels/explain/components/ConsoleInsight.ts | thumbDown": {
-    "message": "Thumb down"
+  "panels/explain/components/ConsoleInsight.ts | syncIsOff": {
+    "message": "This feature is only available if you have Chrome sync turned on."
   },
-  "panels/explain/components/ConsoleInsight.ts | thumbUp": {
-    "message": "Thumb up"
+  "panels/explain/components/ConsoleInsight.ts | thumbsDown": {
+    "message": "Thumbs down"
+  },
+  "panels/explain/components/ConsoleInsight.ts | thumbsUp": {
+    "message": "Thumbs up"
+  },
+  "panels/explain/explain-meta.ts | enableConsoleInsights": {
+    "message": "Enable Console Insights"
   },
   "panels/explain/explain-meta.ts | explainThisError": {
     "message": "Explain this error"
@@ -7919,11 +7937,17 @@
   "panels/network/components/WebBundleInfoView.ts | bundledResource": {
     "message": "Bundled resource"
   },
+  "panels/network/EventSourceMessagesView.ts | clearAll": {
+    "message": "Clear all"
+  },
   "panels/network/EventSourceMessagesView.ts | copyMessage": {
     "message": "Copy message"
   },
   "panels/network/EventSourceMessagesView.ts | data": {
     "message": "Data"
+  },
+  "panels/network/EventSourceMessagesView.ts | enterRegex": {
+    "message": "Enter regex, for example: https?"
   },
   "panels/network/EventSourceMessagesView.ts | eventSource": {
     "message": "Event Source"
@@ -9808,6 +9832,9 @@
   },
   "panels/recorder/components/CreateRecordingView.ts | includeNecessarySelectors": {
     "message": "You must choose CSS, Pierce, or XPath as one of your options. Only these selectors are guaranteed to be recorded since ARIA and text selectors may not be unique."
+  },
+  "panels/recorder/components/CreateRecordingView.ts | learnMore": {
+    "message": "Learn more"
   },
   "panels/recorder/components/CreateRecordingView.ts | recordingName": {
     "message": "Recording name"

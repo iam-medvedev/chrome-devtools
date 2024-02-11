@@ -73,7 +73,8 @@ export class StartView extends HTMLElement {
           </${PanelIntroductionSteps.PanelIntroductionSteps.PanelIntroductionSteps
             .litTagName}>
           <div class="fit-content">
-            <${Buttons.Button.Button.litTagName} .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */} @click=${this.#onClick}>
+            <${Buttons.Button.Button.litTagName} .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */} @click=${this.#onClick}
+              .jslogContext=${"chrome-recorder.create-recording" /* Actions.RecorderActions.CreateRecording */}>
               ${i18nString(UIStrings.createRecording)}
             </${Buttons.Button.Button.litTagName}>
           </div>

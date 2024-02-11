@@ -78,7 +78,7 @@ export class CommandMenu {
                     return;
                 }
                 setting.set(value);
-                if (setting.name === 'emulatePageFocus') {
+                if (setting.name === 'emulate-page-focus') {
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ToggleEmulateFocusedPageFromCommandMenu);
                 }
                 if (reloadRequired) {

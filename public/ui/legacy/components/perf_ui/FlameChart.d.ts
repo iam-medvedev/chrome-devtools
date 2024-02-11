@@ -141,6 +141,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private onMouseMove;
     private updateHighlight;
     private onMouseOut;
+    showPopoverForSearchResult(selectedSearchResult: number): void;
     private updatePopover;
     private updatePopoverOffset;
     private onClick;

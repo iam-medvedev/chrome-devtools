@@ -72,7 +72,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
     pollTimer;
     constructor(pollIntervalMs = 500) {
         super(true);
-        this.element.setAttribute('jslog', `${VisualLogging.panel('performance-monitor')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.panel('performance-monitor').track({ resize: true })}`);
         this.contentElement.classList.add('perfmon-pane');
         this.metricsBuffer = [];
         /** @const */

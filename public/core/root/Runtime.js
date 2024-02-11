@@ -52,25 +52,18 @@ export class Runtime {
         return runtimePlatform;
     }
     static isDescriptorEnabled(descriptor) {
-        const activatorExperiment = descriptor['experiment'];
-        if (activatorExperiment === '*') {
+        const { experiment } = descriptor;
+        if (experiment === '*') {
             return true;
         }
-        if (activatorExperiment && activatorExperiment.startsWith('!') &&
-            experiments.isEnabled(activatorExperiment.substring(1))) {
+        if (experiment && experiment.startsWith('!') && experiments.isEnabled(experiment.substring(1))) {
             return false;
         }
-        if (activatorExperiment && !activatorExperiment.startsWith('!') && !experiments.isEnabled(activatorExperiment)) {
+        if (experiment && !experiment.startsWith('!') && !experiments.isEnabled(experiment)) {
             return false;
         }
-        const condition = descriptor['condition'];
-        if (condition && !condition.startsWith('!') && !Runtime.queryParam(condition)) {
-            return false;
-        }
-        if (condition && condition.startsWith('!') && Runtime.queryParam(condition.substring(1))) {
-            return false;
-        }
-        return true;
+        const { condition } = descriptor;
+        return condition ? condition() : true;
     }
     loadLegacyModule(modulePath) {
         return import(`../../${modulePath}`);
@@ -204,4 +197,7 @@ export class Experiment {
 }
 // This must be constructed after the query parameters have been parsed.
 export const experiments = new ExperimentsSupport();
+export const conditions = {
+    canDock: () => Boolean(Runtime.queryParam('can_dock')),
+};
 //# sourceMappingURL=Runtime.js.map

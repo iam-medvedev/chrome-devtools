@@ -17,10 +17,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 1,
     location: "main-toolbar-left" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_LEFT */,
-    showLabel: undefined,
-    condition: undefined,
-    separator: undefined,
-    actionId: undefined,
 });
 Common.AppProvider.registerAppProvider({
     async loadAppProvider() {
@@ -28,7 +24,6 @@ Common.AppProvider.registerAppProvider({
         return Screencast.ScreencastApp.ScreencastAppProvider.instance();
     },
     order: 1,
-    condition: undefined,
 });
 UI.ContextMenu.registerItem({
     location: "mainMenu" /* UI.ContextMenu.ItemLocation.MAIN_MENU */,

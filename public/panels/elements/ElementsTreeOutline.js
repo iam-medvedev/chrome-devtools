@@ -208,7 +208,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
                         return true;
                     },
                 };
-            });
+            }, 'elements.issue');
             this.#popupHelper.setTimeout(300);
             this.#popupHelper.setHasPadding(true);
         }
