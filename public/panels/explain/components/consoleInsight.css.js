@@ -76,7 +76,7 @@ styles.replaceSync(
 }
 
 .wrapper {
-  padding: 16px 20px;
+  padding: 16px;
   background-color: var(--sys-color-cdt-base-container);
   border-radius: 16px;
 }
@@ -95,11 +95,10 @@ header {
   flex-direction: row;
   gap: 6px;
   color: var(--sys-color-on-surface);
-  font-size: 14px;
+  font-size: 13px;
   font-style: normal;
   font-weight: 500;
-  line-height: 20px;
-  height: 20px;
+  height: 14px;
 }
 
 header > .filler {
@@ -109,9 +108,9 @@ header > .filler {
 main {
   --override-markdown-view-message-color: var(--sys-color-on-surface);
 
-  margin: 20px 0 0;
+  margin: 12px 0 0;
   color: var(--sys-color-on-surface);
-  font-size: 13px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
@@ -129,7 +128,7 @@ footer {
   font-style: normal;
   font-weight: 400;
   line-height: normal;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 footer > .filler {
@@ -160,7 +159,7 @@ textarea {
   display: flex;
   gap: 2px;
   color: var(--sys-color-on-surface-subtle);
-  font-size: 12px;
+  font-size: 11px;
   align-items: flex-start;
   flex-direction: column;
 }
@@ -198,7 +197,7 @@ textarea {
 }
 
 summary {
-  font-size: 13px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: 20px;

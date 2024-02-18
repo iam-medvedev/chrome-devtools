@@ -157,6 +157,38 @@ const UIStrings = {
      *@example {https://example.com} PH1
      */
     setcookieHeaderIsIgnoredIn: 'Set-Cookie header is ignored in response from url: {PH1}. The combined size of the name and value must be less than or equal to 4096 characters.',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
+    exemptionReasonUserSetting: 'This cookie is allowed by user preference.',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
+    exemptionReasonTPCDMetadata: 'This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/ps-dt.',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
+    exemptionReasonTPCDDeprecationTrial: 'This cookie is allowed by third-party cookie phaseout deprecation trial.',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
+    exemptionReasonTPCDHeuristics: 'This cookie is allowed by third-party cookie phaseout heuristics. Learn more: goo.gle/hbe',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
+    exemptionReasonEnterprisePolicy: 'This cookie is allowed by Chrome Enterprise policy. Learn more: goo.gle/ce-3pc',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
+    exemptionReasonStorageAccessAPI: 'This cookie is allowed by the Storage Access API. Learn more: goo.gle/saa',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
+    exemptionReasonTopLevelStorageAccessAPI: 'This cookie is allowed by the top-level Storage Access API. Learn more: goo.gle/saa-top',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
+    exemptionReasonCorsOptIn: 'This cookie is allowed by CORS opt-in. Learn more: goo.gle/cors',
 };
 // clang-format on
 const str_ = i18n.i18n.registerUIStrings('core/sdk/NetworkRequest.ts', UIStrings);
@@ -219,6 +251,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #blockedRequestCookiesInternal;
     #includedRequestCookiesInternal;
     #blockedResponseCookiesInternal;
+    #exemptedResponseCookiesInternal;
     #responseCookiesPartitionKey;
     #responseCookiesPartitionKeyOpaque;
     #siteHasCookieInOtherPartition;
@@ -320,6 +353,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#blockedRequestCookiesInternal = [];
         this.#includedRequestCookiesInternal = [];
         this.#blockedResponseCookiesInternal = [];
+        this.#exemptedResponseCookiesInternal = [];
         this.#siteHasCookieInOtherPartition = false;
         this.#responseCookiesPartitionKey = null;
         this.#responseCookiesPartitionKeyOpaque = null;
@@ -923,7 +957,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     allCookiesIncludingBlockedOnes() {
         return [
-            ...this.includedRequestCookies(),
+            ...this.includedRequestCookies().map(includedRequestCookie => includedRequestCookie.cookie),
             ...this.responseCookies,
             ...this.blockedRequestCookies().map(blockedRequestCookie => blockedRequestCookie.cookie),
             ...this.blockedResponseCookies().map(blockedResponseCookie => blockedResponseCookie.cookie),
@@ -1263,6 +1297,9 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     addExtraResponseInfo(extraResponseInfo) {
         this.#blockedResponseCookiesInternal = extraResponseInfo.blockedResponseCookies;
+        if (extraResponseInfo.exemptedResponseCookies) {
+            this.#exemptedResponseCookiesInternal = extraResponseInfo.exemptedResponseCookies;
+        }
         this.#responseCookiesPartitionKey = extraResponseInfo.cookiePartitionKey || null;
         this.#responseCookiesPartitionKeyOpaque = extraResponseInfo.cookiePartitionKeyOpaque || null;
         this.responseHeaders = extraResponseInfo.responseHeaders;
@@ -1352,6 +1389,9 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     blockedResponseCookies() {
         return this.#blockedResponseCookiesInternal;
+    }
+    exemptedResponseCookies() {
+        return this.#exemptedResponseCookiesInternal;
     }
     nonBlockedResponseCookies() {
         const blockedCookieLines = this.blockedResponseCookies().map(blockedCookie => blockedCookie.cookieLine);
@@ -1443,6 +1483,27 @@ export var WebSocketFrameType;
     WebSocketFrameType["Receive"] = "receive";
     WebSocketFrameType["Error"] = "error";
 })(WebSocketFrameType || (WebSocketFrameType = {}));
+export const cookieExemptionReasonToUiString = function (exemptionReason) {
+    switch (exemptionReason) {
+        case "UserSetting" /* Protocol.Network.CookieExemptionReason.UserSetting */:
+            return i18nString(UIStrings.exemptionReasonUserSetting);
+        case "TPCDMetadata" /* Protocol.Network.CookieExemptionReason.TPCDMetadata */:
+            return i18nString(UIStrings.exemptionReasonTPCDMetadata);
+        case "TPCDDeprecationTrial" /* Protocol.Network.CookieExemptionReason.TPCDDeprecationTrial */:
+            return i18nString(UIStrings.exemptionReasonTPCDDeprecationTrial);
+        case "TPCDHeuristics" /* Protocol.Network.CookieExemptionReason.TPCDHeuristics */:
+            return i18nString(UIStrings.exemptionReasonTPCDHeuristics);
+        case "EnterprisePolicy" /* Protocol.Network.CookieExemptionReason.EnterprisePolicy */:
+            return i18nString(UIStrings.exemptionReasonEnterprisePolicy);
+        case "StorageAccess" /* Protocol.Network.CookieExemptionReason.StorageAccess */:
+            return i18nString(UIStrings.exemptionReasonStorageAccessAPI);
+        case "TopLevelStorageAccess" /* Protocol.Network.CookieExemptionReason.TopLevelStorageAccess */:
+            return i18nString(UIStrings.exemptionReasonTopLevelStorageAccessAPI);
+        case "CorsOptIn" /* Protocol.Network.CookieExemptionReason.CorsOptIn */:
+            return i18nString(UIStrings.exemptionReasonCorsOptIn);
+    }
+    return '';
+};
 export const cookieBlockedReasonToUiString = function (blockedReason) {
     switch (blockedReason) {
         case "SecureOnly" /* Protocol.Network.CookieBlockedReason.SecureOnly */:

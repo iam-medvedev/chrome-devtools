@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Sources from '../../panels/sources/sources.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -191,11 +192,11 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
         this.#categories.set(name, { element: treeElement, checkbox: labelNode.checkboxElement });
     }
     createBreakpoint(breakpoint) {
-        const labelNode = UI.UIUtils.CheckboxLabel.create(Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name), undefined, undefined, breakpoint.name);
+        const labelNode = UI.UIUtils.CheckboxLabel.create(Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name), undefined, undefined, Platform.StringUtilities.toKebabCase(breakpoint.name));
         labelNode.classList.add('source-code');
         labelNode.checkboxElement.addEventListener('click', this.breakpointCheckboxClicked.bind(this, breakpoint), true);
         labelNode.checkboxElement.tabIndex = -1;
-        const treeElement = new UI.TreeOutline.TreeElement(labelNode, undefined, breakpoint.name);
+        const treeElement = new UI.TreeOutline.TreeElement(labelNode, undefined, Platform.StringUtilities.toKebabCase(breakpoint.name));
         treeElement.listItemElement.addEventListener('keydown', event => {
             this.handleSpaceKeyEventOnBreakpoint(event, this.#breakpoints.get(breakpoint));
         });
@@ -304,32 +305,32 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     }
 }
 const LOCALIZED_CATEGORIES = {
-    ["Animation" /* SDK.CategorizedBreakpoint.Category.Animation */]: i18nLazyString(UIStrings.animation),
-    ["AuctionWorklet" /* SDK.CategorizedBreakpoint.Category.AuctionWorklet */]: i18nLazyString(UIStrings.auctionWorklet),
-    ["Canvas" /* SDK.CategorizedBreakpoint.Category.Canvas */]: i18nLazyString(UIStrings.canvas),
-    ["Clipboard" /* SDK.CategorizedBreakpoint.Category.Clipboard */]: i18nLazyString(UIStrings.clipboard),
-    ["Control" /* SDK.CategorizedBreakpoint.Category.Control */]: i18nLazyString(UIStrings.control),
-    ["Device" /* SDK.CategorizedBreakpoint.Category.Device */]: i18nLazyString(UIStrings.device),
-    ["DomMutation" /* SDK.CategorizedBreakpoint.Category.DomMutation */]: i18nLazyString(UIStrings.domMutation),
-    ["DragDrop" /* SDK.CategorizedBreakpoint.Category.DragDrop */]: i18nLazyString(UIStrings.dragDrop),
-    ["Geolocation" /* SDK.CategorizedBreakpoint.Category.Geolocation */]: i18nLazyString(UIStrings.geolocation),
-    ["Keyboard" /* SDK.CategorizedBreakpoint.Category.Keyboard */]: i18nLazyString(UIStrings.keyboard),
-    ["Load" /* SDK.CategorizedBreakpoint.Category.Load */]: i18nLazyString(UIStrings.load),
-    ["Media" /* SDK.CategorizedBreakpoint.Category.Media */]: i18nLazyString(UIStrings.media),
-    ["Mouse" /* SDK.CategorizedBreakpoint.Category.Mouse */]: i18nLazyString(UIStrings.mouse),
-    ["Notification" /* SDK.CategorizedBreakpoint.Category.Notification */]: i18nLazyString(UIStrings.notification),
-    ["Parse" /* SDK.CategorizedBreakpoint.Category.Parse */]: i18nLazyString(UIStrings.parse),
-    ["PictureInPicture" /* SDK.CategorizedBreakpoint.Category.PictureInPicture */]: i18nLazyString(UIStrings.pictureinpicture),
-    ["Pointer" /* SDK.CategorizedBreakpoint.Category.Pointer */]: i18nLazyString(UIStrings.pointer),
-    ["Script" /* SDK.CategorizedBreakpoint.Category.Script */]: i18nLazyString(UIStrings.script),
-    ["SharedStorageWorklet" /* SDK.CategorizedBreakpoint.Category.SharedStorageWorklet */]: i18nLazyString(UIStrings.sharedStorageWorklet),
-    ["Timer" /* SDK.CategorizedBreakpoint.Category.Timer */]: i18nLazyString(UIStrings.timer),
-    ["Touch" /* SDK.CategorizedBreakpoint.Category.Touch */]: i18nLazyString(UIStrings.touch),
-    ["TrustedTypeViolation" /* SDK.CategorizedBreakpoint.Category.TrustedTypeViolation */]: i18nLazyString(UIStrings.trustedTypeViolations),
-    ["WebAudio" /* SDK.CategorizedBreakpoint.Category.WebAudio */]: i18nLazyString(UIStrings.webaudio),
-    ["Window" /* SDK.CategorizedBreakpoint.Category.Window */]: i18nLazyString(UIStrings.window),
-    ["Worker" /* SDK.CategorizedBreakpoint.Category.Worker */]: i18nLazyString(UIStrings.worker),
-    ["Xhr" /* SDK.CategorizedBreakpoint.Category.Xhr */]: i18nLazyString(UIStrings.xhr),
+    ["animation" /* SDK.CategorizedBreakpoint.Category.Animation */]: i18nLazyString(UIStrings.animation),
+    ["auction-worklet" /* SDK.CategorizedBreakpoint.Category.AuctionWorklet */]: i18nLazyString(UIStrings.auctionWorklet),
+    ["canvas" /* SDK.CategorizedBreakpoint.Category.Canvas */]: i18nLazyString(UIStrings.canvas),
+    ["clipboard" /* SDK.CategorizedBreakpoint.Category.Clipboard */]: i18nLazyString(UIStrings.clipboard),
+    ["control" /* SDK.CategorizedBreakpoint.Category.Control */]: i18nLazyString(UIStrings.control),
+    ["device" /* SDK.CategorizedBreakpoint.Category.Device */]: i18nLazyString(UIStrings.device),
+    ["dom-mutation" /* SDK.CategorizedBreakpoint.Category.DomMutation */]: i18nLazyString(UIStrings.domMutation),
+    ["drag-drop" /* SDK.CategorizedBreakpoint.Category.DragDrop */]: i18nLazyString(UIStrings.dragDrop),
+    ["geolocation" /* SDK.CategorizedBreakpoint.Category.Geolocation */]: i18nLazyString(UIStrings.geolocation),
+    ["keyboard" /* SDK.CategorizedBreakpoint.Category.Keyboard */]: i18nLazyString(UIStrings.keyboard),
+    ["load" /* SDK.CategorizedBreakpoint.Category.Load */]: i18nLazyString(UIStrings.load),
+    ["media" /* SDK.CategorizedBreakpoint.Category.Media */]: i18nLazyString(UIStrings.media),
+    ["mouse" /* SDK.CategorizedBreakpoint.Category.Mouse */]: i18nLazyString(UIStrings.mouse),
+    ["notification" /* SDK.CategorizedBreakpoint.Category.Notification */]: i18nLazyString(UIStrings.notification),
+    ["parse" /* SDK.CategorizedBreakpoint.Category.Parse */]: i18nLazyString(UIStrings.parse),
+    ["picture-in-picture" /* SDK.CategorizedBreakpoint.Category.PictureInPicture */]: i18nLazyString(UIStrings.pictureinpicture),
+    ["pointer" /* SDK.CategorizedBreakpoint.Category.Pointer */]: i18nLazyString(UIStrings.pointer),
+    ["script" /* SDK.CategorizedBreakpoint.Category.Script */]: i18nLazyString(UIStrings.script),
+    ["shared-storage-worklet" /* SDK.CategorizedBreakpoint.Category.SharedStorageWorklet */]: i18nLazyString(UIStrings.sharedStorageWorklet),
+    ["timer" /* SDK.CategorizedBreakpoint.Category.Timer */]: i18nLazyString(UIStrings.timer),
+    ["touch" /* SDK.CategorizedBreakpoint.Category.Touch */]: i18nLazyString(UIStrings.touch),
+    ["trusted-type-violation" /* SDK.CategorizedBreakpoint.Category.TrustedTypeViolation */]: i18nLazyString(UIStrings.trustedTypeViolations),
+    ["web-audio" /* SDK.CategorizedBreakpoint.Category.WebAudio */]: i18nLazyString(UIStrings.webaudio),
+    ["window" /* SDK.CategorizedBreakpoint.Category.Window */]: i18nLazyString(UIStrings.window),
+    ["worker" /* SDK.CategorizedBreakpoint.Category.Worker */]: i18nLazyString(UIStrings.worker),
+    ["xhr" /* SDK.CategorizedBreakpoint.Category.Xhr */]: i18nLazyString(UIStrings.xhr),
 };
 function getLocalizedCategory(category) {
     return LOCALIZED_CATEGORIES[category]();

@@ -474,8 +474,6 @@ const WORD = /[A-Z]{2,}(?=[A-Z0-9][a-z0-9]+|\b)|[A-Za-z][0-9]+[a-z]|[A-Z]?[a-z]+
 export const toKebabCase = function (input) {
     return (input.match?.(WORD)?.map(w => w.toLowerCase()).join('-').replaceAll('-.-', '.') || input);
 };
-// TODO(b/320405843): remove this when kebab migration is complete and
-// replace with settings version upgrade
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function toKebabCaseKeys(settingValue) {
     const result = {};

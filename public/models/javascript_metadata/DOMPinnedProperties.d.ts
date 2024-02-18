@@ -7,7 +7,7 @@ export declare const SPECS: {
     uievents: number;
     pointerevents: number;
     cssom: number;
-    'wai-aria': number;
+    "wai-aria": number;
 };
 export interface DOMPinnedWebIDLProp {
     global?: boolean;

@@ -158,6 +158,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #font;
     #groupTreeRoot;
     #searchResultEntryIndex;
+    #searchResultHighlightElements = [];
     constructor(dataProvider, flameChartDelegate, groupExpansionSetting) {
         super(true);
         this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
@@ -223,6 +224,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     willHide() {
         this.hideHighlight();
     }
+    getBarHeight() {
+        return this.barHeight;
+    }
     setBarHeight(value) {
         this.barHeight = value;
     }
@@ -251,6 +255,20 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.highlightedEntryIndex = entryIndex;
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
         this.dispatchEventToListeners("EntryHighlighted" /* Events.EntryHighlighted */, entryIndex);
+    }
+    highlightAllEntries(entries) {
+        for (const entry of entries) {
+            const searchElement = this.viewportElement.createChild('div', 'flame-chart-search-element');
+            this.#searchResultHighlightElements.push(searchElement);
+            searchElement.id = entry.toString();
+            this.updateElementPosition(searchElement, entry);
+        }
+    }
+    removeSearchResultHighlights() {
+        for (const element of this.#searchResultHighlightElements) {
+            element.remove();
+        }
+        this.#searchResultHighlightElements = [];
     }
     hideHighlight() {
         if (this.#searchResultEntryIndex === -1) {
@@ -800,6 +818,51 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     bindCanvasEvent(eventName, onEvent) {
         this.canvas.addEventListener(eventName, onEvent);
     }
+    drawTrackOnCanvas(trackName, context, minWidth) {
+        const timelineData = this.timelineData();
+        if (!timelineData) {
+            return null;
+        }
+        const canvasWidth = this.offsetWidth;
+        const canvasHeight = this.offsetHeight;
+        context.save();
+        const ratio = window.devicePixelRatio;
+        context.scale(ratio, ratio);
+        context.fillStyle = 'rgba(0, 0, 0, 0)';
+        context.fillRect(0, 0, canvasWidth, canvasHeight);
+        context.font = this.#font;
+        const groups = this.rawTimelineData?.groups || [];
+        const groupOffsets = this.groupOffsets;
+        if (!groups.length || !groupOffsets) {
+            return null;
+        }
+        const trackIndex = groups.findIndex(g => g.name.includes(trackName));
+        if (trackIndex < 0) {
+            return null;
+        }
+        this.scrollGroupIntoView(trackIndex);
+        const group = groups[trackIndex];
+        const startLevel = group.startLevel;
+        const endLevel = groups[trackIndex + 1].startLevel;
+        const groupTop = groupOffsets[trackIndex];
+        const nextOffset = groupOffsets[trackIndex + 1];
+        const { colorBuckets, titleIndices } = this.getDrawableData(context, timelineData);
+        const entryIndexIsInTrack = (index) => {
+            const barWidth = Math.min(this.#eventBarWidth(timelineData, index), canvasWidth);
+            return timelineData.entryLevels[index] >= startLevel && timelineData.entryLevels[index] < endLevel &&
+                barWidth > minWidth;
+        };
+        let allFilteredIndexes = [];
+        for (const [color, { indexes }] of colorBuckets) {
+            const filteredIndexes = indexes.filter(entryIndexIsInTrack);
+            allFilteredIndexes = [...allFilteredIndexes, ...filteredIndexes];
+            this.#drawGenericEvents(context, timelineData, color, filteredIndexes);
+        }
+        const filteredTitleIndices = titleIndices.filter(entryIndexIsInTrack);
+        this.drawEventTitles(context, timelineData, filteredTitleIndices, canvasWidth);
+        context.restore();
+        return { top: groupOffsets[trackIndex], height: nextOffset - groupTop, visibleEntries: new Set(allFilteredIndexes) };
+    }
     handleKeyboardGroupNavigation(event) {
         const keyboardEvent = event;
         let handled = false;
@@ -1239,16 +1302,34 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             }
         });
         context.restore();
+        const groups = this.rawTimelineData?.groups || [];
+        const trackIndex = groups.findIndex(g => g.name.includes('Main'));
+        const group = groups.at(trackIndex);
+        const startLevel = group?.startLevel;
+        const endLevel = groups.at(trackIndex + 1)?.startLevel;
+        const entryIndexIsInTrack = (index) => {
+            if (trackIndex < 0 || startLevel === undefined || endLevel === undefined) {
+                return false;
+            }
+            const barWidth = Math.min(this.#eventBarWidth(timelineData, index), canvasWidth);
+            return timelineData.entryLevels[index] >= startLevel && timelineData.entryLevels[index] < endLevel &&
+                barWidth > 10;
+        };
+        let wideEntryExists = false;
         for (const [color, { indexes }] of colorBuckets) {
+            if (!wideEntryExists) {
+                wideEntryExists = indexes.some(entryIndexIsInTrack);
+            }
             this.#drawGenericEvents(context, timelineData, color, indexes);
         }
+        this.dispatchEventToListeners("ChartPlayableStateChange" /* Events.ChartPlayableStateChange */, wideEntryExists);
         const allIndexes = Array.from(colorBuckets.values()).map(x => x.indexes).flat();
         this.#drawDecorations(context, timelineData, allIndexes);
         this.drawMarkers(context, timelineData, markerIndices);
         this.drawEventTitles(context, timelineData, titleIndices, canvasWidth);
         context.restore();
         this.drawGroupHeaders(canvasWidth, canvasHeight);
-        this.drawFlowEvents(context, canvasWidth, canvasHeight);
+        this.drawFlowEvents(context);
         this.drawMarkerLines();
         const dividersData = TimelineGrid.calculateGridOffsets(this);
         const navStartTimes = this.dataProvider.mainFrameNavigationStartEvents?.() || [];
@@ -1283,6 +1364,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updateElementPosition(this.selectedElement, this.selectedEntryIndex);
         if (this.#searchResultEntryIndex !== -1) {
             this.showPopoverForSearchResult(this.#searchResultEntryIndex);
+        }
+        for (const element of this.#searchResultHighlightElements) {
+            this.updateElementPosition(element, Number(element.id));
         }
         this.updateMarkerHighlight();
     }
@@ -1451,6 +1535,13 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const barLevel = entryLevels[entryIndex];
         const barHeight = this.levelHeight(barLevel);
         return barHeight;
+    }
+    entryWidth(entryIndex) {
+        const timelineData = this.timelineData();
+        if (!timelineData) {
+            return 0;
+        }
+        return this.#eventBarWidth(timelineData, entryIndex);
     }
     #eventBarWidth(timelineData, entryIndex) {
         const { entryTotalTimes, entryStartTimes } = timelineData;
@@ -1879,22 +1970,21 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return a.data === b.data && a.end + 0.4 > b.end ? a : null;
         }
     }
-    drawFlowEvents(context, _width, _height) {
-        context.save();
-        const ratio = window.devicePixelRatio;
-        const top = this.chartViewport.scrollOffset();
-        const arrowWidth = 6;
-        context.scale(ratio, ratio);
-        context.translate(0, -top);
-        context.fillStyle = '#7f5050';
-        context.strokeStyle = '#7f5050';
+    drawFlowEvents(context) {
         const td = this.timelineData();
         if (!td) {
             return;
         }
-        const endIndex = Platform.ArrayUtilities.lowerBound(td.flowStartTimes, this.chartViewport.windowRightTime(), Platform.ArrayUtilities.DEFAULT_COMPARATOR);
-        context.lineWidth = 0.5;
-        for (let i = 0; i < endIndex; ++i) {
+        const ratio = window.devicePixelRatio;
+        const top = this.chartViewport.scrollOffset();
+        const arrowLineWidth = 6;
+        const arrowWidth = 3;
+        context.save();
+        context.scale(ratio, ratio);
+        context.translate(0, -top);
+        context.fillStyle = '#7f5050';
+        context.strokeStyle = '#7f5050';
+        for (let i = 0; i < this.selectedEntryIndex; ++i) {
             if (!td.flowEndTimes[i] || td.flowEndTimes[i] < this.chartViewport.windowLeftTime()) {
                 continue;
             }
@@ -1904,36 +1994,26 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const endLevel = td.flowEndLevels[i];
             const startY = this.levelToOffset(startLevel) + this.levelHeight(startLevel) / 2;
             const endY = this.levelToOffset(endLevel) + this.levelHeight(endLevel) / 2;
-            const segment = Math.min((endX - startX) / 4, 40);
-            const distanceTime = td.flowEndTimes[i] - td.flowStartTimes[i];
-            const distanceY = (endY - startY) / 10;
-            const spread = 30;
-            const lineY = distanceTime < 1 ? startY : spread + Math.max(0, startY + distanceY * (i % spread));
-            const p = [];
-            p.push({ x: startX, y: startY });
-            p.push({ x: startX + arrowWidth, y: startY });
-            p.push({ x: startX + segment + 2 * arrowWidth, y: startY });
-            p.push({ x: startX + segment, y: lineY });
-            p.push({ x: startX + segment * 2, y: lineY });
-            p.push({ x: endX - segment * 2, y: lineY });
-            p.push({ x: endX - segment, y: lineY });
-            p.push({ x: endX - segment - 2 * arrowWidth, y: endY });
-            p.push({ x: endX - arrowWidth, y: endY });
+            const lineLength = endX - startX;
+            // Draw an arrow in an 'elbow connector' shape
             context.beginPath();
-            context.moveTo(p[0].x, p[0].y);
-            context.lineTo(p[1].x, p[1].y);
-            context.bezierCurveTo(p[2].x, p[2].y, p[3].x, p[3].y, p[4].x, p[4].y);
-            context.lineTo(p[5].x, p[5].y);
-            context.bezierCurveTo(p[6].x, p[6].y, p[7].x, p[7].y, p[8].x, p[8].y);
+            context.moveTo(startX, startY);
+            context.lineTo(startX + lineLength / 2, startY);
+            context.lineTo(startX + lineLength / 2, endY);
+            context.lineTo(endX, endY);
             context.stroke();
-            context.beginPath();
-            context.arc(startX, startY, 2, -Math.PI / 2, Math.PI / 2, false);
-            context.fill();
-            context.beginPath();
-            context.moveTo(endX, endY);
-            context.lineTo(endX - arrowWidth, endY - 3);
-            context.lineTo(endX - arrowWidth, endY + 3);
-            context.fill();
+            // Make line an arrow if the line is long enough to fit the arrow head. Othewise, draw a thinner line without the arrow head.
+            if (lineLength > arrowWidth) {
+                context.lineWidth = 0.5;
+                context.beginPath();
+                context.moveTo(endX, endY);
+                context.lineTo(endX - arrowLineWidth, endY - 3);
+                context.lineTo(endX - arrowLineWidth, endY + 3);
+                context.fill();
+            }
+            else {
+                context.lineWidth = 0.2;
+            }
         }
         context.restore();
     }
@@ -2567,23 +2647,23 @@ export class FlameChartTimelineData {
     flowEndTimes;
     flowEndLevels;
     selectedGroup;
-    constructor(entryLevels, entryTotalTimes, entryStartTimes, groups, entryDecorations = []) {
+    constructor(entryLevels, entryTotalTimes, entryStartTimes, groups, entryDecorations = [], flowStartTimes = [], flowStartLevels = [], flowEndTimes = [], flowEndLevels = []) {
         this.entryLevels = entryLevels;
         this.entryTotalTimes = entryTotalTimes;
         this.entryStartTimes = entryStartTimes;
         this.entryDecorations = entryDecorations;
         this.groups = groups || [];
         this.markers = [];
-        this.flowStartTimes = [];
-        this.flowStartLevels = [];
-        this.flowEndTimes = [];
-        this.flowEndLevels = [];
+        this.flowStartTimes = flowStartTimes || [];
+        this.flowStartLevels = flowStartLevels || [];
+        this.flowEndTimes = flowEndTimes || [];
+        this.flowEndLevels = flowEndLevels || [];
         this.selectedGroup = null;
     }
     // TODO(crbug.com/1501055) Thinking about refactor this class, so we can avoid create a new object when modifying the
     // flame chart.
     static create(data) {
-        return new FlameChartTimelineData(data.entryLevels, data.entryTotalTimes, data.entryStartTimes, data.groups, data.entryDecorations || []);
+        return new FlameChartTimelineData(data.entryLevels, data.entryTotalTimes, data.entryStartTimes, data.groups, data.entryDecorations || [], data.flowStartTimes || [], data.flowStartLevels || [], data.flowEndTimes || [], data.flowEndLevels || []);
     }
     // TODO(crbug.com/1501055) Thinking about refactor this class, so we can avoid create a new object when modifying the
     // flame chart.

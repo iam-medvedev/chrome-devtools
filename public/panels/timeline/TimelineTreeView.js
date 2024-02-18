@@ -189,7 +189,8 @@ export class TimelineTreeView extends UI.Widget.VBox {
         this.searchResults = [];
     }
     static eventNameForSorting(event) {
-        return event.name + ':@' + TimelineModel.TimelineProfileTree.eventURL(event);
+        const name = TimelineUIUtils.eventTitle(event) || event.name;
+        return name + ':@' + TimelineModel.TimelineProfileTree.eventURL(event);
     }
     setSearchableView(searchableView) {
         this.searchableView = searchableView;

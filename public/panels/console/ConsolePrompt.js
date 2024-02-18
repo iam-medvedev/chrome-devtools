@@ -125,7 +125,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         const doc = this.initialText;
         const editorState = CodeMirror.EditorState.create({ doc, extensions });
         this.editor = new TextEditor.TextEditor.TextEditor(editorState);
-        this.editor.addEventListener('keydown', (event) => {
+        this.editor.addEventListener('keydown', event => {
             if (event.defaultPrevented) {
                 event.stopPropagation();
             }

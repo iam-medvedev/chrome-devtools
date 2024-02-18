@@ -715,7 +715,7 @@ const rowMessageTheme = CodeMirror.EditorView.baseTheme({
 });
 function rowMessages(initialMessages) {
     return [
-        showRowMessages.init((state) => RowMessageDecorations.create(RowMessages.create(initialMessages), state.doc)),
+        showRowMessages.init(state => RowMessageDecorations.create(RowMessages.create(initialMessages), state.doc)),
         rowMessageTheme,
     ];
 }

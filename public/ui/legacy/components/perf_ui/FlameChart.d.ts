@@ -119,6 +119,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private totalTime?;
     constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, groupExpansionSetting?: Common.Settings.Setting<GroupExpansionState>);
     willHide(): void;
+    getBarHeight(): number;
     setBarHeight(value: number): void;
     setTextBaseline(value: number): void;
     setTextPadding(value: number): void;
@@ -126,6 +127,8 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     alwaysShowVerticalScroll(): void;
     disableRangeSelection(): void;
     highlightEntry(entryIndex: number): void;
+    highlightAllEntries(entries: number[]): void;
+    removeSearchResultHighlights(): void;
     hideHighlight(): void;
     private createCandyStripePattern;
     private resetCanvas;
@@ -162,6 +165,11 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private handleFlameChartTransformEvent;
     private onKeyDown;
     bindCanvasEvent(eventName: string, onEvent: (arg0: Event) => void): void;
+    drawTrackOnCanvas(trackName: string, context: CanvasRenderingContext2D, minWidth: number): {
+        top: number;
+        height: number;
+        visibleEntries: Set<number>;
+    } | null;
     private handleKeyboardGroupNavigation;
     private selectFirstEntryInCurrentGroup;
     private selectPreviousGroup;
@@ -220,6 +228,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     coordinatesToGroupIndex(x: number, y: number, headerOnly: boolean): number;
     private markerIndexBeforeTime;
     private draw;
+    entryWidth(entryIndex: number): number;
     /**
      * Preprocess the data to be drawn to speed the rendering time.
      * Especifically:
@@ -391,6 +400,10 @@ export declare class FlameChartTimelineData {
         entryStartTimes: FlameChartTimelineData['entryStartTimes'];
         groups: FlameChartTimelineData['groups'] | null;
         entryDecorations?: FlameChartDecoration[][];
+        flowStartTimes?: FlameChartTimelineData['flowStartTimes'];
+        flowStartLevels?: FlameChartTimelineData['flowStartLevels'];
+        flowEndTimes?: FlameChartTimelineData['flowEndTimes'];
+        flowEndLevels?: FlameChartTimelineData['flowEndLevels'];
     }): FlameChartTimelineData;
     static createEmpty(): FlameChartTimelineData;
     resetFlowData(): void;
@@ -450,13 +463,15 @@ export declare const enum Events {
      * been hovered on, or -1 if no entry is selected (the user has moved their
      * mouse off the event)
      */
-    EntryHighlighted = "EntryHighlighted"
+    EntryHighlighted = "EntryHighlighted",
+    ChartPlayableStateChange = "ChartPlayableStateChange"
 }
 export type EventTypes = {
     [Events.CanvasFocused]: number | void;
     [Events.EntryInvoked]: number;
     [Events.EntrySelected]: number;
     [Events.EntryHighlighted]: number;
+    [Events.ChartPlayableStateChange]: boolean;
 };
 export interface Group {
     name: Common.UIString.LocalizedString;

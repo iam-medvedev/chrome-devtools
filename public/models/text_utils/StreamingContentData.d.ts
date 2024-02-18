@@ -11,6 +11,7 @@ import { type DeferredContent } from './ContentProvider.js';
  */
 export declare class StreamingContentData extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
+    readonly mimeType: string;
     private constructor();
     /**
      * Creates a new StreamingContentData with the given MIME type/charset.

@@ -390,22 +390,22 @@ export class DOMDebuggerManager {
             this.#xhrBreakpointsInternal.set(breakpoint.url, breakpoint.enabled);
         }
         this.#cspViolationsToBreakOn = [];
-        this.#cspViolationsToBreakOn.push(new CSPViolationBreakpoint("TrustedTypeViolation" /* Category.TrustedTypeViolation */, "trustedtype-sink-violation" /* Protocol.DOMDebugger.CSPViolationType.TrustedtypeSinkViolation */));
-        this.#cspViolationsToBreakOn.push(new CSPViolationBreakpoint("TrustedTypeViolation" /* Category.TrustedTypeViolation */, "trustedtype-policy-violation" /* Protocol.DOMDebugger.CSPViolationType.TrustedtypePolicyViolation */));
+        this.#cspViolationsToBreakOn.push(new CSPViolationBreakpoint("trusted-type-violation" /* Category.TrustedTypeViolation */, "trustedtype-sink-violation" /* Protocol.DOMDebugger.CSPViolationType.TrustedtypeSinkViolation */));
+        this.#cspViolationsToBreakOn.push(new CSPViolationBreakpoint("trusted-type-violation" /* Category.TrustedTypeViolation */, "trustedtype-policy-violation" /* Protocol.DOMDebugger.CSPViolationType.TrustedtypePolicyViolation */));
         this.#eventListenerBreakpointsInternal = [];
-        this.createEventListenerBreakpoints("Media" /* Category.Media */, [
+        this.createEventListenerBreakpoints("media" /* Category.Media */, [
             'play', 'pause', 'playing', 'canplay', 'canplaythrough', 'seeking',
             'seeked', 'timeupdate', 'ended', 'ratechange', 'durationchange', 'volumechange',
             'loadstart', 'progress', 'suspend', 'abort', 'error', 'emptied',
             'stalled', 'loadedmetadata', 'loadeddata', 'waiting',
         ], ['audio', 'video']);
-        this.createEventListenerBreakpoints("PictureInPicture" /* Category.PictureInPicture */, ['enterpictureinpicture', 'leavepictureinpicture'], ['video']);
-        this.createEventListenerBreakpoints("PictureInPicture" /* Category.PictureInPicture */, ['resize'], ['PictureInPictureWindow']);
-        this.createEventListenerBreakpoints("PictureInPicture" /* Category.PictureInPicture */, ['enter'], ['documentPictureInPicture']);
-        this.createEventListenerBreakpoints("Clipboard" /* Category.Clipboard */, ['copy', 'cut', 'paste', 'beforecopy', 'beforecut', 'beforepaste'], ['*']);
-        this.createEventListenerBreakpoints("Control" /* Category.Control */, ['resize', 'scroll', 'scrollend', 'zoom', 'focus', 'blur', 'select', 'change', 'submit', 'reset'], ['*']);
-        this.createEventListenerBreakpoints("Device" /* Category.Device */, ['deviceorientation', 'devicemotion'], ['*']);
-        this.createEventListenerBreakpoints("DomMutation" /* Category.DomMutation */, [
+        this.createEventListenerBreakpoints("picture-in-picture" /* Category.PictureInPicture */, ['enterpictureinpicture', 'leavepictureinpicture'], ['video']);
+        this.createEventListenerBreakpoints("picture-in-picture" /* Category.PictureInPicture */, ['resize'], ['PictureInPictureWindow']);
+        this.createEventListenerBreakpoints("picture-in-picture" /* Category.PictureInPicture */, ['enter'], ['documentPictureInPicture']);
+        this.createEventListenerBreakpoints("clipboard" /* Category.Clipboard */, ['copy', 'cut', 'paste', 'beforecopy', 'beforecut', 'beforepaste'], ['*']);
+        this.createEventListenerBreakpoints("control" /* Category.Control */, ['resize', 'scroll', 'scrollend', 'zoom', 'focus', 'blur', 'select', 'change', 'submit', 'reset'], ['*']);
+        this.createEventListenerBreakpoints("device" /* Category.Device */, ['deviceorientation', 'devicemotion'], ['*']);
+        this.createEventListenerBreakpoints("dom-mutation" /* Category.DomMutation */, [
             'DOMActivate',
             'DOMFocusIn',
             'DOMFocusOut',
@@ -418,9 +418,9 @@ export class DOMDebuggerManager {
             'DOMSubtreeModified',
             'DOMContentLoaded',
         ], ['*']);
-        this.createEventListenerBreakpoints("DragDrop" /* Category.DragDrop */, ['drag', 'dragstart', 'dragend', 'dragenter', 'dragover', 'dragleave', 'drop'], ['*']);
-        this.createEventListenerBreakpoints("Keyboard" /* Category.Keyboard */, ['keydown', 'keyup', 'keypress', 'input'], ['*']);
-        this.createEventListenerBreakpoints("Load" /* Category.Load */, [
+        this.createEventListenerBreakpoints("drag-drop" /* Category.DragDrop */, ['drag', 'dragstart', 'dragend', 'dragenter', 'dragover', 'dragleave', 'drop'], ['*']);
+        this.createEventListenerBreakpoints("keyboard" /* Category.Keyboard */, ['keydown', 'keyup', 'keypress', 'input'], ['*']);
+        this.createEventListenerBreakpoints("load" /* Category.Load */, [
             'load',
             'beforeunload',
             'unload',
@@ -437,7 +437,7 @@ export class DOMDebuggerManager {
             'finish',
             'dispose',
         ], ['*']);
-        this.createEventListenerBreakpoints("Mouse" /* Category.Mouse */, [
+        this.createEventListenerBreakpoints("mouse" /* Category.Mouse */, [
             'auxclick',
             'click',
             'dblclick',
@@ -452,7 +452,7 @@ export class DOMDebuggerManager {
             'wheel',
             'contextmenu',
         ], ['*']);
-        this.createEventListenerBreakpoints("Pointer" /* Category.Pointer */, [
+        this.createEventListenerBreakpoints("pointer" /* Category.Pointer */, [
             'pointerover',
             'pointerout',
             'pointerenter',
@@ -465,9 +465,9 @@ export class DOMDebuggerManager {
             'lostpointercapture',
             'pointerrawupdate',
         ], ['*']);
-        this.createEventListenerBreakpoints("Touch" /* Category.Touch */, ['touchstart', 'touchmove', 'touchend', 'touchcancel'], ['*']);
-        this.createEventListenerBreakpoints("Worker" /* Category.Worker */, ['message', 'messageerror'], ['*']);
-        this.createEventListenerBreakpoints("Xhr" /* Category.Xhr */, ['readystatechange', 'load', 'loadstart', 'loadend', 'abort', 'error', 'progress', 'timeout'], ['xmlhttprequest', 'xmlhttprequestupload']);
+        this.createEventListenerBreakpoints("touch" /* Category.Touch */, ['touchstart', 'touchmove', 'touchend', 'touchcancel'], ['*']);
+        this.createEventListenerBreakpoints("worker" /* Category.Worker */, ['message', 'messageerror'], ['*']);
+        this.createEventListenerBreakpoints("xhr" /* Category.Xhr */, ['readystatechange', 'load', 'loadstart', 'loadend', 'abort', 'error', 'progress', 'timeout'], ['xmlhttprequest', 'xmlhttprequestupload']);
         TargetManager.instance().observeModels(DOMDebuggerModel, this);
     }
     static instance(opts = { forceNew: null }) {

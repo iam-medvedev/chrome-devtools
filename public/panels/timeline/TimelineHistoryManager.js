@@ -75,14 +75,14 @@ export class TimelineHistoryManager {
         // before creating new instances.
         this.allOverviews = [
             {
-                constructor: (traceParsedData) => {
+                constructor: traceParsedData => {
                     const responsivenessOverviewFromMinimap = this.#minimapComponent?.getControls().find(control => control instanceof TimelineEventOverviewResponsiveness);
                     return responsivenessOverviewFromMinimap || new TimelineEventOverviewResponsiveness(traceParsedData);
                 },
                 height: 3,
             },
             {
-                constructor: (traceParsedData) => {
+                constructor: traceParsedData => {
                     const cpuOverviewFromMinimap = this.#minimapComponent?.getControls().find(control => control instanceof TimelineEventOverviewCPUActivity);
                     if (cpuOverviewFromMinimap) {
                         return cpuOverviewFromMinimap;
@@ -92,7 +92,7 @@ export class TimelineHistoryManager {
                 height: 20,
             },
             {
-                constructor: (traceParsedData) => {
+                constructor: traceParsedData => {
                     const networkOverviewFromMinimap = this.#minimapComponent?.getControls().find(control => control instanceof TimelineEventOverviewNetwork);
                     return networkOverviewFromMinimap || new TimelineEventOverviewNetwork(traceParsedData);
                 },

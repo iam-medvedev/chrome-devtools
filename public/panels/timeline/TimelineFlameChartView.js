@@ -12,6 +12,7 @@ import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { CountersGraph } from './CountersGraph.js';
+import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { TimelineDetailsView } from './TimelineDetailsView.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineFlameChartDataProvider, } from './TimelineFlameChartDataProvider.js';
@@ -29,6 +30,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineFlameChartView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const MAX_HIGHLIGHTED_SEARCH_ELEMENTS = 200;
 export class TimelineFlameChartView extends UI.Widget.VBox {
     delegate;
     model;
@@ -48,6 +50,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     networkPane;
     splitResizer;
     chartSplitWidget;
+    brickGame;
     countersView;
     detailsSplitWidget;
     detailsView;
@@ -65,6 +68,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #traceEngineData;
     #selectedGroupName = null;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
+    #gameKeyMatches = 0;
+    #gameTimeout = setTimeout(() => ({}), 0);
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-flamechart');
@@ -120,6 +125,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.networkFlameChart.addEventListener("EntrySelected" /* PerfUI.FlameChart.Events.EntrySelected */, this.onNetworkEntrySelected, this);
         this.networkFlameChart.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.EntryInvoked */, this.onNetworkEntrySelected, this);
         this.mainFlameChart.addEventListener("EntryHighlighted" /* PerfUI.FlameChart.Events.EntryHighlighted */, this.onEntryHighlighted, this);
+        this.element.addEventListener('keydown', this.#keydownHandler.bind(this));
         this.boundRefresh = this.#reset.bind(this);
         this.#selectedEvents = null;
         this.mainDataProvider.setEventColorMapping(TimelineUIUtils.eventColor);
@@ -127,6 +133,35 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.groupBySetting.addChangeListener(this.updateColorMapper, this);
         this.updateColorMapper();
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
+    }
+    #keydownHandler(event) {
+        const keyCombo = 'fixme';
+        if (event.key === keyCombo[this.#gameKeyMatches]) {
+            this.#gameKeyMatches++;
+            clearTimeout(this.#gameTimeout);
+            this.#gameTimeout = setTimeout(() => {
+                this.#gameKeyMatches = 0;
+            }, 2000);
+        }
+        else {
+            this.#gameKeyMatches = 0;
+            clearTimeout(this.#gameTimeout);
+        }
+        if (this.#gameKeyMatches !== keyCombo.length) {
+            return;
+        }
+        this.fixMe();
+    }
+    fixMe() {
+        if (!SHOULD_SHOW_EASTER_EGG) {
+            return;
+        }
+        if ([...this.element.childNodes].find(child => child instanceof PerfUI.BrickBreaker.BrickBreaker)) {
+            return;
+        }
+        this.brickGame = new PerfUI.BrickBreaker.BrickBreaker(this.mainFlameChart);
+        this.brickGame.classList.add('brick-game');
+        this.element.append(this.brickGame);
     }
     #onTraceBoundsChange(event) {
         if (event.updateType === 'MINIMAP_BOUNDS') {
@@ -352,6 +387,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         const oldSelectedSearchResult = this.selectedSearchResult;
         delete this.selectedSearchResult;
         this.searchResults = [];
+        this.mainFlameChart.removeSearchResultHighlights();
         if (!this.searchRegex || !this.model) {
             return;
         }
@@ -359,6 +395,12 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         const visibleWindow = traceBoundsState.milli.timelineTraceWindow;
         this.searchResults = this.mainDataProvider.search(visibleWindow.min, visibleWindow.max, regExpFilter);
         this.searchableView.updateSearchMatchesCount(this.searchResults.length);
+        // To avoid too many highlights when the search regex matches too many entries,
+        // for example, when user only types in "e" as the search query,
+        // We only highlight the search results when the number of matches is less than or equal to 200.
+        if (this.searchResults.length <= MAX_HIGHLIGHTED_SEARCH_ELEMENTS) {
+            this.mainFlameChart.highlightAllEntries(this.searchResults);
+        }
         if (!shouldJump || !this.searchResults.length) {
             return;
         }
@@ -384,6 +426,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         delete this.searchResults;
         delete this.selectedSearchResult;
         delete this.searchRegex;
+        this.mainFlameChart.showPopoverForSearchResult(-1);
+        this.mainFlameChart.removeSearchResultHighlights();
     }
     performSearch(searchConfig, shouldJump, jumpBackwards) {
         this.searchRegex = searchConfig.toSearchRegex().regex;

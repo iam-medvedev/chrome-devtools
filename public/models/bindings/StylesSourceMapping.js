@@ -273,6 +273,10 @@ export class StyleFile {
         console.assert(this.headers.size > 0);
         return this.headers.values().next().value.originalContentProvider().requestContent();
     }
+    requestContentData() {
+        console.assert(this.headers.size > 0);
+        return this.headers.values().next().value.originalContentProvider().requestContentData();
+    }
     searchInContent(query, caseSensitive, isRegex) {
         console.assert(this.headers.size > 0);
         return this.headers.values().next().value.originalContentProvider().searchInContent(query, caseSensitive, isRegex);

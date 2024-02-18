@@ -470,6 +470,9 @@ class Binding {
     requestContent() {
         return this.firstResource().requestContent();
     }
+    requestContentData() {
+        return this.firstResource().requestContentData();
+    }
     searchInContent(query, caseSensitive, isRegex) {
         return this.firstResource().searchInContent(query, caseSensitive, isRegex);
     }

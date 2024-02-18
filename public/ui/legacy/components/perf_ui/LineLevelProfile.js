@@ -164,7 +164,7 @@ export class Helper {
                             debuggerModel.createRawLocationByURL(scriptIdOrUrl, line, 0) :
                             debuggerModel.createRawLocationByScriptId(String(scriptIdOrUrl), line, 0);
                         if (rawLocation) {
-                            pending.push(workspaceBinding.rawLocationToUILocation(rawLocation).then((uiLocation) => {
+                            pending.push(workspaceBinding.rawLocationToUILocation(rawLocation).then(uiLocation => {
                                 if (uiLocation) {
                                     let lineMap = decorationsBySource.get(uiLocation.uiSourceCode);
                                     if (!lineMap) {

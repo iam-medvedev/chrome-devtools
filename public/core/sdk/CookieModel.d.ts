@@ -20,3 +20,6 @@ export interface BlockedReason {
     uiString: string;
     attribute: Attribute | null;
 }
+export interface ExemptionReason {
+    uiString: string;
+}

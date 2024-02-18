@@ -98,7 +98,7 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
         toolbar.appendToolbarItem(this.typeSelector);
         const content = oldCondition || '';
         const finishIfComplete = (view) => {
-            void TextEditor.JavaScript.isExpressionComplete(view.state.doc.toString()).then((complete) => {
+            void TextEditor.JavaScript.isExpressionComplete(view.state.doc.toString()).then(complete => {
                 if (complete) {
                     this.finishEditing(true, this.editor.state.doc.toString());
                 }

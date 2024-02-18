@@ -22,6 +22,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private readonly networkPane;
     private readonly splitResizer;
     private readonly chartSplitWidget;
+    private brickGame?;
     private readonly countersView;
     private readonly detailsSplitWidget;
     private readonly detailsView;
@@ -34,6 +35,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private selectedSearchResult?;
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
+    fixMe(): void;
     isNetworkTrackShownForTests(): boolean;
     getMainDataProvider(): TimelineFlameChartDataProvider;
     updateColorMapper(): void;

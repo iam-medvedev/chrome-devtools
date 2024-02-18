@@ -1,4 +1,4 @@
-import * as Platform from '../../core/platform/platform.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { CoverageType, SourceURLCoverageInfo, type URLCoverageInfo } from './CoverageModel.js';

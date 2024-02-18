@@ -33,6 +33,8 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private controller;
     private cpuProfiler;
     private clearButton;
+    private fixMeButton;
+    private fixMeButtonAdded;
     private loadButton;
     private saveButton;
     private statusPane;
@@ -86,6 +88,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     toggleRecording(): Promise<void>;
     recordReload(): void;
     private onClearButton;
+    private onFixMe;
     private clear;
     private reset;
     applyFilters(_perfModel: PerformanceModel | null, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null): void;

@@ -617,6 +617,9 @@ export const generatedPropertyValues: {
     "position-fallback-bounds": {
         values: string[];
     };
+    "position-try-options": {
+        values: string[];
+    };
     "position-try-order": {
         values: string[];
     };

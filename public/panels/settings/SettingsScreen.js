@@ -390,6 +390,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
             this.#experimentsSection = this.appendSection();
             const warning = this.#experimentsSection.createChild('span');
             warning.textContent = i18nString(UIStrings.noResults);
+            UI.ARIAUtils.alert(warning.textContent);
         }
     }
     createExperimentsWarningSubsection(warningMessage) {

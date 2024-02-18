@@ -2045,10 +2045,10 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             if (userAgentHeader) {
                 props.push(`$session.UserAgent = ${escapeString(userAgentHeader.value)}`);
             }
-            for (const cookie of request.includedRequestCookies()) {
-                const name = escapeString(cookie.name());
-                const value = escapeString(cookie.value());
-                const domain = escapeString(cookie.domain());
+            for (const includedCookie of request.includedRequestCookies()) {
+                const name = escapeString(includedCookie.cookie.name());
+                const value = escapeString(includedCookie.cookie.value());
+                const domain = escapeString(includedCookie.cookie.domain());
                 props.push(`$session.Cookies.Add((New-Object System.Net.Cookie(${name}, ${value}, "/", ${domain})))`);
             }
             if (props.length) {

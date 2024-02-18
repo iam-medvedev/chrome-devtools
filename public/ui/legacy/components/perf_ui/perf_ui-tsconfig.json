@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../../front_end/ui/legacy/components/perf_ui/BrickBreaker.ts",
     "../../../../../../../../front_end/ui/legacy/components/perf_ui/ChartViewport.ts",
     "../../../../../../../../front_end/ui/legacy/components/perf_ui/FilmStripView.ts",
     "../../../../../../../../front_end/ui/legacy/components/perf_ui/FlameChart.ts",

@@ -249,7 +249,7 @@ export class DebuggerPlugin extends Plugin {
         return [
             CodeMirror.EditorView.updateListener.of(update => this.onEditorUpdate(update)),
             CodeMirror.EditorView.domEventHandlers({
-                keydown: (event) => {
+                keydown: event => {
                     if (this.onKeyDown(event)) {
                         return true;
                     }
@@ -1738,7 +1738,7 @@ const noMarkers = {}, hasContinueMarkers = {
 // Add a class to the content element when there are active
 // continue-to markers. This hides the background on the current
 // execution line.
-const markIfContinueTo = CodeMirror.EditorView.contentAttributes.compute([continueToMarkers.field], (state) => {
+const markIfContinueTo = CodeMirror.EditorView.contentAttributes.compute([continueToMarkers.field], state => {
     return state.field(continueToMarkers.field).size ? hasContinueMarkers : noMarkers;
 });
 // Variable value decorations

@@ -669,9 +669,9 @@ export class NetworkDispatcher {
     requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition }) {
         const blockedRequestCookies = [];
         const includedRequestCookies = [];
-        for (const { blockedReasons, cookie } of associatedCookies) {
+        for (const { blockedReasons, exemptionReason, cookie } of associatedCookies) {
             if (blockedReasons.length === 0) {
-                includedRequestCookies.push(Cookie.fromProtocolCookie(cookie));
+                includedRequestCookies.push({ exemptionReason, cookie: Cookie.fromProtocolCookie(cookie) });
             }
             else {
                 blockedRequestCookies.push({ blockedReasons, cookie: Cookie.fromProtocolCookie(cookie) });
@@ -687,21 +687,23 @@ export class NetworkDispatcher {
         };
         this.getExtraInfoBuilder(requestId).addRequestExtraInfo(extraRequestInfo);
     }
-    responseReceivedExtraInfo({ requestId, blockedCookies, headers, headersText, resourceIPAddressSpace, statusCode, cookiePartitionKey, cookiePartitionKeyOpaque, }) {
+    responseReceivedExtraInfo({ requestId, blockedCookies, headers, headersText, resourceIPAddressSpace, statusCode, cookiePartitionKey, cookiePartitionKeyOpaque, exemptedCookies, }) {
         const extraResponseInfo = {
-            blockedResponseCookies: blockedCookies.map(blockedCookie => {
-                return {
-                    blockedReasons: blockedCookie.blockedReasons,
-                    cookieLine: blockedCookie.cookieLine,
-                    cookie: blockedCookie.cookie ? Cookie.fromProtocolCookie(blockedCookie.cookie) : null,
-                };
-            }),
+            blockedResponseCookies: blockedCookies.map(blockedCookie => ({
+                blockedReasons: blockedCookie.blockedReasons,
+                cookieLine: blockedCookie.cookieLine,
+                cookie: blockedCookie.cookie ? Cookie.fromProtocolCookie(blockedCookie.cookie) : null,
+            })),
             responseHeaders: this.headersMapToHeadersArray(headers),
             responseHeadersText: headersText,
             resourceIPAddressSpace,
             statusCode,
             cookiePartitionKey,
             cookiePartitionKeyOpaque,
+            exemptedResponseCookies: exemptedCookies?.map(exemptedCookie => ({
+                cookie: Cookie.fromProtocolCookie(exemptedCookie.cookie),
+                exemptionReason: exemptedCookie.exemptionReason,
+            })),
         };
         this.getExtraInfoBuilder(requestId).addResponseExtraInfo(extraResponseInfo);
     }

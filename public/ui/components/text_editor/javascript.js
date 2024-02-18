@@ -21,12 +21,11 @@ export async function completeInContext(textBefore, query, force = false) {
         extensions: CodeMirror.javascript.javascriptLanguage,
     });
     const result = await javascriptCompletionSource(new CodeMirror.CompletionContext(state, state.doc.length, force));
-    return result ?
-        result.options.filter((o) => o.label.startsWith(query)).map((o) => ({
-            text: o.label,
-            priority: 100 + (o.boost || 0),
-            isSecondary: o.type === 'secondary',
-        })) :
+    return result ? result.options.filter(o => o.label.startsWith(query)).map(o => ({
+        text: o.label,
+        priority: 100 + (o.boost || 0),
+        isSecondary: o.type === 'secondary',
+    })) :
         [];
 }
 class CompletionSet {

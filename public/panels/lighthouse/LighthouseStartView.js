@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Presets, RuntimeSettings } from './LighthouseController.js';
 import lighthouseStartViewStyles from './lighthouseStartView.css.js';
@@ -64,8 +63,7 @@ export class StartView extends UI.Widget.Widget {
         this.render();
     }
     populateRuntimeSettingAsRadio(settingName, label, parentElement) {
-        // TODO(b/320405843): remove toKebabCase call when kebab migration is
-        const runtimeSetting = RuntimeSettings.find(item => item.setting.name === Platform.StringUtilities.toKebabCase(settingName));
+        const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
         if (!runtimeSetting || !runtimeSetting.options) {
             throw new Error(`${settingName} is not a setting with options`);
         }
@@ -82,8 +80,7 @@ export class StartView extends UI.Widget.Widget {
         UI.ARIAUtils.setLabel(control.element, label);
     }
     populateRuntimeSettingAsToolbarCheckbox(settingName, toolbar) {
-        // TODO(b/320405843): remove toKebabCase call when kebab migration is
-        const runtimeSetting = RuntimeSettings.find(item => item.setting.name === Platform.StringUtilities.toKebabCase(settingName));
+        const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
         if (!runtimeSetting || !runtimeSetting.title) {
             throw new Error(`${settingName} is not a setting with a title`);
         }
@@ -97,8 +94,7 @@ export class StartView extends UI.Widget.Widget {
         }
     }
     populateRuntimeSettingAsToolbarDropdown(settingName, toolbar) {
-        // TODO(b/320405843): remove toKebabCase call when kebab migration is
-        const runtimeSetting = RuntimeSettings.find(item => item.setting.name === Platform.StringUtilities.toKebabCase(settingName));
+        const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
         if (!runtimeSetting || !runtimeSetting.title) {
             throw new Error(`${settingName} is not a setting with a title`);
         }

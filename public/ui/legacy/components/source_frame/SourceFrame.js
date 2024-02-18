@@ -1057,7 +1057,7 @@ const searchHighlighter = CodeMirror.ViewPlugin.fromClass(class {
         }
         return builder.finish();
     }
-}, { decorations: (value) => value.decorations });
+}, { decorations: value => value.decorations });
 const nonBreakableLineMark = new (class extends CodeMirror.GutterMarker {
     elementClass = 'cm-nonBreakableLine';
 })();

@@ -13,14 +13,14 @@ import { ContentData } from './ContentData.js';
  * incomplete unicode at the end and not in-between chunks.
  */
 export class StreamingContentData extends Common.ObjectWrapper.ObjectWrapper {
-    #mimeType;
+    mimeType;
     #charset;
     #disallowStreaming;
     #chunks = [];
     #contentData;
     constructor(mimeType, charset, initialContent) {
         super();
-        this.#mimeType = mimeType;
+        this.mimeType = mimeType;
         this.#charset = charset;
         this.#disallowStreaming = Boolean(initialContent && !initialContent.createdFromBase64);
         this.#contentData = initialContent;
@@ -42,7 +42,7 @@ export class StreamingContentData extends Common.ObjectWrapper.ObjectWrapper {
         return new StreamingContentData(content.mimeType, content.charset, content);
     }
     get isTextContent() {
-        return Platform.MimeType.isTextType(this.#mimeType);
+        return Platform.MimeType.isTextType(this.mimeType);
     }
     /** @param chunk base64 encoded data */
     addChunk(chunk) {
@@ -59,7 +59,7 @@ export class StreamingContentData extends Common.ObjectWrapper.ObjectWrapper {
         }
         const initialBase64 = this.#contentData?.base64 ?? '';
         const base64Content = this.#chunks.reduce((acc, chunk) => Platform.StringUtilities.concatBase64(acc, chunk), initialBase64);
-        this.#contentData = new ContentData(base64Content, /* isBase64=*/ true, this.#mimeType, this.#charset);
+        this.#contentData = new ContentData(base64Content, /* isBase64=*/ true, this.mimeType, this.#charset);
         this.#chunks = [];
         return this.#contentData;
     }
