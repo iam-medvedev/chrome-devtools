@@ -217,8 +217,15 @@ export function getRegisteredActionExtensions() {
     return Array.from(registeredActions.values())
         .filter(action => {
         const settingName = action.setting();
-        if (settingName && !Common.Settings.moduleSetting(settingName).get()) {
-            return false;
+        try {
+            if (settingName && !Common.Settings.moduleSetting(settingName).get()) {
+                return false;
+            }
+        }
+        catch (err) {
+            if (err.message.startsWith('No setting registered')) {
+                return false;
+            }
         }
         return Root.Runtime.Runtime.isDescriptorEnabled({ experiment: action.experiment(), condition: action.condition() });
     })

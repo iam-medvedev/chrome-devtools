@@ -54,6 +54,7 @@ export class Settings {
         this.#registry = new Map();
         this.moduleSettings = new Map();
         for (const registration of getRegisteredSettings()) {
+            // TODO(b/320405843): remove normalization when kebab migration is complete
             const { settingName, defaultValue, storageType } = registration;
             const isRegex = registration.settingType === "regex" /* SettingType.REGEX */;
             const setting = isRegex && typeof defaultValue === 'string' ?
@@ -116,6 +117,8 @@ export class Settings {
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     moduleSetting(settingName) {
+        // TODO(b/320405843): remove normalization when kebab migration is complete
+        settingName = Settings.normalizeSettingName(settingName);
         const setting = this.moduleSettings.get(settingName);
         if (!setting) {
             throw new Error('No setting registered: ' + settingName);
@@ -123,6 +126,8 @@ export class Settings {
         return setting;
     }
     settingForTest(settingName) {
+        // TODO(b/320405843): remove normalization when kebab migration is complete
+        settingName = Settings.normalizeSettingName(settingName);
         const setting = this.#registry.get(settingName);
         if (!setting) {
             throw new Error('No setting registered: ' + settingName);
@@ -130,6 +135,8 @@ export class Settings {
         return setting;
     }
     createSetting(key, defaultValue, storageType) {
+        // TODO(b/320405843): remove normalization when kebab migration is complete
+        key = Settings.normalizeSettingName(key);
         const storage = this.storageFromType(storageType);
         let setting = this.#registry.get(key);
         if (!setting) {
@@ -139,9 +146,13 @@ export class Settings {
         return setting;
     }
     createLocalSetting(key, defaultValue) {
+        // TODO(b/320405843): remove normalization when kebab migration is complete
+        key = Settings.normalizeSettingName(key);
         return this.createSetting(key, defaultValue, "Local" /* SettingStorageType.Local */);
     }
     createRegExpSetting(key, defaultValue, regexFlags, storageType) {
+        // TODO(b/320405843): remove normalization when kebab migration is complete
+        key = Settings.normalizeSettingName(key);
         if (!this.#registry.get(key)) {
             this.#registry.set(key, new RegExpSetting(key, defaultValue, this.#eventSupport, this.storageFromType(storageType), regexFlags));
         }
@@ -265,7 +276,6 @@ export class Deprecation {
     }
 }
 export class Setting {
-    name;
     defaultValue;
     eventSupport;
     storage;
@@ -279,11 +289,13 @@ export class Setting {
     #hadUserAction;
     #disabled;
     #deprecation = null;
+    name;
     constructor(name, defaultValue, eventSupport, storage) {
-        this.name = name;
         this.defaultValue = defaultValue;
         this.eventSupport = eventSupport;
         this.storage = storage;
+        // TODO(b/320405843): remove normalization when kebab migration is complete
+        this.name = Settings.normalizeSettingName(name);
         storage.register(this.name);
     }
     setSerializer(serializer) {
@@ -316,7 +328,24 @@ export class Setting {
         this.#requiresUserAction = requiresUserAction;
     }
     disabled() {
+        if (this.#registration?.disabledCondition) {
+            const { disabled } = this.#registration.disabledCondition();
+            // If registration does not disable it, pass through to #disabled
+            // attribute check.
+            if (disabled) {
+                return true;
+            }
+        }
         return this.#disabled || false;
+    }
+    disabledReason() {
+        if (this.#registration?.disabledCondition) {
+            const result = this.#registration.disabledCondition();
+            if (result.disabled) {
+                return result.reason;
+            }
+        }
+        return undefined;
     }
     setDisabled(disabled) {
         this.#disabled = disabled;

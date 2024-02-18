@@ -329,6 +329,30 @@
   "core/sdk/NetworkRequest.ts | domainMismatch": {
     "message": "This cookie was blocked because neither did the request URL's domain exactly match the cookie's domain, nor was the request URL's domain a subdomain of the cookie's Domain attribute value."
   },
+  "core/sdk/NetworkRequest.ts | exemptionReasonCorsOptIn": {
+    "message": "This cookie is allowed by CORS opt-in. Learn more: goo.gle/cors"
+  },
+  "core/sdk/NetworkRequest.ts | exemptionReasonEnterprisePolicy": {
+    "message": "This cookie is allowed by Chrome Enterprise policy. Learn more: goo.gle/ce-3pc"
+  },
+  "core/sdk/NetworkRequest.ts | exemptionReasonStorageAccessAPI": {
+    "message": "This cookie is allowed by the Storage Access API. Learn more: goo.gle/saa"
+  },
+  "core/sdk/NetworkRequest.ts | exemptionReasonTopLevelStorageAccessAPI": {
+    "message": "This cookie is allowed by the top-level Storage Access API. Learn more: goo.gle/saa-top"
+  },
+  "core/sdk/NetworkRequest.ts | exemptionReasonTPCDDeprecationTrial": {
+    "message": "This cookie is allowed by third-party cookie phaseout deprecation trial."
+  },
+  "core/sdk/NetworkRequest.ts | exemptionReasonTPCDHeuristics": {
+    "message": "This cookie is allowed by third-party cookie phaseout heuristics. Learn more: goo.gle/hbe"
+  },
+  "core/sdk/NetworkRequest.ts | exemptionReasonTPCDMetadata": {
+    "message": "This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/ps-dt."
+  },
+  "core/sdk/NetworkRequest.ts | exemptionReasonUserSetting": {
+    "message": "This cookie is allowed by user preference."
+  },
   "core/sdk/NetworkRequest.ts | nameValuePairExceedsMaxSize": {
     "message": "This cookie was blocked because it was too large. The combined size of the name and value must be less than or equal to 4096 characters."
   },
@@ -1123,6 +1147,9 @@
   },
   "generated/Deprecation.ts | CrossOriginWindowConfirm": {
     "message": "Triggering window.confirm from cross origin iframes has been deprecated and will be removed in the future."
+  },
+  "generated/Deprecation.ts | CSSCustomStateDeprecatedSyntax": {
+    "message": ":--customstatename is deprecated. Please use the :state(customstatename) syntax instead."
   },
   "generated/Deprecation.ts | CSSSelectorInternalMediaControlsOverlayCastButton": {
     "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
@@ -6434,6 +6461,9 @@
   "panels/explain/explain-meta.ts | explainThisWarning": {
     "message": "Explain this warning"
   },
+  "panels/explain/explain-meta.ts | wrongLocale": {
+    "message": "Only English locales are currently supported."
+  },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "Blocked Resource"
   },
@@ -7582,9 +7612,6 @@
   },
   "panels/mobile_throttling/NetworkPanelIndicator.ts | acceptedEncodingOverrideSet": {
     "message": "The set of accepted Content-Encoding headers has been modified by DevTools, see the Network conditions panel"
-  },
-  "panels/mobile_throttling/NetworkPanelIndicator.ts | browserCacheDisabled": {
-    "message": "Browser cache is disabled"
   },
   "panels/mobile_throttling/NetworkPanelIndicator.ts | networkThrottlingIsEnabled": {
     "message": "Network throttling is enabled"
@@ -11036,8 +11063,20 @@
   "panels/settings/KeybindsSettingsTab.ts | RestoreDefaultShortcuts": {
     "message": "Restore default shortcuts"
   },
+  "panels/settings/KeybindsSettingsTab.ts | shortcutChangesApplied": {
+    "message": "Changes to shortcut applied"
+  },
+  "panels/settings/KeybindsSettingsTab.ts | shortcutChangesDiscared": {
+    "message": "Changes to shortcut discarded"
+  },
+  "panels/settings/KeybindsSettingsTab.ts | shortcutChangesRestored": {
+    "message": "Changes to shortcut restored to default"
+  },
   "panels/settings/KeybindsSettingsTab.ts | shortcutModified": {
     "message": "Shortcut modified"
+  },
+  "panels/settings/KeybindsSettingsTab.ts | shortcutRemoved": {
+    "message": "{PH1} Shortcut removed"
   },
   "panels/settings/KeybindsSettingsTab.ts | shortcuts": {
     "message": "Shortcuts"
@@ -12815,6 +12854,9 @@
   "panels/timeline/TimelinePanel.ts | failedToSaveTimelineSS": {
     "message": "Failed to save timeline: {PH1} ({PH2})"
   },
+  "panels/timeline/TimelinePanel.ts | fixMe": {
+    "message": "Fix me"
+  },
   "panels/timeline/TimelinePanel.ts | HardwareConcurrencyIsEnabled": {
     "message": "- Hardware concurrency override is enabled"
   },
@@ -13244,8 +13286,11 @@
   "panels/timeline/TimelineUIUtils.ts | initialPriority": {
     "message": "Initial Priority"
   },
-  "panels/timeline/TimelineUIUtils.ts | initiator": {
-    "message": "Initiator"
+  "panels/timeline/TimelineUIUtils.ts | initiatedBy": {
+    "message": "Initiated by"
+  },
+  "panels/timeline/TimelineUIUtils.ts | initiatorFor": {
+    "message": "Initiator for"
   },
   "panels/timeline/TimelineUIUtils.ts | inputDelay": {
     "message": "Input delay"
@@ -14311,6 +14356,12 @@
   },
   "ui/legacy/components/object_ui/RemoteObjectPreviewFormatter.ts | thePropertyIsComputedWithAGetter": {
     "message": "The property is computed with a getter"
+  },
+  "ui/legacy/components/perf_ui/BrickBreaker.ts | congrats": {
+    "message": "Congrats, you win!"
+  },
+  "ui/legacy/components/perf_ui/BrickBreaker.ts | ps": {
+    "message": "PS: You can also open the game by typing fixme"
   },
   "ui/legacy/components/perf_ui/FilmStripView.ts | doubleclickToZoomImageClickTo": {
     "message": "Doubleclick to zoom image. Click to view preceding requests."

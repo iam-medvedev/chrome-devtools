@@ -50,6 +50,9 @@
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {
+      "path": "../console/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     }
   ]

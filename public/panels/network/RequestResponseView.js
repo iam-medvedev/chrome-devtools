@@ -62,7 +62,9 @@ export class RequestResponseView extends UI.Widget.VBox {
             return sourceView;
         }
         const contentData = await request.requestStreamingContent();
-        if (TextUtils.StreamingContentData.isError(contentData) || !contentData.isTextContent) {
+        // Note: Even though WASM is binary data, the source view will disassemble it and show a text representation.
+        if (TextUtils.StreamingContentData.isError(contentData) ||
+            !(contentData.isTextContent || contentData.mimeType === 'application/wasm')) {
             requestToSourceView.delete(request);
             return null;
         }
@@ -75,7 +77,10 @@ export class RequestResponseView extends UI.Widget.VBox {
         else {
             mimeType = request.resourceType().canonicalMimeType() || request.mimeType;
         }
-        const mediaType = Common.ResourceType.ResourceType.mediaTypeForMetrics(mimeType, request.resourceType().isFromSourceMap(), TextUtils.TextUtils.isMinified(contentData.content().text));
+        const isMinified = contentData.mimeType === 'application/wasm' ?
+            false :
+            TextUtils.TextUtils.isMinified(contentData.content().text);
+        const mediaType = Common.ResourceType.ResourceType.mediaTypeForMetrics(mimeType, request.resourceType().isFromSourceMap(), isMinified);
         Host.userMetrics.networkPanelResponsePreviewOpened(mediaType);
         sourceView = SourceFrame.ResourceSourceFrame.ResourceSourceFrame.createSearchableView(request, mimeType);
         requestToSourceView.set(request, sourceView);

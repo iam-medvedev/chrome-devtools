@@ -34,6 +34,13 @@ p {
   margin: 12px 0;
 }
 
+.disabled-reason {
+  box-sizing: border-box;
+  margin-left: 3px;
+  width: 16px;
+  height: 16px;
+}
+
 /*# sourceURL=settingCheckbox.css */
 `);
 

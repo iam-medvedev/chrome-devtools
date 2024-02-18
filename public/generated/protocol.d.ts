@@ -419,6 +419,9 @@ export declare namespace Animation {
         playbackRate: number;
         /**
          * `Animation`'s start time.
+         * Milliseconds for time based animations and
+         * percentage [0 - 100] for scroll driven animations
+         * (i.e. when viewOrScrollTimeline exists).
          */
         startTime: number;
         /**
@@ -438,6 +441,39 @@ export declare namespace Animation {
          * animation/transition.
          */
         cssId?: string;
+        /**
+         * View or scroll timeline
+         */
+        viewOrScrollTimeline?: ViewOrScrollTimeline;
+    }
+    /**
+     * Timeline instance
+     */
+    interface ViewOrScrollTimeline {
+        /**
+         * Scroll container node
+         */
+        sourceNodeId?: DOM.BackendNodeId;
+        /**
+         * Represents the starting scroll position of the timeline
+         * as a length offset in pixels from scroll origin.
+         */
+        startOffset?: number;
+        /**
+         * Represents the ending scroll position of the timeline
+         * as a length offset in pixels from scroll origin.
+         */
+        endOffset?: number;
+        /**
+         * The element whose principal box's visibility in the
+         * scrollport defined the progress of the timeline.
+         * Does not exist for animations with ScrollTimeline
+         */
+        subjectNodeId?: DOM.BackendNodeId;
+        /**
+         * Orientation of the scroll
+         */
+        axis: DOM.ScrollOrientation;
     }
     /**
      * AnimationEffect instance
@@ -461,6 +497,9 @@ export declare namespace Animation {
         iterations: number;
         /**
          * `AnimationEffect`'s iteration duration.
+         * Milliseconds for time based animations and
+         * percentage [0 - 100] for scroll driven animations
+         * (i.e. when viewOrScrollTimeline exists).
          */
         duration: number;
         /**
@@ -1331,6 +1370,10 @@ export declare namespace Autofill {
          * The filling strategy
          */
         fillingStrategy: FillingStrategy;
+        /**
+         * The frame the field belongs to
+         */
+        frameId: Page.FrameId;
         /**
          * The form field's DOM node
          */
@@ -3324,6 +3367,13 @@ export declare namespace DOM {
         Inline = "Inline",
         Block = "Block",
         Both = "Both"
+    }
+    /**
+     * Physical scroll orientation
+     */
+    const enum ScrollOrientation {
+        Horizontal = "horizontal",
+        Vertical = "vertical"
     }
     /**
      * DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes.
@@ -7569,8 +7619,18 @@ export declare namespace Network {
         DnsAlpnH3JobWonRace = "dnsAlpnH3JobWonRace",
         UnspecifiedReason = "unspecifiedReason"
     }
+    /**
+     * Source of service worker router.
+     */
+    const enum ServiceWorkerRouterSource {
+        Network = "network",
+        Cache = "cache",
+        FetchEvent = "fetch-event",
+        RaceNetworkAndFetchHandler = "race-network-and-fetch-handler"
+    }
     interface ServiceWorkerRouterInfo {
         ruleIdMatched: integer;
+        matchedSourceType: ServiceWorkerRouterSource;
     }
     /**
      * HTTP response data.
@@ -12743,9 +12803,23 @@ export declare namespace Storage {
      * Details for an origin's shared storage.
      */
     interface SharedStorageMetadata {
+        /**
+         * Time when the origin's shared storage was last created.
+         */
         creationTime: Network.TimeSinceEpoch;
+        /**
+         * Number of key-value pairs stored in origin's shared storage.
+         */
         length: integer;
+        /**
+         * Current amount of bits of entropy remaining in the navigation budget.
+         */
         remainingBudget: number;
+        /**
+         * Total number of bytes stored as key-value pairs in origin's shared
+         * storage.
+         */
+        bytesUsed: integer;
     }
     /**
      * Pair of reporting metadata details for a candidate URL for `selectURL()`.
@@ -12930,13 +13004,17 @@ export declare namespace Storage {
         Include = "include",
         Exclude = "exclude"
     }
-    interface AttributionReportingAggregatableValueEntry {
+    interface AttributionReportingAggregatableValueDictEntry {
         key: string;
         /**
          * number instead of integer because not all uint32 can be represented by
          * int
          */
         value: number;
+    }
+    interface AttributionReportingAggregatableValueEntry {
+        values: AttributionReportingAggregatableValueDictEntry[];
+        filters: AttributionReportingFilterPair;
     }
     interface AttributionReportingEventTriggerData {
         data: UnsignedInt64AsBase10;
@@ -14867,6 +14945,18 @@ export declare namespace WebAuthn {
          * See https://w3c.github.io/webauthn/#sctn-large-blob-extension
          */
         largeBlob?: binary;
+        /**
+         * Assertions returned by this credential will have the backup eligibility
+         * (BE) flag set to this value. Defaults to the authenticator's
+         * defaultBackupEligibility value.
+         */
+        backupEligibility?: boolean;
+        /**
+         * Assertions returned by this credential will have the backup state (BS)
+         * flag set to this value. Defaults to the authenticator's
+         * defaultBackupState value.
+         */
+        backupState?: boolean;
     }
     interface EnableRequest {
         /**
@@ -14936,6 +15026,12 @@ export declare namespace WebAuthn {
     interface SetAutomaticPresenceSimulationRequest {
         authenticatorId: AuthenticatorId;
         enabled: boolean;
+    }
+    interface SetCredentialPropertiesRequest {
+        authenticatorId: AuthenticatorId;
+        credentialId: binary;
+        backupEligibility?: boolean;
+        backupState?: boolean;
     }
     /**
      * Triggered when a credential is added to an authenticator.

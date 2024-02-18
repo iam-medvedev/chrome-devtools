@@ -114,7 +114,7 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     eventSourceMessageReceived({ requestId, timestamp: time, eventName, eventId, data }: Protocol.Network.EventSourceMessageReceivedEvent): void;
     requestIntercepted({}: Protocol.Network.RequestInterceptedEvent): void;
     requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition }: Protocol.Network.RequestWillBeSentExtraInfoEvent): void;
-    responseReceivedExtraInfo({ requestId, blockedCookies, headers, headersText, resourceIPAddressSpace, statusCode, cookiePartitionKey, cookiePartitionKeyOpaque, }: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
+    responseReceivedExtraInfo({ requestId, blockedCookies, headers, headersText, resourceIPAddressSpace, statusCode, cookiePartitionKey, cookiePartitionKeyOpaque, exemptedCookies, }: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
     private getExtraInfoBuilder;
     private appendRedirect;
     private maybeAdoptMainResourceRequest;

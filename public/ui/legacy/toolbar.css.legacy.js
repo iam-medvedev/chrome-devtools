@@ -57,6 +57,12 @@ export default {
   overflow: hidden;
 }
 
+devtools-adorner.fix-perf-icon {
+  --override-adorner-text-color: transparent;
+  --override-adorner-border-color: transparent;
+  --override-adorner-background-color: transparent;
+}
+
 .toolbar-item,
 .toolbar-item .devtools-link {
   color: var(--icon-default);

@@ -11,13 +11,14 @@ export declare class CookiesTable extends UI.Widget.VBox {
     private data;
     private cookieDomain;
     private cookieToBlockedReasons;
+    private cookieToExemptionReason;
     constructor(renderInline?: boolean, saveCallback?: ((arg0: SDK.Cookie.Cookie, arg1: SDK.Cookie.Cookie | null) => Promise<boolean>), refreshCallback?: (() => void), selectedCallback?: (() => void), deleteCallback?: ((arg0: SDK.Cookie.Cookie, arg1: () => void) => void));
     wasShown(): void;
-    setCookies(cookies: SDK.Cookie.Cookie[], cookieToBlockedReasons?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>): void;
+    setCookies(cookies: SDK.Cookie.Cookie[], cookieToBlockedReasons?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>, cookieToExemptionReason?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.ExemptionReason>): void;
     setCookieFolders(cookieFolders: {
         folderName: string | null;
         cookies: Array<SDK.Cookie.Cookie> | null;
-    }[], cookieToBlockedReasons?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>): void;
+    }[], cookieToBlockedReasons?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>, cookieToExemptionReason?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.ExemptionReason>): void;
     setCookieDomain(cookieDomain: string): void;
     selectedCookie(): SDK.Cookie.Cookie | null;
     private getSelectionCookies;
@@ -46,10 +47,11 @@ export declare class CookiesTable extends UI.Widget.VBox {
 export declare class DataGridNode extends DataGrid.DataGrid.DataGridNode<DataGridNode> {
     cookie: SDK.Cookie.Cookie;
     private readonly blockedReasons;
+    private readonly exemptionReason;
     private expiresTooltip?;
     constructor(data: {
         [x: string]: string | number | boolean;
-    }, cookie: SDK.Cookie.Cookie, blockedReasons: SDK.CookieModel.BlockedReason[] | null);
+    }, cookie: SDK.Cookie.Cookie, blockedReasons: SDK.CookieModel.BlockedReason[] | null, exemptionReason: SDK.CookieModel.ExemptionReason | null);
     createCells(element: Element): void;
     setExpiresTooltip(tooltip: Platform.UIString.LocalizedString): void;
     createCell(columnId: string): HTMLElement;

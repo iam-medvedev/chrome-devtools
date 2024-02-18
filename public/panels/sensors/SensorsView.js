@@ -400,7 +400,7 @@ export class SensorsView extends UI.Widget.VBox {
                 title: i18nString(UIStrings.presets),
                 value: [
                     { title: i18nString(UIStrings.portrait), orientation: '[0, 90, 0]' },
-                    { title: i18nString(UIStrings.portraitUpsideDown), orientation: '[-180, -90, 0]' },
+                    { title: i18nString(UIStrings.portraitUpsideDown), orientation: '[180, -90, 0]' },
                     { title: i18nString(UIStrings.landscapeLeft), orientation: '[90, 0, -90]' },
                     { title: i18nString(UIStrings.landscapeRight), orientation: '[90, -180, -90]' },
                     { title: i18nString(UIStrings.displayUp), orientation: '[0, 0, 0]' },
@@ -659,7 +659,7 @@ export class PresetOrientations {
                 title: i18nString(UIStrings.presets),
                 value: [
                     { title: i18nString(UIStrings.portrait), orientation: '[0, 90, 0]' },
-                    { title: i18nString(UIStrings.portraitUpsideDown), orientation: '[-180, -90, 0]' },
+                    { title: i18nString(UIStrings.portraitUpsideDown), orientation: '[180, -90, 0]' },
                     { title: i18nString(UIStrings.landscapeLeft), orientation: '[90, 0, -90]' },
                     { title: i18nString(UIStrings.landscapeRight), orientation: '[90, -180, -90]' },
                     { title: i18nString(UIStrings.displayUp), orientation: '[0, 0, 0]' },

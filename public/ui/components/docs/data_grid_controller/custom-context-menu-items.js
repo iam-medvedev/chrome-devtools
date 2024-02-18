@@ -19,7 +19,7 @@ component.data = {
         { cells: [{ columnId: 'key', value: 'Charlie', title: 'Charlie' }, { columnId: 'value', value: 'Letter C' }] },
     ],
     contextMenus: {
-        bodyRow: (menu) => {
+        bodyRow: menu => {
             menu.defaultSection().appendItem('Hello World', () => {
                 alert('You clicked!');
             });

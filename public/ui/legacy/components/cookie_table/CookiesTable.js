@@ -115,6 +115,7 @@ export class CookiesTable extends UI.Widget.VBox {
     data;
     cookieDomain;
     cookieToBlockedReasons;
+    cookieToExemptionReason;
     constructor(renderInline, saveCallback, refreshCallback, selectedCallback, deleteCallback) {
         super();
         this.element.classList.add('cookies-table');
@@ -263,16 +264,18 @@ export class CookiesTable extends UI.Widget.VBox {
         this.data = [];
         this.cookieDomain = '';
         this.cookieToBlockedReasons = null;
+        this.cookieToExemptionReason = null;
     }
     wasShown() {
         this.registerCSSFiles([cookiesTableStyles]);
     }
-    setCookies(cookies, cookieToBlockedReasons) {
-        this.setCookieFolders([{ cookies: cookies, folderName: null }], cookieToBlockedReasons);
+    setCookies(cookies, cookieToBlockedReasons, cookieToExemptionReason) {
+        this.setCookieFolders([{ cookies: cookies, folderName: null }], cookieToBlockedReasons, cookieToExemptionReason);
     }
-    setCookieFolders(cookieFolders, cookieToBlockedReasons) {
+    setCookieFolders(cookieFolders, cookieToBlockedReasons, cookieToExemptionReason) {
         this.data = cookieFolders;
         this.cookieToBlockedReasons = cookieToBlockedReasons || null;
+        this.cookieToExemptionReason = cookieToExemptionReason || null;
         this.rebuildTable();
     }
     setCookieDomain(cookieDomain) {
@@ -511,7 +514,8 @@ export class CookiesTable extends UI.Widget.VBox {
         data["priority" /* SDK.Cookie.Attribute.Priority */] = cookie.priority() || '';
         data["partition-key" /* SDK.Cookie.Attribute.PartitionKey */] = cookie.partitionKey() || '';
         const blockedReasons = this.cookieToBlockedReasons?.get(cookie);
-        const node = new DataGridNode(data, cookie, blockedReasons || null);
+        const exemptionReason = this.cookieToExemptionReason?.get(cookie);
+        const node = new DataGridNode(data, cookie, blockedReasons || null, exemptionReason || null);
         if (expiresTooltip) {
             node.setExpiresTooltip(expiresTooltip);
         }
@@ -657,11 +661,13 @@ export class CookiesTable extends UI.Widget.VBox {
 export class DataGridNode extends DataGrid.DataGrid.DataGridNode {
     cookie;
     blockedReasons;
+    exemptionReason;
     expiresTooltip;
-    constructor(data, cookie, blockedReasons) {
+    constructor(data, cookie, blockedReasons, exemptionReason) {
         super(data);
         this.cookie = cookie;
         this.blockedReasons = blockedReasons;
+        this.exemptionReason = exemptionReason;
     }
     createCells(element) {
         super.createCells(element);
@@ -712,6 +718,13 @@ export class DataGridNode extends DataGrid.DataGrid.DataGridNode {
                 cell.classList.add('flagged-cookie-attribute-cell');
             }
             infoElement.title = blockedReasonString;
+            cell.insertBefore(infoElement, cell.firstChild);
+        }
+        if (this.exemptionReason?.uiString && columnId === "name" /* SDK.Cookie.Attribute.Name */) {
+            const infoElement = new IconButton.Icon.Icon();
+            infoElement.data = { iconName: 'info', color: 'var(--icon-info)', width: '14px', height: '14px' };
+            cell.classList.add('flagged-cookie-attribute-cell');
+            infoElement.title = this.exemptionReason.uiString;
             cell.insertBefore(infoElement, cell.firstChild);
         }
         return cell;

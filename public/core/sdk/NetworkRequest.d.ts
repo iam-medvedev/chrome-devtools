@@ -215,7 +215,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     addExtraRequestInfo(extraRequestInfo: ExtraRequestInfo): void;
     hasExtraRequestInfo(): boolean;
     blockedRequestCookies(): BlockedCookieWithReason[];
-    includedRequestCookies(): Cookie[];
+    includedRequestCookies(): IncludedCookieWithReason[];
     hasRequestCookies(): boolean;
     siteHasCookieInOtherPartition(): boolean;
     static parseStatusTextFromResponseHeadersText(responseHeadersText: string): string;
@@ -223,6 +223,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     addBlockedRequestCookiesToModel(): void;
     hasExtraResponseInfo(): boolean;
     blockedResponseCookies(): BlockedSetCookieWithReason[];
+    exemptedResponseCookies(): ExemptedSetCookieWithReason[];
     nonBlockedResponseCookies(): Cookie[];
     responseCookiesPartitionKey(): string | null;
     responseCookiesPartitionKeyOpaque(): boolean | null;
@@ -274,6 +275,7 @@ export declare enum WebSocketFrameType {
     Receive = "receive",
     Error = "error"
 }
+export declare const cookieExemptionReasonToUiString: (exemptionReason: Protocol.Network.CookieExemptionReason) => string;
 export declare const cookieBlockedReasonToUiString: (blockedReason: Protocol.Network.CookieBlockedReason) => string;
 export declare const setCookieBlockedReasonToUiString: (blockedReason: Protocol.Network.SetCookieBlockedReason) => string;
 export declare const cookieBlockedReasonToAttribute: (blockedReason: Protocol.Network.CookieBlockedReason) => Attribute | null;
@@ -295,8 +297,16 @@ export interface BlockedSetCookieWithReason {
     cookie: Cookie | null;
 }
 export interface BlockedCookieWithReason {
-    blockedReasons: Protocol.Network.CookieBlockedReason[];
     cookie: Cookie;
+    blockedReasons: Protocol.Network.CookieBlockedReason[];
+}
+export interface IncludedCookieWithReason {
+    cookie: Cookie;
+    exemptionReason: Protocol.Network.CookieExemptionReason | undefined;
+}
+export interface ExemptedSetCookieWithReason {
+    cookie: Cookie;
+    exemptionReason: Protocol.Network.CookieExemptionReason;
 }
 export interface EventSourceMessage {
     time: number;
@@ -310,7 +320,7 @@ export interface ExtraRequestInfo {
         cookie: Cookie;
     }[];
     requestHeaders: NameValue[];
-    includedRequestCookies: Cookie[];
+    includedRequestCookies: IncludedCookieWithReason[];
     clientSecurityState?: Protocol.Network.ClientSecurityState;
     connectTiming: Protocol.Network.ConnectTiming;
     siteHasCookieInOtherPartition?: boolean;
@@ -327,6 +337,10 @@ export interface ExtraResponseInfo {
     statusCode: number | undefined;
     cookiePartitionKey: string | undefined;
     cookiePartitionKeyOpaque: boolean | undefined;
+    exemptedResponseCookies: {
+        cookie: Cookie;
+        exemptionReason: Protocol.Network.CookieExemptionReason;
+    }[] | undefined;
 }
 export interface WebBundleInfo {
     resourceUrls?: Platform.DevToolsPath.UrlString[];

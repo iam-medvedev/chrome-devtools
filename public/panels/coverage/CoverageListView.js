@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
@@ -329,6 +328,13 @@ function getPercentageFormatter() {
     }
     return percentageFormatter;
 }
+let bytesFormatter = null;
+function getBytesFormatter() {
+    if (!bytesFormatter) {
+        bytesFormatter = new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale);
+    }
+    return bytesFormatter;
+}
 export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
     coverageInfo;
     lastUsedSize;
@@ -386,9 +392,11 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 break;
             }
             case 'size': {
+                const size = this.coverageInfo.size() || 0;
                 const sizeSpan = cell.createChild('span');
-                sizeSpan.textContent = Platform.NumberUtilities.withThousandsSeparator(this.coverageInfo.size() || 0);
-                const sizeAccessibleName = i18nString(UIStrings.sBytes, { n: this.coverageInfo.size() || 0 });
+                const sizeFormatted = getBytesFormatter().format(size);
+                sizeSpan.textContent = sizeFormatted;
+                const sizeAccessibleName = i18nString(UIStrings.sBytes, { n: size });
                 this.setCellAccessibleName(sizeAccessibleName, cell, columnId);
                 break;
             }
@@ -396,7 +404,8 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 const unusedSize = this.coverageInfo.unusedSize() || 0;
                 const unusedSizeSpan = cell.createChild('span');
                 const unusedPercentsSpan = cell.createChild('span', 'percent-value');
-                unusedSizeSpan.textContent = Platform.NumberUtilities.withThousandsSeparator(unusedSize);
+                const unusedSizeFormatted = getBytesFormatter().format(unusedSize);
+                unusedSizeSpan.textContent = unusedSizeFormatted;
                 const unusedPercentFormatted = getPercentageFormatter().format(this.coverageInfo.unusedPercentage());
                 unusedPercentsSpan.textContent = unusedPercentFormatted;
                 const unusedAccessibleName = i18nString(UIStrings.sBytesS, { n: unusedSize, percentage: unusedPercentFormatted });

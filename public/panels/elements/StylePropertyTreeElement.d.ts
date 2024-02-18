@@ -9,6 +9,7 @@ import { StylesSidebarPane } from './StylesSidebarPane.js';
 export declare const activeHints: WeakMap<Element, Hint>;
 interface StylePropertyTreeElementParams {
     stylesPane: StylesSidebarPane;
+    section: StylePropertiesSection;
     matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles;
     property: SDK.CSSProperty.CSSProperty;
     isShorthand: boolean;
@@ -55,7 +56,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private computedStyles;
     private parentsComputedStyles;
     private contextForTest;
-    constructor({ stylesPane, matchedStyles, property, isShorthand, inherited, overloaded, newProperty }: StylePropertyTreeElementParams);
+    constructor({ stylesPane, section, matchedStyles, property, isShorthand, inherited, overloaded, newProperty }: StylePropertyTreeElementParams);
     matchedStyles(): SDK.CSSMatchedStyles.CSSMatchedStyles;
     editable(): boolean;
     inherited(): boolean;
@@ -83,7 +84,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private updateState;
     node(): SDK.DOMModel.DOMNode | null;
     parentPane(): StylesSidebarPane;
-    section(): StylePropertiesSection | null;
+    section(): StylePropertiesSection;
     private updatePane;
     private toggleDisabled;
     private isPropertyChanged;

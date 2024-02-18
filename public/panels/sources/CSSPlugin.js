@@ -205,7 +205,7 @@ function createCSSTooltip(active) {
             let widget, addListener;
             if (active.type === 0 /* TooltipType.Color */) {
                 const spectrum = new ColorPicker.Spectrum.Spectrum();
-                addListener = (handler) => {
+                addListener = handler => {
                     spectrum.addEventListener("ColorChanged" /* ColorPicker.Spectrum.Events.ColorChanged */, handler);
                 };
                 spectrum.addEventListener("SizeChanged" /* ColorPicker.Spectrum.Events.SizeChanged */, () => view.requestMeasure());
@@ -216,7 +216,7 @@ function createCSSTooltip(active) {
             else {
                 const spectrum = new InlineEditor.BezierEditor.BezierEditor(active.curve);
                 widget = spectrum;
-                addListener = (handler) => {
+                addListener = handler => {
                     spectrum.addEventListener("BezierChanged" /* InlineEditor.BezierEditor.Events.BezierChanged */, handler);
                 };
             }

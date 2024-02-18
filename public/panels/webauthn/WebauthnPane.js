@@ -468,9 +468,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         this.#protocolSelect = protocolGroup.createChild('select', 'chrome-select');
         this.#protocolSelect.setAttribute('jslog', `${VisualLogging.dropDown('protocol').track({ change: true })}`);
         UI.ARIAUtils.bindLabelToControl(protocolSelectTitle, this.#protocolSelect);
-        Object.values(PROTOCOL_AUTHENTICATOR_VALUES)
-            .sort()
-            .forEach((option) => {
+        Object.values(PROTOCOL_AUTHENTICATOR_VALUES).sort().forEach((option) => {
             if (this.#protocolSelect) {
                 this.#protocolSelect.appendChild(new Option(option, option));
             }
@@ -606,8 +604,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         }
         // @ts-ignore dataGrid node type is indeterminate.
         dataGrid.rootNode()
-            .children
-            .find((n) => n.data.credentialId === credentialId)
+            .children.find((n) => n.data.credentialId === credentialId)
             .remove();
         if (!dataGrid.rootNode().children.length) {
             dataGrid.rootNode().appendChild(new EmptyDataGridNode());

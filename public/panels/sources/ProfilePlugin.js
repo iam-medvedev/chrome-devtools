@@ -109,7 +109,7 @@ const makeLineLevelProfilePlugin = (type) => class extends Plugin {
             },
         });
         this.gutter = CodeMirror.gutter({
-            markers: (view) => view.state.field(this.field),
+            markers: view => view.state.field(this.field),
             class: `cm-${type}Gutter`,
         });
     }

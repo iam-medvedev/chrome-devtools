@@ -126,7 +126,6 @@ export declare class StylePropertiesSection {
      * or otherwise, null.
      */
     closestPropertyForEditing(propertyIndex: number): UI.TreeOutline.TreeElement | null;
-    static MaxProperties: number;
 }
 export declare class BlankStylePropertiesSection extends StylePropertiesSection {
     private normal;

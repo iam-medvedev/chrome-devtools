@@ -523,7 +523,9 @@ export class ControlPane extends Common.ObjectWrapper.ObjectWrapper {
             const chartName = chartInfo.metrics[0].name;
             const active = this.enabledCharts.has(chartName);
             const indicator = new MetricIndicator(this.element, chartInfo, active, this.onToggle.bind(this, chartName));
-            indicator.element.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true, keydown: 'Enter' }).context(chartName)}`);
+            indicator.element.setAttribute('jslog', `${VisualLogging.toggle()
+                .track({ click: true, keydown: 'Enter' })
+                .context(Platform.StringUtilities.toKebabCase(chartName))}`);
             this.indicators.set(chartName, indicator);
         }
     }

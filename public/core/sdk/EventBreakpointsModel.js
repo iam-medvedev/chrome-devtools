@@ -37,41 +37,41 @@ let eventBreakpointManagerInstance;
 export class EventBreakpointsManager {
     #eventListenerBreakpointsInternal = [];
     constructor() {
-        this.createInstrumentationBreakpoints("AuctionWorklet" /* Category.AuctionWorklet */, [
+        this.createInstrumentationBreakpoints("auction-worklet" /* Category.AuctionWorklet */, [
             "beforeBidderWorkletBiddingStart" /* InstrumentationNames.BeforeBidderWorkletBiddingStart */,
             "beforeBidderWorkletReportingStart" /* InstrumentationNames.BeforeBidderWorkletReportingStart */,
             "beforeSellerWorkletScoringStart" /* InstrumentationNames.BeforeSellerWorkletScoringStart */,
             "beforeSellerWorkletReportingStart" /* InstrumentationNames.BeforeSellerWorkletReportingStart */,
         ]);
-        this.createInstrumentationBreakpoints("Animation" /* Category.Animation */, [
+        this.createInstrumentationBreakpoints("animation" /* Category.Animation */, [
             "requestAnimationFrame" /* InstrumentationNames.RequestAnimationFrame */,
             "cancelAnimationFrame" /* InstrumentationNames.CancelAnimationFrame */,
             "requestAnimationFrame.callback" /* InstrumentationNames.RequestAnimationFrameCallback */,
         ]);
-        this.createInstrumentationBreakpoints("Canvas" /* Category.Canvas */, [
+        this.createInstrumentationBreakpoints("canvas" /* Category.Canvas */, [
             "canvasContextCreated" /* InstrumentationNames.CanvasContextCreated */,
             "webglErrorFired" /* InstrumentationNames.WebGLErrorFired */,
             "webglWarningFired" /* InstrumentationNames.WebGLWarningFired */,
         ]);
-        this.createInstrumentationBreakpoints("Geolocation" /* Category.Geolocation */, [
+        this.createInstrumentationBreakpoints("geolocation" /* Category.Geolocation */, [
             "Geolocation.getCurrentPosition" /* InstrumentationNames.GeolocationGetCurrentPosition */,
             "Geolocation.watchPosition" /* InstrumentationNames.GeolocationWatchPosition */,
         ]);
-        this.createInstrumentationBreakpoints("Notification" /* Category.Notification */, [
+        this.createInstrumentationBreakpoints("notification" /* Category.Notification */, [
             "Notification.requestPermission" /* InstrumentationNames.NotificationRequestPermission */,
         ]);
-        this.createInstrumentationBreakpoints("Parse" /* Category.Parse */, [
+        this.createInstrumentationBreakpoints("parse" /* Category.Parse */, [
             "Element.setInnerHTML" /* InstrumentationNames.ElementSetInnerHTML */,
             "Document.write" /* InstrumentationNames.DocumentWrite */,
         ]);
-        this.createInstrumentationBreakpoints("Script" /* Category.Script */, [
+        this.createInstrumentationBreakpoints("script" /* Category.Script */, [
             "scriptFirstStatement" /* InstrumentationNames.ScriptFirstStatement */,
             "scriptBlockedByCSP" /* InstrumentationNames.ScriptBlockedByCSP */,
         ]);
-        this.createInstrumentationBreakpoints("SharedStorageWorklet" /* Category.SharedStorageWorklet */, [
+        this.createInstrumentationBreakpoints("shared-storage-worklet" /* Category.SharedStorageWorklet */, [
             "sharedStorageWorkletScriptFirstStatement" /* InstrumentationNames.SharedStorageWorkletScriptFirstStatement */,
         ]);
-        this.createInstrumentationBreakpoints("Timer" /* Category.Timer */, [
+        this.createInstrumentationBreakpoints("timer" /* Category.Timer */, [
             "setTimeout" /* InstrumentationNames.SetTimeout */,
             "clearTimeout" /* InstrumentationNames.ClearTimeout */,
             "setInterval" /* InstrumentationNames.SetInterval */,
@@ -79,10 +79,10 @@ export class EventBreakpointsManager {
             "setTimeout.callback" /* InstrumentationNames.SetTimeoutCallback */,
             "setInterval.callback" /* InstrumentationNames.SetIntervalCallback */,
         ]);
-        this.createInstrumentationBreakpoints("Window" /* Category.Window */, [
+        this.createInstrumentationBreakpoints("window" /* Category.Window */, [
             "DOMWindow.close" /* InstrumentationNames.DOMWindowClose */,
         ]);
-        this.createInstrumentationBreakpoints("WebAudio" /* Category.WebAudio */, [
+        this.createInstrumentationBreakpoints("web-audio" /* Category.WebAudio */, [
             "audioContextCreated" /* InstrumentationNames.AudioContextCreated */,
             "audioContextClosed" /* InstrumentationNames.AudioContextClosed */,
             "audioContextResumed" /* InstrumentationNames.AudioContextResumed */,

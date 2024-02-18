@@ -696,7 +696,7 @@ export class DataGrid extends HTMLElement {
             <tr class="filler-row-top padding-row" style=${LitHtml.Directives.styleMap({
                 height: `${topVisibleRow * ROW_HEIGHT_PIXELS}px`,
             })} aria-hidden="true"></tr>
-            ${LitHtml.Directives.repeat(renderableRows, row => this.#rowIndexMap.get(row), (row) => {
+            ${LitHtml.Directives.repeat(renderableRows, row => this.#rowIndexMap.get(row), row => {
                 const rowIndex = this.#rowIndexMap.get(row);
                 if (rowIndex === undefined) {
                     throw new Error('Trying to render a row that has no index in the rowIndexMap');

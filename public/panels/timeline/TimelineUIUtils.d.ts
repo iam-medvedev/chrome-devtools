@@ -45,6 +45,7 @@ export declare class TimelineUIUtils {
     static buildSyntheticNetworkRequestDetails(event: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest, model: TimelineModel.TimelineModel.TimelineModelImpl, linkifier: LegacyComponents.Linkifier.Linkifier): Promise<DocumentFragment>;
     static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | TraceEngine.Types.TraceEvents.TraceEventCallFrame[]): Protocol.Runtime.StackTrace;
     private static generateCauses;
+    private static createEntryLink;
     private static generateInvalidationsList;
     private static generateInvalidationsForReason;
     private static aggregatedStatsForTraceEvent;

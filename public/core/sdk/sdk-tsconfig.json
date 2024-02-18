@@ -98,6 +98,7 @@
     "../../../../../../front_end/core/sdk/ServiceWorkerManager.ts",
     "../../../../../../front_end/core/sdk/SourceMap.ts",
     "../../../../../../front_end/core/sdk/SourceMapManager.ts",
+    "../../../../../../front_end/core/sdk/SourceMapScopes.ts",
     "../../../../../../front_end/core/sdk/StorageBucketsModel.ts",
     "../../../../../../front_end/core/sdk/StorageKeyManager.ts",
     "../../../../../../front_end/core/sdk/Target.ts",

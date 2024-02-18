@@ -104,10 +104,8 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertiesSection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// TODO(crbug.com/1172300) This workaround is needed to keep the linter happy.
-// Otherwise it complains about: Unknown word CssSyntaxError
-const STYLE_TAG = '<' +
-    'style>';
+const STYLE_TAG = '<style>';
+const DEFAULT_MAX_PROPERTIES = 50;
 export class StylePropertiesSection {
     parentPane;
     styleInternal;
@@ -172,8 +170,6 @@ export class StylePropertiesSection {
         this.propertiesTreeOutline.setFocusable(false);
         this.propertiesTreeOutline.registerCSSFiles([stylesSectionTreeStyles]);
         this.propertiesTreeOutline.element.classList.add('style-properties', 'matched-styles', 'monospace');
-        // @ts-ignore TODO: fix ad hoc section property in a separate CL to be safe
-        this.propertiesTreeOutline.section = this;
         this.innerElement.appendChild(this.propertiesTreeOutline.element);
         this.showAllButton = UI.UIUtils.createTextButton('', this.showAllItems.bind(this), {
             className: 'styles-show-all',
@@ -772,7 +768,7 @@ export class StylePropertiesSection {
         containerElement.data = {
             container: ElementsComponents.Helper.legacyNodeToElementsComponentsNode(container.containerNode),
             queryName: containerQuery.name,
-            onContainerLinkClick: (event) => {
+            onContainerLinkClick: event => {
                 event.preventDefault();
                 void ElementsPanel.instance().revealAndSelectNode(container.containerNode, true, true);
                 void container.containerNode.scrollIntoView();
@@ -870,7 +866,7 @@ export class StylePropertiesSection {
         const style = this.styleInternal;
         let count = 0;
         const properties = style.leadingProperties();
-        const maxProperties = StylePropertiesSection.MaxProperties + properties.length - this.originalPropertiesCount;
+        const maxProperties = DEFAULT_MAX_PROPERTIES + properties.length - this.originalPropertiesCount;
         for (const property of properties) {
             if (!this.forceShowAll && count >= maxProperties) {
                 break;
@@ -884,6 +880,7 @@ export class StylePropertiesSection {
             }
             const item = new StylePropertyTreeElement({
                 stylesPane: this.parentPane,
+                section: this,
                 matchedStyles: this.matchedStyles,
                 property,
                 isShorthand,
@@ -978,6 +975,7 @@ export class StylePropertiesSection {
         const property = this.styleInternal.newBlankProperty(index);
         const item = new StylePropertyTreeElement({
             stylesPane: this.parentPane,
+            section: this,
             matchedStyles: this.matchedStyles,
             property,
             isShorthand: false,
@@ -1316,9 +1314,6 @@ export class StylePropertiesSection {
         }
         return rootElement.childAt(propertyIndex);
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static MaxProperties = 50;
 }
 export class BlankStylePropertiesSection extends StylePropertiesSection {
     normal;
