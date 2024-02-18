@@ -1,6 +1,6 @@
 {
   "name": "chrome-devtools-built",
-  "version": "0.0.0",
+  "version": "1.20241802.0",
   "description": "chrome-devtools-frontend built version",
   "repository": "https://github.com/iam-medvedev/chrome-devtools.git",
   "author": "Ilya Medvedev <ilya@medvedev.im>",
