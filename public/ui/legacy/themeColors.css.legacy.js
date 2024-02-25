@@ -682,13 +682,14 @@ export default {
 
   --sys-color-primary-bright: var(--ref-palette-primary70);
   --sys-color-blue-bright: var(--ref-palette-blue70);
-  --sys-color-green-bright: var(--ref-palette-tertiary70);
+  --sys-color-green-bright: var(--ref-palette-green70);
   --sys-color-error-bright: var(--ref-palette-error60);
   --sys-color-orange-bright: var(--ref-palette-orange70);
   --sys-color-yellow-bright: var(--ref-palette-yellow70);
   --sys-color-cyan-bright: var(--ref-palette-cyan70);
   --sys-color-purple-bright: var(--ref-palette-purple70);
   --sys-color-neutral-bright: var(--ref-palette-neutral50);
+  --sys-color-pink-bright: var(--ref-palette-pink70);
 
   /* Prominent accent colors for text */
 
@@ -704,6 +705,8 @@ export default {
   --sys-color-on-cyan: var(--ref-palette-cyan20);
   --sys-color-purple: var(--ref-palette-purple80);
   --sys-color-on-purple: var(--ref-palette-purple20);
+  --sys-color-pink: var(--ref-palette-pink80);
+  --sys-color-on-pink: var(--ref-palette-pink20);
 
   /* Containers */
 

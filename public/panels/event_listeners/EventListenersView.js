@@ -295,10 +295,14 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
                 menu.appendApplicableItems(linkElement);
             }
             if (object.subtype === 'node') {
-                menu.defaultSection().appendItem(i18nString(UIStrings.revealInElementsPanel), () => Common.Revealer.reveal(object));
+                menu.defaultSection().appendItem(i18nString(UIStrings.revealInElementsPanel), () => Common.Revealer.reveal(object), { jslogContext: 'reveal-in-elements' });
             }
-            menu.defaultSection().appendItem(i18nString(UIStrings.deleteEventListener), this.removeListener.bind(this), { disabled: !this.eventListenerInternal.canRemove() });
-            menu.defaultSection().appendCheckboxItem(i18nString(UIStrings.passive), this.togglePassiveListener.bind(this), this.eventListenerInternal.passive(), !this.eventListenerInternal.canTogglePassive());
+            menu.defaultSection().appendItem(i18nString(UIStrings.deleteEventListener), this.removeListener.bind(this), { disabled: !this.eventListenerInternal.canRemove(), jslogContext: 'delete-event-listener' });
+            menu.defaultSection().appendCheckboxItem(i18nString(UIStrings.passive), this.togglePassiveListener.bind(this), {
+                checked: this.eventListenerInternal.passive(),
+                disabled: !this.eventListenerInternal.canTogglePassive(),
+                jslogContext: 'passive',
+            });
             void menu.show();
         });
     }

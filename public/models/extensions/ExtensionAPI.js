@@ -421,6 +421,14 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         getWasmOp: async function (op, stopId) {
             return new Promise(resolve => extensionServer.sendRequest({ command: "getWasmOp" /* PrivateAPI.Commands.GetWasmOp */, op, stopId }, resolve));
         },
+        reportResourceLoad: function (resourceUrl, status) {
+            return new Promise(resolve => extensionServer.sendRequest({
+                command: "reportResourceLoad" /* PrivateAPI.Commands.ReportResourceLoad */,
+                extensionId: window.location.origin,
+                resourceUrl,
+                status,
+            }, resolve));
+        },
     };
     function declareInterfaceClass(implConstructor) {
         return function (...args) {

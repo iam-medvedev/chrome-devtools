@@ -71,5 +71,5 @@ export class TwoStatesCounter extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-two-states-counter', TwoStatesCounter);
+customElements.define('devtools-two-states-counter', TwoStatesCounter);
 //# sourceMappingURL=TwoStatesCounter.js.map

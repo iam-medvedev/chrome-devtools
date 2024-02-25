@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -162,7 +161,7 @@ export class StackTrace extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-stack-trace-row', StackTraceRow);
-ComponentHelpers.CustomElements.defineComponent('devtools-stack-trace-link-button', StackTraceLinkButton);
-ComponentHelpers.CustomElements.defineComponent('devtools-resources-stack-trace', StackTrace);
+customElements.define('devtools-stack-trace-row', StackTraceRow);
+customElements.define('devtools-stack-trace-link-button', StackTraceLinkButton);
+customElements.define('devtools-resources-stack-trace', StackTrace);
 //# sourceMappingURL=StackTrace.js.map

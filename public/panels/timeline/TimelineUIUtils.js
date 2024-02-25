@@ -38,6 +38,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import imagePreviewStyles from '../../ui/legacy/components/utils/imagePreview.css.js';
@@ -855,6 +856,10 @@ const UIStrings = {
      */
     FromServiceWorker: ' (from `service worker`)',
     /**
+     *@description Text for the stack trace of the initiator of something. The Initiator is the event or factor that directly triggered or precipitated a subsequent action.
+     */
+    initiatorStackTrace: 'Initiator Stack Trace',
+    /**
      *@description Text for the event initiated by another one
      */
     initiatedBy: 'Initiated by',
@@ -887,10 +892,6 @@ const UIStrings = {
      */
     layoutForced: 'Layout Forced',
     /**
-     *@description Text in Timeline UIUtils of the Performance panel
-     */
-    callStacks: 'Call Stacks',
-    /**
      *@description Text for the execution stack trace
      */
     stackTrace: 'Stack Trace',
@@ -904,10 +905,6 @@ const UIStrings = {
      * "pending".
      */
     pendingFor: 'Pending for',
-    /**
-     *@description Text for revealing an item in its destination
-     */
-    reveal: 'Reveal',
     /**
      *@description Noun label for a stack trace which indicates the first time some condition was invalidated.
      */
@@ -988,6 +985,10 @@ const UIStrings = {
      *@example {app.js} PH2
      */
     invalidationWithCallFrame: '{PH1} at {PH2}',
+    /**
+     *@description Text indicating that something is outside of the Performace Panel Timeline Minimap range
+     */
+    outsideBreadcrumbRange: '(outside of the breadcrumb range)',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineUIUtils.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -2260,47 +2261,54 @@ export class TimelineUIUtils {
     }
     static async generateCauses(event, contentHelper, traceParseData) {
         const { startTime } = TraceEngine.Legacy.timesForEventInMilliseconds(event);
-        let callSiteStackLabel;
-        let stackLabel;
+        let initiatorStackLabel = i18nString(UIStrings.initiatorStackTrace);
+        let stackLabel = i18nString(UIStrings.stackTrace);
         switch (event.name) {
             case "TimerFire" /* TraceEngine.Types.TraceEvents.KnownEventName.TimerFire */:
-                callSiteStackLabel = i18nString(UIStrings.timerInstalled);
+                initiatorStackLabel = i18nString(UIStrings.timerInstalled);
                 break;
             case "FireAnimationFrame" /* TraceEngine.Types.TraceEvents.KnownEventName.FireAnimationFrame */:
-                callSiteStackLabel = i18nString(UIStrings.animationFrameRequested);
+                initiatorStackLabel = i18nString(UIStrings.animationFrameRequested);
                 break;
             case "FireIdleCallback" /* TraceEngine.Types.TraceEvents.KnownEventName.FireIdleCallback */:
-                callSiteStackLabel = i18nString(UIStrings.idleCallbackRequested);
+                initiatorStackLabel = i18nString(UIStrings.idleCallbackRequested);
                 break;
             case "UpdateLayoutTree" /* TraceEngine.Types.TraceEvents.KnownEventName.UpdateLayoutTree */:
             case "RecalculateStyles" /* TraceEngine.Types.TraceEvents.KnownEventName.RecalculateStyles */:
+                initiatorStackLabel = i18nString(UIStrings.firstInvalidated);
                 stackLabel = i18nString(UIStrings.recalculationForced);
                 break;
             case "Layout" /* TraceEngine.Types.TraceEvents.KnownEventName.Layout */:
-                callSiteStackLabel = i18nString(UIStrings.firstLayoutInvalidation);
+                initiatorStackLabel = i18nString(UIStrings.firstLayoutInvalidation);
                 stackLabel = i18nString(UIStrings.layoutForced);
                 break;
+        }
+        const stackTrace = TraceEngine.Helpers.Trace.stackTraceForEvent(event);
+        if (stackTrace && stackTrace.length) {
+            contentHelper.addSection(stackLabel);
+            contentHelper.createChildStackTraceElement(TimelineUIUtils.stackTraceFromCallFrames(stackTrace));
         }
         const initiator = traceParseData.Initiators.eventToInitiator.get(event);
         const initiatorFor = traceParseData.Initiators.initiatorToEvents.get(event);
         const invalidations = traceParseData.Invalidations.invalidationsForEvent.get(event);
         if (initiator) {
-            // If we have an initiator for the event, we can show information about
-            // its initiator and a link to reveal it.
-            const { startTime: initiatorStartTime } = TraceEngine.Legacy.timesForEventInMilliseconds(initiator);
-            const delay = startTime - initiatorStartTime;
-            contentHelper.appendTextRow(i18nString(UIStrings.pendingFor), i18n.TimeUtilities.preciseMillisToString(delay, 1));
-            const link = this.createEntryLink(initiator);
-            contentHelper.appendElementRow(i18nString(UIStrings.initiatedBy), link);
+            // If we have an initiator for the event, we can show its stack trace, a link to reveal the initiator,
+            // and the time since the initiator (Pending For).
             const stackTrace = TraceEngine.Helpers.Trace.stackTraceForEvent(initiator);
             if (stackTrace) {
-                contentHelper.appendStackTrace(callSiteStackLabel || i18nString(UIStrings.firstInvalidated), TimelineUIUtils.stackTraceFromCallFrames(stackTrace.map(frame => {
+                contentHelper.addSection(initiatorStackLabel);
+                contentHelper.createChildStackTraceElement(TimelineUIUtils.stackTraceFromCallFrames(stackTrace.map(frame => {
                     return {
                         ...frame,
                         scriptId: String(frame.scriptId),
                     };
                 })));
             }
+            const link = this.createEntryLink(initiator);
+            contentHelper.appendElementRow(i18nString(UIStrings.initiatedBy), link);
+            const { startTime: initiatorStartTime } = TraceEngine.Legacy.timesForEventInMilliseconds(initiator);
+            const delay = startTime - initiatorStartTime;
+            contentHelper.appendTextRow(i18nString(UIStrings.pendingFor), i18n.TimeUtilities.preciseMillisToString(delay, 1));
         }
         if (initiatorFor) {
             // If the event is an initiator for some entries, add links to reveal them.
@@ -2314,11 +2322,6 @@ export class TimelineUIUtils {
             });
             contentHelper.appendElementRow(UIStrings.initiatorFor, links);
         }
-        const stackTrace = TraceEngine.Helpers.Trace.stackTraceForEvent(event);
-        if (stackTrace && stackTrace.length) {
-            contentHelper.addSection(i18nString(UIStrings.callStacks));
-            contentHelper.appendStackTrace(stackLabel || i18nString(UIStrings.stackTrace), TimelineUIUtils.stackTraceFromCallFrames(stackTrace));
-        }
         if (invalidations && invalidations.length) {
             contentHelper.addSection(i18nString(UIStrings.invalidations));
             await TimelineUIUtils.generateInvalidationsList(invalidations, contentHelper);
@@ -2326,19 +2329,30 @@ export class TimelineUIUtils {
     }
     static createEntryLink(entry) {
         const link = document.createElement('span');
-        link.classList.add('devtools-link');
-        UI.ARIAUtils.markAsLink(link);
-        link.tabIndex = 0;
-        link.textContent = i18nString(UIStrings.reveal);
-        link.addEventListener('click', () => {
-            TimelinePanel.instance().select(TimelineSelection.fromTraceEvent((entry)));
-        });
-        link.addEventListener('keydown', event => {
-            if (event.key === 'Enter') {
+        const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
+        if (!traceBoundsState) {
+            return link;
+        }
+        // Check is the entry is outside of the current breadcrumb. If it is, don't create a link to navigate to it because there is no way to navigate outside breadcrumb without removing it. Instead, just display the name and "outside breadcrumb" text
+        // Consider entry outside breadcrumb only if it is fully outside. If a part of it is visible, we can still select it.
+        const isEntryOutsideBreadcrumb = traceBoundsState.micro.minimapTraceBounds.min > entry.ts + (entry.dur || 0) ||
+            traceBoundsState.micro.minimapTraceBounds.max < entry.ts;
+        if (!isEntryOutsideBreadcrumb) {
+            link.classList.add('devtools-link');
+            UI.ARIAUtils.markAsLink(link);
+            link.tabIndex = 0;
+            link.addEventListener('click', () => {
                 TimelinePanel.instance().select(TimelineSelection.fromTraceEvent((entry)));
-                event.consume(true);
-            }
-        });
+            });
+            link.addEventListener('keydown', event => {
+                if (event.key === 'Enter') {
+                    TimelinePanel.instance().select(TimelineSelection.fromTraceEvent((entry)));
+                    event.consume(true);
+                }
+            });
+        }
+        link.textContent =
+            this.eventTitle(entry) + (isEntryOutsideBreadcrumb ? ' ' + i18nString(UIStrings.outsideBreadcrumbRange) : '');
         return link;
     }
     static async generateInvalidationsList(invalidations, contentHelper) {
@@ -2843,20 +2857,11 @@ export class TimelineDetailsContentHelper {
         UI.UIUtils.createTextChild(locationContent, Platform.StringUtilities.sprintf(' [%s…%s]', startLine + 1, (endLine || 0) + 1 || ''));
         this.appendElementRow(title, locationContent);
     }
-    appendStackTrace(title, stackTrace) {
+    createChildStackTraceElement(stackTrace) {
         if (!this.linkifierInternal) {
             return;
         }
-        const rowElement = this.tableElement.createChild('div', 'timeline-details-view-row');
-        rowElement.createChild('div', 'timeline-details-view-row-title').textContent = title;
-        this.createChildStackTraceElement(rowElement, stackTrace);
-    }
-    createChildStackTraceElement(parentElement, stackTrace) {
-        if (!this.linkifierInternal) {
-            return;
-        }
-        parentElement.classList.add('timeline-details-stack-values');
-        const stackTraceElement = parentElement.createChild('div', 'timeline-details-view-row-value timeline-details-view-row-stack-trace');
+        const stackTraceElement = this.tableElement.createChild('div', 'timeline-details-view-row timeline-details-stack-values');
         const callFrameContents = LegacyComponents.JSPresentationUtils.buildStackTracePreviewContents(this.target, this.linkifierInternal, { stackTrace, tabStops: true });
         stackTraceElement.appendChild(callFrameContents.element);
     }

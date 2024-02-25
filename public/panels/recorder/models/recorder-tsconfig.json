@@ -72,10 +72,10 @@
       "path": "../../../third_party/puppeteer/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/legacy/bundle-tsconfig.json"
+      "path": "../../../third_party/puppeteer-replay/bundle-tsconfig.json"
     },
     {
-      "path": "../../../third_party/puppeteer-replay/bundle-tsconfig.json"
+      "path": "../../../ui/legacy/bundle-tsconfig.json"
     },
     {
       "path": "../injected/bundle-tsconfig.json"

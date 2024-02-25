@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as EmulationModel from '../../../models/emulation/emulation.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as UILegacy from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -108,5 +107,5 @@ export class SizeInputElement extends HTMLElement {
         this.dispatchEvent(new SizeChangedEvent(modifiedValue));
     }
 }
-ComponentHelpers.CustomElements.defineComponent('device-mode-emulation-size-input', SizeInputElement);
+customElements.define('device-mode-emulation-size-input', SizeInputElement);
 //# sourceMappingURL=DeviceSizeInputElement.js.map

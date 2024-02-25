@@ -1,7 +1,6 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { toHexString } from './LinearMemoryInspectorUtils.js';
@@ -55,7 +54,7 @@ export class LinearMemoryViewer extends HTMLElement {
         this.#update();
     }
     connectedCallback() {
-        ComponentHelpers.SetCSSProperty.set(this, '--byte-group-margin', `${BYTE_GROUP_MARGIN}px`);
+        this.style.setProperty('--byte-group-margin', `${BYTE_GROUP_MARGIN}px`);
         this.#shadow.adoptedStyleSheets = [linearMemoryViewerStyles];
     }
     disconnectedCallback() {
@@ -263,5 +262,5 @@ export class LinearMemoryViewer extends HTMLElement {
             && index < this.#focusedMemoryHighlight.startAddress + this.#focusedMemoryHighlight.size;
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-linear-memory-inspector-viewer', LinearMemoryViewer);
+customElements.define('devtools-linear-memory-inspector-viewer', LinearMemoryViewer);
 //# sourceMappingURL=LinearMemoryViewer.js.map

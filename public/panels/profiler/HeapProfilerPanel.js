@@ -50,7 +50,7 @@ export class HeapProfilerPanel extends ProfilesPanel {
                 }
             });
         }
-        contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSummaryView), revealInView.bind(this, 'Summary'));
+        contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSummaryView), revealInView.bind(this, 'Summary'), { jslogContext: 'reveal-in-summary' });
     }
     handleAction(_context, _actionId) {
         const panel = UI.Context.Context.instance().flavor(HeapProfilerPanel);

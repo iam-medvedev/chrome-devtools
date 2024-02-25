@@ -29,5 +29,5 @@ export class PanelIntroductionSteps extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-panel-introduction-steps', PanelIntroductionSteps);
+customElements.define('devtools-panel-introduction-steps', PanelIntroductionSteps);
 //# sourceMappingURL=PanelIntroductionSteps.js.map

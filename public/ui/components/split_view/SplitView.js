@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 // clean-css does not compile this file correctly. So as a workaround adding styles inline.
 const styles = `
   :host {
@@ -164,7 +163,7 @@ export class SplitView extends HTMLElement {
         <div class="wrapper ${this.#mainAxisIdx === 1 ? 'horizontal' : ''}">
           <div class="container">
             <slot name="main"></slot>
-            <div id="resizer" @mousedown=${this.#onMouseDown} jslog=${VisualLogging.resizer('split-view')}></div>
+            <div id="resizer" @mousedown=${this.#onMouseDown}></div>
             <slot name="sidebar"></slot>
           </div>
         </div>
@@ -172,5 +171,5 @@ export class SplitView extends HTMLElement {
         // clang-format on
     };
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-split-view', SplitView);
+customElements.define('devtools-split-view', SplitView);
 //# sourceMappingURL=SplitView.js.map

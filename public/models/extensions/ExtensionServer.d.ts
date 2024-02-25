@@ -57,6 +57,7 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private onGetWasmLocal;
     private onGetWasmOp;
     private registerRecorderExtensionEndpoint;
+    private onReportResourceLoad;
     private onShowRecorderView;
     private onCreateRecorderView;
     private inspectedURLChanged;

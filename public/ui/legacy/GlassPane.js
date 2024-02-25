@@ -46,6 +46,9 @@ export class GlassPane {
         this.sizeBehavior = "SetExactSize" /* SizeBehavior.SetExactSize */;
         this.marginBehavior = "DefaultMargin" /* MarginBehavior.DefaultMargin */;
     }
+    setJsLog(jslog) {
+        this.contentElement.setAttribute('jslog', jslog);
+    }
     isShowing() {
         return this.widgetInternal.isShowing();
     }

@@ -26,7 +26,7 @@ export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
         return autofillManagerInstance;
     }
     async #addressFormFilled({ data }) {
-        if (Root.Runtime.experiments.isEnabled("autofillView" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */) &&
+        if (Root.Runtime.experiments.isEnabled("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */) &&
             this.#autoOpenViewSetting.get()) {
             await UI.ViewManager.ViewManager.instance().showView('autofill-view');
         }

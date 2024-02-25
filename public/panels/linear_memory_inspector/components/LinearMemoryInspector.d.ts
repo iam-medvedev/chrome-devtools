@@ -1,6 +1,6 @@
-import { Endianness, type ValueType, type ValueTypeMode } from './ValueInterpreterDisplayUtils.js';
 import { type DeleteMemoryHighlightEvent } from './LinearMemoryHighlightChipList.js';
 import { type HighlightInfo } from './LinearMemoryViewerUtils.js';
+import { Endianness, type ValueType, type ValueTypeMode } from './ValueInterpreterDisplayUtils.js';
 export interface LinearMemoryInspectorData {
     memory: Uint8Array;
     address: number;

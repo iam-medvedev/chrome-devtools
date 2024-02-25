@@ -4,7 +4,6 @@
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as ChromeLink from '../../../../ui/components/chrome_link/chrome_link.js';
 import * as Dialogs from '../../../../ui/components/dialogs/dialogs.js';
-import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
@@ -216,5 +215,5 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
         return this.#maybeKeyValue(this.#data.disabledByHoldbackPrerenderSpeculationRules, i18nString(UIStrings.headerDisabledByHoldbackPrerenderSpeculationRules), i18nString(UIStrings.descriptionDisabledByHoldbackPrerenderSpeculationRules));
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-resources-preloading-disabled-infobar', PreloadingDisabledInfobar);
+customElements.define('devtools-resources-preloading-disabled-infobar', PreloadingDisabledInfobar);
 //# sourceMappingURL=PreloadingDisabledInfobar.js.map

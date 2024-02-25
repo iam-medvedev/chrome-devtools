@@ -31,7 +31,7 @@ export function addColumnVisibilityCheckboxes(dataGrid, contextMenu) {
          */
         contextMenu.defaultSection().appendCheckboxItem(column.title, () => {
             toggleColumnVisibility(dataGrid, column);
-        }, column.visible);
+        }, { checked: column.visible, jslogContext: column.id });
     }
 }
 /**
@@ -48,7 +48,7 @@ export function addSortableColumnItems(dataGrid, contextMenu) {
         for (const column of sortableColumns) {
             contextMenu.defaultSection().appendItem(column.title, () => {
                 dataGrid.dispatchEvent(new ContextMenuColumnSortClickEvent(column));
-            });
+            }, { jslogContext: column.id });
         }
     }
 }

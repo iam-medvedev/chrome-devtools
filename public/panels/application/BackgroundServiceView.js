@@ -162,7 +162,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
     constructor(serviceName, model) {
         super(true);
         this.serviceName = serviceName;
-        const kebabName = serviceName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+        const kebabName = Platform.StringUtilities.toKebabCase(serviceName);
         this.element.setAttribute('jslog', `${VisualLogging.pane().context(kebabName)}`);
         this.model = model;
         this.model.addEventListener(Events.RecordingStateChanged, this.onRecordingStateChanged, this);
@@ -192,6 +192,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         this.splitWidget.show(this.contentElement);
         this.dataGrid = this.createDataGrid();
         this.previewPanel = new UI.Widget.VBox();
+        this.previewPanel.element.setAttribute('jslog', `${VisualLogging.pane('preview').track({ resize: true })}`);
         this.selectedEventNode = null;
         this.preview = null;
         this.splitWidget.setMainWidget(this.dataGrid.asWidget());

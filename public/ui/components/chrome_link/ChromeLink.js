@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
@@ -42,17 +43,20 @@ export class ChromeLink extends HTMLElement {
         event.consume(true);
     }
     #render() {
+        const urlForContext = new URL(this.#href);
+        urlForContext.search = '';
+        const jslogContext = Platform.StringUtilities.toKebabCase(urlForContext.toString());
         // clang-format off
         LitHtml.render(
         /* x-link doesn't work with custom click/keydown handlers */
         /* eslint-disable rulesdir/ban_a_tags_in_lit_html */
         LitHtml.html `
         <a href=${this.#href} class="link" target="_blank"
-          jslog=${VisualLogging.link().track({ click: true }).context(this.#href)}
+          jslog=${VisualLogging.link().track({ click: true }).context(jslogContext)}
           @click=${this.#handleClick}><slot></slot></a>
       `, this.#shadow, { host: this });
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-chrome-link', ChromeLink);
+customElements.define('devtools-chrome-link', ChromeLink);
 //# sourceMappingURL=ChromeLink.js.map

@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import adornerStyles from './adorner.css.js';
 const { render, html } = LitHtml;
@@ -88,5 +87,5 @@ export class Adorner extends HTMLElement {
         });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-adorner', Adorner);
+customElements.define('devtools-adorner', Adorner);
 //# sourceMappingURL=Adorner.js.map

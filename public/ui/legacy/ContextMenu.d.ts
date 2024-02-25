@@ -12,6 +12,7 @@ export declare class Item {
     protected idInternal: number | undefined;
     customElement?: Element;
     private shortcut?;
+    protected jslogContext: string | undefined;
     constructor(contextMenu: ContextMenu | null, type: 'checkbox' | 'item' | 'separator' | 'subMenu', label?: string, disabled?: boolean, checked?: boolean, tooltip?: Platform.UIString.LocalizedString, jslogContext?: string);
     id(): number;
     type(): string;
@@ -34,7 +35,13 @@ export declare class Section {
     appendSeparator(): Item;
     appendAction(actionId: string, label?: string, optional?: boolean): void;
     appendSubMenuItem(label: string, disabled?: boolean, jslogContext?: string): SubMenu;
-    appendCheckboxItem(label: string, handler: () => void, checked?: boolean, disabled?: boolean, additionalElement?: Element, tooltip?: Platform.UIString.LocalizedString, jslogContext?: string): Item;
+    appendCheckboxItem(label: string, handler: () => void, options?: {
+        checked?: boolean;
+        disabled?: boolean;
+        additionalElement?: Element;
+        tooltip?: Platform.UIString.LocalizedString;
+        jslogContext?: string;
+    }): Item;
 }
 export declare class SubMenu extends Item {
     private readonly sections;

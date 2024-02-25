@@ -58,6 +58,7 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     static linkActions(info: _LinkInfo): {
         section: string;
         title: string;
+        jslogContext: string;
         handler: () => Promise<void> | void;
     }[];
 }

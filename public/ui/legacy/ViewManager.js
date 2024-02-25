@@ -576,10 +576,10 @@ class TabbedLocation extends Location {
                 contextMenu.defaultSection().appendItem(title, () => {
                     Host.userMetrics.issuesPanelOpenedFrom(3 /* Host.UserMetrics.IssueOpener.HamburgerMenu */);
                     void this.showView(view, undefined, true);
-                });
+                }, { jslogContext: 'issues-pane' });
                 continue;
             }
-            contextMenu.defaultSection().appendItem(title, this.showView.bind(this, view, undefined, true));
+            contextMenu.defaultSection().appendItem(title, this.showView.bind(this, view, undefined, true), { jslogContext: view.viewId() });
         }
     }
     appendTab(view, index) {
@@ -694,7 +694,7 @@ class StackLocation extends Location {
     expandableContainers;
     constructor(manager, revealCallback, location) {
         const vbox = new VBox();
-        vbox.element.setAttribute('jslog', `${VisualLogging.pane('sidebar')}`);
+        vbox.element.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
         super(manager, vbox, revealCallback);
         this.vbox = vbox;
         ARIAUtils.markAsTree(vbox.element);

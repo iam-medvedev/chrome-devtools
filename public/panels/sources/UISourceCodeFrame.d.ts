@@ -9,7 +9,7 @@ declare const UISourceCodeFrame_base: (new (...args: any[]) => {
     once<T_1 extends Events.ToolbarItemsChanged>(eventType: T_1): Promise<EventTypes[T_1]>;
     removeEventListener<T_2 extends Events.ToolbarItemsChanged>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
     hasEventListeners(eventType: Events.ToolbarItemsChanged): boolean;
-    dispatchEventToListeners<T_3 extends Events.ToolbarItemsChanged>(eventType: import("../../core/platform/typescript-utilities.js").NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_3>): void;
+    dispatchEventToListeners<T_3 extends Events.ToolbarItemsChanged>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_3>): void;
 }) & typeof SourceFrame.SourceFrame.SourceFrameImpl;
 export declare class UISourceCodeFrame extends UISourceCodeFrame_base {
     #private;

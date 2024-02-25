@@ -322,7 +322,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         }
     }
     async evaluateCommandInConsole(executionContext, message, expression, useCommandLineAPI) {
-        if (Root.Runtime.experiments.isEnabled('evaluateExpressionsWithSourceMaps')) {
+        if (Root.Runtime.experiments.isEnabled('evaluate-expressions-with-source-maps')) {
             const callFrame = executionContext.debuggerModel.selectedCallFrame();
             if (callFrame) {
                 const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);

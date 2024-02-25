@@ -300,7 +300,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         storageTreeElement.appendChild(this.sharedStorageListTreeElement);
         this.cacheStorageListTreeElement = new ServiceWorkerCacheTreeElement(panel);
         storageTreeElement.appendChild(this.cacheStorageListTreeElement);
-        if (Root.Runtime.experiments.isEnabled("storageBucketsTree" /* Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE */)) {
+        if (Root.Runtime.experiments.isEnabled("storage-buckets-tree" /* Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE */)) {
             this.storageBucketsTreeElement = new StorageBucketsTreeParentElement(panel);
             storageTreeElement.appendChild(this.storageBucketsTreeElement);
         }
@@ -325,7 +325,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.periodicBackgroundSyncTreeElement =
             new BackgroundServiceTreeElement(panel, "periodicBackgroundSync" /* Protocol.BackgroundService.ServiceName.PeriodicBackgroundSync */);
         backgroundServiceTreeElement.appendChild(this.periodicBackgroundSyncTreeElement);
-        if (Root.Runtime.experiments.isEnabled("preloadingStatusPanel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */)) {
+        if (Root.Runtime.experiments.isEnabled("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */)) {
             this.preloadingSummaryTreeElement = new PreloadingSummaryTreeElement(panel);
             backgroundServiceTreeElement.appendChild(this.preloadingSummaryTreeElement);
             this.preloadingSummaryTreeElement.constructChildren(panel);
@@ -458,7 +458,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.periodicBackgroundSyncTreeElement.initialize(backgroundServiceModel);
         this.pushMessagingTreeElement.initialize(backgroundServiceModel);
         this.storageBucketsTreeElement?.initialize();
-        if (Root.Runtime.experiments.isEnabled("preloadingStatusPanel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */)) {
+        if (Root.Runtime.experiments.isEnabled("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */)) {
             const preloadingModel = this.target?.model(SDK.PreloadingModel.PreloadingModel);
             if (preloadingModel) {
                 this.preloadingSummaryTreeElement?.initialize(preloadingModel);
@@ -1082,7 +1082,7 @@ export class IndexedDBTreeElement extends ExpandableApplicationPanelTreeElement 
     }
     handleContextMenuEvent(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.refreshIndexeddb), this.refreshIndexedDB.bind(this));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.refreshIndexeddb), this.refreshIndexedDB.bind(this), { jslogContext: 'refresh-indexeddb' });
         void contextMenu.show();
     }
     refreshIndexedDB() {
@@ -1168,7 +1168,7 @@ export class IDBDatabaseTreeElement extends ApplicationPanelTreeElement {
     }
     handleContextMenuEvent(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.refreshIndexeddb), this.refreshIndexedDB.bind(this));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.refreshIndexeddb), this.refreshIndexedDB.bind(this), { jslogContext: 'refresh-indexeddb' });
         void contextMenu.show();
     }
     refreshIndexedDB() {
@@ -1284,7 +1284,7 @@ export class IDBObjectStoreTreeElement extends ApplicationPanelTreeElement {
     }
     handleContextMenuEvent(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), this.clearObjectStore.bind(this));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), this.clearObjectStore.bind(this), { jslogContext: 'clear' });
         void contextMenu.show();
     }
     refreshObjectStore() {
@@ -1455,7 +1455,7 @@ export class DOMStorageTreeElement extends ApplicationPanelTreeElement {
     }
     handleContextMenuEvent(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), () => this.domStorage.clear());
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), () => this.domStorage.clear(), { jslogContext: 'clear' });
         void contextMenu.show();
     }
 }
@@ -1488,7 +1488,7 @@ export class CookieTreeElement extends ApplicationPanelTreeElement {
     }
     handleContextMenuEvent(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), () => this.resourcesPanel.clearCookies(this.target, this.cookieDomainInternal));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), () => this.resourcesPanel.clearCookies(this.target, this.cookieDomainInternal), { jslogContext: 'clear' });
         void contextMenu.show();
     }
     onselect(selectedByUser) {

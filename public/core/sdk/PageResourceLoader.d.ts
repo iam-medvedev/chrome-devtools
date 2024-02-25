@@ -4,6 +4,12 @@ import * as Host from '../host/host.js';
 import type * as Platform from '../platform/platform.js';
 import { PrimaryPageChangeType, type ResourceTreeFrame } from './ResourceTreeModel.js';
 import { type Target } from './Target.js';
+export interface ExtensionInitiator {
+    target: null;
+    frameId: null;
+    initiatorUrl: Platform.DevToolsPath.UrlString;
+    extensionId: string;
+}
 export type PageResourceLoadInitiator = {
     target: null;
     frameId: Protocol.Page.FrameId;
@@ -12,7 +18,7 @@ export type PageResourceLoadInitiator = {
     target: Target;
     frameId: Protocol.Page.FrameId | null;
     initiatorUrl: Platform.DevToolsPath.UrlString | null;
-};
+} | ExtensionInitiator;
 export interface PageResource {
     success: boolean | null;
     errorMessage?: string;
@@ -64,7 +70,9 @@ export declare class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapp
     };
     private acquireLoadSlot;
     private releaseLoadSlot;
+    static makeExtensionKey(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator): string;
     static makeKey(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator): string;
+    resourceLoadedThroughExtension(pageResource: PageResource): void;
     loadResource(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator): Promise<{
         content: string;
     }>;

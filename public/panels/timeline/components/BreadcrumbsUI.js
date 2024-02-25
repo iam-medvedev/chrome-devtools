@@ -92,5 +92,5 @@ export class BreadcrumbsUI extends HTMLElement {
         }
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-breadcrumbs-ui', BreadcrumbsUI);
+customElements.define('devtools-breadcrumbs-ui', BreadcrumbsUI);
 //# sourceMappingURL=BreadcrumbsUI.js.map

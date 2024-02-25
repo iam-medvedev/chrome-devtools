@@ -408,6 +408,7 @@ export class IgnoreListManager {
             menuItems.push({
                 text: i18nString(UIStrings.removeFromIgnoreList),
                 callback: this.removeIgnoreListPattern.bind(this, regexValue),
+                jslogContext: 'remove-from-ignore-list',
             });
         }
         else if (this.isUserIgnoreListedURL(url, options)) {
@@ -415,6 +416,7 @@ export class IgnoreListManager {
             menuItems.push({
                 text: i18nString(UIStrings.removeFromIgnoreList),
                 callback: this.unIgnoreListURL.bind(this, url, options),
+                jslogContext: 'remove-from-ignore-list',
             });
         }
         else if (!options?.isCurrentlyIgnoreListed) {
@@ -423,6 +425,7 @@ export class IgnoreListManager {
             menuItems.push({
                 text: i18nString(UIStrings.addDirectoryToIgnoreList),
                 callback: this.ignoreListRegex.bind(this, regexValue),
+                jslogContext: 'add-directory-to-ignore-list',
             });
             menuItems.push(...this.getIgnoreListGeneralContextMenuItems(options));
         }

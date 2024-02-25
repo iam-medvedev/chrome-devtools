@@ -40,6 +40,7 @@ import * as Extensions from '../../models/extensions/extensions.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as TreeOutline from '../../ui/components/tree_outline/tree_outline.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AccessibilityTreeView } from './AccessibilityTreeView.js';
 import { ColorSwatchPopoverIcon } from './ColorSwatchPopoverIcon.js';
 import * as ElementsComponents from './components/components.js';
@@ -199,7 +200,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.mainContainer = document.createElement('div');
         this.domTreeContainer = document.createElement('div');
         const crumbsContainer = document.createElement('div');
-        if (Root.Runtime.experiments.isEnabled('fullAccessibilityTree')) {
+        if (Root.Runtime.experiments.isEnabled('full-accessibility-tree')) {
             this.initializeFullAccessibilityTreeView();
         }
         this.mainContainer.appendChild(this.domTreeContainer);
@@ -846,10 +847,12 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.showToolbarPane(null /* widget */, null /* toggle */);
         const matchedStylePanesWrapper = new UI.Widget.VBox();
         matchedStylePanesWrapper.element.classList.add('style-panes-wrapper');
+        matchedStylePanesWrapper.element.setAttribute('jslog', `${VisualLogging.pane('styles').track({ resize: true })}`);
         this.stylesWidget.show(matchedStylePanesWrapper.element);
         this.setupTextSelectionHack(matchedStylePanesWrapper.element);
         const computedStylePanesWrapper = new UI.Widget.VBox();
         computedStylePanesWrapper.element.classList.add('style-panes-wrapper');
+        computedStylePanesWrapper.element.setAttribute('jslog', `${VisualLogging.pane('computed').track({ resize: true })}`);
         this.computedStyleWidget.show(computedStylePanesWrapper.element);
         const stylesSplitWidget = new UI.SplitWidget.SplitWidget(true /* isVertical */, true /* secondIsSidebar */, 'elements.styles.sidebar.width', 100);
         stylesSplitWidget.setMainWidget(matchedStylePanesWrapper);
@@ -904,6 +907,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         };
         this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => UI.ViewManager.ViewManager.instance().showView('elements'), 'styles-pane-sidebar', true, true);
         const tabbedPane = this.sidebarPaneView.tabbedPane();
+        tabbedPane.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('sidebar')}`);
         if (this.splitMode !== "Vertical" /* _splitMode.Vertical */) {
             this.splitWidget.installResizer(tabbedPane.headerElement());
         }

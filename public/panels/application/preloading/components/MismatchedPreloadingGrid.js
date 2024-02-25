@@ -6,7 +6,6 @@ import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js'
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Diff from '../../../../third_party/diff/diff.js';
 import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
-import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import * as PreloadingString from './PreloadingString.js';
@@ -180,5 +179,5 @@ export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.Wrappa
         }));
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-resources-mismatched-preloading-grid', MismatchedPreloadingGrid);
+customElements.define('devtools-resources-mismatched-preloading-grid', MismatchedPreloadingGrid);
 //# sourceMappingURL=MismatchedPreloadingGrid.js.map

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import srgbOverlayStyles from './srgbOverlay.css.js';
@@ -86,5 +85,5 @@ export class SrgbOverlay extends HTMLElement {
         });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-spectrum-srgb-overlay', SrgbOverlay);
+customElements.define('devtools-spectrum-srgb-overlay', SrgbOverlay);
 //# sourceMappingURL=SrgbOverlay.js.map

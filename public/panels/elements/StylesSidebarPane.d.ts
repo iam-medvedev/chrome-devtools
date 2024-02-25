@@ -55,7 +55,10 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
         forceNew: boolean;
     }): StylesSidebarPane;
     constructor();
-    addPopover(element: Node, contents: () => HTMLElement | undefined): void;
+    addPopover(element: Node, popover: {
+        contents: () => HTMLElement | undefined;
+        jslogContext?: string;
+    }): void;
     private onScroll;
     swatchPopoverHelper(): InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper;
     setUserOperation(userOperation: boolean): void;
@@ -178,35 +181,20 @@ export declare class StylesSidebarPropertyRenderer {
     private node;
     readonly propertyName: string;
     readonly propertyValue: string;
-    private colorMixHandler;
-    private bezierHandler;
     private fontHandler;
     private shadowHandler;
     private gridHandler;
-    private varHandler;
-    private angleHandler;
     private lengthHandler;
-    private animationNameHandler;
     private animationHandler;
-    private positionFallbackHandler;
-    private fontPaletteHandler;
     matchers: Matcher[];
     constructor(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null, name: string, value: string, matchers?: Matcher[]);
-    setColorMixHandler(handler: (arg0: string) => Node): void;
-    setBezierHandler(handler: (arg0: string) => Node): void;
     setFontHandler(handler: (arg0: string) => Node): void;
     setShadowHandler(handler: (arg0: string, arg1: string) => Node): void;
     setGridHandler(handler: (arg0: string, arg1: string) => Node): void;
-    setVarHandler(handler: (arg0: string) => Node): void;
-    setAnimationNameHandler(handler: (arg0: string) => Node): void;
     setAnimationHandler(handler: (arg0: string) => Node): void;
-    setAngleHandler(handler: (arg0: string, readonly: boolean) => Node): void;
     setLengthHandler(handler: (arg0: string) => Node): void;
-    setPositionFallbackHandler(handler: (arg0: string) => Node): void;
-    setFontPaletteHandler(handler: (arg0: string) => Node): void;
     renderName(): Element;
     renderValue(): Element;
-    private processURL;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(_context: UI.Context.Context, actionId: string): boolean;

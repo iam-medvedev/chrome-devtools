@@ -10,7 +10,6 @@ export declare class TracingManager extends SDK.SDKModel.SDKModel<void> {
     tracingComplete(): void;
     reset(): Promise<void>;
     start(client: TracingManagerClient, categoryFilter: string, options: string): Promise<Protocol.ProtocolResponseWithError>;
-    warmupJsProfiler(): Promise<void>;
     stop(): void;
 }
 export interface TracingManagerClient {

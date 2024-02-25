@@ -38,7 +38,6 @@ import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_e
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ElementsComponents from './components/components.js';
 import { ComputedStyleModel } from './ComputedStyleModel.js';
 import computedStyleSidebarPaneStyles from './computedStyleSidebarPane.css.js';
@@ -47,6 +46,7 @@ import { PlatformFontsWidget } from './PlatformFontsWidget.js';
 import { categorizePropertyName, DefaultCategoryOrder } from './PropertyNameCategories.js';
 import { ColorMatch, ColorMatcher } from './PropertyParser.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
+import { StringRenderer, URLRenderer } from './StylePropertyTreeElement.js';
 import { StylesSidebarPropertyRenderer } from './StylesSidebarPane.js';
 const UIStrings = {
     /**
@@ -108,7 +108,7 @@ function renderPropertyContents(node, propertyName, propertyValue) {
     if (valueFromCache) {
         return valueFromCache;
     }
-    const renderer = new StylesSidebarPropertyRenderer(null, node, propertyName, propertyValue, [ColorRenderer.matcher()]);
+    const renderer = new StylesSidebarPropertyRenderer(null, node, propertyName, propertyValue, [ColorRenderer.matcher(), URLRenderer.matcher(null, node), StringRenderer.matcher()]);
     const name = renderer.renderName();
     name.slot = 'name';
     const value = renderer.renderValue();
@@ -139,7 +139,7 @@ const createPropertyElement = (node, propertyName, propertyValue, traceable, inh
 };
 const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles, linkifier) => {
     const trace = new ElementsComponents.ComputedStyleTrace.ComputedStyleTrace();
-    const renderer = new StylesSidebarPropertyRenderer(null, node, property.name, property.value, [ColorRenderer.matcher()]);
+    const renderer = new StylesSidebarPropertyRenderer(null, node, property.name, property.value, [ColorRenderer.matcher(), URLRenderer.matcher(null, node), StringRenderer.matcher()]);
     const valueElement = renderer.renderValue();
     valueElement.slot = 'trace-value';
     trace.appendChild(valueElement);
@@ -225,7 +225,6 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         this.filterRegex = null;
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.showInheritedComputedStylePropertiesSetting, undefined, i18nString(UIStrings.showAll)));
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.groupComputedStylesSetting, undefined, i18nString(UIStrings.group)));
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('computed')}`);
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingProperty);
         this.contentElement.appendChild(this.#computedStylesTree);
@@ -430,10 +429,10 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
             if (header && !header.isAnonymousInlineStyleSheet()) {
                 contextMenu.defaultSection().appendItem(i18nString(UIStrings.navigateToSelectorSource), () => {
                     StylePropertiesSection.tryNavigateToRuleLocation(matchedStyles, rule);
-                });
+                }, { jslogContext: 'navigate-to-selector-source' });
             }
         }
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.navigateToStyle), () => Common.Revealer.reveal(property));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.navigateToStyle), () => Common.Revealer.reveal(property), { jslogContext: 'navigate-to-style' });
         void contextMenu.show();
     }
     computePropertyTraces(matchedStyles) {

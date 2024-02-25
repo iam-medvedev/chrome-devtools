@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/core/host/AidaClient.ts",
     "../../../../../../front_end/core/host/InspectorFrontendHost.ts",
     "../../../../../../front_end/core/host/InspectorFrontendHostAPI.ts",
     "../../../../../../front_end/core/host/Platform.ts",

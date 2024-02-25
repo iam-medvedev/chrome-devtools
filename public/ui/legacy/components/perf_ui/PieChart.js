@@ -1,7 +1,6 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../../components/helpers/helpers.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import pieChartStyles from './pieChart.css.js';
@@ -200,5 +199,5 @@ export class PieChart extends HTMLElement {
         return pathString;
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-perf-piechart', PieChart);
+customElements.define('devtools-perf-piechart', PieChart);
 //# sourceMappingURL=PieChart.js.map

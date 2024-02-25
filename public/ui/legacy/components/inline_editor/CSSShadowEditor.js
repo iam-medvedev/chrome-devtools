@@ -68,9 +68,9 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.insetButton.textContent = i18n.i18n.lockedString('Inset');
         this.insetButton.addEventListener('click', this.onButtonClick.bind(this), false);
         const xField = this.contentElement.createChild('div', 'shadow-editor-field');
-        this.xInput = this.createTextInput(xField, i18nString(UIStrings.xOffset), 'xOffset');
+        this.xInput = this.createTextInput(xField, i18nString(UIStrings.xOffset), 'x-offset');
         const yField = this.contentElement.createChild('div', 'shadow-editor-field');
-        this.yInput = this.createTextInput(yField, i18nString(UIStrings.yOffset), 'yOffset');
+        this.yInput = this.createTextInput(yField, i18nString(UIStrings.yOffset), 'y-offset');
         this.xySlider = xField.createChild('canvas', 'shadow-editor-2D-slider');
         this.xySlider.setAttribute('jslog', `${VisualLogging.slider('xy').track({ click: true, drag: true })}`);
         this.xySlider.width = canvasSize;

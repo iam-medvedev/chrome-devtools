@@ -4,7 +4,6 @@
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
@@ -108,7 +107,7 @@ export class RequestLinkIcon extends HTMLElement {
             void this.#reveal(requestLocation);
         }
         else {
-            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(linkedRequest, this.#networkTab ?? "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
+            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(linkedRequest, this.#networkTab ?? "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
             void this.#reveal(requestLocation);
         }
         this.#additionalOnClickAction?.();
@@ -155,5 +154,5 @@ export class RequestLinkIcon extends HTMLElement {
         });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-request-link-icon', RequestLinkIcon);
+customElements.define('devtools-request-link-icon', RequestLinkIcon);
 //# sourceMappingURL=RequestLinkIcon.js.map

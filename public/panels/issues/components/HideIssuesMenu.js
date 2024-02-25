@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
@@ -41,7 +40,7 @@ export class HideIssuesMenu extends HTMLElement {
             x: buttonElement?.getBoundingClientRect().left,
             y: buttonElement?.getBoundingClientRect().bottom,
         });
-        contextMenu.headerSection().appendItem(this.#menuItemLabel, () => this.#menuItemAction());
+        contextMenu.headerSection().appendItem(this.#menuItemLabel, () => this.#menuItemAction(), { jslogContext: 'toggle-similar-issues' });
         void contextMenu.show();
         this.classList.toggle('has-context-menu-opened', true);
     }
@@ -55,5 +54,5 @@ export class HideIssuesMenu extends HTMLElement {
     `, this.#shadow, { host: this });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-hide-issues-menu', HideIssuesMenu);
+customElements.define('devtools-hide-issues-menu', HideIssuesMenu);
 //# sourceMappingURL=HideIssuesMenu.js.map

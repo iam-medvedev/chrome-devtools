@@ -50,9 +50,6 @@
       "path": "../../../models/trace/bundle-tsconfig.json"
     },
     {
-      "path": "../../../models/trace/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/components/helpers/bundle-tsconfig.json"
     },
     {

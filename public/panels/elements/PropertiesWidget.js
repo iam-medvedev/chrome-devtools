@@ -94,7 +94,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
         filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(filterInput);
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingCheckbox(this.showAllPropertiesSetting, i18nString(UIStrings.showAllTooltip), i18nString(UIStrings.showAll)));
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('element-properties')}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('element-properties').track({ resize: true })}`);
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message hidden');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingProperty);
         this.treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline({ readOnly: true });

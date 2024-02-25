@@ -7,7 +7,6 @@ import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.nex
 import * as ThemeSupport from '../../legacy/theme_support/theme_support.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
-import * as ComponentHelpers from '../helpers/helpers.js';
 import { baseConfiguration, dummyDarkTheme, dynamicSetting, DynamicSetting, themeSelection } from './config.js';
 import { toLineColumn, toOffset } from './position.js';
 export class TextEditor extends HTMLElement {
@@ -200,7 +199,7 @@ export class TextEditor extends HTMLElement {
         return toOffset(this.state.doc, pos);
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-text-editor', TextEditor);
+customElements.define('devtools-text-editor', TextEditor);
 // Line highlighting
 const clearHighlightedLine = CodeMirror.StateEffect.define();
 const setHighlightedLine = CodeMirror.StateEffect.define();

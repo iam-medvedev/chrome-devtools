@@ -4,7 +4,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -52,7 +51,7 @@ function findPropertyAt(node, pos) {
 function getCurrentStyleSheet(url, cssModel) {
     const currentStyleSheet = cssModel.getStyleSheetIdsForURL(url);
     if (currentStyleSheet.length === 0) {
-        Platform.DCHECK(() => currentStyleSheet.length !== 0, 'Can\'t find style sheet ID for current URL');
+        throw new Error('Can\'t find style sheet ID for current URL');
     }
     return currentStyleSheet[0];
 }
@@ -403,7 +402,7 @@ export class CSSPlugin extends Plugin {
         if (this.uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network && cssModel &&
             !Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
             const addSourceMapURLLabel = i18nString(UIStrings.addSourceMap);
-            contextMenu.debugSection().appendItem(addSourceMapURLLabel, () => addSourceMapURL(cssModel, url));
+            contextMenu.debugSection().appendItem(addSourceMapURLLabel, () => addSourceMapURL(cssModel, url), { jslogContext: 'add-source-map' });
         }
     }
 }

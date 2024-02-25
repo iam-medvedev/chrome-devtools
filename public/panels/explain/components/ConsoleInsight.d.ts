@@ -2,19 +2,18 @@ import * as Host from '../../../core/host/host.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import { type InsightProvider } from '../InsightProvider.js';
 import { type PromptBuilder, type Source } from '../PromptBuilder.js';
 export declare class CloseEvent extends Event {
     static readonly eventName = "close";
     constructor();
 }
 type PublicPromptBuilder = Pick<PromptBuilder, 'buildPrompt'>;
-type PublicInsightProvider = Pick<InsightProvider, 'getInsights'>;
+type PublicAidaClient = Pick<Host.AidaClient.AidaClient, 'fetch'>;
 export declare class ConsoleInsight extends HTMLElement {
     #private;
-    static create(promptBuilder: PublicPromptBuilder, insightProvider: PublicInsightProvider, actionTitle?: string): Promise<ConsoleInsight>;
+    static create(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient, actionTitle?: string): Promise<ConsoleInsight>;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
-    constructor(promptBuilder: PublicPromptBuilder, insightProvider: PublicInsightProvider, actionTitle?: string, syncInfo?: Host.InspectorFrontendHostAPI.SyncInformation);
+    constructor(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient, actionTitle?: string, syncInfo?: Host.InspectorFrontendHostAPI.SyncInformation);
     connectedCallback(): void;
 }
 declare class ConsoleInsightSourcesList extends HTMLElement {

@@ -57,6 +57,7 @@ export declare class IgnoreListManager implements SDK.TargetManager.SDKModelObse
     getIgnoreListFolderContextMenuItems(url: Platform.DevToolsPath.UrlString, options?: IgnoreListGeneralRules): Array<{
         text: string;
         callback: () => void;
+        jslogContext: string;
     }>;
 }
 export interface SourceRange {

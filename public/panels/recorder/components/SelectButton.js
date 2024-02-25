@@ -143,5 +143,5 @@ export class SelectButton extends HTMLElement {
         // clang-format on
     };
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-select-button', SelectButton);
+customElements.define('devtools-select-button', SelectButton);
 //# sourceMappingURL=SelectButton.js.map

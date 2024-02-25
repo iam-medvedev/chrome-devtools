@@ -403,5 +403,5 @@ export class HeadersViewComponent extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-sources-headers-view', HeadersViewComponent);
+customElements.define('devtools-sources-headers-view', HeadersViewComponent);
 //# sourceMappingURL=HeadersView.js.map

@@ -167,10 +167,10 @@ export class TreeOutline extends HTMLElement {
         await this.#render();
     }
     #setNodeKeyNoWrapCSSVariable(attributeValue) {
-        ComponentHelpers.SetCSSProperty.set(this, '--override-key-whitespace-wrapping', attributeValue !== null ? 'nowrap' : 'initial');
+        this.style.setProperty('--override-key-whitespace-wrapping', attributeValue !== null ? 'nowrap' : 'initial');
     }
     #setTopLevelNodeBorderColorCSSVariable(attributeValue) {
-        ComponentHelpers.SetCSSProperty.set(this, '--override-top-node-border', attributeValue ? `1px solid ${attributeValue}` : '');
+        this.style.setProperty('--override-top-node-border', attributeValue ? `1px solid ${attributeValue}` : '');
     }
     async #recursivelyCollapseTreeNodeChildren(treeNode) {
         if (!isExpandableNode(treeNode) || !this.#nodeIsExpanded(treeNode)) {
@@ -451,5 +451,5 @@ export class TreeOutline extends HTMLElement {
         }
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-tree-outline', TreeOutline);
+customElements.define('devtools-tree-outline', TreeOutline);
 //# sourceMappingURL=TreeOutline.js.map

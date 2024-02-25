@@ -18,7 +18,7 @@ export class AdvancedApp {
     constructor() {
         UI.DockController.DockController.instance().addEventListener("BeforeDockSideChanged" /* UI.DockController.Events.BeforeDockSideChanged */, this.openToolboxWindow, this);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged, async () => {
-            await UI.Utils.DynamicTheming.fetchColors(this.toolboxDocument);
+            await ThemeSupport.ThemeSupport.fetchColors(this.toolboxDocument);
         }, this);
     }
     /**
@@ -120,9 +120,9 @@ export class AdvancedApp {
     }
     updateForDocked(dockSide) {
         const resizerElement = this.rootSplitWidget.resizerElement();
-        resizerElement.style.transform = dockSide === "right" /* UI.DockController.DockState.RIGHT */ ?
-            'translateX(2px)' :
-            dockSide === "left" /* UI.DockController.DockState.LEFT */ ? 'translateX(-2px)' : '';
+        resizerElement.style.transform = dockSide === "right" /* UI.DockController.DockState.RIGHT */ ? 'translateX(2px)' :
+            dockSide === "left" /* UI.DockController.DockState.LEFT */ ? 'translateX(-2px)' :
+                '';
         this.rootSplitWidget.setVertical(dockSide === "right" /* UI.DockController.DockState.RIGHT */ || dockSide === "left" /* UI.DockController.DockState.LEFT */);
         this.rootSplitWidget.setSecondIsSidebar(dockSide === "right" /* UI.DockController.DockState.RIGHT */ || dockSide === "bottom" /* UI.DockController.DockState.BOTTOM */);
         this.rootSplitWidget.toggleResizer(this.rootSplitWidget.resizerElement(), true);

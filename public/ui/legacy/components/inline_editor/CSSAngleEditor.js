@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
-import * as ComponentHelpers from '../../../components/helpers/helpers.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import cssAngleEditorStyles from './cssAngleEditor.css.js';
@@ -25,7 +24,7 @@ export class CSSAngleEditor extends HTMLElement {
     mousemoveListener = this.onMousemove.bind(this);
     connectedCallback() {
         this.shadow.adoptedStyleSheets = [cssAngleEditorStyles];
-        ComponentHelpers.SetCSSProperty.set(this, '--clock-dial-length', `${CLOCK_DIAL_LENGTH}px`);
+        this.style.setProperty('--clock-dial-length', `${CLOCK_DIAL_LENGTH}px`);
     }
     set data(data) {
         this.angle = data.angle;
@@ -138,5 +137,5 @@ export class CSSAngleEditor extends HTMLElement {
         return this.dialTemplates;
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-css-angle-editor', CSSAngleEditor);
+customElements.define('devtools-css-angle-editor', CSSAngleEditor);
 //# sourceMappingURL=CSSAngleEditor.js.map

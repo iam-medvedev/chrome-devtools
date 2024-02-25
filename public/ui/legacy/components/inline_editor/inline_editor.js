@@ -5,7 +5,6 @@ import * as AnimationTimingModel from './AnimationTimingModel.js';
 import * as AnimationTimingUI from './AnimationTimingUI.js';
 import * as BezierEditor from './BezierEditor.js';
 import * as BezierUI from './BezierUI.js';
-import * as ColorMixModel from './ColorMixModel.js';
 import * as ColorMixSwatch from './ColorMixSwatch.js';
 import * as ColorSwatch from './ColorSwatch.js';
 import * as CSSAngle from './CSSAngle.js';
@@ -23,5 +22,5 @@ import * as InlineEditorUtils from './InlineEditorUtils.js';
 import * as LinkSwatch from './LinkSwatch.js';
 import * as Swatches from './Swatches.js';
 import * as SwatchPopoverHelper from './SwatchPopoverHelper.js';
-export { AnimationTimingModel, AnimationTimingUI, BezierEditor, BezierUI, ColorMixModel, ColorMixSwatch, ColorSwatch, CSSAngle, CSSAngleUtils, CSSAnimationModel, CSSLength, CSSLengthUtils, CSSLinearEasingModel, CSSShadowEditor, CSSShadowModel, FontEditor, FontEditorUnitConverter, FontEditorUtils, InlineEditorUtils, LinkSwatch, Swatches, SwatchPopoverHelper, };
+export { AnimationTimingModel, AnimationTimingUI, BezierEditor, BezierUI, ColorMixSwatch, ColorSwatch, CSSAngle, CSSAngleUtils, CSSAnimationModel, CSSLength, CSSLengthUtils, CSSLinearEasingModel, CSSShadowEditor, CSSShadowModel, FontEditor, FontEditorUnitConverter, FontEditorUtils, InlineEditorUtils, LinkSwatch, Swatches, SwatchPopoverHelper, };
 //# sourceMappingURL=inline_editor.js.map

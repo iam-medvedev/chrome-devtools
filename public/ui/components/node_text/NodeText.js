@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as ComponentHelpers from '../helpers/helpers.js';
 import nodeTextStyles from './nodeText.css.js';
 const { render, html } = LitHtml;
 export class NodeText extends HTMLElement {
@@ -51,5 +50,5 @@ export class NodeText extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-node-text', NodeText);
+customElements.define('devtools-node-text', NodeText);
 //# sourceMappingURL=NodeText.js.map

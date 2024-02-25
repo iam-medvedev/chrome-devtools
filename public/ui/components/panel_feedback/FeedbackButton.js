@@ -46,5 +46,5 @@ export class FeedbackButton extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-feedback-button', FeedbackButton);
+customElements.define('devtools-feedback-button', FeedbackButton);
 //# sourceMappingURL=FeedbackButton.js.map

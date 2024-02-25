@@ -265,6 +265,7 @@ export function sanitizeThreads(processes) {
  *   |- Task C -|
  */
 export function buildHierarchy(processes, options) {
+    const samplesData = samplesHandlerData();
     for (const [pid, process] of processes) {
         for (const [tid, thread] of process.threads) {
             if (!thread.entries.length) {
@@ -274,7 +275,7 @@ export function buildHierarchy(processes, options) {
             // Step 1. Massage the data.
             Helpers.Trace.sortTraceEventsInPlace(thread.entries);
             // Step 2. Inject profile calls from samples
-            const cpuProfile = samplesHandlerData().profilesInProcess.get(pid)?.get(tid)?.parsedProfile;
+            const cpuProfile = samplesData.profilesInProcess.get(pid)?.get(tid)?.parsedProfile;
             const samplesIntegrator = cpuProfile && new Helpers.SamplesIntegrator.SamplesIntegrator(cpuProfile, pid, tid, config);
             const profileCalls = samplesIntegrator?.buildProfileCalls(thread.entries);
             if (profileCalls) {

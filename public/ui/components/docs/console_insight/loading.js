@@ -12,8 +12,9 @@ const component = new ConsoleInsight({
         return { prompt: '', sources: [] };
     },
 }, {
-    async getInsights() {
-        return `## Result
+    async *fetch() {
+        yield {
+            explanation: `## Result
 
 Some text with \`code\`. Some code:
 \`\`\`ts
@@ -23,7 +24,9 @@ document.querySelector('test').style = 'black';
 
 Links: [https://example.com](https://example.com)
 Images: ![https://example.com](https://example.com)
-`;
+`,
+            metadata: {},
+        };
     },
 }, 'Explain this error', {
     isSyncActive: true,

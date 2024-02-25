@@ -12,7 +12,7 @@ export class TimelineLayersView extends UI.SplitWidget.SplitWidget {
     frameLayerTree;
     updateWhenVisible;
     constructor(model, showPaintProfilerCallback) {
-        super(true, false, 'timelineLayersView');
+        super(true, false, 'timeline-layers-view');
         this.model = model;
         this.showPaintProfilerCallback = showPaintProfilerCallback;
         this.element.classList.add('timeline-layers-view');

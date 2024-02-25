@@ -86,7 +86,14 @@ export interface SearchCompletedEvent {
     files: Platform.DevToolsPath.RawPathString[];
 }
 export interface DoAidaConversationResult {
-    response: string;
+    statusCode?: number;
+    headers?: {
+        [x: string]: string;
+    };
+    netError?: number;
+    netErrorName?: string;
+    error?: string;
+    detail?: string;
 }
 export interface VisualElementImpression {
     id: number;
@@ -176,6 +183,7 @@ export interface InspectorFrontendHostAPI {
     setEyeDropperActive(active: boolean): void;
     inspectElementCompleted(): void;
     openInNewTab(url: Platform.DevToolsPath.UrlString): void;
+    openSearchResultsInNewTab(query: string): void;
     showItemInFolder(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
     removeFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
     requestFileSystems(): void;
@@ -229,7 +237,8 @@ export interface InspectorFrontendHostAPI {
     isHostedMode(): boolean;
     setAddExtensionCallback(callback: (arg0: ExtensionDescriptor) => void): void;
     initialTargetId(): Promise<string | null>;
-    doAidaConversation: (request: string, cb: (result: DoAidaConversationResult) => void) => void;
+    doAidaConversation: (request: string, streamId: number, cb: (result: DoAidaConversationResult) => void) => void;
+    registerAidaClientEvent: (request: string) => void;
     recordImpression(event: ImpressionEvent): void;
     recordClick(event: ClickEvent): void;
     recordHover(event: HoverEvent): void;

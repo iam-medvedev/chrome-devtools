@@ -348,7 +348,7 @@ class GenericTrackMenu extends UI.TabbedPane.TabbedPane {
     }
     addNewTab(trackNumber, element) {
         const localizedTrackLower = i18nString(UIStrings.track);
-        const tabId = `Track${trackNumber}`;
+        const tabId = `track-${trackNumber}`;
         if (this.hasTab(tabId)) {
             const tabElement = this.tabView(tabId);
             if (tabElement === null) {
@@ -370,7 +370,7 @@ class DecoderTrackMenu extends GenericTrackMenu {
         const title = `${decoderName} ${decoderLocalized}`;
         const propertiesLocalized = i18nString(UIStrings.properties);
         const hoverText = `${title} ${propertiesLocalized}`;
-        this.appendTab('DecoderProperties', title, informationalElement, hoverText);
+        this.appendTab('decoder-properties', title, informationalElement, hoverText);
     }
 }
 class NoTracksPlaceholderMenu extends UI.Widget.VBox {

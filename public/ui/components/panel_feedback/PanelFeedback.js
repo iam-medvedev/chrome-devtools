@@ -76,5 +76,5 @@ export class PanelFeedback extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-panel-feedback', PanelFeedback);
+customElements.define('devtools-panel-feedback', PanelFeedback);
 //# sourceMappingURL=PanelFeedback.js.map

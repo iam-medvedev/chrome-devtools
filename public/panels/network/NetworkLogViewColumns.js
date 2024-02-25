@@ -551,31 +551,31 @@ export class NetworkLogViewColumns {
             const visibleColumns = group.filter(columnConfig => columnConfig.visible);
             for (const columnConfig of group) {
                 // Make sure that at least one item in every group is enabled
-                const isDisabled = visibleColumns.length === 1 && visibleColumns[0] === columnConfig;
+                const disabled = visibleColumns.length === 1 && visibleColumns[0] === columnConfig;
                 const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
-                contextMenu.headerSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), columnConfig.visible, isDisabled);
+                contextMenu.headerSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible, disabled });
             }
             contextMenu.headerSection().appendSeparator();
         }
         // Add normal columns not belonging to any group
         for (const columnConfig of nonResponseHeadersWithoutGroup) {
             const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
-            contextMenu.headerSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), columnConfig.visible);
+            contextMenu.headerSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible });
         }
         const responseSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString(UIStrings.responseHeaders));
         const responseHeaders = columnConfigs.filter(columnConfig => columnConfig.isResponseHeader);
         for (const columnConfig of responseHeaders) {
             const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
-            responseSubMenu.defaultSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), columnConfig.visible);
+            responseSubMenu.defaultSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible });
         }
         responseSubMenu.footerSection().appendItem(i18nString(UIStrings.manageHeaderColumns), this.manageCustomHeaderDialog.bind(this));
         const waterfallSortIds = WaterfallSortIds;
         const waterfallSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString(UIStrings.waterfall));
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.startTime), setWaterfallMode.bind(this, waterfallSortIds.StartTime), this.activeWaterfallSortId === waterfallSortIds.StartTime);
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.responseTime), setWaterfallMode.bind(this, waterfallSortIds.ResponseTime), this.activeWaterfallSortId === waterfallSortIds.ResponseTime);
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.endTime), setWaterfallMode.bind(this, waterfallSortIds.EndTime), this.activeWaterfallSortId === waterfallSortIds.EndTime);
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.totalDuration), setWaterfallMode.bind(this, waterfallSortIds.Duration), this.activeWaterfallSortId === waterfallSortIds.Duration);
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.latency), setWaterfallMode.bind(this, waterfallSortIds.Latency), this.activeWaterfallSortId === waterfallSortIds.Latency);
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.startTime), setWaterfallMode.bind(this, waterfallSortIds.StartTime), { checked: this.activeWaterfallSortId === waterfallSortIds.StartTime });
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.responseTime), setWaterfallMode.bind(this, waterfallSortIds.ResponseTime), { checked: this.activeWaterfallSortId === waterfallSortIds.ResponseTime });
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.endTime), setWaterfallMode.bind(this, waterfallSortIds.EndTime), { checked: this.activeWaterfallSortId === waterfallSortIds.EndTime });
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.totalDuration), setWaterfallMode.bind(this, waterfallSortIds.Duration), { checked: this.activeWaterfallSortId === waterfallSortIds.Duration });
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.latency), setWaterfallMode.bind(this, waterfallSortIds.Latency), { checked: this.activeWaterfallSortId === waterfallSortIds.Latency });
         function setWaterfallMode(sortId) {
             let calculator = this.calculatorsMap.get("Time" /* CalculatorTypes.Time */);
             const waterfallSortIds = WaterfallSortIds;

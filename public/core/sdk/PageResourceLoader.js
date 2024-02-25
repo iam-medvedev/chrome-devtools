@@ -17,6 +17,9 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('core/sdk/PageResourceLoader.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+function isExtensionInitiator(initiator) {
+    return 'extensionId' in initiator;
+}
 let pageResourceLoader = null;
 /**
  * The page resource loader is a bottleneck for all DevTools-initiated resource loads. For each such load, it keeps a
@@ -79,7 +82,8 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         return this.#pageResources;
     }
     getScopedResourcesLoaded() {
-        return new Map([...this.#pageResources].filter(([_, pageResource]) => TargetManager.instance().isInScope(pageResource.initiator.target)));
+        return new Map([...this.#pageResources].filter(([_, pageResource]) => TargetManager.instance().isInScope(pageResource.initiator.target) ||
+            isExtensionInitiator(pageResource.initiator)));
     }
     /**
      * Loading is the number of currently loading and queued items. Resources is the total number of resources,
@@ -129,6 +133,12 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
             entry.resolve();
         }
     }
+    static makeExtensionKey(url, initiator) {
+        if (isExtensionInitiator(initiator) && initiator.extensionId) {
+            return `${url}-${initiator.extensionId}`;
+        }
+        throw new Error('Invalid initiator');
+    }
     static makeKey(url, initiator) {
         if (initiator.frameId) {
             return `${url}-${initiator.frameId}`;
@@ -138,7 +148,15 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         }
         throw new Error('Invalid initiator');
     }
+    resourceLoadedThroughExtension(pageResource) {
+        const key = PageResourceLoader.makeExtensionKey(pageResource.url, pageResource.initiator);
+        this.#pageResources.set(key, pageResource);
+        this.dispatchEventToListeners("Update" /* Events.Update */);
+    }
     async loadResource(url, initiator) {
+        if (isExtensionInitiator(initiator)) {
+            throw new Error('Invalid initiator');
+        }
         const key = PageResourceLoader.makeKey(url, initiator);
         const pageResource = { success: null, size: null, errorMessage: undefined, url, initiator };
         this.#pageResources.set(key, pageResource);
@@ -170,6 +188,9 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     async dispatchLoad(url, initiator) {
+        if (isExtensionInitiator(initiator)) {
+            throw new Error('Invalid initiator');
+        }
         let failureReason = null;
         if (this.#loadOverride) {
             return this.#loadOverride(url);

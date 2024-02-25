@@ -86,7 +86,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
     downloadStore;
     sidebar;
     constructor(downloadStore = new PlayerDataDownloadManager()) {
-        super('Media');
+        super('media');
         this.detailPanels = new Map();
         this.deletedPlayers = new Set();
         this.downloadStore = downloadStore;

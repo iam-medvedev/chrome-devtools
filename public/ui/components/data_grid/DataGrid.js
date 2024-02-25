@@ -6,7 +6,6 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as UI from '../../legacy/legacy.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import * as ComponentHelpers from '../helpers/helpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import dataGridStyles from './dataGrid.css.js';
 import { BodyCellFocusedEvent, ColumnHeaderClickEvent, ContextMenuHeaderResetClickEvent, RowMouseEnterEvent, RowMouseLeaveEvent, } from './DataGridEvents.js';
@@ -95,7 +94,7 @@ export class DataGrid extends HTMLElement {
     #scheduleRender = false;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [dataGridStyles];
-        ComponentHelpers.SetCSSProperty.set(this, '--table-row-height', `${ROW_HEIGHT_PIXELS}px`);
+        this.style.setProperty('--table-row-height', `${ROW_HEIGHT_PIXELS}px`);
         void this.#render();
     }
     get data() {
@@ -465,11 +464,11 @@ export class DataGrid extends HTMLElement {
         }
         const menu = new UI.ContextMenu.ContextMenu(event);
         addColumnVisibilityCheckboxes(this, menu);
-        const sortMenu = menu.defaultSection().appendSubMenuItem(i18nString(UIStrings.sortBy));
+        const sortMenu = menu.defaultSection().appendSubMenuItem(i18nString(UIStrings.sortBy), false, 'sort-by');
         addSortableColumnItems(this, sortMenu);
         menu.defaultSection().appendItem(i18nString(UIStrings.resetColumns), () => {
             this.dispatchEvent(new ContextMenuHeaderResetClickEvent());
-        });
+        }, { jslogContext: 'reset-columns' });
         if (this.#contextMenus && this.#contextMenus.headerRow) {
             // Let the user append things to the menu
             this.#contextMenus.headerRow(menu, this.#columns);
@@ -498,13 +497,13 @@ export class DataGrid extends HTMLElement {
         // rowIndex - 1 here because in the UI the 0th row is the column headers.
         const rowThatWasClicked = this.#rows[rowIndex - 1];
         const menu = new UI.ContextMenu.ContextMenu(event);
-        const sortMenu = menu.defaultSection().appendSubMenuItem(i18nString(UIStrings.sortBy));
+        const sortMenu = menu.defaultSection().appendSubMenuItem(i18nString(UIStrings.sortBy), false, 'sort-by');
         addSortableColumnItems(this, sortMenu);
-        const headerOptionsMenu = menu.defaultSection().appendSubMenuItem(i18nString(UIStrings.headerOptions));
+        const headerOptionsMenu = menu.defaultSection().appendSubMenuItem(i18nString(UIStrings.headerOptions), false, 'header-options');
         addColumnVisibilityCheckboxes(this, headerOptionsMenu);
         headerOptionsMenu.defaultSection().appendItem(i18nString(UIStrings.resetColumns), () => {
             this.dispatchEvent(new ContextMenuHeaderResetClickEvent());
-        });
+        }, { jslogContext: 'reset-columns' });
         if (this.#contextMenus && this.#contextMenus.bodyRow) {
             this.#contextMenus.bodyRow(menu, this.#columns, rowThatWasClicked);
         }
@@ -791,5 +790,5 @@ export class DataGrid extends HTMLElement {
         }
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-data-grid', DataGrid);
+customElements.define('devtools-data-grid', DataGrid);
 //# sourceMappingURL=DataGrid.js.map

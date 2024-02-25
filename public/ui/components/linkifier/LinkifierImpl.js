@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
-import * as ComponentHelpers from '../helpers/helpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import linkifierImplStyles from './linkifierImpl.css.js';
 import * as LinkifierUtils from './LinkifierUtils.js';
@@ -57,5 +56,5 @@ export class Linkifier extends HTMLElement {
         });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-linkifier', Linkifier);
+customElements.define('devtools-linkifier', Linkifier);
 //# sourceMappingURL=LinkifierImpl.js.map

@@ -1,7 +1,6 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import { Icon } from './Icon.js';
 import iconButtonStyles from './iconButton.css.js';
@@ -67,5 +66,5 @@ export class IconButton extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('icon-button', IconButton);
+customElements.define('icon-button', IconButton);
 //# sourceMappingURL=IconButton.js.map

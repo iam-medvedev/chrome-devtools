@@ -29,7 +29,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../../front_end/ui/legacy/utils/DynamicTheming.ts",
     "../../../../../../../front_end/ui/legacy/utils/create-shadow-root-with-core-styles.ts",
     "../../../../../../../front_end/ui/legacy/utils/focus-changed.ts",
     "../../../../../../../front_end/ui/legacy/utils/inject-core-styles.ts",

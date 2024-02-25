@@ -896,10 +896,10 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         }
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         if (colorIndex !== -1) {
-            contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeColor), this.deletePaletteColors.bind(this, colorIndex, false));
-            contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeAllToTheRight), this.deletePaletteColors.bind(this, colorIndex, true));
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeColor), this.deletePaletteColors.bind(this, colorIndex, false), { jslogContext: 'remove-color' });
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeAllToTheRight), this.deletePaletteColors.bind(this, colorIndex, true), { jslogContext: 'remove-all-to-the-right' });
         }
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clearPalette), this.deletePaletteColors.bind(this, -1, true));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clearPalette), this.deletePaletteColors.bind(this, -1, true), { jslogContext: 'clear-palette' });
         void contextMenu.show();
     }
     deletePaletteColors(colorIndex, toRight) {

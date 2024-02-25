@@ -1,13 +1,12 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as ComponentHelpers from '../helpers/helpers.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import { getRowEntryForColumnId, getStringifiedCellValues, } from './DataGridUtils.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import { alert } from '../../legacy/ARIAUtils.js';
 import { DataGrid } from './DataGrid.js';
 import dataGridControllerStyles from './dataGridController.css.js';
-import { alert } from '../../legacy/ARIAUtils.js';
+import { getRowEntryForColumnId, getStringifiedCellValues, } from './DataGridUtils.js';
 const UIStrings = {
     /**
      *@description Text announced when the column is sorted in ascending order
@@ -224,5 +223,5 @@ export class DataGridController extends HTMLElement {
         this.#hasRenderedAtLeastOnce = true;
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-data-grid-controller', DataGridController);
+customElements.define('devtools-data-grid-controller', DataGridController);
 //# sourceMappingURL=DataGridController.js.map

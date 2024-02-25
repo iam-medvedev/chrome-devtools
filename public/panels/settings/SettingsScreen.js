@@ -421,7 +421,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
         }
         p.appendChild(label);
         if (experiment.docLink) {
-            const link = UI.XLink.XLink.create(experiment.docLink, undefined, undefined, undefined, `${experiment.name}:documentation`);
+            const link = UI.XLink.XLink.create(experiment.docLink, undefined, undefined, undefined, `${experiment.name}-documentation`);
             link.textContent = '';
             link.setAttribute('aria-label', i18nString(UIStrings.learnMore));
             const linkIcon = new IconButton.Icon.Icon();
@@ -431,7 +431,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
             p.appendChild(link);
         }
         if (experiment.feedbackLink) {
-            const link = UI.XLink.XLink.create(experiment.feedbackLink, undefined, undefined, undefined, `${experiment.name}:feedback`);
+            const link = UI.XLink.XLink.create(experiment.feedbackLink, undefined, undefined, undefined, `${experiment.name}-feedback`);
             link.textContent = i18nString(UIStrings.sendFeedback);
             link.classList.add('feedback-link');
             p.appendChild(link);

@@ -5,7 +5,7 @@ import * as LoggingConfig from './LoggingConfig.js';
 import * as LoggingDriver from './LoggingDriver.js';
 import * as NonDomState from './NonDomState.js';
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
-export { logClick, logImpressions } from './LoggingEvents.js';
+export { logClick, logImpressions, logResize } from './LoggingEvents.js';
 export { registerContextProvider, registerParentProvider } from './LoggingState.js';
 export function registerLoggable(loggable, config, parent) {
     if (!LoggingDriver.isLogging()) {

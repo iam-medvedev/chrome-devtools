@@ -417,5 +417,5 @@ export class HeaderSectionRow extends HTMLElement {
         }
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-header-section-row', HeaderSectionRow);
+customElements.define('devtools-header-section-row', HeaderSectionRow);
 //# sourceMappingURL=HeaderSectionRow.js.map

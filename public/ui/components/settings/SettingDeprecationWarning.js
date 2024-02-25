@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
-import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import settingDeprecationWarning from './settingDeprecationWarning.css.js';
@@ -28,5 +27,5 @@ export class SettingDeprecationWarning extends HTMLElement {
         LitHtml.render(LitHtml.html `<${IconButton.Icon.Icon.litTagName} class=${LitHtml.Directives.classMap(classes)} .data=${iconData} title=${warning} @click=${onclick}></${IconButton.Icon.Icon.litTagName}>`, this.#shadow, { host: this });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-setting-deprecation-warning', SettingDeprecationWarning);
+customElements.define('devtools-setting-deprecation-warning', SettingDeprecationWarning);
 //# sourceMappingURL=SettingDeprecationWarning.js.map

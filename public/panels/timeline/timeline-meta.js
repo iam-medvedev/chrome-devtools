@@ -124,7 +124,7 @@ UI.ViewManager.registerViewExtension({
     commandPrompt: i18nLazyString(UIStrings.showJavascriptProfiler),
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
     order: 65,
-    experiment: "jsProfilerTemporarilyEnable" /* Root.Runtime.ExperimentName.JS_PROFILER_TEMP_ENABLE */,
+    experiment: "js-profiler-temporarily-enable" /* Root.Runtime.ExperimentName.JS_PROFILER_TEMP_ENABLE */,
     async loadView() {
         const Profiler = await loadProfilerModule();
         return Profiler.ProfilesPanel.JSProfilerPanel.instance();

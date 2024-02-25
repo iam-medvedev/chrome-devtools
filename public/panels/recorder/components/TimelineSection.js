@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import timelineSectionStyles from './timelineSection.css.js';
 export class TimelineSection extends HTMLElement {
@@ -50,5 +49,5 @@ export class TimelineSection extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-timeline-section', TimelineSection);
+customElements.define('devtools-timeline-section', TimelineSection);
 //# sourceMappingURL=TimelineSection.js.map

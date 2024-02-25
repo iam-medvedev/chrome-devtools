@@ -6,7 +6,6 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
-import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
@@ -113,7 +112,7 @@ export class RuleSetGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent 
         }));
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-resources-ruleset-grid', RuleSetGrid);
+customElements.define('devtools-resources-ruleset-grid', RuleSetGrid);
 function ruleSetRenderer(ruleSet, pageURL) {
     function ruleSetRendererInnerDocument(ruleSet, location) {
         assertNotNullOrUndefined(ruleSet.backendNodeId);

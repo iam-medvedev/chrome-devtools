@@ -232,7 +232,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.WebAuthnModel.WebAuthnModel, this, { scoped: true });
         this.contentElement.classList.add('webauthn-pane');
         this.#availableAuthenticatorSetting =
-            Common.Settings.Settings.instance().createSetting('webauthnAuthenticators', []);
+            Common.Settings.Settings.instance().createSetting('webauthn-authenticators', []);
         this.#createToolbar();
         this.#authenticatorsView = this.contentElement.createChild('div', 'authenticators-view');
         this.#createNewAuthenticatorSection();

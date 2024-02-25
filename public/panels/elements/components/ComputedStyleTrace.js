@@ -1,7 +1,6 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import computedStyleTraceStyles from './computedStyleTrace.css.js';
 const { render, html } = LitHtml;
@@ -38,5 +37,5 @@ export class ComputedStyleTrace extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-computed-style-trace', ComputedStyleTrace);
+customElements.define('devtools-computed-style-trace', ComputedStyleTrace);
 //# sourceMappingURL=ComputedStyleTrace.js.map

@@ -7,6 +7,7 @@ import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrappe
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ApplicationComponents from './components/components.js';
 import { StorageItemsView } from './StorageItemsView.js';
 const UIStrings = {
@@ -104,6 +105,7 @@ export class SharedStorageItemsView extends StorageItemsView {
         this.innerSplitWidget.installResizer(innerResizer);
         this.#noDisplayView = new UI.Widget.VBox();
         this.#noDisplayView.setMinimumSize(0, 25);
+        this.#noDisplayView.element.setAttribute('jslog', `${VisualLogging.pane('preview').track({ resize: true })}`);
         const outerResizer = this.#noDisplayView.element.createChild('div', 'preview-panel-resizer');
         this.outerSplitWidget = new UI.SplitWidget.SplitWidget(
         /* isVertical: */ false, /* secondIsSidebar: */ true, 'shared-storage-outer-split-view-state');
@@ -230,6 +232,7 @@ export class SharedStorageItemsView extends StorageItemsView {
             // Selection could've changed while the preview was loaded
             if (entry.selected) {
                 this.outerSplitWidget.setSidebarWidget(preview);
+                preview.element.setAttribute('jslog', `${VisualLogging.pane('preview').track({ resize: true })}`);
             }
         }
         else {

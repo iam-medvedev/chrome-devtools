@@ -5,7 +5,6 @@
 import '../../../ui/legacy/legacy.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
@@ -293,5 +292,5 @@ export class CreateRecordingView extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-create-recording-view', CreateRecordingView);
+customElements.define('devtools-create-recording-view', CreateRecordingView);
 //# sourceMappingURL=CreateRecordingView.js.map

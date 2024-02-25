@@ -110,7 +110,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
     constructor(request) {
         super();
         this.#request = request;
-        this.setAttribute('jslog', `${VisualLogging.pane('headers')}`);
+        this.setAttribute('jslog', `${VisualLogging.pane('headers').track({ resize: true })}`);
     }
     wasShown() {
         this.#request.addEventListener(SDK.NetworkRequest.Events.RemoteAddressChanged, this.#refreshHeadersView, this);
@@ -508,6 +508,6 @@ export class Category extends HTMLElement {
         this.#expandedSetting?.set(event.target.open);
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-request-headers', RequestHeadersView);
-ComponentHelpers.CustomElements.defineComponent('devtools-request-headers-category', Category);
+customElements.define('devtools-request-headers', RequestHeadersView);
+customElements.define('devtools-request-headers-category', Category);
 //# sourceMappingURL=RequestHeadersView.js.map

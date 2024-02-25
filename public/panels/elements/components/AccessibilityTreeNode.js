@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import accessibilityTreeNodeStyles from './accessibilityTreeNode.css.js';
@@ -69,5 +68,5 @@ export class AccessibilityTreeNode extends HTMLElement {
         });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-accessibility-tree-node', AccessibilityTreeNode);
+customElements.define('devtools-accessibility-tree-node', AccessibilityTreeNode);
 //# sourceMappingURL=AccessibilityTreeNode.js.map

@@ -38,13 +38,13 @@
   ],
   "references": [
     {
-      "path": "../helpers/bundle-tsconfig.json"
-    },
-    {
       "path": "../../lit-html/bundle-tsconfig.json"
     },
     {
       "path": "../../visual_logging/bundle-tsconfig.json"
+    },
+    {
+      "path": "../helpers/bundle-tsconfig.json"
     }
   ]
 }

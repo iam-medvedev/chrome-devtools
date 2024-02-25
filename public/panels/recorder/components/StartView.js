@@ -95,5 +95,5 @@ export class StartView extends HTMLElement {
         // clang-format on
     };
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-start-view', StartView);
+customElements.define('devtools-start-view', StartView);
 //# sourceMappingURL=StartView.js.map

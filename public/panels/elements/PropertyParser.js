@@ -4,6 +4,8 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
+import * as UI from '../../ui/legacy/legacy.js';
 const cssParser = CodeMirror.css.cssLanguage.parser;
 function nodeText(node, text) {
     return text.substring(node.from, node.to);
@@ -22,6 +24,9 @@ export class SyntaxTree {
         this.trailingNodes = trailingNodes;
     }
     text(node) {
+        if (node === null) {
+            return '';
+        }
         return nodeText(node ?? this.tree, this.rule);
     }
     subtree(node) {
@@ -87,6 +92,9 @@ export class MatcherBase {
     constructor(createMatch) {
         this.createMatch = createMatch;
     }
+    accepts(_propertyName) {
+        return true;
+    }
 }
 export class BottomUpTreeMatching extends TreeWalker {
     #matchers = [];
@@ -98,7 +106,7 @@ export class BottomUpTreeMatching extends TreeWalker {
     constructor(ast, matchers) {
         super(ast);
         this.computedText = new ComputedText(ast.propertyValue);
-        this.#matchers.push(...matchers);
+        this.#matchers.push(...matchers.filter(m => !ast.propertyName || m.accepts(ast.propertyName)));
         this.#matchers.push(new TextMatcher());
     }
     leave({ node }) {
@@ -315,7 +323,7 @@ export class Renderer extends TreeWalker {
         return true;
     }
 }
-function siblings(node) {
+export function siblings(node) {
     const result = [];
     while (node) {
         result.push(node);
@@ -324,7 +332,121 @@ function siblings(node) {
     return result;
 }
 export function children(node) {
-    return siblings(node.firstChild);
+    return siblings(node?.firstChild ?? null);
+}
+function* stripComments(nodes) {
+    for (const node of nodes) {
+        if (node.type.name !== 'Comment') {
+            yield node;
+        }
+    }
+}
+function split(nodes) {
+    const result = [];
+    let current = [];
+    for (const node of nodes) {
+        if (node.name === ',') {
+            result.push(current);
+            current = [];
+        }
+        else {
+            current.push(node);
+        }
+    }
+    result.push(current);
+    return result;
+}
+function callArgs(node) {
+    const args = children(node.getChild('ArgList'));
+    const openParen = args.splice(0, 1)[0];
+    const closingParen = args.pop();
+    if (openParen?.name !== '(' || closingParen?.name !== ')') {
+        return [];
+    }
+    return split(args);
+}
+export class AngleMatch {
+    text;
+    type = 'angle';
+    constructor(text) {
+        this.text = text;
+    }
+}
+export class AngleMatcher extends MatcherBase {
+    accepts(propertyName) {
+        return SDK.CSSMetadata.cssMetadata().isAngleAwareProperty(propertyName);
+    }
+    matches(node, matching) {
+        if (node.name !== 'NumberLiteral') {
+            return null;
+        }
+        const unit = node.getChild('Unit');
+        // TODO(crbug/1138628) handle unitless 0
+        if (!unit || !['deg', 'grad', 'rad', 'turn'].includes(matching.ast.text(unit))) {
+            return null;
+        }
+        return this.createMatch(matching.ast.text(node));
+    }
+}
+function literalToNumber(node, ast) {
+    if (node.type.name !== 'NumberLiteral') {
+        return null;
+    }
+    const text = ast.text(node);
+    return Number(text.substring(0, text.length - ast.text(node.getChild('Unit')).length));
+}
+export class ColorMixMatch {
+    text;
+    space;
+    color1;
+    color2;
+    type = 'color-mix';
+    constructor(text, space, color1, color2) {
+        this.text = text;
+        this.space = space;
+        this.color1 = color1;
+        this.color2 = color2;
+    }
+}
+export class ColorMixMatcher extends MatcherBase {
+    accepts(propertyName) {
+        return SDK.CSSMetadata.cssMetadata().isColorAwareProperty(propertyName);
+    }
+    matches(node, matching) {
+        if (node.name !== 'CallExpression' || matching.ast.text(node.getChild('Callee')) !== 'color-mix') {
+            return null;
+        }
+        const computedValueTree = tokenizePropertyValue(matching.getComputedText(node));
+        if (!computedValueTree) {
+            return null;
+        }
+        const computedValueArgs = callArgs(computedValueTree.tree);
+        if (computedValueArgs.length !== 3) {
+            return null;
+        }
+        const [space, color1, color2] = computedValueArgs;
+        // Verify that all arguments are there, and that the space starts with a literal `in`.
+        if (space.length < 2 || computedValueTree.text(stripComments(space).next().value) !== 'in' || color1.length < 1 ||
+            color2.length < 1) {
+            return null;
+        }
+        // Verify there's at most one percentage value for each color.
+        const p1 = color1.filter(n => n.type.name === 'NumberLiteral' && computedValueTree.text(n.getChild('Unit')) === '%');
+        const p2 = color2.filter(n => n.type.name === 'NumberLiteral' && computedValueTree.text(n.getChild('Unit')) === '%');
+        if (p1.length > 1 || p2.length > 1) {
+            return null;
+        }
+        // Verify that if both colors carry percentages, they aren't both zero (which is an invalid property value).
+        if (p1[0] && p2[0] && (literalToNumber(p1[0], computedValueTree) ?? 0) === 0 &&
+            (literalToNumber(p2[0], computedValueTree) ?? 0) === 0) {
+            return null;
+        }
+        const args = callArgs(node);
+        if (args.length !== 3) {
+            return null;
+        }
+        return this.createMatch(matching.ast.text(node), args[0], args[1], args[2]);
+    }
 }
 export class VariableMatch {
     text;
@@ -376,6 +498,35 @@ export class VariableMatcher extends MatcherBase {
         return this.createMatch(matching.ast.text(node), varName, fallback, matching);
     }
 }
+export class URLMatch {
+    url;
+    text;
+    type = 'url';
+    constructor(url, text) {
+        this.url = url;
+        this.text = text;
+    }
+}
+export class URLMatcher extends MatcherBase {
+    matches(node, matching) {
+        if (node.name !== 'CallLiteral') {
+            return null;
+        }
+        const callee = node.getChild('CallTag');
+        if (!callee || matching.ast.text(callee) !== 'url') {
+            return null;
+        }
+        const [, lparenNode, urlNode, rparenNode] = siblings(callee);
+        if (matching.ast.text(lparenNode) !== '(' ||
+            (urlNode.name !== 'ParenthesizedContent' && urlNode.name !== 'StringLiteral') ||
+            matching.ast.text(rparenNode) !== ')') {
+            return null;
+        }
+        const text = matching.ast.text(urlNode);
+        const url = (urlNode.name === 'StringLiteral' ? text.substr(1, text.length - 2) : text.trim());
+        return this.createMatch(url, matching.ast.text(node));
+    }
+}
 export class ColorMatch {
     text;
     type = 'color';
@@ -384,10 +535,10 @@ export class ColorMatch {
     }
 }
 export class ColorMatcher extends MatcherBase {
+    accepts(propertyName) {
+        return SDK.CSSMetadata.cssMetadata().isColorAwareProperty(propertyName);
+    }
     matches(node, matching) {
-        if (matching.ast.propertyName && !SDK.CSSMetadata.cssMetadata().isColorAwareProperty(matching.ast.propertyName)) {
-            return null;
-        }
         const text = matching.ast.text(node);
         if (node.name === 'ColorLiteral') {
             return this.createMatch(text);
@@ -402,6 +553,75 @@ export class ColorMatcher extends MatcherBase {
             }
         }
         return null;
+    }
+}
+export class LinkableNameMatch {
+    text;
+    properyName;
+    type = 'linkable-name';
+    constructor(text, properyName) {
+        this.text = text;
+        this.properyName = properyName;
+    }
+}
+export class LinkableNameMatcher extends MatcherBase {
+    static isLinkableNameProperty(propertyName) {
+        const names = [
+            "animation-name" /* LinkableNameProperties.AnimationName */,
+            "font-palette" /* LinkableNameProperties.FontPalette */,
+            "position-fallback" /* LinkableNameProperties.PositionFallback */,
+        ];
+        return names.includes(propertyName);
+    }
+    accepts(propertyName) {
+        return LinkableNameMatcher.isLinkableNameProperty(propertyName);
+    }
+    matches(node, matching) {
+        const { propertyName } = matching.ast;
+        const text = matching.ast.text(node);
+        if (!propertyName || node.name !== 'ValueName' || !LinkableNameMatcher.isLinkableNameProperty(propertyName)) {
+            return null;
+        }
+        // Only animation-name is allowed to specify more than one name. We don't verify this for the other properties since
+        // they would be reported as !parsedOk from the backend.
+        return this.createMatch(text, propertyName);
+    }
+}
+export class BezierMatch {
+    text;
+    type = 'bezier';
+    constructor(text) {
+        this.text = text;
+    }
+}
+export class BezierMatcher extends MatcherBase {
+    accepts(propertyName) {
+        return SDK.CSSMetadata.cssMetadata().isBezierAwareProperty(propertyName);
+    }
+    matches(node, matching) {
+        const text = matching.ast.text(node);
+        const isCubicBezierKeyword = node.name === 'ValueName' && UI.Geometry.CubicBezier.KeywordValues.has(text);
+        const isCubicBezierOrLinearFunction = node.name === 'CallExpression' &&
+            ['cubic-bezier', 'linear'].includes(matching.ast.text(node.getChild('Callee')));
+        if (!isCubicBezierKeyword && !isCubicBezierOrLinearFunction) {
+            return null;
+        }
+        if (!InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(text)) {
+            return null;
+        }
+        return this.createMatch(text);
+    }
+}
+export class StringMatch {
+    text;
+    type = 'string';
+    constructor(text) {
+        this.text = text;
+    }
+}
+export class StringMatcher extends MatcherBase {
+    matches(node, matching) {
+        return node.name === 'StringLiteral' ? this.createMatch(matching.ast.text(node)) : null;
     }
 }
 class LegacyRegexMatch {
@@ -430,6 +650,9 @@ export class LegacyRegexMatcher {
     constructor(regexp, processor) {
         this.regexp = new RegExp(regexp);
         this.processor = processor;
+    }
+    accepts() {
+        return true;
     }
     matches(node, matching) {
         const text = matching.ast.text(node);
@@ -468,6 +691,9 @@ export class TextMatch {
     }
 }
 class TextMatcher {
+    accepts() {
+        return true;
+    }
     matches(node, matching) {
         if (!node.firstChild || node.name === 'NumberLiteral' /* may have a Unit child */) {
             // Leaf node, just emit text

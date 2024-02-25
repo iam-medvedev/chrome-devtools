@@ -104,7 +104,6 @@ export declare class SourceMap {
     private buildScopeTree;
     findScopeEntry(sourceURL: Platform.DevToolsPath.UrlString, sourceLineNumber: number, sourceColumnNumber: number): ScopeEntry | null;
     private isSeparator;
-    private decodeVLQ;
     /**
      * Finds all the reverse mappings that intersect with the given `textRange` within the
      * source entity identified by the `url`. If the `url` does not have any reverse mappings
@@ -141,17 +140,14 @@ export declare class SourceMap {
      */
     compatibleForURL(sourceURL: Platform.DevToolsPath.UrlString, other: SourceMap): boolean;
 }
-export declare namespace SourceMap {
-    const _VLQ_BASE_SHIFT = 5;
-    const _VLQ_BASE_MASK: number;
-    const _VLQ_CONTINUATION_MASK: number;
-    class StringCharIterator {
-        private readonly string;
-        private position;
-        constructor(string: string);
-        next(): string;
-        peek(): string;
-        hasNext(): boolean;
-    }
+export declare class StringCharIterator {
+    #private;
+    constructor(string: string);
+    next(): string;
+    /** Returns the unicode value of the next character and advances the iterator  */
+    nextCharCode(): number;
+    peek(): string;
+    hasNext(): boolean;
+    decodeVLQ(): number;
 }
 export {};

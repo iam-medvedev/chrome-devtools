@@ -1,7 +1,6 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as IconButton from '../../components/icon_button/icon_button.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import markdownImageStyles from './markdownImage.css.js';
@@ -53,5 +52,5 @@ export class MarkdownImage extends HTMLElement {
         LitHtml.render(imageComponent, this.#shadow, { host: this });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-markdown-image', MarkdownImage);
+customElements.define('devtools-markdown-image', MarkdownImage);
 //# sourceMappingURL=MarkdownImage.js.map

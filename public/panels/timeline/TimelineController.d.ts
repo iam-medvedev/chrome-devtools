@@ -45,6 +45,7 @@ export declare class TimelineController implements TraceEngine.TracingManager.Tr
     getPerformanceModel(): PerformanceModel;
     private waitForTracingToStop;
     private startRecordingWithCategories;
+    warmupJsProfiler(): Promise<void>;
     traceEventsCollected(events: TraceEngine.TracingManager.EventPayload[]): void;
     tracingComplete(): void;
     private allSourcesFinished;

@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 export declare class ListModel<T> extends Common.ObjectWrapper.ObjectWrapper<EventTypes<T>> implements Iterable<T> {
     private items;
     constructor(items?: T[]);
-    [Symbol.iterator](): Iterator<T, any, undefined>;
+    [Symbol.iterator](): Iterator<T>;
     get length(): number;
     at(index: number): T;
     every(callback: (arg0: T) => boolean): boolean;

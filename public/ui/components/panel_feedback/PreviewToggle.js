@@ -4,7 +4,6 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as ComponentHelpers from '../helpers/helpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import * as Input from '../input/input.js';
 import previewToggleStyles from './previewToggle.css.js';
@@ -85,5 +84,5 @@ export class PreviewToggle extends HTMLElement {
         this.#onChangeCallback?.(checked);
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-preview-toggle', PreviewToggle);
+customElements.define('devtools-preview-toggle', PreviewToggle);
 //# sourceMappingURL=PreviewToggle.js.map

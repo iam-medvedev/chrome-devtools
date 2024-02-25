@@ -68,10 +68,10 @@ export class ContextMenuProvider {
             link.click();
         }
         if (contentProvider.contentType().isDocumentOrScriptOrStyleSheet()) {
-            contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAs), saveAs);
+            contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAs), saveAs, { jslogContext: 'save-as' });
         }
         else if (contentProvider instanceof SDK.Resource.Resource && contentProvider.contentType().isImage()) {
-            contextMenu.saveSection().appendItem(i18nString(UIStrings.saveImage), saveImage);
+            contextMenu.saveSection().appendItem(i18nString(UIStrings.saveImage), saveImage, { jslogContext: 'save-image' });
         }
         // Retrieve uiSourceCode by URL to pick network resources everywhere.
         const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(contentProvider.contentURL());
@@ -80,7 +80,7 @@ export class ContextMenuProvider {
         const fileURL = binding ? binding.fileSystem.contentURL() : contentProvider.contentURL();
         if (Common.ParsedURL.schemeIs(fileURL, 'file:')) {
             const path = Common.ParsedURL.ParsedURL.urlToRawPathString(fileURL, Host.Platform.isWin());
-            contextMenu.revealSection().appendItem(i18nString(UIStrings.openInContainingFolder), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.showItemInFolder(path));
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.openInContainingFolder), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.showItemInFolder(path), { jslogContext: 'open-in-containing-folder' });
         }
         if (contentProvider instanceof Workspace.UISourceCode.UISourceCode &&
             (contentProvider.project().type() === Workspace.Workspace.projectTypes.FileSystem)) {
@@ -103,12 +103,12 @@ export class ContextMenuProvider {
                 }
             }
         }
-        contextMenu.overrideSection().appendItem(i18nString(UIStrings.overrideContent), handler, { disabled });
+        contextMenu.overrideSection().appendItem(i18nString(UIStrings.overrideContent), handler, { disabled, jslogContext: 'override-content' });
         if (contentProvider instanceof SDK.NetworkRequest.NetworkRequest) {
             contextMenu.overrideSection().appendItem(i18nString(UIStrings.showOverrides), async () => {
                 await UI.ViewManager.ViewManager.instance().showView('navigator-overrides');
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.ShowAllOverridesFromNetworkContextMenu);
-            });
+            }, { jslogContext: 'show-overrides' });
         }
     }
     async handleOverrideContent(uiSourceCode, contentProvider) {

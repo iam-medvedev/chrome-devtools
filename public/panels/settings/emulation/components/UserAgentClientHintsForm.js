@@ -4,7 +4,6 @@
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
-import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as Input from '../../../../ui/components/input/input.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
@@ -786,5 +785,5 @@ export class UserAgentClientHintsForm extends HTMLElement {
         return { valid: true };
     };
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-user-agent-client-hints-form', UserAgentClientHintsForm);
+customElements.define('devtools-user-agent-client-hints-form', UserAgentClientHintsForm);
 //# sourceMappingURL=UserAgentClientHintsForm.js.map

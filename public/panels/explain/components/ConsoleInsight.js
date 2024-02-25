@@ -6,7 +6,6 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -158,28 +157,28 @@ function buildRatingFormLink(rating, comment, explanation, consoleMessage, stack
         .join('&')}`;
 }
 export class ConsoleInsight extends HTMLElement {
-    static async create(promptBuilder, insightProvider, actionTitle) {
+    static async create(promptBuilder, aidaClient, actionTitle) {
         const syncData = await new Promise(resolve => {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
                 resolve(syncInfo);
             });
         });
-        return new ConsoleInsight(promptBuilder, insightProvider, actionTitle, syncData);
+        return new ConsoleInsight(promptBuilder, aidaClient, actionTitle, syncData);
     }
     static litTagName = LitHtml.literal `devtools-console-insight`;
     #shadow = this.attachShadow({ mode: 'open' });
     #actionTitle = '';
     #promptBuilder;
-    #insightProvider;
+    #aidaClient;
     #renderer = new MarkdownRenderer();
     // Main state.
     #state;
     // Rating sub-form state.
     #selectedRating;
-    constructor(promptBuilder, insightProvider, actionTitle, syncInfo) {
+    constructor(promptBuilder, aidaClient, actionTitle, syncInfo) {
         super();
         this.#promptBuilder = promptBuilder;
-        this.#insightProvider = insightProvider;
+        this.#aidaClient = aidaClient;
         this.#actionTitle = actionTitle ?? '';
         this.#state = {
             type: "not-logged-in" /* State.NOT_LOGGED_IN */,
@@ -266,6 +265,9 @@ export class ConsoleInsight extends HTMLElement {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(link);
     }
     #onRating(event) {
+        if (this.#state.type !== "insight" /* State.INSIGHT */) {
+            throw new Error('Unexpected state');
+        }
         this.#selectedRating = event.target.dataset.rating === 'true';
         if (this.#selectedRating) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRatedPositive);
@@ -273,6 +275,16 @@ export class ConsoleInsight extends HTMLElement {
         else {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRatedNegative);
         }
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.registerAidaClientEvent(JSON.stringify({
+            client: 'CHROME_DEVTOOLS',
+            event_time: new Date().toISOString(),
+            corresponding_aida_rpc_global_id: this.#state.metadata?.rpcGlobalId,
+            do_conversation_client_event: {
+                user_feedback: {
+                    sentiment: this.#selectedRating ? 'POSITIVE' : 'NEGATIVE',
+                },
+            },
+        }));
         this.#openFeedbackFrom();
     }
     async #onConsent() {
@@ -281,16 +293,18 @@ export class ConsoleInsight extends HTMLElement {
             consentGiven: true,
         });
         try {
-            const { sources, explanation } = await this.#getInsight();
-            const tokens = this.#validateMarkdown(explanation);
-            const valid = tokens !== false;
-            this.#transitionTo({
-                type: "insight" /* State.INSIGHT */,
-                tokens: valid ? tokens : [],
-                validMarkdown: valid,
-                explanation,
-                sources,
-            });
+            for await (const { sources, explanation, metadata } of this.#getInsight()) {
+                const tokens = this.#validateMarkdown(explanation);
+                const valid = tokens !== false;
+                this.#transitionTo({
+                    type: "insight" /* State.INSIGHT */,
+                    tokens: valid ? tokens : [],
+                    validMarkdown: valid,
+                    explanation,
+                    sources,
+                    metadata,
+                });
+            }
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightGenerated);
         }
         catch (err) {
@@ -317,11 +331,12 @@ export class ConsoleInsight extends HTMLElement {
             return false;
         }
     }
-    async #getInsight() {
+    async *#getInsight() {
         try {
             const { prompt, sources } = await this.#promptBuilder.buildPrompt();
-            const explanation = await this.#insightProvider.getInsights(prompt);
-            return { sources, explanation };
+            for await (const response of this.#aidaClient.fetch(prompt)) {
+                yield { sources, ...response };
+            }
         }
         catch (err) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightErroredApi);
@@ -553,8 +568,8 @@ class ConsoleInsightSourcesList extends HTMLElement {
         this.#render();
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-console-insight', ConsoleInsight);
-ComponentHelpers.CustomElements.defineComponent('devtools-console-insight-sources-list', ConsoleInsightSourcesList);
+customElements.define('devtools-console-insight', ConsoleInsight);
+customElements.define('devtools-console-insight-sources-list', ConsoleInsightSourcesList);
 export class MarkdownRenderer extends MarkdownView.MarkdownView.MarkdownLitRenderer {
     renderToken(token) {
         const template = this.templateForToken(token);

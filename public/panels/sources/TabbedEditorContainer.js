@@ -573,7 +573,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         this.updateFileTitle(uiSourceCode);
     }
     generateTabId() {
-        return 'tab_' + (tabId++);
+        return 'tab-' + (tabId++);
     }
     currentFile() {
         return this.currentFileInternal || null;

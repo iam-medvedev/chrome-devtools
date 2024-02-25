@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
@@ -124,7 +123,9 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
             return LitHtml.nothing;
         }
         return LitHtml.html `
-      <${ReportView.ReportView.ReportSectionHeader.litTagName} jslog=${VisualLogging.pane('trust-tokens')}>${i18nString(UIStrings.parameters)}</${ReportView.ReportView.ReportSectionHeader.litTagName}>
+      <${ReportView.ReportView.ReportSectionHeader.litTagName} jslog=${VisualLogging.pane('trust-tokens').track({
+            resize: true,
+        })}>${i18nString(UIStrings.parameters)}</${ReportView.ReportView.ReportSectionHeader.litTagName}>
       ${renderRowWithCodeValue(i18nString(UIStrings.type), trustTokenParams.operation.toString())}
       ${this.#renderRefreshPolicy(trustTokenParams)}
       ${this.#renderIssuers(trustTokenParams)}
@@ -253,5 +254,5 @@ function renderRowWithCodeValue(key, value) {
     <${ReportView.ReportView.ReportValue.litTagName} class="code">${value}</${ReportView.ReportView.ReportValue.litTagName}>
   `;
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-trust-token-report', RequestTrustTokensView);
+customElements.define('devtools-trust-token-report', RequestTrustTokensView);
 //# sourceMappingURL=RequestTrustTokensView.js.map

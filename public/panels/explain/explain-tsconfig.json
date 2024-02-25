@@ -30,7 +30,6 @@
   },
   "files": [
     "../../../../../../front_end/panels/explain/ActionDelegate.ts",
-    "../../../../../../front_end/panels/explain/InsightProvider.ts",
     "../../../../../../front_end/panels/explain/PromptBuilder.ts",
     "../../../../../../front_end/panels/explain/components/ConsoleInsight.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

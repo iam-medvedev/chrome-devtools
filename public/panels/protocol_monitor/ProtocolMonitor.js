@@ -270,7 +270,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                             splitWidget.toggleSidebar();
                         }
                         this.dispatchEventToListeners("CommandChange" /* Events.CommandChange */, { command, parameters, targetId });
-                    });
+                    }, { jslogContext: 'edit-and-resend' });
                     /**
                      * You can click the "Filter" item in the context menu to filter the
                      * protocol monitor entries to those that match the method of the
@@ -279,7 +279,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     menu.editSection().appendItem(i18nString(UIStrings.filter), () => {
                         const methodColumn = DataGrid.DataGridUtils.getRowEntryForColumnId(row, 'method');
                         this.textFilterUI.setValue(`method:${methodColumn.value}`, true);
-                    });
+                    }, { jslogContext: 'filter' });
                     /**
                      * You can click the "Documentation" item in the context menu to be
                      * taken to the CDP Documentation site entry for the given method.
@@ -291,7 +291,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                         const [domain, method] = String(methodColumn.value).split('.');
                         const type = typeColumn.value === 'sent' ? 'method' : 'event';
                         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(`https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}`);
-                    });
+                    }, { jslogContext: 'documentation' });
                 },
             },
         };
@@ -662,7 +662,7 @@ export class EditorWidget extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     jsonEditor;
     constructor() {
         super();
-        this.element.setAttribute('jslog', `${VisualLogging.pane('command-editor')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('command-editor').track({ resize: true })}`);
         this.jsonEditor = new Components.JSONEditor.JSONEditor();
         this.jsonEditor.metadataByCommand = metadataByCommand;
         this.jsonEditor.typesByName = typesByName;

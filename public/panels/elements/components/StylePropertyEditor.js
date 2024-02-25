@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -133,7 +132,7 @@ export class FlexboxEditor extends StylePropertyEditor {
         return findFlexContainerIcon(query, computedProperties);
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-flexbox-editor', FlexboxEditor);
+customElements.define('devtools-flexbox-editor', FlexboxEditor);
 export class GridEditor extends StylePropertyEditor {
     jslog = `${VisualLogging.cssGridEditor()}`;
     editableProperties = GridEditableProperties;
@@ -141,7 +140,7 @@ export class GridEditor extends StylePropertyEditor {
         return findGridContainerIcon(query, computedProperties);
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-grid-editor', GridEditor);
+customElements.define('devtools-grid-editor', GridEditor);
 export const FlexboxEditableProperties = [
     {
         propertyName: 'flex-direction',

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
-import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import textPromptStyles from './textPrompt.css.js';
 export class PromptInputEvent extends Event {
@@ -104,5 +103,5 @@ export class TextPrompt extends HTMLElement {
         LitHtml.render(output, this.#shadow, { host: this });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-text-prompt', TextPrompt);
+customElements.define('devtools-text-prompt', TextPrompt);
 //# sourceMappingURL=TextPrompt.js.map

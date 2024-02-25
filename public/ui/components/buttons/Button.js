@@ -226,5 +226,5 @@ export class Button extends HTMLElement {
         return this.#internals.reportValidity();
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-button', Button);
+customElements.define('devtools-button', Button);
 //# sourceMappingURL=Button.js.map

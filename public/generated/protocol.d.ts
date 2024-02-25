@@ -293,7 +293,7 @@ export declare namespace Accessibility {
         depth?: integer;
         /**
          * The frame for whose document the AX tree should be retrieved.
-         * If omited, the root frame is used.
+         * If omitted, the root frame is used.
          */
         frameId?: Page.FrameId;
     }
@@ -1334,7 +1334,7 @@ export declare namespace Autofill {
      */
     interface AddressUI {
         /**
-         * A two dimension array containing the repesentation of values from an address profile.
+         * A two dimension array containing the representation of values from an address profile.
          */
         addressFields: AddressFields[];
     }
@@ -1560,6 +1560,7 @@ export declare namespace Browser {
         ProtectedMediaIdentifier = "protectedMediaIdentifier",
         Sensors = "sensors",
         StorageAccess = "storageAccess",
+        SpeakerSelection = "speakerSelection",
         TopLevelStorageAccess = "topLevelStorageAccess",
         VideoCapture = "videoCapture",
         VideoCapturePanTiltZoom = "videoCapturePanTiltZoom",
@@ -1690,7 +1691,7 @@ export declare namespace Browser {
         /**
          * Whether to allow all or deny all download requests, or use default Chrome behavior if
          * available (otherwise deny). |allowAndName| allows download and names files according to
-         * their dowmload guids.
+         * their download guids.
          */
         behavior: SetDownloadBehaviorRequestBehavior;
         /**
@@ -2017,7 +2018,7 @@ export declare namespace CSS {
         frameId: Page.FrameId;
         /**
          * Stylesheet resource URL. Empty if this is a constructed stylesheet created using
-         * new CSSStyleSheet() (but non-empty if this is a constructed sylesheet imported
+         * new CSSStyleSheet() (but non-empty if this is a constructed stylesheet imported
          * as a CSS module script).
          */
         sourceURL: string;
@@ -3724,7 +3725,7 @@ export declare namespace DOM {
     }
     interface GetAttributesRequest {
         /**
-         * Id of the node to retrieve attibutes for.
+         * Id of the node to retrieve attributes for.
          */
         nodeId: NodeId;
     }
@@ -5309,14 +5310,14 @@ export declare namespace Emulation {
         PauseIfNetworkFetchesPending = "pauseIfNetworkFetchesPending"
     }
     /**
-     * Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+     * Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
      */
     interface UserAgentBrandVersion {
         brand: string;
         version: string;
     }
     /**
-     * Used to specify User Agent Cient Hints to emulate. See https://wicg.github.io/ua-client-hints
+     * Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
      * Missing optional values will be filled in by the target with what it would normally use.
      */
     interface UserAgentMetadata {
@@ -5628,8 +5629,9 @@ export declare namespace Emulation {
     }
     interface SetTimezoneOverrideRequest {
         /**
-         * The timezone identifier. If empty, disables the override and
-         * restores default host system timezone.
+         * The timezone identifier. List of supported timezones:
+         * https://source.chromium.org/chromium/chromium/deps/icu.git/+/faee8bc70570192d82d2978a71e2a615788597d1:source/data/misc/metaZones.txt
+         * If empty, disables the override and restores default host system timezone.
          */
         timezoneId: string;
     }
@@ -5763,7 +5765,7 @@ export declare namespace IO {
          */
         handle: StreamHandle;
         /**
-         * Seek to the specified offset before reading (if not specificed, proceed with offset
+         * Seek to the specified offset before reading (if not specified, proceed with offset
          * following the last read). Some types of streams may only support sequential reads.
          */
         offset?: integer;
@@ -6907,7 +6909,7 @@ export declare namespace LayerTree {
     }
     interface LayerTreeDidChangeEvent {
         /**
-         * Layer tree, absent if not in the comspositing mode.
+         * Layer tree, absent if not in the compositing mode.
          */
         layers?: Layer[];
     }
@@ -7393,7 +7395,7 @@ export declare namespace Network {
         trustTokenParams?: TrustTokenParams;
         /**
          * True if this resource request is considered to be the 'same site' as the
-         * request correspondinfg to the main frame.
+         * request corresponding to the main frame.
          */
         isSameSite?: boolean;
     }
@@ -7701,7 +7703,7 @@ export declare namespace Network {
          */
         fromPrefetchCache?: boolean;
         /**
-         * Infomation about how Service Worker Static Router was used.
+         * Information about how Service Worker Static Router was used.
          */
         serviceWorkerRouterInfo?: ServiceWorkerRouterInfo;
         /**
@@ -8301,7 +8303,7 @@ export declare namespace Network {
          */
         securityDetails?: SecurityDetails;
         /**
-         * Errors occurred while handling the signed exchagne.
+         * Errors occurred while handling the signed exchange.
          */
         errors?: SignedExchangeError[];
     }
@@ -8931,7 +8933,7 @@ export declare namespace Network {
          */
         type: ResourceType;
         /**
-         * User friendly error message.
+         * Error message. List of network errors: https://cs.chromium.org/chromium/src/net/base/net_error_list.h
          */
         errorText: string;
         /**
@@ -9393,7 +9395,7 @@ export declare namespace Network {
          */
         cookiePartitionKey?: string;
         /**
-         * True if partitioned cookies are enabled, but the partition key is not serializeable to string.
+         * True if partitioned cookies are enabled, but the partition key is not serializable to string.
          */
         cookiePartitionKeyOpaque?: boolean;
         /**
@@ -9542,7 +9544,7 @@ export declare namespace Overlay {
      */
     interface SourceOrderConfig {
         /**
-         * the color to outline the givent element in.
+         * the color to outline the given element in.
          */
         parentOutlineColor: DOM.RGBA;
         /**
@@ -9888,7 +9890,7 @@ export declare namespace Overlay {
          */
         showCSS: boolean;
         /**
-         * Seleted platforms to show the overlay.
+         * Selected platforms to show the overlay.
          */
         selectedPlatform: string;
         /**
@@ -10372,6 +10374,7 @@ export declare namespace Page {
         SharedStorage = "shared-storage",
         SharedStorageSelectUrl = "shared-storage-select-url",
         SmartCard = "smart-card",
+        SpeakerSelection = "speaker-selection",
         StorageAccess = "storage-access",
         SubApps = "sub-apps",
         SyncXhr = "sync-xhr",
@@ -10681,7 +10684,7 @@ export declare namespace Page {
          */
         message: string;
         /**
-         * If criticial, this is a non-recoverable parse error.
+         * If critical, this is a non-recoverable parse error.
          */
         critical: integer;
         /**
@@ -10911,7 +10914,7 @@ export declare namespace Page {
         eager?: boolean;
     }
     /**
-     * Enum of possible auto-reponse for permisison / prompt dialogs.
+     * Enum of possible auto-response for permission / prompt dialogs.
      */
     const enum AutoResponseMode {
         None = "none",
@@ -10995,7 +10998,6 @@ export declare namespace Page {
         SubresourceHasCacheControlNoCache = "SubresourceHasCacheControlNoCache",
         ContainsPlugins = "ContainsPlugins",
         DocumentLoaded = "DocumentLoaded",
-        DedicatedWorkerOrWorklet = "DedicatedWorkerOrWorklet",
         OutstandingNetworkRequestOthers = "OutstandingNetworkRequestOthers",
         RequestedMIDIPermission = "RequestedMIDIPermission",
         RequestedAudioCapturePermission = "RequestedAudioCapturePermission",
@@ -12042,7 +12044,7 @@ export declare namespace Page {
      */
     interface BackForwardCacheNotUsedEvent {
         /**
-         * The loader id for the associated navgation.
+         * The loader id for the associated navigation.
          */
         loaderId: Network.LoaderId;
         /**
@@ -12237,7 +12239,7 @@ export declare namespace PerformanceTimeline {
         frameId: Page.FrameId;
         /**
          * The event type, as specified in https://w3c.github.io/performance-timeline/#dom-performanceentry-entrytype
-         * This determines which of the optional "details" fiedls is present.
+         * This determines which of the optional "details" fields is present.
          */
         type: string;
         /**
@@ -12349,7 +12351,7 @@ export declare namespace Security {
          */
         certificateNetworkError?: string;
         /**
-         * True if the certificate uses a weak signature aglorithm.
+         * True if the certificate uses a weak signature algorithm.
          */
         certificateHasWeakSignature: boolean;
         /**
@@ -13460,7 +13462,7 @@ export declare namespace Storage {
          */
         ownerOrigin: string;
         /**
-         * The sub-parameters warapped by `params` are all optional and their
+         * The sub-parameters wrapped by `params` are all optional and their
          * presence/absence depends on `type`.
          */
         params: SharedStorageAccessParams;
@@ -13708,6 +13710,9 @@ export declare namespace Target {
     type SessionID = OpaqueIdentifier<string, 'Protocol.Target.SessionID'>;
     interface TargetInfo {
         targetId: TargetID;
+        /**
+         * List of types: https://source.chromium.org/chromium/chromium/src/+/main:content/browser/devtools/devtools_agent_host_impl.cc?ss=chromium&q=f:devtools%20-f:out%20%22::kTypeTab%5B%5D%22
+         */
         type: string;
         title: string;
         url: string;
@@ -13739,7 +13744,7 @@ export declare namespace Target {
      */
     interface FilterEntry {
         /**
-         * If set, causes exclusion of mathcing targets from the list.
+         * If set, causes exclusion of matching targets from the list.
          */
         exclude?: boolean;
         /**
@@ -15291,7 +15296,7 @@ export declare namespace Preload {
      * that had a speculation rule that triggered the attempt, and the
      * BackendNodeIds of <a href> or <area href> elements that triggered the
      * attempt (in the case of attempts triggered by a document rule). It is
-     * possible for mulitple rule sets and links to trigger a single attempt.
+     * possible for multiple rule sets and links to trigger a single attempt.
      */
     interface PreloadingAttemptSource {
         key: PreloadingAttemptKey;

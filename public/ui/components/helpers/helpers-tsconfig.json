@@ -30,11 +30,9 @@
   },
   "files": [
     "../../../../../../../front_end/ui/components/helpers/component-server-setup.ts",
-    "../../../../../../../front_end/ui/components/helpers/custom-elements.ts",
     "../../../../../../../front_end/ui/components/helpers/directives.ts",
     "../../../../../../../front_end/ui/components/helpers/get-root-node.ts",
     "../../../../../../../front_end/ui/components/helpers/scheduled-render.ts",
-    "../../../../../../../front_end/ui/components/helpers/set-css-property.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../../front_end/global_typings/request_idle_callback.d.ts",

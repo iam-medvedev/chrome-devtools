@@ -90,12 +90,12 @@ export class ConsolePinPane extends UI.ThrottledWidget.ThrottledWidget {
             if (targetPinElement) {
                 const targetPin = elementToConsolePin.get(targetPinElement);
                 if (targetPin) {
-                    contextMenu.editSection().appendItem(i18nString(UIStrings.removeExpression), this.removePin.bind(this, targetPin));
+                    contextMenu.editSection().appendItem(i18nString(UIStrings.removeExpression), this.removePin.bind(this, targetPin), { jslogContext: 'remove-expression' });
                     targetPin.appendToContextMenu(contextMenu);
                 }
             }
         }
-        contextMenu.editSection().appendItem(i18nString(UIStrings.removeAllExpressions), this.removeAllPins.bind(this));
+        contextMenu.editSection().appendItem(i18nString(UIStrings.removeAllExpressions), this.removeAllPins.bind(this), { jslogContext: 'remove-all-expressions' });
         void contextMenu.show();
     }
     removeAllPins() {

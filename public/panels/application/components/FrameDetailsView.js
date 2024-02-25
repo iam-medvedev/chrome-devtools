@@ -11,7 +11,6 @@ import * as Workspace from '../../../models/workspace/workspace.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import * as CspEvaluator from '../../../third_party/csp_evaluator/csp_evaluator.js';
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
@@ -263,7 +262,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     }
     connectedCallback() {
         this.parentElement?.classList.add('overflow-auto');
-        this.#protocolMonitorExperimentEnabled = Root.Runtime.experiments.isEnabled('protocolMonitor');
+        this.#protocolMonitorExperimentEnabled = Root.Runtime.experiments.isEnabled('protocol-monitor');
         this.#shadow.adoptedStyleSheets = [frameDetailsReportViewStyles];
     }
     async render() {
@@ -359,7 +358,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
             if (resource && resource.request) {
                 const request = resource.request;
                 return renderIconLink('arrow-up-down-circle', i18nString(UIStrings.clickToRevealInNetworkPanel), () => {
-                    const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(request, "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
+                    const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(request, "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */);
                     return Common.Revealer.reveal(requestLocation);
                 }, 'reveal-in-network');
             }
@@ -738,5 +737,5 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     `;
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-resources-frame-details-view', FrameDetailsReportView);
+customElements.define('devtools-resources-frame-details-view', FrameDetailsReportView);
 //# sourceMappingURL=FrameDetailsView.js.map

@@ -16,6 +16,7 @@ export declare class GlassPane {
     private sizeBehavior;
     private marginBehavior;
     constructor(jslog?: string);
+    setJsLog(jslog: string): void;
     isShowing(): boolean;
     registerRequiredCSS(cssFile: {
         cssContent: string;

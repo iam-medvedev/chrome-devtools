@@ -60,7 +60,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
         if (this.uiSourceCodeIds.has(uiSourceCode.canononicalScriptId())) {
             return false;
         }
-        if (Root.Runtime.experiments.isEnabled("justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */) &&
+        if (Root.Runtime.experiments.isEnabled("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */) &&
             Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
             return false;
         }

@@ -324,8 +324,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.fixMeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.fixMe), adorner);
         this.fixMeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.onFixMe());
         const config = TraceEngine.Types.Configuration.DEFAULT;
-        config.experiments.timelineShowAllEvents = Root.Runtime.experiments.isEnabled('timelineShowAllEvents');
-        config.experiments.timelineV8RuntimeCallStats = Root.Runtime.experiments.isEnabled('timelineV8RuntimeCallStats');
+        config.experiments.timelineShowAllEvents = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
+        config.experiments.timelineV8RuntimeCallStats =
+            Root.Runtime.experiments.isEnabled('timeline-v8-runtime-call-stats');
         this.#traceEngineModel = TraceEngine.TraceModel.Model.createWithAllHandlers(config);
         this.element.addEventListener('contextmenu', this.contextMenu.bind(this), false);
         this.dropTarget = new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.File, UI.DropTarget.Type.URI], i18nString(UIStrings.dropTimelineFileOrUrlHere), this.handleDrop.bind(this));
@@ -383,7 +384,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.showLandingPage();
         this.updateTimelineControls();
         SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SuspendStateChanged */, this.onSuspendStateChanged, this);
-        if (Root.Runtime.experiments.isEnabled('timelineAsConsoleProfileResultPanel')) {
+        if (Root.Runtime.experiments.isEnabled('timeline-as-console-profile-result-panel')) {
             const profilerModels = SDK.TargetManager.TargetManager.instance().models(SDK.CPUProfilerModel.CPUProfilerModel);
             for (const model of profilerModels) {
                 for (const message of model.registeredConsoleProfileMessages) {
@@ -439,6 +440,9 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     getFlameChart() {
         return this.flameChart;
+    }
+    getMinimap() {
+        return this.#minimapComponent;
     }
     #onChartPlayableStateChange(event) {
         if (event.data) {
@@ -1013,7 +1017,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.setModel(null);
     }
     #applyActiveFilters(traceIsGeneric, exclusiveFilter = null) {
-        if (traceIsGeneric || Root.Runtime.experiments.isEnabled('timelineShowAllEvents')) {
+        if (traceIsGeneric || Root.Runtime.experiments.isEnabled('timeline-show-all-events')) {
             return;
         }
         const newActiveFilters = exclusiveFilter ? [exclusiveFilter] : [

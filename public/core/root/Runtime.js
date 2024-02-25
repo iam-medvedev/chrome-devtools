@@ -38,7 +38,7 @@ export class Runtime {
     }
     static experimentsSetting() {
         try {
-            return JSON.parse(self.localStorage && self.localStorage['experiments'] ? self.localStorage['experiments'] : '{}');
+            return Platform.StringUtilities.toKebabCaseKeys(JSON.parse(self.localStorage && self.localStorage['experiments'] ? self.localStorage['experiments'] : '{}'));
         }
         catch (e) {
             console.error('Failed to parse localStorage[\'experiments\']');
@@ -98,7 +98,9 @@ export class ExperimentsSupport {
         self.localStorage['experiments'] = JSON.stringify(value);
     }
     register(experimentName, experimentTitle, unstable, docLink, feedbackLink) {
-        Platform.DCHECK(() => !this.#experimentNames.has(experimentName), 'Duplicate registration of experiment ' + experimentName);
+        if (this.#experimentNames.has(experimentName)) {
+            throw new Error(`Duplicate registraction of experiment '${experimentName}'`);
+        }
         this.#experimentNames.add(experimentName);
         this.#experiments.push(new Experiment(this, experimentName, experimentTitle, Boolean(unstable), docLink ?? Platform.DevToolsPath.EmptyUrlString, feedbackLink ?? Platform.DevToolsPath.EmptyUrlString));
     }
@@ -170,7 +172,9 @@ export class ExperimentsSupport {
         this.setExperimentsSetting(cleanedUpExperimentSetting);
     }
     checkExperiment(experimentName) {
-        Platform.DCHECK(() => this.#experimentNames.has(experimentName), 'Unknown experiment ' + experimentName);
+        if (!this.#experimentNames.has(experimentName)) {
+            throw new Error(`Unknown experiment '${experimentName}'`);
+        }
     }
 }
 export class Experiment {

@@ -1,3 +1,4 @@
+import { type Angle } from './CSSAngleUtils.js';
 import { ValueChangedEvent } from './InlineEditorUtils.js';
 export declare class PopoverToggledEvent extends Event {
     static readonly eventName = "popovertoggled";
@@ -46,7 +47,7 @@ export declare class CSSAngle extends HTMLElement {
     addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
     minify(): void;
     updateProperty(name: string, value: string): void;
-    private updateAngle;
+    updateAngle(angle: Angle): void;
     private displayNextUnit;
     private bindMinifyingAction;
     private unbindMinifyingAction;

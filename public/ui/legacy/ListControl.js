@@ -307,7 +307,9 @@ export class ListControl {
         let element = this.itemToElement.get(item);
         if (!element) {
             element = this.delegate.createElementForItem(item);
-            element.setAttribute('jslog', `${VisualLogging.item().track({ click: true })}`);
+            if (!element.hasAttribute('jslog')) {
+                element.setAttribute('jslog', `${VisualLogging.item().track({ click: true })}`);
+            }
             this.itemToElement.set(item, element);
             this.updateElementARIA(element, index);
         }

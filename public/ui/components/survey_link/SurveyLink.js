@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as ComponentHelpers from '../../components/helpers/helpers.js';
+import * as LitHtml from '../../lit-html/lit-html.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import surveyLinkStyles from './surveyLink.css.js';
 const UIStrings = {
@@ -103,5 +102,5 @@ export class SurveyLink extends HTMLElement {
         LitHtml.render(output, this.#shadow, { host: this });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-survey-link', SurveyLink);
+customElements.define('devtools-survey-link', SurveyLink);
 //# sourceMappingURL=SurveyLink.js.map

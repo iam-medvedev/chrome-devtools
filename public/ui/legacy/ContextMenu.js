@@ -44,7 +44,7 @@ export class Item {
     customElement;
     shortcut;
     #tooltip;
-    #jslogContext;
+    jslogContext;
     constructor(contextMenu, type, label, disabled, checked, tooltip, jslogContext) {
         this.typeInternal = type;
         this.label = label;
@@ -56,7 +56,7 @@ export class Item {
         if (type === 'item' || type === 'checkbox') {
             this.idInternal = contextMenu ? contextMenu.nextId() : 0;
         }
-        this.#jslogContext = jslogContext;
+        this.jslogContext = jslogContext;
     }
     id() {
         if (this.idInternal === undefined) {
@@ -84,7 +84,7 @@ export class Item {
                     checked: undefined,
                     subItems: undefined,
                     tooltip: this.#tooltip,
-                    jslogContext: this.#jslogContext,
+                    jslogContext: this.jslogContext,
                 };
                 if (this.customElement) {
                     result.element = this.customElement;
@@ -113,7 +113,7 @@ export class Item {
                     enabled: !this.disabled,
                     subItems: undefined,
                     tooltip: this.#tooltip,
-                    jslogContext: this.#jslogContext,
+                    jslogContext: this.jslogContext,
                 };
                 if (this.customElement) {
                     result.element = this.customElement;
@@ -179,14 +179,14 @@ export class Section {
         this.items.push(item);
         return item;
     }
-    appendCheckboxItem(label, handler, checked, disabled, additionalElement, tooltip, jslogContext) {
-        const item = new Item(this.contextMenu, 'checkbox', label, disabled, checked, tooltip, jslogContext);
+    appendCheckboxItem(label, handler, options) {
+        const item = new Item(this.contextMenu, 'checkbox', label, options?.disabled, options?.checked, options?.tooltip, options?.jslogContext);
         this.items.push(item);
         if (this.contextMenu) {
             this.contextMenu.setHandler(item.id(), handler);
         }
-        if (additionalElement) {
-            item.customElement = additionalElement;
+        if (options?.additionalElement) {
+            item.customElement = options?.additionalElement;
         }
         return item;
     }
@@ -257,6 +257,7 @@ export class SubMenu extends Item {
             subItems: [],
             id: undefined,
             checked: undefined,
+            jslogContext: this.jslogContext,
         };
         const nonEmptySections = this.sectionList.filter(section => Boolean(section.items.length));
         for (const section of nonEmptySections) {
@@ -499,6 +500,9 @@ export class ContextMenu extends SubMenu {
     menuCleared() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuCleared, this.menuCleared, this);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, this.onItemSelected, this);
+        if (this.openHostedMenu) {
+            void VisualLogging.logResize(this.openHostedMenu, new DOMRect(0, 0, 0, 0));
+        }
         this.openHostedMenu = null;
         if (!this.keepOpen) {
             this.onSoftMenuClosed?.();
