@@ -308,7 +308,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         this.constructorsDataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, this.selectionChanged, this);
         this.constructorsWidget = this.constructorsDataGrid.asWidget();
         this.constructorsWidget.setMinimumSize(50, 25);
-        this.constructorsWidget.element.setAttribute('jslog', `${VisualLogging.section('heap-snapshot.constructors-view')}`);
+        this.constructorsWidget.element.setAttribute('jslog', `${VisualLogging.pane('heap-snapshot.constructors-view').track({ resize: true })}`);
         this.diffDataGrid = new HeapSnapshotDiffDataGrid(heapProfilerModel, this);
         this.diffDataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SelectedNode */, this.selectionChanged, this);
         this.diffWidget = this.diffDataGrid.asWidget();
@@ -327,7 +327,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         this.retainmentWidget = this.retainmentDataGrid.asWidget();
         this.retainmentWidget.setMinimumSize(50, 21);
         this.retainmentWidget.element.classList.add('retaining-paths-view');
-        this.retainmentWidget.element.setAttribute('jslog', `${VisualLogging.section('heap-snapshot.retaining-paths-view')}`);
+        this.retainmentWidget.element.setAttribute('jslog', `${VisualLogging.pane('heap-snapshot.retaining-paths-view').track({ resize: true })}`);
         let splitWidgetResizer;
         if (this.allocationStackView) {
             this.tabbedPane = new UI.TabbedPane.TabbedPane();
@@ -1052,7 +1052,7 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
     }
     customContent() {
         const optionsContainer = document.createElement('div');
-        const showOptionToExposeInternalsInHeapSnapshot = Root.Runtime.experiments.isEnabled('showOptionToExposeInternalsInHeapSnapshot');
+        const showOptionToExposeInternalsInHeapSnapshot = Root.Runtime.experiments.isEnabled('show-option-tp-expose-internals-in-heap-snapshot');
         const omitParagraphElement = !showOptionToExposeInternalsInHeapSnapshot;
         if (showOptionToExposeInternalsInHeapSnapshot) {
             const exposeInternalsInHeapSnapshotCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.exposeInternals), this.exposeInternals, omitParagraphElement);
@@ -1509,7 +1509,7 @@ export class HeapSnapshotStatisticsView extends UI.Widget.VBox {
     constructor() {
         super();
         this.element.classList.add('heap-snapshot-statistics-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane('profiler.heap-snapshot-statistics-view')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('profiler.heap-snapshot-statistics-view').track({ resize: true })}`);
         this.pieChart = new PerfUI.PieChart.PieChart();
         this.setTotalAndRecords(0, []);
         this.pieChart.classList.add('heap-snapshot-stats-pie-chart');

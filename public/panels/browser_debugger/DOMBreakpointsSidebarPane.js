@@ -127,7 +127,7 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
     constructor() {
         super(true);
         this.elementToCheckboxes = new WeakMap();
-        this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.dom-breakpoints')}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.dom-breakpoints').track({ resize: true })}`);
         this.#emptyElement = this.contentElement.createChild('div', 'gray-info-message');
         this.#emptyElement.textContent = i18nString(UIStrings.noBreakpoints);
         this.#breakpoints = new UI.ListModel.ListModel();
@@ -283,13 +283,13 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
     }
     contextMenu(breakpoint, event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.revealDomNodeInElementsPanel), () => Common.Revealer.reveal(breakpoint.node));
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.revealDomNodeInElementsPanel), () => Common.Revealer.reveal(breakpoint.node), { jslogContext: 'reveal-in-elements' });
         contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeBreakpoint), () => {
             breakpoint.domDebuggerModel.removeDOMBreakpoint(breakpoint.node, breakpoint.type);
-        });
+        }, { jslogContext: 'remove-breakpoint' });
         contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeAllDomBreakpoints), () => {
             breakpoint.domDebuggerModel.removeAllDOMBreakpoints();
-        });
+        }, { jslogContext: 'remove-all-dom-breakpoints' });
         void contextMenu.show();
     }
     checkboxClicked(breakpoint, event) {
@@ -362,7 +362,7 @@ export class ContextMenuProvider {
                 UI.ARIAUtils.alert(`${i18nString(UIStrings.breakpointSet)}: ${labelString}`);
             }
         }
-        const breakpointsMenu = contextMenu.debugSection().appendSubMenuItem(i18nString(UIStrings.breakOn));
+        const breakpointsMenu = contextMenu.debugSection().appendSubMenuItem(i18nString(UIStrings.breakOn), false, 'break-on');
         const allBreakpointTypes = {
             SubtreeModified: "subtree-modified" /* Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified */,
             AttributeModified: "attribute-modified" /* Protocol.DOMDebugger.DOMBreakpointType.AttributeModified */,
@@ -371,7 +371,7 @@ export class ContextMenuProvider {
         for (const type of Object.values(allBreakpointTypes)) {
             const label = Sources.DebuggerPausedMessage.BreakpointTypeNouns.get(type);
             if (label) {
-                breakpointsMenu.defaultSection().appendCheckboxItem(label(), toggleBreakpoint.bind(null, type), domDebuggerModel.hasDOMBreakpoint(node, type));
+                breakpointsMenu.defaultSection().appendCheckboxItem(label(), toggleBreakpoint.bind(null, type), { checked: domDebuggerModel.hasDOMBreakpoint(node, type), jslogContext: type });
             }
         }
     }

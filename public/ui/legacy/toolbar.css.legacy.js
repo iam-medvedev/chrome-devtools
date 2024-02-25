@@ -55,6 +55,7 @@ export default {
   border: none;
   white-space: pre;
   overflow: hidden;
+  max-width: 100%;
 }
 
 devtools-adorner.fix-perf-icon {
@@ -313,7 +314,7 @@ select.toolbar-item {
   appearance: none;
   border: 1px solid transparent;
   padding: 0 13px 0 5px;
-  margin-right: -10px;
+  margin-right: -17px;
   position: relative;
   height: 22px;
   margin-top: 2px;

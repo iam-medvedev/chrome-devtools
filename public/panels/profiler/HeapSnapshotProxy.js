@@ -214,7 +214,7 @@ export class HeapSnapshotLoaderProxy extends HeapSnapshotProxyObject {
     async close() {
         await this.callMethodPromise('close');
         const snapshotProxy = await this.callFactoryMethodPromise('buildSnapshot', HeapSnapshotProxy, {
-            heapSnapshotTreatBackingStoreAsContainingObject: Root.Runtime.experiments.isEnabled('heapSnapshotTreatBackingStoreAsContainingObject'),
+            heapSnapshotTreatBackingStoreAsContainingObject: Root.Runtime.experiments.isEnabled('heap-snapshot-treat-backing-store-as-containing-object'),
         });
         this.dispose();
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)

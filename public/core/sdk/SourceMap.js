@@ -100,11 +100,6 @@ class ScopeTreeEntry {
         return { lineNumber: this.endLineNumber, columnNumber: this.endColumnNumber };
     }
 }
-const base64Digits = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-const base64Map = new Map();
-for (let i = 0; i < base64Digits.length; ++i) {
-    base64Map.set(base64Digits.charAt(i), i);
-}
 const sourceMapToSourceList = new WeakMap();
 export class SourceMap {
     #json;
@@ -261,7 +256,13 @@ export class SourceMap {
     #ensureMappingsProcessed() {
         if (this.#mappingsInternal === null) {
             this.#mappingsInternal = [];
-            this.eachSection(this.parseMap.bind(this));
+            try {
+                this.eachSection(this.parseMap.bind(this));
+            }
+            catch (e) {
+                console.error('Failed to parse source map', e);
+                this.#mappingsInternal = [];
+            }
             // As per spec, mappings are not necessarily sorted.
             this.mappings().sort(SourceMapEntry.compare);
             this.#computeReverseMappings(this.#mappingsInternal);
@@ -355,7 +356,7 @@ export class SourceMap {
         // we have the list available.
         const sources = sourceMapToSourceList.get(map);
         const names = map.names ?? [];
-        const stringCharIterator = new SourceMap.StringCharIterator(map.mappings);
+        const stringCharIterator = new StringCharIterator(map.mappings);
         let sourceURL = sources && sources[sourceIndex];
         while (true) {
             if (stringCharIterator.peek() === ',') {
@@ -371,28 +372,28 @@ export class SourceMap {
                     break;
                 }
             }
-            columnNumber += this.decodeVLQ(stringCharIterator);
+            columnNumber += stringCharIterator.decodeVLQ();
             if (!stringCharIterator.hasNext() || this.isSeparator(stringCharIterator.peek())) {
                 this.mappings().push(new SourceMapEntry(lineNumber, columnNumber));
                 continue;
             }
-            const sourceIndexDelta = this.decodeVLQ(stringCharIterator);
+            const sourceIndexDelta = stringCharIterator.decodeVLQ();
             if (sourceIndexDelta) {
                 sourceIndex += sourceIndexDelta;
                 if (sources) {
                     sourceURL = sources[sourceIndex];
                 }
             }
-            sourceLineNumber += this.decodeVLQ(stringCharIterator);
-            sourceColumnNumber += this.decodeVLQ(stringCharIterator);
+            sourceLineNumber += stringCharIterator.decodeVLQ();
+            sourceColumnNumber += stringCharIterator.decodeVLQ();
             if (!stringCharIterator.hasNext() || this.isSeparator(stringCharIterator.peek())) {
                 this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber));
                 continue;
             }
-            nameIndex += this.decodeVLQ(stringCharIterator);
+            nameIndex += stringCharIterator.decodeVLQ();
             this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
         }
-        if (Root.Runtime.experiments.isEnabled("useSourceMapScopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */)) {
+        if (Root.Runtime.experiments.isEnabled("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */)) {
             this.parseScopes(map);
         }
     }
@@ -420,7 +421,7 @@ export class SourceMap {
             let startColumnNumber = 0;
             let endLineNumber = 0;
             let endColumnNumber = 0;
-            const stringCharIterator = new SourceMap.StringCharIterator(scopes);
+            const stringCharIterator = new StringCharIterator(scopes);
             const entries = [];
             let atStart = true;
             while (stringCharIterator.hasNext()) {
@@ -434,11 +435,11 @@ export class SourceMap {
                     // Unexpected character.
                     return;
                 }
-                nameIndex += this.decodeVLQ(stringCharIterator);
-                startLineNumber += this.decodeVLQ(stringCharIterator);
-                startColumnNumber += this.decodeVLQ(stringCharIterator);
-                endLineNumber += this.decodeVLQ(stringCharIterator);
-                endColumnNumber += this.decodeVLQ(stringCharIterator);
+                nameIndex += stringCharIterator.decodeVLQ();
+                startLineNumber += stringCharIterator.decodeVLQ();
+                startColumnNumber += stringCharIterator.decodeVLQ();
+                endLineNumber += stringCharIterator.decodeVLQ();
+                endColumnNumber += stringCharIterator.decodeVLQ();
                 entries.push(new ScopeTreeEntry(startLineNumber, startColumnNumber, endLineNumber, endColumnNumber, names[nameIndex] ?? '<invalid>'));
             }
             sourceInfo.scopeTree = this.buildScopeTree(entries);
@@ -488,21 +489,6 @@ export class SourceMap {
     }
     isSeparator(char) {
         return char === ',' || char === ';';
-    }
-    decodeVLQ(stringCharIterator) {
-        // Read unsigned value.
-        let result = 0;
-        let shift = 0;
-        let digit = SourceMap._VLQ_CONTINUATION_MASK;
-        while (digit & SourceMap._VLQ_CONTINUATION_MASK) {
-            digit = base64Map.get(stringCharIterator.next()) || 0;
-            result += (digit & SourceMap._VLQ_BASE_MASK) << shift;
-            shift += SourceMap._VLQ_BASE_SHIFT;
-        }
-        // Fix the sign.
-        const negative = result & 1;
-        result >>= 1;
-        return negative ? -result : result;
     }
     /**
      * Finds all the reverse mappings that intersect with the given `textRange` within the
@@ -634,33 +620,50 @@ export class SourceMap {
             this.hasIgnoreListHint(sourceURL) === other.hasIgnoreListHint(sourceURL);
     }
 }
-(function (SourceMap) {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    SourceMap._VLQ_BASE_SHIFT = 5;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    SourceMap._VLQ_BASE_MASK = (1 << 5) - 1;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    SourceMap._VLQ_CONTINUATION_MASK = 1 << 5;
-    class StringCharIterator {
-        string;
-        position;
-        constructor(string) {
-            this.string = string;
-            this.position = 0;
-        }
-        next() {
-            return this.string.charAt(this.position++);
-        }
-        peek() {
-            return this.string.charAt(this.position);
-        }
-        hasNext() {
-            return this.position < this.string.length;
-        }
+const VLQ_BASE_SHIFT = 5;
+const VLQ_BASE_MASK = (1 << 5) - 1;
+const VLQ_CONTINUATION_MASK = 1 << 5;
+export class StringCharIterator {
+    #string;
+    #position;
+    constructor(string) {
+        this.#string = string;
+        this.#position = 0;
     }
-    SourceMap.StringCharIterator = StringCharIterator;
-})(SourceMap || (SourceMap = {}));
+    next() {
+        return this.#string.charAt(this.#position++);
+    }
+    /** Returns the unicode value of the next character and advances the iterator  */
+    nextCharCode() {
+        return this.#string.charCodeAt(this.#position++);
+    }
+    peek() {
+        return this.#string.charAt(this.#position);
+    }
+    hasNext() {
+        return this.#position < this.#string.length;
+    }
+    decodeVLQ() {
+        // Read unsigned value.
+        let result = 0;
+        let shift = 0;
+        let digit = VLQ_CONTINUATION_MASK;
+        while (digit & VLQ_CONTINUATION_MASK) {
+            if (!this.hasNext()) {
+                throw new Error('Unexpected end of input while decodling VLQ number!');
+            }
+            const charCode = this.nextCharCode();
+            digit = Common.Base64.BASE64_CODES[charCode];
+            if (charCode !== 65 /* 'A' */ && digit === 0) {
+                throw new Error(`Unexpected char '${String.fromCharCode(charCode)}' encountered while decoding`);
+            }
+            result += (digit & VLQ_BASE_MASK) << shift;
+            shift += VLQ_BASE_SHIFT;
+        }
+        // Fix the sign.
+        const negative = result & 1;
+        result >>= 1;
+        return negative ? -result : result;
+    }
+}
 //# sourceMappingURL=SourceMap.js.map

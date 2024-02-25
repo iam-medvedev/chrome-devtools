@@ -52,6 +52,7 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     inspectedURLChanged(url: Platform.DevToolsPath.UrlString): void;
     copyText(text: string | null | undefined): void;
     openInNewTab(url: Platform.DevToolsPath.UrlString): void;
+    openSearchResultsInNewTab(query: string): void;
     showItemInFolder(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
     save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean): void;
     append(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string): void;
@@ -101,7 +102,8 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     isHostedMode(): boolean;
     setAddExtensionCallback(callback: (arg0: ExtensionDescriptor) => void): void;
     initialTargetId(): Promise<string | null>;
-    doAidaConversation(request: string, callback: (result: DoAidaConversationResult) => void): void;
+    doAidaConversation(request: string, streamId: number, callback: (result: DoAidaConversationResult) => void): void;
+    registerAidaClientEvent(request: string): void;
     recordImpression(event: ImpressionEvent): void;
     recordResize(event: ResizeEvent): void;
     recordClick(event: ClickEvent): void;

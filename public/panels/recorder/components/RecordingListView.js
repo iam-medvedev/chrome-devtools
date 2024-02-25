@@ -178,5 +178,5 @@ export class RecordingListView extends HTMLElement {
         // clang-format on
     };
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-recording-list-view', RecordingListView);
+customElements.define('devtools-recording-list-view', RecordingListView);
 //# sourceMappingURL=RecordingListView.js.map

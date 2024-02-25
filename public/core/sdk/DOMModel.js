@@ -898,7 +898,7 @@ export class DOMModel extends SDKModel {
         if (!target.suspended()) {
             void this.agent.invoke_enable({});
         }
-        if (Root.Runtime.experiments.isEnabled('captureNodeCreationStacks')) {
+        if (Root.Runtime.experiments.isEnabled('capture-node-creation-stacks')) {
             void this.agent.invoke_setNodeStackTracesEnabled({ enable: true });
         }
     }
@@ -1191,7 +1191,9 @@ export class DOMModel extends SDKModel {
         }
         const currentPseudoElements = parent.pseudoElements().get(pseudoType);
         if (currentPseudoElements) {
-            Platform.DCHECK(() => pseudoType.startsWith('view-transition'), 'DOMModel.pseudoElementAdded expects parent to not already have this pseudo type added; only view-transition* pseudo elements can coexist under the same parent.');
+            if (!pseudoType.startsWith('view-transition')) {
+                throw new Error('DOMModel.pseudoElementAdded expects parent to not already have this pseudo type added; only view-transition* pseudo elements can coexist under the same parent.');
+            }
             currentPseudoElements.push(node);
         }
         else {

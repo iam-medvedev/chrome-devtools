@@ -9,7 +9,6 @@ import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.nex
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as CodeHighlighter from '../../../ui/components/code_highlighter/code_highlighter.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
@@ -689,7 +688,7 @@ export class RecordingView extends HTMLElement {
           <div slot="main">
             ${this.#renderSections()}
           </div>
-          <div slot="sidebar" jslog=${VisualLogging.pane('source-code')}>
+          <div slot="sidebar" jslog=${VisualLogging.pane('source-code').track({ resize: true })}>
             <div class="section-toolbar" jslog=${VisualLogging.toolbar()}>
               <${Menus.SelectMenu.SelectMenu.litTagName}
                 @selectmenuselected=${this.#onCodeFormatChange}
@@ -1031,5 +1030,5 @@ export class RecordingView extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-recording-view', RecordingView);
+customElements.define('devtools-recording-view', RecordingView);
 //# sourceMappingURL=RecordingView.js.map

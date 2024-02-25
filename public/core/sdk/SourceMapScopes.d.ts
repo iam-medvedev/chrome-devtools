@@ -1,13 +1,4 @@
 /**
- * @fileoverview This file implements the current state of the "Scopes" proposal
- * for the source map spec.
- *
- * See https://github.com/tc39/source-map-rfc/blob/main/proposals/scopes.md.
- *
- * The proposal is still being worked on so we expect the implementation details
- * in this file to change frequently.
- */
-/**
  * A scope in the authored source.
  */
 export interface OriginalScope {
@@ -16,7 +7,7 @@ export interface OriginalScope {
     kind: ScopeKind;
     name?: string;
     variables: string[];
-    children?: OriginalScope[];
+    children: OriginalScope[];
 }
 /**
  * A range (can be a scope) in the generated JavaScript.
@@ -40,7 +31,7 @@ export interface GeneratedRange {
      */
     values?: (string | BindingRange[])[];
 }
-export type ScopeKind = 'global' | 'module' | 'class' | 'function' | 'block';
+export type ScopeKind = 'global' | 'class' | 'function' | 'block';
 export interface BindingRange {
     value?: string;
     from: Position;
@@ -53,3 +44,7 @@ export interface Position {
 export interface OriginalPosition extends Position {
     sourceIndex: number;
 }
+export declare function decodeScopes(encodedOriginalScopes: string[], encodedGeneratedRange: string, names: string[]): {
+    originalScopes: OriginalScope[];
+    generatedRange: GeneratedRange;
+};

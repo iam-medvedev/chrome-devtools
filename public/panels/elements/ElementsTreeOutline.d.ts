@@ -10,7 +10,7 @@ declare const ElementsTreeOutline_base: (new (...args: any[]) => {
     once<T_1 extends keyof ElementsTreeOutline.EventTypes>(eventType: T_1): Promise<ElementsTreeOutline.EventTypes[T_1]>;
     removeEventListener<T_2 extends keyof ElementsTreeOutline.EventTypes>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<ElementsTreeOutline.EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
     hasEventListeners(eventType: keyof ElementsTreeOutline.EventTypes): boolean;
-    dispatchEventToListeners<T_3 extends keyof ElementsTreeOutline.EventTypes>(eventType: import("../../core/platform/typescript-utilities.js").NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<ElementsTreeOutline.EventTypes, T_3>): void;
+    dispatchEventToListeners<T_3 extends keyof ElementsTreeOutline.EventTypes>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<ElementsTreeOutline.EventTypes, T_3>): void;
 }) & typeof UI.TreeOutline.TreeOutline;
 export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     #private;

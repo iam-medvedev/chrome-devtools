@@ -6,6 +6,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { PerformanceModel } from './PerformanceModel.js';
 import { type Client } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
+import { TimelineMiniMap } from './TimelineMiniMap.js';
 import { TimelineSelection } from './TimelineSelection.js';
 export declare class TimelinePanel extends UI.Panel.Panel implements Client, TimelineModeViewDelegate {
     #private;
@@ -59,6 +60,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     willHide(): void;
     loadFromEvents(events: TraceEngine.TracingManager.EventPayload[]): void;
     getFlameChart(): TimelineFlameChartView;
+    getMinimap(): TimelineMiniMap;
     private loadFromCpuProfile;
     private setState;
     private createSettingCheckbox;

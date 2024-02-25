@@ -25,7 +25,7 @@ async function loadAutofillModule() {
     return loadedAutofillModule;
 }
 UI.ViewManager.registerViewExtension({
-    experiment: "autofillView" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
+    experiment: "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
     location: "drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */,
     id: 'autofill-view',
     title: i18nLazyString(UIStrings.autofill),

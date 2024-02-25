@@ -6,6 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ConsoleFilter, FilterType } from './ConsoleFilter.js';
 import consoleSidebarStyles from './consoleSidebar.css.js';
 const UIStrings = {
@@ -52,6 +53,7 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.setMinimumSize(125, 0);
         this.tree = new UI.TreeOutline.TreeOutlineInShadow();
         this.tree.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged.bind(this));
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
         this.contentElement.appendChild(this.tree.element);
         this.selectedTreeElement = null;
         this.treeElements = [];

@@ -165,5 +165,5 @@ export class ReplayButton extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-replay-button', ReplayButton);
+customElements.define('devtools-replay-button', ReplayButton);
 //# sourceMappingURL=ReplayButton.js.map

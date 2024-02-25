@@ -183,7 +183,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.canvas.addEventListener('mouseout', this.onMouseOut.bind(this), false);
         this.canvas.addEventListener('click', this.onClick.bind(this), false);
         this.canvas.addEventListener('keydown', this.onKeyDown.bind(this), false);
-        if (Root.Runtime.experiments.isEnabled("trackContextMenu" /* Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU */)) {
+        if (Root.Runtime.experiments.isEnabled("track-context-menu" /* Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU */)) {
             this.canvas.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
         }
         this.entryInfo = this.viewportElement.createChild('div', 'flame-chart-entry-info');
@@ -744,30 +744,33 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (possibleActions?.["MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */]) {
             const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideFunction), () => {
                 this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */, this.selectedEntryIndex);
-            });
+            }, { jslogContext: 'hide-function' });
             item.setShortcut('H');
         }
         if (possibleActions?.["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */]) {
             const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideChildren), () => {
                 this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */, this.selectedEntryIndex);
-            });
+            }, { jslogContext: 'hide-children' });
             item.setShortcut('C');
         }
         if (possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */]) {
             const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideRepeatingChildren), () => {
                 this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */, this.selectedEntryIndex);
-            });
+            }, { jslogContext: 'hide-repeating-children' });
             item.setShortcut('R');
         }
         if (possibleActions?.["RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */]) {
             const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetChildren), () => {
                 this.modifyTree("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */, this.selectedEntryIndex);
-            });
+            }, { jslogContext: 'reset-children' });
             item.setShortcut('U');
         }
         this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetTrace), () => {
             this.modifyTree("UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterAction.UNDO_ALL_ACTIONS */, this.selectedEntryIndex);
-        }, { disabled: !possibleActions?.["UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterAction.UNDO_ALL_ACTIONS */] });
+        }, {
+            disabled: !possibleActions?.["UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterAction.UNDO_ALL_ACTIONS */],
+            jslogContext: 'reset-trace',
+        });
         void this.contextMenu.show();
     }
     handleFlameChartTransformEvent(event) {
@@ -1984,8 +1987,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         context.translate(0, -top);
         context.fillStyle = '#7f5050';
         context.strokeStyle = '#7f5050';
-        for (let i = 0; i < this.selectedEntryIndex; ++i) {
-            if (!td.flowEndTimes[i] || td.flowEndTimes[i] < this.chartViewport.windowLeftTime()) {
+        for (let i = 0; i < td.flowEndTimes.length; ++i) {
+            if (td.flowEndTimes[i] < this.chartViewport.windowLeftTime()) {
                 continue;
             }
             const startX = this.chartViewport.timeToPosition(td.flowStartTimes[i]);

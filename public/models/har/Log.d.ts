@@ -103,6 +103,7 @@ export interface CookieDTO {
     httpOnly: boolean;
     secure: boolean;
     sameSite?: Protocol.Network.CookieSameSite;
+    partitionKey?: string;
 }
 export interface Page {
     startedDateTime: string | Object;

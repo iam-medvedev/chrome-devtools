@@ -33,7 +33,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
     constructor(request) {
         super();
         this.element.classList.add('request-initiator-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane('initiator')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('initiator').track({ resize: true })}`);
         this.linkifier = new Components.Linkifier.Linkifier();
         this.request = request;
         this.emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoInitiatorData));

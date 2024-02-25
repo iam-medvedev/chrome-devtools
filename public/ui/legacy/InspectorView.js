@@ -548,10 +548,10 @@ export class InspectorViewTabDelegate {
         }
         const locationName = ViewManager.instance().locationNameForViewId(tabId);
         if (locationName === 'drawer-view') {
-            contextMenu.defaultSection().appendItem(i18nString(UIStrings.moveToTop), this.moveToMainPanel.bind(this, tabId));
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.moveToTop), this.moveToMainPanel.bind(this, tabId), { jslogContext: 'move-to-top' });
         }
         else {
-            contextMenu.defaultSection().appendItem(i18nString(UIStrings.moveToBottom), this.moveToDrawer.bind(this, tabId));
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.moveToBottom), this.moveToDrawer.bind(this, tabId), { jslogContext: 'move-to-bottom' });
         }
     }
 }

@@ -12,16 +12,18 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, } from './ColorSwatchPopoverIcon.js';
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { children, ColorMatch, ColorMatcher, Renderer, RenderingContext, VariableMatch, VariableMatcher, } from './PropertyParser.js';
+import { ImagePreviewPopover } from './ImagePreviewPopover.js';
+import { AngleMatch, AngleMatcher, BezierMatch, BezierMatcher, children, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, LinkableNameMatch, LinkableNameMatcher, Renderer, StringMatch, StringMatcher, URLMatch, URLMatcher, VariableMatch, VariableMatcher, } from './PropertyParser.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
-import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, StylesSidebarPropertyRenderer, } from './StylesSidebarPane.js';
+import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, StylesSidebarPropertyRenderer, unescapeCssString, } from './StylesSidebarPane.js';
 const FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 const GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
 export const activeHints = new WeakMap();
@@ -138,7 +140,10 @@ export class VariableRenderer extends VariableMatch {
             UI.UIUtils.createTextChild(varSwatch, this.text);
         }
         if (varSwatch.link) {
-            this.#pane.addPopover(varSwatch.link, () => this.#treeElement.getVariablePopoverContents(this.name, variableValue ?? null));
+            this.#pane.addPopover(varSwatch.link, {
+                contents: () => this.#treeElement.getVariablePopoverContents(this.name, variableValue ?? null),
+                jslogContext: 'elements.css-var',
+            });
         }
         if (!computedValue || !Common.Color.parse(computedValue)) {
             return [varSwatch];
@@ -184,17 +189,34 @@ export class ColorRenderer extends ColorMatch {
         const valueChild = document.createElement('span');
         if (node.name === 'ColorLiteral' || (node.name === 'ValueName' && Common.Color.Nicknames.has(this.text))) {
             valueChild.appendChild(document.createTextNode(this.text));
+            return { valueChild };
         }
-        else {
-            const { ast, matchedResult, cssControls } = context;
-            const childContext = new RenderingContext(ast, matchedResult, cssControls, { readonly: true });
-            Renderer.renderInto(children(node), childContext, valueChild);
-        }
-        return valueChild;
+        const { cssControls } = Renderer.renderInto(children(node), context, valueChild);
+        return { valueChild, cssControls };
     }
     render(node, context) {
-        const swatch = this.renderColorSwatch(this.#getValueChild(node, context), context.matchedResult.getComputedText(node));
+        const { valueChild, cssControls } = this.#getValueChild(node, context);
+        const swatch = this.renderColorSwatch(valueChild, context.matchedResult.getComputedText(node));
         context.addControl('color', swatch);
+        if (cssControls && node.name === 'CallExpression' &&
+            context.ast.text(node.getChild('Callee')).match(/^(hsla?|hwba?)/)) {
+            const angles = cssControls.get('angle');
+            if (angles?.length === 1 && angles[0] instanceof InlineEditor.CSSAngle.CSSAngle) {
+                angles[0].addEventListener(InlineEditor.InlineEditorUtils.ValueChangedEvent.eventName, ev => {
+                    const hue = Common.Color.parseHueNumeric(ev.data.value);
+                    const color = swatch.getColor();
+                    if (!hue || !color) {
+                        return;
+                    }
+                    if (color.is("hsl" /* Common.Color.Format.HSL */) || color.is("hsla" /* Common.Color.Format.HSLA */)) {
+                        swatch.renderColor(new Common.Color.HSL(hue, color.s, color.l, color.alpha));
+                    }
+                    else if (color.is("hwb" /* Common.Color.Format.HWB */) || color.is("hwba" /* Common.Color.Format.HWBA */)) {
+                        swatch.renderColor(new Common.Color.HWB(hue, color.w, color.b, color.alpha));
+                    }
+                });
+            }
+        }
         return [swatch];
     }
     renderColorSwatch(valueChild, text) {
@@ -251,6 +273,262 @@ export class ColorRenderer extends ColorMatch {
         }
         const contrastInfo = new ColorPicker.ContrastInfo.ContrastInfo(await cssModel.getBackgroundColors(node.id));
         swatchIcon.setContrastInfo(contrastInfo);
+    }
+}
+export class ColorMixRenderer extends ColorMixMatch {
+    #pane;
+    constructor(pane, text, space, color1, color2) {
+        super(text, space, color1, color2);
+        this.#pane = pane;
+    }
+    render(node, context) {
+        const hookUpColorArg = (node, onChange) => {
+            if (node instanceof InlineEditor.ColorMixSwatch.ColorMixSwatch ||
+                node instanceof InlineEditor.ColorSwatch.ColorSwatch) {
+                if (node instanceof InlineEditor.ColorSwatch.ColorSwatch) {
+                    node.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, ev => onChange(ev.data.text));
+                }
+                else {
+                    node.addEventListener("colorChanged" /* InlineEditor.ColorMixSwatch.Events.ColorChanged */, ev => onChange(ev.data.text));
+                }
+                const color = node.getText();
+                if (color) {
+                    onChange(color);
+                    return true;
+                }
+            }
+            return false;
+        };
+        const contentChild = document.createElement('span');
+        contentChild.appendChild(document.createTextNode('color-mix('));
+        Renderer.renderInto(this.space, context, contentChild);
+        contentChild.appendChild(document.createTextNode(', '));
+        const color1 = Renderer.renderInto(this.color1, context, contentChild).cssControls.get('color') ?? [];
+        contentChild.appendChild(document.createTextNode(', '));
+        const color2 = Renderer.renderInto(this.color2, context, contentChild).cssControls.get('color') ?? [];
+        contentChild.appendChild(document.createTextNode(')'));
+        if (context.matchedResult.hasUnresolvedVars(node) || color1.length !== 1 || color2.length !== 1) {
+            return [contentChild];
+        }
+        const swatch = new InlineEditor.ColorMixSwatch.ColorMixSwatch();
+        if (!hookUpColorArg(color1[0], text => swatch.setFirstColor(text)) ||
+            !hookUpColorArg(color2[0], text => swatch.setSecondColor(text))) {
+            return [contentChild];
+        }
+        const space = this.space.map(space => context.matchedResult.getComputedText(space)).join(' ');
+        const color1Text = this.color1.map(color => context.matchedResult.getComputedText(color)).join(' ');
+        const color2Text = this.color2.map(color => context.matchedResult.getComputedText(color)).join(' ');
+        swatch.appendChild(contentChild);
+        swatch.setColorMixText(`color-mix(${space}, ${color1Text}, ${color2Text})`);
+        swatch.setRegisterPopoverCallback(swatch => {
+            if (swatch.icon) {
+                this.#pane.addPopover(swatch.icon, {
+                    contents: () => {
+                        const color = swatch.mixedColor();
+                        if (!color) {
+                            return undefined;
+                        }
+                        const span = document.createElement('span');
+                        span.style.padding = '11px 7px';
+                        const rgb = color.as("hex" /* Common.Color.Format.HEX */);
+                        const text = rgb.isGamutClipped() ? color.asString() : rgb.asString();
+                        if (!text) {
+                            return undefined;
+                        }
+                        span.appendChild(document.createTextNode(text));
+                        return span;
+                    },
+                    jslogContext: 'elements.css-color-mix',
+                });
+            }
+        });
+        context.addControl('color', swatch);
+        return [swatch];
+    }
+    static matcher(pane) {
+        return new ColorMixMatcher((text, space, color1, color2) => new ColorMixRenderer(pane, text, space, color1, color2));
+    }
+}
+export class URLRenderer extends URLMatch {
+    rule;
+    node;
+    constructor(rule, node, url, text) {
+        super(unescapeCssString(url), text);
+        this.rule = rule;
+        this.node = node;
+    }
+    render() {
+        const container = document.createDocumentFragment();
+        UI.UIUtils.createTextChild(container, 'url(');
+        let hrefUrl = null;
+        if (this.rule && this.rule.resourceURL()) {
+            hrefUrl = Common.ParsedURL.ParsedURL.completeURL(this.rule.resourceURL(), this.url);
+        }
+        else if (this.node) {
+            hrefUrl = this.node.resolveURL(this.url);
+        }
+        const link = ImagePreviewPopover.setImageUrl(Components.Linkifier.Linkifier.linkifyURL(hrefUrl || this.url, {
+            text: this.url,
+            preventClick: false,
+            // crbug.com/1027168
+            // We rely on CSS text-overflow: ellipsis to hide long URLs in the Style panel,
+            // so that we don't have to keep two versions (original vs. trimmed) of URL
+            // at the same time, which complicates both StylesSidebarPane and StylePropertyTreeElement.
+            bypassURLTrimming: true,
+            showColumnNumber: false,
+            inlineFrameIndex: 0,
+        }), hrefUrl || this.url);
+        container.appendChild(link);
+        UI.UIUtils.createTextChild(container, ')');
+        return [container];
+    }
+    static matcher(rule, node) {
+        return new URLMatcher((url, text) => new URLRenderer(rule, node, url, text));
+    }
+}
+export class AngleRenderer extends AngleMatch {
+    #treeElement;
+    constructor(text, treeElement) {
+        super(text);
+        this.#treeElement = treeElement;
+    }
+    render(_, context) {
+        const angleText = this.text;
+        if (!this.#treeElement.editable()) {
+            return [document.createTextNode(angleText)];
+        }
+        const cssAngle = new InlineEditor.CSSAngle.CSSAngle();
+        cssAngle.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context('css-angle')}`);
+        const valueElement = document.createElement('span');
+        valueElement.textContent = angleText;
+        const computedPropertyValue = this.#treeElement.matchedStyles().computeValue(this.#treeElement.property.ownerStyle, this.#treeElement.property.value) ||
+            '';
+        cssAngle.data = {
+            propertyName: this.#treeElement.property.name,
+            propertyValue: computedPropertyValue,
+            angleText,
+            containingPane: this.#treeElement.parentPane().element.enclosingNodeOrSelfWithClass('style-panes-wrapper'),
+        };
+        cssAngle.append(valueElement);
+        cssAngle.addEventListener('popovertoggled', ({ data }) => {
+            const section = this.#treeElement.section();
+            if (!section) {
+                return;
+            }
+            if (data.open) {
+                this.#treeElement.parentPane().hideAllPopovers();
+                this.#treeElement.parentPane().activeCSSAngle = cssAngle;
+                Host.userMetrics.swatchActivated(7 /* Host.UserMetrics.SwatchType.Angle */);
+            }
+            section.element.classList.toggle('has-open-popover', data.open);
+            this.#treeElement.parentPane().setEditingStyle(data.open);
+            // Commit the value as a major change after the angle popover is closed.
+            if (!data.open) {
+                void this.#treeElement.applyStyleText(this.#treeElement.renderedPropertyText(), true);
+            }
+        });
+        cssAngle.addEventListener('valuechanged', async ({ data }) => {
+            valueElement.textContent = data.value;
+            await this.#treeElement.applyStyleText(this.#treeElement.renderedPropertyText(), false);
+            const computedPropertyValue = this.#treeElement.matchedStyles().computeValue(this.#treeElement.property.ownerStyle, this.#treeElement.property.value) ||
+                '';
+            cssAngle.updateProperty(this.#treeElement.property.name, computedPropertyValue);
+        });
+        cssAngle.addEventListener('unitchanged', ({ data }) => {
+            valueElement.textContent = data.value;
+        });
+        context.addControl('angle', cssAngle);
+        return [cssAngle];
+    }
+    static matcher(treeElement) {
+        return new AngleMatcher(text => new AngleRenderer(text, treeElement));
+    }
+}
+export class LinkableNameRenderer extends LinkableNameMatch {
+    #treeElement;
+    constructor(treeElement, text, propertyName) {
+        super(text, propertyName);
+        this.#treeElement = treeElement;
+    }
+    #getLinkData() {
+        switch (this.properyName) {
+            case "animation-name" /* LinkableNameProperties.AnimationName */:
+                return {
+                    jslogContext: 'css-animation-name',
+                    metric: 1 /* Host.UserMetrics.SwatchType.AnimationNameLink */,
+                    ruleBlock: '@keyframes',
+                    isDefined: Boolean(this.#treeElement.matchedStyles().keyframes().find(kf => kf.name().text === this.text)),
+                };
+            case "font-palette" /* LinkableNameProperties.FontPalette */:
+                return {
+                    jslogContext: 'css-font-palette',
+                    metric: null,
+                    ruleBlock: '@font-palette-values',
+                    isDefined: this.#treeElement.matchedStyles().fontPaletteValuesRule()?.name().text === this.text,
+                };
+            case "position-fallback" /* LinkableNameProperties.PositionFallback */:
+                return {
+                    jslogContext: 'css-position-fallback',
+                    metric: 9 /* Host.UserMetrics.SwatchType.PositionFallbackLink */,
+                    ruleBlock: '@position-fallback',
+                    isDefined: Boolean(this.#treeElement.matchedStyles().positionFallbackRules().find(pf => pf.name().text === this.text)),
+                };
+        }
+    }
+    render() {
+        const swatch = new InlineEditor.LinkSwatch.LinkSwatch();
+        UI.UIUtils.createTextChild(swatch, this.text);
+        const { metric, jslogContext, ruleBlock, isDefined } = this.#getLinkData();
+        swatch.data = {
+            text: this.text,
+            isDefined,
+            onLinkActivate: () => {
+                metric && Host.userMetrics.swatchActivated(metric);
+                this.#treeElement.parentPane().jumpToSectionBlock(`${ruleBlock} ${this.text}`);
+            },
+            jslogContext,
+        };
+        return [swatch];
+    }
+    static matcher(treeElement) {
+        return new LinkableNameMatcher((text, propertyName) => new LinkableNameRenderer(treeElement, text, propertyName));
+    }
+}
+export class BezierRenderer extends BezierMatch {
+    #treeElement;
+    constructor(treeElement, text) {
+        super(text);
+        this.#treeElement = treeElement;
+    }
+    render() {
+        return [this.renderSwatch()];
+    }
+    renderSwatch() {
+        if (!this.#treeElement.editable()) {
+            return document.createTextNode(this.text);
+        }
+        const swatchPopoverHelper = this.#treeElement.parentPane().swatchPopoverHelper();
+        const swatch = InlineEditor.Swatches.BezierSwatch.create();
+        swatch.iconElement().addEventListener('click', () => {
+            Host.userMetrics.swatchActivated(3 /* Host.UserMetrics.SwatchType.AnimationTiming */);
+        });
+        swatch.setBezierText(this.text);
+        new BezierPopoverIcon({ treeElement: this.#treeElement, swatchPopoverHelper, swatch });
+        return swatch;
+    }
+    static matcher(treeElement) {
+        return new BezierMatcher(text => new BezierRenderer(treeElement, text));
+    }
+}
+export class StringRenderer extends StringMatch {
+    render() {
+        const element = document.createElement('span');
+        element.innerText = this.text;
+        UI.Tooltip.Tooltip.install(element, unescapeCssString(this.text));
+        return [element];
+    }
+    static matcher() {
+        return new StringMatcher(text => new StringRenderer(text));
     }
 }
 export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
@@ -365,30 +643,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         return matches;
     }
-    processAnimationName(animationNamePropertyText) {
-        const animationNames = animationNamePropertyText.split(',').map(name => name.trim());
-        const contentChild = document.createElement('span');
-        for (let i = 0; i < animationNames.length; i++) {
-            const animationName = animationNames[i];
-            const swatch = new InlineEditor.LinkSwatch.LinkSwatch();
-            UI.UIUtils.createTextChild(swatch, animationName);
-            const isDefined = Boolean(this.matchedStylesInternal.keyframes().find(kf => kf.name().text === animationName));
-            swatch.data = {
-                text: animationName,
-                isDefined,
-                onLinkActivate: () => {
-                    Host.userMetrics.swatchActivated(1 /* Host.UserMetrics.SwatchType.AnimationNameLink */);
-                    this.parentPaneInternal.jumpToSectionBlock(`@keyframes ${animationName}`);
-                },
-                jslogContext: 'css-animation-name',
-            };
-            contentChild.appendChild(swatch);
-            if (i !== animationNames.length - 1) {
-                contentChild.appendChild(document.createTextNode(', '));
-            }
-        }
-        return contentChild;
-    }
     processAnimation(animationPropertyValue) {
         const animationNameProperty = this.property.getLonghandProperties().find(longhand => longhand.name === 'animation-name');
         if (!animationNameProperty) {
@@ -404,10 +658,12 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                     contentChild.appendChild(document.createTextNode(part.value));
                     break;
                 case "EF" /* InlineEditor.CSSAnimationModel.PartType.EasingFunction */:
-                    contentChild.appendChild(this.processBezier(part.value));
+                    contentChild.appendChild(this.editable() && InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(part.value) ?
+                        new BezierRenderer(this, part.value).renderSwatch() :
+                        document.createTextNode(part.value));
                     break;
                 case "AN" /* InlineEditor.CSSAnimationModel.PartType.AnimationName */:
-                    contentChild.appendChild(this.processAnimationName(part.value));
+                    contentChild.appendChild(new LinkableNameRenderer(this, part.value, "animation-name" /* LinkableNameProperties.AnimationName */).render()[0]);
                     break;
                 case "V" /* InlineEditor.CSSAnimationModel.PartType.Variable */:
                     contentChild.appendChild(this.processVar(part.value));
@@ -418,139 +674,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             }
         }
         return contentChild;
-    }
-    processPositionFallback(propertyText) {
-        const contentChild = document.createElement('span');
-        const swatch = new InlineEditor.LinkSwatch.LinkSwatch();
-        UI.UIUtils.createTextChild(swatch, propertyText);
-        const isDefined = Boolean(this.matchedStylesInternal.positionFallbackRules().find(pf => pf.name().text === propertyText));
-        swatch.data = {
-            text: propertyText,
-            isDefined,
-            onLinkActivate: () => {
-                Host.userMetrics.swatchActivated(9 /* Host.UserMetrics.SwatchType.PositionFallbackLink */);
-                this.parentPaneInternal.jumpToSectionBlock(`@position-fallback ${propertyText}`);
-            },
-            jslogContext: 'css-position-fallback',
-        };
-        contentChild.appendChild(swatch);
-        return contentChild;
-    }
-    processFontPalette(propertyText) {
-        const contentChild = document.createElement('span');
-        const swatch = new InlineEditor.LinkSwatch.LinkSwatch();
-        UI.UIUtils.createTextChild(swatch, propertyText);
-        const isDefined = this.matchedStylesInternal.fontPaletteValuesRule()?.name().text === propertyText;
-        swatch.data = {
-            text: propertyText,
-            isDefined,
-            onLinkActivate: () => {
-                this.parentPaneInternal.jumpToSectionBlock(`@font-palette-values ${propertyText}`);
-            },
-            jslogContext: 'css-font-palette',
-        };
-        contentChild.appendChild(swatch);
-        return contentChild;
-    }
-    processColorMix(text) {
-        let colorMixText = text;
-        let interpolationMethodResolvedCorrectly = false;
-        const paramColorValues = [];
-        const colorMixModel = InlineEditor.ColorMixModel.ColorMixModel.parse(text);
-        if (!colorMixModel) {
-            return document.createTextNode(text);
-        }
-        const handleInterpolationMethod = (interpolationMethod) => {
-            const matches = TextUtils.TextUtils.Utils.splitStringByRegexes(interpolationMethod, [SDK.CSSMetadata.VariableRegex]);
-            for (const match of matches) {
-                if (match.regexIndex === 0) {
-                    const computedSingleValue = this.matchedStylesInternal.computeSingleVariableValue(this.style, match.value);
-                    if (!computedSingleValue || !computedSingleValue.computedValue) {
-                        return;
-                    }
-                    colorMixText = colorMixText.replace(match.value, computedSingleValue.computedValue);
-                    const varSwatch = this.processVar(match.value);
-                    contentChild.appendChild(varSwatch);
-                }
-                else {
-                    contentChild.appendChild(document.createTextNode(match.value));
-                }
-            }
-            interpolationMethodResolvedCorrectly = true;
-            return;
-        };
-        const handleValue = (value, onChange) => {
-            // Parameter is a CSS variable
-            if (value.match(SDK.CSSMetadata.VariableRegex)) {
-                const computedSingleValue = this.matchedStylesInternal.computeSingleVariableValue(this.style, value);
-                // The variable is not defined or it is not a color
-                if (!computedSingleValue || !computedSingleValue.computedValue ||
-                    !Common.Color.parse(computedSingleValue.computedValue)) {
-                    return;
-                }
-                const { computedValue } = computedSingleValue;
-                // Update `var` reference in the color mix text with the variable's
-                // computed value since the same variable is not defined in DevTools
-                // reference to that in the CSS will result in undefined color.
-                colorMixText = colorMixText.replace(value, computedValue);
-                const varSwatch = this.processVar(value);
-                if (varSwatch instanceof InlineEditor.ColorSwatch.ColorSwatch) {
-                    varSwatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, (ev) => {
-                        onChange(ev.data.text);
-                    });
-                }
-                contentChild.appendChild(varSwatch);
-                paramColorValues.push(computedSingleValue.computedValue);
-                return;
-            }
-            // Parameter is specified as an actual color (i.e. #000)
-            if (value.match(Common.Color.Regex)) {
-                const colorSwatch = new ColorRenderer(this, value).renderColorSwatch();
-                if (colorSwatch instanceof InlineEditor.ColorSwatch.ColorSwatch) {
-                    colorSwatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, (ev) => {
-                        onChange(ev.data.text);
-                    });
-                }
-                contentChild.appendChild(colorSwatch);
-                paramColorValues.push(value);
-            }
-        };
-        const handleParam = (paramParts, onChange) => {
-            for (let i = 0; i < paramParts.length; i++) {
-                const part = paramParts[i];
-                if (part.name === "V" /* InlineEditor.ColorMixModel.PartName.Value */) {
-                    handleValue(part.value, onChange);
-                }
-                else {
-                    contentChild.appendChild(document.createTextNode(part.value));
-                }
-                if (i !== paramParts.length - 1) {
-                    contentChild.appendChild(document.createTextNode(' '));
-                }
-            }
-        };
-        const [interpolationMethod, firstParam, secondParam] = colorMixModel.parts;
-        const swatch = new InlineEditor.ColorMixSwatch.ColorMixSwatch();
-        const contentChild = document.createElement('span');
-        contentChild.appendChild(document.createTextNode('color-mix('));
-        handleInterpolationMethod(interpolationMethod.value);
-        contentChild.appendChild(document.createTextNode(', '));
-        handleParam(firstParam.value, (color) => {
-            swatch.setFirstColor(color);
-        });
-        contentChild.appendChild(document.createTextNode(', '));
-        handleParam(secondParam.value, (color) => {
-            swatch.setSecondColor(color);
-        });
-        contentChild.appendChild(document.createTextNode(')'));
-        if (paramColorValues.length !== 2 || !interpolationMethodResolvedCorrectly) {
-            return document.createTextNode(text);
-        }
-        swatch.appendChild(contentChild);
-        swatch.setFirstColor(paramColorValues[0]);
-        swatch.setSecondColor(paramColorValues[1]);
-        swatch.setColorMixText(colorMixText);
-        return swatch;
     }
     // TODO(chromium:1504820) Delete once callers are migrated
     processVar(text, { shouldShowColorSwatch = true } = {}) {
@@ -588,7 +711,10 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 const computedValueOfLink = textContent ?
                     this.matchedStylesInternal.computeSingleVariableValue(this.style, `var(${textContent})`) :
                     null;
-                this.parentPaneInternal.addPopover(varSwatch.link, () => this.getVariablePopoverContents(textContent, computedValueOfLink?.computedValue ?? null));
+                this.parentPaneInternal.addPopover(varSwatch.link, {
+                    contents: () => this.getVariablePopoverContents(textContent, computedValueOfLink?.computedValue ?? null),
+                    jslogContext: 'elements.css-var',
+                });
             }
         }
         if (fallbackHtml) {
@@ -628,19 +754,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return '';
         }
         return this.nameElement.textContent + ': ' + this.valueElement.textContent;
-    }
-    processBezier(text) {
-        if (!this.editable() || !InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(text)) {
-            return document.createTextNode(text);
-        }
-        const swatchPopoverHelper = this.parentPaneInternal.swatchPopoverHelper();
-        const swatch = InlineEditor.Swatches.BezierSwatch.create();
-        swatch.iconElement().addEventListener('click', () => {
-            Host.userMetrics.swatchActivated(3 /* Host.UserMetrics.SwatchType.AnimationTiming */);
-        });
-        swatch.setBezierText(text);
-        new BezierPopoverIcon({ treeElement: this, swatchPopoverHelper, swatch });
-        return swatch;
     }
     processFont(text) {
         this.#parentSection.registerFontProperty(this);
@@ -705,42 +818,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             container.appendChild(content);
         }
         return container;
-    }
-    processAngle(angleText, readonly) {
-        if (!this.editable() || readonly) {
-            return document.createTextNode(angleText);
-        }
-        const cssAngle = new InlineEditor.CSSAngle.CSSAngle();
-        cssAngle.setAttribute('jslog', `${VisualLogging.showStyleEditor('css-angle').track({ click: true })}`);
-        const valueElement = document.createElement('span');
-        valueElement.textContent = angleText;
-        const computedPropertyValue = this.matchedStylesInternal.computeValue(this.property.ownerStyle, this.property.value) || '';
-        cssAngle.data = {
-            propertyName: this.property.name,
-            propertyValue: computedPropertyValue,
-            angleText,
-            containingPane: this.parentPaneInternal.element.enclosingNodeOrSelfWithClass('style-panes-wrapper'),
-        };
-        cssAngle.append(valueElement);
-        cssAngle.addEventListener('popovertoggled', ({ data }) => {
-            if (data.open) {
-                this.parentPaneInternal.hideAllPopovers();
-                this.parentPaneInternal.activeCSSAngle = cssAngle;
-                Host.userMetrics.swatchActivated(7 /* Host.UserMetrics.SwatchType.Angle */);
-            }
-            this.#parentSection.element.classList.toggle('has-open-popover', data.open);
-            this.parentPaneInternal.setEditingStyle(data.open);
-        });
-        cssAngle.addEventListener('valuechanged', async ({ data }) => {
-            valueElement.textContent = data.value;
-            await this.applyStyleText(this.renderedPropertyText(), false);
-            const computedPropertyValue = this.matchedStylesInternal.computeValue(this.property.ownerStyle, this.property.value) || '';
-            cssAngle.updateProperty(this.property.name, computedPropertyValue);
-        });
-        cssAngle.addEventListener('unitchanged', ({ data }) => {
-            valueElement.textContent = data.value;
-        });
-        return cssAngle;
     }
     processLength(lengthText) {
         if (!this.editable()) {
@@ -832,7 +909,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.styleTextAppliedForTest();
     }
     isPropertyChanged(property) {
-        if (!Root.Runtime.experiments.isEnabled("stylesPaneCSSChanges" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */)) {
+        if (!Root.Runtime.experiments.isEnabled("styles-pane-css-changes" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */)) {
             return false;
         }
         // Check local cache first, then check against diffs from the workspace.
@@ -940,24 +1017,27 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         const propertyRenderer = new StylesSidebarPropertyRenderer(this.style.parentRule, this.node(), this.name, this.value, [
             VariableRenderer.matcher(this, this.style),
             ColorRenderer.matcher(this),
+            ColorMixRenderer.matcher(this.parentPaneInternal),
+            URLRenderer.matcher(this.style.parentRule, this.node()),
+            AngleRenderer.matcher(this),
+            LinkableNameRenderer.matcher(this),
+            BezierRenderer.matcher(this),
+            StringRenderer.matcher(),
         ]);
         if (this.property.parsedOk) {
-            propertyRenderer.setAnimationNameHandler(this.processAnimationName.bind(this));
             propertyRenderer.setAnimationHandler(this.processAnimation.bind(this));
-            propertyRenderer.setColorMixHandler(this.processColorMix.bind(this));
-            propertyRenderer.setBezierHandler(this.processBezier.bind(this));
             propertyRenderer.setFontHandler(this.processFont.bind(this));
             propertyRenderer.setShadowHandler(this.processShadow.bind(this));
             propertyRenderer.setGridHandler(this.processGrid.bind(this));
-            propertyRenderer.setAngleHandler(this.processAngle.bind(this));
             propertyRenderer.setLengthHandler(this.processLength.bind(this));
-            propertyRenderer.setPositionFallbackHandler(this.processPositionFallback.bind(this));
-            propertyRenderer.setFontPaletteHandler(this.processFontPalette.bind(this));
         }
         this.listItemElement.removeChildren();
         this.nameElement = propertyRenderer.renderName();
         if (this.property.name.startsWith('--') && this.nameElement) {
-            this.parentPaneInternal.addPopover(this.nameElement, () => this.getVariablePopoverContents(this.property.name, this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value ?? null));
+            this.parentPaneInternal.addPopover(this.nameElement, {
+                contents: () => this.getVariablePopoverContents(this.property.name, this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value ?? null),
+                jslogContext: 'elements.css-var',
+            });
         }
         this.valueElement = propertyRenderer.renderValue();
         if (!this.treeOutline) {
@@ -1135,10 +1215,10 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                     event.consume();
                     this.parentPaneInternal.continueEditingElement(sectionIndex, propertyIndex);
                 }
-            }, !this.property.disabled);
+            }, { checked: !this.property.disabled, jslogContext: 'toggle-property-and-continue-editing' });
         }
         const revealCallback = this.navigateToSource.bind(this);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.revealInSourcesPanel), revealCallback);
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.revealInSourcesPanel), revealCallback, { jslogContext: 'reveal-in-sources-panel' });
         void contextMenu.show();
     }
     handleCopyContextMenuEvent(event) {
@@ -1155,36 +1235,36 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             const propertyText = `${this.property.name}: ${this.property.value};`;
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(propertyText);
             Host.userMetrics.styleTextCopied(3 /* Host.UserMetrics.StyleTextCopied.DeclarationViaContextMenu */);
-        });
+        }, { jslogContext: 'copy-declaration' });
         contextMenu.headerSection().appendItem(i18nString(UIStrings.copyProperty), () => {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.property.name);
             Host.userMetrics.styleTextCopied(4 /* Host.UserMetrics.StyleTextCopied.PropertyViaContextMenu */);
-        });
+        }, { jslogContext: 'copy-property' });
         contextMenu.headerSection().appendItem(i18nString(UIStrings.copyValue), () => {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.property.value);
             Host.userMetrics.styleTextCopied(5 /* Host.UserMetrics.StyleTextCopied.ValueViaContextMenu */);
-        });
+        }, { jslogContext: 'copy-value' });
         contextMenu.headerSection().appendItem(i18nString(UIStrings.copyRule), () => {
             const ruleText = StylesSidebarPane.formatLeadingProperties(this.#parentSection).ruleText;
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(ruleText);
             Host.userMetrics.styleTextCopied(7 /* Host.UserMetrics.StyleTextCopied.RuleViaContextMenu */);
-        });
-        contextMenu.headerSection().appendItem(i18nString(UIStrings.copyCssDeclarationAsJs), this.copyCssDeclarationAsJs.bind(this));
+        }, { jslogContext: 'copy-rule' });
+        contextMenu.headerSection().appendItem(i18nString(UIStrings.copyCssDeclarationAsJs), this.copyCssDeclarationAsJs.bind(this), { jslogContext: 'copy-css-declaration-as-js' });
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllDeclarations), () => {
             const allDeclarationText = StylesSidebarPane.formatLeadingProperties(this.#parentSection).allDeclarationText;
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allDeclarationText);
             Host.userMetrics.styleTextCopied(8 /* Host.UserMetrics.StyleTextCopied.AllDeclarationsViaContextMenu */);
-        });
-        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllCssDeclarationsAsJs), this.copyAllCssDeclarationAsJs.bind(this));
+        }, { jslogContext: 'copy-all-declarations' });
+        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllCssDeclarationsAsJs), this.copyAllCssDeclarationAsJs.bind(this), { jslogContext: 'copy-all-css-declarations-as-js' });
         // TODO(changhaohan): conditionally add this item only when there are changes to copy
         contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyAllCSSChanges), async () => {
             const allChanges = await this.parentPane().getFormattedChanges();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
             Host.userMetrics.styleTextCopied(2 /* Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane */);
-        });
+        }, { jslogContext: 'copy-all-css-changes' });
         contextMenu.footerSection().appendItem(i18nString(UIStrings.viewComputedValue), () => {
             void this.viewComputedValue();
-        });
+        }, { jslogContext: 'view-computed-value' });
         return contextMenu;
     }
     async viewComputedValue() {

@@ -255,7 +255,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
             this.wasmDisassemblyInternal ? markNonBreakableLines(this.wasmDisassemblyInternal) : nonBreakableLines,
             this.options.lineWrapping ? CodeMirror.EditorView.lineWrapping : [],
             this.options.lineNumbers !== false ? CodeMirror.lineNumbers() : [],
-            Root.Runtime.experiments.isEnabled("sourcesFrameIndentationMarkersTemporarilyDisable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */) ?
+            Root.Runtime.experiments.isEnabled("sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */) ?
                 [] :
                 CodeMirror.indentationMarkers({
                     colors: {
@@ -273,7 +273,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.resetCurrentSearchResultIndex();
     }
     onPaste() {
-        if (Root.Runtime.experiments.isEnabled("selfXssWarning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */) &&
+        if (Root.Runtime.experiments.isEnabled("self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */) &&
             !Root.Runtime.Runtime.queryParam('isChromeForTesting') && !this.selfXssWarningDisabledSetting.get()) {
             void this.showSelfXssWarning();
             return true;

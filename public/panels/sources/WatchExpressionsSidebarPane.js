@@ -243,7 +243,7 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
     appendApplicableItems(_event, contextMenu, target) {
         if (target instanceof ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement) {
             if (!target.property.synthetic) {
-                contextMenu.debugSection().appendItem(i18nString(UIStrings.addPropertyPathToWatch), () => this.focusAndAddExpressionToWatch(target.path()));
+                contextMenu.debugSection().appendItem(i18nString(UIStrings.addPropertyPathToWatch), () => this.focusAndAddExpressionToWatch(target.path()), { jslogContext: 'add-property-path-to-watch' });
             }
             return;
         }
@@ -289,7 +289,7 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
         return this.expressionInternal;
     }
     async #evaluateExpression(executionContext, expression) {
-        if (Root.Runtime.experiments.isEnabled('evaluateExpressionsWithSourceMaps')) {
+        if (Root.Runtime.experiments.isEnabled('evaluate-expressions-with-source-maps')) {
             const callFrame = executionContext.debuggerModel.selectedCallFrame();
             if (callFrame) {
                 const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);

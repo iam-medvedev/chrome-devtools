@@ -154,7 +154,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
     constructor(request) {
         super();
         this.element.classList.add('websocket-frame-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane('web-socket-messages')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('web-socket-messages').track({ resize: true })}`);
         this.request = request;
         this.splitWidget = new UI.SplitWidget.SplitWidget(false, true, 'resource-web-socket-frame-split-view-state');
         this.splitWidget.show(this.element);

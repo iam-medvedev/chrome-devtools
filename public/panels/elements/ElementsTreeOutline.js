@@ -105,7 +105,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
     #nodeElementToIssue = new Map();
     constructor(omitRootDOMNode, selectEnabled, hideGutter) {
         super();
-        if (Root.Runtime.experiments.isEnabled("highlightErrorsElementsPanel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
+        if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
             this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
             this.#issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, this.#onIssueEventReceived, this);
             for (const issue of this.#issuesManager.issues()) {
@@ -170,7 +170,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         this.showHTMLCommentsSetting = Common.Settings.Settings.instance().moduleSetting('show-html-comments');
         this.showHTMLCommentsSetting.addChangeListener(this.onShowHTMLCommentsChange.bind(this));
         this.setUseLightSelectionColor(true);
-        if (Root.Runtime.experiments.isEnabled("highlightErrorsElementsPanel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
+        if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
             this.#popupHelper = new UI.PopoverHelper.PopoverHelper(this.elementInternal, event => {
                 const hoveredNode = event.composedPath()[0];
                 if (!hoveredNode || !hoveredNode.matches('.violating-element')) {
@@ -994,7 +994,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         this.reset();
         if (domModel.existingDocument()) {
             this.rootDOMNode = domModel.existingDocument();
-            if (Root.Runtime.experiments.isEnabled("highlightErrorsElementsPanel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
+            if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
                 this.#addAllElementIssues();
             }
         }

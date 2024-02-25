@@ -3395,6 +3395,9 @@
   "panels/application/components/SharedStorageMetadataView.ts | notYetCreated": {
     "message": "Not yet created"
   },
+  "panels/application/components/SharedStorageMetadataView.ts | numBytesUsed": {
+    "message": "Number of Bytes Used"
+  },
   "panels/application/components/SharedStorageMetadataView.ts | numEntries": {
     "message": "Number of Entries"
   },
@@ -7082,6 +7085,12 @@
   "panels/lighthouse/LighthouseController.ts | doesThisPageMeetTheStandardOfA": {
     "message": "Does this page meet the standard of a Progressive Web App"
   },
+  "panels/lighthouse/LighthouseController.ts | enableJavaScriptSampling": {
+    "message": "Enable JavaScript sampling during the Lighthouse run. This will provide more execution details in the performance panel when you view the trace, but has higher CPU overhead and may impact the performance of the page."
+  },
+  "panels/lighthouse/LighthouseController.ts | enableSampling": {
+    "message": "Enable JS sampling"
+  },
   "panels/lighthouse/LighthouseController.ts | howLongDoesThisAppTakeToShow": {
     "message": "How long does this app take to show content and become usable"
   },
@@ -8164,6 +8173,9 @@
   },
   "panels/network/NetworkDataGridNode.ts | matchedToServiceWorkerRouter": {
     "message": "Matched to ServiceWorker router#{PH1}, resource size: {PH2}"
+  },
+  "panels/network/NetworkDataGridNode.ts | matchedToServiceWorkerRouterWithNetworkSource": {
+    "message": "Matched to ServiceWorker router#{PH1}, {PH2} transferred over network, resource size: {PH3}"
   },
   "panels/network/NetworkDataGridNode.ts | memoryCache": {
     "message": "(memory cache)"
@@ -13061,9 +13073,6 @@
   "panels/timeline/TimelineUIUtils.ts | callbackId": {
     "message": "Callback ID"
   },
-  "panels/timeline/TimelineUIUtils.ts | callStacks": {
-    "message": "Call Stacks"
-  },
   "panels/timeline/TimelineUIUtils.ts | cancelAnimationFrame": {
     "message": "Cancel Animation Frame"
   },
@@ -13292,6 +13301,9 @@
   "panels/timeline/TimelineUIUtils.ts | initiatorFor": {
     "message": "Initiator for"
   },
+  "panels/timeline/TimelineUIUtils.ts | initiatorStackTrace": {
+    "message": "Initiator Stack Trace"
+  },
   "panels/timeline/TimelineUIUtils.ts | inputDelay": {
     "message": "Input delay"
   },
@@ -13400,6 +13412,9 @@
   "panels/timeline/TimelineUIUtils.ts | other": {
     "message": "Other"
   },
+  "panels/timeline/TimelineUIUtils.ts | outsideBreadcrumbRange": {
+    "message": "(outside of the breadcrumb range)"
+  },
   "panels/timeline/TimelineUIUtils.ts | ownerElement": {
     "message": "Owner Element"
   },
@@ -13498,9 +13513,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | requestMethod": {
     "message": "Request Method"
-  },
-  "panels/timeline/TimelineUIUtils.ts | reveal": {
-    "message": "Reveal"
   },
   "panels/timeline/TimelineUIUtils.ts | runMicrotasks": {
     "message": "Run Microtasks"

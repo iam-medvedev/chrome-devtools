@@ -5,12 +5,11 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as UI from '../../../ui/legacy/legacy.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 const UIStrings = {
     /**
      *@description The origin of a URL (https://web.dev/same-site-same-origin/#origin).
@@ -234,5 +233,5 @@ export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableCo
         }
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-storage-metadata-view', StorageMetadataView);
+customElements.define('devtools-storage-metadata-view', StorageMetadataView);
 //# sourceMappingURL=StorageMetadataView.js.map

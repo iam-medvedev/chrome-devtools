@@ -1,7 +1,6 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../components/helpers/helpers.js';
 import { XElement } from './XElement.js';
 let observer = null;
 const storedScrollPositions = new WeakMap();
@@ -121,5 +120,5 @@ export class XWidget extends XElement {
         }
     }
 }
-ComponentHelpers.CustomElements.defineComponent('x-widget', XWidget);
+customElements.define('x-widget', XWidget);
 //# sourceMappingURL=XWidget.js.map

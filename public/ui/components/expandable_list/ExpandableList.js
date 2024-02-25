@@ -1,7 +1,6 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import expandableListStyles from './expandableList.css.js';
@@ -51,5 +50,5 @@ export class ExpandableList extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-expandable-list', ExpandableList);
+customElements.define('devtools-expandable-list', ExpandableList);
 //# sourceMappingURL=ExpandableList.js.map

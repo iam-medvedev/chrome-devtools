@@ -1,5 +1,5 @@
 import * as I18n from '../../third_party/i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
+import type * as Platform from '../platform/platform.js';
 import { DevToolsLocale } from './DevToolsLocale.js';
 import type * as i18nTypes from './i18nTypes.js';
 /**

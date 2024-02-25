@@ -377,10 +377,10 @@ export class TimelineTreeView extends UI.Widget.VBox {
                 sortFunction = compareStartTime;
                 break;
             case 'self':
-                sortFunction = compareNumericField.bind(null, 'selfTime');
+                sortFunction = compareSelfTime;
                 break;
             case 'total':
-                sortFunction = compareNumericField.bind(null, 'totalTime');
+                sortFunction = compareTotalTime;
                 break;
             case 'activity':
                 sortFunction = compareName;
@@ -390,12 +390,10 @@ export class TimelineTreeView extends UI.Widget.VBox {
                 return;
         }
         this.dataGrid.sortNodes(sortFunction, !this.dataGrid.isSortOrderAscending());
-        function compareNumericField(field, a, b) {
+        function compareSelfTime(a, b) {
             const nodeA = a;
             const nodeB = b;
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return nodeA.profileNode[field] - nodeB.profileNode[field];
+            return nodeA.profileNode.selfTime - nodeB.profileNode.selfTime;
         }
         function compareStartTime(a, b) {
             const nodeA = a;
@@ -403,6 +401,11 @@ export class TimelineTreeView extends UI.Widget.VBox {
             const eventA = nodeA.profileNode.event;
             const eventB = nodeB.profileNode.event;
             return eventA.startTime - eventB.startTime;
+        }
+        function compareTotalTime(a, b) {
+            const nodeA = a;
+            const nodeB = b;
+            return nodeA.profileNode.totalTime - nodeB.profileNode.totalTime;
         }
         function compareName(a, b) {
             const nodeA = a;

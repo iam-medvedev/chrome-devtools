@@ -93,7 +93,14 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     getDetailsContentElementForTest() {
         return this.defaultDetailsContentElement;
     }
-    #onTraceBoundsChange(event) {
+    async #onTraceBoundsChange(event) {
+        if (event.updateType === 'MINIMAP_BOUNDS') {
+            // If new minimap bounds are set, we might need to update the selected entry summary because
+            // the links to other entries (ex. initiator) might be outside of the new breadcrumb.
+            if (this.selection) {
+                await this.setSelection(this.selection);
+            }
+        }
         if (event.updateType === 'RESET' || event.updateType === 'VISIBLE_WINDOW') {
             // If the update type was a changing of the minimap bounds, we do not
             // need to redraw.
@@ -320,11 +327,11 @@ export class TimelineDetailsView extends UI.Widget.VBox {
 }
 export var Tab;
 (function (Tab) {
-    Tab["Details"] = "Details";
-    Tab["EventLog"] = "EventLog";
-    Tab["CallTree"] = "CallTree";
-    Tab["BottomUp"] = "BottomUp";
-    Tab["PaintProfiler"] = "PaintProfiler";
-    Tab["LayerViewer"] = "LayerViewer";
+    Tab["Details"] = "details";
+    Tab["EventLog"] = "event-log";
+    Tab["CallTree"] = "call-tree";
+    Tab["BottomUp"] = "bottom-up";
+    Tab["PaintProfiler"] = "paint-profiler";
+    Tab["LayerViewer"] = "layer-viewer";
 })(Tab || (Tab = {}));
 //# sourceMappingURL=TimelineDetailsView.js.map

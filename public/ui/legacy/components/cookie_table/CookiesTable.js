@@ -210,7 +210,7 @@ export class CookiesTable extends UI.Widget.VBox {
                 editable: editable,
             },
         ];
-        if (Root.Runtime.experiments.isEnabled('experimentalCookieFeatures')) {
+        if (Root.Runtime.experiments.isEnabled('experimental-cookie-features')) {
             const additionalColumns = [
                 {
                     id: "source-scheme" /* SDK.Cookie.Attribute.SourceScheme */,
@@ -649,12 +649,12 @@ export class CookiesTable extends UI.Widget.VBox {
                 },
             ]);
             void Common.Revealer.reveal(requestFilter);
-        });
+        }, { jslogContext: 'show-requests-with-this-cookie' });
         if (IssuesManager.RelatedIssue.hasIssues(cookie)) {
             contextMenu.revealSection().appendItem(i18nString(UIStrings.showIssueAssociatedWithThis), () => {
                 // TODO(chromium:1077719): Just filter for the cookie instead of revealing one of the associated issues.
                 void IssuesManager.RelatedIssue.reveal(cookie);
-            });
+            }, { jslogContext: 'show-issue-associated-with-this' });
         }
     }
 }

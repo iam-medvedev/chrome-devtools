@@ -1,9 +1,10 @@
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { type BottomUpTreeMatching, ColorMatch, ColorMatcher, RenderingContext, VariableMatch, VariableMatcher } from './PropertyParser.js';
+import { AngleMatch, AngleMatcher, BezierMatch, BezierMatcher, type BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, LinkableNameMatch, LinkableNameMatcher, LinkableNameProperties, type RenderingContext, StringMatch, StringMatcher, URLMatch, URLMatcher, VariableMatch, VariableMatcher } from './PropertyParser.js';
 import { type StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
 export declare const activeHints: WeakMap<Element, Hint>;
@@ -33,6 +34,42 @@ export declare class ColorRenderer extends ColorMatch {
     static matcher(treeElement: StylePropertyTreeElement): ColorMatcher;
     render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
     renderColorSwatch(valueChild?: Node, text?: string): InlineEditor.ColorSwatch.ColorSwatch;
+}
+export declare class ColorMixRenderer extends ColorMixMatch {
+    #private;
+    constructor(pane: StylesSidebarPane, text: string, space: CodeMirror.SyntaxNode[], color1: CodeMirror.SyntaxNode[], color2: CodeMirror.SyntaxNode[]);
+    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+    static matcher(pane: StylesSidebarPane): ColorMixMatcher;
+}
+export declare class URLRenderer extends URLMatch {
+    private readonly rule;
+    private readonly node;
+    constructor(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null, url: Platform.DevToolsPath.UrlString, text: string);
+    render(): Node[];
+    static matcher(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null): URLMatcher;
+}
+export declare class AngleRenderer extends AngleMatch {
+    #private;
+    constructor(text: string, treeElement: StylePropertyTreeElement);
+    render(_: unknown, context: RenderingContext): Node[];
+    static matcher(treeElement: StylePropertyTreeElement): AngleMatcher;
+}
+export declare class LinkableNameRenderer extends LinkableNameMatch {
+    #private;
+    constructor(treeElement: StylePropertyTreeElement, text: string, propertyName: LinkableNameProperties);
+    render(): Node[];
+    static matcher(treeElement: StylePropertyTreeElement): LinkableNameMatcher;
+}
+export declare class BezierRenderer extends BezierMatch {
+    #private;
+    constructor(treeElement: StylePropertyTreeElement, text: string);
+    render(): Node[];
+    renderSwatch(): Node;
+    static matcher(treeElement: StylePropertyTreeElement): BezierMatcher;
+}
+export declare class StringRenderer extends StringMatch {
+    render(): Node[];
+    static matcher(): StringMatcher;
 }
 export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     #private;
@@ -67,19 +104,13 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     get name(): string;
     get value(): string;
     updateFilter(): boolean;
-    private processAnimationName;
     private processAnimation;
-    private processPositionFallback;
-    private processFontPalette;
-    private processColorMix;
     private processVar;
     private handleVarDefinitionActivate;
     renderedPropertyText(): string;
-    private processBezier;
     private processFont;
     private processShadow;
     private processGrid;
-    private processAngle;
     private processLength;
     private updateState;
     node(): SDK.DOMModel.DOMNode | null;

@@ -120,6 +120,7 @@ styles.replaceSync(
 .authenticator-option {
   display: flex;
   padding-bottom: 10px;
+  align-items: center;
   margin: auto;
 }
 
@@ -127,7 +128,7 @@ styles.replaceSync(
   text-align: right;
   width: 200px;
   display: inline-block;
-  padding: 5px 10px 0 0;
+  padding: 0 10px 0 0;
 }
 
 td .text-button {

@@ -118,5 +118,5 @@ export class IconDialog extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-icon-dialog', IconDialog);
+customElements.define('devtools-icon-dialog', IconDialog);
 //# sourceMappingURL=IconDialog.js.map

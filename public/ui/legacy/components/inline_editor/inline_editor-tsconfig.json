@@ -43,7 +43,6 @@
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSShadowEditor.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSShadowModel.ts",
-    "../../../../../../../../front_end/ui/legacy/components/inline_editor/ColorMixModel.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/ColorMixSwatch.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/ColorSwatch.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/FontEditor.ts",

@@ -11,15 +11,16 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+/* stylelint-disable */
 .swatch-icon {
   display: inline-grid;
   inline-size: 15px;
   grid: [stack] 1fr / [stack] 1fr;
   margin-left: 1px;
   margin-right: 2px;
+  color: var(--color);
 }
 
-/* stylelint-disable */
 .swatch {
   aspect-ratio: 1 / 1;
   display: inline-block;

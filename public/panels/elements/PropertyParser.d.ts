@@ -1,3 +1,4 @@
+import type * as Platform from '../../core/platform/platform.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 export declare class SyntaxTree {
     readonly propertyValue: string;
@@ -6,7 +7,7 @@ export declare class SyntaxTree {
     readonly trailingNodes: CodeMirror.SyntaxNode[];
     readonly propertyName: string | undefined;
     constructor(propertyValue: string, rule: string, tree: CodeMirror.SyntaxNode, propertyName?: string, trailingNodes?: CodeMirror.SyntaxNode[]);
-    text(node?: CodeMirror.SyntaxNode): string;
+    text(node?: CodeMirror.SyntaxNode | null): string;
     subtree(node: CodeMirror.SyntaxNode): SyntaxTree;
 }
 export interface SyntaxNodeRef {
@@ -47,11 +48,13 @@ export interface Match {
 type Constructor = (abstract new (...args: any[]) => any) | (new (...args: any[]) => any);
 export type MatchFactory<MatchT extends Constructor> = (...args: ConstructorParameters<MatchT>) => InstanceType<MatchT>;
 export interface Matcher {
+    accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export declare abstract class MatcherBase<MatchT extends Constructor> implements Matcher {
     readonly createMatch: MatchFactory<MatchT>;
     constructor(createMatch: MatchFactory<MatchT>);
+    accepts(_propertyName: string): boolean;
     abstract matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export declare class BottomUpTreeMatching extends TreeWalker {
@@ -99,7 +102,31 @@ export declare class Renderer extends TreeWalker {
     renderedMatchForTest(_nodes: Node[], _match: Match): void;
     protected enter({ node }: SyntaxNodeRef): boolean;
 }
-export declare function children(node: CodeMirror.SyntaxNode): CodeMirror.SyntaxNode[];
+export declare function siblings(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode[];
+export declare function children(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode[];
+export declare abstract class AngleMatch implements Match {
+    readonly text: string;
+    readonly type: string;
+    constructor(text: string);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class AngleMatcher extends MatcherBase<typeof AngleMatch> {
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
+export declare abstract class ColorMixMatch implements Match {
+    readonly text: string;
+    readonly space: CodeMirror.SyntaxNode[];
+    readonly color1: CodeMirror.SyntaxNode[];
+    readonly color2: CodeMirror.SyntaxNode[];
+    readonly type = "color-mix";
+    constructor(text: string, space: CodeMirror.SyntaxNode[], color1: CodeMirror.SyntaxNode[], color2: CodeMirror.SyntaxNode[]);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class ColorMixMatcher extends MatcherBase<typeof ColorMixMatch> {
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
 export declare abstract class VariableMatch implements Match {
     readonly text: string;
     readonly name: string;
@@ -112,6 +139,16 @@ export declare abstract class VariableMatch implements Match {
 export declare class VariableMatcher extends MatcherBase<typeof VariableMatch> {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
+export declare abstract class URLMatch implements Match {
+    readonly url: Platform.DevToolsPath.UrlString;
+    readonly text: string;
+    readonly type = "url";
+    constructor(url: Platform.DevToolsPath.UrlString, text: string);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class URLMatcher extends MatcherBase<typeof URLMatch> {
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
 export declare abstract class ColorMatch implements Match {
     readonly text: string;
     readonly type = "color";
@@ -119,6 +156,43 @@ export declare abstract class ColorMatch implements Match {
     abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
 }
 export declare class ColorMatcher extends MatcherBase<typeof ColorMatch> {
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
+export declare const enum LinkableNameProperties {
+    AnimationName = "animation-name",
+    FontPalette = "font-palette",
+    PositionFallback = "position-fallback"
+}
+export declare abstract class LinkableNameMatch implements Match {
+    readonly text: string;
+    readonly properyName: LinkableNameProperties;
+    readonly type = "linkable-name";
+    constructor(text: string, properyName: LinkableNameProperties);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class LinkableNameMatcher extends MatcherBase<typeof LinkableNameMatch> {
+    private static isLinkableNameProperty;
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
+export declare abstract class BezierMatch implements Match {
+    readonly text: string;
+    readonly type: string;
+    constructor(text: string);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class BezierMatcher extends MatcherBase<typeof BezierMatch> {
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
+export declare abstract class StringMatch implements Match {
+    readonly text: string;
+    type: string;
+    constructor(text: string);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class StringMatcher extends MatcherBase<typeof StringMatch> {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 type LegacyRegexHandler = (text: string, readonly: boolean) => Node | null;
@@ -126,6 +200,7 @@ export declare class LegacyRegexMatcher implements Matcher {
     readonly regexp: RegExp;
     readonly processor: LegacyRegexHandler;
     constructor(regexp: RegExp, processor: LegacyRegexHandler);
+    accepts(): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export declare class TextMatch implements Match {

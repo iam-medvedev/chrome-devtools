@@ -7,7 +7,6 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ChromeLink from '../../../ui/components/chrome_link/chrome_link.js';
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
@@ -577,5 +576,5 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-resources-back-forward-cache-view', BackForwardCacheView);
+customElements.define('devtools-resources-back-forward-cache-view', BackForwardCacheView);
 //# sourceMappingURL=BackForwardCacheView.js.map

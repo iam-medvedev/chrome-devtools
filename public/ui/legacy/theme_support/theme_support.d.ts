@@ -1,1 +1,1 @@
-export * from './theme_support_impl.js';
+export * from './ThemeSupport.js';

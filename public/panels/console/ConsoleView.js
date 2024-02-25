@@ -959,18 +959,18 @@ export class ConsoleView extends UI.Widget.VBox {
         }
         if (consoleMessage && consoleMessage.url) {
             const menuTitle = i18nString(UIStrings.hideMessagesFromS, { PH1: new Common.ParsedURL.ParsedURL(consoleMessage.url).displayName });
-            contextMenu.headerSection().appendItem(menuTitle, this.filter.addMessageURLFilter.bind(this.filter, consoleMessage.url));
+            contextMenu.headerSection().appendItem(menuTitle, this.filter.addMessageURLFilter.bind(this.filter, consoleMessage.url), { jslogContext: 'hide-messages-from' });
         }
         contextMenu.defaultSection().appendAction('console.clear');
         contextMenu.defaultSection().appendAction('console.clear.history');
-        contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAs), this.saveConsole.bind(this));
+        contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAs), this.saveConsole.bind(this), { jslogContext: 'save-as' });
         if (this.element.hasSelection()) {
-            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyVisibleStyledSelection), this.viewport.copyWithStyles.bind(this.viewport));
+            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyVisibleStyledSelection), this.viewport.copyWithStyles.bind(this.viewport), { jslogContext: 'copy-visible-styled-selection' });
         }
         if (consoleMessage) {
             const request = Logs.NetworkLog.NetworkLog.requestForConsoleMessage(consoleMessage);
             if (request && SDK.NetworkManager.NetworkManager.canReplayRequest(request)) {
-                contextMenu.debugSection().appendItem(i18nString(UIStrings.replayXhr), SDK.NetworkManager.NetworkManager.replayRequest.bind(null, request));
+                contextMenu.debugSection().appendItem(i18nString(UIStrings.replayXhr), SDK.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: 'replay-xhr' });
             }
         }
         void contextMenu.show();
@@ -1140,7 +1140,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.focusPrompt();
     }
     messagesPasted(event) {
-        if (Root.Runtime.experiments.isEnabled("selfXssWarning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */) &&
+        if (Root.Runtime.experiments.isEnabled("self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */) &&
             !Root.Runtime.Runtime.queryParam('isChromeForTesting') && !this.selfXssWarningDisabledSetting.get()) {
             event.preventDefault();
             this.prompt.showSelfXssWarning();
@@ -1489,9 +1489,9 @@ export class ConsoleViewFilter {
             y: this.levelMenuButton.element.getBoundingClientRect().top +
                 this.levelMenuButton.element.offsetHeight,
         });
-        contextMenu.headerSection().appendItem(i18nString(UIStrings.default), () => setting.set(ConsoleFilter.defaultLevelsFilterValue()));
+        contextMenu.headerSection().appendItem(i18nString(UIStrings.default), () => setting.set(ConsoleFilter.defaultLevelsFilterValue()), { jslogContext: 'default' });
         for (const [level, levelText] of this.levelLabels.entries()) {
-            contextMenu.defaultSection().appendCheckboxItem(levelText, toggleShowLevel.bind(null, level), levels[level]);
+            contextMenu.defaultSection().appendCheckboxItem(levelText, toggleShowLevel.bind(null, level), { checked: levels[level], jslogContext: level });
         }
         void contextMenu.show();
         function toggleShowLevel(level) {

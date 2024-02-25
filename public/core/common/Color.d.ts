@@ -2,6 +2,7 @@ import { type Color3D, type Color4D, type Color4DOr3D } from './ColorUtils.js';
 export declare function getFormat(formatText: string): Format | null;
 type ColorSpace = Format.SRGB | Format.SRGB_LINEAR | Format.DISPLAY_P3 | Format.A98_RGB | Format.PROPHOTO_RGB | Format.REC_2020 | Format.XYZ | Format.XYZ_D50 | Format.XYZ_D65;
 export declare function parse(text: string): Color | null;
+export declare function parseHueNumeric(value: string): number | null;
 export declare function hsl2rgb(hsl: Color4D): Color4D;
 export declare function hsva2rgba(hsva: Color4D): Color4D;
 export declare function rgb2hsv(rgba: Color3D): Color3D;
@@ -51,6 +52,7 @@ export interface Color {
     setAlpha(alpha: number): Color;
     format(): Format;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
+    is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     asLegacyColor(): Legacy;
     getAuthoredText(): string | null;
     getRawParameters(): Color3D;
@@ -90,6 +92,7 @@ export declare class Lab implements Color {
     readonly b: number;
     readonly alpha: number | null;
     constructor(l: number, a: number, b: number, alpha: number | null, authoredText?: string | undefined);
+    is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
     asLegacyColor(): Legacy;
     equal(color: Color): boolean;
@@ -110,6 +113,7 @@ export declare class LCH implements Color {
     readonly alpha: number | null;
     constructor(l: number, c: number, h: number, alpha: number | null, authoredText?: string | undefined);
     asLegacyColor(): Legacy;
+    is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
     equal(color: Color): boolean;
     format(): Format;
@@ -130,6 +134,7 @@ export declare class Oklab implements Color {
     readonly alpha: number | null;
     constructor(l: number, a: number, b: number, alpha: number | null, authoredText?: string | undefined);
     asLegacyColor(): Legacy;
+    is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
     equal(color: Color): boolean;
     format(): Format;
@@ -149,6 +154,7 @@ export declare class Oklch implements Color {
     readonly alpha: number | null;
     constructor(l: number, c: number, h: number, alpha: number | null, authoredText?: string | undefined);
     asLegacyColor(): Legacy;
+    is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
     equal(color: Color): boolean;
     format(): Format;
@@ -169,6 +175,7 @@ export declare class ColorFunction implements Color {
     readonly colorSpace: ColorSpace;
     constructor(colorSpace: ColorSpace, p0: number, p1: number, p2: number, alpha: number | null, authoredText?: string | undefined);
     asLegacyColor(): Legacy;
+    is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
     equal(color: Color): boolean;
     format(): Format;
@@ -203,6 +210,7 @@ export declare class HSL implements Color {
     asString(format?: Format | undefined): string | null;
     setAlpha(alpha: number): HSL;
     format(): Format;
+    is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
     asLegacyColor(): Legacy;
     getAuthoredText(): string | null;
@@ -224,6 +232,7 @@ export declare class HWB implements Color {
     asString(format?: Format | undefined): string | null;
     setAlpha(alpha: number): HWB;
     format(): Format;
+    is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
     asLegacyColor(): Legacy;
     getAuthoredText(): string | null;
@@ -244,6 +253,7 @@ export declare class Legacy implements Color {
     static fromRGBAFunction(r: string, g: string, b: string, alpha: string | undefined, text: string): Legacy | null;
     static fromRGBA(rgba: number[], authoredText?: string): Legacy;
     static fromHSVA(hsva: Color4D): Legacy;
+    is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
     format(): LegacyColor;
     hasAlpha(): boolean;

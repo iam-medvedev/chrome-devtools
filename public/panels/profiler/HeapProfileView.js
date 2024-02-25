@@ -138,7 +138,7 @@ export class HeapProfileView extends ProfileView {
         this.totalTime = 0;
         this.lastOrdinal = 0;
         this.timelineOverview = new HeapTimelineOverview();
-        if (Root.Runtime.experiments.isEnabled('samplingHeapProfilerTimeline')) {
+        if (Root.Runtime.experiments.isEnabled('sampling-heap-profiler-timeline')) {
             this.timelineOverview.addEventListener("IdsRangeChanged" /* Events.IdsRangeChanged */, this.onIdsRangeChanged.bind(this));
             this.timelineOverview.show(this.element, this.element.firstChild);
             this.timelineOverview.start();
@@ -323,7 +323,7 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
         return formattedDescription.join('\n');
     }
     hasTemporaryView() {
-        return Root.Runtime.experiments.isEnabled('samplingHeapProfilerTimeline');
+        return Root.Runtime.experiments.isEnabled('sampling-heap-profiler-timeline');
     }
     startSampling() {
         const heapProfilerModel = this.obtainRecordingProfile();
@@ -331,7 +331,7 @@ export class SamplingHeapProfileType extends SamplingHeapProfileTypeBase {
             return;
         }
         void heapProfilerModel.startSampling();
-        if (Root.Runtime.experiments.isEnabled('samplingHeapProfilerTimeline')) {
+        if (Root.Runtime.experiments.isEnabled('sampling-heap-profiler-timeline')) {
             this.updateTimer = window.setTimeout(() => {
                 void this.updateStats();
             }, this.updateIntervalMs);

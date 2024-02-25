@@ -204,7 +204,7 @@ export class ThrottlingManager {
                     conditions.description === ThrottlingPresets.getCustomConditions().description) {
                     continue;
                 }
-                contextMenu.defaultSection().appendCheckboxItem(conditions.title, selector.optionSelected.bind(selector, conditions), selectedIndex === index, undefined, undefined, undefined, conditions.jslogContext);
+                contextMenu.defaultSection().appendCheckboxItem(conditions.title, selector.optionSelected.bind(selector, conditions), { checked: selectedIndex === index, jslogContext: conditions.jslogContext });
             }
         }
         function populate(groups) {

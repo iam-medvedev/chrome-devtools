@@ -12,7 +12,9 @@ const component = new ConsoleInsight({
         return { prompt: '', sources: [] };
     },
 }, {
-    async getInsights() {
+    async *
+    // eslint-disable-next-line require-yield
+    fetch() {
         throw new Error('Could not connect to the server');
     },
 }, 'Explain this error', {

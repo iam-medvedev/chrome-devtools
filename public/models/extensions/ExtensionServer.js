@@ -186,6 +186,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         this.registerHandler("getWasmLocal" /* PrivateAPI.Commands.GetWasmLocal */, this.onGetWasmLocal.bind(this));
         this.registerHandler("getWasmOp" /* PrivateAPI.Commands.GetWasmOp */, this.onGetWasmOp.bind(this));
         this.registerHandler("registerRecorderExtensionPlugin" /* PrivateAPI.Commands.RegisterRecorderExtensionPlugin */, this.registerRecorderExtensionEndpoint.bind(this));
+        this.registerHandler("reportResourceLoad" /* PrivateAPI.Commands.ReportResourceLoad */, this.onReportResourceLoad.bind(this));
         this.registerHandler("createRecorderView" /* PrivateAPI.Commands.CreateRecorderView */, this.onCreateRecorderView.bind(this));
         this.registerHandler("showRecorderView" /* PrivateAPI.Commands.ShowRecorderView */, this.onShowRecorderView.bind(this));
         window.addEventListener('message', this.onWindowMessage, false); // Only for main window.
@@ -304,6 +305,23 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         }
         const { pluginName, mediaType, port, capabilities } = message;
         RecorderPluginManager.instance().addPlugin(new RecorderExtensionEndpoint(pluginName, port, capabilities, mediaType));
+        return this.status.OK();
+    }
+    onReportResourceLoad(message) {
+        if (message.command !== "reportResourceLoad" /* PrivateAPI.Commands.ReportResourceLoad */) {
+            return this.status.E_BADARG('command', `expected ${"reportResourceLoad" /* PrivateAPI.Commands.ReportResourceLoad */}`);
+        }
+        const { resourceUrl, extensionId, status } = message;
+        const url = resourceUrl;
+        const initiator = { target: null, frameId: null, initiatorUrl: extensionId, extensionId };
+        const pageResource = {
+            url,
+            initiator,
+            errorMessage: status.errorMessage,
+            success: status.success ?? null,
+            size: status.size ?? null,
+        };
+        SDK.PageResourceLoader.PageResourceLoader.instance().resourceLoadedThroughExtension(pageResource);
         return this.status.OK();
     }
     onShowRecorderView(message) {
@@ -448,7 +466,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (message.command !== "applyStyleSheet" /* PrivateAPI.Commands.ApplyStyleSheet */) {
             return this.status.E_BADARG('command', `expected ${"applyStyleSheet" /* PrivateAPI.Commands.ApplyStyleSheet */}`);
         }
-        if (!Root.Runtime.experiments.isEnabled('applyCustomStylesheet')) {
+        if (!Root.Runtime.experiments.isEnabled('apply-custom-stylesheet')) {
             return;
         }
         const styleSheet = document.createElement('style');

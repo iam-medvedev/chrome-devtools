@@ -1,7 +1,6 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../components/helpers/helpers.js';
 // eslint-disable-next-line rulesdir/check_component_naming
 export class XElement extends HTMLElement {
     static get observedAttributes() {
@@ -105,10 +104,10 @@ class XText extends XElement {
         this.style.setProperty('white-space', 'pre');
     }
 }
-ComponentHelpers.CustomElements.defineComponent('x-vbox', XVBox);
-ComponentHelpers.CustomElements.defineComponent('x-hbox', XHBox);
-ComponentHelpers.CustomElements.defineComponent('x-cbox', XCBox);
-ComponentHelpers.CustomElements.defineComponent('x-div', XDiv);
-ComponentHelpers.CustomElements.defineComponent('x-span', XSpan);
-ComponentHelpers.CustomElements.defineComponent('x-text', XText);
+customElements.define('x-vbox', XVBox);
+customElements.define('x-hbox', XHBox);
+customElements.define('x-cbox', XCBox);
+customElements.define('x-div', XDiv);
+customElements.define('x-span', XSpan);
+customElements.define('x-text', XText);
 //# sourceMappingURL=XElement.js.map

@@ -85,7 +85,7 @@ class AffectedRequestsView extends AffectedResourcesView {
             const element = document.createElement('tr');
             element.classList.add('affected-resource-request');
             const category = this.issue.getCategory();
-            const tab = issueTypeToNetworkHeaderMap.get(category) || "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
+            const tab = issueTypeToNetworkHeaderMap.get(category) || "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
             element.appendChild(this.createRequestCell(affectedRequest, {
                 networkTab: tab,
                 additionalOnClickAction() {
@@ -124,11 +124,11 @@ const issueTypeToNetworkHeaderMap = new Map([
     ],
     [
         "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy */,
-        "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
+        "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
     ],
     [
         "MixedContent" /* IssuesManager.Issue.IssueCategory.MixedContent */,
-        "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
+        "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
     ],
 ]);
 class AffectedMixedContentView extends AffectedResourcesView {
@@ -153,7 +153,7 @@ class AffectedMixedContentView extends AffectedResourcesView {
         element.classList.add('affected-resource-mixed-content');
         if (mixedContent.request) {
             const networkTab = issueTypeToNetworkHeaderMap.get(this.issue.getCategory()) ||
-                "headersComponent" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
+                "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */;
             element.appendChild(this.createRequestCell(mixedContent.request, {
                 networkTab,
                 additionalOnClickAction() {

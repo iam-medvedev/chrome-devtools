@@ -26,16 +26,22 @@ export async function logImpressions(loggables) {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordImpression({ impressions });
     }
 }
-export const logResize = (resizeLogThrottler) => async (loggable) => {
+export async function logResize(loggable, size, resizeLogThrottler) {
     const loggingState = getLoggingState(loggable);
-    if (!loggingState || !loggingState.size) {
+    if (!loggingState) {
         return;
     }
+    loggingState.size = size;
     const resizeEvent = { veid: loggingState.veid, width: loggingState.size.width, height: loggingState.size.height };
-    await resizeLogThrottler.schedule(async () => {
+    if (resizeLogThrottler) {
+        await resizeLogThrottler.schedule(async () => {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordResize(resizeEvent);
+        });
+    }
+    else {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordResize(resizeEvent);
-    });
-};
+    }
+}
 export async function logClick(loggable, event, options) {
     if (!(event instanceof MouseEvent)) {
         return;

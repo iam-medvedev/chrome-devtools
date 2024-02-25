@@ -370,7 +370,7 @@ export class DeviceModeToolbar {
     }
     appendDevicePostureItems(contextMenu) {
         for (const title of ['Continuous', 'Folded']) {
-            contextMenu.defaultSection().appendCheckboxItem(title, this.spanClicked.bind(this), title === this.currentDevicePosture(), false, undefined, undefined, title.toLowerCase());
+            contextMenu.defaultSection().appendCheckboxItem(title, this.spanClicked.bind(this), { checked: title === this.currentDevicePosture(), jslogContext: title.toLowerCase() });
         }
     }
     currentDevicePosture() {
@@ -386,7 +386,7 @@ export class DeviceModeToolbar {
         if (this.model.type() === EmulationModel.DeviceModeModel.Type.Device) {
             contextMenu.footerSection().appendItem(i18nString(UIStrings.fitToWindowF, { PH1: this.getPrettyFitZoomPercentage() }), this.onScaleMenuChanged.bind(this, this.model.fitScale()), { jslogContext: 'fit-to-window' });
         }
-        contextMenu.footerSection().appendCheckboxItem(i18nString(UIStrings.autoadjustZoom), this.onAutoAdjustScaleChanged.bind(this), this.autoAdjustScaleSetting.get(), undefined, undefined, undefined, 'auto-adjust-zoom');
+        contextMenu.footerSection().appendCheckboxItem(i18nString(UIStrings.autoadjustZoom), this.onAutoAdjustScaleChanged.bind(this), { checked: this.autoAdjustScaleSetting.get(), jslogContext: 'auto-adjust-zoom' });
         const boundAppendScaleItem = appendScaleItem.bind(this);
         boundAppendScaleItem('50%', 0.5);
         boundAppendScaleItem('75%', 0.75);
@@ -395,7 +395,7 @@ export class DeviceModeToolbar {
         boundAppendScaleItem('150%', 1.5);
         boundAppendScaleItem('200%', 2);
         function appendScaleItem(title, value) {
-            contextMenu.defaultSection().appendCheckboxItem(title, this.onScaleMenuChanged.bind(this, value), this.model.scaleSetting().get() === value, false, undefined, undefined, title);
+            contextMenu.defaultSection().appendCheckboxItem(title, this.onScaleMenuChanged.bind(this, value), { checked: this.model.scaleSetting().get() === value, jslogContext: title });
         }
     }
     onScaleMenuChanged(value) {
@@ -410,12 +410,12 @@ export class DeviceModeToolbar {
             this.model.uaSetting().get() === "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */ ?
             EmulationModel.DeviceModeModel.defaultMobileScaleFactor :
             window.devicePixelRatio;
-        appendDeviceScaleFactorItem(contextMenu.headerSection(), i18nString(UIStrings.defaultF, { PH1: defaultValue }), 0, 'DPR: default');
-        appendDeviceScaleFactorItem(contextMenu.defaultSection(), '1', 1, 'DPR: 1');
-        appendDeviceScaleFactorItem(contextMenu.defaultSection(), '2', 2, 'DPR: 2');
-        appendDeviceScaleFactorItem(contextMenu.defaultSection(), '3', 3, 'DPR: 3');
+        appendDeviceScaleFactorItem(contextMenu.headerSection(), i18nString(UIStrings.defaultF, { PH1: defaultValue }), 0, 'dpr-default');
+        appendDeviceScaleFactorItem(contextMenu.defaultSection(), '1', 1, 'dpr-1');
+        appendDeviceScaleFactorItem(contextMenu.defaultSection(), '2', 2, 'dpr-2');
+        appendDeviceScaleFactorItem(contextMenu.defaultSection(), '3', 3, 'dpr-3');
         function appendDeviceScaleFactorItem(section, title, value, jslogContext) {
-            section.appendCheckboxItem(title, deviceScaleFactorSetting.set.bind(deviceScaleFactorSetting, value), deviceScaleFactorSetting.get() === value, undefined, undefined, undefined, jslogContext);
+            section.appendCheckboxItem(title, deviceScaleFactorSetting.set.bind(deviceScaleFactorSetting, value), { checked: deviceScaleFactorSetting.get() === value, jslogContext });
         }
     }
     appendUserAgentMenuItems(contextMenu) {
@@ -425,7 +425,7 @@ export class DeviceModeToolbar {
         appendUAItem("Desktop" /* EmulationModel.DeviceModeModel.UA.Desktop */, "Desktop" /* EmulationModel.DeviceModeModel.UA.Desktop */);
         appendUAItem("Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */, "Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */);
         function appendUAItem(title, value) {
-            contextMenu.defaultSection().appendCheckboxItem(title, uaSetting.set.bind(uaSetting, value), uaSetting.get() === value, undefined, undefined, undefined, value);
+            contextMenu.defaultSection().appendCheckboxItem(title, uaSetting.set.bind(uaSetting, value), { checked: uaSetting.get() === value, jslogContext: Platform.StringUtilities.toKebabCase(value) });
         }
     }
     appendOptionsMenuItems(contextMenu) {
@@ -485,7 +485,7 @@ export class DeviceModeToolbar {
         return this.standardDevices().concat(this.customDevices());
     }
     appendDeviceMenuItems(contextMenu) {
-        contextMenu.headerSection().appendCheckboxItem(i18nString(UIStrings.responsive), this.switchToResponsive.bind(this), this.model.type() === EmulationModel.DeviceModeModel.Type.Responsive, false, undefined, undefined, 'responsive');
+        contextMenu.headerSection().appendCheckboxItem(i18nString(UIStrings.responsive), this.switchToResponsive.bind(this), { checked: this.model.type() === EmulationModel.DeviceModeModel.Type.Responsive, jslogContext: 'responsive' });
         appendGroup.call(this, this.standardDevices());
         appendGroup.call(this, this.customDevices());
         contextMenu.footerSection().appendItem(i18nString(UIStrings.edit), this.emulatedDevicesList.revealCustomSetting.bind(this.emulatedDevicesList), { jslogContext: 'edit' });
@@ -495,7 +495,10 @@ export class DeviceModeToolbar {
             }
             const section = contextMenu.section();
             for (const device of devices) {
-                section.appendCheckboxItem(device.title, this.emulateDevice.bind(this, device), this.model.device() === device, false, undefined, undefined, Platform.StringUtilities.toKebabCase(device.title));
+                section.appendCheckboxItem(device.title, this.emulateDevice.bind(this, device), {
+                    checked: this.model.device() === device,
+                    jslogContext: Platform.StringUtilities.toKebabCase(device.title),
+                });
             }
         }
     }
@@ -605,7 +608,7 @@ export class DeviceModeToolbar {
             }
         }
         function addMode(mode, title) {
-            contextMenu.defaultSection().appendCheckboxItem(title, applyMode.bind(null, mode), model.mode() === mode, false);
+            contextMenu.defaultSection().appendCheckboxItem(title, applyMode.bind(null, mode), { checked: model.mode() === mode, jslogContext: 'device-mode' });
         }
         function applyMode(mode) {
             const scale = autoAdjustScaleSetting.get() ? undefined : model.scaleSetting().get();

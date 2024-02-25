@@ -5,7 +5,6 @@ import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as NodeText from '../../../ui/components/node_text/node_text.js';
@@ -165,6 +164,7 @@ export class LayoutPane extends LegacyWrapper.LegacyWrapper.WrappableComponent {
             layoutPaneWrapperInstance = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, new LayoutPane());
         }
         layoutPaneWrapperInstance.element.style.minWidth = 'min-content';
+        layoutPaneWrapperInstance.element.setAttribute('jslog', `${VisualLogging.pane('layout').track({ resize: true })}`);
         return layoutPaneWrapperInstance.getComponent();
     }
     modelAdded(domModel) {
@@ -449,5 +449,5 @@ export class LayoutPane extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     </label>`;
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-layout-pane', LayoutPane);
+customElements.define('devtools-layout-pane', LayoutPane);
 //# sourceMappingURL=LayoutPane.js.map

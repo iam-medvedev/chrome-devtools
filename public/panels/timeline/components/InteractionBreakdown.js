@@ -52,5 +52,5 @@ export class InteractionBreakdown extends HTMLElement {
                    `, this.#shadow, { host: this });
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-interaction-breakdown', InteractionBreakdown);
+customElements.define('devtools-interaction-breakdown', InteractionBreakdown);
 //# sourceMappingURL=InteractionBreakdown.js.map

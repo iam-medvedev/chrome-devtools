@@ -658,6 +658,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             result.push({
                 section: 'reveal',
                 title: destination ? i18nString(UIStrings.revealInS, { PH1: destination }) : i18nString(UIStrings.reveal),
+                jslogContext: 'reveal',
                 handler: () => {
                     if (revealable instanceof Breakpoints.BreakpointManager.BreakpointLocation) {
                         Host.userMetrics.breakpointEditDialogRevealedFrom(5 /* Host.UserMetrics.BreakpointEditDialogRevealedFrom.Linkifier */);
@@ -676,6 +677,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
                 const action = {
                     section: 'reveal',
                     title: i18nString(UIStrings.openUsingS, { PH1: title }),
+                    jslogContext: 'open-using',
                     handler: handler.bind(null, contentProvider, lineNumber),
                 };
                 if (title === Linkifier.linkHandlerSetting().get()) {
@@ -690,11 +692,13 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             result.push({
                 section: 'reveal',
                 title: UI.UIUtils.openLinkExternallyLabel(),
+                jslogContext: 'open-in-new-tab',
                 handler: () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(url),
             });
             result.push({
                 section: 'clipboard',
                 title: UI.UIUtils.copyLinkAddressLabel(),
+                jslogContext: 'copy-link-address',
                 handler: () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(url),
             });
         }
@@ -703,6 +707,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             result.push({
                 section: 'clipboard',
                 title: UI.UIUtils.copyFileNameLabel(),
+                jslogContext: 'copy-file-name',
                 handler: () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName()),
             });
         }
@@ -722,7 +727,7 @@ export class LinkContextMenuProvider {
         }
         const actions = Linkifier.linkActions(linkInfo);
         for (const action of actions) {
-            contextMenu.section(action.section).appendItem(action.title, action.handler);
+            contextMenu.section(action.section).appendItem(action.title, action.handler, { jslogContext: action.jslogContext });
         }
     }
 }
@@ -789,25 +794,25 @@ export class ContentProviderContextMenuProvider {
         if (!Common.ParsedURL.schemeIs(contentUrl, 'file:')) {
             contextMenu.revealSection().appendItem(UI.UIUtils.openLinkExternallyLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(contentUrl.endsWith(':formatted') ?
                 Common.ParsedURL.ParsedURL.slice(contentUrl, 0, contentUrl.lastIndexOf(':')) :
-                contentUrl));
+                contentUrl), { jslogContext: 'open-in-new-tab' });
         }
         for (const title of linkHandlers.keys()) {
             const handler = linkHandlers.get(title);
             if (!handler) {
                 continue;
             }
-            contextMenu.revealSection().appendItem(i18nString(UIStrings.openUsingS, { PH1: title }), handler.bind(null, contentProvider, 0));
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.openUsingS, { PH1: title }), handler.bind(null, contentProvider, 0), { jslogContext: 'open-using' });
         }
         if (contentProvider instanceof SDK.NetworkRequest.NetworkRequest) {
             return;
         }
-        contextMenu.clipboardSection().appendItem(UI.UIUtils.copyLinkAddressLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentUrl));
+        contextMenu.clipboardSection().appendItem(UI.UIUtils.copyLinkAddressLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentUrl), { jslogContext: 'copy-link-address' });
         // TODO(bmeurer): `displayName` should be an accessor/data property consistently.
         if (contentProvider instanceof Workspace.UISourceCode.UISourceCode) {
-            contextMenu.clipboardSection().appendItem(UI.UIUtils.copyFileNameLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName()));
+            contextMenu.clipboardSection().appendItem(UI.UIUtils.copyFileNameLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName()), { jslogContext: 'copy-file-name' });
         }
         else {
-            contextMenu.clipboardSection().appendItem(UI.UIUtils.copyFileNameLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName));
+            contextMenu.clipboardSection().appendItem(UI.UIUtils.copyFileNameLabel(), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(contentProvider.displayName), { jslogContext: 'copy-file-name' });
         }
     }
 }

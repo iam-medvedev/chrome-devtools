@@ -11,8 +11,7 @@ export declare const enum FormattableMediaTypes {
     APPLICATION_MANIFEST_JSON = "application/manifest+json",
     TEXT_CSS = "text/css",
     TEXT_HTML = "text/html",
-    TEXT_JAVASCRIPT = "text/javascript",
-    TEXT_X_SCSS = "text/x-scss"
+    TEXT_JAVASCRIPT = "text/javascript"
 }
 export declare const FORMATTABLE_MEDIA_TYPES: string[];
 export interface FormatMapping {

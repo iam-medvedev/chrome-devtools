@@ -1,5 +1,7 @@
 import * as Common from '../common/common.js';
 export declare const ResourceLoader: {};
+export declare const bindOutputStream: (stream: Common.StringOutputStream.OutputStream) => number;
+export declare const discardOutputStream: (id: number) => void;
 export declare const streamWrite: (id: number, chunk: string) => void;
 export interface LoadErrorDescription {
     statusCode: number;

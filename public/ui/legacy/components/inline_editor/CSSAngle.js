@@ -1,7 +1,6 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as ComponentHelpers from '../../../components/helpers/helpers.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
 import cssAngleStyles from './cssAngle.css.js';
 import { CSSAngleEditor } from './CSSAngleEditor.js';
@@ -174,7 +173,7 @@ export class CSSAngle extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
-      <div class="css-angle" @keydown=${this.onKeydown} tabindex="-1">
+      <div class="css-angle" @focusout=${this.minify} @keydown=${this.onKeydown} tabindex="-1">
         <div class="preview">
           <${CSSAngleSwatch.litTagName}
             @click=${this.onMiniIconClick}
@@ -216,5 +215,5 @@ export class CSSAngle extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-css-angle', CSSAngle);
+customElements.define('devtools-css-angle', CSSAngle);
 //# sourceMappingURL=CSSAngle.js.map

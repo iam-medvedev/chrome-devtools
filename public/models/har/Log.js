@@ -330,12 +330,19 @@ export class Entry {
             httpOnly: cookie.httpOnly(),
             secure: cookie.secure(),
             sameSite: undefined,
+            partitionKey: undefined,
         };
         if (cookie.sameSite()) {
             c.sameSite = cookie.sameSite();
         }
         else {
             delete c.sameSite;
+        }
+        if (cookie.partitionKey()) {
+            c.partitionKey = cookie.partitionKey();
+        }
+        else {
+            delete c.partitionKey;
         }
         return c;
     }

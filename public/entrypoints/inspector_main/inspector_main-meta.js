@@ -256,6 +256,6 @@ UI.Toolbar.registerToolbarItem({
     },
     order: 98,
     location: "main-toolbar-right" /* UI.Toolbar.ToolbarItemLocation.MAIN_TOOLBAR_RIGHT */,
-    experiment: "outermostTargetSelector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
+    experiment: "outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
 });
 //# sourceMappingURL=inspector_main-meta.js.map

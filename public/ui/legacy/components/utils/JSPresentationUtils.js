@@ -70,10 +70,10 @@ function populateContextMenu(link, event) {
     if (uiLocation &&
         Bindings.IgnoreListManager.IgnoreListManager.instance().canIgnoreListUISourceCode(uiLocation.uiSourceCode)) {
         if (Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(uiLocation.uiSourceCode.url())) {
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.removeFromIgnore), () => Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiLocation.uiSourceCode));
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.removeFromIgnore), () => Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: 'remove-from-ignore-list' });
         }
         else {
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.addToIgnore), () => Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiLocation.uiSourceCode));
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.addToIgnore), () => Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: 'add-to-ignore-list' });
         }
     }
     contextMenu.appendApplicableItems(event);

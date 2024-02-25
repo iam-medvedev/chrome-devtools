@@ -178,7 +178,7 @@ styles.replaceSync(
 
 .timeline-details-view-row {
   padding-left: 10px;
-  line-height: 20px;
+  line-height: 1.3;
 }
 
 .timeline-details-view-block .timeline-details-stack-values {
@@ -186,10 +186,14 @@ styles.replaceSync(
 }
 
 .timeline-details-chip-title {
-  font-size: 13px;
+  font-size: 12px;
   padding: 8px;
   display: flex;
   align-items: center;
+}
+
+.timeline-details-view-block:first-child > .timeline-details-chip-title {
+  font-size: 13px;
 }
 
 .timeline-details-view-row-title:not(:empty) {
@@ -229,21 +233,12 @@ styles.replaceSync(
   text-overflow: ellipsis;
 }
 
-.timeline-details-view-row-value .stack-preview-container {
-  line-height: 11px;
-}
-
 .timeline-details-view-pie-chart-wrapper {
   margin: 4px 0;
 }
 
 .timeline-details-view-pie-chart {
   margin-top: 5px;
-}
-
-.timeline-details-view-row-stack-trace {
-  padding: 4px 0;
-  line-height: inherit;
 }
 
 .timeline-flamechart {
@@ -537,12 +532,6 @@ styles.replaceSync(
     background-color: transparent;
     border-bottom-color: HighlightText;
   }
-}
-
-.timeline-details-view-row-stack-trace div {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  line-height: 12px;
 }
 
 .timeline-details-view-body > div {

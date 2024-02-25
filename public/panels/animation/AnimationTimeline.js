@@ -771,7 +771,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         const currentTime = this.#scrubberPlayer?.currentTime;
         this.#animationGroupPausedBeforeScrub =
             this.#selectedGroup.paused() || typeof currentTime === 'number' && currentTime >= this.duration();
-        const { x } = event; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const { x } = event;
         const seekTime = Math.max(0, x - this.#gridOffsetLeft) / this.pixelMsRatio();
         this.#selectedGroup.seekTo(seekTime);
         this.togglePause(true);
@@ -782,7 +782,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         return true;
     }
     scrubberDragMove(event) {
-        const { x } = event; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const { x } = event;
         const delta = x - (this.#originalMousePosition || 0);
         const currentTime = Math.max(0, Math.min((this.#originalScrubberTime || 0) + delta / this.pixelMsRatio(), this.duration()));
         if (this.#scrubberPlayer) {

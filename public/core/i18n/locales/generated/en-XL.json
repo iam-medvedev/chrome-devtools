@@ -3395,6 +3395,9 @@
   "panels/application/components/SharedStorageMetadataView.ts | notYetCreated": {
     "message": "N̂ót̂ ýêt́ ĉŕêát̂éd̂"
   },
+  "panels/application/components/SharedStorageMetadataView.ts | numBytesUsed": {
+    "message": "N̂úm̂b́êŕ ôf́ B̂ýt̂éŝ Úŝéd̂"
+  },
   "panels/application/components/SharedStorageMetadataView.ts | numEntries": {
     "message": "N̂úm̂b́êŕ ôf́ Êńt̂ŕîéŝ"
   },
@@ -7082,6 +7085,12 @@
   "panels/lighthouse/LighthouseController.ts | doesThisPageMeetTheStandardOfA": {
     "message": "D̂óêś t̂h́îś p̂áĝé m̂éêt́ t̂h́ê śt̂án̂d́âŕd̂ óf̂ á P̂ŕôǵr̂éŝśîv́ê Ẃêb́ Âṕp̂"
   },
+  "panels/lighthouse/LighthouseController.ts | enableJavaScriptSampling": {
+    "message": "Êńâb́l̂é Ĵáv̂áŜćr̂íp̂t́ ŝám̂ṕl̂ín̂ǵ d̂úr̂ín̂ǵ t̂h́ê Ĺîǵĥt́ĥóûśê ŕûń. T̂h́îś ŵíl̂ĺ p̂ŕôv́îd́ê ḿôŕê éx̂éĉút̂íôń d̂ét̂áîĺŝ ín̂ t́ĥé p̂ér̂f́ôŕm̂án̂ćê ṕâńêĺ ŵh́êń ŷóû v́îéŵ t́ĥé t̂ŕâćê, b́ût́ ĥáŝ h́îǵĥér̂ ĆP̂Ú ôv́êŕĥéâd́ âńd̂ ḿâý îḿp̂áĉt́ t̂h́ê ṕêŕf̂ór̂ḿâńĉé ôf́ t̂h́ê ṕâǵê."
+  },
+  "panels/lighthouse/LighthouseController.ts | enableSampling": {
+    "message": "Êńâb́l̂é ĴŚ ŝám̂ṕl̂ín̂ǵ"
+  },
   "panels/lighthouse/LighthouseController.ts | howLongDoesThisAppTakeToShow": {
     "message": "Ĥóŵ ĺôńĝ d́ôéŝ t́ĥíŝ áp̂ṕ t̂ák̂é t̂ó ŝh́ôẃ ĉón̂t́êńt̂ án̂d́ b̂éĉóm̂é ûśâb́l̂é"
   },
@@ -8164,6 +8173,9 @@
   },
   "panels/network/NetworkDataGridNode.ts | matchedToServiceWorkerRouter": {
     "message": "M̂át̂ćĥéd̂ t́ô ServiceWorker router#{PH1}, ŕêśôúr̂ćê śîźê: {PH2}"
+  },
+  "panels/network/NetworkDataGridNode.ts | matchedToServiceWorkerRouterWithNetworkSource": {
+    "message": "M̂át̂ćĥéd̂ t́ô ServiceWorker router#{PH1}, {PH2} t́r̂án̂śf̂ér̂ŕêd́ ôv́êŕ n̂ét̂ẃôŕk̂, ŕêśôúr̂ćê śîźê: {PH3}"
   },
   "panels/network/NetworkDataGridNode.ts | memoryCache": {
     "message": "(m̂ém̂ór̂ý ĉáĉh́ê)"
@@ -13061,9 +13073,6 @@
   "panels/timeline/TimelineUIUtils.ts | callbackId": {
     "message": "Ĉál̂ĺb̂áĉḱ ÎD́"
   },
-  "panels/timeline/TimelineUIUtils.ts | callStacks": {
-    "message": "Ĉál̂ĺ Ŝt́âćk̂ś"
-  },
   "panels/timeline/TimelineUIUtils.ts | cancelAnimationFrame": {
     "message": "Ĉán̂ćêĺ Âńîḿât́îón̂ F́r̂ám̂é"
   },
@@ -13292,6 +13301,9 @@
   "panels/timeline/TimelineUIUtils.ts | initiatorFor": {
     "message": "Îńît́îát̂ór̂ f́ôŕ"
   },
+  "panels/timeline/TimelineUIUtils.ts | initiatorStackTrace": {
+    "message": "Îńît́îát̂ór̂ Śt̂áĉḱ T̂ŕâćê"
+  },
   "panels/timeline/TimelineUIUtils.ts | inputDelay": {
     "message": "Îńp̂út̂ d́êĺâý"
   },
@@ -13400,6 +13412,9 @@
   "panels/timeline/TimelineUIUtils.ts | other": {
     "message": "Ôt́ĥér̂"
   },
+  "panels/timeline/TimelineUIUtils.ts | outsideBreadcrumbRange": {
+    "message": "(ôút̂śîd́ê óf̂ t́ĥé b̂ŕêád̂ćr̂úm̂b́ r̂án̂ǵê)"
+  },
   "panels/timeline/TimelineUIUtils.ts | ownerElement": {
     "message": "Ôẃn̂ér̂ Él̂ém̂én̂t́"
   },
@@ -13498,9 +13513,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | requestMethod": {
     "message": "R̂éq̂úêśt̂ Ḿêt́ĥód̂"
-  },
-  "panels/timeline/TimelineUIUtils.ts | reveal": {
-    "message": "R̂év̂éâĺ"
   },
   "panels/timeline/TimelineUIUtils.ts | runMicrotasks": {
     "message": "R̂ún̂ Ḿîćr̂ót̂áŝḱŝ"

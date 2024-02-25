@@ -305,7 +305,7 @@ function parseRgbNumeric(value) {
     }
     return parsed / 255;
 }
-function parseHueNumeric(value) {
+export function parseHueNumeric(value) {
     const angle = value.replace(/(deg|g?rad|turn)$/, '');
     // @ts-ignore: isNaN can accept strings
     if (isNaN(angle) || value.match(/\s+(deg|g?rad|turn)/)) {
@@ -589,6 +589,9 @@ export class Lab {
         this.alpha = clamp(alpha, { min: 0, max: 1 });
         this.#authoredText = authoredText;
     }
+    is(format) {
+        return format === this.format();
+    }
     as(format) {
         return Lab.#conversions[format](this);
     }
@@ -705,6 +708,9 @@ export class LCH {
     }
     asLegacyColor() {
         return this.as("rgba" /* Format.RGBA */);
+    }
+    is(format) {
+        return format === this.format();
     }
     as(format) {
         return LCH.#conversions[format](this);
@@ -826,6 +832,9 @@ export class Oklab {
     asLegacyColor() {
         return this.as("rgba" /* Format.RGBA */);
     }
+    is(format) {
+        return format === this.format();
+    }
     as(format) {
         return Oklab.#conversions[format](this);
     }
@@ -939,6 +948,9 @@ export class Oklch {
     }
     asLegacyColor() {
         return this.as("rgba" /* Format.RGBA */);
+    }
+    is(format) {
+        return format === this.format();
     }
     as(format) {
         return Oklch.#conversions[format](this);
@@ -1081,6 +1093,9 @@ export class ColorFunction {
     }
     asLegacyColor() {
         return this.as("rgba" /* Format.RGBA */);
+    }
+    is(format) {
+        return format === this.format();
     }
     as(format) {
         if (this.colorSpace === format) {
@@ -1264,6 +1279,9 @@ export class HSL {
     format() {
         return this.alpha === null || this.alpha === 1 ? "hsl" /* Format.HSL */ : "hsla" /* Format.HSLA */;
     }
+    is(format) {
+        return format === this.format();
+    }
     as(format) {
         if (format === this.format()) {
             return this;
@@ -1394,6 +1412,9 @@ export class HWB {
     }
     format() {
         return this.alpha !== null && !equals(this.alpha, 1) ? "hwba" /* Format.HWBA */ : "hwb" /* Format.HWB */;
+    }
+    is(format) {
+        return format === this.format();
     }
     as(format) {
         if (format === this.format()) {
@@ -1562,6 +1583,9 @@ export class Legacy {
     static fromHSVA(hsva) {
         const rgba = hsva2rgba(hsva);
         return new Legacy(rgba, "rgba" /* Format.RGBA */);
+    }
+    is(format) {
+        return format === this.format();
     }
     as(format) {
         if (format === this.format()) {
@@ -1877,9 +1901,7 @@ const COLOR_TO_RGBA_ENTRIES = [
     ['yellowgreen', [154, 205, 50]],
     ['transparent', [0, 0, 0, 0]],
 ];
-Platform.DCHECK(() => {
-    return COLOR_TO_RGBA_ENTRIES.every(([nickname]) => nickname.toLowerCase() === nickname);
-}, 'All color nicknames must be lowercase.');
+console.assert(COLOR_TO_RGBA_ENTRIES.every(([nickname]) => nickname.toLowerCase() === nickname), 'All color nicknames must be lowercase.');
 export const Nicknames = new Map(COLOR_TO_RGBA_ENTRIES);
 const RGBAToNickname = new Map(
 // Default opacity to 1 if the color only specified 3 channels

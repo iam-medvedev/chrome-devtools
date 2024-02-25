@@ -137,8 +137,8 @@ export class ThreadAppender {
     #headerAppended = false;
     threadType = "MAIN_THREAD" /* TraceEngine.Handlers.Threads.ThreadType.MAIN_THREAD */;
     isOnMainFrame;
-    #ignoreListingEnabled = Root.Runtime.experiments.isEnabled('ignoreListJSFramesOnTimeline');
-    #showAllEventsEnabled = Root.Runtime.experiments.isEnabled('timelineShowAllEvents');
+    #ignoreListingEnabled = Root.Runtime.experiments.isEnabled('ignore-list-js-frames-on-timeline');
+    #showAllEventsEnabled = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
     #entriesFilter;
     #url = '';
     #headerNestingLevel = null;

@@ -120,10 +120,10 @@ export class MediaQueryInspector extends UI.Widget.Widget {
         }
         const contextMenuItems = [...uiLocations.keys()].sort();
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        const subMenuItem = contextMenu.defaultSection().appendSubMenuItem(i18nString(UIStrings.revealInSourceCode), undefined);
+        const subMenuItem = contextMenu.defaultSection().appendSubMenuItem(i18nString(UIStrings.revealInSourceCode), undefined, 'reveal-in-source-list');
         for (let i = 0; i < contextMenuItems.length; ++i) {
             const title = contextMenuItems[i];
-            subMenuItem.defaultSection().appendItem(title, this.revealSourceLocation.bind(this, uiLocations.get(title)), { jslogContext: 'revealInSourceCode' });
+            subMenuItem.defaultSection().appendItem(title, this.revealSourceLocation.bind(this, uiLocations.get(title)), { jslogContext: 'reveal-in-source' });
         }
         void contextMenu.show();
     }

@@ -579,23 +579,23 @@ export class StepView extends HTMLElement {
             const section = menu.section(item.group);
             section.appendItem(item.label, () => {
                 this.#handleStepAction(new Menus.Menu.MenuItemSelectedEvent(item.id));
-            });
+            }, { jslogContext: item.id });
         }
         const preferredCopyAction = copyActions.find(item => item.id === COPY_ACTION_PREFIX + this.#recorderSettings?.preferredCopyFormat);
         if (preferredCopyAction) {
             menu.section('copy').appendItem(preferredCopyAction.label, () => {
                 this.#handleStepAction(new Menus.Menu.MenuItemSelectedEvent(preferredCopyAction.id));
-            });
+            }, { jslogContext: preferredCopyAction.id });
         }
         if (copyActions.length) {
-            const copyAs = menu.section('copy').appendSubMenuItem(i18nString(UIStrings.copyAs));
+            const copyAs = menu.section('copy').appendSubMenuItem(i18nString(UIStrings.copyAs), false, 'copy');
             for (const item of copyActions) {
                 if (item === preferredCopyAction) {
                     continue;
                 }
                 copyAs.section(item.group).appendItem(item.label, () => {
                     this.#handleStepAction(new Menus.Menu.MenuItemSelectedEvent(item.id));
-                });
+                }, { jslogContext: item.id });
             }
         }
         void menu.show();
@@ -687,5 +687,5 @@ export class StepView extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-step-view', StepView);
+customElements.define('devtools-step-view', StepView);
 //# sourceMappingURL=StepView.js.map

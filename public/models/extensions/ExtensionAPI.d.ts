@@ -54,7 +54,8 @@ export declare namespace PrivateAPI {
         GetWasmOp = "getWasmOp",
         RegisterRecorderExtensionPlugin = "registerRecorderExtensionPlugin",
         CreateRecorderView = "createRecorderView",
-        ShowRecorderView = "showRecorderView"
+        ShowRecorderView = "showRecorderView",
+        ReportResourceLoad = "reportResourceLoad"
     }
     export const enum LanguageExtensionPluginCommands {
         AddRawModule = "addRawModule",
@@ -256,7 +257,17 @@ export declare namespace PrivateAPI {
         op: number;
         stopId: unknown;
     };
-    export type ServerRequests = ShowRecorderViewRequest | CreateRecorderViewRequest | RegisterRecorderExtensionPluginRequest | RegisterLanguageExtensionPluginRequest | SubscribeRequest | UnsubscribeRequest | AddRequestHeadersRequest | ApplyStyleSheetRequest | CreatePanelRequest | ShowPanelRequest | CreateToolbarButtonRequest | UpdateButtonRequest | CreateSidebarPaneRequest | SetSidebarHeightRequest | SetSidebarContentRequest | SetSidebarPageRequest | OpenResourceRequest | SetOpenResourceHandlerRequest | SetThemeChangeHandlerRequest | ReloadRequest | EvaluateOnInspectedPageRequest | GetRequestContentRequest | GetResourceContentRequest | SetResourceContentRequest | ForwardKeyboardEventRequest | GetHARRequest | GetPageResourcesRequest | GetWasmLinearMemoryRequest | GetWasmLocalRequest | GetWasmGlobalRequest | GetWasmOpRequest;
+    type ReportResourceLoadRequest = {
+        command: Commands.ReportResourceLoad;
+        extensionId: string;
+        resourceUrl: string;
+        status: {
+            success: boolean;
+            errorMessage?: string;
+            size?: number;
+        };
+    };
+    export type ServerRequests = ShowRecorderViewRequest | CreateRecorderViewRequest | RegisterRecorderExtensionPluginRequest | RegisterLanguageExtensionPluginRequest | SubscribeRequest | UnsubscribeRequest | AddRequestHeadersRequest | ApplyStyleSheetRequest | CreatePanelRequest | ShowPanelRequest | CreateToolbarButtonRequest | UpdateButtonRequest | CreateSidebarPaneRequest | SetSidebarHeightRequest | SetSidebarContentRequest | SetSidebarPageRequest | OpenResourceRequest | SetOpenResourceHandlerRequest | SetThemeChangeHandlerRequest | ReloadRequest | EvaluateOnInspectedPageRequest | GetRequestContentRequest | GetResourceContentRequest | SetResourceContentRequest | ForwardKeyboardEventRequest | GetHARRequest | GetPageResourcesRequest | GetWasmLinearMemoryRequest | GetWasmLocalRequest | GetWasmGlobalRequest | GetWasmOpRequest | ReportResourceLoadRequest;
     export type ExtensionServerRequestMessage = PrivateAPI.ServerRequests & {
         requestId?: number;
     };

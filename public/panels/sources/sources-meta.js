@@ -1850,7 +1850,7 @@ UI.ContextMenu.registerItem({
 QuickOpen.FilteredListWidget.registerProvider({
     prefix: '@',
     iconName: 'symbol',
-    iconWidth: '16px',
+    iconWidth: '20px',
     async provider() {
         const Sources = await loadSourcesModule();
         return new Sources.OutlineQuickOpen.OutlineQuickOpen();
@@ -1872,7 +1872,7 @@ QuickOpen.FilteredListWidget.registerProvider({
 QuickOpen.FilteredListWidget.registerProvider({
     prefix: '',
     iconName: 'document',
-    iconWidth: '16px',
+    iconWidth: '20px',
     async provider() {
         const Sources = await loadSourcesModule();
         return new Sources.OpenFileQuickOpen.OpenFileQuickOpen();

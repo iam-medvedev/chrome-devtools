@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -150,5 +149,5 @@ export class LinearMemoryNavigator extends HTMLElement {
       </button>`;
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-linear-memory-inspector-navigator', LinearMemoryNavigator);
+customElements.define('devtools-linear-memory-inspector-navigator', LinearMemoryNavigator);
 //# sourceMappingURL=LinearMemoryNavigator.js.map

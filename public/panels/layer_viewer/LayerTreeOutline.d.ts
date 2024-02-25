@@ -8,7 +8,7 @@ declare const LayerTreeOutline_base: (new (...args: any[]) => {
     once<T_1 extends Events.PaintProfilerRequested>(eventType: T_1): Promise<EventTypes[T_1]>;
     removeEventListener<T_2 extends Events.PaintProfilerRequested>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
     hasEventListeners(eventType: Events.PaintProfilerRequested): boolean;
-    dispatchEventToListeners<T_3 extends Events.PaintProfilerRequested>(eventType: import("../../core/platform/typescript-utilities.js").NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_3>): void;
+    dispatchEventToListeners<T_3 extends Events.PaintProfilerRequested>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_3>): void;
 }) & typeof UI.TreeOutline.TreeOutline;
 export declare class LayerTreeOutline extends LayerTreeOutline_base implements Common.EventTarget.EventTarget<EventTypes>, LayerView {
     private layerViewHost;

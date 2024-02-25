@@ -188,7 +188,7 @@ export class NavigatorView extends UI.Widget.VBox {
         this.scriptsTree = new UI.TreeOutline.TreeOutlineInShadow();
         this.scriptsTree.setComparator(NavigatorView.treeElementsCompare);
         this.scriptsTree.setFocusable(false);
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane().context(jslogContext)}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.pane(jslogContext).track({ resize: true })}`);
         this.contentElement.appendChild(this.scriptsTree.element);
         this.setDefaultFocusedElement(this.scriptsTree.element);
         this.uiSourceCodeNodes = new Platform.MapUtilities.Multimap();
@@ -201,7 +201,7 @@ export class NavigatorView extends UI.Widget.VBox {
         this.navigatorGroupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigator-group-by-folder');
         this.navigatorGroupByFolderSetting.addChangeListener(this.groupingChanged.bind(this));
         if (enableAuthoredGrouping) {
-            this.navigatorGroupByAuthoredExperiment = "authoredDeployedGrouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */;
+            this.navigatorGroupByAuthoredExperiment = "authored-deployed-grouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */;
         }
         Bindings.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListChanged.bind(this));
         this.initGrouping();
@@ -241,7 +241,7 @@ export class NavigatorView extends UI.Widget.VBox {
     static appendSearchItem(contextMenu, path) {
         const searchLabel = path ? i18nString(UIStrings.searchInFolder) : i18nString(UIStrings.searchInAllFiles);
         const searchSources = new SearchSources(path && `file:${path}`);
-        contextMenu.viewSection().appendItem(searchLabel, () => Common.Revealer.reveal(searchSources));
+        contextMenu.viewSection().appendItem(searchLabel, () => Common.Revealer.reveal(searchSources), { jslogContext: path ? 'search-in-folder' : 'search-in-all-files' });
     }
     static treeElementsCompare(treeElement1, treeElement2) {
         const typeWeight1 = NavigatorView.treeElementOrder(treeElement1);
@@ -392,7 +392,7 @@ export class NavigatorView extends UI.Widget.VBox {
         return this.acceptProject(uiSourceCode.project());
     }
     addUISourceCode(uiSourceCode) {
-        if (Root.Runtime.experiments.isEnabled("justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */) &&
+        if (Root.Runtime.experiments.isEnabled("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */) &&
             Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
             return;
         }
@@ -815,9 +815,9 @@ export class NavigatorView extends UI.Widget.VBox {
         contextMenu.appendApplicableItems(uiSourceCode);
         const project = uiSourceCode.project();
         if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
-            contextMenu.editSection().appendItem(i18nString(UIStrings.rename), this.handleContextMenuRename.bind(this, node));
-            contextMenu.editSection().appendItem(i18nString(UIStrings.makeACopy), this.handleContextMenuCreate.bind(this, project, Platform.DevToolsPath.EmptyEncodedPathString, uiSourceCode));
-            contextMenu.editSection().appendItem(i18nString(UIStrings.delete), this.handleContextMenuDelete.bind(this, uiSourceCode));
+            contextMenu.editSection().appendItem(i18nString(UIStrings.rename), this.handleContextMenuRename.bind(this, node), { jslogContext: 'rename' });
+            contextMenu.editSection().appendItem(i18nString(UIStrings.makeACopy), this.handleContextMenuCreate.bind(this, project, Platform.DevToolsPath.EmptyEncodedPathString, uiSourceCode), { jslogContext: 'make-a-copy' });
+            contextMenu.editSection().appendItem(i18nString(UIStrings.delete), this.handleContextMenuDelete.bind(this, uiSourceCode), { jslogContext: 'delete' });
         }
         void contextMenu.show();
     }
@@ -869,11 +869,11 @@ export class NavigatorView extends UI.Widget.VBox {
         }
         if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
             const folderPath = Common.ParsedURL.ParsedURL.urlToRawPathString(Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.completeURL(project, path), Host.Platform.isWin());
-            contextMenu.revealSection().appendItem(i18nString(UIStrings.openFolder), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.showItemInFolder(folderPath));
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.openFolder), () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.showItemInFolder(folderPath), { jslogContext: 'open-folder' });
             if (project.canCreateFile()) {
                 contextMenu.defaultSection().appendItem(i18nString(UIStrings.newFile), () => {
                     this.handleContextMenuCreate(project, path, undefined);
-                });
+                }, { jslogContext: 'new-file' });
             }
         }
         else if (node.origin && node.folderPath) {
@@ -883,13 +883,13 @@ export class NavigatorView extends UI.Widget.VBox {
                 isKnownThirdParty: node.recursiveProperties.exclusivelyThirdParty || false,
                 isCurrentlyIgnoreListed: node.recursiveProperties.exclusivelyIgnored || false,
             };
-            for (const { text, callback } of Bindings.IgnoreListManager.IgnoreListManager.instance()
+            for (const { text, callback, jslogContext } of Bindings.IgnoreListManager.IgnoreListManager.instance()
                 .getIgnoreListFolderContextMenuItems(url, options)) {
-                contextMenu.defaultSection().appendItem(text, callback);
+                contextMenu.defaultSection().appendItem(text, callback, { jslogContext });
             }
         }
         if (project.canExcludeFolder(path)) {
-            contextMenu.defaultSection().appendItem(i18nString(UIStrings.excludeFolder), this.handleContextMenuExclude.bind(this, project, path));
+            contextMenu.defaultSection().appendItem(i18nString(UIStrings.excludeFolder), this.handleContextMenuExclude.bind(this, project, path), { jslogContext: 'exclude-folder' });
         }
         if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
             const isFileOverrides = project.fileSystem().type() === 'overrides';
@@ -905,12 +905,12 @@ export class NavigatorView extends UI.Widget.VBox {
                         if (shouldRemove) {
                             project.remove();
                         }
-                    });
+                    }, { jslogContext: 'remove-folder-from-workspace' });
                 }
             }
             else {
                 if (!(node instanceof NavigatorGroupTreeNode)) {
-                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.delete), this.handleDeleteFolder.bind(this, node));
+                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.delete), this.handleDeleteFolder.bind(this, node), { jslogContext: 'delete' });
                 }
             }
         }
@@ -954,7 +954,7 @@ export class NavigatorView extends UI.Widget.VBox {
         this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
     }
     ignoreListChanged() {
-        if (Root.Runtime.experiments.isEnabled("justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */)) {
+        if (Root.Runtime.experiments.isEnabled("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */)) {
             this.groupingChanged();
         }
         else {

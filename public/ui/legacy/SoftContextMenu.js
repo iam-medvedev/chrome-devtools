@@ -104,6 +104,7 @@ export class SoftContextMenu {
         this.glassPane.setMarginBehavior("NoMargin" /* MarginBehavior.NoMargin */);
         this.glassPane.setAnchorBehavior(this.parentMenu ? "PreferRight" /* AnchorBehavior.PreferRight */ : "PreferBottom" /* AnchorBehavior.PreferBottom */);
         this.contextMenuElement = this.glassPane.contentElement.createChild('div', 'soft-context-menu');
+        this.contextMenuElement.setAttribute('jslog', `${VisualLogging.menu().track({ resize: true })}`);
         this.contextMenuElement.tabIndex = -1;
         ARIAUtils.markAsMenu(this.contextMenuElement);
         this.contextMenuElement.addEventListener('mouseup', e => e.consume(), false);

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../../core/host/host.js';
-import * as ComponentHelpers from '../../../components/helpers/helpers.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import cssLengthStyles from './cssLength.css.js';
@@ -144,5 +143,5 @@ export class CSSLength extends HTMLElement {
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-css-length', CSSLength);
+customElements.define('devtools-css-length', CSSLength);
 //# sourceMappingURL=CSSLength.js.map

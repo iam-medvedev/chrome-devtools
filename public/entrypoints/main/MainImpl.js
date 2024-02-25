@@ -238,68 +238,68 @@ export class MainImpl {
         }
     }
     #initializeExperiments() {
-        Root.Runtime.experiments.register('applyCustomStylesheet', 'Allow extensions to load custom stylesheets');
-        Root.Runtime.experiments.register('captureNodeCreationStacks', 'Capture node creation stacks');
-        Root.Runtime.experiments.register('ignoreListJSFramesOnTimeline', 'Ignore List for JavaScript frames on Timeline', true);
-        Root.Runtime.experiments.register('liveHeapProfile', 'Live heap profile', true);
-        Root.Runtime.experiments.register('protocolMonitor', 'Protocol Monitor', undefined, 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor');
-        Root.Runtime.experiments.register('samplingHeapProfilerTimeline', 'Sampling heap profiler timeline', true);
-        Root.Runtime.experiments.register('showOptionToExposeInternalsInHeapSnapshot', 'Show option to expose internals in heap snapshots');
-        Root.Runtime.experiments.register('heapSnapshotTreatBackingStoreAsContainingObject', 'In heap snapshots, treat backing store size as part of the containing object');
+        Root.Runtime.experiments.register('apply-custom-stylesheet', 'Allow extensions to load custom stylesheets');
+        Root.Runtime.experiments.register('capture-node-creation-stacks', 'Capture node creation stacks');
+        Root.Runtime.experiments.register('ignore-list-js-frames-on-timeline', 'Ignore List for JavaScript frames on Timeline', true);
+        Root.Runtime.experiments.register('live-heap-profile', 'Live heap profile', true);
+        Root.Runtime.experiments.register('protocol-monitor', 'Protocol Monitor', undefined, 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor');
+        Root.Runtime.experiments.register('sampling-heap-profiler-timeline', 'Sampling heap profiler timeline', true);
+        Root.Runtime.experiments.register('show-option-tp-expose-internals-in-heap-snapshot', 'Show option to expose internals in heap snapshots');
+        Root.Runtime.experiments.register('heap-snapshot-treat-backing-store-as-containing-object', 'In heap snapshots, treat backing store size as part of the containing object');
         // Timeline
-        Root.Runtime.experiments.register('timelineInvalidationTracking', 'Timeline: invalidation tracking', true);
-        Root.Runtime.experiments.register('timelineShowAllEvents', 'Timeline: show all events', true);
-        Root.Runtime.experiments.register('timelineV8RuntimeCallStats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
-        Root.Runtime.experiments.register('timelineAsConsoleProfileResultPanel', 'View console.profile() results in the Performance panel for Node.js', true);
+        Root.Runtime.experiments.register('timeline-invalidation-tracking', 'Timeline: invalidation tracking', true);
+        Root.Runtime.experiments.register('timeline-show-all-events', 'Timeline: show all events', true);
+        Root.Runtime.experiments.register('timeline-v8-runtime-call-stats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
+        Root.Runtime.experiments.register('timeline-as-console-profile-result-panel', 'View console.profile() results in the Performance panel for Node.js', true);
         // JS Profiler
-        Root.Runtime.experiments.register('jsProfilerTemporarilyEnable', 'Enable JavaScript Profiler temporarily', /* unstable= */ false, 'https://goo.gle/js-profiler-deprecation', 'https://crbug.com/1354548');
+        Root.Runtime.experiments.register('js-profiler-temporarily-enable', 'Enable JavaScript Profiler temporarily', /* unstable= */ false, 'https://goo.gle/js-profiler-deprecation', 'https://crbug.com/1354548');
         // Sources
-        Root.Runtime.experiments.register("sourcesFrameIndentationMarkersTemporarilyDisable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */, 'Disable Indentation Markers temporarily', 
+        Root.Runtime.experiments.register("sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */, 'Disable Indentation Markers temporarily', 
         /* unstable= */ false, 'https://developer.chrome.com/blog/new-in-devtools-121/#indentation', 'https://crbug.com/1479986');
         // Debugging
-        Root.Runtime.experiments.register('evaluateExpressionsWithSourceMaps', 'Resolve variable names in expressions using source maps', undefined, 'https://goo.gle/evaluate-source-var-default', 'https://crbug.com/1504123');
-        Root.Runtime.experiments.register('instrumentationBreakpoints', 'Enable instrumentation breakpoints', true);
-        Root.Runtime.experiments.register('setAllBreakpointsEagerly', 'Set all breakpoints eagerly at startup');
-        Root.Runtime.experiments.register('useSourceMapScopes', 'Use scope information from source maps', true);
+        Root.Runtime.experiments.register('evaluate-expressions-with-source-maps', 'Resolve variable names in expressions using source maps', undefined, 'https://goo.gle/evaluate-source-var-default', 'https://crbug.com/1504123');
+        Root.Runtime.experiments.register('instrumentation-breakpoints', 'Enable instrumentation breakpoints', true);
+        Root.Runtime.experiments.register('set-all-breakpoints-eagerly', 'Set all breakpoints eagerly at startup');
+        Root.Runtime.experiments.register('use-source-map-scopes', 'Use scope information from source maps', true);
         // Advanced Perceptual Contrast Algorithm.
-        Root.Runtime.experiments.register('APCA', 'Enable new Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines', undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#apca');
+        Root.Runtime.experiments.register('apca', 'Enable new Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines', undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#apca');
         // Full Accessibility Tree
-        Root.Runtime.experiments.register('fullAccessibilityTree', 'Enable full accessibility tree view in the Elements panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#accesibility-tree', 'https://g.co/devtools/a11y-tree-feedback');
+        Root.Runtime.experiments.register('full-accessibility-tree', 'Enable full accessibility tree view in the Elements panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#accesibility-tree', 'https://g.co/devtools/a11y-tree-feedback');
         // Font Editor
-        Root.Runtime.experiments.register('fontEditor', 'Enable new Font Editor tool within the Styles tab.', undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#font');
+        Root.Runtime.experiments.register('font-editor', 'Enable new Font Editor tool within the Styles tab.', undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#font');
         // Contrast issues reported via the Issues panel.
-        Root.Runtime.experiments.register('contrastIssues', 'Enable automatic contrast issue reporting via the Issues panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast');
+        Root.Runtime.experiments.register('contrast-issues', 'Enable automatic contrast issue reporting via the Issues panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast');
         // New cookie features.
-        Root.Runtime.experiments.register('experimentalCookieFeatures', 'Enable experimental cookie features');
+        Root.Runtime.experiments.register('experimental-cookie-features', 'Enable experimental cookie features');
         // CSS <length> authoring tool.
-        Root.Runtime.experiments.register('cssTypeComponentLengthDeprecate', 'Deprecate CSS <length> authoring tool in the Styles tab', undefined, 'https://goo.gle/devtools-deprecate-length-tools', 'https://crbug.com/1522657');
+        Root.Runtime.experiments.register('css-type-component-length-deprecate', 'Deprecate CSS <length> authoring tool in the Styles tab', undefined, 'https://goo.gle/devtools-deprecate-length-tools', 'https://crbug.com/1522657');
         // Integrate CSS changes in the Styles pane.
-        Root.Runtime.experiments.register("stylesPaneCSSChanges" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */, 'Sync CSS changes in the Styles pane');
+        Root.Runtime.experiments.register("styles-pane-css-changes" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */, 'Sync CSS changes in the Styles pane');
         // Highlights a violating node or attribute by rendering a squiggly line under it and adding a tooltip linking to the issues panel.
         // Right now violating nodes are exclusively form fields that contain an HTML issue, for example, and <input /> whose id is duplicate inside the form.
-        Root.Runtime.experiments.register("highlightErrorsElementsPanel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */, 'Highlights a violating node or attribute in the Elements panel DOM tree');
+        Root.Runtime.experiments.register("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */, 'Highlights a violating node or attribute in the Elements panel DOM tree');
         // Change grouping of sources panel to use Authored/Deployed trees
-        Root.Runtime.experiments.register("authoredDeployedGrouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, 'Group sources into Authored and Deployed trees', undefined, 'https://goo.gle/authored-deployed', 'https://goo.gle/authored-deployed-feedback');
+        Root.Runtime.experiments.register("authored-deployed-grouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, 'Group sources into Authored and Deployed trees', undefined, 'https://goo.gle/authored-deployed', 'https://goo.gle/authored-deployed-feedback');
         // Hide third party code (as determined by ignore lists or source maps)
-        Root.Runtime.experiments.register("justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, 'Hide ignore-listed code in sources tree view');
+        Root.Runtime.experiments.register("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, 'Hide ignore-listed code in sources tree view');
         // Highlight important DOM properties in the Object Properties viewer.
-        Root.Runtime.experiments.register("importantDOMProperties" /* Root.Runtime.ExperimentName.IMPORTANT_DOM_PROPERTIES */, 'Highlight important DOM properties in the Object Properties viewer');
-        Root.Runtime.experiments.register("preloadingStatusPanel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */, 'Enable Speculative Loads Panel in Application panel', true);
-        Root.Runtime.experiments.register("outermostTargetSelector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */, 'Enable background page selector (e.g. for prerendering debugging)', false);
-        Root.Runtime.experiments.register("selfXssWarning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */, 'Show warning about Self-XSS when pasting code');
-        Root.Runtime.experiments.register("storageBucketsTree" /* Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE */, 'Enable Storage Buckets Tree in Application panel', true);
-        Root.Runtime.experiments.register("networkPanelFilterBarRedesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network Panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
-        Root.Runtime.experiments.register("trackContextMenu" /* Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU */, 'Enable context menu that allows to modify trees in the Flame Chart', true);
-        Root.Runtime.experiments.register("autofillView" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Enable Autofill view');
+        Root.Runtime.experiments.register("important-dom-properties" /* Root.Runtime.ExperimentName.IMPORTANT_DOM_PROPERTIES */, 'Highlight important DOM properties in the Object Properties viewer');
+        Root.Runtime.experiments.register("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */, 'Enable Speculative Loads Panel in Application panel', true);
+        Root.Runtime.experiments.register("outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */, 'Enable background page selector (e.g. for prerendering debugging)', false);
+        Root.Runtime.experiments.register("self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */, 'Show warning about Self-XSS when pasting code');
+        Root.Runtime.experiments.register("storage-buckets-tree" /* Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE */, 'Enable Storage Buckets Tree in Application panel', true);
+        Root.Runtime.experiments.register("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network Panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
+        Root.Runtime.experiments.register("track-context-menu" /* Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU */, 'Enable context menu that allows to modify trees in the Flame Chart', true);
+        Root.Runtime.experiments.register("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Enable Autofill view');
         Root.Runtime.experiments.enableExperimentsByDefault([
-            'cssTypeComponentLengthDeprecate',
-            'setAllBreakpointsEagerly',
-            "timelineAsConsoleProfileResultPanel" /* Root.Runtime.ExperimentName.TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL */,
-            "outermostTargetSelector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
-            "selfXssWarning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */,
-            "preloadingStatusPanel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
-            'evaluateExpressionsWithSourceMaps',
-            ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocolMonitor'] : []),
+            'css-type-component-length-deprecate',
+            'set-all-breakpoints-eagerly',
+            "timeline-as-console-profile-result-panel" /* Root.Runtime.ExperimentName.TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL */,
+            "outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
+            "self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */,
+            "preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
+            'evaluate-expressions-with-source-maps',
+            ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
         const enabledExperiments = Root.Runtime.Runtime.queryParam('enabledExperiments');
@@ -310,7 +310,7 @@ export class MainImpl {
         if (Host.InspectorFrontendHost.isUnderTest()) {
             const testParam = Root.Runtime.Runtime.queryParam('test');
             if (testParam && testParam.includes('live-line-level-heap-profile.js')) {
-                Root.Runtime.experiments.enableForTest('liveHeapProfile');
+                Root.Runtime.experiments.enableForTest('live-heap-profile');
             }
         }
         for (const experiment of Root.Runtime.experiments.allConfigurableExperiments()) {
@@ -346,7 +346,7 @@ export class MainImpl {
         highContrastMediaQuery.addEventListener('change', onThemeChange);
         themeSetting.addChangeListener(onThemeChange);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged, async () => {
-            await UI.Utils.DynamicTheming.fetchColors(document);
+            await ThemeSupport.ThemeSupport.fetchColors(document);
         }, this);
         UI.UIUtils.installComponentRootStyles(document.body);
         this.#addMainEventListeners(document);
@@ -428,7 +428,7 @@ export class MainImpl {
         const app = appProvider.createApp();
         // It is important to kick controller lifetime after apps are instantiated.
         UI.DockController.DockController.instance().initialize();
-        await UI.Utils.DynamicTheming.fetchColors(document);
+        await ThemeSupport.ThemeSupport.fetchColors(document);
         app.presentUI(document);
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-element-search')) {
             const toggleSearchNodeAction = UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
@@ -473,7 +473,7 @@ export class MainImpl {
             const runnable = await lateInitializationLoader();
             return runnable.run();
         });
-        if (Root.Runtime.experiments.isEnabled('liveHeapProfile')) {
+        if (Root.Runtime.experiments.isEnabled('live-heap-profile')) {
             const setting = 'memory-live-heap-profile';
             if (Common.Settings.Settings.instance().moduleSetting(setting).get()) {
                 promises.push(PerfUI.LiveHeapProfile.LiveHeapProfile.instance().run());
@@ -682,7 +682,7 @@ export class MainMenuItem {
                 buttons[index].element.focus();
                 event.consume(true);
             });
-            contextMenu.headerSection().appendCustomItem(dockItemElement, 'dockSide');
+            contextMenu.headerSection().appendCustomItem(dockItemElement, 'dock-side');
         }
         const button = this.#itemInternal.element;
         function setDockSide(side) {

@@ -1,4 +1,4 @@
-import type * as Platform from '../../../core/platform/platform.js';
+import * as Platform from '../../../core/platform/platform.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-chrome-link': ChromeLink;

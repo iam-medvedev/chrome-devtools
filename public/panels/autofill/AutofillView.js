@@ -77,7 +77,6 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
     #filledFields = [];
     #matches = [];
     #highlightedMatches = [];
-    #autofillModel = null;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [Input.checkboxStyles, autofillViewStyles];
         const autofillManager = AutofillManager.AutofillManager.AutofillManager.instance();
@@ -87,7 +86,6 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
                 address: this.#address,
                 filledFields: this.#filledFields,
                 matches: this.#matches,
-                autofillModel: this.#autofillModel,
             } = formFilledEvent);
         }
         autofillManager.addEventListener("AddressFormFilled" /* AutofillManager.AutofillManager.Events.AddressFormFilled */, this.#onAddressFormFilled, this);
@@ -101,7 +99,6 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
         this.#filledFields = [];
         this.#matches = [];
         this.#highlightedMatches = [];
-        this.#autofillModel = null;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     #onAddressFormFilled({ data }) {
@@ -109,7 +106,6 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
             address: this.#address,
             filledFields: this.#filledFields,
             matches: this.#matches,
-            autofillModel: this.#autofillModel,
         } = data);
         this.#highlightedMatches = [];
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
@@ -273,16 +269,16 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
         this.#highlightedMatches = this.#matches.filter(match => match.filledFieldIndex === rowIndex);
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
         const backendNodeId = this.#filledFields[rowIndex].fieldId;
-        if (!this.#autofillModel) {
-            return;
-        }
-        const domModel = this.#autofillModel.target().model(SDK.DOMModel.DOMModel);
-        if (!domModel) {
-            return;
-        }
-        const deferredNode = new SDK.DOMModel.DeferredDOMNode(this.#autofillModel.target(), backendNodeId);
-        if (deferredNode) {
-            domModel.overlayModel().highlightInOverlay({ deferredNode }, 'all');
+        const target = SDK.FrameManager.FrameManager.instance()
+            .getFrame(this.#filledFields[rowIndex].frameId)
+            ?.resourceTreeModel()
+            .target();
+        if (target) {
+            const deferredNode = new SDK.DOMModel.DeferredDOMNode(target, backendNodeId);
+            const domModel = target.model(SDK.DOMModel.DOMModel);
+            if (deferredNode && domModel) {
+                domModel.overlayModel().highlightInOverlay({ deferredNode }, 'all');
+            }
         }
     }
     #onGridRowMouseLeave() {
@@ -336,5 +332,5 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
         // clang-format on
     }
 }
-ComponentHelpers.CustomElements.defineComponent('devtools-autofill-view', AutofillView);
+customElements.define('devtools-autofill-view', AutofillView);
 //# sourceMappingURL=AutofillView.js.map

@@ -111,6 +111,7 @@ export class DOMStorageItemsView extends StorageItemsView {
         this.splitWidget.show(this.element);
         this.previewPanel = new UI.Widget.VBox();
         this.previewPanel.setMinimumSize(0, 50);
+        this.previewPanel.element.setAttribute('jslog', `${VisualLogging.pane('preview').track({ resize: true })}`);
         const resizer = this.previewPanel.element.createChild('div', 'preview-panel-resizer');
         const dataGridWidget = this.dataGrid.asWidget();
         dataGridWidget.setMinimumSize(0, 50);

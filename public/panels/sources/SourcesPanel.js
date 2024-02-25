@@ -491,14 +491,18 @@ export class SourcesPanel extends UI.Panel.Panel {
             const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigator-group-by-folder');
             groupByFolderSetting.set(groupByFolderSetting.get());
         }
-        menuSection.appendCheckboxItem(menuItem, toggleExperiment, Root.Runtime.experiments.isEnabled(experiment), false, IconButton.Icon.create('experiment'), undefined, Platform.StringUtilities.toKebabCase(experiment));
+        menuSection.appendCheckboxItem(menuItem, toggleExperiment, {
+            checked: Root.Runtime.experiments.isEnabled(experiment),
+            additionalElement: IconButton.Icon.create('experiment'),
+            jslogContext: Platform.StringUtilities.toKebabCase(experiment),
+        });
     }
     populateNavigatorMenu(contextMenu) {
         const groupByFolderSetting = Common.Settings.Settings.instance().moduleSetting('navigator-group-by-folder');
         contextMenu.appendItemsAtLocation('navigatorMenu');
-        contextMenu.viewSection().appendCheckboxItem(i18nString(UIStrings.groupByFolder), () => groupByFolderSetting.set(!groupByFolderSetting.get()), groupByFolderSetting.get(), undefined, undefined, undefined, groupByFolderSetting.name);
-        this.addExperimentMenuItem(contextMenu.viewSection(), "authoredDeployedGrouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, i18nString(UIStrings.groupByAuthored));
-        this.addExperimentMenuItem(contextMenu.viewSection(), "justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, i18nString(UIStrings.hideIgnoreListed));
+        contextMenu.viewSection().appendCheckboxItem(i18nString(UIStrings.groupByFolder), () => groupByFolderSetting.set(!groupByFolderSetting.get()), { checked: groupByFolderSetting.get(), jslogContext: groupByFolderSetting.name });
+        this.addExperimentMenuItem(contextMenu.viewSection(), "authored-deployed-grouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, i18nString(UIStrings.groupByAuthored));
+        this.addExperimentMenuItem(contextMenu.viewSection(), "just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, i18nString(UIStrings.hideIgnoreListed));
     }
     setIgnoreExecutionLineEvents(ignoreExecutionLineEvents) {
         this.ignoreExecutionLineEvents = ignoreExecutionLineEvents;
@@ -746,7 +750,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         const eventTarget = event.target;
         if (!uiSourceCode.project().isServiceProject() &&
             !eventTarget.isSelfOrDescendant(this.navigatorTabbedLocation.widget().element) &&
-            !(Root.Runtime.experiments.isEnabled("justMyCode" /* Root.Runtime.ExperimentName.JUST_MY_CODE */) &&
+            !(Root.Runtime.experiments.isEnabled("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */) &&
                 Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode))) {
             contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSidebar), this.revealInNavigator.bind(this, uiSourceCode), {
                 jslogContext: 'sources.reveal-in-navigator-sidebar',
@@ -779,7 +783,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
             const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
             if (debuggerModel && debuggerModel.isPaused()) {
-                contextMenu.debugSection().appendItem(i18nString(UIStrings.continueToHere), this.continueToLocation.bind(this, uiLocation));
+                contextMenu.debugSection().appendItem(i18nString(UIStrings.continueToHere), this.continueToLocation.bind(this, uiLocation), { jslogContext: 'continue-to-here' });
             }
             this.callstackPane.appendIgnoreListURLContextMenuItems(contextMenu, uiSourceCode);
         }
@@ -799,25 +803,25 @@ export class SourcesPanel extends UI.Panel.Panel {
         const copyContextMenuTitle = getObjectTitle();
         contextMenu.debugSection().appendItem(i18nString(UIStrings.storeAsGlobalVariable), () => executionContext?.target()
             .model(SDK.ConsoleModel.ConsoleModel)
-            ?.saveToTempVariable(executionContext, remoteObject));
+            ?.saveToTempVariable(executionContext, remoteObject), { jslogContext: 'store-as-global-variable' });
         const ctxMenuClipboardSection = contextMenu.clipboardSection();
         const inspectorFrontendHost = Host.InspectorFrontendHost.InspectorFrontendHostInstance;
         if (remoteObject.type === 'string') {
             ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyStringContents), () => {
                 inspectorFrontendHost.copyText(remoteObject.value);
-            });
+            }, { jslogContext: 'copy-string-contents' });
             ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyStringAsJSLiteral), () => {
                 inspectorFrontendHost.copyText(Platform.StringUtilities.formatAsJSLiteral(remoteObject.value));
-            });
+            }, { jslogContext: 'copy-string-as-js-literal' });
             ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyStringAsJSONLiteral), () => {
                 inspectorFrontendHost.copyText(JSON.stringify(remoteObject.value));
-            });
+            }, { jslogContext: 'copy-string-as-json-literal' });
         }
         // We are trying to copy a primitive value.
         else if (primitiveRemoteObjectTypes.has(remoteObject.type)) {
             ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyS, { PH1: String(copyContextMenuTitle) }), () => {
                 inspectorFrontendHost.copyText(remoteObject.description);
-            });
+            }, { jslogContext: 'copy-primitive' });
         }
         // We are trying to copy a remote object.
         else if (remoteObject.type === 'object') {
@@ -830,10 +834,10 @@ export class SourcesPanel extends UI.Panel.Panel {
                     }]);
                 inspectorFrontendHost.copyText(result);
             };
-            ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyS, { PH1: String(copyContextMenuTitle) }), copyDecodedValueHandler);
+            ctxMenuClipboardSection.appendItem(i18nString(UIStrings.copyS, { PH1: String(copyContextMenuTitle) }), copyDecodedValueHandler, { jslogContext: 'copy-object' });
         }
         else if (remoteObject.type === 'function') {
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.showFunctionDefinition), this.showFunctionDefinition.bind(this, remoteObject));
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.showFunctionDefinition), this.showFunctionDefinition.bind(this, remoteObject), { jslogContext: 'show-function-definition' });
         }
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -877,7 +881,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         }
         const openText = i18nString(UIStrings.openInSourcesPanel);
         const callback = this.showUILocation.bind(this, uiSourceCode.uiLocation(0, 0));
-        contextMenu.revealSection().appendItem(openText, callback);
+        contextMenu.revealSection().appendItem(openText, callback, { jslogContext: 'reveal-in-sources' });
     }
     showFunctionDefinition(remoteObject) {
         void SDK.RemoteObject.RemoteFunction.objectAsFunction(remoteObject)

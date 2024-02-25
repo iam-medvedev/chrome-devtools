@@ -129,6 +129,9 @@ export class InspectorFrontendHostStub {
     openInNewTab(url) {
         window.open(url, '_blank');
     }
+    openSearchResultsInNewTab(query) {
+        Common.Console.Console.instance().error('Search is not enabled in hosted mode. Please inspect using chrome://inspect');
+    }
     showItemInFolder(fileSystemPath) {
         Common.Console.Console.instance().error('Show item in folder is not enabled in hosted mode. Please inspect using chrome://inspect');
     }
@@ -354,10 +357,12 @@ export class InspectorFrontendHostStub {
     async initialTargetId() {
         return null;
     }
-    doAidaConversation(request, callback) {
+    doAidaConversation(request, streamId, callback) {
         callback({
-            response: '{}',
+            error: 'Not implemened',
         });
+    }
+    registerAidaClientEvent(request) {
     }
     recordImpression(event) {
     }
