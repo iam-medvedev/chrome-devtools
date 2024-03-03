@@ -31,7 +31,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -324,7 +323,7 @@ export class NetworkNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
         this.renderCell(cell, columnId);
         return cell;
     }
-    renderCell(cell, columnId) {
+    renderCell(_cell, _columnId) {
     }
     isFailed() {
         return false;
@@ -828,11 +827,11 @@ export class NetworkRequestNode extends NetworkNode {
                 this.setTextAndTitle(cell, this.requestInternal.domain);
                 break;
             }
-            case 'remoteaddress': {
+            case 'remote-address': {
                 this.setTextAndTitle(cell, this.requestInternal.remoteAddress());
                 break;
             }
-            case 'remoteaddress-space': {
+            case 'remote-address-space': {
                 this.renderAddressSpaceCell(cell, this.requestInternal.remoteAddressSpace());
                 break;
             }
@@ -840,7 +839,7 @@ export class NetworkRequestNode extends NetworkNode {
                 this.setTextAndTitle(cell, this.arrayLength(this.requestInternal.includedRequestCookies()));
                 break;
             }
-            case 'setcookies': {
+            case 'set-cookies': {
                 this.setTextAndTitle(cell, this.arrayLength(this.requestInternal.nonBlockedResponseCookies()));
                 break;
             }
@@ -859,7 +858,7 @@ export class NetworkRequestNode extends NetworkNode {
                 this.appendSubtitle(cell, initialPriority ? PerfUI.NetworkPriorities.uiLabelForNetworkPriority(initialPriority) : '');
                 break;
             }
-            case 'connectionid': {
+            case 'connection-id': {
                 this.setTextAndTitle(cell, this.requestInternal.connectionId === '0' ? '' : this.requestInternal.connectionId);
                 break;
             }

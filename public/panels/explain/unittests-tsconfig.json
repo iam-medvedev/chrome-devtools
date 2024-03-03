@@ -39,6 +39,7 @@
   "files": [
     "../../../../../../front_end/panels/explain/PromptBuilder.test.ts",
     "../../../../../../front_end/panels/explain/components/ConsoleInsight.test.ts",
+    "../../../../../../front_end/panels/explain/components/MarkdownRenderer.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../front_end/global_typings/request_idle_callback.d.ts",
@@ -50,7 +51,10 @@
       "path": "./bundle-tsconfig.json"
     },
     {
-      "path": "../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
+      "path": "../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../testing/testing-tsconfig.json"
     }
   ]
 }

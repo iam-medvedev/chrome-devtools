@@ -188,8 +188,6 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
     notifyFiltersChanged() {
         this.dispatchEventToListeners("FilterChanged" /* Events.FilterChanged */);
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     static durationFilterPresetsMs = [0, 1, 15];
 }
 //# sourceMappingURL=EventsTimelineTreeView.js.map

@@ -68,6 +68,7 @@ export declare function createTextButton(text: string, clickHandler?: ((arg0: Ev
 }): HTMLButtonElement;
 export declare function createInput(className?: string, type?: string, jslogContext?: string): HTMLInputElement;
 export declare function createSelect(name: string, options: string[] | Map<string, string[]>[] | Set<string>): HTMLSelectElement;
+export declare function createOption(title: string, value?: string, jslogContext?: string): HTMLOptionElement;
 export declare function createLabel(title: string, className?: string, associatedControl?: Element): Element;
 export declare function createRadioLabel(name: string, title: string, checked?: boolean, jslogContext?: string): DevToolsRadioButton;
 export declare function createIconLabel(options: {
@@ -137,7 +138,7 @@ export declare function loadImage(url: string): Promise<HTMLImageElement | null>
 export declare function createFileSelectorElement(callback: (arg0: File) => void): HTMLInputElement;
 export declare const MaxLengthForDisplayedURLs = 150;
 export declare class MessageDialog {
-    static show(message: string, where?: Element | Document): Promise<void>;
+    static show(message: string, where?: Element | Document, jslogContext?: string): Promise<void>;
 }
 export declare class ConfirmDialog {
     static show(message: string, where?: Element | Document, options?: ConfirmDialogOptions): Promise<boolean>;
@@ -181,4 +182,5 @@ export interface RendererRegistration {
 export interface ConfirmDialogOptions {
     okButtonLabel?: string;
     cancelButtonLabel?: string;
+    jslogContext?: string;
 }

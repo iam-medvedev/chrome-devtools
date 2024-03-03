@@ -181,21 +181,19 @@ export class NodeLabelGenerator {
         return label;
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _contextForFontTextMeasuring;
+let contextForFontTextMeasuring;
 /**
  * Get the text width using given font style.
  */
 export const measureTextWidth = (text, fontStyle) => {
-    if (!_contextForFontTextMeasuring) {
+    if (!contextForFontTextMeasuring) {
         const context = document.createElement('canvas').getContext('2d');
         if (!context) {
             throw new Error('Unable to create canvas context.');
         }
-        _contextForFontTextMeasuring = context;
+        contextForFontTextMeasuring = context;
     }
-    const context = _contextForFontTextMeasuring;
+    const context = contextForFontTextMeasuring;
     context.save();
     if (fontStyle) {
         context.font = fontStyle;

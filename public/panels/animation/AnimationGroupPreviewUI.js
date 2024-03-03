@@ -17,7 +17,13 @@ export class AnimationGroupPreviewUI {
         this.element = document.createElement('div');
         this.element.setAttribute('jslog', `${VisualLogging.item('animations.buffer-preview').track({ click: true })}`);
         this.element.classList.add('animation-buffer-preview');
+        this.element.addEventListener('animationend', () => {
+            this.element.classList.add('no-animation');
+        });
         this.element.createChild('div', 'animation-paused fill');
+        if (model.isScrollDriven()) {
+            this.element.appendChild(IconButton.Icon.create('mouse', 'mouse-icon'));
+        }
         this.#removeButtonInternal = this.element.createChild('button', 'animation-remove-button');
         this.#removeButtonInternal.setAttribute('jslog', `${VisualLogging.action('animations.remove-preview').track({ click: true })}`);
         this.#removeButtonInternal.appendChild(IconButton.Icon.create('cross'));
@@ -30,16 +36,6 @@ export class AnimationGroupPreviewUI {
         this.#svg.setAttribute('viewBox', '0 0 100 ' + this.#viewBoxHeight);
         this.#svg.setAttribute('shape-rendering', 'crispEdges');
         this.render();
-    }
-    groupDuration() {
-        let duration = 0;
-        for (const anim of this.#model.animations()) {
-            const animDuration = anim.source().delay() + anim.source().duration();
-            if (animDuration > duration) {
-                duration = animDuration;
-            }
-        }
-        return duration;
     }
     removeButton() {
         return this.#removeButtonInternal;
@@ -55,12 +51,14 @@ export class AnimationGroupPreviewUI {
         this.#svg.removeChildren();
         const maxToShow = 10;
         const numberOfAnimations = Math.min(this.#model.animations().length, maxToShow);
-        const timeToPixelRatio = 100 / Math.max(this.groupDuration(), 750);
+        const timeToPixelRatio = 100 / Math.max(this.#model.groupDuration(), 750);
         for (let i = 0; i < numberOfAnimations; i++) {
-            const effect = this.#model.animations()[i].source();
+            const animation = this.#model.animations()[i];
             const line = UI.UIUtils.createSVGChild(this.#svg, 'line');
-            line.setAttribute('x1', String(effect.delay() * timeToPixelRatio));
-            line.setAttribute('x2', String((effect.delay() + effect.duration()) * timeToPixelRatio));
+            const startPoint = animation.delayOrStartTime();
+            const endPoint = startPoint + animation.iterationDuration();
+            line.setAttribute('x1', String(startPoint * timeToPixelRatio));
+            line.setAttribute('x2', String(endPoint * timeToPixelRatio));
             const y = String(Math.floor(this.#viewBoxHeight / Math.max(6, numberOfAnimations) * i + 1));
             line.setAttribute('y1', y);
             line.setAttribute('y2', y);

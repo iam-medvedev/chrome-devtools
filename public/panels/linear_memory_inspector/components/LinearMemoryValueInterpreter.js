@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -111,7 +112,8 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
         style="border: none; background-color: transparent; cursor: pointer;"
         data-endianness="true" @change=${onEnumSettingChange}>
         ${["Little Endian" /* Endianness.Little */, "Big Endian" /* Endianness.Big */].map(endianness => {
-            return html `<option value=${endianness} .selected=${this.#endianness === endianness}>${i18n.i18n.lockedString(endianness)}</option>`;
+            return html `<option value=${endianness} .selected=${this.#endianness === endianness}
+            jslog=${VisualLogging.item(Platform.StringUtilities.toKebabCase(endianness)).track({ click: true })}>${i18n.i18n.lockedString(endianness)}</option>`;
         })}
       </select>
     </label>

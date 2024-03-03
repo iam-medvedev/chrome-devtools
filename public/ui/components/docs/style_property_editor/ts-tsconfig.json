@@ -47,10 +47,10 @@
   ],
   "references": [
     {
-      "path": "../../../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
+      "path": "../../../../panels/elements/components/bundle-tsconfig.json"
     },
     {
-      "path": "../../../../panels/elements/components/bundle-tsconfig.json"
+      "path": "../../../../testing/testing-tsconfig.json"
     },
     {
       "path": "../../helpers/bundle-tsconfig.json"

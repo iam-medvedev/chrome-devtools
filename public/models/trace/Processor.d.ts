@@ -1,4 +1,5 @@
 import * as Handlers from './handlers/handlers.js';
+import * as Insights from './insights/insights.js';
 import * as Types from './types/types.js';
 export type TraceParseEventProgressData = {
     index: number;
@@ -23,7 +24,8 @@ export declare class TraceProcessor<EnabledModelHandlers extends {
     updateConfiguration(config: Types.Configuration.Configuration): void;
     reset(): void;
     parse(traceEvents: readonly Types.TraceEvents.TraceEventData[], freshRecording?: boolean): Promise<void>;
-    get data(): Handlers.Types.EnabledHandlerDataWithMeta<EnabledModelHandlers> | null;
+    get traceParsedData(): Handlers.Types.EnabledHandlerDataWithMeta<EnabledModelHandlers> | null;
+    get insights(): Insights.Types.TraceInsightData<EnabledModelHandlers> | null;
 }
 /**
  * Some Handlers need data provided by others. Dependencies of a handler handler are

@@ -1,12 +1,12 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { renderElementIntoDOM } from '../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithLocale } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 import * as Platform from '../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import * as Network from './network.js';
 async function contentData() {
     const content = '<style> p { color: red; }</style><link rel="stylesheet" ref="http://devtools-frontend.test/style">';

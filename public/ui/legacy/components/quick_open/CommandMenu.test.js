@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
+import { createFakeSetting, describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as QuickOpen from './quick_open.js';
-import { createFakeSetting, describeWithLocale } from '../../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 function createCommandMenuProvider(deprecationNotice) {
     const setting = createFakeSetting('test-setting', false);
     setting.setRegistration({

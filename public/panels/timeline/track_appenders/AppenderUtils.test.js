@@ -1,9 +1,9 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { defaultTraceEvent } from '../../../../test/unittests/front_end/helpers/TraceHelpers.js';
 import * as TraceEngine from '../../../models/trace/trace.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { defaultTraceEvent } from '../../../testing/TraceHelpers.js';
 import * as Timeline from '../timeline.js';
 const { assert } = chai;
 describeWithEnvironment('AppenderUtils', () => {

@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { defaultTraceEvent } from '../../../test/unittests/front_end/helpers/TraceHelpers.js';
+import { defaultTraceEvent } from '../../testing/TraceHelpers.js';
 import * as Timeline from './timeline.js';
 describe('SaveFileFormatter', () => {
     function assertValidJSON(input) {

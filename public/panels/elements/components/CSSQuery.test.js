@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
+import { assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as ElementsComponents from './components.js';
 const { assert } = chai;
 describe('CSSQuery', () => {
@@ -18,7 +18,7 @@ describe('CSSQuery', () => {
             assert.fail('query element should exist');
             return;
         }
-        assert.strictEqual(queryElement.innerText, '@container (min-width: 10px)', 'text content of query element should match query text');
+        assert.strictEqual(queryElement.innerText, '@container (min-width: 10px) {', 'text content of query element should match query text');
     });
     it('renders an editable named query correctly', () => {
         const component = new ElementsComponents.CSSQuery.CSSQuery();
@@ -36,7 +36,7 @@ describe('CSSQuery', () => {
             assert.fail('query element should exist');
             return;
         }
-        assert.strictEqual(queryElement.innerText, '@container container-query-1 (max-width: 10px)', 'text content of query element should match query text');
+        assert.strictEqual(queryElement.innerText, '@container container-query-1 (max-width: 10px) {', 'text content of query element should match query text');
         const queryText = queryElement.querySelector('.editable .query-text');
         if (!queryText) {
             assert.fail('editable query text should exist');

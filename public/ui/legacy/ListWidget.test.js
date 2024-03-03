@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as UI from './legacy.js';
-import { dispatchClickEvent, renderElementIntoDOM } from '../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithLocale } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 describeWithLocale('ListWidget', () => {
     describe('Editor', () => {
         it('Cancel button triggers on mouse click event', () => {

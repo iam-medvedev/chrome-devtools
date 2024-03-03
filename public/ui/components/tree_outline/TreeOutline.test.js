@@ -1,10 +1,10 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assertElement, assertShadowRoot, dispatchClickEvent, dispatchKeyDownEvent, dispatchMouseOutEvent, dispatchMouseOverEvent, getEventPromise, renderElementIntoDOM, stripLitHtmlCommentNodes, } from '../../../testing/DOMHelpers.js';
+import * as LitHtml from '../../lit-html/lit-html.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as TreeOutline from './tree_outline.js';
-import * as LitHtml from '../../lit-html/lit-html.js';
-import { assertElement, assertShadowRoot, dispatchClickEvent, dispatchKeyDownEvent, dispatchMouseOutEvent, dispatchMouseOverEvent, getEventPromise, renderElementIntoDOM, stripLitHtmlCommentNodes, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const { assert } = chai;
 async function renderTreeOutline({ tree, defaultRenderer, filter, }) {

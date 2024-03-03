@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 const { assert } = chai;
-import { renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithLocale } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ApplicationComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();

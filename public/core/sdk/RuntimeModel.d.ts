@@ -43,6 +43,7 @@ export declare class RuntimeModel extends SDKModel<EventTypes> {
     } | null>;
     inspectRequested(payload: Protocol.Runtime.RemoteObject, hints?: any, executionContextId?: number): void;
     addBinding(event: Protocol.Runtime.AddBindingRequest): Promise<Protocol.ProtocolResponseWithError>;
+    removeBinding(request: Protocol.Runtime.RemoveBindingRequest): Promise<Protocol.ProtocolResponseWithError>;
     bindingCalled(event: Protocol.Runtime.BindingCalledEvent): void;
     private copyRequested;
     private queryObjectsRequested;

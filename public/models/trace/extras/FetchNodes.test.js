@@ -5,9 +5,9 @@ const { assert } = chai;
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as TraceEngine from '../trace.js';
 import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
-import { createTarget } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { clearAllMockConnectionResponseHandlers, clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../../test/unittests/front_end/helpers/MockConnection.js';
-import { TraceLoader } from '../../../../test/unittests/front_end/helpers/TraceLoader.js';
+import { createTarget } from '../../../testing/EnvironmentHelpers.js';
+import { clearAllMockConnectionResponseHandlers, clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../testing/MockConnection.js';
+import { TraceLoader } from '../../../testing/TraceLoader.js';
 function nodeId(x) {
     return x;
 }
@@ -83,7 +83,7 @@ describeWithMockConnection('TraceSDKServices', function () {
             domModel.registerNode(domNodeId3);
             // The model data is only used as a cache key, so we don't need it to be real to test this.
             const modelData = {};
-            const result = await TraceEngine.Extras.FetchNodes.domNodesForMultipleBackendNodeIds(modelData, new Set([nodeId(2), nodeId(3)]));
+            const result = await TraceEngine.Extras.FetchNodes.domNodesForMultipleBackendNodeIds(modelData, [nodeId(2), nodeId(3)]);
             assert.isNotNull(result);
             const entries = Array.from(result.entries());
             assert.deepEqual(entries, [

@@ -4,7 +4,7 @@
 const { assert } = chai;
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Resources from './application.js';
-import { describeWithLocale } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 var View = Resources.ServiceWorkerUpdateCycleView;
 describeWithLocale('ServiceWorkerUpdateCycleView', () => {
     let versionId = 0;

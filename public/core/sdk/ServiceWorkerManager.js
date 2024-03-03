@@ -290,14 +290,12 @@ class ServiceWorkerDispatcher {
 export class ServiceWorkerVersionState {
     runningStatus;
     status;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    last_updated_timestamp;
+    lastUpdatedTimestamp;
     previousState;
     constructor(runningStatus, status, previousState, timestamp) {
         this.runningStatus = runningStatus;
         this.status = status;
-        this.last_updated_timestamp = timestamp;
+        this.lastUpdatedTimestamp = timestamp;
         this.previousState = previousState;
     }
 }

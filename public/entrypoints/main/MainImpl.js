@@ -639,11 +639,12 @@ export class MainMenuItem {
             UI.Tooltip.Tooltip.install(titleElement, i18nString(UIStrings.placementOfDevtoolsRelativeToThe, { PH1: toggleDockSideShorcuts[0].title() }));
             dockItemElement.appendChild(titleElement);
             const dockItemToolbar = new UI.Toolbar.Toolbar('', dockItemElement);
+            dockItemElement.setAttribute('jslog', `${VisualLogging.item('dock-side')}`);
             dockItemToolbar.makeBlueOnHover();
-            const undock = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.undockIntoSeparateWindow), 'dock-window');
-            const bottom = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToBottom), 'dock-bottom');
-            const right = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToRight), 'dock-right');
-            const left = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToLeft), 'dock-left');
+            const undock = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.undockIntoSeparateWindow), 'dock-window', undefined, 'undock');
+            const bottom = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToBottom), 'dock-bottom', undefined, 'dock-bottom');
+            const right = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToRight), 'dock-right', undefined, 'dock-right');
+            const left = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToLeft), 'dock-left', undefined, 'dock-left');
             undock.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
             bottom.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());
             right.addEventListener("MouseDown" /* UI.Toolbar.ToolbarButton.Events.MouseDown */, event => event.data.consume());

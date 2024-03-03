@@ -104,19 +104,19 @@ export class GlassPane {
         }
         // TODO(crbug.com/1006759): Extract the magic number
         // Deliberately starts with 3000 to hide other z-indexed elements below.
-        this.element.style.zIndex = `${3000 + 1000 * _panes.size}`;
+        this.element.style.zIndex = `${3000 + 1000 * panes.size}`;
         this.element.setAttribute('data-devtools-glass-pane', '');
         document.body.addEventListener('mousedown', this.onMouseDownBound, true);
         document.body.addEventListener('pointerdown', this.onMouseDownBound, true);
         this.widgetInternal.show(document.body);
-        _panes.add(this);
+        panes.add(this);
         this.positionContent();
     }
     hide() {
         if (!this.isShowing()) {
             return;
         }
-        _panes.delete(this);
+        panes.delete(this);
         this.element.ownerDocument.body.removeEventListener('mousedown', this.onMouseDownBound, true);
         this.element.ownerDocument.body.removeEventListener('pointerdown', this.onMouseDownBound, true);
         this.widgetInternal.detach();
@@ -139,7 +139,7 @@ export class GlassPane {
         const gutterSize = showArrow ? 8 : (this.marginBehavior === "NoMargin" /* MarginBehavior.NoMargin */ ? 0 : 3);
         const scrollbarSize = Utils.measuredScrollbarWidth(this.element.ownerDocument);
         const arrowSize = 10;
-        const container = (_containers.get(this.element.ownerDocument));
+        const container = (containers.get(this.element.ownerDocument));
         if (this.sizeBehavior === "MeasureContent" /* SizeBehavior.MeasureContent */) {
             this.contentElement.positionAt(0, 0);
             this.contentElement.style.width = '';
@@ -312,26 +312,22 @@ export class GlassPane {
         return this.widgetInternal;
     }
     static setContainer(element) {
-        _containers.set(element.ownerDocument, element);
+        containers.set(element.ownerDocument, element);
         GlassPane.containerMoved(element);
     }
     static container(document) {
-        return _containers.get(document);
+        return containers.get(document);
     }
     static containerMoved(element) {
-        for (const pane of _panes) {
+        for (const pane of panes) {
             if (pane.isShowing() && pane.element.ownerDocument === element.ownerDocument) {
                 pane.positionContent();
             }
         }
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _containers = new Map();
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _panes = new Set();
+const containers = new Map();
+const panes = new Set();
 // Exported for layout tests.
-export const GlassPanePanes = _panes;
+export const GlassPanePanes = panes;
 //# sourceMappingURL=GlassPane.js.map

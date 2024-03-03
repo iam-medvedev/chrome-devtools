@@ -30,12 +30,6 @@ styles.replaceSync(
   overflow: auto;
 }
 
-.empty-view-scroller .warning {
-  position: absolute;
-  top: 0;
-  width: 100%;
-}
-
 .empty-view p {
   white-space: initial;
   line-height: 18px;

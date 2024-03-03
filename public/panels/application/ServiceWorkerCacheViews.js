@@ -393,9 +393,6 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     }
     updatedForTest() {
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static previewSymbol = Symbol('preview');
 }
 const networkRequestToPreview = new WeakMap();
 export class DataGridNode extends DataGrid.DataGrid.DataGridNode {

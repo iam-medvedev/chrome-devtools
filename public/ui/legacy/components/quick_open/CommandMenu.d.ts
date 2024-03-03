@@ -31,6 +31,7 @@ export interface CreateCommandOptions {
     keys: string;
     title: Common.UIString.LocalizedString;
     shortcut: string;
+    jslogContext: string;
     executeHandler: () => void;
     availableHandler?: () => boolean;
     userActionCode?: number;
@@ -50,6 +51,7 @@ export declare class CommandMenuProvider extends Provider {
     itemKeyAt(itemIndex: number): string;
     itemScoreAt(itemIndex: number, query: string): number;
     renderItem(itemIndex: number, query: string, titleElement: Element, subtitleElement: Element): void;
+    jslogContextAt(itemIndex: number): string;
     selectItem(itemIndex: number | null, _promptValue: string): void;
     notFoundText(): string;
 }
@@ -60,9 +62,10 @@ export declare class Command {
     readonly title: Common.UIString.LocalizedString;
     readonly key: string;
     readonly shortcut: string;
+    readonly jslogContext: string;
     readonly deprecationWarning?: Platform.UIString.LocalizedString;
     readonly isPanelOrDrawer?: PanelOrDrawer;
-    constructor(category: Common.UIString.LocalizedString, title: Common.UIString.LocalizedString, key: string, shortcut: string, executeHandler: () => unknown, availableHandler?: () => boolean, deprecationWarning?: Platform.UIString.LocalizedString, isPanelOrDrawer?: PanelOrDrawer);
+    constructor(category: Common.UIString.LocalizedString, title: Common.UIString.LocalizedString, key: string, shortcut: string, jslogContext: string, executeHandler: () => unknown, availableHandler?: () => boolean, deprecationWarning?: Platform.UIString.LocalizedString, isPanelOrDrawer?: PanelOrDrawer);
     available(): boolean;
     execute(): unknown;
 }

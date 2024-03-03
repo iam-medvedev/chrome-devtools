@@ -78,6 +78,12 @@ export class EntriesFilter {
         return this.#invisibleEntries;
     }
     /**
+     * Returns the array of entries that have a sign indicating that entries below are hidden.
+     **/
+    modifiedEntries() {
+        return this.#modifiedVisibleEntries;
+    }
+    /**
      * Applies an action to hide entries or removes entries
      * from hidden entries array depending on the action.
      **/
@@ -98,7 +104,7 @@ export class EntriesFilter {
                 const actionNode = this.#entryToNode.get(action.entry) || null;
                 const parentNode = actionNode && this.#findNextVisibleParent(actionNode);
                 if (parentNode) {
-                    this.#modifiedVisibleEntries.push(parentNode?.entry);
+                    this.#addModifiedEntry(parentNode.entry);
                 }
                 break;
             }
@@ -111,10 +117,7 @@ export class EntriesFilter {
                 }
                 const allDescendants = this.#findAllDescendantsOfNode(entryNode);
                 allDescendants.forEach(descendant => entriesToHide.add(descendant));
-                // If there are any children to hide, add selected entry to modifiedVisibleEntries array to identify in the UI that children of the selected entry are modified.
-                if (entriesToHide.size > 0) {
-                    this.#modifiedVisibleEntries.push(action.entry);
-                }
+                this.#addModifiedEntry(action.entry);
                 break;
             }
             case "COLLAPSE_REPEATING_DESCENDANTS" /* FilterAction.COLLAPSE_REPEATING_DESCENDANTS */: {
@@ -126,7 +129,7 @@ export class EntriesFilter {
                 const allRepeatingDescendants = this.#findAllRepeatingDescendantsOfNext(entryNode);
                 allRepeatingDescendants.forEach(descendant => entriesToHide.add(descendant));
                 if (entriesToHide.size > 0) {
-                    this.#modifiedVisibleEntries.push(action.entry);
+                    this.#addModifiedEntry(action.entry);
                 }
                 break;
             }
@@ -144,6 +147,26 @@ export class EntriesFilter {
         }
         this.#invisibleEntries.push(...entriesToHide);
         return this.#invisibleEntries;
+    }
+    /**
+     * Add an entry to the array of entries that have a sign indicating that entries below are hidden.
+     * Also, remove all of the child entries of the new modified entry from the modified array. Do that because
+     * to draw the initiator from the closest visible entry, we need to get the closest entry that is
+     * marked as modified and we do not want to get some that are hidden.
+     */
+    #addModifiedEntry(entry) {
+        this.#modifiedVisibleEntries.push(entry);
+        const entryNode = this.#entryToNode.get(entry);
+        if (!entryNode) {
+            // Invalid node was given, just ignore and move on.
+            return;
+        }
+        const allDescendants = this.#findAllDescendantsOfNode(entryNode);
+        if (allDescendants.length > 0) {
+            this.#modifiedVisibleEntries = this.#modifiedVisibleEntries.filter(entry => {
+                return !allDescendants.includes(entry);
+            });
+        }
     }
     // The direct parent might be hidden by other actions, therefore we look for the next visible parent.
     #findNextVisibleParent(node) {

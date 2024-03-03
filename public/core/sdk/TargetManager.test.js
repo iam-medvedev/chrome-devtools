@@ -4,8 +4,8 @@
 const { assert } = chai;
 import * as SDK from './sdk.js';
 import * as Host from '../host/host.js';
-import { describeWithMockConnection, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { createTarget, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 describeWithMockConnection('TargetManager', () => {
     let targetManager;

@@ -281,8 +281,6 @@ export class StyleFile {
         console.assert(this.headers.size > 0);
         return this.headers.values().next().value.originalContentProvider().searchInContent(query, caseSensitive, isRegex);
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     static updateTimeout = 200;
     getHeaders() {
         return this.headers;

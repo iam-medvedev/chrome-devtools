@@ -56,13 +56,13 @@
       "path": "./bundle-tsconfig.json"
     },
     {
-      "path": "../../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
-    },
-    {
-      "path": "../../../../test/unittests/front_end/helpers/recorder_helpers-tsconfig.json"
-    },
-    {
       "path": "../../../generated/protocol-tsconfig.json"
+    },
+    {
+      "path": "../../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../testing/testing-tsconfig.json"
     }
   ]
 }

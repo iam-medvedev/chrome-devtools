@@ -598,7 +598,7 @@ export class NetworkPanel extends UI.Panel.Panel {
             contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInNetworkPanel), () => UI.ViewManager.ViewManager.instance()
                 .showView('network')
                 .then(this.networkLogView.resetFilter.bind(this.networkLogView))
-                .then(this.revealAndHighlightRequest.bind(this, request)));
+                .then(this.revealAndHighlightRequest.bind(this, request)), { jslogContext: 'reveal-in-network' });
         };
         if (event.target.isSelfOrDescendant(this.element)) {
             return;

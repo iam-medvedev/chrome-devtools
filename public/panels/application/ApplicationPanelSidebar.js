@@ -48,9 +48,6 @@ import { BackgroundServiceModel } from './BackgroundServiceModel.js';
 import { BackgroundServiceView } from './BackgroundServiceView.js';
 import { BounceTrackingMitigationsTreeElement } from './BounceTrackingMitigationsTreeElement.js';
 import * as ApplicationComponents from './components/components.js';
-import { DatabaseModel } from './DatabaseModel.js';
-import { DatabaseQueryView } from './DatabaseQueryView.js';
-import { DatabaseTableView } from './DatabaseTableView.js';
 import { DOMStorageModel } from './DOMStorageModel.js';
 import { Events as IndexedDBModelEvents, IndexedDBModel, } from './IndexedDBModel.js';
 import { IDBDatabaseView, IDBDataView } from './IndexedDBViews.js';
@@ -85,10 +82,6 @@ const UIStrings = {
      *@description Text in Application Panel Sidebar of the Application panel
      */
     sessionStorage: 'Session storage',
-    /**
-     *@description Text in Application Panel Sidebar of the Application panel
-     */
-    webSql: 'Web SQL',
     /**
      *@description Text for web cookies
      */
@@ -213,7 +206,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     sessionStorageListTreeElement;
     indexedDBListTreeElement;
     interestGroupTreeElement;
-    databasesListTreeElement;
     cookieListTreeElement;
     trustTokensTreeElement;
     cacheStorageListTreeElement;
@@ -230,15 +222,11 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     reportingApiTreeElement;
     preloadingSummaryTreeElement;
     resourcesSection;
-    databaseTableViews;
-    databaseQueryViews;
-    databaseTreeElements;
     domStorageTreeElements;
     sharedStorageTreeElements;
     domains;
     // Holds main frame target.
     target;
-    databaseModel;
     previousHoveredElement;
     sharedStorageTreeElementDispatcher;
     constructor(panel) {
@@ -280,12 +268,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.indexedDBListTreeElement = new IndexedDBTreeElement(panel);
         this.indexedDBListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/indexeddb/?utm_source=devtools');
         storageTreeElement.appendChild(this.indexedDBListTreeElement);
-        this.databasesListTreeElement =
-            new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.webSql), 'databases');
-        this.databasesListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/websql/?utm_source=devtools');
-        const databaseIcon = IconButton.Icon.create('database');
-        this.databasesListTreeElement.setLeadingIcons([databaseIcon]);
-        storageTreeElement.appendChild(this.databasesListTreeElement);
         this.cookieListTreeElement =
             new ExpandableApplicationPanelTreeElement(panel, i18nString(UIStrings.cookies), 'cookies');
         this.cookieListTreeElement.setLink('https://developer.chrome.com/docs/devtools/storage/cookies/?utm_source=devtools');
@@ -338,9 +320,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         const resourcesSectionTitle = i18nString(UIStrings.frames);
         const resourcesTreeElement = this.addSidebarSection(resourcesSectionTitle);
         this.resourcesSection = new ResourcesSection(panel, resourcesTreeElement);
-        this.databaseTableViews = new Map();
-        this.databaseQueryViews = new Map();
-        this.databaseTreeElements = new Map();
         this.domStorageTreeElements = new Map();
         this.sharedStorageTreeElements = new Map();
         this.domains = {};
@@ -395,11 +374,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             return;
         }
         this.target = target;
-        this.databaseModel = target.model(DatabaseModel);
-        if (this.databaseModel) {
-            this.databaseModel.addEventListener("DatabaseAdded" /* DatabaseModelEvents.DatabaseAdded */, this.databaseAdded, this);
-            this.databaseModel.addEventListener("DatabasesRemoved" /* DatabaseModelEvents.DatabasesRemoved */, this.resetWebSQL, this);
-        }
         const interestGroupModel = target.model(InterestGroupStorageModel);
         if (interestGroupModel) {
             interestGroupModel.addEventListener("InterestGroupAccess" /* InterestGroupModelEvents.InterestGroupAccess */, this.interestGroupAccess, this);
@@ -424,11 +398,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, this.initialize, this);
             resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.WillLoadCachedResources, this.resetWithFrames, this);
         }
-        if (this.databaseModel) {
-            this.databaseModel.removeEventListener("DatabaseAdded" /* DatabaseModelEvents.DatabaseAdded */, this.databaseAdded, this);
-            this.databaseModel.removeEventListener("DatabasesRemoved" /* DatabaseModelEvents.DatabasesRemoved */, this.resetWebSQL, this);
-            this.databaseModel = null;
-        }
         const interestGroupModel = target.model(InterestGroupStorageModel);
         if (interestGroupModel) {
             interestGroupModel.removeEventListener("InterestGroupAccess" /* InterestGroupModelEvents.InterestGroupAccess */, this.interestGroupAccess, this);
@@ -441,9 +410,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     initialize() {
         for (const frame of SDK.ResourceTreeModel.ResourceTreeModel.frames()) {
             this.addCookieDocument(frame);
-        }
-        if (this.databaseModel) {
-            this.databaseModel.enable();
         }
         const interestGroupModel = this.target && this.target.model(InterestGroupStorageModel);
         if (interestGroupModel) {
@@ -519,18 +485,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.resourcesSection.reset();
         this.reset();
     }
-    resetWebSQL() {
-        for (const queryView of this.databaseQueryViews.values()) {
-            queryView.removeEventListener("SchemaUpdated" /* DatabaseQueryViewEvents.SchemaUpdated */, event => {
-                void this.updateDatabaseTables(event);
-            }, this);
-        }
-        this.databaseTableViews.clear();
-        this.databaseQueryViews.clear();
-        this.databaseTreeElements.clear();
-        this.databasesListTreeElement.removeChildren();
-        this.databasesListTreeElement.setExpandable(false);
-    }
     treeElementAdded(event) {
         // On tree item selection its itemURL and those of its parents are persisted.
         // On reload/navigation we check for matches starting from the root on the
@@ -563,7 +517,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     }
     reset() {
         this.domains = {};
-        this.resetWebSQL();
         this.cookieListTreeElement.removeChildren();
         this.interestGroupTreeElement.clearEvents();
     }
@@ -573,11 +526,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
             this.reset();
         }
         this.addCookieDocument(frame);
-    }
-    databaseAdded({ data: database }) {
-        const databaseTreeElement = new DatabaseTreeElement(this, database);
-        this.databaseTreeElements.set(database, databaseTreeElement);
-        this.databasesListTreeElement.appendChild(databaseTreeElement);
     }
     interestGroupAccess(event) {
         this.interestGroupTreeElement.addEvent(event.data);
@@ -673,47 +621,11 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     sharedStorageAccess(event) {
         this.sharedStorageListTreeElement.addEvent(event.data);
     }
-    selectDatabase(database) {
-        if (database) {
-            this.showDatabase(database);
-            const treeElement = this.databaseTreeElements.get(database);
-            treeElement && treeElement.select();
-        }
-    }
     async showResource(resource, line, column) {
         await this.resourcesSection.revealResource(resource, line, column);
     }
     showFrame(frame) {
         this.resourcesSection.revealAndSelectFrame(frame);
-    }
-    showDatabase(database, tableName) {
-        if (!database) {
-            return;
-        }
-        let view;
-        if (tableName) {
-            let tableViews = this.databaseTableViews.get(database);
-            if (!tableViews) {
-                tableViews = {};
-                this.databaseTableViews.set(database, tableViews);
-            }
-            view = tableViews[tableName];
-            if (!view) {
-                view = new DatabaseTableView(database, tableName);
-                tableViews[tableName] = view;
-            }
-        }
-        else {
-            view = this.databaseQueryViews.get(database);
-            if (!view) {
-                view = new DatabaseQueryView(database);
-                this.databaseQueryViews.set(database, view);
-                view.addEventListener("SchemaUpdated" /* DatabaseQueryViewEvents.SchemaUpdated */, event => {
-                    void this.updateDatabaseTables(event);
-                }, this);
-            }
-        }
-        this.innerShowView(view);
     }
     showFileSystem(view) {
         this.innerShowView(view);
@@ -730,36 +642,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         if (this.preloadingSummaryTreeElement) {
             this.preloadingSummaryTreeElement.expandAndRevealAttempts(filter);
         }
-    }
-    async updateDatabaseTables(event) {
-        const database = event.data;
-        if (!database) {
-            return;
-        }
-        const databasesTreeElement = this.databaseTreeElements.get(database);
-        if (!databasesTreeElement) {
-            return;
-        }
-        databasesTreeElement.invalidateChildren();
-        const tableViews = this.databaseTableViews.get(database);
-        if (!tableViews) {
-            return;
-        }
-        const tableNamesHash = new Set();
-        const panel = this.panel;
-        const tableNames = await database.tableNames();
-        for (const tableName of tableNames) {
-            tableNamesHash.add(tableName);
-        }
-        for (const tableName in tableViews) {
-            if (!(tableNamesHash.has(tableName))) {
-                if (panel.visibleView === tableViews[tableName]) {
-                    panel.showView(null);
-                }
-                delete tableViews[tableName];
-            }
-        }
-        await databasesTreeElement.updateChildren();
     }
     onmousemove(event) {
         const nodeUnderMouse = event.target;
@@ -856,58 +738,6 @@ export class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
         this.showView(this.view);
         UI.Context.Context.instance().setFlavor(BackgroundServiceView, this.view);
         Host.userMetrics.panelShown('background_service_' + this.serviceName);
-        return false;
-    }
-}
-export class DatabaseTreeElement extends ApplicationPanelTreeElement {
-    sidebar;
-    database;
-    constructor(sidebar, database) {
-        super(sidebar.panel, database.name, true);
-        this.sidebar = sidebar;
-        this.database = database;
-        const icon = IconButton.Icon.create('database');
-        this.setLeadingIcons([icon]);
-    }
-    get itemURL() {
-        return 'database://' + encodeURI(this.database.name);
-    }
-    onselect(selectedByUser) {
-        super.onselect(selectedByUser);
-        this.sidebar.showDatabase(this.database);
-        Host.userMetrics.panelShown('web-sql');
-        return false;
-    }
-    onexpand() {
-        void this.updateChildren();
-    }
-    async updateChildren() {
-        this.removeChildren();
-        const tableNames = await this.database.tableNames();
-        for (const tableName of tableNames) {
-            this.appendChild(new DatabaseTableTreeElement(this.sidebar, this.database, tableName));
-        }
-    }
-}
-export class DatabaseTableTreeElement extends ApplicationPanelTreeElement {
-    sidebar;
-    database;
-    tableName;
-    constructor(sidebar, database, tableName) {
-        super(sidebar.panel, tableName, false);
-        this.sidebar = sidebar;
-        this.database = database;
-        this.tableName = tableName;
-        const icon = IconButton.Icon.create('table');
-        this.setLeadingIcons([icon]);
-    }
-    get itemURL() {
-        return 'database://' + encodeURI(this.database.name) + '/' + encodeURI(this.tableName);
-    }
-    onselect(selectedByUser) {
-        super.onselect(selectedByUser);
-        this.sidebar.showDatabase(this.database, this.tableName);
-        Host.userMetrics.panelShown('web-sql');
         return false;
     }
 }
@@ -1501,7 +1331,6 @@ export class CookieTreeElement extends ApplicationPanelTreeElement {
 export class StorageCategoryView extends UI.Widget.VBox {
     emptyWidget;
     linkElement;
-    warningBar;
     constructor() {
         super();
         this.element.classList.add('storage-view');
@@ -1522,17 +1351,6 @@ export class StorageCategoryView extends UI.Widget.VBox {
         if (link && this.linkElement) {
             this.linkElement.setAttribute('href', link);
             this.linkElement.classList.remove('hidden');
-        }
-    }
-    setWarning(message, learnMoreLink, jsLogContext) {
-        if (message && !this.warningBar) {
-            this.warningBar = this.emptyWidget.appendWarning(message, learnMoreLink, jsLogContext);
-        }
-        if (!message && this.warningBar) {
-            this.warningBar.element.classList.add('hidden');
-        }
-        if (message && this.warningBar) {
-            this.warningBar.element.classList.remove('hidden');
         }
     }
 }

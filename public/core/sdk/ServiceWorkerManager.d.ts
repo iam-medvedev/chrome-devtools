@@ -54,7 +54,7 @@ export type EventTypes = {
 export declare class ServiceWorkerVersionState {
     runningStatus: Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus;
     status: Protocol.ServiceWorker.ServiceWorkerVersionStatus;
-    last_updated_timestamp: number;
+    lastUpdatedTimestamp: number;
     previousState: ServiceWorkerVersionState | null;
     constructor(runningStatus: Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus, status: Protocol.ServiceWorker.ServiceWorkerVersionStatus, previousState: ServiceWorkerVersionState | null, timestamp: number);
 }

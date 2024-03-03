@@ -4,7 +4,7 @@
 // Copyright 2023222 The Chromium Author2s. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { TraceLoader } from '../../../test/unittests/front_end/helpers/TraceLoader.js';
+import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as TraceEngine from '../trace/trace.js';
 function getMainThread(data) {
     let mainThread = null;

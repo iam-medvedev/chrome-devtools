@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
+import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ElementsComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();

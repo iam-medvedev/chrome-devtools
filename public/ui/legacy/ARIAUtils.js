@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _id = 0;
+let id = 0;
 export function nextId(prefix) {
-    return (prefix || '') + ++_id;
+    return (prefix || '') + ++id;
 }
 export function bindLabelToControl(label, control) {
     const controlId = nextId('labelledControl');

@@ -16,7 +16,7 @@ export declare class Dialog extends Dialog_base {
     private targetDocument;
     private readonly targetDocumentKeyDownHandler;
     private escapeKeyCallback;
-    constructor();
+    constructor(jslogContext?: string);
     static hasInstance(): boolean;
     show(where?: Document | Element): void;
     hide(): void;

@@ -6,7 +6,7 @@ const { assert } = chai;
 import { RecorderController } from './recorder.js';
 import * as Models from './models/models.js';
 import * as Components from './components/components.js';
-import { describeWithEnvironment, setupActionRegistry, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('RecorderController', () => {

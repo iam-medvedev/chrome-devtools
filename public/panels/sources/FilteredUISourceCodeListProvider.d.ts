@@ -8,7 +8,7 @@ export declare class FilteredUISourceCodeListProvider extends QuickOpen.Filtered
     private uiSourceCodes;
     private readonly uiSourceCodeIds;
     private query;
-    constructor();
+    constructor(jslogContext: string);
     private projectRemoved;
     private populate;
     private filterUISourceCode;

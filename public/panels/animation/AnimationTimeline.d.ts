@@ -13,7 +13,6 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     get uiAnimations(): AnimationUI[];
     get groupBuffer(): AnimationGroup[];
     wasShown(): void;
-    willHide(): void;
     modelAdded(animationModel: AnimationModel): void;
     modelRemoved(animationModel: AnimationModel): void;
     private addEventListeners;
@@ -38,10 +37,14 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     private animationGroupStarted;
     private clearPreviews;
     private createPreview;
+    previewsCreatedForTest(): void;
+    private createPreviewForCollectedGroups;
     private addAnimationGroup;
     private handleAnimationGroupKeyDown;
     private focusNextGroup;
     private removeAnimationGroup;
+    private clearCurrentTimeText;
+    private setCurrentTimeText;
     private selectAnimationGroup;
     animationGroupSelectedForTest(): void;
     private addAnimation;
@@ -54,9 +57,11 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     width(): number;
     private syncScrubber;
     private animateTime;
-    pixelMsRatio(): number;
+    pixelTimeRatio(): number;
     private updateScrubber;
     private scrubberDragStart;
+    private updateScrollOffsetOnPage;
+    private setTimelineScrubberPosition;
     private scrubberDragMove;
     private scrubberDragEnd;
 }

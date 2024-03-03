@@ -1017,7 +1017,7 @@ export class TabbedPaneTab {
         return tabElement;
     }
     createCloseIconButton() {
-        const closeIconContainer = document.createElement('div');
+        const closeIconContainer = document.createElement('button');
         closeIconContainer.classList.add('close-button', 'tabbed-pane-close-button');
         closeIconContainer.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         const closeIcon = new IconButton.Icon.Icon();

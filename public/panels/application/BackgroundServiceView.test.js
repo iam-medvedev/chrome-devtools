@@ -6,8 +6,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Resources from './application.js';
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 describeWithMockConnection('BackgroundServiceView', () => {
     const testKey = 'test-storage-key';
     const serviceName = "backgroundFetch" /* Protocol.BackgroundService.ServiceName.BackgroundFetch */;

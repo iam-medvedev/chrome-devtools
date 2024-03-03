@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/animation/AnimationDOMNode.ts",
     "../../../../../../front_end/panels/animation/AnimationGroupPreviewUI.ts",
     "../../../../../../front_end/panels/animation/AnimationModel.ts",
     "../../../../../../front_end/panels/animation/AnimationScreenshotPopover.ts",

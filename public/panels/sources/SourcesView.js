@@ -52,7 +52,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     scriptViewToolbar;
     bottomToolbarInternal;
     toolbarChangedListener;
-    shortcuts;
     focusedPlaceholderElement;
     searchView;
     searchConfig;
@@ -110,8 +109,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         if (!window.opener) {
             window.addEventListener('beforeunload', handleBeforeUnload, true);
         }
-        this.shortcuts = new Map();
-        this.element.addEventListener('keydown', this.handleKeyDown.bind(this), false);
     }
     placeholderElement() {
         const shortcuts = [
@@ -176,18 +173,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     }
     bottomToolbar() {
         return this.bottomToolbarInternal;
-    }
-    registerShortcuts(keys, handler) {
-        for (let i = 0; i < keys.length; ++i) {
-            this.shortcuts.set(keys[i].key, handler);
-        }
-    }
-    handleKeyDown(event) {
-        const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(event);
-        const handler = this.shortcuts.get(shortcutKey);
-        if (handler && handler()) {
-            event.consume(true);
-        }
     }
     wasShown() {
         super.wasShown();

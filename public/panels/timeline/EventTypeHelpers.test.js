@@ -1,8 +1,8 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { defaultTraceEvent, makeFakeEventPayload, makeFakeSDKEventFromPayload, } from '../../../test/unittests/front_end/helpers/TraceHelpers.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import { defaultTraceEvent, makeFakeEventPayload, makeFakeSDKEventFromPayload, } from '../../testing/TraceHelpers.js';
 describe('EventTypeHelpers', () => {
     describe('timesForEventInMilliseconds', () => {
         it('supports SDK events', () => {

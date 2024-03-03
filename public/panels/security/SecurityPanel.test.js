@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { assertElement } from '../../testing/DOMHelpers.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Security from './security.js';
-import { assertElement } from '../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
 describeWithMockConnection('SecurityPanel', () => {
     const tests = (targetFactory) => {
         let target;

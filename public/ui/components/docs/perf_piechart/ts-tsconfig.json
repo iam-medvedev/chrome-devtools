@@ -47,7 +47,7 @@
   ],
   "references": [
     {
-      "path": "../../../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
+      "path": "../../../../testing/testing-tsconfig.json"
     },
     {
       "path": "../../../legacy/components/perf_ui/bundle-tsconfig.json"

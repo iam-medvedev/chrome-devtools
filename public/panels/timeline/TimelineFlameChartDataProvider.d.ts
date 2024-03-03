@@ -107,8 +107,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     entryIndexForSelection(selection: TimelineSelection | null): number;
     getIndexForEvent(targetEvent: TraceEngine.Types.TraceEvents.TraceEventData): number | null;
     /**
-     * Build the |flowStartTimes|, |flowStartLevels|, |flowEndTimes| and
-     * |flowEndLevels| data for the initiator arrows of given entry.
+     * Build the pairs of initiators and initiated entries.
      * @param entryIndex
      * @returns if we should re-render the flame chart (canvas)
      */

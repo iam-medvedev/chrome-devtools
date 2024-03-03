@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-const MAX_WORKERS = Math.min(2, navigator.hardwareConcurrency - 1);
+const MAX_WORKERS = Math.max(2, navigator.hardwareConcurrency - 1);
 let formatterWorkerPoolInstance;
 export class FormatterWorkerPool {
     taskQueue;

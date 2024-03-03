@@ -100,7 +100,6 @@ export declare class DebuggerModel extends SDKModel<EventTypes> {
     getContinueToLocationCallback(): ((arg0: DebuggerPausedDetails) => boolean) | null;
     getEvaluateOnCallFrameCallback(): ((arg0: CallFrame, arg1: EvaluationOptions) => Promise<EvaluationResult | null>) | null;
 }
-export declare const _debuggerIdToModel: Map<string, DebuggerModel>;
 /**
  * Keep these in sync with WebCore::V8Debugger
  */

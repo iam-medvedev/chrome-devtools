@@ -1,11 +1,11 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { renderElementIntoDOM } from '../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { deinitializeGlobalVars, describeWithEnvironment, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { setUpEnvironment } from '../../../test/unittests/front_end/helpers/OverridesHelpers.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { deinitializeGlobalVars, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import * as NetworkForward from './forward/forward.js';
 import * as Network from './network.js';
 function renderNetworkItemView(request) {

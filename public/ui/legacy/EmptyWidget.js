@@ -27,11 +27,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import emptyWidgetStyles from './emptyWidget.css.legacy.js';
-import { Infobar } from './Infobar.js';
 import { VBox } from './Widget.js';
 import { XLink } from './XLink.js';
 const UIStrings = {
@@ -59,23 +57,6 @@ export class EmptyWidget extends VBox {
     appendLink(link) {
         const learnMoreLink = XLink.create(link, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
         return this.contentElement.appendChild(learnMoreLink);
-    }
-    appendWarning(message, learnMoreLink, jsLogContext) {
-        function openLink() {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(learnMoreLink);
-        }
-        const actions = learnMoreLink ? [{
-                text: 'Learn More',
-                highlight: true,
-                delegate: openLink,
-                dismiss: false,
-                jsLogContext: 'learn-more',
-            }] :
-            undefined;
-        const warningBar = new Infobar("warning" /* Type.Warning */, message, actions, undefined, undefined, jsLogContext);
-        warningBar.element.classList.add('warning');
-        this.element.prepend(warningBar.element);
-        return warningBar;
     }
     set text(text) {
         this.textElement.textContent = text;

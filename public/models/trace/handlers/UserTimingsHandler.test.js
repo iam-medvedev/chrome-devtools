@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { TraceLoader } from '../../../../test/unittests/front_end/helpers/TraceLoader.js';
+import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceModel from '../trace.js';
 const { assert } = chai;
 describe('UserTimingsHandler', function () {

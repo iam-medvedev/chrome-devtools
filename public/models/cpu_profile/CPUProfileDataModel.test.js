@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as CPUProfile from '../cpu_profile/cpu_profile.js';
-import { describeWithEnvironment } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 function makeCallFrame(functionName) {
     return {
         functionName,

@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, getElementWithinComponent, renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
+import { assertShadowRoot, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as UI from '../../legacy/legacy.js';
 import * as MarkdownView from './markdown_view.js';
 const { assert } = chai;

@@ -336,10 +336,13 @@ export default {
   align-items: center;
   justify-content: center;
   border-radius: 50%;
+  background-color: transparent;
+  border: none;
 }
 
 .close-button:hover,
-.close-button:active {
+.close-button:active,
+.close-button:focus {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 

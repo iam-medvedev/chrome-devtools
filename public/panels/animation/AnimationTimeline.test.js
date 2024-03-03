@@ -1,19 +1,49 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget, stubNoopSettings, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
 import * as Common from '../../core/common/common.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Elements from '../elements/elements.js';
 import * as Animation from './animation.js';
 const { assert } = chai;
+class ManualPromise {
+    #waitPromise;
+    #resolveFn;
+    constructor() {
+        this.#waitPromise = new Promise(r => {
+            this.#resolveFn = r;
+        });
+    }
+    resolve() {
+        this.#resolveFn();
+        this.#waitPromise = new Promise(r => {
+            this.#resolveFn = r;
+        });
+    }
+    wait() {
+        return this.#waitPromise;
+    }
+}
 const cancelAllPendingRaf = () => {
     let rafId = window.requestAnimationFrame(() => { });
     while (rafId--) {
         window.cancelAnimationFrame(rafId);
     }
+};
+const stubAnimationGroup = () => {
+    sinon.stub(Animation.AnimationModel.AnimationGroup.prototype, 'scrollNode')
+        .resolves(new Animation.AnimationDOMNode.AnimationDOMNode(null));
+};
+const stubAnimationDOMNode = () => {
+    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'verticalScrollRange').resolves(100);
+    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'horizontalScrollRange').resolves(100);
+    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'scrollLeft').resolves(10);
+    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'scrollTop').resolves(10);
+    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'addScrollEventListener').resolves();
+    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'removeScrollEventListener').resolves();
 };
 describeWithMockConnection('AnimationTimeline', () => {
     let target;
@@ -29,6 +59,20 @@ describeWithMockConnection('AnimationTimeline', () => {
         });
         stubNoopSettings();
         target = createTarget();
+        const runtimeAgent = target.model(SDK.RuntimeModel.RuntimeModel)?.agent;
+        const stub = sinon.stub(runtimeAgent, 'invoke_evaluate');
+        stub.callsFake(params => {
+            if (params.expression === 'window.devicePixelRatio') {
+                return Promise.resolve({
+                    result: {
+                        type: 'number',
+                        value: 1,
+                    },
+                    getError: () => undefined,
+                });
+            }
+            return stub.wrappedMethod(params);
+        });
     });
     afterEach(() => {
         cancelAllPendingRaf();
@@ -43,7 +87,7 @@ describeWithMockConnection('AnimationTimeline', () => {
         view.show(document.body);
         await new Promise(resolve => setTimeout(resolve, 0));
         const previewContainer = view.contentElement.querySelector('.animation-timeline-buffer');
-        model.animationStarted({
+        await model.animationStarted({
             id: 'id',
             name: 'name',
             pausedState: false,
@@ -58,6 +102,9 @@ describeWithMockConnection('AnimationTimeline', () => {
                 backendNodeId: 42,
             },
         });
+        if (inScope) {
+            await new Promise(r => sinon.stub(view, 'previewsCreatedForTest').callsFake(r));
+        }
         assert.strictEqual(previewContainer.querySelectorAll('.animation-buffer-preview').length, inScope ? 1 : 0);
     };
     it('updates UI on in scope animation group start', updatesUiOnEvent(true));
@@ -90,16 +137,21 @@ describeWithMockConnection('AnimationTimeline', () => {
         });
     });
     describe('Animation group nodes are removed', () => {
+        const waitForPreviewsManualPromise = new ManualPromise();
+        const waitForAnimationGroupSelectedPromise = new ManualPromise();
         let domModel;
         let animationModel;
         let contentDocument;
-        let waitForAnimationGroupSelected;
-        beforeEach(() => {
+        beforeEach(async () => {
             view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
             view.markAsRoot();
             view.show(document.body);
-            waitForAnimationGroupSelected =
-                new Promise(r => sinon.stub(view, 'animationGroupSelectedForTest').callsFake(r));
+            sinon.stub(view, 'animationGroupSelectedForTest').callsFake(() => {
+                waitForAnimationGroupSelectedPromise.resolve();
+            });
+            sinon.stub(view, 'previewsCreatedForTest').callsFake(() => {
+                waitForPreviewsManualPromise.resolve();
+            });
             const model = target.model(Animation.AnimationModel.AnimationModel);
             assertNotNullOrUndefined(model);
             animationModel = model;
@@ -114,7 +166,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                 localName: 'document',
                 nodeValue: '',
             });
-            animationModel.animationStarted({
+            void animationModel.animationStarted({
                 id: 'animation-id',
                 name: 'animation-name',
                 pausedState: false,
@@ -130,6 +182,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                     backendNodeId: 42,
                 },
             });
+            await waitForPreviewsManualPromise.wait();
         });
         describe('when the animation group is already selected', () => {
             it('should hide scrubber, disable control button and make current time empty', async () => {
@@ -145,7 +198,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                 const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
                 assertNotNullOrUndefined(preview);
                 preview.click();
-                await waitForAnimationGroupSelected;
+                await waitForAnimationGroupSelectedPromise.wait();
                 const gridHeader = view.element.shadowRoot?.querySelector('.animation-grid-header');
                 assertNotNullOrUndefined(gridHeader);
                 assert.isTrue(gridHeader.classList.contains('scrubber-enabled'));
@@ -177,7 +230,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                 const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
                 assertNotNullOrUndefined(preview);
                 preview.click();
-                await waitForAnimationGroupSelected;
+                await waitForAnimationGroupSelectedPromise.wait();
                 // Wait for the animation group to be fully selected and scrubber enabled.
                 const gridHeader = view.element.shadowRoot?.querySelector('.animation-grid-header');
                 assertNotNullOrUndefined(gridHeader);
@@ -204,7 +257,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                 const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
                 assertNotNullOrUndefined(preview);
                 preview.click();
-                await waitForAnimationGroupSelected;
+                await waitForAnimationGroupSelectedPromise.wait();
                 const gridHeader = view.element.shadowRoot?.querySelector('.animation-grid-header');
                 assertNotNullOrUndefined(gridHeader);
                 assert.isFalse(gridHeader.classList.contains('scrubber-enabled'));
@@ -219,6 +272,102 @@ describeWithMockConnection('AnimationTimeline', () => {
                 assertNotNullOrUndefined(currentTime);
                 assert.isTrue(currentTime.textContent === '');
             });
+        });
+    });
+    describe('scroll driven animations', () => {
+        const waitForPreviewsManualPromise = new ManualPromise();
+        const waitForAnimationGroupSelectedPromise = new ManualPromise();
+        let domModel;
+        let animationModel;
+        let contentDocument;
+        beforeEach(async () => {
+            stubAnimationDOMNode();
+            stubAnimationGroup();
+            view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
+            view.markAsRoot();
+            view.show(document.body);
+            sinon.stub(view, 'animationGroupSelectedForTest').callsFake(() => {
+                waitForAnimationGroupSelectedPromise.resolve();
+            });
+            sinon.stub(view, 'previewsCreatedForTest').callsFake(() => {
+                waitForPreviewsManualPromise.resolve();
+            });
+            const model = target.model(Animation.AnimationModel.AnimationModel);
+            assertNotNullOrUndefined(model);
+            animationModel = model;
+            const modelForDom = target.model(SDK.DOMModel.DOMModel);
+            assertNotNullOrUndefined(modelForDom);
+            domModel = modelForDom;
+            contentDocument = SDK.DOMModel.DOMDocument.create(domModel, null, false, {
+                nodeId: 0,
+                backendNodeId: 0,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                localName: 'document',
+                nodeValue: '',
+            });
+            const domNode = SDK.DOMModel.DOMNode.create(domModel, contentDocument, false, {
+                nodeId: 1,
+                backendNodeId: 1,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'div',
+                localName: 'div',
+                nodeValue: '',
+            });
+            sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(domNode);
+            void animationModel.animationStarted({
+                id: 'animation-id',
+                name: 'animation-name',
+                pausedState: false,
+                playState: 'running',
+                playbackRate: 1,
+                startTime: 42,
+                currentTime: 0,
+                type: "CSSAnimation" /* Protocol.Animation.AnimationType.CSSAnimation */,
+                source: {
+                    delay: 0,
+                    endDelay: 0,
+                    duration: 10000,
+                    backendNodeId: 42,
+                },
+                viewOrScrollTimeline: {
+                    axis: "vertical" /* Protocol.DOM.ScrollOrientation.Vertical */,
+                    sourceNodeId: 42,
+                    startOffset: 42,
+                    endOffset: 142,
+                },
+            });
+            await waitForPreviewsManualPromise.wait();
+        });
+        it('should disable global controls after a scroll driven animation is selected', async () => {
+            const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+            assertNotNullOrUndefined(preview);
+            preview.click();
+            await waitForAnimationGroupSelectedPromise.wait();
+            const playbackRateButtons = [...view.element.shadowRoot?.querySelectorAll('.animation-playback-rate-button')];
+            assert.isTrue(playbackRateButtons.every(button => button.getAttribute('disabled')), 'All the playback rate buttons are disabled');
+            const timelineToolbar = view.element.shadowRoot?.querySelector('.animation-timeline-toolbar');
+            const pauseAllButton = timelineToolbar.shadowRoot?.querySelector('[aria-label=\'Pause all\']');
+            assertNotNullOrUndefined(pauseAllButton?.getAttribute('disabled'), 'Pause all button is disabled');
+            const controlsToolbar = view.element.shadowRoot?.querySelector('.animation-controls-toolbar');
+            const replayButton = controlsToolbar.shadowRoot?.querySelector('[aria-label=\'Replay timeline\']');
+            assertNotNullOrUndefined(replayButton?.getAttribute('disabled'), 'Replay button is disabled');
+        });
+        it('should show current time text in pixels', async () => {
+            const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+            assertNotNullOrUndefined(preview);
+            preview.click();
+            await waitForAnimationGroupSelectedPromise.wait();
+            const currentTimeElement = view.element.shadowRoot?.querySelector('.animation-timeline-current-time');
+            assert.isTrue(currentTimeElement.textContent?.includes('px'));
+        });
+        it('should show timeline grid values in percentages', async () => {
+            const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+            assertNotNullOrUndefined(preview);
+            preview.click();
+            await waitForAnimationGroupSelectedPromise.wait();
+            const labelElements = [...view.element.shadowRoot?.querySelectorAll('.animation-timeline-grid-label')];
+            assert.isTrue(labelElements.every(el => el.textContent?.includes('%')), 'Label doesnt include a percentage');
         });
     });
 });

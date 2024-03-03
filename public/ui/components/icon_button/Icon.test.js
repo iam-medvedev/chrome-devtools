@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertShadowRoot, renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
+import { assertElement, assertShadowRoot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as IconButton from './icon_button.js';
 const { assert } = chai;
 function getSpanElement(icon) {

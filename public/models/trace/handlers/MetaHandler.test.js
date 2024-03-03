@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import * as TraceModel from '../trace.js';
 const { assert } = chai;
-import { defaultTraceEvent } from '../../../../test/unittests/front_end/helpers/TraceHelpers.js';
-import { TraceLoader } from '../../../../test/unittests/front_end/helpers/TraceLoader.js';
+import { defaultTraceEvent } from '../../../testing/TraceHelpers.js';
+import { TraceLoader } from '../../../testing/TraceLoader.js';
 describe('MetaHandler', function () {
     let baseEvents;
     beforeEach(async function () {

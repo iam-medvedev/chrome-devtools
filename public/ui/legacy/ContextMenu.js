@@ -326,6 +326,7 @@ export class ContextMenu extends SubMenu {
     contextMenuLabel;
     openHostedMenu;
     eventTarget;
+    loggableParent = null;
     constructor(event, options = {}) {
         super(null);
         const mouseEvent = event;
@@ -339,13 +340,16 @@ export class ContextMenu extends SubMenu {
         this.x = options.x === undefined ? mouseEvent.x : options.x;
         this.y = options.y === undefined ? mouseEvent.y : options.y;
         this.onSoftMenuClosed = options.onSoftMenuClosed;
-        this.jsLogContext = options.jsLogContext;
         this.handlers = new Map();
         this.idInternal = 0;
         this.openHostedMenu = null;
-        const target = deepElementFromEvent(event);
+        let target = (deepElementFromEvent(event) || event.target);
         if (target) {
             this.appendApplicableItems(target);
+            while (target instanceof Element && !target.hasAttribute('jslog')) {
+                target = target.parentElementOrShadowHost() ?? null;
+            }
+            this.loggableParent = target;
         }
     }
     static initialize() {
@@ -424,7 +428,7 @@ export class ContextMenu extends SubMenu {
         const ownerDocument = this.eventTarget.ownerDocument;
         if (this.useSoftMenu || ContextMenu.useSoftMenu ||
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
-            this.softMenu = new SoftContextMenu(menuObject, this.itemSelected.bind(this), this.keepOpen, undefined, this.onSoftMenuClosed);
+            this.softMenu = new SoftContextMenu(menuObject, this.itemSelected.bind(this), this.keepOpen, undefined, this.onSoftMenuClosed, this.loggableParent);
             // let soft context menu focus on the first item when the event is triggered by a non-mouse event
             // add another check of button value to differentiate mouse event with 'shift + f10' keyboard event
             const isMouseEvent = this.event.pointerType === 'mouse' && this.event.button >= 0;
@@ -440,11 +444,7 @@ export class ContextMenu extends SubMenu {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuCleared, this.menuCleared, this);
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, this.onItemSelected, this);
             }
-            const visualElement = VisualLogging.menu();
-            if (this.jsLogContext) {
-                visualElement.context(this.jsLogContext);
-            }
-            VisualLogging.registerLoggable(menuObject, `${visualElement}`, null);
+            VisualLogging.registerLoggable(menuObject, `${VisualLogging.menu()}`, this.loggableParent);
             this.registerLoggablesWithin(menuObject);
             this.openHostedMenu = menuObject;
             // showContextMenuAtPoint call above synchronously issues a clear event for previous context menu (if any),
@@ -528,8 +528,6 @@ export class ContextMenu extends SubMenu {
     }
     static pendingMenu = null;
     static useSoftMenu = false;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     static groupWeights = ['header', 'new', 'reveal', 'edit', 'clipboard', 'debug', 'view', 'default', 'override', 'save', 'footer'];
 }
 const registeredProviders = [];

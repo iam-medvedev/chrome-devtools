@@ -1509,6 +1509,7 @@ export class ShortcutTreeElement extends UI.TreeOutline.TreeElement {
         adorner.data = {
             name,
             content: adornerContent,
+            jslogContext: 'reveal',
         };
         this.listItemElement.appendChild(adorner);
         const onClick = (() => {

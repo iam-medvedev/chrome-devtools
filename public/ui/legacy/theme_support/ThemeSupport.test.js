@@ -1,8 +1,8 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 import * as Host from '../../../core/host/host.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as ThemeSupport from './theme_support.js';
 const { assert } = chai;
 describe('ThemeSupport', () => {

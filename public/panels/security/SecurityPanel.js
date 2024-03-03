@@ -1245,7 +1245,7 @@ export class SecurityOriginView extends UI.Widget.VBox {
                 { filterType: NetworkForward.UIFilter.FilterType.Domain, filterValue: parsedURL.host },
                 { filterType: NetworkForward.UIFilter.FilterType.Scheme, filterValue: parsedURL.scheme },
             ]));
-        }, { jslogContext: 'security.view-requests-in-network-panel' });
+        }, { jslogContext: 'reveal-in-network' });
         originNetworkDiv.appendChild(originNetworkButton);
         UI.ARIAUtils.markAsLink(originNetworkButton);
         if (originState.securityDetails) {

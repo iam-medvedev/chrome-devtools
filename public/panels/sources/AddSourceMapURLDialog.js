@@ -24,26 +24,26 @@ export class AddDebugInfoURLDialog extends UI.Widget.HBox {
     input;
     dialog;
     callback;
-    constructor(label, callback) {
+    constructor(label, jslogContext, callback) {
         super(/* isWebComponent */ true);
         this.contentElement.createChild('label').textContent = label;
-        this.input = UI.UIUtils.createInput('add-source-map', 'text');
+        this.input = UI.UIUtils.createInput('add-source-map', 'text', 'url');
         this.input.addEventListener('keydown', this.onKeyDown.bind(this), false);
         this.contentElement.appendChild(this.input);
         const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.add), this.apply.bind(this), {
-            jslogContext: 'sources.add-source-map-url',
+            jslogContext: 'add',
         });
         this.contentElement.appendChild(addButton);
-        this.dialog = new UI.Dialog.Dialog();
+        this.dialog = new UI.Dialog.Dialog(jslogContext);
         this.dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MeasureContent */);
         this.dialog.setDefaultFocusedElement(this.input);
         this.callback = callback;
     }
     static createAddSourceMapURLDialog(callback) {
-        return new AddDebugInfoURLDialog(i18nString(UIStrings.sourceMapUrl), callback);
+        return new AddDebugInfoURLDialog(i18nString(UIStrings.sourceMapUrl), 'add-source-map-url', callback);
     }
     static createAddDWARFSymbolsURLDialog(callback) {
-        return new AddDebugInfoURLDialog(i18nString(UIStrings.debugInfoUrl), callback);
+        return new AddDebugInfoURLDialog(i18nString(UIStrings.debugInfoUrl), 'add-debug-info-url', callback);
     }
     show() {
         super.show(this.dialog.contentElement);

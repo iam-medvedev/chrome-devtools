@@ -61,9 +61,6 @@
       "path": "./bundle-tsconfig.json"
     },
     {
-      "path": "../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
-    },
-    {
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
@@ -74,6 +71,9 @@
     },
     {
       "path": "../../models/breakpoints/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../testing/testing-tsconfig.json"
     },
     {
       "path": "../../third_party/codemirror.next/bundle-tsconfig.json"

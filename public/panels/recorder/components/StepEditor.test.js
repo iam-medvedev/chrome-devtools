@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 const { assert } = chai;
 // eslint-disable-next-line rulesdir/es_modules_import
-import * as EnvironmentHelpers from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import * as EnvironmentHelpers from '../../../testing/EnvironmentHelpers.js';
 import * as Models from '../models/models.js';
 // eslint-disable-next-line rulesdir/es_modules_import
-import * as RecorderHelpers from '../../../../test/unittests/front_end/helpers/RecorderHelpers.js';
-import { renderElementIntoDOM, getEventPromise, assertElement, dispatchKeyDownEvent, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
+import * as RecorderHelpers from '../testing/RecorderHelpers.js';
+import { renderElementIntoDOM, getEventPromise, assertElement, dispatchKeyDownEvent, } from '../../../testing/DOMHelpers.js';
 const { describeWithLocale } = EnvironmentHelpers;
 function getStepEditedPromise(editor) {
     return getEventPromise(editor, 'stepedited')

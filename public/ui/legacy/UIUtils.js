@@ -963,16 +963,23 @@ export function createSelect(name, options) {
                 optGroup.label = key;
                 for (const child of value) {
                     if (typeof child === 'string') {
-                        optGroup.appendChild(new Option(child, child));
+                        optGroup.appendChild(createOption(child, child, Platform.StringUtilities.toKebabCase(child)));
                     }
                 }
             }
         }
         else if (typeof option === 'string') {
-            select.add(new Option(option, option));
+            select.add(createOption(option, option, Platform.StringUtilities.toKebabCase(option)));
         }
     }
     return select;
+}
+export function createOption(title, value, jslogContext) {
+    const result = new Option(title, value || title);
+    if (jslogContext) {
+        result.setAttribute('jslog', `${VisualLogging.item(jslogContext).track({ click: true })}`);
+    }
+    return result;
 }
 export function createLabel(title, className, associatedControl) {
     const element = document.createElement('label');
@@ -1323,8 +1330,8 @@ export function createFileSelectorElement(callback) {
 }
 export const MaxLengthForDisplayedURLs = 150;
 export class MessageDialog {
-    static async show(message, where) {
-        const dialog = new Dialog();
+    static async show(message, where, jslogContext) {
+        const dialog = new Dialog(jslogContext);
         dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MeasureContent */);
         dialog.setDimmed(true);
         const shadowRoot = Utils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: confirmDialogStyles, delegatesFocus: undefined });
@@ -1345,7 +1352,7 @@ export class MessageDialog {
 }
 export class ConfirmDialog {
     static async show(message, where, options) {
-        const dialog = new Dialog();
+        const dialog = new Dialog(options?.jslogContext);
         dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MeasureContent */);
         dialog.setDimmed(true);
         ARIAUtils.setLabel(dialog.contentElement, message);

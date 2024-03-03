@@ -4,8 +4,8 @@
 const { assert } = chai;
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Resources from './application.js';
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 describeWithMockConnection('IndexedDBModel', () => {
     let indexedDBModel;
     let target;

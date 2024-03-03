@@ -30,12 +30,13 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Settings from '../components/settings/settings.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { InspectorView } from './InspectorView.js';
 import { Tooltip } from './Tooltip.js';
-import { CheckboxLabel } from './UIUtils.js';
+import { CheckboxLabel, createOption } from './UIUtils.js';
 const UIStrings = {
     /**
      *@description Note when a setting change will require the user to reload DevTools
@@ -78,7 +79,7 @@ const createSettingSelect = function (name, options, requiresReload, setting, su
     ARIAUtils.bindLabelToControl(label, select);
     for (const option of options) {
         if (option.text && typeof option.value === 'string') {
-            select.add(new Option(option.text, option.value));
+            select.add(createOption(option.text, option.value, Platform.StringUtilities.toKebabCase(option.value)));
         }
     }
     let reloadWarning = null;

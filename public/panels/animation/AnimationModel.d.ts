@@ -1,6 +1,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
+import { AnimationDOMNode } from './AnimationDOMNode.js';
 export declare class AnimationModel extends SDK.SDKModel.SDKModel<EventTypes> {
     #private;
     readonly runtimeModel: SDK.RuntimeModel.RuntimeModel;
@@ -9,9 +10,10 @@ export declare class AnimationModel extends SDK.SDKModel.SDKModel<EventTypes> {
     playbackRate: number;
     constructor(target: SDK.Target.Target);
     private reset;
+    private devicePixelRatio;
     animationCreated(id: string): void;
     animationCanceled(id: string): void;
-    animationStarted(payload: Protocol.Animation.Animation): void;
+    animationStarted(payload: Protocol.Animation.Animation): Promise<void>;
     private flushPendingAnimationsIfNeeded;
     private matchExistingGroups;
     private createGroupFromPendingAnimations;
@@ -33,6 +35,8 @@ export declare class AnimationImpl {
     #private;
     constructor(animationModel: AnimationModel, payload: Protocol.Animation.Animation);
     static parsePayload(animationModel: AnimationModel, payload: Protocol.Animation.Animation): AnimationImpl;
+    private percentageToPixels;
+    viewOrScrollTimeline(): Protocol.Animation.ViewOrScrollTimeline | undefined;
     payload(): Protocol.Animation.Animation;
     id(): string;
     name(): string;
@@ -41,12 +45,14 @@ export declare class AnimationImpl {
     setPlayState(playState: string): void;
     playbackRate(): number;
     startTime(): number;
+    iterationDuration(): number;
     endTime(): number;
     finiteDuration(): number;
     currentTime(): number;
     source(): AnimationEffect;
     type(): Protocol.Animation.AnimationType;
     overlaps(animation: AnimationImpl): boolean;
+    delayOrStartTime(): number;
     setTiming(duration: number, delay: number): void;
     private updateNodeStyle;
     remoteObjectPromise(): Promise<SDK.RemoteObject.RemoteObject | null>;
@@ -89,12 +95,16 @@ export declare class AnimationGroup {
     #private;
     screenshotsInternal: string[];
     constructor(animationModel: AnimationModel, id: string, animations: AnimationImpl[]);
+    isScrollDriven(): boolean;
     id(): string;
     animations(): AnimationImpl[];
     release(): void;
     private animationIds;
     startTime(): number;
+    groupDuration(): number;
     finiteDuration(): number;
+    scrollOrientation(): Protocol.DOM.ScrollOrientation | null;
+    scrollNode(): Promise<AnimationDOMNode | null>;
     seekTo(currentTime: number): void;
     paused(): boolean;
     togglePause(paused: boolean): void;

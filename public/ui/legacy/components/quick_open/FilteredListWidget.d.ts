@@ -77,13 +77,15 @@ export type EventTypes = {
 };
 export declare class Provider {
     private refreshCallback;
-    constructor();
+    jslogContext: string;
+    constructor(jslogContext: string);
     setRefreshCallback(refreshCallback: () => void): void;
     attach(): void;
     itemCount(): number;
     itemKeyAt(_itemIndex: number): string;
     itemScoreAt(_itemIndex: number, _query: string): number;
     renderItem(_itemIndex: number, _query: string, _titleElement: Element, _subtitleElement: Element): void;
+    jslogContextAt(_itemIndex: number): string;
     renderAsTwoRows(): boolean;
     selectItem(_itemIndex: number | null, _promptValue: string): void;
     refresh(): void;

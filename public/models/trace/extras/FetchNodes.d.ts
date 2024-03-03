@@ -1,7 +1,7 @@
-import type * as Protocol from '../../../generated/protocol.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import type * as Protocol from '../../../generated/protocol.js';
 import type * as Handlers from '../handlers/handlers.js';
-import type * as Types from '../types/types.js';
+import * as Types from '../types/types.js';
 export declare function _TEST_clearCache(): void;
 /**
  * Looks up the DOM Node on the page for the given BackendNodeId. Uses the
@@ -10,10 +10,17 @@ export declare function _TEST_clearCache(): void;
  */
 export declare function domNodeForBackendNodeID(modelData: Handlers.Types.TraceParseData, nodeId: Protocol.DOM.BackendNodeId): Promise<SDK.DOMModel.DOMNode | null>;
 /**
+ * Looks up for backend node ids in different types of trace events
+ * and resolves them into related DOM nodes.
+ * This method should be progressively updated to support more events
+ * containing node ids which we want to resolve.
+ */
+export declare function extractRelatedDOMNodesFromEvent(modelData: Handlers.Types.TraceParseData, event: Types.TraceEvents.TraceEventData): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null> | null>;
+/**
  * Takes a set of Protocol.DOM.BackendNodeId ids and will return a map of NodeId=>DOMNode.
  * Results are cached based on 1) the provided TraceParseData and 2) the provided set of IDs.
  */
-export declare function domNodesForMultipleBackendNodeIds(modelData: Handlers.Types.TraceParseData, nodeIds: Set<Protocol.DOM.BackendNodeId>): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null>>;
+export declare function domNodesForMultipleBackendNodeIds(modelData: Handlers.Types.TraceParseData, nodeIds: Array<Protocol.DOM.BackendNodeId>): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null>>;
 export interface LayoutShiftSource {
     previousRect: DOMRect;
     currentRect: DOMRect;

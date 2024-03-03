@@ -15,7 +15,8 @@ export declare class SoftContextMenu {
     private onMenuClosed?;
     private focusOnTheFirstItem;
     private keepOpen;
-    constructor(items: SoftContextMenuDescriptor[], itemSelectedCallback: (arg0: number) => void, keepOpen: boolean, parentMenu?: SoftContextMenu, onMenuClosed?: () => void);
+    private loggableParent;
+    constructor(items: SoftContextMenuDescriptor[], itemSelectedCallback: (arg0: number) => void, keepOpen: boolean, parentMenu?: SoftContextMenu, onMenuClosed?: () => void, loggableParent?: Element | null);
     getItems(): SoftContextMenuDescriptor[];
     show(document: Document, anchorBox: AnchorBox): void;
     setContextMenuElementLabel(label: string): void;

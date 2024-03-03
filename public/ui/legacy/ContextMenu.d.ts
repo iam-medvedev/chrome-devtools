@@ -70,7 +70,6 @@ export interface ContextMenuOptions {
     onSoftMenuClosed?: () => void;
     x?: number;
     y?: number;
-    jsLogContext?: string;
 }
 export declare class ContextMenu extends SubMenu {
     protected contextMenu: this;
@@ -88,6 +87,7 @@ export declare class ContextMenu extends SubMenu {
     private contextMenuLabel?;
     private openHostedMenu;
     private eventTarget;
+    private loggableParent;
     constructor(event: Event, options?: ContextMenuOptions);
     static initialize(): void;
     static installHandler(doc: Document): void;

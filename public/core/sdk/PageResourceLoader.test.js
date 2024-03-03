@@ -6,8 +6,8 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as SDK from './sdk.js';
 import * as Platform from '../platform/platform.js';
-import { createTarget, describeWithEnvironment, describeWithLocale, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { createTarget, describeWithEnvironment, describeWithLocale, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 const initiator = {
     target: null,
     frameId: '123',

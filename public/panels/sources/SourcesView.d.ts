@@ -24,7 +24,6 @@ export declare class SourcesView extends SourcesView_base implements TabbedEdito
     private readonly scriptViewToolbar;
     private readonly bottomToolbarInternal;
     private toolbarChangedListener;
-    private readonly shortcuts;
     private readonly focusedPlaceholderElement?;
     private searchView?;
     private searchConfig?;
@@ -35,8 +34,6 @@ export declare class SourcesView extends SourcesView_base implements TabbedEdito
     leftToolbar(): UI.Toolbar.Toolbar;
     rightToolbar(): UI.Toolbar.Toolbar;
     bottomToolbar(): UI.Toolbar.Toolbar;
-    private registerShortcuts;
-    private handleKeyDown;
     wasShown(): void;
     willHide(): void;
     toolbarContainerElement(): Element;

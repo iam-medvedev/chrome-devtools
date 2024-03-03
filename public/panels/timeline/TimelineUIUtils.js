@@ -1717,6 +1717,10 @@ export class TimelineUIUtils {
                     relatedNodesMap = await domModel.pushNodesByBackendIdsToFrontend(nodeIdsToResolve);
                 }
             }
+            if (traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event) &&
+                TraceEngine.Types.TraceEvents.isSyntheticLayoutShift(event)) {
+                relatedNodesMap = await TraceEngine.Extras.FetchNodes.extractRelatedDOMNodesFromEvent(traceParseData, event);
+            }
         }
         const recordTypes = TimelineModel.TimelineModel.RecordType;
         if (event.name === recordTypes.LayoutShift) {
@@ -2048,8 +2052,8 @@ export class TimelineUIUtils {
                 break;
             }
         }
-        for (let i = 0; i < timelineData.backendNodeIds.length; ++i) {
-            const relatedNode = relatedNodesMap && relatedNodesMap.get(timelineData.backendNodeIds[i]);
+        const relatedNodes = relatedNodesMap?.values() || [];
+        for (const relatedNode of relatedNodes) {
             if (relatedNode) {
                 const nodeSpan = await Common.Linkifier.Linkifier.linkify(relatedNode);
                 contentHelper.appendElementRow(relatedNodeLabel || i18nString(UIStrings.relatedNode), nodeSpan);

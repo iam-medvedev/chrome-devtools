@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as SDK from './sdk.js';
-import { expectCookie } from '../../../test/unittests/front_end/helpers/Cookies.js';
+import { expectCookie } from '../../testing/Cookies.js';
 function ensureCookiesExistOrFailTest(cookies) {
     if (!cookies) {
         assert.fail('expected cookies to exist');

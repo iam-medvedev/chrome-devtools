@@ -1,8 +1,8 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { TraceLoader } from '../../../test/unittests/front_end/helpers/TraceLoader.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as TraceModel from '../trace/trace.js';
 const { assert } = chai;
 describeWithEnvironment('TraceModel', function () {
@@ -43,7 +43,9 @@ describeWithEnvironment('TraceModel', function () {
         model.resetProcessor();
         assert.strictEqual(model.size(), 2);
         assert.isNotNull(model.traceParsedData(0));
+        assert.isNotNull(model.traceInsights(0));
         assert.isNotNull(model.traceParsedData(1));
+        assert.isNotNull(model.traceInsights(1));
     });
     it('supports deleting traces', async function () {
         const model = TraceModel.TraceModel.Model.createWithAllHandlers();
@@ -58,9 +60,11 @@ describeWithEnvironment('TraceModel', function () {
         model.deleteTraceByIndex(0);
         assert.strictEqual(model.size(), 1);
         assert.isNotNull(model.traceParsedData(0));
+        assert.isNotNull(model.traceInsights(0));
         model.deleteTraceByIndex(0);
         assert.strictEqual(model.size(), 0);
         assert.isNull(model.traceParsedData(0));
+        assert.isNull(model.traceInsights(0));
     });
     it('names traces using their origin and defaults to "Trace n" when no origin is found', async function () {
         const model = TraceModel.TraceModel.Model.createWithAllHandlers();

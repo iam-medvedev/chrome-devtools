@@ -7,10 +7,10 @@ import * as Common from '../../../../core/common/common.js';
 import * as ObjectUI from './object_ui.js';
 import * as UI from '../../legacy.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
-import { dispatchClickEvent } from '../../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { someMutations } from '../../../../../test/unittests/front_end/helpers/MutationHelpers.js';
-import { describeWithRealConnection, getExecutionContext, } from '../../../../../test/unittests/front_end/helpers/RealConnection.js';
+import { dispatchClickEvent } from '../../../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
+import { someMutations } from '../../../../testing/MutationHelpers.js';
+import { describeWithRealConnection, getExecutionContext, } from '../../../../testing/RealConnection.js';
 describe('ObjectPropertiesSection', () => {
     describeWithRealConnection('ObjectPropertiesSection', () => {
         async function evaluateAndGetProperties(code, accessorPropertiesOnly = false, generatePreview = false) {

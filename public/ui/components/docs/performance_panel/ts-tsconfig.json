@@ -50,9 +50,6 @@
   ],
   "references": [
     {
-      "path": "../../../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
-    },
-    {
       "path": "../../../../core/common/bundle-tsconfig.json"
     },
     {
@@ -72,6 +69,9 @@
     },
     {
       "path": "../../../../panels/timeline/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../testing/testing-tsconfig.json"
     },
     {
       "path": "../../../legacy/bundle-tsconfig.json"

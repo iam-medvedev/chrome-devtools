@@ -217,6 +217,9 @@ export class RuntimeModel extends SDKModel {
     async addBinding(event) {
         return await this.agent.invoke_addBinding(event);
     }
+    async removeBinding(request) {
+        return await this.agent.invoke_removeBinding(request);
+    }
     bindingCalled(event) {
         this.dispatchEventToListeners(Events.BindingCalled, event);
     }
@@ -314,7 +317,7 @@ export class RuntimeModel extends SDKModel {
         }
         // Check for a positive throwOnSideEffect response without triggering side effects.
         const response = await this.agent.invoke_evaluate({
-            expression: _sideEffectTestExpression,
+            expression: sideEffectTestExpression,
             contextId: testContext.id,
             throwOnSideEffect: true,
         });
@@ -338,11 +341,8 @@ export class RuntimeModel extends SDKModel {
  * - IMPORTANT: must not actually cause user-visible or JS-visible side-effects.
  * - Must throw when evaluated with `throwOnSideEffect: true`.
  * - Must be valid when run from any ExecutionContext that supports `throwOnSideEffect`.
- * @const
  */
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _sideEffectTestExpression = '(async function(){ await 1; })()';
+const sideEffectTestExpression = '(async function(){ await 1; })()';
 export var Events;
 (function (Events) {
     Events["BindingCalled"] = "BindingCalled";

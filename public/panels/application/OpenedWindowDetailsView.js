@@ -203,8 +203,6 @@ export class WorkerDetailsView extends UI.ThrottledWidget.ThrottledWidget {
     targetInfo;
     reportView;
     documentSection;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     isolationSection;
     coepPolicy;
     constructor(targetInfo) {

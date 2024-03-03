@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as SDK from './sdk.js';
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, clearMockConnectionResponseHandler, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler, clearMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 describeWithMockConnection('ServiceWorkerCacheModel', () => {
     let cacheStorageModel;
     let cache;

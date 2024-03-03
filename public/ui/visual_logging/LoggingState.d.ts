@@ -9,6 +9,7 @@ export interface LoggingState {
     parent: LoggingState | null;
     processedForDebugging?: boolean;
     size?: DOMRect;
+    selectOpen?: boolean;
 }
 export declare function getOrCreateLoggingState(loggable: Loggable, config: LoggingConfig, parent?: Loggable): LoggingState;
 export declare function getLoggingState(loggable: Loggable): LoggingState | null;

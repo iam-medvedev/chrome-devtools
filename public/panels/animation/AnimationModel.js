@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { AnimationDOMNode } from './AnimationDOMNode.js';
 export class AnimationModel extends SDK.SDKModel.SDKModel {
     runtimeModel;
     agent;
@@ -33,6 +34,13 @@ export class AnimationModel extends SDK.SDKModel.SDKModel {
         this.#pendingAnimations.clear();
         this.dispatchEventToListeners(Events.ModelReset);
     }
+    async devicePixelRatio() {
+        const evaluateResult = await this.target().runtimeAgent().invoke_evaluate({ expression: 'window.devicePixelRatio' });
+        if (evaluateResult?.result.type === 'number') {
+            return evaluateResult?.result.value ?? 1;
+        }
+        return 1;
+    }
     animationCreated(id) {
         this.#pendingAnimations.add(id);
     }
@@ -40,10 +48,20 @@ export class AnimationModel extends SDK.SDKModel.SDKModel {
         this.#pendingAnimations.delete(id);
         this.flushPendingAnimationsIfNeeded();
     }
-    animationStarted(payload) {
+    async animationStarted(payload) {
         // We are not interested in animations without effect or target.
         if (!payload.source || !payload.source.backendNodeId) {
             return;
+        }
+        // TODO(b/40929569): Remove normalizing by devicePixelRatio after the attached bug is resolved.
+        if (payload.viewOrScrollTimeline) {
+            const devicePixelRatio = await this.devicePixelRatio();
+            if (payload.viewOrScrollTimeline.startOffset) {
+                payload.viewOrScrollTimeline.startOffset /= devicePixelRatio;
+            }
+            if (payload.viewOrScrollTimeline.endOffset) {
+                payload.viewOrScrollTimeline.endOffset /= devicePixelRatio;
+            }
         }
         const animation = AnimationImpl.parsePayload(this, payload);
         if (!animation) {
@@ -96,12 +114,24 @@ export class AnimationModel extends SDK.SDKModel.SDKModel {
         if (!firstAnimation) {
             throw new Error('Unable to locate first animation');
         }
+        const shouldGroupAnimation = (anim) => {
+            const firstAnimationTimeline = firstAnimation.viewOrScrollTimeline();
+            const animationTimeline = anim.viewOrScrollTimeline();
+            if (firstAnimationTimeline) {
+                // This is a SDA group so check whether the animation's
+                // scroll container and scroll axis is the same with the first animation.
+                return Boolean(animationTimeline && firstAnimationTimeline.sourceNodeId === animationTimeline.sourceNodeId &&
+                    firstAnimationTimeline.axis === animationTimeline.axis);
+            }
+            // This is a non-SDA group so check whether the coming animation
+            // is a time based one too and if so, compare their start times.
+            return !animationTimeline && firstAnimation.startTime() === anim.startTime();
+        };
         const groupedAnimations = [firstAnimation];
-        const groupStartTime = firstAnimation.startTime();
         const remainingAnimations = new Set();
         for (const id of this.#pendingAnimations) {
             const anim = this.#animationsById.get(id);
-            if (anim.startTime() === groupStartTime) {
+            if (shouldGroupAnimation(anim)) {
                 groupedAnimations.push(anim);
             }
             else {
@@ -109,6 +139,8 @@ export class AnimationModel extends SDK.SDKModel.SDKModel {
             }
         }
         this.#pendingAnimations = remainingAnimations;
+        // Show the first starting animation at the top of the animations of the animation group.
+        groupedAnimations.sort((anim1, anim2) => anim1.startTime() - anim2.startTime());
         return new AnimationGroup(this, firstAnimationId, groupedAnimations);
     }
     setPlaybackRate(playbackRate) {
@@ -155,6 +187,25 @@ export class AnimationImpl {
     static parsePayload(animationModel, payload) {
         return new AnimationImpl(animationModel, payload);
     }
+    // `startTime` and `duration` is represented as the
+    // percentage of the view timeline range that starts at `startOffset`px
+    // from the scroll container and ends at `endOffset`px of the scroll container.
+    // This takes a percentage of the timeline range and returns the absolute
+    // pixels values as a scroll offset of the scroll container.
+    percentageToPixels(percentage, viewOrScrollTimeline) {
+        const { startOffset, endOffset } = viewOrScrollTimeline;
+        if (startOffset === undefined || endOffset === undefined) {
+            // We don't expect this situation to occur since after an animation is started
+            // we expect the scroll offsets to be resolved and provided correctly. If `startOffset`
+            // or `endOffset` is not provided in a viewOrScrollTimeline; we can assume that there is a bug here
+            // so it's fine to throw an error.
+            throw new Error('startOffset or endOffset does not exist in viewOrScrollTimeline');
+        }
+        return (endOffset - startOffset) * (percentage / 100);
+    }
+    viewOrScrollTimeline() {
+        return this.#payloadInternal.viewOrScrollTimeline;
+    }
     payload() {
         return this.#payloadInternal;
     }
@@ -176,21 +227,53 @@ export class AnimationImpl {
     playbackRate() {
         return this.#payloadInternal.playbackRate;
     }
+    // For scroll driven animations, it returns the pixel offset in the scroll container
+    // For time animations, it returns milliseconds.
     startTime() {
+        const viewOrScrollTimeline = this.viewOrScrollTimeline();
+        if (viewOrScrollTimeline) {
+            return this.percentageToPixels(this.playbackRate() > 0 ? this.#payloadInternal.startTime : 100 - this.#payloadInternal.startTime, viewOrScrollTimeline) +
+                (this.viewOrScrollTimeline()?.startOffset ?? 0);
+        }
         return this.#payloadInternal.startTime;
     }
+    // For scroll driven animations, it returns the duration in pixels (i.e. after how many pixels of scroll the animation is going to end)
+    // For time animations, it returns milliseconds.
+    iterationDuration() {
+        const viewOrScrollTimeline = this.viewOrScrollTimeline();
+        if (viewOrScrollTimeline) {
+            return this.percentageToPixels(this.source().duration(), viewOrScrollTimeline);
+        }
+        return this.source().duration();
+    }
+    // For scroll driven animations, it returns the duration in pixels (i.e. after how many pixels of scroll the animation is going to end)
+    // For time animations, it returns milliseconds.
     endTime() {
         if (!this.source().iterations) {
             return Infinity;
         }
+        if (this.viewOrScrollTimeline()) {
+            return this.startTime() + this.iterationDuration() * this.source().iterations();
+        }
         return this.startTime() + this.source().delay() + this.source().duration() * this.source().iterations() +
             this.source().endDelay();
     }
+    // For scroll driven animations, it returns the duration in pixels (i.e. after how many pixels of scroll the animation is going to end)
+    // For time animations, it returns milliseconds.
     finiteDuration() {
         const iterations = Math.min(this.source().iterations(), 3);
+        if (this.viewOrScrollTimeline()) {
+            return this.iterationDuration() * iterations;
+        }
         return this.source().delay() + this.source().duration() * iterations;
     }
+    // For scroll driven animations, it returns the duration in pixels (i.e. after how many pixels of scroll the animation is going to end)
+    // For time animations, it returns milliseconds.
     currentTime() {
+        const viewOrScrollTimeline = this.viewOrScrollTimeline();
+        if (viewOrScrollTimeline) {
+            return this.percentageToPixels(this.#payloadInternal.currentTime, viewOrScrollTimeline);
+        }
         return this.#payloadInternal.currentTime;
     }
     source() {
@@ -207,6 +290,15 @@ export class AnimationImpl {
         const firstAnimation = this.startTime() < animation.startTime() ? this : animation;
         const secondAnimation = firstAnimation === this ? animation : this;
         return firstAnimation.endTime() >= secondAnimation.startTime();
+    }
+    // Utility method for returning `delay` for time based animations
+    // and `startTime` in pixels for scroll driven animations. It is used to
+    // find the exact starting time of the first keyframe for both cases.
+    delayOrStartTime() {
+        if (this.viewOrScrollTimeline()) {
+            return this.startTime();
+        }
+        return this.source().delay();
     }
     setTiming(duration, delay) {
         void this.#sourceInternal.node().then(node => {
@@ -353,6 +445,7 @@ export class KeyframeStyle {
 export class AnimationGroup {
     #animationModel;
     #idInternal;
+    #scrollNodeInternal;
     #animationsInternal;
     #pausedInternal;
     screenshotsInternal;
@@ -364,6 +457,9 @@ export class AnimationGroup {
         this.#pausedInternal = false;
         this.screenshotsInternal = [];
         this.#screenshotImages = [];
+    }
+    isScrollDriven() {
+        return Boolean(this.#animationsInternal[0]?.viewOrScrollTimeline());
     }
     id() {
         return this.#idInternal;
@@ -384,12 +480,49 @@ export class AnimationGroup {
     startTime() {
         return this.#animationsInternal[0].startTime();
     }
+    // For scroll driven animations, it returns the duration in pixels (i.e. after how many pixels of scroll the animation is going to end)
+    // For time animations, it returns milliseconds.
+    groupDuration() {
+        let duration = 0;
+        for (const anim of this.#animationsInternal) {
+            duration = Math.max(duration, anim.delayOrStartTime() + anim.iterationDuration());
+        }
+        return duration;
+    }
+    // For scroll driven animations, it returns the duration in pixels (i.e. after how many pixels of scroll the animation is going to end)
+    // For time animations, it returns milliseconds.
     finiteDuration() {
         let maxDuration = 0;
         for (let i = 0; i < this.#animationsInternal.length; ++i) {
             maxDuration = Math.max(maxDuration, this.#animationsInternal[i].finiteDuration());
         }
         return maxDuration;
+    }
+    scrollOrientation() {
+        const timeline = this.#animationsInternal[0]?.viewOrScrollTimeline();
+        if (!timeline) {
+            return null;
+        }
+        return timeline.axis;
+    }
+    async scrollNode() {
+        if (this.#scrollNodeInternal) {
+            return this.#scrollNodeInternal;
+        }
+        if (!this.isScrollDriven()) {
+            return null;
+        }
+        const sourceNodeId = this.#animationsInternal[0]?.viewOrScrollTimeline()?.sourceNodeId;
+        if (!sourceNodeId) {
+            return null;
+        }
+        const deferredScrollNode = new SDK.DOMModel.DeferredDOMNode(this.#animationModel.target(), sourceNodeId);
+        const scrollNode = await deferredScrollNode.resolvePromise();
+        if (!scrollNode) {
+            return null;
+        }
+        this.#scrollNodeInternal = new AnimationDOMNode(scrollNode);
+        return this.#scrollNodeInternal;
     }
     seekTo(currentTime) {
         void this.#animationModel.agent.invoke_seekAnimations({ animations: this.animationIds(), currentTime });
@@ -419,10 +552,9 @@ export class AnimationGroup {
     }
     matches(group) {
         function extractId(anim) {
-            if (anim.type() === "WebAnimation" /* Protocol.Animation.AnimationType.WebAnimation */) {
-                return anim.type() + anim.id();
-            }
-            return anim.cssId();
+            const timelineId = (anim.viewOrScrollTimeline()?.sourceNodeId ?? '') + (anim.viewOrScrollTimeline()?.axis ?? '');
+            const regularId = anim.type() === "WebAnimation" /* Protocol.Animation.AnimationType.WebAnimation */ ? anim.type() + anim.id() : anim.cssId();
+            return regularId + timelineId;
         }
         if (this.#animationsInternal.length !== group.#animationsInternal.length) {
             return false;
@@ -439,6 +571,7 @@ export class AnimationGroup {
     update(group) {
         this.#animationModel.releaseAnimations(this.animationIds());
         this.#animationsInternal = group.#animationsInternal;
+        this.#scrollNodeInternal = undefined;
     }
     screenshots() {
         for (let i = 0; i < this.screenshotsInternal.length; ++i) {
@@ -462,7 +595,7 @@ export class AnimationDispatcher {
         this.#animationModel.animationCanceled(id);
     }
     animationStarted({ animation }) {
-        this.#animationModel.animationStarted(animation);
+        void this.#animationModel.animationStarted(animation);
     }
 }
 export class ScreenshotCapture {

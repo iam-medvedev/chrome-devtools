@@ -114,6 +114,24 @@ main {
   font-style: normal;
   font-weight: 400;
   line-height: 20px;
+
+  p {
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+  }
+
+  ul {
+    padding-left: 1em;
+  }
+
+  label {
+    display: inline-block;
+
+    input,
+    span {
+      vertical-align: middle;
+    }
+  }
 }
 
 devtools-markdown-view {
@@ -123,12 +141,13 @@ devtools-markdown-view {
 footer {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  align-items: center;
   color: var(--sys-color-on-surface);
   font-style: normal;
   font-weight: 400;
   line-height: normal;
   margin-top: 14px;
+  gap: 32px;
 }
 
 footer > .filler {
@@ -138,7 +157,7 @@ footer > .filler {
 footer .rating {
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 8px;
 }
 
 textarea {
@@ -152,7 +171,8 @@ textarea {
 }
 
 .buttons {
-  margin-bottom: 16px;
+  display: flex;
+  gap: 5px;
 }
 
 .disclaimer {

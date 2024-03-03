@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as Logs from '../logs/logs.js';
-import { MockNetworkLog, createNetworkRequest } from '../../../test/unittests/front_end/helpers/MockNetworkLog.js';
+import { MockNetworkLog, createNetworkRequest } from '../../testing/MockNetworkLog.js';
 describe('RequestResolver', () => {
     const requestId1 = 'foo';
     describe('tryGet', () => {

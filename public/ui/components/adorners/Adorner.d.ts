@@ -2,6 +2,7 @@ import type * as Platform from '../../../core/platform/platform.js';
 export interface AdornerData {
     name: string;
     content: HTMLElement;
+    jslogContext?: string;
 }
 export declare class Adorner extends HTMLElement {
     #private;

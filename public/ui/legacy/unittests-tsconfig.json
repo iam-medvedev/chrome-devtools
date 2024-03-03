@@ -66,9 +66,6 @@
       "path": "./bundle-tsconfig.json"
     },
     {
-      "path": "../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
-    },
-    {
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
@@ -79,6 +76,9 @@
     },
     {
       "path": "../../core/root/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../testing/testing-tsconfig.json"
     },
     {
       "path": "components/quick_open/bundle-tsconfig.json"

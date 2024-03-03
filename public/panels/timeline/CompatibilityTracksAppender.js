@@ -94,6 +94,20 @@ export class CompatibilityTracksAppender {
     getFlameChartTimelineData() {
         return this.#flameChartData;
     }
+    getHiddenEvents(group) {
+        const appender = this.#trackForGroup.get(group);
+        if (appender && appender.entriesFilter) {
+            return appender.entriesFilter().invisibleEntries();
+        }
+        console.warn('Could not get hidden events.');
+    }
+    getModifiedEntries(group) {
+        const appender = this.#trackForGroup.get(group);
+        if (appender && appender.entriesFilter) {
+            return appender.entriesFilter().modifiedEntries();
+        }
+        console.warn('Could not get modified events.');
+    }
     modifyTree(group, entry, type) {
         const appender = this.#trackForGroup.get(group);
         if (appender && appender.entriesFilter) {
@@ -108,7 +122,7 @@ export class CompatibilityTracksAppender {
         if (appender && appender.entriesFilter) {
             return appender.entriesFilter().findPossibleActions(node);
         }
-        console.warn('Could not modify tree on a track.');
+        console.warn('Could not find possible context menu actions.');
     }
     findHiddenDescendantsAmount(group, node) {
         const appender = this.#trackForGroup.get(group);

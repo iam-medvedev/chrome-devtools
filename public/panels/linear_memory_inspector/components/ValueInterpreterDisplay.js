@@ -148,7 +148,8 @@ export class ValueInterpreterDisplay extends HTMLElement {
           @change=${this.#onValueTypeModeChange.bind(this, type)}>
             ${VALUE_TYPE_MODE_LIST.filter(x => isValidMode(type, x)).map(mode => {
             return html `
-                <option value=${mode} .selected=${this.#valueTypeModeConfig.get(type) === mode}>${i18n.i18n.lockedString(mode)}
+                <option value=${mode} .selected=${this.#valueTypeModeConfig.get(type) === mode}
+                        jslog=${VisualLogging.item(mode).track({ click: true })}>${i18n.i18n.lockedString(mode)}
                 </option>`;
         })}
         </select>

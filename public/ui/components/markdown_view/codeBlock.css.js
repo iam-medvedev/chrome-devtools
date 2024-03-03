@@ -81,6 +81,16 @@ code {
   --copy-icon-color: var(--sys-color-primary);
 }
 
+.notice {
+  margin-top: 3px;
+  margin-left: 3px;
+
+  .link {
+    color: var(--sys-color-primary);
+    text-decoration-line: underline;
+  }
+}
+
 /*# sourceURL=codeBlock.css */
 `);
 

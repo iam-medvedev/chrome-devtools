@@ -2255,9 +2255,6 @@
   "panels/application/ApplicationPanelSidebar.ts | versionSEmpty": {
     "message": "Version: {PH1} (empty)"
   },
-  "panels/application/ApplicationPanelSidebar.ts | webSql": {
-    "message": "Web SQL"
-  },
   "panels/application/ApplicationPanelSidebar.ts | webWorkers": {
     "message": "Web Workers"
   },
@@ -2848,6 +2845,9 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
     "message": "Pages with an in-flight XHR network request are not currently eligible for back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ParserAborted": {
+    "message": "Undefined"
   },
   "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
     "message": "Pages that use PaymentManager are not currently eligible for back/forward cache."
@@ -3524,33 +3524,6 @@
   "panels/application/CookieItemsView.ts | showUrlDecoded": {
     "message": "Show URL-decoded"
   },
-  "panels/application/DatabaseModel.ts | anUnexpectedErrorSOccurred": {
-    "message": "An unexpected error {PH1} occurred."
-  },
-  "panels/application/DatabaseModel.ts | databaseNoLongerHasExpected": {
-    "message": "Database no longer has expected version."
-  },
-  "panels/application/DatabaseQueryView.ts | databaseQuery": {
-    "message": "Database Query"
-  },
-  "panels/application/DatabaseQueryView.ts | queryS": {
-    "message": "Query: {PH1}"
-  },
-  "panels/application/DatabaseTableView.ts | anErrorOccurredTryingToreadTheS": {
-    "message": "An error occurred trying to read the \"{PH1}\" table."
-  },
-  "panels/application/DatabaseTableView.ts | database": {
-    "message": "Database"
-  },
-  "panels/application/DatabaseTableView.ts | refresh": {
-    "message": "Refresh"
-  },
-  "panels/application/DatabaseTableView.ts | theStableIsEmpty": {
-    "message": "The \"{PH1}\" table is empty."
-  },
-  "panels/application/DatabaseTableView.ts | visibleColumns": {
-    "message": "Visible columns"
-  },
   "panels/application/DOMStorageItemsView.ts | domStorage": {
     "message": "DOM Storage"
   },
@@ -4219,9 +4192,6 @@
   },
   "panels/application/ReportingApiTreeElement.ts | reportingApi": {
     "message": "Reporting API"
-  },
-  "panels/application/ResourcesPanel.ts | webSqlDeprecation": {
-    "message": "Web SQL is deprecated. You can join the deprecation trial to keep using it until Chrome 123."
   },
   "panels/application/ServiceWorkerCacheTreeElement.ts | cacheStorage": {
     "message": "Cache storage"
@@ -5160,13 +5130,13 @@
     "message": "<exception>"
   },
   "panels/console/ConsoleViewMessage.ts | explainThisError": {
-    "message": "Explain this error"
+    "message": "Understand this error"
   },
   "panels/console/ConsoleViewMessage.ts | explainThisMessage": {
-    "message": "Explain this message"
+    "message": "Understand this message"
   },
   "panels/console/ConsoleViewMessage.ts | explainThisWarning": {
-    "message": "Explain this warning"
+    "message": "Understand this warning"
   },
   "panels/console/ConsoleViewMessage.ts | functionWasResolvedFromBound": {
     "message": "Function was resolved from bound function."
@@ -6386,29 +6356,23 @@
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Toggle whether event listener is passive or blocking"
   },
+  "panels/explain/components/ConsoleInsight.ts | cancel": {
+    "message": "Cancel"
+  },
   "panels/explain/components/ConsoleInsight.ts | closeInsight": {
     "message": "Close insight"
-  },
-  "panels/explain/components/ConsoleInsight.ts | consentButton": {
-    "message": "Continue"
   },
   "panels/explain/components/ConsoleInsight.ts | consoleMessage": {
     "message": "Console message"
   },
-  "panels/explain/components/ConsoleInsight.ts | disclaimer": {
-    "message": "The following data will be sent to Google to find an explanation for the console message. They may be reviewed by humans and used to improve products."
-  },
   "panels/explain/components/ConsoleInsight.ts | error": {
-    "message": "Something went wrong…"
+    "message": "Console insights has encountered an error"
   },
-  "panels/explain/components/ConsoleInsight.ts | finePrint": {
-    "message": "This is an experimental AI insights tool and won’t always get it right."
+  "panels/explain/components/ConsoleInsight.ts | errorBody": {
+    "message": "Something went wrong. Try again."
   },
   "panels/explain/components/ConsoleInsight.ts | generating": {
-    "message": "Coming up with an explanation…"
-  },
-  "panels/explain/components/ConsoleInsight.ts | goToSettings": {
-    "message": "Go to settings"
+    "message": "Insight generation is in progress…"
   },
   "panels/explain/components/ConsoleInsight.ts | inputData": {
     "message": "Data used to create this insight"
@@ -6417,7 +6381,7 @@
     "message": "Insight"
   },
   "panels/explain/components/ConsoleInsight.ts | learnMore": {
-    "message": "Learn more about AI in DevTools"
+    "message": "Learn more"
   },
   "panels/explain/components/ConsoleInsight.ts | networkRequest": {
     "message": "Network request"
@@ -6426,16 +6390,22 @@
     "message": "Console insights is not available"
   },
   "panels/explain/components/ConsoleInsight.ts | notLoggedIn": {
-    "message": "This feature is only available if you are signed into Chrome with your Google account."
+    "message": "This feature is only available when you sign into Chrome with your Google account."
   },
   "panels/explain/components/ConsoleInsight.ts | offline": {
-    "message": "Internet connection is currently not available."
+    "message": "Check your internet connection and try again."
+  },
+  "panels/explain/components/ConsoleInsight.ts | offlineHeader": {
+    "message": "Console insights can’t reach the internet"
   },
   "panels/explain/components/ConsoleInsight.ts | opensInNewTab": {
     "message": "(opens in a new tab)"
   },
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "Related code"
+  },
+  "panels/explain/components/ConsoleInsight.ts | signInToUse": {
+    "message": "Sign in to use Console insights"
   },
   "panels/explain/components/ConsoleInsight.ts | stackTrace": {
     "message": "Stacktrace"
@@ -6444,7 +6414,7 @@
     "message": "Submit feedback"
   },
   "panels/explain/components/ConsoleInsight.ts | syncIsOff": {
-    "message": "This feature is only available if you have Chrome sync turned on."
+    "message": "This feature requires you to turn on Chrome sync."
   },
   "panels/explain/components/ConsoleInsight.ts | thumbsDown": {
     "message": "Thumbs down"
@@ -6452,20 +6422,23 @@
   "panels/explain/components/ConsoleInsight.ts | thumbsUp": {
     "message": "Thumbs up"
   },
+  "panels/explain/components/ConsoleInsight.ts | updateSettings": {
+    "message": "Update Settings"
+  },
   "panels/explain/explain-meta.ts | enableConsoleInsights": {
-    "message": "Enable Console Insights"
+    "message": "Enable Console insights"
   },
   "panels/explain/explain-meta.ts | explainThisError": {
-    "message": "Explain this error"
+    "message": "Understand this error"
   },
   "panels/explain/explain-meta.ts | explainThisMessage": {
-    "message": "Explain this message"
+    "message": "Understand this message"
   },
   "panels/explain/explain-meta.ts | explainThisWarning": {
-    "message": "Explain this warning"
+    "message": "Understand this warning"
   },
   "panels/explain/explain-meta.ts | wrongLocale": {
-    "message": "Only English locales are currently supported."
+    "message": "To use this feature, update your Language preference in DevTools Settings to English."
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "Blocked Resource"

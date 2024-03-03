@@ -1,14 +1,14 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertShadowRoot, dispatchInputEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { createWorkspaceProject, setUpEnvironment, } from '../../../../test/unittests/front_end/helpers/OverridesHelpers.js';
-import { recordedMetricsContain, resetRecordedMetrics, } from '../../../../test/unittests/front_end/helpers/UserMetricsHelpers.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
+import { assertElement, assertShadowRoot, dispatchInputEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { createWorkspaceProject, setUpEnvironment, } from '../../../testing/OverridesHelpers.js';
+import { recordedMetricsContain, resetRecordedMetrics, } from '../../../testing/UserMetricsHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as NetworkForward from '../forward/forward.js';
 import * as NetworkComponents from './components.js';

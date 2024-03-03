@@ -553,29 +553,29 @@ export class NetworkLogViewColumns {
                 // Make sure that at least one item in every group is enabled
                 const disabled = visibleColumns.length === 1 && visibleColumns[0] === columnConfig;
                 const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
-                contextMenu.headerSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible, disabled });
+                contextMenu.headerSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible, disabled, jslogContext: columnConfig.id });
             }
             contextMenu.headerSection().appendSeparator();
         }
         // Add normal columns not belonging to any group
         for (const columnConfig of nonResponseHeadersWithoutGroup) {
             const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
-            contextMenu.headerSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible });
+            contextMenu.headerSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible, jslogContext: columnConfig.id });
         }
-        const responseSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString(UIStrings.responseHeaders));
+        const responseSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString(UIStrings.responseHeaders), false, 'response-headers');
         const responseHeaders = columnConfigs.filter(columnConfig => columnConfig.isResponseHeader);
         for (const columnConfig of responseHeaders) {
             const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
-            responseSubMenu.defaultSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible });
+            responseSubMenu.defaultSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible, jslogContext: columnConfig.id });
         }
-        responseSubMenu.footerSection().appendItem(i18nString(UIStrings.manageHeaderColumns), this.manageCustomHeaderDialog.bind(this));
+        responseSubMenu.footerSection().appendItem(i18nString(UIStrings.manageHeaderColumns), this.manageCustomHeaderDialog.bind(this), { jslogContext: 'manage-header-columns' });
         const waterfallSortIds = WaterfallSortIds;
-        const waterfallSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString(UIStrings.waterfall));
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.startTime), setWaterfallMode.bind(this, waterfallSortIds.StartTime), { checked: this.activeWaterfallSortId === waterfallSortIds.StartTime });
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.responseTime), setWaterfallMode.bind(this, waterfallSortIds.ResponseTime), { checked: this.activeWaterfallSortId === waterfallSortIds.ResponseTime });
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.endTime), setWaterfallMode.bind(this, waterfallSortIds.EndTime), { checked: this.activeWaterfallSortId === waterfallSortIds.EndTime });
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.totalDuration), setWaterfallMode.bind(this, waterfallSortIds.Duration), { checked: this.activeWaterfallSortId === waterfallSortIds.Duration });
-        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.latency), setWaterfallMode.bind(this, waterfallSortIds.Latency), { checked: this.activeWaterfallSortId === waterfallSortIds.Latency });
+        const waterfallSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString(UIStrings.waterfall), false, 'waterfall');
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.startTime), setWaterfallMode.bind(this, waterfallSortIds.StartTime), { checked: this.activeWaterfallSortId === waterfallSortIds.StartTime, jslogContext: 'start-time' });
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.responseTime), setWaterfallMode.bind(this, waterfallSortIds.ResponseTime), { checked: this.activeWaterfallSortId === waterfallSortIds.ResponseTime, jslogContext: 'response-time' });
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.endTime), setWaterfallMode.bind(this, waterfallSortIds.EndTime), { checked: this.activeWaterfallSortId === waterfallSortIds.EndTime, jslogContext: 'end-time' });
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.totalDuration), setWaterfallMode.bind(this, waterfallSortIds.Duration), { checked: this.activeWaterfallSortId === waterfallSortIds.Duration, jslogContext: 'total-duration' });
+        waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.latency), setWaterfallMode.bind(this, waterfallSortIds.Latency), { checked: this.activeWaterfallSortId === waterfallSortIds.Latency, jslogContext: 'latency' });
         function setWaterfallMode(sortId) {
             let calculator = this.calculatorsMap.get("Time" /* CalculatorTypes.Time */);
             const waterfallSortIds = WaterfallSortIds;
@@ -597,7 +597,7 @@ export class NetworkLogViewColumns {
             }
         }
         const manageCustomHeaders = new NetworkManageCustomHeadersView(customHeaders, headerTitle => Boolean(this.addCustomHeader(headerTitle)), this.changeCustomHeader.bind(this), this.removeCustomHeader.bind(this));
-        const dialog = new UI.Dialog.Dialog();
+        const dialog = new UI.Dialog.Dialog('manage-custom-headers');
         manageCustomHeaders.show(dialog.contentElement);
         dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MeasureContent */);
         // @ts-ignore
@@ -801,14 +801,14 @@ const _temporaryDefaultColumns = [
         sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, 'domain'),
     },
     {
-        id: 'remoteaddress',
+        id: 'remote-address',
         title: i18nLazyString(UIStrings.remoteAddress),
         weight: 10,
         align: "right" /* DataGrid.DataGrid.Align.Right */,
         sortingFunction: NetworkRequestNode.RemoteAddressComparator,
     },
     {
-        id: 'remoteaddress-space',
+        id: 'remote-address-space',
         title: i18nLazyString(UIStrings.remoteAddressSpace),
         visible: false,
         weight: 10,
@@ -841,7 +841,7 @@ const _temporaryDefaultColumns = [
         sortingFunction: NetworkRequestNode.RequestCookiesCountComparator,
     },
     {
-        id: 'setcookies',
+        id: 'set-cookies',
         title: i18nLazyString(UIStrings.setCookies),
         align: "right" /* DataGrid.DataGrid.Align.Right */,
         sortingFunction: NetworkRequestNode.ResponseCookiesCountComparator,
@@ -864,7 +864,7 @@ const _temporaryDefaultColumns = [
     },
     { id: 'priority', title: i18nLazyString(UIStrings.priority), sortingFunction: NetworkRequestNode.PriorityComparator },
     {
-        id: 'connectionid',
+        id: 'connection-id',
         title: i18nLazyString(UIStrings.connectionId),
         sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, 'connectionId'),
     },

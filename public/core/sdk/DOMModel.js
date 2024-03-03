@@ -8,6 +8,7 @@ import * as Root from '../root/root.js';
 import { CSSModel } from './CSSModel.js';
 import { FrameManager } from './FrameManager.js';
 import { OverlayModel } from './OverlayModel.js';
+import { RemoteObject } from './RemoteObject.js';
 import { ResourceTreeModel } from './ResourceTreeModel.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
@@ -723,8 +724,8 @@ export class DOMNode {
     highlightForTwoSeconds() {
         this.#domModelInternal.overlayModel().highlightInOverlayForTwoSeconds({ node: this, selectorList: undefined });
     }
-    async resolveToObject(objectGroup) {
-        const { object } = await this.#agent.invoke_resolveNode({ nodeId: this.id, backendNodeId: undefined, objectGroup });
+    async resolveToObject(objectGroup, executionContextId) {
+        const { object } = await this.#agent.invoke_resolveNode({ nodeId: this.id, backendNodeId: undefined, executionContextId, objectGroup });
         return object && this.#domModelInternal.runtimeModelInternal.createRemoteObject(object) || null;
     }
     async boxModel() {
@@ -763,19 +764,31 @@ export class DOMNode {
         }
         return node;
     }
+    async callFunction(fn, args = []) {
+        const object = await this.resolveToObject();
+        if (!object) {
+            return null;
+        }
+        const result = await object.callFunction(fn, args.map(arg => RemoteObject.toCallArgument(arg)));
+        object.release();
+        if (result.wasThrown || !result.object) {
+            return null;
+        }
+        return {
+            value: result.object.value,
+        };
+    }
     async scrollIntoView() {
         const node = this.enclosingElementOrSelf();
         if (!node) {
             return;
         }
-        const object = await node.resolveToObject();
-        if (!object) {
+        const result = await node.callFunction(scrollIntoViewInPage);
+        if (!result) {
             return;
         }
-        await object.callFunction(scrollIntoView);
-        object.release();
         node.highlightForTwoSeconds();
-        function scrollIntoView() {
+        function scrollIntoViewInPage() {
             this.scrollIntoViewIfNeeded(true);
         }
     }
@@ -784,12 +797,10 @@ export class DOMNode {
         if (!node) {
             throw new Error('DOMNode.focus expects node to not be null.');
         }
-        const object = await node.resolveToObject();
-        if (!object) {
+        const result = await node.callFunction(focusInPage);
+        if (!result) {
             return;
         }
-        await object.callFunction(focusInPage);
-        object.release();
         node.highlightForTwoSeconds();
         await this.#domModelInternal.target().pageAgent().invoke_bringToFront();
         function focusInPage() {
@@ -1397,9 +1408,7 @@ class DOMDispatcher {
         this.#domModel.topLayerElementsUpdated();
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let DOMModelUndoStackInstance;
+let domModelUndoStackInstance = null;
 export class DOMModelUndoStack {
     #stack;
     #index;
@@ -1411,10 +1420,10 @@ export class DOMModelUndoStack {
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
-        if (!DOMModelUndoStackInstance || forceNew) {
-            DOMModelUndoStackInstance = new DOMModelUndoStack();
+        if (!domModelUndoStackInstance || forceNew) {
+            domModelUndoStackInstance = new DOMModelUndoStack();
         }
-        return DOMModelUndoStackInstance;
+        return domModelUndoStackInstance;
     }
     async markUndoableState(model, minorChange) {
         // Both minor and major changes get into the #stack, but minor updates are coalesced.

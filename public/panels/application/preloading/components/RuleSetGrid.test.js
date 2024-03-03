@@ -1,9 +1,9 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertGridContents } from '../../../../../test/unittests/front_end/helpers/DataGridHelpers.js';
-import { renderElementIntoDOM } from '../../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { assertGridContents } from '../../../../testing/DataGridHelpers.js';
+import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();

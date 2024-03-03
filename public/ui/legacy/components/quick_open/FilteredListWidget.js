@@ -7,6 +7,7 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as Diff from '../../../../third_party/diff/diff.js';
 import * as TextPrompt from '../../../../ui/components/text_prompt/text_prompt.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import filteredListWidgetStyles from './filteredListWidget.css.js';
 const UIStrings = {
@@ -66,6 +67,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         this.inputBoxElement = new TextPrompt.TextPrompt.TextPrompt();
         this.inputBoxElement.data = { ariaLabel: i18nString(UIStrings.quickOpenPrompt), prefix: '', suggestion: '' };
         this.inputBoxElement.addEventListener(TextPrompt.TextPrompt.PromptInputEvent.eventName, this.onInput.bind(this), false);
+        this.inputBoxElement.setAttribute('jslog', `${VisualLogging.textField().track({ keydown: 'Enter|Tab' })}`);
         hbox.appendChild(this.inputBoxElement);
         this.hintElement = hbox.createChild('span', 'filtered-list-widget-hint');
         this.bottomElementsContainer = this.contentElement.createChild('div', 'vbox');
@@ -140,7 +142,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         if (!dialogTitle) {
             dialogTitle = i18nString(UIStrings.quickOpen);
         }
-        this.dialog = new UI.Dialog.Dialog();
+        this.dialog = new UI.Dialog.Dialog('quick-open');
         UI.ARIAUtils.setLabel(this.dialog.contentElement, dialogTitle);
         this.dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
         this.dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SetExactWidthMaxHeight */);
@@ -210,6 +212,10 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
             return;
         }
         event.preventDefault();
+        const element = this.list.elementAtIndex(this.list.selectedIndex());
+        if (element) {
+            void VisualLogging.logClick(element, event);
+        }
         const selectedIndexInProvider = this.provider.itemCount() ? this.list.selectedItem() : null;
         this.selectItem(selectedIndexInProvider);
         if (this.dialog) {
@@ -237,6 +243,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         subtitleElement.textContent = '\u200B';
         if (this.provider) {
             this.provider.renderItem(item, this.cleanValue(), titleElement, subtitleElement);
+            wrapperElement.setAttribute('jslog', `${VisualLogging.item(this.provider.jslogContextAt(item)).track({ click: true })}`);
         }
         UI.ARIAUtils.markAsOption(itemElement);
         return wrapperElement;
@@ -494,7 +501,9 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
 }
 export class Provider {
     refreshCallback;
-    constructor() {
+    jslogContext;
+    constructor(jslogContext) {
+        this.jslogContext = jslogContext;
     }
     setRefreshCallback(refreshCallback) {
         this.refreshCallback = refreshCallback;
@@ -511,6 +520,9 @@ export class Provider {
         return 1;
     }
     renderItem(_itemIndex, _query, _titleElement, _subtitleElement) {
+    }
+    jslogContextAt(_itemIndex) {
+        return this.jslogContext;
     }
     renderAsTwoRows() {
         return false;

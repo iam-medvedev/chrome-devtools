@@ -8,7 +8,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as HAR from '../har/har.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Platform from '../../core/platform/platform.js';
-import { describeWithLocale } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 const simulateRequestWithStartTime = (startTime) => {
     const requestId = 'r0';
     const request = SDK.NetworkRequest.NetworkRequest.create(requestId, 'p0.com', Platform.DevToolsPath.EmptyUrlString, null, null, null);

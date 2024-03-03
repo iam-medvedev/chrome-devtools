@@ -203,7 +203,7 @@ export class IDBDatabaseView extends ApplicationComponents.StorageMetadataView.S
         // Sniffed in tests.
     }
     async deleteDatabase() {
-        const ok = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.pleaseConfirmDeleteOfSDatabase, { PH1: this.database.databaseId.name }), this);
+        const ok = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.pleaseConfirmDeleteOfSDatabase, { PH1: this.database.databaseId.name }), this, { jslogContext: 'delete-database-confirmation' });
         if (ok) {
             void this.model.deleteDatabase(this.database.databaseId);
         }

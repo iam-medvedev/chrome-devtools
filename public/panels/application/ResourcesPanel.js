@@ -9,17 +9,9 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ApplicationPanelSidebar, StorageCategoryView } from './ApplicationPanelSidebar.js';
 import { CookieItemsView } from './CookieItemsView.js';
-import { DatabaseQueryView } from './DatabaseQueryView.js';
-import { DatabaseTableView } from './DatabaseTableView.js';
 import { DOMStorageItemsView } from './DOMStorageItemsView.js';
 import resourcesPanelStyles from './resourcesPanel.css.js';
 import { StorageItemsView } from './StorageItemsView.js';
-const UIStrings = {
-    /**
-     *@description Web SQL deprecation warning message
-     */
-    webSqlDeprecation: 'Web SQL is deprecated. You can join the deprecation trial to keep using it until Chrome 123.',
-};
 let resourcesPanelInstance;
 export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     resourcesLastSelectedItemSetting;
@@ -63,8 +55,6 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
             SourceFrame.ImageView.ImageView,
             SourceFrame.FontView.FontView,
             StorageItemsView,
-            DatabaseQueryView,
-            DatabaseTableView,
         ];
         return viewClassesToClose.some(type => view instanceof type);
     }
@@ -123,11 +113,6 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
         this.categoryView.element.setAttribute('jslog', `${VisualLogging.pane().context(Platform.StringUtilities.toKebabCase(categoryName))}`);
         this.categoryView.setText(categoryName);
         this.categoryView.setLink(categoryLink);
-        const categoryWarning = categoryName === 'Web SQL' ? UIStrings.webSqlDeprecation : null;
-        const learnMoreLink = categoryName === 'Web SQL' ?
-            'https://developer.chrome.com/blog/deprecating-web-sql/' :
-            Platform.DevToolsPath.EmptyUrlString;
-        this.categoryView.setWarning(categoryWarning, learnMoreLink, categoryName === 'Web SQL' ? 'deprecation-warning' : undefined);
         this.showView(this.categoryView);
     }
     showDOMStorage(domStorage) {

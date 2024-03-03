@@ -4,11 +4,11 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { MockExecutionContext } from '../../testing/MockExecutionContext.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Snippets from './snippets.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { MockExecutionContext } from '../../../test/unittests/front_end/helpers/MockExecutionContext.js';
 describeWithMockConnection('ScriptSnippetFileSystem', () => {
     it('evaluates snippets with user gesture', async () => {
         UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, new MockExecutionContext(createTarget()));

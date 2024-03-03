@@ -869,9 +869,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
     static isV8NativeURL(url) {
         return url.startsWith(AggregatedTimelineTreeView.v8NativePrefix);
     }
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     static extensionInternalPrefix = 'extensions::';
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     static v8NativePrefix = 'native ';
 }
 (function (AggregatedTimelineTreeView) {

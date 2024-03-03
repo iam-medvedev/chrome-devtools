@@ -1,16 +1,19 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, getCleanTextContentFromElements } from '../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { createTarget, stubNoopSettings } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
 import * as Common from '../../core/common/common.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { assertElement, getCleanTextContentFromElements } from '../../testing/DOMHelpers.js';
+import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 const { assert } = chai;
 describeWithMockConnection('AppManifestView', () => {
+    const FIXTURES_96X96_URL = `${new URL('./fixtures/96x96.png', import.meta.url)}`;
+    const FIXTURES_320X320_URL = `${new URL('./fixtures/320x320.png', import.meta.url)}`;
+    const FIXTURES_640X320_URL = `${new URL('./fixtures/640x320.png', import.meta.url)}`;
     const tests = (targetFactory) => {
         let target;
         let emptyView;
@@ -112,27 +115,27 @@ describeWithMockConnection('AppManifestView', () => {
             "name": "Today's agenda",
             "url": "/today",
             "description": "List of events planned for today",
-            "icons": [{ "src": "/fixtures/images/96x96.png", "sizes": "96x96" }]
+            "icons": [{ "src": "${FIXTURES_96X96_URL}", "sizes": "96x96" }]
           },
           {
             "name": "New event",
             "url": "/create/event",
-            "icons": [{ "src": "/fixtures/images/96x96.png", "sizes": "96x96" }]
+            "icons": [{ "src": "${FIXTURES_96X96_URL}", "sizes": "96x96" }]
           },
           {
             "name": "New reminder",
             "url": "/create/reminder",
-            "icons": [{ "src": "/fixtures/images/96x96.png", "sizes": "96x96" }]
+            "icons": [{ "src": "${FIXTURES_96X96_URL}", "sizes": "96x96" }]
           },
           {
             "name": "Delete event",
             "url": "/delete/reminder",
-            "icons": [{ "src": "/fixtures/images/96x96.png", "sizes": "96x96" }]
+            "icons": [{ "src": "${FIXTURES_96X96_URL}", "sizes": "96x96" }]
           },
           {
             "name": "Delete reminder",
             "url": "/delete/reminder",
-            "icons": [{ "src": "/fixtures/images/96x96.png", "sizes": "96x96" }]
+            "icons": [{ "src": "${FIXTURES_96X96_URL}", "sizes": "96x96" }]
           }
         ]
       }`);
@@ -148,32 +151,32 @@ describeWithMockConnection('AppManifestView', () => {
             const actual = await renderWithWarnings(`{
         "screenshots": [
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320"
           }
@@ -190,55 +193,55 @@ describeWithMockConnection('AppManifestView', () => {
             const actual = await renderWithWarnings(`{
         "screenshots": [
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320",
             "form_factor": "wide"
           },
           {
-            "src": "/fixtures/images/640x320.png",
+            "src": "${FIXTURES_640X320_URL}",
             "type": "image/png",
             "sizes": "640x320",
             "form_factor": "wide"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320",
             "form_factor": "wide"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320",
             "form_factor": "wide"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320",
             "form_factor": "wide"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320",
             "form_factor": "wide"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320",
             "form_factor": "wide"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320",
             "form_factor": "wide"
           },
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320",
             "form_factor": "wide"
@@ -257,7 +260,7 @@ describeWithMockConnection('AppManifestView', () => {
             await renderWithWarnings(`{
         "screenshots": [
           {
-            "src": "/fixtures/images/320x320.png",
+            "src": "${FIXTURES_320X320_URL}",
             "type": "image/png",
             "sizes": "320x320",
             "form_factor": "wide",

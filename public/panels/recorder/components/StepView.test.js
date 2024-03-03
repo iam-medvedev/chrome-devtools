@@ -7,8 +7,8 @@ import * as Converters from '../converters/converters.js';
 import * as Components from './components.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import { dispatchClickEvent, getEventPromise, renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithEnvironment, } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { dispatchClickEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('StepView', () => {
     const step = { type: Models.Schema.StepType.Scroll };

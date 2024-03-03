@@ -228,7 +228,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingProperty);
         this.contentElement.appendChild(this.#computedStylesTree);
-        this.linkifier = new Components.Linkifier.Linkifier(_maxLinkLength);
+        this.linkifier = new Components.Linkifier.Linkifier(maxLinkLength);
         this.imagePreviewPopover = new ImagePreviewPopover(this.contentElement, event => {
             const link = event.composedPath()[0];
             if (link instanceof Element) {
@@ -293,7 +293,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
             const propertyValue = nodeStyle.computedStyle.get(propertyName) || '';
             const canonicalName = SDK.CSSMetadata.cssMetadata().canonicalPropertyName(propertyName);
             const isInherited = !nonInheritedProperties.has(canonicalName);
-            if (!showInherited && isInherited && !_alwaysShownComputedProperties.has(propertyName)) {
+            if (!showInherited && isInherited && !alwaysShownComputedProperties.has(propertyName)) {
                 continue;
             }
             if (!showInherited && propertyName.startsWith('--')) {
@@ -329,7 +329,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         for (const [propertyName, propertyValue] of nodeStyle.computedStyle) {
             const canonicalName = SDK.CSSMetadata.cssMetadata().canonicalPropertyName(propertyName);
             const isInherited = !nonInheritedProperties.has(canonicalName);
-            if (!showInherited && isInherited && !_alwaysShownComputedProperties.has(propertyName)) {
+            if (!showInherited && isInherited && !alwaysShownComputedProperties.has(propertyName)) {
                 continue;
             }
             if (!showInherited && propertyName.startsWith('--')) {
@@ -521,10 +521,6 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         this.noMatchesElement.classList.toggle('hidden', Boolean(tree.length));
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _maxLinkLength = 30;
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _alwaysShownComputedProperties = new Set(['display', 'height', 'width']);
+const maxLinkLength = 30;
+const alwaysShownComputedProperties = new Set(['display', 'height', 'width']);
 //# sourceMappingURL=ComputedStyleWidget.js.map

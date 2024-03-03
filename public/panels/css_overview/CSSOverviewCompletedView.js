@@ -697,7 +697,6 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
     setOverviewData(data) {
         void this.#render(data);
     }
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     static pushedNodes = new Set();
 }
 export class DetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {

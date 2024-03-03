@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as IssuesManager from '../issues_manager/issues_manager.js';
-import { MockIssuesModel } from '../../../test/unittests/front_end/helpers/MockIssuesModel.js';
-import { describeWithLocale } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
+import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 describeWithLocale('GenericIssue', () => {
     const mockModel = new MockIssuesModel([]);
     function createProtocolIssueWithoutDetails() {

@@ -780,6 +780,8 @@ export class ToolbarComboBox extends ToolbarItem {
         if (typeof value !== 'undefined') {
             option.value = value;
         }
+        const jslogContext = value ? Platform.StringUtilities.toKebabCase(value) : undefined;
+        option.setAttribute('jslog', `${VisualLogging.item(jslogContext).track({ click: true })}`);
         return option;
     }
     applyEnabledState(enabled) {

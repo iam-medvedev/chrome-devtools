@@ -352,10 +352,15 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
 }
 export declare const RulerHeight = 15;
 export declare const MinimalTimeWindowMs = 0.5;
+export interface FlameChartInitiatorPair {
+    initiatorIndex: number;
+    eventIndex: number;
+}
 export declare const enum FlameChartDecorationType {
     CANDY = "CANDY",
     WARNING_TRIANGLE = "WARNING_TRIANGLE",
-    HIDDEN_DESCENDANTS_ARROW = "HIDDEN_DESCENDANTS_ARROW"
+    HIDDEN_DESCENDANTS_ARROW = "HIDDEN_DESCENDANTS_ARROW",
+    INITIATOR_HIDDEN_CIRCLE = "INITIATOR_ENTRY_HIDDEN"
 }
 /**
  * Represents a decoration that can be added to event. Each event can have as
@@ -375,6 +380,8 @@ export type FlameChartDecoration = {
     customEndTime?: TraceEngine.Types.Timing.MicroSeconds;
 } | {
     type: FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW;
+} | {
+    type: FlameChartDecorationType.INITIATOR_HIDDEN_CIRCLE;
 };
 export declare function sortDecorationsForRenderingOrder(decorations: FlameChartDecoration[]): void;
 export declare class FlameChartTimelineData {
@@ -385,13 +392,10 @@ export declare class FlameChartTimelineData {
      * An array of entry decorations, where each item in the array is an array of
      * decorations for the event at that index.
      **/
-    readonly entryDecorations: FlameChartDecoration[][];
+    entryDecorations: FlameChartDecoration[][];
     groups: Group[];
     markers: FlameChartMarker[];
-    flowStartTimes: number[];
-    flowStartLevels: number[];
-    flowEndTimes: number[];
-    flowEndLevels: number[];
+    initiatorPairs: FlameChartInitiatorPair[];
     selectedGroup: Group | null;
     private constructor();
     static create(data: {
@@ -400,10 +404,7 @@ export declare class FlameChartTimelineData {
         entryStartTimes: FlameChartTimelineData['entryStartTimes'];
         groups: FlameChartTimelineData['groups'] | null;
         entryDecorations?: FlameChartDecoration[][];
-        flowStartTimes?: FlameChartTimelineData['flowStartTimes'];
-        flowStartLevels?: FlameChartTimelineData['flowStartLevels'];
-        flowEndTimes?: FlameChartTimelineData['flowEndTimes'];
-        flowEndLevels?: FlameChartTimelineData['flowEndLevels'];
+        initiatorPairs?: FlameChartTimelineData['initiatorPairs'];
     }): FlameChartTimelineData;
     static createEmpty(): FlameChartTimelineData;
     resetFlowData(): void;

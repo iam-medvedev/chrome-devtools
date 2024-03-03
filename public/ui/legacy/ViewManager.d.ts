@@ -56,7 +56,7 @@ export declare class ViewManager {
     showView(viewId: string, userGesture?: boolean, omitFocus?: boolean): Promise<void>;
     resolveLocation(location?: string): Promise<Location | null>;
     createTabbedLocation(revealCallback?: (() => void), location?: string, restoreSelection?: boolean, allowReorder?: boolean, defaultTab?: string | null): TabbedViewLocation;
-    createStackLocation(revealCallback?: (() => void), location?: string): ViewLocation;
+    createStackLocation(revealCallback?: (() => void), location?: string, jslogContext?: string): ViewLocation;
     hasViewsForLocation(location: string): boolean;
     viewsForLocation(location: string): View[];
 }

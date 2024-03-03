@@ -406,8 +406,9 @@ export class InspectorView extends VBox {
                     highlight: true,
                     delegate: () => reloadDevTools(),
                     dismiss: false,
+                    jslogContext: 'main.debug-reload',
                 },
-            ]);
+            ], undefined, undefined, 'reload-required');
             infobar.setParentView(this);
             this.attachInfobar(infobar);
             this.reloadRequiredInfobar = infobar;
@@ -424,8 +425,9 @@ export class InspectorView extends VBox {
                     highlight: true,
                     delegate: () => callback(),
                     dismiss: true,
+                    jslogContext: 'select-folder',
                 },
-            ]);
+            ], undefined, undefined, 'select-override-folder');
             infobar.setParentView(this);
             this.attachInfobar(infobar);
             this.#selectOverrideFolderInfobar = infobar;
@@ -480,6 +482,7 @@ function createLocaleInfobar() {
                 reloadDevTools();
             },
             dismiss: true,
+            jslogContext: 'set-to-browser-language',
         },
         {
             text: i18nString(UIStrings.setToSpecificLanguage, { PH1: closestSupportedLanguageInCurrentLocale }),
@@ -490,8 +493,9 @@ function createLocaleInfobar() {
                 reloadDevTools();
             },
             dismiss: true,
+            jslogContext: 'set-to-specific-language',
         },
-    ], getDisableLocaleInfoBarSetting());
+    ], getDisableLocaleInfoBarSetting(), undefined, 'language-mismatch');
 }
 function reloadDevTools() {
     if (DockController.instance().canDock() && DockController.instance().dockSide() === "undocked" /* DockState.UNDOCKED */) {

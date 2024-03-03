@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../../../test/unittests/front_end/helpers/DOMHelpers.js';
+import { assertShadowRoot, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import * as InlineEditor from './inline_editor.js';
 const { assert } = chai;
 const initialData = {

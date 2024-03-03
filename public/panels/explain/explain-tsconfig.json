@@ -43,6 +43,9 @@
       "path": "./css_files-tsconfig.json"
     },
     {
+      "path": "../../core/common/bundle-tsconfig.json"
+    },
+    {
       "path": "../../core/host/bundle-tsconfig.json"
     },
     {

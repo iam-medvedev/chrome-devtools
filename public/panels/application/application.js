@@ -7,9 +7,6 @@ import * as BackgroundServiceModel from './BackgroundServiceModel.js';
 import * as BackgroundServiceView from './BackgroundServiceView.js';
 import * as BounceTrackingMitigationsTreeElement from './BounceTrackingMitigationsTreeElement.js';
 import * as CookieItemsView from './CookieItemsView.js';
-import * as DatabaseModel from './DatabaseModel.js';
-import * as DatabaseQueryView from './DatabaseQueryView.js';
-import * as DatabaseTableView from './DatabaseTableView.js';
 import * as DOMStorageItemsView from './DOMStorageItemsView.js';
 import * as DOMStorageModel from './DOMStorageModel.js';
 import * as IndexedDBModel from './IndexedDBModel.js';
@@ -35,5 +32,5 @@ import * as StorageBucketsTreeElement from './StorageBucketsTreeElement.js';
 import * as StorageItemsView from './StorageItemsView.js';
 import * as StorageView from './StorageView.js';
 import * as TrustTokensTreeElement from './TrustTokensTreeElement.js';
-export { ApplicationPanelSidebar, AppManifestView, BackgroundServiceModel, BackgroundServiceView, BounceTrackingMitigationsTreeElement, CookieItemsView, DatabaseModel, DatabaseQueryView, DatabaseTableView, DOMStorageItemsView, DOMStorageModel, IndexedDBModel, IndexedDBViews, InterestGroupStorageModel, InterestGroupStorageView, InterestGroupTreeElement, OpenedWindowDetailsView, PreloadingTreeElement, PreloadingView, ReportingApiReportsView, ReportingApiView, ResourcesPanel, ServiceWorkerCacheViews, ServiceWorkersView, ServiceWorkerUpdateCycleView, SharedStorageEventsView, SharedStorageItemsView, SharedStorageListTreeElement, SharedStorageModel, SharedStorageTreeElement, StorageBucketsTreeElement, StorageItemsView, StorageView, TrustTokensTreeElement, };
+export { ApplicationPanelSidebar, AppManifestView, BackgroundServiceModel, BackgroundServiceView, BounceTrackingMitigationsTreeElement, CookieItemsView, DOMStorageItemsView, DOMStorageModel, IndexedDBModel, IndexedDBViews, InterestGroupStorageModel, InterestGroupStorageView, InterestGroupTreeElement, OpenedWindowDetailsView, PreloadingTreeElement, PreloadingView, ReportingApiReportsView, ReportingApiView, ResourcesPanel, ServiceWorkerCacheViews, ServiceWorkersView, ServiceWorkerUpdateCycleView, SharedStorageEventsView, SharedStorageItemsView, SharedStorageListTreeElement, SharedStorageModel, SharedStorageTreeElement, StorageBucketsTreeElement, StorageItemsView, StorageView, TrustTokensTreeElement, };
 //# sourceMappingURL=application.js.map
