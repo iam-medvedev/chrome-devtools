@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 const { assert } = chai;
-import { createTarget, stubNoopSettings } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import * as Host from '../../core/host/host.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Main from './main.js';
-import { describeWithMockConnection, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { describeWithRealConnection } from '../../../test/unittests/front_end/helpers/RealConnection.js';
+import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { describeWithRealConnection } from '../../testing/RealConnection.js';
 describeWithMockConnection('MainMenuItem', () => {
     const focusDebuggee = (targetFactory) => {
         beforeEach(async () => {

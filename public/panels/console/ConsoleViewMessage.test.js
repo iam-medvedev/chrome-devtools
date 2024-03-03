@@ -1,10 +1,10 @@
 // Copyright (c) 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../../test/unittests/front_end/helpers/ConsoleHelpers.js';
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { createConsoleViewMessageWithStubDeps, createStackTrace, } from '../../testing/ConsoleHelpers.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 describeWithMockConnection('ConsoleViewMessage', () => {
     describe('anchor rendering', () => {
         it('links to the top frame for normal console message', () => {

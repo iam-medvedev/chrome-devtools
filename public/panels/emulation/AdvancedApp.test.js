@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 const { assert } = chai;
-import { deinitializeGlobalVars, initializeGlobalVars, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';

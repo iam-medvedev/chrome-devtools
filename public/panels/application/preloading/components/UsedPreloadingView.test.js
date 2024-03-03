@@ -1,11 +1,11 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertGridContents } from '../../../../../test/unittests/front_end/helpers/DataGridHelpers.js';
-import { assertElement, assertShadowRoot, getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
+import { assertGridContents } from '../../../../testing/DataGridHelpers.js';
+import { assertElement, assertShadowRoot, getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../../ui/components/report_view/report_view.js';
 import * as PreloadingComponents from './components.js';

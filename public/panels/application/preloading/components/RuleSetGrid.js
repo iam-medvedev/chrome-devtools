@@ -139,7 +139,7 @@ function ruleSetRenderer(ruleSet, pageURL) {
             'padding-inline-start': '0',
             'padding-inline-end': '0',
         })}
-        jslog=${VisualLogging.action('reveal-in-elements-panel').track({ click: true })}
+        jslog=${VisualLogging.action('reveal-in-elements').track({ click: true })}
       >
         <${IconButton.Icon.Icon.litTagName}
           .data=${{

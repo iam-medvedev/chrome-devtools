@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 import * as Common from '../../core/common/common.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
@@ -11,10 +10,11 @@ import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 const { assert } = chai;
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 describeWithMockConnection('NavigatorView', () => {
     let target;
     let workspace;

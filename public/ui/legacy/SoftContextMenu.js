@@ -79,7 +79,8 @@ export class SoftContextMenu {
     onMenuClosed;
     focusOnTheFirstItem = true;
     keepOpen;
-    constructor(items, itemSelectedCallback, keepOpen, parentMenu, onMenuClosed) {
+    loggableParent;
+    constructor(items, itemSelectedCallback, keepOpen, parentMenu, onMenuClosed, loggableParent) {
         this.items = items;
         this.itemSelectedCallback = itemSelectedCallback;
         this.parentMenu = parentMenu;
@@ -87,6 +88,7 @@ export class SoftContextMenu {
         this.detailsForElementMap = new WeakMap();
         this.onMenuClosed = onMenuClosed;
         this.keepOpen = keepOpen;
+        this.loggableParent = loggableParent || null;
     }
     getItems() {
         return this.items;
@@ -104,7 +106,10 @@ export class SoftContextMenu {
         this.glassPane.setMarginBehavior("NoMargin" /* MarginBehavior.NoMargin */);
         this.glassPane.setAnchorBehavior(this.parentMenu ? "PreferRight" /* AnchorBehavior.PreferRight */ : "PreferBottom" /* AnchorBehavior.PreferBottom */);
         this.contextMenuElement = this.glassPane.contentElement.createChild('div', 'soft-context-menu');
-        this.contextMenuElement.setAttribute('jslog', `${VisualLogging.menu().track({ resize: true })}`);
+        this.contextMenuElement.setAttribute('jslog', `${VisualLogging.menu().track({ resize: true }).parent('softMenuParent')}`);
+        if (this.loggableParent) {
+            loggableParents.set(this.contextMenuElement, this.loggableParent);
+        }
         this.contextMenuElement.tabIndex = -1;
         ARIAUtils.markAsMenu(this.contextMenuElement);
         this.contextMenuElement.addEventListener('mouseup', e => e.consume(), false);
@@ -218,7 +223,7 @@ export class SoftContextMenu {
             subItems: undefined,
             subMenuTimer: undefined,
         };
-        if (item.jslogContext) {
+        if (item.jslogContext && !item.element?.hasAttribute('jslog')) {
             if (item.type === 'checkbox') {
                 menuItemElement.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true }).context(item.jslogContext)}`);
             }
@@ -573,4 +578,9 @@ export class SoftContextMenu {
         this.focusOnTheFirstItem = focusOnTheFirstItem;
     }
 }
+const loggableParents = new WeakMap();
+function parentForLogging(element) {
+    return loggableParents.get(element) || undefined;
+}
+VisualLogging.registerParentProvider('softMenuParent', parentForLogging);
 //# sourceMappingURL=SoftContextMenu.js.map

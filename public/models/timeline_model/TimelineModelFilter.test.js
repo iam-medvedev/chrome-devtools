@@ -4,7 +4,7 @@
 const { assert } = chai;
 import * as TraceEngine from '../trace/trace.js';
 import * as TimelineModel from '../timeline_model/timeline_model.js';
-import { DevToolsTimelineCategory, makeFakeSDKEventFromPayload, } from '../../../test/unittests/front_end/helpers/TraceHelpers.js';
+import { DevToolsTimelineCategory, makeFakeSDKEventFromPayload, } from '../../testing/TraceHelpers.js';
 const consoleEvent = makeFakeSDKEventFromPayload({
     categories: [DevToolsTimelineCategory, TimelineModel.TimelineModel.TimelineModelImpl.Category.Console],
     name: TimelineModel.TimelineModel.RecordType.ConsoleTime,

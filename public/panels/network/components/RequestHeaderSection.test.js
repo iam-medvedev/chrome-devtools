@@ -1,8 +1,8 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertShadowRoot, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { assertElement, assertShadowRoot, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as NetworkComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();

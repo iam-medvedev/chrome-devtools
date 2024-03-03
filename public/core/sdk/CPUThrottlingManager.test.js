@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithRealConnection } from '../../../test/unittests/front_end/helpers/RealConnection.js';
+import { describeWithRealConnection } from '../../testing/RealConnection.js';
 import * as SDK from './sdk.js';
 describeWithRealConnection('CPUThrottlingManager', () => {
     it('can get the current hardwareConcurrency.', async () => {

@@ -262,8 +262,8 @@ export class ViewManager {
     createTabbedLocation(revealCallback, location, restoreSelection, allowReorder, defaultTab) {
         return new TabbedLocation(this, revealCallback, location, restoreSelection, allowReorder, defaultTab);
     }
-    createStackLocation(revealCallback, location) {
-        return new StackLocation(this, revealCallback, location);
+    createStackLocation(revealCallback, location, jslogContext) {
+        return new StackLocation(this, revealCallback, location, jslogContext);
     }
     hasViewsForLocation(location) {
         return Boolean(this.viewsForLocation(location).length);
@@ -692,9 +692,9 @@ class TabbedLocation extends Location {
 class StackLocation extends Location {
     vbox;
     expandableContainers;
-    constructor(manager, revealCallback, location) {
+    constructor(manager, revealCallback, location, jslogContext) {
         const vbox = new VBox();
-        vbox.element.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
+        vbox.element.setAttribute('jslog', `${VisualLogging.pane(jslogContext || 'sidebar').track({ resize: true })}`);
         super(manager, vbox, revealCallback);
         this.vbox = vbox;
         ARIAUtils.markAsTree(vbox.element);

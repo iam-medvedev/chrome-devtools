@@ -30,7 +30,7 @@ var VisualElements;
     VisualElements[VisualElements["Popover"] = 18] = "Popover";
     VisualElements[VisualElements["BreakpointMarker"] = 19] = "BreakpointMarker";
     VisualElements[VisualElements["DropDown"] = 20] = "DropDown";
-    /* 21 used to be StylesMetricsPane, but free to grab now */
+    VisualElements[VisualElements["Adorner"] = 21] = "Adorner";
     /* 22 used to be JumpToSource, but free to grab now */
     VisualElements[VisualElements["MetricsBox"] = 23] = "MetricsBox";
     VisualElements[VisualElements["MetricsBoxPart"] = 24] = "MetricsBoxPart";
@@ -40,7 +40,7 @@ var VisualElements;
     /* 28 used to be EventListenersPane, but free to grab now */
     VisualElements[VisualElements["Action"] = 29] = "Action";
     VisualElements[VisualElements["FilterDropdown"] = 30] = "FilterDropdown";
-    VisualElements[VisualElements["InfoBar"] = 31] = "InfoBar";
+    VisualElements[VisualElements["Dialog"] = 31] = "Dialog";
     VisualElements[VisualElements["BezierCurveEditor"] = 32] = "BezierCurveEditor";
     VisualElements[VisualElements["BezierEditor"] = 33] = "BezierEditor";
     VisualElements[VisualElements["BezierPresetCategory"] = 34] = "BezierPresetCategory";

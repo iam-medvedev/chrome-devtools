@@ -36,7 +36,6 @@ export declare class ServiceWorkerCacheView extends UI.View.SimpleView {
     private createRequest;
     private requestContent;
     private updatedForTest;
-    private static readonly previewSymbol;
 }
 export declare class DataGridNode extends DataGrid.DataGrid.DataGridNode<DataGridNode> {
     private number;

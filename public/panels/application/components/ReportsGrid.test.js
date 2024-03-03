@@ -1,10 +1,10 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { getHeaderCells, getValuesOfAllBodyRows } from '../../../../test/unittests/front_end/helpers/DataGridHelpers.js';
-import { assertShadowRoot, getElementWithinComponent, renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 import * as Root from '../../../core/root/root.js';
+import { getHeaderCells, getValuesOfAllBodyRows } from '../../../testing/DataGridHelpers.js';
+import { assertShadowRoot, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ApplicationComponents from './components.js';

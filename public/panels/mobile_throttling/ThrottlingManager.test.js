@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { dispatchClickEvent } from '../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as MobileThrottling from './mobile_throttling.js';
-import { dispatchClickEvent } from '../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 const { assert } = chai;
 describeWithEnvironment('ThrottlingManager', () => {
     describe('OfflineToolbarCheckbox', () => {

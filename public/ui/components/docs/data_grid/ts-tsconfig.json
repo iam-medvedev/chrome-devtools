@@ -52,7 +52,7 @@
   ],
   "references": [
     {
-      "path": "../../../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
+      "path": "../../../../testing/testing-tsconfig.json"
     },
     {
       "path": "../../data_grid/bundle-tsconfig.json"

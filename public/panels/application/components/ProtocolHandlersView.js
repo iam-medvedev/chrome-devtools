@@ -12,6 +12,7 @@ import * as Input from '../../../ui/components/input/input.js';
 import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import protocolHandlersViewStyles from './protocolHandlersView.css.js';
 const PROTOCOL_DOCUMENT_URL = 'https://web.dev/url-protocol-handler/';
 const UIStrings = {
@@ -98,7 +99,9 @@ export class ProtocolHandlersView extends HTMLElement {
             return LitHtml.nothing;
         }
         const protocolOptions = this.#protocolHandlers.filter(p => p.protocol)
-            .map(p => LitHtml.html `<option value=${p.protocol}>${p.protocol}://</option>`);
+            .map(p => LitHtml.html `<option value=${p.protocol} jslog=${VisualLogging.item(p.protocol).track({
+            click: true,
+        })}>${p.protocol}://</option>`);
         return LitHtml.html `
        <div class="protocol-handlers-row">
         <select class="chrome-select protocol-select" @change=${this.#handleProtocolSelect} aria-label=${i18nString(UIStrings.dropdownLabel)}>

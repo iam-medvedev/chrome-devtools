@@ -13,10 +13,10 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Sources from './sources.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { MockProtocolBackend } from '../../../test/unittests/front_end/helpers/MockScopeChain.js';
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { createContentProviderUISourceCodes } from '../../../test/unittests/front_end/helpers/UISourceCodeHelpers.js';
+import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { createContentProviderUISourceCodes } from '../../testing/UISourceCodeHelpers.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 describeWithMockConnection('NetworkNavigatorView', () => {
     let workspace;

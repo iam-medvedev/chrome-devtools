@@ -1,9 +1,9 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { deinitializeGlobalVars, initializeGlobalVars, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
+import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import * as LegacyUI from './legacy.js';
 const { assert } = chai;
 async function registerDockingSettings(currentValue) {

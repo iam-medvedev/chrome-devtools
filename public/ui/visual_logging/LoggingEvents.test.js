@@ -1,9 +1,9 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { stabilizeEvent, stabilizeImpressions } from '../../../test/unittests/front_end/helpers/VisualLoggingHelpers.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import { stabilizeEvent, stabilizeImpressions } from '../../testing/VisualLoggingHelpers.js';
 import * as VisualLogging from './visual_logging-testing.js';
 const { assert } = chai;
 describe('LoggingEvents', () => {

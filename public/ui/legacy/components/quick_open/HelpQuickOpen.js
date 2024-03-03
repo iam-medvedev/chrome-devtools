@@ -7,18 +7,19 @@ import { getRegisteredProviders, Provider, registerProvider } from './FilteredLi
 import { QuickOpenImpl } from './QuickOpen.js';
 export class HelpQuickOpen extends Provider {
     providers;
-    constructor() {
-        super();
+    constructor(jslogContext) {
+        super(jslogContext);
         this.providers = [];
         getRegisteredProviders().forEach(this.addProvider.bind(this));
     }
-    addProvider(extension) {
+    async addProvider(extension) {
         if (extension.titleSuggestion) {
             this.providers.push({
                 prefix: extension.prefix || '',
                 iconName: extension.iconName,
                 iconWidth: extension.iconWidth,
                 title: extension.titlePrefix() + ' ' + extension.titleSuggestion(),
+                jslogContext: (await extension.provider()).jslogContext,
             });
         }
     }
@@ -42,6 +43,9 @@ export class HelpQuickOpen extends Provider {
         titleElement.parentElement?.parentElement?.insertBefore(iconElement, titleElement.parentElement);
         UI.UIUtils.createTextChild(titleElement, provider.title);
     }
+    jslogContextAt(itemIndex) {
+        return this.providers[itemIndex].jslogContext;
+    }
     selectItem(itemIndex, _promptValue) {
         if (itemIndex !== null) {
             QuickOpenImpl.show(this.providers[itemIndex].prefix);
@@ -55,7 +59,7 @@ registerProvider({
     prefix: '?',
     iconName: 'help',
     iconWidth: '20px',
-    provider: () => Promise.resolve(new HelpQuickOpen()),
+    provider: () => Promise.resolve(new HelpQuickOpen('help')),
     titlePrefix: () => 'Help',
     titleSuggestion: undefined,
 });

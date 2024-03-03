@@ -55,16 +55,16 @@
       "path": "./bundle-tsconfig.json"
     },
     {
-      "path": "../../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
-    },
-    {
-      "path": "../../../../test/unittests/front_end/helpers/recorder_helpers-tsconfig.json"
+      "path": "../../../testing/testing-tsconfig.json"
     },
     {
       "path": "../../../ui/components/text_editor/bundle-tsconfig.json"
     },
     {
       "path": "../models/bundle-tsconfig.json"
+    },
+    {
+      "path": "../testing/testing-tsconfig.json"
     }
   ]
 }

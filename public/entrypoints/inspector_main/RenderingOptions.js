@@ -212,7 +212,7 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         this.#appendCheckbox(i18nString(UIStrings.frameRenderingStats), i18nString(UIStrings.plotsFrameThroughputDropped), Common.Settings.Settings.instance().moduleSetting('show-fps-counter'));
         this.#appendCheckbox(i18nString(UIStrings.scrollingPerformanceIssues), i18nString(UIStrings.highlightsElementsTealThatCan), Common.Settings.Settings.instance().moduleSetting('show-scroll-bottleneck-rects'));
         this.#appendCheckbox(i18nString(UIStrings.highlightAdFrames), i18nString(UIStrings.highlightsFramesRedDetectedToBe), Common.Settings.Settings.instance().moduleSetting('show-ad-highlights'));
-        this.#appendCheckbox(i18nString(UIStrings.coreWebVitals), i18nString(UIStrings.showsAnOverlayWithCoreWebVitals), Common.Settings.Settings.instance().moduleSetting('show-web-vitals'));
+        this.#appendCheckbox(i18nString(UIStrings.coreWebVitals), i18nString(UIStrings.showsAnOverlayWithCoreWebVitals), Common.Settings.Settings.instance().moduleSetting('show-web-vitals'), { toggle: Host.UserMetrics.Action.ToggleShowWebVitals });
         this.#appendCheckbox(i18nString(UIStrings.disableLocalFonts), i18nString(UIStrings.disablesLocalSourcesInFontface), Common.Settings.Settings.instance().moduleSetting('local-fonts-disabled'));
         this.#appendCheckbox(i18nString(UIStrings.emulateAFocusedPage), i18nString(UIStrings.emulatesAFocusedPage), Common.Settings.Settings.instance().moduleSetting('emulate-page-focus'), { toggle: Host.UserMetrics.Action.ToggleEmulateFocusedPageFromRenderingTab });
         this.#appendCheckbox(i18nString(UIStrings.emulateAutoDarkMode), i18nString(UIStrings.emulatesAutoDarkMode), Common.Settings.Settings.instance().moduleSetting('emulate-auto-dark-mode'));

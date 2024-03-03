@@ -371,14 +371,21 @@ export class DebuggerPlugin extends Plugin {
             Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiSourceCode);
         }
         const infobar = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.Warning */, i18nString(UIStrings.thisScriptIsOnTheDebuggersIgnore), [
-            { text: i18nString(UIStrings.removeFromIgnoreList), highlight: false, delegate: unIgnoreList, dismiss: true },
+            {
+                text: i18nString(UIStrings.removeFromIgnoreList),
+                highlight: false,
+                delegate: unIgnoreList,
+                dismiss: true,
+                jslogContext: 'remove-from-ignore-list',
+            },
             {
                 text: i18nString(UIStrings.configure),
                 highlight: false,
                 delegate: UI.ViewManager.ViewManager.instance().showView.bind(UI.ViewManager.ViewManager.instance(), 'blackbox'),
                 dismiss: false,
+                jslogContext: 'configure',
             },
-        ]);
+        ], undefined, undefined, 'script-on-ignore-list');
         this.ignoreListInfobar = infobar;
         infobar.setCloseCallback(() => this.removeInfobar(this.ignoreListInfobar));
         infobar.createDetailsRowMessage(i18nString(UIStrings.theDebuggerWillSkipStepping));
@@ -1207,7 +1214,7 @@ export class DebuggerPlugin extends Plugin {
             !Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().supportsConditionalBreakpoints(this.uiSourceCode)) {
             return;
         }
-        const contextMenu = new UI.ContextMenu.ContextMenu(event, { jsLogContext: 'sources-inline-breakpoint' });
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
         if (breakpoint) {
             contextMenu.debugSection().appendItem(i18nString(UIStrings.editBreakpoint), () => {
                 Host.userMetrics.breakpointEditDialogRevealedFrom(2 /* Host.UserMetrics.BreakpointEditDialogRevealedFrom.BreakpointMarkerContextMenu */);
@@ -1275,7 +1282,8 @@ export class DebuggerPlugin extends Plugin {
             this.missingDebugInfoBar = null;
             return;
         }
-        this.missingDebugInfoBar = UI.Infobar.Infobar.create("error" /* UI.Infobar.Type.Error */, warning.details, []);
+        this.missingDebugInfoBar =
+            UI.Infobar.Infobar.create("error" /* UI.Infobar.Type.Error */, warning.details, [], undefined, 'missing-debug-info');
         if (!this.missingDebugInfoBar) {
             return;
         }
@@ -1333,7 +1341,7 @@ export class DebuggerPlugin extends Plugin {
             return;
         }
         if (!resource) {
-            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.Info */, i18nString(UIStrings.sourceMapSkipped), [], Common.Settings.Settings.instance().createSetting('source-map-skipped-infobar-disabled', false));
+            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.Info */, i18nString(UIStrings.sourceMapSkipped), [], Common.Settings.Settings.instance().createSetting('source-map-skipped-infobar-disabled', false), 'source-map-skipped');
             if (!this.sourceMapInfobar) {
                 return;
             }
@@ -1341,7 +1349,7 @@ export class DebuggerPlugin extends Plugin {
             this.sourceMapInfobar.createDetailsRowMessage(i18nString(UIStrings.reloadForSourceMap));
         }
         else if (resource.success) {
-            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.Info */, i18nString(UIStrings.sourceMapLoaded), [], Common.Settings.Settings.instance().createSetting('source-map-infobar-disabled', false));
+            this.sourceMapInfobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.Info */, i18nString(UIStrings.sourceMapLoaded), [], Common.Settings.Settings.instance().createSetting('source-map-infobar-disabled', false), 'source-map-loaded');
             if (!this.sourceMapInfobar) {
                 return;
             }
@@ -1362,10 +1370,9 @@ export class DebuggerPlugin extends Plugin {
                 text = i18nString(UIStrings.ignoreScript);
                 delegate = ignoreListManager.ignoreListUISourceCode.bind(ignoreListManager, this.uiSourceCode);
             }
-            this.sourceMapInfobar =
-                UI.Infobar.Infobar.create("warning" /* UI.Infobar.Type.Warning */, i18nString(UIStrings.sourceMapFailed), [
-                    { text, highlight: false, delegate, dismiss: true },
-                ]);
+            this.sourceMapInfobar = UI.Infobar.Infobar.create("warning" /* UI.Infobar.Type.Warning */, i18nString(UIStrings.sourceMapFailed), [
+                { text, highlight: false, delegate, dismiss: true },
+            ], undefined, 'source-map-failed');
             if (!this.sourceMapInfobar) {
                 return;
             }

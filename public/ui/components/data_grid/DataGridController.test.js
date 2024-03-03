@@ -1,10 +1,10 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { getAllRows, getHeaderCellForColumnId, getValuesForColumn, getValuesOfAllBodyRows, } from '../../../../test/unittests/front_end/helpers/DataGridHelpers.js';
-import { assertShadowRoot, dispatchClickEvent, renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithLocale } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { TEXT_NODE, withMutations } from '../../../../test/unittests/front_end/helpers/MutationHelpers.js';
+import { getAllRows, getHeaderCellForColumnId, getValuesForColumn, getValuesOfAllBodyRows, } from '../../../testing/DataGridHelpers.js';
+import { assertShadowRoot, dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import { TEXT_NODE, withMutations } from '../../../testing/MutationHelpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as DataGrid from './data_grid.js';
 const { assert } = chai;

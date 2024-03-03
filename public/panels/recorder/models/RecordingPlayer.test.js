@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as Models from './models.js';
-import { createCustomStep, installMocksForRecordingPlayer, installMocksForTargetManager, } from '../../../../test/unittests/front_end/helpers/RecorderHelpers.js';
+import { createCustomStep, installMocksForRecordingPlayer, installMocksForTargetManager, } from '../testing/RecorderHelpers.js';
 describe('RecordingPlayer', () => {
     let recordingPlayer;
     beforeEach(() => {

@@ -63,10 +63,10 @@
       "path": "../bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/legacy/components/perf_ui/bundle-tsconfig.json"
+      "path": "../../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
+      "path": "../../../ui/legacy/components/perf_ui/bundle-tsconfig.json"
     }
   ]
 }

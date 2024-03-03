@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Handlers from './handlers/handlers.js';
+import * as Insights from './insights/insights.js';
 import * as Types from './types/types.js';
 export class TraceParseProgressEvent extends Event {
     data;
@@ -14,10 +15,10 @@ export class TraceParseProgressEvent extends Event {
 export class TraceProcessor extends EventTarget {
     // We force the Meta handler to be enabled, so the TraceHandlers type here is
     // the model handlers the user passes in and the Meta handler.
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     #traceHandlers;
     #status = "IDLE" /* Status.IDLE */;
     #modelConfiguration = Types.Configuration.DEFAULT;
+    #insights = null;
     static createWithAllHandlers() {
         return new TraceProcessor(Handlers.ModelHandlers, Types.Configuration.DEFAULT);
     }
@@ -88,6 +89,7 @@ export class TraceProcessor extends EventTarget {
         for (const handler of handlers) {
             handler.reset();
         }
+        this.#insights = null;
         this.#status = "IDLE" /* Status.IDLE */;
     }
     async parse(traceEvents, freshRecording = false) {
@@ -136,15 +138,58 @@ export class TraceProcessor extends EventTarget {
             await handler.finalize?.();
         }
     }
-    get data() {
+    get traceParsedData() {
         if (this.#status !== "FINISHED_PARSING" /* Status.FINISHED_PARSING */) {
             return null;
         }
-        const data = {};
+        const traceParsedData = {};
         for (const [name, handler] of Object.entries(this.#traceHandlers)) {
-            Object.assign(data, { [name]: handler.data() });
+            Object.assign(traceParsedData, { [name]: handler.data() });
         }
-        return data;
+        return traceParsedData;
+    }
+    #getEnabledInsightRunners(traceParsedData) {
+        const enabledInsights = {};
+        for (const [name, insight] of Object.entries(Insights.InsightRunners)) {
+            const deps = insight.deps();
+            if (deps.some(dep => !traceParsedData[dep])) {
+                continue;
+            }
+            Object.assign(enabledInsights, { [name]: insight.generateInsight });
+        }
+        return enabledInsights;
+    }
+    get insights() {
+        if (!this.traceParsedData) {
+            return null;
+        }
+        if (this.#insights) {
+            return this.#insights;
+        }
+        this.#insights = new Map();
+        const enabledInsightRunners = this.#getEnabledInsightRunners(this.traceParsedData);
+        for (const nav of this.traceParsedData.Meta.mainFrameNavigations) {
+            if (!nav.args.frame || !nav.args.data?.navigationId) {
+                continue;
+            }
+            const context = {
+                frameId: nav.args.frame,
+                navigationId: nav.args.data.navigationId,
+            };
+            const navInsightData = {};
+            for (const [name, generateInsight] of Object.entries(enabledInsightRunners)) {
+                let insightResult;
+                try {
+                    insightResult = generateInsight(this.traceParsedData, context);
+                }
+                catch (err) {
+                    insightResult = err;
+                }
+                Object.assign(navInsightData, { [name]: insightResult });
+            }
+            this.#insights.set(context.navigationId, navInsightData);
+        }
+        return this.#insights;
     }
 }
 /**

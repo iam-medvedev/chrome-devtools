@@ -10,25 +10,25 @@ const UIStrings = {
     /**
      *@description Message to offer insights for a console error message
      */
-    explainThisError: 'Explain this error',
+    explainThisError: 'Understand this error',
     /**
      *@description Message to offer insights for a console warning message
      */
-    explainThisWarning: 'Explain this warning',
+    explainThisWarning: 'Understand this warning',
     /**
      *@description Message to offer insights for a console message
      */
-    explainThisMessage: 'Explain this message',
+    explainThisMessage: 'Understand this message',
     /**
      * @description The setting title to enable the console insights feature via
      * the settings tab.
      */
-    enableConsoleInsights: 'Enable Console Insights',
+    enableConsoleInsights: 'Enable Console insights',
     /**
      * @description Message shown to the user if the DevTools locale is not
      * supported.
      */
-    wrongLocale: 'Only English locales are currently supported.',
+    wrongLocale: 'To use this feature, update your Language preference in DevTools Settings to English.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/explain/explain-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);

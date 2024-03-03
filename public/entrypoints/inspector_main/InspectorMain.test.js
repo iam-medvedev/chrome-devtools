@@ -6,8 +6,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as Root from '../../core/root/root.js';
 import * as InspectorMain from './inspector_main.js';
-import { createTarget, stubNoopSettings, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 describeWithMockConnection('FocusDebuggeeActionDelegate', () => {
     it('uses main frame without tab tatget', async () => {
         const target = createTarget();

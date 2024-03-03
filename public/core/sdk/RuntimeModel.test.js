@@ -4,8 +4,8 @@
 const { assert } = chai;
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
-import { describeWithMockConnection, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { createTarget, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 describeWithMockConnection('ExecutionContext', () => {
     function createExecutionContext(target, name, isDefault) {
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);

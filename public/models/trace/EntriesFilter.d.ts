@@ -46,6 +46,10 @@ export declare class EntriesFilter {
      **/
     invisibleEntries(): Types.TraceEvents.TraceEventData[];
     /**
+     * Returns the array of entries that have a sign indicating that entries below are hidden.
+     **/
+    modifiedEntries(): Types.TraceEvents.TraceEventData[];
+    /**
      * Applies an action to hide entries or removes entries
      * from hidden entries array depending on the action.
      **/

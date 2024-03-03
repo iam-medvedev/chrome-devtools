@@ -1,12 +1,12 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget, stubNoopSettings } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
 import * as Common from '../../core/common/common.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 const { assert } = chai;
@@ -176,8 +176,6 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
             await new Promise(resolve => setTimeout(resolve, 0));
             assert.strictEqual(expectedCall.called, inScope);
         };
-        it('adds database element on in scope event', testUiUpdate("DatabaseAdded" /* Application.DatabaseModel.Events.DatabaseAdded */, Application.DatabaseModel.DatabaseModel, 'databasesListTreeElement.appendChild', true));
-        it('does not add database element on out of scope event', testUiUpdate("DatabaseAdded" /* Application.DatabaseModel.Events.DatabaseAdded */, Application.DatabaseModel.DatabaseModel, 'databasesListTreeElement.appendChild', false));
         it('adds interest group event on in scope event', testUiUpdate("InterestGroupAccess" /* Application.InterestGroupStorageModel.Events.InterestGroupAccess */, Application.InterestGroupStorageModel.InterestGroupStorageModel, 'interestGroupTreeElement.addEvent', true));
         it('does not add interest group event on out of scope event', testUiUpdate("InterestGroupAccess" /* Application.InterestGroupStorageModel.Events.InterestGroupAccess */, Application.InterestGroupStorageModel.InterestGroupStorageModel, 'interestGroupTreeElement.addEvent', false));
         it('adds DOM storage on in scope event', testUiUpdate("DOMStorageAdded" /* Application.DOMStorageModel.Events.DOMStorageAdded */, Application.DOMStorageModel.DOMStorageModel, 'sessionStorageListTreeElement.appendChild', true));

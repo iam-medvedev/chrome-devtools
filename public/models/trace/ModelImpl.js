@@ -87,12 +87,13 @@ export class Model extends EventTarget {
             traceEvents,
             metadata,
             traceParsedData: null,
+            traceInsights: null,
         };
         try {
             // Wait for all outstanding promises before finishing the async execution,
             // but perform all tasks in parallel.
             await this.#processor.parse(traceEvents, isFreshRecording);
-            this.#storeParsedFileData(file, this.#processor.data);
+            this.#storeParsedFileData(file, this.#processor.traceParsedData, this.#processor.insights);
             // We only push the file onto this.#traces here once we know it's valid
             // and there's been no errors in the parsing.
             this.#traces.push(file);
@@ -107,8 +108,9 @@ export class Model extends EventTarget {
             this.dispatchEvent(new ModelUpdateEvent({ type: "COMPLETE" /* ModelUpdateType.COMPLETE */, data: 'done' }));
         }
     }
-    #storeParsedFileData(file, data) {
+    #storeParsedFileData(file, data, insights) {
         file.traceParsedData = data;
+        file.traceInsights = insights;
         this.#lastRecordingIndex++;
         let recordingName = `Trace ${this.#lastRecordingIndex}`;
         let origin = null;
@@ -131,6 +133,12 @@ export class Model extends EventTarget {
             return null;
         }
         return this.#traces[index].traceParsedData;
+    }
+    traceInsights(index = this.#traces.length - 1) {
+        if (!this.#traces[index]) {
+            return null;
+        }
+        return this.#traces[index].traceInsights;
     }
     metadata(index) {
         if (!this.#traces[index]) {

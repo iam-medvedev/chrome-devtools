@@ -29,8 +29,8 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
     uiSourceCodes;
     uiSourceCodeIds;
     query;
-    constructor() {
-        super();
+    constructor(jslogContext) {
+        super(jslogContext);
         this.queryLineNumberAndColumnNumber = '';
         this.defaultScores = null;
         this.scorer = new FilePathScoreFunction('');

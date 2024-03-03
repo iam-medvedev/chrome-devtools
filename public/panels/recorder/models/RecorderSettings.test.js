@@ -4,7 +4,7 @@
 const { assert } = chai;
 import * as Models from './models.js';
 import * as Common from '../../../core/common/common.js';
-import { describeWithEnvironment, } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 describeWithEnvironment('RecorderSettings', () => {
     let recorderSettings;
     beforeEach(() => {

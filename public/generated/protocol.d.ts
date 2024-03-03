@@ -928,7 +928,12 @@ export declare namespace Audits {
         InvalidRegisterOsTriggerHeader = "InvalidRegisterOsTriggerHeader",
         WebAndOsHeaders = "WebAndOsHeaders",
         NoWebOrOsSupport = "NoWebOrOsSupport",
-        NavigationRegistrationWithoutTransientUserActivation = "NavigationRegistrationWithoutTransientUserActivation"
+        NavigationRegistrationWithoutTransientUserActivation = "NavigationRegistrationWithoutTransientUserActivation",
+        InvalidInfoHeader = "InvalidInfoHeader",
+        NoRegisterSourceHeader = "NoRegisterSourceHeader",
+        NoRegisterTriggerHeader = "NoRegisterTriggerHeader",
+        NoRegisterOsSourceHeader = "NoRegisterOsSourceHeader",
+        NoRegisterOsTriggerHeader = "NoRegisterOsTriggerHeader"
     }
     /**
      * Details for issues around "Attribution Reporting API" usage.
@@ -11038,6 +11043,7 @@ export declare namespace Page {
         SmartCard = "SmartCard",
         LiveMediaStreamTrack = "LiveMediaStreamTrack",
         UnloadHandler = "UnloadHandler",
+        ParserAborted = "ParserAborted",
         ContentSecurityHandler = "ContentSecurityHandler",
         ContentWebAuthenticationAPI = "ContentWebAuthenticationAPI",
         ContentFileChooser = "ContentFileChooser",

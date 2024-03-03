@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as Types from '../types/types.js';
 const domLookUpSingleNodeCache = new Map();
 const domLookUpBatchNodesCache = new Map();
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -34,6 +35,18 @@ export async function domNodeForBackendNodeID(modelData, nodeId) {
     return result;
 }
 /**
+ * Looks up for backend node ids in different types of trace events
+ * and resolves them into related DOM nodes.
+ * This method should be progressively updated to support more events
+ * containing node ids which we want to resolve.
+ */
+export async function extractRelatedDOMNodesFromEvent(modelData, event) {
+    if (Types.TraceEvents.isSyntheticLayoutShift(event) && event.args.data?.impacted_nodes) {
+        return domNodesForMultipleBackendNodeIds(modelData, event.args.data.impacted_nodes.map(node => node.node_id));
+    }
+    return null;
+}
+/**
  * Takes a set of Protocol.DOM.BackendNodeId ids and will return a map of NodeId=>DOMNode.
  * Results are cached based on 1) the provided TraceParseData and 2) the provided set of IDs.
  */
@@ -47,7 +60,7 @@ export async function domNodesForMultipleBackendNodeIds(modelData, nodeIds) {
     if (!domModel) {
         return new Map();
     }
-    const domNodesMap = await domModel.pushNodesByBackendIdsToFrontend(nodeIds) || new Map();
+    const domNodesMap = await domModel.pushNodesByBackendIdsToFrontend(new Set(nodeIds)) || new Map();
     const cacheForModel = domLookUpBatchNodesCache.get(modelData) ||
         new Map();
     cacheForModel.set(nodeIds, domNodesMap);

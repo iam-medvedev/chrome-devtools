@@ -4,9 +4,9 @@
 const { assert } = chai;
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
-import { createFakeSetting, createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection, dispatchEvent } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { mkInspectorCspIssue, StubIssue, ThirdPartyStubIssue, } from '../../../test/unittests/front_end/helpers/StubIssue.js';
+import { createFakeSetting, createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
+import { mkInspectorCspIssue, StubIssue, ThirdPartyStubIssue, } from '../../testing/StubIssue.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 describeWithMockConnection('IssuesManager', () => {
     let target;

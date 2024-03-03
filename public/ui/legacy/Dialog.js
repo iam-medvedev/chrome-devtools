@@ -28,12 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Common from '../../core/common/common.js';
+import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
+import dialogStyles from './dialog.css.legacy.js';
 import { GlassPane } from './GlassPane.js';
 import { InspectorView } from './InspectorView.js';
 import { KeyboardShortcut, Keys } from './KeyboardShortcut.js';
 import { WidgetFocusRestorer } from './Widget.js';
-import dialogStyles from './dialog.css.legacy.js';
 export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
     tabIndexBehavior;
     tabIndexMap;
@@ -42,11 +43,14 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
     targetDocument;
     targetDocumentKeyDownHandler;
     escapeKeyCallback;
-    constructor() {
+    constructor(jslogContext) {
         super();
         this.registerRequiredCSS(dialogStyles);
         this.contentElement.tabIndex = 0;
         this.contentElement.addEventListener('focus', () => this.widget().focus(), false);
+        if (jslogContext) {
+            this.contentElement.setAttribute('jslog', `${VisualLogging.dialog(jslogContext).track({ resize: true })}`);
+        }
         this.widget().setDefaultFocusedElement(this.contentElement);
         this.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BlockedByGlassPane */);
         this.setOutsideClickCallback(event => {

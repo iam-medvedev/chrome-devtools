@@ -6,7 +6,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { ApplicationPanelTreeElement, ExpandableApplicationPanelTreeElement } from './ApplicationPanelTreeElement.js';
 import { BackgroundServiceModel } from './BackgroundServiceModel.js';
 import { BounceTrackingMitigationsTreeElement } from './BounceTrackingMitigationsTreeElement.js';
-import { type Database as DatabaseModelDatabase } from './DatabaseModel.js';
 import { type DOMStorage } from './DOMStorageModel.js';
 import { type Database as IndexedDBModelDatabase, type DatabaseId, type Index, IndexedDBModel, type ObjectStore } from './IndexedDBModel.js';
 import { InterestGroupTreeElement } from './InterestGroupTreeElement.js';
@@ -38,7 +37,6 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     sessionStorageListTreeElement: ExpandableApplicationPanelTreeElement;
     indexedDBListTreeElement: IndexedDBTreeElement;
     interestGroupTreeElement: InterestGroupTreeElement;
-    databasesListTreeElement: ExpandableApplicationPanelTreeElement;
     cookieListTreeElement: ExpandableApplicationPanelTreeElement;
     trustTokensTreeElement: TrustTokensTreeElement;
     cacheStorageListTreeElement: ServiceWorkerCacheTreeElement;
@@ -55,14 +53,10 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     reportingApiTreeElement: ReportingApiTreeElement;
     preloadingSummaryTreeElement: PreloadingSummaryTreeElement | undefined;
     private readonly resourcesSection;
-    private readonly databaseTableViews;
-    private databaseQueryViews;
-    private readonly databaseTreeElements;
     private domStorageTreeElements;
     private sharedStorageTreeElements;
     private domains;
     private target?;
-    private databaseModel?;
     private previousHoveredElement?;
     readonly sharedStorageTreeElementDispatcher: Common.ObjectWrapper.ObjectWrapper<SharedStorageTreeElementDispatcher.EventTypes>;
     constructor(panel: ResourcesPanel);
@@ -82,11 +76,9 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private storageBucketsModelAdded;
     private storageBucketsModelRemoved;
     private resetWithFrames;
-    private resetWebSQL;
     private treeElementAdded;
     private reset;
     private frameNavigated;
-    private databaseAdded;
     private interestGroupAccess;
     private addCookieDocument;
     private domStorageAdded;
@@ -98,15 +90,12 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private sharedStorageRemoved;
     private removeSharedStorage;
     private sharedStorageAccess;
-    selectDatabase(database: DatabaseModelDatabase): void;
     showResource(resource: SDK.Resource.Resource, line?: number, column?: number): Promise<void>;
     showFrame(frame: SDK.ResourceTreeModel.ResourceTreeFrame): void;
-    showDatabase(database: DatabaseModelDatabase, tableName?: string): void;
     showFileSystem(view: UI.Widget.Widget): void;
     private innerShowView;
     showPreloadingRuleSetView(revealInfo: PreloadingHelper.PreloadingForward.RuleSetView): void;
     showPreloadingAttemptViewWithFilter(filter: PreloadingHelper.PreloadingForward.AttemptViewWithFilter): void;
-    private updateDatabaseTables;
     private onmousemove;
     private onmouseleave;
     wasShown(): void;
@@ -121,23 +110,6 @@ export declare class BackgroundServiceTreeElement extends ApplicationPanelTreeEl
     initialize(model: BackgroundServiceModel | null): void;
     get itemURL(): Platform.DevToolsPath.UrlString;
     get selectable(): boolean;
-    onselect(selectedByUser?: boolean): boolean;
-}
-export declare class DatabaseTreeElement extends ApplicationPanelTreeElement {
-    private readonly sidebar;
-    private readonly database;
-    constructor(sidebar: ApplicationPanelSidebar, database: DatabaseModelDatabase);
-    get itemURL(): Platform.DevToolsPath.UrlString;
-    onselect(selectedByUser?: boolean): boolean;
-    onexpand(): void;
-    updateChildren(): Promise<void>;
-}
-export declare class DatabaseTableTreeElement extends ApplicationPanelTreeElement {
-    private readonly sidebar;
-    private readonly database;
-    private readonly tableName;
-    constructor(sidebar: ApplicationPanelSidebar, database: DatabaseModelDatabase, tableName: string);
-    get itemURL(): Platform.DevToolsPath.UrlString;
     onselect(selectedByUser?: boolean): boolean;
 }
 export declare class ServiceWorkersTreeElement extends ApplicationPanelTreeElement {
@@ -263,11 +235,9 @@ export declare class CookieTreeElement extends ApplicationPanelTreeElement {
 export declare class StorageCategoryView extends UI.Widget.VBox {
     private emptyWidget;
     private linkElement;
-    private warningBar?;
     constructor();
     setText(text: string): void;
     setLink(link: Platform.DevToolsPath.UrlString | null): void;
-    setWarning(message: string | null, learnMoreLink: Platform.DevToolsPath.UrlString, jsLogContext?: string): void;
 }
 export declare class ResourcesSection implements SDK.TargetManager.Observer {
     panel: ResourcesPanel;

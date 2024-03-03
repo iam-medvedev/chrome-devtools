@@ -206,7 +206,8 @@ export declare enum Action {
     InsightGenerated = 130,
     InsightErroredApi = 131,
     InsightErroredMarkdown = 132,
-    MaxValue = 133
+    ToggleShowWebVitals = 133,
+    MaxValue = 134
 }
 export declare enum PanelCodes {
     elements = 1,

@@ -156,7 +156,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.NetworkPanelCopyValue);
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(decodedValue);
             };
-            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyValue), copyDecodedValueHandler);
+            contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyValue), copyDecodedValueHandler, { jslogContext: 'copy-value' });
             void contextMenu.show();
         });
     }
@@ -222,15 +222,13 @@ export class RequestPayloadView extends UI.Widget.VBox {
         }
     }
     populateTreeElementWithSourceText(treeElement, sourceText) {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const max_len = 3000;
+        const MAX_LENGTH = 3000;
         const text = (sourceText || '').trim();
-        const trim = text.length > max_len;
+        const trim = text.length > MAX_LENGTH;
         const sourceTextElement = document.createElement('span');
         sourceTextElement.classList.add('payload-value');
         sourceTextElement.classList.add('source-code');
-        sourceTextElement.textContent = trim ? text.substr(0, max_len) : text;
+        sourceTextElement.textContent = trim ? text.substr(0, MAX_LENGTH) : text;
         const sourceTreeElement = new UI.TreeOutline.TreeElement(sourceTextElement);
         treeElement.removeChildren();
         treeElement.appendChild(sourceTreeElement);
@@ -250,7 +248,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
         function onContextMenuShowMore(event) {
             const contextMenu = new UI.ContextMenu.ContextMenu(event);
             const section = contextMenu.newSection();
-            section.appendItem(i18nString(UIStrings.showMore), showMore);
+            section.appendItem(i18nString(UIStrings.showMore), showMore, { jslogContext: 'show-more' });
             void contextMenu.show();
         }
         sourceTreeElement.listItemElement.addEventListener('contextmenu', onContextMenuShowMore);
@@ -288,7 +286,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
                 return;
             }
             const contextMenu = new UI.ContextMenu.ContextMenu(event);
-            contextMenu.newSection().appendItem(i18nString(UIStrings.viewParsed), viewParsed.bind(this, event));
+            contextMenu.newSection().appendItem(i18nString(UIStrings.viewParsed), viewParsed.bind(this, event), { jslogContext: 'view-parsed' });
             void contextMenu.show();
         };
         const viewParsedButton = this.createViewSourceToggle(/* viewSource */ true, viewParsed.bind(this));
@@ -329,9 +327,9 @@ export class RequestPayloadView extends UI.Widget.VBox {
             }
             const contextMenu = new UI.ContextMenu.ContextMenu(event);
             const section = contextMenu.newSection();
-            section.appendItem(i18nString(UIStrings.viewSource), viewSource.bind(this, event));
+            section.appendItem(i18nString(UIStrings.viewSource), viewSource.bind(this, event), { jslogContext: 'view-source' });
             const viewURLEncodedText = this.decodeRequestParameters ? i18nString(UIStrings.viewUrlEncoded) : i18nString(UIStrings.viewDecoded);
-            section.appendItem(viewURLEncodedText, toggleURLDecoding.bind(this, event));
+            section.appendItem(viewURLEncodedText, toggleURLDecoding.bind(this, event), { jslogContext: 'toggle-url-decoding' });
             void contextMenu.show();
         };
         const viewSourceButton = this.createViewSourceToggle(/* viewSource */ false, viewSource.bind(this));
@@ -377,7 +375,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
                 return;
             }
             const contextMenu = new UI.ContextMenu.ContextMenu(event);
-            contextMenu.newSection().appendItem(i18nString(UIStrings.viewParsed), viewParsed.bind(this, event));
+            contextMenu.newSection().appendItem(i18nString(UIStrings.viewParsed), viewParsed.bind(this, event), { jslogContext: 'view-parsed' });
             void contextMenu.show();
         };
         rootListItemElement.addEventListener('contextmenu', viewParsedContextMenu);
@@ -408,7 +406,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
                 return;
             }
             const contextMenu = new UI.ContextMenu.ContextMenu(event);
-            contextMenu.newSection().appendItem(i18nString(UIStrings.viewSource), viewSource.bind(this, event));
+            contextMenu.newSection().appendItem(i18nString(UIStrings.viewSource), viewSource.bind(this, event), { jslogContext: 'view-source' });
             void contextMenu.show();
         };
         const viewSourceButton = this.createViewSourceToggle(/* viewSource */ false, viewSource.bind(this));

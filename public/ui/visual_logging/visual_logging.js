@@ -22,6 +22,7 @@ export function registerLoggable(loggable, config, parent) {
  * Ideally the `action`s context should match the ID of an `UI.ActionRegistration.Action`.
  */
 export const action = LoggingConfig.makeConfigStringBuilder.bind(null, 'Action');
+export const adorner = LoggingConfig.makeConfigStringBuilder.bind(null, 'Adorner');
 export const animationClip = LoggingConfig.makeConfigStringBuilder.bind(null, 'AnimationClip');
 export const bezierCurveEditor = LoggingConfig.makeConfigStringBuilder.bind(null, 'BezierCurveEditor');
 export const bezierEditor = LoggingConfig.makeConfigStringBuilder.bind(null, 'BezierEditor');
@@ -49,7 +50,7 @@ export const dropDown = LoggingConfig.makeConfigStringBuilder.bind(null, 'DropDo
 export const elementsBreadcrumbs = LoggingConfig.makeConfigStringBuilder.bind(null, 'ElementsBreadcrumbs');
 export const expand = LoggingConfig.makeConfigStringBuilder.bind(null, 'Expand');
 export const filterDropdown = LoggingConfig.makeConfigStringBuilder.bind(null, 'FilterDropdown');
-export const infoBar = LoggingConfig.makeConfigStringBuilder.bind(null, 'InfoBar');
+export const dialog = LoggingConfig.makeConfigStringBuilder.bind(null, 'Dialog');
 export const item = LoggingConfig.makeConfigStringBuilder.bind(null, 'Item');
 export const key = LoggingConfig.makeConfigStringBuilder.bind(null, 'Key');
 /**

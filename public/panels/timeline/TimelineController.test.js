@@ -1,9 +1,9 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { renderElementIntoDOM } from '../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithRealConnection } from '../../../test/unittests/front_end/helpers/RealConnection.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { describeWithRealConnection } from '../../testing/RealConnection.js';
 import * as Timeline from './timeline.js';
 describeWithRealConnection('TimelineController', () => {
     it('calls the callback methods on the client in the expected order', async function () {

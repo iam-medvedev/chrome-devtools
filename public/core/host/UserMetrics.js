@@ -511,7 +511,8 @@ export var Action;
     Action[Action["InsightGenerated"] = 130] = "InsightGenerated";
     Action[Action["InsightErroredApi"] = 131] = "InsightErroredApi";
     Action[Action["InsightErroredMarkdown"] = 132] = "InsightErroredMarkdown";
-    Action[Action["MaxValue"] = 133] = "MaxValue";
+    Action[Action["ToggleShowWebVitals"] = 133] = "ToggleShowWebVitals";
+    Action[Action["MaxValue"] = 134] = "MaxValue";
 })(Action || (Action = {}));
 /* eslint-disable @typescript-eslint/naming-convention */
 export var PanelCodes;

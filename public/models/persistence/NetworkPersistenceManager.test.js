@@ -7,10 +7,10 @@ import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Workspace from '../workspace/workspace.js';
-import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { createWorkspaceProject, setUpEnvironment } from '../../../test/unittests/front_end/helpers/OverridesHelpers.js';
-import { createFileSystemUISourceCode } from '../../../test/unittests/front_end/helpers/UISourceCodeHelpers.js';
+import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createWorkspaceProject, setUpEnvironment } from '../../testing/OverridesHelpers.js';
+import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 const setUpEnvironmentWithUISourceCode = (url, resourceType, project) => {
     const { workspace, networkPersistenceManager } = setUpEnvironment();
     if (!project) {

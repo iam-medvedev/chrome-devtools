@@ -404,8 +404,5 @@ export class FontEditorSectionManager {
         this.section.resetToolbars();
         this.section.onpopulate();
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static treeElementSymbol = Symbol('FontEditorSectionManager._treeElementSymbol');
 }
 //# sourceMappingURL=ColorSwatchPopoverIcon.js.map

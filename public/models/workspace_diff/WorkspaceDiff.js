@@ -222,14 +222,12 @@ export class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper {
         };
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _instance = null;
+let workspaceDiffImplInstance = null;
 export function workspaceDiff() {
-    if (!_instance) {
-        _instance = new WorkspaceDiffImpl(Workspace.Workspace.WorkspaceImpl.instance());
+    if (!workspaceDiffImplInstance) {
+        workspaceDiffImplInstance = new WorkspaceDiffImpl(Workspace.Workspace.WorkspaceImpl.instance());
     }
-    return _instance;
+    return workspaceDiffImplInstance;
 }
 export const UpdateTimeout = 200;
 //# sourceMappingURL=WorkspaceDiff.js.map

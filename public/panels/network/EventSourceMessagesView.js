@@ -148,7 +148,7 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
         this.dataGrid.sortNodes(comparator, !this.dataGrid.isSortOrderAscending());
     }
     onRowContextMenu(contextMenu, node) {
-        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyMessage), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, node.data.data));
+        contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyMessage), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, node.data.data), { jslogContext: 'copy' });
     }
     refresh() {
         this.dataGrid.rootNode().removeChildren();

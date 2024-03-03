@@ -1,8 +1,8 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, getEventPromise, renderElementIntoDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithLocale } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { assertElement, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as ElementsComponents from './components.js';
 const { assert } = chai;
 describeWithLocale('StylePropertyEditor', () => {

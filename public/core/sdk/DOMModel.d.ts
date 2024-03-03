@@ -3,7 +3,7 @@ import * as Protocol from '../../generated/protocol.js';
 import * as Platform from '../platform/platform.js';
 import { CSSModel } from './CSSModel.js';
 import { OverlayModel } from './OverlayModel.js';
-import { type RemoteObject } from './RemoteObject.js';
+import { RemoteObject } from './RemoteObject.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
@@ -119,10 +119,13 @@ export declare class DOMNode {
     resolveURL(url: string): Platform.DevToolsPath.UrlString | null;
     highlight(mode?: string): void;
     highlightForTwoSeconds(): void;
-    resolveToObject(objectGroup?: string): Promise<RemoteObject | null>;
+    resolveToObject(objectGroup?: string, executionContextId?: Protocol.Runtime.ExecutionContextId): Promise<RemoteObject | null>;
     boxModel(): Promise<Protocol.DOM.BoxModel | null>;
     setAsInspectedNode(): Promise<void>;
     enclosingElementOrSelf(): DOMNode | null;
+    callFunction<T, U extends string | number>(fn: (this: HTMLElement, ...args: U[]) => T, args?: U[]): Promise<{
+        value: T;
+    } | null>;
     scrollIntoView(): Promise<void>;
     focus(): Promise<void>;
     simpleSelector(): string;

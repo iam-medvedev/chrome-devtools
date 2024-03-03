@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as Recorder from './models.js';
-import { describeWithEnvironment, } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 describeWithEnvironment('RecordingStorage', () => {
     beforeEach(() => {
         Recorder.RecordingStorage.RecordingStorage.instance().clearForTest();

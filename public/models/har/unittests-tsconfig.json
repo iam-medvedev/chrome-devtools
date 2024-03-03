@@ -51,13 +51,13 @@
       "path": "./bundle-tsconfig.json"
     },
     {
-      "path": "../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
-    },
-    {
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
       "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../testing/testing-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

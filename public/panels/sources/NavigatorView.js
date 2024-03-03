@@ -796,7 +796,7 @@ export class NavigatorView extends UI.Widget.VBox {
         this.rename(node, false);
     }
     async handleContextMenuExclude(project, path) {
-        const shouldExclude = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.areYouSureYouWantToExcludeThis));
+        const shouldExclude = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.areYouSureYouWantToExcludeThis), undefined, { jslogContext: 'exclude-folder-confirmation' });
         if (shouldExclude) {
             UI.UIUtils.startBatchUpdate();
             project.excludeFolder(Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.completeURL(project, path));
@@ -804,7 +804,7 @@ export class NavigatorView extends UI.Widget.VBox {
         }
     }
     async handleContextMenuDelete(uiSourceCode) {
-        const shouldDelete = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.areYouSureYouWantToDeleteThis));
+        const shouldDelete = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.areYouSureYouWantToDeleteThis), undefined, { jslogContext: 'delete-file-confirmation' });
         if (shouldDelete) {
             uiSourceCode.project().deleteFile(uiSourceCode);
         }
@@ -823,7 +823,7 @@ export class NavigatorView extends UI.Widget.VBox {
     }
     async handleDeleteFolder(node) {
         const warningMsg = `${i18nString(UIStrings.areYouSureYouWantToDeleteFolder)}\n${i18nString(UIStrings.actionCannotBeUndone)}`;
-        const shouldRemove = await UI.UIUtils.ConfirmDialog.show(warningMsg);
+        const shouldRemove = await UI.UIUtils.ConfirmDialog.show(warningMsg, undefined, { jslogContext: 'delete-folder-confirmation' });
         if (shouldRemove) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.OverrideTabDeleteFolderContextMenu);
             const topNode = this.findTopNonMergedNode(node);
@@ -901,6 +901,7 @@ export class NavigatorView extends UI.Widget.VBox {
                         })}\n${i18nString(UIStrings.workspaceStopSyncing)}`;
                         const shouldRemove = await UI.UIUtils.ConfirmDialog.show(warningMessage, undefined, {
                             okButtonLabel: i18nString(UIStrings.remove),
+                            jslogContext: 'remove-folder-from-workspace-confirmation',
                         });
                         if (shouldRemove) {
                             project.remove();

@@ -4,9 +4,9 @@
 const { assert } = chai;
 import * as RecorderComponents from './components.js';
 import * as Models from '../models/models.js';
-import { describeWithEnvironment, setupActionRegistry, } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import { renderElementIntoDOM } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('ReplayButton', () => {
     setupActionRegistry();

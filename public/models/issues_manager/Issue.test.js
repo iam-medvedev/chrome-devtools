@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as IssueManager from '../issues_manager/issues_manager.js';
-import { StubIssue } from '../../../test/unittests/front_end/helpers/StubIssue.js';
+import { StubIssue } from '../../testing/StubIssue.js';
 describe('Issue', () => {
     it('should store the code', () => {
         const code = 'anExampleIssueCodeString';

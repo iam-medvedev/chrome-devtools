@@ -59,7 +59,7 @@ export declare class NetworkNode extends DataGrid.SortableDataGrid.SortableDataG
     displayName(): string;
     displayType(): string;
     createCell(columnId: string): HTMLElement;
-    renderCell(cell: Element, columnId: string): void;
+    renderCell(_cell: Element, _columnId: string): void;
     isFailed(): boolean;
     backgroundColor(): string;
     updateBackgroundColor(): void;

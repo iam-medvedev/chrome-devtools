@@ -88,6 +88,5 @@ export declare class FontEditorSectionManager {
     showPopover(iconElement: Element, parentPane: StylesSidebarPane): Promise<void>;
     private onScroll;
     private onPopoverHidden;
-    private static readonly treeElementSymbol;
 }
 export {};

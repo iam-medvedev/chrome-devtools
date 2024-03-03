@@ -1,10 +1,10 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget, stubNoopSettings, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';

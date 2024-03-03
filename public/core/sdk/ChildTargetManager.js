@@ -96,8 +96,7 @@ export class ChildTargetManager extends SDKModel {
         this.fireAvailableTargetsChanged();
         this.dispatchEventToListeners("TargetDestroyed" /* Events.TargetDestroyed */, targetId);
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    targetCrashed({ targetId, status, errorCode }) {
+    targetCrashed(_event) {
     }
     fireAvailableTargetsChanged() {
         TargetManager.instance().dispatchEventToListeners("AvailableTargetsChanged" /* TargetManagerEvents.AvailableTargetsChanged */, [...this.#targetInfosInternal.values()]);

@@ -2255,9 +2255,6 @@
   "panels/application/ApplicationPanelSidebar.ts | versionSEmpty": {
     "message": "V̂ér̂śîón̂: {PH1} (ém̂ṕt̂ý)"
   },
-  "panels/application/ApplicationPanelSidebar.ts | webSql": {
-    "message": "Ŵéb̂ ŚQ̂Ĺ"
-  },
   "panels/application/ApplicationPanelSidebar.ts | webWorkers": {
     "message": "Ŵéb̂ Ẃôŕk̂ér̂ś"
   },
@@ -2848,6 +2845,9 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
     "message": "P̂áĝéŝ ẃît́ĥ án̂ ín̂-f́l̂íĝh́t̂ X́ĤŔ n̂ét̂ẃôŕk̂ ŕêq́ûéŝt́ âŕê ńôt́ ĉúr̂ŕêńt̂ĺŷ él̂íĝíb̂ĺê f́ôŕ b̂áĉḱ/f̂ór̂ẃâŕd̂ ćâćĥé."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | ParserAborted": {
+    "message": "Ûńd̂éf̂ín̂éd̂"
   },
   "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
     "message": "P̂áĝéŝ t́ĥát̂ úŝé P̂áŷḿêńt̂Ḿâńâǵêŕ âŕê ńôt́ ĉúr̂ŕêńt̂ĺŷ él̂íĝíb̂ĺê f́ôŕ b̂áĉḱ/f̂ór̂ẃâŕd̂ ćâćĥé."
@@ -3524,33 +3524,6 @@
   "panels/application/CookieItemsView.ts | showUrlDecoded": {
     "message": "Ŝh́ôẃ ÛŔL̂-d́êćôd́êd́"
   },
-  "panels/application/DatabaseModel.ts | anUnexpectedErrorSOccurred": {
-    "message": "Âń ûńêx́p̂éĉt́êd́ êŕr̂ór̂ {PH1} óĉćûŕr̂éd̂."
-  },
-  "panels/application/DatabaseModel.ts | databaseNoLongerHasExpected": {
-    "message": "D̂át̂áb̂áŝé n̂ó l̂ón̂ǵêŕ ĥáŝ éx̂ṕêćt̂éd̂ v́êŕŝíôń."
-  },
-  "panels/application/DatabaseQueryView.ts | databaseQuery": {
-    "message": "D̂át̂áb̂áŝé Q̂úêŕŷ"
-  },
-  "panels/application/DatabaseQueryView.ts | queryS": {
-    "message": "Q̂úêŕŷ: {PH1}"
-  },
-  "panels/application/DatabaseTableView.ts | anErrorOccurredTryingToreadTheS": {
-    "message": "Âń êŕr̂ór̂ óĉćûŕr̂éd̂ t́r̂ýîńĝ t́ô ŕêád̂ t́ĥé \"{PH1}\" t̂áb̂ĺê."
-  },
-  "panels/application/DatabaseTableView.ts | database": {
-    "message": "D̂át̂áb̂áŝé"
-  },
-  "panels/application/DatabaseTableView.ts | refresh": {
-    "message": "R̂éf̂ŕêśĥ"
-  },
-  "panels/application/DatabaseTableView.ts | theStableIsEmpty": {
-    "message": "T̂h́ê \"{PH1}\" t́âb́l̂é îś êḿp̂t́ŷ."
-  },
-  "panels/application/DatabaseTableView.ts | visibleColumns": {
-    "message": "V̂íŝíb̂ĺê ćôĺûḿn̂ś"
-  },
   "panels/application/DOMStorageItemsView.ts | domStorage": {
     "message": "D̂ÓM̂ Śt̂ór̂áĝé"
   },
@@ -4219,9 +4192,6 @@
   },
   "panels/application/ReportingApiTreeElement.ts | reportingApi": {
     "message": "R̂ép̂ór̂t́îńĝ ÁP̂Í"
-  },
-  "panels/application/ResourcesPanel.ts | webSqlDeprecation": {
-    "message": "Ŵéb̂ ŚQ̂Ĺ îś d̂ép̂ŕêćât́êd́. Ŷóû ćâń ĵóîń t̂h́ê d́êṕr̂éĉát̂íôń t̂ŕîál̂ t́ô ḱêép̂ úŝín̂ǵ ît́ ûńt̂íl̂ Ćĥŕôḿê 123."
   },
   "panels/application/ServiceWorkerCacheTreeElement.ts | cacheStorage": {
     "message": "Ĉáĉh́ê śt̂ór̂áĝé"
@@ -5160,13 +5130,13 @@
     "message": "<êx́ĉép̂t́îón̂>"
   },
   "panels/console/ConsoleViewMessage.ts | explainThisError": {
-    "message": "Êx́p̂ĺâín̂ t́ĥíŝ ér̂ŕôŕ"
+    "message": "Ûńd̂ér̂śt̂án̂d́ t̂h́îś êŕr̂ór̂"
   },
   "panels/console/ConsoleViewMessage.ts | explainThisMessage": {
-    "message": "Êx́p̂ĺâín̂ t́ĥíŝ ḿêśŝáĝé"
+    "message": "Ûńd̂ér̂śt̂án̂d́ t̂h́îś m̂éŝśâǵê"
   },
   "panels/console/ConsoleViewMessage.ts | explainThisWarning": {
-    "message": "Êx́p̂ĺâín̂ t́ĥíŝ ẃâŕn̂ín̂ǵ"
+    "message": "Ûńd̂ér̂śt̂án̂d́ t̂h́îś ŵár̂ńîńĝ"
   },
   "panels/console/ConsoleViewMessage.ts | functionWasResolvedFromBound": {
     "message": "F̂ún̂ćt̂íôń ŵáŝ ŕêśôĺv̂éd̂ f́r̂óm̂ b́ôún̂d́ f̂ún̂ćt̂íôń."
@@ -6386,29 +6356,23 @@
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "T̂óĝǵl̂é ŵh́êt́ĥér̂ év̂én̂t́ l̂íŝt́êńêŕ îś p̂áŝśîv́ê ór̂ b́l̂óĉḱîńĝ"
   },
+  "panels/explain/components/ConsoleInsight.ts | cancel": {
+    "message": "Ĉán̂ćêĺ"
+  },
   "panels/explain/components/ConsoleInsight.ts | closeInsight": {
     "message": "Ĉĺôśê ín̂śîǵĥt́"
-  },
-  "panels/explain/components/ConsoleInsight.ts | consentButton": {
-    "message": "Ĉón̂t́îńûé"
   },
   "panels/explain/components/ConsoleInsight.ts | consoleMessage": {
     "message": "Ĉón̂śôĺê ḿêśŝáĝé"
   },
-  "panels/explain/components/ConsoleInsight.ts | disclaimer": {
-    "message": "T̂h́ê f́ôĺl̂óŵín̂ǵ d̂át̂á ŵíl̂ĺ b̂é ŝén̂t́ t̂ó Ĝóôǵl̂é t̂ó f̂ín̂d́ âń êx́p̂ĺâńât́îón̂ f́ôŕ t̂h́ê ćôńŝól̂é m̂éŝśâǵê. T́ĥéŷ ḿâý b̂é r̂év̂íêẃêd́ b̂ý ĥúm̂án̂ś âńd̂ úŝéd̂ t́ô ím̂ṕr̂óv̂é p̂ŕôd́ûćt̂ś."
-  },
   "panels/explain/components/ConsoleInsight.ts | error": {
-    "message": "Ŝóm̂ét̂h́îńĝ ẃêńt̂ ẃr̂ón̂ǵ…"
+    "message": "Ĉón̂śôĺê ín̂śîǵĥt́ŝ h́âś êńĉóûńt̂ér̂éd̂ án̂ ér̂ŕôŕ"
   },
-  "panels/explain/components/ConsoleInsight.ts | finePrint": {
-    "message": "T̂h́îś îś âń êx́p̂ér̂ím̂én̂t́âĺ ÂÍ îńŝíĝh́t̂ś t̂óôĺ âńd̂ ẃôń’t̂ ál̂ẃâýŝ ǵêt́ ît́ r̂íĝh́t̂."
+  "panels/explain/components/ConsoleInsight.ts | errorBody": {
+    "message": "Ŝóm̂ét̂h́îńĝ ẃêńt̂ ẃr̂ón̂ǵ. T̂ŕŷ áĝáîń."
   },
   "panels/explain/components/ConsoleInsight.ts | generating": {
-    "message": "Ĉóm̂ín̂ǵ ûṕ ŵít̂h́ âń êx́p̂ĺâńât́îón̂…"
-  },
-  "panels/explain/components/ConsoleInsight.ts | goToSettings": {
-    "message": "Ĝó t̂ó ŝét̂t́îńĝś"
+    "message": "Îńŝíĝh́t̂ ǵêńêŕât́îón̂ íŝ ín̂ ṕr̂óĝŕêśŝ…"
   },
   "panels/explain/components/ConsoleInsight.ts | inputData": {
     "message": "D̂át̂á ûśêd́ t̂ó ĉŕêát̂é t̂h́îś îńŝíĝh́t̂"
@@ -6417,7 +6381,7 @@
     "message": "Îńŝíĝh́t̂"
   },
   "panels/explain/components/ConsoleInsight.ts | learnMore": {
-    "message": "L̂éâŕn̂ ḿôŕê áb̂óût́ ÂÍ îń D̂év̂T́ôól̂ś"
+    "message": "L̂éâŕn̂ ḿôŕê"
   },
   "panels/explain/components/ConsoleInsight.ts | networkRequest": {
     "message": "N̂ét̂ẃôŕk̂ ŕêq́ûéŝt́"
@@ -6426,16 +6390,22 @@
     "message": "Ĉón̂śôĺê ín̂śîǵĥt́ŝ íŝ ńôt́ âv́âíl̂áb̂ĺê"
   },
   "panels/explain/components/ConsoleInsight.ts | notLoggedIn": {
-    "message": "T̂h́îś f̂éât́ûŕê íŝ ón̂ĺŷ áv̂áîĺâb́l̂é îf́ ŷóû ár̂é ŝíĝńêd́ îńt̂ó Ĉh́r̂óm̂é ŵít̂h́ ŷóûŕ Ĝóôǵl̂é âćĉóûńt̂."
+    "message": "T̂h́îś f̂éât́ûŕê íŝ ón̂ĺŷ áv̂áîĺâb́l̂é ŵh́êń ŷóû śîǵn̂ ín̂t́ô Ćĥŕôḿê ẃît́ĥ ýôúr̂ Ǵôóĝĺê áĉćôún̂t́."
   },
   "panels/explain/components/ConsoleInsight.ts | offline": {
-    "message": "Îńt̂ér̂ńêt́ ĉón̂ńêćt̂íôń îś ĉúr̂ŕêńt̂ĺŷ ńôt́ âv́âíl̂áb̂ĺê."
+    "message": "Ĉh́êćk̂ ýôúr̂ ín̂t́êŕn̂ét̂ ćôńn̂éĉt́îón̂ án̂d́ t̂ŕŷ áĝáîń."
+  },
+  "panels/explain/components/ConsoleInsight.ts | offlineHeader": {
+    "message": "Ĉón̂śôĺê ín̂śîǵĥt́ŝ ćâń’t̂ ŕêáĉh́ t̂h́ê ín̂t́êŕn̂ét̂"
   },
   "panels/explain/components/ConsoleInsight.ts | opensInNewTab": {
     "message": "(ôṕêńŝ ín̂ á n̂éŵ t́âb́)"
   },
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "R̂él̂át̂éd̂ ćôd́ê"
+  },
+  "panels/explain/components/ConsoleInsight.ts | signInToUse": {
+    "message": "Ŝíĝń îń t̂ó ûśê Ćôńŝól̂é îńŝíĝh́t̂ś"
   },
   "panels/explain/components/ConsoleInsight.ts | stackTrace": {
     "message": "Ŝt́âćk̂t́r̂áĉé"
@@ -6444,7 +6414,7 @@
     "message": "Ŝúb̂ḿît́ f̂éêd́b̂áĉḱ"
   },
   "panels/explain/components/ConsoleInsight.ts | syncIsOff": {
-    "message": "T̂h́îś f̂éât́ûŕê íŝ ón̂ĺŷ áv̂áîĺâb́l̂é îf́ ŷóû h́âv́ê Ćĥŕôḿê śŷńĉ t́ûŕn̂éd̂ ón̂."
+    "message": "T̂h́îś f̂éât́ûŕê ŕêq́ûír̂éŝ ýôú t̂ó t̂úr̂ń ôń Ĉh́r̂óm̂é ŝýn̂ć."
   },
   "panels/explain/components/ConsoleInsight.ts | thumbsDown": {
     "message": "T̂h́ûḿb̂ś d̂óŵń"
@@ -6452,20 +6422,23 @@
   "panels/explain/components/ConsoleInsight.ts | thumbsUp": {
     "message": "T̂h́ûḿb̂ś ûṕ"
   },
+  "panels/explain/components/ConsoleInsight.ts | updateSettings": {
+    "message": "Ûṕd̂át̂é Ŝét̂t́îńĝś"
+  },
   "panels/explain/explain-meta.ts | enableConsoleInsights": {
-    "message": "Êńâb́l̂é Ĉón̂śôĺê Ín̂śîǵĥt́ŝ"
+    "message": "Êńâb́l̂é Ĉón̂śôĺê ín̂śîǵĥt́ŝ"
   },
   "panels/explain/explain-meta.ts | explainThisError": {
-    "message": "Êx́p̂ĺâín̂ t́ĥíŝ ér̂ŕôŕ"
+    "message": "Ûńd̂ér̂śt̂án̂d́ t̂h́îś êŕr̂ór̂"
   },
   "panels/explain/explain-meta.ts | explainThisMessage": {
-    "message": "Êx́p̂ĺâín̂ t́ĥíŝ ḿêśŝáĝé"
+    "message": "Ûńd̂ér̂śt̂án̂d́ t̂h́îś m̂éŝśâǵê"
   },
   "panels/explain/explain-meta.ts | explainThisWarning": {
-    "message": "Êx́p̂ĺâín̂ t́ĥíŝ ẃâŕn̂ín̂ǵ"
+    "message": "Ûńd̂ér̂śt̂án̂d́ t̂h́îś ŵár̂ńîńĝ"
   },
   "panels/explain/explain-meta.ts | wrongLocale": {
-    "message": "Ôńl̂ý Êńĝĺîśĥ ĺôćâĺêś âŕê ćûŕr̂én̂t́l̂ý ŝúp̂ṕôŕt̂éd̂."
+    "message": "T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ûṕd̂át̂é ŷóûŕ L̂án̂ǵûáĝé p̂ŕêf́êŕêńĉé îń D̂év̂T́ôól̂ś Ŝét̂t́îńĝś t̂ó Êńĝĺîśĥ."
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "B̂ĺôćk̂éd̂ Ŕêśôúr̂ćê"

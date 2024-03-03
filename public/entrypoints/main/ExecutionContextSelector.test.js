@@ -5,8 +5,8 @@ const { assert } = chai;
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Main from './main.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { createTarget, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection, dispatchEvent, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { createTarget, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockConnection.js';
 describeWithMockConnection('ExecutionContextSelector', () => {
     it('switches to the default context once available', () => {
         new Main.ExecutionContextSelector.ExecutionContextSelector(SDK.TargetManager.TargetManager.instance(), UI.Context.Context.instance());

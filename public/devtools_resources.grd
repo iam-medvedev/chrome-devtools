@@ -458,6 +458,7 @@
       <include file="models/trace/extras/extras.js" name="MODELS_TRACE_EXTRAS_EXTRAS_JS" resource_path="models/trace/extras/extras.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/handlers.js" name="MODELS_TRACE_HANDLERS_HANDLERS_JS" resource_path="models/trace/handlers/handlers.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/helpers.js" name="MODELS_TRACE_HELPERS_HELPERS_JS" resource_path="models/trace/helpers/helpers.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/insights/insights.js" name="MODELS_TRACE_INSIGHTS_INSIGHTS_JS" resource_path="models/trace/insights/insights.js" type="BINDATA" compress="false"/>
       <include file="models/trace/root-causes/root-causes.js" name="MODELS_TRACE_ROOT_CAUSES_ROOT_CAUSES_JS" resource_path="models/trace/root-causes/root-causes.js" type="BINDATA" compress="false"/>
       <include file="models/trace/trace.js" name="MODELS_TRACE_TRACE_JS" resource_path="models/trace/trace.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/types.js" name="MODELS_TRACE_TYPES_TYPES_JS" resource_path="models/trace/types/types.js" type="BINDATA" compress="false"/>
@@ -965,6 +966,9 @@
       <include file="models/trace/helpers/Timing.js" name="MODELS_TRACE_HELPERS_TIMING_JS" resource_path="models/trace/helpers/Timing.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/Trace.js" name="MODELS_TRACE_HELPERS_TRACE_JS" resource_path="models/trace/helpers/Trace.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/TreeHelpers.js" name="MODELS_TRACE_HELPERS_TREEHELPERS_JS" resource_path="models/trace/helpers/TreeHelpers.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/insights/InsightRunners.js" name="MODELS_TRACE_INSIGHTS_INSIGHTRUNNERS_JS" resource_path="models/trace/insights/InsightRunners.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/insights/RenderBlocking.js" name="MODELS_TRACE_INSIGHTS_RENDERBLOCKING_JS" resource_path="models/trace/insights/RenderBlocking.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/insights/types.js" name="MODELS_TRACE_INSIGHTS_TYPES_JS" resource_path="models/trace/insights/types.js" type="BINDATA" compress="false"/>
       <include file="models/trace/root-causes/LayoutShift.js" name="MODELS_TRACE_ROOT_CAUSES_LAYOUTSHIFT_JS" resource_path="models/trace/root-causes/LayoutShift.js" type="BINDATA" compress="false"/>
       <include file="models/trace/root-causes/RootCauses.js" name="MODELS_TRACE_ROOT_CAUSES_ROOTCAUSES_JS" resource_path="models/trace/root-causes/RootCauses.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/Configuration.js" name="MODELS_TRACE_TYPES_CONFIGURATION_JS" resource_path="models/trace/types/Configuration.js" type="BINDATA" compress="false"/>
@@ -987,6 +991,7 @@
       <include file="panels/accessibility/accessibilityNode.css.js" name="PANELS_ACCESSIBILITY_ACCESSIBILITYNODE_CSS_JS" resource_path="panels/accessibility/accessibilityNode.css.js" type="BINDATA" compress="false"/>
       <include file="panels/accessibility/accessibilityProperties.css.js" name="PANELS_ACCESSIBILITY_ACCESSIBILITYPROPERTIES_CSS_JS" resource_path="panels/accessibility/accessibilityProperties.css.js" type="BINDATA" compress="false"/>
       <include file="panels/accessibility/axBreadcrumbs.css.js" name="PANELS_ACCESSIBILITY_AXBREADCRUMBS_CSS_JS" resource_path="panels/accessibility/axBreadcrumbs.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/animation/AnimationDOMNode.js" name="PANELS_ANIMATION_ANIMATIONDOMNODE_JS" resource_path="panels/animation/AnimationDOMNode.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationGroupPreviewUI.js" name="PANELS_ANIMATION_ANIMATIONGROUPPREVIEWUI_JS" resource_path="panels/animation/AnimationGroupPreviewUI.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationModel.js" name="PANELS_ANIMATION_ANIMATIONMODEL_JS" resource_path="panels/animation/AnimationModel.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationScreenshotPopover.js" name="PANELS_ANIMATION_ANIMATIONSCREENSHOTPOPOVER_JS" resource_path="panels/animation/AnimationScreenshotPopover.js" type="BINDATA" compress="false"/>
@@ -1004,9 +1009,6 @@
       <include file="panels/application/CookieItemsView.js" name="PANELS_APPLICATION_COOKIEITEMSVIEW_JS" resource_path="panels/application/CookieItemsView.js" type="BINDATA" compress="false"/>
       <include file="panels/application/DOMStorageItemsView.js" name="PANELS_APPLICATION_DOMSTORAGEITEMSVIEW_JS" resource_path="panels/application/DOMStorageItemsView.js" type="BINDATA" compress="false"/>
       <include file="panels/application/DOMStorageModel.js" name="PANELS_APPLICATION_DOMSTORAGEMODEL_JS" resource_path="panels/application/DOMStorageModel.js" type="BINDATA" compress="false"/>
-      <include file="panels/application/DatabaseModel.js" name="PANELS_APPLICATION_DATABASEMODEL_JS" resource_path="panels/application/DatabaseModel.js" type="BINDATA" compress="false"/>
-      <include file="panels/application/DatabaseQueryView.js" name="PANELS_APPLICATION_DATABASEQUERYVIEW_JS" resource_path="panels/application/DatabaseQueryView.js" type="BINDATA" compress="false"/>
-      <include file="panels/application/DatabaseTableView.js" name="PANELS_APPLICATION_DATABASETABLEVIEW_JS" resource_path="panels/application/DatabaseTableView.js" type="BINDATA" compress="false"/>
       <include file="panels/application/IndexedDBModel.js" name="PANELS_APPLICATION_INDEXEDDBMODEL_JS" resource_path="panels/application/IndexedDBModel.js" type="BINDATA" compress="false"/>
       <include file="panels/application/IndexedDBViews.js" name="PANELS_APPLICATION_INDEXEDDBVIEWS_JS" resource_path="panels/application/IndexedDBViews.js" type="BINDATA" compress="false"/>
       <include file="panels/application/InterestGroupStorageModel.js" name="PANELS_APPLICATION_INTERESTGROUPSTORAGEMODEL_JS" resource_path="panels/application/InterestGroupStorageModel.js" type="BINDATA" compress="false"/>
@@ -1229,7 +1231,7 @@
       <include file="panels/elements/nodeStackTraceWidget.css.js" name="PANELS_ELEMENTS_NODESTACKTRACEWIDGET_CSS_JS" resource_path="panels/elements/nodeStackTraceWidget.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/platformFontsWidget.css.js" name="PANELS_ELEMENTS_PLATFORMFONTSWIDGET_CSS_JS" resource_path="panels/elements/platformFontsWidget.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/propertiesWidget.css.js" name="PANELS_ELEMENTS_PROPERTIESWIDGET_CSS_JS" resource_path="panels/elements/propertiesWidget.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/elements/stylesSectionTree.css.js" name="PANELS_ELEMENTS_STYLESSECTIONTREE_CSS_JS" resource_path="panels/elements/stylesSectionTree.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/elements/stylePropertiesTreeOutline.css.js" name="PANELS_ELEMENTS_STYLEPROPERTIESTREEOUTLINE_CSS_JS" resource_path="panels/elements/stylePropertiesTreeOutline.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/stylesSidebarPane.css.js" name="PANELS_ELEMENTS_STYLESSIDEBARPANE_CSS_JS" resource_path="panels/elements/stylesSidebarPane.css.js" type="BINDATA" compress="false"/>
       <include file="panels/emulation/AdvancedApp.js" name="PANELS_EMULATION_ADVANCEDAPP_JS" resource_path="panels/emulation/AdvancedApp.js" type="BINDATA" compress="false"/>
       <include file="panels/emulation/DeviceModeToolbar.js" name="PANELS_EMULATION_DEVICEMODETOOLBAR_JS" resource_path="panels/emulation/DeviceModeToolbar.js" type="BINDATA" compress="false"/>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -86,13 +87,13 @@ export class NetworkConfigView extends UI.Widget.VBox {
         userAgentSelectElement.setAttribute('jslog', `${VisualLogging.dropDown().track({ change: true }).context(userAgentSetting.name)}`);
         UI.ARIAUtils.setLabel(userAgentSelectElement, title);
         const customOverride = { title: i18nString(UIStrings.custom), value: 'custom' };
-        userAgentSelectElement.appendChild(new Option(customOverride.title, customOverride.value));
+        userAgentSelectElement.appendChild(UI.UIUtils.createOption(customOverride.title, customOverride.value, 'custom'));
         for (const userAgentDescriptor of userAgentGroups) {
             const groupElement = userAgentSelectElement.createChild('optgroup');
             groupElement.label = userAgentDescriptor.title;
             for (const userAgentVersion of userAgentDescriptor.values) {
                 const userAgentValue = SDK.NetworkManager.MultitargetNetworkManager.patchUserAgentWithChromeVersion(userAgentVersion.value);
-                groupElement.appendChild(new Option(userAgentVersion.title, userAgentValue));
+                groupElement.appendChild(UI.UIUtils.createOption(userAgentVersion.title, userAgentValue, Platform.StringUtilities.toKebabCase(userAgentVersion.title)));
             }
         }
         userAgentSelectElement.selectedIndex = 0;

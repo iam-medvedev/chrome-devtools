@@ -1,4 +1,5 @@
 import * as Handlers from './handlers/handlers.js';
+import type * as Insights from './insights/insights.js';
 import * as Types from './types/types.js';
 export interface ParseConfig {
     metadata?: Types.File.MetaData;
@@ -62,6 +63,7 @@ export declare class Model<EnabledModelHandlers extends {
      * If no index is given, the last stored parsed data is returned.
      */
     traceParsedData(index?: number): Handlers.Types.EnabledHandlerDataWithMeta<EnabledModelHandlers> | null;
+    traceInsights(index?: number): Insights.Types.TraceInsightData<EnabledModelHandlers> | null;
     metadata(index: number): Types.File.MetaData | null;
     traceEvents(index: number): readonly Types.TraceEvents.TraceEventData[] | null;
     size(): number;
@@ -78,6 +80,7 @@ export type ParsedTraceFile<Handlers extends {
     [key: string]: Handlers.Types.TraceEventHandler;
 }> = Types.File.TraceFile & {
     traceParsedData: Handlers.Types.EnabledHandlerDataWithMeta<Handlers> | null;
+    traceInsights: Insights.Types.TraceInsightData<Handlers> | null;
 };
 export declare const enum ModelUpdateType {
     COMPLETE = "COMPLETE",

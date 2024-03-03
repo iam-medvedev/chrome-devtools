@@ -1,11 +1,11 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertCurrentFocusedCellIs, assertSelectedRowIs, emulateUserFocusingCellAt, emulateUserKeyboardNavigation, focusCurrentlyFocusableCell, getAllRows, getBodyRowByAriaIndex, getCellByIndexes, getFocusableCell, getHeaderCellForColumnId, getHeaderCells, getValuesOfAllBodyRows, getValuesOfBodyRowByAriaIndex, } from '../../../../test/unittests/front_end/helpers/DataGridHelpers.js';
-import { assertElement, assertShadowRoot, dispatchClickEvent, dispatchFocusOutEvent, dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, stripLitHtmlCommentNodes, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithLocale } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { withMutations } from '../../../../test/unittests/front_end/helpers/MutationHelpers.js';
 import * as Platform from '../../../core/platform/platform.js';
+import { assertCurrentFocusedCellIs, assertSelectedRowIs, emulateUserFocusingCellAt, emulateUserKeyboardNavigation, focusCurrentlyFocusableCell, getAllRows, getBodyRowByAriaIndex, getCellByIndexes, getFocusableCell, getHeaderCellForColumnId, getHeaderCells, getValuesOfAllBodyRows, getValuesOfBodyRowByAriaIndex, } from '../../../testing/DataGridHelpers.js';
+import { assertElement, assertShadowRoot, dispatchClickEvent, dispatchFocusOutEvent, dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, stripLitHtmlCommentNodes, } from '../../../testing/DOMHelpers.js';
+import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import { withMutations } from '../../../testing/MutationHelpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';

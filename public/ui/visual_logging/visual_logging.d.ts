@@ -13,6 +13,7 @@ export declare function registerLoggable(loggable: Loggable, config: string, par
  * Ideally the `action`s context should match the ID of an `UI.ActionRegistration.Action`.
  */
 export declare const action: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
+export declare const adorner: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const animationClip: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const bezierCurveEditor: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const bezierEditor: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
@@ -40,7 +41,7 @@ export declare const dropDown: (context?: string | undefined) => LoggingConfig.C
 export declare const elementsBreadcrumbs: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const expand: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const filterDropdown: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
-export declare const infoBar: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
+export declare const dialog: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const item: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const key: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 /**

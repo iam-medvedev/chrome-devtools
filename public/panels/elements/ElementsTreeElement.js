@@ -627,7 +627,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const isEditable = this.hasEditableNode();
         // clang-format off
         if (isEditable && !this.editing) {
-            contextMenu.editSection().appendItem(i18nString(UIStrings.editAsHtml), this.editAsHTML.bind(this), { jslogContext: 'edit-as-html' });
+            contextMenu.editSection().appendItem(i18nString(UIStrings.editAsHtml), this.editAsHTML.bind(this), { jslogContext: 'elements.edit-as-html' });
         }
         // clang-format on
         const isShadowRoot = this.nodeInternal.isShadowRoot();
@@ -650,7 +650,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         if (this.nodeInternal.nodeType() === Node.ELEMENT_NODE) {
             section.appendItem(i18nString(UIStrings.copySelector), this.copyCSSPath.bind(this), { jslogContext: 'copy-selector' });
             section.appendItem(i18nString(UIStrings.copyJsPath), this.copyJSPath.bind(this), { disabled: !canGetJSPath(this.nodeInternal), jslogContext: 'copy-js-path' });
-            section.appendItem(i18nString(UIStrings.copyStyles), this.copyStyles.bind(this), { jslogContext: 'copy-styles' });
+            section.appendItem(i18nString(UIStrings.copyStyles), this.copyStyles.bind(this), { jslogContext: 'elements.copy-styles' });
         }
         if (!isShadowRoot) {
             section.appendItem(i18nString(UIStrings.copyXpath), this.copyXPath.bind(this), { jslogContext: 'copy-xpath' });
@@ -661,11 +661,14 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             menuItem.setShortcut(createShortcut('C', modifier));
             // Duplicate element, disabled on root element and ShadowDOM.
             const isRootElement = !this.nodeInternal.parentNode || this.nodeInternal.parentNode.nodeName() === '#document';
-            menuItem = contextMenu.editSection().appendItem(i18nString(UIStrings.duplicateElement), treeOutline.duplicateNode.bind(treeOutline, this.nodeInternal), { disabled: (this.nodeInternal.isInShadowTree() || isRootElement), jslogContext: 'duplicate-element' });
+            menuItem = contextMenu.editSection().appendItem(i18nString(UIStrings.duplicateElement), treeOutline.duplicateNode.bind(treeOutline, this.nodeInternal), {
+                disabled: (this.nodeInternal.isInShadowTree() || isRootElement),
+                jslogContext: 'elements.duplicate-element',
+            });
         }
         menuItem = contextMenu.clipboardSection().appendItem(i18nString(UIStrings.paste), treeOutline.pasteNode.bind(treeOutline, this.nodeInternal), { disabled: !treeOutline.canPaste(this.nodeInternal), jslogContext: 'paste' });
         menuItem.setShortcut(createShortcut('V', modifier));
-        menuItem = contextMenu.debugSection().appendCheckboxItem(i18nString(UIStrings.hideElement), treeOutline.toggleHideElement.bind(treeOutline, this.nodeInternal), { checked: treeOutline.isToggledToHidden(this.nodeInternal), jslogContext: 'hide-element' });
+        menuItem = contextMenu.debugSection().appendCheckboxItem(i18nString(UIStrings.hideElement), treeOutline.toggleHideElement.bind(treeOutline, this.nodeInternal), { checked: treeOutline.isToggledToHidden(this.nodeInternal), jslogContext: 'elements.hide-element' });
         menuItem.setShortcut(UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction('elements.hide-element') || '');
         if (isEditable) {
             contextMenu.editSection().appendItem(i18nString(UIStrings.deleteElement), this.remove.bind(this), { jslogContext: 'delete-element' });
@@ -673,7 +676,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.populateExpandRecursively(contextMenu);
         contextMenu.viewSection().appendItem(i18nString(UIStrings.collapseChildren), this.collapseChildren.bind(this), { jslogContext: 'collapse-children' });
         const deviceModeWrapperAction = new Emulation.DeviceModeWrapper.ActionDelegate();
-        contextMenu.viewSection().appendItem(i18nString(UIStrings.captureNodeScreenshot), deviceModeWrapperAction.handleAction.bind(null, UI.Context.Context.instance(), 'emulation.capture-node-screenshot'), { jslogContext: 'capture-node-screenshot' });
+        contextMenu.viewSection().appendItem(i18nString(UIStrings.captureNodeScreenshot), deviceModeWrapperAction.handleAction.bind(null, UI.Context.Context.instance(), 'emulation.capture-node-screenshot'), { jslogContext: 'emulation.capture-node-screenshot' });
         if (this.nodeInternal.frameOwnerFrameId()) {
             contextMenu.viewSection().appendItem(i18nString(UIStrings.showFrameDetails), () => {
                 const frameOwnerFrameId = this.nodeInternal.frameOwnerFrameId();
@@ -1718,6 +1721,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         adorner.data = {
             name,
             content: adornerContent,
+            jslogContext: name,
         };
         if (isOpeningTag(this.tagTypeContext)) {
             this.tagTypeContext.adorners.push(adorner);
@@ -1739,6 +1743,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         adorner.data = {
             name,
             content: adornerContent,
+            jslogContext: 'slot',
         };
         context.adorners.push(adorner);
         ElementsPanel.instance().registerAdorner(adorner);
@@ -1756,6 +1761,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         adorner.data = {
             name,
             content: adornerContent,
+            jslogContext: 'media',
         };
         if (isOpeningTag(this.tagTypeContext)) {
             this.tagTypeContext.adorners.push(adorner);

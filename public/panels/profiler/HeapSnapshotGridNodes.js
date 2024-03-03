@@ -565,7 +565,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
     populateContextMenu(contextMenu, dataDisplayDelegate, heapProfilerModel) {
         contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSummaryView), () => {
             dataDisplayDelegate.showObject(String(this.snapshotNodeId), i18nString(UIStrings.summary));
-        }, { jslogContext: 'reveal-in-summary-view' });
+        }, { jslogContext: 'reveal-in-summary' });
         if (this.referenceName) {
             for (const match of this.referenceName.matchAll(/\((?<objectName>[^@)]*) @(?<snapshotNodeId>\d+)\)/g)) {
                 const { objectName, snapshotNodeId } = match.groups;

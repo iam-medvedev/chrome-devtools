@@ -46,10 +46,10 @@
   ],
   "references": [
     {
-      "path": "../../../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
+      "path": "../../../../panels/recorder/injected/bundle-tsconfig.json"
     },
     {
-      "path": "../../../../panels/recorder/injected/bundle-tsconfig.json"
+      "path": "../../../../testing/testing-tsconfig.json"
     }
   ]
 }

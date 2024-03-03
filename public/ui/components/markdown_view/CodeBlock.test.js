@@ -1,10 +1,10 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { dispatchClickEvent, renderElementIntoDOM, resetTestDOM, } from '../../../../test/unittests/front_end/helpers/DOMHelpers.js';
-import { describeWithEnvironment } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 import * as Host from '../../../core/host/host.js';
 import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
+import { dispatchClickEvent, renderElementIntoDOM, resetTestDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as MarkdownView from './markdown_view.js';
 const { assert } = chai;
 describeWithEnvironment('CodeBlock', () => {
@@ -32,6 +32,32 @@ describeWithEnvironment('CodeBlock', () => {
         }
         finally {
             clock.restore();
+            resetTestDOM();
+        }
+    });
+    it('renders no legal notice by default', () => {
+        try {
+            const component = new MarkdownView.CodeBlock.CodeBlock();
+            component.code = 'test';
+            renderElementIntoDOM(component);
+            const notice = component.shadowRoot.querySelector('.notice');
+            assert(notice === null, '.notice was found');
+        }
+        finally {
+            resetTestDOM();
+        }
+    });
+    it('renders legal notice if configured', () => {
+        try {
+            const component = new MarkdownView.CodeBlock.CodeBlock();
+            component.code = 'test';
+            component.displayNotice = true;
+            renderElementIntoDOM(component);
+            const notice = component.shadowRoot.querySelector('.notice');
+            assertNotNullOrUndefined(notice);
+            assert.strictEqual(notice.innerText, 'Use code snippets with caution.');
+        }
+        finally {
             resetTestDOM();
         }
     });

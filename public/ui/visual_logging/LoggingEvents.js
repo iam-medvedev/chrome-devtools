@@ -43,14 +43,12 @@ export async function logResize(loggable, size, resizeLogThrottler) {
     }
 }
 export async function logClick(loggable, event, options) {
-    if (!(event instanceof MouseEvent)) {
-        return;
-    }
     const loggingState = getLoggingState(loggable);
     if (!loggingState) {
         return;
     }
-    const clickEvent = { veid: loggingState.veid, mouseButton: event.button, doubleClick: Boolean(options?.doubleClick) };
+    const button = event instanceof MouseEvent ? event.button : 0;
+    const clickEvent = { veid: loggingState.veid, mouseButton: button, doubleClick: Boolean(options?.doubleClick) };
     const context = await loggingState.context(event);
     if (context) {
         clickEvent.context = context;

@@ -2,6 +2,8 @@ import * as TraceEngine from '../../models/trace/trace.js';
 export interface InitiatorPair {
     event: TraceEngine.Types.TraceEvents.TraceEventData;
     initiator: TraceEngine.Types.TraceEvents.TraceEventData;
+    isEntryHidden?: boolean;
+    isInitiatorHidden?: boolean;
 }
 /**
  * Given an event that the user has selected, this function returns all the
@@ -10,4 +12,4 @@ export interface InitiatorPair {
  * entire chain: for each, we see if it had an initiator, and
  * work backwards to draw each one, as well as the events initiated directly by the entry.
  */
-export declare function eventInitiatorPairsToDraw(traceEngineData: TraceEngine.Handlers.Types.TraceParseData, selectedEvent: TraceEngine.Types.TraceEvents.TraceEventData): readonly InitiatorPair[];
+export declare function eventInitiatorPairsToDraw(traceEngineData: TraceEngine.Handlers.Types.TraceParseData, selectedEvent: TraceEngine.Types.TraceEvents.TraceEventData, hiddenEntries: TraceEngine.Types.TraceEvents.TraceEventData[], modifiedEntries: TraceEngine.Types.TraceEvents.TraceEventData[]): readonly InitiatorPair[];

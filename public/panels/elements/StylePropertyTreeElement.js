@@ -1044,7 +1044,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return;
         }
         const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
-        UI.UIUtils.createTextChild(this.listItemElement.createChild('span', 'styles-clipboard-only'), indent + (this.property.disabled ? '/* ' : ''));
+        UI.UIUtils.createTextChild(this.listItemElement.createChild('span', 'styles-clipboard-only'), indent.repeat(this.section().nestingLevel + 1) + (this.property.disabled ? '/* ' : ''));
         if (this.nameElement) {
             this.listItemElement.appendChild(this.nameElement);
         }

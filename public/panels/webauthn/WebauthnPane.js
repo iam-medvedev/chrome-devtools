@@ -400,7 +400,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const prevValue = this.#transportSelect.value;
         this.#transportSelect.removeChildren();
         for (const option of enabledOptions) {
-            this.#transportSelect.appendChild(new Option(option, option));
+            this.#transportSelect.appendChild(UI.UIUtils.createOption(option, option, option));
         }
         // Make sure the currently selected value stays the same.
         this.#transportSelect.value = prevValue;
@@ -470,7 +470,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         UI.ARIAUtils.bindLabelToControl(protocolSelectTitle, this.#protocolSelect);
         Object.values(PROTOCOL_AUTHENTICATOR_VALUES).sort().forEach((option) => {
             if (this.#protocolSelect) {
-                this.#protocolSelect.appendChild(new Option(option, option));
+                this.#protocolSelect.appendChild(UI.UIUtils.createOption(option, option, option));
             }
         });
         if (this.#protocolSelect) {

@@ -48,7 +48,7 @@ export class CommandMenu {
         return commandMenuInstance;
     }
     static createCommand(options) {
-        const { category, keys, title, shortcut, executeHandler, availableHandler, userActionCode, deprecationWarning, isPanelOrDrawer, } = options;
+        const { category, keys, title, shortcut, jslogContext, executeHandler, availableHandler, userActionCode, deprecationWarning, isPanelOrDrawer, } = options;
         let handler = executeHandler;
         if (userActionCode) {
             const actionCode = userActionCode;
@@ -57,7 +57,7 @@ export class CommandMenu {
                 executeHandler();
             };
         }
-        return new Command(category, title, keys, shortcut, handler, availableHandler, deprecationWarning, isPanelOrDrawer);
+        return new Command(category, title, keys, shortcut, jslogContext, handler, availableHandler, deprecationWarning, isPanelOrDrawer);
     }
     static createSettingCommand(setting, title, value) {
         const category = setting.category();
@@ -71,6 +71,7 @@ export class CommandMenu {
             keys: tags,
             title,
             shortcut: '',
+            jslogContext: setting.name,
             executeHandler: () => {
                 if (setting.deprecation?.disabled &&
                     (!setting.deprecation?.experiment || setting.deprecation.experiment.isEnabled())) {
@@ -80,6 +81,9 @@ export class CommandMenu {
                 setting.set(value);
                 if (setting.name === 'emulate-page-focus') {
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.ToggleEmulateFocusedPageFromCommandMenu);
+                }
+                if (setting.name === 'show-web-vitals') {
+                    Host.userMetrics.actionTaken(Host.UserMetrics.Action.ToggleShowWebVitals);
                 }
                 if (reloadRequired) {
                     UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.oneOrMoreSettingsHaveChanged));
@@ -109,6 +113,7 @@ export class CommandMenu {
             keys: action.tags() || '',
             title: action.title(),
             shortcut,
+            jslogContext: action.id(),
             executeHandler: action.execute.bind(action),
             userActionCode,
             availableHandler: undefined,
@@ -138,6 +143,7 @@ export class CommandMenu {
             keys: tags,
             title,
             shortcut: '',
+            jslogContext: id,
             executeHandler,
             userActionCode,
             availableHandler: undefined,
@@ -187,7 +193,7 @@ export class CommandMenu {
 export class CommandMenuProvider extends Provider {
     commands;
     constructor(commandsForTest = []) {
-        super();
+        super('command');
         this.commands = commandsForTest;
     }
     attach() {
@@ -261,6 +267,9 @@ export class CommandMenuProvider extends Provider {
         tagElement.style.color = '#fff';
         tagElement.textContent = command.category;
     }
+    jslogContextAt(itemIndex) {
+        return this.commands[itemIndex].jslogContext;
+    }
     selectItem(itemIndex, _promptValue) {
         if (itemIndex === null) {
             return;
@@ -296,15 +305,17 @@ export class Command {
     title;
     key;
     shortcut;
+    jslogContext;
     deprecationWarning;
     isPanelOrDrawer;
     #executeHandler;
     #availableHandler;
-    constructor(category, title, key, shortcut, executeHandler, availableHandler, deprecationWarning, isPanelOrDrawer) {
+    constructor(category, title, key, shortcut, jslogContext, executeHandler, availableHandler, deprecationWarning, isPanelOrDrawer) {
         this.category = category;
         this.title = title;
         this.key = category + '\0' + title + '\0' + key;
         this.shortcut = shortcut;
+        this.jslogContext = jslogContext;
         this.#executeHandler = executeHandler;
         this.#availableHandler = availableHandler;
         this.deprecationWarning = deprecationWarning;

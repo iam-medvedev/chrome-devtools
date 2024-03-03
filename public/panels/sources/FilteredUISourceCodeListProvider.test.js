@@ -7,8 +7,8 @@ import * as Common from '../../core/common/common.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Root from '../../core/root/root.js';
 import * as Sources from './sources.js';
-import { describeWithEnvironment } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { setUpEnvironment } from '../../../test/unittests/front_end/helpers/OverridesHelpers.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setUpEnvironment } from '../../testing/OverridesHelpers.js';
 const setUpEnvironmentWithUISourceCode = (url, resourceType, project) => {
     const { workspace, debuggerWorkspaceBinding } = setUpEnvironment();
     Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: false, debuggerWorkspaceBinding });
@@ -28,7 +28,7 @@ describeWithEnvironment('FilteredUISourceCodeListProvider', () => {
         const url = 'http://www.example.com/list-fetch.json';
         const resourceType = Common.ResourceType.resourceTypes.Fetch;
         const { workspace, project } = setUpEnvironmentWithUISourceCode(url, resourceType);
-        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider();
+        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider('test');
         filteredUISourceCodeListProvider.attach();
         const result = filteredUISourceCodeListProvider.itemCount();
         workspace.removeProject(project);
@@ -38,7 +38,7 @@ describeWithEnvironment('FilteredUISourceCodeListProvider', () => {
         const url = 'http://www.example.com/list-xhr.json';
         const resourceType = Common.ResourceType.resourceTypes.XHR;
         const { workspace, project } = setUpEnvironmentWithUISourceCode(url, resourceType);
-        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider();
+        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider('test');
         filteredUISourceCodeListProvider.attach();
         const result = filteredUISourceCodeListProvider.itemCount();
         workspace.removeProject(project);
@@ -48,7 +48,7 @@ describeWithEnvironment('FilteredUISourceCodeListProvider', () => {
         const url = 'http://www.example.com/index.html';
         const resourceType = Common.ResourceType.resourceTypes.Document;
         const { workspace, project } = setUpEnvironmentWithUISourceCode(url, resourceType);
-        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider();
+        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider('test');
         filteredUISourceCodeListProvider.attach();
         const resultUrl = filteredUISourceCodeListProvider.itemKeyAt(0);
         const resultCount = filteredUISourceCodeListProvider.itemCount();
@@ -63,7 +63,7 @@ describeWithEnvironment('FilteredUISourceCodeListProvider', () => {
         // ignore the uiSourceCode
         Root.Runtime.experiments.setEnabled("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, true);
         Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiSourceCode);
-        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider();
+        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider('test');
         filteredUISourceCodeListProvider.attach();
         const result = filteredUISourceCodeListProvider.itemCount();
         workspace.removeProject(project);
@@ -74,7 +74,7 @@ describeWithEnvironment('FilteredUISourceCodeListProvider', () => {
         const url = 'http://www.example.com/img.png';
         const resourceType = Common.ResourceType.resourceTypes.Image;
         const { workspace, project } = setUpEnvironmentWithUISourceCode(url, resourceType);
-        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider();
+        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider('test');
         filteredUISourceCodeListProvider.attach();
         const resultUrl = filteredUISourceCodeListProvider.itemKeyAt(0);
         const resultCount = filteredUISourceCodeListProvider.itemCount();
@@ -86,7 +86,7 @@ describeWithEnvironment('FilteredUISourceCodeListProvider', () => {
         const url = 'http://www.example.com/some-script.js';
         const resourceType = Common.ResourceType.resourceTypes.Script;
         const { workspace, project } = setUpEnvironmentWithUISourceCode(url, resourceType);
-        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider();
+        const filteredUISourceCodeListProvider = new Sources.FilteredUISourceCodeListProvider.FilteredUISourceCodeListProvider('test');
         filteredUISourceCodeListProvider.attach();
         const resultUrl = filteredUISourceCodeListProvider.itemKeyAt(0);
         const resultCount = filteredUISourceCodeListProvider.itemCount();

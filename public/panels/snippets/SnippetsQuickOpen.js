@@ -25,7 +25,7 @@ let snippetsQuickOpenInstance;
 export class SnippetsQuickOpen extends QuickOpen.FilteredListWidget.Provider {
     snippets;
     constructor() {
-        super();
+        super('snippet');
         this.snippets = [];
     }
     static instance(opts = { forceNew: null }) {

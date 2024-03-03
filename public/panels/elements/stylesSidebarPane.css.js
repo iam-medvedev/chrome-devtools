@@ -18,10 +18,7 @@ styles.replaceSync(
   border-bottom: 1px solid var(--sys-color-divider);
   position: relative;
   overflow: hidden;
-
-  > div {
-    padding: 2px 2px 4px 4px;
-  }
+  padding: 2px 2px 4px 4px;
 
   &:last-child {
     border-bottom: none;
@@ -61,8 +58,14 @@ styles.replaceSync(
   }
 
   .selector,
-  .try-rule-selector-element {
-    color: var(--sys-color-state-disabled);
+  .try-rule-selector-element,
+  .ancestor-rule-list,
+  .ancestor-closing-braces {
+    color: var(--sys-color-token-meta);
+  }
+
+  .ancestor-rule-list devtools-css-query {
+    display: block;
   }
 
   .simple-selector.selector-matches,
@@ -103,10 +106,6 @@ styles.replaceSync(
   background-clip: padding;
   word-wrap: break-word;
   white-space: normal;
-
-  .ancestor-rule-list {
-    color: var(--sys-color-state-disabled);
-  }
 }
 
 .styles-section-subtitle {
@@ -160,6 +159,15 @@ styles.replaceSync(
 
 .styles-selector {
   cursor: text;
+}
+
+/* TODO(changhaohan): restructure this in relation to stylePropertiesTreeOutline.css. */
+.styles-clipboard-only {
+  display: inline-block;
+  width: 0;
+  opacity: 0%;
+  pointer-events: none;
+  white-space: pre;
 }
 
 .styles-sidebar-pane-toolbar-container {

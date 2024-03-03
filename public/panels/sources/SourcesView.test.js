@@ -13,9 +13,9 @@ import * as Sources from './sources.js';
 import * as SourcesComponents from './components/components.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { createTarget, describeWithEnvironment, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { createFileSystemUISourceCode, createContentProviderUISourceCodes, } from '../../../test/unittests/front_end/helpers/UISourceCodeHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
+import { createFileSystemUISourceCode, createContentProviderUISourceCodes, } from '../../testing/UISourceCodeHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 describeWithEnvironment('SourcesView', () => {
     beforeEach(async () => {
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });

@@ -16,7 +16,7 @@
         "nodeStackTraceWidget.css.js",
         "platformFontsWidget.css.js",
         "propertiesWidget.css.js",
-        "stylesSectionTree.css.js",
+        "stylePropertiesTreeOutline.css.js",
         "stylesSidebarPane.css.js"
     ]
 }

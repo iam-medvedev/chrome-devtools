@@ -4,7 +4,7 @@
 const { assert } = chai;
 import * as DiffView from './diff_view.js';
 import * as Diff from '../../../third_party/diff/diff.js';
-import { describeWithLocale } from '../../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 function buildDiff(original, updated) {
     const diff = Diff.Diff.DiffWrapper.lineDiff(original.split('\n'), updated.split('\n'));
     const view = new DiffView.DiffView.DiffView({ diff, mimeType: 'text/javascript' });

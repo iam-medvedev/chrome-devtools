@@ -413,6 +413,19 @@ text.animation-timeline-grid-label {
   position: relative;
 }
 
+.animation-buffer-preview.no-animation {
+  animation: none;
+}
+
+.animation-buffer-preview .mouse-icon {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  right: 1px;
+  bottom: 2px;
+  opacity: 60%;
+}
+
 .animation-buffer-preview-animation {
   width: 100%;
   height: 100%;
@@ -429,9 +442,17 @@ text.animation-timeline-grid-label {
   outline: -webkit-focus-ring-color auto 5px;
 }
 
+.animation-buffer-preview.selected .mouse-icon {
+  opacity: 100%;
+}
+
 .animation-buffer-preview:not(.selected):focus-visible,
 .animation-buffer-preview:not(.selected):hover {
   background-color: var(--sys-color-surface-variant);
+
+  & .mouse-icon {
+    opacity: 80%;
+  }
 }
 
 .animation-buffer-preview.selected {
@@ -484,7 +505,10 @@ text.animation-timeline-grid-label {
 }
 
 .animation-playback-rate-button {
-  border: 1px solid var(--sys-color-tonal-outline);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--sys-color-tonal-outline);
+  border-right-width: 0;
   color: var(--sys-color-on-surface);
   display: inline-block;
   margin-right: -1px;
@@ -500,6 +524,7 @@ text.animation-timeline-grid-label {
 
 .animation-playback-rate-button:last-child {
   border-radius: 0 4px 4px 0;
+  border-right-width: 1px;
 }
 
 .animation-playback-rate-button.selected {
@@ -518,8 +543,14 @@ text.animation-timeline-grid-label {
   outline-offset: 2px;
 }
 
-.animation-playback-rate-button:not(.selected):hover {
+.animation-playback-rate-button:not(.selected):not([disabled]):hover {
   background: var(--sys-color-state-hover-on-subtle);
+}
+
+.animation-playback-rate-button[disabled] {
+  background: unset;
+  border-color: var(--sys-color-state-disabled);
+  color: var(--sys-color-state-disabled);
 }
 
 .animation-remove-button {

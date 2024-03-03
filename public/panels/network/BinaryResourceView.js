@@ -149,20 +149,20 @@ export class BinaryResourceView extends UI.Widget.VBox {
         this.updateView();
     }
     addCopyToContextMenu(contextMenu, submenuItemText) {
-        const copyMenu = contextMenu.clipboardSection().appendSubMenuItem(submenuItemText);
+        const copyMenu = contextMenu.clipboardSection().appendSubMenuItem(submenuItemText, false, 'copy');
         const footerSection = copyMenu.footerSection();
         footerSection.appendItem(i18nString(UIStrings.copyAsBase), async () => {
             const content = await this.binaryResourceViewFactory.base64();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content.content);
-        });
+        }, { jslogContext: 'copy-as-base' });
         footerSection.appendItem(i18nString(UIStrings.copyAsHex), async () => {
             const content = await this.binaryResourceViewFactory.hex();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content.content);
-        });
+        }, { jslogContext: 'copy-as-hex' });
         footerSection.appendItem(i18nString(UIStrings.copyAsUtf), async () => {
             const content = await this.binaryResourceViewFactory.utf8();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content.content);
-        });
+        }, { jslogContext: 'copy-as-utf' });
     }
 }
 export class BinaryViewObject {

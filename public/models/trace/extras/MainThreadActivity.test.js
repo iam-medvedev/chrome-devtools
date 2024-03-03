@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { makeFakeEventPayload, } from '../../../../test/unittests/front_end/helpers/TraceHelpers.js';
+import { makeFakeEventPayload, } from '../../../testing/TraceHelpers.js';
 import * as TraceEngine from '../trace.js';
 const { assert } = chai;
 const DEVTOOLS_CATEGORY = 'disabled-by-default-devtools.timeline';

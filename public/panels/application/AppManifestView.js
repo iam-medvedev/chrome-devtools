@@ -1119,9 +1119,9 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             await this.overlayModel?.toggleWindowControlsToolbar(wcoOsCheckbox.checkboxElement.checked);
         });
         const osSelectElement = wcoOsCheckbox.createChild('select', 'chrome-select');
-        osSelectElement.appendChild(new Option('Windows', "Windows" /* SDK.OverlayModel.EmulatedOSType.WindowsOS */));
-        osSelectElement.appendChild(new Option('macOS', "Mac" /* SDK.OverlayModel.EmulatedOSType.MacOS */));
-        osSelectElement.appendChild(new Option('Linux', "Linux" /* SDK.OverlayModel.EmulatedOSType.LinuxOS */));
+        osSelectElement.appendChild(UI.UIUtils.createOption('Windows', "Windows" /* SDK.OverlayModel.EmulatedOSType.WindowsOS */, 'windows'));
+        osSelectElement.appendChild(UI.UIUtils.createOption('macOS', "Mac" /* SDK.OverlayModel.EmulatedOSType.MacOS */, 'macos'));
+        osSelectElement.appendChild(UI.UIUtils.createOption('Linux', "Linux" /* SDK.OverlayModel.EmulatedOSType.LinuxOS */, 'linux'));
         osSelectElement.selectedIndex = 0;
         if (this.overlayModel) {
             osSelectElement.value = this.overlayModel?.getWindowControlsConfig().selectedPlatform;

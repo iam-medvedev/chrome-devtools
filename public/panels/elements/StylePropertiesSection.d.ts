@@ -19,7 +19,6 @@ export declare class StylePropertiesSection {
     private forceShowAll;
     private readonly originalPropertiesCount;
     element: HTMLDivElement;
-    private readonly innerElement;
     private readonly titleElement;
     propertiesTreeOutline: UI.TreeOutline.TreeOutlineInShadow;
     private showAllButton;
@@ -34,7 +33,7 @@ export declare class StylePropertiesSection {
     protected readonly selectorRefElement: HTMLElement;
     private hoverableSelectorsMode;
     private isHiddenInternal;
-    private ancestorRuleListElement;
+    nestingLevel: number;
     nextEditorTriggerButtonIdx: number;
     private sectionIdx;
     constructor(parentPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number, computedStyles: Map<string, string> | null, parentsComputedStyles: Map<string, string> | null, headerText?: string);
@@ -78,7 +77,7 @@ export declare class StylePropertiesSection {
     protected createSupportsElement(supports: SDK.CSSSupports.CSSSupports): ElementsComponents.CSSQuery.CSSQuery | undefined;
     protected createNestingElement(nestingSelector?: string): HTMLElement | undefined;
     private addContainerForContainerQuery;
-    private updateQueryList;
+    private updateAncestorRuleList;
     isPropertyInherited(propertyName: string): boolean;
     nextEditableSibling(): StylePropertiesSection | null;
     previousEditableSibling(): StylePropertiesSection | null;

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as SDK from './sdk.js';
-import { describeWithLocale } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 describe('ServerTiming', () => {
     it('can be instantiated correctly', () => {
         const serverTiming = new SDK.ServerTiming.ServerTiming('example metric', 1, 'example description');

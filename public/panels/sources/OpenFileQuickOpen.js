@@ -8,6 +8,9 @@ import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import { FilteredUISourceCodeListProvider } from './FilteredUISourceCodeListProvider.js';
 import { SourcesView } from './SourcesView.js';
 export class OpenFileQuickOpen extends FilteredUISourceCodeListProvider {
+    constructor() {
+        super('source-file');
+    }
     attach() {
         this.setDefaultScores(SourcesView.defaultUISourceCodeScores());
         super.attach();

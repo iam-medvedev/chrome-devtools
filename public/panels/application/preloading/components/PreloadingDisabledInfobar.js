@@ -10,6 +10,7 @@ import * as Coordinator from '../../../../ui/components/render_coordinator/rende
 import * as ReportView from '../../../../ui/components/report_view/report_view.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import preloadingDisabledInfobarStyles from './preloadingDisabledInfobar.css.js';
 const UIStrings = {
     /**
@@ -30,7 +31,7 @@ const UIStrings = {
     headerDisabledByPreference: 'User settings or extensions',
     /**
      *@description Description in dialog
-     *@example {Preload pages settings (linked to chrome://settings/preloading)} PH1
+     *@example {Preload pages settings (linked to chrome://settings/performance)} PH1
      *@example {Extensions settings (linked to chrome://extensions)} PH2
      */
     descriptionDisabledByPreference: 'Speculative loading is disabled because of user settings or an extension. Go to {PH1} to update your preference. Go to {PH2} to disable any extension that blocks speculative loading.',
@@ -140,6 +141,7 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
             closeOnESC: true,
             closeOnScroll: false,
         }}
+          jslog=${VisualLogging.dialog('preloading-disabled').track({ resize: true })}
         >
           ${this.#dialogContents()}
         </${Dialogs.IconDialog.IconDialog.litTagName}>

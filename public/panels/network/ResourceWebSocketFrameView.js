@@ -228,9 +228,9 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
                 binaryView.addCopyToContextMenu(contextMenu, i18nString(UIStrings.copyMessageD));
             }
             else {
-                contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyMessage), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, node.data.data));
+                contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyMessage), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, node.data.data), { jslogContext: 'copy' });
             }
-            contextMenu.footerSection().appendItem(i18nString(UIStrings.clearAllL), this.clearFrames.bind(this));
+            contextMenu.footerSection().appendItem(i18nString(UIStrings.clearAllL), this.clearFrames.bind(this), { jslogContext: 'clear-all' });
         }
     }
     static opCodeDescription(opCode, mask) {
@@ -263,7 +263,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
     }
     clearFrames() {
         // TODO(allada): actially remove frames from request.
-        _clearFrameOffsets.set(this.request, this.request.frames().length);
+        clearFrameOffsets.set(this.request, this.request.frames().length);
         this.refresh();
     }
     updateFilterSetting() {
@@ -300,7 +300,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
         this.dataGrid.rootNode().removeChildren();
         const url = this.request.url();
         let frames = this.request.frames();
-        const offset = _clearFrameOffsets.get(this.request) || 0;
+        const offset = clearFrameOffsets.get(this.request) || 0;
         frames = frames.slice(offset);
         frames = frames.filter(this.frameFilter.bind(this));
         frames.forEach(frame => this.dataGrid.insertChild(new ResourceWebSocketFrameNode(url, frame)));
@@ -396,7 +396,5 @@ export class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.Sortab
 export function ResourceWebSocketFrameNodeTimeComparator(a, b) {
     return a.frame.time - b.frame.time;
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _clearFrameOffsets = new WeakMap();
+const clearFrameOffsets = new WeakMap();
 //# sourceMappingURL=ResourceWebSocketFrameView.js.map

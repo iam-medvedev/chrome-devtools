@@ -1,7 +1,7 @@
 // Copyright (c) 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { renderElementIntoDOM } from '../../../test/unittests/front_end/helpers/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import * as Platform from './platform.js';
 const { assert } = chai;
 describe('DOMUtilities', () => {

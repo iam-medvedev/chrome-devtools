@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as SDK from './sdk.js';
-import { describeWithMockConnection, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { createTarget, } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 const TARGET_ID = 'TARGET_ID';
 const TITLE = 'TITLE';
 let nextTargetId = 0;

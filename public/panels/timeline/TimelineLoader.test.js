@@ -1,12 +1,12 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { makeFakeEventPayload } from '../../../test/unittests/front_end/helpers/TraceHelpers.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { makeFakeEventPayload } from '../../testing/TraceHelpers.js';
 import * as Timeline from './timeline.js';
 async function loadWebDevTraceAsFile() {
-    const file = new URL('../../../test/unittests/fixtures/traces/web-dev.json.gz', import.meta.url);
+    const file = new URL('./fixtures/traces/web-dev.json.gz', import.meta.url);
     const response = await fetch(file);
     const asBlob = await response.blob();
     const asFile = new File([asBlob], 'web-dev.json.gz', {
@@ -15,7 +15,7 @@ async function loadWebDevTraceAsFile() {
     return asFile;
 }
 async function loadBasicCpuProfileAsFile() {
-    const file = new URL('../../../test/unittests/fixtures/traces/node-fibonacci-website.cpuprofile.gz', import.meta.url);
+    const file = new URL('./fixtures/traces/node-fibonacci-website.cpuprofile.gz', import.meta.url);
     const response = await fetch(file);
     const asBlob = await response.blob();
     const asFile = new File([asBlob], 'node-fibonacci-website.cpuprofile.gz', {

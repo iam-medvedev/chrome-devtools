@@ -633,13 +633,11 @@ export async function resolveProfileFrameFunctionName({ scriptId, lineNumber, co
     }
     return await getFunctionNameFromScopeStart(script, lineNumber, columnNumber);
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _scopeResolvedForTest = function () { };
+let scopeResolvedForTest = function () { };
 export const getScopeResolvedForTest = () => {
-    return _scopeResolvedForTest;
+    return scopeResolvedForTest;
 };
 export const setScopeResolvedForTest = (scope) => {
-    _scopeResolvedForTest = scope;
+    scopeResolvedForTest = scope;
 };
 //# sourceMappingURL=NamesResolver.js.map

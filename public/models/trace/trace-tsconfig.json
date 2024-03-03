@@ -60,6 +60,9 @@
       "path": "helpers/bundle-tsconfig.json"
     },
     {
+      "path": "insights/bundle-tsconfig.json"
+    },
+    {
       "path": "root-causes/bundle-tsconfig.json"
     },
     {

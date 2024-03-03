@@ -6,9 +6,9 @@ import * as Platform from '../platform/platform.js';
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import { expectCookie } from '../../../test/unittests/front_end/helpers/Cookies.js';
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
+import { expectCookie } from '../../testing/Cookies.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 describe('NetworkRequest', () => {
     it('can parse statusText from the first line of responseReceivedExtraInfo\'s headersText', () => {
         assert.strictEqual(SDK.NetworkRequest.NetworkRequest.parseStatusTextFromResponseHeadersText('HTTP/1.1 304 not modified'), 'not modified');

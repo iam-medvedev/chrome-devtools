@@ -413,4 +413,7 @@ export declare const NotRestoredReasonDescription: {
     UnloadHandler: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    ParserAborted: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
 };

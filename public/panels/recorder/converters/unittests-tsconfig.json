@@ -51,7 +51,7 @@
       "path": "./bundle-tsconfig.json"
     },
     {
-      "path": "../../../../test/unittests/front_end/helpers/helpers-tsconfig.json"
+      "path": "../../../testing/testing-tsconfig.json"
     },
     {
       "path": "../models/bundle-tsconfig.json"

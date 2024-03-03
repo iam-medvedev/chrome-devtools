@@ -19,7 +19,7 @@ export declare class AnimationUI {
     redraw(): void;
     private renderTransition;
     private renderIteration;
-    private delay;
+    private delayOrStartTime;
     private duration;
     private offset;
     private mouseDown;

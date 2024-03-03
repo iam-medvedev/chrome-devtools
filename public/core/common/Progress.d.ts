@@ -1,8 +1,8 @@
 export declare class Progress {
-    setTotalWork(totalWork: number): void;
-    setTitle(title: string): void;
-    setWorked(worked: number, title?: string): void;
-    incrementWorked(worked?: number): void;
+    setTotalWork(_totalWork: number): void;
+    setTitle(_title: string): void;
+    setWorked(_worked: number, _title?: string): void;
+    incrementWorked(_worked?: number): void;
     done(): void;
     isCanceled(): boolean;
 }

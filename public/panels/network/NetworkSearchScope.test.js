@@ -1,12 +1,12 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithLocale } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import * as Network from './network.js';
 describeWithLocale('NetworkSearchScope', () => {
     let scope;

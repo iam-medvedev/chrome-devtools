@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 const { assert } = chai;
 import * as UI from './legacy.js';
-import { describeWithEnvironment } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 describe('View', () => {
     describeWithEnvironment('TabbedViewLocation', () => {
         let tabbedLocation;

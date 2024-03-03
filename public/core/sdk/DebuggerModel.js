@@ -232,7 +232,7 @@ export class DebuggerModel extends SDKModel {
             return;
         }
         const { debuggerId } = response;
-        _debuggerIdToModel.set(debuggerId, this);
+        debuggerIdToModel.set(debuggerId, this);
         this.#debuggerId = debuggerId;
         this.dispatchEventToListeners(Events.DebuggerIsReadyToPause, this);
     }
@@ -244,10 +244,10 @@ export class DebuggerModel extends SDKModel {
             await DebuggerModel.resyncDebuggerIdForModels();
             DebuggerModel.shouldResyncDebuggerId = false;
         }
-        return _debuggerIdToModel.get(debuggerId) || null;
+        return debuggerIdToModel.get(debuggerId) || null;
     }
     static async resyncDebuggerIdForModels() {
-        const dbgModels = _debuggerIdToModel.values();
+        const dbgModels = debuggerIdToModel.values();
         for (const dbgModel of dbgModels) {
             if (dbgModel.debuggerEnabled()) {
                 await dbgModel.syncDebuggerId();
@@ -265,7 +265,7 @@ export class DebuggerModel extends SDKModel {
         this.globalObjectCleared();
         this.dispatchEventToListeners(Events.DebuggerWasDisabled, this);
         if (typeof this.#debuggerId === 'string') {
-            _debuggerIdToModel.delete(this.#debuggerId);
+            debuggerIdToModel.delete(this.#debuggerId);
         }
         this.#debuggerId = null;
     }
@@ -725,7 +725,7 @@ export class DebuggerModel extends SDKModel {
     dispose() {
         this.#sourceMapManagerInternal.dispose();
         if (this.#debuggerId) {
-            _debuggerIdToModel.delete(this.#debuggerId);
+            debuggerIdToModel.delete(this.#debuggerId);
         }
         Common.Settings.Settings.instance()
             .moduleSetting('pause-on-exception-enabled')
@@ -751,9 +751,7 @@ export class DebuggerModel extends SDKModel {
         return this.evaluateOnCallFrameCallback;
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _debuggerIdToModel = new Map();
+const debuggerIdToModel = new Map();
 /**
  * Keep these in sync with WebCore::V8Debugger
  */

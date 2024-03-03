@@ -1,11 +1,11 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { MockProtocolBackend } from '../../../test/unittests/front_end/helpers/MockScopeChain.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
 import * as Common from '../common/common.js';
 import * as SDK from './sdk.js';
 const { assert } = chai;

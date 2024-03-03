@@ -1,16 +1,16 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { createTarget } from '../../../test/unittests/front_end/helpers/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../test/unittests/front_end/helpers/MockConnection.js';
-import { MockProtocolBackend } from '../../../test/unittests/front_end/helpers/MockScopeChain.js';
-import { createContentProviderUISourceCode } from '../../../test/unittests/front_end/helpers/UISourceCodeHelpers.js';
 import * as Common from '../../core/common/common.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
+import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Coverage from './coverage.js';
 const { CoverageDecorationManager } = Coverage.CoverageDecorationManager;
 /** Test helper that returns the "identity" line ranges for any given string */
