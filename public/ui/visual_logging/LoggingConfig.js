@@ -8,7 +8,7 @@ export function needsLogging(element) {
 export function getLoggingConfig(element) {
     return parseJsLog(element.getAttribute(LOGGING_ATTRIBUTE) || '');
 }
-var VisualElements;
+export var VisualElements;
 (function (VisualElements) {
     VisualElements[VisualElements["TreeItem"] = 1] = "TreeItem";
     VisualElements[VisualElements["Close"] = 2] = "Close";
@@ -42,17 +42,17 @@ var VisualElements;
     VisualElements[VisualElements["FilterDropdown"] = 30] = "FilterDropdown";
     VisualElements[VisualElements["Dialog"] = 31] = "Dialog";
     VisualElements[VisualElements["BezierCurveEditor"] = 32] = "BezierCurveEditor";
-    VisualElements[VisualElements["BezierEditor"] = 33] = "BezierEditor";
+    /* 33 used to be BezierEditor, but free to grab now */
     VisualElements[VisualElements["BezierPresetCategory"] = 34] = "BezierPresetCategory";
     VisualElements[VisualElements["Preview"] = 35] = "Preview";
     VisualElements[VisualElements["Canvas"] = 36] = "Canvas";
     VisualElements[VisualElements["ColorEyeDropper"] = 37] = "ColorEyeDropper";
-    VisualElements[VisualElements["ColorPicker"] = 38] = "ColorPicker";
+    /* 38 used to be ColorPicker, but free to grab now */
     /* 39 used to be CopyColor, but free to grab now */
-    VisualElements[VisualElements["CssAngleEditor"] = 40] = "CssAngleEditor";
-    VisualElements[VisualElements["CssFlexboxEditor"] = 41] = "CssFlexboxEditor";
-    VisualElements[VisualElements["CssGridEditor"] = 42] = "CssGridEditor";
-    VisualElements[VisualElements["CssShadowEditor"] = 43] = "CssShadowEditor";
+    /* 40 used to be CssAngleEditor, but free to grab now */
+    /* 41 used to be CssFlexboxEditor, but free to grab now */
+    /* 42 used to be CssGridEditor, but free to grab now */
+    /* 43 used to be CssShadowEditor, but free to grab now */
     VisualElements[VisualElements["Link"] = 44] = "Link";
     /* 45 used to be Next, but free to grab now */
     VisualElements[VisualElements["Item"] = 46] = "Item";
@@ -110,19 +110,6 @@ export function parseJsLog(jslog) {
         config.track = new Map(trackString.split(',').map(t => t.split(':')));
     }
     return config;
-}
-export function debugString(config) {
-    const components = [VisualElements[config.ve]];
-    if (config.context) {
-        components.push(`context: ${config.context}`);
-    }
-    if (config.parent) {
-        components.push(`parent: ${config.parent}`);
-    }
-    if (config.track?.size) {
-        components.push(`track: ${[...config.track?.entries()].map(([key, value]) => `${key}${value ? `: ${value}` : ''}`).join(', ')}`);
-    }
-    return components.join('; ');
 }
 export function makeConfigStringBuilder(veName, context) {
     const components = [veName];

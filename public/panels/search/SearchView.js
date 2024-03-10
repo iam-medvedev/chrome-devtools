@@ -121,7 +121,7 @@ export class SearchView extends UI.Widget.VBox {
         this.progressIndicator = null;
         this.visiblePane = null;
         this.#throttler = throttler;
-        this.element.setAttribute('jslog', `${VisualLogging.panel('search').track({ resize: true })}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.panel('search').track({ resize: true })}`);
         this.contentElement.classList.add('search-view');
         this.contentElement.addEventListener('keydown', event => {
             this.onKeyDownOnPanel(event);
@@ -135,7 +135,7 @@ export class SearchView extends UI.Widget.VBox {
         this.search.addEventListener('keydown', event => {
             this.onKeyDown(event);
         });
-        this.search.setAttribute('jslog', `${VisualLogging.textField().track({ keydown: true })}`);
+        this.search.setAttribute('jslog', `${VisualLogging.textField().track({ keydown: 'ArrowUp|ArrowDown|Enter' })}`);
         searchContainer.appendChild(this.search);
         this.search.placeholder = i18nString(UIStrings.search);
         this.search.setAttribute('type', 'search');
@@ -407,9 +407,11 @@ export class SearchView extends UI.Widget.VBox {
         const shouldCollapseAllForOtherPlatforms = !isMac && event.ctrlKey && !event.metaKey && event.shiftKey && event.code === 'BracketLeft';
         if (shouldShowAllForMac || shouldShowAllForOtherPlatforms) {
             this.searchResultsPane?.showAllMatches();
+            void VisualLogging.logKeyDown(event, 'show-all-matches');
         }
         else if (shouldCollapseAllForMac || shouldCollapseAllForOtherPlatforms) {
             this.searchResultsPane?.collapseAllResults();
+            void VisualLogging.logKeyDown(event, 'collapse-all-results');
         }
     }
     save() {

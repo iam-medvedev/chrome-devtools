@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { getRegisteredActionExtensions } from './ActionRegistration.js';
 import { Context } from './Context.js';
 import { Dialog } from './Dialog.js';
@@ -153,7 +154,7 @@ export class ShortcutRegistry {
         }
         if (this.activePrefixTimeout) {
             clearTimeout(this.activePrefixTimeout);
-            const handled = await maybeExecuteActionForKey.call(this);
+            const handled = await maybeExecuteActionForKey.call(this, event);
             this.activePrefixKey = null;
             this.activePrefixTimeout = null;
             if (handled) {
@@ -168,12 +169,12 @@ export class ShortcutRegistry {
             this.consumePrefix = async () => {
                 this.activePrefixKey = null;
                 this.activePrefixTimeout = null;
-                await maybeExecuteActionForKey.call(this);
+                await maybeExecuteActionForKey.call(this, event);
             };
             this.activePrefixTimeout = window.setTimeout(this.consumePrefix, KeyTimeout);
         }
         else {
-            await maybeExecuteActionForKey.call(this);
+            await maybeExecuteActionForKey.call(this, event);
         }
         function isPossiblyInputKey() {
             if (!event || !isEditing() || /^F\d+|Control|Shift|Alt|Meta|Escape|Win|U\+001B$/.test(domKey)) {
@@ -213,7 +214,7 @@ export class ShortcutRegistry {
         }
         /** ;
          */
-        async function maybeExecuteActionForKey() {
+        async function maybeExecuteActionForKey(event) {
             const actions = this.applicableActions(key, handlers);
             if (!actions.length) {
                 return false;
@@ -228,6 +229,9 @@ export class ShortcutRegistry {
                 }
                 if (handled) {
                     Host.userMetrics.keyboardShortcutFired(action.id());
+                    if (event) {
+                        void VisualLogging.logKeyDown(event, action.id());
+                    }
                     return true;
                 }
             }

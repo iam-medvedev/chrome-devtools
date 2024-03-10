@@ -38,6 +38,16 @@ styles.replaceSync(
   display: inline-block;
 }
 
+.object-popover-description-box {
+  padding: 6px;
+  max-width: 350px;
+  line-height: 1.4;
+}
+
+.object-popover-footer {
+  margin-top: 8px;
+}
+
 /*# sourceURL=objectPopover.css */
 `);
 

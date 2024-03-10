@@ -4,6 +4,7 @@ export declare const i18nString: (id: string, values?: import("../../core/i18n/i
 export declare class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #private;
     static readonly litTagName: import("../../ui/lit-html/static.js").Static;
+    constructor();
     connectedCallback(): void;
 }
 declare global {

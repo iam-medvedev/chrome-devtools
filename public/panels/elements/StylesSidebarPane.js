@@ -1945,7 +1945,7 @@ export class StylesSidebarPropertyRenderer {
             // TODO(changhaohan): crbug.com/1138628 refactor this to handle unitless 0 cases
             matchers.push(new LegacyRegexMatcher(asLineMatch(InlineEditor.CSSLengthUtils.CSSLengthRegex), this.lengthHandler));
         }
-        renderPropertyValue(this.propertyValue, matchers, this.propertyName)
+        renderPropertyValue(this.propertyName, this.propertyValue, matchers)
             .forEach(node => valueElement.appendChild(node));
         valueElement.normalize();
         return valueElement;

@@ -253,10 +253,14 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     constructor(contrastInfo) {
         super(true);
         this.contentElement.tabIndex = 0;
-        this.contentElement.setAttribute('jslog', `${VisualLogging.colorPicker()}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('colorPicker').parent('mapped').track({ keydown: 'Enter|Escape' })}`);
         this.colorElement = this.contentElement.createChild('div', 'spectrum-color');
         this.colorElement.tabIndex = 0;
-        this.colorElement.setAttribute('jslog', `${VisualLogging.canvas('color').track({ click: true, drag: true })}`);
+        this.colorElement.setAttribute('jslog', `${VisualLogging.canvas('color').track({
+            click: true,
+            drag: true,
+            keydown: 'ArrowLeft|ArrowRight|ArrowDown|ArrowUp',
+        })}`);
         this.setDefaultFocusedElement(this.colorElement);
         this.colorElement.addEventListener('keydown', this.onSliderKeydown.bind(this, positionColor.bind(this)));
         const swatchAriaText = i18nString(UIStrings.pressArrowKeysMessage);
@@ -278,14 +282,22 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.colorPickerButton.element.setAttribute('jslog', `${VisualLogging.colorEyeDropper().track({ click: true })}`);
         this.swatch = new Swatch(toolsContainer);
         this.hueElement = toolsContainer.createChild('div', 'spectrum-hue');
-        this.hueElement.setAttribute('jslog', `${VisualLogging.slider('hue').track({ click: true, drag: true })}`);
+        this.hueElement.setAttribute('jslog', `${VisualLogging.slider('hue').track({
+            click: true,
+            drag: true,
+            keydown: 'ArrowLeft|ArrowRight|ArrowDown|ArrowUp',
+        })}`);
         this.hueElement.tabIndex = 0;
         this.hueElement.addEventListener('keydown', this.onSliderKeydown.bind(this, positionHue.bind(this)));
         UI.ARIAUtils.setLabel(this.hueElement, i18nString(UIStrings.changeHue));
         UI.ARIAUtils.markAsSlider(this.hueElement, 0, 360);
         this.hueSlider = this.hueElement.createChild('div', 'spectrum-slider');
         this.alphaElement = toolsContainer.createChild('div', 'spectrum-alpha');
-        this.alphaElement.setAttribute('jslog', `${VisualLogging.slider('alpha').track({ click: true, drag: true })}`);
+        this.alphaElement.setAttribute('jslog', `${VisualLogging.slider('alpha').track({
+            click: true,
+            drag: true,
+            keydown: 'ArrowLeft|ArrowRight|ArrowDown|ArrowUp',
+        })}`);
         this.alphaElement.tabIndex = 0;
         this.alphaElement.addEventListener('keydown', this.onSliderKeydown.bind(this, positionAlpha.bind(this)));
         UI.ARIAUtils.setLabel(this.alphaElement, i18nString(UIStrings.changeAlpha));
@@ -298,7 +310,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.textValues = [];
         for (let i = 0; i < 4; ++i) {
             const inputValue = UI.UIUtils.createInput('spectrum-text-value');
-            inputValue.setAttribute('jslog', `${VisualLogging.value().track({ keydown: true }).context(i)}`);
+            inputValue.setAttribute('jslog', `${VisualLogging.value().track({ change: true, keydown: 'ArrowUp|ArrowDown' }).context(i)}`);
             this.displayContainer.appendChild(inputValue);
             inputValue.maxLength = 4;
             this.textValues.push(inputValue);
@@ -312,7 +324,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.hexContainer = toolsContainer.createChild('div', 'spectrum-text spectrum-text-hex source-code');
         UI.ARIAUtils.markAsPoliteLiveRegion(this.hexContainer, true);
         this.hexValue = UI.UIUtils.createInput('spectrum-text-value');
-        this.hexValue.setAttribute('jslog', `${VisualLogging.value('hex').track({ keydown: true })}`);
+        this.hexValue.setAttribute('jslog', `${VisualLogging.value('hex').track({ keydown: 'ArrowUp|ArrowDown', change: true })}`);
         this.hexContainer.appendChild(this.hexValue);
         this.hexValue.maxLength = 9;
         this.hexValue.addEventListener('keydown', this.inputChanged.bind(this), false);
@@ -566,7 +578,11 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     createPaletteColor(colorText, colorName, animationDelay) {
         const element = document.createElement('div');
         element.classList.add('spectrum-palette-color');
-        element.setAttribute('jslog', `${VisualLogging.item().track({ click: true, drag: true })}`);
+        element.setAttribute('jslog', `${VisualLogging.item().track({
+            click: true,
+            drag: true,
+            keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Escape|Tab',
+        })}`);
         element.style.background =
             Platform.StringUtilities.sprintf('linear-gradient(%s, %s), var(--image-file-checker)', colorText, colorText);
         if (animationDelay) {

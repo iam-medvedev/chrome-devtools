@@ -140,7 +140,7 @@ export declare class SourceMap {
      */
     compatibleForURL(sourceURL: Platform.DevToolsPath.UrlString, other: SourceMap): boolean;
 }
-export declare class StringCharIterator {
+export declare class TokenIterator {
     #private;
     constructor(string: string);
     next(): string;
@@ -148,6 +148,11 @@ export declare class StringCharIterator {
     nextCharCode(): number;
     peek(): string;
     hasNext(): boolean;
-    decodeVLQ(): number;
+    nextVLQ(): number;
+    /**
+     * @returns the next VLQ number without iterating further. Or returns null if
+     * the iterator is at the end or it's not a valid number.
+     */
+    peekVLQ(): null | number;
 }
 export {};

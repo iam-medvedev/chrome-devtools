@@ -91,6 +91,7 @@ export async function languageFromMIME(mimeType) {
         case 'text/html':
             return CodeMirror.html.html({ selfClosingTags: true });
         case 'application/xml':
+        case 'application/xhtml+xml':
         case 'image/svg+xml':
             return (await CodeMirror.xml()).xml();
         case 'application/wasm':

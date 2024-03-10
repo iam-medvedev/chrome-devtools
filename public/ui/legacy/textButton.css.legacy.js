@@ -34,7 +34,7 @@ export default {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 
-.text-button:not(:disabled):not(.primary-button):focus {
+.text-button:not(:disabled):not(.primary-button):focus-visible {
   outline: 2px solid var(--sys-color-state-focus-ring);
   color: var(--sys-color-on-primary);
   background-color: var(--sys-color-cdt-base-container);
@@ -46,13 +46,18 @@ export default {
   color: var(--sys-color-primary);
 }
 
-.text-button.link-style {
+.text-button.link-style,
+.text-button.link-style:hover,
+.text-button.link-style:active {
   background: none;
   border: none;
+  outline: none;
+  border-radius: 2px;
+  margin: 0;
   padding: 0 !important; /* stylelint-disable-line declaration-no-important */
   font: inherit;
   cursor: pointer;
-  height: 18px;
+  height: unset;
 }
 
 .text-button.primary-button {
@@ -71,7 +76,7 @@ export default {
   color: var(--sys-color-on-primary);
 }
 
-.text-button.primary-button:not(:disabled):focus {
+.text-button.primary-button:not(:disabled):focus-visible {
   background-color: var(--sys-color-primary);
   outline-offset: 2px;
   outline: 2px solid var(--sys-color-state-focus-ring);
@@ -93,7 +98,7 @@ export default {
     color: GrayText;
   }
 
-  .text-button:not(:disabled):focus {
+  .text-button:not(:disabled):focus-visible {
     forced-color-adjust: none;
     background-color: ButtonFace;
     color: Highlight !important; /* stylelint-disable-line declaration-no-important */
@@ -117,7 +122,7 @@ export default {
     border: 1px solid Highlight;
   }
 
-  .text-button.primary-button:not(:disabled):focus {
+  .text-button.primary-button:not(:disabled):focus-visible {
     background-color: Highlight;
     color: HighlightText !important; /* stylelint-disable-line declaration-no-important */
     border-color: ButtonText;

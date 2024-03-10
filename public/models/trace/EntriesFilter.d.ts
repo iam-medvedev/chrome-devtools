@@ -54,6 +54,12 @@ export declare class EntriesFilter {
      * from hidden entries array depending on the action.
      **/
     applyFilterAction(action: UserFilterAction): Types.TraceEvents.TraceEventData[];
+    /**
+     * If an entry was selected from a link instead of clicking on it,
+     * it might be in the invisible entries array.
+     * If it is, reveal it by resetting clidren the closest modified entry,
+     */
+    revealEntry(entry: Types.TraceEvents.SyntheticTraceEntry): void;
     isEntryModified(event: Types.TraceEvents.TraceEventData): boolean;
 }
 export {};

@@ -418,7 +418,9 @@ export class TreeElement {
         this.listItemNode.addEventListener('mousedown', this.handleMouseDown.bind(this), false);
         this.listItemNode.addEventListener('click', this.treeElementToggled.bind(this), false);
         this.listItemNode.addEventListener('dblclick', this.handleDoubleClick.bind(this), false);
-        this.listItemNode.setAttribute('jslog', `${VisualLogging.treeItem().parent('parentTreeItem').context(jslogContext)}`);
+        this.listItemNode.setAttribute('jslog', `${VisualLogging.treeItem().parent('parentTreeItem').context(jslogContext).track({
+            keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End',
+        })}`);
         ARIAUtils.markAsTreeitem(this.listItemNode);
         this.childrenInternal = null;
         this.childrenListNode = document.createElement('ol');

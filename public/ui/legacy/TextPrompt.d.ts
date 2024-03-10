@@ -19,6 +19,7 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private boundOnInput?;
     private boundOnMouseWheel?;
     private boundClearAutocomplete?;
+    private boundOnBlur?;
     private contentElement?;
     private suggestBox?;
     private isEditing?;
@@ -27,6 +28,7 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private oldTabIndex?;
     private completeTimeout?;
     private disableDefaultSuggestionForEmptyInputInternal?;
+    private changed;
     jslogContext: string | undefined;
     constructor();
     initialize(completions: (this: null, expression: string, filter: string, force?: boolean | undefined) => Promise<Suggestion[]>, stopCharacters?: string, usesSuggestionBuilder?: boolean): void;
@@ -65,6 +67,7 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     onInput(ev: Event): void;
     acceptAutoComplete(): boolean;
     clearAutocomplete(): void;
+    private onBlur;
     private refreshGhostText;
     private clearAutocompleteTimeout;
     autoCompleteSoon(force?: boolean): void;
@@ -76,7 +79,7 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     applySuggestion(suggestion: Suggestion | null, isIntermediateSuggestion?: boolean): void;
     acceptSuggestion(): void;
     private acceptSuggestionInternal;
-    ariaControlledBy(): Element;
+    ownerElement(): Element;
     setDOMSelection(startColumn: number, endColumn: number): void;
     isSuggestBoxVisible(): boolean;
     isCaretInsidePrompt(): boolean;

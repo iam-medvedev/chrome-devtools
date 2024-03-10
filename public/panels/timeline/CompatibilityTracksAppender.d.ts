@@ -89,6 +89,7 @@ export declare class CompatibilityTracksAppender {
     getModifiedEntries(group: PerfUI.FlameChart.Group): TraceEngine.Types.TraceEvents.TraceEventData[] | void;
     modifyTree(group: PerfUI.FlameChart.Group, entry: TraceEngine.Types.TraceEvents.SyntheticTraceEntry, type: TraceEngine.EntriesFilter.FilterAction): void;
     findPossibleContextMenuActions(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): TraceEngine.EntriesFilter.PossibleFilterActions | void;
+    revealEntry(group: PerfUI.FlameChart.Group, index: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): void;
     findHiddenDescendantsAmount(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): number | void;
     /**
      * Given a trace event returns instantiates a legacy SDK.Event. This should

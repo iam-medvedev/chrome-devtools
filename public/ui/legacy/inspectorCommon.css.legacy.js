@@ -486,6 +486,7 @@ span[is="dt-icon-label"] {
 
 .undisplayable-text,
 .expandable-inline-button {
+  border: none;
   padding: 1px 3px;
   margin: 0 2px;
   font-size: 11px;

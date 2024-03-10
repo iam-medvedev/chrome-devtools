@@ -8,9 +8,9 @@ export interface SuggestBoxDelegate {
      */
     acceptSuggestion(): void;
     /**
-     * Called to obtain the element whose aria-controls property should reference this SuggestBox.
+     * Called to obtain the owner element.
      */
-    ariaControlledBy(): Element;
+    ownerElement(): Element;
 }
 export declare class SuggestBox implements ListDelegate<Suggestion> {
     private readonly suggestBoxDelegate;

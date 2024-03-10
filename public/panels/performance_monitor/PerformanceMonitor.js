@@ -6,7 +6,6 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -561,8 +560,6 @@ let numberFormatter;
 let percentFormatter;
 export class MetricIndicator {
     info;
-    active;
-    onToggle;
     element;
     swatchElement;
     valueElement;
@@ -570,24 +567,17 @@ export class MetricIndicator {
     constructor(parent, info, active, onToggle) {
         this.color = info.color || info.metrics[0].color;
         this.info = info;
-        this.active = active;
-        this.onToggle = onToggle;
         this.element = parent.createChild('div', 'perfmon-indicator');
-        this.swatchElement = new IconButton.Icon.Icon();
-        this.swatchElement.classList.add('perfmon-indicator-swatch');
-        this.updateSwatchElement();
+        const chartName = info.metrics[0].name;
+        this.swatchElement = UI.UIUtils.CheckboxLabel.create(info.title, active, undefined, chartName);
         this.element.appendChild(this.swatchElement);
-        this.element.createChild('div', 'perfmon-indicator-title').textContent = info.title;
+        this.swatchElement.checkboxElement.addEventListener('change', () => {
+            onToggle(this.swatchElement.checkboxElement.checked);
+            this.element.classList.toggle('active');
+        });
         this.valueElement = this.element.createChild('div', 'perfmon-indicator-value');
         this.valueElement.style.color = this.color;
-        this.element.addEventListener('click', () => this.toggleIndicator());
-        this.element.addEventListener('keypress', event => this.handleKeypress(event));
         this.element.classList.toggle('active', active);
-        UI.ARIAUtils.markAsCheckbox(this.element);
-        UI.ARIAUtils.setChecked(this.element, this.active);
-        this.element.tabIndex = 0;
-        const chartName = info.metrics[0].name;
-        this.element.setAttribute('jslog', `${VisualLogging.toggle(chartName).track({ click: true })}`);
     }
     static formatNumber(value, info) {
         if (!numberFormatter) {
@@ -605,23 +595,6 @@ export class MetricIndicator {
     }
     setValue(value) {
         this.valueElement.textContent = MetricIndicator.formatNumber(value, this.info);
-    }
-    updateSwatchElement() {
-        const color = this.active ? this.color : 'var(--icon-disabled)';
-        this.swatchElement.data = { iconName: 'checkmark', color, width: '16px', height: '14px' };
-    }
-    toggleIndicator() {
-        this.active = !this.active;
-        this.updateSwatchElement();
-        this.element.classList.toggle('active', this.active);
-        UI.ARIAUtils.setChecked(this.element, this.active);
-        this.onToggle(this.active);
-    }
-    handleKeypress(event) {
-        const keyboardEvent = event;
-        if (keyboardEvent.key === ' ' || keyboardEvent.key === 'Enter') {
-            this.toggleIndicator();
-        }
     }
 }
 export const format = new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });

@@ -341,7 +341,10 @@ class ExpandableContainerWidget extends VBox {
         this.registerRequiredCSS(viewContainersStyles);
         this.titleElement = document.createElement('div');
         this.titleElement.classList.add('expandable-view-title');
-        this.titleElement.setAttribute('jslog', `${VisualLogging.sectionHeader().context(view.viewId()).track({ click: true })}`);
+        this.titleElement.setAttribute('jslog', `${VisualLogging.sectionHeader().context(view.viewId()).track({
+            click: true,
+            keydown: 'Enter|Space|ArrowLeft|ArrowRight',
+        })}`);
         ARIAUtils.markAsTreeitem(this.titleElement);
         this.titleExpandIcon = IconButton.Icon.create('triangle-right', 'title-expand-icon');
         this.titleElement.appendChild(this.titleExpandIcon);

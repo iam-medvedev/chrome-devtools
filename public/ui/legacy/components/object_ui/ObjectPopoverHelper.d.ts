@@ -7,4 +7,5 @@ export declare class ObjectPopoverHelper {
     constructor(linkifier: Components.Linkifier.Linkifier | null, resultHighlightedAsDOM: boolean);
     dispose(): void;
     static buildObjectPopover(result: SDK.RemoteObject.RemoteObject, popover: UI.GlassPane.GlassPane): Promise<ObjectPopoverHelper | null>;
+    static buildDescriptionPopover(description: string, link: string, popover: UI.GlassPane.GlassPane): ObjectPopoverHelper;
 }

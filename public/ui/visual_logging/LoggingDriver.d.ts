@@ -1,4 +1,7 @@
 import * as Common from '../../core/common/common.js';
+export declare let keyboardLogThrottler: Common.Throttler.Throttler;
+export declare let clickLogThrottler: Common.Throttler.Throttler;
+export declare let resizeLogThrottler: Common.Throttler.Throttler;
 export declare function isLogging(): boolean;
 export declare function startLogging(options?: {
     processingThrottler?: Common.Throttler.Throttler;

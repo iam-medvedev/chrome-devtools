@@ -228,6 +228,23 @@ export class EntriesFilter {
         return repeatingNodes;
     }
     /**
+     * If an entry was selected from a link instead of clicking on it,
+     * it might be in the invisible entries array.
+     * If it is, reveal it by resetting clidren the closest modified entry,
+     */
+    revealEntry(entry) {
+        const entryNode = this.#entryToNode.get(entry);
+        if (!entryNode) {
+            // Invalid node was given, just ignore and move on.
+            return;
+        }
+        let closestModifiedParent = entryNode;
+        while (closestModifiedParent.parent && !this.#modifiedVisibleEntries.includes(closestModifiedParent.entry)) {
+            closestModifiedParent = closestModifiedParent.parent;
+        }
+        this.#makeEntryChildrenVisible(closestModifiedParent.entry);
+    }
+    /**
      * Removes all of the entry children from the
      * invisible entries array to make them visible.
      **/

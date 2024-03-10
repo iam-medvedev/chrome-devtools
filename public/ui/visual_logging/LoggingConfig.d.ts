@@ -6,7 +6,7 @@ export interface LoggingConfig {
 }
 export declare function needsLogging(element: Element): boolean;
 export declare function getLoggingConfig(element: Element): LoggingConfig;
-declare enum VisualElements {
+export declare enum VisualElements {
     TreeItem = 1,
     Close = 2,
     Counter = 3,
@@ -35,16 +35,10 @@ declare enum VisualElements {
     FilterDropdown = 30,
     Dialog = 31,
     BezierCurveEditor = 32,
-    BezierEditor = 33,
     BezierPresetCategory = 34,
     Preview = 35,
     Canvas = 36,
     ColorEyeDropper = 37,
-    ColorPicker = 38,
-    CssAngleEditor = 40,
-    CssFlexboxEditor = 41,
-    CssGridEditor = 42,
-    CssShadowEditor = 43,
     Link = 44,
     Item = 46,
     PaletteColorShades = 47,
@@ -69,7 +63,6 @@ declare enum VisualElements {
 }
 export type VisualElementName = keyof typeof VisualElements;
 export declare function parseJsLog(jslog: string): LoggingConfig;
-export declare function debugString(config: LoggingConfig): string;
 export interface ConfigStringBuilder {
     /**
      * Specifies an optional context for the visual element. For string contexts
@@ -109,4 +102,3 @@ export interface ConfigStringBuilder {
     toString: () => string;
 }
 export declare function makeConfigStringBuilder(veName: VisualElementName, context?: string): ConfigStringBuilder;
-export {};

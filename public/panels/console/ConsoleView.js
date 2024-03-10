@@ -1140,8 +1140,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.focusPrompt();
     }
     messagesPasted(event) {
-        if (Root.Runtime.experiments.isEnabled("self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */) &&
-            !Root.Runtime.Runtime.queryParam('isChromeForTesting') && !this.selfXssWarningDisabledSetting.get()) {
+        if (!Root.Runtime.Runtime.queryParam('isChromeForTesting') && !this.selfXssWarningDisabledSetting.get()) {
             event.preventDefault();
             this.prompt.showSelfXssWarning();
         }
@@ -1153,8 +1152,9 @@ export class ConsoleView extends UI.Widget.VBox {
     registerShortcuts() {
         this.shortcuts.set(UI.KeyboardShortcut.KeyboardShortcut.makeKey('u', UI.KeyboardShortcut.Modifiers.Ctrl), this.clearPromptBackwards.bind(this));
     }
-    clearPromptBackwards() {
+    clearPromptBackwards(e) {
         this.prompt.clear();
+        void VisualLogging.logKeyDown(e, 'clear-prompt');
     }
     promptKeyDown(event) {
         const keyboardEvent = event;
@@ -1165,7 +1165,7 @@ export class ConsoleView extends UI.Widget.VBox {
         const shortcut = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(keyboardEvent);
         const handler = this.shortcuts.get(shortcut);
         if (handler) {
-            handler();
+            handler(keyboardEvent);
             keyboardEvent.preventDefault();
         }
     }

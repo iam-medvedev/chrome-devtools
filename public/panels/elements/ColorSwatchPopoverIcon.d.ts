@@ -51,7 +51,13 @@ export declare class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectW
     private onScroll;
     private onPopoverHidden;
 }
-export declare class ShadowSwatchPopoverHelper {
+export declare const enum ShadowEvents {
+    ShadowChanged = "shadowChanged"
+}
+export interface ShadowEventTypes {
+    [ShadowEvents.ShadowChanged]: InlineEditor.CSSShadowEditor.CSSShadowModel;
+}
+export declare class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper<ShadowEventTypes> {
     private treeElement;
     private readonly swatchPopoverHelper;
     private readonly shadowSwatch;

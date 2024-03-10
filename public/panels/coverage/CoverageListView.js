@@ -173,7 +173,6 @@ export class CoverageListView extends UI.Widget.VBox {
         this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.Last */);
         this.dataGrid.setStriped(true);
         this.dataGrid.element.classList.add('flex-auto');
-        this.dataGrid.element.addEventListener('keydown', this.onKeyDown.bind(this), false);
         this.dataGrid.addEventListener("OpenedNode" /* DataGrid.DataGrid.Events.OpenedNode */, this.onOpenedNode, this);
         this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortingChanged, this);
         const dataGridWidget = this.dataGrid.asWidget();
@@ -278,13 +277,6 @@ export class CoverageListView extends UI.Widget.VBox {
         }
     }
     onOpenedNode() {
-        void this.revealSourceForSelectedNode();
-    }
-    onKeyDown(event) {
-        if (!(event.key === 'Enter')) {
-            return;
-        }
-        event.consume(true);
         void this.revealSourceForSelectedNode();
     }
     async revealSourceForSelectedNode() {

@@ -196,6 +196,11 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
         label.classList.add('cursor-auto');
         label.textElement.addEventListener('dblclick', this.labelClicked.bind(this, item), false);
         this.#breakpointElements.set(item, listItemElement);
+        listItemElement.setAttribute('jslog', `${VisualLogging.item().track({
+            click: true,
+            dblclick: true,
+            keydown: 'ArrowUp|ArrowDown|PageUp|PageDown|Enter|Space',
+        })}`);
         return listItemElement;
     }
     selectedItemChanged(from, to, fromElement, toElement) {

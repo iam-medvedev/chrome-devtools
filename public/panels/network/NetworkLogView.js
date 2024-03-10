@@ -502,8 +502,12 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         UI.Tooltip.Tooltip.install(this.invertFilterUI.element(), i18nString(UIStrings.invertsFilter));
         filterBar.addFilter(this.invertFilterUI);
         filterBar.addDivider();
-        const filterItems = Object.values(Common.ResourceType.resourceCategories)
-            .map(category => ({ name: category.title(), label: () => category.shortTitle(), title: category.title() }));
+        const filterItems = Object.entries(Common.ResourceType.resourceCategories).map(([key, category]) => ({
+            name: category.title(),
+            label: () => category.shortTitle(),
+            title: category.title(),
+            jslogContext: Platform.StringUtilities.toKebabCase(key),
+        }));
         if (Root.Runtime.experiments.isEnabled("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */)) {
             this.resourceCategoryFilterUI = new DropDownTypesUI(filterItems, this.networkResourceTypeFiltersSetting);
             this.resourceCategoryFilterUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FilterChanged */, this.filterChanged, this);
@@ -968,6 +972,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                 }
                 if (SDK.NetworkManager.NetworkManager.canReplayRequest(request)) {
                     SDK.NetworkManager.NetworkManager.replayRequest(request);
+                    void VisualLogging.logKeyDown(event, 'replay-xhr');
                 }
             }
         });

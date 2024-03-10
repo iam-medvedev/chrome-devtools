@@ -29,6 +29,8 @@ export default {
 }
 
 .film-strip-view .frame {
+  background: none;
+  border: none;
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -61,7 +61,7 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
     createFrameElement(frame) {
         const time = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.screenshotEvent.ts);
         const frameTime = i18n.TimeUtilities.millisToString(time - this.zeroTime);
-        const element = document.createElement('div');
+        const element = document.createElement('button');
         element.classList.add('frame');
         UI.Tooltip.Tooltip.install(element, i18nString(UIStrings.doubleclickToZoomImageClickTo));
         element.createChild('div', 'time').textContent = frameTime;
@@ -77,11 +77,6 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
         element.addEventListener('dblclick', this.onDoubleClick.bind(this, frame), false);
         element.addEventListener('focusin', this.onMouseEvent.bind(this, "FrameEnter" /* Events.FrameEnter */, time), false);
         element.addEventListener('focusout', this.onMouseEvent.bind(this, "FrameExit" /* Events.FrameExit */, time), false);
-        element.addEventListener('keydown', event => {
-            if (event.code === 'Enter' || event.code === 'Space') {
-                this.onMouseEvent("FrameSelected" /* Events.FrameSelected */, time);
-            }
-        });
         FilmStripView.setImageData(imageElement, frame.screenshotEvent.args.dataUri);
         return element;
     }

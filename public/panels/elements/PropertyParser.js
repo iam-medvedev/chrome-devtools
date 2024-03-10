@@ -8,7 +8,10 @@ import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_e
 import * as UI from '../../ui/legacy/legacy.js';
 const cssParser = CodeMirror.css.cssLanguage.parser;
 function nodeText(node, text) {
-    return text.substring(node.from, node.to);
+    return nodeTextRange(node, node, text);
+}
+function nodeTextRange(from, to, text) {
+    return text.substring(from.from, to.to);
 }
 export class SyntaxTree {
     propertyValue;
@@ -29,6 +32,9 @@ export class SyntaxTree {
         }
         return nodeText(node ?? this.tree, this.rule);
     }
+    textRange(from, to) {
+        return nodeTextRange(from, to, this.rule);
+    }
     subtree(node) {
         return new SyntaxTree(this.propertyValue, this.rule, node);
     }
@@ -40,13 +46,32 @@ export class TreeWalker {
     }
     static walkExcludingSuccessors(propertyValue, ...args) {
         const instance = new this(propertyValue, ...args);
-        instance.iterateExcludingSuccessors(propertyValue.tree);
+        if (propertyValue.tree.name === 'Declaration') {
+            instance.iterateDeclaration(propertyValue.tree);
+        }
+        else {
+            instance.iterateExcludingSuccessors(propertyValue.tree);
+        }
         return instance;
     }
     static walk(propertyValue, ...args) {
         const instance = new this(propertyValue, ...args);
-        instance.iterate(propertyValue.tree);
+        if (propertyValue.tree.name === 'Declaration') {
+            instance.iterateDeclaration(propertyValue.tree);
+        }
+        else {
+            instance.iterate(propertyValue.tree);
+        }
         return instance;
+    }
+    iterateDeclaration(tree) {
+        if (tree.name !== 'Declaration') {
+            return;
+        }
+        if (this.enter(tree)) {
+            ASTUtils.declValue(tree)?.cursor().iterate(this.enter.bind(this), this.leave.bind(this));
+        }
+        this.leave(tree);
     }
     iterate(tree) {
         tree.cursor().iterate(this.enter.bind(this), this.leave.bind(this));
@@ -105,7 +130,7 @@ export class BottomUpTreeMatching extends TreeWalker {
     }
     constructor(ast, matchers) {
         super(ast);
-        this.computedText = new ComputedText(ast.propertyValue);
+        this.computedText = new ComputedText(ast.rule.substring(ast.tree.from));
         this.#matchers.push(...matchers.filter(m => !ast.propertyName || m.accepts(ast.propertyName)));
         this.#matchers.push(new TextMatcher());
     }
@@ -129,10 +154,16 @@ export class BottomUpTreeMatching extends TreeWalker {
         return this.#matchedNodes.get(this.#key(node));
     }
     hasUnresolvedVars(node) {
-        return this.computedText.hasUnresolvedVars(node.from - this.ast.tree.from, node.to - this.ast.tree.from);
+        return this.hasUnresolvedVarsRange(node, node);
+    }
+    hasUnresolvedVarsRange(from, to) {
+        return this.computedText.hasUnresolvedVars(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
     }
     getComputedText(node) {
-        return this.computedText.get(node.from - this.ast.tree.from, node.to - this.ast.tree.from);
+        return this.getComputedTextRange(node, node);
+    }
+    getComputedTextRange(from, to) {
+        return this.computedText.get(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
     }
 }
 class ComputedTextChunk {
@@ -275,6 +306,7 @@ export function requiresSpace(a, b) {
     return !/\s/.test(trailingChar) && !/\s/.test(leadingChar) && !noSpaceAfter.includes(trailingChar) &&
         !noSpaceBefore.includes(leadingChar);
 }
+export const CSSControlMap = (Map);
 function mergeWithSpacing(nodes, merge) {
     const result = [...nodes];
     if (requiresSpace(nodes, merge)) {
@@ -283,7 +315,6 @@ function mergeWithSpacing(nodes, merge) {
     result.push(...merge);
     return result;
 }
-export const CSSControlMap = (Map);
 export class Renderer extends TreeWalker {
     #matchedResult;
     #output = [];
@@ -323,48 +354,63 @@ export class Renderer extends TreeWalker {
         return true;
     }
 }
-export function siblings(node) {
-    const result = [];
-    while (node) {
-        result.push(node);
-        node = node.nextSibling;
+export var ASTUtils;
+(function (ASTUtils) {
+    function siblings(node) {
+        const result = [];
+        while (node) {
+            result.push(node);
+            node = node.nextSibling;
+        }
+        return result;
     }
-    return result;
-}
-export function children(node) {
-    return siblings(node?.firstChild ?? null);
-}
-function* stripComments(nodes) {
-    for (const node of nodes) {
-        if (node.type.name !== 'Comment') {
-            yield node;
+    ASTUtils.siblings = siblings;
+    function children(node) {
+        return siblings(node?.firstChild ?? null);
+    }
+    ASTUtils.children = children;
+    function declValue(node) {
+        if (node.name !== 'Declaration') {
+            return null;
+        }
+        return children(node).find(node => node.name === ':')?.nextSibling ?? null;
+    }
+    ASTUtils.declValue = declValue;
+    function* stripComments(nodes) {
+        for (const node of nodes) {
+            if (node.type.name !== 'Comment') {
+                yield node;
+            }
         }
     }
-}
-function split(nodes) {
-    const result = [];
-    let current = [];
-    for (const node of nodes) {
-        if (node.name === ',') {
-            result.push(current);
-            current = [];
+    ASTUtils.stripComments = stripComments;
+    function split(nodes) {
+        const result = [];
+        let current = [];
+        for (const node of nodes) {
+            if (node.name === ',') {
+                result.push(current);
+                current = [];
+            }
+            else {
+                current.push(node);
+            }
         }
-        else {
-            current.push(node);
+        result.push(current);
+        return result;
+    }
+    ASTUtils.split = split;
+    function callArgs(node) {
+        const args = children(node.getChild('ArgList'));
+        const openParen = args.splice(0, 1)[0];
+        const closingParen = args.pop();
+        if (openParen?.name !== '(' || closingParen?.name !== ')') {
+            return [];
         }
+        return split(args);
     }
-    result.push(current);
-    return result;
-}
-function callArgs(node) {
-    const args = children(node.getChild('ArgList'));
-    const openParen = args.splice(0, 1)[0];
-    const closingParen = args.pop();
-    if (openParen?.name !== '(' || closingParen?.name !== ')') {
-        return [];
-    }
-    return split(args);
-}
+    ASTUtils.callArgs = callArgs;
+})(ASTUtils || (ASTUtils = {}));
 export class AngleMatch {
     text;
     type = 'angle';
@@ -416,18 +462,22 @@ export class ColorMixMatcher extends MatcherBase {
         if (node.name !== 'CallExpression' || matching.ast.text(node.getChild('Callee')) !== 'color-mix') {
             return null;
         }
-        const computedValueTree = tokenizePropertyValue(matching.getComputedText(node));
+        const computedValueTree = tokenizeDeclaration('--property', matching.getComputedText(node));
         if (!computedValueTree) {
             return null;
         }
-        const computedValueArgs = callArgs(computedValueTree.tree);
+        const value = ASTUtils.declValue(computedValueTree.tree);
+        if (!value) {
+            return null;
+        }
+        const computedValueArgs = ASTUtils.callArgs(value);
         if (computedValueArgs.length !== 3) {
             return null;
         }
         const [space, color1, color2] = computedValueArgs;
         // Verify that all arguments are there, and that the space starts with a literal `in`.
-        if (space.length < 2 || computedValueTree.text(stripComments(space).next().value) !== 'in' || color1.length < 1 ||
-            color2.length < 1) {
+        if (space.length < 2 || computedValueTree.text(ASTUtils.stripComments(space).next().value) !== 'in' ||
+            color1.length < 1 || color2.length < 1) {
             return null;
         }
         // Verify there's at most one percentage value for each color.
@@ -441,7 +491,7 @@ export class ColorMixMatcher extends MatcherBase {
             (literalToNumber(p2[0], computedValueTree) ?? 0) === 0) {
             return null;
         }
-        const args = callArgs(node);
+        const args = ASTUtils.callArgs(node);
         if (args.length !== 3) {
             return null;
         }
@@ -468,7 +518,7 @@ export class VariableMatcher extends MatcherBase {
         if (node.name !== 'CallExpression' || !callee || (matching.ast.text(callee) !== 'var') || !args) {
             return null;
         }
-        const [lparenNode, nameNode, ...fallbackOrRParenNodes] = children(args);
+        const [lparenNode, nameNode, ...fallbackOrRParenNodes] = ASTUtils.children(args);
         if (lparenNode?.name !== '(' || nameNode?.name !== 'VariableName') {
             return null;
         }
@@ -516,7 +566,7 @@ export class URLMatcher extends MatcherBase {
         if (!callee || matching.ast.text(callee) !== 'url') {
             return null;
         }
-        const [, lparenNode, urlNode, rparenNode] = siblings(callee);
+        const [, lparenNode, urlNode, rparenNode] = ASTUtils.siblings(callee);
         if (matching.ast.text(lparenNode) !== '(' ||
             (urlNode.name !== 'ParenthesizedContent' && urlNode.name !== 'StringLiteral') ||
             matching.ast.text(rparenNode) !== ')') {
@@ -567,11 +617,69 @@ export class LinkableNameMatch {
 export class LinkableNameMatcher extends MatcherBase {
     static isLinkableNameProperty(propertyName) {
         const names = [
+            "animation" /* LinkableNameProperties.Animation */,
             "animation-name" /* LinkableNameProperties.AnimationName */,
             "font-palette" /* LinkableNameProperties.FontPalette */,
             "position-fallback" /* LinkableNameProperties.PositionFallback */,
         ];
         return names.includes(propertyName);
+    }
+    static identifierAnimationLonghandMap = new Map(Object.entries({
+        'normal': "direction" /* AnimationLonghandPart.Direction */,
+        'alternate': "direction" /* AnimationLonghandPart.Direction */,
+        'reverse': "direction" /* AnimationLonghandPart.Direction */,
+        'alternate-reverse': "direction" /* AnimationLonghandPart.Direction */,
+        'none': "fill-mode" /* AnimationLonghandPart.FillMode */,
+        'forwards': "fill-mode" /* AnimationLonghandPart.FillMode */,
+        'backwards': "fill-mode" /* AnimationLonghandPart.FillMode */,
+        'both': "fill-mode" /* AnimationLonghandPart.FillMode */,
+        'running': "play-state" /* AnimationLonghandPart.PlayState */,
+        'paused': "play-state" /* AnimationLonghandPart.PlayState */,
+        'infinite': "iteration-count" /* AnimationLonghandPart.IterationCount */,
+        'linear': "easing-function" /* AnimationLonghandPart.EasingFunction */,
+        'ease': "easing-function" /* AnimationLonghandPart.EasingFunction */,
+        'ease-in': "easing-function" /* AnimationLonghandPart.EasingFunction */,
+        'ease-out': "easing-function" /* AnimationLonghandPart.EasingFunction */,
+        'ease-in-out': "easing-function" /* AnimationLonghandPart.EasingFunction */,
+    }));
+    matchAnimationNameInShorthand(node, matching) {
+        // Order is important within each animation definition for distinguishing <keyframes-name> values from other keywords.
+        // When parsing, keywords that are valid for properties other than animation-name
+        // whose values were not found earlier in the shorthand must be accepted for those properties rather than for animation-name.
+        // See the details in: https://w3c.github.io/csswg-drafts/css-animations/#animation.
+        const text = matching.ast.text(node);
+        // This is not a known identifier, so return it as `animation-name`.
+        if (!LinkableNameMatcher.identifierAnimationLonghandMap.has(text)) {
+            return this.createMatch(text, "animation" /* LinkableNameProperties.Animation */);
+        }
+        // There can be multiple `animation` declarations splitted by a comma.
+        // So, we find the declaration nodes that are related to the node argument.
+        const declarations = ASTUtils.split(ASTUtils.siblings(ASTUtils.declValue(matching.ast.tree)));
+        const currentDeclarationNodes = declarations.find(declaration => declaration[0].from <= node.from && declaration[declaration.length - 1].to >= node.to);
+        if (!currentDeclarationNodes) {
+            return null;
+        }
+        // We reparse here until the node argument since a variable might be
+        // providing a meaningful value such as a timing keyword,
+        // that might change the meaning of the node.
+        const computedText = matching.getComputedTextRange(currentDeclarationNodes[0], node);
+        const tokenized = tokenizeDeclaration('--p', computedText);
+        if (!tokenized) {
+            return null;
+        }
+        const identifierCategory = LinkableNameMatcher.identifierAnimationLonghandMap.get(text); // The category of the node argument
+        for (let itNode = ASTUtils.declValue(tokenized.tree); itNode?.nextSibling; itNode = itNode.nextSibling) {
+            // Run through all the nodes that come before node argument
+            // and check whether a value in the same category is found.
+            // if so, it means our identifier is an `animation-name` keyword.
+            if (itNode.name === 'ValueName') {
+                const categoryValue = LinkableNameMatcher.identifierAnimationLonghandMap.get(tokenized.text(itNode));
+                if (categoryValue && categoryValue === identifierCategory) {
+                    return this.createMatch(text, "animation" /* LinkableNameProperties.Animation */);
+                }
+            }
+        }
+        return null;
     }
     accepts(propertyName) {
         return LinkableNameMatcher.isLinkableNameProperty(propertyName);
@@ -579,11 +687,24 @@ export class LinkableNameMatcher extends MatcherBase {
     matches(node, matching) {
         const { propertyName } = matching.ast;
         const text = matching.ast.text(node);
-        if (!propertyName || node.name !== 'ValueName' || !LinkableNameMatcher.isLinkableNameProperty(propertyName)) {
+        const parentNode = node.parent;
+        if (!parentNode) {
             return null;
         }
-        // Only animation-name is allowed to specify more than one name. We don't verify this for the other properties since
-        // they would be reported as !parsedOk from the backend.
+        const isParentADeclaration = parentNode.name === 'Declaration';
+        const isInsideVarCall = parentNode.name === 'ArgList' && parentNode.prevSibling?.name === 'Callee' &&
+            matching.ast.text(parentNode.prevSibling) === 'var';
+        const isAParentDeclarationOrVarCall = isParentADeclaration || isInsideVarCall;
+        // We only mark top level nodes or nodes that are inside `var()` expressions as linkable names.
+        if (!propertyName || (node.name !== 'ValueName' && node.name !== 'VariableName') ||
+            !isAParentDeclarationOrVarCall) {
+            return null;
+        }
+        if (propertyName === 'animation') {
+            return this.matchAnimationNameInShorthand(node, matching);
+        }
+        // The assertion here is safe since this matcher only runs for
+        // properties with names inside `LinkableNameProperties` (See the `accepts` function.)
         return this.createMatch(text, propertyName);
     }
 }
@@ -622,6 +743,27 @@ export class StringMatch {
 export class StringMatcher extends MatcherBase {
     matches(node, matching) {
         return node.name === 'StringLiteral' ? this.createMatch(matching.ast.text(node)) : null;
+    }
+}
+export class ShadowMatch {
+    text;
+    shadowType;
+    type = 'shadow';
+    constructor(text, shadowType) {
+        this.text = text;
+        this.shadowType = shadowType;
+    }
+}
+export class ShadowMatcher extends MatcherBase {
+    accepts(propertyName) {
+        return SDK.CSSMetadata.cssMetadata().isShadowProperty(propertyName);
+    }
+    matches(node, matching) {
+        if (node.name !== 'Declaration') {
+            return null;
+        }
+        const text = matching.ast.text(node);
+        return this.createMatch(text, matching.ast.propertyName === 'text-shadow' ? "textShadow" /* ShadowType.TextShadow */ : "boxShadow" /* ShadowType.BoxShadow */);
     }
 }
 class LegacyRegexMatch {
@@ -708,14 +850,17 @@ class TextMatcher {
 function declaration(rule) {
     return cssParser.parse(rule).topNode.getChild('RuleSet')?.getChild('Block')?.getChild('Declaration') ?? null;
 }
-export function tokenizePropertyValue(propertyValue, propertyName) {
-    const fakePropertyName = '--property';
-    const rule = `*{${fakePropertyName}: ${propertyValue};}`;
+export function tokenizeDeclaration(propertyName, propertyValue) {
+    const name = tokenizePropertyName(propertyName);
+    if (!name) {
+        return null;
+    }
+    const rule = `*{${name}: ${propertyValue};}`;
     const decl = declaration(rule);
     if (!decl || decl.type.isError) {
         return null;
     }
-    const childNodes = children(decl);
+    const childNodes = ASTUtils.children(decl);
     if (childNodes.length < 3) {
         return null;
     }
@@ -726,14 +871,13 @@ export function tokenizePropertyValue(propertyValue, propertyName) {
     // It's possible that there are nodes following the declaration when there are comments or syntax errors. We want to
     // render any comments, so pick up any trailing nodes following the declaration excluding the final semicolon and
     // brace.
-    const trailingNodes = siblings(decl).slice(1);
+    const trailingNodes = ASTUtils.siblings(decl).slice(1);
     const [semicolon, brace] = trailingNodes.splice(trailingNodes.length - 2, 2);
     if (semicolon?.name !== ';' && brace?.name !== '}') {
         return null;
     }
-    const name = (propertyName && tokenizePropertyName(propertyName)) ?? undefined;
-    const ast = new SyntaxTree(propertyValue, rule, tree, name, trailingNodes);
-    if (ast.text(varName) !== fakePropertyName || colon.name !== ':') {
+    const ast = new SyntaxTree(propertyValue, rule, decl, name, trailingNodes);
+    if (ast.text(varName) !== name || colon.name !== ':') {
         return null;
     }
     return ast;
@@ -744,7 +888,7 @@ export function tokenizePropertyName(name) {
     if (!decl || decl.type.isError) {
         return null;
     }
-    const propertyName = decl.getChild('PropertyName');
+    const propertyName = decl.getChild('PropertyName') ?? decl.getChild('VariableName');
     if (!propertyName) {
         return null;
     }
@@ -758,14 +902,14 @@ export function tokenizePropertyName(name) {
 //
 // More general, longer matches take precedence over shorter, more specific matches. Whitespaces are normalized, for
 // unmatched text and around rendered matching results.
-export function renderPropertyValue(value, matchers, propertyName) {
-    const ast = tokenizePropertyValue(value, propertyName);
+export function renderPropertyValue(propertyName, propertyValue, matchers) {
+    const ast = tokenizeDeclaration(propertyName, propertyValue);
     if (!ast) {
-        return [document.createTextNode(value)];
+        return [document.createTextNode(propertyValue)];
     }
     const matchedResult = BottomUpTreeMatching.walk(ast, matchers);
     ast.trailingNodes.forEach(n => matchedResult.matchText(n));
     const context = new RenderingContext(ast, matchedResult);
-    return Renderer.render([...siblings(ast.tree), ...ast.trailingNodes], context).nodes;
+    return Renderer.render([ast.tree, ...ast.trailingNodes], context).nodes;
 }
 //# sourceMappingURL=PropertyParser.js.map

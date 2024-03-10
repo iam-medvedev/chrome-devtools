@@ -6404,6 +6404,9 @@
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "R̂él̂át̂éd̂ ćôd́ê"
   },
+  "panels/explain/components/ConsoleInsight.ts | report": {
+    "message": "R̂ép̂ór̂t́ l̂éĝál̂ íŝśûé"
+  },
   "panels/explain/components/ConsoleInsight.ts | signInToUse": {
     "message": "Ŝíĝń îń t̂ó ûśê Ćôńŝól̂é îńŝíĝh́t̂ś"
   },
@@ -9308,6 +9311,18 @@
   "panels/profiler/HeapSnapshotDataGrids.ts | sizeOfTheObjectPlusTheGraphIt": {
     "message": "Ŝíẑé ôf́ t̂h́ê ób̂j́êćt̂ ṕl̂úŝ t́ĥé ĝŕâṕĥ ít̂ ŕêt́âín̂ś îń b̂ýt̂éŝ"
   },
+  "panels/profiler/HeapSnapshotGridNodes.ts | compiledCodeSummary": {
+    "message": "Îńt̂ér̂ńâĺ d̂át̂á ŵh́îćĥ V́8 ûśêś t̂ó r̂ún̂ f́ûńĉt́îón̂ś d̂éf̂ín̂éd̂ b́ŷ J́âv́âŚĉŕîṕt̂ ór̂ Ẃêb́Âśŝém̂b́l̂ý."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | concatenatedStringSummary": {
+    "message": "Â śt̂ŕîńĝ ẃĥíĉh́ r̂ép̂ŕêśêńt̂ś t̂h́ê ćôńt̂én̂t́ŝ óf̂ t́ŵó ôt́ĥér̂ śt̂ŕîńĝś ĵóîńêd́ t̂óĝét̂h́êŕ."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | contextSummary": {
+    "message": "Âń îńt̂ér̂ńâĺ ôb́ĵéĉt́ ĉón̂t́âín̂ín̂ǵ v̂ár̂íâb́l̂éŝ f́r̂óm̂ á Ĵáv̂áŜćr̂íp̂t́ ŝćôṕê ẃĥíĉh́ m̂áŷ b́ê ńêéd̂éd̂ b́ŷ á f̂ún̂ćt̂íôń ĉŕêát̂éd̂ ẃît́ĥín̂ t́ĥát̂ śĉóp̂é."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | descriptorArraySummary": {
+    "message": "Â ĺîśt̂ óf̂ t́ĥé p̂ŕôṕêŕt̂ý n̂ám̂éŝ úŝéd̂ b́ŷ á Ĵáv̂áŜćr̂íp̂t́ Ôb́ĵéĉt́."
+  },
   "panels/profiler/HeapSnapshotGridNodes.ts | detachedFromDomTree": {
     "message": "D̂ét̂áĉh́êd́ f̂ŕôḿ D̂ÓM̂ t́r̂éê"
   },
@@ -9320,6 +9335,21 @@
   "panels/profiler/HeapSnapshotGridNodes.ts | internalArray": {
     "message": "(îńt̂ér̂ńâĺ âŕr̂áŷ)[]"
   },
+  "panels/profiler/HeapSnapshotGridNodes.ts | internalArraySummary": {
+    "message": "Âń îńt̂ér̂ńâĺ âŕr̂áŷ-ĺîḱê d́ât́â śt̂ŕûćt̂úr̂é (n̂ót̂ á Ĵáv̂áŜćr̂íp̂t́ Âŕr̂áŷ)."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | internalNodeSummary": {
+    "message": "Âń ôb́ĵéĉt́ âĺl̂óĉát̂éd̂ b́ŷ á ĉóm̂ṕôńêńt̂ ót̂h́êŕ t̂h́âń V̂8, śûćĥ áŝ Ć++ ôb́ĵéĉt́ŝ d́êf́îńêd́ b̂ý B̂ĺîńk̂."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | mapSummary": {
+    "message": "Âń îńt̂ér̂ńâĺ ôb́ĵéĉt́ r̂ép̂ŕêśêńt̂ín̂ǵ t̂h́ê śĥáp̂é ôf́ â J́âv́âŚĉŕîṕt̂ Ób̂j́êćt̂ (ńôt́ â J́âv́âŚĉŕîṕt̂ Ḿâṕ)."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | objectElementsSummary": {
+    "message": "Âń îńt̂ér̂ńâĺ ôb́ĵéĉt́ ŵh́îćĥ śt̂ór̂éŝ t́ĥé îńd̂éx̂éd̂ ṕr̂óp̂ér̂t́îéŝ ín̂ á Ĵáv̂áŜćr̂íp̂t́ Ôb́ĵéĉt́, ŝúĉh́ âś t̂h́ê ćôńt̂én̂t́ŝ óf̂ án̂ Ár̂ŕâý."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | objectPropertiesSummary": {
+    "message": "Âń îńt̂ér̂ńâĺ ôb́ĵéĉt́ ŵh́îćĥ śt̂ór̂éŝ t́ĥé n̂ám̂éd̂ ṕr̂óp̂ér̂t́îéŝ ín̂ á Ĵáv̂áŜćr̂íp̂t́ Ôb́ĵéĉt́."
+  },
   "panels/profiler/HeapSnapshotGridNodes.ts | previewIsNotAvailable": {
     "message": "P̂ŕêv́îéŵ íŝ ńôt́ âv́âíl̂áb̂ĺê"
   },
@@ -9328,6 +9358,9 @@
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | revealObjectSWithIdSInSummary": {
     "message": "R̂év̂éâĺ ôb́ĵéĉt́ ''{PH1}'' ŵít̂h́ îd́ @{PH2} îń Ŝúm̂ḿâŕŷ v́îéŵ"
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | slicedStringSummary": {
+    "message": "Â śt̂ŕîńĝ ẃĥíĉh́ r̂ép̂ŕêśêńt̂ś ŝóm̂é ôf́ t̂h́ê ćĥár̂áĉt́êŕŝ f́r̂óm̂ án̂ót̂h́êŕ ŝt́r̂ín̂ǵ."
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | storeAsGlobalVariable": {
     "message": "Ŝt́ôŕê áŝ ǵl̂ób̂ál̂ v́âŕîáb̂ĺê"
@@ -13904,6 +13937,9 @@
   "ui/components/markdown_view/CodeBlock.ts | copy": {
     "message": "Ĉóp̂ý ĉód̂é"
   },
+  "ui/components/markdown_view/CodeBlock.ts | disclaimer": {
+    "message": "Ûśê ćôd́ê śn̂íp̂ṕêt́ŝ ẃît́ĥ ćâút̂íôń"
+  },
   "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
     "message": "F̂éêd́b̂áĉḱ"
   },
@@ -14281,6 +14317,9 @@
   },
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Ŝh́ôẃ âś Ĵáv̂áŜćr̂íp̂t́ ôb́ĵéĉt́"
+  },
+  "ui/legacy/components/object_ui/ObjectPopoverHelper.ts | learnMore": {
+    "message": "L̂éâŕn̂ ḿôŕê"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "Ĉól̂ĺâṕŝé ĉh́îĺd̂ŕêń"

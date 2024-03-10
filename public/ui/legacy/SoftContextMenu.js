@@ -106,9 +106,11 @@ export class SoftContextMenu {
         this.glassPane.setMarginBehavior("NoMargin" /* MarginBehavior.NoMargin */);
         this.glassPane.setAnchorBehavior(this.parentMenu ? "PreferRight" /* AnchorBehavior.PreferRight */ : "PreferBottom" /* AnchorBehavior.PreferBottom */);
         this.contextMenuElement = this.glassPane.contentElement.createChild('div', 'soft-context-menu');
-        this.contextMenuElement.setAttribute('jslog', `${VisualLogging.menu().track({ resize: true }).parent('softMenuParent')}`);
+        this.contextMenuElement.setAttribute('jslog', `${VisualLogging.menu().track({ resize: true }).parent('mapped').track({
+            keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter|Space|Escape',
+        })}`);
         if (this.loggableParent) {
-            loggableParents.set(this.contextMenuElement, this.loggableParent);
+            VisualLogging.setMappedParent(this.contextMenuElement, this.loggableParent);
         }
         this.contextMenuElement.tabIndex = -1;
         ARIAUtils.markAsMenu(this.contextMenuElement);
@@ -578,9 +580,4 @@ export class SoftContextMenu {
         this.focusOnTheFirstItem = focusOnTheFirstItem;
     }
 }
-const loggableParents = new WeakMap();
-function parentForLogging(element) {
-    return loggableParents.get(element) || undefined;
-}
-VisualLogging.registerParentProvider('softMenuParent', parentForLogging);
 //# sourceMappingURL=SoftContextMenu.js.map

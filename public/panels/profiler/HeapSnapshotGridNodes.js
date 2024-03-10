@@ -83,6 +83,46 @@ const UIStrings = {
      * element.
      */
     inElement: 'in',
+    /**
+     *@description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#compiled-code
+     */
+    compiledCodeSummary: 'Internal data which V8 uses to run functions defined by JavaScript or WebAssembly.',
+    /**
+     *@description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#concatenated-string
+     */
+    concatenatedStringSummary: 'A string which represents the contents of two other strings joined together.',
+    /**
+     *@description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#system-context
+     */
+    contextSummary: 'An internal object containing variables from a JavaScript scope which may be needed by a function created within that scope.',
+    /**
+     *@description A short description of the data type internal type DescriptorArray, which is described more fully at https://v8.dev/blog/fast-properties
+     */
+    descriptorArraySummary: 'A list of the property names used by a JavaScript Object.',
+    /**
+     *@description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array
+     */
+    internalArraySummary: 'An internal array-like data structure (not a JavaScript Array).',
+    /**
+     *@description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#internal-node
+     */
+    internalNodeSummary: 'An object allocated by a component other than V8, such as C++ objects defined by Blink.',
+    /**
+     *@description A short description of the data type "system / Map" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#object-shape
+     */
+    mapSummary: 'An internal object representing the shape of a JavaScript Object (not a JavaScript Map).',
+    /**
+     *@description A short summary of the "(object elements)[]" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array
+     */
+    objectElementsSummary: 'An internal object which stores the indexed properties in a JavaScript Object, such as the contents of an Array.',
+    /**
+     *@description A short summary of the "(object properties)[]" described at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#array
+     */
+    objectPropertiesSummary: 'An internal object which stores the named properties in a JavaScript Object.',
+    /**
+     *@description A short summary of the text at https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#sliced-string
+     */
+    slicedStringSummary: 'A string which represents some of the characters from another string.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/profiler/HeapSnapshotGridNodes.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -536,7 +576,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
     }
     async queryObjectContent(heapProfilerModel, objectGroupName) {
         const remoteObject = await this.tryQueryObjectContent(heapProfilerModel, objectGroupName);
-        return remoteObject ||
+        return remoteObject || this.tryGetTooltipDescription() ||
             heapProfilerModel.runtimeModel().createRemoteObjectFromPrimitiveValue(i18nString(UIStrings.previewIsNotAvailable));
     }
     async tryQueryObjectContent(heapProfilerModel, objectGroupName) {
@@ -544,6 +584,35 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
             return heapProfilerModel.runtimeModel().createRemoteObjectFromPrimitiveValue(this.nameInternal);
         }
         return await heapProfilerModel.objectForSnapshotObjectId(String(this.snapshotNodeId), objectGroupName);
+    }
+    tryGetTooltipDescription() {
+        const baseLink = 'https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots#';
+        switch (this.type) {
+            case 'code':
+                return { description: i18nString(UIStrings.compiledCodeSummary), link: baseLink + 'compiled-code' };
+            case 'concatenated string':
+                return { description: i18nString(UIStrings.concatenatedStringSummary), link: baseLink + 'concatenated-string' };
+            case 'sliced string':
+                return { description: i18nString(UIStrings.slicedStringSummary), link: baseLink + 'sliced-string' };
+        }
+        switch (this.type + ':' + this.nameInternal) {
+            case 'array:': // If nameInternal is empty, then the object is shown as "(internal array)[]".
+                return { description: i18nString(UIStrings.internalArraySummary), link: baseLink + 'array' };
+            case 'array:(object elements)':
+                return { description: i18nString(UIStrings.objectElementsSummary), link: baseLink + 'array' };
+            case 'array:(object properties)':
+            case 'hidden:system / PropertyArray':
+                return { description: i18nString(UIStrings.objectPropertiesSummary), link: baseLink + 'array' };
+            case 'object:system / Context':
+                return { description: i18nString(UIStrings.contextSummary), link: baseLink + 'system-context' };
+            case 'object shape:system / DescriptorArray':
+                return { description: i18nString(UIStrings.descriptorArraySummary), link: baseLink + 'object-shape' };
+            case 'object shape:system / Map':
+                return { description: i18nString(UIStrings.mapSummary), link: baseLink + 'object-shape' };
+            case 'native:InternalNode':
+                return { description: i18nString(UIStrings.internalNodeSummary), link: baseLink + 'internal-node' };
+        }
+        return undefined;
     }
     async updateHasChildren() {
         const isEmpty = await this.provider().isEmpty();

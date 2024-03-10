@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Coordinator from '../components/render_coordinator/render_coordinator.js';
+import { processForDebugging } from './Debugging.js';
 import { getDomState, visibleOverlap } from './DomState.js';
-import { debugString, getLoggingConfig } from './LoggingConfig.js';
+import { getLoggingConfig } from './LoggingConfig.js';
 import { logChange, logClick, logDrag, logHover, logImpressions, logKeyDown, logResize } from './LoggingEvents.js';
 import { getLoggingState, getOrCreateLoggingState } from './LoggingState.js';
 import { getNonDomState, unregisterAllLoggables, unregisterLoggable } from './NonDomState.js';
@@ -17,12 +17,15 @@ const DRAG_LOG_INTERVAL = 500;
 const CLICK_LOG_INTERVAL = 500;
 const RESIZE_LOG_INTERVAL = 1000;
 const RESIZE_REPORT_THRESHOLD = 50;
-let processingThrottler;
-let keyboardLogThrottler;
-let hoverLogThrottler;
-let dragLogThrottler;
-let clickLogThrottler;
-let resizeLogThrottler;
+const noOpThrottler = {
+    schedule: async () => { },
+};
+let processingThrottler = noOpThrottler;
+export let keyboardLogThrottler = noOpThrottler;
+let hoverLogThrottler = noOpThrottler;
+let dragLogThrottler = noOpThrottler;
+export let clickLogThrottler = noOpThrottler;
+export let resizeLogThrottler = noOpThrottler;
 const mutationObservers = new WeakMap();
 const documents = [];
 function observeMutations(roots) {
@@ -72,7 +75,7 @@ export function stopLogging() {
         mutationObservers.delete(shadowRoot);
     }
     documents.length = 0;
-    processingThrottler = null;
+    processingThrottler = noOpThrottler;
 }
 export function scheduleProcessing() {
     if (!processingThrottler) {
@@ -80,25 +83,6 @@ export function scheduleProcessing() {
     }
     void processingThrottler.schedule(() => Coordinator.RenderCoordinator.RenderCoordinator.instance().read('processForLogging', process));
 }
-let veDebuggingEnabled = false;
-let debugPopover = null;
-const nonDomDebugElements = new WeakMap();
-function setVeDebuggingEnabled(enabled) {
-    veDebuggingEnabled = enabled;
-    if (enabled && !debugPopover) {
-        debugPopover = document.createElement('div');
-        debugPopover.classList.add('ve-debug');
-        debugPopover.style.position = 'absolute';
-        debugPopover.style.bottom = '100px';
-        debugPopover.style.left = '100px';
-        debugPopover.style.background = 'black';
-        debugPopover.style.color = 'white';
-        debugPopover.style.zIndex = '100000';
-        document.body.appendChild(debugPopover);
-    }
-}
-// @ts-ignore
-globalThis.setVeDebuggingEnabled = setVeDebuggingEnabled;
 async function process() {
     if (document.hidden) {
         return;
@@ -132,13 +116,13 @@ async function process() {
             if (loggingState.config.track?.has('click')) {
                 element.addEventListener('click', e => {
                     const loggable = e.currentTarget;
-                    void clickLogThrottler.schedule(async () => logClick(loggable, e));
+                    logClick(clickLogThrottler)(loggable, e);
                 }, { capture: true });
             }
             if (loggingState.config.track?.has('dblclick')) {
                 element.addEventListener('dblclick', e => {
                     const loggable = e.currentTarget;
-                    void clickLogThrottler.schedule(async () => logClick(loggable, e, { doubleClick: true }));
+                    logClick(clickLogThrottler)(loggable, e, { doubleClick: true });
                 }, { capture: true });
             }
             const trackHover = loggingState.config.track?.has('hover');
@@ -157,9 +141,9 @@ async function process() {
                 element.addEventListener('change', logChange, { capture: true });
             }
             const trackKeyDown = loggingState.config.track?.has('keydown');
-            const codes = loggingState.config.track?.get('keydown')?.split(',') || [];
+            const codes = loggingState.config.track?.get('keydown')?.split('|') || [];
             if (trackKeyDown) {
-                element.addEventListener('keydown', logKeyDown(codes, keyboardLogThrottler), { capture: true });
+                element.addEventListener('keydown', logKeyDown(keyboardLogThrottler, codes), { capture: true });
             }
             if (loggingState.config.track?.has('resize')) {
                 const updateSize = () => {
@@ -169,7 +153,7 @@ async function process() {
                     }
                     if (Math.abs(overlap.width - loggingState.size.width) >= RESIZE_REPORT_THRESHOLD ||
                         Math.abs(overlap.height - loggingState.size.height) >= RESIZE_REPORT_THRESHOLD) {
-                        void logResize(element, overlap, resizeLogThrottler);
+                        void logResize(resizeLogThrottler)(element, overlap);
                     }
                 };
                 new ResizeObserver(updateSize).observe(element);
@@ -201,40 +185,14 @@ async function process() {
                 element.addEventListener('change', e => {
                     for (const option of element.selectedOptions) {
                         if (getLoggingState(option)?.config.track?.has('click')) {
-                            void logClick(option, e);
+                            void logClick(clickLogThrottler)(option, e);
                         }
                     }
                 }, { capture: true });
             }
             loggingState.processed = true;
         }
-        if (veDebuggingEnabled && !loggingState.processedForDebugging) {
-            if (element.tagName === 'OPTION') {
-                if (loggingState.parent?.selectOpen && debugPopover) {
-                    debugPopover.innerHTML += '<br>' + debugString(loggingState.config);
-                    loggingState.processedForDebugging = true;
-                }
-            }
-            else {
-                element.style.outline = 'solid 1px red';
-                element.addEventListener('mouseenter', () => {
-                    assertNotNullOrUndefined(debugPopover);
-                    debugPopover.style.display = 'block';
-                    const pathToRoot = [loggingState];
-                    let ancestor = loggingState.parent;
-                    while (ancestor) {
-                        pathToRoot.push(ancestor);
-                        ancestor = ancestor.parent;
-                    }
-                    debugPopover.innerHTML = pathToRoot.map(s => debugString(s.config)).join('<br>');
-                }, { capture: true });
-                element.addEventListener('mouseleave', () => {
-                    assertNotNullOrUndefined(debugPopover);
-                    debugPopover.style.display = 'none';
-                }, { capture: true });
-                loggingState.processedForDebugging = true;
-            }
-        }
+        processForDebugging(element);
     }
     for (const { loggable, config, parent } of getNonDomState().loggables) {
         const loggingState = getOrCreateLoggingState(loggable, config, parent);
@@ -242,34 +200,7 @@ async function process() {
         if (!visible) {
             continue;
         }
-        if (veDebuggingEnabled) {
-            let debugElement = nonDomDebugElements.get(loggable);
-            if (!debugElement) {
-                debugElement = document.createElement('div');
-                debugElement.classList.add('ve-debug');
-                debugElement.style.background = 'black';
-                debugElement.style.color = 'white';
-                debugElement.style.zIndex = '100000';
-                debugElement.textContent = debugString(config);
-                nonDomDebugElements.set(loggable, debugElement);
-                setTimeout(() => {
-                    if (!loggingState.size?.width || !loggingState.size?.height) {
-                        debugElement?.parentElement?.removeChild(debugElement);
-                        nonDomDebugElements.delete(loggable);
-                    }
-                }, 10000);
-            }
-            const parentDebugElement = parent instanceof HTMLElement ? parent : nonDomDebugElements.get(parent) || debugPopover;
-            assertNotNullOrUndefined(parentDebugElement);
-            if (!parentDebugElement.classList.contains('ve-debug')) {
-                debugElement.style.position = 'absolute';
-                parentDebugElement.insertBefore(debugElement, parentDebugElement.firstChild);
-            }
-            else {
-                debugElement.style.marginLeft = '10px';
-                parentDebugElement.appendChild(debugElement);
-            }
-        }
+        processForDebugging(loggable);
         visibleLoggables.push(loggable);
         loggingState.impressionLogged = true;
         // No need to track loggable as soon as we've logged the impression

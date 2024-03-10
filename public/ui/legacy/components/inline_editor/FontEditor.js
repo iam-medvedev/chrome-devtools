@@ -6,6 +6,7 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as IconButton from '../../../components/icon_button/icon_button.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import fontEditorStyles from './fontEditor.css.js';
 import * as FontEditorUnitConverter from './FontEditorUnitConverter.js';
@@ -122,6 +123,7 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         this.propertyMap = propertyMap;
         this.contentElement.tabIndex = 0;
+        this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('font-editor').parent('mapped').track({ keydown: 'Enter|Escape' })}`);
         this.setDefaultFocusedElement(this.contentElement);
         // Font Selector Section
         this.fontSelectorSection = this.contentElement.createChild('div', 'font-selector-section');
@@ -221,11 +223,11 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const globalValuesMap = new Map([['Global Values', FontEditorUtils.GlobalValues]]);
             const primaryFontList = [...this.fontsList];
             primaryFontList.push(globalValuesMap);
-            this.createSelector(selectorField, label, primaryFontList, value.trim());
+            this.createSelector(selectorField, label, primaryFontList, value.trim(), 'primary-font-family');
         }
         else {
             label = i18nString(UIStrings.fallbackS, { PH1: this.fontSelectors.length });
-            this.createSelector(selectorField, label, this.fontsList, value.trim());
+            this.createSelector(selectorField, label, this.fontsList, value.trim(), 'fallback-font-family');
         }
     }
     deleteFontSelector(index, isGlobalValue) {
@@ -295,10 +297,11 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         return { value: null, units: null };
     }
-    createSelector(field, label, options, currentValue) {
+    createSelector(field, label, options, currentValue, jslogContext) {
         const index = this.fontSelectors.length;
         const selectInput = UI.UIUtils.createSelect(label, options);
         selectInput.value = currentValue;
+        selectInput.setAttribute('jslog', `${VisualLogging.dropDown(jslogContext).track({ click: true, change: true })}`);
         const selectLabel = UI.UIUtils.createLabel(label, 'shadow-editor-label', selectInput);
         selectInput.addEventListener('input', this.onFontSelectorChanged.bind(this), false);
         // We want to prevent the Enter key from propagating to the SwatchPopoverHelper which will close the editor.
@@ -310,7 +313,7 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         field.appendChild(selectLabel);
         field.appendChild(selectInput);
         const deleteToolbar = new UI.Toolbar.Toolbar('', field);
-        const deleteButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteS, { PH1: label }), 'bin');
+        const deleteButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.deleteS, { PH1: label }), 'bin', undefined, 'delete');
         deleteToolbar.appendToolbarItem(deleteButton);
         const fontSelectorObject = { label: selectLabel, input: selectInput, deleteButton, index };
         deleteButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
@@ -406,12 +409,12 @@ class FontPropertyInputs {
         this.selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         const propertyLabel = UI.UIUtils.createLabel(label, 'shadow-editor-label');
         propertyField.append(propertyLabel);
-        this.sliderInput = this.createSliderInput(propertyField, label);
-        this.textBoxInput = this.createTextBoxInput(propertyField);
+        this.sliderInput = this.createSliderInput(propertyField, propertyName);
+        this.textBoxInput = this.createTextBoxInput(propertyField, propertyName);
         UI.ARIAUtils.bindLabelToControl(propertyLabel, this.textBoxInput);
-        this.unitInput = this.createUnitInput(propertyField);
-        this.selectorInput = this.createSelectorInput(propertyField);
-        this.createTypeToggle(propertyField);
+        this.unitInput = this.createUnitInput(propertyField, `${propertyName}-unit`);
+        this.selectorInput = this.createSelectorInput(propertyField, propertyName);
+        this.createTypeToggle(propertyField, `${propertyName}-value-type`);
         this.checkSelectorValueAndToggle();
         this.applyNextInput = false;
     }
@@ -471,7 +474,7 @@ class FontPropertyInputs {
         }
         return { min, max, step };
     }
-    createSliderInput(field, _label) {
+    createSliderInput(field, jslogContext) {
         const min = this.initialRange.min;
         const max = this.initialRange.max;
         const step = this.initialRange.step;
@@ -503,10 +506,11 @@ class FontPropertyInputs {
         });
         field.appendChild(slider);
         UI.ARIAUtils.setLabel(slider.sliderElement, i18nString(UIStrings.sSliderInput, { PH1: this.propertyName }));
+        slider.sliderElement.setAttribute('jslog', `${VisualLogging.slider(jslogContext).track({ change: true })}`);
         return slider;
     }
-    createTextBoxInput(field) {
-        const textBoxInput = UI.UIUtils.createInput('shadow-editor-text-input', 'number');
+    createTextBoxInput(field, jslogContext) {
+        const textBoxInput = UI.UIUtils.createInput('shadow-editor-text-input', 'number', jslogContext);
         textBoxInput.step = this.initialRange.step.toString();
         textBoxInput.classList.add('font-editor-text-input');
         if (this.propertyInfo.value !== null) {
@@ -521,7 +525,7 @@ class FontPropertyInputs {
         UI.ARIAUtils.setLabel(textBoxInput, i18nString(UIStrings.sTextInput, { PH1: this.propertyName }));
         return textBoxInput;
     }
-    createUnitInput(field) {
+    createUnitInput(field, jslogContext) {
         let unitInput;
         if (this.hasUnits && this.staticParams.units) {
             const currentValue = this.propertyInfo.units;
@@ -541,6 +545,7 @@ class FontPropertyInputs {
             unitInput.classList.add('font-editor-select');
             unitInput.disabled = true;
         }
+        unitInput.setAttribute('jslog', `${VisualLogging.dropDown(jslogContext).track({ click: true, change: true })}`);
         // We want to prevent the Enter key from propagating to the SwatchPopoverHelper which will close the editor.
         unitInput.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
@@ -551,7 +556,7 @@ class FontPropertyInputs {
         UI.ARIAUtils.setLabel(unitInput, i18nString(UIStrings.sUnitInput, { PH1: this.propertyName }));
         return unitInput;
     }
-    createSelectorInput(field) {
+    createSelectorInput(field, jslogContext) {
         const selectInput = UI.UIUtils.createSelect(i18nString(UIStrings.sKeyValueSelector, { PH1: this.propertyName }), this.staticParams.keyValues);
         selectInput.classList.add('font-selector-input');
         if (this.propertyInfo.value) {
@@ -566,6 +571,7 @@ class FontPropertyInputs {
         }, false);
         field.appendChild(selectInput);
         selectInput.hidden = true;
+        selectInput.setAttribute('jslog', `${VisualLogging.dropDown(jslogContext).track({ click: true, change: true })}`);
         return selectInput;
     }
     onSelectorInput(event) {
@@ -632,7 +638,7 @@ class FontPropertyInputs {
             unitInput.focus();
         }
     }
-    createTypeToggle(field) {
+    createTypeToggle(field, jslogContext) {
         const displaySwitcher = field.createChild('div', 'spectrum-switcher');
         const icon = new IconButton.Icon.Icon();
         icon.data = { iconName: 'fold-more', color: 'var(--icon-default)', width: '16px', height: '16px' };
@@ -641,6 +647,7 @@ class FontPropertyInputs {
         displaySwitcher.tabIndex = 0;
         self.onInvokeElement(displaySwitcher, this.toggleInputType.bind(this));
         UI.ARIAUtils.markAsButton(displaySwitcher);
+        displaySwitcher.setAttribute('jslog', `${VisualLogging.toggle(jslogContext).track({ click: true })}`);
     }
     toggleInputType(event) {
         if (event && event.key === 'Enter') {

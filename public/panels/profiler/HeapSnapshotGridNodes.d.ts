@@ -46,7 +46,10 @@ export declare class HeapSnapshotGridNode extends HeapSnapshotGridNode_base {
     collapse(): void;
     expand(): void;
     dispose(): void;
-    queryObjectContent(_heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel, _objectGroupName: string): Promise<SDK.RemoteObject.RemoteObject>;
+    queryObjectContent(_heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel, _objectGroupName: string): Promise<SDK.RemoteObject.RemoteObject | {
+        description: string;
+        link: string;
+    }>;
     tryQueryObjectContent(_heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel, _objectGroupName: string): Promise<SDK.RemoteObject.RemoteObject | null>;
     populateContextMenu(_contextMenu: UI.ContextMenu.ContextMenu, _dataDisplayDelegate: DataDisplayDelegate, _heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null): void;
     toPercentString(num: number): string;
@@ -93,8 +96,15 @@ export declare abstract class HeapSnapshotGenericObjectNode extends HeapSnapshot
     createObjectCellWithValue(valueStyle: string, value: string): HTMLElement;
     prefixObjectCell(_div: Element): void;
     appendSourceLocation(div: Element): Promise<void>;
-    queryObjectContent(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel, objectGroupName: string): Promise<SDK.RemoteObject.RemoteObject>;
+    queryObjectContent(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel, objectGroupName: string): Promise<SDK.RemoteObject.RemoteObject | {
+        description: string;
+        link: string;
+    }>;
     tryQueryObjectContent(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel, objectGroupName: string): Promise<SDK.RemoteObject.RemoteObject | null>;
+    tryGetTooltipDescription(): {
+        description: string;
+        link: string;
+    } | undefined;
     updateHasChildren(): Promise<void>;
     shortenWindowURL(fullName: string, hasObjectId: boolean): string;
     populateContextMenu(contextMenu: UI.ContextMenu.ContextMenu, dataDisplayDelegate: DataDisplayDelegate, heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null): void;

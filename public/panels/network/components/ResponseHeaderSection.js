@@ -407,7 +407,7 @@ export class ResponseHeaderSection extends HTMLElement {
             @headerremoved=${this.#onHeaderRemoved}
             @enableheaderediting=${this.#onEnableHeaderEditingClick}
             data-index=${index}
-            jslog=${VisualLogging.value('response-header')}
+            jslog=${VisualLogging.item('response-header')}
         ></${HeaderSectionRow.litTagName}>
       `)}
       ${this.#headersAreOverrideable ? html `

@@ -58,6 +58,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     boundOnInput;
     boundOnMouseWheel;
     boundClearAutocomplete;
+    boundOnBlur;
     contentElement;
     suggestBox;
     isEditing;
@@ -66,6 +67,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     oldTabIndex;
     completeTimeout;
     disableDefaultSuggestionForEmptyInputInternal;
+    changed;
     jslogContext = undefined;
     constructor() {
         super();
@@ -80,6 +82,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.ghostTextElement.classList.add('auto-complete-text');
         this.ghostTextElement.setAttribute('contenteditable', 'false');
         this.leftParenthesesIndices = [];
+        this.changed = false;
         ARIAUtils.markAsHidden(this.ghostTextElement);
     }
     initialize(completions, stopCharacters, usesSuggestionBuilder) {
@@ -120,6 +123,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.boundOnInput = this.onInput.bind(this);
         this.boundOnMouseWheel = this.onMouseWheel.bind(this);
         this.boundClearAutocomplete = this.clearAutocomplete.bind(this);
+        this.boundOnBlur = this.onBlur.bind(this);
         this.proxyElement = element.ownerDocument.createElement('span');
         ThemeSupport.ThemeSupport.instance().appendStyle(this.proxyElement, textPromptStyles);
         this.contentElement = this.proxyElement.createChild('div', 'text-prompt-root');
@@ -128,7 +132,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
             element.parentElement.insertBefore(this.proxyElement, element);
         }
         this.contentElement.appendChild(element);
-        let jslog = VisualLogging.textField().track({ keydown: true });
+        let jslog = VisualLogging.textField().track({ keydown: 'Enter|Escape', change: true });
         if (this.jslogContext) {
             jslog = jslog.context(this.jslogContext);
         }
@@ -142,7 +146,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.elementInternal.addEventListener('input', this.boundOnInput, false);
         this.elementInternal.addEventListener('wheel', this.boundOnMouseWheel, false);
         this.elementInternal.addEventListener('selectstart', this.boundClearAutocomplete, false);
-        this.elementInternal.addEventListener('blur', this.boundClearAutocomplete, false);
+        this.elementInternal.addEventListener('blur', this.boundOnBlur, false);
         this.suggestBox = new SuggestBox(this, 20);
         if (this.titleInternal) {
             Tooltip.install(this.proxyElement, this.titleInternal);
@@ -256,7 +260,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.element().removeEventListener('keydown', this.boundOnKeyDown, false);
         this.element().removeEventListener('input', this.boundOnInput, false);
         this.element().removeEventListener('selectstart', this.boundClearAutocomplete, false);
-        this.element().removeEventListener('blur', this.boundClearAutocomplete, false);
+        this.element().removeEventListener('blur', this.boundOnBlur, false);
         if (this.isEditing) {
             this.stopEditing();
         }
@@ -388,6 +392,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.refreshGhostText();
         this.previousText = text;
         this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
+        this.changed = true;
         this.autoCompleteSoon();
     }
     acceptAutoComplete() {
@@ -414,6 +419,14 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.refreshGhostText();
         if (beforeText !== this.textWithCurrentSuggestion()) {
             this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
+            this.changed = true;
+        }
+    }
+    onBlur() {
+        this.clearAutocomplete();
+        if (this.changed && this.elementInternal) {
+            this.elementInternal.dispatchEvent(new Event('change'));
+            this.changed = false;
         }
     }
     refreshGhostText() {
@@ -529,6 +542,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.refreshGhostText();
         if (isIntermediateSuggestion) {
             this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
+            this.changed = true;
         }
     }
     acceptSuggestion() {
@@ -547,9 +561,10 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.updateLeftParenthesesIndices();
         this.clearAutocomplete();
         this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
+        this.changed = true;
         return true;
     }
-    ariaControlledBy() {
+    ownerElement() {
         return this.element();
     }
     setDOMSelection(startColumn, endColumn) {

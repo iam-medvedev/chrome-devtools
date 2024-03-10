@@ -196,6 +196,7 @@
       <include file="Images/refresh.svg" name="IMAGES_REFRESH_SVG" resource_path="Images/refresh.svg" type="BINDATA" compress="false"/>
       <include file="Images/replace.svg" name="IMAGES_REPLACE_SVG" resource_path="Images/replace.svg" type="BINDATA" compress="false"/>
       <include file="Images/replay.svg" name="IMAGES_REPLAY_SVG" resource_path="Images/replay.svg" type="BINDATA" compress="false"/>
+      <include file="Images/report.svg" name="IMAGES_REPORT_SVG" resource_path="Images/report.svg" type="BINDATA" compress="false"/>
       <include file="Images/resizeDiagonal.svg" name="IMAGES_RESIZEDIAGONAL_SVG" resource_path="Images/resizeDiagonal.svg" type="BINDATA" compress="false"/>
       <include file="Images/resizeHorizontal.svg" name="IMAGES_RESIZEHORIZONTAL_SVG" resource_path="Images/resizeHorizontal.svg" type="BINDATA" compress="false"/>
       <include file="Images/resizeVertical.svg" name="IMAGES_RESIZEVERTICAL_SVG" resource_path="Images/resizeVertical.svg" type="BINDATA" compress="false"/>
@@ -815,6 +816,7 @@
       <include file="entrypoints/lighthouse_worker/LighthouseWorkerService.js" name="ENTRYPOINTS_LIGHTHOUSE_WORKER_LIGHTHOUSEWORKERSERVICE_JS" resource_path="entrypoints/lighthouse_worker/LighthouseWorkerService.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/main/ExecutionContextSelector.js" name="ENTRYPOINTS_MAIN_EXECUTIONCONTEXTSELECTOR_JS" resource_path="entrypoints/main/ExecutionContextSelector.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/main/MainImpl.js" name="ENTRYPOINTS_MAIN_MAINIMPL_JS" resource_path="entrypoints/main/MainImpl.js" type="BINDATA" compress="false"/>
+      <include file="entrypoints/main/SettingTracker.js" name="ENTRYPOINTS_MAIN_SETTINGTRACKER_JS" resource_path="entrypoints/main/SettingTracker.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/main/SimpleApp.js" name="ENTRYPOINTS_MAIN_SIMPLEAPP_JS" resource_path="entrypoints/main/SimpleApp.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/node_app/NodeConnectionsPanel.js" name="ENTRYPOINTS_NODE_APP_NODECONNECTIONSPANEL_JS" resource_path="entrypoints/node_app/NodeConnectionsPanel.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/node_app/NodeMain.js" name="ENTRYPOINTS_NODE_APP_NODEMAIN_JS" resource_path="entrypoints/node_app/NodeMain.js" type="BINDATA" compress="false"/>
@@ -2033,12 +2035,10 @@
       <include file="ui/legacy/components/inline_editor/CSSAngleEditor.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_CSSANGLEEDITOR_JS" resource_path="ui/legacy/components/inline_editor/CSSAngleEditor.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/inline_editor/CSSAngleSwatch.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_CSSANGLESWATCH_JS" resource_path="ui/legacy/components/inline_editor/CSSAngleSwatch.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/inline_editor/CSSAngleUtils.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_CSSANGLEUTILS_JS" resource_path="ui/legacy/components/inline_editor/CSSAngleUtils.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/components/inline_editor/CSSAnimationModel.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_CSSANIMATIONMODEL_JS" resource_path="ui/legacy/components/inline_editor/CSSAnimationModel.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/inline_editor/CSSLength.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_CSSLENGTH_JS" resource_path="ui/legacy/components/inline_editor/CSSLength.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/inline_editor/CSSLengthUtils.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_CSSLENGTHUTILS_JS" resource_path="ui/legacy/components/inline_editor/CSSLengthUtils.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/inline_editor/CSSLinearEasingModel.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_CSSLINEAREASINGMODEL_JS" resource_path="ui/legacy/components/inline_editor/CSSLinearEasingModel.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/inline_editor/CSSShadowEditor.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_CSSSHADOWEDITOR_JS" resource_path="ui/legacy/components/inline_editor/CSSShadowEditor.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/components/inline_editor/CSSShadowModel.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_CSSSHADOWMODEL_JS" resource_path="ui/legacy/components/inline_editor/CSSShadowModel.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/inline_editor/ColorMixSwatch.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_COLORMIXSWATCH_JS" resource_path="ui/legacy/components/inline_editor/ColorMixSwatch.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/inline_editor/ColorSwatch.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_COLORSWATCH_JS" resource_path="ui/legacy/components/inline_editor/ColorSwatch.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/inline_editor/FontEditor.js" name="UI_LEGACY_COMPONENTS_INLINE_EDITOR_FONTEDITOR_JS" resource_path="ui/legacy/components/inline_editor/FontEditor.js" type="BINDATA" compress="false"/>
@@ -2162,6 +2162,7 @@
       <include file="ui/legacy/utils/register-custom-element.js" name="UI_LEGACY_UTILS_REGISTER_CUSTOM_ELEMENT_JS" resource_path="ui/legacy/utils/register-custom-element.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/viewContainers.css.legacy.js" name="UI_LEGACY_VIEWCONTAINERS_CSS_LEGACY_JS" resource_path="ui/legacy/viewContainers.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/lit-html/static.js" name="UI_LIT_HTML_STATIC_JS" resource_path="ui/lit-html/static.js" type="BINDATA" compress="false"/>
+      <include file="ui/visual_logging/Debugging.js" name="UI_VISUAL_LOGGING_DEBUGGING_JS" resource_path="ui/visual_logging/Debugging.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/DomState.js" name="UI_VISUAL_LOGGING_DOMSTATE_JS" resource_path="ui/visual_logging/DomState.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/Loggable.js" name="UI_VISUAL_LOGGING_LOGGABLE_JS" resource_path="ui/visual_logging/Loggable.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/LoggingConfig.js" name="UI_VISUAL_LOGGING_LOGGINGCONFIG_JS" resource_path="ui/visual_logging/LoggingConfig.js" type="BINDATA" compress="false"/>

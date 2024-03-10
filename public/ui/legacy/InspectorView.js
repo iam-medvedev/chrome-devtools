@@ -171,7 +171,10 @@ export class InspectorView extends VBox {
         this.drawerSplitWidget.installResizer(this.drawerTabbedPane.headerElement());
         this.drawerSplitWidget.setSidebarWidget(this.drawerTabbedPane);
         this.drawerTabbedPane.rightToolbar().appendToolbarItem(closeDrawerButton);
-        this.drawerTabbedPane.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('drawer').track({ drag: true })}`);
+        this.drawerTabbedPane.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('drawer').track({
+            drag: true,
+            keydown: 'ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space',
+        })}`);
         // Create main area tabbed pane.
         this.tabbedLocation = ViewManager.instance().createTabbedLocation(Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance), 'panel', true, true, Root.Runtime.Runtime.queryParam('panel'));
         this.tabbedPane = this.tabbedLocation.tabbedPane();
@@ -194,7 +197,10 @@ export class InspectorView extends VBox {
         const mainHeaderElement = this.tabbedPane.headerElement();
         ARIAUtils.markAsNavigation(mainHeaderElement);
         ARIAUtils.setLabel(mainHeaderElement, i18nString(UIStrings.mainToolbar));
-        mainHeaderElement.setAttribute('jslog', `${VisualLogging.toolbar('main').track({ drag: true })}`);
+        mainHeaderElement.setAttribute('jslog', `${VisualLogging.toolbar('main').track({
+            drag: true,
+            keydown: 'ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space',
+        })}`);
         // Store the initial selected panel for use in launch histograms
         Host.userMetrics.setLaunchPanel(this.tabbedPane.selectedTabId);
         if (Host.InspectorFrontendHost.isUnderTest()) {
@@ -363,6 +369,7 @@ export class InspectorView extends VBox {
                 if (panelName) {
                     if (!Dialog.hasInstance() && !this.currentPanelLocked) {
                         void this.showPanel(panelName);
+                        void VisualLogging.logKeyDown(event, `panel-by-index-${panelName}`);
                     }
                     event.consume(true);
                 }

@@ -472,6 +472,7 @@ export function handleElementValueModifications(event, element, finishHandler, s
     if (!isElementValueModification(event)) {
         return false;
     }
+    void VisualLogging.logKeyDown(event, 'element-value-modification');
     const selection = element.getComponentSelection();
     if (!selection || !selection.rangeCount) {
         return false;
@@ -948,7 +949,7 @@ export function createInput(className, type, jslogContext) {
         element.type = type;
     }
     if (jslogContext) {
-        element.setAttribute('jslog', `${VisualLogging.textField().track({ keydown: true }).context(jslogContext)}`);
+        element.setAttribute('jslog', `${VisualLogging.textField().track({ keydown: 'Enter', change: true }).context(jslogContext)}`);
     }
     return element;
 }
@@ -1481,5 +1482,4 @@ export function getApplicableRegisteredRenderers(object) {
         return false;
     }
 }
-VisualLogging.registerContextProvider('elementValueModification', e => Promise.resolve(isElementValueModification(e) ? 1 : 0));
 //# sourceMappingURL=UIUtils.js.map

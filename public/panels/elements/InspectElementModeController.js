@@ -31,6 +31,7 @@ import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ElementsPanel } from './ElementsPanel.js';
 let inspectElementModeController;
 export class InspectElementModeController {
@@ -56,6 +57,7 @@ export class InspectElementModeController {
             }
             this.setMode("none" /* Protocol.Overlay.InspectMode.None */);
             event.consume(true);
+            void VisualLogging.logKeyDown(event, 'cancel-inspect-mode');
         }, true);
     }
     static instance({ forceNew } = { forceNew: false }) {

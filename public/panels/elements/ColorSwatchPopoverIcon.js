@@ -205,7 +205,7 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
         UI.Context.Context.instance().setFlavor(ColorSwatchPopoverIcon, null);
     }
 }
-export class ShadowSwatchPopoverHelper {
+export class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
     treeElement;
     swatchPopoverHelper;
     shadowSwatch;
@@ -216,6 +216,7 @@ export class ShadowSwatchPopoverHelper {
     scrollerElement;
     originalPropertyText;
     constructor(treeElement, swatchPopoverHelper, shadowSwatch) {
+        super();
         this.treeElement = treeElement;
         this.swatchPopoverHelper = swatchPopoverHelper;
         this.shadowSwatch = shadowSwatch;
@@ -251,8 +252,7 @@ export class ShadowSwatchPopoverHelper {
         }
     }
     shadowChanged(event) {
-        this.shadowSwatch.setCSSShadow(event.data);
-        void this.treeElement.applyStyleText(this.treeElement.renderedPropertyText(), false);
+        this.dispatchEventToListeners("shadowChanged" /* ShadowEvents.ShadowChanged */, event.data);
     }
     onScroll(_event) {
         this.swatchPopoverHelper.hide(true);

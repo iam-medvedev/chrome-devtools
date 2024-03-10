@@ -107,5 +107,6 @@ export interface Item {
     name: string;
     label: () => string;
     title?: string;
+    jslogContext: string;
 }
 export {};

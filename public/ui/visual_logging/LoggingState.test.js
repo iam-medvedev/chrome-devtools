@@ -19,13 +19,11 @@ describe('LoggingState', () => {
             config: { ve: 1, context: '42' },
             veid: 0,
             processed: false,
-            context: state.context,
             parent: {
                 impressionLogged: false,
                 config: { ve: 1 },
                 veid: 1,
                 processed: false,
-                context: state.parent?.context,
                 parent: null,
             },
         });
@@ -47,20 +45,6 @@ describe('LoggingState', () => {
     it('getLoggingState returns null for unknown element', () => {
         assert.isNull(VisualLogging.LoggingState.getLoggingState(element));
     });
-    it('hashes a string context', async () => {
-        const state = VisualLogging.LoggingState.getOrCreateLoggingState(element, { ve: 1, context: 'foobar' });
-        const context = await state.context(element);
-        assert.strictEqual(4191634312, context);
-    });
-    it('uses a custom context provider', async () => {
-        const provider = sinon.stub();
-        provider.returns(123);
-        VisualLogging.LoggingState.registerContextProvider('custom', provider);
-        const state = VisualLogging.LoggingState.getOrCreateLoggingState(element, { ve: 1, context: 'custom' });
-        const context = await state.context(element);
-        assert.isTrue(provider.calledOnceWith(element));
-        assert.strictEqual(123, context);
-    });
     it('uses a custom parent provider', async () => {
         const provider = sinon.stub();
         const customParent = document.createElement('div');
@@ -70,7 +54,15 @@ describe('LoggingState', () => {
         VisualLogging.LoggingState.registerParentProvider('custom', provider);
         const state = VisualLogging.LoggingState.getOrCreateLoggingState(element, { ve: 1, parent: 'custom' });
         assert.isTrue(provider.calledOnceWith(element));
-        assert.strictEqual(123, await state.parent?.context(element));
+        assert.strictEqual('123', await state.parent?.config.context);
+    });
+    it('uses a mapped parent', async () => {
+        const customParent = document.createElement('div');
+        customParent.setAttribute('jslog', '<not important>');
+        VisualLogging.LoggingState.getOrCreateLoggingState(customParent, { ve: 1, context: '123' });
+        VisualLogging.LoggingState.setMappedParent(element, customParent);
+        const state = VisualLogging.LoggingState.getOrCreateLoggingState(element, { ve: 1, parent: 'custom' });
+        assert.strictEqual('123', await state.parent?.config?.context);
     });
     it('walks the DOM upwards to find the parent loggable', async () => {
         const provider = sinon.stub();
@@ -85,7 +77,7 @@ describe('LoggingState', () => {
         VisualLogging.LoggingState.registerParentProvider('custom2', provider);
         const state = VisualLogging.LoggingState.getOrCreateLoggingState(element, { ve: 1, parent: 'custom2' });
         assert.isTrue(provider.calledOnceWith(element));
-        assert.strictEqual(123, await state.parent?.context(element));
+        assert.strictEqual('123', await state.parent?.config.context);
     });
     it('walks across shadow roots to find the parent loggable', async () => {
         const provider = sinon.stub();
@@ -104,7 +96,7 @@ describe('LoggingState', () => {
         VisualLogging.LoggingState.registerParentProvider('custom3', provider);
         const state = VisualLogging.LoggingState.getOrCreateLoggingState(element, { ve: 1, parent: 'custom3' });
         assert.isTrue(provider.calledOnceWith(element));
-        assert.strictEqual(123, await state.parent?.context(element));
+        assert.strictEqual('123', await state.parent?.config.context);
     });
 });
 //# sourceMappingURL=LoggingState.test.js.map

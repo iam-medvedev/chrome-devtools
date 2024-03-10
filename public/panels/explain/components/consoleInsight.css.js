@@ -79,6 +79,8 @@ styles.replaceSync(
   padding: 16px;
   background-color: var(--sys-color-cdt-base-container);
   border-radius: 16px;
+  /* stylelint-disable-next-line property-no-unknown */
+  container-type: inline-size;
 }
 
 .wrapper.top {
@@ -121,15 +123,33 @@ main {
   }
 
   ul {
-    padding-left: 1em;
+    list-style-type: none;
+    list-style-position: inside;
+    padding-inline-start: 0.2em;
+
+    li {
+      display: list-item;
+      list-style-type: disc;
+    }
+
+    li::marker {
+      font-size: 11px;
+      line-height: 1;
+    }
   }
 
   label {
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: row;
+    gap: 0.5em;
 
     input,
     span {
       vertical-align: middle;
+    }
+
+    input[type="checkbox"] {
+      margin-top: 0.3em;
     }
   }
 }
@@ -148,6 +168,13 @@ footer {
   line-height: normal;
   margin-top: 14px;
   gap: 32px;
+}
+
+/* stylelint-disable-next-line at-rule-no-unknown */
+@container (max-width: 600px) {
+  footer {
+    gap: 8px;
+  }
 }
 
 footer > .filler {
@@ -172,6 +199,7 @@ textarea {
 
 .buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 5px;
 }
 
@@ -182,6 +210,7 @@ textarea {
   font-size: 11px;
   align-items: flex-start;
   flex-direction: column;
+  max-width: 360px;
 }
 
 .link {

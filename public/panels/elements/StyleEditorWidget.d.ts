@@ -12,6 +12,7 @@ interface Editor extends HTMLElement {
     getEditableProperties(): Array<{
         propertyName: string;
     }>;
+    jslogContext: string;
 }
 /**
  * Thin UI.Widget wrapper around style editors to allow using it as a popover.

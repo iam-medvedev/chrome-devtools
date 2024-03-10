@@ -87,22 +87,15 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const booleanToYesNo = (b) => b ? i18nString(UIStrings.yes) : i18nString(UIStrings.no);
 function linkifyIcon(iconType, title, eventHandler) {
     const icon = IconButton.Icon.create(iconType, 'icon-link devtools-link');
-    const span = document.createElement('span');
-    UI.Tooltip.Tooltip.install(span, title);
-    span.classList.add('devtools-link');
-    span.tabIndex = 0;
-    span.appendChild(icon);
-    span.addEventListener('click', event => {
+    const button = document.createElement('button');
+    UI.Tooltip.Tooltip.install(button, title);
+    button.classList.add('devtools-link', 'link-style', 'text-button');
+    button.appendChild(icon);
+    button.addEventListener('click', event => {
         event.consume(true);
         void eventHandler();
     });
-    span.addEventListener('keydown', event => {
-        if (event.key === 'Enter') {
-            event.consume(true);
-            void eventHandler();
-        }
-    });
-    return span;
+    return button;
 }
 async function maybeCreateLinkToElementsPanel(opener) {
     let openerFrame = null;

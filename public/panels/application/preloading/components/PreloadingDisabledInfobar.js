@@ -141,7 +141,7 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
             closeOnESC: true,
             closeOnScroll: false,
         }}
-          jslog=${VisualLogging.dialog('preloading-disabled').track({ resize: true })}
+          jslog=${VisualLogging.dialog('preloading-disabled').track({ resize: true, keydown: 'Escape' })}
         >
           ${this.#dialogContents()}
         </${Dialogs.IconDialog.IconDialog.litTagName}>

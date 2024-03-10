@@ -626,6 +626,9 @@ export const generatedPropertyValues: {
     quotes: {
         values: string[];
     };
+    "reading-order-items": {
+        values: string[];
+    };
     resize: {
         values: string[];
     };

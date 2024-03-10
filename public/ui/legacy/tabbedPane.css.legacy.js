@@ -100,6 +100,10 @@ export default {
   overflow: visible;
   width: 100%;
   background-color: var(--sys-color-cdt-base);
+
+  & > * {
+    cursor: initial;
+  }
 }
 
 .tabbed-pane-header-contents {

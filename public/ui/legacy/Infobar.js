@@ -52,7 +52,7 @@ export class Infobar {
     /* TODO(crbug.com/1354548) Remove with JS Profiler deprecation */ isCloseable = true, jslogContext) {
         this.element = document.createElement('div');
         if (jslogContext) {
-            this.element.setAttribute('jslog', `${VisualLogging.dialog(jslogContext).track({ resize: true })}`);
+            this.element.setAttribute('jslog', `${VisualLogging.dialog(jslogContext).track({ resize: true, keydown: 'Enter|Escape' })}`);
         }
         this.element.classList.add('flex-none');
         this.shadowRoot =

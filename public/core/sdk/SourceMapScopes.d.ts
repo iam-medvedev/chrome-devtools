@@ -44,7 +44,4 @@ export interface Position {
 export interface OriginalPosition extends Position {
     sourceIndex: number;
 }
-export declare function decodeScopes(encodedOriginalScopes: string[], encodedGeneratedRange: string, names: string[]): {
-    originalScopes: OriginalScope[];
-    generatedRange: GeneratedRange;
-};
+export declare function decodeOriginalScopes(encodedOriginalScopes: string[], names: string[]): OriginalScope[];

@@ -76,11 +76,9 @@ export declare const enum ExperimentName {
     JS_PROFILER_TEMP_ENABLE = "js-profiler-temporarily-enable",
     HIGHLIGHT_ERRORS_ELEMENTS_PANEL = "highlight-errors-elements-panel",
     SET_ALL_BREAKPOINTS_EAGERLY = "set-all-breakpoints-eagerly",
-    SELF_XSS_WARNING = "self-xss-warning",
     USE_SOURCE_MAP_SCOPES = "use-source-map-scopes",
     STORAGE_BUCKETS_TREE = "storage-buckets-tree",
     NETWORK_PANEL_FILTER_BAR_REDESIGN = "network-panel-filter-bar-redesign",
-    TRACK_CONTEXT_MENU = "track-context-menu",
     AUTOFILL_VIEW = "autofill-view",
     INDENTATION_MARKERS_TEMP_DISABLE = "sources-frame-indentation-markers-temporarily-disable"
 }

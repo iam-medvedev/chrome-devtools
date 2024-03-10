@@ -34,6 +34,13 @@ import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
 import { type Calculator } from './TimelineGrid.js';
+export declare const enum EditButtonType {
+    UP = "UP",
+    DOWN = "DOWN",
+    HIDE = "HIDE",
+    EDIT = "EDIT",
+    SAVE = "SAVE"
+}
 export declare class FlameChartDelegate {
     windowChanged(_startTime: number, _endTime: number, _animate: boolean): void;
     updateRangeSelection(_startTime: number, _endTime: number): void;
@@ -80,7 +87,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private textBaseline;
     private textPadding;
     private readonly headerLeftPadding;
-    private arrowSide;
+    private readonly arrowSide;
     private readonly expansionArrowIndent;
     private readonly headerLabelXPadding;
     private readonly headerLabelYPadding;
@@ -200,7 +207,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
         y: number;
     } | null;
     /**
-     * Given an entry's index, retrns its title
+     * Given an entry's index, returns its title
      */
     entryTitle(entryIndex: number): string | null;
     /**
@@ -217,15 +224,19 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     getScrollOffset(): number;
     getContextMenu(): UI.ContextMenu.ContextMenu | undefined;
     /**
-     * Given offset of the cursor, returns the index of the group.
+     * Given offset of the cursor, returns the index of the group and the button user clicked.
+     * Will return -1 for index if no group is clicked.
+     * And return undefined for button if no button is clicked.
      * This function is public for test purpose.
      * @param x
      * @param y
-     * @param headerOnly if we only want to check the cursor is inside the header area, This is used for expand/collapse
-     * a track now.
-     * @returns the index of the group
+     * @returns the index of the group and the button user clicked. If there is no button the button type will be
+     * undefined.
      */
-    coordinatesToGroupIndex(x: number, y: number, headerOnly: boolean): number;
+    coordinatesToGroupIndexAndButton(x: number, y: number, headerOnly?: boolean): {
+        groupIndex: number;
+        editButtonType?: EditButtonType;
+    };
     private markerIndexBeforeTime;
     private draw;
     entryWidth(entryIndex: number): number;
@@ -238,6 +249,15 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      *  - Gathers event titles that should be rendered.
      */
     private getDrawableData;
+    /**
+     * The function to draw the group headers. It will draw the title by default.
+     * And when a group is hovered, it will add a edit button.
+     * And will draw the move up/down, hide and save button if user enter the editing mode.
+     * @param width
+     * @param height
+     * @param hoveredGroupIndex This is used to show the edit icon for hovered group. If it is undefined or -1, it means
+     * there is no group being hovered.
+     */
     private drawGroupHeaders;
     /**
      * Draws page load events in the Timings track (LCP, FCP, DCL, etc.)
@@ -267,9 +287,17 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      */
     private forEachGroup;
     private forEachGroupInViewport;
-    private labelWidthForGroup;
+    /**
+     * Returns the width of the title label of the group, which include the left padding, arrow and the group header text.
+     * This function is public for test reason.
+     * @param context canvas context
+     * @param group
+     * @returns the width of the label of the group.
+     */
+    labelWidthForGroup(context: CanvasRenderingContext2D, group: Group): number;
     private drawCollapsedOverviewForGroup;
     private drawFlowEvents;
+    private drawCircleArroundCollapseArrow;
     /**
      * Draws the vertical dashed lines in the timeline marking where the "Marker" events
      * happened in time.
@@ -319,11 +347,15 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private updateHiddenChildrenArrowHighlighPosition;
     private timeToPositionClipped;
     /**
-     * Returns the amount of pixels a group is vertically offset in the.
-     * flame chart.
+     * Returns the amount of pixels a group is vertically offset in the flame chart.
      * Now this function is only used for tests.
      */
     groupIndexToOffsetForTest(groupIndex: number): number;
+    /**
+     * Set the edit mode.
+     * Now this function is only used for tests.
+     */
+    setEditModeForTest(editMode: boolean): void;
     /**
      * Returns the visibility of a level in the.
      * flame chart.
@@ -352,15 +384,25 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
 }
 export declare const RulerHeight = 15;
 export declare const MinimalTimeWindowMs = 0.5;
-export interface FlameChartInitiatorPair {
+/**
+ * initiatorIndex is the index of the initiator entry and
+ * eventIndex is the entry initiated by it.
+ * However, if isEntryHidden or isInitiatorHidden are set to true,
+ * it means that the actual initiator or initiated entry is hidden
+ * by some context menu action and the indexes in initiatorIndex
+ * or/and eventIndex are for the entries that are the closest
+ * modified by an actions ancestors to them.
+ */
+export interface FlameChartInitiatorData {
     initiatorIndex: number;
     eventIndex: number;
+    isEntryHidden?: boolean;
+    isInitiatorHidden?: boolean;
 }
 export declare const enum FlameChartDecorationType {
     CANDY = "CANDY",
     WARNING_TRIANGLE = "WARNING_TRIANGLE",
-    HIDDEN_DESCENDANTS_ARROW = "HIDDEN_DESCENDANTS_ARROW",
-    INITIATOR_HIDDEN_CIRCLE = "INITIATOR_ENTRY_HIDDEN"
+    HIDDEN_DESCENDANTS_ARROW = "HIDDEN_DESCENDANTS_ARROW"
 }
 /**
  * Represents a decoration that can be added to event. Each event can have as
@@ -380,8 +422,6 @@ export type FlameChartDecoration = {
     customEndTime?: TraceEngine.Types.Timing.MicroSeconds;
 } | {
     type: FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW;
-} | {
-    type: FlameChartDecorationType.INITIATOR_HIDDEN_CIRCLE;
 };
 export declare function sortDecorationsForRenderingOrder(decorations: FlameChartDecoration[]): void;
 export declare class FlameChartTimelineData {
@@ -395,7 +435,7 @@ export declare class FlameChartTimelineData {
     entryDecorations: FlameChartDecoration[][];
     groups: Group[];
     markers: FlameChartMarker[];
-    initiatorPairs: FlameChartInitiatorPair[];
+    initiatorsData: FlameChartInitiatorData[];
     selectedGroup: Group | null;
     private constructor();
     static create(data: {
@@ -404,7 +444,7 @@ export declare class FlameChartTimelineData {
         entryStartTimes: FlameChartTimelineData['entryStartTimes'];
         groups: FlameChartTimelineData['groups'] | null;
         entryDecorations?: FlameChartDecoration[][];
-        initiatorPairs?: FlameChartTimelineData['initiatorPairs'];
+        initiatorsData?: FlameChartTimelineData['initiatorsData'];
     }): FlameChartTimelineData;
     static createEmpty(): FlameChartTimelineData;
     resetFlowData(): void;

@@ -157,7 +157,10 @@ export class ServiceWorkerUpdateCycleView {
             const left = (scale * (range.start - startTime));
             const right = (scale * (endTime - range.end));
             const tr = this.tableElement.createChild('tr', 'service-worker-update-timeline');
-            tr.setAttribute('jslog', `${VisualLogging.treeItem('update-timeline')}`);
+            tr.setAttribute('jslog', `${VisualLogging.treeItem('update-timeline').track({
+                click: true,
+                keydown: 'ArrowLeft|ArrowRight|ArrowUp|ArrowDown|Enter|Space',
+            })}`);
             this.rows.push(tr);
             const timingBarVersionElement = tr.createChild('td');
             UI.UIUtils.createTextChild(timingBarVersionElement, '#' + range.id);

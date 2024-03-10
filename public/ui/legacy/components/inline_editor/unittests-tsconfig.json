@@ -41,9 +41,9 @@
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/AnimationTimingUI.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/BezierUI.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSAngle.test.ts",
-    "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSAnimationModel.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLength.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.test.ts",
+    "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSShadowEditor.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/ColorMixSwatch.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/ColorSwatch.test.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/FontEditorUnitConverter.test.ts",
@@ -52,8 +52,7 @@
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../../../front_end/global_typings/request_idle_callback.d.ts",
-    "../../../../../../../../node_modules/@types/filesystem/index.d.ts",
-    "../../../../../../../../node_modules/@webgpu/types/dist/index.d.ts"
+    "../../../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [
     {

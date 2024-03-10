@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import { ColorSwatch } from './ColorSwatch.js';
 import swatchPopoverStyles from './swatchPopover.css.js';
@@ -49,6 +50,7 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
             // Reopen the picker for another anchor element.
             this.hide(true);
         }
+        VisualLogging.setMappedParent(view.contentElement, anchorElement);
         this.popover.registerCSSFiles([swatchPopoverStyles]);
         this.dispatchEventToListeners("WillShowPopover" /* Events.WillShowPopover */);
         this.isHidden = false;

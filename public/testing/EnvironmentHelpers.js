@@ -100,12 +100,10 @@ const REGISTERED_EXPERIMENTS = [
     "header-overrides" /* Root.Runtime.ExperimentName.HEADER_OVERRIDES */,
     "highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */,
     "set-all-breakpoints-eagerly" /* Root.Runtime.ExperimentName.SET_ALL_BREAKPOINTS_EAGERLY */,
-    "self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */,
     'evaluate-expressions-with-source-maps',
     "use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */,
     'font-editor',
     "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
-    "track-context-menu" /* Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU */,
     "sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */,
     "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
 ];

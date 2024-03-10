@@ -9,6 +9,7 @@ export declare function buildStackTracePreviewContents(target: SDK.Target.Target
 export interface Options {
     stackTrace: Protocol.Runtime.StackTrace | undefined;
     tabStops: boolean | undefined;
+    widthConstrained?: boolean;
 }
 export interface StackTraceRegularRow {
     functionName: string;

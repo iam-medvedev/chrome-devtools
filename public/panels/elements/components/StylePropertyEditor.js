@@ -46,7 +46,6 @@ export class StylePropertyEditor extends HTMLElement {
     #authoredProperties = new Map();
     #computedProperties = new Map();
     editableProperties = [];
-    jslog = '';
     constructor() {
         super();
     }
@@ -65,7 +64,7 @@ export class StylePropertyEditor extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
-      <div class="container" jslog=${this.jslog}>
+      <div class="container">
         ${this.editableProperties.map(prop => this.#renderProperty(prop))}
       </div>
     `, this.#shadow, {
@@ -126,7 +125,7 @@ export class StylePropertyEditor extends HTMLElement {
     }
 }
 export class FlexboxEditor extends StylePropertyEditor {
-    jslog = `${VisualLogging.cssFlexboxEditor()}`;
+    jslogContext = 'cssFlexboxEditor';
     editableProperties = FlexboxEditableProperties;
     findIcon(query, computedProperties) {
         return findFlexContainerIcon(query, computedProperties);
@@ -134,7 +133,7 @@ export class FlexboxEditor extends StylePropertyEditor {
 }
 customElements.define('devtools-flexbox-editor', FlexboxEditor);
 export class GridEditor extends StylePropertyEditor {
-    jslog = `${VisualLogging.cssGridEditor()}`;
+    jslogContext = 'cssGridEditor';
     editableProperties = GridEditableProperties;
     findIcon(query, computedProperties) {
         return findGridContainerIcon(query, computedProperties);

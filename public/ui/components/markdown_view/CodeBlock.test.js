@@ -55,7 +55,7 @@ describeWithEnvironment('CodeBlock', () => {
             renderElementIntoDOM(component);
             const notice = component.shadowRoot.querySelector('.notice');
             assertNotNullOrUndefined(notice);
-            assert.strictEqual(notice.innerText, 'Use code snippets with caution.');
+            assert.strictEqual(notice.innerText, 'Use code snippets with caution');
         }
         finally {
             resetTestDOM();

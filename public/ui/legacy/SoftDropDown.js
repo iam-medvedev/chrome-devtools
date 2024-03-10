@@ -63,8 +63,8 @@ export class SoftDropDown {
         })
             .appendChild(this.list.element);
         ARIAUtils.markAsMenu(this.list.element);
-        parentsForLogging.set(this.list.element, this.element);
-        this.list.element.setAttribute('jslog', `${VisualLogging.menu().parent('softDropDownParent').track({ resize: true })}`);
+        VisualLogging.setMappedParent(this.list.element, this.element);
+        this.list.element.setAttribute('jslog', `${VisualLogging.menu().parent('mapped').track({ resize: true, keydown: 'ArrowUp|ArrowDown|PageUp|PageDown' })}`);
         this.listWasShowing200msAgo = false;
         this.element.addEventListener('mousedown', event => {
             if (this.listWasShowing200msAgo) {
@@ -280,6 +280,4 @@ export class SoftDropDown {
         this.list.refreshItem(item);
     }
 }
-const parentsForLogging = new WeakMap();
-VisualLogging.registerParentProvider('softDropDownParent', (e) => parentsForLogging.get(e));
 //# sourceMappingURL=SoftDropDown.js.map

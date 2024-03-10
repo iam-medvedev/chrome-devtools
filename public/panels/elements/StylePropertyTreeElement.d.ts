@@ -4,7 +4,7 @@ import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.n
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { AngleMatch, AngleMatcher, BezierMatch, BezierMatcher, type BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, LinkableNameMatch, LinkableNameMatcher, LinkableNameProperties, type RenderingContext, StringMatch, StringMatcher, URLMatch, URLMatcher, VariableMatch, VariableMatcher } from './PropertyParser.js';
+import { AngleMatch, AngleMatcher, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, LinkableNameMatch, LinkableNameMatcher, LinkableNameProperties, RenderingContext, ShadowMatch, ShadowMatcher, ShadowType, StringMatch, StringMatcher, URLMatch, URLMatcher, VariableMatch, VariableMatcher } from './PropertyParser.js';
 import { type StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
 export declare const activeHints: WeakMap<Element, Hint>;
@@ -71,6 +71,43 @@ export declare class StringRenderer extends StringMatch {
     render(): Node[];
     static matcher(): StringMatcher;
 }
+export declare const enum ShadowPropertyType {
+    X = "x",
+    Y = "y",
+    Spread = "spread",
+    Blur = "blur",
+    Inset = "inset",
+    Color = "color"
+}
+type ShadowProperty = {
+    value: string | CodeMirror.SyntaxNode;
+    source: CodeMirror.SyntaxNode | null;
+    expansionContext: RenderingContext | null;
+    propertyType: ShadowPropertyType;
+};
+export declare class ShadowModel implements InlineEditor.CSSShadowEditor.CSSShadowModel {
+    #private;
+    constructor(shadowType: ShadowType, properties: ShadowProperty[], context: RenderingContext);
+    isBoxShadow(): boolean;
+    inset(): boolean;
+    offsetX(): InlineEditor.CSSShadowEditor.CSSLength;
+    offsetY(): InlineEditor.CSSShadowEditor.CSSLength;
+    blurRadius(): InlineEditor.CSSShadowEditor.CSSLength;
+    spreadRadius(): InlineEditor.CSSShadowEditor.CSSLength;
+    setInset(inset: boolean): void;
+    setOffsetX(value: InlineEditor.CSSShadowEditor.CSSLength): void;
+    setOffsetY(value: InlineEditor.CSSShadowEditor.CSSLength): void;
+    setBlurRadius(value: InlineEditor.CSSShadowEditor.CSSLength): void;
+    setSpreadRadius(value: InlineEditor.CSSShadowEditor.CSSLength): void;
+    renderContents(parent: HTMLElement): void;
+}
+export declare class ShadowRenderer extends ShadowMatch {
+    #private;
+    constructor(text: string, type: ShadowType, treeElement: StylePropertyTreeElement);
+    shadowModel(shadow: CodeMirror.SyntaxNode[], context: RenderingContext): null | ShadowModel;
+    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+    static matcher(treeElement: StylePropertyTreeElement): ShadowMatcher;
+}
 export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     #private;
     private readonly style;
@@ -104,12 +141,8 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     get name(): string;
     get value(): string;
     updateFilter(): boolean;
-    private processAnimation;
-    private processVar;
-    private handleVarDefinitionActivate;
     renderedPropertyText(): string;
     private processFont;
-    private processShadow;
     private processGrid;
     private processLength;
     private updateState;

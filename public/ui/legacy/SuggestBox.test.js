@@ -22,7 +22,7 @@ class MockSuggestBoxDelegate {
     acceptSuggestion() {
         this.accceptedSuggestions.push(this.lastAppliedSuggestion.text);
     }
-    ariaControlledBy() {
+    ownerElement() {
         return this.element;
     }
 }

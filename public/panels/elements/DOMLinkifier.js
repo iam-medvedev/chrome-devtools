@@ -74,7 +74,7 @@ export const linkifyNodeReference = function (node, options = {
     const root = document.createElement('span');
     root.classList.add('monospace');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(root, { cssFile: [domLinkifierStyles], delegatesFocus: undefined });
-    const link = shadowRoot.createChild('div', 'node-link');
+    const link = shadowRoot.createChild('button', 'node-link text-button link-style');
     link.setAttribute('jslog', `${VisualLogging.link('node').track({ click: true, keydown: 'Enter' })}`);
     decorateNodeLabel(node, link, options.tooltip);
     link.addEventListener('click', () => {
@@ -83,14 +83,8 @@ export const linkifyNodeReference = function (node, options = {
     }, false);
     link.addEventListener('mouseover', node.highlight.bind(node, undefined), false);
     link.addEventListener('mouseleave', () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(), false);
-    if (!options.preventKeyboardFocus) {
-        link.addEventListener('keydown', event => {
-            if (event.key === 'Enter') {
-                void Common.Revealer.reveal(node, false);
-            }
-        });
-        link.tabIndex = 0;
-        UI.ARIAUtils.markAsLink(link);
+    if (options.preventKeyboardFocus) {
+        link.tabIndex = -1;
     }
     return root;
 };
@@ -100,15 +94,13 @@ export const linkifyDeferredNodeReference = function (deferredNode, options = {
 }) {
     const root = document.createElement('div');
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(root, { cssFile: [domLinkifierStyles], delegatesFocus: undefined });
-    const link = shadowRoot.createChild('div', 'node-link');
-    link.setAttribute('jslog', `${VisualLogging.link('node').track({ click: true, keydown: 'Enter' })}`);
+    const link = shadowRoot.createChild('button', 'node-link text-button link-style');
+    link.setAttribute('jslog', `${VisualLogging.link('node').track({ click: true })}`);
     link.createChild('slot');
     link.addEventListener('click', deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);
     link.addEventListener('mousedown', e => e.consume(), false);
-    if (!options.preventKeyboardFocus) {
-        link.addEventListener('keydown', event => event.key === 'Enter' && deferredNode.resolve(onDeferredNodeResolved));
-        link.tabIndex = 0;
-        UI.ARIAUtils.markAsLink(link);
+    if (options.preventKeyboardFocus) {
+        link.tabIndex = -1;
     }
     function onDeferredNodeResolved(node) {
         void Common.Revealer.reveal(node);

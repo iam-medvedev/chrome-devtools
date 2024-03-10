@@ -32,7 +32,6 @@ export declare class PropertyDeselectedEvent extends Event {
 export declare class StylePropertyEditor extends HTMLElement {
     #private;
     protected readonly editableProperties: EditableProperty[];
-    protected readonly jslog: string;
     constructor();
     connectedCallback(): void;
     getEditableProperties(): EditableProperty[];
@@ -40,7 +39,7 @@ export declare class StylePropertyEditor extends HTMLElement {
     protected findIcon(_query: string, _computedProperties: Map<string, string>): IconInfo | null;
 }
 export declare class FlexboxEditor extends StylePropertyEditor {
-    protected readonly jslog: string;
+    readonly jslogContext = "cssFlexboxEditor";
     protected readonly editableProperties: EditableProperty[];
     protected findIcon(query: string, computedProperties: Map<string, string>): IconInfo | null;
 }
@@ -50,7 +49,7 @@ declare global {
     }
 }
 export declare class GridEditor extends StylePropertyEditor {
-    protected readonly jslog: string;
+    readonly jslogContext = "cssGridEditor";
     protected readonly editableProperties: EditableProperty[];
     protected findIcon(query: string, computedProperties: Map<string, string>): IconInfo | null;
 }

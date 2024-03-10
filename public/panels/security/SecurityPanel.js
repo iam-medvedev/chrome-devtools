@@ -1200,16 +1200,11 @@ export class SecurityMainView extends UI.Widget.VBox {
             refreshPrompt.textContent = i18nString(UIStrings.reloadThePageToRecordRequestsFor);
             return;
         }
-        const requestsAnchor = element.createChild('div', 'security-mixed-content devtools-link');
+        const requestsAnchor = element.createChild('button', 'security-mixed-content devtools-link text-button link-style');
         UI.ARIAUtils.markAsLink(requestsAnchor);
         requestsAnchor.tabIndex = 0;
         requestsAnchor.textContent = i18nString(UIStrings.viewDRequestsInNetworkPanel, { n: filterRequestCount });
         requestsAnchor.addEventListener('click', this.showNetworkFilter.bind(this, filterKey));
-        requestsAnchor.addEventListener('keydown', event => {
-            if (event.key === 'Enter') {
-                this.showNetworkFilter(filterKey, event);
-            }
-        });
     }
     showNetworkFilter(filterKey, e) {
         e.consume();

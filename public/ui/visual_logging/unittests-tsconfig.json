@@ -37,6 +37,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/ui/visual_logging/Debugging.test.ts",
     "../../../../../../front_end/ui/visual_logging/DomState.test.ts",
     "../../../../../../front_end/ui/visual_logging/LoggingConfig.test.ts",
     "../../../../../../front_end/ui/visual_logging/LoggingDriver.test.ts",
@@ -46,8 +47,7 @@
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../front_end/global_typings/request_idle_callback.d.ts",
-    "../../../../../../node_modules/@types/filesystem/index.d.ts",
-    "../../../../../../node_modules/@webgpu/types/dist/index.d.ts"
+    "../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [
     {

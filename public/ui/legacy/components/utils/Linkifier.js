@@ -484,11 +484,11 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     }
     static createLink(text, className, options = {}) {
         const { maxLength, title, href, preventClick, tabStop, bypassURLTrimming } = options;
-        const link = document.createElement('span');
+        const link = document.createElement('button');
         if (className) {
             link.className = className;
         }
-        link.classList.add('devtools-link');
+        link.classList.add('devtools-link', 'text-button', 'link-style');
         if (title) {
             UI.Tooltip.Tooltip.install(link, title);
         }
@@ -524,11 +524,6 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         if (!preventClick) {
             link.addEventListener('click', event => {
                 if (Linkifier.handleClick(event)) {
-                    event.consume(true);
-                }
-            }, false);
-            link.addEventListener('keydown', event => {
-                if (event.key === 'Enter' && Linkifier.handleClick(event)) {
                     event.consume(true);
                 }
             }, false);

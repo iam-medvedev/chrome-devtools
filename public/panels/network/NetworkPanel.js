@@ -244,6 +244,7 @@ export class NetworkPanel extends UI.Panel.Panel {
             }
             splitWidget.hideSidebar();
             event.consume();
+            void VisualLogging.logKeyDown(event, 'hide-sidebar');
         });
         const closeSidebar = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.close), 'cross');
         closeSidebar.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => splitWidget.hideSidebar());
