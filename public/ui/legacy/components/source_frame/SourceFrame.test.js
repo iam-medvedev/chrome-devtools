@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
-import * as Root from '../../../../core/root/root.js';
 import { assertElement, assertShadowRoot, dispatchInputEvent, dispatchPasteEvent, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as UI from '../../legacy.js';
@@ -42,7 +41,6 @@ describeWithEnvironment('SourceFrame', () => {
         assert.strictEqual(sourceFrame.textEditor.state.selection.main.to, 3);
     });
     it('shows self-XSS warning which the user can disable', async () => {
-        Root.Runtime.experiments.enableForTest("self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */);
         const setting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
         assert.isFalse(setting.get());
         const sourceFrame = await createSourceFrame('Example');

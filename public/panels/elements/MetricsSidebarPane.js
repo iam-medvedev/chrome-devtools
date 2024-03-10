@@ -153,7 +153,10 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
             value = value.replace(/px$/, '');
             value = Platform.NumberUtilities.toFixedIfFloating(value);
             element.textContent = value;
-            element.setAttribute('jslog', `${VisualLogging.value('element-value-modification').track({ dblclick: true })}`);
+            element.setAttribute('jslog', `${VisualLogging.value().track({
+                dblclick: true,
+                keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown',
+            })}`);
             element.addEventListener('dblclick', this.startEditing.bind(this, element, name, propertyName, style), false);
             return element;
         }

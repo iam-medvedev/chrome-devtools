@@ -30,6 +30,9 @@ export class CookieModel extends SDKModel {
             this.#cookieToBlockedReasons.delete(previousCookie);
         }
     }
+    removeBlockedCookie(cookie) {
+        this.#blockedCookies.delete(cookie.key());
+    }
     #onPrimaryPageChanged() {
         this.#blockedCookies.clear();
         this.#cookieToBlockedReasons.clear();

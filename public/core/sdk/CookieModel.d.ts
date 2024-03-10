@@ -5,6 +5,7 @@ export declare class CookieModel extends SDKModel<void> {
     #private;
     constructor(target: Target);
     addBlockedCookie(cookie: Cookie, blockedReasons: BlockedReason[] | null): void;
+    removeBlockedCookie(cookie: Cookie): void;
     getCookieToBlockedReasonsMap(): ReadonlyMap<Cookie, BlockedReason[]>;
     getCookies(urls: string[]): Promise<Cookie[]>;
     deleteCookie(cookie: Cookie): Promise<void>;

@@ -140,13 +140,19 @@ export class TimelineLoader {
     }
     async addEvents(events) {
         await this.client?.loadingStarted();
-        const eventsPerChunk = 15_000;
+        /**
+         * See the `eventsPerChunk` comment in `models/trace/types/Configuration.ts`.
+         *
+         * This value is different though. Why? `The addEvents()` work below is different
+         * (and much faster!) than running `handleEvent()` on all handlers.
+         */
+        const eventsPerChunk = 150_000;
         for (let i = 0; i < events.length; i += eventsPerChunk) {
             const chunk = events.slice(i, i + eventsPerChunk);
             this.#collectEvents(chunk);
             this.tracingModel.addEvents(chunk);
             await this.client?.loadingProgress((i + chunk.length) / events.length);
-            await new Promise(r => window.setTimeout(r)); // Yield event loop to paint.
+            await new Promise(r => window.setTimeout(r, 0)); // Yield event loop to paint.
         }
         void this.close();
     }
@@ -162,6 +168,11 @@ export class TimelineLoader {
             this.canceledCallback();
         }
     }
+    /**
+     * As TimelineLoader implements `Common.StringOutputStream.OutputStream`, `write()` is called when a
+     * Common.StringOutputStream.StringOutputStream instance has decoded a chunk. This path is only used
+     * by `loadFromURL()`; it's NOT used by `loadFromEvents` or `loadFromFile`.
+     */
     async write(chunk) {
         if (!this.client) {
             return Promise.resolve();

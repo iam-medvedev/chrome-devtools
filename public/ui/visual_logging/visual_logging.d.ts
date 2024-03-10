@@ -2,8 +2,11 @@ import type * as LoggableModule from './Loggable.js';
 import * as LoggingConfig from './LoggingConfig.js';
 export type Loggable = LoggableModule.Loggable;
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
-export { logClick, logImpressions, logResize } from './LoggingEvents.js';
-export { registerContextProvider, registerParentProvider } from './LoggingState.js';
+export { logImpressions, logChange } from './LoggingEvents.js';
+export declare const logClick: (l: Loggable, e: Event) => void;
+export declare const logResize: (l: Loggable, s: DOMRect) => void;
+export declare const logKeyDown: (e: Event, context?: string) => Promise<void>;
+export { registerParentProvider, setMappedParent } from './LoggingState.js';
 export declare function registerLoggable(loggable: Loggable, config: string, parent: Loggable | null): void;
 /**
  * Action visual elements are either buttons or menu items that trigger a given action. Use the
@@ -16,24 +19,18 @@ export declare const action: (context?: string | undefined) => LoggingConfig.Con
 export declare const adorner: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const animationClip: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const bezierCurveEditor: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
-export declare const bezierEditor: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const bezierPresetCategory: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const breakpointMarker: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const canvas: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const close: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const colorEyeDropper: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
-export declare const colorPicker: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const counter: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 /**
  * Visual element to denote a moveable control point such as the ones exist in BezierEditor
  * for bezier control points or keyframes in AnimationUI.
  */
 export declare const controlPoint: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
-export declare const cssAngleEditor: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const cssColorMix: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
-export declare const cssFlexboxEditor: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
-export declare const cssGridEditor: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
-export declare const cssShadowEditor: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const deviceModeRuler: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const domBreakpoint: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const drawer: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;

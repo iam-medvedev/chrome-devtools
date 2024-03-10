@@ -6404,6 +6404,9 @@
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "Related code"
   },
+  "panels/explain/components/ConsoleInsight.ts | report": {
+    "message": "Report legal issue"
+  },
   "panels/explain/components/ConsoleInsight.ts | signInToUse": {
     "message": "Sign in to use Console insights"
   },
@@ -9308,6 +9311,18 @@
   "panels/profiler/HeapSnapshotDataGrids.ts | sizeOfTheObjectPlusTheGraphIt": {
     "message": "Size of the object plus the graph it retains in bytes"
   },
+  "panels/profiler/HeapSnapshotGridNodes.ts | compiledCodeSummary": {
+    "message": "Internal data which V8 uses to run functions defined by JavaScript or WebAssembly."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | concatenatedStringSummary": {
+    "message": "A string which represents the contents of two other strings joined together."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | contextSummary": {
+    "message": "An internal object containing variables from a JavaScript scope which may be needed by a function created within that scope."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | descriptorArraySummary": {
+    "message": "A list of the property names used by a JavaScript Object."
+  },
   "panels/profiler/HeapSnapshotGridNodes.ts | detachedFromDomTree": {
     "message": "Detached from DOM tree"
   },
@@ -9320,6 +9335,21 @@
   "panels/profiler/HeapSnapshotGridNodes.ts | internalArray": {
     "message": "(internal array)[]"
   },
+  "panels/profiler/HeapSnapshotGridNodes.ts | internalArraySummary": {
+    "message": "An internal array-like data structure (not a JavaScript Array)."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | internalNodeSummary": {
+    "message": "An object allocated by a component other than V8, such as C++ objects defined by Blink."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | mapSummary": {
+    "message": "An internal object representing the shape of a JavaScript Object (not a JavaScript Map)."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | objectElementsSummary": {
+    "message": "An internal object which stores the indexed properties in a JavaScript Object, such as the contents of an Array."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | objectPropertiesSummary": {
+    "message": "An internal object which stores the named properties in a JavaScript Object."
+  },
   "panels/profiler/HeapSnapshotGridNodes.ts | previewIsNotAvailable": {
     "message": "Preview is not available"
   },
@@ -9328,6 +9358,9 @@
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | revealObjectSWithIdSInSummary": {
     "message": "Reveal object ''{PH1}'' with id @{PH2} in Summary view"
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | slicedStringSummary": {
+    "message": "A string which represents some of the characters from another string."
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | storeAsGlobalVariable": {
     "message": "Store as global variable"
@@ -13904,6 +13937,9 @@
   "ui/components/markdown_view/CodeBlock.ts | copy": {
     "message": "Copy code"
   },
+  "ui/components/markdown_view/CodeBlock.ts | disclaimer": {
+    "message": "Use code snippets with caution"
+  },
   "ui/components/panel_feedback/FeedbackButton.ts | feedback": {
     "message": "Feedback"
   },
@@ -14281,6 +14317,9 @@
   },
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Show as JavaScript object"
+  },
+  "ui/legacy/components/object_ui/ObjectPopoverHelper.ts | learnMore": {
+    "message": "Learn more"
   },
   "ui/legacy/components/object_ui/ObjectPropertiesSection.ts | collapseChildren": {
     "message": "Collapse children"

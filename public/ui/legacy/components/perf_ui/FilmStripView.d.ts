@@ -16,7 +16,7 @@ export declare class FilmStripView extends FilmStripView_base {
     constructor();
     static setImageData(imageElement: HTMLImageElement, dataUri: string | null): void;
     setModel(filmStrip: TraceEngine.Extras.FilmStrip.Data): void;
-    createFrameElement(frame: TraceEngine.Extras.FilmStrip.Frame): HTMLDivElement;
+    createFrameElement(frame: TraceEngine.Extras.FilmStrip.Frame): HTMLButtonElement;
     update(): void;
     private onMouseEvent;
     private onDoubleClick;

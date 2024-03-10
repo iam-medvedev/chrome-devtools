@@ -124,6 +124,12 @@ export class CompatibilityTracksAppender {
         }
         console.warn('Could not find possible context menu actions.');
     }
+    revealEntry(group, index) {
+        const appender = this.#trackForGroup.get(group);
+        if (appender && appender.entriesFilter) {
+            appender.entriesFilter().revealEntry(index);
+        }
+    }
     findHiddenDescendantsAmount(group, node) {
         const appender = this.#trackForGroup.get(group);
         if (appender && appender.entriesFilter) {

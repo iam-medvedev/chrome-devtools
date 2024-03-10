@@ -180,6 +180,7 @@ function updateHiddenRows(renderCallback, stackTraceRows) {
     renderCallback(stackTraceRows);
 }
 export function buildStackTracePreviewContents(target, linkifier, options = {
+    widthConstrained: false,
     stackTrace: undefined,
     tabStops: undefined,
 }) {
@@ -187,9 +188,11 @@ export function buildStackTracePreviewContents(target, linkifier, options = {
     const element = document.createElement('span');
     element.classList.add('monospace');
     element.classList.add('stack-preview-container');
+    element.classList.toggle('width-constrained', options.widthConstrained);
     element.style.display = 'inline-block';
     const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(element, { cssFile: [jsUtilsStyles], delegatesFocus: undefined });
     const contentElement = shadowRoot.createChild('table', 'stack-preview-container');
+    contentElement.classList.toggle('width-constrained', options.widthConstrained);
     if (!stackTrace) {
         return { element, links: [] };
     }

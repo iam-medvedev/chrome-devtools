@@ -1,7 +1,7 @@
 import { type AnimationGroup } from './AnimationModel.js';
 export declare class AnimationGroupPreviewUI {
     #private;
-    element: HTMLDivElement;
+    element: HTMLButtonElement;
     constructor(model: AnimationGroup);
     removeButton(): Element;
     replay(): void;

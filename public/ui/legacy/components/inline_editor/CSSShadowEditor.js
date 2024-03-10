@@ -7,7 +7,6 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import cssShadowEditorStyles from './cssShadowEditor.css.js';
-import { CSSLength } from './CSSShadowModel.js';
 const UIStrings = {
     /**
      *@description Text that refers to some types
@@ -37,6 +36,38 @@ const maxRange = 20;
 const defaultUnit = 'px';
 const sliderThumbRadius = 6;
 const canvasSize = 88;
+export class CSSLength {
+    amount;
+    unit;
+    constructor(amount, unit) {
+        this.amount = amount;
+        this.unit = unit;
+    }
+    static parse(text) {
+        const lengthRegex = new RegExp('^(?:' + CSSLength.Regex.source + ')$', 'i');
+        const match = text.match(lengthRegex);
+        if (!match) {
+            return null;
+        }
+        if (match.length > 2 && match[2]) {
+            return new CSSLength(parseFloat(match[1]), match[2]);
+        }
+        return CSSLength.zero();
+    }
+    static zero() {
+        return new CSSLength(0, '');
+    }
+    asCSSText() {
+        return this.amount + this.unit;
+    }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    static Regex = (function () {
+        const number = '([+-]?(?:[0-9]*[.])?[0-9]+(?:[eE][+-]?[0-9]+)?)';
+        const unit = '(ch|cm|em|ex|in|mm|pc|pt|px|rem|vh|vmax|vmin|vw)';
+        const zero = '[+-]?(?:0*[.])?0+(?:[eE][+-]?[0-9]+)?';
+        return new RegExp(number + unit + '|' + zero, 'gi');
+    })();
+}
 export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     typeField;
     outsetButton;
@@ -57,7 +88,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     constructor() {
         super(true);
         this.contentElement.tabIndex = 0;
-        this.contentElement.setAttribute('jslog', `${VisualLogging.cssShadowEditor()}`);
+        this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('cssShadowEditor').parent('mapped').track({ keydown: 'Enter|Escape' })}`);
         this.setDefaultFocusedElement(this.contentElement);
         this.typeField = this.contentElement.createChild('div', 'shadow-editor-field shadow-editor-flex-field');
         this.typeField.createChild('label', 'shadow-editor-label').textContent = i18nString(UIStrings.type);
@@ -72,7 +103,11 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         const yField = this.contentElement.createChild('div', 'shadow-editor-field');
         this.yInput = this.createTextInput(yField, i18nString(UIStrings.yOffset), 'y-offset');
         this.xySlider = xField.createChild('canvas', 'shadow-editor-2D-slider');
-        this.xySlider.setAttribute('jslog', `${VisualLogging.slider('xy').track({ click: true, drag: true })}`);
+        this.xySlider.setAttribute('jslog', `${VisualLogging.slider('xy').track({
+            click: true,
+            drag: true,
+            keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight',
+        })}`);
         this.xySlider.width = canvasSize;
         this.xySlider.height = canvasSize;
         this.xySlider.tabIndex = -1;
@@ -99,7 +134,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         textInput.addEventListener('wheel', this.handleValueModification.bind(this), false);
         textInput.addEventListener('input', this.onTextInput.bind(this), false);
         textInput.addEventListener('blur', this.onTextBlur.bind(this), false);
-        textInput.setAttribute('jslog', `${VisualLogging.value().track({ keydown: true }).context(jslogContext)}`);
+        textInput.setAttribute('jslog', `${VisualLogging.value().track({ change: true, keydown: 'ArrowUp|ArrowDown' }).context(jslogContext)}`);
         return textInput;
     }
     createSlider(field, jslogContext) {

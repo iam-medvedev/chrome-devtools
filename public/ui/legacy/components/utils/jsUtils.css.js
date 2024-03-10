@@ -12,6 +12,10 @@ styles.replaceSync(
  */
 
 :host {
+  display: inline;
+}
+
+:host(.width-constrained) {
   display: inline-block;
   width: 100%;
 }
@@ -21,7 +25,7 @@ styles.replaceSync(
   font-style: italic;
 }
 
-.stack-preview-container {
+.stack-preview-container.width-constrained {
   display: block;
   width: 100%;
 }
@@ -42,7 +46,7 @@ styles.replaceSync(
   padding-inline: 2px;
 }
 
-.stack-preview-container td.link {
+.stack-preview-container.width-constrained td.link {
   /* width: 100%; and max-width: 0; combination causes the link cell to be
   extended as much as possible while still staying inside the table */
   width: 100%;

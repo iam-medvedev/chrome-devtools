@@ -1,7 +1,8 @@
+import * as Debugging from './Debugging.js';
 import * as DomState from './DomState.js';
 import * as LoggingConfig from './LoggingConfig.js';
 import * as LoggingDriver from './LoggingDriver.js';
 import * as LoggingEvents from './LoggingEvents.js';
 import * as LoggingState from './LoggingState.js';
 import * as NonDomState from './NonDomState.js';
-export { DomState, LoggingConfig, LoggingDriver, LoggingEvents, LoggingState, NonDomState, };
+export { Debugging, DomState, LoggingConfig, LoggingDriver, LoggingEvents, LoggingState, NonDomState, };

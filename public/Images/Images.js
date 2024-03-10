@@ -192,6 +192,7 @@ style.setProperty('--image-file-redo', 'url(\"' + new URL(new URL('redo.svg', im
 style.setProperty('--image-file-refresh', 'url(\"' + new URL(new URL('refresh.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-replace', 'url(\"' + new URL(new URL('replace.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-replay', 'url(\"' + new URL(new URL('replay.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-report', 'url(\"' + new URL(new URL('report.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-resizeDiagonal', 'url(\"' + new URL(new URL('resizeDiagonal.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-resizeHorizontal', 'url(\"' + new URL(new URL('resizeHorizontal.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-resizeVertical', 'url(\"' + new URL(new URL('resizeVertical.svg', import.meta.url).href, import.meta.url).toString() + '\")');

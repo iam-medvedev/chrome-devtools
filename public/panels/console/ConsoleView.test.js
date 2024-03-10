@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { assertElement, dispatchPasteEvent } from '../../testing/DOMHelpers.js';
@@ -140,7 +139,6 @@ describeWithMockConnection('ConsoleView', () => {
     describe('self-XSS warning', () => {
         let target;
         beforeEach(() => {
-            Root.Runtime.experiments.enableForTest("self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */);
             target = createTarget();
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             consoleView.markAsRoot();

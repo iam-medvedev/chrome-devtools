@@ -17,7 +17,6 @@ export declare class CoverageListView extends UI.Widget.VBox {
     private appendNodeByType;
     selectByUrl(url: string): void;
     private onOpenedNode;
-    private onKeyDown;
     private revealSourceForSelectedNode;
     private sortingChanged;
     wasShown(): void;

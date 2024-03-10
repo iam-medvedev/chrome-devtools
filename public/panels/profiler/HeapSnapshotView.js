@@ -768,11 +768,13 @@ export class HeapSnapshotView extends UI.View.SimpleView {
                     return false;
                 }
                 const remoteObject = await node.queryObjectContent(heapProfilerModel, 'popover');
-                if (!remoteObject) {
-                    return false;
+                if (remoteObject instanceof SDK.RemoteObject.RemoteObject) {
+                    objectPopoverHelper =
+                        await ObjectUI.ObjectPopoverHelper.ObjectPopoverHelper.buildObjectPopover(remoteObject, popover);
                 }
-                objectPopoverHelper =
-                    await ObjectUI.ObjectPopoverHelper.ObjectPopoverHelper.buildObjectPopover(remoteObject, popover);
+                else {
+                    objectPopoverHelper = ObjectUI.ObjectPopoverHelper.ObjectPopoverHelper.buildDescriptionPopover(remoteObject.description, remoteObject.link, popover);
+                }
                 if (!objectPopoverHelper) {
                     heapProfilerModel.runtimeModel().releaseObjectGroup('popover');
                     return false;

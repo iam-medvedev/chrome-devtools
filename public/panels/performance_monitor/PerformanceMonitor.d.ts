@@ -59,8 +59,6 @@ type EventTypes = {
 };
 export declare class MetricIndicator {
     private info;
-    private active;
-    private readonly onToggle;
     element: HTMLElement;
     private readonly swatchElement;
     private valueElement;
@@ -68,9 +66,6 @@ export declare class MetricIndicator {
     constructor(parent: Element, info: ChartInfo, active: boolean, onToggle: (arg0: boolean) => void);
     static formatNumber(value: number, info: ChartInfo): string;
     setValue(value: number): void;
-    private updateSwatchElement;
-    private toggleIndicator;
-    private handleKeypress;
 }
 export declare const format: Intl.NumberFormat;
 export interface MetricInfo {

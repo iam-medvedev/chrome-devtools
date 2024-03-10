@@ -405,7 +405,7 @@ export class AXBreadcrumb {
         this.axNodeInternal = axNode;
         this.elementInternal = document.createElement('div');
         this.elementInternal.classList.add('ax-breadcrumb');
-        this.elementInternal.setAttribute('jslog', `${VisualLogging.treeItem().track({ click: true })}`);
+        this.elementInternal.setAttribute('jslog', `${VisualLogging.treeItem().track({ click: true, keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter' })}`);
         elementsToAXBreadcrumb.set(this.elementInternal, this);
         this.nodeElementInternal = document.createElement('div');
         this.nodeElementInternal.classList.add('ax-node');

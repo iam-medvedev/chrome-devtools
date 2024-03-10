@@ -1,5 +1,4 @@
-import { ColorSwatch } from './ColorSwatch.js';
-import { type CSSShadowModel } from './CSSShadowModel.js';
+import { type CSSShadowModel } from './CSSShadowEditor.js';
 export declare class BezierSwatch extends HTMLSpanElement {
     private readonly iconElementInternal;
     private textElement;
@@ -11,17 +10,15 @@ export declare class BezierSwatch extends HTMLSpanElement {
     iconElement(): HTMLSpanElement;
     private static constructorInternal;
 }
-export declare class CSSShadowSwatch extends HTMLSpanElement {
-    private readonly iconElementInternal;
-    private contentElement;
-    private colorSwatchInternal;
-    private modelInternal?;
-    constructor();
-    static create(): CSSShadowSwatch;
+export declare class CSSShadowSwatch extends HTMLElement {
+    #private;
+    static readonly litTagName: import("../../../lit-html/static.js").Static;
+    constructor(model: CSSShadowModel);
     model(): CSSShadowModel;
-    setCSSShadow(model: CSSShadowModel): void;
-    hideText(hide: boolean): void;
     iconElement(): HTMLSpanElement;
-    colorSwatch(): ColorSwatch | null;
-    private static constructorInternal;
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'css-shadow-swatch': CSSShadowSwatch;
+    }
 }

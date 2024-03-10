@@ -273,12 +273,11 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.resetCurrentSearchResultIndex();
     }
     onPaste() {
-        if (Root.Runtime.experiments.isEnabled("self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */) &&
-            !Root.Runtime.Runtime.queryParam('isChromeForTesting') && !this.selfXssWarningDisabledSetting.get()) {
-            void this.showSelfXssWarning();
-            return true;
+        if (Root.Runtime.Runtime.queryParam('isChromeForTesting') || this.selfXssWarningDisabledSetting.get()) {
+            return false;
         }
-        return false;
+        void this.showSelfXssWarning();
+        return true;
     }
     async showSelfXssWarning() {
         // Hack to circumvent Chrome issue which would show a tooltip for the newly opened

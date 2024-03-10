@@ -36,6 +36,7 @@ import * as JavaScriptMetaData from '../../../../models/javascript_metadata/java
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as TextEditor from '../../../components/text_editor/text_editor.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import { CustomPreviewComponent } from './CustomPreviewComponent.js';
 import { JavaScriptREPL } from './JavaScriptREPL.js';
@@ -1545,38 +1546,26 @@ export class ExpandableTextPropertyValue extends ObjectPropertyValue {
         this.maxLength = maxLength;
         container.textContent = text.slice(0, maxLength);
         UI.Tooltip.Tooltip.install(container, `${text.slice(0, maxLength)}…`);
-        this.expandElement = container.createChild('span');
+        this.expandElement = container.createChild('button');
         this.maxDisplayableTextLength = 10000000;
         const byteCount = Platform.StringUtilities.countWtf8Bytes(text);
         const totalBytesText = Platform.NumberUtilities.bytesToString(byteCount);
         if (this.text.length < this.maxDisplayableTextLength) {
             this.expandElementText = i18nString(UIStrings.showMoreS, { PH1: totalBytesText });
             this.expandElement.setAttribute('data-text', this.expandElementText);
+            this.expandElement.setAttribute('jslog', `${VisualLogging.action('expand').track({ click: true })}`);
             this.expandElement.classList.add('expandable-inline-button');
             this.expandElement.addEventListener('click', this.expandText.bind(this));
-            this.expandElement.addEventListener('keydown', (event) => {
-                const keyboardEvent = event;
-                if (keyboardEvent.key === 'Enter' || keyboardEvent.key === ' ') {
-                    this.expandText();
-                }
-            });
-            UI.ARIAUtils.markAsButton(this.expandElement);
         }
         else {
             this.expandElement.setAttribute('data-text', i18nString(UIStrings.longTextWasTruncatedS, { PH1: totalBytesText }));
             this.expandElement.classList.add('undisplayable-text');
         }
         this.copyButtonText = i18nString(UIStrings.copy);
-        const copyButton = container.createChild('span', 'expandable-inline-button');
+        const copyButton = container.createChild('button', 'expandable-inline-button');
         copyButton.setAttribute('data-text', this.copyButtonText);
+        copyButton.setAttribute('jslog', `${VisualLogging.action('copy').track({ click: true })}`);
         copyButton.addEventListener('click', this.copyText.bind(this));
-        copyButton.addEventListener('keydown', (event) => {
-            const keyboardEvent = event;
-            if (keyboardEvent.key === 'Enter' || keyboardEvent.key === ' ') {
-                this.copyText();
-            }
-        });
-        UI.ARIAUtils.markAsButton(copyButton);
     }
     appendApplicableItems(_event, contextMenu, _object) {
         if (this.text.length < this.maxDisplayableTextLength && this.expandElement) {

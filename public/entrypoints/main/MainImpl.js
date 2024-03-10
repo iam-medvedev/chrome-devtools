@@ -54,6 +54,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ExecutionContextSelector } from './ExecutionContextSelector.js';
+import { SettingTracker } from './SettingTracker.js';
 const UIStrings = {
     /**
      *@description Title of item in main
@@ -233,6 +234,8 @@ export class MainImpl {
         const syncedStorage = new Common.Settings.SettingsStorage(prefs, hostSyncedStorage, storagePrefix);
         const globalStorage = new Common.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
         Common.Settings.Settings.instance({ forceNew: true, syncedStorage, globalStorage, localStorage });
+        // Needs to be created after Settings are available.
+        new SettingTracker();
         if (!Host.InspectorFrontendHost.isUnderTest()) {
             new Common.Settings.VersionController().updateVersion();
         }
@@ -286,19 +289,17 @@ export class MainImpl {
         Root.Runtime.experiments.register("important-dom-properties" /* Root.Runtime.ExperimentName.IMPORTANT_DOM_PROPERTIES */, 'Highlight important DOM properties in the Object Properties viewer');
         Root.Runtime.experiments.register("preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */, 'Enable Speculative Loads Panel in Application panel', true);
         Root.Runtime.experiments.register("outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */, 'Enable background page selector (e.g. for prerendering debugging)', false);
-        Root.Runtime.experiments.register("self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */, 'Show warning about Self-XSS when pasting code');
         Root.Runtime.experiments.register("storage-buckets-tree" /* Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE */, 'Enable Storage Buckets Tree in Application panel', true);
         Root.Runtime.experiments.register("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network Panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
-        Root.Runtime.experiments.register("track-context-menu" /* Root.Runtime.ExperimentName.TRACK_CONTEXT_MENU */, 'Enable context menu that allows to modify trees in the Flame Chart', true);
         Root.Runtime.experiments.register("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Enable Autofill view');
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
             'set-all-breakpoints-eagerly',
             "timeline-as-console-profile-result-panel" /* Root.Runtime.ExperimentName.TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL */,
             "outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
-            "self-xss-warning" /* Root.Runtime.ExperimentName.SELF_XSS_WARNING */,
             "preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
             'evaluate-expressions-with-source-maps',
+            "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
@@ -639,7 +640,7 @@ export class MainMenuItem {
             UI.Tooltip.Tooltip.install(titleElement, i18nString(UIStrings.placementOfDevtoolsRelativeToThe, { PH1: toggleDockSideShorcuts[0].title() }));
             dockItemElement.appendChild(titleElement);
             const dockItemToolbar = new UI.Toolbar.Toolbar('', dockItemElement);
-            dockItemElement.setAttribute('jslog', `${VisualLogging.item('dock-side')}`);
+            dockItemElement.setAttribute('jslog', `${VisualLogging.item('dock-side').track({ keydown: 'ArrowDown|ArrowLeft|ArrowRight' })}`);
             dockItemToolbar.makeBlueOnHover();
             const undock = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.undockIntoSeparateWindow), 'dock-window', undefined, 'undock');
             const bottom = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToBottom), 'dock-bottom', undefined, 'dock-bottom');

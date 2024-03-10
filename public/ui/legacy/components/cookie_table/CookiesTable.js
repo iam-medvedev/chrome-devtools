@@ -318,6 +318,7 @@ export class CookiesTable extends UI.Widget.VBox {
             cookieB.domain() === cookieA.domain() && cookieB.path() === cookieA.path();
     }
     rebuildTable() {
+        const restoreFocus = this.dataGrid.element?.contains(document.activeElement);
         const selectionCookies = this.getSelectionCookies();
         const lastEditedColumnId = this.lastEditedColumnId;
         this.lastEditedColumnId = null;
@@ -355,6 +356,9 @@ export class CookiesTable extends UI.Widget.VBox {
         }
         if (this.saveCallback) {
             this.dataGrid.addCreationNode(false);
+        }
+        if (restoreFocus) {
+            this.dataGrid.element.focus();
         }
     }
     populateNode(parentNode, cookies, selectedCookie, lastEditedColumnId) {

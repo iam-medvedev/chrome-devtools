@@ -10,10 +10,9 @@
  * The proposal is still being worked on so we expect the implementation details
  * in this file to change frequently.
  */
-import { StringCharIterator } from './SourceMap.js';
-export function decodeScopes(encodedOriginalScopes, encodedGeneratedRange, names) {
-    const originalScopes = encodedOriginalScopes.map(scope => decodeOriginalScope(scope, names));
-    return { originalScopes, generatedRange: {} };
+import { TokenIterator } from './SourceMap.js';
+export function decodeOriginalScopes(encodedOriginalScopes, names) {
+    return encodedOriginalScopes.map(scope => decodeOriginalScope(scope, names));
 }
 function decodeOriginalScope(encodedOriginalScope, names) {
     const scopeStack = [];
@@ -46,13 +45,13 @@ function isStart(item) {
     return 'kind' in item;
 }
 function* decodeOriginalScopeItems(encodedOriginalScope) {
-    const iter = new StringCharIterator(encodedOriginalScope);
+    const iter = new TokenIterator(encodedOriginalScope);
     let prevColumn = 0;
     while (iter.hasNext()) {
         if (iter.peek() === ',') {
             iter.next(); // Consume ','.
         }
-        const [line, column] = [iter.decodeVLQ(), iter.decodeVLQ()];
+        const [line, column] = [iter.nextVLQ(), iter.nextVLQ()];
         if (line === 0 && column < prevColumn) {
             throw new Error('Malformed original scope encoding: start/end items must be ordered w.r.t. source positions');
         }
@@ -64,17 +63,17 @@ function* decodeOriginalScopeItems(encodedOriginalScope) {
         const startItem = {
             line,
             column,
-            kind: iter.decodeVLQ(),
-            flags: iter.decodeVLQ(),
+            kind: iter.nextVLQ(),
+            flags: iter.nextVLQ(),
             variables: [],
         };
         if (startItem.flags & 0x1) {
-            startItem.name = iter.decodeVLQ();
+            startItem.name = iter.nextVLQ();
         }
         if (startItem.flags & 0x2) {
-            const count = iter.decodeVLQ();
+            const count = iter.nextVLQ();
             for (let i = 0; i < count; ++i) {
-                startItem.variables.push(iter.decodeVLQ());
+                startItem.variables.push(iter.nextVLQ());
             }
         }
         yield startItem;

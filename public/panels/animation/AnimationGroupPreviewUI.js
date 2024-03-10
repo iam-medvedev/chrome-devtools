@@ -14,7 +14,7 @@ export class AnimationGroupPreviewUI {
     #viewBoxHeight;
     constructor(model) {
         this.#model = model;
-        this.element = document.createElement('div');
+        this.element = document.createElement('button');
         this.element.setAttribute('jslog', `${VisualLogging.item('animations.buffer-preview').track({ click: true })}`);
         this.element.classList.add('animation-buffer-preview');
         this.element.addEventListener('animationend', () => {
@@ -22,7 +22,10 @@ export class AnimationGroupPreviewUI {
         });
         this.element.createChild('div', 'animation-paused fill');
         if (model.isScrollDriven()) {
-            this.element.appendChild(IconButton.Icon.create('mouse', 'mouse-icon'));
+            this.element.appendChild(IconButton.Icon.create('mouse', 'preview-icon'));
+        }
+        else {
+            this.element.appendChild(IconButton.Icon.create('watch', 'preview-icon'));
         }
         this.#removeButtonInternal = this.element.createChild('button', 'animation-remove-button');
         this.#removeButtonInternal.setAttribute('jslog', `${VisualLogging.action('animations.remove-preview').track({ click: true })}`);

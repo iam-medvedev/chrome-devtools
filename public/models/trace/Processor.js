@@ -112,7 +112,6 @@ export class TraceProcessor extends EventTarget {
         // provide status update events, and other various bits of config like the
         // pause duration and frequency.
         const { pauseDuration, eventsPerChunk } = this.#modelConfiguration.processing;
-        const traceEventIterator = new TraceEventIterator(traceEvents, pauseDuration, eventsPerChunk);
         // Convert to array so that we are able to iterate all handlers multiple times.
         const sortedHandlers = [...sortHandlers(this.#traceHandlers).values()];
         // Reset.
@@ -124,13 +123,18 @@ export class TraceProcessor extends EventTarget {
             handler.initialize?.(freshRecording);
         }
         // Handle each event.
-        for await (const item of traceEventIterator) {
-            if (item.kind === 2 /* IteratorItemType.STATUS_UPDATE */) {
-                this.dispatchEvent(new TraceParseProgressEvent(item.data));
-                continue;
+        for (let i = 0; i < traceEvents.length; ++i) {
+            // Every so often we take a break just to render.
+            if (i % eventsPerChunk === 0 && i) {
+                // Take the opportunity to provide status update events.
+                this.dispatchEvent(new TraceParseProgressEvent({ index: i, total: traceEvents.length }));
+                // Wait for rendering before resuming.
+                // TODO(paulirish): consider using `scheduler.await()` or `scheduler.postTask(() => {}, {priority: 'user-blocking'})`
+                await new Promise(resolve => setTimeout(resolve, pauseDuration));
             }
-            for (const handler of sortedHandlers) {
-                handler.handleEvent(item.data);
+            const event = traceEvents[i];
+            for (let j = 0; j < sortedHandlers.length; ++j) {
+                sortedHandlers[j].handleEvent(event);
             }
         }
         // Finalize.
@@ -230,29 +234,5 @@ export function sortHandlers(traceHandlers) {
         visitHandler(handlerName);
     }
     return sortedMap;
-}
-class TraceEventIterator {
-    traceEvents;
-    pauseDuration;
-    eventsPerChunk;
-    #eventCount;
-    constructor(traceEvents, pauseDuration, eventsPerChunk) {
-        this.traceEvents = traceEvents;
-        this.pauseDuration = pauseDuration;
-        this.eventsPerChunk = eventsPerChunk;
-        this.#eventCount = 0;
-    }
-    async *[Symbol.asyncIterator]() {
-        for (let i = 0, length = this.traceEvents.length; i < length; i++) {
-            // Every so often we take a break just to render.
-            if (++this.#eventCount % this.eventsPerChunk === 0) {
-                // Take the opportunity to provide status update events.
-                yield { kind: 2 /* IteratorItemType.STATUS_UPDATE */, data: { index: i, total: length } };
-                // Wait for rendering before resuming.
-                await new Promise(resolve => setTimeout(resolve, this.pauseDuration));
-            }
-            yield { kind: 1 /* IteratorItemType.TRACE_EVENT */, data: this.traceEvents[i] };
-        }
-    }
 }
 //# sourceMappingURL=Processor.js.map

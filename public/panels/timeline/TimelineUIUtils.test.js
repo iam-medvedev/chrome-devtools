@@ -561,8 +561,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
             // Test the related node link.
             const relatedNodeRow = details.querySelector('.timeline-details-view-row:nth-of-type(9) .timeline-details-view-row-value span')
                 ?.shadowRoot;
-            relatedNodeRow?.querySelector('div')?.innerText;
-            assert.strictEqual(relatedNodeRow?.querySelector('div')?.innerText, 'A test node name');
+            relatedNodeRow?.querySelector('button')?.innerText;
+            assert.strictEqual(relatedNodeRow?.querySelector('button')?.innerText, 'A test node name');
         });
         it('renders the details for a profile call properly', async function () {
             Common.Linkifier.registerLinkifier({

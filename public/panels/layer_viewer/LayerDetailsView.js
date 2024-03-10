@@ -296,19 +296,13 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         this.paintCountCell = this.createRow(i18nString(UIStrings.paintCount));
         this.scrollRectsCell = this.createRow(i18nString(UIStrings.slowScrollRegions));
         this.stickyPositionConstraintCell = this.createRow(i18nString(UIStrings.stickyPositionConstraint));
-        this.paintProfilerLink = this.contentElement.createChild('span', 'hidden devtools-link link-margin');
+        this.paintProfilerLink = this.contentElement.createChild('button', 'hidden devtools-link link-margin text-button link-style');
         UI.ARIAUtils.markAsLink(this.paintProfilerLink);
         this.paintProfilerLink.textContent = i18nString(UIStrings.paintProfiler);
         this.paintProfilerLink.tabIndex = 0;
         this.paintProfilerLink.addEventListener('click', e => {
             e.consume(true);
             this.invokeProfilerLink();
-        });
-        this.paintProfilerLink.addEventListener('keydown', event => {
-            if (event.key === 'Enter') {
-                event.consume();
-                this.invokeProfilerLink();
-            }
         });
         this.paintProfilerLink.setAttribute('jslog', `${VisualLogging.action('layers.paint-profiler').track({ click: true, keydown: 'Enter' })}`);
     }

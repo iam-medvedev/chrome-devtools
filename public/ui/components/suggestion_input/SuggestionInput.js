@@ -170,6 +170,9 @@ let SuggestionBox = class SuggestionBox extends LitElement {
                 selected: index === this.cursor,
             })}
           @mousedown=${this.#dispatchSuggestEvent.bind(this, suggestion)}
+          jslog=${VisualLogging.item('suggestion').track({
+                click: true,
+            })}
         >
           ${suggestion}
         </li>`;
@@ -209,7 +212,7 @@ let SuggestionInput = class SuggestionInput extends LitElement {
         this.mimeType = '';
         this.autocomplete = true;
         this.addEventListener('blur', this.#handleBlurEvent);
-        let jslog = VisualLogging.value().track({ keydown: true });
+        let jslog = VisualLogging.value().track({ keydown: 'ArrowUp|ArrowDown|Enter', change: true });
         if (this.jslogContext) {
             jslog = jslog.context(this.jslogContext);
         }
@@ -229,8 +232,12 @@ let SuggestionInput = class SuggestionInput extends LitElement {
     }
     #handleBlurEvent = () => {
         window.getSelection()?.removeAllRanges();
+        const changed = this.value !== this.#editableContent.value;
         this.value = this.#editableContent.value;
         this.expression = this.#editableContent.value;
+        if (changed) {
+            this.dispatchEvent(new Event('change'));
+        }
     };
     #handleFocusEvent = (event) => {
         assert(event.target instanceof Node);

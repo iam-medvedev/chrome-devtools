@@ -131,7 +131,7 @@ export interface ChangeEvent {
     context?: number;
 }
 export interface KeyDownEvent {
-    veid: number;
+    veid?: number;
     context?: number;
 }
 export type EventTypes = {

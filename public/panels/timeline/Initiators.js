@@ -4,33 +4,33 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 /**
  * Given an event that the user has selected, this function returns all the
- * pairs of events and their initiators that need to be drawn on the flamechart.
- * The reason that this can return multiple pairs is because we draw the
+ * data of events and their initiators that need to be drawn on the flamechart.
+ * The reason that this can return multiple InitiatorEntry objects is because we draw the
  * entire chain: for each, we see if it had an initiator, and
  * work backwards to draw each one, as well as the events initiated directly by the entry.
  */
-export function eventInitiatorPairsToDraw(traceEngineData, selectedEvent, hiddenEntries, modifiedEntries) {
-    const pairs = [
-        ...findEventInitiatorPairsPredecessors(traceEngineData, selectedEvent),
-        ...findEventInitiatorPairsDirectSuccessors(traceEngineData, selectedEvent),
+export function initiatorsDataToDraw(traceEngineData, selectedEvent, hiddenEntries, modifiedEntries) {
+    const initiatorsData = [
+        ...findInitiatorDataPredecessors(traceEngineData, selectedEvent),
+        ...findInitiatorDataDirectSuccessors(traceEngineData, selectedEvent),
     ];
-    // For each pair, call a function that makes sure that neither entry is hidden.
+    // For each InitiatorData, call a function that makes sure that neither the initirator or initiated entry is hidden.
     // If they are, it will reassign the event or initiator to the closest ancestor.
-    pairs.forEach(pair => getClosestVisibleAncestorsPair(pair, modifiedEntries, hiddenEntries, traceEngineData));
-    return pairs;
+    initiatorsData.forEach(initiatorData => getClosestVisibleInitiatorEntriesAncestors(initiatorData, modifiedEntries, hiddenEntries, traceEngineData));
+    return initiatorsData;
 }
-function findEventInitiatorPairsPredecessors(traceEngineData, selectedEvent) {
-    const pairs = [];
+function findInitiatorDataPredecessors(traceEngineData, selectedEvent) {
+    const initiatorsData = [];
     let currentEvent = selectedEvent;
-    // Build event pairs up to the selected one
+    // Build event initiator data up to the selected one
     while (currentEvent) {
         const currentInitiator = traceEngineData.Initiators.eventToInitiator.get(currentEvent);
         if (currentInitiator) {
-            // Store the current pair, and then set the initiator to
+            // Store the current initiator data, and then set the initiator to
             // be the current event, so we work back through the
             // trace and find the initiator of the initiator, and so
             // on...
-            pairs.push({ event: currentEvent, initiator: currentInitiator });
+            initiatorsData.push({ event: currentEvent, initiator: currentInitiator });
             currentEvent = currentInitiator;
             continue;
         }
@@ -50,42 +50,42 @@ function findEventInitiatorPairsPredecessors(traceEngineData, selectedEvent) {
         // Go up to the parent, and loop again.
         currentEvent = nodeForCurrentEvent.parent?.entry || null;
     }
-    return pairs;
+    return initiatorsData;
 }
-function findEventInitiatorPairsDirectSuccessors(traceEngineData, selectedEvent) {
-    const pairs = [];
-    // Add all of the initiated events to the pairs array.
+function findInitiatorDataDirectSuccessors(traceEngineData, selectedEvent) {
+    const initiatorsData = [];
+    // Add all of the initiated events to the initiatorsData array.
     const eventsInitiatedByCurrent = traceEngineData.Initiators.initiatorToEvents.get(selectedEvent);
     if (eventsInitiatedByCurrent) {
         eventsInitiatedByCurrent.forEach(event => {
-            pairs.push({ event: event, initiator: selectedEvent });
+            initiatorsData.push({ event: event, initiator: selectedEvent });
         });
     }
-    return pairs;
+    return initiatorsData;
 }
 /**
- * Given a pair of an initiator and event, this function returns
- * the closest visible ancestors. We need to apply this to each pair because
+ * Given an InitiatorData object that contains an initiator and event, this function returns
+ * the closest visible ancestors. We need to apply this to each initiatorData because
  * the actual initiator or initiated event might be hidden form the flame chart.
- * If neither entry is hidden, this function returns the initial pair.
+ * If neither entry is hidden, this function returns the initial initiatorData object.
  */
-function getClosestVisibleAncestorsPair(pair, modifiedEntries, hiddenEntries, traceEngineData) {
-    if (hiddenEntries.includes(pair.event)) {
-        let nextParent = traceEngineData.Renderer.entryToNode.get(pair.event)?.parent;
+function getClosestVisibleInitiatorEntriesAncestors(initiatorData, modifiedEntries, hiddenEntries, traceEngineData) {
+    if (hiddenEntries.includes(initiatorData.event)) {
+        let nextParent = traceEngineData.Renderer.entryToNode.get(initiatorData.event)?.parent;
         while (nextParent?.entry && !modifiedEntries.includes(nextParent?.entry)) {
             nextParent = nextParent.parent ?? undefined;
         }
-        pair.event = nextParent?.entry ?? pair.event;
-        pair.isEntryHidden = true;
+        initiatorData.event = nextParent?.entry ?? initiatorData.event;
+        initiatorData.isEntryHidden = true;
     }
-    if (hiddenEntries.includes(pair.initiator)) {
-        let nextParent = traceEngineData.Renderer.entryToNode.get(pair.initiator)?.parent;
+    if (hiddenEntries.includes(initiatorData.initiator)) {
+        let nextParent = traceEngineData.Renderer.entryToNode.get(initiatorData.initiator)?.parent;
         while (nextParent?.entry && !modifiedEntries.includes(nextParent?.entry)) {
             nextParent = nextParent.parent ?? undefined;
         }
-        pair.initiator = nextParent?.entry ?? pair.initiator;
-        pair.isInitiatorHidden = true;
+        initiatorData.initiator = nextParent?.entry ?? initiatorData.initiator;
+        initiatorData.isInitiatorHidden = true;
     }
-    return pair;
+    return initiatorData;
 }
 //# sourceMappingURL=Initiators.js.map

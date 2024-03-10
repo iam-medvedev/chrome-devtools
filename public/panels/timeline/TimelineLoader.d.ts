@@ -32,6 +32,11 @@ export declare class TimelineLoader implements Common.StringOutputStream.OutputS
     static loadFromURL(url: Platform.DevToolsPath.UrlString, client: Client): Promise<TimelineLoader>;
     addEvents(events: TraceEngine.TracingManager.EventPayload[]): Promise<void>;
     cancel(): Promise<void>;
+    /**
+     * As TimelineLoader implements `Common.StringOutputStream.OutputStream`, `write()` is called when a
+     * Common.StringOutputStream.StringOutputStream instance has decoded a chunk. This path is only used
+     * by `loadFromURL()`; it's NOT used by `loadFromEvents` or `loadFromFile`.
+     */
     write(chunk: string): Promise<void>;
     private writeBalancedJSON;
     private reportErrorAndCancelLoading;
