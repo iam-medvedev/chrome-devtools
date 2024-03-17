@@ -695,7 +695,7 @@ export const NativeFunctions = [
     {
         name: "forEach",
         signatures: [["callbackfn", "?thisArg"]],
-        receivers: ["ReadonlyArray", "Array", "Int8Array", "Uint8Array", "Uint8ClampedArray", "Int16Array", "Uint16Array", "Int32Array", "Uint32Array", "Float32Array", "Float64Array", "AudioParamMap", "CSSNumericArray", "CSSTransformValue", "CSSUnparsedValue", "DOMTokenList", "EventCounts", "FontFaceSet", "FormData", "Headers", "MIDIInputMap", "MIDIOutputMap", "MediaKeyStatusMap", "NodeList", "NodeListOf", "RTCStatsReport", "StylePropertyMapReadOnly", "URLSearchParams", "Map", "ReadonlyMap", "Set", "ReadonlySet", "BigInt64Array", "BigUint64Array"]
+        receivers: ["ReadonlyArray", "Array", "Int8Array", "Uint8Array", "Uint8ClampedArray", "Int16Array", "Uint16Array", "Int32Array", "Uint32Array", "Float32Array", "Float64Array", "AudioParamMap", "CSSNumericArray", "CSSTransformValue", "CSSUnparsedValue", "DOMTokenList", "EventCounts", "FontFaceSet", "FormData", "Headers", "Highlight", "HighlightRegistry", "MIDIInputMap", "MIDIOutputMap", "MediaKeyStatusMap", "NodeList", "NodeListOf", "RTCStatsReport", "StylePropertyMapReadOnly", "URLSearchParams", "Map", "ReadonlyMap", "Set", "ReadonlySet", "BigInt64Array", "BigUint64Array"]
     },
     {
         name: "forEach",
@@ -1122,7 +1122,7 @@ export const NativeFunctions = [
     {
         name: "createBuffer",
         signatures: [["descriptor"]],
-        receivers: ["GPUDevice"]
+        receivers: ["MLContext", "GPUDevice"]
     },
     {
         name: "createChannelMerger",
@@ -1179,7 +1179,7 @@ export const NativeFunctions = [
     {
         name: "deleteRule",
         signatures: [["index"]],
-        receivers: ["CSSGroupingRule", "CSSStyleRule", "CSSStyleSheet"]
+        receivers: ["CSSGroupingRule", "CSSStyleSheet", "CSSStyleRule"]
     },
     {
         name: "deleteRule",
@@ -1926,6 +1926,10 @@ export const NativeFunctions = [
     {
         name: "define",
         signatures: [["name", "constructor", "?options"]]
+    },
+    {
+        name: "getName",
+        signatures: [["constructor"]]
     },
     {
         name: "upgrade",
@@ -2747,6 +2751,10 @@ export const NativeFunctions = [
         signatures: [["mediaKeys"]]
     },
     {
+        name: "setSinkId",
+        signatures: [["sinkId"]]
+    },
+    {
         name: "focus",
         signatures: [["?options"]],
         receivers: ["HTMLOrSVGElement", "HTMLElement", "MathMLElement", "SVGElement"]
@@ -3507,7 +3515,7 @@ export const NativeFunctions = [
     },
     {
         name: "setParameters",
-        signatures: [["parameters", "?options"]]
+        signatures: [["parameters", "?setParameterOptions"], ["parameters", "?options"]]
     },
     {
         name: "setStreams",
@@ -5611,6 +5619,10 @@ export const NativeFunctions = [
         receivers: ["FileSystemFileHandle", "FileSystemHandle"]
     },
     {
+        name: "groupBy",
+        signatures: [["items", "keySelector"]]
+    },
+    {
         name: "addInitializer",
         signatures: [["initializer"]]
     },
@@ -5827,6 +5839,10 @@ export const NativeFunctions = [
     {
         name: "createSyncAccessHandle",
         signatures: [["?options"]]
+    },
+    {
+        name: "generateKeyFrame",
+        signatures: [["?rid"]]
     },
     {
         name: "navigate",
@@ -6725,10 +6741,6 @@ export const NativeFunctions = [
         signatures: [["?options"]]
     },
     {
-        name: "getName",
-        signatures: [["constructor"]]
-    },
-    {
         name: "reportEvent",
         signatures: [["event"]]
     },
@@ -7059,10 +7071,6 @@ export const NativeFunctions = [
     {
         name: "BeforeInstallPromptEvent",
         signatures: [["type", "?eventInitDict"]]
-    },
-    {
-        name: "setSinkId",
-        signatures: [["sinkId"]]
     },
     {
         name: "setResizable",
@@ -7426,10 +7434,6 @@ export const NativeFunctions = [
         signatures: [["type", "?eventInitDict"]]
     },
     {
-        name: "canPlay",
-        signatures: [["type"]]
-    },
-    {
         name: "addStroke",
         signatures: [["stroke"]]
     },
@@ -7698,6 +7702,10 @@ export const NativeFunctions = [
         signatures: [["a", "b", "?options"]]
     },
     {
+        name: "gru",
+        signatures: [["input", "weight", "recurrentWeight", "steps", "hiddenSize", "?options"]]
+    },
+    {
         name: "hardSigmoid",
         signatures: [["?options"], ["x", "?options"]]
     },
@@ -7822,6 +7830,10 @@ export const NativeFunctions = [
         signatures: [["input", "?options"]]
     },
     {
+        name: "triangular",
+        signatures: [["input", "?options"]]
+    },
+    {
         name: "where",
         signatures: [["condition", "true_value", "false_value"]]
     },
@@ -7836,6 +7848,10 @@ export const NativeFunctions = [
     {
         name: "executeStreaming",
         signatures: [["input"]]
+    },
+    {
+        name: "createGenericSession",
+        signatures: [["?options"]]
     },
     {
         name: "getFileSystemAccessTransferToken",
@@ -7948,6 +7964,10 @@ export const NativeFunctions = [
     {
         name: "setMetadata",
         signatures: [["metadata"]]
+    },
+    {
+        name: "RTCEncodedVideoFrame",
+        signatures: [["originalFrame", "?newMetadata"]]
     },
     {
         name: "RTCErrorEvent",

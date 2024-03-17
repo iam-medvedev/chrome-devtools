@@ -2599,6 +2599,28 @@ export declare namespace CSS {
         tryRules: CSSTryRule[];
     }
     /**
+     * CSS @position-try rule representation.
+     */
+    interface CSSPositionTryRule {
+        /**
+         * The prelude dashed-ident name
+         */
+        name: Value;
+        /**
+         * The css style sheet identifier (absent for user agent stylesheet and user-specified
+         * stylesheet rules) this rule came from.
+         */
+        styleSheetId?: StyleSheetId;
+        /**
+         * Parent stylesheet's origin.
+         */
+        origin: StyleSheetOrigin;
+        /**
+         * Associated style declaration.
+         */
+        style: CSSStyle;
+    }
+    /**
      * CSS keyframes rule representation.
      */
     interface CSSKeyframesRule {
@@ -2844,6 +2866,10 @@ export declare namespace CSS {
          */
         cssPositionFallbackRules?: CSSPositionFallbackRule[];
         /**
+         * A list of CSS @position-try rules matching this node, based on the position-try-options property.
+         */
+        cssPositionTryRules?: CSSPositionTryRule[];
+        /**
          * A list of CSS at-property rules matching this node.
          */
         cssPropertyRules?: CSSPropertyRule[];
@@ -2886,6 +2912,13 @@ export declare namespace CSS {
     }
     interface GetLayersForNodeResponse extends ProtocolResponseWithError {
         rootLayer: CSSLayerData;
+    }
+    interface GetLocationForSelectorRequest {
+        styleSheetId: StyleSheetId;
+        selectorText: string;
+    }
+    interface GetLocationForSelectorResponse extends ProtocolResponseWithError {
+        ranges: SourceRange[];
     }
     interface TrackComputedStyleUpdatesRequest {
         propertiesToTrack: CSSComputedStyleProperty[];
@@ -8572,6 +8605,18 @@ export declare namespace Network {
          * Connection type if known.
          */
         connectionType?: ConnectionType;
+        /**
+         * WebRTC packet loss (percent, 0-100). 0 disables packet loss emulation, 100 drops all the packets.
+         */
+        packetLoss?: number;
+        /**
+         * WebRTC packet queue length (packet). 0 removes any queue length limitations.
+         */
+        packetQueueLength?: integer;
+        /**
+         * WebRTC packetReordering feature.
+         */
+        packetReordering?: boolean;
     }
     interface EnableRequest {
         /**
@@ -10330,7 +10375,7 @@ export declare namespace Page {
         ChUaPlatform = "ch-ua-platform",
         ChUaModel = "ch-ua-model",
         ChUaMobile = "ch-ua-mobile",
-        ChUaFormFactor = "ch-ua-form-factor",
+        ChUaFormFactors = "ch-ua-form-factors",
         ChUaFullVersion = "ch-ua-full-version",
         ChUaFullVersionList = "ch-ua-full-version-list",
         ChUaPlatformVersion = "ch-ua-platform-version",
@@ -10994,6 +11039,7 @@ export declare namespace Page {
         CookieDisabled = "CookieDisabled",
         HTTPAuthRequired = "HTTPAuthRequired",
         CookieFlushed = "CookieFlushed",
+        BroadcastChannelOnMessage = "BroadcastChannelOnMessage",
         WebSocket = "WebSocket",
         WebTransport = "WebTransport",
         WebRTC = "WebRTC",
@@ -12756,30 +12802,6 @@ export declare namespace Storage {
         SellerTrustedSignals = "sellerTrustedSignals"
     }
     /**
-     * Ad advertising element inside an interest group.
-     */
-    interface InterestGroupAd {
-        renderURL: string;
-        metadata?: string;
-    }
-    /**
-     * The full details of an interest group.
-     */
-    interface InterestGroupDetails {
-        ownerOrigin: string;
-        name: string;
-        expirationTime: Network.TimeSinceEpoch;
-        joiningOrigin: string;
-        biddingLogicURL?: string;
-        biddingWasmHelperURL?: string;
-        updateURL?: string;
-        trustedBiddingSignalsURL?: string;
-        trustedBiddingSignalsKeys: string[];
-        userBiddingSignals?: string;
-        ads: InterestGroupAd[];
-        adComponents: InterestGroupAd[];
-    }
-    /**
      * Enum of shared storage access types.
      */
     const enum SharedStorageAccessType {
@@ -12790,6 +12812,7 @@ export declare namespace Storage {
         DocumentAppend = "documentAppend",
         DocumentDelete = "documentDelete",
         DocumentClear = "documentClear",
+        DocumentGet = "documentGet",
         WorkletSet = "workletSet",
         WorkletAppend = "workletAppend",
         WorkletDelete = "workletDelete",
@@ -12798,7 +12821,11 @@ export declare namespace Storage {
         WorkletKeys = "workletKeys",
         WorkletEntries = "workletEntries",
         WorkletLength = "workletLength",
-        WorkletRemainingBudget = "workletRemainingBudget"
+        WorkletRemainingBudget = "workletRemainingBudget",
+        HeaderSet = "headerSet",
+        HeaderAppend = "headerAppend",
+        HeaderDelete = "headerDelete",
+        HeaderClear = "headerClear"
     }
     /**
      * Struct for a single key-value pair in an origin's shared storage.
@@ -12883,22 +12910,28 @@ export declare namespace Storage {
          * SharedStorageAccessType.documentDelete,
          * SharedStorageAccessType.workletSet,
          * SharedStorageAccessType.workletAppend,
-         * SharedStorageAccessType.workletDelete, and
-         * SharedStorageAccessType.workletGet.
+         * SharedStorageAccessType.workletDelete,
+         * SharedStorageAccessType.workletGet,
+         * SharedStorageAccessType.headerSet,
+         * SharedStorageAccessType.headerAppend, and
+         * SharedStorageAccessType.headerDelete.
          */
         key?: string;
         /**
          * Value for a specific entry in an origin's shared storage.
          * Present only for SharedStorageAccessType.documentSet,
          * SharedStorageAccessType.documentAppend,
-         * SharedStorageAccessType.workletSet, and
-         * SharedStorageAccessType.workletAppend.
+         * SharedStorageAccessType.workletSet,
+         * SharedStorageAccessType.workletAppend,
+         * SharedStorageAccessType.headerSet, and
+         * SharedStorageAccessType.headerAppend.
          */
         value?: string;
         /**
          * Whether or not to set an entry for a key if that key is already present.
-         * Present only for SharedStorageAccessType.documentSet and
-         * SharedStorageAccessType.workletSet.
+         * Present only for SharedStorageAccessType.documentSet,
+         * SharedStorageAccessType.workletSet, and
+         * SharedStorageAccessType.headerSet.
          */
         ignoreIfPresent?: boolean;
     }
@@ -13088,6 +13121,23 @@ export declare namespace Storage {
         ReportWindowPassed = "reportWindowPassed",
         ExcessiveReports = "excessiveReports"
     }
+    /**
+     * A single Related Website Set object.
+     */
+    interface RelatedWebsiteSet {
+        /**
+         * The primary site of this set, along with the ccTLDs if there is any.
+         */
+        primarySites: string[];
+        /**
+         * The associated sites of this set, along with the ccTLDs if there is any.
+         */
+        associatedSites: string[];
+        /**
+         * The service sites of this set, along with the ccTLDs if there is any.
+         */
+        serviceSites: string[];
+    }
     interface GetStorageKeyForFrameRequest {
         frameId: Page.FrameId;
     }
@@ -13247,7 +13297,13 @@ export declare namespace Storage {
         name: string;
     }
     interface GetInterestGroupDetailsResponse extends ProtocolResponseWithError {
-        details: InterestGroupDetails;
+        /**
+         * This largely corresponds to:
+         * https://wicg.github.io/turtledove/#dictdef-generatebidinterestgroup
+         * but has absolute expirationTime instead of relative lifetimeMs and
+         * also adds joiningOrigin.
+         */
+        details: any;
     }
     interface SetInterestGroupTrackingRequest {
         enable: boolean;
@@ -13308,6 +13364,9 @@ export declare namespace Storage {
     }
     interface SetAttributionReportingTrackingRequest {
         enable: boolean;
+    }
+    interface GetRelatedWebsiteSetsResponse extends ProtocolResponseWithError {
+        sets: RelatedWebsiteSet[];
     }
     /**
      * A cache's contents have been modified.

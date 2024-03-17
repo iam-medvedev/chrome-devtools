@@ -66,12 +66,12 @@ export declare const enum AutocompleteInteractionModel {
 export declare function setAutocomplete(element: Element, interactionModel?: AutocompleteInteractionModel): void;
 export declare function clearAutocomplete(element: Element): void;
 export declare const enum PopupRole {
-    False = "false",
-    True = "true",
-    Menu = "menu",
-    ListBox = "listbox",
-    Tree = "tree",
-    Grid = "grid",
+    False = "false",// (default) Indicates the element does not have a popup.
+    True = "true",// Indicates the popup is a menu.
+    Menu = "menu",// Indicates the popup is a menu.
+    ListBox = "listbox",// Indicates the popup is a listbox.
+    Tree = "tree",// Indicates the popup is a tree.
+    Grid = "grid",// Indicates the popup is a grid.
     Dialog = "dialog"
 }
 export declare function setHasPopup(element: Element, value?: PopupRole): void;

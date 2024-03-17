@@ -11,6 +11,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ActiveFilters } from './ActiveFilters.js';
+import { getCategoryStyles, stringIsEventCategory } from './EventUICategory.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 const UIStrings = {
@@ -712,13 +713,14 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         return name;
     }
     displayInfoForGroupNode(node) {
-        const categories = TimelineUIUtils.categories();
+        const categories = getCategoryStyles();
         const color = node.id && node.event ? TimelineUIUtils.eventColor(node.event) : categories['other'].color;
         const unattributed = i18nString(UIStrings.unattributed);
         const id = typeof node.id === 'symbol' ? undefined : node.id;
         switch (this.groupBySetting.get()) {
             case AggregatedTimelineTreeView.GroupBy.Category: {
-                const category = id ? categories[id] || categories['other'] : { title: unattributed, color: unattributed };
+                const idIsValid = id && stringIsEventCategory(id);
+                const category = idIsValid ? categories[id] || categories['other'] : { title: unattributed, color: unattributed };
                 return { name: category.title, color: category.color, icon: undefined };
             }
             case AggregatedTimelineTreeView.GroupBy.Domain:

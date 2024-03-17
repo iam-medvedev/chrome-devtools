@@ -103,6 +103,7 @@ export class Importer {
         request.setRemoteAddress(entry.serverIPAddress || '', 80); // Har does not support port numbers.
         request.setResourceType(Importer.getResourceType(request, entry, pageLoad));
         const priority = entry.customAsString('priority');
+        // @ts-expect-error This accesses the globalThis['Protocol'] where the enum is an actual JS object and not just a TS const enum.
         if (priority && Protocol.Network.ResourcePriority.hasOwnProperty(priority)) {
             request.setPriority(priority);
         }

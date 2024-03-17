@@ -236,6 +236,10 @@ const quoteKey = {
     code: 222,
     name: '\'',
 };
+const metaKey = {
+    code: 91,
+    name: 'Meta',
+};
 export const Keys = {
     Backspace: { code: 8, name: '\u21a4' },
     Tab: { code: 9, name: { mac: '\u21e5', other: 'Tab' } },
@@ -248,14 +252,14 @@ export const Keys = {
     Escape: escKey,
     Space: spaceKey,
     ' ': spaceKey,
-    PageUp: { code: 33, name: { mac: '\u21de', other: 'PageUp' } },
-    PageDown: { code: 34, name: { mac: '\u21df', other: 'PageDown' } },
-    End: { code: 35, name: { mac: '\u2197', other: 'End' } },
-    Home: { code: 36, name: { mac: '\u2196', other: 'Home' } },
-    Left: leftKey,
-    Up: upKey,
-    Right: rightKey,
-    Down: downKey,
+    PageUp: { code: 33, name: { mac: '\u21de', other: 'PageUp' } }, // also NUM_NORTH_EAST
+    PageDown: { code: 34, name: { mac: '\u21df', other: 'PageDown' } }, // also NUM_SOUTH_EAST
+    End: { code: 35, name: { mac: '\u2197', other: 'End' } }, // also NUM_SOUTH_WEST
+    Home: { code: 36, name: { mac: '\u2196', other: 'Home' } }, // also NUM_NORTH_WEST
+    Left: leftKey, // also NUM_WEST
+    Up: upKey, // also NUM_NORTH
+    Right: rightKey, // also NUM_EAST
+    Down: downKey, // also NUM_SOUTH
     ArrowLeft: leftKey,
     ArrowUp: upKey,
     ArrowRight: rightKey,
@@ -265,7 +269,7 @@ export const Keys = {
     H: { code: 72, name: 'H' },
     N: { code: 78, name: 'N' },
     P: { code: 80, name: 'P' },
-    Meta: { code: 91, name: 'Meta' },
+    Meta: metaKey,
     F1: { code: 112, name: 'F1' },
     F2: { code: 113, name: 'F2' },
     F3: { code: 114, name: 'F3' },
@@ -298,12 +302,8 @@ export const Keys = {
     Backslash: { code: 220, name: '\\' },
     SingleQuote: quoteKey,
     Quote: quoteKey,
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    get CtrlOrMeta() {
-        // "default" command/ctrl key for platform, Command on Mac, Ctrl on other platforms
-        return Host.Platform.isMac() ? this.Meta : this.Ctrl;
-    },
+    // "default" command/ctrl key for platform, Command on Mac, Ctrl on other platforms
+    CtrlOrMeta: Host.Platform.isMac() ? metaKey : ctrlKey,
 };
 export const KeyBindings = {};
 (function () {

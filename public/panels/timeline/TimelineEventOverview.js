@@ -33,8 +33,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { getCategoryStyles, getEventStyle } from './EventUICategory.js';
-import { TimelineUIUtils } from './TimelineUIUtils.js';
+import { EventCategory, getCategoryStyles, getEventStyle, getTimelineMainEventCategories, } from './EventUICategory.js';
 const UIStrings = {
     /**
      *@description Short for Network. Label for the network requests section of the Performance panel.
@@ -154,10 +153,10 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
         // Scripting Category, but if they represent idle time, we do not want
         // that.
         if (TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === '(idle)') {
-            return 'idle';
+            return EventCategory.IDLE;
         }
         const eventStyle = getEventStyle(entry.name)?.category ||
-            getCategoryStyles().Other;
+            getCategoryStyles().other;
         const categoryName = eventStyle.name;
         return categoryName;
     }
@@ -175,11 +174,11 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
         const timeRange = this.#end - this.#start;
         const scale = width / timeRange;
         const quantTime = quantSizePx / scale;
-        const categories = TimelineUIUtils.categories();
-        const categoryOrder = TimelineUIUtils.getTimelineMainEventCategories();
-        const otherIndex = categoryOrder.indexOf('other');
+        const categories = getCategoryStyles();
+        const categoryOrder = getTimelineMainEventCategories();
+        const otherIndex = categoryOrder.indexOf(EventCategory.OTHER);
         const idleIndex = 0;
-        console.assert(idleIndex === categoryOrder.indexOf('idle'));
+        console.assert(idleIndex === categoryOrder.indexOf(EventCategory.IDLE));
         for (let i = 0; i < categoryOrder.length; ++i) {
             categoryToIndex.set(categories[categoryOrder[i]], i);
         }

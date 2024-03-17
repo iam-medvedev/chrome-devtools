@@ -22,8 +22,8 @@ describeWithMockConnection('PersistenceImpl', () => {
     let breakpointManager;
     const DEFAULT_BREAKPOINT = [
         Breakpoints.BreakpointManager.EMPTY_BREAKPOINT_CONDITION,
-        true,
-        false,
+        true, // enabled
+        false, // isLogpoint
         "RESTORED" /* Breakpoints.BreakpointManager.BreakpointOrigin.OTHER */,
     ];
     const SCRIPT_DESCRIPTION = {

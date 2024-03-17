@@ -971,6 +971,11 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         if (!(event instanceof KeyboardEvent)) {
             return;
         }
+        if (this.selectedNode) {
+            if (this.selectedNode.element().tabIndex < 0) {
+                void VisualLogging.logKeyDown(this.selectedNode.element(), event);
+            }
+        }
         if (event.shiftKey || event.metaKey || event.ctrlKey || this.editing || UI.UIUtils.isEditing()) {
             return;
         }
@@ -1462,6 +1467,7 @@ export class DataGridNode {
     }
     createElement() {
         this.elementInternal = document.createElement('tr');
+        this.elementInternal.setAttribute('jslog', `${VisualLogging.tableRow().track({ keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Enter|Space' })}`);
         this.elementInternal.classList.add('data-grid-data-grid-node');
         if (this.dataGrid) {
             this.dataGrid.elementToDataGridNode.set(this.elementInternal, this);
@@ -1672,11 +1678,18 @@ export class DataGridNode {
     }
     createTD(columnId) {
         const cell = this.createTDWithClass(columnId + '-column');
-        cell.setAttribute('jslog', `${VisualLogging.tableCell()
-            .track({ click: true, keydown: Boolean(this.dataGrid?.columns[columnId].editable), resize: true })
-            .context(Platform.StringUtilities.toKebabCase(columnId))}`);
         nodeToColumnIdMap.set(cell, columnId);
         if (this.dataGrid) {
+            const editableCell = this.dataGrid.columns[columnId].editable;
+            cell.setAttribute('jslog', `${VisualLogging.tableCell()
+                .track({
+                click: true,
+                keydown: editableCell ? 'Enter|Space|Escape' : false,
+                dblclick: editableCell,
+                change: editableCell,
+                resize: true,
+            })
+                .context(Platform.StringUtilities.toKebabCase(columnId))}`);
             const alignment = this.dataGrid.columns[columnId].align;
             if (alignment) {
                 cell.classList.add(alignment);
@@ -1688,7 +1701,6 @@ export class DataGridNode {
                 }
             }
             // Allow accessibility tool to identify the editable cell and display context menu
-            const editableCell = this.dataGrid.columns[columnId].editable;
             if (editableCell) {
                 cell.tabIndex = 0;
                 cell.ariaHasPopup = 'true';
@@ -1920,6 +1932,7 @@ export class DataGridNode {
         this.dataGrid.selectedNode = this;
         if (this.elementInternal) {
             this.elementInternal.classList.add('selected');
+            this.elementInternal.focus();
             this.dataGrid.setHasSelection(true);
             this.dataGrid.announceSelectedGridNode();
         }

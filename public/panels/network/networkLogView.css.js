@@ -148,8 +148,12 @@ styles.replaceSync(
   color: inherit;
 }
 
-.initiator-column .devtools-link {
+.initiator-column .text-button.devtools-link,
+.initiator-column .text-button.devtools-link:focus-visible {
   color: inherit;
+  background-color: transparent;
+  outline-offset: 0;
+  height: 16px;
 }
 
 .network-error-row,

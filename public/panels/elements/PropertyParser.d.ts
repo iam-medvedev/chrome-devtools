@@ -87,6 +87,7 @@ export declare const CSSControlMap: {
     new (entries?: readonly (readonly [string, HTMLElement[]])[] | null | undefined): Map<string, HTMLElement[]>;
     new (iterable?: Iterable<readonly [string, HTMLElement[]]> | null | undefined): Map<string, HTMLElement[]>;
     readonly prototype: Map<any, any>;
+    groupBy<K, T>(items: Iterable<T>, keySelector: (item: T, index: number) => K): Map<K, T[]>;
     readonly [Symbol.species]: MapConstructor;
 };
 export type CSSControlMap = Map<string, HTMLElement[]>;
@@ -230,6 +231,16 @@ export declare class ShadowMatcher extends MatcherBase<typeof ShadowMatch> {
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
+export declare abstract class FontMatch implements Match {
+    readonly text: string;
+    type: string;
+    constructor(text: string);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class FontMatcher extends MatcherBase<typeof FontMatch> {
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
 type LegacyRegexHandler = (text: string, readonly: boolean) => Node | null;
 export declare class LegacyRegexMatcher implements Matcher {
     readonly regexp: RegExp;
@@ -245,6 +256,17 @@ export declare class TextMatch implements Match {
     computedText?: () => string;
     constructor(text: string, isComment: boolean);
     render(): Node[];
+}
+export declare abstract class GridTemplateMatch implements Match {
+    readonly text: string;
+    readonly lines: CodeMirror.SyntaxNode[][];
+    readonly type: string;
+    constructor(text: string, lines: CodeMirror.SyntaxNode[][]);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class GridTemplateMatcher extends MatcherBase<typeof GridTemplateMatch> {
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
 export declare function tokenizeDeclaration(propertyName: string, propertyValue: string): SyntaxTree | null;
 export declare function tokenizePropertyName(name: string): string | null;

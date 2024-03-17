@@ -60,7 +60,8 @@ export default {
   height: unset;
 }
 
-.text-button.primary-button {
+.text-button.primary-button,
+.text-button.primary-button:not(:disabled):focus {
   background-color: var(--sys-color-primary);
   border: none;
   color: var(--sys-color-on-primary);

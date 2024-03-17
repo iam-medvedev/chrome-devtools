@@ -27,9 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _Eps = 1e-5;
+const EPS = 1e-5;
 export class Vector {
     x;
     y;
@@ -44,7 +42,7 @@ export class Vector {
     }
     normalize() {
         const length = this.length();
-        if (length <= _Eps) {
+        if (length <= EPS) {
             return;
         }
         this.x /= length;
@@ -189,8 +187,8 @@ export class EulerAngles {
         //   rotation around the Z axis by 360 degrees will correctly return
         //   alpha=0, but a rotation around the Z axis by 360 * 20000000000000000
         //   will return alpha=~75 degrees, for example.
-        if (Math.abs(rotationMatrix.m33) < _Eps) { // m33 == 0
-            if (Math.abs(rotationMatrix.m13) < _Eps) { // m13 == 0, cos(beta) == 0
+        if (Math.abs(rotationMatrix.m33) < EPS) { // m33 == 0
+            if (Math.abs(rotationMatrix.m13) < EPS) { // m13 == 0, cos(beta) == 0
                 // Gimbal lock discontinuity: in the Z-X'-Y'' angle system used here, a
                 // rotation of 90 or -90 degrees around the X axis (beta) causes a
                 // Gimbal lock, which we handle by always setting gamma = 0 and
@@ -207,7 +205,7 @@ export class EulerAngles {
             else { // cos(gamma) == 0, cos(beta) < 0
                 alpha = Math.atan2(rotationMatrix.m21, -rotationMatrix.m22);
                 beta = -Math.asin(rotationMatrix.m23);
-                beta += (beta > 0 || Math.abs(beta) < _Eps) ? -Math.PI : Math.PI; // beta [-pi,-pi/2) U (pi/2,pi)
+                beta += (beta > 0 || Math.abs(beta) < EPS) ? -Math.PI : Math.PI; // beta [-pi,-pi/2) U (pi/2,pi)
                 gamma = -(Math.PI / 2); // gamma = -pi/2
             }
         }
@@ -219,11 +217,11 @@ export class EulerAngles {
         else { // cos(beta) < 0
             alpha = Math.atan2(rotationMatrix.m21, -rotationMatrix.m22);
             beta = -Math.asin(rotationMatrix.m23);
-            beta += (beta > 0 || Math.abs(beta) < _Eps) ? -Math.PI : Math.PI; // beta [-pi,-pi/2) U (pi/2,pi)
+            beta += (beta > 0 || Math.abs(beta) < EPS) ? -Math.PI : Math.PI; // beta [-pi,-pi/2) U (pi/2,pi)
             gamma = Math.atan2(rotationMatrix.m13, -rotationMatrix.m33); // gamma (-pi/2, pi/2)
         }
         // alpha is in [-pi, pi], make sure it is in [0, 2*pi).
-        if (alpha < -_Eps) {
+        if (alpha < -EPS) {
             alpha += 2 * Math.PI; // alpha [0, 2*pi)
         }
         // We do not need a lot of precision in degrees. Arbitrarily set it to 6
@@ -260,7 +258,7 @@ export const multiplyVectorByMatrixAndNormalize = function (v, m) {
 export const calculateAngle = function (u, v) {
     const uLength = u.length();
     const vLength = v.length();
-    if (uLength <= _Eps || vLength <= _Eps) {
+    if (uLength <= EPS || vLength <= EPS) {
         return 0;
     }
     const cos = scalarProduct(u, v) / uLength / vLength;

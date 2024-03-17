@@ -16,8 +16,10 @@ const lastInvalidationEventForFrame = new Map();
 // These are the same - just UpdateLayoutTree is what the event from Chromium
 // is called.
 const lastUpdateLayoutTreeByFrame = new Map();
+// This tracks postmessage dispatch and handler events for creating initiator association
+const postMessageHandlerEvents = [];
+const schedulePostMessageEventByTraceId = new Map();
 // These two maps store the same data but in different directions.
-//
 // For a given event, tell me what its initiator was. An event can only have one initiator.
 const eventToInitiatorMap = new Map();
 // For a given event, tell me what events it initiated. An event can initiate
@@ -37,6 +39,8 @@ export function reset() {
     requestAnimationFrameEventsById.clear();
     requestIdleCallbackEventsById.clear();
     webSocketCreateEventsById.clear();
+    schedulePostMessageEventByTraceId.clear();
+    postMessageHandlerEvents.length = 0;
     handlerState = 1 /* HandlerState.UNINITIALIZED */;
 }
 export function initialize() {
@@ -168,11 +172,36 @@ export function handleEvent(event) {
             });
         }
     }
+    // Store schedulePostMessage Events by their traceIds.
+    // so they can be reconciled later with matching handlePostMessage events with same traceIds.
+    else if (Types.TraceEvents.isTraceEventHandlePostMessage(event)) {
+        postMessageHandlerEvents.push(event);
+    }
+    else if (Types.TraceEvents.isTraceEventSchedulePostMessage(event)) {
+        const traceId = event.args.data?.traceId;
+        if (traceId) {
+            schedulePostMessageEventByTraceId.set(traceId, event);
+        }
+    }
+}
+function finalizeInitiatorRelationship() {
+    for (const handlerEvent of postMessageHandlerEvents) {
+        const traceId = handlerEvent.args.data?.traceId;
+        const matchingSchedulePostMesssageEvent = schedulePostMessageEventByTraceId.get(traceId);
+        if (matchingSchedulePostMesssageEvent) {
+            // Set schedulePostMesssage events as initiators for handler events.
+            storeInitiator({ event: handlerEvent, initiator: matchingSchedulePostMesssageEvent });
+        }
+    }
 }
 export async function finalize() {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('InitiatorsHandler is not initialized');
     }
+    // During event processing, we may encounter initiators before the handler events themselves
+    // (e.g dispatch events on worker and handler events on the main thread)
+    // we don't want to miss out on events whose initiators haven't been processed yet
+    finalizeInitiatorRelationship();
     handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {

@@ -76,6 +76,7 @@ export default {
 .flame-chart-entry-info:not(:empty) {
   z-index: 2000;
   position: absolute;
+  contain: content;
   background-color: var(--sys-color-cdt-base-container);
   pointer-events: none;
   padding: 4px 8px;

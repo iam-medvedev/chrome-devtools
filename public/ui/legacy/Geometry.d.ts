@@ -1,4 +1,3 @@
-export declare const _Eps: number;
 export declare class Vector {
     x: number;
     y: number;

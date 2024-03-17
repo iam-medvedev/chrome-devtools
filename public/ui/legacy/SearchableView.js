@@ -513,9 +513,6 @@ export class SearchableView extends VBox {
         this.performSearch(false, true);
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _symbol = Symbol('searchableView');
 const searchableViewsByElement = new WeakMap();
 export class SearchConfig {
     query;

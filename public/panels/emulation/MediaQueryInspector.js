@@ -188,8 +188,7 @@ export class MediaQueryInspector extends UI.Widget.Widget {
         }
         const markers = [];
         let lastMarker = null;
-        for (let i = 0; i < this.cachedQueryModels.length; ++i) {
-            const model = this.cachedQueryModels[i];
+        for (const model of this.cachedQueryModels) {
             if (lastMarker && lastMarker.model.dimensionsEqual(model)) {
                 lastMarker.active = lastMarker.active || model.active();
             }

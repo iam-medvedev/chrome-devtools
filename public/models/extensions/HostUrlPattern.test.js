@@ -9,19 +9,19 @@ import * as Extensions from '../extensions/extensions.js';
 describe('HostUrlPattern', () => {
     it('ParseInvalid', () => {
         const invalidPatterns = [
-            'http',
-            'http:',
-            'http:/',
-            'about://',
-            'http://',
-            'http:///',
-            'http://:1234/',
-            'http://*./',
-            'http://\0www/',
-            'http://*foo/',
-            'http://foo.*.bar/',
-            'http://fo.*.ba:123/',
-            'http:/bar',
+            'http', // Missing Scheme Separator
+            'http:', // Wrong Scheme Separator
+            'http:/', // Wrong Scheme Separator
+            'about://', // Wrong Scheme Separator
+            'http://', // Empty Host
+            'http:///', // Empty Host
+            'http://:1234/', // Empty Host
+            'http://*./', // Empty Host
+            'http://\0www/', // Invalid host
+            'http://*foo/', // Invalid Host Wildcard
+            'http://foo.*.bar/', // Invalid Host Wildcard
+            'http://fo.*.ba:123/', // Invalid Host Wildcard
+            'http:/bar', // Wrong Scheme Separator
             'http://foo.*/', // Invalid Host Wildcard
         ];
         for (const pattern of invalidPatterns) {
@@ -69,13 +69,13 @@ describe('HostUrlPattern', () => {
             assert.strictEqual(parsedPattern.port, port);
         }
         const failureTestPatterns = [
-            'http://[2607:f8b0:4005:805::200e]:/*',
-            'http://[]:8888/*',
-            'http://[2607:f8b0:4005:805::200e/*',
-            'http://[2607:f8b0:4005:805::200e]]/*',
-            'http://[[2607:f8b0:4005:805::200e]/*',
-            'http://[2607:f8b0:4005:805:200e]/*',
-            'http://[2607:f8b0:4005:805:200e:12:bogus]/*',
+            'http://[2607:f8b0:4005:805::200e]:/*', // Invalid Port
+            'http://[]:8888/*', // Empty Host
+            'http://[2607:f8b0:4005:805::200e/*', // Invalid Host
+            'http://[2607:f8b0:4005:805::200e]]/*', // Invalid Host
+            'http://[[2607:f8b0:4005:805::200e]/*', // Invalid Host
+            'http://[2607:f8b0:4005:805:200e]/*', // Invalid Host
+            'http://[2607:f8b0:4005:805:200e:12:bogus]/*', // Invalid Host
             'http://[[2607:f8b0:4005:805::200e]:abc/*', // Invalid Port
         ];
         for (const pattern of failureTestPatterns) {

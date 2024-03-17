@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
@@ -93,49 +94,6 @@ export class CompatibilityTracksAppender {
     }
     getFlameChartTimelineData() {
         return this.#flameChartData;
-    }
-    getHiddenEvents(group) {
-        const appender = this.#trackForGroup.get(group);
-        if (appender && appender.entriesFilter) {
-            return appender.entriesFilter().invisibleEntries();
-        }
-        console.warn('Could not get hidden events.');
-    }
-    getModifiedEntries(group) {
-        const appender = this.#trackForGroup.get(group);
-        if (appender && appender.entriesFilter) {
-            return appender.entriesFilter().modifiedEntries();
-        }
-        console.warn('Could not get modified events.');
-    }
-    modifyTree(group, entry, type) {
-        const appender = this.#trackForGroup.get(group);
-        if (appender && appender.entriesFilter) {
-            appender.entriesFilter().applyFilterAction({ entry, type });
-        }
-        else {
-            console.warn('Could not modify tree on a track.');
-        }
-    }
-    findPossibleContextMenuActions(group, node) {
-        const appender = this.#trackForGroup.get(group);
-        if (appender && appender.entriesFilter) {
-            return appender.entriesFilter().findPossibleActions(node);
-        }
-        console.warn('Could not find possible context menu actions.');
-    }
-    revealEntry(group, index) {
-        const appender = this.#trackForGroup.get(group);
-        if (appender && appender.entriesFilter) {
-            appender.entriesFilter().revealEntry(index);
-        }
-    }
-    findHiddenDescendantsAmount(group, node) {
-        const appender = this.#trackForGroup.get(group);
-        if (appender && appender.entriesFilter) {
-            return appender.entriesFilter().findHiddenDescendantsAmount(node);
-        }
-        console.warn('Could not find hidden entries on a track.');
     }
     #addThreadAppenders() {
         const weight = (appender) => {
@@ -453,6 +411,11 @@ export class CompatibilityTracksAppender {
             // Therefore we mark them as visible so they are appended onto the Thread
             // track, and hence accessible by the CountersGraph view.
             return true;
+        }
+        // Gate the visibility of post message events behind the experiement flag
+        if (TraceEngine.Types.TraceEvents.isTraceEventSchedulePostMessage(entry) ||
+            TraceEngine.Types.TraceEvents.isTraceEventHandlePostMessage(entry)) {
+            return Root.Runtime.experiments.isEnabled("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */);
         }
         // Default styles are globally defined for each event name. Some
         // events are hidden by default.

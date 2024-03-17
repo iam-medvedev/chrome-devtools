@@ -202,7 +202,7 @@ describe('DataGridController', () => {
         const createRegexFilter = (text) => ({
             text: undefined,
             key: undefined,
-            regex: new RegExp(text, 'i'),
+            regex: new RegExp(text, 'i'), // i because the FilterParser adds that flag
             negative: false,
         });
         const createColumnFilter = (key, text) => ({

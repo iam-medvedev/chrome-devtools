@@ -9,7 +9,7 @@ export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logImpressions, logChange } from './LoggingEvents.js';
 export const logClick = (l, e) => LoggingEvents.logClick(LoggingDriver.clickLogThrottler)(l, e);
 export const logResize = (l, s) => LoggingEvents.logResize(LoggingDriver.resizeLogThrottler)(l, s);
-export const logKeyDown = async (e, context) => LoggingEvents.logKeyDown(LoggingDriver.keyboardLogThrottler)(e, context);
+export const logKeyDown = async (l, e, context) => LoggingEvents.logKeyDown(LoggingDriver.keyboardLogThrottler)(l, e, context);
 export { registerParentProvider, setMappedParent } from './LoggingState.js';
 export function registerLoggable(loggable, config, parent) {
     if (!LoggingDriver.isLogging()) {
@@ -80,6 +80,7 @@ export const slider = LoggingConfig.makeConfigStringBuilder.bind(null, 'Slider')
 export const section = LoggingConfig.makeConfigStringBuilder.bind(null, 'Section');
 export const sectionHeader = LoggingConfig.makeConfigStringBuilder.bind(null, 'SectionHeader');
 export const stylesSelector = LoggingConfig.makeConfigStringBuilder.bind(null, 'StylesSelector');
+export const tableRow = LoggingConfig.makeConfigStringBuilder.bind(null, 'TableRow');
 export const tableCell = LoggingConfig.makeConfigStringBuilder.bind(null, 'TableCell');
 export const tableHeader = LoggingConfig.makeConfigStringBuilder.bind(null, 'TableHeader');
 /**

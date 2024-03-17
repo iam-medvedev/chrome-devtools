@@ -47,7 +47,6 @@ export declare class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWr
     lowerBound(_request: SDK.NetworkRequest.NetworkRequest): number;
     upperBound(_request: SDK.NetworkRequest.NetworkRequest): number;
 }
-export declare const _minimumSpread = 0.1;
 export declare const enum Events {
     BoundariesChanged = "BoundariesChanged"
 }

@@ -1,10 +1,6 @@
 import { type ContentDataOrError } from './ContentData.js';
 import { SearchMatch } from './ContentProvider.js';
 export declare const Utils: {
-    readonly _keyValueFilterRegex: RegExp;
-    readonly _regexFilterRegex: RegExp;
-    readonly _textFilterRegex: RegExp;
-    readonly _SpaceCharRegex: RegExp;
     isSpaceChar: (char: string) => boolean;
     lineIndent: (line: string) => string;
     splitStringByRegexes(text: string, regexes: RegExp[]): {

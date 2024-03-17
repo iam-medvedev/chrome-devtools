@@ -99,7 +99,7 @@ function storePageLoadMetricAgainstNavigationId(navigation, event) {
             maximumFractionDigits: 2,
         });
         const classification = scoreClassificationForFirstContentfulPaint(fcpTime);
-        const metricScore = { event, score, metricName: "FCP" /* MetricName.FCP */, classification, navigation };
+        const metricScore = { event, score, metricName: "FCP" /* MetricName.FCP */, classification, navigation, timing: fcpTime };
         storeMetricScore(frameId, navigationId, metricScore);
         return;
     }
@@ -110,7 +110,7 @@ function storePageLoadMetricAgainstNavigationId(navigation, event) {
             maximumFractionDigits: 2,
         });
         const classification = "unclassified" /* ScoreClassification.UNCLASSIFIED */;
-        const metricScore = { event, score, metricName: "FP" /* MetricName.FP */, classification, navigation };
+        const metricScore = { event, score, metricName: "FP" /* MetricName.FP */, classification, navigation, timing: paintTime };
         storeMetricScore(frameId, navigationId, metricScore);
         return;
     }
@@ -126,6 +126,7 @@ function storePageLoadMetricAgainstNavigationId(navigation, event) {
             metricName: "DCL" /* MetricName.DCL */,
             classification: scoreClassificationForDOMContentLoaded(dclTime),
             navigation,
+            timing: dclTime,
         };
         storeMetricScore(frameId, navigationId, metricScore);
         return;
@@ -142,6 +143,7 @@ function storePageLoadMetricAgainstNavigationId(navigation, event) {
             metricName: "TTI" /* MetricName.TTI */,
             classification: scoreClassificationForTimeToInteractive(ttiValue),
             navigation,
+            timing: ttiValue,
         };
         storeMetricScore(frameId, navigationId, tti);
         const tbtValue = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(event.args.args.total_blocking_time_ms));
@@ -155,6 +157,7 @@ function storePageLoadMetricAgainstNavigationId(navigation, event) {
             metricName: "TBT" /* MetricName.TBT */,
             classification: scoreClassificationForTotalBlockingTime(tbtValue),
             navigation,
+            timing: tbtValue,
         };
         storeMetricScore(frameId, navigationId, tbt);
         return;
@@ -171,6 +174,7 @@ function storePageLoadMetricAgainstNavigationId(navigation, event) {
             metricName: "L" /* MetricName.L */,
             classification: "unclassified" /* ScoreClassification.UNCLASSIFIED */,
             navigation,
+            timing: loadTime,
         };
         storeMetricScore(frameId, navigationId, metricScore);
         return;
@@ -191,6 +195,7 @@ function storePageLoadMetricAgainstNavigationId(navigation, event) {
             metricName: "LCP" /* MetricName.LCP */,
             classification: scoreClassificationForLargestContentfulPaint(lcpTime),
             navigation,
+            timing: lcpTime,
         };
         const metricsByNavigation = Platform.MapUtilities.getWithDefault(metricScoresByFrameId, frameId, () => new Map());
         const metrics = Platform.MapUtilities.getWithDefault(metricsByNavigation, navigationId, () => new Map());

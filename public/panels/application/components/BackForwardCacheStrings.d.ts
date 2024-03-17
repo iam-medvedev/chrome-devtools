@@ -416,4 +416,7 @@ export declare const NotRestoredReasonDescription: {
     ParserAborted: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    BroadcastChannelOnMessage: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
 };

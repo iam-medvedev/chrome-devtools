@@ -63,11 +63,11 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
             }
         });
         assert.deepEqual(stripingTitles, [
-            'Pointer',
+            'Pointer', // The interaction event in the Interactions track for the pointer event.
             'Task', // The same long task as above, but rendered by the new engine.
         ]);
         assert.deepEqual(triangleTitles, [
-            'Pointer',
+            'Pointer', // The interaction event in the Interactions track for the pointer event.
             'Task', // The same long task as above, but rendered by the new engine.
         ]);
     });

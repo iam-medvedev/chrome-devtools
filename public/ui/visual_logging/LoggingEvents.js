@@ -75,14 +75,16 @@ export async function logChange(event) {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordChange(changeEvent);
     showDebugPopoverForEvent('Change', loggingState?.config);
 }
-export const logKeyDown = (throttler, codes) => async (event, context) => {
+let pendingKeyDownContext = null;
+export const logKeyDown = (throttler) => async (loggable, event, context) => {
     if (!(event instanceof KeyboardEvent)) {
         return;
     }
-    if (codes?.length && !codes.includes(event.code)) {
+    const loggingState = loggable ? getLoggingState(loggable) : null;
+    const codes = (typeof loggingState?.config.track?.keydown === 'string') ? loggingState.config.track.keydown : '';
+    if (codes.length && !codes.split('|').includes(event.code)) {
         return;
     }
-    const loggingState = event?.currentTarget ? getLoggingState(event.currentTarget) : null;
     const keyDownEvent = { veid: loggingState?.veid };
     if (!context && codes?.length) {
         context = contextFromKeyCodes(event);
@@ -90,9 +92,14 @@ export const logKeyDown = (throttler, codes) => async (event, context) => {
     if (context) {
         keyDownEvent.context = await contextAsNumber(context);
     }
+    if (pendingKeyDownContext && context && pendingKeyDownContext !== context) {
+        void throttler.process?.();
+    }
+    pendingKeyDownContext = context || null;
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordKeyDown(keyDownEvent);
         showDebugPopoverForEvent('KeyDown', loggingState?.config, context);
+        pendingKeyDownContext = null;
     });
 };
 function contextFromKeyCodes(event) {

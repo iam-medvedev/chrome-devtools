@@ -407,11 +407,11 @@ export class SearchView extends UI.Widget.VBox {
         const shouldCollapseAllForOtherPlatforms = !isMac && event.ctrlKey && !event.metaKey && event.shiftKey && event.code === 'BracketLeft';
         if (shouldShowAllForMac || shouldShowAllForOtherPlatforms) {
             this.searchResultsPane?.showAllMatches();
-            void VisualLogging.logKeyDown(event, 'show-all-matches');
+            void VisualLogging.logKeyDown(event.currentTarget, event, 'show-all-matches');
         }
         else if (shouldCollapseAllForMac || shouldCollapseAllForOtherPlatforms) {
             this.searchResultsPane?.collapseAllResults();
-            void VisualLogging.logKeyDown(event, 'collapse-all-results');
+            void VisualLogging.logKeyDown(event.currentTarget, event, 'collapse-all-results');
         }
     }
     save() {

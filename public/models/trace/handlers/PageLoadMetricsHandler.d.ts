@@ -63,5 +63,6 @@ export interface MetricScore {
     event?: Types.TraceEvents.PageLoadEvent;
     navigation?: Types.TraceEvents.TraceEventNavigationStart;
     estimated?: boolean;
+    timing: Types.Timing.MicroSeconds;
 }
 export {};

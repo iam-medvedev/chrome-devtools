@@ -121,45 +121,55 @@ describeWithEnvironment('PageLoadMetricsHandler', function () {
         it('extracts DOMContentLoaded correctly', () => {
             const domContentLoadedMetrics = getMetricsByName("DCL" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.MetricName.DCL */);
             assert.strictEqual(domContentLoadedMetrics[0].score, '0.03s');
+            assert.strictEqual(domContentLoadedMetrics[0].timing, 34520);
             assert.strictEqual(domContentLoadedMetrics[0].classification, "unclassified" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
             assertMetricNavigationId(domContentLoadedMetrics[0], firstNavigationId);
             assert.strictEqual(domContentLoadedMetrics[1].score, '0.04s');
+            assert.strictEqual(domContentLoadedMetrics[1].timing, 40401);
             assert.strictEqual(domContentLoadedMetrics[1].classification, "unclassified" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
             assertMetricNavigationId(domContentLoadedMetrics[1], secondNavigationId);
         });
         it('extracts First Contentful Paint correctly', () => {
             const firstContentfulPaints = getMetricsByName("FCP" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FCP */);
             assert.strictEqual(firstContentfulPaints[0].score, '0.04s');
+            assert.strictEqual(firstContentfulPaints[0].timing, 37269);
             assert.strictEqual(firstContentfulPaints[0].classification, "good" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
             assertMetricNavigationId(firstContentfulPaints[0], firstNavigationId);
             assert.strictEqual(firstContentfulPaints[1].score, '0.04s');
+            assert.strictEqual(firstContentfulPaints[1].timing, 42390);
             assert.strictEqual(firstContentfulPaints[1].classification, "good" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
             assertMetricNavigationId(firstContentfulPaints[1], secondNavigationId);
         });
         it('extracts Largest Contentful Paint correctly', () => {
             const firstContentfulPaints = getMetricsByName("LCP" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
             assert.strictEqual(firstContentfulPaints[0].score, '0.04s');
+            assert.strictEqual(firstContentfulPaints[0].timing, 37271);
             assert.strictEqual(firstContentfulPaints[0].classification, "good" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
             assertMetricNavigationId(firstContentfulPaints[0], firstNavigationId);
             assert.strictEqual(firstContentfulPaints[1].score, '0.04s');
+            assert.strictEqual(firstContentfulPaints[1].timing, 42391);
             assert.strictEqual(firstContentfulPaints[1].classification, "good" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
             assertMetricNavigationId(firstContentfulPaints[1], secondNavigationId);
         });
         it('extracts First Paint correctly', () => {
             const firstContentfulPaints = getMetricsByName("FP" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.MetricName.FP */);
             assert.strictEqual(firstContentfulPaints[0].score, '0.04s');
+            assert.strictEqual(firstContentfulPaints[0].timing, 37269);
             assert.strictEqual(firstContentfulPaints[0].classification, "unclassified" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
             assertMetricNavigationId(firstContentfulPaints[0], firstNavigationId);
             assert.strictEqual(firstContentfulPaints[1].score, '0.04s');
+            assert.strictEqual(firstContentfulPaints[1].timing, 42389);
             assert.strictEqual(firstContentfulPaints[1].classification, "unclassified" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
             assertMetricNavigationId(firstContentfulPaints[1], secondNavigationId);
         });
         it('extracts Load correctly', () => {
             const firstContentfulPaints = getMetricsByName("L" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.MetricName.L */);
             assert.strictEqual(firstContentfulPaints[0].score, '0.15s');
+            assert.strictEqual(firstContentfulPaints[0].timing, 148980);
             assert.strictEqual(firstContentfulPaints[0].classification, "unclassified" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
             assertMetricNavigationId(firstContentfulPaints[0], firstNavigationId);
             assert.strictEqual(firstContentfulPaints[1].score, '0.16s');
+            assert.strictEqual(firstContentfulPaints[1].timing, 161333);
             assert.strictEqual(firstContentfulPaints[1].classification, "unclassified" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.UNCLASSIFIED */);
             assertMetricNavigationId(firstContentfulPaints[1], secondNavigationId);
         });

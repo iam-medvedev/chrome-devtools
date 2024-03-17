@@ -514,7 +514,6 @@ export class NodeFormatter {
 export class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
     profile;
     heapProfilerModel;
-    timelineDataInternal;
     constructor(profile, heapProfilerModel) {
         super();
         this.profile = profile;

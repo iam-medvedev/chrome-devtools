@@ -187,13 +187,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             }
         });
     }
-    modifyTree(group, node, action) {
+    modifyTree(node, action) {
         const entry = this.entryData[node];
-        this.compatibilityTracksAppender?.modifyTree(group, entry, action);
+        TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.applyFilterAction({ type: action, entry });
     }
-    findPossibleContextMenuActions(group, node) {
+    findPossibleContextMenuActions(node) {
         const entry = this.entryData[node];
-        return this.compatibilityTracksAppender?.findPossibleContextMenuActions(group, entry);
+        return TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.findPossibleActions(entry);
     }
     buildGroupStyle(extra) {
         const defaultGroupStyle = {
@@ -826,14 +826,14 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         return element;
     }
-    prepareHighlightedHiddenEntriesArrowInfo(group, entryIndex) {
+    prepareHighlightedHiddenEntriesArrowInfo(entryIndex) {
         const element = document.createElement('div');
         const root = UI.Utils.createShadowRootWithCoreStyles(element, {
             cssFile: [timelineFlamechartPopoverStyles],
             delegatesFocus: undefined,
         });
         const entry = this.entryData[entryIndex];
-        const hiddenEntriesAmount = this.compatibilityTracksAppender?.findHiddenDescendantsAmount(group, entry);
+        const hiddenEntriesAmount = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.findHiddenDescendantsAmount(entry);
         if (!hiddenEntriesAmount) {
             return null;
         }
@@ -1187,7 +1187,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Try revealing the entry and getting the index again.
         if (this.entryData.indexOf(selection.object) === -1 && TimelineSelection.isTraceEventSelection(selection.object)) {
             if (this.timelineDataInternal?.selectedGroup) {
-                this.compatibilityTracksAppender?.revealEntry(this.timelineDataInternal?.selectedGroup, selection.object);
+                TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.revealEntry(selection.object);
                 this.timelineData(true);
             }
         }
@@ -1260,13 +1260,8 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Reset to clear any previous arrows from the last event.
         this.timelineDataInternal.resetFlowData();
         this.lastInitiatorEntry = entryIndex;
-        let hiddenEvents = [];
-        let modifiedEntries = [];
-        if (this.timelineDataInternal.selectedGroup) {
-            hiddenEvents = this.compatibilityTracksAppender?.getHiddenEvents(this.timelineDataInternal.selectedGroup) ?? [];
-            modifiedEntries =
-                this.compatibilityTracksAppender?.getModifiedEntries(this.timelineDataInternal.selectedGroup) ?? [];
-        }
+        const hiddenEvents = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.invisibleEntries() ?? [];
+        const modifiedEntries = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.modifiedEntries() ?? [];
         const initiatorsData = initiatorsDataToDraw(this.traceEngineData, event, hiddenEvents, modifiedEntries);
         // This means there is no change for arrows.
         if (previousInitiatorsDataLength === 0 && initiatorsData.length === 0) {

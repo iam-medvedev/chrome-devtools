@@ -364,9 +364,9 @@ describeWithEnvironment('Inline variable view scope value resolution', () => {
             { scopeStart: 0, scopeEnd: 30, variableMap: new Map([['a', value2]]) },
         ];
         const variableNames = [
-            { line: 0, from: 5, id: 'a' },
-            { line: 10, from: 15, id: 'a' },
-            { line: 20, from: 25, id: 'a' },
+            { line: 0, from: 5, id: 'a' }, // Falls into the outer scope.
+            { line: 10, from: 15, id: 'a' }, // Inner scope.
+            { line: 20, from: 25, id: 'a' }, // Outer scope.
             { line: 30, from: 35, id: 'a' }, // Outside of any scope.
         ];
         const valuesByLine = Sources.DebuggerPlugin.getVariableValuesByLine(scopeMappings, variableNames);

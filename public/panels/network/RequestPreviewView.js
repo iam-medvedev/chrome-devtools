@@ -79,8 +79,7 @@ export class RequestPreviewView extends RequestResponseView {
         if (jsonView) {
             return jsonView;
         }
-        const dataURL = contentData.asDataUrl();
-        return dataURL ? new RequestHTMLView(dataURL) : null;
+        return RequestHTMLView.create(contentData);
     }
     async createPreview() {
         if (this.request.signedExchangeInfo()) {

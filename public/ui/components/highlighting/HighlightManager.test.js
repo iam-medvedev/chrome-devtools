@@ -66,9 +66,8 @@ describe('HighlightManager', () => {
             new TextUtils.TextRange.SourceRange(3, 3),
             new TextUtils.TextRange.SourceRange(6, 3),
         ]);
-        // @ts-expect-error
         const highlight = CSS.highlights.get(Highlighting.HighlightManager.HIGHLIGHT_REGISTRY);
-        assert.strictEqual(highlight.size, 3);
+        assert.strictEqual(highlight?.size, 3);
         assert.deepStrictEqual(Array.from(highlight.keys()), ranges);
     });
 });

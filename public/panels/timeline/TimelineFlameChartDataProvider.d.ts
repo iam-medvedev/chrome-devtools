@@ -34,8 +34,8 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private lastSelection?;
     private colorForEvent?;
     constructor();
-    modifyTree(group: PerfUI.FlameChart.Group, node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
-    findPossibleContextMenuActions(group: PerfUI.FlameChart.Group, node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
+    modifyTree(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
+    findPossibleContextMenuActions(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
     private buildGroupStyle;
     setModel(performanceModel: PerformanceModel | null, newTraceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
     /**
@@ -90,7 +90,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private appendFrames;
     private entryType;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
-    prepareHighlightedHiddenEntriesArrowInfo(group: PerfUI.FlameChart.Group, entryIndex: number): Element | null;
+    prepareHighlightedHiddenEntriesArrowInfo(entryIndex: number): Element | null;
     entryColor(entryIndex: number): string;
     private genericTraceEventColor;
     private preparePatternCanvas;

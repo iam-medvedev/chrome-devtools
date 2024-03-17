@@ -292,7 +292,7 @@ export class FlexGridValidator extends CSSRuleValidator {
     constructor() {
         super([
             'justify-content',
-            'place-content',
+            'place-content', // Shorthand	<'align-content'> <'justify-content'>?
             'align-items',
         ]);
     }

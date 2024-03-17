@@ -110,8 +110,10 @@ export function debugString(config) {
     if (config.parent) {
         components.push(`parent: ${config.parent}`);
     }
-    if (config.track?.size) {
-        components.push(`track: ${[...config.track?.entries()].map(([key, value]) => `${key}${value ? `: ${value}` : ''}`).join(', ')}`);
+    if (config.track) {
+        components.push(`track: ${Object.entries(config.track)
+            .map(([key, value]) => `${key}${typeof value === 'string' ? `: ${value}` : ''}`)
+            .join(', ')}`);
     }
     return components.join('; ');
 }

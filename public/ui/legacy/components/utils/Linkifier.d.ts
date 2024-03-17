@@ -47,15 +47,15 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     private static appendTextWithoutHashes;
     private static appendHiddenText;
     static untruncatedNodeText(node: Node): string;
-    static linkInfo(link: Element | null): _LinkInfo | null;
+    static linkInfo(link: Element | null): LinkInfo | null;
     private static handleClick;
-    static handleClickFromNewComponentLand(linkInfo: _LinkInfo): void;
-    static invokeFirstAction(linkInfo: _LinkInfo): boolean;
+    static handleClickFromNewComponentLand(linkInfo: LinkInfo): void;
+    static invokeFirstAction(linkInfo: LinkInfo): boolean;
     static linkHandlerSetting(): Common.Settings.Setting<string>;
     static registerLinkHandler(title: string, handler: LinkHandler): void;
     static unregisterLinkHandler(title: string): void;
     static uiLocation(link: Element): Workspace.UISourceCode.UILocation | null;
-    static linkActions(info: _LinkInfo): {
+    static linkActions(info: LinkInfo): {
         section: string;
         title: string;
         jslogContext: string;
@@ -90,7 +90,7 @@ export declare class ContentProviderContextMenuProvider implements UI.ContextMen
     .Provider<Workspace.UISourceCode.UISourceCode | SDK.Resource.Resource | SDK.NetworkRequest.NetworkRequest> {
     appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, contentProvider: Workspace.UISourceCode.UISourceCode | SDK.Resource.Resource | SDK.NetworkRequest.NetworkRequest): void;
 }
-export interface _LinkInfo {
+interface LinkInfo {
     icon: IconButton.Icon.Icon | null;
     enableDecorator: boolean;
     uiLocation: Workspace.UISourceCode.UILocation | null;
@@ -128,14 +128,6 @@ export interface LinkifyOptions {
      */
     revealBreakpoint?: boolean;
 }
-export interface _CreateLinkOptions {
-    maxLength?: number;
-    title?: string;
-    href?: Platform.DevToolsPath.UrlString;
-    preventClick?: boolean;
-    tabStop?: boolean;
-    bypassURLTrimming?: boolean;
-}
 export type LinkHandler = (arg0: TextUtils.ContentProvider.ContentProvider, arg1: number) => void;
 export declare const enum Events {
     LiveLocationUpdated = "liveLocationUpdated"
@@ -143,3 +135,4 @@ export declare const enum Events {
 export type EventTypes = {
     [Events.LiveLocationUpdated]: Bindings.LiveLocation.LiveLocation;
 };
+export {};

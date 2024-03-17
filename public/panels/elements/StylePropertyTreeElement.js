@@ -20,7 +20,7 @@ import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
-import { AngleMatch, AngleMatcher, ASTUtils, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, LinkableNameMatch, LinkableNameMatcher, Renderer, RenderingContext, ShadowMatch, ShadowMatcher, StringMatch, StringMatcher, tokenizeDeclaration, URLMatch, URLMatcher, VariableMatch, VariableMatcher, } from './PropertyParser.js';
+import { AngleMatch, AngleMatcher, ASTUtils, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatch, FontMatcher, GridTemplateMatch, GridTemplateMatcher, LinkableNameMatch, LinkableNameMatcher, Renderer, RenderingContext, ShadowMatch, ShadowMatcher, StringMatch, StringMatcher, tokenizeDeclaration, URLMatch, URLMatcher, VariableMatch, VariableMatcher, } from './PropertyParser.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
 import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, StylesSidebarPropertyRenderer, unescapeCssString, } from './StylesSidebarPane.js';
@@ -779,6 +779,41 @@ export class ShadowRenderer extends ShadowMatch {
         return new ShadowMatcher((text, type) => new ShadowRenderer(text, type, treeElement));
     }
 }
+export class FontRenderer extends FontMatch {
+    treeElement;
+    constructor(treeElement, text) {
+        super(text);
+        this.treeElement = treeElement;
+    }
+    render() {
+        this.treeElement.section().registerFontProperty(this.treeElement);
+        return [document.createTextNode(this.text)];
+    }
+    static matcher(treeElement) {
+        return new FontMatcher(text => new FontRenderer(treeElement, text));
+    }
+}
+export class GridTemplateRenderer extends GridTemplateMatch {
+    constructor(text, lines) {
+        super(text, lines);
+    }
+    render(node, context) {
+        if (this.lines.length <= 1) {
+            return Renderer.render(ASTUtils.siblings(ASTUtils.declValue(node)), context).nodes;
+        }
+        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
+        const container = document.createDocumentFragment();
+        for (const line of this.lines) {
+            const value = Renderer.render(line, context);
+            const lineBreak = UI.Fragment.html `<br /><span class='styles-clipboard-only'>${indent.repeat(2)}</span>`;
+            container.append(lineBreak, ...value.nodes);
+        }
+        return [container];
+    }
+    static matcher() {
+        return new GridTemplateMatcher((text, lines) => new GridTemplateRenderer(text, lines));
+    }
+}
 export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     style;
     matchedStylesInternal;
@@ -896,24 +931,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return '';
         }
         return this.nameElement.textContent + ': ' + this.valueElement.textContent;
-    }
-    processFont(text) {
-        this.#parentSection.registerFontProperty(this);
-        return document.createTextNode(text);
-    }
-    processGrid(propertyValue, _propertyName) {
-        const splitResult = TextUtils.TextUtils.Utils.splitStringByRegexes(propertyValue, [SDK.CSSMetadata.GridAreaRowRegex]);
-        if (splitResult.length <= 1) {
-            return document.createTextNode(propertyValue);
-        }
-        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
-        const container = document.createDocumentFragment();
-        for (const result of splitResult) {
-            const value = result.value.trim();
-            const content = UI.Fragment.html `<br /><span class='styles-clipboard-only'>${indent.repeat(2)}</span>${value}`;
-            container.appendChild(content);
-        }
-        return container;
     }
     processLength(lengthText) {
         if (!this.editable()) {
@@ -1120,10 +1137,10 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             BezierRenderer.matcher(this),
             StringRenderer.matcher(),
             ShadowRenderer.matcher(this),
+            FontRenderer.matcher(this),
+            GridTemplateRenderer.matcher(),
         ]);
         if (this.property.parsedOk) {
-            propertyRenderer.setFontHandler(this.processFont.bind(this));
-            propertyRenderer.setGridHandler(this.processGrid.bind(this));
             propertyRenderer.setLengthHandler(this.processLength.bind(this));
         }
         this.listItemElement.removeChildren();

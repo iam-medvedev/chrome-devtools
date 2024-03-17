@@ -9,7 +9,9 @@ export interface NavigationInsightContext {
 }
 type InsightRunnersType = typeof InsightsRunners;
 export declare enum InsightWarning {
-    NO_FP = "NO_FP"
+    NO_FP = "NO_FP",
+    NO_LCP = "NO_LCP",
+    NO_DOCUMENT_REQUEST = "NO_DOCUMENT_REQUEST"
 }
 export type InsightResult<R extends Record<string, unknown>> = R & {
     warnings?: InsightWarning[];

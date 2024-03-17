@@ -124,6 +124,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private forceDecorationCache?;
     private entryColorsCache?;
     private totalTime?;
+    private lastIndexOfUpdatedPopover;
     constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, groupExpansionSetting?: Common.Settings.Setting<GroupExpansionState>);
     willHide(): void;
     getBarHeight(): number;
@@ -456,7 +457,7 @@ export interface FlameChartDataProvider {
     maxStackDepth(): number;
     timelineData(rebuild?: boolean): FlameChartTimelineData | null;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
-    prepareHighlightedHiddenEntriesArrowInfo?(group: Group, entryIndex: number): Element | null;
+    prepareHighlightedHiddenEntriesArrowInfo?(entryIndex: number): Element | null;
     canJumpToEntry(entryIndex: number): boolean;
     entryTitle(entryIndex: number): string | null;
     entryFont(entryIndex: number): string | null;
@@ -465,8 +466,8 @@ export interface FlameChartDataProvider {
     forceDecoration(entryIndex: number): boolean;
     textColor(entryIndex: number): string;
     mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
-    modifyTree?(group: Group, node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
-    findPossibleContextMenuActions?(group: Group, node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
+    modifyTree?(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
+    findPossibleContextMenuActions?(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
 }
 export interface FlameChartMarker {
     startTime(): number;

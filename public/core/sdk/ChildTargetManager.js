@@ -150,6 +150,9 @@ export class ChildTargetManager extends SDKModel {
         else if (targetInfo.type === 'worker') {
             type = Type.Worker;
         }
+        else if (targetInfo.type === 'worklet') {
+            type = Type.Worklet;
+        }
         else if (targetInfo.type === 'shared_worker') {
             type = Type.SharedWorker;
         }

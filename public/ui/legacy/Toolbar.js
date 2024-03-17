@@ -194,7 +194,7 @@ export class Toolbar {
         if (options.showLabel) {
             button.setText(options.label?.() || action.title());
         }
-        let handler = (_event) => {
+        let handler = () => {
             void action.execute();
         };
         if (options.userActionCode) {
@@ -801,10 +801,7 @@ export class ToolbarComboBox extends ToolbarItem {
         return null;
     }
     select(option) {
-        this.selectElementInternal.selectedIndex =
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Array.prototype.indexOf.call(this.selectElementInternal, option);
+        this.selectElementInternal.selectedIndex = Array.prototype.indexOf.call(this.selectElementInternal, option);
     }
     setSelectedIndex(index) {
         this.selectElementInternal.selectedIndex = index;

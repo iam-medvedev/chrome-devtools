@@ -6,6 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { getCategoryStyles } from './EventUICategory.js';
 import { Category, IsLong } from './TimelineFilters.js';
 import { TimelineSelection } from './TimelineSelection.js';
 import { TimelineTreeView } from './TimelineTreeView.js';
@@ -160,7 +161,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
         }
         toolbar.appendToolbarItem(durationFilterUI);
         const categoryFiltersUI = new Map();
-        const categories = TimelineUIUtils.categories();
+        const categories = getCategoryStyles();
         for (const categoryName in categories) {
             const category = categories[categoryName];
             if (!category.visible) {
@@ -179,7 +180,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
             this.notifyFiltersChanged();
         }
         function categoriesFilterChanged(name) {
-            const categories = TimelineUIUtils.categories();
+            const categories = getCategoryStyles();
             const checkBox = categoryFiltersUI.get(name);
             categories[name].hidden = !checkBox || !checkBox.checked();
             this.notifyFiltersChanged();

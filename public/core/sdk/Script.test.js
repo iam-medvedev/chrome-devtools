@@ -99,7 +99,7 @@ console.log("foo");
         it('throws an error for protocol failures', done => {
             const { script, target } = setupEditTest('1', 'console.log("foo")');
             sinon.stub(target.debuggerAgent(), 'invoke_setScriptSource').returns(Promise.resolve({
-                status: undefined,
+                status: undefined, // Make TS happy.
                 getError: () => 'setScriptSource failed for some reason',
             }));
             script.editSource('console.log("bar")')

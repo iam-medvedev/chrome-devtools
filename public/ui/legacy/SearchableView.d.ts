@@ -62,7 +62,6 @@ export declare class SearchableView extends VBox {
     private onInput;
     private onValueChanged;
 }
-export declare const _symbol: unique symbol;
 export interface Searchable {
     onSearchCanceled(): void;
     onSearchClosed?: () => void;

@@ -36,7 +36,7 @@ export declare class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.
     constructor(options?: TreeOutlineOptions | null);
 }
 export declare const enum ObjectPropertiesMode {
-    All = 0,
+    All = 0,// All properties, including prototype properties
     OwnAndInternalAndInherited = 1
 }
 export declare class RootElement extends UI.TreeOutline.TreeElement {

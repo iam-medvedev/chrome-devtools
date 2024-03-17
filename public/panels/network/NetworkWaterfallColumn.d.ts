@@ -60,13 +60,3 @@ export declare class NetworkWaterfallColumn extends UI.Widget.VBox {
     private buildTimingBarLayers;
     private decorateRow;
 }
-export interface _TextLayer {
-    x: number;
-    y: number;
-    text: string;
-}
-export interface _LayerStyle {
-    fillStyle?: string;
-    lineWidth?: number;
-    borderColor?: string;
-}

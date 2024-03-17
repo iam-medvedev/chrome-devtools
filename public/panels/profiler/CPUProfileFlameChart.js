@@ -36,15 +36,14 @@ let colorGeneratorInstance = null;
 export class ProfileFlameChartDataProvider {
     colorGeneratorInternal;
     maxStackDepthInternal;
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    timelineData_;
+    timelineDataInternal;
     entryNodes;
     #font;
     boldFont;
     constructor() {
         this.colorGeneratorInternal = ProfileFlameChartDataProvider.colorGenerator();
         this.maxStackDepthInternal = 0;
-        this.timelineData_ = null;
+        this.timelineDataInternal = null;
         this.entryNodes = [];
         this.#font = `${PerfUI.Font.DEFAULT_FONT_SIZE} ${PerfUI.Font.getFontFamilyForCanvas()}`;
     }
@@ -70,7 +69,7 @@ export class ProfileFlameChartDataProvider {
         return this.maxStackDepthInternal;
     }
     timelineData() {
-        return this.timelineData_ || this.calculateTimelineData();
+        return this.timelineDataInternal || this.calculateTimelineData();
     }
     calculateTimelineData() {
         throw 'Not implemented.';

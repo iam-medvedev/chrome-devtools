@@ -4,10 +4,7 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
-import { TimelineCategory, TimelineRecordStyle } from './EventUICategory.js';
-interface EventStylesMap {
-    [x: string]: TimelineRecordStyle;
-}
+import { type CategoryPalette, type TimelineCategory, TimelineRecordStyle } from './EventUICategory.js';
 type LinkifyLocationOptions = {
     scriptId: Protocol.Runtime.ScriptId | null;
     url: string;
@@ -18,8 +15,6 @@ type LinkifyLocationOptions = {
     linkifier: LegacyComponents.Linkifier.Linkifier;
 };
 export declare class TimelineUIUtils {
-    private static initEventStyles;
-    static setEventStylesMap(eventStyles: EventStylesMap): void;
     static frameDisplayName(frame: Protocol.Runtime.CallFrame): string;
     static testContentMatching(traceEvent: TraceEngine.Legacy.CompatibleTraceEvent, regExp: RegExp, traceParsedData?: TraceEngine.Handlers.Types.TraceParseData): boolean;
     static eventStyle(event: TraceEngine.Legacy.CompatibleTraceEvent): TimelineRecordStyle;
@@ -51,16 +46,8 @@ export declare class TimelineUIUtils {
     private static aggregatedStatsForTraceEvent;
     static buildPicturePreviewContent(traceData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventPaint, target: SDK.Target.Target): Promise<Element | null>;
     static createEventDivider(event: TraceEngine.Legacy.CompatibleTraceEvent, zeroTime: number): Element;
-    static visibleTypes(): string[];
     static visibleEventsFilter(): TimelineModel.TimelineModelFilter.TimelineModelFilter;
-    static categories(): {
-        [x: string]: TimelineCategory;
-    };
-    static setCategories(cats: {
-        [x: string]: TimelineCategory;
-    }): void;
-    static getTimelineMainEventCategories(): string[];
-    static setTimelineMainEventCategories(categories: string[]): void;
+    static categories(): CategoryPalette;
     static generatePieChart(aggregatedStats: {
         [x: string]: number;
     }, selfCategory?: TimelineCategory, selfTime?: number): Element;
