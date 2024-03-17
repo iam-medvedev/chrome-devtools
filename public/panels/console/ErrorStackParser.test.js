@@ -70,8 +70,8 @@ describe('ErrorStackParser', () => {
             url: fileTestingUrl,
             prefix: '        at foo (',
             suffix: ')',
-            lineNumber: 9,
-            columnNumber: 2,
+            lineNumber: 9, // 0-based.
+            columnNumber: 2, // 0-based.
             enclosedInBraces: true,
         });
     });
@@ -96,8 +96,8 @@ describe('ErrorStackParser', () => {
             url: fileTestingUrl,
             prefix: '        at ',
             suffix: '',
-            lineNumber: 41,
-            columnNumber: 2,
+            lineNumber: 41, // 0-based.
+            columnNumber: 2, // 0-based.
             enclosedInBraces: false,
         });
     });
@@ -109,8 +109,8 @@ describe('ErrorStackParser', () => {
             url: fileTestingUrl,
             prefix: '        at async ',
             suffix: '',
-            lineNumber: 41,
-            columnNumber: 2,
+            lineNumber: 41, // 0-based.
+            columnNumber: 2, // 0-based.
             enclosedInBraces: false,
         });
     });
@@ -125,16 +125,16 @@ describe('ErrorStackParser', () => {
             url,
             prefix: '        at load (',
             suffix: ')',
-            lineNumber: 32,
-            columnNumber: 4,
+            lineNumber: 32, // 0-based.
+            columnNumber: 4, // 0-based.
             enclosedInBraces: true,
         });
         assert.deepStrictEqual(frames[2].link, {
             url,
             prefix: '        at ',
             suffix: '',
-            lineNumber: 0,
-            columnNumber: 0,
+            lineNumber: 0, // 0-based.
+            columnNumber: 0, // 0-based.
             enclosedInBraces: false,
         });
     });
@@ -148,8 +148,8 @@ describe('ErrorStackParser', () => {
             url,
             prefix: '    at eval (eval at <anonymous> (',
             suffix: '), <anonymous>:1:1)',
-            lineNumber: 41,
-            columnNumber: 0,
+            lineNumber: 41, // 0-based.
+            columnNumber: 0, // 0-based.
             enclosedInBraces: true,
         });
     });
@@ -169,8 +169,8 @@ describe('ErrorStackParser', () => {
             url: 'http://www.example.org/inspected-page.html',
             prefix: '    at eval (eval at testFunction (',
             suffix: '), <anonymous>:1:10)',
-            lineNumber: 28,
-            columnNumber: 10,
+            lineNumber: 28, // 0-based.
+            columnNumber: 10, // 0-based.
             enclosedInBraces: true,
         });
     });
@@ -185,24 +185,24 @@ describe('ErrorStackParser', () => {
             url: 'http://www.example.org/(abc)/foo.js',
             prefix: '        at foo (',
             suffix: ')',
-            lineNumber: 1,
-            columnNumber: 2,
+            lineNumber: 1, // 0-based.
+            columnNumber: 2, // 0-based.
             enclosedInBraces: true,
         });
         assert.deepStrictEqual(frames[2].link, {
             url: 'http://www.example.org/(abc)/foo.js',
             prefix: '        at async bar (',
             suffix: ')',
-            lineNumber: 0,
-            columnNumber: 1,
+            lineNumber: 0, // 0-based.
+            columnNumber: 1, // 0-based.
             enclosedInBraces: true,
         });
         assert.deepStrictEqual(frames[3].link, {
             url: 'http://www.example.org/(abc)/foo.js',
             prefix: '        at ',
             suffix: '',
-            lineNumber: 9,
-            columnNumber: 19,
+            lineNumber: 9, // 0-based.
+            columnNumber: 19, // 0-based.
             enclosedInBraces: false,
         });
     });

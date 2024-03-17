@@ -5,6 +5,7 @@ import * as TraceEngine from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
 const { assert } = chai;
 function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel) {
@@ -81,12 +82,14 @@ describeWithEnvironment('GPUTrackAppender', function () {
         }
       `;
             document.documentElement.appendChild(styleElement);
+            ThemeSupport.ThemeSupport.clearThemeCache();
         });
         after(() => {
             const styleElementToRemove = document.documentElement.querySelector('#fake-perf-panel-colors');
             if (styleElementToRemove) {
                 document.documentElement.removeChild(styleElementToRemove);
             }
+            ThemeSupport.ThemeSupport.clearThemeCache();
         });
         it('returns the correct color and title for GPU tasks', () => {
             const gpuEvents = traceParsedData.GPU.mainGPUThreadTasks;

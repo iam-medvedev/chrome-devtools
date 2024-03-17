@@ -1047,11 +1047,11 @@ const extraPropertyValues = {
     // [2]: https://chromium-review.googlesource.com/c/chromium/src/+/4232738
     'white-space': {
         values: [
-            'normal',
-            'pre',
-            'pre-wrap',
-            'pre-line',
-            'nowrap',
+            'normal', // equal to: `collapse wrap`
+            'pre', // equal to: `preserve nowrap`
+            'pre-wrap', // equal to: `preserve wrap`
+            'pre-line', // equal to: `preserve-breaks wrap`
+            'nowrap', // equal to: `collapse nowrap`
             'break-spaces', // equal to: `break-spaces wrap`, Chrome 76, crbug.com/767634#c28
         ],
     },

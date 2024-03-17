@@ -1,12 +1,10 @@
-import { TimelineCategory, TimelineRecordStyle } from './EventUICategory.js';
+import { type CategoryPalette, TimelineRecordStyle } from './EventUICategory.js';
 export declare class UIDevtoolsUtils {
     static isUiDevTools(): boolean;
     static categorizeEvents(): {
         [x: string]: TimelineRecordStyle;
     };
-    static categories(): {
-        [x: string]: TimelineCategory;
-    };
+    static categories(): CategoryPalette;
     static getMainCategoriesList(): string[];
 }
 export declare enum RecordType {

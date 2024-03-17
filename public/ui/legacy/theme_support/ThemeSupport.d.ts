@@ -3,14 +3,14 @@ export declare class ThemeSupport extends EventTarget {
     private setting;
     private themeNameInternal;
     private customSheets;
-    private computedRoot;
+    private computedStyleOfHTML;
     private constructor();
     static hasInstance(): boolean;
     static instance(opts?: {
         forceNew: boolean | null;
         setting: Common.Settings.Setting<string> | null;
     }): ThemeSupport;
-    getComputedValue(variableName: string, target?: Element | null): string;
+    getComputedValue(propertyName: string, target?: Element | null): string;
     hasTheme(): boolean;
     themeName(): string;
     injectHighlightStyleSheets(element: Element | ShadowRoot): void;
@@ -20,6 +20,7 @@ export declare class ThemeSupport extends EventTarget {
     injectCustomStyleSheets(element: Element | ShadowRoot): void;
     addCustomStylesheet(sheetText: string): void;
     applyTheme(document: Document): void;
+    static clearThemeCache(): void;
     static fetchColors(document: Document | undefined): Promise<void>;
 }
 export declare class ThemeChangeEvent extends Event {

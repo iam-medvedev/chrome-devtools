@@ -28,7 +28,7 @@ export async function forNewRecording(recordStartTime) {
         const networkTitle = typeof networkConditions.title === 'function' ? networkConditions.title() : networkConditions.title;
         return {
             source: 'DevTools',
-            startTime: recordStartTime ? new Date(recordStartTime).toJSON() : undefined,
+            startTime: recordStartTime ? new Date(recordStartTime).toJSON() : undefined, // ISO-8601 timestamp
             cpuThrottling,
             networkThrottling: networkTitle,
             hardwareConcurrency,

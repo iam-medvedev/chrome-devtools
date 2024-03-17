@@ -242,6 +242,9 @@ export interface Conditions {
     download: number;
     upload: number;
     latency: number;
+    packetLoss?: number;
+    packetQueueLength?: number;
+    packetReordering?: boolean;
     title: string | (() => string);
     i18nTitleKey?: string;
 }

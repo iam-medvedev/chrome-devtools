@@ -31,7 +31,11 @@ export interface PossibleFilterActions {
  **/
 export declare class EntriesFilter {
     #private;
-    constructor(entryToNode: EntryToNodeMap);
+    static maybeInstance(opts?: {
+        entryToNodeMap: EntryToNodeMap | null;
+    }): EntriesFilter | null;
+    static removeInstance(): void;
+    private constructor();
     /**
      * Checks which actions can be applied on an entry. This allows us to only show possible actions in the Context Menu.
      * For example, if an entry has no children, COLLAPSE_FUNCTION will not change the FlameChart, therefore there is no need to show this action as an option.
@@ -45,6 +49,7 @@ export declare class EntriesFilter {
      * Returns the set of entries that are invisible given the set of applied actions.
      **/
     invisibleEntries(): Types.TraceEvents.TraceEventData[];
+    inEntryInvisible(entry: Types.TraceEvents.TraceEventData): boolean;
     /**
      * Returns the array of entries that have a sign indicating that entries below are hidden.
      **/

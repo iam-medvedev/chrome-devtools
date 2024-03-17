@@ -77,7 +77,7 @@ export var VisualElements;
     /* 65 used to be ToggleElementSearch, but free to grab now */
     VisualElements[VisualElements["PanelTabHeader"] = 66] = "PanelTabHeader";
     VisualElements[VisualElements["Menu"] = 67] = "Menu";
-    /* 68 used to be DeveloperResourcesPanel, but free to grab now */
+    VisualElements[VisualElements["TableRow"] = 68] = "TableRow";
     VisualElements[VisualElements["TableHeader"] = 69] = "TableHeader";
     VisualElements[VisualElements["TableCell"] = 70] = "TableCell";
     /* 71 used to be StylesComputedPane, but free to grab now */
@@ -107,7 +107,15 @@ export function parseJsLog(jslog) {
     }
     const trackString = getComponent('track:');
     if (trackString) {
-        config.track = new Map(trackString.split(',').map(t => t.split(':')));
+        config.track = {};
+        for (const [key, value] of trackString.split(',').map(t => t.split(':'))) {
+            if (key === 'keydown' && value?.length) {
+                config.track.keydown = value;
+            }
+            else {
+                config.track[key] = true;
+            }
+        }
     }
     return config;
 }

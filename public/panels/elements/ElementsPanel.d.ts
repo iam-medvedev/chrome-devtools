@@ -105,10 +105,6 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     private static firstInspectElementCompletedForTest;
     private static firstInspectElementNodeNameForTest;
 }
-export declare const enum _splitMode {
-    Vertical = "Vertical",
-    Horizontal = "Horizontal"
-}
 export declare class ContextMenuProvider implements UI.ContextMenu.Provider<SDK.RemoteObject.RemoteObject | SDK.DOMModel.DOMNode | SDK.DOMModel.DeferredDOMNode> {
     appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, object: SDK.RemoteObject.RemoteObject | SDK.DOMModel.DOMNode | SDK.DOMModel.DeferredDOMNode): void;
 }

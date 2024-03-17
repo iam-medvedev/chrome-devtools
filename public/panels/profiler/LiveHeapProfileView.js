@@ -215,12 +215,10 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
             exisitingNodes.add(node);
         }
         for (const node of rootNode.children.slice()) {
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // @ts-expect-error
-            if (!exisitingNodes.has(node)) {
-                node.remove();
-            }
             const gridNode = node;
+            if (!exisitingNodes.has(gridNode)) {
+                gridNode.remove();
+            }
             this.gridNodeByUrl.delete(gridNode.url);
         }
         this.sortingChanged();

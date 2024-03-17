@@ -16,6 +16,7 @@ import { loadBasicSourceMapExample, setupPageResourceLoaderForSourceMap, } from 
 import { getMainThread, makeCompleteEvent, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
+import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from './timeline.js';
 const { assert } = chai;
 describeWithMockConnection('TimelineUIUtils', function () {
@@ -296,19 +297,21 @@ describeWithMockConnection('TimelineUIUtils', function () {
 }
 `;
             document.documentElement.appendChild(styleElement);
+            ThemeSupport.ThemeSupport.clearThemeCache();
         });
         after(() => {
             const styleElementToRemove = document.documentElement.querySelector('#fake-perf-panel-colors');
             if (styleElementToRemove) {
                 document.documentElement.removeChild(styleElementToRemove);
             }
+            ThemeSupport.ThemeSupport.clearThemeCache();
         });
         it('should return the correct rgb value for a corresponding CSS variable', function () {
-            const parsedColor = Timeline.TimelineUIUtils.TimelineUIUtils.categories().scripting.getComputedColorValue();
+            const parsedColor = Timeline.EventUICategory.getCategoryStyles().scripting.getComputedColorValue();
             assert.strictEqual('rgb(2 2 2)', parsedColor);
         });
         it('should return the color as a CSS variable', function () {
-            const cssVariable = Timeline.TimelineUIUtils.TimelineUIUtils.categories().scripting.getCSSValue();
+            const cssVariable = Timeline.EventUICategory.getCategoryStyles().scripting.getCSSValue();
             assert.strictEqual('var(--app-color-scripting)', cssVariable);
         });
         it('treats the v8.parseOnBackgroundWaiting as scripting even though it would usually be idle', function () {
@@ -332,7 +335,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const data = await TraceLoader.allModels(this, 'lcp-web-font.json.gz');
             const networkRequests = data.traceParsedData.NetworkRequests.byTime;
             const cssRequest = networkRequests.find(request => {
-                return request.args.data.url === 'http://localhost:3000/app.css';
+                return request.args.data.url === 'https://chromedevtools.github.io/performance-stories/lcp-web-font/app.css';
             });
             if (!cssRequest) {
                 throw new Error('Could not find expected network request.');
@@ -707,7 +710,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const data = await TraceLoader.allModels(this, 'lcp-web-font.json.gz');
             const networkRequests = data.traceParsedData.NetworkRequests.byTime;
             const cssRequest = networkRequests.find(request => {
-                return request.args.data.url === 'http://localhost:3000/app.css';
+                return request.args.data.url === 'https://chromedevtools.github.io/performance-stories/lcp-web-font/app.css';
             });
             if (!cssRequest) {
                 throw new Error('Could not find expected network request.');
@@ -715,13 +718,13 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildSyntheticNetworkRequestDetails(cssRequest, data.timelineModel, new Components.Linkifier.Linkifier());
             const rowData = getRowDataForDetailsElement(details);
             assert.deepEqual(rowData, [
-                { title: 'URL', value: 'localhost:3000/app.css' },
-                { title: 'Duration', value: '4.075ms (3.08ms network transfer + 995μs resource loading)' },
+                { title: 'URL', value: 'chromedevtools.github.io/performance-stories/lcp-web-font/app.css' },
+                { title: 'Duration', value: '12.582ms (8.291ms load from cache + 4.291ms resource loading)' },
                 { title: 'Request Method', value: 'GET' },
                 { title: 'Initial Priority', value: 'Highest' },
                 { title: 'Priority', value: 'Highest' },
                 { title: 'Mime Type', value: 'text/css' },
-                { title: 'Encoded Data', value: '402 B' },
+                { title: 'Encoded Data', value: ' (from cache)' },
                 { title: 'Decoded Body', value: '96 B' },
             ]);
         });

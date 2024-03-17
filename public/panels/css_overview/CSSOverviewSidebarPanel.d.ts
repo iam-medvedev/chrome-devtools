@@ -11,8 +11,6 @@ declare const CSSOverviewSidebarPanel_base: (new (...args: any[]) => {
 export declare class CSSOverviewSidebarPanel extends CSSOverviewSidebarPanel_base {
     #private;
     containerElement: HTMLDivElement;
-    static get ITEM_CLASS_NAME(): string;
-    static get SELECTED(): string;
     constructor();
     addItem(name: string, id: string): void;
     select(id: string, focus: boolean): void;

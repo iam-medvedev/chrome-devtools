@@ -602,8 +602,8 @@ describeWithEnvironment('BreakpointsSidebarController', () => {
 describeWithRealConnection('BreakpointsSidebarController', () => {
     const DEFAULT_BREAKPOINT = [
         Breakpoints.BreakpointManager.EMPTY_BREAKPOINT_CONDITION,
-        true,
-        false,
+        true, // enabled
+        false, // isLogpoint
         "USER_ACTION" /* Breakpoints.BreakpointManager.BreakpointOrigin.USER_ACTION */,
     ];
     it('auto-expands if a user adds a new  breakpoint', async () => {

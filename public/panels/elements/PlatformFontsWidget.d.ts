@@ -5,7 +5,7 @@ export declare class PlatformFontsWidget extends UI.ThrottledWidget.ThrottledWid
     private readonly sectionTitle;
     private readonly fontStatsSection;
     constructor(sharedModel: ComputedStyleModel);
-    doUpdate(): Promise<any>;
+    doUpdate(): Promise<void>;
     private refreshUI;
     wasShown(): void;
 }

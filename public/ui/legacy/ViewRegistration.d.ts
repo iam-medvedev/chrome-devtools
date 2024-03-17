@@ -111,7 +111,7 @@ export declare function registerLocationResolver(registration: LocationResolverR
 export declare function getRegisteredLocationResolvers(): Array<LocationResolverRegistration>;
 export declare function resetViewRegistration(): void;
 export declare const enum ViewLocationCategory {
-    NONE = "",
+    NONE = "",// `NONE` must be a falsy value. Legacy code uses if-checks for the category.
     ELEMENTS = "ELEMENTS",
     DRAWER = "DRAWER",
     DRAWER_SIDEBAR = "DRAWER_SIDEBAR",

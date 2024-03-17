@@ -203,6 +203,10 @@ textarea {
   gap: 5px;
 }
 
+main .buttons {
+  margin-top: 12px;
+}
+
 .disclaimer {
   display: flex;
   gap: 2px;

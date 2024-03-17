@@ -73,7 +73,7 @@ describeWithEnvironment('TimelineFilters', () => {
             const models = await TraceLoader.allModels(this, 'user-timings.json.gz');
             // These events are usually visible, so make the category hidden before
             // running this test.
-            Timeline.TimelineUIUtils.TimelineUIUtils.categories()['scripting'].hidden = true;
+            Timeline.EventUICategory.getCategoryStyles()['scripting'].hidden = true;
             const userTimingEvent = (models.traceParsedData.UserTimings.performanceMeasures).at(0);
             if (!userTimingEvent) {
                 throw new Error('Could not find expected event.');
@@ -86,7 +86,7 @@ describeWithEnvironment('TimelineFilters', () => {
             const legacyEvent = TraceEngine.Legacy.PayloadEvent.fromPayload(userTimingEvent, thread);
             const filter = new Timeline.TimelineFilters.Category();
             assert.isFalse(filter.accept(legacyEvent));
-            Timeline.TimelineUIUtils.TimelineUIUtils.categories()['scripting'].hidden = false;
+            Timeline.EventUICategory.getCategoryStyles()['scripting'].hidden = false;
         });
         it('returns true for a legacy event if it has a category that is visible', async function () {
             const models = await TraceLoader.allModels(this, 'user-timings.json.gz');
@@ -108,14 +108,14 @@ describeWithEnvironment('TimelineFilters', () => {
             const models = await TraceLoader.allModels(this, 'user-timings.json.gz');
             // These events are usually visible, so make the category hidden before
             // running this test.
-            Timeline.TimelineUIUtils.TimelineUIUtils.categories()['scripting'].hidden = true;
+            Timeline.EventUICategory.getCategoryStyles()['scripting'].hidden = true;
             const userTimingEvent = (models.traceParsedData.UserTimings.performanceMeasures).at(0);
             if (!userTimingEvent) {
                 throw new Error('Could not find expected event.');
             }
             const filter = new Timeline.TimelineFilters.Category();
             assert.isFalse(filter.accept(userTimingEvent));
-            Timeline.TimelineUIUtils.TimelineUIUtils.categories()['scripting'].hidden = false;
+            Timeline.EventUICategory.getCategoryStyles()['scripting'].hidden = false;
         });
         it('returns true for a new event if it has a category that is visible', async function () {
             const models = await TraceLoader.allModels(this, 'user-timings.json.gz');
@@ -125,7 +125,7 @@ describeWithEnvironment('TimelineFilters', () => {
             }
             const filter = new Timeline.TimelineFilters.Category();
             assert.isTrue(filter.accept(userTimingEvent));
-            Timeline.TimelineUIUtils.TimelineUIUtils.categories()['scripting'].hidden = false;
+            Timeline.EventUICategory.getCategoryStyles()['scripting'].hidden = false;
         });
     });
 });

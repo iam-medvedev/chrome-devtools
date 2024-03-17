@@ -33,8 +33,12 @@ export class RequestHTMLView extends UI.Widget.VBox {
     dataURL;
     constructor(dataURL) {
         super(true);
-        this.dataURL = encodeURI(dataURL).replace(/#/g, '%23');
+        this.dataURL = dataURL;
         this.contentElement.classList.add('html', 'request-view');
+    }
+    static create(contentData) {
+        const dataURL = contentData.asDataUrl();
+        return dataURL ? new RequestHTMLView(dataURL) : null;
     }
     wasShown() {
         this.createIFrame();

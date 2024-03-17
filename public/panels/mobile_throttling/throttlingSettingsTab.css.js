@@ -31,8 +31,7 @@ styles.replaceSync(
 }
 
 .conditions-list {
-  max-width: 500px;
-  min-width: 340px;
+  min-width: 640px;
   flex: auto;
 }
 
@@ -46,22 +45,16 @@ styles.replaceSync(
 }
 
 .conditions-list-text {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  flex: 0 0 70px;
+  flex: 0 0 80px;
   user-select: none;
   color: var(--sys-color-on-surface);
-  text-align: end;
+  text-align: center;
   position: relative;
 }
 
 .conditions-list-text:last-child {
-  flex-basis: 140px;
+  flex-basis: 100px;
   text-align: left;
-}
-
-.conditions-edit-row .conditions-list-text:last-child {
-  text-align: right;
 }
 
 .conditions-list-title {
@@ -72,10 +65,11 @@ styles.replaceSync(
 }
 
 .conditions-list-title-text {
-  overflow: hidden;
   flex: auto;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+}
+
+.conditions-list-title-text:last-child {
+  text-align: center;
 }
 
 .conditions-list-separator {

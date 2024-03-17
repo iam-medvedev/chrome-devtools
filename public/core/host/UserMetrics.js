@@ -520,7 +520,10 @@ export var Action;
     Action[Action["InsightErroredOther"] = 139] = "InsightErroredOther";
     Action[Action["AutofillReceived"] = 140] = "AutofillReceived";
     Action[Action["AutofillReceivedAndTabAutoOpened"] = 141] = "AutofillReceivedAndTabAutoOpened";
-    Action[Action["MaxValue"] = 142] = "MaxValue";
+    Action[Action["AnimationGroupSelected"] = 142] = "AnimationGroupSelected";
+    Action[Action["ScrollDrivenAnimationGroupSelected"] = 143] = "ScrollDrivenAnimationGroupSelected";
+    Action[Action["ScrollDrivenAnimationGroupScrubbed"] = 144] = "ScrollDrivenAnimationGroupScrubbed";
+    Action[Action["MaxValue"] = 145] = "MaxValue";
 })(Action || (Action = {}));
 /* eslint-disable @typescript-eslint/naming-convention */
 export var PanelCodes;
@@ -961,7 +964,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-as-console-profile-result-panel"] = 67] = "timeline-as-console-profile-result-panel";
     DevtoolsExperiments[DevtoolsExperiments["preloading-status-panel"] = 68] = "preloading-status-panel";
     DevtoolsExperiments[DevtoolsExperiments["outermost-target-selector"] = 71] = "outermost-target-selector";
-    DevtoolsExperiments[DevtoolsExperiments["js-profiler-temporarily-enable"] = 72] = "js-profiler-temporarily-enable";
     DevtoolsExperiments[DevtoolsExperiments["highlight-errors-elements-panel"] = 73] = "highlight-errors-elements-panel";
     DevtoolsExperiments[DevtoolsExperiments["set-all-breakpoints-eagerly"] = 74] = "set-all-breakpoints-eagerly";
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
@@ -971,8 +973,11 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["sources-frame-indentation-markers-temporarily-disable"] = 83] = "sources-frame-indentation-markers-temporarily-disable";
     DevtoolsExperiments[DevtoolsExperiments["heap-snapshot-treat-backing-store-as-containing-object"] = 84] = "heap-snapshot-treat-backing-store-as-containing-object";
     DevtoolsExperiments[DevtoolsExperiments["css-type-component-length-deprecate"] = 85] = "css-type-component-length-deprecate";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
+    DevtoolsExperiments[DevtoolsExperiments["save-and-load-trace-with-annotations"] = 87] = "save-and-load-trace-with-annotations";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-track-configuration"] = 88] = "timeline-track-configuration";
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 86] = "MaxValue";
+    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 89] = "MaxValue";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

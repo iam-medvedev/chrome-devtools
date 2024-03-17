@@ -1161,6 +1161,11 @@ export class ConsoleViewMessage {
         }
     }
     shouldShowInsights() {
+        if (this.message.source === SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI &&
+            this.message.stackTrace?.callFrames[0]?.url === '') {
+            // Do not show insights for direct calls to Console APIs from within DevTools Console.
+            return false;
+        }
         return this.message.level === "error" /* Protocol.Log.LogEntryLevel.Error */ ||
             this.message.level === "warning" /* Protocol.Log.LogEntryLevel.Warning */;
     }

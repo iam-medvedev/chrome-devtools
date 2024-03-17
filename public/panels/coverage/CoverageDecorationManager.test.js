@@ -102,14 +102,14 @@ describeWithMockConnection('CoverageDeocrationManager', () => {
             // clang-format off
             // Simulate editor pretty-printing `script`.
             const lineRanges = [
-                new TextUtils.TextRange.TextRange(0, 0, 0, 30),
-                new TextUtils.TextRange.TextRange(0, 30, 0, 42),
-                new TextUtils.TextRange.TextRange(0, 42, 0, 52),
-                new TextUtils.TextRange.TextRange(0, 52, 0, 70),
-                new TextUtils.TextRange.TextRange(0, 70, 0, 82),
-                new TextUtils.TextRange.TextRange(0, 82, 0, 90),
-                new TextUtils.TextRange.TextRange(0, 90, 0, 91),
-                new TextUtils.TextRange.TextRange(0, 91, 0, 99),
+                new TextUtils.TextRange.TextRange(0, 0, 0, 30), // function mulWithOffset(n,t,e){
+                new TextUtils.TextRange.TextRange(0, 30, 0, 42), //   const f=n*t;
+                new TextUtils.TextRange.TextRange(0, 42, 0, 52), //   const u=f;
+                new TextUtils.TextRange.TextRange(0, 52, 0, 70), //   if(e!==undefined){
+                new TextUtils.TextRange.TextRange(0, 70, 0, 82), //     const n=u+e;
+                new TextUtils.TextRange.TextRange(0, 82, 0, 90), //     return n
+                new TextUtils.TextRange.TextRange(0, 90, 0, 91), //   }
+                new TextUtils.TextRange.TextRange(0, 91, 0, 99), //   return u
                 new TextUtils.TextRange.TextRange(0, 99, 0, 100), // }
             ];
             // clang-format on

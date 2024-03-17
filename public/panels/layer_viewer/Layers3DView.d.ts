@@ -13,7 +13,9 @@ declare const Layers3DView_base: (new (...args: any[]) => {
     dispatchEventToListeners<T_3 extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_3>): void;
 }) & typeof UI.Widget.VBox;
 export declare class Layers3DView extends Layers3DView_base implements LayerView {
+    #private;
     private readonly failBanner;
+    private readonly deprecationBanner;
     private readonly layerViewHost;
     private transformController;
     private canvasElement;

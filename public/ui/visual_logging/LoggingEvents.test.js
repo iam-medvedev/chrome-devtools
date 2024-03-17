@@ -54,32 +54,59 @@ describe('LoggingEvents', () => {
     it('calls UI binding to log a keydown with any code', async () => {
         const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
         const event = new KeyboardEvent('keydown');
-        sinon.stub(event, 'currentTarget').value(element);
-        void VisualLogging.LoggingEvents.logKeyDown(throttler)(event);
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event);
         await assertThrottled(recordKeyDown);
         assert.deepStrictEqual(stabilizeEvent(recordKeyDown.firstCall.firstArg), { veid: 0 });
     });
     it('calls UI binding to log a keydown with a matching code', async () => {
         const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
         const event = new KeyboardEvent('keydown', { code: 'Enter', key: 'Enter' });
-        sinon.stub(event, 'currentTarget').value(element);
-        void VisualLogging.LoggingEvents.logKeyDown(throttler, ['Enter', 'Escape'])(event);
+        VisualLogging.LoggingState.getLoggingState(element).config.track = { keydown: 'Enter|Escape' };
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event);
         await assertThrottled(recordKeyDown);
         assert.deepStrictEqual(stabilizeEvent(recordKeyDown.firstCall.firstArg), { veid: 0, context: 513111094 });
     });
     it('calls UI binding to log a keydown with an provided context', async () => {
         const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
         const event = new KeyboardEvent('keydown', { code: 'Enter' });
-        sinon.stub(event, 'currentTarget').value(element);
-        void VisualLogging.LoggingEvents.logKeyDown(throttler)(event, '21');
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event, '21');
         await assertThrottled(recordKeyDown);
         assert.deepStrictEqual(stabilizeEvent(recordKeyDown.firstCall.firstArg), { veid: 0, context: 21 });
+    });
+    it('throttles subsequent keydowns', async () => {
+        const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
+        const event = new KeyboardEvent('keydown', { code: 'Enter' });
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event);
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event);
+        await assertThrottled(recordKeyDown);
+    });
+    it('does not drop keydowns with a specific context', async () => {
+        const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
+        const event = new KeyboardEvent('keydown', { code: 'Enter' });
+        sinon.stub(event, 'currentTarget').value(element);
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event, '1');
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event, '2');
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isTrue(recordKeyDown.calledOnce);
+        await throttler.process?.();
+        assert.isTrue(recordKeyDown.calledTwice);
+        assert.deepStrictEqual(stabilizeEvent(recordKeyDown.firstCall.firstArg), { veid: 0, context: 1 });
+        assert.deepStrictEqual(stabilizeEvent(recordKeyDown.secondCall.firstArg), { veid: 0, context: 2 });
+    });
+    it('throttles subsequent keydowns with the same context', async () => {
+        const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
+        const event = new KeyboardEvent('keydown', { code: 'Enter' });
+        sinon.stub(event, 'currentTarget').value(element);
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event, '1');
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event, '1');
+        await assertThrottled(recordKeyDown);
+        assert.deepStrictEqual(stabilizeEvent(recordKeyDown.firstCall.firstArg), { veid: 0, context: 1 });
     });
     it('does not call UI binding to log a keydown with a non-matching code', async () => {
         const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
         const event = new KeyboardEvent('keydown', { code: 'KeyQ' });
-        sinon.stub(event, 'currentTarget').value(element);
-        void VisualLogging.LoggingEvents.logKeyDown(throttler, ['Enter', 'Escape'])(event);
+        VisualLogging.LoggingState.getLoggingState(element).config.track = { keydown: 'Enter|Escape' };
+        void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event);
         assert.isFalse(recordKeyDown.called);
     });
     it('calls UI binding to log a hover event', async () => {

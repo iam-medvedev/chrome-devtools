@@ -202,8 +202,8 @@ export const loadAsStream = function (url, headers, stream, callback, allowRemot
         // Remote file paths can cause security problems, see crbug.com/1342722.
         if (callback) {
             callback(/* success */ false, /* headers */ {}, {
-                statusCode: 400,
-                netError: -20,
+                statusCode: 400, // BAD_REQUEST
+                netError: -20, // BLOCKED_BY_CLIENT
                 netErrorName: 'net::BLOCKED_BY_CLIENT',
                 message: 'Loading from a remote file path is prohibited for security reasons.',
             });

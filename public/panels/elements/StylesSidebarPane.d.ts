@@ -183,14 +183,12 @@ export declare class StylesSidebarPropertyRenderer {
     readonly propertyValue: string;
     private fontHandler;
     private shadowHandler;
-    private gridHandler;
     private lengthHandler;
     private animationHandler;
     matchers: Matcher[];
     constructor(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null, name: string, value: string, matchers?: Matcher[]);
     setFontHandler(handler: (arg0: string) => Node): void;
     setShadowHandler(handler: (arg0: string, arg1: string) => Node): void;
-    setGridHandler(handler: (arg0: string, arg1: string) => Node): void;
     setAnimationHandler(handler: (arg0: string) => Node): void;
     setLengthHandler(handler: (arg0: string) => Node): void;
     renderName(): Element;

@@ -99,7 +99,7 @@ export default {
   border-bottom: 1px solid var(--sys-color-divider);
   overflow: visible;
   width: 100%;
-  background-color: var(--sys-color-cdt-base);
+  background-color: var(--app-color-toolbar-background);
 
   & > * {
     cursor: initial;

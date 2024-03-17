@@ -7,7 +7,7 @@ export declare class InterestGroupTreeElement extends ApplicationPanelTreeElemen
     private view;
     constructor(storagePanel: ResourcesPanel);
     get itemURL(): Platform.DevToolsPath.UrlString;
-    getInterestGroupDetails(owner: string, name: string): Promise<Protocol.Storage.InterestGroupDetails | null>;
+    getInterestGroupDetails(owner: string, name: string): Promise<object | null>;
     onselect(selectedByUser?: boolean): boolean;
     addEvent(event: Protocol.Storage.InterestGroupAccessedEvent): void;
     clearEvents(): void;

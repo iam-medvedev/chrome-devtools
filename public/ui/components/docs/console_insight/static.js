@@ -8,6 +8,9 @@ await ComponentHelpers.ComponentServerSetup.setup();
 await FrontendHelpers.initializeGlobalVars();
 const ConsoleInsight = Explain.ConsoleInsight;
 const component = new ConsoleInsight({
+    getSearchQuery() {
+        return '';
+    },
     async buildPrompt() {
         return {
             prompt: '',
@@ -63,7 +66,7 @@ Images: ![https://example.com](https://example.com)
             metadata: {},
         };
     },
-}, 'Understand this error', {
+}, {
     isSyncActive: true,
     accountEmail: 'some-email',
 });

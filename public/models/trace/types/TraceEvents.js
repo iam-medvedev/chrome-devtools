@@ -150,6 +150,12 @@ export function isTraceEventRendererEvent(event) {
 export function isTraceEventFireIdleCallback(event) {
     return event.name === 'FireIdleCallback';
 }
+export function isTraceEventSchedulePostMessage(event) {
+    return event.name === "SchedulePostMessage" /* KnownEventName.SchedulePostMessage */;
+}
+export function isTraceEventHandlePostMessage(event) {
+    return event.name === "HandlePostMessage" /* KnownEventName.HandlePostMessage */;
+}
 export function isTraceEventUpdateCounters(event) {
     return event.name === 'UpdateCounters';
 }

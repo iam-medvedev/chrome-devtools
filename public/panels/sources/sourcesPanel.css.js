@@ -43,7 +43,7 @@ styles.replaceSync(
   position: absolute;
   top: 0;
   width: 100%;
-  background-color: var(--sys-color-cdt-base);
+  background-color: var(--app-color-toolbar-background);
   border-bottom: 1px solid var(--sys-color-divider);
   overflow: hidden;
   z-index: 1;

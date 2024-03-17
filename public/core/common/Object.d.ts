@@ -17,7 +17,7 @@ type Constructor = new (...args: any[]) => {};
 export declare function eventMixin<Events, Base extends Constructor>(base: Base): {
     new (...args: any[]): {
         "__#13@#events": ObjectWrapper<Events>;
-        addEventListener<T extends keyof Events>(eventType: T, listener: (arg0: EventTargetEvent<Events[T], any>) => void, thisObject?: Object): EventDescriptor<Events, T>;
+        addEventListener<T extends keyof Events>(eventType: T, listener: (arg0: EventTargetEvent<Events[T]>) => void, thisObject?: Object): EventDescriptor<Events, T>;
         once<T_1 extends keyof Events>(eventType: T_1): Promise<Events[T_1]>;
         removeEventListener<T_2 extends keyof Events>(eventType: T_2, listener: (arg0: EventTargetEvent<Events[T_2], any>) => void, thisObject?: Object): void;
         hasEventListeners(eventType: keyof Events): boolean;

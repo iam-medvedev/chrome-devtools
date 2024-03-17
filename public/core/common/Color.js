@@ -1934,7 +1934,7 @@ export const SourceOrderHighlight = {
     ChildOutline: Legacy.fromRGBA([0, 120, 212, 1]),
 };
 export const IsolationModeHighlight = {
-    Resizer: Legacy.fromRGBA([222, 225, 230, 1]),
+    Resizer: Legacy.fromRGBA([222, 225, 230, 1]), // --color-background-elevation-2
     ResizerHandle: Legacy.fromRGBA([166, 166, 166, 1]),
     Mask: Legacy.fromRGBA([248, 249, 249, 1]),
 };

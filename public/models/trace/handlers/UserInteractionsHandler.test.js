@@ -153,8 +153,8 @@ describe('UserInteractionsHandler', function () {
             {
                 cat: 'devtools.timeline',
                 ph: "b" /* TraceModel.Types.TraceEvents.Phase.ASYNC_NESTABLE_START */,
-                pid: 1537729,
-                tid: 1,
+                pid: 1537729, // the Renderer Thread
+                tid: 1, // CrRendererMain
                 id: '1234',
                 ts: 10,
                 dur: 500,
@@ -176,8 +176,8 @@ describe('UserInteractionsHandler', function () {
             {
                 cat: 'devtools.timeline',
                 ph: "b" /* TraceModel.Types.TraceEvents.Phase.ASYNC_NESTABLE_START */,
-                pid: 1537729,
-                tid: 1,
+                pid: 1537729, // the Renderer Thread
+                tid: 1, // CrRendererMain
                 id: '1234',
                 ts: 10,
                 dur: 500,
@@ -199,8 +199,8 @@ describe('UserInteractionsHandler', function () {
             {
                 cat: 'devtools.timeline',
                 ph: "b" /* TraceModel.Types.TraceEvents.Phase.ASYNC_NESTABLE_START */,
-                pid: 1537729,
-                tid: 1,
+                pid: 1537729, // the Renderer Thread
+                tid: 1, // CrRendererMain
                 id: '1234',
                 ts: 10,
                 dur: 500,

@@ -254,8 +254,7 @@ export class MainImpl {
         Root.Runtime.experiments.register('timeline-show-all-events', 'Timeline: show all events', true);
         Root.Runtime.experiments.register('timeline-v8-runtime-call-stats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
         Root.Runtime.experiments.register('timeline-as-console-profile-result-panel', 'View console.profile() results in the Performance panel for Node.js', true);
-        // JS Profiler
-        Root.Runtime.experiments.register('js-profiler-temporarily-enable', 'Enable JavaScript Profiler temporarily', /* unstable= */ false, 'https://goo.gle/js-profiler-deprecation', 'https://crbug.com/1354548');
+        Root.Runtime.experiments.register('timeline-track-configuration', 'Timeline: Enable track configuration feature that can reorder or hide a track in the flame chart', true);
         // Sources
         Root.Runtime.experiments.register("sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */, 'Disable Indentation Markers temporarily', 
         /* unstable= */ false, 'https://developer.chrome.com/blog/new-in-devtools-121/#indentation', 'https://crbug.com/1479986');
@@ -291,7 +290,9 @@ export class MainImpl {
         Root.Runtime.experiments.register("outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */, 'Enable background page selector (e.g. for prerendering debugging)', false);
         Root.Runtime.experiments.register("storage-buckets-tree" /* Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE */, 'Enable Storage Buckets Tree in Application panel', true);
         Root.Runtime.experiments.register("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network Panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
-        Root.Runtime.experiments.register("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Enable Autofill view');
+        Root.Runtime.experiments.register("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Autofill panel', false, 'https://goo.gle/devtools-autofill-panel', 'https://crbug.com/329106326');
+        Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Timeline: Show postMessage dispatch and handling flows');
+        Root.Runtime.experiments.register("save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */, 'Enable save and load trace with annotations in Performance Panel');
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
             'set-all-breakpoints-eagerly',

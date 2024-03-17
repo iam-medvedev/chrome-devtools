@@ -32,6 +32,7 @@ export declare class PromptBuilder {
         relatedCode: string;
         relatedRequest: string;
     }): string;
+    getSearchQuery(): string;
 }
 export declare function allowHeader(header: SDK.NetworkRequest.NameValue): boolean;
 export declare function lineWhitespace(line: string): string | null;

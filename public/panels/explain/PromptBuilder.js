@@ -116,6 +116,15 @@ ${relatedRequest}
         }
         return prompt;
     }
+    getSearchQuery() {
+        let message = this.#consoleMessage.toMessageTextString();
+        if (message) {
+            // If there are multiple lines, it is likely the rest of the message
+            // is a stack trace, which we don't want.
+            message = message.split('\n')[0];
+        }
+        return message;
+    }
 }
 export function allowHeader(header) {
     const normalizedName = header.name.toLowerCase().trim();

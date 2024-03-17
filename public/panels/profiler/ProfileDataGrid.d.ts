@@ -86,9 +86,6 @@ export declare class ProfileDataGridTree implements UI.SearchableView.Searchable
     supportsCaseSensitiveSearch(): boolean;
     supportsRegexSearch(): boolean;
     jumpToSearchResult(index: number): void;
-    static readonly propertyComparators: {
-        [key: string]: unknown;
-    }[];
 }
 export interface Formatter {
     formatValue(value: number, node: ProfileDataGridNode): string;

@@ -7,7 +7,7 @@ export declare function registerSettingsForTest(settings: Array<SettingRegistrat
 export declare function resetSettings(): void;
 export declare function maybeRemoveSettingExtension(settingName: string): boolean;
 export declare const enum SettingCategory {
-    NONE = "",
+    NONE = "",// `NONE` must be a falsy value. Legacy code uses if-checks for the category.
     ELEMENTS = "ELEMENTS",
     APPEARANCE = "APPEARANCE",
     SOURCES = "SOURCES",

@@ -2,7 +2,7 @@ import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components/components.js';
 interface InterestGroupDetailsGetter {
-    getInterestGroupDetails: (owner: string, name: string) => Promise<Protocol.Storage.InterestGroupDetails | null>;
+    getInterestGroupDetails: (owner: string, name: string) => Promise<object | null>;
 }
 export declare class InterestGroupStorageView extends UI.SplitWidget.SplitWidget {
     private readonly interestGroupGrid;

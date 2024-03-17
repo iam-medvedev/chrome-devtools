@@ -31,29 +31,13 @@ import * as Platform from '../../core/platform/platform.js';
 import { ContentData } from './ContentData.js';
 import { SearchMatch } from './ContentProvider.js';
 import { Text } from './Text.js';
+const KEY_VALUE_FILTER_REGEXP = /(?:^|\s)(\-)?([\w\-]+):([^\s]+)/;
+const REGEXP_FILTER_REGEXP = /(?:^|\s)(\-)?\/([^\/\\]+(\\.[^\/]*)*)\//;
+const TEXT_FILTER_REGEXP = /(?:^|\s)(\-)?([^\s]+)/;
+const SPACE_CHAR_REGEXP = /\s/;
 export const Utils = {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    get _keyValueFilterRegex() {
-        return /(?:^|\s)(\-)?([\w\-]+):([^\s]+)/;
-    },
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    get _regexFilterRegex() {
-        return /(?:^|\s)(\-)?\/([^\/\\]+(\\.[^\/]*)*)\//;
-    },
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    get _textFilterRegex() {
-        return /(?:^|\s)(\-)?([^\s]+)/;
-    },
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    get _SpaceCharRegex() {
-        return /\s/;
-    },
     isSpaceChar: function (char) {
-        return Utils._SpaceCharRegex.test(char);
+        return SPACE_CHAR_REGEXP.test(char);
     },
     lineIndent: function (line) {
         let indentation = 0;
@@ -116,7 +100,7 @@ export class FilterParser {
         return { key: filter.key, text: filter.text, regex: filter.regex, negative: filter.negative };
     }
     parse(query) {
-        const splitFilters = Utils.splitStringByRegexes(query, [Utils._keyValueFilterRegex, Utils._regexFilterRegex, Utils._textFilterRegex]);
+        const splitFilters = Utils.splitStringByRegexes(query, [KEY_VALUE_FILTER_REGEXP, REGEXP_FILTER_REGEXP, TEXT_FILTER_REGEXP]);
         const parsedFilters = [];
         for (const { regexIndex, captureGroups } of splitFilters) {
             if (regexIndex === -1) {

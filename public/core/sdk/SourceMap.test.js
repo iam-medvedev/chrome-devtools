@@ -858,7 +858,7 @@ describeWithEnvironment('SourceMap', () => {
         it('computes ranges when the first mapping is for third-party code that is not on the first char', () => {
             const mappingPayload = encodeSourceMap([
                 // clang-format off
-                '10:9 => vendor1.js:1:0',
+                '10:9 => vendor1.js:1:0', // initial mapping not at 0:0
                 '11:8 => vendor2.js:1:0',
                 '12:7 => vendor3.js:1:0',
                 '13:6 => foo.js:1:0', // known end
@@ -873,16 +873,16 @@ describeWithEnvironment('SourceMap', () => {
             assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor3.js'), true);
             assert.deepEqual(sourceMap.findRanges(url => sourceMap.hasIgnoreListHint(url)), [
                 {
-                    'startLine': 10,
-                    'startColumn': 9,
+                    'startLine': 10, // By default, unmapped code (before 10:9) is not considered
+                    'startColumn': 9, // special, and will therefore not be included in the range.
                     'endLine': 13,
                     'endColumn': 6,
                 },
             ]);
             assert.deepEqual(sourceMap.findRanges(url => sourceMap.hasIgnoreListHint(url), { isStartMatching: true }), [
                 {
-                    'startLine': 0,
-                    'startColumn': 0,
+                    'startLine': 0, // Starting at 0:0 instead of 10:9 because all the code until
+                    'startColumn': 0, // the initial mapping is now assumed to match the predicate.
                     'endLine': 13,
                     'endColumn': 6,
                 },
@@ -891,7 +891,7 @@ describeWithEnvironment('SourceMap', () => {
         it('computes ranges when the first mapping is for first-party code that is not on the first char', () => {
             const mappingPayload = encodeSourceMap([
                 // clang-format off
-                '5:5 => foo.js:1:0',
+                '5:5 => foo.js:1:0', // initial mapping not at 0:0
                 '10:9 => vendor1.js:1:0',
                 '11:8 => vendor2.js:1:0',
                 '12:7 => vendor3.js:1:0',
@@ -907,17 +907,17 @@ describeWithEnvironment('SourceMap', () => {
             assert.strictEqual(sourceMap.hasIgnoreListHint('wp:///vendor3.js'), true);
             assert.deepEqual(sourceMap.findRanges(url => sourceMap.hasIgnoreListHint(url)), [
                 {
-                    'startLine': 10,
-                    'startColumn': 9,
+                    'startLine': 10, // By default, unmapped code (before 5:5) is not considered
+                    'startColumn': 9, // special, and will therefore not be included in the range.
                     'endLine': 13,
                     'endColumn': 6,
                 },
             ]);
             assert.deepEqual(sourceMap.findRanges(url => sourceMap.hasIgnoreListHint(url), { isStartMatching: true }), [
                 {
-                    'startLine': 0,
-                    'startColumn': 0,
-                    'endLine': 5,
+                    'startLine': 0, // Starting at 0:0 instead of 10:9 because all the code until
+                    'startColumn': 0, // the initial mapping is now assumed to match the predicate.
+                    'endLine': 5, // And because the first source url is not hinted as being on
                     'endColumn': 5, // the ignore-list, there's now an extra initial range.
                 },
                 {

@@ -172,17 +172,15 @@ export class EventSourceMessageNode extends DataGrid.SortableDataGrid.SortableDa
         this.message = message;
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function EventSourceMessageNodeComparator(fieldGetter, a, b) {
+function eventSourceMessageNodeComparator(fieldGetter, a, b) {
     const aValue = fieldGetter(a.message);
     const bValue = fieldGetter(b.message);
     return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
 }
 export const Comparators = {
-    'id': EventSourceMessageNodeComparator.bind(null, message => message.eventId),
-    'type': EventSourceMessageNodeComparator.bind(null, message => message.eventName),
-    'time': EventSourceMessageNodeComparator.bind(null, message => message.time),
+    'id': eventSourceMessageNodeComparator.bind(null, message => message.eventId),
+    'type': eventSourceMessageNodeComparator.bind(null, message => message.eventName),
+    'time': eventSourceMessageNodeComparator.bind(null, message => message.time),
 };
 const clearMessageOffsets = new WeakMap();
 //# sourceMappingURL=EventSourceMessagesView.js.map

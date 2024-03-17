@@ -215,7 +215,10 @@ export declare enum Action {
     InsightErroredOther = 139,
     AutofillReceived = 140,
     AutofillReceivedAndTabAutoOpened = 141,
-    MaxValue = 142
+    AnimationGroupSelected = 142,
+    ScrollDrivenAnimationGroupSelected = 143,
+    ScrollDrivenAnimationGroupScrubbed = 144,
+    MaxValue = 145
 }
 export declare enum PanelCodes {
     elements = 1,
@@ -643,7 +646,6 @@ export declare enum DevtoolsExperiments {
     'timeline-as-console-profile-result-panel' = 67,
     'preloading-status-panel' = 68,
     'outermost-target-selector' = 71,
-    'js-profiler-temporarily-enable' = 72,
     'highlight-errors-elements-panel' = 73,
     'set-all-breakpoints-eagerly' = 74,
     'use-source-map-scopes' = 76,
@@ -653,7 +655,10 @@ export declare enum DevtoolsExperiments {
     'sources-frame-indentation-markers-temporarily-disable' = 83,
     'heap-snapshot-treat-backing-store-as-containing-object' = 84,
     'css-type-component-length-deprecate' = 85,
-    'MaxValue' = 86
+    'timeline-show-postmessage-events' = 86,
+    'save-and-load-trace-with-annotations' = 87,
+    'timeline-track-configuration' = 88,
+    'MaxValue' = 89
 }
 export declare const enum BreakpointWithConditionAdded {
     Logpoint = 0,

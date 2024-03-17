@@ -123,7 +123,6 @@ export declare class NodeFormatter implements Formatter {
 export declare class HeapFlameChartDataProvider extends ProfileFlameChartDataProvider {
     readonly profile: CPUProfile.ProfileTreeModel.ProfileTreeModel;
     readonly heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null;
-    timelineDataInternal?: PerfUI.FlameChart.FlameChartTimelineData;
     constructor(profile: CPUProfile.ProfileTreeModel.ProfileTreeModel, heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null);
     minimumBoundary(): number;
     totalTime(): number;

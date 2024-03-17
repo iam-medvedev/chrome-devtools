@@ -1061,7 +1061,12 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     updateNetworkConditions(networkAgent) {
         const conditions = this.#networkConditionsInternal;
         if (!this.isThrottling()) {
-            void networkAgent.invoke_emulateNetworkConditions({ offline: false, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
+            void networkAgent.invoke_emulateNetworkConditions({
+                offline: false,
+                latency: 0,
+                downloadThroughput: 0,
+                uploadThroughput: 0,
+            });
         }
         else {
             void networkAgent.invoke_emulateNetworkConditions({
@@ -1069,6 +1074,9 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
                 latency: conditions.latency,
                 downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
                 uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
+                packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
+                packetQueueLength: conditions.packetQueueLength,
+                packetReordering: conditions.packetReordering,
                 connectionType: NetworkManager.connectionType(conditions),
             });
         }
@@ -1504,6 +1512,7 @@ export function networkConditionsEqual(first, second) {
     const firstTitle = typeof first.title === 'function' ? first.title() : first.title;
     const secondTitle = typeof second.title === 'function' ? second.title() : second.title;
     return second.download === first.download && second.upload === first.upload && second.latency === first.latency &&
-        secondTitle === firstTitle;
+        first.packetLoss === second.packetLoss && first.packetQueueLength === second.packetQueueLength &&
+        first.packetReordering === second.packetReordering && secondTitle === firstTitle;
 }
 //# sourceMappingURL=NetworkManager.js.map

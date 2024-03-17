@@ -52,7 +52,7 @@ export type EventTypes = {
     [Events.Toggled]: boolean;
 };
 export declare const enum ActionCategory {
-    NONE = "",
+    NONE = "",// `NONE` must be a falsy value. Legacy code uses if-checks for the category.
     ELEMENTS = "ELEMENTS",
     SCREENSHOT = "SCREENSHOT",
     NETWORK = "NETWORK",

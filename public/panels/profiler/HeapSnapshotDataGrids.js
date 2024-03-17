@@ -275,8 +275,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
         this.lastSortColumnId = sortColumnId;
         this.lastSortAscending = sortAscending;
         const sortFields = this.sortFields(sortColumnId || '', sortAscending);
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        function SortByTwoFields(nodeA, nodeB) {
+        function sortByTwoFields(nodeA, nodeB) {
             // @ts-ignore
             let field1 = nodeA[sortFields.fieldName1];
             // @ts-ignore
@@ -298,7 +297,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
             }
             return result;
         }
-        this.performSorting(SortByTwoFields);
+        this.performSorting(sortByTwoFields);
     }
     performSorting(sortFunction) {
         this.recursiveSortingEnter();

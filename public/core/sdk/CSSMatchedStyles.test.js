@@ -136,13 +136,13 @@ describe('CSSMatchedStyles', () => {
                 node,
                 inlinePayload: null,
                 attributesPayload: null,
-                matchedPayload: [ruleMatch('div', [{ name: '--foo', value: 'foo1' }])],
+                matchedPayload: [ruleMatch('div', [{ name: '--foo', value: 'foo1' }])], // styleFoo1
                 pseudoPayload: [],
                 inheritedPayload: [
                     {
                         matchedCSSRules: [ruleMatch('div', [{ name: '--bar', value: 'bar' }, { name: '--foo', value: 'foo2' }])],
-                    },
-                    { matchedCSSRules: [ruleMatch('div', [{ name: '--baz', value: 'baz' }])] },
+                    }, // styleFoo2
+                    { matchedCSSRules: [ruleMatch('div', [{ name: '--baz', value: 'baz' }])] }, // styleBaz
                     { matchedCSSRules: [ruleMatch('div', [{ name: '--foo', value: 'foo3' }])] }, // styleFoo3
                 ],
                 inheritedPseudoPayload: [],

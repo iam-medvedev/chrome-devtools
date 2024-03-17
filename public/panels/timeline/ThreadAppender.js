@@ -139,7 +139,6 @@ export class ThreadAppender {
     isOnMainFrame;
     #ignoreListingEnabled = Root.Runtime.experiments.isEnabled('ignore-list-js-frames-on-timeline');
     #showAllEventsEnabled = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
-    #entriesFilter;
     #url = '';
     #headerNestingLevel = null;
     constructor(compatibilityBuilder, traceParsedData, processId, threadId, threadName, type) {
@@ -179,12 +178,7 @@ export class ThreadAppender {
         if (this.#traceParsedData.AuctionWorklets.worklets.has(processId)) {
             this.appenderName = 'Thread_AuctionWorklet';
         }
-        this.#entriesFilter = new TraceEngine.EntriesFilter.EntriesFilter(this.threadType === "CPU_PROFILE" /* TraceEngine.Handlers.Threads.ThreadType.CPU_PROFILE */ ? traceParsedData.Samples.entryToNode :
-            traceParsedData.Renderer.entryToNode);
         this.#url = this.#traceParsedData.Renderer?.processes.get(this.#processId)?.url || '';
-    }
-    entriesFilter() {
-        return this.#entriesFilter;
     }
     processId() {
         return this.#processId;
@@ -396,7 +390,7 @@ export class ThreadAppender {
      * listed is done before appending.
      */
     #appendNodesAtLevel(nodes, startingLevel, parentIsIgnoredListed = false) {
-        const invisibleEntries = this.#entriesFilter?.invisibleEntries() ?? [];
+        const invisibleEntries = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.invisibleEntries() ?? [];
         let maxDepthInTree = startingLevel;
         for (const node of nodes) {
             let nextLevel = startingLevel;
@@ -410,8 +404,8 @@ export class ThreadAppender {
             // another traversal to the entries array (which could grow
             // large). To avoid the extra cost we  add the check in the
             // traversal we already need to append events.
-            const entryIsVisible = (!invisibleEntries.includes(entry) && this.#compatibilityBuilder.entryIsVisibleInTimeline(entry)) ||
-                this.#showAllEventsEnabled;
+            const entryIsVisible = !invisibleEntries.includes(entry) &&
+                (this.#compatibilityBuilder.entryIsVisibleInTimeline(entry) || this.#showAllEventsEnabled);
             // For ignore listing support, these two conditions need to be met
             // to not append a profile call to the flame chart:
             // 1. It is ignore listed
@@ -441,7 +435,7 @@ export class ThreadAppender {
     }
     #addDecorationsToEntry(entry, index) {
         const flameChartData = this.#compatibilityBuilder.getFlameChartTimelineData();
-        if (this.#entriesFilter?.isEntryModified(entry)) {
+        if (TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.isEntryModified(entry)) {
             addDecorationToEvent(flameChartData, index, { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ });
         }
         const warnings = this.#traceParsedData.Warnings.perEvent.get(entry);
@@ -485,18 +479,18 @@ export class ThreadAppender {
         }
         if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
             if (event.callFrame.functionName === '(idle)') {
-                return getCategoryStyles().Idle.getComputedColorValue();
+                return getCategoryStyles().idle.getComputedColorValue();
             }
             if (event.callFrame.scriptId === '0') {
                 // If we can not match this frame to a script, return the
                 // generic "scripting" color.
-                return getCategoryStyles().Scripting.getComputedColorValue();
+                return getCategoryStyles().scripting.getComputedColorValue();
             }
             // Otherwise, return a color created based on its URL.
             return this.#colorGenerator.colorForID(event.callFrame.url);
         }
         const defaultColor = getEventStyle(event.name)?.category.getComputedColorValue();
-        return defaultColor || getCategoryStyles().Other.getComputedColorValue();
+        return defaultColor || getCategoryStyles().other.getComputedColorValue();
     }
     /**
      * Gets the title an event added by this appender should be rendered with.

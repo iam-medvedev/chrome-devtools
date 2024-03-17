@@ -24,7 +24,7 @@ export class IconButton extends HTMLElement {
     }
     get data() {
         return {
-            groups: this.#groups.map(group => ({ ...group })),
+            groups: this.#groups.map(group => ({ ...group })), // Ensure we make a deep copy.
             accessibleName: this.#accessibleName,
             clickHandler: this.#clickHandler,
             leadingText: this.#leadingText,

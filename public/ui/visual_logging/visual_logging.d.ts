@@ -5,7 +5,7 @@ export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logImpressions, logChange } from './LoggingEvents.js';
 export declare const logClick: (l: Loggable, e: Event) => void;
 export declare const logResize: (l: Loggable, s: DOMRect) => void;
-export declare const logKeyDown: (e: Event, context?: string) => Promise<void>;
+export declare const logKeyDown: (l: Loggable | null, e: Event, context?: string) => Promise<void>;
 export { registerParentProvider, setMappedParent } from './LoggingState.js';
 export declare function registerLoggable(loggable: Loggable, config: string, parent: Loggable | null): void;
 /**
@@ -70,6 +70,7 @@ export declare const slider: (context?: string | undefined) => LoggingConfig.Con
 export declare const section: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const sectionHeader: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const stylesSelector: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
+export declare const tableRow: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const tableCell: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const tableHeader: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 /**

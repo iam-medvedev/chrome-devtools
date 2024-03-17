@@ -843,7 +843,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         }
     }
     initializeSidebarPanes(splitMode) {
-        this.splitWidget.setVertical(splitMode === "Vertical" /* _splitMode.Vertical */);
+        this.splitWidget.setVertical(splitMode === "Vertical" /* SplitMode.Vertical */);
         this.showToolbarPane(null /* widget */, null /* toggle */);
         const matchedStylePanesWrapper = new UI.Widget.VBox();
         matchedStylePanesWrapper.element.classList.add('style-panes-wrapper');
@@ -908,7 +908,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => UI.ViewManager.ViewManager.instance().showView('elements'), 'styles-pane-sidebar', true, true);
         const tabbedPane = this.sidebarPaneView.tabbedPane();
         tabbedPane.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('sidebar').track({ keydown: 'ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space' })}`);
-        if (this.splitMode !== "Vertical" /* _splitMode.Vertical */) {
+        if (this.splitMode !== "Vertical" /* SplitMode.Vertical */) {
             this.splitWidget.installResizer(tabbedPane.headerElement());
         }
         const headerElement = tabbedPane.headerElement();
@@ -938,10 +938,10 @@ export class ElementsPanel extends UI.Panel.Panel {
             return;
         } // We can't reparent extension iframes.
         const position = Common.Settings.Settings.instance().moduleSetting('sidebar-position').get();
-        let splitMode = "Horizontal" /* _splitMode.Horizontal */;
+        let splitMode = "Horizontal" /* SplitMode.Horizontal */;
         if (position === 'right' ||
             (position === 'auto' && UI.InspectorView.InspectorView.instance().element.offsetWidth > 680)) {
-            splitMode = "Vertical" /* _splitMode.Vertical */;
+            splitMode = "Vertical" /* SplitMode.Vertical */;
         }
         if (!this.sidebarPaneView) {
             this.initializeSidebarPanes(splitMode);
@@ -953,9 +953,9 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.splitMode = splitMode;
         const tabbedPane = this.sidebarPaneView.tabbedPane();
         this.splitWidget.uninstallResizer(tabbedPane.headerElement());
-        this.splitWidget.setVertical(this.splitMode === "Vertical" /* _splitMode.Vertical */);
+        this.splitWidget.setVertical(this.splitMode === "Vertical" /* SplitMode.Vertical */);
         this.showToolbarPane(null /* widget */, null /* toggle */);
-        if (this.splitMode !== "Vertical" /* _splitMode.Vertical */) {
+        if (this.splitMode !== "Vertical" /* SplitMode.Vertical */) {
             this.splitWidget.installResizer(tabbedPane.headerElement());
         }
     }

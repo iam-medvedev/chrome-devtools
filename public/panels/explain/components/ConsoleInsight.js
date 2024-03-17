@@ -36,20 +36,20 @@ const UIStrings = {
     /**
      * @description The title that is shown while the insight is being generated.
      */
-    generating: 'Insight generation is in progress…',
+    generating: 'Generating explanation…',
     /**
      * @description The header that indicates that the content shown is a console
      * insight.
      */
-    insight: 'Insight',
+    insight: 'Explanation',
     /**
      * @description The title of the a button that closes the insight pane.
      */
-    closeInsight: 'Close insight',
+    closeInsight: 'Close explanation',
     /**
      * @description The title of the list of source data that was used to generate the insight.
      */
-    inputData: 'Data used to create this insight',
+    inputData: 'Data used to understand this message',
     /**
      * @description The title of the button that allows submitting positive
      * feedback about the console insight.
@@ -72,7 +72,7 @@ const UIStrings = {
     /**
      * @description The text of the header inside the console insight pane when there was an error generating an insight.
      */
-    error: 'Console insights has encountered an error',
+    error: 'DevTools has encountered an error',
     /**
      * @description The message shown when an error has been encountered.
      */
@@ -90,7 +90,7 @@ const UIStrings = {
     /**
      * @description The title of the message when the console insight is not available for some reason.
      */
-    notAvailable: 'Console insights is not available',
+    notAvailable: 'This feature is not available',
     /**
      * @description The error message when the user is not logged in into Chrome.
      */
@@ -107,7 +107,7 @@ const UIStrings = {
      * @description The header shown when the internet connection is not
      * available.
      */
-    offlineHeader: 'Console insights can’t reach the internet',
+    offlineHeader: 'DevTools can’t reach the internet',
     /**
      * @description Message shown when the user is offline.
      */
@@ -115,7 +115,7 @@ const UIStrings = {
     /**
      * @description The message shown if the user is not logged in.
      */
-    signInToUse: 'Sign in to use Console insights',
+    signInToUse: 'Sign in to use this feature',
     /**
      * @description The title of the button that cancels a console insight flow.
      */
@@ -169,17 +169,16 @@ function buildRatingFormLink(rating, comment, explanation, consoleMessage, stack
         .join('&')}`;
 }
 export class ConsoleInsight extends HTMLElement {
-    static async create(promptBuilder, aidaClient, actionTitle) {
+    static async create(promptBuilder, aidaClient) {
         const syncData = await new Promise(resolve => {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
                 resolve(syncInfo);
             });
         });
-        return new ConsoleInsight(promptBuilder, aidaClient, actionTitle, syncData);
+        return new ConsoleInsight(promptBuilder, aidaClient, syncData);
     }
     static litTagName = LitHtml.literal `devtools-console-insight`;
     #shadow = this.attachShadow({ mode: 'open' });
-    #actionTitle = '';
     #promptBuilder;
     #aidaClient;
     #renderer = new MarkdownRenderer();
@@ -187,11 +186,10 @@ export class ConsoleInsight extends HTMLElement {
     #state;
     // Rating sub-form state.
     #selectedRating;
-    constructor(promptBuilder, aidaClient, actionTitle, syncInfo) {
+    constructor(promptBuilder, aidaClient, syncInfo) {
         super();
         this.#promptBuilder = promptBuilder;
         this.#aidaClient = aidaClient;
-        this.#actionTitle = actionTitle ?? '';
         this.#state = {
             type: "not-logged-in" /* State.NOT_LOGGED_IN */,
         };
@@ -313,6 +311,10 @@ export class ConsoleInsight extends HTMLElement {
     #onReport() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(REPORT_URL);
     }
+    #onSearch() {
+        const query = this.#promptBuilder.getSearchQuery();
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openSearchResultsInNewTab(query);
+    }
     async #onConsentReminderConfirmed() {
         this.#transitionTo({
             type: "loading" /* State.LOADING */,
@@ -429,6 +431,7 @@ export class ConsoleInsight extends HTMLElement {
       @click=${this.#onClose}
       .data=${{
             variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            jslogContext: 'cancel',
         }}
     >
       ${UIStrings.cancel}
@@ -442,6 +445,7 @@ export class ConsoleInsight extends HTMLElement {
       class="disable-button"
       .data=${{
             variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            jslogContext: 'disable',
         }}
     >
       Disable this feature
@@ -455,6 +459,7 @@ export class ConsoleInsight extends HTMLElement {
       @click=${this.#goToNextPage}
       .data=${{
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
+            jslogContext: 'next',
         }}
     >
       Next
@@ -467,6 +472,7 @@ export class ConsoleInsight extends HTMLElement {
       @click=${this.#goToPrevPage}
       .data=${{
             variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            jslogContext: 'back',
         }}
     >
       Back
@@ -481,15 +487,29 @@ export class ConsoleInsight extends HTMLElement {
       .data=${{
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             disabled,
+            jslogContext: 'continue',
         }}
     >
       Continue
     </${Buttons.Button.Button.litTagName}>`;
         // clang-format on
     }
+    #renderSearchButton() {
+        // clang-format off
+        return html `<${Buttons.Button.Button.litTagName}
+      @click=${this.#onSearch}
+      class="search-button"
+      .data=${{
+            variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+        }}
+    >
+      Use search instead
+    </${Buttons.Button.Button.litTagName}>`;
+        // clang-format on
+    }
     #renderLearnMoreAboutInsights() {
         // clang-format off
-        return html `<x-link href=${DOGFOODINFO_URL} class="link">Learn more about Console insights</x-link>`;
+        return html `<x-link href=${DOGFOODINFO_URL} class="link" jslog=${VisualLogging.link('learn-more').track({ click: true })}>Learn more</x-link>`;
         // clang-format on
     }
     #onTermsChange() {
@@ -521,6 +541,9 @@ export class ConsoleInsight extends HTMLElement {
             <${ConsoleInsightSourcesList.litTagName} .sources=${this.#state.sources}>
             </${ConsoleInsightSourcesList.litTagName}>
           </details>
+          <div class="buttons">
+            ${this.#renderSearchButton()}
+          </div>
         </main>`;
             case "error" /* State.ERROR */:
                 return html `
@@ -532,8 +555,8 @@ export class ConsoleInsight extends HTMLElement {
           <main>
             <p>The following data will be sent to Google to understand the context for the console message.
             Human reviewers may process this information for quality purposes.
-            Don’t submit sensitive information. Read Google’s <x-link href="https://policies.google.com/terms" class="link">Terms of Service</x-link> and
-            the <x-link href=${'https://policies.google.com/terms/gener' + 'ative-ai'} class="link">${'Gener' + 'ative'} AI Additional Terms of Service</x-link>.</p>
+            Don’t submit sensitive information. Read Google’s <x-link href="https://policies.google.com/terms" class="link" jslog=${VisualLogging.link('terms-of-service').track({ click: true })}>Terms of Service</x-link> and
+            the <x-link href=${'https://policies.google.com/terms/gener' + 'ative-ai'} class="link" jslog=${VisualLogging.link('gener' + 'ative-ai-terms-of-service').track({ click: true })}>${'Gener' + 'ative'} AI Additional Terms of Service</x-link>.</p>
             <${ConsoleInsightSourcesList.litTagName} .sources=${this.#state.sources}>
             </${ConsoleInsightSourcesList.litTagName}>
           </main>
@@ -542,28 +565,28 @@ export class ConsoleInsight extends HTMLElement {
                 switch (this.#state.page) {
                     case "private" /* ConsentOnboardingPage.PAGE1 */:
                         return html `<main>
-              <p>This notice and our <x-link href="https://policies.google.com/privacy" class="link">Privacy Notice</x-link> describe how Console insights in Chrome DevTools handles your data. Please read them carefully.</p>
+              <p>This notice and our <x-link href="https://policies.google.com/privacy" class="link" jslog=${VisualLogging.link('privacy-notice').track({ click: true })}>privacy notice</x-link> describe how Chrome DevTools handles your data. Please read them carefully.</p>
 
-              <p>Console insights uses the console message, associated stack trace, related source code, and the associated network headers as input data. When you use Console insights, Google collects this input data, generated output, related feature usage information, and your feedback. Google uses this data to provide, improve, and develop Google products and services and machine learning technologies, including Google's enterprise products such as Google Cloud.</p>
+              <p>Chrome DevTools uses the console message, associated stack trace, related source code, and the associated network headers as input data. When you use "Understand this message", Google collects this input data, generated output, related feature usage information, and your feedback. Google uses this data to provide, improve, and develop Google products and services and machine learning technologies, including Google's enterprise products such as Google Cloud.</p>
 
               <p>To help with quality and improve our products, human reviewers may read, annotate, and process the above-mentioned input data, generated output, related feature usage information, and your feedback. <strong>Please do not include sensitive (e.g., confidential) or personal information that can be used to identify you or others in your prompts or feedback.</strong> Your data will be stored in a way where Google cannot tell who provided it and can no longer fulfill any deletion requests and will be retained for up to 18 months.</p>
             </main>`;
                     case "legal" /* ConsentOnboardingPage.PAGE2 */:
                         return html `<main>
-            <p>As you try Console insights, here are key things to know:
+            <p>As you try "Understand this message", here are key things to know:
 
             <ul>
-              <li>Console insights uses console message, associated stack trace, related source code, and the associated network headers to provide answers.</li>
-              <li>Console insights is an experimental technology, and may generate inaccurate or offensive information that doesn't represent Google's views. Voting on the responses will help make Console insights better.</li>
-              <li>Console insights is an experimental feature and subject to future changes.</li>
-              <li><strong><x-link class="link" href="https://support.google.com/legal/answer/13505487">Use generated code snippets with caution</x-link>.</strong></li>
+              <li>Chrome DevTools uses console message, associated stack trace, related source code, and the associated network headers to provide answers.</li>
+              <li>Chrome DevTools uses experimental technology, and may generate inaccurate or offensive information that doesn't represent Google's views. Voting on the responses will help make Console insights better.</li>
+              <li>This feature is an experimental feature and subject to future changes.</li>
+              <li><strong><x-link class="link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging.link('use-code-with-caution').track({ click: true })}>Use generated code snippets with caution</x-link>.</strong></li>
             </ul>
             </p>
 
             <p>
             <label>
-              <input class="terms" @change=${this.#onTermsChange} type="checkbox">
-              <span>I accept my use of Console insights is subject to the <x-link href="https://policies.google.com/terms" class="link">Google Terms of Service</x-link> and the <x-link href=${'https://policies.google.com/terms/gener' + 'ative-ai'} class="link">${'Gener' + 'ative'} AI Additional Terms of Service</x-link>.</span>
+              <input class="terms" @change=${this.#onTermsChange} type="checkbox" jslog=${VisualLogging.toggle('terms-of-service-accepted')}>
+              <span>I accept my use of "Understand this message" is subject to the <x-link href="https://policies.google.com/terms" class="link" jslog=${VisualLogging.link('terms-of-service').track({ click: true })}>Google Terms of Service</x-link> and the <x-link href=${'https://policies.google.com/terms/gener' + 'ative-ai'} class="link" jslog=${VisualLogging.link('gener' + 'ative-ai-terms-of-service').track({ click: true })}>${'Gener' + 'ative'} AI Additional Terms of Service</x-link>.</span>
             </label>
             </p>
             </main>`;
@@ -588,7 +611,7 @@ export class ConsoleInsight extends HTMLElement {
     }
     #renderDogfoodFeedbackLink() {
         // clang-format off
-        return html `<x-link href=${DOGFOODFEEDBACK_URL} class="link">${i18nString(UIStrings.submitFeedback)}</x-link>`;
+        return html `<x-link href=${DOGFOODFEEDBACK_URL} class="link" jslog=${VisualLogging.link('feedback').track({ click: true })}>${i18nString(UIStrings.submitFeedback)}</x-link>`;
         // clang-format on
     }
     #renderFooter() {
@@ -596,8 +619,8 @@ export class ConsoleInsight extends HTMLElement {
         // clang-format off
         const disclaimer = LitHtml
             .html `<span>
-                Console insights may display inaccurate or offensive information that doesn't represent Google's views.
-                <x-link href=${DOGFOODINFO_URL} class="link">${i18nString(UIStrings.learnMore)}</x-link>
+                This feature may display inaccurate or offensive information that doesn't represent Google's views.
+                <x-link href=${DOGFOODINFO_URL} class="link" jslog=${VisualLogging.link('learn-more').track({ click: true })}>${i18nString(UIStrings.learnMore)}</x-link>
                 ${showFeedbackLink() ? LitHtml.html ` - ${this.#renderDogfoodFeedbackLink()}` : LitHtml.nothing}
             </span>`;
         switch (this.#state.type) {
@@ -619,6 +642,7 @@ export class ConsoleInsight extends HTMLElement {
             @click=${this.#onGoToSettings}
             .data=${{
                     variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
+                    jslogContext: 'update-settings',
                 }}
           >
             ${UIStrings.updateSettings}
@@ -678,6 +702,7 @@ export class ConsoleInsight extends HTMLElement {
                     iconName: 'thumb-up',
                     active: this.#selectedRating,
                     title: i18nString(UIStrings.thumbsUp),
+                    jslogContext: 'thumbs-up',
                 }}
             @click=${this.#onRating}
           ></${Buttons.Button.Button.litTagName}>
@@ -689,6 +714,7 @@ export class ConsoleInsight extends HTMLElement {
                     iconName: 'thumb-down',
                     active: this.#selectedRating !== undefined && !this.#selectedRating,
                     title: i18nString(UIStrings.thumbsDown),
+                    jslogContext: 'thumbs-down',
                 }}
             @click=${this.#onRating}
           ></${Buttons.Button.Button.litTagName}>
@@ -698,6 +724,7 @@ export class ConsoleInsight extends HTMLElement {
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'report',
                     title: i18nString(UIStrings.report),
+                    jslogContext: 'report',
                 }}
             @click=${this.#onReport}
           ></${Buttons.Button.Button.litTagName}>
@@ -722,20 +749,20 @@ export class ConsoleInsight extends HTMLElement {
             case "error" /* State.ERROR */:
                 return i18nString(UIStrings.error);
             case "consent-reminder" /* State.CONSENT_REMINDER */:
-                return this.#actionTitle;
+                return 'Data used to understand this message';
             case "consent-onboarding" /* State.CONSENT_ONBOARDING */:
                 switch (this.#state.page) {
                     case "private" /* ConsentOnboardingPage.PAGE1 */:
-                        return 'Console insights Privacy Notice';
+                        return 'Privacy notice';
                     case "legal" /* ConsentOnboardingPage.PAGE2 */:
-                        return 'Console insights Legal Notice';
+                        return 'Legal notice';
                 }
         }
     }
     #render() {
         // clang-format off
         render(html `
-      <div class="wrapper">
+      <div class="wrapper" jslog=${VisualLogging.pane('console-insights').track({ resize: true })}>
         <header>
           <div class="filler">
             <h2>
@@ -777,7 +804,7 @@ class ConsoleInsightSourcesList extends HTMLElement {
         render(html `
       <ul>
         ${Directives.repeat(this.#sources, item => item.value, item => {
-            return html `<li><x-link class="link" title="${localizeType(item.type)} ${i18nString(UIStrings.opensInNewTab)}" href=${`data:text/plain,${encodeURIComponent(item.value)}`}>
+            return html `<li><x-link class="link" title="${localizeType(item.type)} ${i18nString(UIStrings.opensInNewTab)}" href="data:text/plain,${encodeURIComponent(item.value)}" jslog=${VisualLogging.link('source-' + item.type).track({ click: true })}>
             <${IconButton.Icon.Icon.litTagName} name="open-externally"></${IconButton.Icon.Icon.litTagName}>
             ${localizeType(item.type)}
           </x-link></li>`;

@@ -57,7 +57,7 @@ export class InspectElementModeController {
             }
             this.setMode("none" /* Protocol.Overlay.InspectMode.None */);
             event.consume(true);
-            void VisualLogging.logKeyDown(event, 'cancel-inspect-mode');
+            void VisualLogging.logKeyDown(null, event, 'cancel-inspect-mode');
         }, true);
     }
     static instance({ forceNew } = { forceNew: false }) {

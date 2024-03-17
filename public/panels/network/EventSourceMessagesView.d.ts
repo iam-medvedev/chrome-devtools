@@ -25,7 +25,6 @@ export declare class EventSourceMessageNode extends DataGrid.SortableDataGrid.So
     readonly message: SDK.NetworkRequest.EventSourceMessage;
     constructor(message: SDK.NetworkRequest.EventSourceMessage);
 }
-export declare function EventSourceMessageNodeComparator(fieldGetter: (arg0: SDK.NetworkRequest.EventSourceMessage) => (number | string), a: EventSourceMessageNode, b: EventSourceMessageNode): number;
 export declare const Comparators: {
     [x: string]: (arg0: EventSourceMessageNode, arg1: EventSourceMessageNode) => number;
 };

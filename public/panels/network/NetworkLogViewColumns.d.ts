@@ -71,9 +71,6 @@ export declare class NetworkLogViewColumns {
     selectFilmStripFrame(time: number): void;
     clearFilmStripFrame(): void;
 }
-export declare const _initialSortColumn = "waterfall";
-export declare const _defaultColumnConfig: Object;
-export declare const _filmStripDividerColor = "#fccc49";
 export interface Descriptor {
     id: string;
     title: string | (() => string);

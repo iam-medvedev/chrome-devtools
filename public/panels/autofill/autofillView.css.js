@@ -24,6 +24,7 @@ main {
 
 .placeholder {
   font-size: 15px;
+  text-align: center;
 }
 
 .address {
@@ -59,6 +60,8 @@ main {
 
 .label-container {
   padding: 5px 5px 0;
+  display: flex;
+  align-items: flex-start;
 }
 
 .top-right-corner {
@@ -73,6 +76,15 @@ main {
 
 .highlighted {
   background-color: var(--sys-color-state-focus-select);
+}
+
+.link {
+  color: var(--sys-color-primary);
+  text-decoration-line: underline;
+}
+
+.feedback {
+  margin: 1.5px 3px 0 5px;
 }
 
 /*# sourceURL=autofillView.css */

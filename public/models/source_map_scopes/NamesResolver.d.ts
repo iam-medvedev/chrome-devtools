@@ -41,7 +41,7 @@ export declare class RemoteObject extends SDK.RemoteObject.RemoteObject {
     get objectId(): Protocol.Runtime.RemoteObjectId | undefined;
     get type(): string;
     get subtype(): string | undefined;
-    get value(): any;
+    get value(): typeof this.object.value;
     get description(): string | undefined;
     get hasChildren(): boolean;
     get preview(): Protocol.Runtime.ObjectPreview | undefined;

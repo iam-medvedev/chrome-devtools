@@ -1678,7 +1678,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
                     const canonicalPropertyResult = {
                         text: canonicalProperty,
                         priority: SDK.CSSMetadata.cssMetadata().propertyUsageWeight(canonicalProperty),
-                        subtitle: `= ${alias}`,
+                        subtitle: `= ${alias}`, // This explains why this canonicalProperty is prompted.
                         isCSSVariableColor: false,
                     };
                     // We add aliasResult *before* the canonicalProperty one because we want to prompt
@@ -1861,7 +1861,6 @@ export class StylesSidebarPropertyRenderer {
     propertyValue;
     fontHandler;
     shadowHandler;
-    gridHandler;
     lengthHandler;
     animationHandler;
     matchers;
@@ -1872,7 +1871,6 @@ export class StylesSidebarPropertyRenderer {
         this.propertyValue = value;
         this.fontHandler = null;
         this.shadowHandler = null;
-        this.gridHandler = null;
         this.lengthHandler = null;
         this.animationHandler = null;
         this.matchers = matchers;
@@ -1882,9 +1880,6 @@ export class StylesSidebarPropertyRenderer {
     }
     setShadowHandler(handler) {
         this.shadowHandler = handler;
-    }
-    setGridHandler(handler) {
-        this.gridHandler = handler;
     }
     setAnimationHandler(handler) {
         this.animationHandler = handler;
@@ -1916,11 +1911,6 @@ export class StylesSidebarPropertyRenderer {
             valueElement.normalize();
             return valueElement;
         }
-        if (this.gridHandler && metadata.isGridAreaDefiningProperty(this.propertyName)) {
-            valueElement.appendChild(this.gridHandler(this.propertyValue, this.propertyName));
-            valueElement.normalize();
-            return valueElement;
-        }
         if (this.animationHandler && (this.propertyName === 'animation' || this.propertyName === '-webkit-animation')) {
             valueElement.appendChild(this.animationHandler(this.propertyValue));
             valueElement.normalize();
@@ -1937,10 +1927,6 @@ export class StylesSidebarPropertyRenderer {
             }
             return new RegExp(`^${source}$`, flags);
         };
-        if (this.fontHandler && metadata.isFontAwareProperty(this.propertyName)) {
-            matchers.push(new LegacyRegexMatcher(this.propertyName === 'font-family' ? InlineEditor.FontEditorUtils.FontFamilyRegex :
-                InlineEditor.FontEditorUtils.FontPropertiesRegex, this.fontHandler));
-        }
         if (!Root.Runtime.experiments.isEnabled('css-type-component-length-deprecate') && this.lengthHandler) {
             // TODO(changhaohan): crbug.com/1138628 refactor this to handle unitless 0 cases
             matchers.push(new LegacyRegexMatcher(asLineMatch(InlineEditor.CSSLengthUtils.CSSLengthRegex), this.lengthHandler));

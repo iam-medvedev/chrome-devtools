@@ -7,13 +7,13 @@ export declare class CloseEvent extends Event {
     static readonly eventName = "close";
     constructor();
 }
-type PublicPromptBuilder = Pick<PromptBuilder, 'buildPrompt'>;
+type PublicPromptBuilder = Pick<PromptBuilder, 'buildPrompt' | 'getSearchQuery'>;
 type PublicAidaClient = Pick<Host.AidaClient.AidaClient, 'fetch'>;
 export declare class ConsoleInsight extends HTMLElement {
     #private;
-    static create(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient, actionTitle?: string): Promise<ConsoleInsight>;
+    static create(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient): Promise<ConsoleInsight>;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
-    constructor(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient, actionTitle?: string, syncInfo?: Host.InspectorFrontendHostAPI.SyncInformation);
+    constructor(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient, syncInfo?: Host.InspectorFrontendHostAPI.SyncInformation);
     connectedCallback(): void;
 }
 declare class ConsoleInsightSourcesList extends HTMLElement {

@@ -1,6 +1,15 @@
+interface TrackConfig {
+    click?: boolean;
+    dblclick?: boolean;
+    hover?: boolean;
+    drag?: boolean;
+    change?: boolean;
+    keydown?: boolean | string;
+    resize?: boolean;
+}
 export interface LoggingConfig {
     ve: number;
-    track?: Map<string, string | undefined>;
+    track?: TrackConfig;
     context?: string;
     parent?: string;
 }
@@ -54,6 +63,7 @@ export declare enum VisualElements {
     ElementsBreadcrumbs = 62,
     PanelTabHeader = 66,
     Menu = 67,
+    TableRow = 68,
     TableHeader = 69,
     TableCell = 70,
     Pane = 72,
@@ -85,15 +95,7 @@ export interface ConfigStringBuilder {
      * @param options The set of DOM events to track.
      * @returns The builder itself.
      */
-    track: (options: {
-        click?: boolean;
-        dblclick?: boolean;
-        hover?: boolean;
-        drag?: boolean;
-        change?: boolean;
-        keydown?: boolean | string;
-        resize?: boolean;
-    }) => ConfigStringBuilder;
+    track: (options: TrackConfig) => ConfigStringBuilder;
     /**
      * Serializes the configuration into a `jslog` string.
      *
@@ -102,3 +104,4 @@ export interface ConfigStringBuilder {
     toString: () => string;
 }
 export declare function makeConfigStringBuilder(veName: VisualElementName, context?: string): ConfigStringBuilder;
+export {};

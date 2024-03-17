@@ -62,7 +62,7 @@ describeWithEnvironment('Timing helpers', () => {
     });
     it('eventTimingsSeconds returns the right numbers', async () => {
         const event = {
-            ts: 100_000,
+            ts: 100_000, // 100k microseconds = 100ms = 0.1second
             dur: 50_000, // 50k microseconds = 50ms = 0.05second
         };
         assert.deepEqual(TraceModel.Helpers.Timing.eventTimingsSeconds(event), {

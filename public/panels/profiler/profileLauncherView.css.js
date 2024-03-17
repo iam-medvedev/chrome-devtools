@@ -123,6 +123,7 @@ styles.replaceSync(
 
 .profile-launcher-buttons {
   flex-wrap: wrap;
+  column-gap: 8px;
 }
 
 @media (forced-colors: active) {

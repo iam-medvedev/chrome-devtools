@@ -954,7 +954,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.dataGrid.element.addEventListener('mouseleave', () => this.setHoveredNode(null), true);
         this.dataGrid.element.addEventListener('keydown', event => {
             if (event.key === 'ArrowRight' && this.dataGrid.selectedNode) {
-                const initiatorLink = this.dataGrid.selectedNode.element().querySelector('span.devtools-link');
+                const initiatorLink = this.dataGrid.selectedNode.element().querySelector('button.devtools-link');
                 if (initiatorLink) {
                     initiatorLink.focus();
                 }
@@ -972,7 +972,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                 }
                 if (SDK.NetworkManager.NetworkManager.canReplayRequest(request)) {
                     SDK.NetworkManager.NetworkManager.replayRequest(request);
-                    void VisualLogging.logKeyDown(event, 'replay-xhr');
+                    void VisualLogging.logKeyDown(this.dataGrid.selectedNode.element(), event, 'replay-xhr');
                 }
             }
         });

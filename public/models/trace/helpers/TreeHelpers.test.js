@@ -12,10 +12,10 @@ describe('TreeHelpers', () => {
              *   |- Task C -|
              */
             const data = [
-                makeCompleteEvent('A', 0, 10),
-                makeCompleteEvent('B', 1, 3),
-                makeCompleteEvent('D', 5, 3),
-                makeCompleteEvent('C', 2, 1),
+                makeCompleteEvent('A', 0, 10), // 0..10
+                makeCompleteEvent('B', 1, 3), // 1..4
+                makeCompleteEvent('D', 5, 3), // 5..8
+                makeCompleteEvent('C', 2, 1), // 2..3
                 makeCompleteEvent('E', 11, 3), // 11..14
             ];
             TraceModel.Helpers.Trace.sortTraceEventsInPlace(data);
@@ -66,10 +66,10 @@ describe('TreeHelpers', () => {
              *   |- ?????? -|
              */
             const data = [
-                makeCompleteEvent('A', 0, 10),
-                makeCompleteEvent('B', 1, 3),
-                makeCompleteEvent('D', 5, 3),
-                makeCompleteEvent('C', 2, 1),
+                makeCompleteEvent('A', 0, 10), // 0..10
+                makeCompleteEvent('B', 1, 3), // 1..4
+                makeCompleteEvent('D', 5, 3), // 5..8
+                makeCompleteEvent('C', 2, 1), // 2..3
                 makeCompleteEvent('E', 11, 3), // 11..14
             ];
             TraceModel.Helpers.Trace.sortTraceEventsInPlace(data);
@@ -104,10 +104,10 @@ describe('TreeHelpers', () => {
              *   |- Task C -|
              */
             const data = [
-                makeCompleteEvent('A', 0, 10),
-                makeCompleteEvent('B', 0, 3),
-                makeCompleteEvent('D', 3, 3),
-                makeCompleteEvent('C', 2, 1),
+                makeCompleteEvent('A', 0, 10), // 0..10
+                makeCompleteEvent('B', 0, 3), // 0..3 (starts same time as A)
+                makeCompleteEvent('D', 3, 3), // 3..6 (starts when B finishes)
+                makeCompleteEvent('C', 2, 1), // 2..3 (finishes when B finishes)
                 makeCompleteEvent('E', 10, 3), // 10..13 (starts when A finishes)
             ];
             TraceModel.Helpers.Trace.sortTraceEventsInPlace(data);
@@ -158,10 +158,10 @@ describe('TreeHelpers', () => {
              *   |- Task C -|
              */
             const data = [
-                makeCompleteEvent('A', 0, 10),
-                makeCompleteEvent('B', 0, 3),
-                makeCompleteEvent('D', 3, 3),
-                makeCompleteEvent('C', 2, 1),
+                makeCompleteEvent('A', 0, 10), // 0..10
+                makeCompleteEvent('B', 0, 3), // 0..3 (starts same time as A)
+                makeCompleteEvent('D', 3, 3), // 3..6 (starts when B finishes)
+                makeCompleteEvent('C', 2, 1), // 2..3 (finishes when B finishes)
                 makeCompleteEvent('E', 10, 3), // 10..13 (starts when A finishes)
             ];
             TraceModel.Helpers.Trace.sortTraceEventsInPlace(data);
@@ -264,10 +264,10 @@ describe('TreeHelpers', () => {
              *   |- Task C -|
              */
             const data = [
-                makeCompleteEvent('A', 0, 10),
-                makeCompleteEvent('B', 1, 3),
-                makeCompleteEvent('D', 5, 3),
-                makeCompleteEvent('C', 2, 1),
+                makeCompleteEvent('A', 0, 10), // 0..10
+                makeCompleteEvent('B', 1, 3), // 1..4
+                makeCompleteEvent('D', 5, 3), // 5..8
+                makeCompleteEvent('C', 2, 1), // 2..3
                 makeCompleteEvent('E', 11, 3), // 11..14
             ];
             TraceModel.Helpers.Trace.sortTraceEventsInPlace(data);
@@ -301,10 +301,10 @@ describe('TreeHelpers', () => {
              *   |- Task C -|
              */
             const data = [
-                makeCompleteEvent('A', 0, 10),
-                makeCompleteEvent('B', 1, 3),
-                makeCompleteEvent('D', 5, 3),
-                makeCompleteEvent('C', 2, 1),
+                makeCompleteEvent('A', 0, 10), // 0..10
+                makeCompleteEvent('B', 1, 3), // 1..4
+                makeCompleteEvent('D', 5, 3), // 5..8
+                makeCompleteEvent('C', 2, 1), // 2..3
                 makeCompleteEvent('E', 11, 3), // 11..14
             ];
             TraceModel.Helpers.Trace.sortTraceEventsInPlace(data);
@@ -335,10 +335,10 @@ describe('TreeHelpers', () => {
              *   |- Task C -|
              */
             const data = [
-                makeCompleteEvent('A', 0, 10),
-                makeCompleteEvent('B', 1, 3),
-                makeCompleteEvent('D', 5, 3),
-                makeCompleteEvent('C', 2, 1),
+                makeCompleteEvent('A', 0, 10), // 0..10
+                makeCompleteEvent('B', 1, 3), // 1..4
+                makeCompleteEvent('D', 5, 3), // 5..8
+                makeCompleteEvent('C', 2, 1), // 2..3
                 makeCompleteEvent('E', 11, 3), // 11..14
             ];
             TraceModel.Helpers.Trace.sortTraceEventsInPlace(data);

@@ -72,7 +72,7 @@ export class InspectorBackend {
     agentPrototype(domain) {
         let prototype = this.agentPrototypes.get(domain);
         if (!prototype) {
-            prototype = new _AgentPrototype(domain);
+            prototype = new AgentPrototype(domain);
             this.agentPrototypes.set(domain, prototype);
         }
         return prototype;
@@ -682,9 +682,7 @@ export class TargetBase {
  * The reasons this is done is so that on the prototypes we can install the implementations
  * of the invoke_enable, etc. methods that the front-end uses.
  */
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-class _AgentPrototype {
+class AgentPrototype {
     replyArgs;
     description = '';
     metadata;
@@ -698,7 +696,7 @@ class _AgentPrototype {
     registerCommand(methodName, parameters, replyArgs, description) {
         const domainAndMethod = qualifyName(this.domain, methodName);
         function sendMessagePromise(...args) {
-            return _AgentPrototype.prototype.sendMessageToBackendPromise.call(this, domainAndMethod, parameters, args);
+            return AgentPrototype.prototype.sendMessageToBackendPromise.call(this, domainAndMethod, parameters, args);
         }
         // @ts-ignore Method code generation
         this[methodName] = sendMessagePromise;

@@ -500,8 +500,6 @@ export class RemoteObject extends SDK.RemoteObject.RemoteObject {
     get subtype() {
         return this.object.subtype;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get value() {
         return this.object.value;
     }

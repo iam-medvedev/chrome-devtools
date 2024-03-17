@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function WidgetfocusWidgetForNode(node) {
+function updateWidgetfocusWidgetForNode(node) {
     while (node) {
         if (node.__widget) {
             break;
@@ -24,9 +22,7 @@ function WidgetfocusWidgetForNode(node) {
         widget = parentWidget;
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-function XWidgetfocusWidgetForNode(node) {
+function updateXWidgetfocusWidgetForNode(node) {
     node = node && node.parentNodeOrShadowHost();
     const XWidgetCtor = customElements.get('x-widget');
     let widget = null;
@@ -46,7 +42,7 @@ export function focusChanged(event) {
     const target = event.target;
     const document = target ? target.ownerDocument : null;
     const element = document ? Platform.DOMUtilities.deepActiveElement(document) : null;
-    WidgetfocusWidgetForNode(element);
-    XWidgetfocusWidgetForNode(element);
+    updateWidgetfocusWidgetForNode(element);
+    updateXWidgetfocusWidgetForNode(element);
 }
 //# sourceMappingURL=focus-changed.js.map

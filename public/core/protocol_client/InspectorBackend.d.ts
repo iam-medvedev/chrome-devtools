@@ -48,7 +48,7 @@ interface CallbackWithDebugInfo {
 }
 export declare class InspectorBackend {
     #private;
-    readonly agentPrototypes: Map<ProtocolDomainName, _AgentPrototype>;
+    readonly agentPrototypes: Map<ProtocolDomainName, AgentPrototype>;
     readonly typeMap: Map<QualifiedName, CommandParameter[]>;
     readonly enumMap: Map<QualifiedName, Record<string, string>>;
     private getOrCreateEventParameterNamesForDomain;
@@ -235,7 +235,7 @@ export declare class TargetBase {
  * The reasons this is done is so that on the prototypes we can install the implementations
  * of the invoke_enable, etc. methods that the front-end uses.
  */
-declare class _AgentPrototype {
+declare class AgentPrototype {
     replyArgs: {
         [x: string]: string[];
     };

@@ -59,11 +59,6 @@ export interface TrackAppender {
      * Returns the info shown when an event in the timeline is hovered.
      */
     highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventData): HighlightedEntryInfo;
-    /**
-     * The EntriesFilter instance that used to modify the trees in a track based on user actions,
-     * e.g collapsing functions, etc.
-     */
-    entriesFilter?(): TraceEngine.EntriesFilter.EntriesFilter;
 }
 export declare const TrackNames: readonly ["Animations", "Timings", "Interactions", "GPU", "LayoutShifts", "Thread", "Thread_AuctionWorklet"];
 export type TrackAppenderName = typeof TrackNames[number] | 'Network';
@@ -85,12 +80,6 @@ export declare class CompatibilityTracksAppender {
     constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[], legacyTimelineModel: TimelineModel.TimelineModel.TimelineModelImpl);
     setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
-    getHiddenEvents(group: PerfUI.FlameChart.Group): TraceEngine.Types.TraceEvents.TraceEventData[] | void;
-    getModifiedEntries(group: PerfUI.FlameChart.Group): TraceEngine.Types.TraceEvents.TraceEventData[] | void;
-    modifyTree(group: PerfUI.FlameChart.Group, entry: TraceEngine.Types.TraceEvents.SyntheticTraceEntry, type: TraceEngine.EntriesFilter.FilterAction): void;
-    findPossibleContextMenuActions(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): TraceEngine.EntriesFilter.PossibleFilterActions | void;
-    revealEntry(group: PerfUI.FlameChart.Group, index: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): void;
-    findHiddenDescendantsAmount(group: PerfUI.FlameChart.Group, node: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): number | void;
     /**
      * Given a trace event returns instantiates a legacy SDK.Event. This should
      * be used for compatibility purposes only.

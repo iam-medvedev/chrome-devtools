@@ -321,11 +321,10 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     }
     async setFileContent(path, content, isBase64) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.FileSavedInWorkspace);
-        let callback;
+        let resolve;
         const innerSetFileContent = () => {
             const promise = new Promise(x => {
-                // @ts-ignore TODO(crbug.com/1172300) Properly type this after jsdoc to ts migration
-                callback = x;
+                resolve = x;
             });
             this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), { create: true }, fileEntryLoaded.bind(this), errorHandler.bind(this));
             return promise;
@@ -346,7 +345,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             }
             fileWriter.write(blob);
             function fileWritten() {
-                fileWriter.onwriteend = callback;
+                fileWriter.onwriteend = resolve;
                 fileWriter.truncate(blob.size);
             }
         }
@@ -354,7 +353,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             // @ts-ignore TODO(crbug.com/1172300) Properly type this after jsdoc to ts migration
             const errorMessage = IsolatedFileSystem.errorMessage(error);
             console.error(errorMessage + ' when setting content for file \'' + (this.path() + '/' + path) + '\'');
-            callback(undefined);
+            resolve(undefined);
         }
     }
     renameFile(path, newName, callback) {

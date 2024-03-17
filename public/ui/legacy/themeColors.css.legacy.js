@@ -252,7 +252,7 @@ export default {
 
   /* Chrome base surface */
 
-  --sys-color-base: var(--ref-palette-neutral100);
+  --sys-color-base: var(--ref-palette-neutral98);
   --sys-color-base-container: var(--sys-color-surface4);
   --sys-color-base-container-elevated: var(--ref-palette-neutral100);
 
@@ -279,13 +279,13 @@ export default {
 
   /* States */
 
-  --sys-color-state-hover-on-prominent: rgb(253 252 251 / 10%);
-  --sys-color-state-hover-on-subtle: rgb(31 31 31 / 6%);
+  --sys-color-state-hover-on-prominent: color-mix(in sRGB, var(--ref-palette-neutral99) 10%, transparent);
+  --sys-color-state-hover-on-subtle: color-mix(in sRGB, var(--ref-palette-neutral10) 6%, transparent);
   --sys-color-state-hover-dim-blend-protection: rgb(6 46 111 / 18%);
   --sys-color-state-hover-bright-blend-protection: rgb(31 31 31 / 6%);
-  --sys-color-state-ripple-neutral-on-prominent: rgb(253 252 251 / 16%);
-  --sys-color-state-ripple-neutral-on-subtle: rgb(31 31 31 / 8%);
-  --sys-color-state-ripple-primary: rgb(124 172 248 / 32%);
+  --sys-color-state-ripple-neutral-on-prominent: color-mix(in sRGB, var(--ref-palette-neutral99) 16%, transparent);
+  --sys-color-state-ripple-neutral-on-subtle: color-mix(in sRGB, var(--ref-palette-neutral10) 8%, transparent);
+  --sys-color-state-ripple-primary: color-mix(in sRGB, var(--ref-palette-primary70) 32%, transparent);
   --sys-color-state-focus-ring: var(--ref-palette-primary40);
   --sys-color-state-focus-select: var(--ref-palette-primary80);
   --sys-color-state-focus-highlight: rgb(31 31 31 / 6%);
@@ -399,6 +399,8 @@ export default {
   --app-color-rendering-children: var(--ref-palette-purple80);
   --app-color-painting: var(--ref-palette-green70);
   --app-color-painting-children: var(--ref-palette-green80);
+  --app-color-messaging: var(--ref-palette-cyan70);
+  --app-color-messaging-children: var(--ref-palette-cyan80);
   --app-color-task: var(--ref-palette-neutral80);
   --app-color-task-children: var(--ref-palette-neutral90);
   --app-color-system: var(--ref-palette-neutral80);
@@ -425,6 +427,28 @@ export default {
    */
   --app-color-coverage-used: var(--ref-palette-neutral80);
   --app-color-coverage-unused: var(--sys-color-error-bright);
+  --app-color-toolbar-background: var(--sys-color-surface4);
+}
+
+:root.baseline-default {
+  --sys-color-surface4: color-mix(in sRGB, #6991d6 12%, var(--ref-palette-neutral100));
+}
+
+:root.baseline-grayscale {
+  --sys-color-divider: var(--ref-palette-neutral90);
+  --app-color-toolbar-background: var(--ref-palette-neutral94);
+}
+
+:root.baseline-default,
+:root.baseline-grayscale {
+  --sys-color-base: var(--ref-palette-neutral100);
+
+  &.-theme-with-dark-background {
+    --sys-color-surface4: color-mix(in sRGB, #d1e1ff 12%, var(--ref-palette-neutral10));
+    --sys-color-divider: var(--ref-palette-neutral40);
+    --app-color-toolbar-background: var(--sys-color-base);
+    --sys-color-base: var(--ref-palette-neutral25);
+  }
 }
 
 .-theme-with-dark-background {
@@ -625,7 +649,7 @@ export default {
 
   /* Chrome base surface */
 
-  --sys-color-base: var(--ref-palette-neutral25);
+  --sys-color-base: var(--ref-palette-secondary25);
   --sys-color-base-container: var(--ref-palette-neutral15);
   --sys-color-base-container-elevated: var(--ref-palette-neutral25);
 
@@ -647,19 +671,19 @@ export default {
   --sys-color-neutral-outline: var(--ref-palette-neutral50);
   --sys-color-yellow-outline: var(--ref-palette-yellow40);
   --sys-color-error-outline: var(--ref-palette-error80);
-  --sys-color-divider: var(--ref-palette-neutral30);
+  --sys-color-divider: var(--ref-palette-secondary35);
   --sys-color-divider-on-tonal-container: var(--ref-palette-neutral40);
   --sys-color-divider-prominent: var(--ref-palette-neutral50);
 
   /* States */
 
-  --sys-color-state-hover-on-prominent: rgb(31 31 31 / 6%);
-  --sys-color-state-hover-on-subtle: rgb(253 252 251 / 10%);
+  --sys-color-state-hover-on-prominent: color-mix(in sRGB, var(--ref-palette-neutral10) 6%, transparent);
+  --sys-color-state-hover-on-subtle: color-mix(in sRGB, var(--ref-plette-neutral99) 10%, transparent);
   --sys-color-state-hover-dim-blend-protection: rgb(31 31 31 / 10%);
   --sys-color-state-hover-bright-blend-protection: rgb(31 31 31 / 16%);
-  --sys-color-state-ripple-neutral-on-prominent: rgb(31 31 31 / 12%);
-  --sys-color-state-ripple-neutral-on-subtle: rgb(253 252 251 / 16%);
-  --sys-color-state-ripple-primary: rgb(76 141 246 / 32%);
+  --sys-color-state-ripple-neutral-on-prominent: color-mix(in sRGB, var(--ref-palette-neutral10) 12%, transparent);
+  --sys-color-state-ripple-neutral-on-subtle: color-mix(in sRGB, var(--ref-palette-neutral99) 16%, transparent);
+  --sys-color-state-ripple-primary: color-mix(in sRGB, var(--ref-palette-primary60) 32%, transparent);
   --sys-color-state-focus-ring: var(--ref-palette-primary80);
   --sys-color-state-focus-select: var(--ref-palette-secondary50);
   --sys-color-state-focus-highlight: rgb(253 252 251 / 10%);
@@ -800,6 +824,7 @@ export default {
    */
   --app-color-coverage-used: var(--ref-palette-neutral40);
   --app-color-coverage-unused: var(--sys-color-error-bright);
+  --app-color-toolbar-background: var(--sys-color-base);
 }
 `
 };

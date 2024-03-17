@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 import { Keys } from './KeyboardShortcut.js';
 import * as Utils from './utils/utils.js';
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _constructor = null;
+let cachedConstructor = null;
 export class HistoryInput extends HTMLInputElement {
     history;
     historyPosition;
@@ -17,10 +15,10 @@ export class HistoryInput extends HTMLInputElement {
         this.addEventListener('input', this.onInput.bind(this), false);
     }
     static create() {
-        if (!_constructor) {
-            _constructor = Utils.registerCustomElement('input', 'history-input', HistoryInput);
+        if (!cachedConstructor) {
+            cachedConstructor = Utils.registerCustomElement('input', 'history-input', HistoryInput);
         }
-        return _constructor();
+        return cachedConstructor();
     }
     onInput(_event) {
         if (this.history.length === this.historyPosition + 1) {

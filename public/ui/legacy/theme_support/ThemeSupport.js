@@ -35,12 +35,12 @@ import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import inspectorSyntaxHighlightStyles from '../inspectorSyntaxHighlight.css.legacy.js';
 let themeSupportInstance;
-const themeValuesCache = new Map();
+const themeValueByTargetByName = new Map();
 export class ThemeSupport extends EventTarget {
     setting;
     themeNameInternal = 'default';
     customSheets = new Set();
-    computedRoot = Common.Lazy.lazy(() => window.getComputedStyle(document.documentElement));
+    computedStyleOfHTML = Common.Lazy.lazy(() => window.getComputedStyle(document.documentElement));
     constructor(setting) {
         super();
         this.setting = setting;
@@ -58,34 +58,34 @@ export class ThemeSupport extends EventTarget {
         }
         return themeSupportInstance;
     }
-    getComputedValue(variableName, target = null) {
-        const computedRoot = target ? window.getComputedStyle(target) : this.computedRoot();
-        if (typeof computedRoot === 'symbol') {
-            throw new Error(`Computed value for property (${variableName}) could not be found on :root.`);
-        }
-        // Since we might query the same variable name from various targets we need to support
+    getComputedValue(propertyName, target = null) {
+        // Since we might query the same property name from various targets we need to support
         // per-target caching of computed values. Here we attempt to locate the particular computed
-        // value cache for the target. If no target was specified we use the default computed root,
-        // which belongs to the document element.
-        let computedRootCache = themeValuesCache.get(computedRoot);
-        if (!computedRootCache) {
-            computedRootCache = new Map();
-            themeValuesCache.set(computedRoot, computedRootCache);
+        // value cache for the target element. If no target was specified we use the default computed root,
+        // which belongs to the documentElement.
+        let themeValueByName = themeValueByTargetByName.get(target);
+        if (!themeValueByName) {
+            themeValueByName = new Map();
+            themeValueByTargetByName.set(target, themeValueByName);
         }
         // Since theme changes trigger a reload, we can avoid repeatedly looking up color values
         // dynamically. Instead we can look up the first time and cache them for future use,
         // knowing that the cache will be invalidated by virtue of a reload when the theme changes.
-        let cachedValue = computedRootCache.get(variableName);
-        if (!cachedValue) {
-            cachedValue = computedRoot.getPropertyValue(variableName).trim();
+        let themeValue = themeValueByName.get(propertyName);
+        if (!themeValue) {
+            const styleDeclaration = target ? window.getComputedStyle(target) : this.computedStyleOfHTML();
+            if (typeof styleDeclaration === 'symbol') {
+                throw new Error(`Computed value for property (${propertyName}) could not be found on documentElement.`);
+            }
+            themeValue = styleDeclaration.getPropertyValue(propertyName).trim();
             // If we receive back an empty value (nothing has been set) we don't store it for the future.
             // This means that subsequent requests will continue to query the styles in case the value
             // has been set.
-            if (cachedValue) {
-                computedRootCache.set(variableName, cachedValue);
+            if (themeValue) {
+                themeValueByName.set(propertyName, themeValue);
             }
         }
-        return cachedValue;
+        return themeValue;
     }
     hasTheme() {
         return this.themeNameInternal !== 'default';
@@ -121,10 +121,20 @@ export class ThemeSupport extends EventTarget {
         const isDarkThemed = document.documentElement.classList.contains('-theme-with-dark-background');
         // In the event the theme changes we need to clear caches and notify subscribers.
         if (wasDarkThemed !== isDarkThemed) {
-            themeValuesCache.clear();
+            themeValueByTargetByName.clear();
             this.customSheets.clear();
             this.dispatchEvent(new ThemeChangeEvent());
         }
+        // Baseline is the name of Chrome's default color theme and there are two of these: default and grayscale.
+        // The collective name for the rest of the color themes is dynamic.
+        // In the baseline themes Chrome uses custom values for surface colors, whereas for dynamic themes these are color-mixed.
+        // To match Chrome we need to know if any of the baseline themes is currently active and assign specific values to surface colors.
+        const selectedTheme = getComputedStyle(document.body).getPropertyValue('--user-color-source');
+        document.documentElement.classList.toggle('baseline-default', selectedTheme === 'baseline-default');
+        document.documentElement.classList.toggle('baseline-grayscale', selectedTheme === 'baseline-grayscale');
+    }
+    static clearThemeCache() {
+        themeValueByTargetByName.clear();
     }
     static async fetchColors(document) {
         if (Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
@@ -144,8 +154,11 @@ export class ThemeSupport extends EventTarget {
         const COLORS_CSS_SELECTOR = 'link[href*=\'//theme/colors.css\']';
         const colorCssNode = document.querySelector(COLORS_CSS_SELECTOR);
         document.body.appendChild(newColorsCssLink);
-        if (colorCssNode && await newColorsLoaded) {
-            colorCssNode.remove();
+        if (await newColorsLoaded) {
+            if (colorCssNode) {
+                colorCssNode.remove();
+            }
+            ThemeSupport.instance().applyTheme(document);
         }
     }
 }

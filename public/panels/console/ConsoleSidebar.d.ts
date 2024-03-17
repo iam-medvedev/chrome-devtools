@@ -7,9 +7,7 @@ import { type ConsoleViewMessage } from './ConsoleViewMessage.js';
 declare const ConsoleSidebar_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends Events.FilterSelected>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T_1 extends Events.FilterSelected>(eventType: T_1): Promise<EventTypes[T_1]>; /**
-     *@description Text in Console Sidebar of the Console panel to show how many messages exist.
-     */
+    once<T_1 extends Events.FilterSelected>(eventType: T_1): Promise<EventTypes[T_1]>;
     removeEventListener<T_2 extends Events.FilterSelected>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
     hasEventListeners(eventType: Events.FilterSelected): boolean;
     dispatchEventToListeners<T_3 extends Events.FilterSelected>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_3>): void;
@@ -48,7 +46,7 @@ export declare class FilterTreeElement extends ConsoleSidebarTreeElement {
     private readonly urlTreeElements;
     private messageCount;
     private uiStringForFilterCount;
-    constructor(filter: ConsoleFilter, icon: IconButton.Icon.Icon, selectedFilterSetting: Common.Settings.Setting<string>);
+    constructor(filter: ConsoleFilter, icon: IconButton.Icon.Icon, selectedFilterSetting: Common.Settings.Setting<string | null>);
     clear(): void;
     name(): string;
     onselect(selectedByUser?: boolean): boolean;

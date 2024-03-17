@@ -534,7 +534,7 @@ describe('Color', () => {
             { format: "hexa" /* Common.Color.Format.HEXA */, spec: '#00ff00ff' },
             { format: "shorthexa" /* Common.Color.Format.ShortHEXA */, spec: '#0f0f' },
             { format: "rgb" /* Common.Color.Format.RGB */, spec: 'rgb(0 255 0)' },
-            { format: "rgba" /* Common.Color.Format.RGBA */, spec: 'rgb(0 255 0)' },
+            { format: "rgba" /* Common.Color.Format.RGBA */, spec: 'rgb(0 255 0)' }, // no alpha here because it is ignored at 100%
             { format: "hsl" /* Common.Color.Format.HSL */, spec: 'hsl(120deg 100% 50%)' },
             { format: "hsla" /* Common.Color.Format.HSLA */, spec: 'hsl(120deg 100% 50%)' },
             { format: "hwb" /* Common.Color.Format.HWB */, spec: 'hwb(120deg 0% 0%)' },

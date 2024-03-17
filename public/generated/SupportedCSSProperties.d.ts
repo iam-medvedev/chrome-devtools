@@ -611,9 +611,6 @@ export const generatedPropertyValues: {
     position: {
         values: string[];
     };
-    "position-fallback": {
-        values: string[];
-    };
     "position-fallback-bounds": {
         values: string[];
     };

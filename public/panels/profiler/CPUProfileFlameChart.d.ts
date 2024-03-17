@@ -36,7 +36,7 @@ export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.
     #private;
     readonly colorGeneratorInternal: Common.Color.Generator;
     maxStackDepthInternal: number;
-    timelineData_: PerfUI.FlameChart.FlameChartTimelineData | null;
+    timelineDataInternal: PerfUI.FlameChart.FlameChartTimelineData | null;
     entryNodes: CPUProfile.ProfileTreeModel.ProfileNode[];
     boldFont?: string;
     constructor();

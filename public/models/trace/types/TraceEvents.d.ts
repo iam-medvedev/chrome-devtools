@@ -128,6 +128,22 @@ export interface TraceEventFireIdleCallback extends TraceEventComplete {
         };
     };
 }
+export interface TraceEventSchedulePostMessage extends TraceEventInstant {
+    name: KnownEventName.SchedulePostMessage;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            traceId: string;
+        };
+    };
+}
+export interface TraceEventHandlePostMessage extends TraceEventComplete {
+    name: KnownEventName.HandlePostMessage;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            traceId: string;
+        };
+    };
+}
 export interface TraceEventDispatch extends TraceEventComplete {
     name: 'EventDispatch';
     args: TraceEventArgs & {
@@ -664,6 +680,7 @@ interface TraceEventResourceReceiveResponseTimingData {
     pushEnd: MilliSeconds;
     pushStart: MilliSeconds;
     receiveHeadersEnd: MilliSeconds;
+    receiveHeadersStart: MilliSeconds;
     requestTime: Seconds;
     sendEnd: MilliSeconds;
     sendStart: MilliSeconds;
@@ -1171,6 +1188,8 @@ export declare function isTraceEventDispatch(event: TraceEventData): event is Tr
 export declare function isTraceEventInstant(event: TraceEventData): event is TraceEventInstant;
 export declare function isTraceEventRendererEvent(event: TraceEventData): event is TraceEventRendererEvent;
 export declare function isTraceEventFireIdleCallback(event: TraceEventData): event is TraceEventFireIdleCallback;
+export declare function isTraceEventSchedulePostMessage(event: TraceEventData): event is TraceEventSchedulePostMessage;
+export declare function isTraceEventHandlePostMessage(event: TraceEventData): event is TraceEventHandlePostMessage;
 export declare function isTraceEventUpdateCounters(event: TraceEventData): event is TraceEventUpdateCounters;
 export declare function isThreadName(traceEventData: TraceEventData): traceEventData is TraceEventThreadName;
 export declare function isProcessName(traceEventData: TraceEventData): traceEventData is TraceEventProcessName;
@@ -1590,6 +1609,8 @@ export declare const enum KnownEventName {
     DisplayItemListSnapshot = "cc::DisplayItemList",
     InputLatencyMouseMove = "InputLatency::MouseMove",
     InputLatencyMouseWheel = "InputLatency::MouseWheel",
-    ImplSideFling = "InputHandlerProxy::HandleGestureFling::started"
+    ImplSideFling = "InputHandlerProxy::HandleGestureFling::started",
+    SchedulePostMessage = "SchedulePostMessage",
+    HandlePostMessage = "HandlePostMessage"
 }
 export {};

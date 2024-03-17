@@ -41,10 +41,10 @@ describeWithMockConnection('BackgroundServiceView', () => {
         assertNotNullOrUndefined(manager);
         backgroundServiceModel.backgroundServiceEventReceived({
             backgroundServiceEvent: {
-                timestamp: 1556889085,
+                timestamp: 1556889085, // 2019-05-03 14:11:25.000.
                 origin: '',
                 storageKey: testKey,
-                serviceWorkerRegistrationId: 42,
+                serviceWorkerRegistrationId: 42, // invalid.
                 service: serviceName,
                 eventName: 'Event1',
                 instanceId: 'Instance1',

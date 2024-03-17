@@ -160,7 +160,7 @@ export type DataGridData = {
 };
 export declare class DataGridNode<T> {
     #private;
-    elementInternal: Element | null;
+    elementInternal: HTMLElement | null;
     expandedInternal: boolean;
     private selectedInternal;
     private dirty;

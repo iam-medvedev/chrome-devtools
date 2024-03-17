@@ -84,18 +84,18 @@ export class FontView extends UI.View.SimpleView {
         if (this.fontPreviewElement) {
             return;
         }
-        const uniqueFontName = 'WebInspectorFontPreview' + (++_fontId);
+        const uniqueFontName = `WebInspectorFontPreview${++fontId}`;
         this.fontStyleElement = document.createElement('style');
         void this.contentProvider.requestContent().then(deferredContent => {
             this.onFontContentLoaded(uniqueFontName, deferredContent);
         });
         this.element.appendChild(this.fontStyleElement);
         const fontPreview = document.createElement('div');
-        for (let i = 0; i < _fontPreviewLines.length; ++i) {
+        for (let i = 0; i < FONT_PREVIEW_LINES.length; ++i) {
             if (i > 0) {
                 fontPreview.createChild('br');
             }
-            UI.UIUtils.createTextChild(fontPreview, _fontPreviewLines[i]);
+            UI.UIUtils.createTextChild(fontPreview, FONT_PREVIEW_LINES[i]);
         }
         this.fontPreviewElement = fontPreview.cloneNode(true);
         if (!this.fontPreviewElement) {
@@ -111,7 +111,7 @@ export class FontView extends UI.View.SimpleView {
         this.dummyElement.style.display = 'inline';
         this.dummyElement.style.position = 'absolute';
         this.dummyElement.style.setProperty('font-family', uniqueFontName);
-        this.dummyElement.style.setProperty('font-size', _measureFontSize + 'px');
+        this.dummyElement.style.setProperty('font-size', MEASUURE_FONT_SIZE + 'px');
         this.element.appendChild(this.fontPreviewElement);
     }
     wasShown() {
@@ -156,17 +156,11 @@ export class FontView extends UI.View.SimpleView {
         }
         const widthRatio = containerWidth / width;
         const heightRatio = containerHeight / height;
-        const finalFontSize = Math.floor(_measureFontSize * Math.min(widthRatio, heightRatio)) - 2;
+        const finalFontSize = Math.floor(MEASUURE_FONT_SIZE * Math.min(widthRatio, heightRatio)) - 2;
         this.fontPreviewElement.style.setProperty('font-size', finalFontSize + 'px', undefined);
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-let _fontId = 0;
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _fontPreviewLines = ['ABCDEFGHIJKLM', 'NOPQRSTUVWXYZ', 'abcdefghijklm', 'nopqrstuvwxyz', '1234567890'];
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const _measureFontSize = 50;
+let fontId = 0;
+const FONT_PREVIEW_LINES = ['ABCDEFGHIJKLM', 'NOPQRSTUVWXYZ', 'abcdefghijklm', 'nopqrstuvwxyz', '1234567890'];
+const MEASUURE_FONT_SIZE = 50;
 //# sourceMappingURL=FontView.js.map

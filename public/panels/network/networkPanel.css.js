@@ -65,11 +65,11 @@ styles.replaceSync(
 }
 
 .network-details-view {
-  background: var(--sys-color-cdt-base);
+  background: var(--app-color-toolbar-background);
 }
 
 .network-details-view-tall-header {
-  border-top: 4px solid var(--sys-color-cdt-base);
+  border-top: 4px solid var(--app-color-toolbar-background);
 }
 
 .network-item-view {

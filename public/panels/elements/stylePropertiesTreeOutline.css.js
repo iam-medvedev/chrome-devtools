@@ -122,7 +122,7 @@ ol.expanded {
 }
 
 .tree-outline li.child-editing .enabled-button {
-  display: none;
+  visibility: hidden;
 }
 
 .overloaded:not(.has-ignorable-error, .invalid-property-value),

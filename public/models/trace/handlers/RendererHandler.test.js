@@ -21,27 +21,27 @@ describeWithEnvironment('RendererHandler', function () {
         assert.strictEqual(renderers.processes.size, 4);
         const pids = [...renderers.processes].map(([pid]) => pid);
         assert.deepStrictEqual(pids, [
-            MAIN_FRAME_PID,
-            SUB_FRAME_PID,
-            SUB_FRAME_PID_2,
+            MAIN_FRAME_PID, // Main frame process: localhost:5000
+            SUB_FRAME_PID, // Sub frame process (trace start): example.com
+            SUB_FRAME_PID_2, // Sub frame process (after first navigation): example.com
             SUB_FRAME_PID_3, // Sub frame process (after second navigation): example.com
         ], 'Process IDs do not match expectations');
         const origins = [...renderers.processes].map(([, process]) => {
             return process.url ? new URL(process.url).origin : null;
         });
         assert.deepEqual(origins, [
-            'http://localhost:5000',
-            'https://www.example.com',
-            'https://www.example.com',
+            'http://localhost:5000', // Main frame process: localhost:5000
+            'https://www.example.com', // Sub frame process (trace start): example.com
+            'https://www.example.com', // Sub frame process (after first navigation): example.com
             'https://www.example.com', // Sub frame process (after second navigation): example.com
         ], 'Process origins do not meet expectations');
         // Assert on whether it has correctly detected a given process to be on the
         // main frame or in a subframe.
         const isOnMainFrame = [...renderers.processes].map(([, process]) => process.isOnMainFrame);
         assert.deepStrictEqual(isOnMainFrame, [
-            true,
-            false,
-            false,
+            true, // Main frame process: localhost:5000
+            false, // Sub frame process (trace start): example.com
+            false, // Sub frame process (after first navigation): example.com
             false, // Sub frame process (after second navigation): example.com
         ], 'Processes are incorrectly assigned as being on the main frame');
     });
@@ -559,10 +559,10 @@ describeWithEnvironment('RendererHandler', function () {
          *   |- Task C -|
          */
         const data1 = [
-            makeCompleteEvent('A', 0, 10),
-            makeCompleteEvent('B', 1, 3),
-            makeCompleteEvent('D', 5, 3),
-            makeCompleteEvent('C', 2, 1),
+            makeCompleteEvent('A', 0, 10), // 0..10
+            makeCompleteEvent('B', 1, 3), // 1..4
+            makeCompleteEvent('D', 5, 3), // 5..8
+            makeCompleteEvent('C', 2, 1), // 2..3
             makeCompleteEvent('E', 11, 3), // 11..14
         ];
         /**
@@ -571,10 +571,10 @@ describeWithEnvironment('RendererHandler', function () {
          *                 |- Task I -|
          */
         const data2 = [
-            makeCompleteEvent('F', 0, 3),
-            makeCompleteEvent('G', 3, 10),
-            makeCompleteEvent('H', 3, 3),
-            makeCompleteEvent('J', 6, 3),
+            makeCompleteEvent('F', 0, 3), // 0..3
+            makeCompleteEvent('G', 3, 10), // 3..13 (starts when F finishes)
+            makeCompleteEvent('H', 3, 3), // 3..6 (starts same time as G)
+            makeCompleteEvent('J', 6, 3), // 6..9 (starts when H finishes)
             makeCompleteEvent('I', 5, 1), // 5..6 (finishes when H finishes)
         ];
         const processes = new Map([
@@ -741,15 +741,15 @@ describeWithEnvironment('RendererHandler', function () {
             //  |-- RunMicrotasks --||-- Layout --|
             //   |- FunctionCall -|
             const traceEvents = [
-                ...defaultTraceEvents, makeBeginEvent('RunTask', 0, '*', pid, tid),
-                makeBeginEvent('RunMicrotasks', 1, '*', pid, tid),
-                makeBeginEvent('FunctionCall', 2, '*', pid, tid),
-                makeEndEvent('FunctionCall', 3, '*', pid, tid),
-                makeEndEvent('RunMicrotasks', 4, '*', pid, tid),
-                makeBeginEvent('Layout', 5, '*', pid, tid),
-                makeEndEvent('Layout', 8, '*', pid, tid),
-                makeEndEvent('RunTask', 10, '*', pid, tid),
-                makeBeginEvent('RunTask', 11, '*', pid, tid),
+                ...defaultTraceEvents, makeBeginEvent('RunTask', 0, '*', pid, tid), // 0..10
+                makeBeginEvent('RunMicrotasks', 1, '*', pid, tid), // 1..4
+                makeBeginEvent('FunctionCall', 2, '*', pid, tid), // 2..3
+                makeEndEvent('FunctionCall', 3, '*', pid, tid), // 2..3
+                makeEndEvent('RunMicrotasks', 4, '*', pid, tid), // 1..4
+                makeBeginEvent('Layout', 5, '*', pid, tid), // 5..8
+                makeEndEvent('Layout', 8, '*', pid, tid), // 5..8
+                makeEndEvent('RunTask', 10, '*', pid, tid), // 0..10
+                makeBeginEvent('RunTask', 11, '*', pid, tid), // 11..14
                 makeEndEvent('RunTask', 14, '*', pid, tid), // 11..14
             ];
             const data = await handleEvents(traceEvents);
@@ -780,12 +780,12 @@ describeWithEnvironment('RendererHandler', function () {
             //  |-- RunMicrotasks --||-- Layout --|
             //   |- FunctionCall -|
             const traceEvents = [
-                ...defaultTraceEvents, makeBeginEvent('RunTask', 0, '*', pid, tid),
-                makeBeginEvent('RunMicrotasks', 1, '*', pid, tid),
-                makeCompleteEvent('FunctionCall', 2, 1, '*', pid, tid),
-                makeEndEvent('RunMicrotasks', 4, '*', pid, tid),
-                makeBeginEvent('Layout', 5, '*', pid, tid),
-                makeEndEvent('Layout', 8, '*', pid, tid),
+                ...defaultTraceEvents, makeBeginEvent('RunTask', 0, '*', pid, tid), // 0..10
+                makeBeginEvent('RunMicrotasks', 1, '*', pid, tid), // 1..4
+                makeCompleteEvent('FunctionCall', 2, 1, '*', pid, tid), // 2..3
+                makeEndEvent('RunMicrotasks', 4, '*', pid, tid), // 1..4
+                makeBeginEvent('Layout', 5, '*', pid, tid), // 5..8
+                makeEndEvent('Layout', 8, '*', pid, tid), // 5..8
                 makeEndEvent('RunTask', 10, '*', pid, tid), // 0..10
             ];
             const data = await handleEvents(traceEvents);

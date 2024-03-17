@@ -301,7 +301,7 @@ export class ProfileDataGridTree {
         this.populated = false;
     }
     static propertyComparator(property, isAscending) {
-        let comparator = ProfileDataGridTree.propertyComparators[(isAscending ? 1 : 0)][property];
+        let comparator = propertyComparators[(isAscending ? 1 : 0)][property];
         if (!comparator) {
             if (isAscending) {
                 comparator = function (lhs, rhs) {
@@ -325,7 +325,7 @@ export class ProfileDataGridTree {
                     return 0;
                 };
             }
-            ProfileDataGridTree.propertyComparators[(isAscending ? 1 : 0)][property] = comparator;
+            propertyComparators[(isAscending ? 1 : 0)][property] = comparator;
         }
         return comparator;
     }
@@ -543,7 +543,6 @@ export class ProfileDataGridTree {
         profileNode.revealAndSelect();
         this.searchableView.updateCurrentMatchIndex(index);
     }
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static propertyComparators = [{}, {}];
 }
+const propertyComparators = [{}, {}];
 //# sourceMappingURL=ProfileDataGrid.js.map
