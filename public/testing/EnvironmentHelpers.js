@@ -151,6 +151,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'allow-scroll-past-eof', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'css-source-maps-enabled', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'inline-variable-values', true),
+        createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'auto-pretty-print-minified', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'js-source-maps-enabled', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'show-whitespaces-in-editor', 'none'),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-autocompletion', true),

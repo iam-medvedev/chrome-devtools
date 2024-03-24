@@ -68,11 +68,62 @@ function processElementForDebugging(element, loggingState) {
         loggingState.processedForDebugging = true;
     }
 }
-export function showDebugPopoverForEvent(name, config, context) {
-    if (!veDebuggingEnabled) {
+export function processEventForDebugging(event, state, extraInfo) {
+    const veDebugLoggingEnabled = localStorage.getItem('veDebugLoggingEnabled');
+    if (!veDebuggingEnabled && !veDebugLoggingEnabled) {
         return;
     }
-    showDebugPopover(`${name}: ${config ? debugString(config) : ''}; ${context ? 'context: ' + context : ''}`);
+    const entry = { event, ve: state ? VisualElements[state?.config.ve] : undefined, context: state?.config.context, ...extraInfo };
+    for (const stringKey in entry) {
+        const key = stringKey;
+        if (typeof entry[key] === 'undefined') {
+            delete entry[key];
+        }
+    }
+    if (veDebuggingEnabled) {
+        showDebugPopover(`${Object.entries(entry).map(([k, v]) => `${k}: ${v}`).join('; ')}`);
+    }
+    if (veDebugLoggingEnabled) {
+        const time = Date.now() - sessionStartTime;
+        veDebugEventsLog.push({ ...entry, veid: state?.veid, time });
+    }
+}
+export function processImpressionsForDebugging(states) {
+    if (!localStorage.getItem('veDebugLoggingEnabled')) {
+        return;
+    }
+    const impressions = new Map();
+    for (const state of states) {
+        const entry = {
+            event: 'Impression',
+            ve: VisualElements[state.config.ve],
+        };
+        if (state.config.context) {
+            entry.context = state.config.context;
+        }
+        if (state.size) {
+            entry.width = state.size.width;
+            entry.height = state.size.height;
+        }
+        entry.veid = state.veid,
+            impressions.set(state.veid, entry);
+        if (!state.parent || !impressions.has(state.parent?.veid)) {
+            entry.parent = state.parent?.veid;
+        }
+        else {
+            const parent = impressions.get(state.parent?.veid);
+            parent.children = parent.children || [];
+            parent.children.push(entry);
+        }
+    }
+    const entries = [...impressions.values()].filter(i => 'parent' in i);
+    if (entries.length === 1) {
+        entries[0].time = Date.now() - sessionStartTime;
+        veDebugEventsLog.push(entries[0]);
+    }
+    else {
+        veDebugEventsLog.push({ event: 'Impression', children: entries, time: Date.now() - sessionStartTime });
+    }
 }
 function processNonDomLoggableForDebugging(loggable, loggingState) {
     let debugElement = nonDomDebugElements.get(loggable);
@@ -117,4 +168,25 @@ export function debugString(config) {
     }
     return components.join('; ');
 }
+const veDebugEventsLog = [];
+function setVeDebugLoggingEnabled(enabled) {
+    if (enabled) {
+        localStorage.setItem('veDebugLoggingEnabled', 'true');
+    }
+    else {
+        localStorage.removeItem('veDebugLoggingEnabled');
+    }
+}
+let sessionStartTime = Date.now();
+export function processStartLoggingForDebugging() {
+    if (!localStorage.getItem('veDebugLoggingEnabled')) {
+        return;
+    }
+    sessionStartTime = Date.now();
+    veDebugEventsLog.push({ event: 'SessionStart' });
+}
+// @ts-ignore
+globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
+// @ts-ignore
+globalThis.veDebugEventsLog = veDebugEventsLog;
 //# sourceMappingURL=Debugging.js.map

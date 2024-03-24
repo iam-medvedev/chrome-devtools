@@ -20,10 +20,10 @@ import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
-import { AngleMatch, AngleMatcher, ASTUtils, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatch, FontMatcher, GridTemplateMatch, GridTemplateMatcher, LinkableNameMatch, LinkableNameMatcher, Renderer, RenderingContext, ShadowMatch, ShadowMatcher, StringMatch, StringMatcher, tokenizeDeclaration, URLMatch, URLMatcher, VariableMatch, VariableMatcher, } from './PropertyParser.js';
+import { AngleMatch, AngleMatcher, ASTUtils, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatch, FontMatcher, GridTemplateMatch, GridTemplateMatcher, LegacyRegexMatcher, LinkableNameMatch, LinkableNameMatcher, Renderer, RenderingContext, renderPropertyValue, ShadowMatch, ShadowMatcher, StringMatch, StringMatcher, tokenizeDeclaration, URLMatch, URLMatcher, VariableMatch, VariableMatcher, } from './PropertyParser.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
-import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, StylesSidebarPropertyRenderer, unescapeCssString, } from './StylesSidebarPane.js';
+import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, unescapeCssString, } from './StylesSidebarPane.js';
 const FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 const GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
 export const activeHints = new WeakMap();
@@ -89,6 +89,16 @@ const UIStrings = {
      *@description A context menu item in Styles panel to copy all declarations of CSS rule as JavaScript properties.
      */
     copyAllCssDeclarationsAsJs: 'Copy all declarations as JS',
+    /**
+     *@description Text that is announced by the screen reader when the user focuses on an input field for entering the name of a CSS property in the Styles panel
+     *@example {margin} PH1
+     */
+    cssPropertyName: '`CSS` property name: {PH1}',
+    /**
+     *@description Text that is announced by the screen reader when the user focuses on an input field for entering the value of a CSS property in the Styles panel
+     *@example {10px} PH1
+     */
+    cssPropertyValue: '`CSS` property value: {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertyTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -474,6 +484,14 @@ export class LinkableNameRenderer extends LinkableNameMatch {
                     ruleBlock: '@position-fallback',
                     isDefined: Boolean(this.#treeElement.matchedStyles().positionFallbackRules().find(pf => pf.name().text === this.text)),
                 };
+            case "position-try" /* LinkableNameProperties.PositionTry */:
+            case "position-try-options" /* LinkableNameProperties.PositionTryOptions */:
+                return {
+                    jslogContext: 'css-position-try',
+                    metric: 10 /* Host.UserMetrics.SwatchType.PositionTryLink */,
+                    ruleBlock: '@position-try',
+                    isDefined: Boolean(this.#treeElement.matchedStyles().positionTryRules().find(pt => pt.name().text === this.text)),
+                };
         }
     }
     render() {
@@ -839,7 +857,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     #propertyTextFromSource;
     constructor({ stylesPane, section, matchedStyles, property, isShorthand, inherited, overloaded, newProperty }) {
         // Pass an empty title, the title gets made later in onattach.
-        super('', isShorthand);
+        super('', isShorthand, property.name);
         this.style = property.ownerStyle;
         this.matchedStylesInternal = matchedStyles;
         this.property = property;
@@ -863,6 +881,24 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.prompt = null;
         this.lastComputedValue = null;
         this.#propertyTextFromSource = property.propertyText || '';
+    }
+    static renderNameElement(name) {
+        const nameElement = document.createElement('span');
+        nameElement.setAttribute('jslog', `${VisualLogging.key().track({ keydown: true, click: true })}`);
+        UI.ARIAUtils.setLabel(nameElement, i18nString(UIStrings.cssPropertyName, { PH1: name }));
+        nameElement.className = 'webkit-css-property';
+        nameElement.textContent = name;
+        nameElement.normalize();
+        return nameElement;
+    }
+    static renderValueElement(propertyName, propertyValue, renderers) {
+        const valueElement = document.createElement('span');
+        valueElement.setAttribute('jslog', `${VisualLogging.value().track({ keydown: true, click: true })}`);
+        UI.ARIAUtils.setLabel(valueElement, i18nString(UIStrings.cssPropertyValue, { PH1: propertyValue }));
+        valueElement.className = 'value';
+        renderPropertyValue(propertyName, propertyValue, renderers).forEach(node => valueElement.appendChild(node));
+        valueElement.normalize();
+        return valueElement;
     }
     matchedStyles() {
         return this.matchedStylesInternal;
@@ -1127,31 +1163,33 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             this.expandElement = IconButton.Icon.create('triangle-right', 'expand-icon');
             this.expandElement.setAttribute('jslog', `${VisualLogging.expand().track({ click: true })}`);
         }
-        const propertyRenderer = new StylesSidebarPropertyRenderer(this.style.parentRule, this.node(), this.name, this.value, [
-            VariableRenderer.matcher(this, this.style),
-            ColorRenderer.matcher(this),
-            ColorMixRenderer.matcher(this.parentPaneInternal),
-            URLRenderer.matcher(this.style.parentRule, this.node()),
-            AngleRenderer.matcher(this),
-            LinkableNameRenderer.matcher(this),
-            BezierRenderer.matcher(this),
-            StringRenderer.matcher(),
-            ShadowRenderer.matcher(this),
-            FontRenderer.matcher(this),
-            GridTemplateRenderer.matcher(),
-        ]);
-        if (this.property.parsedOk) {
-            propertyRenderer.setLengthHandler(this.processLength.bind(this));
+        const matchers = this.property.parsedOk ?
+            [
+                VariableRenderer.matcher(this, this.style),
+                ColorRenderer.matcher(this),
+                ColorMixRenderer.matcher(this.parentPaneInternal),
+                URLRenderer.matcher(this.style.parentRule, this.node()),
+                AngleRenderer.matcher(this),
+                LinkableNameRenderer.matcher(this),
+                BezierRenderer.matcher(this),
+                StringRenderer.matcher(),
+                ShadowRenderer.matcher(this),
+                FontRenderer.matcher(this),
+                GridTemplateRenderer.matcher(),
+            ] :
+            [];
+        if (!Root.Runtime.experiments.isEnabled('css-type-component-length-deprecate') && this.property.parsedOk) {
+            matchers.push(new LegacyRegexMatcher(new RegExp(`^${InlineEditor.CSSLengthUtils.CSSLengthRegex}$`), text => this.processLength(text)));
         }
         this.listItemElement.removeChildren();
-        this.nameElement = propertyRenderer.renderName();
+        this.valueElement = StylePropertyTreeElement.renderValueElement(this.name, this.value, matchers);
+        this.nameElement = StylePropertyTreeElement.renderNameElement(this.name);
         if (this.property.name.startsWith('--') && this.nameElement) {
             this.parentPaneInternal.addPopover(this.nameElement, {
                 contents: () => this.getVariablePopoverContents(this.property.name, this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value ?? null),
                 jslogContext: 'elements.css-var',
             });
         }
-        this.valueElement = propertyRenderer.renderValue();
         if (!this.treeOutline) {
             return;
         }

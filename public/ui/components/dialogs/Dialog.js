@@ -229,9 +229,12 @@ export class Dialog extends HTMLElement {
         }
         return "right" /* DialogHorizontalAlignment.RIGHT */;
     }
-    #getBestVerticalPosition(originBounds, dialogHeight, windowheight) {
-        const { bottom } = originBounds;
-        if (bottom + dialogHeight > windowheight) {
+    #getBestVerticalPosition(originBounds, dialogHeight, devtoolsBounds) {
+        // If the dialog's full height doesn't fit at the bottom attempt to
+        // position it at the top. If it doesn't fit at the top either
+        // position it at the bottom and make the overflow scrollable.
+        if (originBounds.bottom + dialogHeight > devtoolsBounds.height &&
+            originBounds.top - dialogHeight > devtoolsBounds.top) {
             return "top" /* DialogVerticalPosition.TOP */;
         }
         return "bottom" /* DialogVerticalPosition.BOTTOM */;
@@ -288,7 +291,7 @@ export class Dialog extends HTMLElement {
                     this.#getBestHorizontalAlignment(absoluteAnchorBounds, devtoolsBounds) :
                     this.#props.horizontalAlignment;
                 this.#bestVerticalPositionInternal = this.#props.position === "auto" /* DialogVerticalPosition.AUTO */ ?
-                    this.#getBestVerticalPosition(absoluteAnchorBounds, dialogHeight, devToolsHeight) :
+                    this.#getBestVerticalPosition(absoluteAnchorBounds, dialogHeight, devtoolsBounds) :
                     this.#props.position;
                 if (this.#bestHorizontalAlignment === "auto" /* DialogHorizontalAlignment.AUTO */ ||
                     this.#bestVerticalPositionInternal === "auto" /* DialogVerticalPosition.AUTO */) {

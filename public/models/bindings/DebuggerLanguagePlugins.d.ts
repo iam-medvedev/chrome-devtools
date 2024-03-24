@@ -90,13 +90,13 @@ export declare class DebuggerLanguagePluginManager implements SDK.TargetManager.
     private parsedScriptSource;
     private debuggerResumed;
     getSourcesForScript(script: SDK.Script.Script): Promise<Array<Platform.DevToolsPath.UrlString> | {
-        missingSymbolFiles: string[];
+        missingSymbolFiles: SDK.DebuggerModel.MissingDebugFiles[];
     } | undefined>;
     resolveScopeChain(callFrame: SDK.DebuggerModel.CallFrame): Promise<SourceScope[] | null>;
     getFunctionInfo(script: SDK.Script.Script, location: SDK.DebuggerModel.Location): Promise<{
         frames: Array<Chrome.DevTools.FunctionInfo>;
     } | {
-        missingSymbolFiles: string[];
+        missingSymbolFiles: SDK.DebuggerModel.MissingDebugFiles[];
     } | null>;
     getInlinedFunctionRanges(rawLocation: SDK.DebuggerModel.Location): Promise<{
         start: SDK.DebuggerModel.Location;
@@ -111,5 +111,6 @@ export declare class DebuggerLanguagePluginManager implements SDK.TargetManager.
 export interface DebuggerLanguagePlugin extends Chrome.DevTools.LanguageExtensionPlugin {
     name: string;
     handleScript(script: SDK.Script.Script): boolean;
+    createPageResourceLoadInitiator(): SDK.PageResourceLoader.PageResourceLoadInitiator;
 }
 export {};

@@ -2,8 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../../core/sdk/sdk.js';
-export async function forNewRecording(recordStartTime) {
+import * as Types from '../types/types.js';
+export async function forNewRecording(isCpuProfile, recordStartTime) {
     try {
+        if (isCpuProfile) {
+            // For CPU profile, only specify data origin
+            return {
+                dataOrigin: "CPUProfile" /* Types.File.DataOrigin.CPUProfile */,
+            };
+        }
         const cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
         // If the CPU Throttling manager has yet to have its primary page target
         // set, it will block on the call to get the current hardware concurrency
@@ -32,6 +39,7 @@ export async function forNewRecording(recordStartTime) {
             cpuThrottling,
             networkThrottling: networkTitle,
             hardwareConcurrency,
+            dataOrigin: "TraceEvents" /* Types.File.DataOrigin.TraceEvents */,
         };
     }
     catch {

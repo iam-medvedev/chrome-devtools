@@ -102,7 +102,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     loadingStarted(): Promise<void>;
     loadingProgress(progress?: number): Promise<void>;
     processingStarted(): Promise<void>;
-    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null | undefined, isCpuProfile: boolean, recordingStartTime: number | null): Promise<void>;
+    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
     recordTraceLoadMetric(): void;
     loadingCompleteForTest(): void;
     private showRecordingStarted;

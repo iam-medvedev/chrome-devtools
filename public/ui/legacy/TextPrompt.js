@@ -160,6 +160,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         return this.elementInternal;
     }
     detach() {
+        this.maybeDispatchChange();
         this.removeFromElement();
         if (this.focusRestorer) {
             this.focusRestorer.restore();
@@ -422,12 +423,15 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
             this.changed = true;
         }
     }
-    onBlur() {
-        this.clearAutocomplete();
+    maybeDispatchChange() {
         if (this.changed && this.elementInternal) {
             this.elementInternal.dispatchEvent(new Event('change'));
             this.changed = false;
         }
+    }
+    onBlur() {
+        this.clearAutocomplete();
+        this.maybeDispatchChange();
     }
     refreshGhostText() {
         if (this.currentSuggestion && this.currentSuggestion.hideGhostText) {

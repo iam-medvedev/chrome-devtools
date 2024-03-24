@@ -4,7 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Coordinator from '../components/render_coordinator/render_coordinator.js';
-import { processForDebugging } from './Debugging.js';
+import { processForDebugging, processStartLoggingForDebugging } from './Debugging.js';
 import { getDomState, visibleOverlap } from './DomState.js';
 import { getLoggingConfig } from './LoggingConfig.js';
 import { logChange, logClick, logDrag, logHover, logImpressions, logKeyDown, logResize } from './LoggingEvents.js';
@@ -13,7 +13,7 @@ import { getNonDomState, unregisterAllLoggables, unregisterLoggable } from './No
 const PROCESS_DOM_INTERVAL = 500;
 const KEYBOARD_LOG_INTERVAL = 3000;
 const HOVER_LOG_INTERVAL = 1000;
-const DRAG_LOG_INTERVAL = 500;
+const DRAG_LOG_INTERVAL = 1250;
 const CLICK_LOG_INTERVAL = 500;
 const RESIZE_LOG_INTERVAL = 1000;
 const RESIZE_REPORT_THRESHOLD = 50;
@@ -49,6 +49,7 @@ export async function startLogging(options) {
     dragLogThrottler = options?.dragLogThrottler || new Common.Throttler.Throttler(DRAG_LOG_INTERVAL);
     clickLogThrottler = options?.clickLogThrottler || new Common.Throttler.Throttler(CLICK_LOG_INTERVAL);
     resizeLogThrottler = options?.resizeLogThrottler || new Common.Throttler.Throttler(RESIZE_LOG_INTERVAL);
+    processStartLoggingForDebugging();
     await addDocument(document);
 }
 export async function addDocument(document) {
@@ -113,29 +114,27 @@ async function process() {
             }
         }
         if (!loggingState.processed) {
+            const clickLikeHandler = (doubleClick) => (e) => {
+                const loggable = e.currentTarget;
+                logClick(clickLogThrottler)(loggable, e, { doubleClick });
+            };
             if (loggingState.config.track?.click) {
-                element.addEventListener('click', e => {
-                    const loggable = e.currentTarget;
-                    logClick(clickLogThrottler)(loggable, e);
-                }, { capture: true });
+                element.addEventListener('click', clickLikeHandler(false), { capture: true });
+                element.addEventListener('contextmenu', clickLikeHandler(false), { capture: true });
             }
             if (loggingState.config.track?.dblclick) {
-                element.addEventListener('dblclick', e => {
-                    const loggable = e.currentTarget;
-                    logClick(clickLogThrottler)(loggable, e, { doubleClick: true });
-                }, { capture: true });
+                element.addEventListener('dblclick', clickLikeHandler(true), { capture: true });
             }
             const trackHover = loggingState.config.track?.hover;
             if (trackHover) {
                 element.addEventListener('mouseover', logHover(hoverLogThrottler), { capture: true });
-                const cancelLogging = () => Promise.resolve();
                 element.addEventListener('mouseout', () => hoverLogThrottler.schedule(cancelLogging), { capture: true });
             }
             const trackDrag = loggingState.config.track?.drag;
             if (trackDrag) {
                 element.addEventListener('pointerdown', logDrag(dragLogThrottler), { capture: true });
-                const cancelLogging = () => Promise.resolve();
-                element.addEventListener('pointerup', () => dragLogThrottler.schedule(cancelLogging), { capture: true });
+                document.addEventListener('pointerup', cancelDrag, { capture: true });
+                document.addEventListener('dragend', cancelDrag, { capture: true });
             }
             if (loggingState.config.track?.change) {
                 element.addEventListener('change', logChange, { capture: true });
@@ -195,7 +194,7 @@ async function process() {
     }
     for (const { loggable, config, parent } of getNonDomState().loggables) {
         const loggingState = getOrCreateLoggingState(loggable, config, parent);
-        const visible = !loggingState.parent || loggingState.parent.impressionLogged;
+        const visible = !parent || loggingState.parent?.impressionLogged;
         if (!visible) {
             continue;
         }
@@ -208,5 +207,10 @@ async function process() {
     }
     await logImpressions(visibleLoggables);
     Host.userMetrics.visualLoggingProcessingDone(performance.now() - startTime);
+}
+async function cancelLogging() {
+}
+function cancelDrag() {
+    void dragLogThrottler.schedule(cancelLogging);
 }
 //# sourceMappingURL=LoggingDriver.js.map

@@ -206,8 +206,8 @@ export async function finalize() {
 }
 export function data() {
     return {
-        eventToInitiator: new Map(eventToInitiatorMap),
-        initiatorToEvents: new Map(initiatorToEventsMap),
+        eventToInitiator: eventToInitiatorMap,
+        initiatorToEvents: initiatorToEventsMap,
     };
 }
 //# sourceMappingURL=InitiatorsHandler.js.map

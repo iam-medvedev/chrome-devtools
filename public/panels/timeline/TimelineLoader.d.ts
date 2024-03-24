@@ -16,13 +16,9 @@ export declare class TimelineLoader implements Common.StringOutputStream.OutputS
     private client;
     private tracingModel;
     private canceledCallback;
-    private state;
     private buffer;
     private firstRawChunk;
-    private firstChunk;
-    private loadedBytes;
     private totalSize;
-    private readonly jsonTokenizer;
     private filter;
     constructor(client: Client, title?: string);
     static loadFromFile(file: File, client: Client): Promise<TimelineLoader>;
@@ -37,22 +33,11 @@ export declare class TimelineLoader implements Common.StringOutputStream.OutputS
      * Common.StringOutputStream.StringOutputStream instance has decoded a chunk. This path is only used
      * by `loadFromURL()`; it's NOT used by `loadFromEvents` or `loadFromFile`.
      */
-    write(chunk: string): Promise<void>;
-    private writeBalancedJSON;
+    write(chunk: string, endOfFile: boolean): Promise<void>;
     private reportErrorAndCancelLoading;
-    private looksLikeAppVersion;
     close(): Promise<void>;
     private isCpuProfile;
     private finalizeTrace;
     traceFinalizedForTest(): Promise<void>;
     private parseCPUProfileFormat;
-}
-export declare const TransferChunkLengthBytes = 5000000;
-export declare const enum State {
-    Initial = "Initial",
-    LookingForEvents = "LookingForEvents",
-    ReadingEvents = "ReadingEvents",
-    SkippingTail = "SkippingTail",
-    LoadingCPUProfileFromFile = "LoadingCPUProfileFromFile",
-    LoadingCPUProfileFromRecording = "LoadingCPUProfileFromRecording"
 }

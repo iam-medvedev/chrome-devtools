@@ -569,6 +569,7 @@
       <include file="panels/web_audio/web_audio.js" name="PANELS_WEB_AUDIO_WEB_AUDIO_JS" resource_path="panels/web_audio/web_audio.js" type="BINDATA" compress="false"/>
       <include file="panels/webauthn/webauthn-meta.js" name="PANELS_WEBAUTHN_WEBAUTHN_META_JS" resource_path="panels/webauthn/webauthn-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/webauthn/webauthn.js" name="PANELS_WEBAUTHN_WEBAUTHN_JS" resource_path="panels/webauthn/webauthn.js" type="BINDATA" compress="false"/>
+      <include file="services/annotations_manager/annotations_manager.js" name="SERVICES_ANNOTATIONS_MANAGER_ANNOTATIONS_MANAGER_JS" resource_path="services/annotations_manager/annotations_manager.js" type="BINDATA" compress="false"/>
       <include file="services/puppeteer/puppeteer.js" name="SERVICES_PUPPETEER_PUPPETEER_JS" resource_path="services/puppeteer/puppeteer.js" type="BINDATA" compress="false"/>
       <include file="services/trace_bounds/trace_bounds.js" name="SERVICES_TRACE_BOUNDS_TRACE_BOUNDS_JS" resource_path="services/trace_bounds/trace_bounds.js" type="BINDATA" compress="false"/>
       <include file="services/tracing/tracing.js" name="SERVICES_TRACING_TRACING_JS" resource_path="services/tracing/tracing.js" type="BINDATA" compress="false"/>
@@ -1652,6 +1653,7 @@
       <include file="panels/web_audio/webAudio.css.js" name="PANELS_WEB_AUDIO_WEBAUDIO_CSS_JS" resource_path="panels/web_audio/webAudio.css.js" type="BINDATA" compress="false"/>
       <include file="panels/webauthn/WebauthnPane.js" name="PANELS_WEBAUTHN_WEBAUTHNPANE_JS" resource_path="panels/webauthn/WebauthnPane.js" type="BINDATA" compress="false"/>
       <include file="panels/webauthn/webauthnPane.css.js" name="PANELS_WEBAUTHN_WEBAUTHNPANE_CSS_JS" resource_path="panels/webauthn/webauthnPane.css.js" type="BINDATA" compress="false"/>
+      <include file="services/annotations_manager/AnnotationsManager.js" name="SERVICES_ANNOTATIONS_MANAGER_ANNOTATIONSMANAGER_JS" resource_path="services/annotations_manager/AnnotationsManager.js" type="BINDATA" compress="false"/>
       <include file="services/puppeteer/PuppeteerConnection.js" name="SERVICES_PUPPETEER_PUPPETEERCONNECTION_JS" resource_path="services/puppeteer/PuppeteerConnection.js" type="BINDATA" compress="false"/>
       <include file="services/trace_bounds/TraceBounds.js" name="SERVICES_TRACE_BOUNDS_TRACEBOUNDS_JS" resource_path="services/trace_bounds/TraceBounds.js" type="BINDATA" compress="false"/>
       <include file="services/tracing/PerformanceTracing.js" name="SERVICES_TRACING_PERFORMANCETRACING_JS" resource_path="services/tracing/PerformanceTracing.js" type="BINDATA" compress="false"/>
@@ -2121,6 +2123,7 @@
       <include file="ui/legacy/components/utils/imagePreview.css.js" name="UI_LEGACY_COMPONENTS_UTILS_IMAGEPREVIEW_CSS_JS" resource_path="ui/legacy/components/utils/imagePreview.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/utils/jsUtils.css.js" name="UI_LEGACY_COMPONENTS_UTILS_JSUTILS_CSS_JS" resource_path="ui/legacy/components/utils/jsUtils.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/confirmDialog.css.legacy.js" name="UI_LEGACY_CONFIRMDIALOG_CSS_LEGACY_JS" resource_path="ui/legacy/confirmDialog.css.legacy.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/designTokens.css.legacy.js" name="UI_LEGACY_DESIGNTOKENS_CSS_LEGACY_JS" resource_path="ui/legacy/designTokens.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/dialog.css.legacy.js" name="UI_LEGACY_DIALOG_CSS_LEGACY_JS" resource_path="ui/legacy/dialog.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/dropTarget.css.legacy.js" name="UI_LEGACY_DROPTARGET_CSS_LEGACY_JS" resource_path="ui/legacy/dropTarget.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/emptyWidget.css.js" name="UI_LEGACY_EMPTYWIDGET_CSS_JS" resource_path="ui/legacy/emptyWidget.css.js" type="BINDATA" compress="false"/>

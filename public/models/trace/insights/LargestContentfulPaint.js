@@ -84,9 +84,21 @@ export function generateInsight(traceParsedData, context) {
     if (!mainReq) {
         return { lcpMs, warnings: [InsightWarning.NO_DOCUMENT_REQUEST] };
     }
+    if (!lcpResource) {
+        return {
+            lcpMs,
+            phases: breakdownPhases(nav, mainReq, lcpMs, lcpResource),
+        };
+    }
+    const imageLoadingAttr = lcpEvent.args.data?.loadingAttr;
+    const imagePreloaded = lcpResource?.args.data.isLinkPreload || lcpResource?.args.data.initiator?.type === 'preload';
+    const imageFetchPriorityHint = lcpResource?.args.data.fetchPriorityHint;
     return {
         lcpMs,
         phases: breakdownPhases(nav, mainReq, lcpMs, lcpResource),
+        shouldRemoveLazyLoading: imageLoadingAttr === 'lazy',
+        shouldIncreasePriorityHint: imageFetchPriorityHint !== 'high',
+        shouldPreloadImage: !imagePreloaded,
     };
 }
 //# sourceMappingURL=LargestContentfulPaint.js.map

@@ -270,6 +270,18 @@ const UIStrings = {
      */
     doNotDetectIndentation: 'Do not detect indentation',
     /**
+     *@description Title of a setting under Sources category that can be invoked through the Command Menu.
+     *This setting turns on the automatic formatting of source files in the Sources panel that are detected
+     *to be minified.
+     */
+    automaticallyPrettyPrintMinifiedSources: 'Automatically pretty print minified sources',
+    /**
+     *@description Title of a setting under Sources category that can be invoked through the Command Menu.
+     *This setting turns off the automatic formatting of source files in the Sources panel that are detected
+     *to be minified.
+     */
+    doNotAutomaticallyPrettyPrintMinifiedSources: 'Do not automatically pretty print minified sources',
+    /**
      *@description Text for autocompletion
      */
     autocompletion: 'Autocompletion',
@@ -365,15 +377,15 @@ const UIStrings = {
     /**
      *@description Title of a setting under the Sources category in Settings
      */
-    wasmAutoStepping: 'When debugging wasm with debug information, do not pause on wasm bytecode if possible',
+    wasmAutoStepping: 'When debugging Wasm with debug information, do not pause on wasm bytecode if possible',
     /**
      *@description Title of a setting under the Sources category in Settings
      */
-    enableWasmAutoStepping: 'Enable wasm auto-stepping',
+    enableWasmAutoStepping: 'Enable Wasm auto-stepping',
     /**
      *@description Title of a setting under the Sources category in Settings
      */
-    disableWasmAutoStepping: 'Disable wasm auto-stepping',
+    disableWasmAutoStepping: 'Disable Wasm auto-stepping',
     /**
      *@description Text for command prefix of go to a given line or symbol
      */
@@ -1601,6 +1613,24 @@ Common.Settings.registerSettingExtension({
         {
             value: false,
             title: i18nLazyString(UIStrings.disableAutoFocusOnDebuggerPaused),
+        },
+    ],
+});
+Common.Settings.registerSettingExtension({
+    category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    title: i18nLazyString(UIStrings.automaticallyPrettyPrintMinifiedSources),
+    settingName: 'auto-pretty-print-minified',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
+    options: [
+        {
+            value: true,
+            title: i18nLazyString(UIStrings.automaticallyPrettyPrintMinifiedSources),
+        },
+        {
+            value: false,
+            title: i18nLazyString(UIStrings.doNotAutomaticallyPrettyPrintMinifiedSources),
         },
     ],
 });

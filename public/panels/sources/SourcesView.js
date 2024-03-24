@@ -58,7 +58,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     constructor() {
         super();
         this.element.id = 'sources-panel-sources-view';
-        this.element.setAttribute('jslog', `${VisualLogging.pane('editor')}`);
+        this.element.setAttribute('jslog', `${VisualLogging.pane('editor').track({ keydown: 'Escape' })}`);
         this.setMinimumAndPreferredSizes(88, 52, 150, 100);
         this.selectedIndex = 0;
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();

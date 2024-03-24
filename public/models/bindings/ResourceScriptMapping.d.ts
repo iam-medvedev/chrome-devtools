@@ -43,7 +43,7 @@ export declare class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapp
     addSourceMapURL(sourceMapURL: Platform.DevToolsPath.UrlString): void;
     addDebugInfoURL(debugInfoURL: Platform.DevToolsPath.UrlString): void;
     hasSourceMapURL(): boolean;
-    missingSymbolFiles(): Promise<string[] | null>;
+    missingSymbolFiles(): Promise<SDK.DebuggerModel.MissingDebugFiles[] | null>;
     get script(): SDK.Script.Script | null;
     get uiSourceCode(): Workspace.UISourceCode.UISourceCode;
 }

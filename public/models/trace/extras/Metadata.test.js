@@ -18,12 +18,13 @@ describeWithEnvironment('Trace Metadata', () => {
             upload: 1,
             latency: 1,
         });
-        const metadata = await TraceEngine.Extras.Metadata.forNewRecording();
+        const metadata = await TraceEngine.Extras.Metadata.forNewRecording(/* isCpuProfile= */ false);
         assert.deepEqual(metadata, {
             source: 'DevTools',
             startTime: undefined,
             cpuThrottling: 2,
             networkThrottling: 'Slow 3G',
+            dataOrigin: "TraceEvents" /* TraceEngine.Types.File.DataOrigin.TraceEvents */,
             hardwareConcurrency: 1,
         });
     });
@@ -39,12 +40,13 @@ describeWithEnvironment('Trace Metadata', () => {
             upload: 1,
             latency: 1,
         });
-        const metadata = await TraceEngine.Extras.Metadata.forNewRecording();
+        const metadata = await TraceEngine.Extras.Metadata.forNewRecording(/* isCpuProfile= */ false);
         assert.deepEqual(metadata, {
             source: 'DevTools',
             startTime: undefined,
             cpuThrottling: 2,
             networkThrottling: 'Slow 3G',
+            dataOrigin: "TraceEvents" /* TraceEngine.Types.File.DataOrigin.TraceEvents */,
             hardwareConcurrency: 1,
         });
     });
@@ -60,12 +62,13 @@ describeWithEnvironment('Trace Metadata', () => {
             upload: 1,
             latency: 1,
         });
-        const metadata = await TraceEngine.Extras.Metadata.forNewRecording();
+        const metadata = await TraceEngine.Extras.Metadata.forNewRecording(/* isCpuProfile= */ false);
         assert.deepEqual(metadata, {
             source: 'DevTools',
             startTime: undefined,
             cpuThrottling: 2,
             networkThrottling: 'Slow 3G',
+            dataOrigin: "TraceEvents" /* TraceEngine.Types.File.DataOrigin.TraceEvents */,
             hardwareConcurrency: undefined,
         });
         assert.strictEqual(getHardwareConcurrencyStub.callCount, 0);

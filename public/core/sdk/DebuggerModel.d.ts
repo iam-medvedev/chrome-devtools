@@ -2,6 +2,7 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
+import { type PageResourceLoadInitiator } from './PageResourceLoader.js';
 import { type RemoteObject } from './RemoteObject.js';
 import { type EvaluationOptions, type EvaluationResult, type ExecutionContext, RuntimeModel } from './RuntimeModel.js';
 import { Script } from './Script.js';
@@ -161,9 +162,13 @@ export declare class BreakLocation extends Location {
     constructor(debuggerModel: DebuggerModel, scriptId: Protocol.Runtime.ScriptId, lineNumber: number, columnNumber?: number, type?: Protocol.Debugger.BreakLocationType);
     static fromPayload(debuggerModel: DebuggerModel, payload: Protocol.Debugger.BreakLocation): BreakLocation;
 }
+export interface MissingDebugFiles {
+    resourceUrl: Platform.DevToolsPath.UrlString;
+    initiator: PageResourceLoadInitiator;
+}
 export interface MissingDebugInfoDetails {
     details: string;
-    resources: string[];
+    resources: MissingDebugFiles[];
 }
 export declare class CallFrame {
     #private;

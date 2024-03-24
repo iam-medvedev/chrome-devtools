@@ -8,7 +8,6 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type ComputedStyleChangedEvent } from './ComputedStyleModel.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
-import { type Matcher } from './PropertyParser.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
 import { type StylePropertyTreeElement } from './StylePropertyTreeElement.js';
 export declare const REGISTERED_PROPERTY_SECTION_NAME = "@property";
@@ -142,6 +141,7 @@ export declare class SectionBlock {
     static createKeyframesBlock(keyframesName: string): SectionBlock;
     static createFontPaletteValuesRuleBlock(name: string): SectionBlock;
     static createPositionFallbackBlock(positionFallbackName: string): SectionBlock;
+    static createPositionTryBlock(positionTryName: string): SectionBlock;
     static createInheritedNodeBlock(node: SDK.DOMModel.DOMNode): Promise<SectionBlock>;
     static createLayerBlock(rule: SDK.CSSRule.CSSStyleRule): SectionBlock;
     updateFilter(): number;
@@ -176,24 +176,6 @@ export declare class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
 }
 export declare function unescapeCssString(input: string): string;
 export declare function escapeUrlAsCssComment(urlText: string): string;
-export declare class StylesSidebarPropertyRenderer {
-    private rule;
-    private node;
-    readonly propertyName: string;
-    readonly propertyValue: string;
-    private fontHandler;
-    private shadowHandler;
-    private lengthHandler;
-    private animationHandler;
-    matchers: Matcher[];
-    constructor(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null, name: string, value: string, matchers?: Matcher[]);
-    setFontHandler(handler: (arg0: string) => Node): void;
-    setShadowHandler(handler: (arg0: string, arg1: string) => Node): void;
-    setAnimationHandler(handler: (arg0: string) => Node): void;
-    setLengthHandler(handler: (arg0: string) => Node): void;
-    renderName(): Element;
-    renderValue(): Element;
-}
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(_context: UI.Context.Context, actionId: string): boolean;
 }

@@ -35,7 +35,17 @@ export declare function scoreClassificationForDOMContentLoaded(_dclTimeInMicrose
 export declare function scoreClassificationForTotalBlockingTime(tbtTimeInMicroseconds: Types.Timing.MicroSeconds): ScoreClassification;
 export declare function finalize(): Promise<void>;
 export type PageLoadMetricsData = {
+    /**
+     * This represents the metric scores for all navigations, for all frames in a trace.
+     * Given a frame id, the map points to another map from navigation id to metric scores.
+     * The metric scores include the event related to the metric as well as the data regarding
+     * the score itself.
+     */
     metricScoresByFrameId: Map<string, Map<string, Map<MetricName, MetricScore>>>;
+    /**
+     * Page load events with no associated duration that happened in the
+     * main frame.
+     */
     allMarkerEvents: Types.TraceEvents.PageLoadEvent[];
 };
 export declare function data(): PageLoadMetricsData;

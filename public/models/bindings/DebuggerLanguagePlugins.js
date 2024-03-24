@@ -648,7 +648,12 @@ export class DebuggerLanguagePluginManager {
                             return [];
                         }
                         if ('missingSymbolFiles' in addModuleResult) {
-                            return { missingSymbolFiles: addModuleResult.missingSymbolFiles };
+                            const initiator = plugin.createPageResourceLoadInitiator();
+                            const missingSymbolFiles = addModuleResult.missingSymbolFiles.map(resource => {
+                                const resourceUrl = resource;
+                                return { resourceUrl, initiator };
+                            });
+                            return { missingSymbolFiles: missingSymbolFiles };
                         }
                         const sourceFileURLs = addModuleResult;
                         if (sourceFileURLs.length === 0) {
@@ -754,6 +759,14 @@ export class DebuggerLanguagePluginManager {
         };
         try {
             const functionInfo = await plugin.getFunctionInfo(rawLocation);
+            if ('missingSymbolFiles' in functionInfo) {
+                const initiator = plugin.createPageResourceLoadInitiator();
+                const missingSymbolFiles = functionInfo.missingSymbolFiles.map(resource => {
+                    const resourceUrl = resource;
+                    return { resourceUrl, initiator };
+                });
+                return { missingSymbolFiles };
+            }
             return functionInfo;
         }
         catch (error) {

@@ -9,6 +9,15 @@ export class TestPlugin {
     handleScript(_script) {
         return false;
     }
+    createPageResourceLoadInitiator() {
+        const extensionId = 'chrome-extension-id';
+        return {
+            target: null,
+            frameId: null,
+            extensionId,
+            initiatorUrl: extensionId,
+        };
+    }
     async evaluate(_expression, _context, _stopId) {
         return null;
     }

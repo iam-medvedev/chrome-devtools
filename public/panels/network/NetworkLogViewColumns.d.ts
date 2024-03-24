@@ -5,7 +5,7 @@ import { type NetworkLogView } from './NetworkLogView.js';
 import { type NetworkTimeCalculator, type NetworkTransferDurationCalculator, type NetworkTransferTimeCalculator } from './NetworkTimeCalculator.js';
 export declare class NetworkLogViewColumns {
     private networkLogView;
-    private readonly persistantSettings;
+    private readonly persistentSettings;
     private readonly networkLogLargeRowsSetting;
     private readonly eventDividers;
     private eventDividersShown;
@@ -56,6 +56,7 @@ export declare class NetworkLogViewColumns {
     private updateColumns;
     switchViewMode(gridMode: boolean): void;
     private toggleColumnVisibility;
+    private setWaterfallVisibility;
     private saveColumnsSettings;
     private loadCustomColumnsAndSettings;
     private makeHeaderFragment;

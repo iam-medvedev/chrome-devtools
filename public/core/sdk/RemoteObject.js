@@ -906,6 +906,46 @@ export class RemoteFunction {
         return this.#objectInternal;
     }
 }
+export class RemoteError {
+    #object;
+    #exceptionDetails;
+    #cause;
+    constructor(object) {
+        this.#object = object;
+    }
+    static objectAsError(object) {
+        if (object.subtype !== 'error') {
+            throw new Error(`Object of type ${object.subtype} is not an error`);
+        }
+        return new RemoteError(object);
+    }
+    get errorStack() {
+        return this.#object.description ?? '';
+    }
+    exceptionDetails() {
+        if (!this.#exceptionDetails) {
+            this.#exceptionDetails = this.#lookupExceptionDetails();
+        }
+        return this.#exceptionDetails;
+    }
+    #lookupExceptionDetails() {
+        if (this.#object.objectId) {
+            return this.#object.runtimeModel().getExceptionDetails(this.#object.objectId);
+        }
+        return Promise.resolve(undefined);
+    }
+    cause() {
+        if (!this.#cause) {
+            this.#cause = this.#lookupCause();
+        }
+        return this.#cause;
+    }
+    async #lookupCause() {
+        const allProperties = await this.#object.getAllProperties(false /* accessorPropertiesOnly */, false /* generatePreview */);
+        const cause = allProperties.properties?.find(prop => prop.name === 'cause');
+        return cause?.value;
+    }
+}
 const descriptionLengthParenRegex = /\(([0-9]+)\)/;
 const descriptionLengthSquareRegex = /\[([0-9]+)\]/;
 /**

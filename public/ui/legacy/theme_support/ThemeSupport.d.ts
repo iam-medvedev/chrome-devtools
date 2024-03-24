@@ -21,7 +21,7 @@ export declare class ThemeSupport extends EventTarget {
     addCustomStylesheet(sheetText: string): void;
     applyTheme(document: Document): void;
     static clearThemeCache(): void;
-    static fetchColors(document: Document | undefined): Promise<void>;
+    static fetchColors(document?: Document): void;
 }
 export declare class ThemeChangeEvent extends Event {
     static readonly eventName = "themechange";

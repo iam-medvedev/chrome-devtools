@@ -39,6 +39,17 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/developer_resources/DeveloperResourcesView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export class DeveloperResourcesRevealer {
+    async reveal(resourceInitiatorKey) {
+        const loader = SDK.PageResourceLoader.PageResourceLoader.instance();
+        const resource = loader.getResourcesLoaded().get(resourceInitiatorKey.key);
+        if (resource) {
+            await UI.ViewManager.ViewManager.instance().showView('developer-resources');
+            const developerResourcesView = await UI.ViewManager.ViewManager.instance().view('developer-resources').widget();
+            return developerResourcesView.select(resource);
+        }
+    }
+}
 export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
     textFilterRegExp;
     filterInput;
@@ -72,9 +83,21 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         this.update();
     }
     async doUpdate() {
+        const selectedItem = this.listView.selectedItem();
         this.listView.reset();
         this.listView.update(this.loader.getScopedResourcesLoaded().values());
+        if (selectedItem) {
+            this.listView.select(selectedItem);
+        }
         this.updateStats();
+    }
+    async select(resource) {
+        await this.lastUpdatePromise;
+        this.listView.select(resource);
+    }
+    async selectedItem() {
+        await this.lastUpdatePromise;
+        return this.listView.selectedItem();
     }
     updateStats() {
         const { loading, resources } = this.loader.getScopedNumberOfResources();

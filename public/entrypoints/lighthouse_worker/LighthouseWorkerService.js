@@ -69,11 +69,6 @@ async function invokeLH(action, args) {
         flags.logLevel = flags.logLevel || 'info';
         flags.channel = 'devtools';
         flags.locale = locale;
-        // TODO: Remove this filter once pubads is mode restricted
-        // https://github.com/googleads/publisher-ads-lighthouse-plugin/pull/339
-        if (action === 'startTimespan' || action === 'snapshot') {
-            args.categoryIDs = args.categoryIDs.filter((c) => c !== 'lighthouse-plugin-publisher-ads');
-        }
         // @ts-expect-error https://github.com/GoogleChrome/lighthouse/issues/11628
         const config = args.config || self.createConfig(args.categoryIDs, flags.formFactor);
         const url = args.url;

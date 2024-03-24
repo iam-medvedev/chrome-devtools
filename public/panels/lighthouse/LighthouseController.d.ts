@@ -71,7 +71,6 @@ export interface Preset {
     configID: string;
     title: () => Common.UIString.LocalizedString;
     description: () => Common.UIString.LocalizedString;
-    plugin: boolean;
     supportedModes: string[];
     userMetric: Host.UserMetrics.LighthouseCategoryUsed;
 }

@@ -784,22 +784,26 @@ export class ConsoleViewMessage {
     }
     formatParameterAsError(output) {
         const result = document.createElement('span');
-        const errorStack = output.description || '';
         // Combine the ExceptionDetails for this error object with the parsed Error#stack.
         // The Exceptiondetails include script IDs for stack frames, which allows more accurate
         // linking.
-        this.#formatErrorStackPromiseForTest = this.retrieveExceptionDetails(output).then(exceptionDetails => {
-            const errorSpan = this.tryFormatAsError(errorStack, exceptionDetails);
-            result.appendChild(errorSpan ?? this.linkifyStringAsFragment(errorStack));
-        });
+        const formatErrorStack = async (errorObj, includeCausedByPrefix) => {
+            const error = SDK.RemoteObject.RemoteError.objectAsError(errorObj);
+            const [details, cause] = await Promise.all([error.exceptionDetails(), error.cause()]);
+            const errorElement = this.tryFormatAsError(error.errorStack, details) ?? this.linkifyStringAsFragment(error.errorStack);
+            if (includeCausedByPrefix) {
+                errorElement.prepend('Caused by: ');
+            }
+            result.appendChild(errorElement);
+            if (cause && cause.subtype === 'error') {
+                await formatErrorStack(cause, /* includeCausedByPrefix */ true);
+            }
+            else if (cause && cause.type === 'string') {
+                result.append(`Caused by: ${cause.value}`);
+            }
+        };
+        this.#formatErrorStackPromiseForTest = formatErrorStack(output, /* includeCausedByPrefix */ false);
         return result;
-    }
-    async retrieveExceptionDetails(errorObject) {
-        const runtimeModel = this.message.runtimeModel();
-        if (runtimeModel && errorObject.objectId) {
-            return runtimeModel.getExceptionDetails(errorObject.objectId);
-        }
-        return undefined;
     }
     formatAsArrayEntry(output) {
         return this.previewFormatter.renderPropertyPreview(output.type, output.subtype, output.className, output.description);
@@ -1445,7 +1449,7 @@ export class ConsoleViewMessage {
             augmentErrorStackWithScriptIds(linkInfos, exceptionDetails.stackTrace);
         }
         const debuggerModel = runtimeModel.debuggerModel();
-        const formattedResult = document.createElement('span');
+        const formattedResult = document.createElement('div');
         for (let i = 0; i < linkInfos.length; ++i) {
             const newline = i < linkInfos.length - 1 ? '\n' : '';
             const { line, link } = linkInfos[i];

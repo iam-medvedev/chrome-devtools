@@ -3,6 +3,7 @@ export declare const HeapSnapshotProgressEvent: {
     BrokenSnapshot: string;
 };
 export declare const baseSystemDistance = 100000000;
+export declare const baseUnreachableDistance: number;
 export declare class AllocationNodeCallers {
     nodesWithSingleCaller: SerializedAllocationNode[];
     branchingCallers: SerializedAllocationNode[];
@@ -41,6 +42,7 @@ export declare class Node {
     canBeQueried: boolean;
     detachedDOMTreeNode: boolean;
     isAddedNotRemoved: boolean | null;
+    ignored: boolean;
     constructor(id: number, name: string, distance: number, nodeIndex: number, retainedSize: number, selfSize: number, type: string);
 }
 export declare class Edge {

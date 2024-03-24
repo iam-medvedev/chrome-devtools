@@ -356,8 +356,8 @@ export function data() {
         throw new Error('Network Request handler is not finalized');
     }
     return {
-        byOrigin: new Map(requestsByOrigin),
-        byTime: [...requestsByTime],
+        byOrigin: requestsByOrigin,
+        byTime: requestsByTime,
     };
 }
 export function deps() {

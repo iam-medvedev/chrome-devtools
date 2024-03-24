@@ -28,10 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Bindings from '../../models/bindings/bindings.js';
 import * as Extensions from '../../models/extensions/extensions.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -165,17 +163,6 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             Common.EventTarget.fireEvent('source-file-loaded', uiSourceCode.displayName(true));
         }
         else {
-            if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Debugger) {
-                const script = Bindings.DefaultScriptMapping.DefaultScriptMapping.scriptForUISourceCode(uiSourceCode);
-                if (script && script.isInlineScript() && !script.hasSourceURL) {
-                    if (script.isModule) {
-                        Host.userMetrics.vmInlineScriptContentShown(0 /* Host.UserMetrics.VMInlineScriptType.MODULE_SCRIPT */);
-                    }
-                    else {
-                        Host.userMetrics.vmInlineScriptContentShown(1 /* Host.UserMetrics.VMInlineScriptType.CLASSIC_SCRIPT */);
-                    }
-                }
-            }
             this.innerShowFile(uiSourceCode, true);
         }
     }

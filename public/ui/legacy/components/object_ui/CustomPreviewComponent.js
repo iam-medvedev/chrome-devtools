@@ -6,7 +6,7 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as UI from '../../legacy.js';
 import customPreviewComponentStyles from './customPreviewComponent.css.js';
-import { ObjectPropertiesSection } from './ObjectPropertiesSection.js';
+import { ObjectPropertiesSection, ObjectPropertiesSectionsTreeOutline, ObjectPropertyTreeElement, } from './ObjectPropertiesSection.js';
 const UIStrings = {
     /**
      *@description A context menu item in the Custom Preview Component
@@ -58,22 +58,17 @@ export class CustomPreviewSection {
     element() {
         return this.sectionElement;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderJSONMLTag(jsonML) {
         if (!Array.isArray(jsonML)) {
             return document.createTextNode(String(jsonML));
         }
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const array = jsonML;
-        return array[0] === 'object' ? this.layoutObjectTag(array) : this.renderElement(array);
+        return jsonML[0] === 'object' ? this.layoutObjectTag(jsonML) : this.renderElement(jsonML);
     }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderElement(object) {
         const tagName = object.shift();
-        if (!CustomPreviewSection.allowedTags.has(tagName)) {
+        if (!ALLOWED_TAGS.includes(tagName)) {
             Common.Console.Console.instance().error('Broken formatter: element ' + tagName + ' is not allowed!');
             return document.createElement('span');
         }
@@ -91,8 +86,6 @@ export class CustomPreviewSection {
         this.appendJsonMLTags(element, object);
         return element;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     layoutObjectTag(objectTag) {
         objectTag.shift();
         const attributes = objectTag.shift();
@@ -104,8 +97,6 @@ export class CustomPreviewSection {
         sectionElement.classList.toggle('custom-expandable-section-standard-section', remoteObject.hasChildren);
         return sectionElement;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     appendJsonMLTags(parentElement, jsonMLTags) {
         for (let i = 0; i < jsonMLTags.length; ++i) {
             parentElement.appendChild(this.renderJSONMLTag(jsonMLTags[i]));
@@ -137,26 +128,32 @@ export class CustomPreviewSection {
             }
         }
     }
+    defaultBodyTreeOutline;
     async loadBody() {
         const customPreview = this.object.customPreview();
         if (!customPreview) {
             return;
         }
         if (customPreview.bodyGetterId) {
-            const bodyJsonML = await this.object.callFunctionJSON(
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            bodyGetter => bodyGetter(), [{ objectId: customPreview.bodyGetterId }]);
-            if (!bodyJsonML) {
-                return;
+            const bodyJsonML = await this.object.callFunctionJSON(bodyGetter => bodyGetter(), [{ objectId: customPreview.bodyGetterId }]);
+            if (bodyJsonML === null) {
+                // Per https://firefox-source-docs.mozilla.org/devtools-user/custom_formatters/index.html#custom-formatter-structure
+                // we are supposed to fall back to the default format when the `body()` callback returns `null`.
+                this.defaultBodyTreeOutline = new ObjectPropertiesSectionsTreeOutline({ readOnly: true });
+                this.defaultBodyTreeOutline.setShowSelectionOnKeyboardFocus(/* show */ true, /* preventTabOrder */ false);
+                this.defaultBodyTreeOutline.element.classList.add('custom-expandable-section-default-body');
+                void ObjectPropertyTreeElement.populate(this.defaultBodyTreeOutline.rootElement(), this.object, false, false);
+                this.cachedContent = this.defaultBodyTreeOutline.element;
             }
-            this.cachedContent = this.renderJSONMLTag(bodyJsonML);
+            else {
+                this.cachedContent = this.renderJSONMLTag(bodyJsonML);
+            }
             this.sectionElement.appendChild(this.cachedContent);
             this.toggleExpand();
         }
     }
-    static allowedTags = new Set(['span', 'div', 'ol', 'li', 'table', 'tr', 'td']);
 }
+const ALLOWED_TAGS = ['span', 'div', 'ol', 'li', 'table', 'tr', 'td'];
 export class CustomPreviewComponent {
     object;
     customPreviewSection;

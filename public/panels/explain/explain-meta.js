@@ -29,6 +29,20 @@ const UIStrings = {
      * supported.
      */
     wrongLocale: 'To use this feature, update your Language preference in DevTools Settings to English.',
+    /**
+     * @description Message shown to the user if the age check is not successful.
+     */
+    ageRestricted: 'This feature is only available to users who are 18 years of age or older.',
+    /**
+     * @description Message shown to the user if the user's region is not
+     * supported.
+     */
+    geoRestricted: 'This feature is unavailable in your region.',
+    /**
+     * @description Message shown to the user if the enterprise policy does
+     * not allow this feature.
+     */
+    policyRestricted: 'Your organization turned off this feature. Contact your administrators for more information.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/explain/explain-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -64,23 +78,28 @@ const actions = [
         },
     },
 ];
-function isActionAvailable() {
-    return isLocaleAllowed() === true && isSettingAvailable();
-}
 function isSettingAvailable() {
     return isFeatureEnabled();
 }
-/**
- * Additional checks for the availability of the feature event if enabled via
- * the server. Returns true if locale is supported, or a string containing the
- * reason why not.
- */
-function isLocaleAllowed() {
+function isActionAvailable() {
+    return isSettingAvailable() && !isAgeRestricted() && !isLocaleRestricted() && !isGeoRestricted() &&
+        !isPolicyRestricted();
+}
+function isLocaleRestricted() {
     const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
-    if (!devtoolsLocale.locale.startsWith('en-')) {
-        return i18nString(UIStrings.wrongLocale);
-    }
-    return true;
+    return !devtoolsLocale.locale.startsWith('en-');
+}
+function isAgeRestricted() {
+    return Root.Runtime.Runtime.queryParam('ci_blockedByAge') === 'true';
+}
+function isGeoRestricted() {
+    return Root.Runtime.Runtime.queryParam('ci_blockedByGeo') === 'true';
+}
+function isPolicyRestricted() {
+    return Root.Runtime.Runtime.queryParam('ci_blockedByEnterprisePolicy') === 'true';
+}
+function isDisabledByDefault() {
+    return Root.Runtime.Runtime.queryParam('ci_disabledByDefault') === 'true';
 }
 function isFeatureEnabled() {
     return Root.Runtime.Runtime.queryParam('enableAida') === 'true';
@@ -90,13 +109,21 @@ Common.Settings.registerSettingExtension({
     settingName: setting,
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     title: i18nLazyString(UIStrings.enableConsoleInsights),
-    defaultValue: true,
+    defaultValue: isDisabledByDefault() ? false : true,
     reloadRequired: true,
     condition: isSettingAvailable,
     disabledCondition: () => {
-        const localeCheck = isLocaleAllowed();
-        if (localeCheck !== true) {
-            return { disabled: true, reason: localeCheck };
+        if (isLocaleRestricted()) {
+            return { disabled: true, reason: i18nString(UIStrings.wrongLocale) };
+        }
+        if (isAgeRestricted()) {
+            return { disabled: true, reason: i18nString(UIStrings.ageRestricted) };
+        }
+        if (isGeoRestricted()) {
+            return { disabled: true, reason: i18nString(UIStrings.geoRestricted) };
+        }
+        if (isPolicyRestricted()) {
+            return { disabled: true, reason: i18nString(UIStrings.policyRestricted) };
         }
         return { disabled: false };
     },

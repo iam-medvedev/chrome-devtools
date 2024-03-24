@@ -185,7 +185,7 @@ export class TimelineController {
     async finalizeTrace() {
         await SDK.TargetManager.TargetManager.instance().resumeAllTargets();
         this.tracingModel.tracingComplete();
-        await this.client.loadingComplete(this.#collectedEvents, this.tracingModel, /* exclusiveFilter= */ null, /* isCpuProfile= */ false, this.#recordingStartTime);
+        await this.client.loadingComplete(this.#collectedEvents, this.tracingModel, /* exclusiveFilter= */ null, /* isCpuProfile= */ false, this.#recordingStartTime, /* metadata= */ null);
         this.client.loadingCompleteForTest();
     }
     tracingBufferUsage(usage) {

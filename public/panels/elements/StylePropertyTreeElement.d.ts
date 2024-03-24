@@ -4,7 +4,7 @@ import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.n
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { AngleMatch, AngleMatcher, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatch, FontMatcher, GridTemplateMatch, GridTemplateMatcher, LinkableNameMatch, LinkableNameMatcher, LinkableNameProperties, RenderingContext, ShadowMatch, ShadowMatcher, ShadowType, StringMatch, StringMatcher, URLMatch, URLMatcher, VariableMatch, VariableMatcher } from './PropertyParser.js';
+import { AngleMatch, AngleMatcher, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatch, FontMatcher, GridTemplateMatch, GridTemplateMatcher, LinkableNameMatch, LinkableNameMatcher, LinkableNameProperties, type Matcher, RenderingContext, ShadowMatch, ShadowMatcher, ShadowType, StringMatch, StringMatcher, URLMatch, URLMatcher, VariableMatch, VariableMatcher } from './PropertyParser.js';
 import { type StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
 export declare const activeHints: WeakMap<Element, Hint>;
@@ -142,6 +142,8 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private parentsComputedStyles;
     private contextForTest;
     constructor({ stylesPane, section, matchedStyles, property, isShorthand, inherited, overloaded, newProperty }: StylePropertyTreeElementParams);
+    static renderNameElement(name: string): HTMLElement;
+    static renderValueElement(propertyName: string, propertyValue: string, renderers: Matcher[]): HTMLElement;
     matchedStyles(): SDK.CSSMatchedStyles.CSSMatchedStyles;
     editable(): boolean;
     inherited(): boolean;

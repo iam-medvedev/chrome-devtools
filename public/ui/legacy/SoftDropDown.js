@@ -86,6 +86,10 @@ export class SoftDropDown {
                 return;
             }
             this.selectHighlightedItem();
+            if (event.target instanceof Element && event.target?.parentElement) {
+                // hide() will consume the mouseup event and click won't be triggered
+                void VisualLogging.logClick(event.target.parentElement, event);
+            }
             this.hide(event);
         }, false);
         model.addEventListener("ItemsReplaced" /* ListModelEvents.ItemsReplaced */, this.itemsReplaced, this);

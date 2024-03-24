@@ -3,14 +3,14 @@ import * as Types from '../types/types.js';
 import { ScoreClassification } from './PageLoadMetricsHandler.js';
 import { type TraceEventHandlerName } from './types.js';
 interface LayoutShifts {
-    clusters: LayoutShiftCluster[];
+    clusters: readonly LayoutShiftCluster[];
     sessionMaxScore: number;
     clsWindowID: number;
     prePaintEvents: Types.TraceEvents.TraceEventPrePaint[];
-    layoutInvalidationEvents: Types.TraceEvents.TraceEventLayoutInvalidationTracking[];
-    scheduleStyleInvalidationEvents: Types.TraceEvents.TraceEventScheduleStyleInvalidationTracking[];
-    styleRecalcInvalidationEvents: Types.TraceEvents.TraceEventStyleRecalcInvalidationTracking[];
-    scoreRecords: ScoreRecord[];
+    layoutInvalidationEvents: readonly Types.TraceEvents.TraceEventLayoutInvalidationTracking[];
+    scheduleStyleInvalidationEvents: readonly Types.TraceEvents.TraceEventScheduleStyleInvalidationTracking[];
+    styleRecalcInvalidationEvents: readonly Types.TraceEvents.TraceEventStyleRecalcInvalidationTracking[];
+    scoreRecords: readonly ScoreRecord[];
     backendNodeIds: Protocol.DOM.BackendNodeId[];
 }
 export declare const MAX_CLUSTER_DURATION: Types.Timing.MicroSeconds;

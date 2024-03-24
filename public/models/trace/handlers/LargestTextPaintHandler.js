@@ -21,6 +21,6 @@ export function handleEvent(event) {
     textPaintByDOMNodeId.set(event.args.data.DOMNodeId, event);
 }
 export function data() {
-    return new Map(textPaintByDOMNodeId);
+    return textPaintByDOMNodeId;
 }
 //# sourceMappingURL=LargestTextPaintHandler.js.map

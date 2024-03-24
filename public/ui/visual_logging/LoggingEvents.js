@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
-import { showDebugPopoverForEvent } from './Debugging.js';
+import { processEventForDebugging, processImpressionsForDebugging } from './Debugging.js';
 import { getLoggingState } from './LoggingState.js';
 export async function logImpressions(loggables) {
     const impressions = await Promise.all(loggables.map(async (loggable) => {
@@ -24,6 +24,7 @@ export async function logImpressions(loggables) {
     }));
     if (impressions.length) {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordImpression({ impressions });
+        processImpressionsForDebugging(loggables.map(l => getLoggingState(l)));
     }
 }
 export const logResize = (throttler) => (loggable, size) => {
@@ -35,7 +36,7 @@ export const logResize = (throttler) => (loggable, size) => {
     const resizeEvent = { veid: loggingState.veid, width: loggingState.size.width, height: loggingState.size.height };
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordResize(resizeEvent);
-        showDebugPopoverForEvent('Resize', loggingState?.config);
+        processEventForDebugging('Resize', loggingState, { width: size.width, height: size.height });
     });
 };
 export const logClick = (throttler) => (loggable, event, options) => {
@@ -43,29 +44,33 @@ export const logClick = (throttler) => (loggable, event, options) => {
     if (!loggingState) {
         return;
     }
-    const button = event instanceof MouseEvent ? event.button : 0;
-    const clickEvent = { veid: loggingState.veid, mouseButton: button, doubleClick: Boolean(options?.doubleClick) };
+    const clickEvent = { veid: loggingState.veid, doubleClick: Boolean(options?.doubleClick) };
+    if (event instanceof MouseEvent && 'sourceCapabilities' in event && event.sourceCapabilities) {
+        clickEvent.mouseButton = event.button;
+    }
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordClick(clickEvent);
-        showDebugPopoverForEvent('Click', loggingState?.config);
+        processEventForDebugging('Click', loggingState, { mouseButton: clickEvent.mouseButton, doubleClick: clickEvent.doubleClick });
     });
 };
 export const logHover = (throttler) => async (event) => {
     const loggingState = getLoggingState(event.currentTarget);
     assertNotNullOrUndefined(loggingState);
     const hoverEvent = { veid: loggingState.veid };
+    void throttler.schedule(async () => { }); // Ensure the logging won't get scheduled immediately
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordHover(hoverEvent);
-        showDebugPopoverForEvent('Hover', loggingState?.config);
+        processEventForDebugging('Hover', loggingState);
     });
 };
 export const logDrag = (throttler) => async (event) => {
     const loggingState = getLoggingState(event.currentTarget);
     assertNotNullOrUndefined(loggingState);
     const dragEvent = { veid: loggingState.veid };
+    await throttler.schedule(async () => { }); // Ensure the logging won't get scheduled immediately
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordDrag(dragEvent);
-        showDebugPopoverForEvent('Drag', loggingState?.config);
+        processEventForDebugging('Drag', loggingState);
     });
 };
 export async function logChange(event) {
@@ -73,7 +78,7 @@ export async function logChange(event) {
     assertNotNullOrUndefined(loggingState);
     const changeEvent = { veid: loggingState.veid };
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordChange(changeEvent);
-    showDebugPopoverForEvent('Change', loggingState?.config);
+    processEventForDebugging('Change', loggingState);
 }
 let pendingKeyDownContext = null;
 export const logKeyDown = (throttler) => async (loggable, event, context) => {
@@ -98,7 +103,7 @@ export const logKeyDown = (throttler) => async (loggable, event, context) => {
     pendingKeyDownContext = context || null;
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordKeyDown(keyDownEvent);
-        showDebugPopoverForEvent('KeyDown', loggingState?.config, context);
+        processEventForDebugging('KeyDown', loggingState, { context });
         pendingKeyDownContext = null;
     });
 };

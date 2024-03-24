@@ -63,6 +63,7 @@ export interface RevealerRegistration<T> {
     destination?: RevealerDestination;
 }
 export declare const RevealerDestination: {
+    DEVELOPER_RESOURCES_PANEL: () => Platform.UIString.LocalizedString;
     ELEMENTS_PANEL: () => Platform.UIString.LocalizedString;
     STYLES_SIDEBAR: () => Platform.UIString.LocalizedString;
     CHANGES_DRAWER: () => Platform.UIString.LocalizedString;

@@ -20,6 +20,13 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 function isExtensionInitiator(initiator) {
     return 'extensionId' in initiator;
 }
+// Used for revealing a resource.
+export class ResourceKey {
+    key;
+    constructor(key) {
+        this.key = key;
+    }
+}
 let pageResourceLoader = null;
 /**
  * The page resource loader is a bottleneck for all DevTools-initiated resource loads. For each such load, it keeps a

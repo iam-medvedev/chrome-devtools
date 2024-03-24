@@ -144,7 +144,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 export class NetworkLogViewColumns {
     networkLogView;
-    persistantSettings;
+    persistentSettings;
     networkLogLargeRowsSetting;
     eventDividers;
     eventDividersShown;
@@ -170,7 +170,7 @@ export class NetworkLogViewColumns {
     scrollerTouchStartPos;
     constructor(networkLogView, timeCalculator, durationCalculator, networkLogLargeRowsSetting) {
         this.networkLogView = networkLogView;
-        this.persistantSettings = Common.Settings.Settings.instance().createSetting('network-log-columns', {});
+        this.persistentSettings = Common.Settings.Settings.instance().createSetting('network-log-columns', {});
         this.networkLogLargeRowsSetting = networkLogLargeRowsSetting;
         this.networkLogLargeRowsSetting.addChangeListener(this.updateRowsSize, this);
         this.eventDividers = new Map();
@@ -357,7 +357,11 @@ export class NetworkLogViewColumns {
             this.waterfallColumn.contentElement.createChild('div', 'network-waterfall-header');
         this.waterfallHeaderElement.setAttribute('jslog', `${VisualLogging.tableHeader('waterfall').track({ click: true })}`);
         this.waterfallHeaderElement.addEventListener('click', waterfallHeaderClicked.bind(this));
-        this.waterfallHeaderElement.addEventListener('contextmenu', event => this.innerHeaderContextMenu(new UI.ContextMenu.ContextMenu(event)));
+        this.waterfallHeaderElement.addEventListener('contextmenu', event => {
+            const contextMenu = new UI.ContextMenu.ContextMenu(event);
+            this.innerHeaderContextMenu(contextMenu);
+            void contextMenu.show();
+        });
         this.waterfallHeaderElement.createChild('div', 'hover-layer');
         const innerElement = this.waterfallHeaderElement.createChild('div');
         innerElement.textContent = i18nString(UIStrings.waterfall);
@@ -448,7 +452,10 @@ export class NetworkLogViewColumns {
         const visibleColumns = new Set();
         if (this.gridMode) {
             for (const columnConfig of this.columns) {
-                if (columnConfig.visible) {
+                if (columnConfig.id === 'waterfall') {
+                    this.setWaterfallVisibility(columnConfig.visible);
+                }
+                else if (columnConfig.visible) {
                     visibleColumns.add(columnConfig.id);
                 }
             }
@@ -465,15 +472,31 @@ export class NetworkLogViewColumns {
                 // This is just in case.
                 visibleColumns.add('name');
             }
+            this.setWaterfallVisibility(false);
         }
-        this.dataGridInternal.setColumnsVisiblity(visibleColumns);
+        this.dataGridInternal.setColumnsVisibility(visibleColumns);
     }
     switchViewMode(gridMode) {
         if (this.gridMode === gridMode) {
             return;
         }
         this.gridMode = gridMode;
-        if (gridMode) {
+        this.networkLogView.element.classList.toggle('grid-mode', gridMode);
+        this.updateColumns();
+        this.updateRowsSize();
+    }
+    toggleColumnVisibility(columnConfig) {
+        this.loadCustomColumnsAndSettings();
+        columnConfig.visible = !columnConfig.visible;
+        this.saveColumnsSettings();
+        this.updateColumns();
+        this.updateRowsSize();
+    }
+    setWaterfallVisibility(visible) {
+        if (!this.splitWidget) {
+            return;
+        }
+        if (visible) {
             this.splitWidget.showBoth();
             this.activeScroller = this.waterfallScroller;
             this.waterfallScroller.scrollTop = this.dataGridScroller.scrollTop;
@@ -485,25 +508,16 @@ export class NetworkLogViewColumns {
             this.activeScroller = this.dataGridScroller;
             this.dataGridInternal.setScrollContainer(this.dataGridScroller);
         }
-        this.networkLogView.element.classList.toggle('brief-mode', !gridMode);
-        this.updateColumns();
-        this.updateRowsSize();
-    }
-    toggleColumnVisibility(columnConfig) {
-        this.loadCustomColumnsAndSettings();
-        columnConfig.visible = !columnConfig.visible;
-        this.saveColumnsSettings();
-        this.updateColumns();
     }
     saveColumnsSettings() {
         const saveableSettings = {};
         for (const columnConfig of this.columns) {
             saveableSettings[columnConfig.id] = { visible: columnConfig.visible, title: columnConfig.title };
         }
-        this.persistantSettings.set(saveableSettings);
+        this.persistentSettings.set(saveableSettings);
     }
     loadCustomColumnsAndSettings() {
-        const savedSettings = this.persistantSettings.get();
+        const savedSettings = this.persistentSettings.get();
         const columnIds = Object.keys(savedSettings);
         for (const columnId of columnIds) {
             const setting = savedSettings[columnId];
@@ -926,8 +940,6 @@ const DEFAULT_COLUMNS = [
     {
         id: 'waterfall',
         title: i18nLazyString(UIStrings.waterfall),
-        visible: false,
-        hideable: false,
         allowInSortByEvenWhenHidden: true,
     },
 ];

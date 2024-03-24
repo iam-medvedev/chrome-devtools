@@ -119,6 +119,9 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 ...fontChanges,
                 ...unknownLayoutInvalidation,
             ].sort((a, b) => a.ts - b.ts);
+            for (const e of layoutInvalidationEvents) {
+                e.name = "LayoutInvalidationTracking" /* TraceEngine.Types.TraceEvents.KnownEventName.LayoutInvalidationTracking */;
+            }
             // Map from fake BackendNodeId to fake Protocol.DOM.Node used by the handler to
             // resolve the nodeIds in the traces.
             const domNodeByBackendIdMapEntries = [];

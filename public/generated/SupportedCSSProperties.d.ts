@@ -77,9 +77,6 @@ export const generatedPropertyValues: {
     "alignment-baseline": {
         values: string[];
     };
-    "anchor-default": {
-        values: string[];
-    };
     "anchor-name": {
         values: string[];
     };
@@ -609,6 +606,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     position: {
+        values: string[];
+    };
+    "position-anchor": {
         values: string[];
     };
     "position-fallback-bounds": {

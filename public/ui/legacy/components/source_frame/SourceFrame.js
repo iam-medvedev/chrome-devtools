@@ -37,6 +37,7 @@ import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as CodeMirror from '../../../../third_party/codemirror.next/codemirror.next.js';
 import * as CodeHighlighter from '../../../components/code_highlighter/code_highlighter.js';
 import * as TextEditor from '../../../components/text_editor/text_editor.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import selfXssDialogStyles from './selfXssDialog.css.legacy.js';
 const UIStrings = {
@@ -313,7 +314,8 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         return { lineNumber, columnNumber };
     }
     setCanPrettyPrint(canPrettyPrint, autoPrettyPrint) {
-        this.shouldAutoPrettyPrint = canPrettyPrint && Boolean(autoPrettyPrint);
+        this.shouldAutoPrettyPrint = autoPrettyPrint === true &&
+            Common.Settings.Settings.instance().moduleSetting('auto-pretty-print-minified').get();
         this.prettyToggle.setVisible(canPrettyPrint);
     }
     setEditable(editable) {
@@ -389,6 +391,8 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
     }
     updateLineNumberFormatter() {
         this.textEditor.dispatch({ effects: config.lineNumbers.reconfigure(this.getLineNumberFormatter()) });
+        this.textEditor.shadowRoot?.querySelector('.cm-lineNumbers')
+            ?.setAttribute('jslog', `${VisualLogging.gutter('line-numbers').track({ click: true })}`);
     }
     updatePrettyPrintState() {
         this.prettyToggle.setToggled(this.prettyInternal);
@@ -608,6 +612,11 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.innerRevealPositionIfNeeded();
         this.innerSetSelectionIfNeeded();
         this.innerScrollToLineIfNeeded();
+        this.textEditor.shadowRoot?.querySelector('.cm-lineNumbers')
+            ?.setAttribute('jslog', `${VisualLogging.gutter('line-numbers').track({ click: true })}`);
+        this.textEditor.shadowRoot?.querySelector('.cm-foldGutter')
+            ?.setAttribute('jslog', `${VisualLogging.gutter('fold')}`);
+        this.textEditor.shadowRoot?.querySelector('.cm-content')?.setAttribute('jslog', `${VisualLogging.textField()}`);
     }
     onTextChanged() {
         const wasPretty = this.pretty;

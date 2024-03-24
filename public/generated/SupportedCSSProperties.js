@@ -383,12 +383,6 @@ export const generatedProperties = [
         "keywords": [
             "none"
         ],
-        "name": "anchor-default"
-    },
-    {
-        "keywords": [
-            "none"
-        ],
         "name": "anchor-name"
     },
     {
@@ -2824,6 +2818,12 @@ export const generatedProperties = [
     },
     {
         "keywords": [
+            "implicit"
+        ],
+        "name": "position-anchor"
+    },
+    {
+        "keywords": [
             "normal"
         ],
         "name": "position-fallback-bounds"
@@ -3922,11 +3922,6 @@ export const generatedPropertyValues = {
             "after-edge",
             "text-after-edge",
             "hanging"
-        ]
-    },
-    "anchor-default": {
-        "values": [
-            "none"
         ]
     },
     "anchor-name": {
@@ -5263,6 +5258,11 @@ export const generatedPropertyValues = {
             "absolute",
             "fixed",
             "sticky"
+        ]
+    },
+    "position-anchor": {
+        "values": [
+            "implicit"
         ]
     },
     "position-fallback-bounds": {

@@ -38,6 +38,7 @@ export declare const dropDown: (context?: string | undefined) => LoggingConfig.C
 export declare const elementsBreadcrumbs: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const expand: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const filterDropdown: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
+export declare const gutter: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const dialog: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const item: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const key: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;

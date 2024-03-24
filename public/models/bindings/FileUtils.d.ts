@@ -9,7 +9,7 @@ export interface ChunkedReader {
 }
 export declare class ChunkedFileReader implements ChunkedReader {
     #private;
-    constructor(file: File, chunkSize: number, chunkTransferredCallback?: ((arg0: ChunkedReader) => void));
+    constructor(file: File, chunkSize?: number, chunkTransferredCallback?: ((arg0: ChunkedReader) => void));
     read(output: Common.StringOutputStream.OutputStream): Promise<boolean>;
     cancel(): void;
     loadedSize(): number;

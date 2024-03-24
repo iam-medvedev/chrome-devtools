@@ -92,7 +92,7 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     willHide(): void;
     private getPreferredWidth;
     private applyColumnWeights;
-    setColumnsVisiblity(columnsVisibility: Set<string>): void;
+    setColumnsVisibility(columnsVisibility: Set<string>): void;
     get scrollContainer(): HTMLElement;
     private positionResizers;
     addCreationNode(hasChildren?: boolean): void;

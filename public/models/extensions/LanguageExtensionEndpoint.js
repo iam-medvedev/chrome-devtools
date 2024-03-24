@@ -23,9 +23,11 @@ class LanguageExtensionEndpointImpl extends ExtensionEndpoint {
 export class LanguageExtensionEndpoint {
     supportedScriptTypes;
     endpoint;
+    extensionOrigin;
     name;
-    constructor(name, supportedScriptTypes, port) {
+    constructor(extensionOrigin, name, supportedScriptTypes, port) {
         this.name = name;
+        this.extensionOrigin = extensionOrigin;
         this.supportedScriptTypes = supportedScriptTypes;
         this.endpoint = new LanguageExtensionEndpointImpl(this, port);
     }
@@ -33,6 +35,14 @@ export class LanguageExtensionEndpoint {
         const language = script.scriptLanguage();
         return language !== null && script.debugSymbols !== null && language === this.supportedScriptTypes.language &&
             this.supportedScriptTypes.symbol_types.includes(script.debugSymbols.type);
+    }
+    createPageResourceLoadInitiator() {
+        return {
+            target: null,
+            frameId: null,
+            extensionId: this.extensionOrigin,
+            initiatorUrl: this.extensionOrigin,
+        };
     }
     /** Notify the plugin about a new script
      */

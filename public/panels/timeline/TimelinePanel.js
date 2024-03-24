@@ -39,6 +39,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as PanelFeedback from '../../ui/components/panel_feedback/panel_feedback.js';
@@ -603,6 +604,11 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         const traceEvents = this.#traceEngineModel.traceEvents(this.#traceEngineActiveTraceIndex);
         const metadata = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex);
+        // Save annotations into the metadata if annotations the experiment is on
+        if (Root.Runtime.experiments.isEnabled("save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */) &&
+            metadata) {
+            metadata.annotations = AnnotationsManager.AnnotationsManager.AnnotationsManager.instance().getAnnotations();
+        }
         if (!traceEvents) {
             return;
         }
@@ -935,7 +941,8 @@ export class TimelinePanel extends UI.Panel.Panel {
             /* tracingModel= */ null, 
             /* exclusiveFilter= */ null, 
             /* isCpuProfile= */ false, 
-            /* recordingStartTime= */ null);
+            /* recordingStartTime= */ null, 
+            /* metadata= */ null);
         });
         this.statusPane.showPane(this.statusPaneContainer);
         this.statusPane.updateStatus(i18nString(UIStrings.recordingFailed));
@@ -1213,7 +1220,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     #onSourceMapsNodeNamesResolved() {
         this.flameChart.updateColorMapper();
     }
-    async loadingComplete(collectedEvents, tracingModel, exclusiveFilter = null, isCpuProfile, recordingStartTime) {
+    async loadingComplete(collectedEvents, tracingModel, exclusiveFilter = null, isCpuProfile, recordingStartTime, metadata) {
         this.#traceEngineModel.resetProcessor();
         SourceMapsResolver.clearResolvedNodeNames();
         delete this.loader;
@@ -1227,16 +1234,20 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.clear();
             return;
         }
+        // TODO(b.corp.google.com/issues/313757110): Apply annotations from the file if they exist in the metadata.
         if (!this.performanceModel) {
             this.performanceModel = new PerformanceModel();
         }
+        metadata = metadata ?
+            metadata :
+            await TraceEngine.Extras.Metadata.forNewRecording(isCpuProfile, recordingStartTime ?? undefined);
         try {
             // Run the new engine in parallel with the parsing done in the performanceModel
             await Promise.all([
                 // Calling setTracingModel now and setModel so much later, leads to several problems due to addEventListener order being unexpected
                 // TODO(paulirish): Resolve this, or just wait for the death of tracingModel. :)
                 this.performanceModel.setTracingModel(tracingModel, recordingIsFresh),
-                this.#executeNewTraceEngine(collectedEvents, recordingIsFresh, isCpuProfile, recordingStartTime),
+                this.#executeNewTraceEngine(collectedEvents, recordingIsFresh, metadata),
             ]);
             // This code path is only executed when a new trace is recorded/imported,
             // so we know that the active index will be the size of the model because
@@ -1306,11 +1317,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             }, 0);
         });
     }
-    async #executeNewTraceEngine(collectedEvents, isFreshRecording, isCpuProfile, recordStartTime) {
-        const shouldGatherMetadata = isFreshRecording && !isCpuProfile;
-        const metadata = shouldGatherMetadata ? await TraceEngine.Extras.Metadata.forNewRecording(recordStartTime ?? undefined) : {};
-        metadata.dataOrigin =
-            isCpuProfile ? "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPUProfile */ : "TraceEvents" /* TraceEngine.Types.File.DataOrigin.TraceEvents */;
+    async #executeNewTraceEngine(collectedEvents, isFreshRecording, metadata) {
         return this.#traceEngineModel.parse(collectedEvents, {
             metadata,
             isFreshRecording,

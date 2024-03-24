@@ -24,6 +24,9 @@ export declare class Settings {
     static normalizeSettingName(name: string): string;
     moduleSetting<T = any>(settingName: string): Setting<T>;
     settingForTest(settingName: string): Setting<unknown>;
+    /**
+     * Get setting via key, and create a new setting if the requested setting does not exist.
+     */
     createSetting<T>(key: string, defaultValue: T, storageType?: SettingStorageType): Setting<T>;
     createLocalSetting<T>(key: string, defaultValue: T): Setting<T>;
     createRegExpSetting(key: string, defaultValue: string, regexFlags?: string, storageType?: SettingStorageType): RegExpSetting;

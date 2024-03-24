@@ -8,6 +8,7 @@
         "checkboxTextLabel.css.legacy.js",
         "closeButton.css.legacy.js",
         "confirmDialog.css.legacy.js",
+        "designTokens.css.legacy.js",
         "dialog.css.legacy.js",
         "dropTarget.css.legacy.js",
         "emptyWidget.css.legacy.js",

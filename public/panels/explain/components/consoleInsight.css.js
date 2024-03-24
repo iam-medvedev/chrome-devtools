@@ -103,6 +103,10 @@ header {
   height: 14px;
 }
 
+header:focus-visible {
+  outline: none;
+}
+
 header > .filler {
   flex: 1;
 }
@@ -130,6 +134,8 @@ main {
     li {
       display: list-item;
       list-style-type: disc;
+      list-style-position: outside;
+      margin-inline-start: 1em;
     }
 
     li::marker {
@@ -273,6 +279,10 @@ h2 {
   font-size: inherit;
   margin: 0;
   font-weight: inherit;
+}
+
+h2:focus-visible {
+  outline: none;
 }
 
 .info {

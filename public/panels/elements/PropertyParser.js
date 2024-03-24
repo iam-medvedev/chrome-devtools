@@ -621,6 +621,8 @@ export class LinkableNameMatcher extends MatcherBase {
             "animation-name" /* LinkableNameProperties.AnimationName */,
             "font-palette" /* LinkableNameProperties.FontPalette */,
             "position-fallback" /* LinkableNameProperties.PositionFallback */,
+            "position-try-options" /* LinkableNameProperties.PositionTryOptions */,
+            "position-try" /* LinkableNameProperties.PositionTry */,
         ];
         return names.includes(propertyName);
     }
@@ -695,9 +697,12 @@ export class LinkableNameMatcher extends MatcherBase {
         const isInsideVarCall = parentNode.name === 'ArgList' && parentNode.prevSibling?.name === 'Callee' &&
             matching.ast.text(parentNode.prevSibling) === 'var';
         const isAParentDeclarationOrVarCall = isParentADeclaration || isInsideVarCall;
+        // `position-try-options` and `position-try` only accepts names with dashed ident.
+        const shouldMatchOnlyVariableName = propertyName === "position-try" /* LinkableNameProperties.PositionTry */ ||
+            propertyName === "position-try-options" /* LinkableNameProperties.PositionTryOptions */;
         // We only mark top level nodes or nodes that are inside `var()` expressions as linkable names.
         if (!propertyName || (node.name !== 'ValueName' && node.name !== 'VariableName') ||
-            !isAParentDeclarationOrVarCall) {
+            !isAParentDeclarationOrVarCall || (node.name === 'ValueName' && shouldMatchOnlyVariableName)) {
             return null;
         }
         if (propertyName === 'animation') {

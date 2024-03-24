@@ -59,6 +59,7 @@ export declare class HeapSnapshotSortableDataGrid extends HeapSnapshotSortableDa
     insertChild(parent: HeapSnapshotGridNode, node: HeapSnapshotGridNode, index: number): void;
     removeChildByIndex(parent: HeapSnapshotGridNode, index: number): void;
     removeAllChildren(parent: HeapSnapshotGridNode): void;
+    dataSourceChanged(): Promise<void>;
 }
 export declare enum HeapSnapshotSortableDataGridEvents {
     ContentShown = "ContentShown",
@@ -100,11 +101,14 @@ export declare class HeapSnapshotContainmentDataGrid extends HeapSnapshotSortabl
     sortingChanged(): void;
 }
 export declare class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainmentDataGrid {
+    resetRetainersButton: UI.Toolbar.ToolbarButton | undefined;
     constructor(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null, dataDisplayDelegate: DataDisplayDelegate);
     createRootNode(snapshot: HeapSnapshotProxy, node: HeapSnapshotModel.HeapSnapshotModel.Node): HeapSnapshotRetainingObjectNode;
     sortFields(sortColumn: string, sortAscending: boolean): HeapSnapshotModel.HeapSnapshotModel.ComparatorConfig;
     reset(): void;
+    updateResetButtonVisibility(): void;
     setDataSource(snapshot: HeapSnapshotProxy, nodeIndex: number, nodeId?: number): Promise<void>;
+    dataSourceChanged(): Promise<void>;
 }
 export declare enum HeapSnapshotRetainmentDataGridEvents {
     ExpandRetainersComplete = "ExpandRetainersComplete"

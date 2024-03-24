@@ -4,7 +4,7 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Platform from '../platform/platform.js';
 import { cssMetadata, VariableRegex } from './CSSMetadata.js';
-import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionFallbackRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
+import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionFallbackRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 export function parseCSSVariableNameAndFallback(cssVariableValue) {
     const match = cssVariableValue.match(/var\(\s*(--(?:[\s\w\P{ASCII}-]|\\.)+),?\s*(.*)\s*\)/u);
@@ -201,6 +201,7 @@ export class CSSMatchedStyles {
     #styleToDOMCascade;
     #parentLayoutNodeId;
     #positionFallbackRules;
+    #positionTryRules;
     #mainDOMCascade;
     #pseudoDOMCascades;
     #customHighlightPseudoDOMCascades;
@@ -210,7 +211,7 @@ export class CSSMatchedStyles {
         await cssMatchedStyles.init(payload);
         return cssMatchedStyles;
     }
-    constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionFallbackRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, }) {
+    constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionFallbackRules, positionTryRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, }) {
         this.#cssModelInternal = cssModel;
         this.#nodeInternal = node;
         this.#addedStyles = new Map();
@@ -224,6 +225,7 @@ export class CSSMatchedStyles {
             this.#keyframesInternal = animationsPayload.map(rule => new CSSKeyframesRule(cssModel, rule));
         }
         this.#positionFallbackRules = positionFallbackRules.map(rule => new CSSPositionFallbackRule(cssModel, rule));
+        this.#positionTryRules = positionTryRules.map(rule => new CSSPositionTryRule(cssModel, rule));
         this.#parentLayoutNodeId = parentLayoutNodeId;
         this.#fontPaletteValuesRule =
             fontPaletteValuesRule ? new CSSFontPaletteValuesRule(cssModel, fontPaletteValuesRule) : undefined;
@@ -547,6 +549,9 @@ export class CSSMatchedStyles {
     }
     positionFallbackRules() {
         return this.#positionFallbackRules;
+    }
+    positionTryRules() {
+        return this.#positionTryRules;
     }
     pseudoStyles(pseudoType) {
         Platform.assertNotNullOrUndefined(this.#pseudoDOMCascades);

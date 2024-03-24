@@ -95,7 +95,7 @@ describeWithEnvironment('ContextMenu', () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, 1);
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isTrue(recordClick.calledOnce);
-        assert.deepStrictEqual(stabilizeEvent(recordClick.firstCall.firstArg), { veid: 0, mouseButton: 0, doubleClick: false });
+        assert.deepStrictEqual(stabilizeEvent(recordClick.firstCall.firstArg), { veid: 0, doubleClick: false });
         VisualLogging.stopLogging();
     });
 });

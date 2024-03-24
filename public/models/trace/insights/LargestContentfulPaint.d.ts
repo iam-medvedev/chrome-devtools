@@ -25,4 +25,7 @@ export interface LCPPhases {
 export declare function generateInsight(traceParsedData: RequiredData<typeof deps>, context: NavigationInsightContext): InsightResult<{
     lcpMs?: Types.Timing.MilliSeconds;
     phases?: LCPPhases;
+    shouldRemoveLazyLoading?: boolean;
+    shouldIncreasePriorityHint?: boolean;
+    shouldPreloadImage?: boolean;
 }>;

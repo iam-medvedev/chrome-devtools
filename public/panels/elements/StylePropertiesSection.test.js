@@ -55,6 +55,7 @@ function setUpStyles(cssModel, origin, styleSheetId, header, payload) {
         animationsPayload: [],
         parentLayoutNodeId: undefined,
         positionFallbackRules: [],
+        positionTryRules: [],
         propertyRules: [],
         cssPropertyRegistrations: [],
         fontPaletteValuesRule: undefined,

@@ -308,7 +308,7 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
             mockMatchedStyles.computeCSSVariable.callsFake((_, name) => name === '--prop' ?
                 { value: 'computedvalue', declaration: cssCustomPropertyDef, fromFallback: false } :
                 null);
-            const renderValueSpy = sinon.spy(Elements.StylesSidebarPane.StylesSidebarPropertyRenderer.prototype, 'renderValue');
+            const renderValueSpy = sinon.spy(Elements.StylePropertyTreeElement.StylePropertyTreeElement, 'renderValueElement');
             const stylePropertyTreeElement = getTreeElement('prop', 'var(--prop)');
             stylePropertyTreeElement.updateTitle();
             const varSwatch = renderValueSpy.returnValues.find(value => value.firstChild instanceof InlineEditor.LinkSwatch.CSSVarSwatch)
@@ -336,7 +336,7 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
         });
         it('linkifies var functions to initial-value registrations', async () => {
             mockMatchedStyles.computeCSSVariable.returns({ value: 'computedvalue', declaration: null });
-            const renderValueSpy = sinon.spy(Elements.StylesSidebarPane.StylesSidebarPropertyRenderer.prototype, 'renderValue');
+            const renderValueSpy = sinon.spy(Elements.StylePropertyTreeElement.StylePropertyTreeElement, 'renderValueElement');
             const stylePropertyTreeElement = getTreeElement('prop', 'var(--prop)');
             stylePropertyTreeElement.updateTitle();
             const varSwatch = renderValueSpy.returnValues.find(value => value.firstChild instanceof InlineEditor.LinkSwatch.CSSVarSwatch)
@@ -474,6 +474,7 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
             animationsPayload: [],
             parentLayoutNodeId: undefined,
             positionFallbackRules: [],
+            positionTryRules: [],
             propertyRules: [],
             cssPropertyRegistrations: [],
             fontPaletteValuesRule: undefined,

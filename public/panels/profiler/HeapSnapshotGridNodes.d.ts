@@ -131,12 +131,17 @@ export declare class HeapSnapshotObjectNode extends HeapSnapshotGenericObjectNod
     edgeNodeSeparator(): string;
 }
 export declare class HeapSnapshotRetainingObjectNode extends HeapSnapshotObjectNode {
+    #private;
     constructor(dataGrid: HeapSnapshotSortableDataGrid, snapshot: HeapSnapshotProxy, edge: HeapSnapshotModel.HeapSnapshotModel.Edge, parentRetainingObjectNode: HeapSnapshotRetainingObjectNode | null);
     createProvider(): HeapSnapshotProviderProxy;
     createChildNode(item: HeapSnapshotModel.HeapSnapshotModel.Node | HeapSnapshotModel.HeapSnapshotModel.Edge): HeapSnapshotRetainingObjectNode;
     edgeNodeSeparator(): string;
     expand(): void;
+    populateContextMenu(contextMenu: UI.ContextMenu.ContextMenu, dataDisplayDelegate: DataDisplayDelegate, heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel | null): void;
+    isReachable(): boolean;
+    prefixObjectCell(div: Element): void;
     expandRetainersChain(maxExpandLevels: number): void;
+    comparator(): HeapSnapshotModel.HeapSnapshotModel.ComparatorConfig;
 }
 export declare class HeapSnapshotInstanceNode extends HeapSnapshotGenericObjectNode {
     readonly baseSnapshotOrSnapshot: HeapSnapshotProxy;

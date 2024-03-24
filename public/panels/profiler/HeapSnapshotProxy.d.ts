@@ -80,6 +80,10 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     getStatistics(): Promise<HeapSnapshotModel.HeapSnapshotModel.Statistics>;
     getLocation(nodeIndex: number): Promise<HeapSnapshotModel.HeapSnapshotModel.Location | null>;
     getSamples(): Promise<HeapSnapshotModel.HeapSnapshotModel.Samples | null>;
+    ignoreNodeInRetainersView(nodeIndex: number): Promise<void>;
+    unignoreNodeInRetainersView(nodeIndex: number): Promise<void>;
+    unignoreAllNodesInRetainersView(): Promise<void>;
+    areNodesIgnoredInRetainersView(): Promise<boolean>;
     get totalSize(): number;
     get uid(): string | undefined;
     setProfileUid(profileUid: string): void;

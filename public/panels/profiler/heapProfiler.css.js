@@ -160,7 +160,8 @@ styles.replaceSync(
   color: var(--sys-color-token-subtle);
 }
 
-.heap-snapshot-view tr:not(.selected) .cycled-ancestor-node {
+.heap-snapshot-view tr:not(.selected) .cycled-ancestor-node,
+.heap-snapshot-view tr:not(.selected) .unreachable-ancestor-node {
   opacity: 60%;
 }
 

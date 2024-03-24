@@ -22,6 +22,7 @@ export declare class HeapSnapshotEdge implements HeapSnapshotItem {
     isInternal(): boolean;
     isInvisible(): boolean;
     isWeak(): boolean;
+    getValueForSorting(_fieldName: string): number;
 }
 export interface HeapSnapshotItemIterator {
     hasNext(): boolean;
@@ -72,6 +73,8 @@ export declare class HeapSnapshotRetainerEdge implements HeapSnapshotItem {
     itemIndex(): number;
     serialize(): HeapSnapshotModel.HeapSnapshotModel.Edge;
     type(): string;
+    isInternal(): boolean;
+    getValueForSorting(fieldName: string): number;
 }
 export declare class HeapSnapshotRetainerEdgeIterator implements HeapSnapshotItemIterator {
     #private;
@@ -86,6 +89,7 @@ export declare class HeapSnapshotNode implements HeapSnapshotItem {
     nodeIndex: number;
     constructor(snapshot: HeapSnapshot, nodeIndex?: number);
     distance(): number;
+    distanceForRetainersView(): number;
     className(): string;
     classIndex(): number;
     dominatorIndex(): number;
@@ -244,11 +248,15 @@ export declare abstract class HeapSnapshot {
     };
     isUserRoot(_node: HeapSnapshotNode): boolean;
     calculateShallowSizes(): void;
-    calculateDistances(filter?: ((arg0: HeapSnapshotNode, arg1: HeapSnapshotEdge) => boolean)): void;
+    calculateDistances(isForRetainersView: boolean, filter?: ((arg0: HeapSnapshotNode, arg1: HeapSnapshotEdge) => boolean)): void;
     private bfs;
     private buildAggregates;
     private calculateClassesRetainedSize;
     private sortAggregateIndexes;
+    static tryParseWeakMapEdgeName(edgeName: string): {
+        duplicatedPart: string;
+        tableId: string;
+    } | undefined;
     /**
      * The function checks is the edge should be considered during building
      * postorder iterator and dominator tree.
@@ -310,6 +318,13 @@ export declare abstract class HeapSnapshot {
     createNodesProviderForClass(className: string, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): HeapSnapshotNodesProvider;
     private maxJsNodeId;
     updateStaticData(): HeapSnapshotModel.HeapSnapshotModel.StaticData;
+    ignoreNodeInRetainersView(nodeIndex: number): void;
+    unignoreNodeInRetainersView(nodeIndex: number): void;
+    unignoreAllNodesInRetainersView(): void;
+    areNodesIgnoredInRetainersView(): boolean;
+    getDistanceForRetainersView(nodeIndex: number): number;
+    isNodeIgnoredInRetainersView(nodeIndex: number): boolean;
+    isEdgeIgnoredInRetainersView(edgeIndex: number): boolean;
 }
 declare class HeapSnapshotMetainfo {
     location_fields: string[];
@@ -374,7 +389,7 @@ export declare class JSHeapSnapshot extends HeapSnapshot {
     retainingEdgesFilter(): (arg0: HeapSnapshotEdge) => boolean;
     calculateFlags(): void;
     calculateShallowSizes(): void;
-    calculateDistances(): void;
+    calculateDistances(isForRetainersView: boolean): void;
     isUserRoot(node: HeapSnapshotNode): boolean;
     userObjectsMapAndFlag(): {
         map: Uint32Array;
@@ -425,7 +440,6 @@ export declare class JSHeapSnapshotRetainerEdge extends HeapSnapshotRetainerEdge
     constructor(snapshot: JSHeapSnapshot, retainerIndex: number);
     clone(): JSHeapSnapshotRetainerEdge;
     isHidden(): boolean;
-    isInternal(): boolean;
     isInvisible(): boolean;
     isShortcut(): boolean;
     isWeak(): boolean;

@@ -153,9 +153,10 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
             value = value.replace(/px$/, '');
             value = Platform.NumberUtilities.toFixedIfFloating(value);
             element.textContent = value;
-            element.setAttribute('jslog', `${VisualLogging.value().track({
+            element.setAttribute('jslog', `${VisualLogging.value(propertyName).track({
                 dblclick: true,
                 keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown',
+                change: true,
             })}`);
             element.addEventListener('dblclick', this.startEditing.bind(this, element, name, propertyName, style), false);
             return element;
@@ -247,11 +248,19 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
                 const widthElement = document.createElement('span');
                 widthElement.textContent = getContentAreaWidthPx(style);
                 widthElement.addEventListener('dblclick', this.startEditing.bind(this, widthElement, 'width', 'width', style), false);
-                widthElement.setAttribute('jslog', `${VisualLogging.value('element-value-modification').track({ 'dblclick': true })}`);
+                widthElement.setAttribute('jslog', `${VisualLogging.value('width').track({
+                    dblclick: true,
+                    keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown',
+                    change: true,
+                })}`);
                 const heightElement = document.createElement('span');
                 heightElement.textContent = getContentAreaHeightPx(style);
                 heightElement.addEventListener('dblclick', this.startEditing.bind(this, heightElement, 'height', 'height', style), false);
-                heightElement.setAttribute('jslog', `${VisualLogging.value('element-value-modification').track({ 'dblclick': true })}`);
+                heightElement.setAttribute('jslog', `${VisualLogging.value('height').track({
+                    dblclick: true,
+                    keydown: 'Enter|Escape|ArrowUp|ArrowDown|PageUp|PageDown',
+                    change: true,
+                })}`);
                 const timesElement = document.createElement('span');
                 timesElement.textContent = ' × ';
                 boxElement.appendChild(widthElement);
