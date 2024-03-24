@@ -118,8 +118,8 @@ export async function finalize() {
 }
 export function data() {
     return {
-        perEvent: new Map(warningsPerEvent),
-        perWarning: new Map(eventsPerWarning),
+        perEvent: warningsPerEvent,
+        perWarning: eventsPerWarning,
     };
 }
 //# sourceMappingURL=WarningsHandler.js.map

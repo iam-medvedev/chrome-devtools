@@ -79,6 +79,18 @@ const UIStrings = {
      */
     storeAsGlobalVariable: 'Store as global variable',
     /**
+     *@description Text to ignore an object shown in the Retainers pane
+     */
+    ignoreThisRetainer: 'Ignore this retainer',
+    /**
+     *@description Text to undo the "Ignore this retainer" action
+     */
+    stopIgnoringThisRetainer: 'Stop ignoring this retainer',
+    /**
+     *@description Text indicating that a node has been ignored with the "Ignore this retainer" action
+     */
+    ignored: 'ignored',
+    /**
      *@description Text in Heap Snapshot Grid Nodes of a profiler tool that indicates an element contained in another
      * element.
      */
@@ -632,9 +644,11 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         return fullName.substr(0, startPos + 2) + url + fullName.substr(endPos);
     }
     populateContextMenu(contextMenu, dataDisplayDelegate, heapProfilerModel) {
-        contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSummaryView), () => {
-            dataDisplayDelegate.showObject(String(this.snapshotNodeId), i18nString(UIStrings.summary));
-        }, { jslogContext: 'reveal-in-summary' });
+        if (this.shallowSize !== 0) {
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.revealInSummaryView), () => {
+                dataDisplayDelegate.showObject(String(this.snapshotNodeId), i18nString(UIStrings.summary));
+            }, { jslogContext: 'reveal-in-summary' });
+        }
         if (this.referenceName) {
             for (const match of this.referenceName.matchAll(/\((?<objectName>[^@)]*) @(?<snapshotNodeId>\d+)\)/g)) {
                 const { objectName, snapshotNodeId } = match.groups;
@@ -756,8 +770,13 @@ export class HeapSnapshotObjectNode extends HeapSnapshotGenericObjectNode {
     }
 }
 export class HeapSnapshotRetainingObjectNode extends HeapSnapshotObjectNode {
+    #ignored;
     constructor(dataGrid, snapshot, edge, parentRetainingObjectNode) {
         super(dataGrid, snapshot, edge, parentRetainingObjectNode);
+        this.#ignored = edge.node.ignored;
+        if (this.#ignored) {
+            this.data['distance'] = i18nString(UIStrings.ignored);
+        }
     }
     createProvider() {
         if (this.snapshotNodeIndex === undefined) {
@@ -775,6 +794,34 @@ export class HeapSnapshotRetainingObjectNode extends HeapSnapshotObjectNode {
     expand() {
         this.expandRetainersChain(20);
     }
+    populateContextMenu(contextMenu, dataDisplayDelegate, heapProfilerModel) {
+        super.populateContextMenu(contextMenu, dataDisplayDelegate, heapProfilerModel);
+        const snapshotNodeIndex = this.snapshotNodeIndex;
+        if (snapshotNodeIndex === undefined) {
+            return;
+        }
+        if (this.#ignored) {
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.stopIgnoringThisRetainer), async () => {
+                await this.snapshot.unignoreNodeInRetainersView(snapshotNodeIndex);
+                await this.dataGridInternal.dataSourceChanged();
+            }, { jslogContext: 'stop-ignoring-this-retainer' });
+        }
+        else {
+            contextMenu.revealSection().appendItem(i18nString(UIStrings.ignoreThisRetainer), async () => {
+                await this.snapshot.ignoreNodeInRetainersView(snapshotNodeIndex);
+                await this.dataGridInternal.dataSourceChanged();
+            }, { jslogContext: 'ignore-this-retainer' });
+        }
+    }
+    isReachable() {
+        return (this.distance ?? 0) < HeapSnapshotModel.HeapSnapshotModel.baseUnreachableDistance;
+    }
+    prefixObjectCell(div) {
+        super.prefixObjectCell(div);
+        if (!this.isReachable()) {
+            div.classList.add('unreachable-ancestor-node');
+        }
+    }
     expandRetainersChain(maxExpandLevels) {
         if (!this.populated) {
             void this.once(HeapSnapshotGridNode.Events.PopulateComplete)
@@ -785,12 +832,22 @@ export class HeapSnapshotRetainingObjectNode extends HeapSnapshotObjectNode {
         super.expand();
         if (--maxExpandLevels > 0 && this.children.length > 0) {
             const retainer = this.children[0];
-            if ((retainer.distance || 0) > 1) {
+            if ((retainer.distance || 0) > 1 && retainer.isReachable()) {
                 retainer.expandRetainersChain(maxExpandLevels);
                 return;
             }
         }
         this.dataGridInternal.dispatchEventToListeners(HeapSnapshotSortableDataGridEvents.ExpandRetainersComplete);
+    }
+    comparator() {
+        const result = super.comparator();
+        if (result.fieldName1 === 'distance') {
+            result.fieldName1 = '!edgeDistance';
+        }
+        if (result.fieldName2 === 'distance') {
+            result.fieldName2 = '!edgeDistance';
+        }
+        return result;
     }
 }
 export class HeapSnapshotInstanceNode extends HeapSnapshotGenericObjectNode {

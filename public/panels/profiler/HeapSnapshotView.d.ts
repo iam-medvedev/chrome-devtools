@@ -41,6 +41,7 @@ export declare class HeapSnapshotView extends UI.View.SimpleView implements Data
     readonly filterSelect: UI.Toolbar.ToolbarComboBox;
     readonly classNameFilter: UI.Toolbar.ToolbarInput;
     readonly selectedSizeText: UI.Toolbar.ToolbarText;
+    readonly resetRetainersButton: UI.Toolbar.ToolbarButton;
     readonly popoverHelper: UI.PopoverHelper.PopoverHelper;
     currentPerspectiveIndex: number;
     currentPerspective: SummaryPerspective | ComparisonPerspective | ContainmentPerspective | AllocationPerspective | StatisticsPerspective;

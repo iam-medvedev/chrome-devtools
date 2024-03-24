@@ -320,14 +320,15 @@ export function data() {
         throw new Error('Layout Shifts Handler is not finalized');
     }
     return {
-        clusters: [...clusters],
+        clusters,
         sessionMaxScore: sessionMaxScore,
         clsWindowID,
-        prePaintEvents: [...prePaintEvents],
-        layoutInvalidationEvents: [...layoutInvalidationEvents],
-        scheduleStyleInvalidationEvents: [...scheduleStyleInvalidationEvents],
+        prePaintEvents,
+        layoutInvalidationEvents,
+        scheduleStyleInvalidationEvents,
         styleRecalcInvalidationEvents: [],
-        scoreRecords: [...scoreRecords],
+        scoreRecords,
+        // TODO(crbug/41484172): change the type so no need to clone
         backendNodeIds: [...backendNodeIds],
     };
 }

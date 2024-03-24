@@ -1,7 +1,6 @@
 export declare class UserMetrics {
     #private;
     constructor();
-    breakpointWithConditionAdded(breakpointWithConditionAdded: BreakpointWithConditionAdded): void;
     breakpointEditDialogRevealedFrom(breakpointEditDialogRevealedFrom: BreakpointEditDialogRevealedFrom): void;
     panelShown(panelName: string, isLaunching?: boolean): void;
     /**
@@ -30,8 +29,6 @@ export declare class UserMetrics {
     experimentChanged(experimentId: string, isEnabled: boolean): void;
     developerResourceLoaded(developerResourceLoaded: DeveloperResourceLoaded): void;
     developerResourceScheme(developerResourceScheme: DeveloperResourceScheme): void;
-    inlineScriptParsed(inlineScriptType: VMInlineScriptType): void;
-    vmInlineScriptContentShown(inlineScriptType: VMInlineScriptType): void;
     language(language: Intl.UnicodeBCP47LocaleIdentifier): void;
     syncSetting(devtoolsSyncSettingEnabled: boolean): void;
     recordingAssertion(value: RecordingAssertion): void;
@@ -660,11 +657,6 @@ export declare enum DevtoolsExperiments {
     'timeline-track-configuration' = 88,
     'MaxValue' = 89
 }
-export declare const enum BreakpointWithConditionAdded {
-    Logpoint = 0,
-    ConditionalBreakpoint = 1,
-    MaxValue = 2
-}
 export declare const enum BreakpointEditDialogRevealedFrom {
     BreakpointSidebarContextMenu = 0,
     BreakpointSidebarEditButton = 1,
@@ -860,11 +852,6 @@ export declare enum NetworkPanelMoreFilters {
     'Blocked requests' = 3,
     '3rd-party requests' = 4,
     MaxValue = 5
-}
-export declare const enum VMInlineScriptType {
-    MODULE_SCRIPT = 0,
-    CLASSIC_SCRIPT = 1,
-    MaxValue = 2
 }
 export declare enum Language {
     'af' = 1,
@@ -1092,7 +1079,8 @@ export declare const enum SwatchType {
     Angle = 7,
     Length = 8,
     PositionFallbackLink = 9,
-    MaxValue = 10
+    PositionTryLink = 10,
+    MaxValue = 11
 }
 export declare const enum BadgeType {
     GRID = 0,

@@ -116,6 +116,9 @@
       "path": "../profiler/bundle-tsconfig.json"
     },
     {
+      "path": "../../services/annotations_manager/bundle-tsconfig.json"
+    },
+    {
       "path": "../../services/trace_bounds/bundle-tsconfig.json"
     },
     {

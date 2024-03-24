@@ -67,12 +67,12 @@ export declare class LayoutShiftRootCauses {
      * Given a LayoutInvalidation trace event, determines if it was dispatched
      * because a media element without dimensions was resized.
      */
-    getUnsizedMediaRootCause(reason: Types.TraceEvents.LayoutInvalidationReason, layoutInvalidationNode: Protocol.DOM.Node): Promise<UnsizedMedia | null>;
+    getUnsizedMediaRootCause(layoutInvalidation: Types.TraceEvents.TraceEventLayoutInvalidationTracking, layoutInvalidationNodeId: Protocol.DOM.NodeId): Promise<UnsizedMedia | null>;
     /**
      * Given a LayoutInvalidation trace event, determines if it was dispatched
      * because a node, which is an ancestor to an iframe, was injected.
      */
-    getIframeRootCause(reason: Types.TraceEvents.LayoutInvalidationReason, layoutInvalidationDOMNode: Protocol.DOM.Node): InjectedIframe | null;
+    getIframeRootCause(layoutInvalidation: Types.TraceEvents.TraceEventLayoutInvalidationTracking, layoutInvalidationNodeId: Protocol.DOM.NodeId): Promise<InjectedIframe | null>;
     /**
      * Given a layout invalidation event and a sorted array, returns the subset of requests that arrived within a
      * 500ms window before the layout invalidation.

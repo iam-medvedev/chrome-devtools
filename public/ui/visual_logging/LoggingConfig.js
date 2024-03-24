@@ -31,7 +31,7 @@ export var VisualElements;
     VisualElements[VisualElements["BreakpointMarker"] = 19] = "BreakpointMarker";
     VisualElements[VisualElements["DropDown"] = 20] = "DropDown";
     VisualElements[VisualElements["Adorner"] = 21] = "Adorner";
-    /* 22 used to be JumpToSource, but free to grab now */
+    VisualElements[VisualElements["Gutter"] = 22] = "Gutter";
     VisualElements[VisualElements["MetricsBox"] = 23] = "MetricsBox";
     VisualElements[VisualElements["MetricsBoxPart"] = 24] = "MetricsBoxPart";
     /* 25 used to be DOMBreakpointsPane, but free to grab now */

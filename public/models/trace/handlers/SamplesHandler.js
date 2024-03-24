@@ -178,8 +178,8 @@ export function data() {
         throw new Error('Samples Handler is not finalized');
     }
     return {
-        profilesInProcess: new Map(profilesInProcess),
-        entryToNode: new Map(entryToNode),
+        profilesInProcess,
+        entryToNode,
     };
 }
 function getOrCreatePreProcessedData(processId, profileId) {

@@ -37,6 +37,7 @@ export declare enum VisualElements {
     BreakpointMarker = 19,
     DropDown = 20,
     Adorner = 21,
+    Gutter = 22,
     MetricsBox = 23,
     MetricsBoxPart = 24,
     DOMBreakpoint = 26,

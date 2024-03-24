@@ -154,6 +154,14 @@ export declare class RemoteFunction {
     targetFunctionDetails(): Promise<FunctionDetails | null>;
     object(): RemoteObject;
 }
+export declare class RemoteError {
+    #private;
+    private constructor();
+    static objectAsError(object: RemoteObject): RemoteError;
+    get errorStack(): string;
+    exceptionDetails(): Promise<Protocol.Runtime.ExceptionDetails | undefined>;
+    cause(): Promise<RemoteObject | undefined>;
+}
 export interface CallFunctionResult {
     object: RemoteObject | null;
     wasThrown?: boolean;

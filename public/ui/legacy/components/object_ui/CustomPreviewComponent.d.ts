@@ -14,8 +14,8 @@ export declare class CustomPreviewSection {
     private appendJsonMLTags;
     private onClick;
     private toggleExpand;
+    private defaultBodyTreeOutline;
     loadBody(): Promise<void>;
-    private static allowedTags;
 }
 export declare class CustomPreviewComponent {
     private readonly object;

@@ -26,6 +26,10 @@ export interface PageResource {
     url: Platform.DevToolsPath.UrlString;
     size: number | null;
 }
+export declare class ResourceKey {
+    readonly key: string;
+    constructor(key: string);
+}
 /**
  * The page resource loader is a bottleneck for all DevTools-initiated resource loads. For each such load, it keeps a
  * `PageResource` object around that holds meta information. This can be as the basis for reporting to the user which

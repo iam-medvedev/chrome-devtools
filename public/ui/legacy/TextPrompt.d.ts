@@ -67,6 +67,7 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     onInput(ev: Event): void;
     acceptAutoComplete(): boolean;
     clearAutocomplete(): void;
+    private maybeDispatchChange;
     private onBlur;
     private refreshGhostText;
     private clearAutocompleteTimeout;

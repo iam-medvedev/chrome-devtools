@@ -1,5 +1,22 @@
 import { type Loggable } from './Loggable.js';
 import { type LoggingConfig } from './LoggingConfig.js';
+import { type LoggingState } from './LoggingState.js';
 export declare function processForDebugging(loggable: Loggable): void;
-export declare function showDebugPopoverForEvent(name: string, config?: LoggingConfig, context?: string): void;
+export declare function processEventForDebugging(event: string, state: LoggingState | null, extraInfo?: Entry): void;
+type Entry = {
+    event?: string;
+    ve?: string;
+    context?: string;
+    veid?: number;
+    children?: Entry[];
+    parent?: number;
+    time?: number;
+    width?: number;
+    height?: number;
+    mouseButton?: number;
+    doubleClick?: boolean;
+};
+export declare function processImpressionsForDebugging(states: LoggingState[]): void;
 export declare function debugString(config: LoggingConfig): string;
+export declare function processStartLoggingForDebugging(): void;
+export {};

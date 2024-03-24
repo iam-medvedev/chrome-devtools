@@ -44,9 +44,9 @@ export function data() {
         throw new Error('Workers Handler is not finalized');
     }
     return {
-        workerSessionIdEvents: [...sessionIdEvents],
-        workerIdByThread: new Map(workerIdByThread),
-        workerURLById: new Map(workerURLById),
+        workerSessionIdEvents: sessionIdEvents,
+        workerIdByThread,
+        workerURLById,
     };
 }
 //# sourceMappingURL=WorkersHandler.js.map

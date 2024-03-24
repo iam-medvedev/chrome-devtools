@@ -345,6 +345,9 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
     removeAllChildren(parent) {
         parent.removeChildren();
     }
+    async dataSourceChanged() {
+        throw new Error('Not implemented');
+    }
 }
 export var HeapSnapshotSortableDataGridEvents;
 (function (HeapSnapshotSortableDataGridEvents) {
@@ -591,6 +594,7 @@ export class HeapSnapshotContainmentDataGrid extends HeapSnapshotSortableDataGri
     }
 }
 export class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainmentDataGrid {
+    resetRetainersButton;
     constructor(heapProfilerModel, dataDisplayDelegate) {
         const columns = [
             { id: 'object', title: i18nString(UIStrings.object), disclosure: true, sortable: true },
@@ -631,9 +635,21 @@ export class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainmentDataG
         this.rootNode().removeChildren();
         this.resetSortingCache();
     }
+    updateResetButtonVisibility() {
+        void this.snapshot?.areNodesIgnoredInRetainersView().then(value => {
+            this.resetRetainersButton?.setVisible(value);
+        });
+    }
     async setDataSource(snapshot, nodeIndex, nodeId) {
         await super.setDataSource(snapshot, nodeIndex, nodeId);
         this.rootNode().expand();
+        this.updateResetButtonVisibility();
+    }
+    async dataSourceChanged() {
+        this.reset();
+        await this.rootNode().sort();
+        this.rootNode().expand();
+        this.updateResetButtonVisibility();
     }
 }
 // TODO(crbug.com/1228674): Remove this enum, it is only used in web tests.

@@ -51,6 +51,9 @@ export class Multimap {
     keysArray() {
         return [...this.map.keys()];
     }
+    keys() {
+        return this.map.keys();
+    }
     valuesArray() {
         const result = [];
         for (const set of this.map.values()) {

@@ -4,12 +4,14 @@ import * as Bindings from '../bindings/bindings.js';
 export declare class LanguageExtensionEndpoint implements Bindings.DebuggerLanguagePlugins.DebuggerLanguagePlugin {
     private readonly supportedScriptTypes;
     private endpoint;
+    private extensionOrigin;
     name: string;
-    constructor(name: string, supportedScriptTypes: {
+    constructor(extensionOrigin: string, name: string, supportedScriptTypes: {
         language: string;
         symbol_types: Array<string>;
     }, port: MessagePort);
     handleScript(script: SDK.Script.Script): boolean;
+    createPageResourceLoadInitiator(): SDK.PageResourceLoader.PageResourceLoadInitiator;
     /** Notify the plugin about a new script
      */
     addRawModule(rawModuleId: string, symbolsURL: string, rawModule: Chrome.DevTools.RawModule): Promise<string[]>;

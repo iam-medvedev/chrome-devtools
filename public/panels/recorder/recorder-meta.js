@@ -48,15 +48,15 @@ function maybeRetrieveContextTypes(getClassCallBack, actionId) {
     }
     return [];
 }
-UI.ViewManager.defaultOptionsForTabs.chrome_recorder = true;
+const viewId = 'chrome-recorder';
+UI.ViewManager.defaultOptionsForTabs[viewId] = true;
 UI.ViewManager.registerViewExtension({
     location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
-    id: 'chrome-recorder',
+    id: viewId,
     commandPrompt: i18nLazyString(UIStrings.showRecorder),
     title: i18nLazyString(UIStrings.recorder),
     order: 90,
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
-    isPreviewFeature: true,
     async loadView() {
         const Recorder = await loadRecorderModule();
         return Recorder.RecorderPanel.RecorderPanel.instance();

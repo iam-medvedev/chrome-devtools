@@ -26,7 +26,7 @@ export function data() {
         throw new Error('Animation handler is not finalized');
     }
     return {
-        animations: Array.from(animationsSyntheticEvents),
+        animations: animationsSyntheticEvents,
     };
 }
 //# sourceMappingURL=AnimationHandler.js.map

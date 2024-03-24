@@ -9,6 +9,7 @@ export declare class Multimap<K, V> {
     delete(key: K, value: V): boolean;
     deleteAll(key: K): void;
     keysArray(): K[];
+    keys(): IterableIterator<K>;
     valuesArray(): V[];
     clear(): void;
 }

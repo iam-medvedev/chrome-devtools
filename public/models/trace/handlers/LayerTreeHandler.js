@@ -105,9 +105,9 @@ export async function finalize() {
 }
 export function data() {
     return {
-        paints: Array.from(paintEvents),
-        snapshots: Array.from(snapshotEvents),
-        paintsToSnapshots: new Map(paintToSnapshotMap),
+        paints: paintEvents,
+        snapshots: snapshotEvents,
+        paintsToSnapshots: paintToSnapshotMap,
     };
 }
 export function deps() {

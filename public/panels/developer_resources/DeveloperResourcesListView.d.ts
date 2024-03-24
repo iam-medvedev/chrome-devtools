@@ -6,6 +6,8 @@ export declare class DeveloperResourcesListView extends UI.Widget.VBox {
     private highlightRegExp;
     private dataGrid;
     constructor(isVisibleFilter: (arg0: SDK.PageResourceLoader.PageResource) => boolean);
+    select(item: SDK.PageResourceLoader.PageResource): void;
+    selectedItem(): SDK.PageResourceLoader.PageResource | null;
     private populateContextMenu;
     update(items: Iterable<SDK.PageResourceLoader.PageResource>): void;
     reset(): void;

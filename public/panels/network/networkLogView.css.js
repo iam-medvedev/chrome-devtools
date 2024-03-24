@@ -293,7 +293,7 @@ styles.replaceSync(
   visibility: hidden;
 }
 
-#network-container:not(.brief-mode) .data-container {
+#network-container.grid-mode .data-container {
   overflow: hidden;
 }
 
@@ -383,6 +383,7 @@ styles.replaceSync(
 .network-frame-group-icon {
   display: inline-block;
   margin: -7px 1px;
+  vertical-align: baseline;
 }
 
 .network-frame-group-badge {

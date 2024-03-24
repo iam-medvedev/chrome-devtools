@@ -114,7 +114,7 @@ export async function finalize() {
 }
 export function data() {
     return {
-        invalidationsForEvent: new Map(invalidationsForEvent),
+        invalidationsForEvent,
     };
 }
 //# sourceMappingURL=InvalidationsHandler.js.map

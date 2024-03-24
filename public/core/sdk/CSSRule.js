@@ -298,4 +298,14 @@ export class CSSPositionFallbackRule {
         return this.#tryRules;
     }
 }
+export class CSSPositionTryRule extends CSSRule {
+    #name;
+    constructor(cssModel, payload) {
+        super(cssModel, { origin: payload.origin, style: payload.style, styleSheetId: payload.styleSheetId });
+        this.#name = new CSSValue(payload.name);
+    }
+    name() {
+        return this.#name;
+    }
+}
 //# sourceMappingURL=CSSRule.js.map

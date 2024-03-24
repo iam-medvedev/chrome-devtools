@@ -347,9 +347,7 @@ export class MainImpl {
         darkThemeMediaQuery.addEventListener('change', onThemeChange);
         highContrastMediaQuery.addEventListener('change', onThemeChange);
         themeSetting.addChangeListener(onThemeChange);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged, async () => {
-            await ThemeSupport.ThemeSupport.fetchColors(document);
-        }, this);
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged, () => ThemeSupport.ThemeSupport.fetchColors(document));
         UI.UIUtils.installComponentRootStyles(document.body);
         this.#addMainEventListeners(document);
         const canDock = Boolean(Root.Runtime.Runtime.queryParam('can_dock'));
@@ -430,7 +428,7 @@ export class MainImpl {
         const app = appProvider.createApp();
         // It is important to kick controller lifetime after apps are instantiated.
         UI.DockController.DockController.instance().initialize();
-        await ThemeSupport.ThemeSupport.fetchColors(document);
+        ThemeSupport.ThemeSupport.fetchColors(document);
         app.presentUI(document);
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-element-search')) {
             const toggleSearchNodeAction = UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');

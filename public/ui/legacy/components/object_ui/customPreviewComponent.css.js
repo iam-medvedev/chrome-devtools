@@ -26,6 +26,10 @@ styles.replaceSync(
   display: inline-flex;
 }
 
+.custom-expandable-section-default-body {
+  padding-left: 12px;
+}
+
 /*# sourceURL=customPreviewComponent.css */
 `);
 

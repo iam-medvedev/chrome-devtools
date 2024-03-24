@@ -101,6 +101,7 @@ export function data() {
     return {
         performanceMeasures: syntheticEvents.filter(e => e.cat === 'blink.user_timing'),
         consoleTimings: syntheticEvents.filter(e => e.cat === 'blink.console'),
+        // TODO(crbug/41484172): UserTimingsHandler.test.ts fails if this is not copied.
         performanceMarks: [...performanceMarkEvents],
         timestampEvents: [...timestampEvents],
     };

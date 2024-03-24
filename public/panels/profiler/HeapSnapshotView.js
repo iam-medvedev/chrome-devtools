@@ -232,6 +232,11 @@ const UIStrings = {
      *@description Text of a DOM element in Heap Snapshot View of a profiler tool
      */
     stackWasNotRecordedForThisObject: 'Stack was not recorded for this object because it had been allocated before this profile recording started.',
+    /**
+     *@description Text in Heap Snapshot View of a profiler tool.
+     * This text is on a button to undo all previous "Ignore this retainer" actions.
+     */
+    restoreIgnoredRetainers: 'Restore ignored retainers',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/profiler/HeapSnapshotView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -269,6 +274,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     filterSelect;
     classNameFilter;
     selectedSizeText;
+    resetRetainersButton;
     popoverHelper;
     currentPerspectiveIndex;
     currentPerspective;
@@ -376,6 +382,16 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         this.constructorsDataGrid.setNameFilter(this.classNameFilter);
         this.diffDataGrid.setNameFilter(this.classNameFilter);
         this.selectedSizeText = new UI.Toolbar.ToolbarText();
+        const restoreIgnoredRetainers = i18nString(UIStrings.restoreIgnoredRetainers);
+        this.resetRetainersButton =
+            new UI.Toolbar.ToolbarButton(restoreIgnoredRetainers, 'clear-list', restoreIgnoredRetainers);
+        this.resetRetainersButton.setVisible(false);
+        this.resetRetainersButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, async () => {
+            // The reset retainers button acts upon whichever snapshot is currently shown in the Retainers pane.
+            await this.retainmentDataGrid.snapshot?.unignoreAllNodesInRetainersView();
+            await this.retainmentDataGrid.dataSourceChanged();
+        });
+        this.retainmentDataGrid.resetRetainersButton = this.resetRetainersButton;
         this.popoverHelper = new UI.PopoverHelper.PopoverHelper(this.element, this.getPopoverRequest.bind(this), 'profiler.heap-snapshot-object');
         this.popoverHelper.setDisableOnClick(true);
         this.popoverHelper.setHasPadding(true);
@@ -501,6 +517,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
             result.push(this.baseSelect, this.filterSelect);
         }
         result.push(this.selectedSizeText);
+        result.push(this.resetRetainersButton);
         return result;
     }
     willHide() {

@@ -32,6 +32,7 @@ export const HeapSnapshotProgressEvent = {
     BrokenSnapshot: 'BrokenSnapshot',
 };
 export const baseSystemDistance = 100000000;
+export const baseUnreachableDistance = baseSystemDistance * 2;
 export class AllocationNodeCallers {
     nodesWithSingleCaller;
     branchingCallers;
@@ -91,6 +92,7 @@ export class Node {
     canBeQueried;
     detachedDOMTreeNode;
     isAddedNotRemoved;
+    ignored;
     constructor(id, name, distance, nodeIndex, retainedSize, selfSize, type) {
         this.id = id;
         this.name = name;
@@ -102,6 +104,7 @@ export class Node {
         this.canBeQueried = false;
         this.detachedDOMTreeNode = false;
         this.isAddedNotRemoved = null;
+        this.ignored = false;
     }
 }
 export class Edge {

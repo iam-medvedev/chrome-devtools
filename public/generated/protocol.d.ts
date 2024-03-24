@@ -7400,6 +7400,7 @@ export declare namespace Network {
         headers: Headers;
         /**
          * HTTP POST request data.
+         * Use postDataEntries instead.
          */
         postData?: string;
         /**
@@ -7407,7 +7408,7 @@ export declare namespace Network {
          */
         hasPostData?: boolean;
         /**
-         * Request body elements. This will be converted from base64 to binary
+         * Request body elements (post data broken into individual entries).
          */
         postDataEntries?: PostDataEntry[];
         /**
@@ -13364,6 +13365,12 @@ export declare namespace Storage {
     }
     interface SetAttributionReportingTrackingRequest {
         enable: boolean;
+    }
+    interface SendPendingAttributionReportsResponse extends ProtocolResponseWithError {
+        /**
+         * The number of reports that were sent.
+         */
+        numSent: integer;
     }
     interface GetRelatedWebsiteSetsResponse extends ProtocolResponseWithError {
         sets: RelatedWebsiteSet[];

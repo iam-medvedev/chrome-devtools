@@ -92,4 +92,9 @@ export declare class CSSPositionFallbackRule {
     name(): CSSValue;
     tryRules(): CSSRule[];
 }
+export declare class CSSPositionTryRule extends CSSRule {
+    #private;
+    constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSPositionTryRule);
+    name(): CSSValue;
+}
 export {};

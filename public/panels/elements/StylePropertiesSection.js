@@ -1471,6 +1471,12 @@ export class FontPaletteValuesRuleSection extends StylePropertiesSection {
         this.selectorElement.className = 'font-palette-values-key';
     }
 }
+export class PositionTryRuleSection extends StylePropertiesSection {
+    constructor(stylesPane, matchedStyles, style, sectionIdx) {
+        super(stylesPane, matchedStyles, style, sectionIdx, null, null);
+        this.selectorElement.className = 'position-try-values-key';
+    }
+}
 export class KeyframePropertiesSection extends StylePropertiesSection {
     constructor(stylesPane, matchedStyles, style, sectionIdx) {
         super(stylesPane, matchedStyles, style, sectionIdx, null, null);

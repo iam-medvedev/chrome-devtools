@@ -37,12 +37,6 @@ export class UserMetrics {
         this.#firedLaunchHistogram = false;
         this.#launchPanelName = '';
     }
-    breakpointWithConditionAdded(breakpointWithConditionAdded) {
-        if (breakpointWithConditionAdded >= 2 /* BreakpointWithConditionAdded.MaxValue */) {
-            return;
-        }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.BreakpointWithConditionAdded" /* EnumeratedHistogram.BreakpointWithConditionAdded */, breakpointWithConditionAdded, 2 /* BreakpointWithConditionAdded.MaxValue */);
-    }
     breakpointEditDialogRevealedFrom(breakpointEditDialogRevealedFrom) {
         if (breakpointEditDialogRevealedFrom >= 7 /* BreakpointEditDialogRevealedFrom.MaxValue */) {
             return;
@@ -196,18 +190,6 @@ export class UserMetrics {
         }
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.DeveloperResourceScheme" /* EnumeratedHistogram.DeveloperResourceScheme */, developerResourceScheme, 9 /* DeveloperResourceScheme.MaxValue */);
     }
-    inlineScriptParsed(inlineScriptType) {
-        if (inlineScriptType >= 2 /* VMInlineScriptType.MaxValue */) {
-            return;
-        }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.InlineScriptParsed" /* EnumeratedHistogram.InlineScriptParsed */, inlineScriptType, 2 /* VMInlineScriptType.MaxValue */);
-    }
-    vmInlineScriptContentShown(inlineScriptType) {
-        if (inlineScriptType >= 2 /* VMInlineScriptType.MaxValue */) {
-            return;
-        }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.VMInlineScriptShown" /* EnumeratedHistogram.VMInlineScriptTypeShown */, inlineScriptType, 2 /* VMInlineScriptType.MaxValue */);
-    }
     language(language) {
         const languageCode = Language[language];
         if (languageCode === undefined) {
@@ -281,7 +263,7 @@ export class UserMetrics {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSPropertyDocumentation" /* EnumeratedHistogram.CSSPropertyDocumentation */, type, 3 /* CSSPropertyDocumentation.MaxValue */);
     }
     swatchActivated(swatch) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 10 /* SwatchType.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 11 /* SwatchType.MaxValue */);
     }
     badgeActivated(badge) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.BadgeActivated" /* EnumeratedHistogram.BadgeActivated */, badge, 9 /* BadgeType.MaxValue */);
@@ -1122,6 +1104,7 @@ export var NetworkPanelMoreFilters;
     NetworkPanelMoreFilters[NetworkPanelMoreFilters["3rd-party requests"] = 4] = "3rd-party requests";
     NetworkPanelMoreFilters[NetworkPanelMoreFilters["MaxValue"] = 5] = "MaxValue";
 })(NetworkPanelMoreFilters || (NetworkPanelMoreFilters = {}));
+/* eslint-enable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/naming-convention */
 export var Language;
 (function (Language) {

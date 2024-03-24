@@ -86,6 +86,9 @@
   "core/common/Revealer.ts | changesDrawer": {
     "message": "Changes drawer"
   },
+  "core/common/Revealer.ts | developerResourcesPanel": {
+    "message": "Developer Resources panel"
+  },
   "core/common/Revealer.ts | elementsPanel": {
     "message": "Elements panel"
   },
@@ -6104,6 +6107,12 @@
   "panels/elements/StylePropertyTreeElement.ts | copyValue": {
     "message": "Copy value"
   },
+  "panels/elements/StylePropertyTreeElement.ts | cssPropertyName": {
+    "message": "CSS property name: {PH1}"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | cssPropertyValue": {
+    "message": "CSS property value: {PH1}"
+  },
   "panels/elements/StylePropertyTreeElement.ts | flexboxEditorButton": {
     "message": "Open flexbox editor"
   },
@@ -6136,12 +6145,6 @@
   },
   "panels/elements/StylesSidebarPane.ts | copyAllCSSChanges": {
     "message": "Copy CSS changes"
-  },
-  "panels/elements/StylesSidebarPane.ts | cssPropertyName": {
-    "message": "CSS property name: {PH1}"
-  },
-  "panels/elements/StylesSidebarPane.ts | cssPropertyValue": {
-    "message": "CSS property value: {PH1}"
   },
   "panels/elements/StylesSidebarPane.ts | filter": {
     "message": "Filter"
@@ -6368,6 +6371,9 @@
   "panels/event_listeners/EventListenersView.ts | toggleWhetherEventListenerIs": {
     "message": "Toggle whether event listener is passive or blocking"
   },
+  "panels/explain/components/ConsoleInsight.ts | back": {
+    "message": "Back"
+  },
   "panels/explain/components/ConsoleInsight.ts | cancel": {
     "message": "Cancel"
   },
@@ -6376,6 +6382,12 @@
   },
   "panels/explain/components/ConsoleInsight.ts | consoleMessage": {
     "message": "Console message"
+  },
+  "panels/explain/components/ConsoleInsight.ts | continue": {
+    "message": "Continue"
+  },
+  "panels/explain/components/ConsoleInsight.ts | disableFeature": {
+    "message": "Disable this feature"
   },
   "panels/explain/components/ConsoleInsight.ts | error": {
     "message": "DevTools has encountered an error"
@@ -6398,6 +6410,9 @@
   "panels/explain/components/ConsoleInsight.ts | networkRequest": {
     "message": "Network request"
   },
+  "panels/explain/components/ConsoleInsight.ts | next": {
+    "message": "Next"
+  },
   "panels/explain/components/ConsoleInsight.ts | notAvailable": {
     "message": "This feature is not available"
   },
@@ -6419,14 +6434,14 @@
   "panels/explain/components/ConsoleInsight.ts | report": {
     "message": "Report legal issue"
   },
+  "panels/explain/components/ConsoleInsight.ts | search": {
+    "message": "Use search instead"
+  },
   "panels/explain/components/ConsoleInsight.ts | signInToUse": {
     "message": "Sign in to use this feature"
   },
   "panels/explain/components/ConsoleInsight.ts | stackTrace": {
     "message": "Stacktrace"
-  },
-  "panels/explain/components/ConsoleInsight.ts | submitFeedback": {
-    "message": "Submit feedback"
   },
   "panels/explain/components/ConsoleInsight.ts | syncIsOff": {
     "message": "This feature requires you to turn on Chrome sync."
@@ -6440,6 +6455,9 @@
   "panels/explain/components/ConsoleInsight.ts | updateSettings": {
     "message": "Update Settings"
   },
+  "panels/explain/explain-meta.ts | ageRestricted": {
+    "message": "This feature is only available to users who are 18 years of age or older."
+  },
   "panels/explain/explain-meta.ts | enableConsoleInsights": {
     "message": "Understand console messages with AI"
   },
@@ -6451,6 +6469,12 @@
   },
   "panels/explain/explain-meta.ts | explainThisWarning": {
     "message": "Understand this warning"
+  },
+  "panels/explain/explain-meta.ts | geoRestricted": {
+    "message": "This feature is unavailable in your region."
+  },
+  "panels/explain/explain-meta.ts | policyRestricted": {
+    "message": "Your organization turned off this feature. Contact your administrators for more information."
   },
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "To use this feature, update your Language preference in DevTools Settings to English."
@@ -7082,9 +7106,6 @@
   "panels/lighthouse/LighthouseController.ts | indexeddb": {
     "message": "IndexedDB"
   },
-  "panels/lighthouse/LighthouseController.ts | isThisPageOptimizedForAdSpeedAnd": {
-    "message": "Is this page optimized for ad speed and quality"
-  },
   "panels/lighthouse/LighthouseController.ts | isThisPageOptimizedForSearch": {
     "message": "Is this page optimized for search engine results ranking"
   },
@@ -7117,9 +7138,6 @@
   },
   "panels/lighthouse/LighthouseController.ts | progressiveWebApp": {
     "message": "Progressive Web App"
-  },
-  "panels/lighthouse/LighthouseController.ts | publisherAds": {
-    "message": "Publisher Ads"
   },
   "panels/lighthouse/LighthouseController.ts | resetStorageLocalstorage": {
     "message": "Reset storage (cache, service workers, etc) before auditing. (Good for performance & PWA testing)"
@@ -7207,9 +7225,6 @@
   },
   "panels/lighthouse/LighthouseStartView.ts | mode": {
     "message": "Mode"
-  },
-  "panels/lighthouse/LighthouseStartView.ts | plugins": {
-    "message": "Plugins"
   },
   "panels/lighthouse/LighthouseStartView.ts | startTimespan": {
     "message": "Start timespan"
@@ -8263,9 +8278,6 @@
   },
   "panels/network/NetworkDataGridNode.ts | serviceWorker": {
     "message": "(ServiceWorker)"
-  },
-  "panels/network/NetworkDataGridNode.ts | serviceWorkerRouter": {
-    "message": "(ServiceWorker router)"
   },
   "panels/network/NetworkDataGridNode.ts | signedexchange": {
     "message": "signed-exchange"
@@ -9365,6 +9377,12 @@
   "panels/profiler/HeapSnapshotGridNodes.ts | genericStringsTwoPlaceholders": {
     "message": "{PH1}, {PH2}"
   },
+  "panels/profiler/HeapSnapshotGridNodes.ts | ignored": {
+    "message": "ignored"
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | ignoreThisRetainer": {
+    "message": "Ignore this retainer"
+  },
   "panels/profiler/HeapSnapshotGridNodes.ts | inElement": {
     "message": "in"
   },
@@ -9397,6 +9415,9 @@
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | slicedStringSummary": {
     "message": "A string which represents some of the characters from another string."
+  },
+  "panels/profiler/HeapSnapshotGridNodes.ts | stopIgnoringThisRetainer": {
+    "message": "Stop ignoring this retainer"
   },
   "panels/profiler/HeapSnapshotGridNodes.ts | storeAsGlobalVariable": {
     "message": "Store as global variable"
@@ -9493,6 +9514,9 @@
   },
   "panels/profiler/HeapSnapshotView.ts | recording": {
     "message": "Recording…"
+  },
+  "panels/profiler/HeapSnapshotView.ts | restoreIgnoredRetainers": {
+    "message": "Restore ignored retainers"
   },
   "panels/profiler/HeapSnapshotView.ts | retainers": {
     "message": "Retainers"
@@ -11567,6 +11591,9 @@
   "panels/sources/DebuggerPlugin.ts | neverPauseHere": {
     "message": "Never pause here"
   },
+  "panels/sources/DebuggerPlugin.ts | openDeveloperResources": {
+    "message": "Opens the request in the Developer resource panel"
+  },
   "panels/sources/DebuggerPlugin.ts | reloadForSourceMap": {
     "message": "To enable again, make sure the file isn't on the ignore list and reload."
   },
@@ -11575,6 +11602,9 @@
   },
   "panels/sources/DebuggerPlugin.ts | removeFromIgnoreList": {
     "message": "Remove from ignore list"
+  },
+  "panels/sources/DebuggerPlugin.ts | showRequest": {
+    "message": "Show request"
   },
   "panels/sources/DebuggerPlugin.ts | sourceMapFailed": {
     "message": "Source map failed to load."
@@ -11768,6 +11798,9 @@
   "panels/sources/sources-meta.ts | autocompletion": {
     "message": "Autocompletion"
   },
+  "panels/sources/sources-meta.ts | automaticallyPrettyPrintMinifiedSources": {
+    "message": "Automatically pretty print minified sources"
+  },
   "panels/sources/sources-meta.ts | automaticallyRevealFilesIn": {
     "message": "Automatically reveal files in sidebar"
   },
@@ -11823,13 +11856,16 @@
     "message": "Disable tab moves focus"
   },
   "panels/sources/sources-meta.ts | disableWasmAutoStepping": {
-    "message": "Disable wasm auto-stepping"
+    "message": "Disable Wasm auto-stepping"
   },
   "panels/sources/sources-meta.ts | disallowScrollingPastEndOfFile": {
     "message": "Disallow scrolling past end of file"
   },
   "panels/sources/sources-meta.ts | displayVariableValuesInlineWhile": {
     "message": "Display variable values inline while debugging"
+  },
+  "panels/sources/sources-meta.ts | doNotAutomaticallyPrettyPrintMinifiedSources": {
+    "message": "Do not automatically pretty print minified sources"
   },
   "panels/sources/sources-meta.ts | doNotAutomaticallyRevealFilesIn": {
     "message": "Do not automatically reveal files in sidebar"
@@ -11868,7 +11904,7 @@
     "message": "Enable tab moves focus"
   },
   "panels/sources/sources-meta.ts | enableWasmAutoStepping": {
-    "message": "Enable wasm auto-stepping"
+    "message": "Enable Wasm auto-stepping"
   },
   "panels/sources/sources-meta.ts | evaluateSelectedTextInConsole": {
     "message": "Evaluate selected text in console"
@@ -12036,7 +12072,7 @@
     "message": "Trailing"
   },
   "panels/sources/sources-meta.ts | wasmAutoStepping": {
-    "message": "When debugging wasm with debug information, do not pause on wasm bytecode if possible"
+    "message": "When debugging Wasm with debug information, do not pause on wasm bytecode if possible"
   },
   "panels/sources/sources-meta.ts | watch": {
     "message": "Watch"
@@ -12845,20 +12881,8 @@
   "panels/timeline/TimelineHistoryManager.ts | sM": {
     "message": "{PH1} m"
   },
-  "panels/timeline/TimelineLoader.ts | legacyTimelineFormatIsNot": {
-    "message": "Legacy Timeline format is not supported."
-  },
-  "panels/timeline/TimelineLoader.ts | malformedCpuProfileFormat": {
-    "message": "Malformed CPU profile format"
-  },
   "panels/timeline/TimelineLoader.ts | malformedTimelineDataS": {
     "message": "Malformed timeline data: {PH1}"
-  },
-  "panels/timeline/TimelineLoader.ts | malformedTimelineDataUnknownJson": {
-    "message": "Malformed timeline data: Unknown JSON format"
-  },
-  "panels/timeline/TimelineLoader.ts | malformedTimelineInputWrongJson": {
-    "message": "Malformed timeline input, wrong JSON brackets balance"
   },
   "panels/timeline/TimelinePanel.ts | afterRecordingSelectAnAreaOf": {
     "message": "After recording, select an area of interest in the overview by dragging. Then, zoom and pan the timeline with the mousewheel or {PH1} keys. {PH2}"

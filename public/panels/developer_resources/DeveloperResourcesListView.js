@@ -108,6 +108,18 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
         dataGridWidget.show(this.contentElement);
         this.setDefaultFocusedChild(dataGridWidget);
     }
+    select(item) {
+        const node = this.nodeForItem.get(item);
+        if (node) {
+            node.select();
+        }
+    }
+    selectedItem() {
+        if (!this.dataGrid.selectedNode) {
+            return null;
+        }
+        return this.dataGrid.selectedNode.item;
+    }
     populateContextMenu(contextMenu, gridNode) {
         const item = gridNode.item;
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyUrl), () => {

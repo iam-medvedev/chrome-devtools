@@ -5,6 +5,7 @@ export declare class TestPlugin implements Bindings.DebuggerLanguagePlugins.Debu
     constructor(name: string);
     name: string;
     handleScript(_script: SDK.Script.Script): boolean;
+    createPageResourceLoadInitiator(): SDK.PageResourceLoader.PageResourceLoadInitiator;
     evaluate(_expression: string, _context: Chrome.DevTools.RawLocation, _stopId: Bindings.DebuggerLanguagePlugins.StopId): Promise<Chrome.DevTools.RemoteObject | null>;
     getProperties(_objectId: string): Promise<Chrome.DevTools.PropertyDescriptor[]>;
     releaseObject(_objectId: string): Promise<void>;

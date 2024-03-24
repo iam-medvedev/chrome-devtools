@@ -71,7 +71,6 @@ export declare class ConsoleViewMessage implements ConsoleViewportElement {
     private formattedParameterAsNodeForTest;
     private formatParameterAsString;
     private formatParameterAsError;
-    private retrieveExceptionDetails;
     private formatAsArrayEntry;
     private formatAsAccessorProperty;
     private formatWithSubstitutionString;

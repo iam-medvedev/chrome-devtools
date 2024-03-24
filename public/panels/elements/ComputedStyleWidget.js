@@ -46,8 +46,7 @@ import { PlatformFontsWidget } from './PlatformFontsWidget.js';
 import { categorizePropertyName, DefaultCategoryOrder } from './PropertyNameCategories.js';
 import { ColorMatch, ColorMatcher } from './PropertyParser.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
-import { StringRenderer, URLRenderer } from './StylePropertyTreeElement.js';
-import { StylesSidebarPropertyRenderer } from './StylesSidebarPane.js';
+import { StringRenderer, StylePropertyTreeElement, URLRenderer } from './StylePropertyTreeElement.js';
 const UIStrings = {
     /**
      * @description Placeholder text for a text input used to filter which CSS properties show up in
@@ -108,10 +107,9 @@ function renderPropertyContents(node, propertyName, propertyValue) {
     if (valueFromCache) {
         return valueFromCache;
     }
-    const renderer = new StylesSidebarPropertyRenderer(null, node, propertyName, propertyValue, [ColorRenderer.matcher(), URLRenderer.matcher(null, node), StringRenderer.matcher()]);
-    const name = renderer.renderName();
+    const name = StylePropertyTreeElement.renderNameElement(propertyName);
     name.slot = 'name';
-    const value = renderer.renderValue();
+    const value = StylePropertyTreeElement.renderValueElement(propertyName, propertyValue, [ColorRenderer.matcher(), URLRenderer.matcher(null, node), StringRenderer.matcher()]);
     value.slot = 'value';
     propertyContentsCache.set(cacheKey, { name, value });
     return { name, value };
@@ -139,8 +137,7 @@ const createPropertyElement = (node, propertyName, propertyValue, traceable, inh
 };
 const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles, linkifier) => {
     const trace = new ElementsComponents.ComputedStyleTrace.ComputedStyleTrace();
-    const renderer = new StylesSidebarPropertyRenderer(null, node, property.name, property.value, [ColorRenderer.matcher(), URLRenderer.matcher(null, node), StringRenderer.matcher()]);
-    const valueElement = renderer.renderValue();
+    const valueElement = StylePropertyTreeElement.renderValueElement(property.name, property.value, [ColorRenderer.matcher(), URLRenderer.matcher(null, node), StringRenderer.matcher()]);
     valueElement.slot = 'trace-value';
     trace.appendChild(valueElement);
     const rule = property.ownerStyle.parentRule;
