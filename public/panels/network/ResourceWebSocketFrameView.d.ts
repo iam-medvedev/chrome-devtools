@@ -41,7 +41,6 @@ declare const enum OpCodes {
     PongFrame = 10
 }
 export declare const opCodeDescriptions: (() => string)[];
-export declare const _filterTypes: UI.FilterBar.Item[];
 export declare class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.SortableDataGridNode<unknown> {
     private readonly url;
     readonly frame: SDK.NetworkRequest.WebSocketFrame;
@@ -55,5 +54,4 @@ export declare class ResourceWebSocketFrameNode extends DataGrid.SortableDataGri
     opCode(): OpCodes;
     binaryView(): BinaryResourceView | null;
 }
-export declare function ResourceWebSocketFrameNodeTimeComparator(a: ResourceWebSocketFrameNode, b: ResourceWebSocketFrameNode): number;
 export {};

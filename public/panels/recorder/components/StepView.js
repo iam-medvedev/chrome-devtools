@@ -491,6 +491,7 @@ export class StepView extends HTMLElement {
                     label: converter.getFormatName(),
                     group: 'copy',
                     groupTitle: i18nString(UIStrings.copyAs),
+                    jslogContext: COPY_ACTION_PREFIX + 'extension',
                 });
             }
         }
@@ -552,7 +553,7 @@ export class StepView extends HTMLElement {
               ${LitHtml.Directives.repeat(item.actions, item => item.id, item => {
                 return LitHtml.html `<${Menus.Menu.MenuItem.litTagName}
                       .value=${item.id}
-                      jslog=${VisualLogging.action().track({ click: true }).context(`${item.id}`)}
+                      jslog=${VisualLogging.action().track({ click: true }).context(`${item.jslogContext || item.id}`)}
                     >
                       ${item.label}
                     </${Menus.Menu.MenuItem.litTagName}>

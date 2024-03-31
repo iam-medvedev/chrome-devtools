@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as TraceBounds from '../../../services/trace_bounds/trace_bounds.js';
 export function flattenBreadcrumbs(initialBreadcrumb) {
     const allBreadcrumbs = [initialBreadcrumb];
     let breadcrumbsIter = initialBreadcrumb;
@@ -32,7 +33,7 @@ export class Breadcrumbs {
             // To add a new Breadcrumb to the Breadcrumbs Linked List, set the child of last breadcrumb
             // to the new breadcrumb and update the last Breadcrumb
             this.lastBreadcrumb.child = newBreadcrumb;
-            this.lastBreadcrumb = this.lastBreadcrumb.child;
+            this.setLastBreadcrumb(newBreadcrumb);
         }
         else {
             throw new Error('Can not add a breadcrumb that is equal to or is outside of the parent breadcrumb TimeWindow');
@@ -43,10 +44,23 @@ export class Breadcrumbs {
         return (child.min >= parent.min && child.max <= parent.max) &&
             !(child.min === parent.min && child.max === parent.max);
     }
-    // Make breadcrumb active by removing all of its children and making it the last breadcrumb
-    makeBreadcrumbActive(newLastBreadcrumb) {
-        this.lastBreadcrumb = newLastBreadcrumb;
+    // Used to set an initial breadcrumbs from annotations loaded from a file
+    setInitialBreadcrumbFromLoadedAnnotations(initialBreadcrumb) {
+        this.initialBreadcrumb = initialBreadcrumb;
+        // Make last breadcrumb active
+        let lastBreadcrumb = initialBreadcrumb;
+        while (lastBreadcrumb.child !== null) {
+            lastBreadcrumb = lastBreadcrumb.child;
+        }
+        this.setLastBreadcrumb(lastBreadcrumb);
+    }
+    setLastBreadcrumb(lastBreadcrumb) {
+        // When we assign a new active breadcrumb, both the minimap bounds and the visible
+        // window get set to that breadcrumb's window.
+        this.lastBreadcrumb = lastBreadcrumb;
         this.lastBreadcrumb.child = null;
+        TraceBounds.TraceBounds.BoundsManager.instance().setMiniMapBounds(lastBreadcrumb.window);
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(lastBreadcrumb.window);
     }
 }
 //# sourceMappingURL=Breadcrumbs.js.map

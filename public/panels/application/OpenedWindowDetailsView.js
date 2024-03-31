@@ -131,9 +131,7 @@ export class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget 
     isWindowClosed;
     reportView;
     documentSection;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    URLFieldValue;
+    #urlFieldValue;
     securitySection;
     openerElementField;
     hasDOMAccessValue;
@@ -147,7 +145,7 @@ export class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget 
         this.reportView.show(this.contentElement);
         this.reportView.element.classList.add('frame-details-report-container');
         this.documentSection = this.reportView.appendSection(i18nString(UIStrings.document));
-        this.URLFieldValue =
+        this.#urlFieldValue =
             this.documentSection.appendField(i18nString(UIStrings.url)).createChild('div', 'text-ellipsis');
         this.securitySection = this.reportView.appendSection(i18nString(UIStrings.security));
         this.openerElementField = this.securitySection.appendField(i18nString(UIStrings.openerFrame));
@@ -158,8 +156,8 @@ export class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget 
     }
     async doUpdate() {
         this.reportView.setTitle(this.buildTitle());
-        this.URLFieldValue.textContent = this.targetInfo.url;
-        this.URLFieldValue.title = this.targetInfo.url;
+        this.#urlFieldValue.textContent = this.targetInfo.url;
+        this.#urlFieldValue.title = this.targetInfo.url;
         this.hasDOMAccessValue.textContent = booleanToYesNo(this.targetInfo.canAccessOpener);
         void this.maybeDisplayOpenerFrame();
     }

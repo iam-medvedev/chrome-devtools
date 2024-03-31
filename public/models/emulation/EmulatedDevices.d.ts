@@ -6,7 +6,7 @@ export declare function computeRelativeImageURL(cssURLValue: string): string;
 export declare class EmulatedDevice {
     #private;
     title: string;
-    type: string;
+    type: Type;
     order: number;
     vertical: Orientation;
     horizontal: Orientation;
@@ -40,22 +40,17 @@ export declare const Horizontal = "horizontal";
 export declare const Vertical = "vertical";
 export declare const HorizontalSpanned = "horizontal-spanned";
 export declare const VerticalSpanned = "vertical-spanned";
-export declare const Type: {
-    Phone: string;
-    Tablet: string;
-    Notebook: string;
-    Desktop: string;
-    Unknown: string;
-};
-export declare const Capability: {
-    Touch: string;
-    Mobile: string;
-};
-export declare const _Show: {
-    Always: string;
-    Default: string;
-    Never: string;
-};
+declare enum Type {
+    Phone = "phone",
+    Tablet = "tablet",
+    Notebook = "notebook",
+    Desktop = "desktop",
+    Unknown = "unknown"
+}
+export declare const enum Capability {
+    Touch = "touch",
+    Mobile = "mobile"
+}
 export declare class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     constructor();
@@ -103,3 +98,4 @@ export interface JSONMode {
         bottom: number;
     };
 }
+export {};

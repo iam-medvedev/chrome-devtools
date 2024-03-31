@@ -2,11 +2,11 @@ import * as Common from '../../core/common/common.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class OpenedWindowDetailsView extends UI.ThrottledWidget.ThrottledWidget {
+    #private;
     private targetInfo;
     private isWindowClosed;
     private readonly reportView;
     private readonly documentSection;
-    private URLFieldValue;
     private readonly securitySection;
     private readonly openerElementField;
     private hasDOMAccessValue;

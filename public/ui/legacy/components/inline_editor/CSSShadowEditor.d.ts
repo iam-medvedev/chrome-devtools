@@ -21,7 +21,6 @@ export declare class CSSLength {
     static parse(text: string): CSSLength | null;
     static zero(): CSSLength;
     asCSSText(): string;
-    static Regex: RegExp;
 }
 declare const CSSShadowEditor_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;

@@ -5,8 +5,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as Types from '../types/types.js';
 const domLookUpSingleNodeCache = new Map();
 const domLookUpBatchNodesCache = new Map();
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function _TEST_clearCache() {
+export function clearCacheForTesting() {
     domLookUpSingleNodeCache.clear();
     domLookUpBatchNodesCache.clear();
     layoutShiftSourcesCache.clear();

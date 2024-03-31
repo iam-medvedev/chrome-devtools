@@ -46,12 +46,12 @@ export declare class RemoteObjectImpl extends RemoteObject {
     #private;
     runtimeModelInternal: RuntimeModel;
     hasChildrenInternal: boolean;
-    constructor(runtimeModel: RuntimeModel, objectId: Protocol.Runtime.RemoteObjectId | undefined, type: string, subtype: string | undefined, value: any, unserializableValue?: string, description?: string, preview?: Protocol.Runtime.ObjectPreview, customPreview?: Protocol.Runtime.CustomPreview, className?: string);
+    constructor(runtimeModel: RuntimeModel, objectId: Protocol.Runtime.RemoteObjectId | undefined, type: string, subtype: string | undefined, value: typeof RemoteObject.prototype.value, unserializableValue?: string, description?: string, preview?: Protocol.Runtime.ObjectPreview, customPreview?: Protocol.Runtime.CustomPreview, className?: string);
     customPreview(): Protocol.Runtime.CustomPreview | null;
     get objectId(): Protocol.Runtime.RemoteObjectId | undefined;
     get type(): string;
     get subtype(): string | undefined;
-    get value(): any;
+    get value(): typeof RemoteObject.prototype.value;
     unserializableValue(): string | undefined;
     get description(): string | undefined;
     set description(description: string | undefined);
@@ -77,7 +77,7 @@ export declare class RemoteObjectImpl extends RemoteObject {
 }
 export declare class ScopeRemoteObject extends RemoteObjectImpl {
     #private;
-    constructor(runtimeModel: RuntimeModel, objectId: Protocol.Runtime.RemoteObjectId | undefined, scopeRef: ScopeRef, type: string, subtype: string | undefined, value: any, unserializableValue?: string, description?: string, preview?: Protocol.Runtime.ObjectPreview);
+    constructor(runtimeModel: RuntimeModel, objectId: Protocol.Runtime.RemoteObjectId | undefined, scopeRef: ScopeRef, type: string, subtype: string | undefined, value: typeof RemoteObjectImpl.prototype.value, unserializableValue?: string, description?: string, preview?: Protocol.Runtime.ObjectPreview);
     doGetProperties(ownProperties: boolean, accessorPropertiesOnly: boolean, _generatePreview: boolean): Promise<GetPropertiesResult>;
     doSetObjectPropertyValue(result: Protocol.Runtime.RemoteObject, argumentName: Protocol.Runtime.CallArgument): Promise<string | undefined>;
 }
@@ -111,10 +111,10 @@ export declare class RemoteObjectProperty {
 }
 export declare class LocalJSONObject extends RemoteObject {
     #private;
-    valueInternal: any;
-    constructor(value: any);
+    valueInternal: typeof RemoteObject.prototype.value;
+    constructor(value: typeof RemoteObject.prototype.value);
     get objectId(): Protocol.Runtime.RemoteObjectId | undefined;
-    get value(): any;
+    get value(): typeof RemoteObject.prototype.value;
     unserializableValue(): string | undefined;
     get description(): string;
     private formatValue;

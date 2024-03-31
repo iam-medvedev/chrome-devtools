@@ -94,7 +94,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private clear;
     private reset;
     applyFilters(_perfModel: PerformanceModel | null, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null): void;
-    setModel(model: PerformanceModel | null, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, traceEngineIndex?: number): void;
+    setModel(model: PerformanceModel | null, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, traceEngineIndex?: number, metadata?: TraceEngine.Types.File.MetaData | null): void;
     private recordingStarted;
     recordingProgress(usage: number): void;
     private showLandingPage;

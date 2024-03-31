@@ -177,6 +177,28 @@ function setVeDebugLoggingEnabled(enabled) {
         localStorage.removeItem('veDebugLoggingEnabled');
     }
 }
+function findVeDebugImpression(veid, includeAncestorChain) {
+    const findImpression = (entry) => {
+        if (entry.event === 'Impression' && entry.veid === veid) {
+            return entry;
+        }
+        let i = 0;
+        for (const childEntry of entry.children || []) {
+            const matchingEntry = findImpression(childEntry);
+            if (matchingEntry) {
+                if (includeAncestorChain) {
+                    const children = [];
+                    children[i] = matchingEntry;
+                    return { ...entry, children };
+                }
+                return matchingEntry;
+            }
+            ++i;
+        }
+        return undefined;
+    };
+    return findImpression({ children: veDebugEventsLog });
+}
 let sessionStartTime = Date.now();
 export function processStartLoggingForDebugging() {
     if (!localStorage.getItem('veDebugLoggingEnabled')) {
@@ -189,4 +211,6 @@ export function processStartLoggingForDebugging() {
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
 // @ts-ignore
 globalThis.veDebugEventsLog = veDebugEventsLog;
+// @ts-ignore
+globalThis.findVeDebugImpression = findVeDebugImpression;
 //# sourceMappingURL=Debugging.js.map

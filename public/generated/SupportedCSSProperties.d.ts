@@ -620,6 +620,9 @@ export const generatedPropertyValues: {
     "position-try-order": {
         values: string[];
     };
+    "position-visibility": {
+        values: string[];
+    };
     quotes: {
         values: string[];
     };

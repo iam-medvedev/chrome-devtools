@@ -43,6 +43,10 @@ const UIStrings = {
      * not allow this feature.
      */
     policyRestricted: 'Your organization turned off this feature. Contact your administrators for more information.',
+    /**
+     * @description  Message shown to the user if the feature roll out is currently happening.
+     */
+    rolloutRestricted: 'This feature is currently being rolled out. Please try again later.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/explain/explain-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -83,7 +87,7 @@ function isSettingAvailable() {
 }
 function isActionAvailable() {
     return isSettingAvailable() && !isAgeRestricted() && !isLocaleRestricted() && !isGeoRestricted() &&
-        !isPolicyRestricted();
+        !isPolicyRestricted() && !isRolloutRestricted();
 }
 function isLocaleRestricted() {
     const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
@@ -91,6 +95,9 @@ function isLocaleRestricted() {
 }
 function isAgeRestricted() {
     return Root.Runtime.Runtime.queryParam('ci_blockedByAge') === 'true';
+}
+function isRolloutRestricted() {
+    return Root.Runtime.Runtime.queryParam('ci_blockedByRollout') === 'true';
 }
 function isGeoRestricted() {
     return Root.Runtime.Runtime.queryParam('ci_blockedByGeo') === 'true';
@@ -124,6 +131,9 @@ Common.Settings.registerSettingExtension({
         }
         if (isPolicyRestricted()) {
             return { disabled: true, reason: i18nString(UIStrings.policyRestricted) };
+        }
+        if (isRolloutRestricted()) {
+            return { disabled: true, reason: i18nString(UIStrings.rolloutRestricted) };
         }
         return { disabled: false };
     },

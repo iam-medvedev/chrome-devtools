@@ -1,4 +1,5 @@
 import * as Types from '../types/types.js';
+import { type TraceEventHandlerName } from './types.js';
 export declare const LONG_INTERACTION_THRESHOLD: Types.Timing.MicroSeconds;
 export interface UserInteractionsData {
     /** All the user events we found in the trace */
@@ -55,3 +56,4 @@ export declare function categoryOfInteraction(interaction: Types.TraceEvents.Syn
 export declare function removeNestedInteractions(interactions: readonly Types.TraceEvents.SyntheticInteractionPair[]): readonly Types.TraceEvents.SyntheticInteractionPair[];
 export declare function finalize(): Promise<void>;
 export declare function data(): UserInteractionsData;
+export declare function deps(): TraceEventHandlerName[];

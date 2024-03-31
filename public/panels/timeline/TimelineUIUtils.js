@@ -38,6 +38,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 // eslint-disable-next-line rulesdir/es_modules_import
@@ -75,9 +76,9 @@ const UIStrings = {
      */
     inputDelay: 'Input delay',
     /**
-     *@description Text shown next to the interaction event's thread processing time in the detail view.
+     *@description Text shown next to the interaction event's thread processing duration in the detail view.
      */
-    processingTime: 'Processing time',
+    processingDuration: 'Processing duration',
     /**
      *@description Text shown next to the interaction event's presentation delay time in the detail view.
      */
@@ -1396,7 +1397,7 @@ export class TimelineUIUtils {
                     const presentationDelay = TraceEngine.Helpers.Timing.formatMicrosecondsTime(payload.presentationDelay);
                     contentHelper.appendTextRow(i18nString(UIStrings.interactionID), payload.interactionId);
                     contentHelper.appendTextRow(i18nString(UIStrings.inputDelay), inputDelay);
-                    contentHelper.appendTextRow(i18nString(UIStrings.processingTime), mainThreadTime);
+                    contentHelper.appendTextRow(i18nString(UIStrings.processingDuration), mainThreadTime);
                     contentHelper.appendTextRow(i18nString(UIStrings.presentationDelay), presentationDelay);
                 }
                 break;
@@ -1730,7 +1731,7 @@ export class TimelineUIUtils {
         const isEntryOutsideBreadcrumb = traceBoundsState.micro.minimapTraceBounds.min > entry.ts + (entry.dur || 0) ||
             traceBoundsState.micro.minimapTraceBounds.max < entry.ts;
         // Check if it is in the hidden array
-        const isEntryHidden = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.inEntryInvisible(entry);
+        const isEntryHidden = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getEntriesFilter().inEntryInvisible(entry);
         if (!isEntryOutsideBreadcrumb) {
             link.classList.add('devtools-link');
             UI.ARIAUtils.markAsLink(link);

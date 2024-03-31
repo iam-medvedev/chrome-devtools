@@ -234,15 +234,10 @@ export class RemoteObjectImpl extends RemoteObject {
     hasChildrenInternal;
     #previewInternal;
     #unserializableValueInternal;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #valueInternal;
     #customPreviewInternal;
     #classNameInternal;
-    constructor(runtimeModel, objectId, type, 
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subtype, value, unserializableValue, description, preview, customPreview, className) {
+    constructor(runtimeModel, objectId, type, subtype, value, unserializableValue, description, preview, customPreview, className) {
         super();
         this.runtimeModelInternal = runtimeModel;
         this.#runtimeAgent = runtimeModel.target().runtimeAgent();
@@ -298,8 +293,6 @@ export class RemoteObjectImpl extends RemoteObject {
     get subtype() {
         return this.#subtypeInternal;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get value() {
         return this.#valueInternal;
     }
@@ -498,10 +491,7 @@ export class RemoteObjectImpl extends RemoteObject {
 export class ScopeRemoteObject extends RemoteObjectImpl {
     #scopeRef;
     #savedScopeProperties;
-    constructor(runtimeModel, objectId, scopeRef, type, 
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subtype, value, unserializableValue, description, preview) {
+    constructor(runtimeModel, objectId, scopeRef, type, subtype, value, unserializableValue, description, preview) {
         super(runtimeModel, objectId, type, subtype, value, unserializableValue, description, preview);
         this.#scopeRef = scopeRef;
         this.#savedScopeProperties = undefined;
@@ -621,13 +611,9 @@ export class RemoteObjectProperty {
 // for traversing prototypes, extracting class names via constructor, handling #properties
 // or functions.
 export class LocalJSONObject extends RemoteObject {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     valueInternal;
     #cachedDescription;
     #cachedChildren;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(value) {
         super();
         this.valueInternal = value;
@@ -635,8 +621,6 @@ export class LocalJSONObject extends RemoteObject {
     get objectId() {
         return undefined;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get value() {
         return this.valueInternal;
     }

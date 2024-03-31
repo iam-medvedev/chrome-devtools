@@ -1,14 +1,11 @@
 import type * as TraceEngine from '../../../models/trace/trace.js';
-export interface Breadcrumb {
-    window: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
-    child: Breadcrumb | null;
-}
-export declare function flattenBreadcrumbs(initialBreadcrumb: Breadcrumb): Breadcrumb[];
+export declare function flattenBreadcrumbs(initialBreadcrumb: TraceEngine.Types.File.Breadcrumb): TraceEngine.Types.File.Breadcrumb[];
 export declare class Breadcrumbs {
-    readonly initialBreadcrumb: Breadcrumb;
-    lastBreadcrumb: Breadcrumb;
+    initialBreadcrumb: TraceEngine.Types.File.Breadcrumb;
+    lastBreadcrumb: TraceEngine.Types.File.Breadcrumb;
     constructor(initialTraceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds);
     add(newBreadcrumbTraceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds): void;
     isTraceWindowWithinTraceWindow(child: TraceEngine.Types.Timing.TraceWindowMicroSeconds, parent: TraceEngine.Types.Timing.TraceWindowMicroSeconds): boolean;
-    makeBreadcrumbActive(newLastBreadcrumb: Breadcrumb): void;
+    setInitialBreadcrumbFromLoadedAnnotations(initialBreadcrumb: TraceEngine.Types.File.Breadcrumb): void;
+    setLastBreadcrumb(lastBreadcrumb: TraceEngine.Types.File.Breadcrumb): void;
 }

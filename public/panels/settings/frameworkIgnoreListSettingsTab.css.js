@@ -37,7 +37,7 @@ styles.replaceSync(
   margin-bottom: -1px;
 }
 
-.ignore-list-option-group-title {
+.ignore-list-option-group {
   margin-top: 16px;
   margin-bottom: 3px;
   margin-left: 8px;

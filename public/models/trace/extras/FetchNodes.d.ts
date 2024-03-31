@@ -2,7 +2,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import type * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-export declare function _TEST_clearCache(): void;
+export declare function clearCacheForTesting(): void;
 /**
  * Looks up the DOM Node on the page for the given BackendNodeId. Uses the
  * provided TraceParseData as the cache and will cache the result after the

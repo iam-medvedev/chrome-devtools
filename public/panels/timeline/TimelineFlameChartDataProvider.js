@@ -34,6 +34,7 @@ import * as Root from '../../core/root/root.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -189,11 +190,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     modifyTree(node, action) {
         const entry = this.entryData[node];
-        TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.applyFilterAction({ type: action, entry });
+        AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getEntriesFilter().applyFilterAction({ type: action, entry });
     }
     findPossibleContextMenuActions(node) {
         const entry = this.entryData[node];
-        return TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.findPossibleActions(entry);
+        return AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+            ?.getEntriesFilter()
+            .findPossibleActions(entry);
     }
     buildGroupStyle(extra) {
         const defaultGroupStyle = {
@@ -833,7 +836,9 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             delegatesFocus: undefined,
         });
         const entry = this.entryData[entryIndex];
-        const hiddenEntriesAmount = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.findHiddenDescendantsAmount(entry);
+        const hiddenEntriesAmount = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+            ?.getEntriesFilter()
+            .findHiddenDescendantsAmount(entry);
         if (!hiddenEntriesAmount) {
             return null;
         }
@@ -1042,7 +1047,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container');
         let desiredBoxStartX = timeToPixel(entry.processingStart);
         const desiredBoxEndX = timeToPixel(entry.processingEnd);
-        // If the entry has no processing time, ensure the box is 1px wide so at least it is visible.
+        // If the entry has no processing duration, ensure the box is 1px wide so at least it is visible.
         if (entry.processingEnd - entry.processingStart === 0) {
             desiredBoxStartX -= 1;
         }
@@ -1187,7 +1192,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Try revealing the entry and getting the index again.
         if (this.entryData.indexOf(selection.object) === -1 && TimelineSelection.isTraceEventSelection(selection.object)) {
             if (this.timelineDataInternal?.selectedGroup) {
-                TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.revealEntry(selection.object);
+                AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getEntriesFilter().revealEntry(selection.object);
                 this.timelineData(true);
             }
         }
@@ -1260,8 +1265,14 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Reset to clear any previous arrows from the last event.
         this.timelineDataInternal.resetFlowData();
         this.lastInitiatorEntry = entryIndex;
-        const hiddenEvents = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.invisibleEntries() ?? [];
-        const modifiedEntries = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.modifiedEntries() ?? [];
+        const hiddenEvents = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+            ?.getEntriesFilter()
+            .invisibleEntries() ??
+            [];
+        const modifiedEntries = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+            ?.getEntriesFilter()
+            .modifiedEntries() ??
+            [];
         const initiatorsData = initiatorsDataToDraw(this.traceEngineData, event, hiddenEvents, modifiedEntries);
         // This means there is no change for arrows.
         if (previousInitiatorsDataLength === 0 && initiatorsData.length === 0) {
