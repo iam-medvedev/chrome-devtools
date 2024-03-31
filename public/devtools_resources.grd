@@ -970,6 +970,7 @@
       <include file="models/trace/helpers/Trace.js" name="MODELS_TRACE_HELPERS_TRACE_JS" resource_path="models/trace/helpers/Trace.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/TreeHelpers.js" name="MODELS_TRACE_HELPERS_TREEHELPERS_JS" resource_path="models/trace/helpers/TreeHelpers.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/InsightRunners.js" name="MODELS_TRACE_INSIGHTS_INSIGHTRUNNERS_JS" resource_path="models/trace/insights/InsightRunners.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/insights/InteractionToNextPaint.js" name="MODELS_TRACE_INSIGHTS_INTERACTIONTONEXTPAINT_JS" resource_path="models/trace/insights/InteractionToNextPaint.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/LargestContentfulPaint.js" name="MODELS_TRACE_INSIGHTS_LARGESTCONTENTFULPAINT_JS" resource_path="models/trace/insights/LargestContentfulPaint.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/RenderBlocking.js" name="MODELS_TRACE_INSIGHTS_RENDERBLOCKING_JS" resource_path="models/trace/insights/RenderBlocking.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/types.js" name="MODELS_TRACE_INSIGHTS_TYPES_JS" resource_path="models/trace/insights/types.js" type="BINDATA" compress="false"/>

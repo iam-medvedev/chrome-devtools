@@ -38,6 +38,9 @@
   "references": [
     {
       "path": "../../models/trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../panels/timeline/components/bundle-tsconfig.json"
     }
   ]
 }

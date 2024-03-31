@@ -14,7 +14,7 @@ function nodeId(x) {
 describeWithMockConnection('TraceSDKServices', function () {
     beforeEach(async () => {
         clearAllMockConnectionResponseHandlers();
-        TraceEngine.Extras.FetchNodes._TEST_clearCache();
+        TraceEngine.Extras.FetchNodes.clearCacheForTesting();
     });
     describe('DOMNodeLookup', function () {
         it('returns the DOM Node for the given node ID', async function () {

@@ -186,11 +186,11 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
         const uaType = editor.control('ua-type').value;
         if (uaType === "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */ ||
             uaType === "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */) {
-            device.capabilities.push(EmulationModel.EmulatedDevices.Capability.Mobile);
+            device.capabilities.push("mobile" /* EmulationModel.EmulatedDevices.Capability.Mobile */);
         }
         if (uaType === "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */ ||
             uaType === "Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */) {
-            device.capabilities.push(EmulationModel.EmulatedDevices.Capability.Touch);
+            device.capabilities.push("touch" /* EmulationModel.EmulatedDevices.Capability.Touch */);
         }
         const userAgentControlValue = editor.control('ua-metadata')
             .value.metaData;

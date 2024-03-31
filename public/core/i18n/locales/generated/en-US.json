@@ -6476,6 +6476,9 @@
   "panels/explain/explain-meta.ts | policyRestricted": {
     "message": "Your organization turned off this feature. Contact your administrators for more information."
   },
+  "panels/explain/explain-meta.ts | rolloutRestricted": {
+    "message": "This feature is currently being rolled out. Please try again later."
+  },
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "To use this feature, update your Language preference in DevTools Settings to English."
   },
@@ -12281,8 +12284,8 @@
   "panels/timeline/components/InteractionBreakdown.ts | presentationDelay": {
     "message": "Presentation delay"
   },
-  "panels/timeline/components/InteractionBreakdown.ts | processingTime": {
-    "message": "Processing time"
+  "panels/timeline/components/InteractionBreakdown.ts | processingDuration": {
+    "message": "Processing duration"
   },
   "panels/timeline/CountersGraph.ts | documents": {
     "message": "Documents"
@@ -13316,8 +13319,8 @@
   "panels/timeline/TimelineUIUtils.ts | priority": {
     "message": "Priority"
   },
-  "panels/timeline/TimelineUIUtils.ts | processingTime": {
-    "message": "Processing time"
+  "panels/timeline/TimelineUIUtils.ts | processingDuration": {
+    "message": "Processing duration"
   },
   "panels/timeline/TimelineUIUtils.ts | producedCacheSize": {
     "message": "Produced Cache Size"

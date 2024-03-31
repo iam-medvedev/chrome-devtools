@@ -185,17 +185,17 @@ export class RuntimeModel extends SDKModel {
         const result = await this.agent.invoke_getHeapUsage();
         return result.getError() ? null : result;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     inspectRequested(payload, hints, executionContextId) {
         const object = this.createRemoteObject(payload);
-        if (hints && 'copyToClipboard' in hints && Boolean(hints.copyToClipboard)) {
-            this.copyRequested(object);
-            return;
-        }
-        if (hints && 'queryObjects' in hints && hints.queryObjects) {
-            void this.queryObjectsRequested(object, executionContextId);
-            return;
+        if (hints !== null && typeof hints === 'object') {
+            if ('copyToClipboard' in hints && Boolean(hints.copyToClipboard)) {
+                this.copyRequested(object);
+                return;
+            }
+            if ('queryObjects' in hints && hints.queryObjects) {
+                void this.queryObjectsRequested(object, executionContextId);
+                return;
+            }
         }
         if (object.isNode()) {
             void Common.Revealer.reveal(object).then(object.release.bind(object));

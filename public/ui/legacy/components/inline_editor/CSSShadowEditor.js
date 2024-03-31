@@ -36,6 +36,12 @@ const maxRange = 20;
 const defaultUnit = 'px';
 const sliderThumbRadius = 6;
 const canvasSize = 88;
+const CSS_LENGTH_REGEX = (function () {
+    const number = '([+-]?(?:[0-9]*[.])?[0-9]+(?:[eE][+-]?[0-9]+)?)';
+    const unit = '(ch|cm|em|ex|in|mm|pc|pt|px|rem|vh|vmax|vmin|vw)';
+    const zero = '[+-]?(?:0*[.])?0+(?:[eE][+-]?[0-9]+)?';
+    return new RegExp(number + unit + '|' + zero, 'gi').source;
+})();
 export class CSSLength {
     amount;
     unit;
@@ -44,7 +50,7 @@ export class CSSLength {
         this.unit = unit;
     }
     static parse(text) {
-        const lengthRegex = new RegExp('^(?:' + CSSLength.Regex.source + ')$', 'i');
+        const lengthRegex = new RegExp('^(?:' + CSS_LENGTH_REGEX + ')$', 'i');
         const match = text.match(lengthRegex);
         if (!match) {
             return null;
@@ -60,13 +66,6 @@ export class CSSLength {
     asCSSText() {
         return this.amount + this.unit;
     }
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static Regex = (function () {
-        const number = '([+-]?(?:[0-9]*[.])?[0-9]+(?:[eE][+-]?[0-9]+)?)';
-        const unit = '(ch|cm|em|ex|in|mm|pc|pt|px|rem|vh|vmax|vmin|vw)';
-        const zero = '[+-]?(?:0*[.])?0+(?:[eE][+-]?[0-9]+)?';
-        return new RegExp(number + unit + '|' + zero, 'gi');
-    })();
 }
 export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     typeField;

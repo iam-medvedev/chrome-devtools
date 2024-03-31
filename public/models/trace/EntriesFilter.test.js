@@ -31,7 +31,7 @@ function findFirstEntry(allEntries, predicate) {
 describe('EntriesFilter', function () {
     it('parses a stack and returns an empty list of invisible entries', async function () {
         const data = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         assert.deepEqual([], stack?.invisibleEntries());
     });
     it('supports the user merging an entry into its parent', async function () {
@@ -65,7 +65,7 @@ describe('EntriesFilter', function () {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -103,7 +103,7 @@ describe('EntriesFilter', function () {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -143,7 +143,7 @@ describe('EntriesFilter', function () {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -195,7 +195,7 @@ describe('EntriesFilter', function () {
             const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -265,7 +265,7 @@ describe('EntriesFilter', function () {
             const basicTwoCallEndTime = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(basicTwoCallEntry).endTime;
             return endTime <= basicTwoCallEndTime;
         });
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -322,7 +322,7 @@ describe('EntriesFilter', function () {
             const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -375,7 +375,7 @@ describe('EntriesFilter', function () {
          *
          * Applying 'undo all actions' should bring the stack to the original state.
          **/
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -460,7 +460,7 @@ describe('EntriesFilter', function () {
          *
          * This should result in all basicTwo children being removed from the invisible array and stack being in the initial state.
          **/
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -542,7 +542,7 @@ describe('EntriesFilter', function () {
             const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -605,7 +605,7 @@ describe('EntriesFilter', function () {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo' &&
                 entry.dur === 233;
         });
-        const stack = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: data.Renderer.entryToNode });
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }

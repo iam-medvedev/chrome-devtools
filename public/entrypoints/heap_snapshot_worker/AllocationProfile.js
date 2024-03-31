@@ -64,7 +64,6 @@ export class AllocationProfile {
             functionInfos[index++] = new FunctionAllocationInfo(strings[rawInfos[i + functionNameOffset]], strings[rawInfos[i + scriptNameOffset]], rawInfos[i + scriptIdOffset], rawInfos[i + lineOffset], rawInfos[i + columnOffset]);
         }
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #buildAllocationTree(profile, liveObjectStats) {
         const traceTreeRaw = profile.trace_tree;
         const functionInfos = this.#functionInfos;

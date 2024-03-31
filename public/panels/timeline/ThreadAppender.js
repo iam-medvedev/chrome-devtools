@@ -8,6 +8,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { addDecorationToEvent, buildGroupStyle, buildTrackHeader, getFormattedTime, } from './AppenderUtils.js';
 import { getCategoryStyles, getEventStyle } from './EventUICategory.js';
@@ -390,7 +391,10 @@ export class ThreadAppender {
      * listed is done before appending.
      */
     #appendNodesAtLevel(nodes, startingLevel, parentIsIgnoredListed = false) {
-        const invisibleEntries = TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.invisibleEntries() ?? [];
+        const invisibleEntries = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+            ?.getEntriesFilter()
+            .invisibleEntries() ??
+            [];
         let maxDepthInTree = startingLevel;
         for (const node of nodes) {
             let nextLevel = startingLevel;
@@ -435,7 +439,7 @@ export class ThreadAppender {
     }
     #addDecorationsToEntry(entry, index) {
         const flameChartData = this.#compatibilityBuilder.getFlameChartTimelineData();
-        if (TraceEngine.EntriesFilter.EntriesFilter.maybeInstance()?.isEntryModified(entry)) {
+        if (AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getEntriesFilter().isEntryModified(entry)) {
             addDecorationToEvent(flameChartData, index, { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ });
         }
         const warnings = this.#traceParsedData.Warnings.perEvent.get(entry);

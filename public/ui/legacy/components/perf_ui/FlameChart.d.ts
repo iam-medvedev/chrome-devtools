@@ -124,7 +124,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private forceDecorationCache?;
     private entryColorsCache?;
     private totalTime?;
-    private lastIndexOfUpdatedPopover;
+    private lastPopoverState;
     constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, groupExpansionSetting?: Common.Settings.Setting<GroupExpansionState>);
     willHide(): void;
     getBarHeight(): number;

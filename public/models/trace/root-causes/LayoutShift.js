@@ -40,6 +40,7 @@ function networkRequestIsRenderBlockingInFrame(event, frameId) {
 export class LayoutShiftRootCauses {
     #protocolInterface;
     #rootCauseCacheMap = new Map();
+    #nodeDetailsCache = new Map();
     constructor(protocolInterface) {
         this.#protocolInterface = protocolInterface;
     }
@@ -217,7 +218,7 @@ export class LayoutShiftRootCauses {
         if (layoutInvalidation.args.data.reason !== "Size changed" /* Types.TraceEvents.LayoutInvalidationReason.SIZE_CHANGED */) {
             return null;
         }
-        const layoutInvalidationNode = await this.#protocolInterface.getNode(layoutInvalidationNodeId);
+        const layoutInvalidationNode = await this.getNodeDetails(layoutInvalidationNodeId);
         if (!layoutInvalidationNode) {
             return null;
         }
@@ -243,7 +244,7 @@ export class LayoutShiftRootCauses {
             layoutInvalidation.args.data.reason !== "Added to layout" /* Types.TraceEvents.LayoutInvalidationReason.ADDED_TO_LAYOUT */) {
             return null;
         }
-        const layoutInvalidationNode = await this.#protocolInterface.getNode(layoutInvalidationNodeId);
+        const layoutInvalidationNode = await this.getNodeDetails(layoutInvalidationNodeId);
         if (!layoutInvalidationNode) {
             return null;
         }
@@ -252,6 +253,15 @@ export class LayoutShiftRootCauses {
             return null;
         }
         return { iframe };
+    }
+    async getNodeDetails(nodeId) {
+        let nodeDetails = this.#nodeDetailsCache.get(nodeId);
+        if (nodeDetails !== undefined) {
+            return nodeDetails;
+        }
+        nodeDetails = await this.#protocolInterface.getNode(nodeId);
+        this.#nodeDetailsCache.set(nodeId, nodeDetails);
+        return nodeDetails;
     }
     /**
      * Given a layout invalidation event and a sorted array, returns the subset of requests that arrived within a

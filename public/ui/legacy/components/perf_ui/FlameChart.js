@@ -98,8 +98,10 @@ const saveIconPath = 'm8.229 14.062-3.521-3.541L5.75 9.479l2.479 2.459 6.021-6L1
 const moveUpIconPath = 'M9.25 17V5.875L7.062 8.062L6 7L10 3L14 7L12.938 8.062L10.75 5.875V17H9.25Z';
 // arrow-down.svg
 const moveDownIconPath = 'M9.25 3V14.125L7.062 11.938L6 13L10 17L14 13L12.938 11.938L10.75 14.125V3H9.25Z';
-// bin.svg
-const hideIconPath = 'M6.5 17c-.417 0-.77-.146-1.062-.438A1.444 1.444 0 0 1 5 15.5v-10H4V4h4V3h4v1h4v1.5h-1v10c0 .417-.146.77-.438 1.062A1.444 1.444 0 0 1 13.5 17h-7Zm7-11.5h-7v10h7v-10ZM8 14h1.5V7H8v7Zm2.5 0H12V7h-1.5v7Z';
+// eye-crossed.svg
+const hideIconPath = 'M13.2708 11.1459L11.9792 9.85419C12.0347 9.32641 11.875 8.87155 11.5 8.4896C11.125 8.10766 10.6736 7.94446 10.1458 8.00002L8.85417 6.70835C9.03472 6.63891 9.22222 6.58683 9.41667 6.5521C9.61111 6.51738 9.80556 6.50002 10 6.50002C10.9722 6.50002 11.7986 6.8403 12.4792 7.52085C13.1597 8.20141 13.5 9.0278 13.5 10C13.5 10.1945 13.4826 10.3889 13.4479 10.5834C13.4132 10.7778 13.3542 10.9653 13.2708 11.1459ZM16.0417 13.9167L14.9583 12.8334C15.4583 12.4445 15.9132 12.0174 16.3229 11.5521C16.7326 11.0868 17.0764 10.5695 17.3542 10C16.6736 8.59724 15.6701 7.49655 14.3438 6.69794C13.0174 5.89933 11.5694 5.50002 10 5.50002C9.63889 5.50002 9.28472 5.52085 8.9375 5.56252C8.59028 5.60419 8.25 5.67363 7.91667 5.77085L6.70833 4.56252C7.23611 4.35419 7.77431 4.20835 8.32292 4.12502C8.87153 4.04169 9.43056 4.00002 10 4.00002C11.9861 4.00002 13.8021 4.53821 15.4479 5.6146C17.0938 6.69099 18.2778 8.1528 19 10C18.6944 10.7917 18.2882 11.5104 17.7813 12.1563C17.2743 12.8021 16.6944 13.3889 16.0417 13.9167ZM16 18.125L13.2917 15.4167C12.7639 15.6111 12.2257 15.757 11.6771 15.8542C11.1285 15.9514 10.5694 16 10 16C8.01389 16 6.19792 15.4618 4.55208 14.3854C2.90625 13.309 1.72222 11.8472 1 10C1.30556 9.20835 1.70833 8.48613 2.20833 7.83335C2.70833 7.18058 3.29167 6.5903 3.95833 6.06252L1.875 3.97919L2.9375 2.91669L17.0625 17.0625L16 18.125ZM5.02083 7.14585C4.53472 7.53474 4.08333 7.96183 3.66667 8.4271C3.25 8.89238 2.90972 9.41669 2.64583 10C3.32639 11.4028 4.32986 12.5035 5.65625 13.3021C6.98264 14.1007 8.43056 14.5 10 14.5C10.3611 14.5 10.7153 14.4757 11.0625 14.4271C11.4097 14.3785 11.7569 14.3125 12.1042 14.2292L11.1667 13.2917C10.9722 13.3611 10.7778 13.4132 10.5833 13.4479C10.3889 13.4827 10.1944 13.5 10 13.5C9.02778 13.5 8.20139 13.1597 7.52083 12.4792C6.84028 11.7986 6.5 10.9722 6.5 10C6.5 9.80558 6.52431 9.61113 6.57292 9.41669C6.62153 9.22224 6.66667 9.0278 6.70833 8.83335L5.02083 7.14585Z';
+// eye.svg
+const showIconPath = 'M10 13.5C10.972 13.5 11.7983 13.1597 12.479 12.479C13.1597 11.7983 13.5 10.972 13.5 10C13.5 9.028 13.1597 8.20167 12.479 7.521C11.7983 6.84033 10.972 6.5 10 6.5C9.028 6.5 8.20167 6.84033 7.521 7.521C6.84033 8.20167 6.5 9.028 6.5 10C6.5 10.972 6.84033 11.7983 7.521 12.479C8.20167 13.1597 9.028 13.5 10 13.5ZM10 12C9.44467 12 8.97233 11.8057 8.583 11.417C8.19433 11.0277 8 10.5553 8 10C8 9.44467 8.19433 8.97233 8.583 8.583C8.97233 8.19433 9.44467 8 10 8C10.5553 8 11.0277 8.19433 11.417 8.583C11.8057 8.97233 12 9.44467 12 10C12 10.5553 11.8057 11.0277 11.417 11.417C11.0277 11.8057 10.5553 12 10 12ZM10 16C8.014 16 6.20833 15.455 4.583 14.365C2.95833 13.2743 1.764 11.8193 1 10C1.764 8.18067 2.95833 6.72567 4.583 5.635C6.20833 4.545 8.014 4 10 4C11.986 4 13.7917 4.545 15.417 5.635C17.0417 6.72567 18.236 8.18067 19 10C18.236 11.8193 17.0417 13.2743 15.417 14.365C13.7917 15.455 11.986 16 10 16ZM10 14.5C11.5553 14.5 12.9927 14.0973 14.312 13.292C15.632 12.486 16.646 11.3887 17.354 10C16.646 8.61133 15.632 7.514 14.312 6.708C12.9927 5.90267 11.5553 5.5 10 5.5C8.44467 5.5 7.00733 5.90267 5.688 6.708C4.368 7.514 3.354 8.61133 2.646 10C3.354 11.3887 4.368 12.486 5.688 13.292C7.00733 14.0973 8.44467 14.5 10 14.5Z';
 export class FlameChartDelegate {
     windowChanged(_startTime, _endTime, _animate) {
     }
@@ -169,7 +171,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     forceDecorationCache;
     entryColorsCache;
     totalTime;
-    lastIndexOfUpdatedPopover;
+    lastPopoverState;
     #font;
     #groupTreeRoot;
     #searchResultEntryIndex;
@@ -229,7 +231,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.markerPositions = new Map();
         this.lastMouseOffsetX = 0;
         this.selectedGroupIndex = -1;
-        this.lastIndexOfUpdatedPopover = -1;
+        this.lastPopoverState = {
+            entryIndex: -1,
+            hiddenEntriesPopover: false,
+        };
         // Keyboard focused group is used to navigate groups irrespective of whether they are selectable or not
         this.keyboardFocusedGroup = -1;
         ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
@@ -288,6 +293,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     hideHighlight() {
         if (this.#searchResultEntryIndex === -1) {
             this.entryInfo.removeChildren();
+            this.lastPopoverState = {
+                entryIndex: -1,
+                hiddenEntriesPopover: false,
+            };
         }
         if (this.highlightedEntryIndex === -1) {
             return;
@@ -401,19 +410,28 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return;
         }
         // Check if the mouse is hovering any group's header area
-        const { groupIndex } = this.coordinatesToGroupIndexAndButton(mouseEvent.offsetX, mouseEvent.offsetY, true /* headerOnly */);
-        if (groupIndex >= 0) {
+        const { groupIndex: groupIndexHeaderArea } = this.coordinatesToGroupIndexAndButton(mouseEvent.offsetX, mouseEvent.offsetY, true /* headerOnly */);
+        if (groupIndexHeaderArea >= 0) {
             this.hideHighlight();
             this.viewportElement.style.cursor = 'pointer';
             // Show edit icon for the hovered group
             this.resetCanvas();
-            this.draw(/* hoveredGroupIndex= */ groupIndex);
+            this.draw(/* hoveredGroupIndex= */ groupIndexHeaderArea);
             return;
         }
-        // No group is hovered.
-        // Redraw the flame chart to clear the potentially previously draw edit icon.
-        this.resetCanvas();
-        this.draw();
+        // Check if the mouse is hovering any group's non-header area
+        const { groupIndex } = this.coordinatesToGroupIndexAndButton(mouseEvent.offsetX, mouseEvent.offsetY);
+        if (groupIndex >= 0) {
+            // Show edit icon for the hovered group
+            this.resetCanvas();
+            this.draw(/* hoveredGroupIndex= */ groupIndex);
+        }
+        else {
+            // No group is hovered.
+            // Redraw the flame chart to clear the potentially previously draw edit icon.
+            this.resetCanvas();
+            this.draw();
+        }
         this.updateHighlight();
     }
     updateHighlight() {
@@ -455,7 +473,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     updatePopover(entryIndex) {
         // Just update position if cursor is hovering the same entry.
-        if (entryIndex === this.lastIndexOfUpdatedPopover) {
+        const isMouseOverRevealChildrenArrow = this.isMouseOverRevealChildrenArrow(this.lastMouseOffsetX, entryIndex);
+        if (entryIndex === this.lastPopoverState.entryIndex &&
+            isMouseOverRevealChildrenArrow === this.lastPopoverState.hiddenEntriesPopover) {
             return this.updatePopoverOffset();
         }
         this.entryInfo.removeChildren();
@@ -465,7 +485,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         const group = data.groups.at(this.selectedGroupIndex);
         // If the mouse is hovering over the hidden descendants arrow, get an element that shows how many children are hidden, otherwise an element with the event name and length
-        const popoverElement = (this.isMouseOverRevealChildrenArrow(this.lastMouseOffsetX, entryIndex) && group) ?
+        const popoverElement = (isMouseOverRevealChildrenArrow && group) ?
             this.dataProvider.prepareHighlightedHiddenEntriesArrowInfo &&
                 this.dataProvider.prepareHighlightedHiddenEntriesArrowInfo(entryIndex) :
             this.dataProvider.prepareHighlightedEntryInfo(entryIndex);
@@ -473,7 +493,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.entryInfo.appendChild(popoverElement);
             this.updatePopoverOffset();
         }
-        this.lastIndexOfUpdatedPopover = entryIndex;
+        this.lastPopoverState = {
+            entryIndex,
+            hiddenEntriesPopover: isMouseOverRevealChildrenArrow,
+        };
     }
     updatePopoverOffset() {
         let mouseX = this.lastMouseOffsetX;
@@ -528,11 +551,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         this.moveGroupDown(groupIndex);
                         return;
                     case "HIDE" /* EditButtonType.HIDE */:
-                        this.hideGroup(groupIndex);
+                        this.#toggleGroupHiddenState(groupIndex, !this.rawTimelineData?.groups[groupIndex].hidden);
                         return;
                     case "SAVE" /* EditButtonType.SAVE */:
                     case "EDIT" /* EditButtonType.EDIT */:
                         this.#editMode = !this.#editMode;
+                        this.updateLevelPositions();
                         this.resetCanvas();
                         this.draw();
                         return;
@@ -801,30 +825,34 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return;
         }
         this.contextMenu = new UI.ContextMenu.ContextMenu(_event, { useSoftMenu: true });
-        if (possibleActions?.["MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */]) {
-            const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideFunction), () => {
-                this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */, this.selectedEntryIndex);
-            }, { jslogContext: 'hide-function' });
-            item.setShortcut('H');
-        }
-        if (possibleActions?.["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */]) {
-            const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideChildren), () => {
-                this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */, this.selectedEntryIndex);
-            }, { jslogContext: 'hide-children' });
-            item.setShortcut('C');
-        }
-        if (possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */]) {
-            const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideRepeatingChildren), () => {
-                this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */, this.selectedEntryIndex);
-            }, { jslogContext: 'hide-repeating-children' });
-            item.setShortcut('R');
-        }
-        if (possibleActions?.["RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */]) {
-            const item = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetChildren), () => {
-                this.modifyTree("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */, this.selectedEntryIndex);
-            }, { jslogContext: 'reset-children' });
-            item.setShortcut('U');
-        }
+        const hideEntryOption = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideFunction), () => {
+            this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */, this.selectedEntryIndex);
+        }, {
+            disabled: !possibleActions?.["MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */],
+            jslogContext: 'hide-function',
+        });
+        hideEntryOption.setShortcut('H');
+        const hideChildrenOption = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideChildren), () => {
+            this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */, this.selectedEntryIndex);
+        }, {
+            disabled: !possibleActions?.["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */],
+            jslogContext: 'hide-children',
+        });
+        hideChildrenOption.setShortcut('C');
+        const hideRepeatingChildrenOption = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideRepeatingChildren), () => {
+            this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */, this.selectedEntryIndex);
+        }, {
+            disabled: !possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */],
+            jslogContext: 'hide-repeating-children',
+        });
+        hideRepeatingChildrenOption.setShortcut('R');
+        const resetChildrenOption = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetChildren), () => {
+            this.modifyTree("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */, this.selectedEntryIndex);
+        }, {
+            disabled: !possibleActions?.["RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */],
+            jslogContext: 'reset-children',
+        });
+        resetChildrenOption.setShortcut('U');
         this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetTrace), () => {
             this.modifyTree("UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterAction.UNDO_ALL_ACTIONS */, this.selectedEntryIndex);
         }, {
@@ -1319,19 +1347,22 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const context = this.canvas.getContext('2d');
         context.save();
         context.font = this.#font;
+        const upIconLeft = 0;
+        const downIconLeft = EDIT_BUTTON_SIZE;
+        const hideIconLeft = EDIT_BUTTON_SIZE * 2;
         const saveIconLeft = EDITION_MODE_INDENT + this.headerLeftPadding + this.labelWidthForGroup(context, groups[groupIndex]);
-        const editIconLeft = this.headerLeftPadding + this.labelWidthForGroup(context, groups[groupIndex]);
-        const headerLeft = (this.#editMode ? EDITION_MODE_INDENT : 0) + this.headerLeftPadding;
+        const editIconLeft = 0;
+        const headerLeft = (this.#editMode ? EDITION_MODE_INDENT : 16) + this.headerLeftPadding;
         const headerRight = headerLeft + this.labelWidthForGroup(context, groups[groupIndex]) + EDIT_BUTTON_SIZE;
         context.restore();
         if (this.#editMode) {
-            if (0 <= x && x < EDIT_BUTTON_SIZE) {
+            if (upIconLeft <= x && x < upIconLeft + EDIT_BUTTON_SIZE) {
                 return { groupIndex, editButtonType: "UP" /* EditButtonType.UP */ };
             }
-            if (EDIT_BUTTON_SIZE <= x && x < EDIT_BUTTON_SIZE * 2) {
+            if (downIconLeft <= x && x < downIconLeft + EDIT_BUTTON_SIZE) {
                 return { groupIndex, editButtonType: "DOWN" /* EditButtonType.DOWN */ };
             }
-            if (EDIT_BUTTON_SIZE * 2 <= x && x < EDIT_BUTTON_SIZE * 3) {
+            if (hideIconLeft <= x && x < hideIconLeft + EDIT_BUTTON_SIZE) {
                 return { groupIndex, editButtonType: "HIDE" /* EditButtonType.HIDE */ };
             }
             if (saveIconLeft <= x && x < saveIconLeft + EDIT_BUTTON_SIZE) {
@@ -1735,8 +1766,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     drawGroupHeaders(width, height, hoveredGroupIndex) {
         const context = this.canvas.getContext('2d');
         const top = this.chartViewport.scrollOffset();
-        // Add an indent to the group headers. This area will show the buttons to customize the groups.
-        const left = this.#editMode ? EDITION_MODE_INDENT : 0;
+        // When it is normal mode, add an indent to the group headers for the edit icon.
+        // When it is in edit mode, add indent that shows the buttons to customize the groups.
+        const left = this.#editMode ? EDITION_MODE_INDENT : EDIT_BUTTON_SIZE;
         const ratio = window.devicePixelRatio;
         if (!this.rawTimelineData) {
             return;
@@ -1755,6 +1787,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         context.translate(left, -top);
         context.font = this.#font;
         context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container');
+        // Fill the gap between groups.
         this.forEachGroupInViewport((offset, index, group) => {
             const paddingHeight = group.style.padding;
             if (paddingHeight < 5) {
@@ -1762,9 +1795,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             }
             context.fillRect(0, offset - paddingHeight + 2, width, paddingHeight - 4);
         });
+        // Fill the gap between last group and the bottom of canvas view.
         if (groups.length && lastGroupOffset < top + height) {
             context.fillRect(0, lastGroupOffset + 2, width, top + height - lastGroupOffset);
         }
+        // The separating line between top level groups.
         context.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-neutral-container');
         context.beginPath();
         this.forEachGroupInViewport((offset, index, group, isFirst) => {
@@ -1791,15 +1826,22 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 nextGroup++;
             }
             const endLevel = nextGroup < groups.length ? groups[nextGroup].startLevel : this.dataProvider.maxStackDepth();
+            context.save();
+            // We need to start drawing the event from the beginning, because they need to be sync with the ruler.
+            // We added an indent for the edit icon, so we need to offset it.
+            context.translate((this.#editMode ? 0 : -EDIT_BUTTON_SIZE), 0);
             this.drawCollapsedOverviewForGroup(group, offset, endLevel);
+            context.restore();
         });
         context.save();
         const trackConfigurationEnabled = Root.Runtime.experiments.isEnabled("timeline-track-configuration" /* Root.Runtime.ExperimentName.TIMELINE_TRACK_CONFIGURATION */);
+        // If there is only one track, we won't allow the track reordering or hiding.
+        const trackConfigurationAllowed = groups.length > 1;
         this.forEachGroupInViewport((offset, index, group) => {
             context.font = this.#font;
             if (this.isGroupCollapsible(index) && !group.expanded || group.style.shareHeaderLine) {
-                const width = this.labelWidthForGroup(context, group) +
-                    ((trackConfigurationEnabled && hoveredGroupIndex === index) ? EDIT_BUTTON_SIZE : 0);
+                // In edit mode, we draw an extra rectangle for the save icon.
+                const width = this.labelWidthForGroup(context, group) + (this.#editMode ? EDIT_BUTTON_SIZE : 0);
                 if (this.isGroupFocused(index)) {
                     context.fillStyle =
                         ThemeSupport.ThemeSupport.instance().getComputedValue('--selected-group-background', this.contentElement);
@@ -1812,21 +1854,33 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 }
                 context.fillRect(this.headerLeftPadding - this.headerLabelXPadding, offset + this.headerLabelYPadding, width, group.style.height - 2 * this.headerLabelYPadding);
             }
-            context.fillStyle = group.style.color;
+            context.fillStyle = (this.#editMode && group.hidden) ?
+                ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-token-subtle', this.contentElement) :
+                group.style.color;
             const titleStart = Math.floor(this.expansionArrowIndent * (group.style.nestingLevel + 1) + this.arrowSide);
             context.fillText(group.name, titleStart, offset + group.style.height - this.textBaseline);
-            if (trackConfigurationEnabled) {
+            if (this.#editMode && group.hidden) {
+                // Draw a strikethrough line for the hidden tracks.
+                context.fillRect(titleStart, offset + group.style.height / 2, UI.UIUtils.measureTextWidth(context, group.name), 1);
+            }
+            // The icon and track title will look like this
+            // Normal mode:
+            // [Edit]Track title
+            // Edit mode:
+            // [ Up ][Down][Hide]Track title[Save]
+            if (trackConfigurationEnabled && trackConfigurationAllowed) {
                 if (this.#editMode) {
+                    const iconColor = group.hidden ? '--sys-color-token-subtle' : '--sys-color-on-surface';
                     // We only allow to reorder the top level groups.
                     if (group.style.nestingLevel === 0) {
-                        drawIcon(-EDITION_MODE_INDENT, offset, moveUpIconPath);
-                        drawIcon(-EDITION_MODE_INDENT + EDIT_BUTTON_SIZE, offset, moveDownIconPath);
+                        drawIcon(-EDITION_MODE_INDENT, offset, moveUpIconPath, iconColor);
+                        drawIcon(-EDITION_MODE_INDENT + EDIT_BUTTON_SIZE, offset, moveDownIconPath, iconColor);
                     }
-                    drawIcon(-EDITION_MODE_INDENT + EDIT_BUTTON_SIZE * 2, offset, hideIconPath);
-                    drawIcon(this.labelWidthForGroup(context, group), offset, saveIconPath);
+                    drawIcon(-EDITION_MODE_INDENT + EDIT_BUTTON_SIZE * 2, offset, group.hidden ? showIconPath : hideIconPath, iconColor);
+                    drawIcon(this.labelWidthForGroup(context, group), offset, saveIconPath, iconColor);
                 }
                 else if (hoveredGroupIndex === index) {
-                    drawIcon(this.labelWidthForGroup(context, group), offset, editIconPath);
+                    drawIcon(-EDIT_BUTTON_SIZE, offset, editIconPath);
                 }
             }
         });
@@ -1834,7 +1888,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-token-subtle');
         this.forEachGroupInViewport((offset, index, group) => {
             if (this.isGroupCollapsible(index)) {
-                drawExpansionArrow.call(this, this.expansionArrowIndent * (group.style.nestingLevel + 1), offset + group.style.height - this.textBaseline - this.arrowSide / 2, Boolean(group.expanded));
+                drawExpansionArrow.call(this, this.expansionArrowIndent * (group.style.nestingLevel + 1), offset + group.style.height - this.textBaseline - this.arrowSide / 2, this.#editMode ? false : Boolean(group.expanded));
             }
         });
         context.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-neutral-outline');
@@ -1880,11 +1934,14 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             context.fill();
             context.restore();
         }
-        function drawIcon(x, y, pathData, iconColor = '--sys-color-token-subtle') {
+        function drawIcon(x, y, pathData, iconColor = '--sys-color-on-surface') {
             const p = new Path2D(pathData);
             context.save();
-            context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue(iconColor);
             context.translate(x, y);
+            // This color is same as the background of the whole flame chart.
+            context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container');
+            context.fillRect(0, 0, EDIT_BUTTON_SIZE, EDIT_BUTTON_SIZE);
+            context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue(iconColor);
             // The pathData from front_end/images folder is for a 20 pixel icon.
             // So we add a scale to draw the icon in a correct size.
             const scale = EDIT_BUTTON_SIZE / 20;
@@ -2049,7 +2106,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             sortedGroupIndexes.push(groups.length);
             const currentIndex = sortedGroupIndexes.indexOf(i);
             const nextOffset = groupOffsets[sortedGroupIndexes[currentIndex + 1]];
-            if (!parentGroupVisible || group.hidden) {
+            // In edit mode all the groups are visible.
+            if (!this.#editMode && (!parentGroupVisible || group.hidden)) {
                 continue;
             }
             callback(groupTop, i, group, firstGroup, nextOffset - groupTop);
@@ -2521,7 +2579,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             // If |shareHeaderLine| is false, we add the height of one more level to
             // the current offset, which will be used for the start level of current
             // group.
-            if (!groups[groupNode.index].hidden && parentGroupIsVisible && !groups[groupNode.index].style.shareHeaderLine) {
+            // If it's in edit mode, all the groups are shown.
+            if (this.#editMode ||
+                (!groups[groupNode.index].hidden && parentGroupIsVisible && !groups[groupNode.index].style.shareHeaderLine)) {
                 currentOffset += groups[groupNode.index].style.height;
             }
         }
@@ -2574,15 +2634,16 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             else {
                 height = this.barHeight;
             }
-            this.visibleLevels[level] = thisLevelIsVisible ?? false;
+            // If it's in edit mode, all the levels are hidden.
+            this.visibleLevels[level] = this.#editMode ? false : Boolean(thisLevelIsVisible);
             this.visibleLevelOffsets[level] = currentOffset;
-            this.visibleLevelHeights[level] = height;
+            this.visibleLevelHeights[level] = this.#editMode ? 0 : height;
             // If this level not belong to any group, it is always shown, otherwise we need to check if it is visible.
             if (groupNode.index < 0 ||
                 (!groups[groupNode.index].hidden) &&
                     (thisLevelIsVisible ||
                         (parentGroupIsVisible && groups[groupNode.index].style.shareHeaderLine && isFirstOnLevel))) {
-                currentOffset += height;
+                currentOffset += this.visibleLevelHeights[level];
             }
         }
         if (groupNode.children.length === 0) {
@@ -2590,8 +2651,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         for (const child of groupNode.children) {
             // If the child is not the first child, we will add a padding top.
-            if (thisGroupLevelsAreVisible && !groups[child.index]?.hidden && child !== groupNode.children[0]) {
-                currentOffset += groups[child.index].style.padding ?? 0;
+            if (this.#editMode ||
+                (thisGroupLevelsAreVisible && !groups[child.index]?.hidden && child !== groupNode.children[0])) {
+                currentOffset += (groups[child.index].style.padding ?? 0);
             }
             currentOffset =
                 this.#traverseGroupTreeAndUpdateLevelPositionsForTheGroup(child, currentOffset, thisGroupLevelsAreVisible);

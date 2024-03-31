@@ -1251,7 +1251,7 @@ export const NativeFunctions = [
     {
         name: "add",
         signatures: [["key"]],
-        receivers: ["CustomStateSet"]
+        receivers: ["CustomStateSet", "ViewTransitionTypeSet"]
     },
     {
         name: "add",
@@ -5758,7 +5758,13 @@ export const NativeFunctions = [
     },
     {
         name: "flatMap",
-        signatures: [["callback", "?thisArg"]]
+        signatures: [["callback", "?thisArg"]],
+        receivers: ["ReadonlyArray", "Array"]
+    },
+    {
+        name: "flatMap",
+        signatures: [["mapper"]],
+        receivers: ["Observable"]
     },
     {
         name: "flat",
@@ -7712,6 +7718,10 @@ export const NativeFunctions = [
     {
         name: "lstm",
         signatures: [["input", "weight", "recurrentWeight", "steps", "hiddenSize", "?options"]]
+    },
+    {
+        name: "lstmCell",
+        signatures: [["input", "weight", "recurrentWeight", "hiddenState", "cellState", "hiddenSize", "?options"]]
     },
     {
         name: "pad",

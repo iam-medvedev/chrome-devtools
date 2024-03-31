@@ -180,7 +180,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
         this.dataGrid.setStickToBottom(true);
         this.dataGrid.setCellClass('websocket-frame-view-td');
         this.timeComparator =
-            ResourceWebSocketFrameNodeTimeComparator;
+            resourceWebSocketFrameNodeTimeComparator;
         this.dataGrid.sortNodes(this.timeComparator, false);
         this.dataGrid.markColumnAsSortedBy('time', DataGrid.DataGrid.Order.Ascending);
         this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.sortItems, this);
@@ -195,7 +195,7 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
         this.mainToolbar.appendToolbarItem(this.clearAllButton);
         this.filterTypeCombobox =
             new UI.Toolbar.ToolbarComboBox(this.updateFilterSetting.bind(this), i18nString(UIStrings.filter));
-        for (const filterItem of _filterTypes) {
+        for (const filterItem of FILTER_TYPES) {
             const option = this.filterTypeCombobox.createOption(filterItem.label(), filterItem.name);
             this.filterTypeCombobox.addOption(option);
         }
@@ -319,9 +319,7 @@ export const opCodeDescriptions = (function () {
     map[10 /* OpCodes.PongFrame */] = i18nLazyString(UIStrings.pongMessage);
     return map;
 })();
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _filterTypes = [
+const FILTER_TYPES = [
     { name: 'all', label: i18nLazyString(UIStrings.all), jslogContext: 'all' },
     { name: 'send', label: i18nLazyString(UIStrings.send), jslogContext: 'send' },
     { name: 'receive', label: i18nLazyString(UIStrings.receive), jslogContext: 'receive' },
@@ -391,9 +389,7 @@ export class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.Sortab
         return this.binaryViewInternal;
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export function ResourceWebSocketFrameNodeTimeComparator(a, b) {
+function resourceWebSocketFrameNodeTimeComparator(a, b) {
     return a.frame.time - b.frame.time;
 }
 const clearFrameOffsets = new WeakMap();

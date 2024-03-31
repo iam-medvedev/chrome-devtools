@@ -44,20 +44,6 @@ export const generatedProperties = [
     },
     {
         "longhands": [
-            "mask-image",
-            "-webkit-mask-position-x",
-            "-webkit-mask-position-y",
-            "mask-size",
-            "mask-repeat",
-            "mask-origin",
-            "mask-clip",
-            "mask-composite",
-            "mask-mode"
-        ],
-        "name": "-alternative-mask"
-    },
-    {
-        "longhands": [
             "view-timeline-name",
             "view-timeline-axis",
             "view-timeline-inset"
@@ -167,18 +153,6 @@ export const generatedProperties = [
     },
     {
         "longhands": [
-            "-webkit-mask-image",
-            "-webkit-mask-position-x",
-            "-webkit-mask-position-y",
-            "-webkit-mask-size",
-            "-webkit-mask-repeat",
-            "-webkit-mask-origin",
-            "-webkit-mask-clip"
-        ],
-        "name": "-webkit-mask"
-    },
-    {
-        "longhands": [
             "-webkit-mask-box-image-source",
             "-webkit-mask-box-image-slice",
             "-webkit-mask-box-image-width",
@@ -203,35 +177,10 @@ export const generatedProperties = [
         "name": "-webkit-mask-box-image-width"
     },
     {
-        "name": "-webkit-mask-clip"
-    },
-    {
-        "name": "-webkit-mask-composite"
-    },
-    {
-        "name": "-webkit-mask-image"
-    },
-    {
-        "name": "-webkit-mask-origin"
-    },
-    {
-        "longhands": [
-            "-webkit-mask-position-x",
-            "-webkit-mask-position-y"
-        ],
-        "name": "-webkit-mask-position"
-    },
-    {
         "name": "-webkit-mask-position-x"
     },
     {
         "name": "-webkit-mask-position-y"
-    },
-    {
-        "name": "-webkit-mask-repeat"
-    },
-    {
-        "name": "-webkit-mask-size"
     },
     {
         "name": "-webkit-perspective-origin-x"
@@ -2330,6 +2279,17 @@ export const generatedProperties = [
         "name": "marker-start"
     },
     {
+        "longhands": [
+            "mask-image",
+            "-webkit-mask-position-x",
+            "-webkit-mask-position-y",
+            "mask-size",
+            "mask-repeat",
+            "mask-origin",
+            "mask-clip",
+            "mask-composite",
+            "mask-mode"
+        ],
         "name": "mask"
     },
     {
@@ -2853,6 +2813,15 @@ export const generatedProperties = [
             "most-inline-size"
         ],
         "name": "position-try-order"
+    },
+    {
+        "keywords": [
+            "always",
+            "anchors-valid",
+            "anchors-visible",
+            "no-overflow"
+        ],
+        "name": "position-visibility"
     },
     {
         "name": "prefix"
@@ -5287,6 +5256,14 @@ export const generatedPropertyValues = {
             "most-inline-size"
         ]
     },
+    "position-visibility": {
+        "values": [
+            "always",
+            "anchors-valid",
+            "anchors-visible",
+            "no-overflow"
+        ]
+    },
     "quotes": {
         "values": [
             "auto",
@@ -5915,38 +5892,6 @@ export const generatedAliasesFor = new Map([
         "-alternative-animation-with-timeline"
     ],
     [
-        "-webkit-alternative-mask",
-        "-alternative-mask"
-    ],
-    [
-        "-webkit-alternative-mask-clip",
-        "mask-clip"
-    ],
-    [
-        "-webkit-alternative-mask-composite",
-        "mask-composite"
-    ],
-    [
-        "-webkit-alternative-mask-image",
-        "mask-image"
-    ],
-    [
-        "-webkit-alternative-mask-origin",
-        "mask-origin"
-    ],
-    [
-        "-webkit-alternative-mask-position",
-        "mask-position"
-    ],
-    [
-        "-webkit-alternative-mask-repeat",
-        "mask-repeat"
-    ],
-    [
-        "-webkit-alternative-mask-size",
-        "mask-size"
-    ],
-    [
         "-webkit-animation",
         "animation"
     ],
@@ -6205,6 +6150,38 @@ export const generatedAliasesFor = new Map([
     [
         "-webkit-margin-start",
         "margin-inline-start"
+    ],
+    [
+        "-webkit-mask",
+        "mask"
+    ],
+    [
+        "-webkit-mask-clip",
+        "mask-clip"
+    ],
+    [
+        "-webkit-mask-composite",
+        "mask-composite"
+    ],
+    [
+        "-webkit-mask-image",
+        "mask-image"
+    ],
+    [
+        "-webkit-mask-origin",
+        "mask-origin"
+    ],
+    [
+        "-webkit-mask-position",
+        "mask-position"
+    ],
+    [
+        "-webkit-mask-repeat",
+        "mask-repeat"
+    ],
+    [
+        "-webkit-mask-size",
+        "mask-size"
     ],
     [
         "-webkit-max-logical-height",

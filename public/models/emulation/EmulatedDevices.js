@@ -51,7 +51,7 @@ export class EmulatedDevice {
         this.vertical = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
         this.horizontal = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
         this.deviceScaleFactor = 1;
-        this.capabilities = [Capability.Touch, Capability.Mobile];
+        this.capabilities = ["touch" /* Capability.Touch */, "mobile" /* Capability.Mobile */];
         this.userAgent = '';
         this.userAgentMetadata = null;
         this.modes = [];
@@ -59,7 +59,7 @@ export class EmulatedDevice {
         this.isFoldableScreen = false;
         this.verticalSpanned = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
         this.horizontalSpanned = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
-        this.#showInternal = _Show.Default;
+        this.#showInternal = Show.Default;
         this.#showByDefault = true;
     }
     static fromJSONV1(json) {
@@ -158,7 +158,11 @@ export class EmulatedDevice {
             }
             const result = new EmulatedDevice();
             result.title = parseValue(json, 'title', 'string');
-            result.type = parseValue(json, 'type', 'string');
+            const type = parseValue(json, 'type', 'string');
+            if (!Object.values(Type).includes(type)) {
+                throw new Error('Emulated device has wrong type: ' + type);
+            }
+            result.type = type;
             result.order = parseValue(json, 'order', 'number', 0);
             const rawUserAgent = parseValue(json, 'user-agent', 'string');
             result.userAgent = SDK.NetworkManager.MultitargetNetworkManager.patchUserAgentWithChromeVersion(rawUserAgent);
@@ -216,7 +220,11 @@ export class EmulatedDevice {
                 result.modes.push(mode);
             }
             result.#showByDefault = parseValue(json, 'show-by-default', 'boolean', undefined);
-            result.#showInternal = parseValue(json, 'show', 'string', _Show.Default);
+            const show = parseValue(json, 'show', 'string', Show.Default);
+            if (!Object.values(Show).includes(show)) {
+                throw new Error('Emulated device has wrong show mode: ' + show);
+            }
+            result.#showInternal = show;
             return result;
         }
         catch (e) {
@@ -377,46 +385,42 @@ export class EmulatedDevice {
         }
     }
     show() {
-        if (this.#showInternal === _Show.Default) {
+        if (this.#showInternal === Show.Default) {
             return this.#showByDefault;
         }
-        return this.#showInternal === _Show.Always;
+        return this.#showInternal === Show.Always;
     }
     setShow(show) {
-        this.#showInternal = show ? _Show.Always : _Show.Never;
+        this.#showInternal = show ? Show.Always : Show.Never;
     }
     copyShowFrom(other) {
         this.#showInternal = other.#showInternal;
     }
     touch() {
-        return this.capabilities.indexOf(Capability.Touch) !== -1;
+        return this.capabilities.indexOf("touch" /* Capability.Touch */) !== -1;
     }
     mobile() {
-        return this.capabilities.indexOf(Capability.Mobile) !== -1;
+        return this.capabilities.indexOf("mobile" /* Capability.Mobile */) !== -1;
     }
 }
 export const Horizontal = 'horizontal';
 export const Vertical = 'vertical';
 export const HorizontalSpanned = 'horizontal-spanned';
 export const VerticalSpanned = 'vertical-spanned';
-export const Type = {
-    Phone: 'phone',
-    Tablet: 'tablet',
-    Notebook: 'notebook',
-    Desktop: 'desktop',
-    Unknown: 'unknown',
-};
-export const Capability = {
-    Touch: 'touch',
-    Mobile: 'mobile',
-};
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export const _Show = {
-    Always: 'Always',
-    Default: 'Default',
-    Never: 'Never',
-};
+var Type;
+(function (Type) {
+    Type["Phone"] = "phone";
+    Type["Tablet"] = "tablet";
+    Type["Notebook"] = "notebook";
+    Type["Desktop"] = "desktop";
+    Type["Unknown"] = "unknown";
+})(Type || (Type = {}));
+var Show;
+(function (Show) {
+    Show["Always"] = "Always";
+    Show["Default"] = "Default";
+    Show["Never"] = "Never";
+})(Show || (Show = {}));
 let emulatedDevicesListInstance;
 export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
     #standardSetting;

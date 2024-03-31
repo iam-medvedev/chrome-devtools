@@ -160,15 +160,9 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/sensors/SensorsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SensorsView extends UI.Widget.VBox {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    LocationSetting;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    Location;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    LocationOverrideEnabled;
+    #locationSetting;
+    #location;
+    #locationOverrideEnabled;
     fieldsetElement;
     timezoneError;
     locationSelectElement;
@@ -203,10 +197,10 @@ export class SensorsView extends UI.Widget.VBox {
         super(true);
         this.element.setAttribute('jslog', `${VisualLogging.panel('sensors').track({ resize: true })}`);
         this.contentElement.classList.add('sensors-view');
-        this.LocationSetting = Common.Settings.Settings.instance().createSetting('emulation.location-override', '');
-        this.Location = SDK.EmulationModel.Location.parseSetting(this.LocationSetting.get());
-        this.LocationOverrideEnabled = false;
-        this.createLocationSection(this.Location);
+        this.#locationSetting = Common.Settings.Settings.instance().createSetting('emulation.location-override', '');
+        this.#location = SDK.EmulationModel.Location.parseSetting(this.#locationSetting.get());
+        this.#locationOverrideEnabled = false;
+        this.createLocationSection(this.#location);
         this.createPanelSeparator();
         this.deviceOrientationSetting =
             Common.Settings.Settings.instance().createSetting('emulation.device-orientation-override', '');
@@ -268,9 +262,9 @@ export class SensorsView extends UI.Widget.VBox {
         group.label = i18nString(UIStrings.error);
         group.appendChild(UI.UIUtils.createOption(i18nString(UIStrings.locationUnavailable), NonPresetOptions.Unavailable, 'unavailable'));
         this.locationSelectElement.selectedIndex = selectedIndex;
-        this.locationSelectElement.addEventListener('change', this.LocationSelectChanged.bind(this));
+        this.locationSelectElement.addEventListener('change', this.#locationSelectChanged.bind(this));
         this.fieldsetElement = fields.createChild('fieldset');
-        this.fieldsetElement.disabled = !this.LocationOverrideEnabled;
+        this.fieldsetElement.disabled = !this.#locationOverrideEnabled;
         this.fieldsetElement.id = 'location-override-section';
         const latitudeGroup = this.fieldsetElement.createChild('div', 'latlong-group');
         const longitudeGroup = this.fieldsetElement.createChild('div', 'latlong-group');
@@ -309,33 +303,31 @@ export class SensorsView extends UI.Widget.VBox {
         localeGroup.appendChild(UI.UIUtils.createLabel(i18nString(UIStrings.locale), 'locale-title', this.localeInput));
         this.localeError = localeGroup.createChild('div', 'locale-error');
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    LocationSelectChanged() {
+    #locationSelectChanged() {
         this.fieldsetElement.disabled = false;
         this.timezoneError.textContent = '';
         const value = this.locationSelectElement.options[this.locationSelectElement.selectedIndex].value;
         if (value === NonPresetOptions.NoOverride) {
-            this.LocationOverrideEnabled = false;
+            this.#locationOverrideEnabled = false;
             this.clearFieldsetElementInputs();
             this.fieldsetElement.disabled = true;
         }
         else if (value === NonPresetOptions.Custom) {
-            this.LocationOverrideEnabled = true;
+            this.#locationOverrideEnabled = true;
             const location = SDK.EmulationModel.Location.parseUserInput(this.latitudeInput.value.trim(), this.longitudeInput.value.trim(), this.timezoneInput.value.trim(), this.localeInput.value.trim());
             if (!location) {
                 return;
             }
-            this.Location = location;
+            this.#location = location;
         }
         else if (value === NonPresetOptions.Unavailable) {
-            this.LocationOverrideEnabled = true;
-            this.Location = new SDK.EmulationModel.Location(0, 0, '', '', true);
+            this.#locationOverrideEnabled = true;
+            this.#location = new SDK.EmulationModel.Location(0, 0, '', '', true);
         }
         else {
-            this.LocationOverrideEnabled = true;
+            this.#locationOverrideEnabled = true;
             const coordinates = JSON.parse(value);
-            this.Location = new SDK.EmulationModel.Location(coordinates.lat, coordinates.long, coordinates.timezoneId, coordinates.locale, false);
+            this.#location = new SDK.EmulationModel.Location(coordinates.lat, coordinates.long, coordinates.timezoneId, coordinates.locale, false);
             this.latitudeSetter(coordinates.lat);
             this.longitudeSetter(coordinates.long);
             this.timezoneSetter(coordinates.timezoneId);
@@ -353,18 +345,18 @@ export class SensorsView extends UI.Widget.VBox {
         }
         this.timezoneError.textContent = '';
         this.setSelectElementLabel(this.locationSelectElement, NonPresetOptions.Custom);
-        this.Location = location;
+        this.#location = location;
         this.applyLocation();
     }
     applyLocation() {
-        if (this.LocationOverrideEnabled) {
-            this.LocationSetting.set(this.Location.toSetting());
+        if (this.#locationOverrideEnabled) {
+            this.#locationSetting.set(this.#location.toSetting());
         }
         else {
-            this.LocationSetting.set('');
+            this.#locationSetting.set('');
         }
         for (const emulationModel of SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
-            emulationModel.emulateLocation(this.LocationOverrideEnabled ? this.Location : null).catch(err => {
+            emulationModel.emulateLocation(this.#locationOverrideEnabled ? this.#location : null).catch(err => {
                 switch (err.type) {
                     case 'emulation-set-timezone': {
                         this.timezoneError.textContent = err.message;
@@ -659,23 +651,6 @@ export const NonPresetOptions = {
     Custom: 'custom',
     Unavailable: 'unavailable',
 };
-export class PresetOrientations {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    static get Orientations() {
-        return [{
-                title: i18nString(UIStrings.presets),
-                value: [
-                    { title: i18nString(UIStrings.portrait), orientation: '[0, 90, 0]' },
-                    { title: i18nString(UIStrings.portraitUpsideDown), orientation: '[180, -90, 0]' },
-                    { title: i18nString(UIStrings.landscapeLeft), orientation: '[90, 0, -90]' },
-                    { title: i18nString(UIStrings.landscapeRight), orientation: '[90, -180, -90]' },
-                    { title: i18nString(UIStrings.displayUp), orientation: '[0, 0, 0]' },
-                    { title: i18nString(UIStrings.displayDown), orientation: '[0, -180, 0]' },
-                ],
-            }];
-    }
-}
 export class ShowActionDelegate {
     handleAction(_context, _actionId) {
         void UI.ViewManager.ViewManager.instance().showView('sensors');

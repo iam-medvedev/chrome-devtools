@@ -590,7 +590,12 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.timelinePane.element.appendChild(this.fileSelectorElement);
     }
     contextMenu(event) {
-        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        // Do not show this Context menu on FlameChart entries because we have a different context menu for FlameChart entries
+        const mouseEvent = event;
+        if (this.flameChart.getMainFlameChart().coordinatesToEntryIndex(mouseEvent.offsetX, mouseEvent.offsetY) !== -1) {
+            return;
+        }
+        const contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
         contextMenu.appendItemsAtLocation('timelineMenu');
         void contextMenu.show();
     }
@@ -607,7 +612,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         // Save annotations into the metadata if annotations the experiment is on
         if (Root.Runtime.experiments.isEnabled("save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */) &&
             metadata) {
-            metadata.annotations = AnnotationsManager.AnnotationsManager.AnnotationsManager.instance().getAnnotations();
+            metadata.annotations = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getAnnotations();
         }
         if (!traceEvents) {
             return;
@@ -1045,7 +1050,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         // http/tests/devtools/tracing/timeline-misc/timeline-range-stats.js
         this.#applyActiveFilters(false, exclusiveFilter);
     }
-    setModel(model, exclusiveFilter = null, traceEngineIndex = -1) {
+    setModel(model, exclusiveFilter = null, traceEngineIndex = -1, metadata = null) {
         this.performanceModel = model;
         this.#traceEngineActiveTraceIndex = traceEngineIndex;
         const traceParsedData = this.#traceEngineModel.traceParsedData(this.#traceEngineActiveTraceIndex);
@@ -1056,9 +1061,20 @@ export class TimelinePanel extends UI.Panel.Panel {
         // rendering.
         if (traceParsedData) {
             TraceBounds.TraceBounds.BoundsManager.instance().resetWithNewBounds(traceParsedData.Meta.traceBounds);
-            // Since we have a single instance to EntriesFilter, combine both SyntheticEvent to Node maps
+            // Since we have a single instance to AnnotationsManager, combine both SyntheticEvent to Node maps
             const samplesAndRendererEventsEntryToNodeMap = new Map([...traceParsedData.Samples.entryToNode, ...traceParsedData.Renderer.entryToNode]);
-            TraceEngine.EntriesFilter.EntriesFilter.maybeInstance({ entryToNodeMap: samplesAndRendererEventsEntryToNodeMap });
+            // If the annotations experiment is on and there are some annotations saved, apply the annotations from the file.
+            // We create AnnotationsManager regardless of the experiment because the EntriesFilterer initiated in the AnnotationsManager
+            // needs to work even if the experiment is off.
+            const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state();
+            AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance({
+                entryToNodeMap: samplesAndRendererEventsEntryToNodeMap,
+                wholeTraceBounds: traceBounds?.micro.entireTraceBounds,
+            });
+            if (Root.Runtime.experiments.isEnabled("save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */) &&
+                metadata?.annotations) {
+                AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.applyAnnotations(metadata?.annotations);
+            }
             this.#applyActiveFilters(traceParsedData.Meta.traceIsGeneric, exclusiveFilter);
         }
         if (model) {
@@ -1234,7 +1250,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.clear();
             return;
         }
-        // TODO(b.corp.google.com/issues/313757110): Apply annotations from the file if they exist in the metadata.
         if (!this.performanceModel) {
             this.performanceModel = new PerformanceModel();
         }
@@ -1253,7 +1268,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             // so we know that the active index will be the size of the model because
             // the newest trace will be automatically set to active.
             this.#traceEngineActiveTraceIndex = this.#traceEngineModel.size() - 1;
-            this.setModel(this.performanceModel, exclusiveFilter, this.#traceEngineActiveTraceIndex);
+            this.setModel(this.performanceModel, exclusiveFilter, this.#traceEngineActiveTraceIndex, metadata);
             if (this.statusPane) {
                 this.statusPane.remove();
             }

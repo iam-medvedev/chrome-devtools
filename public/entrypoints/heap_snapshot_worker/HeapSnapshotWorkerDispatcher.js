@@ -38,12 +38,10 @@ export class HeapSnapshotWorkerDispatcher {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #objects;
     #postMessage;
-    constructor(globalObject, postMessage) {
+    constructor(postMessage) {
         this.#objects = [];
         this.#postMessage = postMessage;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sendEvent(name, data) {
         this.#postMessage({ eventName: name, data: data });
     }

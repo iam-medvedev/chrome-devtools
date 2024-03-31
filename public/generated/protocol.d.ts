@@ -5513,8 +5513,12 @@ export declare namespace Emulation {
         /**
          * If set, the posture of a foldable device. If not set the posture is set
          * to continuous.
+         * Deprecated, use Emulation.setDevicePostureOverride.
          */
         devicePosture?: DevicePosture;
+    }
+    interface SetDevicePostureOverrideRequest {
+        posture: DevicePosture;
     }
     interface SetScrollbarsHiddenRequest {
         /**
@@ -7741,6 +7745,10 @@ export declare namespace Network {
          * Specifies that the request was served from the prefetch cache.
          */
         fromPrefetchCache?: boolean;
+        /**
+         * Specifies that the request was served from the prefetch cache.
+         */
+        fromEarlyHints?: boolean;
         /**
          * Information about how Service Worker Static Router was used.
          */
@@ -13040,7 +13048,8 @@ export declare namespace Storage {
         DestinationGlobalLimitReached = "destinationGlobalLimitReached",
         DestinationBothLimitsReached = "destinationBothLimitsReached",
         ReportingOriginsPerSiteLimitReached = "reportingOriginsPerSiteLimitReached",
-        ExceedsMaxChannelCapacity = "exceedsMaxChannelCapacity"
+        ExceedsMaxChannelCapacity = "exceedsMaxChannelCapacity",
+        ExceedsMaxTriggerStateCardinality = "exceedsMaxTriggerStateCardinality"
     }
     const enum AttributionReportingSourceRegistrationTimeConfig {
         Include = "include",

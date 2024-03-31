@@ -1,11 +1,11 @@
-import { type Breadcrumb } from './Breadcrumbs.js';
+import * as TraceEngine from '../../../models/trace/trace.js';
 export interface BreadcrumbsUIData {
-    breadcrumb: Breadcrumb;
+    breadcrumb: TraceEngine.Types.File.Breadcrumb;
 }
 export declare class BreadcrumbRemovedEvent extends Event {
-    breadcrumb: Breadcrumb;
+    breadcrumb: TraceEngine.Types.File.Breadcrumb;
     static readonly eventName = "breadcrumbremoved";
-    constructor(breadcrumb: Breadcrumb);
+    constructor(breadcrumb: TraceEngine.Types.File.Breadcrumb);
 }
 export declare class BreadcrumbsUI extends HTMLElement {
     #private;
