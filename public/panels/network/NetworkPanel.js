@@ -663,7 +663,10 @@ export class RequestIdRevealer {
 }
 export class NetworkLogWithFilterRevealer {
     reveal(request) {
-        return NetworkPanel.revealAndFilter(request.filters);
+        if ('filters' in request) {
+            return NetworkPanel.revealAndFilter(request.filters);
+        }
+        return NetworkPanel.revealAndFilter(request.filter ? [{ filterType: null, filterValue: request.filter }] : []);
     }
 }
 export class FilmStripRecorder {

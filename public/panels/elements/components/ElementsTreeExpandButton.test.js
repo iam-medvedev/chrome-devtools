@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ElementsComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-describe('Elements tree expand button', () => {
+describeWithLocale('Elements tree expand button', () => {
     it('render and click handler trigger correctly', async () => {
         const component = new ElementsComponents.ElementsTreeExpandButton.ElementsTreeExpandButton();
         let clicks = 0;

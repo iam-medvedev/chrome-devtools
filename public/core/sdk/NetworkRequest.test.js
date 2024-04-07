@@ -123,7 +123,11 @@ describe('NetworkRequest', () => {
             statusCode: undefined,
             cookiePartitionKey: undefined,
             cookiePartitionKeyOpaque: undefined,
-            exemptedResponseCookies: [{ cookie: cookie, exemptionReason: "TPCDHeuristics" /* Protocol.Network.CookieExemptionReason.TPCDHeuristics */ }],
+            exemptedResponseCookies: [{
+                    cookie: cookie,
+                    cookieLine: cookie.getCookieLine(),
+                    exemptionReason: "TPCDHeuristics" /* Protocol.Network.CookieExemptionReason.TPCDHeuristics */,
+                }],
         });
         assert.deepEqual(request.responseCookies.map(cookie => cookie.getCookieLine()), ['name=value; Path=/; SameSite=None; Secure;']);
         assert.deepEqual(request.nonBlockedResponseCookies().map(cookie => cookie.getCookieLine()), ['name=value; Path=/; SameSite=None; Secure;']);
@@ -205,7 +209,11 @@ describeWithMockConnection('NetworkRequest', () => {
             statusCode: undefined,
             cookiePartitionKey: undefined,
             cookiePartitionKeyOpaque: undefined,
-            exemptedResponseCookies: [{ cookie, exemptionReason: "TPCDHeuristics" /* Protocol.Network.CookieExemptionReason.TPCDHeuristics */ }],
+            exemptedResponseCookies: [{
+                    cookie,
+                    cookieLine: cookie.getCookieLine(),
+                    exemptionReason: "TPCDHeuristics" /* Protocol.Network.CookieExemptionReason.TPCDHeuristics */,
+                }],
         });
         assert.isTrue(removeBlockedCookieSpy.calledOnceWith(cookie));
         assert.isEmpty(await cookieModel.getCookies([url]));

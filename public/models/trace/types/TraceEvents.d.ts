@@ -427,6 +427,12 @@ export interface TraceEventFirstPaint extends TraceEventMark {
     };
 }
 export type PageLoadEvent = TraceEventFirstContentfulPaint | TraceEventMarkDOMContent | TraceEventInteractiveTime | TraceEventLargestContentfulPaintCandidate | TraceEventLayoutShift | TraceEventFirstPaint | TraceEventMarkLoad | TraceEventNavigationStart;
+export declare const MarkerName: readonly ["MarkDOMContent", "MarkLoad", "firstPaint", "firstContentfulPaint", "largestContentfulPaint::Candidate"];
+interface MakerEvent extends TraceEventData {
+    name: typeof MarkerName[number];
+}
+export declare function isTraceEventMarkerEvent(event: TraceEventData): event is MakerEvent;
+export declare function eventIsPageLoadEvent(event: TraceEventData): event is PageLoadEvent;
 export interface TraceEventLargestContentfulPaintCandidate extends TraceEventMark {
     name: 'largestContentfulPaint::Candidate';
     args: TraceEventArgs & {
@@ -837,7 +843,12 @@ export interface TraceEventPerformanceMeasureBegin extends TraceEventPairableUse
 export type TraceEventPerformanceMeasureEnd = TraceEventPairableUserTiming & TraceEventPairableAsyncEnd;
 export type TraceEventPerformanceMeasure = TraceEventPerformanceMeasureBegin | TraceEventPerformanceMeasureEnd;
 export interface TraceEventPerformanceMark extends TraceEventUserTiming {
-    ph: Phase.INSTANT | Phase.MARK;
+    args: TraceEventArgs & {
+        data?: TraceEventArgsData & {
+            detail?: string;
+        };
+    };
+    ph: Phase.INSTANT | Phase.MARK | Phase.ASYNC_NESTABLE_INSTANT;
 }
 export interface TraceEventConsoleTimeBegin extends TraceEventPairableAsyncBegin {
     cat: 'blink.console';
@@ -858,17 +869,6 @@ export interface TraceEventTimeStamp extends TraceEventData {
         };
     };
 }
-export interface TraceEventExtensionMeasureBegin extends TraceEventPerformanceMeasureBegin {
-    name: `devtools-entry-${string}`;
-}
-export interface TraceEventExtensionMeasureEnd extends TraceEventPerformanceMeasureEnd {
-    name: `devtools-entry-${string}`;
-}
-export interface TraceEventExtensionMark extends TraceEventPerformanceMark {
-    name: `devtools-entry-${string}`;
-    ph: Phase.INSTANT | Phase.MARK;
-}
-export type TraceEventExtensionMeasure = TraceEventExtensionMeasureBegin | TraceEventExtensionMeasureEnd;
 /** ChromeFrameReporter args for PipelineReporter event.
     Matching proto: https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/trace/track_event/chrome_frame_reporter.proto
  */
@@ -958,6 +958,7 @@ export interface TraceEventPipelineReporter extends TraceEventData {
 }
 export declare function isTraceEventPipelineReporter(event: TraceEventData): event is TraceEventPipelineReporter;
 export interface SyntheticEventPair<T extends TraceEventPairableAsync = TraceEventPairableAsync> extends TraceEventData {
+    name: T['name'];
     cat: T['cat'];
     id?: string;
     id2?: {
@@ -1117,9 +1118,27 @@ export interface SyntheticInvalidation extends TraceEventInstant {
     stackTrace?: TraceEventCallFrame[];
 }
 export declare function isSyntheticInvalidation(event: TraceEventData): event is SyntheticInvalidation;
+export interface SelectorTiming {
+    'elapsed (us)': number;
+    'fast_reject_count': number;
+    'match_attempts': number;
+    'selector': string;
+    'style_sheet_id': string;
+}
+export interface SelectorStats {
+    selector_timings: SelectorTiming[];
+}
+export interface TraceEventStyleRecalcSelectorStats extends TraceEventComplete {
+    name: KnownEventName.SelectorStats;
+    args: TraceEventArgs & {
+        selector_stats?: SelectorStats;
+    };
+}
+export declare function isStyleRecalcSelectorStats(event: TraceEventData): event is TraceEventStyleRecalcSelectorStats;
 export interface TraceEventUpdateLayoutTree extends TraceEventComplete {
     name: KnownEventName.UpdateLayoutTree;
     args: TraceEventArgs & {
+        selector_stats?: SelectorStats;
         elementCount: number;
         beginData?: {
             frame: string;
@@ -1516,7 +1535,6 @@ export declare const enum KnownEventName {
     V8Execute = "V8.Execute",
     GC = "GCEvent",
     DOMGC = "BlinkGC.AtomicPhase",
-    IncrementalGCMarking = "V8.GCIncrementalMarking",
     MajorGC = "MajorGC",
     MinorGC = "MinorGC",
     GCCollectGarbage = "BlinkGC.AtomicPhase",
@@ -1536,6 +1554,7 @@ export declare const enum KnownEventName {
     ScheduleStyleInvalidationTracking = "ScheduleStyleInvalidationTracking",
     StyleRecalcInvalidationTracking = "StyleRecalcInvalidationTracking",
     StyleInvalidatorInvalidationTracking = "StyleInvalidatorInvalidationTracking",
+    SelectorStats = "SelectorStats",
     ScrollLayer = "ScrollLayer",
     UpdateLayer = "UpdateLayer",
     PaintSetup = "PaintSetup",

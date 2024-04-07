@@ -1895,23 +1895,10 @@ export const generatedProperties = [
         "name": "grid-column-end"
     },
     {
-        "longhands": [
-            "column-gap"
-        ],
-        "name": "grid-column-gap"
-    },
-    {
         "keywords": [
             "auto"
         ],
         "name": "grid-column-start"
-    },
-    {
-        "longhands": [
-            "row-gap",
-            "column-gap"
-        ],
-        "name": "grid-gap"
     },
     {
         "longhands": [
@@ -1925,12 +1912,6 @@ export const generatedProperties = [
             "auto"
         ],
         "name": "grid-row-end"
-    },
-    {
-        "longhands": [
-            "row-gap"
-        ],
-        "name": "grid-row-gap"
     },
     {
         "keywords": [
@@ -2131,6 +2112,12 @@ export const generatedProperties = [
         "name": "line-break"
     },
     {
+        "keywords": [
+            "none"
+        ],
+        "name": "line-clamp"
+    },
+    {
         "name": "line-gap-override"
     },
     {
@@ -2207,7 +2194,8 @@ export const generatedProperties = [
     },
     {
         "keywords": [
-            "auto"
+            "auto",
+            "-internal-user-margin"
         ],
         "name": "margin-bottom"
     },
@@ -2232,19 +2220,22 @@ export const generatedProperties = [
     },
     {
         "keywords": [
-            "auto"
+            "auto",
+            "-internal-user-margin"
         ],
         "name": "margin-left"
     },
     {
         "keywords": [
-            "auto"
+            "auto",
+            "-internal-user-margin"
         ],
         "name": "margin-right"
     },
     {
         "keywords": [
-            "auto"
+            "auto",
+            "-internal-user-margin"
         ],
         "name": "margin-top"
     },
@@ -3626,6 +3617,9 @@ export const generatedProperties = [
         "name": "translate"
     },
     {
+        "name": "types"
+    },
+    {
         "keywords": [
             "normal",
             "embed",
@@ -4915,6 +4909,11 @@ export const generatedPropertyValues = {
             "normal",
             "strict",
             "anywhere"
+        ]
+    },
+    "line-clamp": {
+        "values": [
+            "none"
         ]
     },
     "line-height": {
@@ -6298,6 +6297,18 @@ export const generatedAliasesFor = new Map([
     [
         "-webkit-user-select",
         "user-select"
+    ],
+    [
+        "grid-column-gap",
+        "column-gap"
+    ],
+    [
+        "grid-gap",
+        "gap"
+    ],
+    [
+        "grid-row-gap",
+        "row-gap"
     ],
     [
         "word-wrap",

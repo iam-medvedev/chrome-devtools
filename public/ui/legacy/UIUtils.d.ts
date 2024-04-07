@@ -184,3 +184,13 @@ export interface ConfirmDialogOptions {
     cancelButtonLabel?: string;
     jslogContext?: string;
 }
+export declare function injectCoreStyles(root: Element | ShadowRoot): void;
+export declare function createShadowRootWithCoreStyles(element: Element, options?: {
+    cssFile?: CSSStyleSheet[] | {
+        cssContent: string;
+    };
+    delegatesFocus?: boolean;
+}): ShadowRoot;
+export declare function resetMeasuredScrollbarWidthForTest(): void;
+export declare function measuredScrollbarWidth(document?: Document | null): number;
+export declare function registerCustomElement(localName: string, typeExtension: string, definition: new () => HTMLElement): () => Element;

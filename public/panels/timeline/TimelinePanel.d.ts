@@ -20,6 +20,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private performanceModel;
     private disableCaptureJSProfileSetting;
     private readonly captureLayersAndPicturesSetting;
+    private readonly captureSelectorStatsSetting;
     private showScreenshotsSetting;
     private showMemorySetting;
     private readonly panelToolbar;

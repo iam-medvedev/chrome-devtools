@@ -39,8 +39,7 @@ import { Keys } from './KeyboardShortcut.js';
 import * as ThemeSupport from './theme_support/theme_support.js';
 import { Tooltip } from './Tooltip.js';
 import treeoutlineStyles from './treeoutline.css.legacy.js';
-import { deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, isEditing } from './UIUtils.js';
-import * as Utils from './utils/utils.js';
+import { createShadowRootWithCoreStyles, deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, isEditing, } from './UIUtils.js';
 const nodeToParentTreeElementMap = new WeakMap();
 export var Events;
 (function (Events) {
@@ -348,7 +347,7 @@ export class TreeOutlineInShadow extends TreeOutline {
         this.contentElement.classList.add('tree-outline');
         this.element = document.createElement('div');
         this.shadowRoot =
-            Utils.createShadowRootWithCoreStyles(this.element, { cssFile: treeoutlineStyles, delegatesFocus: undefined });
+            createShadowRootWithCoreStyles(this.element, { cssFile: treeoutlineStyles, delegatesFocus: undefined });
         this.disclosureElement = this.shadowRoot.createChild('div', 'tree-outline-disclosure');
         this.disclosureElement.appendChild(this.contentElement);
         this.renderSelection = true;
@@ -419,6 +418,7 @@ export class TreeElement {
         this.listItemNode.addEventListener('click', this.treeElementToggled.bind(this), false);
         this.listItemNode.addEventListener('dblclick', this.handleDoubleClick.bind(this), false);
         this.listItemNode.setAttribute('jslog', `${VisualLogging.treeItem().parent('parentTreeItem').context(jslogContext).track({
+            click: true,
             keydown: 'ArrowUp|ArrowDown|ArrowLeft|ArrowRight|Backspace|Delete|Enter|Space|Home|End',
         })}`);
         ARIAUtils.markAsTreeitem(this.listItemNode);

@@ -133,9 +133,6 @@
     },
     {
       "path": "../visual_logging/bundle-tsconfig.json"
-    },
-    {
-      "path": "utils/bundle-tsconfig.json"
     }
   ]
 }

@@ -43,6 +43,15 @@ function addInvalidationToEvent(event, invalidation) {
     invalidationsForEvent.set(event, existingInvalidations);
 }
 export function handleEvent(event) {
+    if (Types.TraceEvents.isStyleRecalcSelectorStats(event) && lastRecalcStyleEvent) {
+        if (!lastRecalcStyleEvent.args.selector_stats) {
+            lastRecalcStyleEvent.args.selector_stats = event.args.selector_stats;
+        }
+        else {
+            lastRecalcStyleEvent.args.selector_stats.selector_timings.push(...event.args.selector_stats?.selector_timings ?? []);
+        }
+        return;
+    }
     if (Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
         lastRecalcStyleEvent = event;
         // Associate any prior invalidations with this recalc event.

@@ -96,7 +96,6 @@ const REGISTERED_EXPERIMENTS = [
     "instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */,
     'css-type-component-length-deprecate',
     "styles-pane-css-changes" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */,
-    "timeline-as-console-profile-result-panel" /* Root.Runtime.ExperimentName.TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL */,
     "header-overrides" /* Root.Runtime.ExperimentName.HEADER_OVERRIDES */,
     "highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */,
     "set-all-breakpoints-eagerly" /* Root.Runtime.ExperimentName.SET_ALL_BREAKPOINTS_EAGERLY */,
@@ -108,6 +107,7 @@ const REGISTERED_EXPERIMENTS = [
     "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
     "save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */,
     "timeline-track-configuration" /* Root.Runtime.ExperimentName.TIMELINE_TRACK_CONFIGURATION */,
+    "timeline-extensions" /* Root.Runtime.ExperimentName.TIMELINE_EXTENSIONS */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();

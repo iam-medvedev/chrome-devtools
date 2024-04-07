@@ -4,9 +4,6 @@ import { type ToolbarItem } from './Toolbar.js';
 import { type TabbedViewLocation, type View, type ViewLocation } from './View.js';
 import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, ViewLocationValues, ViewPersistence, type ViewRegistration } from './ViewRegistration.js';
 import { VBox, type Widget } from './Widget.js';
-export declare const defaultOptionsForTabs: {
-    security: boolean;
-};
 export declare class PreRegisteredView implements View {
     private readonly viewRegistration;
     private widgetPromise;

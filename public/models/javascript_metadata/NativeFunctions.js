@@ -4291,7 +4291,13 @@ export const NativeFunctions = [
     },
     {
         name: "readBuffer",
-        signatures: [["src"], ["mode"]]
+        signatures: [["src"], ["mode"]],
+        receivers: ["WebGL2RenderingContext"]
+    },
+    {
+        name: "readBuffer",
+        signatures: [["srcBuffer"]],
+        receivers: ["MLContext"]
     },
     {
         name: "renderbufferStorageMultisample",
@@ -6415,6 +6421,18 @@ export const NativeFunctions = [
         signatures: [["number_to_drop"]]
     },
     {
+        name: "switchMap",
+        signatures: [["mapper"]]
+    },
+    {
+        name: "first",
+        signatures: [["?options"]]
+    },
+    {
+        name: "last",
+        signatures: [["?options"]]
+    },
+    {
         name: "getPartNode",
         signatures: [["index"]]
     },
@@ -7584,6 +7602,16 @@ export const NativeFunctions = [
         receivers: ["MLModel"]
     },
     {
+        name: "writeBuffer",
+        signatures: [["dstBuffer", "srcData", "?srcElementOffset", "?srcElementSize"], ["dstBuffer", "srcData", "?srcByteOffset", "?srcByteSize"]],
+        receivers: ["MLContext"]
+    },
+    {
+        name: "writeBuffer",
+        signatures: [["buffer", "bufferOffset", "data", "?dataElementOffset", "?dataElementCount"], ["buffer", "bufferOffset", "data", "?dataByteOffset", "?byteSize"]],
+        receivers: ["GPUQueue"]
+    },
+    {
         name: "MLModelLoader",
         signatures: [["context"]]
     },
@@ -7686,6 +7714,10 @@ export const NativeFunctions = [
     {
         name: "gru",
         signatures: [["input", "weight", "recurrentWeight", "steps", "hiddenSize", "?options"]]
+    },
+    {
+        name: "gruCell",
+        signatures: [["input", "weight", "recurrentWeight", "hiddenState", "hiddenSize", "?options"]]
     },
     {
         name: "hardSigmoid",
@@ -8642,10 +8674,6 @@ export const NativeFunctions = [
     {
         name: "setBindGroup",
         signatures: [["index", "bindGroup", "?dynamicOffsets"], ["index", "bindGroup", "dynamicOffsetsData", "dynamicOffsetsDataStart", "dynamicOffsetsDataLength"]]
-    },
-    {
-        name: "writeBuffer",
-        signatures: [["buffer", "bufferOffset", "data", "?dataElementOffset", "?dataElementCount"], ["buffer", "bufferOffset", "data", "?dataByteOffset", "?byteSize"]]
     },
     {
         name: "writeTexture",

@@ -199,8 +199,8 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #documentURLInternal;
     #frameIdInternal;
     #loaderIdInternal;
-    #initiatorInternal;
     #hasUserGesture;
+    #initiatorInternal;
     #redirectSourceInternal;
     #preflightRequestInternal;
     #preflightInitiatorRequestInternal;
@@ -279,11 +279,13 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #fromMemoryCache;
     #fromDiskCache;
     #fromPrefetchCacheInternal;
+    #fromEarlyHints;
     #fetchedViaServiceWorkerInternal;
     #serviceWorkerRouterInfoInternal;
     #timingInternal;
     #requestHeadersTextInternal;
     #responseHeadersInternal;
+    #earlyHintsHeadersInternal;
     #sortedResponseHeadersInternal;
     #responseCookiesInternal;
     #serverTimingsInternal;
@@ -606,6 +608,12 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     setFromPrefetchCache() {
         this.#fromPrefetchCacheInternal = true;
     }
+    fromEarlyHints() {
+        return Boolean(this.#fromEarlyHints);
+    }
+    setFromEarlyHints() {
+        this.#fromEarlyHints = true;
+    }
     /**
      * Returns true if the request was intercepted by a service worker and it
      * provided its own response.
@@ -833,6 +841,12 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#responseHeaderValues = {};
         this.dispatchEventToListeners(Events.ResponseHeadersChanged);
     }
+    get earlyHintsHeaders() {
+        return this.#earlyHintsHeadersInternal || [];
+    }
+    set earlyHintsHeaders(x) {
+        this.#earlyHintsHeadersInternal = x;
+    }
     get originalResponseHeaders() {
         return this.#originalResponseHeaders;
     }
@@ -930,6 +944,9 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     setWasIntercepted(wasIntercepted) {
         this.#wasIntercepted = wasIntercepted;
+    }
+    setEarlyHintsHeaders(headers) {
+        this.earlyHintsHeaders = headers;
     }
     get responseCookies() {
         if (!this.#responseCookiesInternal) {

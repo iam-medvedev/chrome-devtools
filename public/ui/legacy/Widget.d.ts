@@ -1,11 +1,7 @@
+import '../../core/dom_extension/dom_extension.js';
 import { Constraints } from './Geometry.js';
-export declare class WidgetElement extends HTMLDivElement {
-    __widget: Widget | null;
-    __widgetCounter: number | null;
-    constructor();
-}
 export declare class Widget {
-    element: WidgetElement;
+    readonly element: HTMLDivElement;
     contentElement: HTMLDivElement;
     private shadowRoot;
     private readonly isWebComponent;
@@ -18,15 +14,20 @@ export declare class Widget {
     private invalidationsSuspended;
     defaultFocusedChild: Widget | null;
     private parentWidgetInternal;
-    private registeredCSSFiles;
     private defaultFocusedElement?;
     private cachedConstraints?;
     private constraintsInternal?;
     private invalidationsRequested?;
     private externallyManaged?;
     constructor(isWebComponent?: boolean, delegatesFocus?: boolean);
-    private static incrementWidgetCounter;
-    private static decrementWidgetCounter;
+    /**
+     * Returns the {@link Widget} whose element is the given `node`, or `undefined`
+     * if the `node` is not an element for a widget.
+     *
+     * @param node a DOM node.
+     * @returns the {@link Widget} that is attached to the `node` or `undefined`.
+     */
+    static get(node: Node): Widget | undefined;
     markAsRoot(): void;
     parentWidget(): Widget | null;
     children(): Widget[];

@@ -21,7 +21,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Sources from '../../sources/sources.js';
 import { RequestHeaderSection } from './RequestHeaderSection.js';
 import requestHeadersViewStyles from './RequestHeadersView.css.js';
-import { RESPONSE_HEADER_SECTION_DATA_KEY, ResponseHeaderSection, } from './ResponseHeaderSection.js';
+import { EarlyHintsHeaderSection, RESPONSE_HEADER_SECTION_DATA_KEY, ResponseHeaderSection, } from './ResponseHeaderSection.js';
 const RAW_HEADER_CUTOFF = 3000;
 const { render, html } = LitHtml;
 const UIStrings = {
@@ -33,6 +33,10 @@ const UIStrings = {
      *@description Text in Request Headers View of the Network panel
      */
     fromMemoryCache: '(from memory cache)',
+    /**
+     *@description Text in Request Headers View of the Network panel
+     */
+    fromEarlyHints: '(from early hints)',
     /**
      *@description Text in Request Headers View of the Network panel
      */
@@ -81,6 +85,10 @@ const UIStrings = {
      *@description A context menu item in the Network Log View Columns of the Network panel
      */
     responseHeaders: 'Response Headers',
+    /**
+     *@description A context menu item in the Network Log View Columns of the Network panel
+     */
+    earlyHintsHeaders: 'Early Hints Headers',
     /**
      *@description Title text for a link to the Sources panel to the file containing the header override definitions
      */
@@ -166,11 +174,47 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             // clang-format off
             render(html `
         ${this.#renderGeneralSection()}
+        ${this.#renderEarlyHintsHeaders()}
         ${this.#renderResponseHeaders()}
         ${this.#renderRequestHeaders()}
       `, this.#shadow, { host: this });
             // clang-format on
         });
+    }
+    #renderEarlyHintsHeaders() {
+        if (!this.#request || !this.#request.earlyHintsHeaders || this.#request.earlyHintsHeaders.length === 0) {
+            return LitHtml.nothing;
+        }
+        const toggleShowRaw = () => {
+            this.#showResponseHeadersText = !this.#showResponseHeadersText;
+            void this.render();
+        };
+        // Disabled until https://crbug.com/1079231 is fixed.
+        // clang-format off
+        return html `
+      <${Category.litTagName}
+        @togglerawevent=${toggleShowRaw}
+        .data=${{
+            name: 'early-hints-headers',
+            title: i18nString(UIStrings.earlyHintsHeaders),
+            headerCount: this.#request.earlyHintsHeaders.length,
+            checked: undefined,
+            additionalContent: undefined,
+            forceOpen: this.#toReveal?.section === "EarlyHints" /* NetworkForward.UIRequestLocation.UIHeaderSection.EarlyHints */,
+            loggingContext: 'early-hints-headers',
+        }}
+        aria-label=${i18nString(UIStrings.earlyHintsHeaders)}
+      >
+        ${this.#showResponseHeadersText ?
+            this.#renderRawHeaders(this.#request.responseHeadersText, true) : html `
+          <${EarlyHintsHeaderSection.litTagName} .data=${{
+            request: this.#request,
+            toReveal: this.#toReveal,
+        }}></${EarlyHintsHeaderSection.litTagName}>
+        `}
+      </${Category.litTagName}>
+    `;
+        // clang-format on
     }
     #renderResponseHeaders() {
         if (!this.#request) {
@@ -362,6 +406,9 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         let comment = '';
         if (this.#request.cachedInMemory()) {
             comment = i18nString(UIStrings.fromMemoryCache);
+        }
+        else if (this.#request.fromEarlyHints()) {
+            comment = i18nString(UIStrings.fromEarlyHints);
         }
         else if (this.#request.fetchedViaServiceWorker) {
             comment = i18nString(UIStrings.fromServiceWorker);

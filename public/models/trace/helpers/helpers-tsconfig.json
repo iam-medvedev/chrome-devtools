@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/models/trace/helpers/Extensions.ts",
     "../../../../../../../front_end/models/trace/helpers/SamplesIntegrator.ts",
     "../../../../../../../front_end/models/trace/helpers/Timing.ts",
     "../../../../../../../front_end/models/trace/helpers/Trace.ts",

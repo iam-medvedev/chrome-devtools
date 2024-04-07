@@ -605,6 +605,32 @@ export class ColorMatcher extends MatcherBase {
         return null;
     }
 }
+export class LightDarkColorMatch {
+    text;
+    light;
+    dark;
+    type = 'light-dark';
+    constructor(text, light, dark) {
+        this.text = text;
+        this.light = light;
+        this.dark = dark;
+    }
+}
+export class LightDarkColorMatcher extends MatcherBase {
+    accepts(propertyName) {
+        return SDK.CSSMetadata.cssMetadata().isColorAwareProperty(propertyName);
+    }
+    matches(node, matching) {
+        if (node.name !== 'CallExpression' || matching.ast.text(node.getChild('Callee')) !== 'light-dark') {
+            return null;
+        }
+        const args = ASTUtils.callArgs(node);
+        if (args.length !== 2 || args[0].length === 0 || args[1].length === 0) {
+            return null;
+        }
+        return this.createMatch(matching.ast.text(node), args[0], args[1]);
+    }
+}
 export class LinkableNameMatch {
     text;
     properyName;

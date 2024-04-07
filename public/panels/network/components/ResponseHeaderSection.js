@@ -55,31 +55,70 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 const plusIconUrl = new URL('../../../Images/plus.svg', import.meta.url).toString();
 export const RESPONSE_HEADER_SECTION_DATA_KEY = 'ResponseHeaderSection';
-export class ResponseHeaderSection extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-response-header-section`;
-    #shadow = this.attachShadow({ mode: 'open' });
+class ResponseHeaderSectionBase extends HTMLElement {
+    shadow = this.attachShadow({ mode: 'open' });
+    headerDetails = [];
+    connectedCallback() {
+        this.shadow.adoptedStyleSheets = [responseHeaderSectionStyles];
+    }
+    setHeaders(headers) {
+        headers.sort(function (a, b) {
+            return Platform.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
+        });
+        this.headerDetails = headers.map(header => ({
+            name: Platform.StringUtilities.toLowerCaseString(header.name),
+            value: header.value.replace(/\s/g, ' '),
+        }));
+    }
+    highlightHeaders(data) {
+        if (data.toReveal?.section === "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */) {
+            this.headerDetails.filter(header => compareHeaders(header.name, data.toReveal?.header?.toLowerCase()))
+                .forEach(header => {
+                header.highlight = true;
+            });
+        }
+    }
+}
+export class EarlyHintsHeaderSection extends ResponseHeaderSectionBase {
+    static litTagName = LitHtml.literal `devtools-early-hints-header-section`;
     #request;
-    #headerDetails = [];
+    set data(data) {
+        this.#request = data.request;
+        this.setHeaders(this.#request.earlyHintsHeaders);
+        this.highlightHeaders(data);
+        this.#render();
+    }
+    #render() {
+        if (!this.#request) {
+            return;
+        }
+        // Disabled until https://crbug.com/1079231 is fixed.
+        // clang-format off
+        render(html `
+      ${this.headerDetails.map(header => html `
+        <${HeaderSectionRow.litTagName} .data=${{
+            header: header,
+        }}></${HeaderSectionRow.litTagName}>
+      `)}
+    `, this.shadow, { host: this });
+        // clang-format on
+    }
+}
+customElements.define('devtools-early-hints-header-section', EarlyHintsHeaderSection);
+export class ResponseHeaderSection extends ResponseHeaderSectionBase {
+    static litTagName = LitHtml.literal `devtools-response-header-section`;
+    #request;
     #headerEditors = [];
     #uiSourceCode = null;
     #overrides = [];
     #headersAreOverrideable = false;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [responseHeaderSectionStyles];
-    }
     set data(data) {
         this.#request = data.request;
         // If the request has been locally overridden, its 'sortedResponseHeaders'
         // contains no 'set-cookie' headers, because they have been filtered out by
         // the Chromium backend. DevTools therefore uses previously stored values.
         const headers = this.#request.sortedResponseHeaders.concat(this.#request.setCookieHeaders);
-        headers.sort(function (a, b) {
-            return Platform.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
-        });
-        this.#headerDetails = headers.map(header => ({
-            name: Platform.StringUtilities.toLowerCaseString(header.name),
-            value: header.value.replace(/\s/g, ' '),
-        }));
+        this.setHeaders(headers);
         const headersWithIssues = [];
         if (this.#request.wasBlocked()) {
             const headerWithIssues = BlockedReasonDetails.get(this.#request.blockedReason());
@@ -120,10 +159,10 @@ export class ResponseHeaderSection extends HTMLElement {
             }
             return result;
         }
-        this.#headerDetails = mergeHeadersWithIssues(this.#headerDetails, headersWithIssues);
+        this.headerDetails = mergeHeadersWithIssues(this.headerDetails, headersWithIssues);
         const blockedResponseCookies = this.#request.blockedResponseCookies();
         const blockedCookieLineToReasons = new Map(blockedResponseCookies?.map(c => [c.cookieLine.replace(/\s/g, ' '), c.blockedReasons]));
-        for (const header of this.#headerDetails) {
+        for (const header of this.headerDetails) {
             if (header.name === 'set-cookie' && header.value) {
                 const matchingBlockedReasons = blockedCookieLineToReasons.get(header.value);
                 if (matchingBlockedReasons) {
@@ -131,19 +170,14 @@ export class ResponseHeaderSection extends HTMLElement {
                 }
             }
         }
-        if (data.toReveal?.section === "Response" /* NetworkForward.UIRequestLocation.UIHeaderSection.Response */) {
-            this.#headerDetails.filter(header => compareHeaders(header.name, data.toReveal?.header?.toLowerCase()))
-                .forEach(header => {
-                header.highlight = true;
-            });
-        }
+        this.highlightHeaders(data);
         const dataAssociatedWithRequest = this.#request.getAssociatedData(RESPONSE_HEADER_SECTION_DATA_KEY);
         if (dataAssociatedWithRequest) {
             this.#headerEditors = dataAssociatedWithRequest;
         }
         else {
             this.#headerEditors =
-                this.#headerDetails.map(header => ({ name: header.name, value: header.value, originalValue: header.value }));
+                this.headerDetails.map(header => ({ name: header.name, value: header.value, originalValue: header.value }));
             this.#markOverrides();
         }
         void this.#loadOverridesFileInfo();
@@ -156,7 +190,7 @@ export class ResponseHeaderSection extends HTMLElement {
         }
         this.#headersAreOverrideable = false;
         this.#headerEditors =
-            this.#headerDetails.map(header => ({ name: header.name, value: header.value, originalValue: header.value }));
+            this.headerDetails.map(header => ({ name: header.name, value: header.value, originalValue: header.value }));
         this.#markOverrides();
         this.#request.setAssociatedData(RESPONSE_HEADER_SECTION_DATA_KEY, this.#headerEditors);
     }
@@ -209,14 +243,13 @@ export class ResponseHeaderSection extends HTMLElement {
         // comparing them.
         let indexActual = 0;
         let indexOriginal = 0;
-        while (indexActual < this.#headerDetails.length) {
-            const currentName = this.#headerDetails[indexActual].name;
-            let actualValue = this.#headerDetails[indexActual].value || '';
-            const headerNotSet = this.#headerDetails[indexActual].headerNotSet;
-            while (indexActual < this.#headerDetails.length - 1 &&
-                this.#headerDetails[indexActual + 1].name === currentName) {
+        while (indexActual < this.headerDetails.length) {
+            const currentName = this.headerDetails[indexActual].name;
+            let actualValue = this.headerDetails[indexActual].value || '';
+            const headerNotSet = this.headerDetails[indexActual].headerNotSet;
+            while (indexActual < this.headerDetails.length - 1 && this.headerDetails[indexActual + 1].name === currentName) {
                 indexActual++;
-                actualValue += `, ${this.#headerDetails[indexActual].value}`;
+                actualValue += `, ${this.headerDetails[indexActual].value}`;
             }
             while (indexOriginal < originalHeaders.length && originalHeaders[indexOriginal].name < currentName) {
                 indexOriginal++;
@@ -387,7 +420,7 @@ export class ResponseHeaderSection extends HTMLElement {
         const index = this.#headerEditors.length - 1;
         this.#updateOverrides(this.#headerEditors[index].name, this.#headerEditors[index].value || '', index);
         this.#render();
-        const rows = this.#shadow.querySelectorAll('devtools-header-section-row');
+        const rows = this.shadow.querySelectorAll('devtools-header-section-row');
         const [lastRow] = Array.from(rows).slice(-1);
         lastRow?.focus();
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.HeaderOverrideHeaderAdded);
@@ -396,7 +429,7 @@ export class ResponseHeaderSection extends HTMLElement {
         if (!this.#request) {
             return;
         }
-        const headerDescriptors = this.#headerEditors.map((headerEditor, index) => ({ ...this.#headerDetails[index], ...headerEditor, isResponseHeader: true }));
+        const headerDescriptors = this.#headerEditors.map((headerEditor, index) => ({ ...this.headerDetails[index], ...headerEditor, isResponseHeader: true }));
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
@@ -420,7 +453,7 @@ export class ResponseHeaderSection extends HTMLElement {
           ${i18nString(UIStrings.addHeader)}
         </${Buttons.Button.Button.litTagName}>
       ` : LitHtml.nothing}
-    `, this.#shadow, { host: this });
+    `, this.shadow, { host: this });
         // clang-format on
     }
     async #onEnableHeaderEditingClick() {

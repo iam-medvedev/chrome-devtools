@@ -505,7 +505,7 @@ export class DataGrid extends HTMLElement {
             this.dispatchEvent(new ContextMenuHeaderResetClickEvent());
         }, { jslogContext: 'reset-columns' });
         if (this.#contextMenus && this.#contextMenus.bodyRow) {
-            this.#contextMenus.bodyRow(menu, this.#columns, rowThatWasClicked);
+            this.#contextMenus.bodyRow(menu, this.#columns, rowThatWasClicked, this.#rows);
         }
         void menu.show();
     }

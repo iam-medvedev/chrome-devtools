@@ -148,6 +148,19 @@ export function makeProfileCall(node, ts, pid, tid) {
         callFrame: node.callFrame,
     };
 }
+export function makeSyntheticTraceEntry(name, ts, pid, tid) {
+    return {
+        cat: '',
+        name,
+        args: {},
+        ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
+        pid,
+        tid,
+        ts,
+        dur: Types.Timing.MicroSeconds(0),
+        selfTime: Types.Timing.MicroSeconds(0),
+    };
+}
 export function matchBeginningAndEndEvents(unpairedEvents) {
     // map to store begin and end of the event
     const matchedPairs = new Map();
@@ -178,7 +191,7 @@ function getSyntheticId(event) {
     const id = extractId(event);
     return id && `${event.cat}:${id}:${event.name}`;
 }
-export function createSortedSyntheticEvents(matchedPairs) {
+export function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback) {
     const syntheticEvents = [];
     for (const [id, eventsPair] of matchedPairs.entries()) {
         const beginEvent = eventsPair.begin;
@@ -219,13 +232,14 @@ export function createSortedSyntheticEvents(matchedPairs) {
             // crbug.com/1472375
             continue;
         }
+        syntheticEventCallback?.(event);
         syntheticEvents.push(event);
     }
     return syntheticEvents.sort((a, b) => a.ts - b.ts);
 }
-export function createMatchedSortedSyntheticEvents(unpairedAsyncEvents) {
+export function createMatchedSortedSyntheticEvents(unpairedAsyncEvents, syntheticEventCallback) {
     const matchedPairs = matchBeginningAndEndEvents(unpairedAsyncEvents);
-    const syntheticEvents = createSortedSyntheticEvents(matchedPairs);
+    const syntheticEvents = createSortedSyntheticEvents(matchedPairs, syntheticEventCallback);
     return syntheticEvents;
 }
 //# sourceMappingURL=Trace.js.map

@@ -11,7 +11,7 @@ import { ListControl, ListMode } from './ListControl.js';
 import softDropDownStyles from './softDropDown.css.legacy.js';
 import softDropDownButtonStyles from './softDropDownButton.css.legacy.js';
 import * as ThemeSupport from './theme_support/theme_support.js';
-import * as Utils from './utils/utils.js';
+import { createShadowRootWithCoreStyles } from './UIUtils.js';
 const UIStrings = {
     /**
      *@description Placeholder text in Soft Drop Down
@@ -56,12 +56,10 @@ export class SoftDropDown {
         this.list.element.classList.add('item-list');
         this.rowHeight = 36;
         this.width = 315;
-        Utils
-            .createShadowRootWithCoreStyles(this.glassPane.contentElement, {
+        createShadowRootWithCoreStyles(this.glassPane.contentElement, {
             cssFile: softDropDownStyles,
             delegatesFocus: undefined,
-        })
-            .appendChild(this.list.element);
+        }).appendChild(this.list.element);
         ARIAUtils.markAsMenu(this.list.element);
         VisualLogging.setMappedParent(this.list.element, this.element);
         this.list.element.setAttribute('jslog', `${VisualLogging.menu().parent('mapped').track({ resize: true, keydown: 'ArrowUp|ArrowDown|PageUp|PageDown' })}`);

@@ -45,6 +45,9 @@ const defaultRequest = {
     setCookieHeaders: [],
     getAssociatedData: () => null,
     setAssociatedData: () => { },
+    earlyHintsHeaders: [
+        { name: 'link', value: '<src="/script.js" as="script">' },
+    ],
 };
 async function renderHeadersComponent(request) {
     Object.setPrototypeOf(request, SDK.NetworkRequest.NetworkRequest.prototype);
@@ -130,6 +133,13 @@ describeWithMockConnection('RequestHeadersView', () => {
         const requestHeadersCategory = component.shadowRoot.querySelector('[aria-label="Request Headers"]');
         assertElement(requestHeadersCategory, HTMLElement);
         assert.deepStrictEqual(getRowsTextFromCategory(requestHeadersCategory), [[':method:', 'GET'], ['accept-encoding:', 'gzip, deflate, br'], ['cache-control:', 'no-cache']]);
+    });
+    it('renders early hints headers', async () => {
+        component = await renderHeadersComponent(defaultRequest);
+        assertShadowRoot(component.shadowRoot);
+        const earlyHintsCategory = component.shadowRoot.querySelector('[aria-label="Early Hints Headers"]');
+        assertElement(earlyHintsCategory, HTMLElement);
+        assert.deepStrictEqual(getRowsTextFromCategory(earlyHintsCategory), [['link:', '<src="/script.js" as="script">']]);
     });
     it('emits UMA event when a header value is being copied', async () => {
         component = await renderHeadersComponent(defaultRequest);

@@ -1,6 +1,5 @@
 import { GlassPane } from './GlassPane.js';
 export declare class PopoverHelper {
-    #private;
     static createPopover: (jslogContext?: string) => GlassPane;
     private disableOnClick;
     private hasPadding;
@@ -15,7 +14,8 @@ export declare class PopoverHelper {
     private readonly boundMouseDown;
     private readonly boundMouseMove;
     private readonly boundMouseOut;
-    constructor(container: Element, getRequest: (arg0: MouseEvent) => PopoverRequest | null, jslogContext: string);
+    jslogContext?: string;
+    constructor(container: Element, getRequest: (arg0: MouseEvent) => PopoverRequest | null, jslogContext?: string);
     setTimeout(showTimeout: number, hideTimeout?: number): void;
     setHasPadding(hasPadding: boolean): void;
     setDisableOnClick(disableOnClick: boolean): void;

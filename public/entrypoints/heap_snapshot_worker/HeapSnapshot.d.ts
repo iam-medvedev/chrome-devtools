@@ -1,3 +1,4 @@
+import * as Platform from '../../core/platform/platform.js';
 import * as HeapSnapshotModel from '../../models/heap_snapshot_model/heap_snapshot_model.js';
 import { type HeapSnapshotWorkerDispatcher } from './HeapSnapshotWorkerDispatcher.js';
 export interface HeapSnapshotItem {
@@ -6,7 +7,7 @@ export interface HeapSnapshotItem {
 }
 export declare class HeapSnapshotEdge implements HeapSnapshotItem {
     snapshot: HeapSnapshot;
-    protected readonly edges: Uint32Array;
+    protected readonly edges: Platform.TypedArrayUtilities.BigUint32Array;
     edgeIndex: number;
     constructor(snapshot: HeapSnapshot, edgeIndex?: number);
     clone(): HeapSnapshotEdge;
@@ -158,7 +159,7 @@ export declare class HeapSnapshotProblemReport {
 export interface Profile {
     root_index: number;
     nodes: Uint32Array;
-    edges: Uint32Array;
+    edges: Platform.TypedArrayUtilities.BigUint32Array;
     snapshot: HeapSnapshotHeader;
     samples: number[];
     strings: string[];
@@ -176,7 +177,7 @@ export interface LiveObjects {
 export declare abstract class HeapSnapshot {
     #private;
     nodes: Uint32Array;
-    containmentEdges: Uint32Array;
+    containmentEdges: Platform.TypedArrayUtilities.BigUint32Array;
     strings: string[];
     rootNodeIndexInternal: number;
     nodeTypeOffset: number;

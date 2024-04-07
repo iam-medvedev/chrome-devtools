@@ -139,6 +139,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         const panels = {
             elements: new ElementsPanel(),
             sources: new SourcesPanel(),
+            network: new (Constructor(NetworkPanel))(),
         };
         function panelGetter(name) {
             return panels[name];
@@ -430,6 +431,13 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             }, resolve));
         },
     };
+    function NetworkPanelImpl() {
+    }
+    NetworkPanelImpl.prototype = {
+        show: function (options) {
+            return new Promise(resolve => extensionServer.sendRequest({ command: "showNetworkPanel" /* PrivateAPI.Commands.ShowNetworkPanel */, filter: options?.filter }, () => resolve()));
+        },
+    };
     function declareInterfaceClass(implConstructor) {
         return function (...args) {
             const impl = { __proto__: implConstructor.prototype };
@@ -463,6 +471,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
     const PanelWithSidebarClass = declareInterfaceClass(PanelWithSidebarImpl);
     const Request = declareInterfaceClass(RequestImpl);
     const Resource = declareInterfaceClass(ResourceImpl);
+    const NetworkPanel = declareInterfaceClass(NetworkPanelImpl);
     class ElementsPanel extends (Constructor(PanelWithSidebarClass)) {
         constructor() {
             super('elements');

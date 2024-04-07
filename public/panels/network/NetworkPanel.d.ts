@@ -1,5 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Extensions from '../../models/extensions/extensions.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import type * as NetworkForward from '../../panels/network/forward/forward.js';
@@ -96,8 +97,9 @@ export declare class RequestRevealer implements Common.Revealer.Revealer<SDK.Net
 export declare class RequestIdRevealer implements Common.Revealer.Revealer<NetworkForward.NetworkRequestId.NetworkRequestId> {
     reveal(requestId: NetworkForward.NetworkRequestId.NetworkRequestId): Promise<void>;
 }
-export declare class NetworkLogWithFilterRevealer implements Common.Revealer.Revealer<NetworkForward.UIFilter.UIRequestFilter> {
-    reveal(request: NetworkForward.UIFilter.UIRequestFilter): Promise<void>;
+export declare class NetworkLogWithFilterRevealer implements Common.Revealer
+    .Revealer<Extensions.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter> {
+    reveal(request: Extensions.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter): Promise<void>;
 }
 export declare class FilmStripRecorder implements TraceEngine.TracingManager.TracingManagerClient {
     #private;

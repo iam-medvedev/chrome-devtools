@@ -11,7 +11,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import lockIconStyles from './lockIcon.css.js';
 import mainViewStyles from './mainView.css.js';
 import originViewStyles from './originView.css.js';
-import { Events, SecurityModel, SecurityStyleExplanation, SummaryMessages, } from './SecurityModel.js';
+import { Events, SecurityModel, securityStateCompare, SecurityStyleExplanation, SummaryMessages, } from './SecurityModel.js';
 import sidebarStyles from './sidebar.css.js';
 const UIStrings = {
     /**
@@ -594,9 +594,8 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
         }
         const originState = this.origins.get(origin);
         if (originState) {
-            const oldSecurityState = originState.securityState;
-            originState.securityState = this.securityStateMin(oldSecurityState, securityState);
-            if (oldSecurityState !== originState.securityState) {
+            if (securityStateCompare(securityState, originState.securityState) < 0) {
+                originState.securityState = securityState;
                 const securityDetails = request.securityDetails();
                 if (securityDetails) {
                     originState.securityDetails = securityDetails;
@@ -652,9 +651,6 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
     }
     filterRequestCount(filterKey) {
         return this.filterRequestCounts.get(filterKey) || 0;
-    }
-    securityStateMin(stateA, stateB) {
-        return SecurityModel.SecurityStateComparator(stateA, stateB) < 0 ? stateA : stateB;
     }
     modelAdded(securityModel) {
         if (securityModel.target() !== securityModel.target().outermostTarget()) {

@@ -31,9 +31,13 @@ export interface LayoutShiftRootCausesData {
     renderBlockingRequests: RenderBlockingRequest[];
     scriptStackTrace: Types.TraceEvents.TraceEventCallFrame[];
 }
+interface Options {
+    /** Checking iframe root causes can be an expensive operation, so it is disabled by default. */
+    enableIframeRootCauses?: boolean;
+}
 export declare class LayoutShiftRootCauses {
     #private;
-    constructor(protocolInterface: RootCauseProtocolInterface);
+    constructor(protocolInterface: RootCauseProtocolInterface, options?: Options);
     /**
      * Calculates the potential root causes for a given layout shift event. Once
      * calculated, this data is cached.
@@ -118,3 +122,4 @@ export declare class LayoutShiftRootCauses {
      */
     getNodeAuthoredDimensions(node: Protocol.DOM.Node): Promise<CSSDimensions>;
 }
+export {};

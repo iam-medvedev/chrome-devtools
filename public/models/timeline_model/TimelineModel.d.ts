@@ -4,7 +4,6 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as TraceEngine from '../trace/trace.js';
 export declare class TimelineModelImpl {
     #private;
-    private isGenericTraceInternal;
     private tracksInternal;
     private namedTracks;
     private inspectedTargetEventsInternal;
@@ -27,6 +26,7 @@ export declare class TimelineModelImpl {
     private currentTaskLayoutAndRecalcEvents;
     private tracingModelInternal;
     private mainFrameLayerTreeId?;
+    private lastRecalculateStylesEvent;
     constructor();
     /**
      * Iterates events in a tree hierarchically, from top to bottom,
@@ -85,7 +85,6 @@ export declare class TimelineModelImpl {
     private findAncestorEvent;
     private addPageFrame;
     private reset;
-    isGenericTrace(): boolean;
     tracingModel(): TraceEngine.Legacy.TracingModel | null;
     minimumRecordTime(): number;
     maximumRecordTime(): number;
@@ -94,6 +93,7 @@ export declare class TimelineModelImpl {
     rootFrames(): PageFrame[];
     pageURL(): Platform.DevToolsPath.UrlString;
     pageFrameById(frameId: Protocol.Page.FrameId): PageFrame | null;
+    static findRecalculateStyleEvents(events: TraceEngine.Types.TraceEvents.TraceEventData[], startTime?: number, endTime?: number): TraceEngine.Legacy.Event[];
 }
 export declare enum RecordType {
     Task = "RunTask",
@@ -229,7 +229,8 @@ export declare enum RecordType {
     CryptoDoVerifyReply = "DoVerifyReply",
     CpuProfile = "CpuProfile",
     Profile = "Profile",
-    AsyncTask = "AsyncTask"
+    AsyncTask = "AsyncTask",
+    SelectorStats = "SelectorStats"
 }
 export declare namespace TimelineModelImpl {
     const Category: {

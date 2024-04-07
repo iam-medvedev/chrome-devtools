@@ -25,10 +25,12 @@ export class Linkifier extends HTMLElement {
     #url = Platform.DevToolsPath.EmptyUrlString;
     #lineNumber;
     #columnNumber;
+    #linkText;
     set data(data) {
         this.#url = data.url;
         this.#lineNumber = data.lineNumber;
         this.#columnNumber = data.columnNumber;
+        this.#linkText = data.linkText;
         if (!this.#url) {
             throw new Error('Cannot construct a Linkifier without providing a valid string URL.');
         }
@@ -47,11 +49,12 @@ export class Linkifier extends HTMLElement {
         this.dispatchEvent(linkifierClickEvent);
     }
     async #render() {
+        const linkText = this.#linkText ?? LinkifierUtils.linkText(this.#url, this.#lineNumber);
         // Disabled until https://crbug.com/1079231 is fixed.
         await coordinator.write(() => {
             // clang-format off
             // eslint-disable-next-line rulesdir/ban_a_tags_in_lit_html
-            LitHtml.render(LitHtml.html `<a class="link" href=${this.#url} @click=${this.#onLinkActivation}><slot>${LinkifierUtils.linkText(this.#url, this.#lineNumber)}</slot></a>`, this.#shadow, { host: this });
+            LitHtml.render(LitHtml.html `<a class="link" href=${this.#url} @click=${this.#onLinkActivation}><slot>${linkText}</slot></a>`, this.#shadow, { host: this });
             // clang-format on
         });
     }

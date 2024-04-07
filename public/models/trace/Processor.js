@@ -18,6 +18,7 @@ export class TraceProcessor extends EventTarget {
     #traceHandlers;
     #status = "IDLE" /* Status.IDLE */;
     #modelConfiguration = Types.Configuration.DEFAULT;
+    #data = null;
     #insights = null;
     static createWithAllHandlers() {
         return new TraceProcessor(Handlers.ModelHandlers, Types.Configuration.DEFAULT);
@@ -89,6 +90,7 @@ export class TraceProcessor extends EventTarget {
         for (const handler of handlers) {
             handler.reset();
         }
+        this.#data = null;
         this.#insights = null;
         this.#status = "IDLE" /* Status.IDLE */;
     }
@@ -146,6 +148,9 @@ export class TraceProcessor extends EventTarget {
         if (this.#status !== "FINISHED_PARSING" /* Status.FINISHED_PARSING */) {
             return null;
         }
+        if (this.#data) {
+            return this.#data;
+        }
         // Handlers that depend on other handlers do so via .data(), which used to always
         // return a shallow clone of its internal data structures. However, that pattern
         // easily results in egregious amounts of allocation. Now .data() does not do any
@@ -176,7 +181,8 @@ export class TraceProcessor extends EventTarget {
             const data = shallowClone(handler.data());
             Object.assign(traceParsedData, { [name]: data });
         }
-        return traceParsedData;
+        this.#data = traceParsedData;
+        return this.#data;
     }
     #getEnabledInsightRunners(traceParsedData) {
         const enabledInsights = {};

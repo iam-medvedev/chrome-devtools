@@ -9,13 +9,15 @@ import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
 import { getEventLevel } from './AppenderUtils.js';
 import * as TimelineComponents from './components/components.js';
 import { getEventStyle } from './EventUICategory.js';
+import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
+import { ExtensionTrackAppender } from './ExtensionTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
 import { InteractionsTrackAppender } from './InteractionsTrackAppender.js';
 import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { InstantEventVisibleDurationMs, } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
-export const TrackNames = ['Animations', 'Timings', 'Interactions', 'GPU', 'LayoutShifts', 'Thread', 'Thread_AuctionWorklet'];
+export const TrackNames = ['Animations', 'Timings', 'Interactions', 'GPU', 'LayoutShifts', 'Thread', 'Thread_AuctionWorklet', 'Extension'];
 export class CompatibilityTracksAppender {
     #trackForLevel = new Map();
     #trackForGroup = new Map();
@@ -77,6 +79,9 @@ export class CompatibilityTracksAppender {
         this.#layoutShiftsTrackAppender = new LayoutShiftsTrackAppender(this, this.#traceParsedData);
         this.#allTrackAppenders.push(this.#layoutShiftsTrackAppender);
         this.#addThreadAppenders();
+        if (Root.Runtime.experiments.isEnabled("timeline-extensions" /* Root.Runtime.ExperimentName.TIMELINE_EXTENSIONS */)) {
+            this.#addExtensionAppenders();
+        }
         ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
             for (const group of this.#flameChartData.groups) {
                 // We only need to update the color here, because FlameChart will call `scheduleUpdate()` when theme is changed.
@@ -94,6 +99,12 @@ export class CompatibilityTracksAppender {
     }
     getFlameChartTimelineData() {
         return this.#flameChartData;
+    }
+    #addExtensionAppenders() {
+        const tracks = ExtensionDataGatherer.instance().getExtensionData();
+        for (const trackData of tracks) {
+            this.#allTrackAppenders.push(new ExtensionTrackAppender(this, trackData));
+        }
     }
     #addThreadAppenders() {
         const weight = (appender) => {
@@ -416,6 +427,9 @@ export class CompatibilityTracksAppender {
         if (TraceEngine.Types.TraceEvents.isTraceEventSchedulePostMessage(entry) ||
             TraceEngine.Types.TraceEvents.isTraceEventHandlePostMessage(entry)) {
             return Root.Runtime.experiments.isEnabled("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */);
+        }
+        if (TraceEngine.Types.Extensions.isSyntheticExtensionEntry(entry)) {
+            return true;
         }
         // Default styles are globally defined for each event name. Some
         // events are hidden by default.

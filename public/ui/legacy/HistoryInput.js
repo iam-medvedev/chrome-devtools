@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { Keys } from './KeyboardShortcut.js';
-import * as Utils from './utils/utils.js';
+import { registerCustomElement } from './UIUtils.js';
 let cachedConstructor = null;
 export class HistoryInput extends HTMLInputElement {
     history;
@@ -16,7 +16,7 @@ export class HistoryInput extends HTMLInputElement {
     }
     static create() {
         if (!cachedConstructor) {
-            cachedConstructor = Utils.registerCustomElement('input', 'history-input', HistoryInput);
+            cachedConstructor = registerCustomElement('input', 'history-input', HistoryInput);
         }
         return cachedConstructor();
     }

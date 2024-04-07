@@ -12,6 +12,7 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import { getCategoryStyles, stringIsEventCategory } from './EventUICategory.js';
+import * as Extensions from './extensions/extensions.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 const UIStrings = {
@@ -583,6 +584,10 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             const eventCategory = eventStyle.category;
             UI.ARIAUtils.setLabel(icon, eventCategory.title);
             icon.style.backgroundColor = eventCategory.getComputedColorValue();
+            if (TraceEngine.Legacy.eventIsFromNewEngine(event) &&
+                TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event)) {
+                icon.style.backgroundColor = Extensions.ExtensionUI.extensionEntryColor(event);
+            }
         }
         return cell;
     }

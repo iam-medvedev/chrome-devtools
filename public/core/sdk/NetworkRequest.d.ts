@@ -90,6 +90,8 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     get fromDiskCache(): boolean | undefined;
     setFromDiskCache(): void;
     setFromPrefetchCache(): void;
+    fromEarlyHints(): boolean;
+    setFromEarlyHints(): void;
     /**
      * Returns true if the request was intercepted by a service worker and it
      * provided its own response.
@@ -138,6 +140,8 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     requestHttpVersion(): string;
     get responseHeaders(): NameValue[];
     set responseHeaders(x: NameValue[]);
+    get earlyHintsHeaders(): NameValue[];
+    set earlyHintsHeaders(x: NameValue[]);
     get originalResponseHeaders(): Protocol.Fetch.HeaderEntry[];
     set originalResponseHeaders(headers: Protocol.Fetch.HeaderEntry[]);
     get setCookieHeaders(): Protocol.Fetch.HeaderEntry[];
@@ -153,6 +157,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     responseHeaderValue(headerName: string): string | undefined;
     wasIntercepted(): boolean;
     setWasIntercepted(wasIntercepted: boolean): void;
+    setEarlyHintsHeaders(headers: NameValue[]): void;
     get responseCookies(): Cookie[];
     responseLastModified(): string | undefined;
     allCookiesIncludingBlockedOnes(): Cookie[];
@@ -306,6 +311,7 @@ export interface IncludedCookieWithReason {
 }
 export interface ExemptedSetCookieWithReason {
     cookie: Cookie;
+    cookieLine: string;
     exemptionReason: Protocol.Network.CookieExemptionReason;
 }
 export interface EventSourceMessage {
@@ -339,8 +345,12 @@ export interface ExtraResponseInfo {
     cookiePartitionKeyOpaque: boolean | undefined;
     exemptedResponseCookies: {
         cookie: Cookie;
+        cookieLine: string;
         exemptionReason: Protocol.Network.CookieExemptionReason;
     }[] | undefined;
+}
+export interface EarlyHintsInfo {
+    responseHeaders: NameValue[];
 }
 export interface WebBundleInfo {
     resourceUrls?: Platform.DevToolsPath.UrlString[];

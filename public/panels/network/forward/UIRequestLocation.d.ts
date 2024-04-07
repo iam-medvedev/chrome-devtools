@@ -3,7 +3,8 @@ import type * as TextUtils from '../../../models/text_utils/text_utils.js';
 export declare const enum UIHeaderSection {
     General = "General",
     Request = "Request",
-    Response = "Response"
+    Response = "Response",
+    EarlyHints = "EarlyHints"
 }
 interface UIHeaderLocation {
     section: UIHeaderSection;

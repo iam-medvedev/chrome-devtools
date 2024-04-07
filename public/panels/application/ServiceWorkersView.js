@@ -753,7 +753,7 @@ export class Section {
         void this.manager.inspectWorker(versionId);
     }
     wrapWidget(container) {
-        const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(container, {
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(container, {
             cssFile: [
                 serviceWorkersViewStyles,
                 /* These styles are for the timing table in serviceWorkerUpdateCycleView but this is the widget that it is rendered

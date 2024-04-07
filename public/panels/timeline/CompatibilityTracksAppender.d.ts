@@ -60,7 +60,7 @@ export interface TrackAppender {
      */
     highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventData): HighlightedEntryInfo;
 }
-export declare const TrackNames: readonly ["Animations", "Timings", "Interactions", "GPU", "LayoutShifts", "Thread", "Thread_AuctionWorklet"];
+export declare const TrackNames: readonly ["Animations", "Timings", "Interactions", "GPU", "LayoutShifts", "Thread", "Thread_AuctionWorklet", "Extension"];
 export type TrackAppenderName = typeof TrackNames[number] | 'Network';
 export declare class CompatibilityTracksAppender {
     #private;

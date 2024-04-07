@@ -1,12 +1,6 @@
 import { type TraceEventHandlerName } from './types.js';
 import * as Types from '../types/types.js';
 export declare function reset(): void;
-export declare const MarkerName: readonly ["MarkDOMContent", "MarkLoad", "firstPaint", "firstContentfulPaint", "largestContentfulPaint::Candidate"];
-interface MakerEvent extends Types.TraceEvents.TraceEventData {
-    name: typeof MarkerName[number];
-}
-export declare function isTraceEventMarkerEvent(event: Types.TraceEvents.TraceEventData): event is MakerEvent;
-export declare function eventIsPageLoadEvent(event: Types.TraceEvents.TraceEventData): event is Types.TraceEvents.PageLoadEvent;
 export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
 export declare function getFrameIdForPageLoadEvent(event: Types.TraceEvents.PageLoadEvent): string;
 /**
@@ -75,4 +69,3 @@ export interface MetricScore {
     estimated?: boolean;
     timing: Types.Timing.MicroSeconds;
 }
-export {};

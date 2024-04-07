@@ -59,7 +59,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('models/timeline_model/TimelineModel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TimelineModelImpl {
-    isGenericTraceInternal;
     tracksInternal;
     namedTracks;
     inspectedTargetEventsInternal;
@@ -82,6 +81,7 @@ export class TimelineModelImpl {
     currentTaskLayoutAndRecalcEvents;
     tracingModelInternal;
     mainFrameLayerTreeId;
+    lastRecalculateStylesEvent;
     #isFreshRecording = false;
     constructor() {
         this.minimumRecordTimeInternal = 0;
@@ -90,6 +90,7 @@ export class TimelineModelImpl {
         this.resetProcessingState();
         this.currentTaskLayoutAndRecalcEvents = [];
         this.tracingModelInternal = null;
+        this.lastRecalculateStylesEvent = null;
     }
     /**
      * Iterates events in a tree hierarchically, from top to bottom,
@@ -245,7 +246,6 @@ export class TimelineModelImpl {
             // The next line is for loading legacy traces recorded before M67.
             // TODO(alph): Drop the support at some point.
             const metadataEvents = this.processMetadataEvents(tracingModel);
-            this.isGenericTraceInternal = !metadataEvents;
             if (metadataEvents) {
                 this.processMetadataAndThreads(tracingModel, metadataEvents);
             }
@@ -764,6 +764,10 @@ export class TimelineModelImpl {
                 }
                 break;
             }
+            case RecordType.SelectorStats: {
+                this.lastRecalculateStylesEvent?.addArgs(event.args);
+                break;
+            }
         }
         return true;
     }
@@ -869,7 +873,6 @@ export class TimelineModelImpl {
         return true;
     }
     reset() {
-        this.isGenericTraceInternal = false;
         this.tracksInternal = [];
         this.namedTracks = new Map();
         this.inspectedTargetEventsInternal = [];
@@ -880,9 +883,6 @@ export class TimelineModelImpl {
         this.requestsFromBrowser = new Map();
         this.minimumRecordTimeInternal = 0;
         this.maximumRecordTimeInternal = 0;
-    }
-    isGenericTrace() {
-        return this.isGenericTraceInternal;
     }
     tracingModel() {
         return this.tracingModelInternal;
@@ -907,6 +907,27 @@ export class TimelineModelImpl {
     }
     pageFrameById(frameId) {
         return frameId ? this.pageFrames.get(frameId) || null : null;
+    }
+    static findRecalculateStyleEvents(events, startTime = 0, endTime = Infinity) {
+        const stack = [];
+        const startEvent = TimelineModelImpl.topLevelEventEndingAfter(events, startTime);
+        const startTimeInMicroSec = TraceEngine.Helpers.Timing.millisecondsToMicroseconds(TraceEngine.Types.Timing.MilliSeconds(startTime));
+        const endTimeInMicroSec = TraceEngine.Helpers.Timing.millisecondsToMicroseconds(TraceEngine.Types.Timing.MilliSeconds(endTime));
+        for (let i = startEvent; i < events.length; ++i) {
+            const e = events[i];
+            if (e.name !== "RecalculateStyles" /* TraceEngine.Types.TraceEvents.KnownEventName.RecalculateStyles */ &&
+                e.name !== "UpdateLayoutTree" /* TraceEngine.Types.TraceEvents.KnownEventName.UpdateLayoutTree */) {
+                continue;
+            }
+            if (!e.dur || e.ts + e.dur < startTimeInMicroSec) {
+                continue;
+            }
+            if (e.ts >= endTimeInMicroSec) {
+                break;
+            }
+            stack.push(e);
+        }
+        return stack;
     }
 }
 export var RecordType;
@@ -1055,6 +1076,7 @@ export var RecordType;
     RecordType["CpuProfile"] = "CpuProfile";
     RecordType["Profile"] = "Profile";
     RecordType["AsyncTask"] = "AsyncTask";
+    RecordType["SelectorStats"] = "SelectorStats";
 })(RecordType || (RecordType = {}));
 (function (TimelineModelImpl) {
     TimelineModelImpl.Category = {

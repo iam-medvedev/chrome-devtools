@@ -174,8 +174,10 @@ export function handleEvent(event) {
             if (frame.parent) {
                 continue;
             }
-            mainFrameId = frame.frame;
-            mainFrameURL = frame.url;
+            if (frame.url) {
+                mainFrameId = frame.frame;
+                mainFrameURL = frame.url;
+            }
             topLevelRendererIds.add(frame.processId);
         }
         return;

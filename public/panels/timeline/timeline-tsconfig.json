@@ -38,6 +38,8 @@
     "../../../../../../front_end/panels/timeline/CountersGraph.ts",
     "../../../../../../front_end/panels/timeline/EventUICategory.ts",
     "../../../../../../front_end/panels/timeline/EventsTimelineTreeView.ts",
+    "../../../../../../front_end/panels/timeline/ExtensionDataGatherer.ts",
+    "../../../../../../front_end/panels/timeline/ExtensionTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/GPUTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/Initiators.ts",
     "../../../../../../front_end/panels/timeline/InteractionsTrackAppender.ts",
@@ -62,6 +64,7 @@
     "../../../../../../front_end/panels/timeline/TimelinePaintProfilerView.ts",
     "../../../../../../front_end/panels/timeline/TimelinePanel.ts",
     "../../../../../../front_end/panels/timeline/TimelineSelection.ts",
+    "../../../../../../front_end/panels/timeline/TimelineSelectorStatsView.ts",
     "../../../../../../front_end/panels/timeline/TimelineTreeView.ts",
     "../../../../../../front_end/panels/timeline/TimelineUIUtils.ts",
     "../../../../../../front_end/panels/timeline/TimingsTrackAppender.ts",
@@ -122,6 +125,12 @@
       "path": "../../services/trace_bounds/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/data_grid/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/linkifier/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/menus/bundle-tsconfig.json"
     },
     {
@@ -144,6 +153,9 @@
     },
     {
       "path": "components/bundle-tsconfig.json"
+    },
+    {
+      "path": "extensions/bundle-tsconfig.json"
     }
   ]
 }

@@ -13,10 +13,15 @@ import { DOMModel, type DOMNode } from './DOMModel.js';
 import { SDKModel } from './SDKModel.js';
 import { SourceMapManager } from './SourceMapManager.js';
 import { type Target } from './Target.js';
+export declare const enum ColorScheme {
+    Light = "light",
+    Dark = "dark"
+}
 export declare class CSSModel extends SDKModel<EventTypes> {
     #private;
     readonly agent: ProtocolProxyApi.CSSApi;
     constructor(target: Target);
+    colorScheme(): Promise<ColorScheme | undefined>;
     headersForSourceURL(sourceURL: Platform.DevToolsPath.UrlString): CSSStyleSheetHeader[];
     createRawLocationsByURL(sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber?: number | undefined): CSSLocation[];
     sourceMapManager(): SourceMapManager<CSSStyleSheetHeader>;
