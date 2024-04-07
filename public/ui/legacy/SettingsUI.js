@@ -159,7 +159,9 @@ export const createControlForSetting = function (setting, subtitle) {
                 setting: setting,
             };
             component.onchange = () => {
-                InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.oneOrMoreSettingsHaveChanged));
+                if (setting.reloadRequired()) {
+                    InspectorView.instance().displayReloadRequiredWarning(i18nString(UIStrings.oneOrMoreSettingsHaveChanged));
+                }
             };
             return component;
         }

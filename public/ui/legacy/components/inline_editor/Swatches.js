@@ -12,7 +12,7 @@ export class BezierSwatch extends HTMLSpanElement {
     textElement;
     constructor() {
         super();
-        const root = UI.Utils.createShadowRootWithCoreStyles(this, {
+        const root = UI.UIUtils.createShadowRootWithCoreStyles(this, {
             cssFile: [bezierSwatchStyles],
             delegatesFocus: undefined,
         });
@@ -25,7 +25,7 @@ export class BezierSwatch extends HTMLSpanElement {
     static create() {
         let constructor = BezierSwatch.constructorInternal;
         if (!constructor) {
-            constructor = UI.Utils.registerCustomElement('span', 'bezier-swatch', BezierSwatch);
+            constructor = UI.UIUtils.registerCustomElement('span', 'bezier-swatch', BezierSwatch);
             BezierSwatch.constructorInternal = constructor;
         }
         return constructor();

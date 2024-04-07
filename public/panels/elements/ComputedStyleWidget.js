@@ -373,7 +373,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
                 property,
                 rule,
             },
-            id: rule.origin + ': ' + rule.styleSheetId + (property.range || property.name),
+            id: (rule?.origin || '') + ': ' + property.ownerStyle.styleSheetId + (property.range || property.name),
         };
     }
     createTreeNodeRenderer(propertyTraces, domNode, matchedStyles) {
@@ -409,11 +409,13 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         if (!trace) {
             return {
                 treeNodeData,
+                jslogContext: propertyName,
                 id: propertyName,
             };
         }
         return {
             treeNodeData,
+            jslogContext: propertyName,
             id: propertyName,
             children: async () => trace.map(this.buildTraceNode),
         };

@@ -40,6 +40,7 @@
     "../../../../../../../front_end/panels/timeline/track_appenders/AnimationsTrackAppender.test.ts",
     "../../../../../../../front_end/panels/timeline/track_appenders/AppenderUtils.test.ts",
     "../../../../../../../front_end/panels/timeline/track_appenders/CompatibilityTracksAppender.test.ts",
+    "../../../../../../../front_end/panels/timeline/track_appenders/ExtensionTrackAppender.test.ts",
     "../../../../../../../front_end/panels/timeline/track_appenders/GPUTrackAppender.test.ts",
     "../../../../../../../front_end/panels/timeline/track_appenders/InteractionsTrackAppender.test.ts",
     "../../../../../../../front_end/panels/timeline/track_appenders/LayoutShiftsTrackAppender.test.ts",

@@ -450,6 +450,10 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     value: '3',
                 },
                 {
+                    title: 'Selector Stats',
+                    value: 'Select "" to collect detailed CSS selector matching statistics.',
+                },
+                {
                     // The "Recalculation forced" Stack trace output would be here but the detailRow helper is
                     // unable to parse it, hence why this returns undefined.
                     title: undefined,
@@ -566,6 +570,37 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 ?.shadowRoot;
             relatedNodeRow?.querySelector('button')?.innerText;
             assert.strictEqual(relatedNodeRow?.querySelector('button')?.innerText, 'A test node name');
+        });
+        it('renders the details for an extension entry properly', async function () {
+            const data = await TraceLoader.allModels(this, 'extension-tracks-and-marks.json.gz');
+            const extensionEntry = data.traceParsedData.ExtensionTraceData.extensionTrackData[0].flameChartEntries[0];
+            if (!extensionEntry) {
+                throw new Error('Could not find extension entry.');
+            }
+            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(extensionEntry, data.timelineModel, new Components.Linkifier.Linkifier(), false, data.traceParsedData);
+            const rowData = getRowDataForDetailsElement(details);
+            assert.deepEqual(rowData, [
+                {
+                    title: 'Description',
+                    value: 'This is a top level rendering task',
+                },
+                { title: 'Tip', value: 'A tip to improve this' },
+            ]);
+        });
+        it('renders the details for an extension marker properly', async function () {
+            const data = await TraceLoader.allModels(this, 'extension-tracks-and-marks.json.gz');
+            const extensionMark = data.traceParsedData.ExtensionTraceData.extensionMarkers[0];
+            if (!extensionMark) {
+                throw new Error('Could not find extension mark.');
+            }
+            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(extensionMark, data.timelineModel, new Components.Linkifier.Linkifier(), false, data.traceParsedData);
+            const rowData = getRowDataForDetailsElement(details);
+            assert.deepEqual(rowData, [
+                {
+                    title: 'Description',
+                    value: 'This marks the start of a task',
+                },
+            ]);
         });
         it('renders the details for a profile call properly', async function () {
             Common.Linkifier.registerLinkifier({

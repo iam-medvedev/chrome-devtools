@@ -106,6 +106,8 @@ declare namespace ProtocolProxyApi {
 
     FedCm: FedCmApi;
 
+    PWA: PWAApi;
+
     Debugger: DebuggerApi;
 
     HeapProfiler: HeapProfilerApi;
@@ -206,6 +208,8 @@ declare namespace ProtocolProxyApi {
     Preload: PreloadDispatcher;
 
     FedCm: FedCmDispatcher;
+
+    PWA: PWADispatcher;
 
     Debugger: DebuggerDispatcher;
 
@@ -2206,6 +2210,13 @@ declare namespace ProtocolProxyApi {
     responseReceivedExtraInfo(params: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
 
     /**
+     * Fired when 103 Early Hints headers is received in addition to the common response.
+     * Not every responseReceived event will have an responseReceivedEarlyHints fired.
+     * Only one responseReceivedEarlyHints may be fired for eached responseReceived event.
+     */
+    responseReceivedEarlyHints(params: Protocol.Network.ResponseReceivedEarlyHintsEvent): void;
+
+    /**
      * Fired exactly once for each Trust Token operation. Depending on
      * the type of the operation and whether the operation succeeded or
      * failed, the event is fired before the corresponding request was sent
@@ -3870,6 +3881,16 @@ declare namespace ProtocolProxyApi {
      */
     dialogClosed(params: Protocol.FedCm.DialogClosedEvent): void;
 
+  }
+
+  export interface PWAApi {
+    /**
+     * Returns the following OS state for the given manifest id.
+     */
+    invoke_getOsAppState(params: Protocol.PWA.GetOsAppStateRequest): Promise<Protocol.PWA.GetOsAppStateResponse>;
+
+  }
+  export interface PWADispatcher {
   }
 
   export interface DebuggerApi {

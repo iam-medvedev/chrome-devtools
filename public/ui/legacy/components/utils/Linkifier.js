@@ -36,6 +36,7 @@ import * as Bindings from '../../../../models/bindings/bindings.js';
 import * as Breakpoints from '../../../../models/breakpoints/breakpoints.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 const UIStrings = {
     /**
@@ -205,6 +206,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             tabStop: options?.tabStop,
             inlineFrameIndex: options?.inlineFrameIndex ?? 0,
             userMetric: options?.userMetric,
+            jslogContext: options?.jslogContext || 'script-source-url',
         };
         const { columnNumber, className = '' } = linkifyURLOptions;
         if (sourceURL) {
@@ -227,6 +229,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         }
         const createLinkOptions = {
             tabStop: options?.tabStop,
+            jslogContext: 'script-location',
         };
         const { link, linkInfo } = Linkifier.createLink(fallbackAnchor && fallbackAnchor.textContent ? fallbackAnchor.textContent : '', className, createLinkOptions);
         linkInfo.enableDecorator = this.useLinkDecorator;
@@ -266,6 +269,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             inlineFrameIndex: options?.inlineFrameIndex ?? 0,
             tabStop: options?.tabStop,
             userMetric: options?.userMetric,
+            jslogContext: options?.jslogContext || 'script-source-url',
         };
         return scriptLink || Linkifier.linkifyURL(sourceURL, linkifyURLOptions);
     }
@@ -294,6 +298,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             inlineFrameIndex: 0,
             maxLength: this.maxLength,
             preventClick: true,
+            jslogContext: 'script-source-url',
         });
         // HAR imported network logs have no associated NetworkManager.
         if (!target) {
@@ -330,6 +335,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     linkifyCSSLocation(rawLocation, classes) {
         const createLinkOptions = {
             tabStop: true,
+            jslogContext: 'css-location',
         };
         const { link, linkInfo } = Linkifier.createLink('', classes || '', createLinkOptions);
         linkInfo.enableDecorator = this.useLinkDecorator;
@@ -461,7 +467,15 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         const title = linkText !== url ? url : '';
-        const linkOptions = { maxLength, title, href: url, preventClick, tabStop: options.tabStop, bypassURLTrimming };
+        const linkOptions = {
+            maxLength,
+            title,
+            href: url,
+            preventClick,
+            tabStop: options.tabStop,
+            bypassURLTrimming,
+            jslogContext: options.jslogContext || 'url',
+        };
         const { link, linkInfo } = Linkifier.createLink(linkText, className, linkOptions);
         if (lineNumber) {
             linkInfo.lineNumber = lineNumber;
@@ -472,18 +486,19 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         linkInfo.userMetric = options?.userMetric;
         return link;
     }
-    static linkifyRevealable(revealable, text, fallbackHref, title, className) {
+    static linkifyRevealable(revealable, text, fallbackHref, title, className, jslogContext) {
         const createLinkOptions = {
             maxLength: UI.UIUtils.MaxLengthForDisplayedURLs,
             href: (fallbackHref),
             title,
+            jslogContext,
         };
         const { link, linkInfo } = Linkifier.createLink(text, className || '', createLinkOptions);
         linkInfo.revealable = revealable;
         return link;
     }
     static createLink(text, className, options = {}) {
-        const { maxLength, title, href, preventClick, tabStop, bypassURLTrimming } = options;
+        const { maxLength, title, href, preventClick, tabStop, bypassURLTrimming, jslogContext } = options;
         const link = document.createElement('button');
         if (className) {
             link.className = className;
@@ -496,6 +511,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             // @ts-ignore
             link.href = href;
         }
+        link.setAttribute('jslog', `${VisualLogging.link(jslogContext).track({ click: true })}`);
         if (text instanceof HTMLElement) {
             link.appendChild(text);
         }

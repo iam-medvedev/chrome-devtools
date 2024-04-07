@@ -39,6 +39,7 @@
   "files": [
     "../../../../../../../front_end/models/trace/handlers/AnimationHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/AuctionWorkletsHandler.test.ts",
+    "../../../../../../../front_end/models/trace/handlers/ExtensionTraceDataHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/FramesHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/GPUHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/InitiatorsHandler.test.ts",

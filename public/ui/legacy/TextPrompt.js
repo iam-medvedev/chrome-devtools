@@ -132,9 +132,15 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
             element.parentElement.insertBefore(this.proxyElement, element);
         }
         this.contentElement.appendChild(element);
-        let jslog = VisualLogging.textField().track({ keydown: 'Enter|Escape', change: true });
+        let jslog = VisualLogging.textField().track({
+            keydown: 'ArrowLeft|ArrowUp|PageUp|Home|PageDown|ArrowRight|ArrowDown|End|Space|Tab|Enter|Escape',
+            change: true,
+        });
         if (this.jslogContext) {
             jslog = jslog.context(this.jslogContext);
+        }
+        if (!this.elementInternal.hasAttribute('jslog')) {
+            this.elementInternal.setAttribute('jslog', `${jslog}`);
         }
         this.elementInternal.setAttribute('jslog', `${jslog}`);
         this.elementInternal.classList.add('text-prompt');
@@ -304,6 +310,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         let handled = false;
         const event = ev;
         if (this.isSuggestBoxVisible() && this.suggestBox && this.suggestBox.keyPressed(event)) {
+            void VisualLogging.logKeyDown(this.suggestBox.element, event);
             event.consume(true);
             return;
         }

@@ -71,7 +71,6 @@ export declare const enum ExperimentName {
     IMPORTANT_DOM_PROPERTIES = "important-dom-properties",
     JUST_MY_CODE = "just-my-code",
     PRELOADING_STATUS_PANEL = "preloading-status-panel",
-    TIMELINE_AS_CONSOLE_PROFILE_RESULT_PANEL = "timeline-as-console-profile-result-panel",
     OUTERMOST_TARGET_SELECTOR = "outermost-target-selector",
     HIGHLIGHT_ERRORS_ELEMENTS_PANEL = "highlight-errors-elements-panel",
     SET_ALL_BREAKPOINTS_EAGERLY = "set-all-breakpoints-eagerly",
@@ -82,7 +81,8 @@ export declare const enum ExperimentName {
     INDENTATION_MARKERS_TEMP_DISABLE = "sources-frame-indentation-markers-temporarily-disable",
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
     SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS = "save-and-load-trace-with-annotations",
-    TIMELINE_TRACK_CONFIGURATION = "timeline-track-configuration"
+    TIMELINE_TRACK_CONFIGURATION = "timeline-track-configuration",
+    TIMELINE_EXTENSIONS = "timeline-extensions"
 }
 /**
  * When defining conditions make sure that objects used by the function have

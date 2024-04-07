@@ -36,8 +36,7 @@ import { GlassPane } from './GlassPane.js';
 import { ListControl, ListMode } from './ListControl.js';
 import { ListModel } from './ListModel.js';
 import suggestBoxStyles from './suggestBox.css.legacy.js';
-import { measurePreferredSize } from './UIUtils.js';
-import * as Utils from './utils/utils.js';
+import { createShadowRootWithCoreStyles, measuredScrollbarWidth, measurePreferredSize } from './UIUtils.js';
 const UIStrings = {
     /**
      *@description Aria alert to read the suggestion for the suggestion box when typing in text editor
@@ -82,7 +81,7 @@ export class SuggestBox {
         this.glassPane = new GlassPane();
         this.glassPane.setAnchorBehavior("PreferBottom" /* AnchorBehavior.PreferBottom */);
         this.glassPane.setOutsideClickCallback(this.hide.bind(this));
-        const shadowRoot = Utils.createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: suggestBoxStyles, delegatesFocus: undefined });
+        const shadowRoot = createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: suggestBoxStyles, delegatesFocus: undefined });
         shadowRoot.appendChild(this.element);
     }
     visible() {
@@ -115,7 +114,7 @@ export class SuggestBox {
             }
         }
         const element = this.createElementForItem(maxItem);
-        const preferredWidth = measurePreferredSize(element, this.element).width + Utils.measuredScrollbarWidth(this.element.ownerDocument);
+        const preferredWidth = measurePreferredSize(element, this.element).width + measuredScrollbarWidth(this.element.ownerDocument);
         return Math.min(kMaxWidth, preferredWidth);
     }
     show() {

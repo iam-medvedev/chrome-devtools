@@ -41,7 +41,7 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     private updateAnchor;
     private static updateLinkDecorations;
     static linkifyURL(url: Platform.DevToolsPath.UrlString, options?: LinkifyURLOptions): HTMLElement;
-    static linkifyRevealable(revealable: Object, text: string | HTMLElement, fallbackHref?: Platform.DevToolsPath.UrlString, title?: string, className?: string): HTMLElement;
+    static linkifyRevealable(revealable: Object, text: string | HTMLElement, fallbackHref?: Platform.DevToolsPath.UrlString, title?: string, className?: string, jslogContext?: string): HTMLElement;
     private static createLink;
     private static setTrimmedText;
     private static appendTextWithoutHashes;
@@ -102,6 +102,7 @@ interface LinkInfo {
     revealable: Object | null;
     fallback: Element | null;
     userMetric?: Host.UserMetrics.Action;
+    jslogContext?: string;
 }
 export interface LinkifyURLOptions {
     text?: string;
@@ -115,6 +116,7 @@ export interface LinkifyURLOptions {
     tabStop?: boolean;
     bypassURLTrimming?: boolean;
     userMetric?: Host.UserMetrics.Action;
+    jslogContext?: string;
 }
 export interface LinkifyOptions {
     className?: string;
@@ -123,6 +125,7 @@ export interface LinkifyOptions {
     inlineFrameIndex: number;
     tabStop?: boolean;
     userMetric?: Host.UserMetrics.Action;
+    jslogContext?: string;
     /**
      * {@link LinkDisplayOptions.revealBreakpoint}
      */

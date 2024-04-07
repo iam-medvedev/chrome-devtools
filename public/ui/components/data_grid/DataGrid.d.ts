@@ -2,7 +2,7 @@ import * as UI from '../../legacy/legacy.js';
 import { type Column, type Row, type SortState } from './DataGridUtils.js';
 export interface DataGridContextMenusConfiguration {
     headerRow?: (menu: UI.ContextMenu.ContextMenu, columns: readonly Column[]) => void;
-    bodyRow?: (menu: UI.ContextMenu.ContextMenu, columns: readonly Column[], row: Readonly<Row>) => void;
+    bodyRow?: (menu: UI.ContextMenu.ContextMenu, columns: readonly Column[], row: Readonly<Row>, rows: readonly Row[]) => void;
 }
 export interface DataGridData {
     columns: Column[];

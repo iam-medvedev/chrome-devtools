@@ -123,6 +123,12 @@ class RegisteredExtension {
         return true;
     }
 }
+export class RevealableNetworkRequestFilter {
+    filter;
+    constructor(filter) {
+        this.filter = filter;
+    }
+}
 export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     clientObjects;
     handlers;
@@ -189,6 +195,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         this.registerHandler("reportResourceLoad" /* PrivateAPI.Commands.ReportResourceLoad */, this.onReportResourceLoad.bind(this));
         this.registerHandler("createRecorderView" /* PrivateAPI.Commands.CreateRecorderView */, this.onCreateRecorderView.bind(this));
         this.registerHandler("showRecorderView" /* PrivateAPI.Commands.ShowRecorderView */, this.onShowRecorderView.bind(this));
+        this.registerHandler("showNetworkPanel" /* PrivateAPI.Commands.ShowNetworkPanel */, this.onShowNetworkPanel.bind(this));
         window.addEventListener('message', this.onWindowMessage, false); // Only for main window.
         const existingTabId = window.DevToolsAPI && window.DevToolsAPI.getInspectedTabId && window.DevToolsAPI.getInspectedTabId();
         if (existingTabId) {
@@ -331,6 +338,13 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         }
         RecorderPluginManager.instance().showView(message.id);
         return undefined;
+    }
+    onShowNetworkPanel(message) {
+        if (message.command !== "showNetworkPanel" /* PrivateAPI.Commands.ShowNetworkPanel */) {
+            return this.status.E_BADARG('command', `expected ${"showNetworkPanel" /* PrivateAPI.Commands.ShowNetworkPanel */}`);
+        }
+        void Common.Revealer.reveal(new RevealableNetworkRequestFilter(message.filter));
+        return this.status.OK();
     }
     onCreateRecorderView(message, port) {
         if (message.command !== "createRecorderView" /* PrivateAPI.Commands.CreateRecorderView */) {

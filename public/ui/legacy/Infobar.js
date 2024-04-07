@@ -6,8 +6,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import infobarStyles from './infobar.css.legacy.js';
 import { Keys } from './KeyboardShortcut.js';
-import { createTextButton } from './UIUtils.js';
-import * as Utils from './utils/utils.js';
+import { createShadowRootWithCoreStyles, createTextButton } from './UIUtils.js';
 const UIStrings = {
     /**
      *@description Text on a button to close the infobar and never show the infobar in the future
@@ -55,8 +54,7 @@ export class Infobar {
             this.element.setAttribute('jslog', `${VisualLogging.dialog(jslogContext).track({ resize: true, keydown: 'Enter|Escape' })}`);
         }
         this.element.classList.add('flex-none');
-        this.shadowRoot =
-            Utils.createShadowRootWithCoreStyles(this.element, { cssFile: infobarStyles, delegatesFocus: undefined });
+        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: infobarStyles, delegatesFocus: undefined });
         this.contentElement = this.shadowRoot.createChild('div', 'infobar infobar-' + type);
         this.mainRow = this.contentElement.createChild('div', 'infobar-main-row');
         this.detailsRows = this.contentElement.createChild('div', 'infobar-details-rows hidden');

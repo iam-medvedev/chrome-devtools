@@ -42,6 +42,7 @@
     "../../../../../../front_end/core/platform/SetUtilities.ts",
     "../../../../../../front_end/core/platform/StringUtilities.ts",
     "../../../../../../front_end/core/platform/Timing.ts",
+    "../../../../../../front_end/core/platform/TypedArrayUtilities.ts",
     "../../../../../../front_end/core/platform/TypescriptUtilities.ts",
     "../../../../../../front_end/core/platform/UIString.ts",
     "../../../../../../front_end/core/platform/UserVisibleError.ts",

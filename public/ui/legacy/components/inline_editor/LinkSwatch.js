@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as Platform from '../../../../core/platform/platform.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
+import textButtonStyles from '../../textButton.css.legacy.js';
+import * as ThemeSupport from '../../theme_support/theme_support.js';
 import linkSwatchStyles from './linkSwatch.css.js';
 const UIStrings = {
     /**
@@ -23,13 +24,11 @@ class BaseLinkSwatch extends HTMLElement {
     #linkElement;
     connectedCallback() {
         this.shadow.adoptedStyleSheets = [linkSwatchStyles];
+        ThemeSupport.ThemeSupport.instance().appendStyle(this.shadow, textButtonStyles);
     }
     set data(data) {
         this.onLinkActivate = (linkText, event) => {
             if (event instanceof MouseEvent && event.button !== 0) {
-                return;
-            }
-            if (event instanceof KeyboardEvent && !Platform.KeyboardUtilities.isEnterOrSpaceKey(event)) {
                 return;
             }
             data.onLinkActivate(linkText);
@@ -44,6 +43,8 @@ class BaseLinkSwatch extends HTMLElement {
     render(data) {
         const { isDefined, text, title } = data;
         const classes = Directives.classMap({
+            'link-style': true,
+            'text-button': true,
             'link-swatch-link': true,
             'undefined': !isDefined,
         });
@@ -51,8 +52,8 @@ class BaseLinkSwatch extends HTMLElement {
         const onActivate = isDefined ? this.onLinkActivate.bind(this, text.trim()) : null;
         // We added var popover, so don't need the title attribute when no need for showing title and
         // only provide the data-title for the popover to get the data.
-        const { startNode } = render(html `<span class=${classes} title=${LitHtml.Directives.ifDefined(data.showTitle ? title : null)} data-title=${LitHtml.Directives.ifDefined(!data.showTitle ? title : null)} @mousedown=${onActivate} @keydown=${onActivate} role="link" tabindex="-1">${text}</span>`, this.shadow, { host: this });
-        if (startNode?.nextSibling instanceof HTMLSpanElement) {
+        const { startNode } = render(html `<button class=${classes} title=${LitHtml.Directives.ifDefined(data.showTitle ? title : null)} data-title=${LitHtml.Directives.ifDefined(!data.showTitle ? title : null)} @click=${onActivate} role="link" tabindex="-1">${text}</button>`, this.shadow, { host: this });
+        if (startNode?.nextSibling instanceof HTMLButtonElement) {
             this.#linkElement = startNode?.nextSibling;
         }
     }

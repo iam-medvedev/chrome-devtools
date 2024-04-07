@@ -318,7 +318,7 @@ export class DropDown {
         this.glassPane.setPointerEventsBehavior("BlockedByGlassPane" /* UI.GlassPane.PointerEventsBehavior.BlockedByGlassPane */);
         this.glassPane.setAnchorBehavior("PreferBottom" /* UI.GlassPane.AnchorBehavior.PreferBottom */);
         this.glassPane.element.addEventListener('blur', () => this.close(null));
-        const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(this.glassPane.contentElement, {
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(this.glassPane.contentElement, {
             cssFile: [timelineHistoryManagerStyles],
             delegatesFocus: undefined,
         });

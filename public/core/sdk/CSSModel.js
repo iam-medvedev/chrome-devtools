@@ -33,6 +33,7 @@ export class CSSModel extends SDKModel {
     #isEnabled;
     #isRuleUsageTrackingEnabled;
     #isTrackingRequestPending;
+    #colorScheme;
     constructor(target) {
         super(target);
         this.#isEnabled = false;
@@ -63,6 +64,15 @@ export class CSSModel extends SDKModel {
         Common.Settings.Settings.instance()
             .moduleSetting('css-source-maps-enabled')
             .addChangeListener(event => this.#sourceMapManager.setEnabled(event.data));
+    }
+    async colorScheme() {
+        if (!this.#colorScheme) {
+            const colorSchemeResponse = await this.domModel()?.target().runtimeAgent().invoke_evaluate({ expression: 'window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches' });
+            if (colorSchemeResponse && !colorSchemeResponse.exceptionDetails && !colorSchemeResponse.getError()) {
+                this.#colorScheme = colorSchemeResponse.result.value ? "dark" /* ColorScheme.Dark */ : "light" /* ColorScheme.Light */;
+            }
+        }
+        return this.#colorScheme;
     }
     headersForSourceURL(sourceURL) {
         const headers = [];
@@ -452,6 +462,7 @@ export class CSSModel extends SDKModel {
         }
     }
     mediaQueryResultChanged() {
+        this.#colorScheme = undefined;
         this.dispatchEventToListeners(Events.MediaQueryResultChanged);
     }
     fontsUpdated(fontFace) {

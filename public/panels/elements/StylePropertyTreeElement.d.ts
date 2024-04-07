@@ -4,7 +4,7 @@ import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.n
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { AngleMatch, AngleMatcher, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatch, FontMatcher, GridTemplateMatch, GridTemplateMatcher, LinkableNameMatch, LinkableNameMatcher, LinkableNameProperties, type Matcher, RenderingContext, ShadowMatch, ShadowMatcher, ShadowType, StringMatch, StringMatcher, URLMatch, URLMatcher, VariableMatch, VariableMatcher } from './PropertyParser.js';
+import { AngleMatch, AngleMatcher, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatch, FontMatcher, GridTemplateMatch, GridTemplateMatcher, LightDarkColorMatch, LightDarkColorMatcher, LinkableNameMatch, LinkableNameMatcher, LinkableNameProperties, type Matcher, RenderingContext, ShadowMatch, ShadowMatcher, ShadowType, StringMatch, StringMatcher, URLMatch, URLMatcher, VariableMatch, VariableMatcher } from './PropertyParser.js';
 import { type StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
 export declare const activeHints: WeakMap<Element, Hint>;
@@ -34,6 +34,13 @@ export declare class ColorRenderer extends ColorMatch {
     static matcher(treeElement: StylePropertyTreeElement): ColorMatcher;
     render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
     renderColorSwatch(valueChild?: Node, text?: string): InlineEditor.ColorSwatch.ColorSwatch;
+}
+export declare class LightDarkColorRenderer extends LightDarkColorMatch {
+    #private;
+    constructor(treeElement: StylePropertyTreeElement, text: string, light: CodeMirror.SyntaxNode[], dark: CodeMirror.SyntaxNode[]);
+    static matcher(treeElement: StylePropertyTreeElement): LightDarkColorMatcher;
+    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+    applyColorScheme(context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: HTMLSpanElement, dark: HTMLSpanElement): Promise<void>;
 }
 export declare class ColorMixRenderer extends ColorMixMatch {
     #private;
@@ -150,6 +157,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     overloaded(): boolean;
     setOverloaded(x: boolean): void;
     setComputedStyles(computedStyles: Map<string, string> | null): void;
+    getComputedStyle(property: string): string | null;
     setParentsComputedStyles(parentsComputedStyles: Map<string, string> | null): void;
     get name(): string;
     get value(): string;

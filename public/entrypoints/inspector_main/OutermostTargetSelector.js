@@ -117,7 +117,7 @@ export class OutermostTargetSelector {
     createElementForItem(item) {
         const element = document.createElement('div');
         element.classList.add('target');
-        const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(element, { cssFile: [outermostTargetSelectorStyles], delegatesFocus: undefined });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [outermostTargetSelectorStyles], delegatesFocus: undefined });
         const title = shadowRoot.createChild('div', 'title');
         UI.UIUtils.createTextChild(title, Platform.StringUtilities.trimEndWithMaxLength(this.titleFor(item), 100));
         const subTitle = shadowRoot.createChild('div', 'subtitle');

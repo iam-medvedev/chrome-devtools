@@ -8071,6 +8071,10 @@ export declare namespace Network {
          */
         exemptionReason: CookieExemptionReason;
         /**
+         * The string representing this individual cookie as it would appear in the header.
+         */
+        cookieLine: string;
+        /**
          * The cookie object representing the cookie.
          */
         cookie: Cookie;
@@ -9462,6 +9466,21 @@ export declare namespace Network {
          * the response with the corresponding reason.
          */
         exemptedCookies?: ExemptedSetCookieWithReason[];
+    }
+    /**
+     * Fired when 103 Early Hints headers is received in addition to the common response.
+     * Not every responseReceived event will have an responseReceivedEarlyHints fired.
+     * Only one responseReceivedEarlyHints may be fired for eached responseReceived event.
+     */
+    interface ResponseReceivedEarlyHintsEvent {
+        /**
+         * Request identifier. Used to match this information to another responseReceived event.
+         */
+        requestId: RequestId;
+        /**
+         * Raw response headers as they were received over the wire.
+         */
+        headers: Headers;
     }
     const enum TrustTokenOperationDoneEventStatus {
         Ok = "Ok",
@@ -15662,6 +15681,40 @@ export declare namespace FedCm {
      */
     interface DialogClosedEvent {
         dialogId: string;
+    }
+}
+/**
+ * This domain allows interacting with the browser to control PWAs.
+ */
+export declare namespace PWA {
+    /**
+     * The following types are the replica of
+     * https://crsrc.org/c/chrome/browser/web_applications/proto/web_app_os_integration_state.proto;drc=9910d3be894c8f142c977ba1023f30a656bc13fc;l=67
+     */
+    interface FileHandlerAccept {
+        /**
+         * New name of the mimetype according to
+         * https://www.iana.org/assignments/media-types/media-types.xhtml
+         */
+        mediaType: string;
+        fileExtensions: string[];
+    }
+    interface FileHandler {
+        action: string;
+        accepts: FileHandlerAccept[];
+        displayName: string;
+    }
+    interface GetOsAppStateRequest {
+        /**
+         * The id from the webapp's manifest file, commonly it's the url of the
+         * site installing the webapp. See
+         * https://web.dev/learn/pwa/web-app-manifest.
+         */
+        manifestId: string;
+    }
+    interface GetOsAppStateResponse extends ProtocolResponseWithError {
+        badgeCount: integer;
+        fileHandlers: FileHandler[];
     }
 }
 /**

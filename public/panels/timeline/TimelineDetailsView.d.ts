@@ -16,7 +16,9 @@ export declare class TimelineDetailsView extends UI.Widget.VBox {
     private preferredTabId?;
     private selection?;
     private updateContentsScheduled;
+    private lazySelectorStatsView;
     constructor(delegate: TimelineModeViewDelegate);
+    private selectorStatsView;
     getDetailsContentElementForTest(): HTMLElement;
     setModel(model: PerformanceModel | null, traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, selectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[] | null): Promise<void>;
     private setContent;
@@ -40,6 +42,8 @@ export declare class TimelineDetailsView extends UI.Widget.VBox {
     private layersView;
     private paintProfilerView;
     private showSnapshotInPaintProfiler;
+    private showSelectorStats;
+    private showAggregatedSelectorStats;
     private appendDetailsTabsForTraceEventAndShowDetails;
     private showEventInPaintProfiler;
     private updateSelectedRangeStats;
@@ -50,5 +54,6 @@ export declare enum Tab {
     CallTree = "call-tree",
     BottomUp = "bottom-up",
     PaintProfiler = "paint-profiler",
-    LayerViewer = "layer-viewer"
+    LayerViewer = "layer-viewer",
+    SelectorStats = "selector-stats"
 }

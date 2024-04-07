@@ -50,7 +50,6 @@ export declare class UserMetrics {
     cssPropertyDocumentation(type: CSSPropertyDocumentation): void;
     swatchActivated(swatch: SwatchType): void;
     badgeActivated(badge: BadgeType): void;
-    breakpointsRestoredFromStorage(count: number): void;
     animationPlaybackRateChanged(playbackRate: AnimationsPlaybackRate): void;
     animationPointDragged(dragType: AnimationPointDragType): void;
     workspacesPopulated(wallClockTimeInMilliseconds: number): void;
@@ -640,7 +639,6 @@ export declare enum DevtoolsExperiments {
     'authored-deployed-grouping' = 63,
     'important-dom-properties' = 64,
     'just-my-code' = 65,
-    'timeline-as-console-profile-result-panel' = 67,
     'preloading-status-panel' = 68,
     'outermost-target-selector' = 71,
     'highlight-errors-elements-panel' = 73,
@@ -655,7 +653,8 @@ export declare enum DevtoolsExperiments {
     'timeline-show-postmessage-events' = 86,
     'save-and-load-trace-with-annotations' = 87,
     'timeline-track-configuration' = 88,
-    'MaxValue' = 89
+    'timeline-extensions' = 89,
+    'MaxValue' = 90
 }
 export declare const enum BreakpointEditDialogRevealedFrom {
     BreakpointSidebarContextMenu = 0,
@@ -682,19 +681,6 @@ export declare const enum CSSPropertyDocumentation {
     ToggledOn = 1,
     ToggledOff = 2,
     MaxValue = 3
-}
-export declare const enum BreakpointsRestoredFromStorageCount {
-    LessThan100 = 0,
-    LessThan300 = 1,
-    LessThan1000 = 2,
-    LessThan3000 = 3,
-    LessThan10000 = 4,
-    LessThan30000 = 5,
-    LessThan100000 = 6,
-    LessThan300000 = 7,
-    LessThan1000000 = 8,
-    Above1000000 = 9,
-    MaxValue = 10
 }
 export declare enum IssueExpanded {
     CrossOriginEmbedderPolicy = 0,

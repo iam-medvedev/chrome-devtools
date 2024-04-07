@@ -3,6 +3,7 @@ export interface LinkifierData {
     url: Platform.DevToolsPath.UrlString;
     lineNumber?: number;
     columnNumber?: number;
+    linkText?: string;
 }
 export declare class LinkifierClick extends Event {
     data: LinkifierData;

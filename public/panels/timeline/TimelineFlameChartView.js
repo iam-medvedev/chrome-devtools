@@ -13,6 +13,7 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { CountersGraph } from './CountersGraph.js';
 import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
+import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
 import { TimelineDetailsView } from './TimelineDetailsView.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineFlameChartDataProvider, } from './TimelineFlameChartDataProvider.js';
@@ -217,6 +218,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.#selectedEvents = null;
         this.mainDataProvider.setModel(this.model, newTraceEngineData, isCpuProfile);
         this.networkDataProvider.setModel(newTraceEngineData);
+        ExtensionDataGatherer.instance().modelChanged(newTraceEngineData);
         this.#reset();
         const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
         if (!traceBoundsState) {

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -14,7 +13,6 @@ import { createFileSystemFileForPersistenceTests } from '../../testing/Persisten
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
 import { setupPageResourceLoaderForSourceMap } from '../../testing/SourceMapHelpers.js';
 import { createContentProviderUISourceCode, createFakeScriptMapping, } from '../../testing/UISourceCodeHelpers.js';
-import { recordedMetricsContain, resetRecordedMetrics, } from '../../testing/UserMetricsHelpers.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Breakpoints from '../breakpoints/breakpoints.js';
 import * as Persistence from '../persistence/persistence.js';
@@ -1562,51 +1560,6 @@ describeWithMockConnection('BreakpointManager', () => {
                 }),
             ]);
         });
-    });
-});
-describeWithMockConnection('BreakpointManager storage', () => {
-    let target;
-    let debuggerWorkspaceBinding;
-    beforeEach(async () => {
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-            forceNew: true,
-            resourceMapping,
-            targetManager,
-        });
-        Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
-        target = createTarget();
-        SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
-        resetRecordedMetrics();
-    });
-    it('records breakpoint count after loading from storage', async () => {
-        // Create 200 breakpoints in the storage.
-        const breakpoints = [];
-        for (let i = 0; i < 201; i++) {
-            breakpoints.push({
-                url: 'http://example.com/script.js',
-                resourceTypeName: 'script',
-                lineNumber: i,
-                condition: '',
-                enabled: true,
-                isLogpoint: false,
-            });
-        }
-        Common.Settings.Settings.instance().createLocalSetting('breakpoints', breakpoints).set(breakpoints);
-        assert.isFalse(recordedMetricsContain("DevTools.BreakpointsRestoredFromStorageCount" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.BreakpointsRestoredFromStorageCount */, 1 /* Host.UserMetrics.BreakpointsRestoredFromStorageCount.LessThan300 */));
-        // Creating breakpoint manager to load the breakpoints from storage and record the breakpoint count.
-        Breakpoints.BreakpointManager.BreakpointManager.instance({
-            forceNew: true,
-            targetManager: SDK.TargetManager.TargetManager.instance(),
-            workspace: Workspace.Workspace.WorkspaceImpl.instance(),
-            debuggerWorkspaceBinding,
-        });
-        // Verify that we have recorded the breakpoint count in the 100-300 bucket.
-        assert.isTrue(recordedMetricsContain("DevTools.BreakpointsRestoredFromStorageCount" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.BreakpointsRestoredFromStorageCount */, 1 /* Host.UserMetrics.BreakpointsRestoredFromStorageCount.LessThan300 */));
-        assert.isFalse(recordedMetricsContain("DevTools.BreakpointsRestoredFromStorageCount" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.BreakpointsRestoredFromStorageCount */, 0 /* Host.UserMetrics.BreakpointsRestoredFromStorageCount.LessThan100 */));
-        assert.isFalse(recordedMetricsContain("DevTools.BreakpointsRestoredFromStorageCount" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.BreakpointsRestoredFromStorageCount */, 2 /* Host.UserMetrics.BreakpointsRestoredFromStorageCount.LessThan1000 */));
     });
 });
 //# sourceMappingURL=BreakpointManager.test.js.map

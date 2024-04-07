@@ -12,3 +12,4 @@ export declare class RootCauses {
     readonly layoutShifts: LayoutShiftRootCauses;
     constructor(protocolInterface: RootCauseProtocolInterface);
 }
+export { LayoutShiftRootCauses } from './LayoutShift.js';

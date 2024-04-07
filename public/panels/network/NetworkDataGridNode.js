@@ -147,6 +147,10 @@ const UIStrings = {
      */
     preload: 'Preload',
     /**
+     *@description Cell title in Network Data Grid Node of the Network panel
+     */
+    earlyHints: 'early-hints',
+    /**
      *@description Text in Network Data Grid Node of the Network panel
      */
     signedexchange: 'signed-exchange',
@@ -739,6 +743,9 @@ export class NetworkRequestNode extends NetworkNode {
         const mimeType = this.requestInternal.mimeType || this.requestInternal.requestContentType() || '';
         const resourceType = this.requestInternal.resourceType();
         let simpleType = resourceType.name();
+        if (this.requestInternal.fromEarlyHints()) {
+            return i18nString(UIStrings.earlyHints);
+        }
         if (resourceType === Common.ResourceType.resourceTypes.Other ||
             resourceType === Common.ResourceType.resourceTypes.Image) {
             simpleType = mimeType.replace(/^(application|image)\//, '');
@@ -800,7 +807,7 @@ export class NetworkRequestNode extends NetworkNode {
                 const preflightRequest = this.requestInternal.preflightRequest();
                 if (preflightRequest) {
                     this.setTextAndTitle(cell, `${this.requestInternal.requestMethod} + `, i18nString(UIStrings.sPreflight, { PH1: this.requestInternal.requestMethod }));
-                    cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(preflightRequest, i18nString(UIStrings.preflight), undefined, i18nString(UIStrings.selectPreflightRequest)));
+                    cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(preflightRequest, i18nString(UIStrings.preflight), undefined, i18nString(UIStrings.selectPreflightRequest), undefined, 'preflight-request'));
                 }
                 else {
                     this.setTextAndTitle(cell, this.requestInternal.requestMethod);
@@ -968,7 +975,7 @@ export class NetworkRequestNode extends NetworkNode {
                 secondIconElement.classList.add('icon');
                 const networkManager = SDK.NetworkManager.NetworkManager.forRequest(this.requestInternal);
                 if (webBundleInnerRequestInfo.bundleRequestId && networkManager) {
-                    cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(new NetworkForward.NetworkRequestId.NetworkRequestId(webBundleInnerRequestInfo.bundleRequestId, networkManager), secondIconElement));
+                    cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(new NetworkForward.NetworkRequestId.NetworkRequestId(webBundleInnerRequestInfo.bundleRequestId, networkManager), secondIconElement, undefined, undefined, undefined, 'webbundle-request'));
                 }
                 else {
                     cell.appendChild(secondIconElement);
@@ -1264,10 +1271,10 @@ export class NetworkRequestNode extends NetworkNode {
                 const redirectSource = request.redirectSource();
                 console.assert(redirectSource !== null);
                 if (this.parentView().nodeForRequest(redirectSource)) {
-                    cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(redirectSource, Bindings.ResourceUtils.displayNameForURL(redirectSource.url())));
+                    cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(redirectSource, Bindings.ResourceUtils.displayNameForURL(redirectSource.url()), undefined, undefined, undefined, 'redirect-source-request'));
                 }
                 else {
-                    cell.appendChild(Components.Linkifier.Linkifier.linkifyURL(redirectSource.url()));
+                    cell.appendChild(Components.Linkifier.Linkifier.linkifyURL(redirectSource.url(), { jslogContext: 'redirect-source-request-url' }));
                 }
                 this.appendSubtitle(cell, i18nString(UIStrings.redirect));
                 break;
@@ -1302,7 +1309,7 @@ export class NetworkRequestNode extends NetworkNode {
                 cell.appendChild(document.createTextNode(i18nString(UIStrings.preflight)));
                 if (initiator.initiatorRequest) {
                     const icon = IconButton.Icon.create('arrow-up-down-circle');
-                    const link = Components.Linkifier.Linkifier.linkifyRevealable(initiator.initiatorRequest, icon, undefined, i18nString(UIStrings.selectTheRequestThatTriggered), 'trailing-link-icon');
+                    const link = Components.Linkifier.Linkifier.linkifyRevealable(initiator.initiatorRequest, icon, undefined, i18nString(UIStrings.selectTheRequestThatTriggered), 'trailing-link-icon', 'initator-request');
                     UI.ARIAUtils.setLabel(link, i18nString(UIStrings.selectTheRequestThatTriggered));
                     cell.appendChild(link);
                 }

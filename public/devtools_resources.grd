@@ -561,6 +561,7 @@
       <include file="panels/sources/sources-meta.js" name="PANELS_SOURCES_SOURCES_META_JS" resource_path="panels/sources/sources-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/sources/sources.js" name="PANELS_SOURCES_SOURCES_JS" resource_path="panels/sources/sources.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/components.js" name="PANELS_TIMELINE_COMPONENTS_COMPONENTS_JS" resource_path="panels/timeline/components/components.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/extensions/extensions.js" name="PANELS_TIMELINE_EXTENSIONS_EXTENSIONS_JS" resource_path="panels/timeline/extensions/extensions.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timeline-meta.js" name="PANELS_TIMELINE_TIMELINE_META_JS" resource_path="panels/timeline/timeline-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timeline.js" name="PANELS_TIMELINE_TIMELINE_JS" resource_path="panels/timeline/timeline.js" type="BINDATA" compress="false"/>
       <include file="panels/utils/utils.js" name="PANELS_UTILS_UTILS_JS" resource_path="panels/utils/utils.js" type="BINDATA" compress="false"/>
@@ -649,7 +650,6 @@
       <include file="ui/legacy/components/utils/utils.js" name="UI_LEGACY_COMPONENTS_UTILS_UTILS_JS" resource_path="ui/legacy/components/utils/utils.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/legacy.js" name="UI_LEGACY_LEGACY_JS" resource_path="ui/legacy/legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/theme_support/theme_support.js" name="UI_LEGACY_THEME_SUPPORT_THEME_SUPPORT_JS" resource_path="ui/legacy/theme_support/theme_support.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/utils/utils.js" name="UI_LEGACY_UTILS_UTILS_JS" resource_path="ui/legacy/utils/utils.js" type="BINDATA" compress="false"/>
       <include file="ui/lit-html/lit-html.js" name="UI_LIT_HTML_LIT_HTML_JS" resource_path="ui/lit-html/lit-html.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/visual_logging.js" name="UI_VISUAL_LOGGING_VISUAL_LOGGING_JS" resource_path="ui/visual_logging/visual_logging.js" type="BINDATA" compress="false"/>
       <include file="worker_app.html" name="WORKER_APP_HTML" resource_path="worker_app.html" type="BINDATA" compress="false"/>
@@ -711,6 +711,7 @@
       <include file="core/platform/SetUtilities.js" name="CORE_PLATFORM_SETUTILITIES_JS" resource_path="core/platform/SetUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/StringUtilities.js" name="CORE_PLATFORM_STRINGUTILITIES_JS" resource_path="core/platform/StringUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/Timing.js" name="CORE_PLATFORM_TIMING_JS" resource_path="core/platform/Timing.js" type="BINDATA" compress="false"/>
+      <include file="core/platform/TypedArrayUtilities.js" name="CORE_PLATFORM_TYPEDARRAYUTILITIES_JS" resource_path="core/platform/TypedArrayUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/TypescriptUtilities.js" name="CORE_PLATFORM_TYPESCRIPTUTILITIES_JS" resource_path="core/platform/TypescriptUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/UIString.js" name="CORE_PLATFORM_UISTRING_JS" resource_path="core/platform/UIString.js" type="BINDATA" compress="false"/>
       <include file="core/platform/UserVisibleError.js" name="CORE_PLATFORM_USERVISIBLEERROR_JS" resource_path="core/platform/UserVisibleError.js" type="BINDATA" compress="false"/>
@@ -943,6 +944,7 @@
       <include file="models/trace/extras/Metadata.js" name="MODELS_TRACE_EXTRAS_METADATA_JS" resource_path="models/trace/extras/Metadata.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AnimationHandler.js" name="MODELS_TRACE_HANDLERS_ANIMATIONHANDLER_JS" resource_path="models/trace/handlers/AnimationHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/AuctionWorkletsHandler.js" name="MODELS_TRACE_HANDLERS_AUCTIONWORKLETSHANDLER_JS" resource_path="models/trace/handlers/AuctionWorkletsHandler.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/handlers/ExtensionTraceDataHandler.js" name="MODELS_TRACE_HANDLERS_EXTENSIONTRACEDATAHANDLER_JS" resource_path="models/trace/handlers/ExtensionTraceDataHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/FramesHandler.js" name="MODELS_TRACE_HANDLERS_FRAMESHANDLER_JS" resource_path="models/trace/handlers/FramesHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/GPUHandler.js" name="MODELS_TRACE_HANDLERS_GPUHANDLER_JS" resource_path="models/trace/handlers/GPUHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/InitiatorsHandler.js" name="MODELS_TRACE_HANDLERS_INITIATORSHANDLER_JS" resource_path="models/trace/handlers/InitiatorsHandler.js" type="BINDATA" compress="false"/>
@@ -965,6 +967,7 @@
       <include file="models/trace/handlers/WarningsHandler.js" name="MODELS_TRACE_HANDLERS_WARNINGSHANDLER_JS" resource_path="models/trace/handlers/WarningsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/WorkersHandler.js" name="MODELS_TRACE_HANDLERS_WORKERSHANDLER_JS" resource_path="models/trace/handlers/WorkersHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/types.js" name="MODELS_TRACE_HANDLERS_TYPES_JS" resource_path="models/trace/handlers/types.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/helpers/Extensions.js" name="MODELS_TRACE_HELPERS_EXTENSIONS_JS" resource_path="models/trace/helpers/Extensions.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/SamplesIntegrator.js" name="MODELS_TRACE_HELPERS_SAMPLESINTEGRATOR_JS" resource_path="models/trace/helpers/SamplesIntegrator.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/Timing.js" name="MODELS_TRACE_HELPERS_TIMING_JS" resource_path="models/trace/helpers/Timing.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/Trace.js" name="MODELS_TRACE_HELPERS_TRACE_JS" resource_path="models/trace/helpers/Trace.js" type="BINDATA" compress="false"/>
@@ -977,6 +980,7 @@
       <include file="models/trace/root-causes/LayoutShift.js" name="MODELS_TRACE_ROOT_CAUSES_LAYOUTSHIFT_JS" resource_path="models/trace/root-causes/LayoutShift.js" type="BINDATA" compress="false"/>
       <include file="models/trace/root-causes/RootCauses.js" name="MODELS_TRACE_ROOT_CAUSES_ROOTCAUSES_JS" resource_path="models/trace/root-causes/RootCauses.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/Configuration.js" name="MODELS_TRACE_TYPES_CONFIGURATION_JS" resource_path="models/trace/types/Configuration.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/types/Extensions.js" name="MODELS_TRACE_TYPES_EXTENSIONS_JS" resource_path="models/trace/types/Extensions.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/File.js" name="MODELS_TRACE_TYPES_FILE_JS" resource_path="models/trace/types/File.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/Timing.js" name="MODELS_TRACE_TYPES_TIMING_JS" resource_path="models/trace/types/Timing.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/TraceEvents.js" name="MODELS_TRACE_TYPES_TRACEEVENTS_JS" resource_path="models/trace/types/TraceEvents.js" type="BINDATA" compress="false"/>
@@ -1598,6 +1602,8 @@
       <include file="panels/timeline/EasterEgg.js" name="PANELS_TIMELINE_EASTEREGG_JS" resource_path="panels/timeline/EasterEgg.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/EventUICategory.js" name="PANELS_TIMELINE_EVENTUICATEGORY_JS" resource_path="panels/timeline/EventUICategory.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/EventsTimelineTreeView.js" name="PANELS_TIMELINE_EVENTSTIMELINETREEVIEW_JS" resource_path="panels/timeline/EventsTimelineTreeView.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/ExtensionDataGatherer.js" name="PANELS_TIMELINE_EXTENSIONDATAGATHERER_JS" resource_path="panels/timeline/ExtensionDataGatherer.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/ExtensionTrackAppender.js" name="PANELS_TIMELINE_EXTENSIONTRACKAPPENDER_JS" resource_path="panels/timeline/ExtensionTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/GPUTrackAppender.js" name="PANELS_TIMELINE_GPUTRACKAPPENDER_JS" resource_path="panels/timeline/GPUTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/Initiators.js" name="PANELS_TIMELINE_INITIATORS_JS" resource_path="panels/timeline/Initiators.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/InteractionsTrackAppender.js" name="PANELS_TIMELINE_INTERACTIONSTRACKAPPENDER_JS" resource_path="panels/timeline/InteractionsTrackAppender.js" type="BINDATA" compress="false"/>
@@ -1622,6 +1628,7 @@
       <include file="panels/timeline/TimelinePaintProfilerView.js" name="PANELS_TIMELINE_TIMELINEPAINTPROFILERVIEW_JS" resource_path="panels/timeline/TimelinePaintProfilerView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelinePanel.js" name="PANELS_TIMELINE_TIMELINEPANEL_JS" resource_path="panels/timeline/TimelinePanel.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineSelection.js" name="PANELS_TIMELINE_TIMELINESELECTION_JS" resource_path="panels/timeline/TimelineSelection.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/TimelineSelectorStatsView.js" name="PANELS_TIMELINE_TIMELINESELECTORSTATSVIEW_JS" resource_path="panels/timeline/TimelineSelectorStatsView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineTreeView.js" name="PANELS_TIMELINE_TIMELINETREEVIEW_JS" resource_path="panels/timeline/TimelineTreeView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineUIUtils.js" name="PANELS_TIMELINE_TIMELINEUIUTILS_JS" resource_path="panels/timeline/TimelineUIUtils.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimingsTrackAppender.js" name="PANELS_TIMELINE_TIMINGSTRACKAPPENDER_JS" resource_path="panels/timeline/TimingsTrackAppender.js" type="BINDATA" compress="false"/>
@@ -1633,6 +1640,7 @@
       <include file="panels/timeline/components/InteractionBreakdown.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_JS" resource_path="panels/timeline/components/InteractionBreakdown.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/breadcrumbsUI.css.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_CSS_JS" resource_path="panels/timeline/components/breadcrumbsUI.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/interactionBreakdown.css.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_CSS_JS" resource_path="panels/timeline/components/interactionBreakdown.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/extensions/ExtensionUI.js" name="PANELS_TIMELINE_EXTENSIONS_EXTENSIONUI_JS" resource_path="panels/timeline/extensions/ExtensionUI.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/historyToolbarButton.css.js" name="PANELS_TIMELINE_HISTORYTOOLBARBUTTON_CSS_JS" resource_path="panels/timeline/historyToolbarButton.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineFlamechartPopover.css.js" name="PANELS_TIMELINE_TIMELINEFLAMECHARTPOPOVER_CSS_JS" resource_path="panels/timeline/timelineFlamechartPopover.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineHistoryManager.css.js" name="PANELS_TIMELINE_TIMELINEHISTORYMANAGER_CSS_JS" resource_path="panels/timeline/timelineHistoryManager.css.js" type="BINDATA" compress="false"/>
@@ -2161,11 +2169,6 @@
       <include file="ui/legacy/tokens.css.legacy.js" name="UI_LEGACY_TOKENS_CSS_LEGACY_JS" resource_path="ui/legacy/tokens.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/toolbar.css.legacy.js" name="UI_LEGACY_TOOLBAR_CSS_LEGACY_JS" resource_path="ui/legacy/toolbar.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/treeoutline.css.legacy.js" name="UI_LEGACY_TREEOUTLINE_CSS_LEGACY_JS" resource_path="ui/legacy/treeoutline.css.legacy.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/utils/create-shadow-root-with-core-styles.js" name="UI_LEGACY_UTILS_CREATE_SHADOW_ROOT_WITH_CORE_STYLES_JS" resource_path="ui/legacy/utils/create-shadow-root-with-core-styles.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/utils/focus-changed.js" name="UI_LEGACY_UTILS_FOCUS_CHANGED_JS" resource_path="ui/legacy/utils/focus-changed.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/utils/inject-core-styles.js" name="UI_LEGACY_UTILS_INJECT_CORE_STYLES_JS" resource_path="ui/legacy/utils/inject-core-styles.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/utils/measured-scrollbar-width.js" name="UI_LEGACY_UTILS_MEASURED_SCROLLBAR_WIDTH_JS" resource_path="ui/legacy/utils/measured-scrollbar-width.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/utils/register-custom-element.js" name="UI_LEGACY_UTILS_REGISTER_CUSTOM_ELEMENT_JS" resource_path="ui/legacy/utils/register-custom-element.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/viewContainers.css.legacy.js" name="UI_LEGACY_VIEWCONTAINERS_CSS_LEGACY_JS" resource_path="ui/legacy/viewContainers.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/lit-html/static.js" name="UI_LIT_HTML_STATIC_JS" resource_path="ui/lit-html/static.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/Debugging.js" name="UI_VISUAL_LOGGING_DEBUGGING_JS" resource_path="ui/visual_logging/Debugging.js" type="BINDATA" compress="false"/>

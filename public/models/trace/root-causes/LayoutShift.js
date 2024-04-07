@@ -41,8 +41,10 @@ export class LayoutShiftRootCauses {
     #protocolInterface;
     #rootCauseCacheMap = new Map();
     #nodeDetailsCache = new Map();
-    constructor(protocolInterface) {
+    #iframeRootCausesEnabled;
+    constructor(protocolInterface, options) {
         this.#protocolInterface = protocolInterface;
+        this.#iframeRootCausesEnabled = options?.enableIframeRootCauses ?? false;
     }
     /**
      * Calculates the potential root causes for a given layout shift event. Once
@@ -239,7 +241,10 @@ export class LayoutShiftRootCauses {
      * because a node, which is an ancestor to an iframe, was injected.
      */
     async getIframeRootCause(layoutInvalidation, layoutInvalidationNodeId) {
-        if (layoutInvalidation.args.data.nodeName?.startsWith('IFRAME') &&
+        if (!this.#iframeRootCausesEnabled) {
+            return null;
+        }
+        if (!layoutInvalidation.args.data.nodeName?.startsWith('IFRAME') &&
             layoutInvalidation.args.data.reason !== "Style changed" /* Types.TraceEvents.LayoutInvalidationReason.STYLE_CHANGED */ &&
             layoutInvalidation.args.data.reason !== "Added to layout" /* Types.TraceEvents.LayoutInvalidationReason.ADDED_TO_LAYOUT */) {
             return null;

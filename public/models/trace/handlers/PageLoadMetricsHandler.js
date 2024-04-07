@@ -43,27 +43,8 @@ let pageLoadEventsArray = [];
 // entire trace this set will contain all the LCP events that were used - e.g.
 // the candidates that were the actual LCP events.
 const selectedLCPCandidateEvents = new Set();
-export const MarkerName = ['MarkDOMContent', 'MarkLoad', 'firstPaint', 'firstContentfulPaint', 'largestContentfulPaint::Candidate'];
-const markerTypeGuards = [
-    Types.TraceEvents.isTraceEventMarkDOMContent,
-    Types.TraceEvents.isTraceEventMarkLoad,
-    Types.TraceEvents.isTraceEventFirstPaint,
-    Types.TraceEvents.isTraceEventFirstContentfulPaint,
-    Types.TraceEvents.isTraceEventLargestContentfulPaintCandidate,
-    Types.TraceEvents.isTraceEventNavigationStart,
-];
-export function isTraceEventMarkerEvent(event) {
-    return markerTypeGuards.some(fn => fn(event));
-}
-const pageLoadEventTypeGuards = [
-    ...markerTypeGuards,
-    Types.TraceEvents.isTraceEventInteractiveTime,
-];
-export function eventIsPageLoadEvent(event) {
-    return pageLoadEventTypeGuards.some(fn => fn(event));
-}
 export function handleEvent(event) {
-    if (!eventIsPageLoadEvent(event)) {
+    if (!Types.TraceEvents.eventIsPageLoadEvent(event)) {
         return;
     }
     pageLoadEventsArray.push(event);
@@ -385,7 +366,7 @@ export async function finalize() {
     const mainFrame = metaHandlerData().mainFrameId;
     // Filter out LCP candidates to use only definitive LCP values
     const allEventsButLCP = pageLoadEventsArray.filter(event => !Types.TraceEvents.isTraceEventLargestContentfulPaintCandidate(event));
-    const markerEvents = [...allFinalLCPEvents, ...allEventsButLCP].filter(isTraceEventMarkerEvent);
+    const markerEvents = [...allFinalLCPEvents, ...allEventsButLCP].filter(Types.TraceEvents.isTraceEventMarkerEvent);
     // Filter by main frame and sort.
     allMarkerEvents =
         markerEvents.filter(event => getFrameIdForPageLoadEvent(event) === mainFrame).sort((a, b) => a.ts - b.ts);

@@ -7,6 +7,7 @@ interface BaseTreeNode<TreeNodeDataType> {
         isExpanded: boolean;
     }) => LitHtml.TemplateResult;
     id: TreeNodeId;
+    jslogContext?: string;
 }
 export interface TreeNodeWithChildren<TreeNodeDataType> extends BaseTreeNode<TreeNodeDataType> {
     children: () => Promise<TreeNode<TreeNodeDataType>[]>;

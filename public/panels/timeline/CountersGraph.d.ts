@@ -9,7 +9,7 @@ export declare class CountersGraph extends UI.Widget.VBox {
     private readonly header;
     readonly toolbar: UI.Toolbar.Toolbar;
     private graphsContainer;
-    canvasContainer: UI.Widget.WidgetElement;
+    canvasContainer: typeof UI.Widget.Widget.prototype.element;
     private canvas;
     private readonly timelineGrid;
     private readonly counters;

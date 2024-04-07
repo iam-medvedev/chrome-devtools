@@ -170,6 +170,18 @@ export declare class ColorMatcher extends MatcherBase<typeof ColorMatch> {
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
+export declare abstract class LightDarkColorMatch implements Match {
+    readonly text: string;
+    readonly light: CodeMirror.SyntaxNode[];
+    readonly dark: CodeMirror.SyntaxNode[];
+    readonly type = "light-dark";
+    constructor(text: string, light: CodeMirror.SyntaxNode[], dark: CodeMirror.SyntaxNode[]);
+    abstract render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
+}
+export declare class LightDarkColorMatcher extends MatcherBase<typeof LightDarkColorMatch> {
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
 export declare const enum LinkableNameProperties {
     Animation = "animation",
     AnimationName = "animation-name",

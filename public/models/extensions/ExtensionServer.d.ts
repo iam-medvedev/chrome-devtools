@@ -21,6 +21,10 @@ export declare class HostsPolicy {
     private constructor();
     isAllowedOnURL(inspectedURL?: Platform.DevToolsPath.UrlString): boolean;
 }
+export declare class RevealableNetworkRequestFilter {
+    readonly filter: string | undefined;
+    constructor(filter: string | undefined);
+}
 export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     private readonly clientObjects;
@@ -59,6 +63,7 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private registerRecorderExtensionEndpoint;
     private onReportResourceLoad;
     private onShowRecorderView;
+    private onShowNetworkPanel;
     private onCreateRecorderView;
     private inspectedURLChanged;
     hasSubscribers(type: string): boolean;

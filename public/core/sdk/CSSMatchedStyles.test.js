@@ -6,18 +6,40 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { assert } = chai;
-function ruleMatch(selector, cssProperties) {
+function ruleMatch(selector, cssProperties, range, styleSheetId = '0') {
     return {
         rule: {
             selectorList: { selectors: [{ text: selector }], text: selector },
             origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
             style: {
                 cssProperties,
+                styleSheetId,
+                range,
                 shorthandEntries: [],
             },
         },
         matchingSelectors: [0],
     };
+}
+function createMatchedStyles(payload) {
+    return SDK.CSSMatchedStyles.CSSMatchedStyles.create({
+        cssModel: sinon.createStubInstance(SDK.CSSModel.CSSModel),
+        node: sinon.createStubInstance(SDK.DOMModel.DOMNode),
+        inlinePayload: null,
+        attributesPayload: null,
+        matchedPayload: [],
+        pseudoPayload: [],
+        inheritedPayload: [],
+        inheritedPseudoPayload: [],
+        animationsPayload: [],
+        parentLayoutNodeId: undefined,
+        positionFallbackRules: [],
+        positionTryRules: [],
+        propertyRules: [],
+        cssPropertyRegistrations: [],
+        fontPaletteValuesRule: undefined,
+        ...payload,
+    });
 }
 describe('CSSMatchedStyles', () => {
     describe('parseCSSVariableNameAndFallback', () => {
@@ -79,11 +101,8 @@ describe('CSSMatchedStyles', () => {
         const testCssValueEquals = async (text, value) => {
             const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
             node.id = 1;
-            const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
-                cssModel: sinon.createStubInstance(SDK.CSSModel.CSSModel),
+            const matchedStyles = await createMatchedStyles({
                 node,
-                inlinePayload: null,
-                attributesPayload: null,
                 matchedPayload: [
                     ruleMatch('div', [
                         { name: '--foo', value: 'active-foo' },
@@ -96,16 +115,6 @@ describe('CSSMatchedStyles', () => {
                         { name: '--width', value: '1px' },
                     ]),
                 ],
-                pseudoPayload: [],
-                inheritedPayload: [],
-                inheritedPseudoPayload: [],
-                animationsPayload: [],
-                parentLayoutNodeId: undefined,
-                positionFallbackRules: [],
-                positionTryRules: [],
-                propertyRules: [],
-                cssPropertyRegistrations: [],
-                fontPaletteValuesRule: undefined,
             });
             const val = matchedStyles.computeCSSVariable(matchedStyles.nodeStyles()[0], text)?.value;
             assert.strictEqual(val, value);
@@ -132,13 +141,9 @@ describe('CSSMatchedStyles', () => {
             node.parentNode.parentNode.id = 3;
             node.parentNode.parentNode.parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
             node.parentNode.parentNode.parentNode.id = 4;
-            const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
-                cssModel: sinon.createStubInstance(SDK.CSSModel.CSSModel),
+            const matchedStyles = await createMatchedStyles({
                 node,
-                inlinePayload: null,
-                attributesPayload: null,
                 matchedPayload: [ruleMatch('div', [{ name: '--foo', value: 'foo1' }])], // styleFoo1
-                pseudoPayload: [],
                 inheritedPayload: [
                     {
                         matchedCSSRules: [ruleMatch('div', [{ name: '--bar', value: 'bar' }, { name: '--foo', value: 'foo2' }])],
@@ -146,11 +151,6 @@ describe('CSSMatchedStyles', () => {
                     { matchedCSSRules: [ruleMatch('div', [{ name: '--baz', value: 'baz' }])] }, // styleBaz
                     { matchedCSSRules: [ruleMatch('div', [{ name: '--foo', value: 'foo3' }])] }, // styleFoo3
                 ],
-                inheritedPseudoPayload: [],
-                animationsPayload: [],
-                parentLayoutNodeId: undefined,
-                positionFallbackRules: [],
-                positionTryRules: [],
                 propertyRules: [{
                         origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
                         style: {
@@ -163,8 +163,6 @@ describe('CSSMatchedStyles', () => {
                         },
                         propertyName: { text: '--bar' },
                     }],
-                cssPropertyRegistrations: [],
-                fontPaletteValuesRule: undefined,
             });
             // Compute the variable value as it is visible to `startingCascade` and compare with the expectation
             const testComputedVariableValueEquals = (name, startingCascade, expectedValue, expectedDeclaration) => {
@@ -192,26 +190,14 @@ describe('CSSMatchedStyles', () => {
         const testComputedValueEquals = async (text, value) => {
             const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
             node.id = 1;
-            const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
+            const matchedStyles = await createMatchedStyles({
                 cssModel: sinon.createStubInstance(SDK.CSSModel.CSSModel),
                 node,
-                inlinePayload: null,
-                attributesPayload: null,
                 matchedPayload: [ruleMatch('div', [
                         { name: '--width', value: '1px' },
                         { name: '--dark', value: 'darkgrey' },
                         { name: '--theme', value: 'var(--dark)' },
                     ])],
-                pseudoPayload: [],
-                inheritedPayload: [],
-                inheritedPseudoPayload: [],
-                animationsPayload: [],
-                parentLayoutNodeId: undefined,
-                positionFallbackRules: [],
-                positionTryRules: [],
-                propertyRules: [],
-                cssPropertyRegistrations: [],
-                fontPaletteValuesRule: undefined,
             });
             const val = matchedStyles.computeValue(matchedStyles.nodeStyles()[0], text);
             assert.strictEqual(val, value);
@@ -224,6 +210,31 @@ describe('CSSMatchedStyles', () => {
             await testComputedValueEquals('var(--not-existing-with-default, red)', 'red');
             await testComputedValueEquals('var(--width)solid black', '1px solid black');
         });
+    });
+    it('does not hide inherited rules that also apply directly to the node if it contains custom properties', async () => {
+        const parentNode = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        parentNode.id = 0;
+        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        node.parentNode = parentNode;
+        node.id = 1;
+        const startColumn = 0, endColumn = 1;
+        const matchedPayload = [
+            ruleMatch('body', [{ name: '--var', value: 'blue' }], { startLine: 0, startColumn, endLine: 0, endColumn }),
+            ruleMatch('*', [{ name: 'color', value: 'var(--var)' }], { startLine: 1, startColumn, endLine: 1, endColumn }),
+            ruleMatch('*', [{ name: '--var', value: 'red' }], { startLine: 2, startColumn, endLine: 2, endColumn }),
+        ];
+        const inheritedPayload = [{ matchedCSSRules: matchedPayload.slice(1) }];
+        const matchedStyles = await createMatchedStyles({
+            node,
+            matchedPayload,
+            inheritedPayload,
+        });
+        assert.deepStrictEqual(matchedStyles.nodeStyles().map(style => style.allProperties().map(prop => prop.propertyText)), [
+            ['--var: red;'],
+            ['color: var(--var);'],
+            ['--var: blue;'],
+            ['--var: red;'],
+        ]);
     });
 });
 describeWithMockConnection('NodeCascade', () => {
@@ -262,24 +273,14 @@ describeWithMockConnection('NodeCascade', () => {
                 syntax: '<color>',
             },
         ];
-        const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
+        const matchedStyles = await createMatchedStyles({
             cssModel,
             node,
-            inlinePayload: null,
-            attributesPayload: null,
             matchedPayload: [
                 ruleMatch('div', []),
             ],
-            pseudoPayload: [],
             inheritedPayload: [{ matchedCSSRules }],
-            inheritedPseudoPayload: [],
-            animationsPayload: [],
-            parentLayoutNodeId: undefined,
-            positionFallbackRules: [],
-            positionTryRules: [],
-            propertyRules: [],
             cssPropertyRegistrations,
-            fontPaletteValuesRule: undefined,
         });
         const style = matchedStyles.nodeStyles()[1];
         const [inheritableProperty, nonInheritableProperty] = style.allProperties();

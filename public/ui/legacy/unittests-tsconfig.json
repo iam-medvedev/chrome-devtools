@@ -54,6 +54,7 @@
     "../../../../../../front_end/ui/legacy/UIUtils.test.ts",
     "../../../../../../front_end/ui/legacy/View.test.ts",
     "../../../../../../front_end/ui/legacy/ViewRegistration.test.ts",
+    "../../../../../../front_end/ui/legacy/Widget.test.ts",
     "../../../../../../front_end/ui/legacy/XLink.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

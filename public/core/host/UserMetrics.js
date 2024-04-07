@@ -268,45 +268,11 @@ export class UserMetrics {
     badgeActivated(badge) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.BadgeActivated" /* EnumeratedHistogram.BadgeActivated */, badge, 9 /* BadgeType.MaxValue */);
     }
-    breakpointsRestoredFromStorage(count) {
-        const countBucket = this.#breakpointCountToBucket(count);
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.BreakpointsRestoredFromStorageCount" /* EnumeratedHistogram.BreakpointsRestoredFromStorageCount */, countBucket, 10 /* BreakpointsRestoredFromStorageCount.MaxValue */);
-    }
     animationPlaybackRateChanged(playbackRate) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.AnimationPlaybackRateChanged" /* EnumeratedHistogram.AnimationPlaybackRateChanged */, playbackRate, 4 /* AnimationsPlaybackRate.MaxValue */);
     }
     animationPointDragged(dragType) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.AnimationPointDragged" /* EnumeratedHistogram.AnimationPointDragged */, dragType, 5 /* AnimationPointDragType.MaxValue */);
-    }
-    #breakpointCountToBucket(count) {
-        if (count < 100) {
-            return 0 /* BreakpointsRestoredFromStorageCount.LessThan100 */;
-        }
-        if (count < 300) {
-            return 1 /* BreakpointsRestoredFromStorageCount.LessThan300 */;
-        }
-        if (count < 1000) {
-            return 2 /* BreakpointsRestoredFromStorageCount.LessThan1000 */;
-        }
-        if (count < 3000) {
-            return 3 /* BreakpointsRestoredFromStorageCount.LessThan3000 */;
-        }
-        if (count < 10000) {
-            return 4 /* BreakpointsRestoredFromStorageCount.LessThan10000 */;
-        }
-        if (count < 30000) {
-            return 5 /* BreakpointsRestoredFromStorageCount.LessThan30000 */;
-        }
-        if (count < 100000) {
-            return 6 /* BreakpointsRestoredFromStorageCount.LessThan100000 */;
-        }
-        if (count < 300000) {
-            return 7 /* BreakpointsRestoredFromStorageCount.LessThan300000 */;
-        }
-        if (count < 1000000) {
-            return 8 /* BreakpointsRestoredFromStorageCount.LessThan1000000 */;
-        }
-        return 9 /* BreakpointsRestoredFromStorageCount.Above1000000 */;
     }
     workspacesPopulated(wallClockTimeInMilliseconds) {
         InspectorFrontendHostInstance.recordPerformanceHistogram('DevTools.Workspaces.PopulateWallClocktime', wallClockTimeInMilliseconds);
@@ -943,7 +909,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["authored-deployed-grouping"] = 63] = "authored-deployed-grouping";
     DevtoolsExperiments[DevtoolsExperiments["important-dom-properties"] = 64] = "important-dom-properties";
     DevtoolsExperiments[DevtoolsExperiments["just-my-code"] = 65] = "just-my-code";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-as-console-profile-result-panel"] = 67] = "timeline-as-console-profile-result-panel";
     DevtoolsExperiments[DevtoolsExperiments["preloading-status-panel"] = 68] = "preloading-status-panel";
     DevtoolsExperiments[DevtoolsExperiments["outermost-target-selector"] = 71] = "outermost-target-selector";
     DevtoolsExperiments[DevtoolsExperiments["highlight-errors-elements-panel"] = 73] = "highlight-errors-elements-panel";
@@ -958,8 +923,9 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
     DevtoolsExperiments[DevtoolsExperiments["save-and-load-trace-with-annotations"] = 87] = "save-and-load-trace-with-annotations";
     DevtoolsExperiments[DevtoolsExperiments["timeline-track-configuration"] = 88] = "timeline-track-configuration";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-extensions"] = 89] = "timeline-extensions";
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 89] = "MaxValue";
+    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 90] = "MaxValue";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

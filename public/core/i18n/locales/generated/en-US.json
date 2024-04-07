@@ -5603,6 +5603,9 @@
   "panels/elements/components/ElementsBreadcrumbsUtils.ts | text": {
     "message": "(text)"
   },
+  "panels/elements/components/ElementsTreeExpandButton.ts | expand": {
+    "message": "Expand"
+  },
   "panels/elements/components/LayoutPane.ts | chooseElementOverlayColor": {
     "message": "Choose the overlay color for this element"
   },
@@ -7871,8 +7874,14 @@
   "panels/network/components/RequestHeaderSection.ts | provisionalHeadersAreShownDisableCache": {
     "message": "Provisional headers are shown. Disable cache to see full headers."
   },
+  "panels/network/components/RequestHeadersView.ts | earlyHintsHeaders": {
+    "message": "Early Hints Headers"
+  },
   "panels/network/components/RequestHeadersView.ts | fromDiskCache": {
     "message": "(from disk cache)"
+  },
+  "panels/network/components/RequestHeadersView.ts | fromEarlyHints": {
+    "message": "(from early hints)"
   },
   "panels/network/components/RequestHeadersView.ts | fromMemoryCache": {
     "message": "(from memory cache)"
@@ -8182,6 +8191,9 @@
   },
   "panels/network/NetworkDataGridNode.ts | dnsAlpnH3JobWonWithoutRace": {
     "message": "Chrome used a HTTP/3 connection due to the DNS record indicating HTTP/3 support. There was no race against establishing a connection using a different HTTP version."
+  },
+  "panels/network/NetworkDataGridNode.ts | earlyHints": {
+    "message": "early-hints"
   },
   "panels/network/NetworkDataGridNode.ts | failed": {
     "message": "(failed)"
@@ -12800,6 +12812,9 @@
   "panels/timeline/TimelineDetailsView.ts | rangeSS": {
     "message": "Range:  {PH1} – {PH2}"
   },
+  "panels/timeline/TimelineDetailsView.ts | selectorStats": {
+    "message": "Selector Stats"
+  },
   "panels/timeline/TimelineDetailsView.ts | summary": {
     "message": "Summary"
   },
@@ -12902,6 +12917,9 @@
   "panels/timeline/TimelinePanel.ts | captureSettings": {
     "message": "Capture settings"
   },
+  "panels/timeline/TimelinePanel.ts | capturesSelectorStats": {
+    "message": "Captures CSS selector statistics"
+  },
   "panels/timeline/TimelinePanel.ts | clear": {
     "message": "Clear"
   },
@@ -12937,6 +12955,9 @@
   },
   "panels/timeline/TimelinePanel.ts | enableAdvancedPaint": {
     "message": "Enable advanced paint instrumentation (slow)"
+  },
+  "panels/timeline/TimelinePanel.ts | enableSelectorStats": {
+    "message": "Enable CSS selector stats"
   },
   "panels/timeline/TimelinePanel.ts | failedToSaveTimelineSS": {
     "message": "Failed to save timeline: {PH1} ({PH2})"
@@ -12992,6 +13013,9 @@
   "panels/timeline/TimelinePanel.ts | screenshots": {
     "message": "Screenshots"
   },
+  "panels/timeline/TimelinePanel.ts | SelectorStatsEnabled": {
+    "message": "- Selector stats is enabled"
+  },
   "panels/timeline/TimelinePanel.ts | showMemoryTimeline": {
     "message": "Show memory timeline"
   },
@@ -13015,6 +13039,42 @@
   },
   "panels/timeline/TimelinePanel.ts | wasd": {
     "message": "WASD"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | copyTable": {
+    "message": "Copy Table"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | elapsed": {
+    "message": "Elapsed (ms)"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | lineNumber": {
+    "message": "Line {PH1}:{PH2}"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | matchAttempts": {
+    "message": "Match Attempts"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | matchCount": {
+    "message": "Match Count"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | rejectPercentage": {
+    "message": "% of slow-path non-matches"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | selector": {
+    "message": "Selector"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | selectorStats": {
+    "message": "Selector Stats"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | styleSheetId": {
+    "message": "Style Sheet"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | tableCopiedToClipboard": {
+    "message": "Table copied to clipboard"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | unableToLink": {
+    "message": "Unable to link"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | unableToLinkViaStyleSheetId": {
+    "message": "Unable to link via {PH1}"
   },
   "panels/timeline/TimelineTreeView.ts | activity": {
     "message": "Activity"
@@ -13367,6 +13427,9 @@
   "panels/timeline/TimelineUIUtils.ts | scriptNotEligible": {
     "message": "script not eligible"
   },
+  "panels/timeline/TimelineUIUtils.ts | selectorStatsTitle": {
+    "message": "Selector Stats"
+  },
   "panels/timeline/TimelineUIUtils.ts | selfTime": {
     "message": "Self Time"
   },
@@ -13384,6 +13447,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | sSDimensions": {
     "message": "{PH1} × {PH2}"
+  },
+  "panels/timeline/TimelineUIUtils.ts | sSelectorStatsInfo": {
+    "message": "Select \"{PH1}\" to collect detailed CSS selector matching statistics."
   },
   "panels/timeline/TimelineUIUtils.ts | sSelf": {
     "message": "{PH1} (self)"

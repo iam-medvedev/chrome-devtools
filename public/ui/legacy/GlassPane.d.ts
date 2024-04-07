@@ -1,10 +1,10 @@
 import { type Size } from './Geometry.js';
-import { Widget, type WidgetElement } from './Widget.js';
+import { Widget } from './Widget.js';
 export declare class GlassPane {
     #private;
     private readonly widgetInternal;
-    element: WidgetElement;
-    contentElement: HTMLDivElement;
+    element: typeof Widget.prototype.element;
+    contentElement: typeof Widget.prototype.contentElement;
     private readonly arrowElement;
     private readonly onMouseDownBound;
     private onClickOutsideCallback;

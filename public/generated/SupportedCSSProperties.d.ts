@@ -470,6 +470,9 @@ export const generatedPropertyValues: {
     "line-break": {
         values: string[];
     };
+    "line-clamp": {
+        values: string[];
+    };
     "line-height": {
         values: string[];
     };

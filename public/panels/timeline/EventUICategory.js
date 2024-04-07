@@ -671,7 +671,6 @@ export function maybeInitSylesMap() {
         ["GCEvent" /* TraceEngine.Types.TraceEvents.KnownEventName.GC */]: new TimelineRecordStyle(i18nString(UIStrings.gcEvent), defaultCategoryStyles.scripting),
         ["MajorGC" /* TraceEngine.Types.TraceEvents.KnownEventName.MajorGC */]: new TimelineRecordStyle(i18nString(UIStrings.majorGc), defaultCategoryStyles.scripting),
         ["MinorGC" /* TraceEngine.Types.TraceEvents.KnownEventName.MinorGC */]: new TimelineRecordStyle(i18nString(UIStrings.minorGc), defaultCategoryStyles.scripting),
-        ["V8.GCIncrementalMarking" /* TraceEngine.Types.TraceEvents.KnownEventName.IncrementalGCMarking */]: new TimelineRecordStyle(i18nString(UIStrings.gcEvent), defaultCategoryStyles.scripting),
         ["CppGC.IncrementalSweep" /* TraceEngine.Types.TraceEvents.KnownEventName.CPPGCSweep */]: new TimelineRecordStyle(i18nString(UIStrings.cppGc), defaultCategoryStyles.scripting),
         ["RequestAnimationFrame" /* TraceEngine.Types.TraceEvents.KnownEventName.RequestAnimationFrame */]: new TimelineRecordStyle(i18nString(UIStrings.requestAnimationFrame), defaultCategoryStyles.scripting),
         ["CancelAnimationFrame" /* TraceEngine.Types.TraceEvents.KnownEventName.CancelAnimationFrame */]: new TimelineRecordStyle(i18nString(UIStrings.cancelAnimationFrame), defaultCategoryStyles.scripting),

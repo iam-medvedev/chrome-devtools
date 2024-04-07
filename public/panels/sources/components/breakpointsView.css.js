@@ -271,6 +271,10 @@ input:disabled + span {
   line-height: 13px;
   height: 18px;
   padding-right: 8px;
+
+  & > label {
+    width: fit-content;
+  }
 }
 
 details > summary:focus,

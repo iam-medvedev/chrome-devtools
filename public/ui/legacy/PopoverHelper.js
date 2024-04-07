@@ -51,12 +51,12 @@ export class PopoverHelper {
     boundMouseDown;
     boundMouseMove;
     boundMouseOut;
-    #jslogContext;
+    jslogContext;
     constructor(container, getRequest, jslogContext) {
         this.disableOnClick = false;
         this.hasPadding = false;
         this.getRequest = getRequest;
-        this.#jslogContext = jslogContext;
+        this.jslogContext = jslogContext;
         this.scheduledRequest = null;
         this.hidePopoverCallback = null;
         this.container = container;
@@ -181,7 +181,7 @@ export class PopoverHelper {
         this.hidePopoverCallback = null;
     }
     showPopover(document) {
-        const popover = PopoverHelper.createPopover(this.#jslogContext);
+        const popover = PopoverHelper.createPopover(this.jslogContext);
         const request = this.scheduledRequest;
         if (!request) {
             return;

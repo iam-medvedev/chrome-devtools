@@ -286,6 +286,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             if (possibleHintNodeFromHintIcon instanceof Element && possibleHintNodeFromHintIcon.matches('.hint')) {
                 const hint = activeHints.get(possibleHintNodeFromHintIcon);
                 if (hint) {
+                    this.#hintPopoverHelper.jslogContext = 'elements.css-hint';
                     return {
                         box: hoveredNode.boxInWindow(),
                         show: async (popover) => {
@@ -303,6 +304,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 const cssPropertyName = hoveredNode.textContent;
                 const cssProperty = cssPropertyName && this.#webCustomData.findCssProperty(cssPropertyName);
                 if (cssProperty) {
+                    this.#hintPopoverHelper.jslogContext = 'elements.css-property-doc';
                     return {
                         box: hoveredNode.boxInWindow(),
                         show: async (popover) => {
@@ -316,6 +318,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             }
             if (hoveredNode.matches('.simple-selector')) {
                 const specificity = StylePropertiesSection.getSpecificityStoredForNodeElement(hoveredNode);
+                this.#hintPopoverHelper.jslogContext = 'elements.css-selector-specificity';
                 return {
                     box: hoveredNode.boxInWindow(),
                     show: async (popover) => {
@@ -328,7 +331,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 };
             }
             return null;
-        }, 'elements.css-property-doc');
+        });
         this.#hintPopoverHelper.setDisableOnClick(true);
         this.#hintPopoverHelper.setTimeout(300);
         this.#hintPopoverHelper.setHasPadding(true);

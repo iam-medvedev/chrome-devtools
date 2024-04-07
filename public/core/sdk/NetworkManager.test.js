@@ -155,6 +155,46 @@ describe('NetworkDispatcher', () => {
                 { name: 'set-cookie', value: 'color=green' },
             ]);
         });
+        it('Correctly set early hints properties on receivedResponse event', () => {
+            const responseReceivedEvent = {
+                requestId: 'mockId',
+                loaderId: 'mockLoaderId',
+                frameId: 'mockFrameId',
+                timestamp: 581734.083213,
+                type: "Document" /* Protocol.Network.ResourceType.Document */,
+                response: {
+                    url: 'example.com',
+                    status: 200,
+                    statusText: '',
+                    headers: {
+                        'test-header': 'first',
+                    },
+                    mimeType: 'text/html',
+                    connectionReused: true,
+                    connectionId: 12345,
+                    encodedDataLength: 100,
+                    securityState: 'secure',
+                    fromEarlyHints: true,
+                },
+            };
+            networkDispatcher.requestWillBeSent(requestWillBeSentEvent);
+            networkDispatcher.responseReceived(responseReceivedEvent);
+            assert.deepEqual(networkDispatcher.requestForId('mockId')?.fromEarlyHints(), true);
+        });
+        it('has populated early hints headers after receiving \'repsonseReceivedEarlyHints\'', () => {
+            const earlyHintsEvent = {
+                requestId: 'mockId',
+                headers: {
+                    'link': '</style.css>; as=style;',
+                },
+            };
+            networkDispatcher.requestWillBeSent(requestWillBeSentEvent);
+            networkDispatcher.loadingFinished(loadingFinishedEvent);
+            networkDispatcher.responseReceivedEarlyHints(earlyHintsEvent);
+            assert.deepEqual(networkDispatcher.requestForId('mockId')?.earlyHintsHeaders, [
+                { name: 'link', value: '</style.css>; as=style;' },
+            ]);
+        });
     });
     describeWithEnvironment('WebBundle requests', () => {
         let networkDispatcher;

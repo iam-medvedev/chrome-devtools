@@ -19,7 +19,8 @@ export declare class TimingsTrackAppender implements TrackAppender {
     /**
      * Gets the style for a page load marker event.
      */
-    markerStyleForEvent(markerEvent: TraceEngine.Types.TraceEvents.PageLoadEvent): TimelineMarkerStyle;
+    markerStyleForPageLoadEvent(markerEvent: TraceEngine.Types.TraceEvents.PageLoadEvent): TimelineMarkerStyle;
+    markerStyleForExtensionMarker(markerEvent: TraceEngine.Types.Extensions.SyntheticExtensionMarker): TimelineMarkerStyle;
     /**
      * Gets the color an event added by this appender should be rendered with.
      */

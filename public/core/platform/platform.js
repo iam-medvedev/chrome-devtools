@@ -40,6 +40,7 @@ import * as PromiseUtilities from './PromiseUtilities.js';
 import * as SetUtilities from './SetUtilities.js';
 import * as StringUtilities from './StringUtilities.js';
 import * as Timing from './Timing.js';
+import * as TypedArrayUtilities from './TypedArrayUtilities.js';
 import * as TypeScriptUtilities from './TypescriptUtilities.js';
 import * as UIString from './UIString.js';
 import * as UserVisibleError from './UserVisibleError.js';
@@ -49,5 +50,5 @@ import * as UserVisibleError from './UserVisibleError.js';
  * error).
  */
 export { assertNever, assertNotNullOrUndefined, assertUnhandled } from './TypescriptUtilities.js';
-export { ArrayUtilities, Brand, DateUtilities, DevToolsPath, DOMUtilities, KeyboardUtilities, MapUtilities, MimeType, NumberUtilities, PromiseUtilities, SetUtilities, StringUtilities, Timing, TypeScriptUtilities, UIString, UserVisibleError, };
+export { ArrayUtilities, Brand, DateUtilities, DevToolsPath, DOMUtilities, KeyboardUtilities, MapUtilities, MimeType, NumberUtilities, PromiseUtilities, SetUtilities, StringUtilities, Timing, TypedArrayUtilities, TypeScriptUtilities, UIString, UserVisibleError, };
 //# sourceMappingURL=platform.js.map

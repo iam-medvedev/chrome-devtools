@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../../front_end/models/trace/types/Configuration.ts",
+    "../../../../../../../front_end/models/trace/types/Extensions.ts",
     "../../../../../../../front_end/models/trace/types/File.ts",
     "../../../../../../../front_end/models/trace/types/Timing.ts",
     "../../../../../../../front_end/models/trace/types/TraceEvents.ts",

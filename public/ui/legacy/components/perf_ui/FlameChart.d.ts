@@ -86,11 +86,6 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private hitMarginPx;
     private textBaseline;
     private textPadding;
-    private readonly headerLeftPadding;
-    private readonly arrowSide;
-    private readonly expansionArrowIndent;
-    private readonly headerLabelXPadding;
-    private readonly headerLabelYPadding;
     private highlightedMarkerIndex;
     /**
      * Represents the index of the entry that the user's mouse cursor is over.
@@ -291,6 +286,9 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     /**
      * Returns the width of the title label of the group, which include the left padding, arrow and the group header text.
      * This function is public for test reason.
+     * |ICON_WIDTH|expansionArrowIndent * (nestingLevel + 1)|
+     * |EDIT  ICON|headerLeftPadding|                    |Arrow|LabelXPadding|Title|LabelXPadding|
+     *                              |<--                      labelWidth                      -->|
      * @param context canvas context
      * @param group
      * @returns the width of the label of the group.

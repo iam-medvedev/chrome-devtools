@@ -27,7 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import * as Platfrom from '../../core/platform/platform.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { HeapSnapshotProgress, JSHeapSnapshot } from './HeapSnapshot.js';
 export class HeapSnapshotLoader {
@@ -109,7 +109,7 @@ export class HeapSnapshotLoader {
             if (!this.#array) {
                 throw new Error('Array not instantiated');
             }
-            this.#array[this.#arrayIndex++] = nextNumber;
+            this.#array.setValue(this.#arrayIndex++, nextNumber);
         }
     }
     #parseStringsArray() {
@@ -139,7 +139,7 @@ export class HeapSnapshotLoader {
         if (this.#buffer.length > 0) {
             return Promise.resolve(this.#buffer.shift());
         }
-        const { promise, resolve } = Platfrom.PromiseUtilities.promiseWithResolvers();
+        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
         this.#dataCallback = resolve;
         return promise;
     }
@@ -157,7 +157,8 @@ export class HeapSnapshotLoader {
         const nameIndex = await this.#findToken(name);
         const bracketIndex = await this.#findToken('[', nameIndex);
         this.#json = this.#json.slice(bracketIndex + 1);
-        this.#array = length ? new Uint32Array(length) : [];
+        this.#array = length === undefined ? Platform.TypedArrayUtilities.createExpandableBigUint32Array() :
+            Platform.TypedArrayUtilities.createFixedBigUint32Array(length);
         this.#arrayIndex = 0;
         while (this.#parseUintArray()) {
             if (length) {
@@ -193,13 +194,13 @@ export class HeapSnapshotLoader {
         }
         this.#snapshot = this.#snapshot || {};
         const nodes = await this.#parseArray('"nodes"', 'Loading nodes… {PH1}%', this.#snapshot.snapshot.meta.node_fields.length * this.#snapshot.snapshot.node_count);
-        this.#snapshot.nodes = nodes;
+        this.#snapshot.nodes = nodes.asUint32ArrayOrFail();
         const edges = await this.#parseArray('"edges"', 'Loading edges… {PH1}%', this.#snapshot.snapshot.meta.edge_fields.length * this.#snapshot.snapshot.edge_count);
         this.#snapshot.edges = edges;
         if (this.#snapshot.snapshot.trace_function_count) {
             const traceFunctionInfos = await this.#parseArray('"trace_function_infos"', 'Loading allocation traces… {PH1}%', this.#snapshot.snapshot.meta.trace_function_info_fields.length *
                 this.#snapshot.snapshot.trace_function_count);
-            this.#snapshot.trace_function_infos = traceFunctionInfos;
+            this.#snapshot.trace_function_infos = traceFunctionInfos.asUint32ArrayOrFail();
             const thisTokenEndIndex = await this.#findToken(':');
             const nextTokenIndex = await this.#findToken('"', thisTokenEndIndex);
             const openBracketIndex = this.#json.indexOf('[');
@@ -209,11 +210,11 @@ export class HeapSnapshotLoader {
         }
         if (this.#snapshot.snapshot.meta.sample_fields) {
             const samples = await this.#parseArray('"samples"', 'Loading samples…');
-            this.#snapshot.samples = samples;
+            this.#snapshot.samples = samples.asArrayOrFail();
         }
         if (this.#snapshot.snapshot.meta['location_fields']) {
             const locations = await this.#parseArray('"locations"', 'Loading locations…');
-            this.#snapshot.locations = locations;
+            this.#snapshot.locations = locations.asArrayOrFail();
         }
         else {
             this.#snapshot.locations = [];

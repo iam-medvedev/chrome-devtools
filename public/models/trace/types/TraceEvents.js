@@ -21,6 +21,25 @@ export function isTraceEventAuctionWorkletDoneWithProcess(event) {
 export function isTraceEventScreenshot(event) {
     return event.name === "Screenshot" /* KnownEventName.Screenshot */;
 }
+const markerTypeGuards = [
+    isTraceEventMarkDOMContent,
+    isTraceEventMarkLoad,
+    isTraceEventFirstPaint,
+    isTraceEventFirstContentfulPaint,
+    isTraceEventLargestContentfulPaintCandidate,
+    isTraceEventNavigationStart,
+];
+export const MarkerName = ['MarkDOMContent', 'MarkLoad', 'firstPaint', 'firstContentfulPaint', 'largestContentfulPaint::Candidate'];
+export function isTraceEventMarkerEvent(event) {
+    return markerTypeGuards.some(fn => fn(event));
+}
+const pageLoadEventTypeGuards = [
+    ...markerTypeGuards,
+    isTraceEventInteractiveTime,
+];
+export function eventIsPageLoadEvent(event) {
+    return pageLoadEventTypeGuards.some(fn => fn(event));
+}
 export function isTraceEventTracingSessionIdForWorker(event) {
     return event.name === 'TracingSessionIdForWorker';
 }
@@ -84,6 +103,9 @@ export function isTraceEventActivateLayerTree(event) {
 }
 export function isSyntheticInvalidation(event) {
     return event.name === 'SyntheticInvalidation';
+}
+export function isStyleRecalcSelectorStats(event) {
+    return event.name === "SelectorStats" /* KnownEventName.SelectorStats */;
 }
 export function isTraceEventUpdateLayoutTree(event) {
     return event.name === "UpdateLayoutTree" /* KnownEventName.UpdateLayoutTree */;
@@ -300,16 +322,16 @@ export function isTraceEventTimeStamp(traceEventData) {
 export function isTraceEventParseHTML(traceEventData) {
     return traceEventData.name === 'ParseHTML';
 }
+const asyncPhases = new Set([
+    "b" /* Phase.ASYNC_NESTABLE_START */,
+    "n" /* Phase.ASYNC_NESTABLE_INSTANT */,
+    "e" /* Phase.ASYNC_NESTABLE_END */,
+    "T" /* Phase.ASYNC_STEP_INTO */,
+    "S" /* Phase.ASYNC_BEGIN */,
+    "F" /* Phase.ASYNC_END */,
+    "p" /* Phase.ASYNC_STEP_PAST */,
+]);
 export function isTraceEventAsyncPhase(traceEventData) {
-    const asyncPhases = new Set([
-        "b" /* Phase.ASYNC_NESTABLE_START */,
-        "n" /* Phase.ASYNC_NESTABLE_INSTANT */,
-        "e" /* Phase.ASYNC_NESTABLE_END */,
-        "T" /* Phase.ASYNC_STEP_INTO */,
-        "S" /* Phase.ASYNC_BEGIN */,
-        "F" /* Phase.ASYNC_END */,
-        "p" /* Phase.ASYNC_STEP_PAST */,
-    ]);
     return asyncPhases.has(traceEventData.ph);
 }
 export function isSyntheticLayoutShift(traceEventData) {

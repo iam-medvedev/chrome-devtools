@@ -32,7 +32,6 @@ export declare class SecurityPanel extends UI.Panel.PanelWithSidebar implements 
     private onRequestFinished;
     private updateFilterRequestCounts;
     filterRequestCount(filterKey: string): number;
-    private securityStateMin;
     modelAdded(securityModel: SecurityModel): void;
     modelRemoved(securityModel: SecurityModel): void;
     private onPrimaryPageChanged;

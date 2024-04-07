@@ -129,7 +129,7 @@ export class NodeIndicator {
     #button;
     constructor() {
         const element = document.createElement('div');
-        const shadowRoot = UI.Utils.createShadowRootWithCoreStyles(element, { cssFile: [nodeIconStyles], delegatesFocus: undefined });
+        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: [nodeIconStyles], delegatesFocus: undefined });
         this.#element = shadowRoot.createChild('div', 'node-icon');
         element.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend(), false);
         this.#button = new UI.Toolbar.ToolbarItem(element);
