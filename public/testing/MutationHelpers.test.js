@@ -4,7 +4,6 @@
 import * as LitHtml from '../ui/lit-html/lit-html.js';
 import { renderElementIntoDOM } from './DOMHelpers.js';
 import { TEXT_NODE, withMutations, withNoMutations } from './MutationHelpers.js';
-const { assert } = chai;
 /**
  * Needed because assert.throws from chai does not work async.
  */

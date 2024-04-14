@@ -8,7 +8,6 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as ChromeLink from './chrome_link.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 describeWithMockConnection('ChromeLink', () => {
     it('renders a link when given a \'chrome://\' URL', async () => {
         const target = createTarget();

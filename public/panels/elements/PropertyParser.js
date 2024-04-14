@@ -89,37 +89,18 @@ export class TreeWalker {
     leave(_node) {
     }
 }
-export class RenderingContext {
-    ast;
-    matchedResult;
-    cssControls;
-    options;
-    constructor(ast, matchedResult, cssControls, options = { readonly: false }) {
-        this.ast = ast;
-        this.matchedResult = matchedResult;
-        this.cssControls = cssControls;
-        this.options = options;
-    }
-    addControl(cssType, control) {
-        if (this.cssControls) {
-            const controls = this.cssControls.get(cssType);
-            if (!controls) {
-                this.cssControls.set(cssType, [control]);
-            }
-            else {
-                controls.push(control);
-            }
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function matcherBase(matchT) {
+    class MatcherBase {
+        matchType = matchT;
+        accepts(_propertyName) {
+            return true;
+        }
+        matches(_node, _matching) {
+            return null;
         }
     }
-}
-export class MatcherBase {
-    createMatch;
-    constructor(createMatch) {
-        this.createMatch = createMatch;
-    }
-    accepts(_propertyName) {
-        return true;
-    }
+    return MatcherBase;
 }
 export class BottomUpTreeMatching extends TreeWalker {
     #matchers = [];
@@ -307,53 +288,6 @@ export function requiresSpace(a, b) {
         !noSpaceBefore.includes(leadingChar);
 }
 export const CSSControlMap = (Map);
-function mergeWithSpacing(nodes, merge) {
-    const result = [...nodes];
-    if (requiresSpace(nodes, merge)) {
-        result.push(document.createTextNode(' '));
-    }
-    result.push(...merge);
-    return result;
-}
-export class Renderer extends TreeWalker {
-    #matchedResult;
-    #output = [];
-    #context;
-    constructor(ast, matchedResult, cssControls, options) {
-        super(ast);
-        this.#matchedResult = matchedResult;
-        this.#context = new RenderingContext(this.ast, this.#matchedResult, cssControls, options);
-    }
-    static render(nodeOrNodes, context) {
-        if (!Array.isArray(nodeOrNodes)) {
-            return this.render([nodeOrNodes], context);
-        }
-        const cssControls = new CSSControlMap();
-        const renderers = nodeOrNodes.map(node => this.walkExcludingSuccessors(context.ast.subtree(node), context.matchedResult, cssControls, context.options));
-        const nodes = renderers.map(node => node.#output).reduce(mergeWithSpacing);
-        return { nodes, cssControls };
-    }
-    static renderInto(nodeOrNodes, context, parent) {
-        const { nodes, cssControls } = this.render(nodeOrNodes, context);
-        if (parent.lastChild && requiresSpace([parent.lastChild], nodes)) {
-            parent.appendChild(document.createTextNode(' '));
-        }
-        nodes.map(n => parent.appendChild(n));
-        return { nodes, cssControls };
-    }
-    renderedMatchForTest(_nodes, _match) {
-    }
-    enter({ node }) {
-        const match = this.#matchedResult.getMatch(node);
-        if (match) {
-            const output = match.render(node, this.#context);
-            this.renderedMatchForTest(output, match);
-            this.#output = mergeWithSpacing(this.#output, output);
-            return false;
-        }
-        return true;
-    }
-}
 export var ASTUtils;
 (function (ASTUtils) {
     function siblings(node) {
@@ -413,12 +347,15 @@ export var ASTUtils;
 })(ASTUtils || (ASTUtils = {}));
 export class AngleMatch {
     text;
-    type = 'angle';
-    constructor(text) {
+    node;
+    constructor(text, node) {
         this.text = text;
+        this.node = node;
     }
 }
-export class AngleMatcher extends MatcherBase {
+// clang-format off
+export class AngleMatcher extends matcherBase(AngleMatch) {
+    // clang-format on
     accepts(propertyName) {
         return SDK.CSSMetadata.cssMetadata().isAngleAwareProperty(propertyName);
     }
@@ -431,7 +368,7 @@ export class AngleMatcher extends MatcherBase {
         if (!unit || !['deg', 'grad', 'rad', 'turn'].includes(matching.ast.text(unit))) {
             return null;
         }
-        return this.createMatch(matching.ast.text(node));
+        return new AngleMatch(matching.ast.text(node), node);
     }
 }
 function literalToNumber(node, ast) {
@@ -443,18 +380,21 @@ function literalToNumber(node, ast) {
 }
 export class ColorMixMatch {
     text;
+    node;
     space;
     color1;
     color2;
-    type = 'color-mix';
-    constructor(text, space, color1, color2) {
+    constructor(text, node, space, color1, color2) {
         this.text = text;
+        this.node = node;
         this.space = space;
         this.color1 = color1;
         this.color2 = color2;
     }
 }
-export class ColorMixMatcher extends MatcherBase {
+// clang-format off
+export class ColorMixMatcher extends matcherBase(ColorMixMatch) {
+    // clang-format on
     accepts(propertyName) {
         return SDK.CSSMetadata.cssMetadata().isColorAwareProperty(propertyName);
     }
@@ -495,23 +435,36 @@ export class ColorMixMatcher extends MatcherBase {
         if (args.length !== 3) {
             return null;
         }
-        return this.createMatch(matching.ast.text(node), args[0], args[1], args[2]);
+        return new ColorMixMatch(matching.ast.text(node), node, args[0], args[1], args[2]);
     }
 }
 export class VariableMatch {
     text;
+    node;
     name;
     fallback;
     matching;
-    type = 'var';
-    constructor(text, name, fallback, matching) {
+    computedTextCallback;
+    constructor(text, node, name, fallback, matching, computedTextCallback) {
         this.text = text;
+        this.node = node;
         this.name = name;
         this.fallback = fallback;
         this.matching = matching;
+        this.computedTextCallback = computedTextCallback;
+    }
+    computedText() {
+        return this.computedTextCallback(this, this.matching);
     }
 }
-export class VariableMatcher extends MatcherBase {
+// clang-format off
+export class VariableMatcher extends matcherBase(VariableMatch) {
+    // clang-format on
+    #computedTextCallback;
+    constructor(computedTextCallback) {
+        super();
+        this.#computedTextCallback = computedTextCallback;
+    }
     matches(node, matching) {
         const callee = node.getChild('Callee');
         const args = node.getChild('ArgList');
@@ -545,19 +498,22 @@ export class VariableMatcher extends MatcherBase {
         if (!varName.startsWith('--')) {
             return null;
         }
-        return this.createMatch(matching.ast.text(node), varName, fallback, matching);
+        return new VariableMatch(matching.ast.text(node), node, varName, fallback, matching, this.#computedTextCallback);
     }
 }
 export class URLMatch {
     url;
     text;
-    type = 'url';
-    constructor(url, text) {
+    node;
+    constructor(url, text, node) {
         this.url = url;
         this.text = text;
+        this.node = node;
     }
 }
-export class URLMatcher extends MatcherBase {
+// clang-format off
+export class URLMatcher extends matcherBase(URLMatch) {
+    // clang-format on
     matches(node, matching) {
         if (node.name !== 'CallLiteral') {
             return null;
@@ -574,32 +530,35 @@ export class URLMatcher extends MatcherBase {
         }
         const text = matching.ast.text(urlNode);
         const url = (urlNode.name === 'StringLiteral' ? text.substr(1, text.length - 2) : text.trim());
-        return this.createMatch(url, matching.ast.text(node));
+        return new URLMatch(url, matching.ast.text(node), node);
     }
 }
 export class ColorMatch {
     text;
-    type = 'color';
-    constructor(text) {
+    node;
+    constructor(text, node) {
         this.text = text;
+        this.node = node;
     }
 }
-export class ColorMatcher extends MatcherBase {
+// clang-format off
+export class ColorMatcher extends matcherBase(ColorMatch) {
+    // clang-format on
     accepts(propertyName) {
         return SDK.CSSMetadata.cssMetadata().isColorAwareProperty(propertyName);
     }
     matches(node, matching) {
         const text = matching.ast.text(node);
         if (node.name === 'ColorLiteral') {
-            return this.createMatch(text);
+            return new ColorMatch(text, node);
         }
         if (node.name === 'ValueName' && Common.Color.Nicknames.has(text)) {
-            return this.createMatch(text);
+            return new ColorMatch(text, node);
         }
         if (node.name === 'CallExpression') {
             const callee = node.getChild('Callee');
             if (callee && matching.ast.text(callee).match(/^(rgba?|hsla?|hwba?|lab|lch|oklab|oklch|color)$/)) {
-                return this.createMatch(text);
+                return new ColorMatch(text, node);
             }
         }
         return null;
@@ -607,16 +566,19 @@ export class ColorMatcher extends MatcherBase {
 }
 export class LightDarkColorMatch {
     text;
+    node;
     light;
     dark;
-    type = 'light-dark';
-    constructor(text, light, dark) {
+    constructor(text, node, light, dark) {
         this.text = text;
+        this.node = node;
         this.light = light;
         this.dark = dark;
     }
 }
-export class LightDarkColorMatcher extends MatcherBase {
+// clang-format off
+export class LightDarkColorMatcher extends matcherBase(LightDarkColorMatch) {
+    // clang-format on
     accepts(propertyName) {
         return SDK.CSSMetadata.cssMetadata().isColorAwareProperty(propertyName);
     }
@@ -628,19 +590,22 @@ export class LightDarkColorMatcher extends MatcherBase {
         if (args.length !== 2 || args[0].length === 0 || args[1].length === 0) {
             return null;
         }
-        return this.createMatch(matching.ast.text(node), args[0], args[1]);
+        return new LightDarkColorMatch(matching.ast.text(node), node, args[0], args[1]);
     }
 }
 export class LinkableNameMatch {
     text;
+    node;
     properyName;
-    type = 'linkable-name';
-    constructor(text, properyName) {
+    constructor(text, node, properyName) {
         this.text = text;
+        this.node = node;
         this.properyName = properyName;
     }
 }
-export class LinkableNameMatcher extends MatcherBase {
+// clang-format off
+export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
+    // clang-format on
     static isLinkableNameProperty(propertyName) {
         const names = [
             "animation" /* LinkableNameProperties.Animation */,
@@ -678,7 +643,7 @@ export class LinkableNameMatcher extends MatcherBase {
         const text = matching.ast.text(node);
         // This is not a known identifier, so return it as `animation-name`.
         if (!LinkableNameMatcher.identifierAnimationLonghandMap.has(text)) {
-            return this.createMatch(text, "animation" /* LinkableNameProperties.Animation */);
+            return new LinkableNameMatch(text, node, "animation" /* LinkableNameProperties.Animation */);
         }
         // There can be multiple `animation` declarations splitted by a comma.
         // So, we find the declaration nodes that are related to the node argument.
@@ -703,7 +668,7 @@ export class LinkableNameMatcher extends MatcherBase {
             if (itNode.name === 'ValueName') {
                 const categoryValue = LinkableNameMatcher.identifierAnimationLonghandMap.get(tokenized.text(itNode));
                 if (categoryValue && categoryValue === identifierCategory) {
-                    return this.createMatch(text, "animation" /* LinkableNameProperties.Animation */);
+                    return new LinkableNameMatch(text, node, "animation" /* LinkableNameProperties.Animation */);
                 }
             }
         }
@@ -736,17 +701,20 @@ export class LinkableNameMatcher extends MatcherBase {
         }
         // The assertion here is safe since this matcher only runs for
         // properties with names inside `LinkableNameProperties` (See the `accepts` function.)
-        return this.createMatch(text, propertyName);
+        return new LinkableNameMatch(text, node, propertyName);
     }
 }
 export class BezierMatch {
     text;
-    type = 'bezier';
-    constructor(text) {
+    node;
+    constructor(text, node) {
         this.text = text;
+        this.node = node;
     }
 }
-export class BezierMatcher extends MatcherBase {
+// clang-format off
+export class BezierMatcher extends matcherBase(BezierMatch) {
+    // clang-format on
     accepts(propertyName) {
         return SDK.CSSMetadata.cssMetadata().isBezierAwareProperty(propertyName);
     }
@@ -761,31 +729,37 @@ export class BezierMatcher extends MatcherBase {
         if (!InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(text)) {
             return null;
         }
-        return this.createMatch(text);
+        return new BezierMatch(text, node);
     }
 }
 export class StringMatch {
     text;
-    type = 'string';
-    constructor(text) {
+    node;
+    constructor(text, node) {
         this.text = text;
+        this.node = node;
     }
 }
-export class StringMatcher extends MatcherBase {
+// clang-format off
+export class StringMatcher extends matcherBase(StringMatch) {
+    // clang-format on
     matches(node, matching) {
-        return node.name === 'StringLiteral' ? this.createMatch(matching.ast.text(node)) : null;
+        return node.name === 'StringLiteral' ? new StringMatch(matching.ast.text(node), node) : null;
     }
 }
 export class ShadowMatch {
     text;
+    node;
     shadowType;
-    type = 'shadow';
-    constructor(text, shadowType) {
+    constructor(text, node, shadowType) {
         this.text = text;
+        this.node = node;
         this.shadowType = shadowType;
     }
 }
-export class ShadowMatcher extends MatcherBase {
+// clang-format off
+export class ShadowMatcher extends matcherBase(ShadowMatch) {
+    // clang-format on
     accepts(propertyName) {
         return SDK.CSSMetadata.cssMetadata().isShadowProperty(propertyName);
     }
@@ -795,17 +769,20 @@ export class ShadowMatcher extends MatcherBase {
         }
         const valueNodes = ASTUtils.siblings(ASTUtils.declValue(node));
         const valueText = matching.ast.textRange(valueNodes[0], valueNodes[valueNodes.length - 1]);
-        return this.createMatch(valueText, matching.ast.propertyName === 'text-shadow' ? "textShadow" /* ShadowType.TextShadow */ : "boxShadow" /* ShadowType.BoxShadow */);
+        return new ShadowMatch(valueText, node, matching.ast.propertyName === 'text-shadow' ? "textShadow" /* ShadowType.TextShadow */ : "boxShadow" /* ShadowType.BoxShadow */);
     }
 }
 export class FontMatch {
     text;
-    type = 'font';
-    constructor(text) {
+    node;
+    constructor(text, node) {
         this.text = text;
+        this.node = node;
     }
 }
-export class FontMatcher extends MatcherBase {
+// clang-format off
+export class FontMatcher extends matcherBase(FontMatch) {
+    // clang-format on
     accepts(propertyName) {
         return SDK.CSSMetadata.cssMetadata().isFontAwareProperty(propertyName);
     }
@@ -816,68 +793,38 @@ export class FontMatcher extends MatcherBase {
         const regex = matching.ast.propertyName === 'font-family' ? InlineEditor.FontEditorUtils.FontFamilyRegex :
             InlineEditor.FontEditorUtils.FontPropertiesRegex;
         const text = matching.ast.text(node);
-        return regex.test(text) ? this.createMatch(text) : null;
+        return regex.test(text) ? new FontMatch(text, node) : null;
     }
 }
-class LegacyRegexMatch {
-    processor;
-    #matchedText;
-    #suffix;
-    get text() {
-        return this.#matchedText + this.#suffix;
-    }
-    get type() {
-        return `${this.processor}`;
-    }
-    constructor(matchedText, suffix, processor) {
-        this.#matchedText = matchedText;
-        this.#suffix = suffix;
-        this.processor = processor;
-    }
-    render(_node, context) {
-        const rendered = this.processor(this.#matchedText, context.options.readonly);
-        return rendered ? [rendered, document.createTextNode(this.#suffix)] : [];
+export class LengthMatch {
+    text;
+    node;
+    constructor(text, node) {
+        this.text = text;
+        this.node = node;
     }
 }
-export class LegacyRegexMatcher {
-    regexp;
-    processor;
-    constructor(regexp, processor) {
-        this.regexp = new RegExp(regexp);
-        this.processor = processor;
-    }
-    accepts() {
-        return true;
-    }
+// clang-format off
+export class LengthMatcher extends matcherBase(LengthMatch) {
+    // clang-format on
     matches(node, matching) {
         const text = matching.ast.text(node);
-        this.regexp.lastIndex = 0;
-        const match = this.regexp.exec(text);
+        const regexp = new RegExp(`^${InlineEditor.CSSLengthUtils.CSSLengthRegex}$`);
+        const match = regexp.exec(text);
         if (!match || match.index !== 0) {
             return null;
         }
-        // Some of the legacy regex matching relies on matching prefixes of the text, e.g., for var()s. That particular
-        // matcher can't be extended for a full-text match, because that runs into problems matching the correct closing
-        // parenthesis (with fallbacks, specifically). At the same time we can't rely on prefix matching here because it
-        // has false positives for some subexpressions, such as 'var() + var()'. We compromise by accepting prefix matches
-        // where the remaining suffix is exclusively closing parentheses and whitespace, specifically to handle the existing
-        // prefix matchers like that for var().
-        const suffix = text.substring(match[0].length);
-        if (!suffix.match(/^[\s)]*$/)) {
-            return null;
-        }
-        return new LegacyRegexMatch(match[0], suffix, this.processor);
+        return new LengthMatch(match[0], node);
     }
 }
 export class TextMatch {
     text;
-    isComment;
-    type = 'text';
+    node;
     computedText;
-    constructor(text, isComment) {
+    constructor(text, node) {
         this.text = text;
-        this.isComment = isComment;
-        if (isComment) {
+        this.node = node;
+        if (node.name === 'Comment') {
             this.computedText = () => '';
         }
     }
@@ -885,7 +832,9 @@ export class TextMatch {
         return [document.createTextNode(this.text)];
     }
 }
-class TextMatcher {
+// clang-format off
+class TextMatcher extends matcherBase(TextMatch) {
+    // clang-format on
     accepts() {
         return true;
     }
@@ -894,7 +843,7 @@ class TextMatcher {
             // Leaf node, just emit text
             const text = matching.ast.text(node);
             if (text.length) {
-                return new TextMatch(text, node.name === 'Comment');
+                return new TextMatch(text, node);
             }
         }
         return null;
@@ -902,14 +851,17 @@ class TextMatcher {
 }
 export class GridTemplateMatch {
     text;
+    node;
     lines;
-    type = 'grid-template';
-    constructor(text, lines) {
+    constructor(text, node, lines) {
         this.text = text;
+        this.node = node;
         this.lines = lines;
     }
 }
-export class GridTemplateMatcher extends MatcherBase {
+// clang-format off
+export class GridTemplateMatcher extends matcherBase(GridTemplateMatch) {
+    // clang-format on
     accepts(propertyName) {
         return SDK.CSSMetadata.cssMetadata().isGridAreaDefiningProperty(propertyName);
     }
@@ -934,7 +886,7 @@ export class GridTemplateMatcher extends MatcherBase {
         // be rendered into separate lines.
         function parseNodes(nodes, varParsingMode = false) {
             for (const curNode of nodes) {
-                if (matching.getMatch(curNode)?.type === 'var') {
+                if (matching.getMatch(curNode) instanceof VariableMatch) {
                     const computedValueTree = tokenizeDeclaration('--property', matching.getComputedText(curNode));
                     if (!computedValueTree) {
                         continue;
@@ -995,7 +947,7 @@ export class GridTemplateMatcher extends MatcherBase {
         parseNodes(valueNodes);
         lines.push(curLine);
         const valueText = matching.ast.textRange(valueNodes[0], valueNodes[valueNodes.length - 1]);
-        return this.createMatch(valueText, lines.filter(line => line.length > 0));
+        return new GridTemplateMatch(valueText, node, lines.filter(line => line.length > 0));
     }
 }
 function declaration(rule) {
@@ -1044,23 +996,5 @@ export function tokenizePropertyName(name) {
         return null;
     }
     return nodeText(propertyName, rule);
-}
-// This function renders a property value as HTML, customizing the presentation with a set of given AST matchers. This
-// comprises the following steps:
-// 1. Build an AST of the property.
-// 2. Apply tree matchers during bottom up traversal.
-// 3. Render the value from left to right into HTML, deferring rendering of matched subtrees to the matchers
-//
-// More general, longer matches take precedence over shorter, more specific matches. Whitespaces are normalized, for
-// unmatched text and around rendered matching results.
-export function renderPropertyValue(propertyName, propertyValue, matchers) {
-    const ast = tokenizeDeclaration(propertyName, propertyValue);
-    if (!ast) {
-        return [document.createTextNode(propertyValue)];
-    }
-    const matchedResult = BottomUpTreeMatching.walk(ast, matchers);
-    ast.trailingNodes.forEach(n => matchedResult.matchText(n));
-    const context = new RenderingContext(ast, matchedResult);
-    return Renderer.render([ast.tree, ...ast.trailingNodes], context).nodes;
 }
 //# sourceMappingURL=PropertyParser.js.map

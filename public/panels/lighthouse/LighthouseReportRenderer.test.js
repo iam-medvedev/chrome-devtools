@@ -7,7 +7,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
-const { assert } = chai;
 describeWithMockConnection('LighthouseReportRenderer', () => {
     const linkifyNodeDetails = (targetFactory) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention

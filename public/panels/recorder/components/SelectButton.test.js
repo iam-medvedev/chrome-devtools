@@ -1,11 +1,10 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as RecorderComponents from './components.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import * as RecorderComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describe('SelectButton', () => {
     it('should emit selectbuttonclick event on button click', async () => {

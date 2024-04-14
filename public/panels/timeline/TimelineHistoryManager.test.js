@@ -5,7 +5,6 @@ import { describeWithEnvironment, registerNoopActions, } from '../../testing/Env
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Timeline from './timeline.js';
-const { assert } = chai;
 describeWithEnvironment('TimelineHistoryManager', function () {
     let historyManager;
     beforeEach(() => {

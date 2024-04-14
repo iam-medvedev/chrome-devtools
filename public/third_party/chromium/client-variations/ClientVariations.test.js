@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
 import * as ClientVariations from './client-variations.js';
 describe('formatClientVariations', () => {
     it('formats input containing both types of variation IDs', () => {

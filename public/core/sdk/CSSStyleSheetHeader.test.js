@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from './sdk.js';
-const { assert } = chai;
 describe('CSSStyleSheetHeader', () => {
     describe('createPageResourceLoadInitiator', () => {
         const frameId = 'Frame#123';

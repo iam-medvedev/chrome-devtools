@@ -106,7 +106,6 @@ const REGISTERED_EXPERIMENTS = [
     "sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */,
     "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
     "save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */,
-    "timeline-track-configuration" /* Root.Runtime.ExperimentName.TIMELINE_TRACK_CONFIGURATION */,
     "timeline-extensions" /* Root.Runtime.ExperimentName.TIMELINE_EXTENSIONS */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
@@ -156,6 +155,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'show-whitespaces-in-editor', 'none'),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-autocompletion', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-auto-detect-indent', false),
+        createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-bracket-closing', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-bracket-matching', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-code-folding', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-indent', '    '),

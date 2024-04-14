@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceEngine from '../trace.js';
-const { assert } = chai;
 describe('WarningsHandler', function () {
     beforeEach(() => {
         TraceEngine.Handlers.ModelHandlers.Warnings.reset();

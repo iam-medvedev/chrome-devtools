@@ -7,7 +7,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import * as Accessibility from './accessibility.js';
-const { assert } = chai;
 const NODE_ID = 1;
 describeWithMockConnection('AccessibilitySidebarView', () => {
     let target;

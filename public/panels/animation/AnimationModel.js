@@ -48,22 +48,28 @@ export class AnimationModel extends SDK.SDKModel.SDKModel {
         this.#pendingAnimations.delete(id);
         this.flushPendingAnimationsIfNeeded();
     }
+    async animationUpdated(payload) {
+        let foundAnimationGroup;
+        let foundAnimation;
+        for (const animationGroup of this.animationGroups.values()) {
+            foundAnimation = animationGroup.animations().find(animation => animation.id() === payload.id);
+            if (foundAnimation) {
+                foundAnimationGroup = animationGroup;
+                break;
+            }
+        }
+        if (!foundAnimation || !foundAnimationGroup) {
+            return;
+        }
+        await foundAnimation.setPayload(payload);
+        this.dispatchEventToListeners(Events.AnimationGroupUpdated, foundAnimationGroup);
+    }
     async animationStarted(payload) {
         // We are not interested in animations without effect or target.
         if (!payload.source || !payload.source.backendNodeId) {
             return;
         }
-        // TODO(b/40929569): Remove normalizing by devicePixelRatio after the attached bug is resolved.
-        if (payload.viewOrScrollTimeline) {
-            const devicePixelRatio = await this.devicePixelRatio();
-            if (payload.viewOrScrollTimeline.startOffset) {
-                payload.viewOrScrollTimeline.startOffset /= devicePixelRatio;
-            }
-            if (payload.viewOrScrollTimeline.endOffset) {
-                payload.viewOrScrollTimeline.endOffset /= devicePixelRatio;
-            }
-        }
-        const animation = AnimationImpl.parsePayload(this, payload);
+        const animation = await AnimationImpl.parsePayload(this, payload);
         if (!animation) {
             return;
         }
@@ -171,21 +177,40 @@ export class AnimationModel extends SDK.SDKModel.SDKModel {
 export var Events;
 (function (Events) {
     Events["AnimationGroupStarted"] = "AnimationGroupStarted";
+    Events["AnimationGroupUpdated"] = "AnimationGroupUpdated";
     Events["ModelReset"] = "ModelReset";
 })(Events || (Events = {}));
 export class AnimationImpl {
     #animationModel;
-    #payloadInternal;
-    #sourceInternal;
+    #payloadInternal; // Assertion is safe because only way to create `AnimationImpl` is to use `parsePayload` which calls `setPayload` and sets the value.
+    #sourceInternal; // Assertion is safe because only way to create `AnimationImpl` is to use `parsePayload` which calls `setPayload` and sets the value.
     #playStateInternal;
-    constructor(animationModel, payload) {
+    constructor(animationModel) {
         this.#animationModel = animationModel;
-        this.#payloadInternal = payload;
-        this.#sourceInternal =
-            new AnimationEffect(animationModel, this.#payloadInternal.source);
     }
-    static parsePayload(animationModel, payload) {
-        return new AnimationImpl(animationModel, payload);
+    static async parsePayload(animationModel, payload) {
+        const animation = new AnimationImpl(animationModel);
+        await animation.setPayload(payload);
+        return animation;
+    }
+    async setPayload(payload) {
+        // TODO(b/40929569): Remove normalizing by devicePixelRatio after the attached bug is resolved.
+        if (payload.viewOrScrollTimeline) {
+            const devicePixelRatio = await this.#animationModel.devicePixelRatio();
+            if (payload.viewOrScrollTimeline.startOffset) {
+                payload.viewOrScrollTimeline.startOffset /= devicePixelRatio;
+            }
+            if (payload.viewOrScrollTimeline.endOffset) {
+                payload.viewOrScrollTimeline.endOffset /= devicePixelRatio;
+            }
+        }
+        this.#payloadInternal = payload;
+        if (this.#sourceInternal && payload.source) {
+            this.#sourceInternal.setPayload(payload.source);
+        }
+        else if (!this.#sourceInternal && payload.source) {
+            this.#sourceInternal = new AnimationEffect(this.#animationModel, payload.source);
+        }
     }
     // `startTime` and `duration` is represented as the
     // percentage of the view timeline range that starts at `startOffset`px
@@ -205,9 +230,6 @@ export class AnimationImpl {
     }
     viewOrScrollTimeline() {
         return this.#payloadInternal.viewOrScrollTimeline;
-    }
-    payload() {
-        return this.#payloadInternal;
     }
     id() {
         return this.#payloadInternal.id;
@@ -342,28 +364,31 @@ export class AnimationImpl {
 }
 export class AnimationEffect {
     #animationModel;
-    #payload;
+    #payload; // Assertion is safe because `setPayload` call in `constructor` sets the value.
+    delayInternal; // Assertion is safe because `setPayload` call in `constructor` sets the value.
+    durationInternal; // Assertion is safe because `setPayload` call in `constructor` sets the value.
     #keyframesRuleInternal;
-    delayInternal;
-    durationInternal;
     #deferredNodeInternal;
     constructor(animationModel, payload) {
         this.#animationModel = animationModel;
+        this.setPayload(payload);
+    }
+    setPayload(payload) {
         this.#payload = payload;
-        if (payload.keyframesRule) {
+        if (!this.#keyframesRuleInternal && payload.keyframesRule) {
             this.#keyframesRuleInternal = new KeyframesRule(payload.keyframesRule);
         }
-        this.delayInternal = this.#payload.delay;
-        this.durationInternal = this.#payload.duration;
+        else if (this.#keyframesRuleInternal && payload.keyframesRule) {
+            this.#keyframesRuleInternal.setPayload(payload.keyframesRule);
+        }
+        this.delayInternal = payload.delay;
+        this.durationInternal = payload.duration;
     }
     delay() {
         return this.delayInternal;
     }
     endDelay() {
         return this.#payload.endDelay;
-    }
-    iterationStart() {
-        return this.#payload.iterationStart;
     }
     iterations() {
         // Animations with zero duration, zero delays and infinite iterations can't be shown.
@@ -402,18 +427,21 @@ export class AnimationEffect {
     }
 }
 export class KeyframesRule {
-    #payload;
-    #keyframesInternal;
+    #payload; // Assertion is safe because `setPayload` call in `constructor` sets the value.;
+    #keyframesInternal; // Assertion is safe because `setPayload` call in `constructor` sets the value.;
     constructor(payload) {
-        this.#payload = payload;
-        this.#keyframesInternal = this.#payload.keyframes.map(function (keyframeStyle) {
-            return new KeyframeStyle(keyframeStyle);
-        });
+        this.setPayload(payload);
     }
-    setKeyframesPayload(payload) {
-        this.#keyframesInternal = payload.map(function (keyframeStyle) {
-            return new KeyframeStyle(keyframeStyle);
-        });
+    setPayload(payload) {
+        this.#payload = payload;
+        if (!this.#keyframesInternal) {
+            this.#keyframesInternal = this.#payload.keyframes.map(keyframeStyle => new KeyframeStyle(keyframeStyle));
+        }
+        else {
+            this.#payload.keyframes.forEach((keyframeStyle, index) => {
+                this.#keyframesInternal[index]?.setPayload(keyframeStyle);
+            });
+        }
     }
     name() {
         return this.#payload.name;
@@ -423,11 +451,14 @@ export class KeyframesRule {
     }
 }
 export class KeyframeStyle {
-    #payload;
-    #offsetInternal;
+    #payload; // Assertion is safe because `setPayload` call in `constructor` sets the value.
+    #offsetInternal; // Assertion is safe because `setPayload` call in `constructor` sets the value.
     constructor(payload) {
+        this.setPayload(payload);
+    }
+    setPayload(payload) {
         this.#payload = payload;
-        this.#offsetInternal = this.#payload.offset;
+        this.#offsetInternal = payload.offset;
     }
     offset() {
         return this.#offsetInternal;
@@ -596,6 +627,9 @@ export class AnimationDispatcher {
     }
     animationStarted({ animation }) {
         void this.#animationModel.animationStarted(animation);
+    }
+    animationUpdated({ animation }) {
+        void this.#animationModel.animationUpdated(animation);
     }
 }
 export class ScreenshotCapture {

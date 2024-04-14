@@ -1,11 +1,10 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as Search from './search.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import * as Search from './search.js';
 const { lineSegmentForMatch } = Search.SearchResultsPane;
 function r(matchDescriptor) {
     const start = matchDescriptor[0].indexOf('[');

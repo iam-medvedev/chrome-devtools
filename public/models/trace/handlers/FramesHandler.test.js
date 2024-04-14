@@ -1,10 +1,9 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as TraceEngine from '../trace.js';
-import { TraceLoader } from '../../../testing/TraceLoader.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { TraceLoader } from '../../../testing/TraceLoader.js';
+import * as TraceEngine from '../trace.js';
 async function processTrace(events) {
     // The FramesHandler depends on a few other handlers, so we run all of them as part of these tests.
     const handlersInOrder = [

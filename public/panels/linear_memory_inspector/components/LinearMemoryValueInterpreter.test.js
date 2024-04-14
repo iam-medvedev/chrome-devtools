@@ -4,7 +4,6 @@
 import { getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
-const { assert } = chai;
 const DISPLAY_SELECTOR = 'devtools-linear-memory-inspector-interpreter-display';
 const SETTINGS_SELECTOR = 'devtools-linear-memory-inspector-interpreter-settings';
 const TOOLBAR_SELECTOR = '.settings-toolbar';

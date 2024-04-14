@@ -65,6 +65,7 @@ export declare class Model<EnabledModelHandlers extends {
     traceParsedData(index?: number): Handlers.Types.EnabledHandlerDataWithMeta<EnabledModelHandlers> | null;
     traceInsights(index?: number): Insights.Types.TraceInsightData<EnabledModelHandlers> | null;
     metadata(index: number): Types.File.MetaData | null;
+    overrideAnnotations(index: number, newAnnotations: Types.File.Annotations): void;
     traceEvents(index: number): readonly Types.TraceEvents.TraceEventData[] | null;
     size(): number;
     deleteTraceByIndex(recordingIndex: number): void;

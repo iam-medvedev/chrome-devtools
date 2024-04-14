@@ -298,10 +298,11 @@ export function baseConfiguration(text) {
         CM.bidiIsolates(),
     ];
 }
-export const closeBrackets = [
+export const closeBrackets = DynamicSetting.bool('text-editor-bracket-closing', [
+    CM.html.autoCloseTags,
     CM.closeBrackets(),
     CM.keymap.of(CM.closeBracketsKeymap),
-];
+]);
 // Root editor tooltips at the top of the document, creating a special
 // element with the editor styles mounted in it for them. This is
 // annoying, but necessary because a scrollable parent node clips them

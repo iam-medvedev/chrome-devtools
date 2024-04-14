@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assertShadowRoot, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import * as InlineEditor from './inline_editor.js';
-const { assert } = chai;
 const initialData = {
     lengthText: '42px',
     overloaded: false,

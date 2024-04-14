@@ -54,6 +54,8 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     notifyViewShown(identifier: string, frameIndex?: number): void;
     notifyViewHidden(identifier: string): void;
     notifyButtonClicked(identifier: string): void;
+    profilingStarted(): void;
+    profilingStopped(): void;
     private registerLanguageExtensionEndpoint;
     private loadWasmValue;
     private onGetWasmLinearMemory;

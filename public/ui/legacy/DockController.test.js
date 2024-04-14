@@ -5,7 +5,6 @@ import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import * as LegacyUI from './legacy.js';
-const { assert } = chai;
 async function registerDockingSettings(currentValue) {
     Common.Settings.registerSettingsForTest([{
             category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,

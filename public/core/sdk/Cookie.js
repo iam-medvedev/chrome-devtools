@@ -50,15 +50,6 @@ export class Cookie {
         cookie.setSize(protocolCookie['size']);
         return cookie;
     }
-    isEqual(other) {
-        return this.name() === other.name() && this.value() === other.value() && this.size() === other.size() &&
-            this.domain() === other.domain() && this.path() === other.path() && this.expires() === other.expires() &&
-            this.httpOnly() === other.httpOnly() && this.secure() === other.secure() &&
-            this.sameSite() === other.sameSite() && this.sourceScheme() === other.sourceScheme() &&
-            this.sourcePort() === other.sourcePort() && this.priority() === other.priority() &&
-            this.partitionKey() === other.partitionKey() && this.type() === other.type() &&
-            this.getCookieLine() === other.getCookieLine();
-    }
     key() {
         return (this.domain() || '-') + ' ' + this.name() + ' ' + (this.path() || '-') + ' ' + (this.partitionKey() || '-');
     }

@@ -5,7 +5,6 @@ import { dispatchClickEvent, getElementsWithinComponent, getElementWithinCompone
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 export const DISPLAY_JUMP_TO_POINTER_BUTTON_SELECTOR = '[data-jump]';
-const { assert } = chai;
 describeWithLocale('ValueInterpreterDisplay', () => {
     const combinationsForNumbers = [
         { endianness: "Little Endian" /* LinearMemoryInspectorComponents.ValueInterpreterDisplayUtils.Endianness.Little */, signed: true },

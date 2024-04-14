@@ -4,7 +4,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 describeWithEnvironment('CSSRuleValidator', () => {
     const tests = [
         {

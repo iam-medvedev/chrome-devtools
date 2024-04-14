@@ -93,6 +93,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         this.network = new (Constructor(Network))();
         this.languageServices = new (Constructor(LanguageServicesAPI))();
         this.recorder = new (Constructor(RecorderServicesAPI))();
+        this.performance = new (Constructor(Performance))();
         defineDeprecatedProperty(this, 'webInspector', 'resources', 'network');
     }
     function Network() {
@@ -438,6 +439,18 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             return new Promise(resolve => extensionServer.sendRequest({ command: "showNetworkPanel" /* PrivateAPI.Commands.ShowNetworkPanel */, filter: options?.filter }, () => resolve()));
         },
     };
+    function PerformanceImpl() {
+        function dispatchProfilingStartedEvent() {
+            this._fire();
+        }
+        function dispatchProfilingStoppedEvent() {
+            this._fire();
+        }
+        this.onProfilingStarted =
+            new (Constructor(EventSink))("profiling-started-" /* PrivateAPI.Events.ProfilingStarted */, dispatchProfilingStartedEvent);
+        this.onProfilingStopped =
+            new (Constructor(EventSink))("profiling-stopped-" /* PrivateAPI.Events.ProfilingStopped */, dispatchProfilingStoppedEvent);
+    }
     function declareInterfaceClass(implConstructor) {
         return function (...args) {
             const impl = { __proto__: implConstructor.prototype };
@@ -463,6 +476,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
     }
     const LanguageServicesAPI = declareInterfaceClass(LanguageServicesAPIImpl);
     const RecorderServicesAPI = declareInterfaceClass(RecorderServicesAPIImpl);
+    const Performance = declareInterfaceClass(PerformanceImpl);
     const Button = declareInterfaceClass(ButtonImpl);
     const EventSink = declareInterfaceClass(EventSinkImpl);
     const ExtensionPanel = declareInterfaceClass(ExtensionPanelImpl);
@@ -807,6 +821,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
     chrome.devtools.panels.themeName = themeName;
     chrome.devtools.languageServices = coreAPI.languageServices;
     chrome.devtools.recorder = coreAPI.recorder;
+    chrome.devtools.performance = coreAPI.performance;
     // default to expose experimental APIs for now.
     if (extensionInfo.exposeExperimentalAPIs !== false) {
         chrome.experimental = chrome.experimental || {};

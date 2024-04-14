@@ -64,6 +64,12 @@ styles.replaceSync(
     color: var(--sys-color-token-meta);
   }
 
+  .ancestor-rule-list,
+  .styles-section-title {
+    overflow-wrap: break-word;
+    white-space: normal;
+  }
+
   .ancestor-rule-list devtools-css-query {
     display: block;
   }
@@ -101,23 +107,20 @@ styles.replaceSync(
   clear: both;
 }
 
-.styles-section-title {
-  background-origin: padding;
-  background-clip: padding;
-  word-wrap: break-word;
-  white-space: normal;
-}
-
 .styles-section-subtitle {
   color: var(--sys-color-token-subtle);
   float: right;
   padding-left: 15px;
   max-width: 100%;
+  height: 15px;
+  margin-bottom: -1px;
+}
+
+.styles-section-subtitle * {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  height: 15px;
-  margin-bottom: -1px;
+  max-width: 100%;
 }
 
 .sidebar-pane-open-brace,

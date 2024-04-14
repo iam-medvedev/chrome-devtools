@@ -1,10 +1,9 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
+import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithRealConnection } from '../../testing/RealConnection.js';
-import * as SDK from '../../core/sdk/sdk.js';
 describeWithRealConnection('CPUProfileView test', () => {
     it('reads registered console profile messages from the model', async () => {
         const Profiler = await import('./profiler.js');

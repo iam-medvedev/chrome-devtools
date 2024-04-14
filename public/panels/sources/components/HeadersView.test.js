@@ -10,7 +10,6 @@ import { recordedMetricsContain, resetRecordedMetrics, } from '../../../testing/
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as SourcesComponents from './components.js';
-const { assert } = chai;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describe('HeadersView', () => {
     const commitWorkingCopySpy = sinon.spy();

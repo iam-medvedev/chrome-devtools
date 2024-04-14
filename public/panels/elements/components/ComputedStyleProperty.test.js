@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { getEventPromise, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as ElementsComponents from './components.js';
-const { assert } = chai;
 describe('ComputedStyleProperty', () => {
     it('renders inherited property correctly', () => {
         const component = new ElementsComponents.ComputedStyleProperty.ComputedStyleProperty();

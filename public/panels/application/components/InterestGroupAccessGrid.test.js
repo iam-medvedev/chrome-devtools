@@ -8,7 +8,6 @@ import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ApplicationComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 async function renderInterestGroupAccessGrid(events) {
     const component = new ApplicationComponents.InterestGroupAccessGrid.InterestGroupAccessGrid();
     renderElementIntoDOM(component);

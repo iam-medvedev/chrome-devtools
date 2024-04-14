@@ -15,7 +15,6 @@ import * as Coordinator from '../../../ui/components/render_coordinator/render_c
 import * as NetworkForward from '../forward/forward.js';
 import * as NetworkComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 const defaultRequest = {
     statusCode: 200,
     statusText: 'OK',

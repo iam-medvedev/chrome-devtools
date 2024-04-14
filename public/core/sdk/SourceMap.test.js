@@ -1,12 +1,11 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
+import * as TextUtils from '../../models/text_utils/text_utils.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
-import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 const sourceUrlFoo = '<foo>';
 describe('SourceMapEntry', () => {
     it('can be instantiated correctly', () => {

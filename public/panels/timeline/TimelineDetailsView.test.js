@@ -4,7 +4,6 @@
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
-const { assert } = chai;
 class MockViewDelegate {
     select(_selection) {
     }

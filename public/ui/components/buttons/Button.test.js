@@ -5,7 +5,6 @@ import { assertElement, dispatchKeyDownEvent, renderElementIntoDOM } from '../..
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as Buttons from './buttons.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 describe('Button', () => {
     const iconUrl = new URL('../../../Images/file-image.svg', import.meta.url).toString();
     async function renderButton(data = {

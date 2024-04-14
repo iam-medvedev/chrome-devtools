@@ -1,12 +1,11 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as SDK from './sdk.js';
-import * as Host from '../host/host.js';
-import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import { createTarget, } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import * as Host from '../host/host.js';
 import { assertNotNullOrUndefined } from '../platform/platform.js';
+import * as SDK from './sdk.js';
 describeWithMockConnection('TargetManager', () => {
     let targetManager;
     beforeEach(() => {

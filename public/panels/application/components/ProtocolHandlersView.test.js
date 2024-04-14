@@ -4,7 +4,6 @@
 import { assertElement, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as ApplicationComponents from './components.js';
-const { assert } = chai;
 async function renderProtocolHandlersComponent(manifestLink, protocolHandlers) {
     const component = new ApplicationComponents.ProtocolHandlersView.ProtocolHandlersView();
     renderElementIntoDOM(component);

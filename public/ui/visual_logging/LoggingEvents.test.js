@@ -5,7 +5,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { stabilizeEvent, stabilizeImpressions } from '../../testing/VisualLoggingHelpers.js';
 import * as VisualLogging from './visual_logging-testing.js';
-const { assert } = chai;
 describe('LoggingEvents', () => {
     let parent;
     let element;

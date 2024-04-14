@@ -5,7 +5,6 @@ import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
-const { assert } = chai;
 function navigateFrameWithMockConnection(storageKey, resourceTreeModel) {
     setMockConnectionResponseHandler('Storage.getStorageKeyForFrame', () => ({ storageKey }));
     resourceTreeModel?.frameNavigated({

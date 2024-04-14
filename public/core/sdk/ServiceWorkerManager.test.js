@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from './sdk.js';
-const { assert } = chai;
 describe('ServiceWorkerVersion', () => {
     const REGISTRATION_PAYLOAD = { registrationId: 'foo', scopeURL: 'https://example.com', isDeleted: false };
     const VERSION_PAYLOAD = {

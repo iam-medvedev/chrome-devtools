@@ -6,7 +6,6 @@ import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import * as Common from '../common/common.js';
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
-const { assert } = chai;
 describeWithMockConnection('ConsoleMessage', () => {
     const scriptId1 = '1';
     const scriptId2 = '2';

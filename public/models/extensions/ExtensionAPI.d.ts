@@ -17,6 +17,8 @@ export declare namespace PrivateAPI {
         NetworkRequestFinished = "network-request-finished",
         OpenResource = "open-resource",
         PanelSearch = "panel-search-",
+        ProfilingStarted = "profiling-started-",
+        ProfilingStopped = "profiling-stopped-",
         ResourceAdded = "resource-added",
         ResourceContentCommitted = "resource-content-committed",
         ViewShown = "view-shown-",
@@ -400,6 +402,7 @@ declare namespace APIImpl {
     interface InspectorExtensionAPI {
         languageServices: PublicAPI.Chrome.DevTools.LanguageExtensions;
         recorder: PublicAPI.Chrome.DevTools.RecorderExtensions;
+        performance: PublicAPI.Chrome.DevTools.Performance;
         network: PublicAPI.Chrome.DevTools.Network;
         panels: PublicAPI.Chrome.DevTools.Panels;
         inspectedWindow: PublicAPI.Chrome.DevTools.InspectedWindow;

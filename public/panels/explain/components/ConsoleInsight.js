@@ -139,6 +139,11 @@ const UIStrings = {
      * insight using a search engine instead of using console insights.
      */
     search: 'Use search instead',
+    /**
+     * @description Shown to the user when the network request data is not
+     * available and a page reload might populate it.
+     */
+    reloadRecommendation: 'Reload the page to capture related network request data for this message in order to create a better insight.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/explain/components/ConsoleInsight.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -270,10 +275,11 @@ export class ConsoleInsight extends HTMLElement {
             return;
         }
         if (!this.#state.consentReminderConfirmed) {
-            const { sources } = await this.#promptBuilder.buildPrompt();
+            const { sources, isPageReloadRecommended } = await this.#promptBuilder.buildPrompt();
             this.#transitionTo({
                 type: "consent-reminder" /* State.CONSENT_REMINDER */,
                 sources,
+                isPageReloadRecommended,
             });
             return;
         }
@@ -323,7 +329,7 @@ export class ConsoleInsight extends HTMLElement {
             consentOnboardingFinished: this.#getOnboardingCompletedSetting().get(),
         });
         try {
-            for await (const { sources, explanation, metadata } of this.#getInsight()) {
+            for await (const { sources, isPageReloadRecommended, explanation, metadata } of this.#getInsight()) {
                 const tokens = this.#validateMarkdown(explanation);
                 const valid = tokens !== false;
                 this.#transitionTo({
@@ -333,6 +339,7 @@ export class ConsoleInsight extends HTMLElement {
                     explanation,
                     sources,
                     metadata,
+                    isPageReloadRecommended,
                 });
             }
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightGenerated);
@@ -362,10 +369,10 @@ export class ConsoleInsight extends HTMLElement {
         }
     }
     async *#getInsight() {
-        const { prompt, sources } = await this.#promptBuilder.buildPrompt();
+        const { prompt, sources, isPageReloadRecommended } = await this.#promptBuilder.buildPrompt();
         try {
             for await (const response of this.#aidaClient.fetch(prompt)) {
-                yield { sources, ...response };
+                yield { sources, isPageReloadRecommended, ...response };
             }
         }
         catch (err) {
@@ -563,9 +570,9 @@ export class ConsoleInsight extends HTMLElement {
           ${this.#state.validMarkdown ? html `<${MarkdownView.MarkdownView.MarkdownView.litTagName}
               .data=${{ tokens: this.#state.tokens, renderer: this.#renderer }}>
             </${MarkdownView.MarkdownView.MarkdownView.litTagName}>` : this.#state.explanation}
-          <details style="--list-height: ${this.#state.sources.length * 20}px;">
+          <details style="--list-height: ${(this.#state.sources.length + (this.#state.isPageReloadRecommended ? 1 : 0)) * 20}px;">
             <summary>${i18nString(UIStrings.inputData)}</summary>
-            <${ConsoleInsightSourcesList.litTagName} .sources=${this.#state.sources}>
+            <${ConsoleInsightSourcesList.litTagName} .sources=${this.#state.sources} .isPageReloadRecommended=${this.#state.isPageReloadRecommended}>
             </${ConsoleInsightSourcesList.litTagName}>
           </details>
           <div class="buttons">
@@ -584,7 +591,7 @@ export class ConsoleInsight extends HTMLElement {
             Human reviewers may process this information for quality purposes.
             Don’t submit sensitive information. Read Google’s <x-link href=${TERMS_OF_SERVICE_URL} class="link" jslog=${VisualLogging.link('terms-of-service').track({ click: true })}>Terms of Service</x-link> and
             the <x-link href=${GEN_AI_TERMS_OF_SERVICE_URL} class="link" jslog=${VisualLogging.link('gener' + 'ative-ai-terms-of-service').track({ click: true })}>${'Gener' + 'ative'} AI Additional Terms of Service</x-link>.</p>
-            <${ConsoleInsightSourcesList.litTagName} .sources=${this.#state.sources}>
+            <${ConsoleInsightSourcesList.litTagName} .sources=${this.#state.sources} .isPageReloadRecommended=${this.#state.isPageReloadRecommended}>
             </${ConsoleInsightSourcesList.litTagName}>
           </main>
         `;
@@ -768,7 +775,7 @@ export class ConsoleInsight extends HTMLElement {
             case "error" /* State.ERROR */:
                 return i18nString(UIStrings.error);
             case "consent-reminder" /* State.CONSENT_REMINDER */:
-                return 'Data used to understand this message';
+                return i18nString(UIStrings.inputData);
             case "consent-onboarding" /* State.CONSENT_ONBOARDING */:
                 switch (this.#state.page) {
                     case "private" /* ConsentOnboardingPage.PAGE1 */:
@@ -814,6 +821,7 @@ class ConsoleInsightSourcesList extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-console-insight-sources-list`;
     #shadow = this.attachShadow({ mode: 'open' });
     #sources = [];
+    #isPageReloadRecommended = false;
     constructor() {
         super();
         this.#shadow.adoptedStyleSheets = [listStyles, Input.checkboxStyles];
@@ -828,6 +836,9 @@ class ConsoleInsightSourcesList extends HTMLElement {
             ${localizeType(item.type)}
           </x-link></li>`;
         })}
+        ${this.#isPageReloadRecommended ? LitHtml.html `<li class="source-disclaimer">
+          <${IconButton.Icon.Icon.litTagName} name="warning"></${IconButton.Icon.Icon.litTagName}>
+          ${i18nString(UIStrings.reloadRecommendation)}</li>` : LitHtml.nothing}
       </ul>
     `, this.#shadow, {
             host: this,
@@ -836,6 +847,10 @@ class ConsoleInsightSourcesList extends HTMLElement {
     }
     set sources(values) {
         this.#sources = values;
+        this.#render();
+    }
+    set isPageReloadRecommended(isPageReloadRecommended) {
+        this.#isPageReloadRecommended = isPageReloadRecommended;
         this.#render();
     }
 }

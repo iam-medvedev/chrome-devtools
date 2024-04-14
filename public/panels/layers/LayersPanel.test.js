@@ -1,13 +1,12 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as Layers from './layers.js';
-import * as SDK from '../../core/sdk/sdk.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import * as Layers from './layers.js';
 describeWithMockConnection('LayersPanel', () => {
     beforeEach(async () => {
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });

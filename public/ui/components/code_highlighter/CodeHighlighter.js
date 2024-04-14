@@ -89,7 +89,7 @@ export async function languageFromMIME(mimeType) {
         case 'text/css':
             return CodeMirror.css.css();
         case 'text/html':
-            return CodeMirror.html.html({ selfClosingTags: true });
+            return CodeMirror.html.html({ autoCloseTags: false, selfClosingTags: true });
         case 'application/xml':
         case 'application/xhtml+xml':
         case 'image/svg+xml':

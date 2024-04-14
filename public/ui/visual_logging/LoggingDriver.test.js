@@ -7,7 +7,6 @@ import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { stabilizeEvent, stabilizeImpressions } from '../../testing/VisualLoggingHelpers.js';
 import * as VisualLoggingTesting from './visual_logging-testing.js';
-const { assert } = chai;
 describe('LoggingDriver', () => {
     let recordImpression;
     let throttler;
@@ -263,7 +262,7 @@ describe('LoggingDriver', () => {
         const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
         element.dispatchEvent(new KeyboardEvent('keydown', { 'code': 'KeyC' }));
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.notExists(keyboardLogThrottler.process);
+        assert.strictEqual(keyboardLogThrottler.process, null);
         element.dispatchEvent(new KeyboardEvent('keydown', { 'code': 'KeyA' }));
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.exists(keyboardLogThrottler.process);

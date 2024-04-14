@@ -1,13 +1,12 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
+import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as IssuesManager from '../issues_manager/issues_manager.js';
 import { createFakeSetting, createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
 import { mkInspectorCspIssue, StubIssue, ThirdPartyStubIssue, } from '../../testing/StubIssue.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
+import * as IssuesManager from '../issues_manager/issues_manager.js';
 describeWithMockConnection('IssuesManager', () => {
     let target;
     let model;

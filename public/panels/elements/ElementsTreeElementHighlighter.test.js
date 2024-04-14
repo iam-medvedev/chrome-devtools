@@ -7,7 +7,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 describeWithMockConnection('ElementsTreeElementHighlighter', () => {
     let target;
     let treeOutline;

@@ -1,11 +1,10 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as Workspace from '../workspace/workspace.js';
-import * as WorkspaceDiff from '../workspace_diff/workspace_diff.js';
 import { describeWithRealConnection } from '../../testing/RealConnection.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
+import * as Workspace from '../workspace/workspace.js';
+import * as WorkspaceDiff from '../workspace_diff/workspace_diff.js';
 describeWithRealConnection('UISourceCodeDiff', () => {
     it('returns formatted mapping with a diff', async () => {
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();

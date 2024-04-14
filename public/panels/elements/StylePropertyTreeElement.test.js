@@ -12,7 +12,6 @@ import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.j
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as ElementsComponents from './components/components.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 describeWithRealConnection('StylePropertyTreeElement', () => {
     let stylesSidebarPane;
     let mockStylePropertiesSection;
@@ -308,7 +307,7 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
             mockMatchedStyles.computeCSSVariable.callsFake((_, name) => name === '--prop' ?
                 { value: 'computedvalue', declaration: cssCustomPropertyDef, fromFallback: false } :
                 null);
-            const renderValueSpy = sinon.spy(Elements.StylePropertyTreeElement.StylePropertyTreeElement, 'renderValueElement');
+            const renderValueSpy = sinon.spy(Elements.PropertyRenderer.Renderer, 'renderValueElement');
             const stylePropertyTreeElement = getTreeElement('prop', 'var(--prop)');
             stylePropertyTreeElement.updateTitle();
             const varSwatch = renderValueSpy.returnValues.find(value => value.firstChild instanceof InlineEditor.LinkSwatch.CSSVarSwatch)
@@ -336,7 +335,7 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
         });
         it('linkifies var functions to initial-value registrations', async () => {
             mockMatchedStyles.computeCSSVariable.returns({ value: 'computedvalue', declaration: null });
-            const renderValueSpy = sinon.spy(Elements.StylePropertyTreeElement.StylePropertyTreeElement, 'renderValueElement');
+            const renderValueSpy = sinon.spy(Elements.PropertyRenderer.Renderer, 'renderValueElement');
             const stylePropertyTreeElement = getTreeElement('prop', 'var(--prop)');
             stylePropertyTreeElement.updateTitle();
             const varSwatch = renderValueSpy.returnValues.find(value => value.firstChild instanceof InlineEditor.LinkSwatch.CSSVarSwatch)
@@ -501,7 +500,9 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
                 });
                 const ast = Elements.PropertyParser.tokenizeDeclaration(stylePropertyTreeElement.name, stylePropertyTreeElement.value);
                 assertNotNullOrUndefined(ast);
-                const matching = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [Elements.StylePropertyTreeElement.VariableRenderer.matcher(stylePropertyTreeElement, stylePropertyTreeElement.property.ownerStyle)]);
+                const matching = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.StylePropertyTreeElement
+                        .VariableRenderer(stylePropertyTreeElement, stylePropertyTreeElement.property.ownerStyle)
+                        .matcher()]);
                 const res = {
                     hasUnresolvedVars: matching.hasUnresolvedVars(ast.tree),
                     computedText: matching.getComputedText(ast.tree),
@@ -803,8 +804,8 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
             }
         }
         it('shadow model renders text properties, authored properties, and computed text properties correctly', () => {
-            const renderingContext = sinon.createStubInstance(Elements.PropertyParser.RenderingContext);
-            const expansionContext = sinon.createStubInstance(Elements.PropertyParser.RenderingContext);
+            const renderingContext = sinon.createStubInstance(Elements.PropertyRenderer.RenderingContext);
+            const expansionContext = sinon.createStubInstance(Elements.PropertyRenderer.RenderingContext);
             const y = new StubSyntaxnode();
             const spread = new StubSyntaxnode();
             const blur = new StubSyntaxnode();
@@ -835,7 +836,7 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
                     propertyType: "spread" /* Elements.StylePropertyTreeElement.ShadowPropertyType.Spread */,
                 },
             ];
-            sinon.stub(Elements.PropertyParser.Renderer, 'render').callsFake((nodeOrNodes, context) => {
+            sinon.stub(Elements.PropertyRenderer.Renderer, 'render').callsFake((nodeOrNodes, context) => {
                 if (!Array.isArray(nodeOrNodes)) {
                     nodeOrNodes = [nodeOrNodes];
                 }

@@ -1,10 +1,9 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as SDK from './sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import * as SDK from './sdk.js';
 function assertPropertValues(object, expectedKeyValuePairs) {
     for (const [key, value] of expectedKeyValuePairs) {
         assert.propertyVal(object, key, value);

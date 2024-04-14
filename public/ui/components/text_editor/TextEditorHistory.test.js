@@ -5,7 +5,6 @@ import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { createFakeSetting, describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as TextEditor from './text_editor.js';
-const { assert } = chai;
 const { Direction } = TextEditor.TextEditorHistory;
 function setCodeMirrorContent(editor, content) {
     editor.dispatch({

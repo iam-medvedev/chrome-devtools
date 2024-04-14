@@ -4,6 +4,7 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Extensions from '../../models/extensions/extensions.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import { PerformanceModel } from './PerformanceModel.js';
@@ -155,6 +156,7 @@ export class TimelineController {
         await SDK.TargetManager.TargetManager.instance().suspendAllTargets('performance-timeline');
         const response = await this.tracingManager.start(this, categories, '');
         await this.warmupJsProfiler();
+        Extensions.ExtensionServer.ExtensionServer.instance().profilingStarted();
         return response;
     }
     // CPUProfiler::StartProfiling has a non-trivial cost and we'd prefer it not happen within an
@@ -188,6 +190,7 @@ export class TimelineController {
     async finalizeTrace() {
         await SDK.TargetManager.TargetManager.instance().resumeAllTargets();
         this.tracingModel.tracingComplete();
+        Extensions.ExtensionServer.ExtensionServer.instance().profilingStopped();
         await this.client.loadingComplete(this.#collectedEvents, this.tracingModel, /* exclusiveFilter= */ null, /* isCpuProfile= */ false, this.#recordingStartTime, /* metadata= */ null);
         this.client.loadingCompleteForTest();
     }

@@ -225,7 +225,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         return [
             CodeMirror.EditorView.updateListener.of(update => this.dispatchEventToListeners("EditorUpdate" /* Events.EditorUpdate */, update)),
             TextEditor.Config.baseConfiguration(doc),
-            TextEditor.Config.closeBrackets,
+            TextEditor.Config.closeBrackets.instance(),
             TextEditor.Config.autocompletion.instance(),
             TextEditor.Config.showWhitespace.instance(),
             TextEditor.Config.allowScrollPastEof.instance(),

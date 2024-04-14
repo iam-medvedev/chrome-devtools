@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assertElement, assertElements, assertShadowRoot, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
-const { assert } = chai;
 const NUM_BYTES_PER_GROUP = 4;
 export const VIEWER_BYTE_CELL_SELECTOR = '.byte-cell';
 export const VIEWER_TEXT_CELL_SELECTOR = '.text-cell';

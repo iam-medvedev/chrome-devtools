@@ -9,7 +9,6 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
-const { assert } = chai;
 describeWithMockConnection('ResourceMapping', () => {
     let debuggerModel;
     let resourceMapping;

@@ -13,7 +13,6 @@ import * as Coordinator from '../../../ui/components/render_coordinator/render_c
 import * as NetworkForward from '../forward/forward.js';
 import * as NetworkComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 async function renderResponseHeaderSection(request) {
     const component = new NetworkComponents.ResponseHeaderSection.ResponseHeaderSection();
     renderElementIntoDOM(component);

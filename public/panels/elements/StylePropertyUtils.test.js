@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 describeWithEnvironment('StylePropertyUtils', () => {
     it('convert CSS declaration to JS property', () => {
         assert.strictEqual(Elements.StylePropertyUtils.getCssDeclarationAsJavascriptProperty({ name: 'display', value: 'flex' }), 'display: \'flex\'');

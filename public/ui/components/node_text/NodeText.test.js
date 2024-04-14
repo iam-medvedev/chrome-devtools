@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assertNodeTextContent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as NodeText from './node_text.js';
-const { assert } = chai;
 describe('NodeText', () => {
     const NodeTextComponent = NodeText.NodeText.NodeText;
     it('renders element with a title', async () => {

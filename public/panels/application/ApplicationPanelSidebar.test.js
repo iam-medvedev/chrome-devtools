@@ -9,7 +9,6 @@ import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-const { assert } = chai;
 class SharedStorageTreeElementListener {
     #sidebar;
     #originsAdded = new Array();

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { makeFakeEventPayload, } from '../../../testing/TraceHelpers.js';
 import * as TraceEngine from '../trace.js';
-const { assert } = chai;
 const DEVTOOLS_CATEGORY = 'disabled-by-default-devtools.timeline';
 function milliToMicro(x) {
     return TraceEngine.Helpers.Timing.millisecondsToMicroseconds(TraceEngine.Types.Timing.MilliSeconds(x));

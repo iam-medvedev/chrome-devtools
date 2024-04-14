@@ -18,7 +18,6 @@ import * as Breakpoints from '../breakpoints/breakpoints.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
-const { assert } = chai;
 describeWithMockConnection('BreakpointManager', () => {
     const URL_HTML = 'http://site/index.html';
     const INLINE_SCRIPT_START = 41;
@@ -342,7 +341,7 @@ describeWithMockConnection('BreakpointManager', () => {
         const modelBreakpoint = breakpoint.modelBreakpoint(debuggerModel);
         assertNotNullOrUndefined(modelBreakpoint);
         // Make sure that we do not have a linked script yet.
-        assert.isNull(modelBreakpoint.currentState);
+        assert.strictEqual(modelBreakpoint.currentState, null);
         // Now await restoring the breakpoint.
         // A successful restore should update the ModelBreakpoint of the DebuggerModel
         // to reflect a state, in which we have successfully set a breakpoint (i.e. a script id

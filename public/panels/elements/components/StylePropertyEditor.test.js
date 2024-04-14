@@ -4,7 +4,6 @@
 import { assertElement, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as ElementsComponents from './components.js';
-const { assert } = chai;
 describeWithLocale('StylePropertyEditor', () => {
     function assertValues(component, values) {
         const propertyElements = component.shadowRoot.querySelectorAll('.property');

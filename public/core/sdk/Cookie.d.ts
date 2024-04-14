@@ -4,7 +4,6 @@ export declare class Cookie {
     #private;
     constructor(name: string, value: string, type?: Type | null, priority?: Protocol.Network.CookiePriority);
     static fromProtocolCookie(protocolCookie: Protocol.Network.Cookie): Cookie;
-    isEqual(other: Cookie): boolean;
     key(): string;
     name(): string;
     value(): string;

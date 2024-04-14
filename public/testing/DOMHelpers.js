@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as UI from '../ui/legacy/legacy.js';
-const { assert } = chai;
 const TEST_CONTAINER_ID = '__devtools-test-container-id';
 /**
  * Renders a given element into the DOM. By default it will error if it finds an element already rendered but this can be controlled via the options.

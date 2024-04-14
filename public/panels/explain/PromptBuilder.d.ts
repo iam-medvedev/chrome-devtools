@@ -26,6 +26,7 @@ export declare class PromptBuilder {
     buildPrompt(sourcesTypes?: SourceType[]): Promise<{
         prompt: string;
         sources: Source[];
+        isPageReloadRecommended: boolean;
     }>;
     formatPrompt({ message, relatedCode, relatedRequest }: {
         message: string;

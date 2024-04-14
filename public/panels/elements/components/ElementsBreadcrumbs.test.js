@@ -6,7 +6,6 @@ import { deinitializeGlobalVars, initializeGlobalVars, } from '../../../testing/
 import { withNoMutations } from '../../../testing/MutationHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ElementsComponents from './components.js';
-const { assert } = chai;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 /*
  * This very clearly is not a real legacy SDK DOMNode, but for the purposes of

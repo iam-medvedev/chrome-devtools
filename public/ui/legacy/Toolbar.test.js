@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import * as UI from './legacy.js';
-const { assert } = chai;
 describe('Toolbar', () => {
     describe('ToolbarInput', () => {
         it('sets a title on the clear button', () => {

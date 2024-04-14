@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceModel from '../trace.js';
-const { assert } = chai;
 async function parseAndFinalizeFile(context, traceFile) {
     const traceEvents = await TraceLoader.rawEvents(context, traceFile);
     TraceModel.Handlers.ModelHandlers.Meta.reset();

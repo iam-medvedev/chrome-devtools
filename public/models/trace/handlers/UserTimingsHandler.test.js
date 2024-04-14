@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceModel from '../trace.js';
-const { assert } = chai;
 describe('UserTimingsHandler', function () {
     let timingsData;
     describe('performance timings', function () {

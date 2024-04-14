@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Explain from '../explain.js';
-const { assert } = chai;
 describe('Markdown renderer', () => {
     it('renders link as an x-link', () => {
         const renderer = new Explain.MarkdownRenderer();

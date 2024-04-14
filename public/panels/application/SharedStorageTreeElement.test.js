@@ -8,7 +8,6 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-const { assert } = chai;
 class SharedStorageItemsListener {
     #dispatcher;
     #refreshed = false;

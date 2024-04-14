@@ -1,11 +1,10 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as Resources from './application.js';
+import { raf } from '../../testing/DOMHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as DataGrid from '../../ui/components/data_grid/data_grid.js';
-import { raf } from '../../testing/DOMHelpers.js';
+import * as Resources from './application.js';
 var View = Resources.SharedStorageEventsView;
 describeWithMockConnection('SharedStorageEventsView', () => {
     const TEST_ORIGIN_A = 'http://a.test';

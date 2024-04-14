@@ -225,7 +225,6 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     siteHasCookieInOtherPartition(): boolean;
     static parseStatusTextFromResponseHeadersText(responseHeadersText: string): string;
     addExtraResponseInfo(extraResponseInfo: ExtraResponseInfo): void;
-    addBlockedRequestCookiesToModel(): void;
     hasExtraResponseInfo(): boolean;
     blockedResponseCookies(): BlockedSetCookieWithReason[];
     exemptedResponseCookies(): ExemptedSetCookieWithReason[];

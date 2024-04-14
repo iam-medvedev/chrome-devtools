@@ -21,6 +21,7 @@ declare class ConsoleInsightSourcesList extends HTMLElement {
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor();
     set sources(values: Source[]);
+    set isPageReloadRecommended(isPageReloadRecommended: boolean);
 }
 declare global {
     interface HTMLElementTagNameMap {

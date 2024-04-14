@@ -1,11 +1,10 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as Components from './components.js';
-import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
 import { dispatchClickEvent, dispatchKeyDownEvent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as Components from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('RecordingListView', () => {
     setupActionRegistry();

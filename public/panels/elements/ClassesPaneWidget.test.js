@@ -7,7 +7,6 @@ import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 const CLASS_NAMES = ['class-1', 'class-2', 'class-3'];
 describeWithMockConnection('ClassesPaneWidget', () => {
     let target;

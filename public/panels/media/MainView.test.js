@@ -7,7 +7,6 @@ import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Media from './media.js';
-const { assert } = chai;
 const PLAYER_ID = 'PLAYER_ID';
 describeWithMockConnection('MediaMainView', () => {
     let target;

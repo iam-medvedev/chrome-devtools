@@ -55,6 +55,7 @@
     "../../../../../front_end/testing/MutationHelpers.ts",
     "../../../../../front_end/testing/OverridesHelpers.ts",
     "../../../../../front_end/testing/PersistenceHelpers.ts",
+    "../../../../../front_end/testing/PropertyParser.ts",
     "../../../../../front_end/testing/RealConnection.ts",
     "../../../../../front_end/testing/SourceMapEncoder.test.ts",
     "../../../../../front_end/testing/SourceMapEncoder.ts",

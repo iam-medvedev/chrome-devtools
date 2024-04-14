@@ -5,5 +5,5 @@ export declare class AnimationGroupPreviewUI {
     constructor(model: AnimationGroup);
     removeButton(): Element;
     replay(): void;
-    private render;
+    render(): void;
 }

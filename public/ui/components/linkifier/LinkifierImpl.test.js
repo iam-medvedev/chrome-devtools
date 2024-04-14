@@ -7,7 +7,6 @@ import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as Linkifier from './linkifier.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 import { assertElement, assertShadowRoot, dispatchClickEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-const { assert } = chai;
 describeWithLocale('Linkifier', () => {
     it('renders a link when given a URL', async () => {
         const component = new Linkifier.Linkifier.Linkifier();

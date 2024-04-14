@@ -6,7 +6,6 @@ import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as ApplicationComponents from './components.js';
-const { assert } = chai;
 const makeFrame = (overrides = {}) => {
     const newFrame = {
         resourceTreeModel: () => ({

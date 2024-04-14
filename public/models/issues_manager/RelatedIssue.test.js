@@ -1,11 +1,10 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as SDK from '../../core/sdk/sdk.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as IssuesManager from '../issues_manager/issues_manager.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import { StubIssue } from '../../testing/StubIssue.js';
+import * as IssuesManager from '../issues_manager/issues_manager.js';
 describe('issuesAssociatedWith', () => {
     const requestId1 = 'r0';
     const requestId2 = 'r1';

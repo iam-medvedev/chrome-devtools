@@ -6,7 +6,6 @@ import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { FakeFlameChartProvider, MockFlameChartDelegate, } from '../../../../testing/TraceHelpers.js';
 import * as PerfUI from './perf_ui.js';
-const { assert } = chai;
 describeWithEnvironment('FlameChart', () => {
     it('sorts decorations, putting candy striping before warning triangles', async () => {
         const decorations = [
@@ -607,10 +606,14 @@ describeWithEnvironment('FlameChart', () => {
                 // So the group 0 can be mapped from
                 //   x: any inside the view
                 //   y: 17(inclusive) to 55(exclusive)
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 16, /* headerOnly= */ false), { groupIndex: -1 });
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 17, /* headerOnly= */ false), { groupIndex: 0 });
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 50, /* headerOnly= */ false), { groupIndex: 0 });
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 55, /* headerOnly= */ false), { groupIndex: 1 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 16, /* headerOnly= */ false), { groupIndex: -1 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 17, /* headerOnly= */ false), { groupIndex: 0 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 50, /* headerOnly= */ false), { groupIndex: 0 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 55, /* headerOnly= */ false), { groupIndex: 1 });
             });
             it('returns the correct group index for given coordinates after re-order', () => {
                 const provider = new IndexAndCoordinatesConversionTestProvider();
@@ -633,10 +636,14 @@ describeWithEnvironment('FlameChart', () => {
                 // So the entry 0 can be mapped from
                 //   y: 55(inclusive) to 89(exclusive)
                 // Now Group 1 will be before Group 0. so (y)54 will be mapped to Group 1
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 54, /* headerOnly= */ false), { groupIndex: 1 });
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 55, /* headerOnly= */ false), { groupIndex: 0 });
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 88, /* headerOnly= */ false), { groupIndex: 0 });
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 89, /* headerOnly= */ false), { groupIndex: -1 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 54, /* headerOnly= */ false), { groupIndex: 1 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 55, /* headerOnly= */ false), { groupIndex: 0 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 88, /* headerOnly= */ false), { groupIndex: 0 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 89, /* headerOnly= */ false), { groupIndex: -1 });
             });
             it('returns the correct group index and the icon type for given coordinates', () => {
                 const provider = new IndexAndCoordinatesConversionTestProvider();
@@ -652,29 +659,40 @@ describeWithEnvironment('FlameChart', () => {
                 }
                 const context = chartInstance.getCanvas().getContext('2d');
                 const labelWidth = chartInstance.labelWidthForGroup(context, provider.timelineData()?.groups[0]);
+                // Start of the view (before the edit icon).
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(0, 17, /* headerOnly= */ false), { groupIndex: 0 });
                 // Start of the edit icon.
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(0, 17, /* headerOnly= */ false), { groupIndex: 0, editButtonType: "EDIT" /* PerfUI.FlameChart.EditButtonType.EDIT */ });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* HEADER_LEFT_PADDING */ 6, 17, /* headerOnly= */ false), { groupIndex: 0, editButtonType: "EDIT" /* PerfUI.FlameChart.EditButtonType.EDIT */ });
                 // End of the edit icon, which is the start of the title label
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 17, /* headerOnly= */ false), { groupIndex: 0 });
-                // End of the title label
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(labelWidth + /* this.headerLeftPadding */ 6 + /* EDIT_BUTTON_SIZE */ 16, 17, /* headerOnly= */ false), { groupIndex: 0 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 17, /* headerOnly= */ false), { groupIndex: 0 });
+                // End of the title label, For title label checking, the end is included.
+                const endOfTitle = /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22 + labelWidth;
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(endOfTitle, 17, /* headerOnly= */ true), { groupIndex: 0 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(endOfTitle + 1, 17, /* headerOnly= */ true), { groupIndex: -1 });
                 chartInstance.setEditModeForTest(true);
+                // Start of the view (before the first icon).
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(0, 17, /* headerOnly= */ false), { groupIndex: 0 });
                 // First icon (Up)
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(0, 17, /* headerOnly= */ false), { groupIndex: 0, editButtonType: "UP" /* PerfUI.FlameChart.EditButtonType.UP */ });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* HEADER_LEFT_PADDING */ 6, 17, /* headerOnly= */ false), { groupIndex: 0, editButtonType: "UP" /* PerfUI.FlameChart.EditButtonType.UP */ });
                 // Second icon (Down)
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE */ 16, 17, /* headerOnly= */ false), { groupIndex: 0, editButtonType: "DOWN" /* PerfUI.FlameChart.EditButtonType.DOWN */ });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE */ 22, 17, /* headerOnly= */ false), { groupIndex: 0, editButtonType: "DOWN" /* PerfUI.FlameChart.EditButtonType.DOWN */ });
                 // Third icon (Hide)
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDIT_BUTTON_SIZE * 2 */ 32, 17, /* headerOnly= */ false), { groupIndex: 0, editButtonType: "HIDE" /* PerfUI.FlameChart.EditButtonType.HIDE */ });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDIT_BUTTON_SIZE * 2 */ 38, 17, /* headerOnly= */ false), { groupIndex: 0, editButtonType: "HIDE" /* PerfUI.FlameChart.EditButtonType.HIDE */ });
                 // This is after the third icon, which is the start of the title label. so should only return the index of group.
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(/* EDITION_MODE_INDENT */ 48, 17, /* headerOnly= */ false), { groupIndex: 0 });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
+                /* HEADER_LEFT_PADDING + EDITION_MODE_INDENT */ 54, 17, /* headerOnly= */ true), { groupIndex: 0 });
                 // End of the title label, and it's the start of the save icon.
                 assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
-                /* EDITION_MODE_INDENT */ 48 + labelWidth + /* this.headerLeftPadding */ 6, 17, 
+                /* HEADER_LEFT_PADDING + EDITION_MODE_INDENT */ 54 + labelWidth, 17, 
                 /* headerOnly= */ false), { groupIndex: 0, editButtonType: "SAVE" /* PerfUI.FlameChart.EditButtonType.SAVE */ });
-                // End of the save icon.
-                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(
-                /* EDITION_MODE_INDENT */ 48 + labelWidth + /* this.headerLeftPadding */ 6 + /* EDIT_BUTTON_SIZE */ 16, 17, 
-                /* headerOnly= */ false), { groupIndex: 0 });
+                // End of the save icon. For save icon checking, the end is excluded.
+                const endOfSaveIcon = 
+                /* HEADER_LEFT_PADDING + EDITION_MODE_INDENT */ 54 + labelWidth + /* EDIT_BUTTON_SIZE */ 16;
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(endOfSaveIcon - 1, 17, /* headerOnly= */ true), { groupIndex: 0, editButtonType: "SAVE" /* PerfUI.FlameChart.EditButtonType.SAVE */ });
+                assert.deepEqual(chartInstance.coordinatesToGroupIndexAndButton(endOfSaveIcon, 17, /* headerOnly= */ true), { groupIndex: -1 });
             });
         });
     });

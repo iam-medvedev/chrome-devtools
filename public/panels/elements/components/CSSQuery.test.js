@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as ElementsComponents from './components.js';
-const { assert } = chai;
 describe('CSSQuery', () => {
     it('renders a normal query correctly', () => {
         const component = new ElementsComponents.CSSQuery.CSSQuery();

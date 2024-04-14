@@ -8,7 +8,6 @@ import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelper
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-const { assert } = chai;
 describeWithMockConnection('SharedStorageListTreeElement', function () {
     const tests = (targetFactory) => {
         let target;

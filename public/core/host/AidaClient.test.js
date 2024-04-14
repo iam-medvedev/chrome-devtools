@@ -1,9 +1,8 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Host from './host.js';
 import * as Root from '../root/root.js';
-const { assert } = chai;
+import * as Host from './host.js';
 const TEST_MODEL_ID = 'testModelId';
 describe('AidaClient', () => {
     it('adds no model temperature if there is no aidaTemperature query param', () => {
@@ -103,7 +102,7 @@ describe('AidaClient', () => {
             const response = JSON.stringify([
                 { textChunk: { text: 'hello ' }, metadata: { rpcGlobalId: 123 } },
                 { textChunk: { text: 'brave ' }, metadata: { rpcGlobalId: 123 } },
-                { textChunk: { text: 'new world!' }, metadata: { rpcGlobalId: 123 } },
+                { textChunk: { text: 'new world!' } },
             ]);
             let first = true;
             for (const chunk of response.split(',{')) {
@@ -119,6 +118,22 @@ describe('AidaClient', () => {
             { explanation: 'hello ', metadata: { rpcGlobalId: 123 } },
             { explanation: 'hello brave ', metadata: { rpcGlobalId: 123 } },
             { explanation: 'hello brave new world!', metadata: { rpcGlobalId: 123 } },
+        ]);
+    });
+    it('handles single square bracket as a chunk', async () => {
+        sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'doAidaConversation')
+            .callsFake(async (_, streamId, callback) => {
+            const response = ['[', JSON.stringify({ textChunk: { text: 'hello world' }, metadata: { rpcGlobalId: 123 } }), ']'];
+            for (const chunk of response) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+                Host.ResourceLoader.streamWrite(streamId, chunk);
+            }
+            callback({ statusCode: 200 });
+        });
+        const provider = new Host.AidaClient.AidaClient();
+        const results = await getAllResults(provider);
+        assert.deepStrictEqual(results, [
+            { explanation: 'hello world', metadata: { rpcGlobalId: 123 } },
         ]);
     });
     it('handles chunked response with multiple objects per chunk', async () => {

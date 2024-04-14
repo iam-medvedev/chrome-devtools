@@ -13,7 +13,6 @@ import * as Coordinator from '../../ui/components/render_coordinator/render_coor
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Autofill from './autofill.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 const addressFormFilledEvent = {
     addressUi: {
         addressFields: [

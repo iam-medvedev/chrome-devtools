@@ -247,6 +247,12 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     notifyButtonClicked(identifier) {
         this.postNotification("button-clicked-" /* PrivateAPI.Events.ButtonClicked */ + identifier);
     }
+    profilingStarted() {
+        this.postNotification("profiling-started-" /* PrivateAPI.Events.ProfilingStarted */);
+    }
+    profilingStopped() {
+        this.postNotification("profiling-stopped-" /* PrivateAPI.Events.ProfilingStopped */);
+    }
     registerLanguageExtensionEndpoint(message, _shared_port) {
         if (message.command !== "registerLanguageExtensionPlugin" /* PrivateAPI.Commands.RegisterLanguageExtensionPlugin */) {
             return this.status.E_BADARG('command', `expected ${"registerLanguageExtensionPlugin" /* PrivateAPI.Commands.RegisterLanguageExtensionPlugin */}`);

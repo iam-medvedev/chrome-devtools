@@ -23,6 +23,9 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/ViewManager.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const defaultOptionsForTabs = {
+    security: true,
+};
 export class PreRegisteredView {
     viewRegistration;
     widgetPromise;
@@ -503,7 +506,6 @@ class TabbedLocation extends Location {
     setOrUpdateCloseableTabsSetting() {
         // Update the setting value, we respect the closed state decided by the user
         // and append the new tabs with value of true so they are shown open
-        const defaultOptionsForTabs = { 'security': true, 'chrome-recorder': true };
         const newClosable = {
             ...defaultOptionsForTabs,
             ...this.closeableTabSetting.get(),

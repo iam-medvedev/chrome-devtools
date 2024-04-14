@@ -1,16 +1,15 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Persistence from '../persistence/persistence.js';
-import * as Workspace from '../workspace/workspace.js';
 import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createWorkspaceProject, setUpEnvironment } from '../../testing/OverridesHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
+import * as Persistence from '../persistence/persistence.js';
+import * as Workspace from '../workspace/workspace.js';
 const setUpEnvironmentWithUISourceCode = (url, resourceType, project) => {
     const { workspace, networkPersistenceManager } = setUpEnvironment();
     if (!project) {

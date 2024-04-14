@@ -8,7 +8,6 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as NetworkComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 async function renderHeaderSectionRow(header) {
     const component = new NetworkComponents.HeaderSectionRow.HeaderSectionRow();
     const scrollIntoViewSpy = sinon.spy(component, 'scrollIntoView');

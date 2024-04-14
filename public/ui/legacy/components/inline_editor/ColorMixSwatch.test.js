@@ -4,7 +4,6 @@
 import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as InlineEditor from './inline_editor.js';
-const { assert } = chai;
 function createSwatch(text, firstColor, secondColor) {
     const swatch = new InlineEditor.ColorMixSwatch.ColorMixSwatch();
     renderElementIntoDOM(swatch);

@@ -4,7 +4,6 @@
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import * as SDK from './sdk.js';
-const { assert } = chai;
 describeWithMockConnection('Script', () => {
     describe('originalContentProvider', () => {
         it('doesn\'t strip //# sourceURL annotations', async () => {

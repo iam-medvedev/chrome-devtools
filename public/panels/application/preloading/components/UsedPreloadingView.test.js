@@ -9,7 +9,6 @@ import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../../ui/components/report_view/report_view.js';
 import * as PreloadingComponents from './components.js';
-const { assert } = chai;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function renderUsedPreloadingView(data) {
     const component = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();

@@ -42,10 +42,17 @@ ul .link {
   text-decoration-line: underline;
 }
 
-devtools-icon[name="open-externally"] {
-  color: var(--icon-link);
+devtools-icon {
   height: 16px;
   width: 16px;
+}
+
+devtools-icon[name="open-externally"] {
+  color: var(--icon-link);
+}
+
+.source-disclaimer {
+  color: var(--sys-color-on-surface-subtle);
 }
 
 /*# sourceURL=./components/consoleInsightSourcesList.css */

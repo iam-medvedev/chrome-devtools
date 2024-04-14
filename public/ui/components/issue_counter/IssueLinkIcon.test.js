@@ -8,7 +8,6 @@ import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as IssueCounter from './issue_counter.js';
-const { assert } = chai;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const renderIssueLinkIcon = async (data) => {
     const component = new IssueCounter.IssueLinkIcon.IssueLinkIcon();

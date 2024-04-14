@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as UI from './legacy.js';
-const { assert } = chai;
 describe('UIUtils', () => {
     describe('addReferrerToURL', () => {
         it('correctly adds referrer info to URLs', () => {

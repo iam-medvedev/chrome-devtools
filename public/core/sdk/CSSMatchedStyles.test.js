@@ -5,7 +5,6 @@ import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
-const { assert } = chai;
 function ruleMatch(selector, cssProperties, range, styleSheetId = '0') {
     return {
         rule: {

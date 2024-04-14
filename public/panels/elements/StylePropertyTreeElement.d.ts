@@ -1,10 +1,10 @@
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { AngleMatch, AngleMatcher, BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatch, FontMatcher, GridTemplateMatch, GridTemplateMatcher, LightDarkColorMatch, LightDarkColorMatcher, LinkableNameMatch, LinkableNameMatcher, LinkableNameProperties, type Matcher, RenderingContext, ShadowMatch, ShadowMatcher, ShadowType, StringMatch, StringMatcher, URLMatch, URLMatcher, VariableMatch, VariableMatcher } from './PropertyParser.js';
+import { type AngleMatch, AngleMatcher, type BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, type FontMatch, FontMatcher, type GridTemplateMatch, GridTemplateMatcher, type LengthMatch, LengthMatcher, type LightDarkColorMatch, LightDarkColorMatcher, type LinkableNameMatch, LinkableNameMatcher, type ShadowMatch, ShadowMatcher, ShadowType, VariableMatch, VariableMatcher } from './PropertyParser.js';
+import { type MatchRenderer, RenderingContext } from './PropertyRenderer.js';
 import { type StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
 export declare const activeHints: WeakMap<Element, Hint>;
@@ -18,65 +18,54 @@ interface StylePropertyTreeElementParams {
     overloaded: boolean;
     newProperty: boolean;
 }
-export declare class VariableRenderer extends VariableMatch {
+export declare class VariableRenderer implements MatchRenderer<VariableMatch> {
     #private;
-    constructor(treeElement: StylePropertyTreeElement, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, text: string, name: string, fallback: CodeMirror.SyntaxNode[], matching: BottomUpTreeMatching);
-    resolveVariable(): SDK.CSSMatchedStyles.CSSVariableValue | null;
-    fallbackValue(): string | null;
-    computedText(): string | null;
-    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
-    static matcher(treeElement: StylePropertyTreeElement, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration): VariableMatcher;
+    constructor(treeElement: StylePropertyTreeElement, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration);
+    matcher(): VariableMatcher;
+    resolveVariable(match: VariableMatch): SDK.CSSMatchedStyles.CSSVariableValue | null;
+    fallbackValue(match: VariableMatch, matching: BottomUpTreeMatching): string | null;
+    computedText(match: VariableMatch, matching: BottomUpTreeMatching): string | null;
+    render(match: VariableMatch, context: RenderingContext): Node[];
 }
-export declare class ColorRenderer extends ColorMatch {
+export declare class ColorRenderer implements MatchRenderer<ColorMatch> {
     #private;
     private readonly treeElement;
-    constructor(treeElement: StylePropertyTreeElement, text: string);
-    static matcher(treeElement: StylePropertyTreeElement): ColorMatcher;
-    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
-    renderColorSwatch(valueChild?: Node, text?: string): InlineEditor.ColorSwatch.ColorSwatch;
+    constructor(treeElement: StylePropertyTreeElement);
+    matcher(): ColorMatcher;
+    render(match: ColorMatch, context: RenderingContext): Node[];
+    renderColorSwatch(text: string, valueChild?: Node): InlineEditor.ColorSwatch.ColorSwatch;
 }
-export declare class LightDarkColorRenderer extends LightDarkColorMatch {
+export declare class LightDarkColorRenderer implements MatchRenderer<LightDarkColorMatch> {
     #private;
-    constructor(treeElement: StylePropertyTreeElement, text: string, light: CodeMirror.SyntaxNode[], dark: CodeMirror.SyntaxNode[]);
-    static matcher(treeElement: StylePropertyTreeElement): LightDarkColorMatcher;
-    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
-    applyColorScheme(context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: HTMLSpanElement, dark: HTMLSpanElement): Promise<void>;
+    constructor(treeElement: StylePropertyTreeElement);
+    matcher(): LightDarkColorMatcher;
+    render(match: LightDarkColorMatch, context: RenderingContext): Node[];
+    applyColorScheme(match: LightDarkColorMatch, context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: HTMLSpanElement, dark: HTMLSpanElement): Promise<void>;
 }
-export declare class ColorMixRenderer extends ColorMixMatch {
+export declare class ColorMixRenderer implements MatchRenderer<ColorMixMatch> {
     #private;
-    constructor(pane: StylesSidebarPane, text: string, space: CodeMirror.SyntaxNode[], color1: CodeMirror.SyntaxNode[], color2: CodeMirror.SyntaxNode[]);
-    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
-    static matcher(pane: StylesSidebarPane): ColorMixMatcher;
+    constructor(pane: StylesSidebarPane);
+    render(match: ColorMixMatch, context: RenderingContext): Node[];
+    matcher(): ColorMixMatcher;
 }
-export declare class URLRenderer extends URLMatch {
-    private readonly rule;
-    private readonly node;
-    constructor(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null, url: Platform.DevToolsPath.UrlString, text: string);
-    render(): Node[];
-    static matcher(rule: SDK.CSSRule.CSSRule | null, node: SDK.DOMModel.DOMNode | null): URLMatcher;
-}
-export declare class AngleRenderer extends AngleMatch {
+export declare class AngleRenderer implements MatchRenderer<AngleMatch> {
     #private;
-    constructor(text: string, treeElement: StylePropertyTreeElement);
-    render(_: unknown, context: RenderingContext): Node[];
-    static matcher(treeElement: StylePropertyTreeElement): AngleMatcher;
+    constructor(treeElement: StylePropertyTreeElement);
+    render(match: AngleMatch, context: RenderingContext): Node[];
+    matcher(): AngleMatcher;
 }
-export declare class LinkableNameRenderer extends LinkableNameMatch {
+export declare class LinkableNameRenderer implements MatchRenderer<LinkableNameMatch> {
     #private;
-    constructor(treeElement: StylePropertyTreeElement, text: string, propertyName: LinkableNameProperties);
-    render(): Node[];
-    static matcher(treeElement: StylePropertyTreeElement): LinkableNameMatcher;
+    constructor(treeElement: StylePropertyTreeElement);
+    render(match: LinkableNameMatch): Node[];
+    matcher(): LinkableNameMatcher;
 }
-export declare class BezierRenderer extends BezierMatch {
+export declare class BezierRenderer implements MatchRenderer<BezierMatch> {
     #private;
-    constructor(treeElement: StylePropertyTreeElement, text: string);
-    render(): Node[];
-    renderSwatch(): Node;
-    static matcher(treeElement: StylePropertyTreeElement): BezierMatcher;
-}
-export declare class StringRenderer extends StringMatch {
-    render(): Node[];
-    static matcher(): StringMatcher;
+    constructor(treeElement: StylePropertyTreeElement);
+    render(match: BezierMatch): Node[];
+    renderSwatch(match: BezierMatch): Node;
+    matcher(): BezierMatcher;
 }
 export declare const enum ShadowPropertyType {
     X = "x",
@@ -108,23 +97,28 @@ export declare class ShadowModel implements InlineEditor.CSSShadowEditor.CSSShad
     setSpreadRadius(value: InlineEditor.CSSShadowEditor.CSSLength): void;
     renderContents(parent: HTMLElement): void;
 }
-export declare class ShadowRenderer extends ShadowMatch {
+export declare class ShadowRenderer implements MatchRenderer<ShadowMatch> {
     #private;
-    constructor(text: string, type: ShadowType, treeElement: StylePropertyTreeElement);
-    shadowModel(shadow: CodeMirror.SyntaxNode[], context: RenderingContext): null | ShadowModel;
-    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
-    static matcher(treeElement: StylePropertyTreeElement): ShadowMatcher;
+    constructor(treeElement: StylePropertyTreeElement);
+    shadowModel(shadow: CodeMirror.SyntaxNode[], shadowType: ShadowType, context: RenderingContext): null | ShadowModel;
+    render(match: ShadowMatch, context: RenderingContext): Node[];
+    matcher(): ShadowMatcher;
 }
-export declare class FontRenderer extends FontMatch {
+export declare class FontRenderer implements MatchRenderer<FontMatch> {
     readonly treeElement: StylePropertyTreeElement;
-    constructor(treeElement: StylePropertyTreeElement, text: string);
-    render(): Node[];
-    static matcher(treeElement: StylePropertyTreeElement): FontMatcher;
+    constructor(treeElement: StylePropertyTreeElement);
+    render(match: FontMatch): Node[];
+    matcher(): FontMatcher;
 }
-export declare class GridTemplateRenderer extends GridTemplateMatch {
-    constructor(text: string, lines: CodeMirror.SyntaxNode[][]);
-    render(node: CodeMirror.SyntaxNode, context: RenderingContext): Node[];
-    static matcher(): GridTemplateMatcher;
+export declare class GridTemplateRenderer implements MatchRenderer<GridTemplateMatch> {
+    render(match: GridTemplateMatch, context: RenderingContext): Node[];
+    matcher(): GridTemplateMatcher;
+}
+export declare class LengthRenderer implements MatchRenderer<LengthMatch> {
+    #private;
+    constructor(treeElement: StylePropertyTreeElement);
+    render(match: LengthMatch, _context: RenderingContext): Node[];
+    matcher(): LengthMatcher;
 }
 export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     #private;
@@ -149,8 +143,6 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private parentsComputedStyles;
     private contextForTest;
     constructor({ stylesPane, section, matchedStyles, property, isShorthand, inherited, overloaded, newProperty }: StylePropertyTreeElementParams);
-    static renderNameElement(name: string): HTMLElement;
-    static renderValueElement(propertyName: string, propertyValue: string, renderers: Matcher[]): HTMLElement;
     matchedStyles(): SDK.CSSMatchedStyles.CSSMatchedStyles;
     editable(): boolean;
     inherited(): boolean;
@@ -163,7 +155,6 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     get value(): string;
     updateFilter(): boolean;
     renderedPropertyText(): string;
-    private processLength;
     private updateState;
     node(): SDK.DOMModel.DOMNode | null;
     parentPane(): StylesSidebarPane;

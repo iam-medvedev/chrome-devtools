@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextEditor from './text_editor.js';
-const { assert } = chai;
 describe('argumentsList', () => {
     const { argumentsList } = TextEditor.JavaScript;
     it('handles functions with no parameters', () => {

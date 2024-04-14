@@ -1,10 +1,6 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as Common from '../common/common.js';
-import * as Platform from '../platform/platform.js';
-import * as SDK from './sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -12,6 +8,9 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createWorkspaceProject } from '../../testing/OverridesHelpers.js';
+import * as Common from '../common/common.js';
+import * as Platform from '../platform/platform.js';
+import * as SDK from './sdk.js';
 const LONG_URL_PART = 'LoremIpsumDolorSitAmetConsecteturAdipiscingElitPhasellusVitaeOrciInAugueCondimentumTinciduntUtEgetDolorQuisqueEfficiturUltricesTinciduntVivamusVelitPurusCommodoQuisErosSitAmetTemporMalesuadaNislNullamTtempusVulputateAugueEgetScelerisqueLacusVestibulumNon/index.html';
 describeWithMockConnection('MultitargetNetworkManager', () => {
     describe('Trust Token done event', () => {
@@ -203,9 +202,6 @@ describe('NetworkDispatcher', () => {
         const resourceUrlsFoo = ['foo'];
         beforeEach(() => {
             const networkManager = new Common.ObjectWrapper.ObjectWrapper();
-            networkManager.target = () => ({
-                model: () => null,
-            });
             networkDispatcher = new SDK.NetworkManager.NetworkDispatcher(networkManager);
         });
         it('have webbundle info when webbundle event happen between browser events', () => {

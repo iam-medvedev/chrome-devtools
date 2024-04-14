@@ -5,7 +5,6 @@ import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
-const { assert } = chai;
 describeWithMockConnection('WebAuthn pane', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Webauthn;

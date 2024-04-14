@@ -6,7 +6,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Application from './application.js';
-const { assert } = chai;
 describeWithMockConnection('ServiceWorkersView', () => {
     const tests = (targetFactory) => {
         let target;

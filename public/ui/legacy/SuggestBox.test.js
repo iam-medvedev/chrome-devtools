@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import * as UI from './legacy.js';
-const { assert } = chai;
 class MockSuggestBoxDelegate {
     element;
     appliedSuggestions = [];

@@ -7,7 +7,6 @@ import { assertShadowRoot, renderElementIntoDOM } from '../../../../testing/DOMH
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
-const { assert } = chai;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function assertRenderResult(rowsInput, headerExpected, rowsExpected) {
     const component = new PreloadingComponents.PreloadingGrid.PreloadingGrid();
