@@ -4,7 +4,6 @@
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Common from '../common/common.js';
 import * as SDK from './sdk.js';
-const { assert } = chai;
 function resetSavedSetting(forcedState = []) {
     const setting = Common.Settings.Settings.instance().createLocalSetting('persistent-highlight-setting', []);
     setting.set(forcedState);

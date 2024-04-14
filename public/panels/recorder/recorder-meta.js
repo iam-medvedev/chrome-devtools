@@ -48,9 +48,11 @@ function maybeRetrieveContextTypes(getClassCallBack, actionId) {
     }
     return [];
 }
+const viewId = 'chrome-recorder';
+UI.ViewManager.defaultOptionsForTabs[viewId] = true;
 UI.ViewManager.registerViewExtension({
     location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
-    id: 'chrome-recorder',
+    id: viewId,
     commandPrompt: i18nLazyString(UIStrings.showRecorder),
     title: i18nLazyString(UIStrings.recorder),
     order: 90,

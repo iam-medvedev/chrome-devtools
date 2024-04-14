@@ -4,7 +4,6 @@
 import { assertElement, assertShadowRoot, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
-const { assert } = chai;
 export const HIGHLIGHT_CHIP = '.highlight-chip';
 export const HIGHLIGHT_PILL_JUMP_BUTTON_SELECTOR = '.jump-to-highlight-button';
 export const HIGHLIGHT_PILL_VARIABLE_NAME = HIGHLIGHT_PILL_JUMP_BUTTON_SELECTOR + ' .value';

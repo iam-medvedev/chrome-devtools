@@ -1,10 +1,9 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as DiffView from './diff_view.js';
-import * as Diff from '../../../third_party/diff/diff.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import * as Diff from '../../../third_party/diff/diff.js';
+import * as DiffView from './diff_view.js';
 function buildDiff(original, updated) {
     const diff = Diff.Diff.DiffWrapper.lineDiff(original.split('\n'), updated.split('\n'));
     const view = new DiffView.DiffView.DiffView({ diff, mimeType: 'text/javascript' });

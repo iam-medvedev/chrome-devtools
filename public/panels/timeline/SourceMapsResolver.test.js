@@ -9,7 +9,6 @@ import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import { loadBasicSourceMapExample } from '../../testing/SourceMapHelpers.js';
 import { makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
 import * as Timeline from './timeline.js';
-const { assert } = chai;
 const MINIFIED_FUNCTION_NAME = 'minified';
 const AUTHORED_FUNCTION_NAME = 'someFunction';
 describeWithMockConnection('SourceMapsResolver', () => {

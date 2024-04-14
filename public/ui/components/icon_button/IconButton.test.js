@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assertElement, assertElements, assertShadowRoot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as IconButton from './icon_button.js';
-const { assert } = chai;
 const renderIconButton = (data) => {
     const component = new IconButton.IconButton.IconButton();
     component.data = data;

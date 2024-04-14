@@ -7,7 +7,6 @@ import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { getAllTracingModelPayloadEvents } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
-const { assert } = chai;
 describeWithEnvironment('TimelineSelection', function () {
     it('can be created with a frame', function () {
         const frame = new TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame(

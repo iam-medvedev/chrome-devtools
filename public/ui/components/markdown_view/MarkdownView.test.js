@@ -6,7 +6,6 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as MarkdownView from './markdown_view.js';
-const { assert } = chai;
 function getFakeToken(token) {
     return token;
 }

@@ -1,13 +1,12 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Resources from './application.js';
+import { raf } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as DataGrid from '../../ui/components/data_grid/data_grid.js';
-import { raf } from '../../testing/DOMHelpers.js';
+import * as Resources from './application.js';
 var View = Resources.ReportingApiReportsView;
 const reports = [
     {

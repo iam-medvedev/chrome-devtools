@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assertElements, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as TextPrompt from './text_prompt.js';
-const { assert } = chai;
 const renderTextPrompt = (data) => {
     const component = new TextPrompt.TextPrompt.TextPrompt();
     component.data = data;

@@ -8,7 +8,6 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ApplicationComponents from './components.js';
-const { assert } = chai;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const renderReportsGrid = async (data) => {
     const component = new ApplicationComponents.ReportsGrid.ReportsGrid();

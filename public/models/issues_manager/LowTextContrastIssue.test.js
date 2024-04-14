@@ -1,11 +1,10 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
 import * as Issues from '../../panels/issues/issues.js';
-import * as IssuesManager from '../issues_manager/issues_manager.js';
-import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import { MockIssuesManager } from '../../testing/MockIssuesManager.js';
+import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
+import * as IssuesManager from '../issues_manager/issues_manager.js';
 describe('LowTextContrastIssue', () => {
     it('aggregates multiple issues with duplicates correctly', () => {
         const mockModel = new MockIssuesModel([]);

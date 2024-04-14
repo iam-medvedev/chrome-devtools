@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import * as Platform from './platform.js';
-const { assert } = chai;
 describe('DOMUtilities', () => {
     describe('deepActiveElement', () => {
         it('returns the active element if there is no shadow root', () => {

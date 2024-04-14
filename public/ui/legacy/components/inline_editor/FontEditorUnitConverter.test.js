@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as InlineEditor from './inline_editor.js';
-const { assert } = chai;
 describe('FontEditorUnitConverter', () => {
     it('converts px to em as expected', async () => {
         const pxToEm = await InlineEditor.FontEditorUnitConverter.getUnitConversionMultiplier('px', 'em', false);

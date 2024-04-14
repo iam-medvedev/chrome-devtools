@@ -6,7 +6,6 @@ import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../
 import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as UI from '../../legacy.js';
 import * as InlineEditor from './inline_editor.js';
-const { assert } = chai;
 function assertSwatch(swatch, expected) {
     const swatchEl = swatch.shadowRoot.querySelector('.color-swatch');
     assertElement(swatchEl, HTMLElement);

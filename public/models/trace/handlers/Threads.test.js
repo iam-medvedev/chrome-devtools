@@ -5,7 +5,6 @@ import * as TimelineModel from '../../../models/timeline_model/timeline_model.js
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceEngine from '../trace.js';
-const { assert } = chai;
 describeWithEnvironment('Handler Threads helper', function () {
     it('returns all the threads for a trace that used tracing', async function () {
         const traceData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');

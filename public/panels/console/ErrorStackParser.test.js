@@ -4,7 +4,6 @@
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Console from './console.js';
-const { assert } = chai;
 const { parseSourcePositionsFromErrorStack } = Console.ErrorStackParser;
 describe('ErrorStackParser', () => {
     let runtimeModel;

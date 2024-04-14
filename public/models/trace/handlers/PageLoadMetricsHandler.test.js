@@ -1,10 +1,9 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as TraceModel from '../trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
+import * as TraceModel from '../trace.js';
 function countMetricOcurrences(scoresByMetricName, metricName) {
     return scoresByMetricName.reduce((acc, val) => {
         if (val.get(metricName)) {

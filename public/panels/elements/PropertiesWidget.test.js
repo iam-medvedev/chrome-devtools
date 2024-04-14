@@ -8,7 +8,6 @@ import { describeWithMockConnection, setMockConnectionResponseHandler, } from '.
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 const NODE_ID = 1;
 describeWithMockConnection('PropertiesWidget', () => {
     let target;

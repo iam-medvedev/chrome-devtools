@@ -12,7 +12,6 @@ import { describeWithMockConnection, dispatchEvent, } from '../../../../testing/
 import { MockProtocolBackend } from '../../../../testing/MockScopeChain.js';
 import * as UI from '../../legacy.js';
 import * as Components from './utils.js';
-const { assert } = chai;
 const scriptId1 = '1';
 const scriptId2 = '2';
 const executionContextId = 1234;

@@ -253,7 +253,6 @@ export class MainImpl {
         Root.Runtime.experiments.register('timeline-invalidation-tracking', 'Timeline: invalidation tracking', true);
         Root.Runtime.experiments.register('timeline-show-all-events', 'Timeline: show all events', true);
         Root.Runtime.experiments.register('timeline-v8-runtime-call-stats', 'Timeline: V8 Runtime Call Stats on Timeline', true);
-        Root.Runtime.experiments.register('timeline-track-configuration', 'Timeline: Enable track configuration feature that can reorder or hide a track in the flame chart', true);
         Root.Runtime.experiments.register('timeline-extensions', 'Timeline: Enable User Timings based extensions', true);
         // Sources
         Root.Runtime.experiments.register("sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */, 'Disable Indentation Markers temporarily', 

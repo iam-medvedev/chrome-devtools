@@ -13,7 +13,6 @@ import { MockExecutionContext } from '../../../testing/MockExecutionContext.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
 import * as UI from '../../legacy/legacy.js';
 import * as TextEditor from './text_editor.js';
-const { assert } = chai;
 function makeState(doc, extensions = []) {
     return CodeMirror.EditorState.create({
         doc,

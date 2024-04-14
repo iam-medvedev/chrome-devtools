@@ -6,7 +6,6 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import { getAllNodes, getEventsIn, getRootAt, makeBeginEvent, makeCompleteEvent, makeEndEvent, makeInstantEvent, prettyPrint, } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceModel from '../trace.js';
-const { assert } = chai;
 const MAIN_FRAME_PID = 2154214;
 const SUB_FRAME_PID = 2236065;
 const SUB_FRAME_PID_2 = 2236084;
@@ -809,6 +808,22 @@ describeWithEnvironment('RendererHandler', function () {
   -RunMicrotasks [0.003ms]
     -FunctionCall [0.001ms]
   -Layout [0.003ms]`);
+        });
+        it('keeps a FunctionCall that has the end event missing', async () => {
+            const traceEvents = [
+                ...defaultTraceEvents, makeBeginEvent('RunMicrotasks', 1, '*', pid, tid), // 1..4
+                makeBeginEvent('FunctionCall', 2, '*', pid, tid), // 2..3
+            ];
+            const data = await handleEvents(traceEvents);
+            assert.strictEqual(data.processes.size, 1);
+            const [process] = data.processes.values();
+            assert.strictEqual(process.threads.size, 1);
+            const [thread] = process.threads.values();
+            if (!thread.tree) {
+                throw new Error('thread should have a tree');
+            }
+            // Ensure that the FunctionCall event has been kept despite not having an END event.
+            assert.deepEqual(thread.entries.map(e => e.name), ['RunMicrotasks', 'FunctionCall']);
         });
     });
     describe('building hierarchies trace events and profile calls', () => {

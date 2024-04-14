@@ -5,7 +5,6 @@ import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockConnection.js';
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
-const { assert } = chai;
 describeWithMockConnection('PreloadingModel', () => {
     it('adds and deletes rule sets and preloeading attempts', async () => {
         const target = createTarget();

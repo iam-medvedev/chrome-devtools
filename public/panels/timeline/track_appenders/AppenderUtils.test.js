@@ -5,7 +5,6 @@ import * as TraceEngine from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { defaultTraceEvent } from '../../../testing/TraceHelpers.js';
 import * as Timeline from '../timeline.js';
-const { assert } = chai;
 describeWithEnvironment('AppenderUtils', () => {
     const defaultGroupStyle = {
         padding: 4,

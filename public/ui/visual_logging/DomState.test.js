@@ -4,7 +4,6 @@
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import * as VisualLogging from './visual_logging-testing.js';
-const { assert } = chai;
 describe('DomState', () => {
     let container;
     beforeEach(() => {

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ObjectUI from './object_ui.js';
-const { assert } = chai;
 describe('JavaScriptREPL', () => {
     describe('wrapObjectLiteral', () => {
         const { wrapObjectLiteral } = ObjectUI.JavaScriptREPL.JavaScriptREPL;

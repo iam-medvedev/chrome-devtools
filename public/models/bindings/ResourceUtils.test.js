@@ -6,7 +6,6 @@ import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
-const { assert } = chai;
 describeWithMockConnection('ResourceUtils', () => {
     const displayNameForURL = (targetFactory) => {
         const INSPECTED_URL_SCHEME = 'http://';

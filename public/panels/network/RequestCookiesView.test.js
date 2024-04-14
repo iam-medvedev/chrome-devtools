@@ -7,7 +7,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Network from './network.js';
-const { assert } = chai;
 function renderCookiesView(request) {
     const component = new Network.RequestCookiesView.RequestCookiesView(request);
     const div = document.createElement('div');

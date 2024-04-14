@@ -5,7 +5,6 @@ import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithRealConnection } from '../../testing/RealConnection.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 const stubTopLayerDOMNode = (nodeName, backendNodeId, ownerDocument) => {
     return {
         nodeName: () => nodeName,

@@ -652,6 +652,15 @@ export declare namespace Animation {
          */
         animation: Animation;
     }
+    /**
+     * Event for animation that has been updated.
+     */
+    interface AnimationUpdatedEvent {
+        /**
+         * Animation that was updated.
+         */
+        animation: Animation;
+    }
 }
 /**
  * Audits domain allows investigation of page violations and possible improvements.
@@ -3361,6 +3370,8 @@ export declare namespace DOM {
         GrammarError = "grammar-error",
         Highlight = "highlight",
         FirstLineInherited = "first-line-inherited",
+        ScrollMarker = "scroll-marker",
+        ScrollMarkers = "scroll-markers",
         Scrollbar = "scrollbar",
         ScrollbarThumb = "scrollbar-thumb",
         ScrollbarButton = "scrollbar-button",

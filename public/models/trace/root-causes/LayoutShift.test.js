@@ -5,7 +5,6 @@ import { describeWithMockConnection, } from '../../../testing/MockConnection.js'
 import { getBaseTraceParseModelData } from '../../../testing/TraceHelpers.js';
 import * as TraceEngine from '../trace.js';
 import * as RootCauses from './RootCauses.js';
-const { assert } = chai;
 function assertArrayHasNoNulls(inputArray) {
     inputArray.forEach((item, index) => {
         if (item === null) {

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Media from './media.js';
-const { assert } = chai;
 function assertParameters(bounds, low, high, min, max, range) {
     assert.closeTo(bounds.low, low, 0.01);
     assert.closeTo(bounds.high, high, 0.01);

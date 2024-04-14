@@ -6,7 +6,6 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from '../timeline.js';
-const { assert } = chai;
 function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel) {
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel);
     return compatibilityTracksAppender.interactionsTrackAppender();

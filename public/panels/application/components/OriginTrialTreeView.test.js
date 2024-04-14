@@ -7,7 +7,6 @@ import * as Coordinator from '../../../ui/components/render_coordinator/render_c
 import * as TreeOutline from '../../../ui/components/tree_outline/tree_outline.js';
 import * as ApplicationComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 async function renderOriginTrialTreeView(data) {
     const component = new ApplicationComponents.OriginTrialTreeView.OriginTrialTreeView();
     component.data = data;
@@ -335,8 +334,7 @@ describeWithLocale('OriginTrialTreeView', () => {
         if (trialNameNode.children === undefined) {
             return;
         }
-        for (let i = 0; i < trialNameNode.children.length; i++) {
-            const tokenWithStatusNode = trialNameNode.children[i];
+        for (const tokenWithStatusNode of trialNameNode.children) {
             assert.isDefined(tokenWithStatusNode.children);
             const badges = extractBadgeTextFromTreeNode(tokenWithStatusNode.nodeElement);
             assert.lengthOf(badges, 0);

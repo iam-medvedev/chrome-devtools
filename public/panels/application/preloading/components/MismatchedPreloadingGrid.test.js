@@ -8,7 +8,6 @@ import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.
 import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
-const { assert } = chai;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const zip2 = (xs, ys) => {
     assert.strictEqual(xs.length, ys.length);

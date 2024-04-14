@@ -35,6 +35,8 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     private clearTimeline;
     private reset;
     private animationGroupStarted;
+    scheduledRedrawAfterAnimationGroupUpdatedForTest(): void;
+    private animationGroupUpdated;
     private clearPreviews;
     private createPreview;
     previewsCreatedForTest(): void;

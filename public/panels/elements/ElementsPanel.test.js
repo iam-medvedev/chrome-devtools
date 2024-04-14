@@ -9,7 +9,6 @@ import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { recordedMetricsContain } from '../../testing/UserMetricsHelpers.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 describeWithMockConnection('ElementsPanel', () => {
     let target;
     beforeEach(() => {

@@ -10,7 +10,6 @@ import * as Coordinator from '../../../ui/components/render_coordinator/render_c
 import * as TreeOutline from '../../../ui/components/tree_outline/tree_outline.js';
 import * as ApplicationComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 async function renderBackForwardCacheView() {
     const component = new ApplicationComponents.BackForwardCacheView.BackForwardCacheView();
     renderElementIntoDOM(component);

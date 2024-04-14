@@ -4,7 +4,6 @@
 import * as TraceEngine from '../../../../models/trace/trace.js';
 import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as PerfUI from './perf_ui.js';
-const { assert } = chai;
 const { MilliSeconds } = TraceEngine.Types.Timing;
 describeWithLocale('TimelineGrid', () => {
     it('calculates a set of dividers for the grid', async () => {

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as InlineEditor from './inline_editor.js';
-const { assert } = chai;
 describe('FontEditorUtils', () => {
     it('getRoundingPrecision rounds units as expected', () => {
         let roundingPrecisionValue = InlineEditor.FontEditorUtils.getRoundingPrecision(1);

@@ -922,7 +922,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["css-type-component-length-deprecate"] = 85] = "css-type-component-length-deprecate";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
     DevtoolsExperiments[DevtoolsExperiments["save-and-load-trace-with-annotations"] = 87] = "save-and-load-trace-with-annotations";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-track-configuration"] = 88] = "timeline-track-configuration";
     DevtoolsExperiments[DevtoolsExperiments["timeline-extensions"] = 89] = "timeline-extensions";
     // Increment this when new experiments are added.
     DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 90] = "MaxValue";

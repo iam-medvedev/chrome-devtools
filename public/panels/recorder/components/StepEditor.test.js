@@ -1,13 +1,12 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
+import { assertElement, dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import * as EnvironmentHelpers from '../../../testing/EnvironmentHelpers.js';
 import * as Models from '../models/models.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import * as RecorderHelpers from '../testing/RecorderHelpers.js';
-import { renderElementIntoDOM, getEventPromise, assertElement, dispatchKeyDownEvent, } from '../../../testing/DOMHelpers.js';
 const { describeWithLocale } = EnvironmentHelpers;
 function getStepEditedPromise(editor) {
     return getEventPromise(editor, 'stepedited')

@@ -5,7 +5,6 @@ import { getElementsWithinComponent, getElementWithinComponent, getEventPromise,
 import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as EmulationComponents from './components.js';
-const { assert } = chai;
 describeWithLocale('UserAgentClientHintsForm', () => {
     const testMetaData = {
         brands: [

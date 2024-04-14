@@ -2,33 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
-import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import { Printer } from '../../testing/PropertyParser.js';
 import * as Elements from './elements.js';
-const cssParser = CodeMirror.css.cssLanguage.parser;
-export class Printer extends Elements.PropertyParser.TreeWalker {
-    #printedText = [];
-    #indent = 0;
-    enter({ node }) {
-        const text = this.ast.text(node);
-        this.#printedText.push(`${'|'.repeat(this.#indent)} ${node.name}${text !== node.name ? `: ${text}` : ''}`);
-        this.#indent++;
-        return true;
-    }
-    leave() {
-        this.#indent--;
-    }
-    get() {
-        return this.#printedText.join('\n');
-    }
-    static log(ast) {
-        /* eslint-disable-next-line no-console */
-        console.log(Printer.walk(ast).get());
-    }
-    static rule(rule) {
-        const ast = new Elements.PropertyParser.SyntaxTree('', rule, cssParser.parse(rule).topNode);
-        return Printer.walk(ast).get();
-    }
-}
 class TreeSearch extends Elements.PropertyParser.TreeWalker {
     #found = null;
     #predicate;
@@ -60,34 +35,18 @@ class TreeSearch extends Elements.PropertyParser.TreeWalker {
         return foundNodes;
     }
 }
-function textFragments(nodes) {
-    return nodes.map(n => n.textContent);
-}
-function matchSingleValue(name, value, matchType, matcher) {
+function matchSingleValue(name, value, matcher) {
     const ast = Elements.PropertyParser.tokenizeDeclaration(name, value);
     if (!ast) {
         return { ast, match: null, text: value };
     }
     const matchedResult = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [matcher]);
-    const matchedNode = TreeSearch.find(ast, n => matchedResult.getMatch(n) instanceof matchType);
+    const matchedNode = TreeSearch.find(ast, n => matchedResult.getMatch(n) instanceof matcher.matchType);
     const match = matchedNode && matchedResult.getMatch(matchedNode);
     return {
         ast,
-        match: match instanceof matchType ? match : null,
+        match: match instanceof matcher.matchType ? match : null,
         text: Printer.walk(ast).get(),
-    };
-}
-function nilRenderer(base) {
-    return (...args) => {
-        class Renderer extends base {
-            constructor(...args) {
-                super(...args);
-            }
-            render() {
-                return [];
-            }
-        }
-        return new Renderer(...args);
     };
 }
 function tokenizeDeclaration(name, value) {
@@ -97,7 +56,7 @@ function tokenizeDeclaration(name, value) {
 }
 function injectVariableSubstitutions(variables) {
     const { getComputedText, getComputedTextRange, getMatch } = Elements.PropertyParser.BottomUpTreeMatching.prototype;
-    const variableNames = new Set();
+    const variableNames = new Map();
     function injectChunk(matching) {
         if (matching.computedText.chunkCount === 0) {
             const propertyOffset = matching.ast.rule.indexOf(matching.ast.propertyName ?? '--');
@@ -105,9 +64,9 @@ function injectVariableSubstitutions(variables) {
             for (const [varName, value] of Object.entries(variables)) {
                 const varText = `var(${varName})`;
                 for (let offset = matching.ast.rule.indexOf(varText); offset >= 0; offset = matching.ast.rule.indexOf(varText, offset + 1)) {
-                    matching.computedText.push({ text: varText, type: 'var', render: () => [], computedText: () => value }, offset - propertyOffset);
+                    matching.computedText.push({ text: varText, computedText: () => value, node: {} }, offset - propertyOffset);
                 }
-                variableNames.add(varText);
+                variableNames.set(varText, { varName, value });
             }
         }
     }
@@ -124,28 +83,14 @@ function injectVariableSubstitutions(variables) {
     sinon.stub(Elements.PropertyParser.BottomUpTreeMatching.prototype, 'getMatch')
         .callsFake(function (node) {
         injectChunk(this);
-        return variableNames.has(this.ast.text(node)) ? { type: 'var' } :
-            getMatch.call(this, node);
+        const resolvedValue = variableNames.get(this.ast.text(node));
+        if (!resolvedValue) {
+            return getMatch.call(this, node);
+        }
+        return new Elements.PropertyParser.VariableMatch(this.ast.text(node), node, resolvedValue.varName, [], this, () => resolvedValue.value);
     });
 }
 describe('PropertyParser', () => {
-    it('parses text', () => {
-        assert.deepStrictEqual(textFragments(Elements.PropertyParser.renderPropertyValue('--p', 'var(--v)', [])), ['var', '(', '--v', ')']);
-        assert.deepStrictEqual(textFragments(Elements.PropertyParser.renderPropertyValue('--p', '/* comments are text */ 1px solid 4', [])), ['/* comments are text */', ' ', '1px', ' ', 'solid', ' ', '4']);
-        assert.deepStrictEqual(textFragments(Elements.PropertyParser.renderPropertyValue('--p', '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)', [])), [
-            '2px', ' ', 'var', '(', '--double', ',', ' ', 'var', '(', '--fallback', ',', ' ', 'black', ')',
-            ')', ' ', '#32a1ce', ' ', 'rgb', '(', '124', ' ', '125', ' ', '21', ' ', '0', ')',
-        ]);
-    });
-    it('reproduces the input if nothing matched', () => {
-        const property = '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)';
-        const rule = `*{--property: ${property};}`;
-        const tree = cssParser.parse(rule).topNode;
-        const ast = new Elements.PropertyParser.SyntaxTree(property, rule, tree);
-        const matchedResult = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, []);
-        const context = new Elements.PropertyParser.RenderingContext(ast, matchedResult);
-        assert.deepStrictEqual(textFragments(Elements.PropertyParser.Renderer.render(tree, context).nodes).join(''), rule, Printer.walk(ast).get());
-    });
     it('correctly identifies spacing', () => {
         const requiresSpace = (a, b) => Elements.PropertyParser.requiresSpace([document.createTextNode(a)], [document.createTextNode(b)]);
         assert.isTrue(requiresSpace('a', 'b'));
@@ -184,16 +129,6 @@ describe('PropertyParser', () => {
         assert.isFalse(Elements.PropertyParser.requiresSpace([document.createTextNode('text')], [document.createElement('div'), document.createTextNode(' text')]));
         assert.isFalse(Elements.PropertyParser.requiresSpace([document.createTextNode('text'), document.createElement('div')], [document.createElement('div'), document.createTextNode(' text')]));
     });
-    it('correctly renders subtrees', () => {
-        const property = '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)';
-        const rule = `*{--property: ${property};}`;
-        const tree = cssParser.parse(rule).topNode.firstChild?.firstChild?.nextSibling?.firstChild?.nextSibling;
-        Platform.assertNotNullOrUndefined(tree);
-        const ast = new Elements.PropertyParser.SyntaxTree(property, rule, tree);
-        const matchedResult = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, []);
-        const context = new Elements.PropertyParser.RenderingContext(ast, matchedResult);
-        assert.deepStrictEqual(textFragments(Elements.PropertyParser.Renderer.render(tree, context).nodes).join(''), property, Printer.walk(ast).get());
-    });
     it('parses comments', () => {
         const property = '/* color: red */blue/* color: red */';
         const ast = tokenizeDeclaration('--property', property);
@@ -213,14 +148,6 @@ describe('PropertyParser', () => {
 ||| ;
 ||| }`);
     });
-    it('renders trailing comments', () => {
-        const property = '/* color: red */ blue /* color: red */';
-        assert.strictEqual(textFragments(Elements.PropertyParser.renderPropertyValue('--p', property, [])).join(''), property);
-    });
-    it('renders malformed comments', () => {
-        const property = 'red /* foo: bar';
-        assert.strictEqual(textFragments(Elements.PropertyParser.renderPropertyValue('--p', property, [])).join(''), property);
-    });
     it('correctly tokenizes invalid text', () => {
         assert.isNull(Elements.PropertyParser.tokenizeDeclaration('--p', ''));
         assert.isNull(Elements.PropertyParser.tokenizeDeclaration('--p', '/*'));
@@ -235,19 +162,19 @@ describe('PropertyParser', () => {
     });
     it('parses colors', () => {
         for (const fail of ['red-blue', '#f', '#foobar', '', 'rgbz(1 2 2)', 'tan(45deg)']) {
-            const { match, text } = matchSingleValue('color', fail, Elements.PropertyParser.ColorMatch, new Elements.PropertyParser.ColorMatcher(nilRenderer(Elements.PropertyParser.ColorMatch)));
+            const { match, text } = matchSingleValue('color', fail, new Elements.PropertyParser.ColorMatcher());
             assert.isNull(match, text);
         }
         for (const succeed of ['rgb(/* R */155, /* G */51, /* B */255)', 'red', 'rgb(0 0 0)', 'rgba(0 0 0)', '#fff', '#ffff',
             '#ffffff', '#ffffffff']) {
-            const { match, text } = matchSingleValue('color', succeed, Elements.PropertyParser.ColorMatch, new Elements.PropertyParser.ColorMatcher(nilRenderer(Elements.PropertyParser.ColorMatch)));
+            const { match, text } = matchSingleValue('color', succeed, new Elements.PropertyParser.ColorMatcher());
             Platform.assertNotNullOrUndefined(match, text);
             assert.strictEqual(match.text, succeed);
         }
         // The property name matters:
         for (const fail of ['rgb(/* R */155, /* G */51, /* B */255)', 'red', 'rgb(0 0 0)', 'rgba(0 0 0)', '#fff', '#ffff',
             '#ffffff', '#ffffffff']) {
-            const { match, text } = matchSingleValue('width', fail, Elements.PropertyParser.ColorMatch, new Elements.PropertyParser.ColorMatcher(nilRenderer(Elements.PropertyParser.ColorMatch)));
+            const { match, text } = matchSingleValue('width', fail, new Elements.PropertyParser.ColorMatcher());
             assert.isNull(match, text);
         }
     });
@@ -255,7 +182,7 @@ describe('PropertyParser', () => {
         for (const succeed of ['mask', 'mask-image', 'mask-border', 'mask-border-source']) {
             const ast = Elements.PropertyParser.tokenizeDeclaration(succeed, 'linear-gradient(to top, red, var(--other))');
             Platform.assertNotNullOrUndefined(ast, succeed);
-            const matching = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyParser.ColorMatcher(nilRenderer(Elements.PropertyParser.ColorMatch))]);
+            const matching = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyParser.ColorMatcher()]);
             const colorNode = TreeSearch.find(ast, node => ast.text(node) === 'red');
             Platform.assertNotNullOrUndefined(colorNode);
             const match = matching.getMatch(colorNode);
@@ -267,13 +194,11 @@ describe('PropertyParser', () => {
     class ComputedTextMatch {
         text;
         constructedText;
-        type = 'computed-text-test';
+        node;
         constructor(text, constructedText) {
             this.text = text;
             this.constructedText = constructedText;
-        }
-        render() {
-            return [];
+            this.node = {};
         }
         computedText() {
             return this.constructedText;
@@ -500,7 +425,7 @@ describe('PropertyParser', () => {
             '--multiple-colors': 'red, blue',
         });
         {
-            const { ast, match, text } = matchSingleValue('color', 'color-mix(in srgb var(--interpolation) hue, red var(--percentage), rgb(var(--rgb)))', Elements.PropertyParser.ColorMixMatch, new Elements.PropertyParser.ColorMixMatcher(nilRenderer(Elements.PropertyParser.ColorMixMatch)));
+            const { ast, match, text } = matchSingleValue('color', 'color-mix(in srgb var(--interpolation) hue, red var(--percentage), rgb(var(--rgb)))', new Elements.PropertyParser.ColorMixMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.deepStrictEqual(match.space.map(n => ast.text(n)), ['in', 'srgb', 'var(--interpolation)', 'hue']);
@@ -508,7 +433,7 @@ describe('PropertyParser', () => {
             assert.strictEqual(match.color2.map(n => ast.text(n)).join(), 'rgb(var(--rgb))');
         }
         {
-            const { ast, match, text } = matchSingleValue('color', 'color-mix(var(--space), var(--color1), var(--color2))', Elements.PropertyParser.ColorMixMatch, new Elements.PropertyParser.ColorMixMatcher(nilRenderer(Elements.PropertyParser.ColorMixMatch)));
+            const { ast, match, text } = matchSingleValue('color', 'color-mix(var(--space), var(--color1), var(--color2))', new Elements.PropertyParser.ColorMixMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.strictEqual(match.space.map(n => ast.text(n)).join(), 'var(--space)');
@@ -522,14 +447,14 @@ describe('PropertyParser', () => {
             'color-mix(var(--space), var(--color1), var(--color2) var(--percentage))',
             'color-mix(var(--space), var(--multiple-colors))',
         ]) {
-            const { ast, match, text } = matchSingleValue('color', fail, Elements.PropertyParser.ColorMixMatch, new Elements.PropertyParser.ColorMixMatcher(nilRenderer(Elements.PropertyParser.ColorMixMatch)));
+            const { ast, match, text } = matchSingleValue('color', fail, new Elements.PropertyParser.ColorMixMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             assert.isNull(match, text);
         }
     });
     it('parses color-mix', () => {
         function check(space, color1, color2) {
-            const { ast, match, text } = matchSingleValue('color', `color-mix(${space}, ${color1}, ${color2})`, Elements.PropertyParser.ColorMixMatch, new Elements.PropertyParser.ColorMixMatcher(nilRenderer(Elements.PropertyParser.ColorMixMatch)));
+            const { ast, match, text } = matchSingleValue('color', `color-mix(${space}, ${color1}, ${color2})`, new Elements.PropertyParser.ColorMixMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.deepStrictEqual(match.space.map(n => ast.text(n)).join(' '), space, text);
@@ -537,7 +462,7 @@ describe('PropertyParser', () => {
             assert.strictEqual(match.color2.map(n => ast.text(n)).join(' '), color2, text);
         }
         function checkFailure(space, color1, color2) {
-            const { match, text } = matchSingleValue('color', `color-mix(${space}, ${color1}, ${color2})`, Elements.PropertyParser.ColorMixMatch, new Elements.PropertyParser.ColorMixMatcher(nilRenderer(Elements.PropertyParser.ColorMixMatch)));
+            const { match, text } = matchSingleValue('color', `color-mix(${space}, ${color1}, ${color2})`, new Elements.PropertyParser.ColorMixMatcher());
             assert.isNull(match, text);
         }
         check('in srgb shorter hue', 'red 35%', 'blue');
@@ -552,7 +477,7 @@ describe('PropertyParser', () => {
     it('parses vars correctly', () => {
         for (const succeed of ['var(--a)', 'var(--a, 123)', 'var(--a, calc(1+1))', 'var(--a, var(--b))', 'var(--a, var(--b, 123))',
             'var(--a, a b c)']) {
-            const { ast, match, text } = matchSingleValue('width', succeed, Elements.PropertyParser.VariableMatch, new Elements.PropertyParser.VariableMatcher(nilRenderer(Elements.PropertyParser.VariableMatch)));
+            const { ast, match, text } = matchSingleValue('width', succeed, new Elements.PropertyParser.VariableMatcher(() => ''));
             Platform.assertNotNullOrUndefined(ast, succeed);
             Platform.assertNotNullOrUndefined(match, text);
             assert.strictEqual(match.text, succeed);
@@ -562,32 +487,32 @@ describe('PropertyParser', () => {
             assert.strictEqual(match.fallback.map(n => ast.text(n)).join(' '), fallback.join(', '));
         }
         for (const fail of ['var', 'var(--a, 123, 123)', 'var(a)', 'var(--a']) {
-            const { match, text } = matchSingleValue('width', fail, Elements.PropertyParser.VariableMatch, new Elements.PropertyParser.VariableMatcher(nilRenderer(Elements.PropertyParser.VariableMatch)));
+            const { match, text } = matchSingleValue('width', fail, new Elements.PropertyParser.VariableMatcher(() => ''));
             assert.isNull(match, text);
         }
     });
     it('parses URLs', () => {
         const url = 'http://example.com';
         {
-            const { match, text } = matchSingleValue('background-image', `url(${url})`, Elements.PropertyParser.URLMatch, new Elements.PropertyParser.URLMatcher(nilRenderer(Elements.PropertyParser.URLMatch)));
+            const { match, text } = matchSingleValue('background-image', `url(${url})`, new Elements.PropertyParser.URLMatcher());
             Platform.assertNotNullOrUndefined(match);
             assert.strictEqual(match.url, url, text);
         }
         {
-            const { match, text } = matchSingleValue('background-image', `url("${url}")`, Elements.PropertyParser.URLMatch, new Elements.PropertyParser.URLMatcher(nilRenderer(Elements.PropertyParser.URLMatch)));
+            const { match, text } = matchSingleValue('background-image', `url("${url}")`, new Elements.PropertyParser.URLMatcher());
             Platform.assertNotNullOrUndefined(match);
             assert.strictEqual(match.url, url, text);
         }
     });
     it('parses angles correctly', () => {
         for (const succeed of ['45deg', '1.3rad', '-25grad', '2.3turn']) {
-            const { ast, match, text } = matchSingleValue('transform', succeed, Elements.PropertyParser.AngleMatch, new Elements.PropertyParser.AngleMatcher(nilRenderer(Elements.PropertyParser.AngleMatch)));
+            const { ast, match, text } = matchSingleValue('transform', succeed, new Elements.PropertyParser.AngleMatcher());
             Platform.assertNotNullOrUndefined(ast, succeed);
             Platform.assertNotNullOrUndefined(match, text);
             assert.strictEqual(match.text, succeed);
         }
         for (const fail of ['0DEG', '0', '123', '2em']) {
-            const { match, text } = matchSingleValue('transform', fail, Elements.PropertyParser.AngleMatch, new Elements.PropertyParser.AngleMatcher(nilRenderer(Elements.PropertyParser.AngleMatch)));
+            const { match, text } = matchSingleValue('transform', fail, new Elements.PropertyParser.AngleMatcher());
             assert.isNull(match, text);
         }
     });
@@ -596,7 +521,7 @@ describe('PropertyParser', () => {
             const ast = Elements.PropertyParser.tokenizeDeclaration(name, value);
             Platform.assertNotNullOrUndefined(ast);
             const matchedResult = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [
-                new Elements.PropertyParser.LinkableNameMatcher(nilRenderer(Elements.PropertyParser.LinkableNameMatch)),
+                new Elements.PropertyParser.LinkableNameMatcher(),
             ]);
             const matches = TreeSearch.findAll(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyParser.LinkableNameMatch);
             return matches.map(m => matchedResult.getMatch(m)?.text);
@@ -631,12 +556,12 @@ describe('PropertyParser', () => {
     it('parses easing functions properly', () => {
         for (const succeed of ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear(0 0%, 1 100%)',
             'cubic-bezier(0.3, 0.3, 0.3, 0.3)']) {
-            const { ast, match, text } = matchSingleValue('animation-timing-function', succeed, Elements.PropertyParser.BezierMatch, new Elements.PropertyParser.BezierMatcher(nilRenderer(Elements.PropertyParser.BezierMatch)));
+            const { ast, match, text } = matchSingleValue('animation-timing-function', succeed, new Elements.PropertyParser.BezierMatcher());
             Platform.assertNotNullOrUndefined(ast, succeed);
             Platform.assertNotNullOrUndefined(match, text);
             assert.strictEqual(match.text, succeed);
         }
-        const { ast, match, text } = matchSingleValue('border', 'ease-in', Elements.PropertyParser.BezierMatch, new Elements.PropertyParser.BezierMatcher(nilRenderer(Elements.PropertyParser.BezierMatch)));
+        const { ast, match, text } = matchSingleValue('border', 'ease-in', new Elements.PropertyParser.BezierMatcher());
         Platform.assertNotNullOrUndefined(ast, 'border');
         assert.isNull(match, text);
     });
@@ -644,7 +569,7 @@ describe('PropertyParser', () => {
         function match(name, value) {
             const ast = Elements.PropertyParser.tokenizeDeclaration(name, value);
             Platform.assertNotNullOrUndefined(ast);
-            const matchedResult = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyParser.StringMatcher(nilRenderer(Elements.PropertyParser.StringMatch))]);
+            const matchedResult = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyParser.StringMatcher()]);
             Platform.assertNotNullOrUndefined(matchedResult);
             const match = TreeSearch.find(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyParser.StringMatch);
             Platform.assertNotNullOrUndefined(match);
@@ -654,13 +579,13 @@ describe('PropertyParser', () => {
         match('--image-file-accelerometer-back', 'url("devtools\:\/\/devtools\/bundled\/Images\/accelerometer-back\.svg")');
     });
     it('parses shadows correctly', () => {
-        const { match, text } = matchSingleValue('box-shadow', '/*0*/3px 3px red, -1em 0 .4em /*a*/ olive /*b*/', Elements.PropertyParser.ShadowMatch, new Elements.PropertyParser.ShadowMatcher(nilRenderer(Elements.PropertyParser.ShadowMatch)));
+        const { match, text } = matchSingleValue('box-shadow', '/*0*/3px 3px red, -1em 0 .4em /*a*/ olive /*b*/', new Elements.PropertyParser.ShadowMatcher());
         Platform.assertNotNullOrUndefined(match, text);
         assert.strictEqual(match.text, '/*0*/3px 3px red, -1em 0 .4em /*a*/ olive');
     });
     it('parses fonts correctly', () => {
         for (const fontSize of ['-.23', 'smaller', '17px', 'calc(17px + 17px)']) {
-            const { ast, match, text } = matchSingleValue('font-size', fontSize, Elements.PropertyParser.FontMatch, new Elements.PropertyParser.FontMatcher(nilRenderer(Elements.PropertyParser.FontMatch)));
+            const { ast, match, text } = matchSingleValue('font-size', fontSize, new Elements.PropertyParser.FontMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.strictEqual(match.text, fontSize);
@@ -668,7 +593,7 @@ describe('PropertyParser', () => {
         {
             const ast = Elements.PropertyParser.tokenizeDeclaration('font-family', '"Gill Sans", sans-serif');
             Platform.assertNotNullOrUndefined(ast);
-            const matchedResult = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyParser.FontMatcher(nilRenderer(Elements.PropertyParser.FontMatch))]);
+            const matchedResult = Elements.PropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyParser.FontMatcher()]);
             Platform.assertNotNullOrUndefined(matchedResult);
             const matches = TreeSearch.findAll(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyParser.FontMatch);
             assert.deepStrictEqual(matches.map(m => matchedResult.getMatch(m)?.text), ['"Gill Sans"', 'sans-serif']);
@@ -682,43 +607,43 @@ describe('PropertyParser', () => {
             '--double-row': '"a b" "b c"',
         });
         {
-            const { ast, match, text } = matchSingleValue('grid', '"a a"', Elements.PropertyParser.GridTemplateMatch, new Elements.PropertyParser.GridTemplateMatcher(nilRenderer(Elements.PropertyParser.GridTemplateMatch)));
+            const { ast, match, text } = matchSingleValue('grid', '"a a"', new Elements.PropertyParser.GridTemplateMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.strictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')).join('\n'), '"a a"');
         }
         {
-            const { ast, match, text } = matchSingleValue('grid-template-areas', '"a a a" "b b b" "c c c"', Elements.PropertyParser.GridTemplateMatch, new Elements.PropertyParser.GridTemplateMatcher(nilRenderer(Elements.PropertyParser.GridTemplateMatch)));
+            const { ast, match, text } = matchSingleValue('grid-template-areas', '"a a a" "b b b" "c c c"', new Elements.PropertyParser.GridTemplateMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['"a a a"', '"b b b"', '"c c c"']);
         }
         {
-            const { ast, match, text } = matchSingleValue('grid-template', '"a a a" var(--row) / auto 1fr auto', Elements.PropertyParser.GridTemplateMatch, new Elements.PropertyParser.GridTemplateMatcher(nilRenderer(Elements.PropertyParser.GridTemplateMatch)));
+            const { ast, match, text } = matchSingleValue('grid-template', '"a a a" var(--row) / auto 1fr auto', new Elements.PropertyParser.GridTemplateMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['"a a a"', 'var(--row) / auto 1fr auto']);
         }
         {
-            const { ast, match, text } = matchSingleValue('grid', '[header-top] "a a" var(--row-with-names) [main-top] "b b b" 1fr [main-bottom] / auto 1fr auto;', Elements.PropertyParser.GridTemplateMatch, new Elements.PropertyParser.GridTemplateMatcher(nilRenderer(Elements.PropertyParser.GridTemplateMatch)));
+            const { ast, match, text } = matchSingleValue('grid', '[header-top] "a a" var(--row-with-names) [main-top] "b b b" 1fr [main-bottom] / auto 1fr auto;', new Elements.PropertyParser.GridTemplateMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['[header-top] "a a" var(--row-with-names)', '[main-top] "b b b" 1fr [main-bottom] / auto 1fr auto']);
         }
         {
-            const { ast, match, text } = matchSingleValue('grid', '[header-top] "a a" "b b b" var(--line-name) "c c" / auto 1fr auto;', Elements.PropertyParser.GridTemplateMatch, new Elements.PropertyParser.GridTemplateMatcher(nilRenderer(Elements.PropertyParser.GridTemplateMatch)));
+            const { ast, match, text } = matchSingleValue('grid', '[header-top] "a a" "b b b" var(--line-name) "c c" / auto 1fr auto;', new Elements.PropertyParser.GridTemplateMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['[header-top] "a a"', '"b b b" var(--line-name)', '"c c" / auto 1fr auto']);
         }
         {
-            const { ast, match, text } = matchSingleValue('grid', '[line1] "a a" [line2] var(--double-row) "b b" / auto 1fr auto;', Elements.PropertyParser.GridTemplateMatch, new Elements.PropertyParser.GridTemplateMatcher(nilRenderer(Elements.PropertyParser.GridTemplateMatch)));
+            const { ast, match, text } = matchSingleValue('grid', '[line1] "a a" [line2] var(--double-row) "b b" / auto 1fr auto;', new Elements.PropertyParser.GridTemplateMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['[line1] "a a" [line2]', 'var(--double-row)', '"b b" / auto 1fr auto']);
         }
         {
-            const { ast, match, text } = matchSingleValue('grid', '"a a" var(--unresolved) / auto 1fr auto;', Elements.PropertyParser.GridTemplateMatch, new Elements.PropertyParser.GridTemplateMatcher(nilRenderer(Elements.PropertyParser.GridTemplateMatch)));
+            const { ast, match, text } = matchSingleValue('grid', '"a a" var(--unresolved) / auto 1fr auto;', new Elements.PropertyParser.GridTemplateMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             assert.deepStrictEqual(match.lines.map(line => line.map(n => ast.text(n)).join(' ')), ['"a a" var(--unresolved) / auto 1fr auto']);
@@ -726,12 +651,12 @@ describe('PropertyParser', () => {
     });
     it('parses light-dark correctly', () => {
         for (const fail of ['light-dark()', 'light-dark(red)', 'light-dark(var(--foo))']) {
-            const { match, text } = matchSingleValue('color', fail, Elements.PropertyParser.LightDarkColorMatch, new Elements.PropertyParser.LightDarkColorMatcher(nilRenderer(Elements.PropertyParser.LightDarkColorMatch)));
+            const { match, text } = matchSingleValue('color', fail, new Elements.PropertyParser.LightDarkColorMatcher());
             assert.isNull(match, text);
         }
         for (const succeed of ['light-dark(red, blue)', 'light-dark(var(--foo), red)', 'light-dark(red, var(--foo))',
             'light-dark(var(--foo), var(--bar))']) {
-            const { ast, match, text } = matchSingleValue('color', succeed, Elements.PropertyParser.LightDarkColorMatch, new Elements.PropertyParser.LightDarkColorMatcher(nilRenderer(Elements.PropertyParser.LightDarkColorMatch)));
+            const { ast, match, text } = matchSingleValue('color', succeed, new Elements.PropertyParser.LightDarkColorMatcher());
             Platform.assertNotNullOrUndefined(ast, text);
             Platform.assertNotNullOrUndefined(match, text);
             const [light, dark] = succeed.slice('light-dark('.length, -1).split(', ');
@@ -741,7 +666,7 @@ describe('PropertyParser', () => {
             assert.strictEqual(ast.text(match.dark[0]), dark);
         }
         // light-dark only applies to color properties
-        const { match, text } = matchSingleValue('width', 'light-dark(red, blue)', Elements.PropertyParser.LightDarkColorMatch, new Elements.PropertyParser.LightDarkColorMatcher(nilRenderer(Elements.PropertyParser.LightDarkColorMatch)));
+        const { match, text } = matchSingleValue('width', 'light-dark(red, blue)', new Elements.PropertyParser.LightDarkColorMatcher());
         assert.isNull(match, text);
     });
 });

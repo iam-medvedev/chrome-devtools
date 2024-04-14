@@ -5,7 +5,6 @@ import { assertShadowRoot, renderElementIntoDOM, } from '../../../../testing/DOM
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
-const { assert } = chai;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 async function renderRuleSetDetailsView(data) {
     const component = new PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView();

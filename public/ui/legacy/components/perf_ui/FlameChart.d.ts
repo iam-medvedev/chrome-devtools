@@ -287,7 +287,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      * Returns the width of the title label of the group, which include the left padding, arrow and the group header text.
      * This function is public for test reason.
      * |ICON_WIDTH|expansionArrowIndent * (nestingLevel + 1)|
-     * |EDIT  ICON|headerLeftPadding|                    |Arrow|LabelXPadding|Title|LabelXPadding|
+     * |headerLeftPadding|EDIT  ICON|                    |Arrow|LabelXPadding|Title|LabelXPadding|
      *                              |<--                      labelWidth                      -->|
      * @param context canvas context
      * @param group
@@ -336,6 +336,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     updateGroupTree(groups: Group[], root: GroupTreeNode): void;
     private updateLevelPositions;
     private isGroupCollapsible;
+    groupIsLastVisibleTopLevel(group?: Group): boolean;
     setSelectedEntry(entryIndex: number): void;
     private entryHasDecoration;
     /**

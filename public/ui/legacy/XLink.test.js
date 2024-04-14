@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as LitHtml from '../lit-html/lit-html.js';
 import * as UI from './legacy.js';
-const { assert } = chai;
 describe('XLink', () => {
     describe('title', () => {
         it('equals href by default', () => {

@@ -1,13 +1,12 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as SDK from '../../core/sdk/sdk.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as Root from '../../core/root/root.js';
-import * as InspectorMain from './inspector_main.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import * as InspectorMain from './inspector_main.js';
 describeWithMockConnection('FocusDebuggeeActionDelegate', () => {
     it('uses main frame without tab tatget', async () => {
         const target = createTarget();

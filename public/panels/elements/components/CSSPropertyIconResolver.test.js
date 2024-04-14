@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ElementsComponents from './components.js';
-const { assert } = chai;
 describe('CSSPropertyIconResolver', () => {
     function mapFromStyle(style) {
         const result = new Map();

@@ -4,7 +4,6 @@
 import { assertElement, assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as TwoStatesCounter from './two_states_counter.js';
-const { assert } = chai;
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const ACTIVE_SELECTOR = '.active';
 const INACTIVE_SELECTOR = '.inactive';

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { stabilizeState } from '../../testing/VisualLoggingHelpers.js';
 import * as VisualLogging from './visual_logging-testing.js';
-const { assert } = chai;
 describe('LoggingState', () => {
     let parent;
     let element;

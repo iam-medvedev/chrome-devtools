@@ -14,6 +14,7 @@ const component = new ConsoleInsight({
     async buildPrompt() {
         return {
             prompt: '',
+            isPageReloadRecommended: false,
             sources: [
                 {
                     type: Explain.SourceType.MESSAGE,

@@ -5,7 +5,6 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import { getAllNodes, getMainThread } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceModel from '../trace.js';
-const { assert } = chai;
 async function handleEventsFromTraceFile(context, name) {
     const traceEvents = await TraceLoader.rawEvents(context, name);
     TraceModel.Handlers.ModelHandlers.Meta.reset();

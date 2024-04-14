@@ -8,7 +8,6 @@ import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHan
 import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
 import * as Common from '../common/common.js';
 import * as SDK from './sdk.js';
-const { assert } = chai;
 const SCRIPT_ID_ONE = '1';
 const SCRIPT_ID_TWO = '2';
 describeWithMockConnection('DebuggerModel', () => {

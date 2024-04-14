@@ -5,7 +5,6 @@ import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
 import { getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as NetworkComponents from './components.js';
-const { assert } = chai;
 describeWithLocale('RequestTrustTokensView', () => {
     const mockId = 'mockId';
     const makeRequest = (params, result) => {

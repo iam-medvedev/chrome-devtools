@@ -8,7 +8,6 @@ import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import { MockIssuesManager } from '../../../testing/MockIssuesManager.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import * as IssueCounter from './issue_counter.js';
-const { assert } = chai;
 const renderIssueCounter = (data) => {
     const component = new IssueCounter.IssueCounter.IssueCounter();
     component.data = data;

@@ -10,7 +10,6 @@ import * as Coordinator from '../../../ui/components/render_coordinator/render_c
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as ApplicationComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 const makeFrame = () => {
     const newFrame = {
         url: 'https://www.example.com/path/page.html',

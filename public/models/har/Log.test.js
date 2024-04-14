@@ -1,9 +1,8 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as SDK from '../../core/sdk/sdk.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as HAR from '../har/har.js';
 describe('HAR.Log', () => {
     it('blocked time when no response received is returned in milliseconds (crbug.com/1145177)', async () => {

@@ -7,7 +7,6 @@ import { StubIssue } from '../../testing/StubIssue.js';
 import { recordedMetricsContain } from '../../testing/UserMetricsHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Issues from './issues.js';
-const { assert } = chai;
 describeWithRealConnection('IssueView', () => {
     it('records metrics when an issue is expanded', () => {
         const aggregationKey = 'key';

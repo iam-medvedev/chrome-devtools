@@ -6047,6 +6047,12 @@
   "panels/elements/PropertiesWidget.ts | showAllTooltip": {
     "message": "When unchecked, only properties whose values are neither null nor undefined will be shown"
   },
+  "panels/elements/PropertyRenderer.ts | cssPropertyName": {
+    "message": "CSS property name: {PH1}"
+  },
+  "panels/elements/PropertyRenderer.ts | cssPropertyValue": {
+    "message": "CSS property value: {PH1}"
+  },
   "panels/elements/StylePropertiesSection.ts | constructedStylesheet": {
     "message": "constructed stylesheet"
   },
@@ -6109,12 +6115,6 @@
   },
   "panels/elements/StylePropertyTreeElement.ts | copyValue": {
     "message": "Copy value"
-  },
-  "panels/elements/StylePropertyTreeElement.ts | cssPropertyName": {
-    "message": "CSS property name: {PH1}"
-  },
-  "panels/elements/StylePropertyTreeElement.ts | cssPropertyValue": {
-    "message": "CSS property value: {PH1}"
   },
   "panels/elements/StylePropertyTreeElement.ts | flexboxEditorButton": {
     "message": "Open flexbox editor"
@@ -6434,6 +6434,9 @@
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "Related code"
   },
+  "panels/explain/components/ConsoleInsight.ts | reloadRecommendation": {
+    "message": "Reload the page to capture related network request data for this message in order to create a better insight."
+  },
   "panels/explain/components/ConsoleInsight.ts | report": {
     "message": "Report legal issue"
   },
@@ -6480,7 +6483,7 @@
     "message": "Your organization turned off this feature. Contact your administrators for more information."
   },
   "panels/explain/explain-meta.ts | rolloutRestricted": {
-    "message": "This feature is currently being rolled out. Please try again later."
+    "message": "This feature is currently being rolled out. Stay tuned."
   },
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "To use this feature, update your Language preference in DevTools Settings to English."
@@ -11819,6 +11822,9 @@
   "panels/sources/sources-meta.ts | automaticallyRevealFilesIn": {
     "message": "Automatically reveal files in sidebar"
   },
+  "panels/sources/sources-meta.ts | bracketClosing": {
+    "message": "Auto closing brackets"
+  },
   "panels/sources/sources-meta.ts | bracketMatching": {
     "message": "Bracket matching"
   },
@@ -11854,6 +11860,9 @@
   },
   "panels/sources/sources-meta.ts | disableAutoFocusOnDebuggerPaused": {
     "message": "Do not focus Sources panel when triggering a breakpoint"
+  },
+  "panels/sources/sources-meta.ts | disableBracketClosing": {
+    "message": "Disable auto closing brackets"
   },
   "panels/sources/sources-meta.ts | disableBracketMatching": {
     "message": "Disable bracket matching"
@@ -11902,6 +11911,9 @@
   },
   "panels/sources/sources-meta.ts | enableAutoFocusOnDebuggerPaused": {
     "message": "Focus Sources panel when triggering a breakpoint"
+  },
+  "panels/sources/sources-meta.ts | enableBracketClosing": {
+    "message": "Enable auto closing brackets"
   },
   "panels/sources/sources-meta.ts | enableBracketMatching": {
     "message": "Enable bracket matching"

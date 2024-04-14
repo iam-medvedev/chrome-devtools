@@ -4,7 +4,7 @@ export type Point = {
 };
 export declare class CSSLinearEasingModel {
     #private;
-    private constructor();
+    constructor(points: Point[]);
     static parse(text: string): CSSLinearEasingModel | null;
     addPoint(point: Point, index?: number): void;
     removePoint(index: number): void;

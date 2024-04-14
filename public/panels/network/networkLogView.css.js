@@ -293,7 +293,7 @@ styles.replaceSync(
   visibility: hidden;
 }
 
-#network-container.grid-mode .data-container {
+#network-container.has-waterfall .data-container {
   overflow: hidden;
 }
 

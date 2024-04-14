@@ -5,7 +5,6 @@ import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
-const { assert } = chai;
 describeWithMockConnection('LighthouseProtocolService', () => {
     const attachDetach = (targetFactory) => {
         // eslint-disable-next-line @typescript-eslint/naming-convention

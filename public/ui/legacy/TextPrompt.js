@@ -142,7 +142,6 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.elementInternal.hasAttribute('jslog')) {
             this.elementInternal.setAttribute('jslog', `${jslog}`);
         }
-        this.elementInternal.setAttribute('jslog', `${jslog}`);
         this.elementInternal.classList.add('text-prompt');
         ARIAUtils.markAsTextBox(this.elementInternal);
         ARIAUtils.setAutocomplete(this.elementInternal, "both" /* ARIAUtils.AutocompleteInteractionModel.Both */);

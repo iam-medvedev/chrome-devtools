@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 describeWithMockConnection('PlatformFontsWidget', () => {
     it('correctly displays font stats', async () => {
         const sharedModel = {};

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { createFakeSetting, describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import * as TextEditor from './text_editor.js';
-const { assert } = chai;
 describeWithEnvironment('AutocompleteHistory', () => {
     let setting;
     let history;

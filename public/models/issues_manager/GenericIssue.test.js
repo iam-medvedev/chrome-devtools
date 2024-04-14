@@ -1,10 +1,9 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as IssuesManager from '../issues_manager/issues_manager.js';
-import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
+import * as IssuesManager from '../issues_manager/issues_manager.js';
 describeWithLocale('GenericIssue', () => {
     const mockModel = new MockIssuesModel([]);
     function createProtocolIssueWithoutDetails() {

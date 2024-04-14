@@ -8,7 +8,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Logs from '../logs/logs.js';
-const { assert } = chai;
 function url(input) {
     return input;
 }

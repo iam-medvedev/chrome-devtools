@@ -6,6 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { getLocalizedBreakpointName } from './CategorizedBreakpointL10n.js';
 import debuggerPausedMessageStyles from './debuggerPausedMessage.css.js';
 const UIStrings = {
@@ -113,6 +114,7 @@ export class DebuggerPausedMessage {
         this.elementInternal = document.createElement('div');
         this.elementInternal.classList.add('paused-message');
         this.elementInternal.classList.add('flex-none');
+        this.elementInternal.setAttribute('jslog', `${VisualLogging.dialog('paused-message')}`);
         const root = UI.UIUtils.createShadowRootWithCoreStyles(this.elementInternal, { cssFile: [debuggerPausedMessageStyles], delegatesFocus: undefined });
         this.contentElement = root.createChild('div');
         UI.ARIAUtils.markAsPoliteLiveRegion(this.elementInternal, false);

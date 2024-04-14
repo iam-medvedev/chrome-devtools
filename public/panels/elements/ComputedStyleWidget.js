@@ -44,9 +44,9 @@ import computedStyleSidebarPaneStyles from './computedStyleSidebarPane.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { PlatformFontsWidget } from './PlatformFontsWidget.js';
 import { categorizePropertyName, DefaultCategoryOrder } from './PropertyNameCategories.js';
-import { ColorMatch, ColorMatcher } from './PropertyParser.js';
+import { ColorMatcher } from './PropertyParser.js';
+import { Renderer, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
-import { StringRenderer, StylePropertyTreeElement, URLRenderer } from './StylePropertyTreeElement.js';
 const UIStrings = {
     /**
      * @description Placeholder text for a text input used to filter which CSS properties show up in
@@ -107,9 +107,9 @@ function renderPropertyContents(node, propertyName, propertyValue) {
     if (valueFromCache) {
         return valueFromCache;
     }
-    const name = StylePropertyTreeElement.renderNameElement(propertyName);
+    const name = Renderer.renderNameElement(propertyName);
     name.slot = 'name';
-    const value = StylePropertyTreeElement.renderValueElement(propertyName, propertyValue, [ColorRenderer.matcher(), URLRenderer.matcher(null, node), StringRenderer.matcher()]);
+    const value = Renderer.renderValueElement(propertyName, propertyValue, [new ColorRenderer(), new URLRenderer(null, node), new StringRenderer()]);
     value.slot = 'value';
     propertyContentsCache.set(cacheKey, { name, value });
     return { name, value };
@@ -137,7 +137,7 @@ const createPropertyElement = (node, propertyName, propertyValue, traceable, inh
 };
 const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles, linkifier) => {
     const trace = new ElementsComponents.ComputedStyleTrace.ComputedStyleTrace();
-    const valueElement = StylePropertyTreeElement.renderValueElement(property.name, property.value, [ColorRenderer.matcher(), URLRenderer.matcher(null, node), StringRenderer.matcher()]);
+    const valueElement = Renderer.renderValueElement(property.name, property.value, [new ColorRenderer(), new URLRenderer(null, node), new StringRenderer()]);
     valueElement.slot = 'trace-value';
     trace.appendChild(valueElement);
     const rule = property.ownerStyle.parentRule;
@@ -153,11 +153,11 @@ const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles,
     };
     return trace;
 };
-class ColorRenderer extends ColorMatch {
-    render(_node, context) {
+class ColorRenderer {
+    render(match, context) {
         const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
         swatch.setReadonly(true);
-        swatch.renderColor(this.text, true);
+        swatch.renderColor(match.text, true);
         const valueElement = document.createElement('span');
         valueElement.textContent = swatch.getText();
         swatch.append(valueElement);
@@ -168,8 +168,8 @@ class ColorRenderer extends ColorMatch {
         context.addControl('color', swatch);
         return [swatch];
     }
-    static matcher() {
-        return new ColorMatcher(text => new ColorRenderer(text));
+    matcher() {
+        return new ColorMatcher();
     }
 }
 const navigateToSource = (cssProperty, event) => {

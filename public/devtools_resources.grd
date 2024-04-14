@@ -1189,6 +1189,7 @@
       <include file="panels/elements/PropertiesWidget.js" name="PANELS_ELEMENTS_PROPERTIESWIDGET_JS" resource_path="panels/elements/PropertiesWidget.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/PropertyNameCategories.js" name="PANELS_ELEMENTS_PROPERTYNAMECATEGORIES_JS" resource_path="panels/elements/PropertyNameCategories.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/PropertyParser.js" name="PANELS_ELEMENTS_PROPERTYPARSER_JS" resource_path="panels/elements/PropertyParser.js" type="BINDATA" compress="false"/>
+      <include file="panels/elements/PropertyRenderer.js" name="PANELS_ELEMENTS_PROPERTYRENDERER_JS" resource_path="panels/elements/PropertyRenderer.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/StyleEditorWidget.js" name="PANELS_ELEMENTS_STYLEEDITORWIDGET_JS" resource_path="panels/elements/StyleEditorWidget.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/StylePropertiesSection.js" name="PANELS_ELEMENTS_STYLEPROPERTIESSECTION_JS" resource_path="panels/elements/StylePropertiesSection.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/StylePropertyHighlighter.js" name="PANELS_ELEMENTS_STYLEPROPERTYHIGHLIGHTER_JS" resource_path="panels/elements/StylePropertyHighlighter.js" type="BINDATA" compress="false"/>

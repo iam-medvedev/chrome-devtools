@@ -6405,6 +6405,10 @@ export const NativeFunctions = [
         signatures: [["root", "node", "?init"]]
     },
     {
+        name: "moveBefore",
+        signatures: [["node", "child"]]
+    },
+    {
         name: "Observable",
         signatures: [["callback"]]
     },
@@ -6532,6 +6536,10 @@ export const NativeFunctions = [
     },
     {
         name: "InputEvent",
+        signatures: [["type", "?eventInitDict"]]
+    },
+    {
+        name: "InterestEvent",
         signatures: [["type", "?eventInitDict"]]
     },
     {

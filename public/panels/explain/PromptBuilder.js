@@ -6,7 +6,10 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Formatter from '../../models/formatter/formatter.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
+const MAX_MESSAGE_SIZE = 1000;
+const MAX_STACK_TRACE_SIZE = 1000;
 const MAX_CODE_SIZE = 1000;
+const MAX_HEADERS_SIZE = 1000;
 export var SourceType;
 (function (SourceType) {
     SourceType["MESSAGE"] = "message";
@@ -93,6 +96,8 @@ export class PromptBuilder {
         return {
             prompt,
             sources,
+            isPageReloadRecommended: sourcesTypes.includes(SourceType.NETWORK_REQUEST) &&
+                Boolean(this.#consoleMessage.consoleMessage().getAffectedResources()?.requestId) && !relatedRequest,
         };
     }
     formatPrompt({ message, relatedCode, relatedRequest }) {
@@ -204,21 +209,31 @@ export function formatRelatedCode({ text, columnNumber, lineNumber }, maxCodeSiz
     }
     return lines.slice(startLine, endLine + 1).join('\n');
 }
+function formatLines(title, lines, maxLength) {
+    let result = '';
+    for (const line of lines) {
+        if (result.length + line.length > maxLength) {
+            break;
+        }
+        result += line;
+    }
+    result = result.trim();
+    return result && title ? title + '\n' + result : result;
+}
 export function formatNetworkRequest(request) {
+    const formatHeaders = (title, headers) => formatLines(title, headers.filter(allowHeader).map(header => header.name + ': ' + header.value + '\n'), MAX_HEADERS_SIZE);
     // TODO: anything else that might be relavant?
     // TODO: handle missing headers
     return `Request: ${request.url()}
 
-Request headers:
-${request.requestHeaders().filter(allowHeader).map(header => `${header.name}: ${header.value}`).join('\n')}
+${formatHeaders('Request headers:', request.requestHeaders())}
 
-Response headers:
-${request.responseHeaders.filter(allowHeader).map(header => `${header.name}: ${header.value}`).join('\n')}
+${formatHeaders('Response headers:', request.responseHeaders)}
 
 Response status: ${request.statusCode} ${request.statusText}`;
 }
 export function formatConsoleMessage(message) {
-    return message.toMessageTextString();
+    return message.toMessageTextString().substr(0, MAX_MESSAGE_SIZE);
 }
 /**
  * This formats the stacktrace from the console message which might or might not
@@ -237,8 +252,7 @@ export function formatStackTrace(message) {
         .filter(n => {
         return !n.parentElement?.closest('.show-all-link,.show-less-link,.hidden-row');
     })
-        .map(Components.Linkifier.Linkifier.untruncatedNodeText)
-        .join('');
-    return messageContent.trim();
+        .map(Components.Linkifier.Linkifier.untruncatedNodeText);
+    return formatLines('', messageContent, MAX_STACK_TRACE_SIZE);
 }
 //# sourceMappingURL=PromptBuilder.js.map

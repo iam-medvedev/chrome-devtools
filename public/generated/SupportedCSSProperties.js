@@ -2194,8 +2194,7 @@ export const generatedProperties = [
     },
     {
         "keywords": [
-            "auto",
-            "-internal-user-margin"
+            "auto"
         ],
         "name": "margin-bottom"
     },
@@ -2220,22 +2219,19 @@ export const generatedProperties = [
     },
     {
         "keywords": [
-            "auto",
-            "-internal-user-margin"
+            "auto"
         ],
         "name": "margin-left"
     },
     {
         "keywords": [
-            "auto",
-            "-internal-user-margin"
+            "auto"
         ],
         "name": "margin-right"
     },
     {
         "keywords": [
-            "auto",
-            "-internal-user-margin"
+            "auto"
         ],
         "name": "margin-top"
     },
@@ -2808,7 +2804,6 @@ export const generatedProperties = [
     {
         "keywords": [
             "always",
-            "anchors-valid",
             "anchors-visible",
             "no-overflow"
         ],
@@ -5258,7 +5253,6 @@ export const generatedPropertyValues = {
     "position-visibility": {
         "values": [
             "always",
-            "anchors-valid",
             "anchors-visible",
             "no-overflow"
         ]

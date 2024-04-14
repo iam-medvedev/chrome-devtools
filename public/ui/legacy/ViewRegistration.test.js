@@ -5,7 +5,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as QuickOpen from './components/quick_open/quick_open.js';
 import * as UI from './legacy.js';
-const { assert } = chai;
 class MockView extends UI.Widget.Widget {
     resolveLocation(_location) {
         return UI.ViewManager.ViewManager.instance().createStackLocation();

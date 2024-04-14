@@ -4,7 +4,6 @@
 import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as InlineEditor from './inline_editor.js';
-const { assert } = chai;
 function assertVarSwatch(swatch, expected) {
     const container = swatch.shadowRoot.querySelector('span');
     const link = container.querySelector('devtools-base-link-swatch').shadowRoot.querySelector('.link-swatch-link');

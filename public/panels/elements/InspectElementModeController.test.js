@@ -5,7 +5,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, registerNoopActions, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 const NODE_ID = 1;
 describeWithMockConnection('InspectElementModeController', () => {
     let inScopeTarget;

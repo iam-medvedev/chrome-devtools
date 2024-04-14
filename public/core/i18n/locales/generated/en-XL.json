@@ -6047,6 +6047,12 @@
   "panels/elements/PropertiesWidget.ts | showAllTooltip": {
     "message": "Ŵh́êń ûńĉh́êćk̂éd̂, ón̂ĺŷ ṕr̂óp̂ér̂t́îéŝ ẃĥóŝé v̂ál̂úêś âŕê ńêít̂h́êŕ n̂úl̂ĺ n̂ór̂ ún̂d́êf́îńêd́ ŵíl̂ĺ b̂é ŝh́ôẃn̂"
   },
+  "panels/elements/PropertyRenderer.ts | cssPropertyName": {
+    "message": "CSS p̂ŕôṕêŕt̂ý n̂ám̂é: {PH1}"
+  },
+  "panels/elements/PropertyRenderer.ts | cssPropertyValue": {
+    "message": "CSS p̂ŕôṕêŕt̂ý v̂ál̂úê: {PH1}"
+  },
   "panels/elements/StylePropertiesSection.ts | constructedStylesheet": {
     "message": "ĉón̂śt̂ŕûćt̂éd̂ śt̂ýl̂éŝh́êét̂"
   },
@@ -6109,12 +6115,6 @@
   },
   "panels/elements/StylePropertyTreeElement.ts | copyValue": {
     "message": "Ĉóp̂ý v̂ál̂úê"
-  },
-  "panels/elements/StylePropertyTreeElement.ts | cssPropertyName": {
-    "message": "CSS p̂ŕôṕêŕt̂ý n̂ám̂é: {PH1}"
-  },
-  "panels/elements/StylePropertyTreeElement.ts | cssPropertyValue": {
-    "message": "CSS p̂ŕôṕêŕt̂ý v̂ál̂úê: {PH1}"
   },
   "panels/elements/StylePropertyTreeElement.ts | flexboxEditorButton": {
     "message": "Ôṕêń flexbox êd́ît́ôŕ"
@@ -6434,6 +6434,9 @@
   "panels/explain/components/ConsoleInsight.ts | relatedCode": {
     "message": "R̂él̂át̂éd̂ ćôd́ê"
   },
+  "panels/explain/components/ConsoleInsight.ts | reloadRecommendation": {
+    "message": "R̂él̂óâd́ t̂h́ê ṕâǵê t́ô ćâṕt̂úr̂é r̂él̂át̂éd̂ ńêt́ŵór̂ḱ r̂éq̂úêśt̂ d́ât́â f́ôŕ t̂h́îś m̂éŝśâǵê ín̂ ór̂d́êŕ t̂ó ĉŕêát̂é â b́êt́t̂ér̂ ín̂śîǵĥt́."
+  },
   "panels/explain/components/ConsoleInsight.ts | report": {
     "message": "R̂ép̂ór̂t́ l̂éĝál̂ íŝśûé"
   },
@@ -6480,7 +6483,7 @@
     "message": "Ŷóûŕ ôŕĝán̂íẑát̂íôń t̂úr̂ńêd́ ôf́f̂ t́ĥíŝ f́êát̂úr̂é. Ĉón̂t́âćt̂ ýôúr̂ ád̂ḿîńîśt̂ŕât́ôŕŝ f́ôŕ m̂ór̂é îńf̂ór̂ḿât́îón̂."
   },
   "panels/explain/explain-meta.ts | rolloutRestricted": {
-    "message": "T̂h́îś f̂éât́ûŕê íŝ ćûŕr̂én̂t́l̂ý b̂éîńĝ ŕôĺl̂éd̂ óût́. P̂ĺêáŝé t̂ŕŷ áĝáîń l̂át̂ér̂."
+    "message": "T̂h́îś f̂éât́ûŕê íŝ ćûŕr̂én̂t́l̂ý b̂éîńĝ ŕôĺl̂éd̂ óût́. Ŝt́âý t̂ún̂éd̂."
   },
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ûṕd̂át̂é ŷóûŕ L̂án̂ǵûáĝé p̂ŕêf́êŕêńĉé îń D̂év̂T́ôól̂ś Ŝét̂t́îńĝś t̂ó Êńĝĺîśĥ."
@@ -11819,6 +11822,9 @@
   "panels/sources/sources-meta.ts | automaticallyRevealFilesIn": {
     "message": "Âút̂óm̂át̂íĉál̂ĺŷ ŕêv́êál̂ f́îĺêś îń ŝíd̂éb̂ár̂"
   },
+  "panels/sources/sources-meta.ts | bracketClosing": {
+    "message": "Âút̂ó ĉĺôśîńĝ b́r̂áĉḱêt́ŝ"
+  },
   "panels/sources/sources-meta.ts | bracketMatching": {
     "message": "B̂ŕâćk̂ét̂ ḿât́ĉh́îńĝ"
   },
@@ -11854,6 +11860,9 @@
   },
   "panels/sources/sources-meta.ts | disableAutoFocusOnDebuggerPaused": {
     "message": "D̂ó n̂ót̂ f́ôćûś Ŝóûŕĉéŝ ṕâńêĺ ŵh́êń t̂ŕîǵĝér̂ín̂ǵ â b́r̂éâḱp̂óîńt̂"
+  },
+  "panels/sources/sources-meta.ts | disableBracketClosing": {
+    "message": "D̂íŝáb̂ĺê áût́ô ćl̂óŝín̂ǵ b̂ŕâćk̂ét̂ś"
   },
   "panels/sources/sources-meta.ts | disableBracketMatching": {
     "message": "D̂íŝáb̂ĺê b́r̂áĉḱêt́ m̂át̂ćĥín̂ǵ"
@@ -11902,6 +11911,9 @@
   },
   "panels/sources/sources-meta.ts | enableAutoFocusOnDebuggerPaused": {
     "message": "F̂óĉúŝ Śôúr̂ćêś p̂án̂él̂ ẃĥén̂ t́r̂íĝǵêŕîńĝ á b̂ŕêák̂ṕôín̂t́"
+  },
+  "panels/sources/sources-meta.ts | enableBracketClosing": {
+    "message": "Êńâb́l̂é âút̂ó ĉĺôśîńĝ b́r̂áĉḱêt́ŝ"
   },
   "panels/sources/sources-meta.ts | enableBracketMatching": {
     "message": "Êńâb́l̂é b̂ŕâćk̂ét̂ ḿât́ĉh́îńĝ"

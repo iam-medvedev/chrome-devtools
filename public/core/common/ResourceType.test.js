@@ -1,9 +1,8 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as Common from './common.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import * as Common from './common.js';
 const ResourceType = Common.ResourceType.ResourceType;
 const ResourceCategory = Common.ResourceType.ResourceCategory;
 const resourceTypes = Common.ResourceType.resourceTypes;

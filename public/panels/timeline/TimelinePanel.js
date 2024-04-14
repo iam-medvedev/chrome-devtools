@@ -681,17 +681,25 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async showHistory() {
+        this.#saveAnnotationsForActiveTrace();
         const recordingData = await this.#historyManager.showHistoryDropDown();
         if (recordingData && recordingData.traceParseDataIndex !== this.#traceEngineActiveTraceIndex) {
             this.setModel(recordingData.legacyModel, /* exclusiveFilter= */ null, recordingData.traceParseDataIndex);
         }
     }
     navigateHistory(direction) {
+        this.#saveAnnotationsForActiveTrace();
         const recordingData = this.#historyManager.navigate(direction);
         if (recordingData && recordingData.traceParseDataIndex !== this.#traceEngineActiveTraceIndex) {
             this.setModel(recordingData.legacyModel, /* exclusiveFilter= */ null, recordingData.traceParseDataIndex);
         }
         return true;
+    }
+    #saveAnnotationsForActiveTrace() {
+        const newAnnotations = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getAnnotations();
+        if (newAnnotations) {
+            this.#traceEngineModel.overrideAnnotations(this.#traceEngineActiveTraceIndex, newAnnotations);
+        }
     }
     selectFileToLoad() {
         if (this.fileSelectorElement) {
@@ -1067,15 +1075,15 @@ export class TimelinePanel extends UI.Panel.Panel {
         // http/tests/devtools/tracing/timeline-js/timeline-open-function-call.js
         // http/tests/devtools/tracing/timeline-misc/timeline-filtering-self-time.js
         // http/tests/devtools/tracing/timeline-misc/timeline-filtering.js
-        // http/tests/devtools/tracing/timeline-misc/timeline-range-stats.js
         this.#applyActiveFilters(false, exclusiveFilter);
     }
-    setModel(model, exclusiveFilter = null, traceEngineIndex = -1, metadata = null) {
+    setModel(model, exclusiveFilter = null, traceEngineIndex = -1) {
         this.performanceModel = model;
         this.#traceEngineActiveTraceIndex = traceEngineIndex;
         const traceParsedData = this.#traceEngineModel.traceParsedData(this.#traceEngineActiveTraceIndex);
         const isCpuProfile = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex)?.dataOrigin ===
             "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPUProfile */;
+        const annotations = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex)?.annotations;
         this.#minimapComponent.reset();
         // Order is important: the bounds must be set before we initiate any UI
         // rendering.
@@ -1092,8 +1100,8 @@ export class TimelinePanel extends UI.Panel.Panel {
                 wholeTraceBounds: traceBounds?.micro.entireTraceBounds,
             });
             if (Root.Runtime.experiments.isEnabled("save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */) &&
-                metadata?.annotations) {
-                AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.applyAnnotations(metadata?.annotations);
+                annotations) {
+                AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.applyAnnotations(annotations);
             }
             this.#applyActiveFilters(traceParsedData.Meta.traceIsGeneric, exclusiveFilter);
         }
@@ -1257,6 +1265,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.flameChart.updateColorMapper();
     }
     async loadingComplete(collectedEvents, tracingModel, exclusiveFilter = null, isCpuProfile, recordingStartTime, metadata) {
+        // Before loading a new trace, update annotations of the previous one
+        this.#saveAnnotationsForActiveTrace();
         this.#traceEngineModel.resetProcessor();
         SourceMapsResolver.clearResolvedNodeNames();
         delete this.loader;
@@ -1288,7 +1298,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             // so we know that the active index will be the size of the model because
             // the newest trace will be automatically set to active.
             this.#traceEngineActiveTraceIndex = this.#traceEngineModel.size() - 1;
-            this.setModel(this.performanceModel, exclusiveFilter, this.#traceEngineActiveTraceIndex, metadata);
+            this.setModel(this.performanceModel, exclusiveFilter, this.#traceEngineActiveTraceIndex);
             if (this.statusPane) {
                 this.statusPane.remove();
             }

@@ -4,7 +4,6 @@
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as SDK from './sdk.js';
-const { assert } = chai;
 describeWithMockConnection('AutofillModel', () => {
     it('can enable and disable the Autofill CDP domain', () => {
         const target = createTarget();

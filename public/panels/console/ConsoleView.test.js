@@ -10,7 +10,6 @@ import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelp
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
-const { assert } = chai;
 describeWithMockConnection('ConsoleView', () => {
     let consoleView;
     beforeEach(() => {

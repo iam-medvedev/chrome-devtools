@@ -1377,33 +1377,6 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
             })));
         }
     }
-    // This is called by `NetworkManager.finishNetworkRequest()` and not earlier
-    // to ensure that the correct `CookieModel` is used. If we did this in
-    // `addExtraRequestInfo()`, we would be storing blocked cookies in the wrong
-    // `CookieModel` for OOPIFs.
-    addBlockedRequestCookiesToModel() {
-        const networkManager = NetworkManager.forRequest(this);
-        if (!networkManager) {
-            return;
-        }
-        const cookieModel = networkManager.target().model(CookieModel);
-        if (!cookieModel) {
-            return;
-        }
-        for (const blockedCookie of this.#blockedRequestCookiesInternal) {
-            const cookie = blockedCookie.cookie;
-            if (!cookie) {
-                continue;
-            }
-            if (blockedCookie.blockedReasons.includes("ThirdPartyPhaseout" /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */)) {
-                this.#hasThirdPartyCookiePhaseoutIssue = true;
-            }
-            cookieModel.addBlockedCookie(cookie, blockedCookie.blockedReasons.map(blockedReason => ({
-                attribute: cookieBlockedReasonToAttribute(blockedReason),
-                uiString: cookieBlockedReasonToUiString(blockedReason),
-            })));
-        }
-    }
     hasExtraResponseInfo() {
         return this.#hasExtraResponseInfoInternal;
     }

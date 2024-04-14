@@ -4,7 +4,6 @@
 import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import * as UI from './legacy.js';
-const { assert } = chai;
 describe('Infobar', () => {
     before(async () => {
         await initializeGlobalVars();

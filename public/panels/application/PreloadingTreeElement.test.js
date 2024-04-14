@@ -1,12 +1,11 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
+import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Application from './application.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
+import * as Application from './application.js';
 describeWithMockConnection('PreloadingTreeElement', () => {
     it('shows view even if initialization happens after selection', () => {
         const target = createTarget();

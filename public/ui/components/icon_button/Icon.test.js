@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { assertElement, assertShadowRoot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as IconButton from './icon_button.js';
-const { assert } = chai;
 function getSpanElement(icon) {
     const { shadowRoot } = icon;
     assertShadowRoot(shadowRoot);

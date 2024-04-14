@@ -7,7 +7,6 @@ import { describeWithEnvironment, describeWithLocale, } from '../../testing/Envi
 import { describeWithRealConnection } from '../../testing/RealConnection.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 describe('StylesSidebarPane', () => {
     describeWithRealConnection('StylesSidebarPane', () => {
         it('unescapes CSS strings', () => {

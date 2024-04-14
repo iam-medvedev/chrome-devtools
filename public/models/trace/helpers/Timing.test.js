@@ -4,7 +4,6 @@
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceModel from '../trace.js';
-const { assert } = chai;
 function milliToMicro(value) {
     return TraceModel.Types.Timing.MicroSeconds(value * 1000);
 }

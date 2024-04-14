@@ -158,7 +158,7 @@ export declare class HeapSnapshotProblemReport {
 }
 export interface Profile {
     root_index: number;
-    nodes: Uint32Array;
+    nodes: Platform.TypedArrayUtilities.BigUint32Array;
     edges: Platform.TypedArrayUtilities.BigUint32Array;
     snapshot: HeapSnapshotHeader;
     samples: number[];
@@ -176,7 +176,7 @@ export interface LiveObjects {
 }
 export declare abstract class HeapSnapshot {
     #private;
-    nodes: Uint32Array;
+    nodes: Platform.TypedArrayUtilities.BigUint32Array;
     containmentEdges: Platform.TypedArrayUtilities.BigUint32Array;
     strings: string[];
     rootNodeIndexInternal: number;

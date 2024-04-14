@@ -6,7 +6,6 @@ import * as Workspace from '../../../../models/workspace/workspace.js';
 import { createTarget } from '../../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../../testing/MockConnection.js';
 import * as Components from './utils.js';
-const { assert } = chai;
 describeWithMockConnection('JSPresentationUtils', () => {
     function setUpEnvironment() {
         const target = createTarget();

@@ -1,9 +1,8 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as ProtocolClient from './protocol_client.js';
 import * as Host from '../host/host.js';
+import * as ProtocolClient from './protocol_client.js';
 describe('NodeURL', () => {
     describe('platform detection for paths', () => {
         it('works correctly on windows', () => {

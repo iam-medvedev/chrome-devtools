@@ -8,7 +8,44 @@ import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelper
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Elements from '../elements/elements.js';
 import * as Animation from './animation.js';
-const { assert } = chai;
+const TIME_ANIMATION_PAYLOAD = {
+    id: 'animation-id',
+    name: 'animation-name',
+    pausedState: false,
+    playState: 'running',
+    playbackRate: 1,
+    startTime: 42,
+    currentTime: 0,
+    type: "CSSAnimation" /* Protocol.Animation.AnimationType.CSSAnimation */,
+    source: {
+        delay: 0,
+        endDelay: 0,
+        duration: 10000,
+        backendNodeId: 42,
+    },
+};
+const SDA_ANIMATION_PAYLOAD = {
+    id: 'animation-id',
+    name: 'animation-name',
+    pausedState: false,
+    playState: 'running',
+    playbackRate: 1,
+    startTime: 42,
+    currentTime: 0,
+    type: "CSSAnimation" /* Protocol.Animation.AnimationType.CSSAnimation */,
+    source: {
+        delay: 0,
+        endDelay: 0,
+        duration: 10000,
+        backendNodeId: 42,
+    },
+    viewOrScrollTimeline: {
+        axis: "vertical" /* Protocol.DOM.ScrollOrientation.Vertical */,
+        sourceNodeId: 42,
+        startOffset: 42,
+        endOffset: 142,
+    },
+};
 class ManualPromise {
     #waitPromise;
     #resolveFn;
@@ -38,12 +75,20 @@ const stubAnimationGroup = () => {
         .resolves(new Animation.AnimationDOMNode.AnimationDOMNode(null));
 };
 const stubAnimationDOMNode = () => {
-    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'verticalScrollRange').resolves(100);
-    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'horizontalScrollRange').resolves(100);
-    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'scrollLeft').resolves(10);
-    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'scrollTop').resolves(10);
-    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'addScrollEventListener').resolves();
-    sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'removeScrollEventListener').resolves();
+    const verticalScrollRange = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'verticalScrollRange').resolves(100);
+    const horizontalScrollRange = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'horizontalScrollRange').resolves(100);
+    const scrollLeft = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'scrollLeft').resolves(10);
+    const scrollTop = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'scrollTop').resolves(10);
+    const addScrollEventListener = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'addScrollEventListener').resolves();
+    const removeScrollEventListener = sinon.stub(Animation.AnimationDOMNode.AnimationDOMNode.prototype, 'removeScrollEventListener').resolves();
+    return {
+        verticalScrollRange,
+        horizontalScrollRange,
+        scrollLeft,
+        scrollTop,
+        addScrollEventListener,
+        removeScrollEventListener,
+    };
 };
 describeWithMockConnection('AnimationTimeline', () => {
     let target;
@@ -109,7 +154,8 @@ describeWithMockConnection('AnimationTimeline', () => {
     };
     it('updates UI on in scope animation group start', updatesUiOnEvent(true));
     it('does not update UI on out of scope animation group start', updatesUiOnEvent(false));
-    describe('resizing time controls', () => {
+    // Flaking on multiple bots on CQ.
+    describe.skip('[crbug.com/334003901] resizing time controls', () => {
         it('updates --timeline-controls-width and calls onResize', async () => {
             view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
             view.markAsRoot();
@@ -136,7 +182,8 @@ describeWithMockConnection('AnimationTimeline', () => {
             assert.isTrue(onResizeStub.calledOnce);
         });
     });
-    describe('Animation group nodes are removed', () => {
+    // Flaking on multiple bots on CQ.
+    describe.skip('[crbug.com/334003901] Animation group nodes are removed', () => {
         const waitForPreviewsManualPromise = new ManualPromise();
         const waitForAnimationGroupSelectedPromise = new ManualPromise();
         let domModel;
@@ -166,22 +213,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                 localName: 'document',
                 nodeValue: '',
             });
-            void animationModel.animationStarted({
-                id: 'animation-id',
-                name: 'animation-name',
-                pausedState: false,
-                playState: 'running',
-                playbackRate: 1,
-                startTime: 42,
-                currentTime: 0,
-                type: "CSSAnimation" /* Protocol.Animation.AnimationType.CSSAnimation */,
-                source: {
-                    delay: 0,
-                    endDelay: 0,
-                    duration: 10000,
-                    backendNodeId: 42,
-                },
-            });
+            void animationModel.animationStarted(TIME_ANIMATION_PAYLOAD);
             await waitForPreviewsManualPromise.wait();
         });
         describe('when the animation group is already selected', () => {
@@ -274,14 +306,92 @@ describeWithMockConnection('AnimationTimeline', () => {
             });
         });
     });
-    describe('scroll driven animations', () => {
+    // Flaking on multiple bots on CQ.
+    describe.skip('[crbug.com/334003901] time animations', () => {
         const waitForPreviewsManualPromise = new ManualPromise();
         const waitForAnimationGroupSelectedPromise = new ManualPromise();
+        const waitForScheduleRedrawAfterAnimationGroupUpdated = new ManualPromise();
         let domModel;
         let animationModel;
         let contentDocument;
         beforeEach(async () => {
-            stubAnimationDOMNode();
+            view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
+            view.markAsRoot();
+            view.show(document.body);
+            sinon.stub(view, 'animationGroupSelectedForTest').callsFake(() => {
+                waitForAnimationGroupSelectedPromise.resolve();
+            });
+            sinon.stub(view, 'previewsCreatedForTest').callsFake(() => {
+                waitForPreviewsManualPromise.resolve();
+            });
+            sinon.stub(view, 'scheduledRedrawAfterAnimationGroupUpdatedForTest').callsFake(() => {
+                waitForScheduleRedrawAfterAnimationGroupUpdated.resolve();
+            });
+            const model = target.model(Animation.AnimationModel.AnimationModel);
+            assertNotNullOrUndefined(model);
+            animationModel = model;
+            const modelForDom = target.model(SDK.DOMModel.DOMModel);
+            assertNotNullOrUndefined(modelForDom);
+            domModel = modelForDom;
+            contentDocument = SDK.DOMModel.DOMDocument.create(domModel, null, false, {
+                nodeId: 0,
+                backendNodeId: 0,
+                nodeType: Node.DOCUMENT_NODE,
+                nodeName: '#document',
+                localName: 'document',
+                nodeValue: '',
+            });
+            const domNode = SDK.DOMModel.DOMNode.create(domModel, contentDocument, false, {
+                nodeId: 1,
+                backendNodeId: 1,
+                nodeType: Node.ELEMENT_NODE,
+                nodeName: 'div',
+                localName: 'div',
+                nodeValue: '',
+            });
+            sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(domNode);
+            void animationModel.animationStarted(TIME_ANIMATION_PAYLOAD);
+            await waitForPreviewsManualPromise.wait();
+        });
+        describe('animationGroupUpdated', () => {
+            it('should update duration on animationGroupUpdated', async () => {
+                const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+                assertNotNullOrUndefined(preview);
+                preview.click();
+                await waitForAnimationGroupSelectedPromise.wait();
+                void animationModel.animationUpdated({
+                    ...TIME_ANIMATION_PAYLOAD,
+                    source: {
+                        ...TIME_ANIMATION_PAYLOAD.source,
+                        iterations: 3,
+                        duration: 10,
+                    },
+                });
+                await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
+                // 3 (iterations) * 10 (iteration duration)
+                assert.strictEqual(view.duration(), 30);
+            });
+            it('should schedule re-draw on animationGroupUpdated', async () => {
+                const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+                assertNotNullOrUndefined(preview);
+                preview.click();
+                await waitForAnimationGroupSelectedPromise.wait();
+                void animationModel.animationUpdated(TIME_ANIMATION_PAYLOAD);
+                await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
+            });
+        });
+    });
+    // Flaking on multiple bots on CQ.
+    describe.skip('[crbug.com/334003901] scroll driven animations', () => {
+        let stubbedAnimationDOMNode;
+        const waitForPreviewsManualPromise = new ManualPromise();
+        const waitForAnimationGroupSelectedPromise = new ManualPromise();
+        const waitForScheduleRedrawAfterAnimationGroupUpdated = new ManualPromise();
+        let domModel;
+        let animationModel;
+        let contentDocument;
+        beforeEach(async () => {
+            stubbedAnimationDOMNode = stubAnimationDOMNode();
             stubAnimationGroup();
             view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
             view.markAsRoot();
@@ -291,6 +401,9 @@ describeWithMockConnection('AnimationTimeline', () => {
             });
             sinon.stub(view, 'previewsCreatedForTest').callsFake(() => {
                 waitForPreviewsManualPromise.resolve();
+            });
+            sinon.stub(view, 'scheduledRedrawAfterAnimationGroupUpdatedForTest').callsFake(() => {
+                waitForScheduleRedrawAfterAnimationGroupUpdated.resolve();
             });
             const model = target.model(Animation.AnimationModel.AnimationModel);
             assertNotNullOrUndefined(model);
@@ -368,6 +481,77 @@ describeWithMockConnection('AnimationTimeline', () => {
             await waitForAnimationGroupSelectedPromise.wait();
             const labelElements = [...view.element.shadowRoot?.querySelectorAll('.animation-timeline-grid-label')];
             assert.isTrue(labelElements.every(el => el.textContent?.includes('px')), 'Label is expected to be a pixel value but it is not');
+        });
+        describe('animationGroupUpdated', () => {
+            it('should re-draw preview after receiving animationGroupUpdated', async () => {
+                const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+                assertNotNullOrUndefined(preview);
+                preview.click();
+                await waitForAnimationGroupSelectedPromise.wait();
+                const initialPreviewLine = preview.querySelector('line');
+                assertNotNullOrUndefined(initialPreviewLine);
+                const initialPreviewLineLength = Number.parseInt(initialPreviewLine.getAttribute('x2'), 10) -
+                    Number.parseInt(initialPreviewLine.getAttribute('x1'), 10);
+                void animationModel.animationUpdated({
+                    ...SDA_ANIMATION_PAYLOAD,
+                    source: {
+                        ...SDA_ANIMATION_PAYLOAD.source,
+                        duration: 50,
+                    },
+                });
+                await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
+                const currentPreviewLine = preview.querySelector('line');
+                assertNotNullOrUndefined(currentPreviewLine);
+                const currentPreviewLineLength = Number.parseInt(currentPreviewLine.getAttribute('x2'), 10) -
+                    Number.parseInt(currentPreviewLine.getAttribute('x1'), 10);
+                assert.isTrue(currentPreviewLineLength < initialPreviewLineLength);
+            });
+            it('should update duration if the scroll range is changed on animationGroupUpdated', async () => {
+                const SCROLL_RANGE = 20;
+                const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+                assertNotNullOrUndefined(preview);
+                preview.click();
+                await waitForAnimationGroupSelectedPromise.wait();
+                stubbedAnimationDOMNode.verticalScrollRange.resolves(SCROLL_RANGE);
+                void animationModel.animationUpdated(SDA_ANIMATION_PAYLOAD);
+                await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
+                assert.strictEqual(view.duration(), SCROLL_RANGE);
+            });
+            it('should update current time text if the scroll top is changed on animationGroupUpdated', async () => {
+                const SCROLL_TOP = 5;
+                stubbedAnimationDOMNode.scrollTop.resolves(SCROLL_TOP);
+                const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+                const currentTimeElement = view.element.shadowRoot?.querySelector('.animation-timeline-current-time');
+                assertNotNullOrUndefined(currentTimeElement);
+                assertNotNullOrUndefined(preview);
+                preview.click();
+                await waitForAnimationGroupSelectedPromise.wait();
+                void animationModel.animationUpdated(SDA_ANIMATION_PAYLOAD);
+                await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
+                assert.strictEqual(currentTimeElement.textContent, '5px');
+            });
+            it('should update scrubber position if the scroll top is changed on animationGroupUpdated', async () => {
+                const SCROLL_TOP = 5;
+                stubbedAnimationDOMNode.scrollTop.resolves(SCROLL_TOP);
+                const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+                assertNotNullOrUndefined(preview);
+                const timelineScrubberElement = view.element.shadowRoot?.querySelector('.animation-scrubber');
+                assertNotNullOrUndefined(timelineScrubberElement);
+                preview.click();
+                await waitForAnimationGroupSelectedPromise.wait();
+                void animationModel.animationUpdated(SDA_ANIMATION_PAYLOAD);
+                await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
+                const translateX = Number.parseFloat(timelineScrubberElement.style.transform.match(/translateX\((.*)px\)/)[1]);
+                assert.closeTo(translateX, SCROLL_TOP * view.pixelTimeRatio(), 0.5);
+            });
+            it('should schedule re-draw selected group after receiving animationGroupUpdated', async () => {
+                const preview = view.element.shadowRoot?.querySelector('.animation-buffer-preview');
+                assertNotNullOrUndefined(preview);
+                preview.click();
+                await waitForAnimationGroupSelectedPromise.wait();
+                void animationModel.animationUpdated(SDA_ANIMATION_PAYLOAD);
+                await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
+            });
         });
     });
 });

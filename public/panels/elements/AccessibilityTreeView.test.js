@@ -6,7 +6,6 @@ import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as TreeOutline from '../../ui/components/tree_outline/tree_outline.js';
 import * as Elements from './elements.js';
-const { assert } = chai;
 const MAIN_FRAME_ID = 'MAIN_FRAME_ID';
 describeWithMockConnection('AccessibilityTreeView', () => {
     let target;

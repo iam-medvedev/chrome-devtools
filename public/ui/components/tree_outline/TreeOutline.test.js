@@ -6,7 +6,6 @@ import * as LitHtml from '../../lit-html/lit-html.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as TreeOutline from './tree_outline.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 async function renderTreeOutline({ tree, defaultRenderer, filter, }) {
     const component = new TreeOutline.TreeOutline.TreeOutline();
     const data = {

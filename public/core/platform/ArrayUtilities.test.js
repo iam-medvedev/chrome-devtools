@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from './platform.js';
-const { assert } = chai;
 function comparator(a, b) {
     return a < b ? -1 : (a > b ? 1 : 0);
 }

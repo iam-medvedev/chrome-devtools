@@ -5,7 +5,6 @@ import * as DataGrid from '../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../ui/components/render_coordinator/render_coordinator.js';
 import { assertElement, assertElements, assertShadowRoot, dispatchFocusEvent, dispatchKeyDownEvent, getElementWithinComponent, } from './DOMHelpers.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 export const getFocusableCell = (shadowRoot) => {
     // We only expect one here, but we qSA so we can assert on only one.
     // Can't use td as it may be a th if the user has focused a column header.

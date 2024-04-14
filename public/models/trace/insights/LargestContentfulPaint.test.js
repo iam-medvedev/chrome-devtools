@@ -1,9 +1,8 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as TraceModel from '../trace.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
+import * as TraceModel from '../trace.js';
 import * as Types from '../types/types.js';
 async function setupTraceData(testContext, traceFile) {
     const { NetworkRequests, LargestImagePaint, Meta, PageLoadMetrics } = await TraceLoader.traceEngine(testContext, traceFile);

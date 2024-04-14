@@ -146,6 +146,11 @@ export class Model extends EventTarget {
         }
         return this.#traces[index].metadata;
     }
+    overrideAnnotations(index, newAnnotations) {
+        if (this.#traces[index]) {
+            this.#traces[index].metadata.annotations = newAnnotations;
+        }
+    }
     traceEvents(index) {
         if (!this.#traces[index]) {
             return null;

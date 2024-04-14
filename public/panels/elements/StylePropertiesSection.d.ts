@@ -36,7 +36,7 @@ export declare class StylePropertiesSection {
     nestingLevel: number;
     nextEditorTriggerButtonIdx: number;
     private sectionIdx;
-    constructor(parentPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number, computedStyles: Map<string, string> | null, parentsComputedStyles: Map<string, string> | null, headerText?: string);
+    constructor(parentPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number, computedStyles: Map<string, string> | null, parentsComputedStyles: Map<string, string> | null, customHeaderText?: string);
     setComputedStyles(computedStyles: Map<string, string> | null): void;
     setParentsComputedStyles(parentsComputedStyles: Map<string, string> | null): void;
     updateAuthoringHint(): void;

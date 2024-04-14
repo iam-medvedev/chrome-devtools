@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as IssuesManager from '../issues_manager/issues_manager.js';
-const { assert } = chai;
 describe('createIssueDescriptionFromMarkdown', () => {
     it('only accepts Markdown where the first AST element is a heading, describing the title', () => {
         const emptyMarkdownDescription = {

@@ -9,7 +9,6 @@ import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockIssuesManager } from '../../testing/MockIssuesManager.js';
 import { StubIssue } from '../../testing/StubIssue.js';
 import * as Issues from './issues.js';
-const { assert } = chai;
 describeWithEnvironment('AggregatedIssue', () => {
     const aggregationKey = 'key';
     it('deduplicates network requests across issues', () => {

@@ -5,7 +5,6 @@ import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/Env
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Common from './common.js';
-const { assert } = chai;
 const settingName = 'mock-setting';
 const settingTitle = 'Mock setting';
 const enableTitle = 'Enable mock setting';

@@ -10,9 +10,10 @@ export declare class AnimationModel extends SDK.SDKModel.SDKModel<EventTypes> {
     playbackRate: number;
     constructor(target: SDK.Target.Target);
     private reset;
-    private devicePixelRatio;
+    devicePixelRatio(): Promise<number>;
     animationCreated(id: string): void;
     animationCanceled(id: string): void;
+    animationUpdated(payload: Protocol.Animation.Animation): Promise<void>;
     animationStarted(payload: Protocol.Animation.Animation): Promise<void>;
     private flushPendingAnimationsIfNeeded;
     private matchExistingGroups;
@@ -25,19 +26,21 @@ export declare class AnimationModel extends SDK.SDKModel.SDKModel<EventTypes> {
 }
 export declare enum Events {
     AnimationGroupStarted = "AnimationGroupStarted",
+    AnimationGroupUpdated = "AnimationGroupUpdated",
     ModelReset = "ModelReset"
 }
 export type EventTypes = {
     [Events.AnimationGroupStarted]: AnimationGroup;
+    [Events.AnimationGroupUpdated]: AnimationGroup;
     [Events.ModelReset]: void;
 };
 export declare class AnimationImpl {
     #private;
-    constructor(animationModel: AnimationModel, payload: Protocol.Animation.Animation);
-    static parsePayload(animationModel: AnimationModel, payload: Protocol.Animation.Animation): AnimationImpl;
+    private constructor();
+    static parsePayload(animationModel: AnimationModel, payload: Protocol.Animation.Animation): Promise<AnimationImpl>;
+    setPayload(payload: Protocol.Animation.Animation): Promise<void>;
     private percentageToPixels;
     viewOrScrollTimeline(): Protocol.Animation.ViewOrScrollTimeline | undefined;
-    payload(): Protocol.Animation.Animation;
     id(): string;
     name(): string;
     paused(): boolean;
@@ -63,9 +66,9 @@ export declare class AnimationEffect {
     delayInternal: number;
     durationInternal: number;
     constructor(animationModel: AnimationModel, payload: Protocol.Animation.AnimationEffect);
+    setPayload(payload: Protocol.Animation.AnimationEffect): void;
     delay(): number;
     endDelay(): number;
-    iterationStart(): number;
     iterations(): number;
     duration(): number;
     direction(): string;
@@ -79,13 +82,14 @@ export declare class AnimationEffect {
 export declare class KeyframesRule {
     #private;
     constructor(payload: Protocol.Animation.KeyframesRule);
-    private setKeyframesPayload;
+    setPayload(payload: Protocol.Animation.KeyframesRule): void;
     name(): string | undefined;
     keyframes(): KeyframeStyle[];
 }
 export declare class KeyframeStyle {
     #private;
     constructor(payload: Protocol.Animation.KeyframeStyle);
+    setPayload(payload: Protocol.Animation.KeyframeStyle): void;
     offset(): string;
     setOffset(offset: number): void;
     offsetAsNumber(): number;
@@ -119,6 +123,7 @@ export declare class AnimationDispatcher implements ProtocolProxyApi.AnimationDi
     animationCreated({ id }: Protocol.Animation.AnimationCreatedEvent): void;
     animationCanceled({ id }: Protocol.Animation.AnimationCanceledEvent): void;
     animationStarted({ animation }: Protocol.Animation.AnimationStartedEvent): void;
+    animationUpdated({ animation }: Protocol.Animation.AnimationUpdatedEvent): void;
 }
 export declare class ScreenshotCapture {
     #private;

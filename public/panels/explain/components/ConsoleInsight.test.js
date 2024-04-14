@@ -6,7 +6,6 @@ import * as Host from '../../../core/host/host.js';
 import { dispatchClickEvent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Explain from '../explain.js';
-const { assert } = chai;
 describeWithEnvironment('ConsoleInsight', () => {
     function getTestAidaClient() {
         return {
@@ -26,6 +25,7 @@ describeWithEnvironment('ConsoleInsight', () => {
                             value: 'error message',
                         },
                     ],
+                    isPageReloadRecommended: true,
                 };
             },
             getSearchQuery() {

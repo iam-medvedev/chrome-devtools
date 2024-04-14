@@ -311,6 +311,11 @@ let BidiPage = (() => {
             const { timeout: ms = this._timeoutSettings.timeout(), path = undefined } = options;
             const { printBackground: background, margin, landscape, width, height, pageRanges: ranges, scale, preferCSSPageSize, } = parsePDFOptions(options, 'cm');
             const pageRanges = ranges ? ranges.split(', ') : [];
+            await firstValueFrom(from(this.mainFrame()
+                .isolatedRealm()
+                .evaluate(() => {
+                return document.fonts.ready;
+            })).pipe(raceWith(timeout(ms))));
             const data = await firstValueFrom(from(this.#frame.browsingContext.print({
                 background,
                 margin,
@@ -442,16 +447,30 @@ let BidiPage = (() => {
         async setRequestInterception(enable) {
             if (enable && !this.#interception) {
                 this.#interception = await this.#frame.browsingContext.addIntercept({
-                    phases: [
-                        "beforeRequestSent" /* Bidi.Network.InterceptPhase.BeforeRequestSent */,
-                        "authRequired" /* Bidi.Network.InterceptPhase.AuthRequired */,
-                    ],
+                    phases: ["beforeRequestSent" /* Bidi.Network.InterceptPhase.BeforeRequestSent */],
                 });
             }
             else if (!enable && this.#interception) {
                 await this.#frame.browsingContext.userContext.browser.removeIntercept(this.#interception);
                 this.#interception = undefined;
             }
+        }
+        /**
+         * @internal
+         */
+        _credentials = null;
+        #authInterception;
+        async authenticate(credentials) {
+            if (credentials && !this.#authInterception) {
+                this.#authInterception = await this.#frame.browsingContext.addIntercept({
+                    phases: ["authRequired" /* Bidi.Network.InterceptPhase.AuthRequired */],
+                });
+            }
+            else if (!credentials && this.#authInterception) {
+                await this.#frame.browsingContext.userContext.browser.removeIntercept(this.#authInterception);
+                this.#authInterception = undefined;
+            }
+            this._credentials = credentials;
         }
         setDragInterception() {
             throw new UnsupportedOperation();
@@ -525,9 +544,6 @@ let BidiPage = (() => {
         }
         async removeExposedFunction(name) {
             await this.#frame.removeExposedFunction(name);
-        }
-        authenticate() {
-            throw new UnsupportedOperation();
         }
         setExtraHTTPHeaders() {
             throw new UnsupportedOperation();

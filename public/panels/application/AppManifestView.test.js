@@ -9,7 +9,6 @@ import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
-const { assert } = chai;
 describeWithMockConnection('AppManifestView', () => {
     const FIXTURES_96X96_URL = `${new URL('./fixtures/96x96.png', import.meta.url)}`;
     const FIXTURES_320X320_URL = `${new URL('./fixtures/320x320.png', import.meta.url)}`;

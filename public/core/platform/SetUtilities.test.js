@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Plaform from './platform.js';
-const { assert } = chai;
 describe('SetUtilities', () => {
     describe('addAll', () => {
         it('adds all items in the iterable to the set', () => {

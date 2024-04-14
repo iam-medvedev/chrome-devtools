@@ -1,13 +1,12 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
+import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Application from './application.js';
-import * as ApplicationComponents from './components/components.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
+import * as Application from './application.js';
+import * as ApplicationComponents from './components/components.js';
 describeWithMockConnection('ReportingApiView', () => {
     const ORIGIN_1 = 'origin1';
     const ENDPOINTS_1 = [{ url: 'url1', groupName: 'group1' }];

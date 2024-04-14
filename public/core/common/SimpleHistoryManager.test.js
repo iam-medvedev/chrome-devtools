@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from './common.js';
-const { assert } = chai;
 const SimpleHistoryManager = Common.SimpleHistoryManager.SimpleHistoryManager;
 class Entry {
     callback;

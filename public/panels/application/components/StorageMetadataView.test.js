@@ -8,7 +8,6 @@ import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as ApplicationComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const { assert } = chai;
 async function makeView(storageKeyOrBucketInfo, storageBucketsModel) {
     const component = new ApplicationComponents.StorageMetadataView.StorageMetadataView();
     renderElementIntoDOM(component);

@@ -1,10 +1,9 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Resources from './application.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import * as Resources from './application.js';
 var View = Resources.ServiceWorkerUpdateCycleView;
 describeWithLocale('ServiceWorkerUpdateCycleView', () => {
     let versionId = 0;

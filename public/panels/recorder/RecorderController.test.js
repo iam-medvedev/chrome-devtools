@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/es_modules_import */
-const { assert } = chai;
-import { RecorderController } from './recorder.js';
-import * as Models from './models/models.js';
-import * as Components from './components/components.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as Components from './components/components.js';
+import * as Models from './models/models.js';
+import { RecorderController } from './recorder.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describeWithEnvironment('RecorderController', () => {
     setupActionRegistry();

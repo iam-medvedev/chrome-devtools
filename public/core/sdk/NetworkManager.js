@@ -798,7 +798,6 @@ export class NetworkDispatcher {
                 networkRequest.setTransferSize(encodedDataLength);
             }
         }
-        networkRequest.addBlockedRequestCookiesToModel();
         this.#manager.dispatchEventToListeners(Events.RequestFinished, networkRequest);
         MultitargetNetworkManager.instance().inflightMainResourceRequests.delete(networkRequest.requestId());
         if (Common.Settings.Settings.instance().moduleSetting('monitoring-xhr-enabled').get() &&
