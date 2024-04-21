@@ -17,17 +17,9 @@ export declare const renderElementIntoDOM: (element: HTMLElement, renderOptions?
  * This is run automatically between tests - you should not be manually calling this yourself.
  **/
 export declare const resetTestDOM: () => void;
-/**
- * An easy way to assert the component's shadowRoot exists so you're able to assert on its contents.
- */
-export declare function assertShadowRoot(shadowRoot: ShadowRoot | null): asserts shadowRoot is ShadowRoot;
 type Constructor<T> = {
     new (...args: unknown[]): T;
 };
-/**
- * Asserts that `element` is of type `T`.
- */
-export declare function assertElement<T extends Element>(element: Element | null, elementClass: Constructor<T>): asserts element is T;
 /**
  * Asserts that all emenents of `nodeList` are at least of type `T`.
  */

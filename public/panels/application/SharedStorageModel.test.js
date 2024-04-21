@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -184,11 +183,11 @@ describeWithMockConnection('SharedStorageModel', () => {
         assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
         assert.isEmpty(sharedStorageModel.storages());
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
-        assertNotNullOrUndefined(manager);
+        assert.exists(manager);
         const addedPromise = listener.waitForStoragesAdded(1);
         manager.dispatchEventToListeners(SDK.SecurityOriginManager.Events.SecurityOriginAdded, TEST_ORIGIN_A);
         await addedPromise;
-        assertNotNullOrUndefined(sharedStorageModel.storageForOrigin(TEST_ORIGIN_A));
+        assert.exists(sharedStorageModel.storageForOrigin(TEST_ORIGIN_A));
         manager.dispatchEventToListeners(SDK.SecurityOriginManager.Events.SecurityOriginRemoved, TEST_ORIGIN_A);
         assert.isEmpty(sharedStorageModel.storages());
     });
@@ -200,7 +199,7 @@ describeWithMockConnection('SharedStorageModel', () => {
         assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
         assert.isEmpty(sharedStorageModel.storages());
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
-        assertNotNullOrUndefined(manager);
+        assert.exists(manager);
         manager.dispatchEventToListeners(SDK.SecurityOriginManager.Events.SecurityOriginAdded, 'invalid');
         assert.isEmpty(sharedStorageModel.storages());
     });
@@ -213,10 +212,10 @@ describeWithMockConnection('SharedStorageModel', () => {
         assert.isEmpty(sharedStorageModel.storages());
         const addedPromise = listener.waitForStoragesAdded(1);
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
-        assertNotNullOrUndefined(manager);
+        assert.exists(manager);
         manager.dispatchEventToListeners(SDK.SecurityOriginManager.Events.SecurityOriginAdded, TEST_ORIGIN_A);
         await addedPromise;
-        assertNotNullOrUndefined(sharedStorageModel.storageForOrigin(TEST_ORIGIN_A));
+        assert.exists(sharedStorageModel.storageForOrigin(TEST_ORIGIN_A));
         assert.strictEqual(1, sharedStorageModel.numStoragesForTesting());
         manager.dispatchEventToListeners(SDK.SecurityOriginManager.Events.SecurityOriginAdded, TEST_ORIGIN_A);
         assert.strictEqual(1, sharedStorageModel.numStoragesForTesting());
@@ -226,7 +225,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             getError: () => undefined,
         });
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
-        assertNotNullOrUndefined(manager);
+        assert.exists(manager);
         const originSet = new Set([TEST_ORIGIN_A, TEST_ORIGIN_B, TEST_ORIGIN_C]);
         manager.updateSecurityOrigins(originSet);
         assert.strictEqual(3, manager.securityOrigins().length);
@@ -235,9 +234,9 @@ describeWithMockConnection('SharedStorageModel', () => {
         assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
         await addedPromise;
         assert.strictEqual(3, sharedStorageModel.numStoragesForTesting());
-        assertNotNullOrUndefined(sharedStorageModel.storageForOrigin(TEST_ORIGIN_A));
-        assertNotNullOrUndefined(sharedStorageModel.storageForOrigin(TEST_ORIGIN_B));
-        assertNotNullOrUndefined(sharedStorageModel.storageForOrigin(TEST_ORIGIN_C));
+        assert.exists(sharedStorageModel.storageForOrigin(TEST_ORIGIN_A));
+        assert.exists(sharedStorageModel.storageForOrigin(TEST_ORIGIN_B));
+        assert.exists(sharedStorageModel.storageForOrigin(TEST_ORIGIN_C));
         sharedStorageModel.disable();
         assert.isEmpty(sharedStorageModel.storages());
     });
@@ -246,7 +245,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             getError: () => undefined,
         });
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
-        assertNotNullOrUndefined(manager);
+        assert.exists(manager);
         await sharedStorageModel.enable();
         assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
         for (const event of EVENTS) {
@@ -259,7 +258,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             getError: () => undefined,
         });
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
-        assertNotNullOrUndefined(manager);
+        assert.exists(manager);
         await sharedStorageModel.enable();
         assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
         // For change events whose origins aren't yet in the model, the origin is added
@@ -280,7 +279,7 @@ describeWithMockConnection('SharedStorageModel', () => {
         }
         assert.deepEqual(EVENTS.concat(EVENTS), listener.accessEvents);
         const storageA = sharedStorageModel.storageForOrigin(TEST_ORIGIN_A);
-        assertNotNullOrUndefined(storageA);
+        assert.exists(storageA);
         assert.deepEqual(listener.changeEventsForStorage(storageA), [
             {
                 accessTime: 0,
@@ -290,7 +289,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             },
         ]);
         const storageB = sharedStorageModel.storageForOrigin(TEST_ORIGIN_B);
-        assertNotNullOrUndefined(storageB);
+        assert.exists(storageB);
         assert.deepEqual(listener.changeEventsForStorage(storageB), [
             {
                 accessTime: 20,
@@ -300,7 +299,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             },
         ]);
         const storageC = sharedStorageModel.storageForOrigin(TEST_ORIGIN_C);
-        assertNotNullOrUndefined(storageC);
+        assert.exists(storageC);
         assert.deepEqual(listener.changeEventsForStorage(storageC), [
             {
                 accessTime: 100,

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
 describeWithMockConnection('CSSModel', () => {
     it('gets the FontFace of a source URL', () => {
@@ -74,8 +73,8 @@ describeWithMockConnection('CSSModel', () => {
             cssModel = target.model(SDK.CSSModel.CSSModel);
         });
         it('resets on navigation', () => {
-            assertNotNullOrUndefined(cssModel);
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(cssModel);
+            assert.exists(resourceTreeModel);
             cssModel.styleSheetAdded(header);
             let styleSheetIds = cssModel.getStyleSheetIdsForURL('http://example.com/styles.css');
             assert.deepEqual(styleSheetIds, ['stylesheet']);
@@ -85,8 +84,8 @@ describeWithMockConnection('CSSModel', () => {
             assert.deepEqual(styleSheetIds, []);
         });
         it('does not reset on prerender activation', () => {
-            assertNotNullOrUndefined(cssModel);
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(cssModel);
+            assert.exists(resourceTreeModel);
             cssModel.styleSheetAdded(header);
             let styleSheetIds = cssModel.getStyleSheetIdsForURL('http://example.com/styles.css');
             assert.deepEqual(styleSheetIds, ['stylesheet']);

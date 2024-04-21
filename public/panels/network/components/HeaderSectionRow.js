@@ -166,7 +166,7 @@ export class HeaderSectionRow extends HTMLElement {
               @focusout=${this.#onHeaderNameFocusOut}
               @keydown=${this.#onKeyDown}
               @input=${this.#onHeaderNameEdit}
-              @paste=${this.#onHeaderNameEdit}
+              @paste=${this.#onHeaderNamePaste}
               .data=${{ value: this.#header.name }}
             ></${EditableSpan.litTagName}>` :
             this.#header.name}:
@@ -210,7 +210,7 @@ export class HeaderSectionRow extends HTMLElement {
           title=${i18nString(UIStrings.editHeader)}
           .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
           .iconUrl=${editIconUrl}
-          .variant=${"round" /* Buttons.Button.Variant.ROUND */}
+          .variant=${"icon" /* Buttons.Button.Variant.ICON */}
           @click=${() => {
                 this.dispatchEvent(new EnableHeaderEditingEvent());
             }}
@@ -233,7 +233,7 @@ export class HeaderSectionRow extends HTMLElement {
         title=${i18nString(UIStrings.removeOverride)}
         .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
         .iconUrl=${trashIconUrl}
-        .variant=${"round" /* Buttons.Button.Variant.ROUND */}
+        .variant=${"icon" /* Buttons.Button.Variant.ICON */}
         class="remove-header inline-button"
         @click=${this.#onRemoveOverrideClick}
         jslog=${VisualLogging.action('remove-header-override').track({ click: true })}
@@ -351,6 +351,8 @@ export class HeaderSectionRow extends HTMLElement {
         // Clear selection (needed when pressing 'enter' in editable span).
         const selection = window.getSelection();
         selection?.removeAllRanges();
+        // Reset pasted header name
+        this.#header.originalName = '';
     }
     #onHeaderNameFocusOut(event) {
         const target = event.target;
@@ -393,6 +395,14 @@ export class HeaderSectionRow extends HTMLElement {
             else if (target.matches('.header-value devtools-editable-span')) {
                 target.value = this.#header?.value || '';
                 this.#onHeaderValueEdit(event);
+                if (this.#header?.originalName) {
+                    const headerNameElement = this.#shadow.querySelector('.header-name devtools-editable-span');
+                    headerNameElement.value = this.#header.originalName;
+                    this.#header.originalName = '';
+                    headerNameElement.dispatchEvent(new Event('input'));
+                    headerNameElement.focus();
+                    return;
+                }
             }
             target.blur();
         }
@@ -414,6 +424,33 @@ export class HeaderSectionRow extends HTMLElement {
                 this.#header.highlight = false;
             }
             void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        }
+    }
+    #onHeaderNamePaste(event) {
+        if (!event.clipboardData) {
+            return;
+        }
+        const nameEl = event.target;
+        const clipboardText = event.clipboardData.getData('text/plain') || '';
+        const separatorPosition = clipboardText.indexOf(':');
+        if (separatorPosition < 1) {
+            // Not processing further either case 'abc' or ':abc'
+            nameEl.value = clipboardText;
+            nameEl.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
+        }
+        if (this.#header) {
+            this.#header.originalName = this.#header.name;
+        }
+        const headerValue = clipboardText.substring(separatorPosition + 1, clipboardText.length).trim();
+        const headerName = clipboardText.substring(0, separatorPosition);
+        nameEl.value = headerName;
+        nameEl.dispatchEvent(new Event('input'));
+        const valueEL = this.#shadow.querySelector('.header-value devtools-editable-span');
+        if (valueEL) {
+            valueEL.focus();
+            valueEL.value = headerValue;
+            valueEL.dispatchEvent(new Event('input'));
         }
     }
 }

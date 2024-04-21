@@ -30,9 +30,6 @@ describeWithMockConnection('SourceMapManager', () => {
         });
         const debuggerModel = workerTarget.model(SDK.DebuggerModel.DebuggerModel);
         assert.isNotNull(debuggerModel);
-        if (debuggerModel === null) {
-            return;
-        }
         const sourceMapManager = debuggerModel.sourceMapManager();
         const script = new SDK.Script.Script(debuggerModel, '1', scriptUrl, 0, 0, 0, 0, 0, '', false, false, sourceMapUrl, false, 0, null, null, null, null, null, null);
         sourceMapManager.attachSourceMap(script, sourceUrl, sourceMapUrl);
@@ -52,9 +49,6 @@ describeWithMockConnection('SourceMapManager', () => {
         mainTarget.setInspectedURL(frameUrl);
         const debuggerModel = mainTarget.model(SDK.DebuggerModel.DebuggerModel);
         assert.isNotNull(debuggerModel);
-        if (debuggerModel === null) {
-            return;
-        }
         const sourceMapManager = debuggerModel.sourceMapManager();
         const script = new SDK.Script.Script(debuggerModel, '1', scriptUrl, 0, 0, 0, 0, 0, '', false, false, sourceMapUrl, false, 0, null, null, null, null, null, null);
         sourceMapManager.attachSourceMap(script, sourceUrl, sourceMapUrl);

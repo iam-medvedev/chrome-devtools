@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -34,7 +33,7 @@ const sourceMap = {
     x_google_ignoreList: [0],
 };
 function notNull(val) {
-    assertNotNullOrUndefined(val);
+    assert.exists(val);
     return val;
 }
 describeWithMockConnection('IgnoreListManager', () => {

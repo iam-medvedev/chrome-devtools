@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { dispatchClickEvent } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
@@ -15,9 +14,9 @@ describe('ObjectPropertiesSection', () => {
         async function evaluateAndGetProperties(code, accessorPropertiesOnly = false, generatePreview = false) {
             const targetManager = SDK.TargetManager.TargetManager.instance();
             const target = targetManager.rootTarget();
-            assertNotNullOrUndefined(target);
+            assert.exists(target);
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-            assertNotNullOrUndefined(runtimeModel);
+            assert.exists(runtimeModel);
             const executionContext = await getExecutionContext(runtimeModel);
             UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, executionContext);
             const { result } = await ObjectUI.JavaScriptREPL.JavaScriptREPL.evaluateAndBuildPreview(code, false /* throwOnSideEffect */, true /* replMode */, 500 /* timeout */);
@@ -26,7 +25,7 @@ describe('ObjectPropertiesSection', () => {
             }
             const { object } = result;
             const { properties } = await object.getAllProperties(accessorPropertiesOnly, generatePreview);
-            assertNotNullOrUndefined(properties);
+            assert.exists(properties);
             return { object, properties };
         }
         async function setupTreeOutline(code, accessorPropertiesOnly, generatePreview) {
@@ -46,7 +45,7 @@ describe('ObjectPropertiesSection', () => {
             const propertiesSection = treeOutline.rootElement().firstChild();
             propertiesSection.update();
             const calculateValueButton = propertiesSection.valueElement.querySelector('.object-value-calculate-value-button');
-            assertNotNullOrUndefined(calculateValueButton);
+            assert.exists(calculateValueButton);
             const mutations = someMutations(propertiesSection.listItemElement);
             calculateValueButton.click();
             await mutations;
@@ -159,7 +158,7 @@ describe('ObjectPropertiesSection', () => {
                 const div = document.createElement('div');
                 ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.appendMemoryIcon(div, object, expression);
                 const icon = div.querySelector('devtools-icon');
-                assertNotNullOrUndefined(icon);
+                assert.exists(icon);
                 const reveal = sinon.stub(Common.Revealer.RevealerRegistry.prototype, 'reveal');
                 dispatchClickEvent(icon);
                 sinon.assert.calledOnceWithMatch(reveal, sinon.match({ object, expression }), false);

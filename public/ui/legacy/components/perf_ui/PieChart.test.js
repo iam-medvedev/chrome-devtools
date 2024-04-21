@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as PerfUI from './perf_ui.js';
 const testChartData = {
@@ -26,7 +26,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const root = chart.shadowRoot.querySelector('[aria-label="Contents of a Pie"]');
             assert.isTrue(root.classList.contains('root'));
         });
@@ -34,7 +34,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const slices = chart.shadowRoot.querySelectorAll('path');
             assert.strictEqual(slices.length, 2);
         });
@@ -42,7 +42,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
             assert.strictEqual(legendRows.length, 3);
         });
@@ -50,7 +50,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-size');
             assert.strictEqual(legendRows[0].textContent?.trim(), '75 f');
             assert.strictEqual(legendRows[1].textContent?.trim(), '25 f');
@@ -59,7 +59,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const total = chart.shadowRoot.querySelector('.pie-chart-total');
             assert.isNotNull(total);
         });
@@ -67,7 +67,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const total = chart.shadowRoot.querySelector('.pie-chart-total');
             assert.strictEqual(total.textContent.trim(), '100 f');
         });
@@ -75,7 +75,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
             assert.strictEqual(legendRows.length, 3);
             // Legend has one selected item.
@@ -93,7 +93,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const slice = chart.shadowRoot.querySelector('path');
             assert.strictEqual(slice.tabIndex, -1);
         });
@@ -101,7 +101,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const legendName = chart.shadowRoot.querySelector('.pie-chart-name');
             legendName.click();
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
@@ -120,7 +120,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const slice = chart.shadowRoot.querySelector('[aria-label="Filling"');
             slice.dispatchEvent(new Event('click'));
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
@@ -139,7 +139,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const legendName = chart.shadowRoot.querySelector('.pie-chart-name');
             legendName.click();
             const legendRow = chart.shadowRoot.querySelector('.pie-chart-legend-row:focus-visible');
@@ -149,7 +149,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const root = chart.shadowRoot.querySelector('.root');
             root.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
             const legendRow = chart.shadowRoot.querySelector('.pie-chart-legend-row:focus-visible');
@@ -161,7 +161,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartNoLegendData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             const legendRows = chart.shadowRoot.querySelectorAll('.pie-chart-legend-row');
             assert.strictEqual(legendRows.length, 0);
         });
@@ -169,7 +169,7 @@ describeWithLocale('PieChart', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartNoLegendData;
-            assertShadowRoot(chart.shadowRoot);
+            assert.isNotNull(chart.shadowRoot);
             // This is different in no-legend mode!
             const total = chart.shadowRoot.querySelector('.pie-chart-total');
             assert.strictEqual(total.tabIndex, 1);

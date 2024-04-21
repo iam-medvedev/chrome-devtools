@@ -571,7 +571,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     async renderManifest(url, data, errors, installabilityErrors, appIdResponse) {
         const appId = appIdResponse?.appId || null;
         const recommendedId = appIdResponse?.recommendedId || null;
-        if (!data && !errors.length) {
+        if ((!data || data === '{}') && !errors.length) {
             this.emptyView.showWidget();
             this.reportView.hideWidget();
             this.dispatchEventToListeners("ManifestDetected" /* Events.ManifestDetected */, false);
@@ -634,7 +634,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
                 suggestedIdSpan.textContent = recommendedId;
                 const copyButton = new Buttons.Button.Button();
                 copyButton.className = 'inline-button';
-                copyButton.variant = "round" /* Buttons.Button.Variant.ROUND */;
+                copyButton.variant = "icon" /* Buttons.Button.Variant.ICON */;
                 copyButton.size = "SMALL" /* Buttons.Button.Size.SMALL */;
                 copyButton.iconName = 'copy';
                 copyButton.jslogContext = 'manifest.copy-id';

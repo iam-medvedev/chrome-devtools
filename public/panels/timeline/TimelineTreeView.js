@@ -13,6 +13,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import { getCategoryStyles, stringIsEventCategory } from './EventUICategory.js';
 import * as Extensions from './extensions/extensions.js';
+import { targetForEvent } from './TargetForEvent.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 const UIStrings = {
@@ -20,10 +21,6 @@ const UIStrings = {
      *@description Text for the performance of something
      */
     performance: 'Performance',
-    /**
-     *@description Text to filter result items
-     */
-    filter: 'Filter',
     /**
      *@description Time of a single activity, as opposed to the total time
      */
@@ -108,14 +105,6 @@ const UIStrings = {
      *@description Aria-label for grouping combo box in Timeline Details View
      */
     groupBy: 'Group by',
-    /**
-     *@description Aria-label for filter bar in Call Tree view
-     */
-    filterCallTree: 'Filter call tree',
-    /**
-     *@description Aria-label for the filter bar in Bottom-Up view
-     */
-    filterBottomup: 'Filter bottom-up',
     /**
      * @description Title of the sidebar pane in the Performance panel which shows the stack (call
      * stack) where the program spent the most time (out of all the call stacks) while executing.
@@ -202,17 +191,6 @@ export class TimelineTreeView extends UI.Widget.VBox {
         this.#traceParseData = traceParseData;
         this.#selectedEvents = selectedEvents;
     }
-    /**
-     * This method is included only for preventing layout test failures.
-     * TODO(crbug.com/1433692): Port problematic layout tests to unit
-     * tests.
-     */
-    setModel(model, track) {
-        this.setModelWithEvents(model, track?.eventsForTreeView() || null);
-    }
-    getToolbarInputAccessiblePlaceHolder() {
-        return '';
-    }
     model() {
         return this.modelInternal;
     }
@@ -296,7 +274,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
             this.#toggleFilterButton(this.matchWholeWord);
         }, this);
         toolbar.appendToolbarItem(this.matchWholeWord);
-        const textFilterUI = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), this.getToolbarInputAccessiblePlaceHolder());
+        const textFilterUI = new UI.Toolbar.ToolbarFilter();
         this.textFilterUI = textFilterUI;
         textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.#filterChanged, this);
         toolbar.appendToolbarItem(textFilterUI);
@@ -571,7 +549,8 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                     i18nString(UIStrings.notOptimizedS, { PH1: deoptReason });
             }
             name.textContent = TimelineUIUtils.eventTitle(event);
-            const target = this.treeView.modelInternal?.timelineModel().targetByEvent(event) || null;
+            const traceData = this.treeView.traceParseData();
+            const target = traceData && TraceEngine.Legacy.eventIsFromNewEngine(event) ? targetForEvent(traceData, event) : null;
             const linkifier = this.treeView.linkifier;
             const isFreshRecording = Boolean(this.treeView.modelInternal?.timelineModel().isFreshRecording());
             this.linkElement = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
@@ -677,17 +656,6 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
     }
     setGroupBySettingForTests(groupBy) {
         this.groupBySetting.set(groupBy);
-    }
-    setModelWithEvents(model, selectedEvents, traceParseData = null) {
-        super.setModelWithEvents(model, selectedEvents, traceParseData);
-    }
-    /**
-     * This method is included only for preventing layout test failures.
-     * TODO(crbug.com/1433692): Port problematic layout tests to unit
-     * tests.
-     */
-    setModel(model, track) {
-        super.setModel(model, track);
     }
     updateContents(selection) {
         this.updateExtensionResolver();
@@ -896,9 +864,6 @@ export class CallTreeTimelineTreeView extends AggregatedTimelineTreeView {
         super();
         this.dataGrid.markColumnAsSortedBy('total', DataGrid.DataGrid.Order.Descending);
     }
-    getToolbarInputAccessiblePlaceHolder() {
-        return i18nString(UIStrings.filterCallTree);
-    }
     buildTree() {
         const grouping = this.groupBySetting.get();
         return this.buildTopDownTree(false, this.groupingFunction(grouping));
@@ -908,9 +873,6 @@ export class BottomUpTimelineTreeView extends AggregatedTimelineTreeView {
     constructor() {
         super();
         this.dataGrid.markColumnAsSortedBy('self', DataGrid.DataGrid.Order.Descending);
-    }
-    getToolbarInputAccessiblePlaceHolder() {
-        return i18nString(UIStrings.filterBottomup);
     }
     buildTree() {
         return new TimelineModel.TimelineProfileTree.BottomUpRootNode(this.modelEvents(), this.textFilter(), this.filtersWithoutTextFilter(), this.startTime, this.endTime, this.groupingFunction(this.groupBySetting.get()));

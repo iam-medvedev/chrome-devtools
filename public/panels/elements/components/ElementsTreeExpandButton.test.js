@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ElementsComponents from './components.js';
@@ -17,7 +17,7 @@ describeWithLocale('Elements tree expand button', () => {
         renderElementIntoDOM(component);
         await coordinator.done();
         const button = component.shadowRoot.querySelector('.expand-button');
-        assertElement(button, HTMLElement);
+        assert.instanceOf(button, HTMLElement);
         dispatchClickEvent(button);
         assert.strictEqual(clicks, 1);
     });
@@ -30,7 +30,7 @@ describeWithLocale('Elements tree expand button', () => {
         renderElementIntoDOM(component);
         await coordinator.done();
         const button = component.shadowRoot.querySelector('.expand-button');
-        assertElement(button, HTMLElement);
+        assert.instanceOf(button, HTMLElement);
         assert.strictEqual(button.innerText, '');
     });
 });

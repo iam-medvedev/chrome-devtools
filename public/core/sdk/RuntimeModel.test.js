@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
-import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
 describeWithMockConnection('ExecutionContext', () => {
     function createExecutionContext(target, name, isDefault) {
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-        assertNotNullOrUndefined(runtimeModel);
+        assert.exists(runtimeModel);
         return new SDK.RuntimeModel.ExecutionContext(runtimeModel, 42, 'uniqueId', name ?? 'name', 'http://www.example.com', Boolean(isDefault));
     }
     it('can be compared based on target type', () => {

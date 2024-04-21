@@ -614,9 +614,6 @@ export const generatedPropertyValues: {
     "position-anchor": {
         values: string[];
     };
-    "position-fallback-bounds": {
-        values: string[];
-    };
     "position-try-options": {
         values: string[];
     };

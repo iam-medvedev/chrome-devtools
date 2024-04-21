@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents, getCellByIndexes, } from '../../../../testing/DataGridHelpers.js';
-import { assertShadowRoot, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as DataGrid from '../../../../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
@@ -17,14 +17,14 @@ async function renderMismatchedPreloadingGrid(data) {
     const component = new PreloadingComponents.MismatchedPreloadingGrid.MismatchedPreloadingGrid();
     component.data = data;
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     await coordinator.done();
     return component;
 }
 function assertDiff(gridComponent, cellIndex, spansExpected) {
     const controller = getElementWithinComponent(gridComponent, 'devtools-data-grid-controller', DataGrid.DataGridController.DataGridController);
     const grid = getElementWithinComponent(controller, 'devtools-data-grid', DataGrid.DataGrid.DataGrid);
-    assertShadowRoot(grid.shadowRoot);
+    assert.isNotNull(grid.shadowRoot);
     const cell = getCellByIndexes(grid.shadowRoot, cellIndex);
     const spans = cell.querySelectorAll('div span');
     for (const [got, expected] of zip2(Array.from(spans), spansExpected)) {
@@ -49,7 +49,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         assertGridContents(component, ['URL', 'Action', 'Status'], [
             ['https://example.com/prefetched.html', 'Prefetch', 'Failure'],
         ]);
@@ -64,7 +64,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         assertGridContents(component, ['URL', 'Action', 'Status'], [
             ['https://example.com/prefetched.html?q=21', 'Prefetch', 'Ready'],
         ]);
@@ -84,7 +84,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         assertGridContents(component, ['URL', 'Action', 'Status'], [
             ['https://example.com/prefetched.html?q=1', 'Prefetch', 'Ready'],
         ]);
@@ -103,7 +103,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         assertGridContents(component, ['URL', 'Action', 'Status'], [
             ['https://example.com/prefetched.html?q=1', 'Prefetch', 'Ready'],
         ]);
@@ -122,7 +122,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         assertGridContents(component, ['URL', 'Action', 'Status'], [
             ['https://example.com/prerfendertched.html?xq=1', 'Prerender', 'Ready'],
         ]);

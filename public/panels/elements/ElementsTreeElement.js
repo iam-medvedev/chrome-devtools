@@ -842,15 +842,13 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             tagNameElement.removeEventListener('keydown', keydownListener, false);
             this.tagNameEditingCommitted(element, newTagName, oldText, tagName, moveDirection);
         }
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        function editingCancelled(element, context) {
+        function editingCancelled(element, tagName) {
             if (!tagNameElement) {
                 return;
             }
             tagNameElement.removeEventListener('keyup', keyupListener, false);
             tagNameElement.removeEventListener('keydown', keydownListener, false);
-            this.editingCancelled(element, context);
+            this.editingCancelled(element, tagName);
         }
         tagNameElement.addEventListener('keyup', keyupListener, false);
         tagNameElement.addEventListener('keydown', keydownListener, false);
@@ -860,8 +858,6 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         componentSelection && componentSelection.selectAllChildren(tagNameElement);
         return true;
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     updateEditorHandles(element, config) {
         const editorHandles = UI.InplaceEditor.InplaceEditor.startEditing(element, config);
         if (!editorHandles) {
@@ -1106,9 +1102,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
         textNode.setNodeValue(newText, callback.bind(this));
     }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    editingCancelled(_element, _context) {
+    editingCancelled(_element, _tagName) {
         this.editing = null;
         // Need to restore attributes structure.
         this.updateTitle();

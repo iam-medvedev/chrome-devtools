@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertElements, assertShadowRoot, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertElements, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 export const NAVIGATOR_ADDRESS_SELECTOR = '[data-input]';
@@ -25,7 +25,7 @@ describeWithLocale('LinearMemoryNavigator', () => {
     }
     async function assertNavigationEvents(eventType) {
         const shadowRoot = component.shadowRoot;
-        assertShadowRoot(shadowRoot);
+        assert.isNotNull(shadowRoot);
         const pageNavigationButtons = shadowRoot.querySelectorAll(`[data-button=${eventType}]`);
         assertElements(pageNavigationButtons, HTMLButtonElement);
         assert.lengthOf(pageNavigationButtons, 2);
@@ -43,9 +43,9 @@ describeWithLocale('LinearMemoryNavigator', () => {
     }
     it('renders navigator address', () => {
         const shadowRoot = component.shadowRoot;
-        assertShadowRoot(shadowRoot);
+        assert.isNotNull(shadowRoot);
         const input = shadowRoot.querySelector(NAVIGATOR_ADDRESS_SELECTOR);
-        assertElement(input, HTMLInputElement);
+        assert.instanceOf(input, HTMLInputElement);
         assert.strictEqual(input.value, '20');
     });
     it('re-renders address on address change', () => {
@@ -58,17 +58,17 @@ describeWithLocale('LinearMemoryNavigator', () => {
             canGoForwardInHistory: false,
         };
         const shadowRoot = component.shadowRoot;
-        assertShadowRoot(shadowRoot);
+        assert.isNotNull(shadowRoot);
         const input = shadowRoot.querySelector(NAVIGATOR_ADDRESS_SELECTOR);
-        assertElement(input, HTMLInputElement);
+        assert.instanceOf(input, HTMLInputElement);
         assert.strictEqual(input.value, '16');
     });
     it('sends event when clicking on refresh', async () => {
         const eventPromise = getEventPromise(component, 'refreshrequested');
         const shadowRoot = component.shadowRoot;
-        assertShadowRoot(shadowRoot);
+        assert.isNotNull(shadowRoot);
         const refreshButton = shadowRoot.querySelector(NAVIGATOR_REFRESH_BUTTON_SELECTOR);
-        assertElement(refreshButton, HTMLButtonElement);
+        assert.instanceOf(refreshButton, HTMLButtonElement);
         refreshButton.click();
         assert.isNotNull(await eventPromise);
     });

@@ -69,7 +69,7 @@ describeWithRealConnection('TimelineController', () => {
         assert.strictEqual(stubs.loadingComplete.callCount, 1);
         const [collectedEvents, tracingModel] = stubs.loadingComplete.getCall(0)
             .args;
-        assert.isDefined(tracingModel);
+        assert.exists(tracingModel);
         // Sanity check: ensure that we saw some events during the trace.
         assert.isTrue(tracingModel.allRawEvents().length > 0);
         assert.isTrue(collectedEvents.length > 0);

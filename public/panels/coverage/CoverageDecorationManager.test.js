@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -51,7 +50,7 @@ describeWithMockConnection('CoverageDeocrationManager', () => {
         // Wait for the resource tree model to load; otherwise, our uiSourceCodes could be asynchronously
         // invalidated during the test.
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assertNotNullOrUndefined(resourceTreeModel);
+        assert.exists(resourceTreeModel);
         await new Promise(resolver => {
             if (resourceTreeModel.cachedResourcesLoaded()) {
                 resolver();
@@ -69,7 +68,7 @@ describeWithMockConnection('CoverageDeocrationManager', () => {
         it('marks lines as "unknown" coverge status if no coverage info is available', async () => {
             await backend.addScript(target, { url: URL, content: 'function foo(a,b){return a+b;}' }, null);
             const uiSourceCode = workspace.uiSourceCodeForURL(URL);
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             await uiSourceCode.requestContent();
             const manager = new CoverageDecorationManager(coverageModel, workspace, debuggerBinding, cssBinding);
             const usage = await manager.usageByLine(uiSourceCode, lineRangesForContent(uiSourceCode.content()));
@@ -78,7 +77,7 @@ describeWithMockConnection('CoverageDeocrationManager', () => {
         it('marks lines as covered if coverage info says so', async () => {
             await backend.addScript(target, { url: URL, content: 'function foo(a,b){return a+b;}' }, null);
             const uiSourceCode = workspace.uiSourceCodeForURL(URL);
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             await uiSourceCode.requestContent();
             coverageModel.usageForRange.returns(true);
             const manager = new CoverageDecorationManager(coverageModel, workspace, debuggerBinding, cssBinding);
@@ -91,7 +90,7 @@ describeWithMockConnection('CoverageDeocrationManager', () => {
             const scriptContent = 'function mulWithOffset(n,t,e){const f=n*t;const u=f;if(e!==undefined){const n=u+e;return n}return u}';
             const script = await backend.addScript(target, { url: URL, content: scriptContent }, null);
             const uiSourceCode = workspace.uiSourceCodeForURL(URL);
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             await uiSourceCode.requestContent();
             coverageModel.usageForRange.callsFake((contentProvider, startOffset, endOffset) => {
                 assert.strictEqual(contentProvider, script);
@@ -145,7 +144,7 @@ function mulWithOffset(param1, param2, offset) {
         });
         it('marks lines as covered if coverage info says so', async () => {
             const uiSourceCode = workspace.uiSourceCodeForURL('file:///tmp/example.js');
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             await uiSourceCode.requestContent();
             coverageModel.usageForRange.callsFake((contentProvider, startOffset, endOffset) => {
                 assert.strictEqual(contentProvider, script);

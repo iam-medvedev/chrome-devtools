@@ -4,7 +4,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -185,13 +184,13 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             const navigatorView = Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: true });
             const rootElement = navigatorView.scriptsTree.rootElement();
             const exampleComNode = rootElement.firstChild();
-            assertNotNullOrUndefined(exampleComNode);
+            assert.exists(exampleComNode);
             const nodeA = exampleComNode.childAt(0);
             const nodeB = exampleComNode.childAt(1);
             const nodeC = exampleComNode.childAt(2);
-            assertNotNullOrUndefined(nodeA);
-            assertNotNullOrUndefined(nodeB);
-            assertNotNullOrUndefined(nodeC);
+            assert.exists(nodeA);
+            assert.exists(nodeB);
+            assert.exists(nodeC);
             // Select the 'http://example.com/a.js' node. Remove the project with a.js and b.js and verify
             // that the selection is moved from 'a.js' to 'c.js', without temporarily selecting 'b.js'.
             nodeA.select();
@@ -215,13 +214,13 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             const navigatorView = Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: true });
             const rootElement = navigatorView.scriptsTree.rootElement();
             const nodeExampleCom = rootElement.firstChild();
-            assertNotNullOrUndefined(nodeExampleCom);
+            assert.exists(nodeExampleCom);
             const nodeA = nodeExampleCom.childAt(0);
             const nodeB = nodeExampleCom.childAt(1);
             const nodeC = nodeExampleCom.childAt(2);
-            assertNotNullOrUndefined(nodeA);
-            assertNotNullOrUndefined(nodeB);
-            assertNotNullOrUndefined(nodeC);
+            assert.exists(nodeA);
+            assert.exists(nodeB);
+            assert.exists(nodeC);
             // Select the 'http://example.com/a.js' node. Remove all the source codenodes and check the selection
             // is not propagated forward to the siblings as we remove them. Instead, the selection will be moved
             // directly to the parent.
@@ -257,16 +256,16 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             const navigatorView = Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: true });
             const rootElement = navigatorView.scriptsTree.rootElement();
             const exampleComNode = rootElement.firstChild();
-            assertNotNullOrUndefined(exampleComNode);
+            assert.exists(exampleComNode);
             const nodeD = exampleComNode.childAt(0);
-            assertNotNullOrUndefined(nodeD);
+            assert.exists(nodeD);
             await nodeD.expand();
             const nodeA = nodeD.childAt(0);
             const nodeB = nodeD.childAt(1);
             const nodeC = exampleComNode.childAt(1);
-            assertNotNullOrUndefined(nodeA);
-            assertNotNullOrUndefined(nodeB);
-            assertNotNullOrUndefined(nodeC);
+            assert.exists(nodeA);
+            assert.exists(nodeB);
+            assert.exists(nodeC);
             // Select the 'http://example.com/a.js' node.
             nodeA.select();
             const nodeBSelectSpy = sinon.spy(nodeB, 'select');
@@ -304,19 +303,19 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             const navigatorView = Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: true });
             const rootElement = navigatorView.scriptsTree.rootElement();
             const exampleComNode = rootElement.firstChild();
-            assertNotNullOrUndefined(exampleComNode);
+            assert.exists(exampleComNode);
             const nodeD = exampleComNode.childAt(0);
             const nodeE = exampleComNode.childAt(1);
             const nodeC = exampleComNode.childAt(2);
-            assertNotNullOrUndefined(nodeD);
-            assertNotNullOrUndefined(nodeE);
+            assert.exists(nodeD);
+            assert.exists(nodeE);
             await nodeD.expand();
             await nodeE.expand();
             const nodeA = nodeD.childAt(0);
             const nodeB = nodeE.childAt(0);
-            assertNotNullOrUndefined(nodeA);
-            assertNotNullOrUndefined(nodeB);
-            assertNotNullOrUndefined(nodeC);
+            assert.exists(nodeA);
+            assert.exists(nodeB);
+            assert.exists(nodeC);
             // Select the 'http://example.com/a.js' node.
             nodeA.select();
             const nodeESelectSpy = sinon.spy(nodeE, 'select');
@@ -353,13 +352,13 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             const navigatorView = Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: true });
             const rootElement = navigatorView.scriptsTree.rootElement();
             const exampleComNode = rootElement.firstChild();
-            assertNotNullOrUndefined(exampleComNode);
+            assert.exists(exampleComNode);
             const nodeA = exampleComNode.childAt(0);
             const nodeB = exampleComNode.childAt(1);
             const nodeC = exampleComNode.childAt(2);
-            assertNotNullOrUndefined(nodeA);
-            assertNotNullOrUndefined(nodeB);
-            assertNotNullOrUndefined(nodeC);
+            assert.exists(nodeA);
+            assert.exists(nodeB);
+            assert.exists(nodeC);
             // Select the 'http://example.com/a.js' node. Remove the project with a.js and b.js and verify
             // that the selection is moved from 'a.js' to 'c.js', without temporarily selecting 'b.js'.
             nodeA.select();

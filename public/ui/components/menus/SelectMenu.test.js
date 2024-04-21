@@ -53,13 +53,13 @@ describeWithLocale('SelectMenu', () => {
         menu.buttonTitle = 'Override Title';
         Helpers.renderElementIntoDOM(menu);
         await coordinator.done();
-        Helpers.assertShadowRoot(menu.shadowRoot);
+        assert.isNotNull(menu.shadowRoot);
         const button = menu.shadowRoot.querySelector('devtools-select-menu-button');
         if (!button) {
             assert.fail('devtools-select-menu-button not found');
             return;
         }
-        Helpers.assertElement(button, HTMLElement);
+        assert.instanceOf(button, HTMLElement);
         assert.strictEqual(button.innerText, 'Override Title');
     });
     it('allows the buttonTitle to be a function', async () => {
@@ -73,13 +73,13 @@ describeWithLocale('SelectMenu', () => {
         menu.buttonTitle = () => LitHtml.html `Override Title`;
         Helpers.renderElementIntoDOM(menu);
         await coordinator.done();
-        Helpers.assertShadowRoot(menu.shadowRoot);
+        assert.isNotNull(menu.shadowRoot);
         const button = menu.shadowRoot.querySelector('devtools-select-menu-button');
         if (!button) {
             assert.fail('devtools-select-menu-button not found');
             return;
         }
-        Helpers.assertElement(button, HTMLElement);
+        assert.instanceOf(button, HTMLElement);
         assert.strictEqual(button.innerText, 'Override Title');
     });
     it('can render multiple options as selected at once', async () => {
@@ -87,7 +87,7 @@ describeWithLocale('SelectMenu', () => {
         Helpers.renderElementIntoDOM(selectMenu);
         [...selectMenu.querySelectorAll('devtools-menu-item')][0].selected = true;
         [...selectMenu.querySelectorAll('devtools-menu-item')][1].selected = true;
-        Helpers.assertShadowRoot(selectMenu.shadowRoot);
+        assert.isNotNull(selectMenu.shadowRoot);
         const devtoolsMenu = selectMenu.shadowRoot.querySelector('devtools-menu');
         const devtoolsDialog = devtoolsMenu?.shadowRoot?.querySelector('devtools-dialog');
         await devtoolsDialog?.setDialogVisible(true);

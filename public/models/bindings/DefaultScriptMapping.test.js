@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -67,7 +66,7 @@ describeWithMockConnection('DefaultScriptMapping', () => {
         it('maps UI locations on first line in inline scripts without sourceURL', async () => {
             const script = await backend.addScript(target, { content: contentWithoutSourceUrl, url, startLine: 3, startColumn: 8, hasSourceURL: false }, null);
             const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             const rawLocations = defaultScriptMapping.uiLocationToRawLocations(uiSourceCode, 0, 1);
             assert.strictEqual(rawLocations.length, 1);
             assert.strictEqual(rawLocations[0].lineNumber, 3);
@@ -76,7 +75,7 @@ describeWithMockConnection('DefaultScriptMapping', () => {
         it('maps UI locations in inline scripts without sourceURL', async () => {
             const script = await backend.addScript(target, { content: contentWithoutSourceUrl, url, startLine: 3, startColumn: 8, hasSourceURL: false }, null);
             const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             const rawLocations = defaultScriptMapping.uiLocationToRawLocations(uiSourceCode, 1, 2);
             assert.strictEqual(rawLocations.length, 1);
             assert.strictEqual(rawLocations[0].lineNumber, 4);
@@ -85,7 +84,7 @@ describeWithMockConnection('DefaultScriptMapping', () => {
         it('maps UI locations in inline scripts with sourceURL', async () => {
             const script = await backend.addScript(target, { content: contentWithSourceUrl, url, startLine: 3, startColumn: 8, hasSourceURL: true }, null);
             const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             const rawLocations = defaultScriptMapping.uiLocationToRawLocations(uiSourceCode, 4, 2);
             assert.strictEqual(rawLocations.length, 1);
             assert.strictEqual(rawLocations[0].lineNumber, 4);
@@ -96,9 +95,9 @@ describeWithMockConnection('DefaultScriptMapping', () => {
         it('maps UI location ranges on first line in inline scripts without sourceURL', async () => {
             const script = await backend.addScript(target, { content: contentWithoutSourceUrl, url, startLine: 3, startColumn: 8, hasSourceURL: false }, null);
             const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             const rawLocationRanges = defaultScriptMapping.uiLocationRangeToRawLocationRanges(uiSourceCode, new TextUtils.TextRange.TextRange(0, 1, 0, 4));
-            assertNotNullOrUndefined(rawLocationRanges);
+            assert.exists(rawLocationRanges);
             assert.lengthOf(rawLocationRanges, 1);
             assert.strictEqual(rawLocationRanges[0].start.lineNumber, 3);
             assert.strictEqual(rawLocationRanges[0].start.columnNumber, 9);
@@ -108,9 +107,9 @@ describeWithMockConnection('DefaultScriptMapping', () => {
         it('maps UI location ranges in inline scripts without sourceURL', async () => {
             const script = await backend.addScript(target, { content: contentWithoutSourceUrl, url, startLine: 3, startColumn: 8, hasSourceURL: false }, null);
             const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             const rawLocationRanges = defaultScriptMapping.uiLocationRangeToRawLocationRanges(uiSourceCode, new TextUtils.TextRange.TextRange(1, 2, 2, 4));
-            assertNotNullOrUndefined(rawLocationRanges);
+            assert.exists(rawLocationRanges);
             assert.lengthOf(rawLocationRanges, 1);
             assert.strictEqual(rawLocationRanges[0].start.lineNumber, 4);
             assert.strictEqual(rawLocationRanges[0].start.columnNumber, 2);
@@ -120,9 +119,9 @@ describeWithMockConnection('DefaultScriptMapping', () => {
         it('maps UI locations in inline scripts with sourceURL', async () => {
             const script = await backend.addScript(target, { content: contentWithSourceUrl, url, startLine: 3, startColumn: 8, hasSourceURL: true }, null);
             const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
-            assertNotNullOrUndefined(uiSourceCode);
+            assert.exists(uiSourceCode);
             const rawLocationRanges = defaultScriptMapping.uiLocationRangeToRawLocationRanges(uiSourceCode, new TextUtils.TextRange.TextRange(4, 2, 4, 4));
-            assertNotNullOrUndefined(rawLocationRanges);
+            assert.exists(rawLocationRanges);
             assert.lengthOf(rawLocationRanges, 1);
             assert.strictEqual(rawLocationRanges[0].start.lineNumber, 4);
             assert.strictEqual(rawLocationRanges[0].start.columnNumber, 2);
@@ -134,14 +133,14 @@ describeWithMockConnection('DefaultScriptMapping', () => {
         const content = 'x === 5\n\n//# sourceURL=debugger://breakpoint';
         const script = await backend.addScript(target, { content, url: SDK.DebuggerModel.COND_BREAKPOINT_SOURCE_URL, hasSourceURL: true }, null);
         const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
-        assertNotNullOrUndefined(uiSourceCode);
+        assert.exists(uiSourceCode);
         assert.isTrue(uiSourceCode.isUnconditionallyIgnoreListed());
     });
     it('marks logpoint scripts as ignored', async () => {
         const content = 'console.log(x)\n\n//# sourceURL=debugger://logpoint';
         const script = await backend.addScript(target, { content, url: SDK.DebuggerModel.LOGPOINT_SOURCE_URL, hasSourceURL: true }, null);
         const uiSourceCode = defaultScriptMapping.uiSourceCodeForScript(script);
-        assertNotNullOrUndefined(uiSourceCode);
+        assert.exists(uiSourceCode);
         assert.isTrue(uiSourceCode.isUnconditionallyIgnoreListed());
     });
 });

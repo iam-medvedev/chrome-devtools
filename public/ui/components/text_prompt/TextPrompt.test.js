@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElements, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as TextPrompt from './text_prompt.js';
 const renderTextPrompt = (data) => {
     const component = new TextPrompt.TextPrompt.TextPrompt();
@@ -18,11 +18,11 @@ describe('TextPrompt', () => {
         const component = renderTextPrompt(defaultTextPromptData);
         renderElementIntoDOM(component);
         const textPromptPrefixs = component.shadowRoot.querySelectorAll('.prefix');
-        assert.strictEqual(textPromptPrefixs.length, 1);
-        assertElements(textPromptPrefixs, HTMLSpanElement);
+        assert.lengthOf(textPromptPrefixs, 1);
+        assert.instanceOf(textPromptPrefixs[0], HTMLSpanElement);
         const textPromptInputs = component.shadowRoot.querySelectorAll('.text-prompt-input');
-        assert.strictEqual(textPromptInputs.length, 1);
-        assertElements(textPromptInputs, HTMLSpanElement);
+        assert.lengthOf(textPromptInputs, 1);
+        assert.instanceOf(textPromptInputs[0], HTMLSpanElement);
         assert.deepEqual(component.data, defaultTextPromptData);
     });
     describe('data setter', () => {

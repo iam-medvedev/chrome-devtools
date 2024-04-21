@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
 import * as SettingComponents from './settings.js';
 function createWarningElement(deprecationNotice) {
@@ -33,22 +32,22 @@ describe('SettingDeprecationWarning', () => {
     it('is clickable when disabled and associated with an experiment', () => {
         Root.Runtime.experiments.register(EXPERIMENT_NAME, EXPERIMENT_NAME);
         const { element } = createWarningElement({ disabled: true, warning, experiment: EXPERIMENT_NAME });
-        assertNotNullOrUndefined(element);
+        assert.exists(element);
         assert.include(Array.from(element.classList.values()), 'clickable');
     });
     it('is not clickable when not disabled and associated with an experiment', () => {
         Root.Runtime.experiments.register(EXPERIMENT_NAME, EXPERIMENT_NAME);
         const { element } = createWarningElement({ disabled: false, warning, experiment: EXPERIMENT_NAME });
-        assertNotNullOrUndefined(element);
+        assert.exists(element);
         assert.notInclude(Array.from(element.classList.values()), 'clickable');
     });
     it('reveals the associated experiment on click', () => {
         Root.Runtime.experiments.register(EXPERIMENT_NAME, EXPERIMENT_NAME);
         const experiment = Root.Runtime.experiments.allConfigurableExperiments().find(e => e.name === EXPERIMENT_NAME);
-        assertNotNullOrUndefined(experiment);
+        assert.exists(experiment);
         const { element } = createWarningElement({ disabled: true, warning, experiment: EXPERIMENT_NAME });
         const reveal = sinon.stub(Common.Revealer.RevealerRegistry.prototype, 'reveal').resolves();
-        assertNotNullOrUndefined(element);
+        assert.exists(element);
         element.click();
         assert.isTrue(reveal.calledOnceWithExactly(experiment, false), 'Revealer was either not called or was called with unexpected arguments');
     });

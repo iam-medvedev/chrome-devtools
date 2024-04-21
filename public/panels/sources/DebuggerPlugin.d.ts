@@ -3,7 +3,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
-import type * as TextEditor from '../../ui/components/text_editor/text_editor.js';
+import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Plugin } from './Plugin.js';
@@ -92,7 +92,6 @@ export declare class DebuggerPlugin extends Plugin {
 export declare class BreakpointLocationRevealer implements Common.Revealer.Revealer<Breakpoints.BreakpointManager.BreakpointLocation> {
     reveal(breakpointLocation: Breakpoints.BreakpointManager.BreakpointLocation, omitFocus?: boolean | undefined): Promise<void>;
 }
-export declare function computeExecutionDecorations(state: CodeMirror.EditorState, lineNumber: number, columnNumber: number): CodeMirror.DecorationSet;
 export declare function getVariableNamesByLine(editorState: CodeMirror.EditorState, fromPos: number, toPos: number, currentPos: number): {
     line: number;
     from: number;

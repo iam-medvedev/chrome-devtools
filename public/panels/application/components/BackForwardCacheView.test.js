@@ -1,9 +1,8 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import { assertElement, assertShadowRoot, dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
@@ -14,7 +13,7 @@ async function renderBackForwardCacheView() {
     const component = new ApplicationComponents.BackForwardCacheView.BackForwardCacheView();
     renderElementIntoDOM(component);
     await component.render();
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     await coordinator.done();
     return component;
 }
@@ -34,7 +33,7 @@ describeWithMockConnection('BackForwardCacheView', () => {
             target = targetFactory();
             resourceTreeModel =
                 target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(resourceTreeModel);
             resourceTreeModel.mainFrame = {
                 url: 'https://www.example.com/',
                 backForwardCacheDetails: {
@@ -45,15 +44,15 @@ describeWithMockConnection('BackForwardCacheView', () => {
         });
         it('updates BFCacheView on main frame navigation', async () => {
             await renderBackForwardCacheView();
-            assertNotNullOrUndefined(resourceTreeModel);
-            assertNotNullOrUndefined(resourceTreeModel.mainFrame);
+            assert.exists(resourceTreeModel);
+            assert.exists(resourceTreeModel.mainFrame);
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame: resourceTreeModel.mainFrame, type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Navigation */ });
             await coordinator.done({ waitForWork: true });
         });
         it('updates BFCacheView on BFCache detail update', async () => {
             await renderBackForwardCacheView();
-            assertNotNullOrUndefined(resourceTreeModel);
-            assertNotNullOrUndefined(resourceTreeModel.mainFrame);
+            assert.exists(resourceTreeModel);
+            assert.exists(resourceTreeModel.mainFrame);
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.BackForwardCacheDetailsUpdated, resourceTreeModel.mainFrame);
             await coordinator.done({ waitForWork: true });
         });
@@ -140,8 +139,8 @@ describeWithMockConnection('BackForwardCacheView', () => {
             };
             const component = await renderBackForwardCacheView();
             const treeOutline = component.shadowRoot.querySelector('devtools-tree-outline');
-            assertElement(treeOutline, TreeOutline.TreeOutline.TreeOutline);
-            assertShadowRoot(treeOutline.shadowRoot);
+            assert.instanceOf(treeOutline, TreeOutline.TreeOutline.TreeOutline);
+            assert.isNotNull(treeOutline.shadowRoot);
             const treeData = await Promise.all(treeOutline.data.tree.map(node => unpromisify(node)));
             const expected = [
                 {
@@ -259,7 +258,7 @@ describeWithMockConnection('BackForwardCacheView', () => {
             };
             const component = await renderBackForwardCacheView();
             const button = component.shadowRoot.querySelector('[aria-label="Test back/forward cache"]');
-            assertElement(button, HTMLElement);
+            assert.instanceOf(button, HTMLElement);
             dispatchClickEvent(button);
             await new Promise(resolve => {
                 let eventCounter = 0;

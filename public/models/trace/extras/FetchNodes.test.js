@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { clearAllMockConnectionResponseHandlers, clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../testing/MockConnection.js';
@@ -20,7 +19,7 @@ describeWithMockConnection('TraceSDKServices', function () {
             // Create a mock target, dom model, document and node.
             const target = createTarget();
             const domModel = target.model(SDK.DOMModel.DOMModel);
-            assertNotNullOrUndefined(domModel);
+            assert.exists(domModel);
             const documentNode = { nodeId: nodeId(1) };
             const domNode = new SDK.DOMModel.DOMNode(domModel);
             domNode.id = nodeId(2);
@@ -43,7 +42,7 @@ describeWithMockConnection('TraceSDKServices', function () {
             // Create a mock target, dom model, document and node.
             const target = createTarget();
             const domModel = target.model(SDK.DOMModel.DOMModel);
-            assertNotNullOrUndefined(domModel);
+            assert.exists(domModel);
             const documentNode = { nodeId: nodeId(1) };
             const domNode = new SDK.DOMModel.DOMNode(domModel);
             domNode.id = nodeId(2);
@@ -68,7 +67,7 @@ describeWithMockConnection('TraceSDKServices', function () {
             // Create a mock target, dom model, document and node.
             const target = createTarget();
             const domModel = target.model(SDK.DOMModel.DOMModel);
-            assertNotNullOrUndefined(domModel);
+            assert.exists(domModel);
             const documentNode = { nodeId: nodeId(1) };
             const domNodeId2 = new SDK.DOMModel.DOMNode(domModel);
             domNodeId2.id = nodeId(2);
@@ -96,7 +95,7 @@ describeWithMockConnection('TraceSDKServices', function () {
             // Create a mock target, dom model, document and node.
             const target = createTarget();
             const domModel = target.model(SDK.DOMModel.DOMModel);
-            assertNotNullOrUndefined(domModel);
+            assert.exists(domModel);
             const documentNode = { nodeId: 1 };
             const domNode = new SDK.DOMModel.DOMNode(domModel);
             domNode.id = 2;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getHeaderCells, getValuesOfAllBodyRows } from '../../../testing/DataGridHelpers.js';
-import { assertShadowRoot, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
@@ -14,15 +14,15 @@ const renderEndpointsGrid = async (data) => {
         component.data = data;
     }
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     await coordinator.done();
     if (!data) {
         return component;
     }
     const controller = getElementWithinComponent(component, 'devtools-data-grid-controller', DataGrid.DataGridController.DataGridController);
-    assertShadowRoot(controller.shadowRoot);
+    assert.isNotNull(controller.shadowRoot);
     const datagrid = getElementWithinComponent(controller, 'devtools-data-grid', DataGrid.DataGrid.DataGrid);
-    assertShadowRoot(datagrid.shadowRoot);
+    assert.isNotNull(datagrid.shadowRoot);
     return datagrid;
 };
 describeWithLocale('EndpointsGrid', () => {
@@ -51,7 +51,7 @@ describeWithLocale('EndpointsGrid', () => {
         ]);
         const data = { endpoints };
         const dataGrid = await renderEndpointsGrid(data);
-        assertShadowRoot(dataGrid.shadowRoot);
+        assert.isNotNull(dataGrid.shadowRoot);
         const header = getHeaderCells(dataGrid.shadowRoot).map(({ textContent }) => textContent.trim());
         assert.deepEqual(header, ['Origin', 'Name', 'URL']);
         const rowValues = getValuesOfAllBodyRows(dataGrid.shadowRoot);

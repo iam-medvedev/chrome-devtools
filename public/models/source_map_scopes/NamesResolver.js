@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
@@ -157,6 +158,9 @@ export const scopeIdentifiers = async function (script, scope, ancestorScopes) {
 };
 const identifierAndPunctuationRegExp = /^\s*([A-Za-z_$][A-Za-z_$0-9]*)\s*([.;,=]?)\s*$/;
 const resolveDebuggerScope = async (scope) => {
+    if (!Common.Settings.Settings.instance().moduleSetting('js-source-maps-enabled').get()) {
+        return { variableMapping: new Map(), thisMapping: null };
+    }
     const script = scope.callFrame().script;
     const scopeChain = await findScopeChainForDebuggerScope(scope);
     return resolveScope(script, scopeChain);
@@ -324,6 +328,9 @@ export const resolveScopeChain = async function (callFrame) {
  * shadowed) we set it to `null`.
  */
 export const allVariablesInCallFrame = async (callFrame) => {
+    if (!Common.Settings.Settings.instance().moduleSetting('js-source-maps-enabled').get()) {
+        return new Map();
+    }
     const cachedMap = cachedMapByCallFrame.get(callFrame);
     if (cachedMap) {
         return cachedMap;
@@ -354,6 +361,9 @@ export const allVariablesInCallFrame = async (callFrame) => {
  */
 export const allVariablesAtPosition = async (location) => {
     const reverseMapping = new Map();
+    if (!Common.Settings.Settings.instance().moduleSetting('js-source-maps-enabled').get()) {
+        return reverseMapping;
+    }
     const script = location.script();
     if (!script) {
         return reverseMapping;

@@ -446,7 +446,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
       ${this.#headersAreOverrideable ? html `
         <${Buttons.Button.Button.litTagName}
           class="add-header-button"
-          .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}
+          .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
           .iconUrl=${plusIconUrl}
           @click=${this.#onAddHeaderClick}
           jslog=${VisualLogging.action('add-header').track({ click: true })}>

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockExecutionContext } from '../../testing/MockExecutionContext.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -18,7 +18,7 @@ async function addMessage(helper, target, url) {
 }
 async function addUISourceCode(helper, url) {
     const uiSourceCodeAddedSpy = sinon.stub(helper, 'uiSourceCodeAddedForTest');
-    const uiSourceCodeAddedDonePromise = new Promise(r => uiSourceCodeAddedSpy.callsFake(r));
+    const uiSourceCodeAddedDonePromise = expectCall(uiSourceCodeAddedSpy);
     const workspace = Workspace.Workspace.WorkspaceImpl.instance();
     const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(workspace, 'test-project', Workspace.Workspace.projectTypes.Network, 'test-project', false);
     const uiSourceCode = new Workspace.UISourceCode.UISourceCode(project, url, Common.ResourceType.ResourceType.fromMimeType('application/text'));
@@ -29,18 +29,18 @@ async function addUISourceCode(helper, url) {
 }
 async function addScript(helper, debuggerModel, executionContext, url) {
     const scriptParsedSpy = sinon.stub(helper, 'parsedScriptSourceForTest');
-    const parsedScriptSourceDonePromise = new Promise(r => scriptParsedSpy.callsFake(r));
+    const parsedScriptSourceDonePromise = expectCall(scriptParsedSpy);
     const script = debuggerModel.parsedScriptSource('scriptId', url, 0, 0, 3, 3, executionContext.id, '', undefined, false, undefined, false, false, 0, false, null, null, null, null, null);
     await parsedScriptSourceDonePromise;
     scriptParsedSpy.restore();
     await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().pendingLiveLocationChangesPromise();
     const uiSourceCode = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiSourceCodeForScript(script);
-    Platform.assertNotNullOrUndefined(uiSourceCode);
+    assert.exists(uiSourceCode);
     return uiSourceCode;
 }
 async function addStyleSheet(helper, cssModel, url) {
     const styleSheetAddedSpy = sinon.stub(helper, 'styleSheetAddedForTest');
-    const styleSheetAddedDonePromise = new Promise(r => styleSheetAddedSpy.callsFake(r));
+    const styleSheetAddedDonePromise = expectCall(styleSheetAddedSpy);
     const header = {
         styleSheetId: 'styleSheet',
         frameId: 'frameId',
@@ -62,7 +62,7 @@ async function addStyleSheet(helper, cssModel, url) {
     styleSheetAddedSpy.restore();
     await Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().pendingLiveLocationChangesPromise();
     const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
-    Platform.assertNotNullOrUndefined(uiSourceCode);
+    assert.exists(uiSourceCode);
     return uiSourceCode;
 }
 describeWithMockConnection('PresentationConsoleMessageHelper', () => {
@@ -73,12 +73,12 @@ describeWithMockConnection('PresentationConsoleMessageHelper', () => {
     beforeEach(() => {
         executionContext = new MockExecutionContext(createTarget());
         const { debuggerModel } = executionContext;
-        Platform.assertNotNullOrUndefined(debuggerModel);
+        assert.exists(debuggerModel);
         helper = new Bindings.PresentationConsoleMessageHelper.PresentationSourceFrameMessageHelper();
         helper.setDebuggerModel(debuggerModel);
         const target = executionContext.target();
         const targetCSSModel = target.model(SDK.CSSModel.CSSModel);
-        Platform.assertNotNullOrUndefined(targetCSSModel);
+        assert.exists(targetCSSModel);
         cssModel = targetCSSModel;
         helper.setCSSModel(cssModel);
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();

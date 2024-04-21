@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
@@ -35,11 +34,11 @@ const setupTargetAndModels = () => {
     Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
     Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
     const coverageModel = target.model(Coverage.CoverageModel.CoverageModel);
-    assertNotNullOrUndefined(coverageModel);
+    assert.exists(coverageModel);
     const startSpy = sinon.spy(coverageModel, 'start');
     const stopSpy = sinon.spy(coverageModel, 'stop');
     const cssModel = target.model(SDK.CSSModel.CSSModel);
-    assertNotNullOrUndefined(cssModel);
+    assert.exists(cssModel);
     sinon.stub(cssModel.agent, 'invoke_startRuleUsageTracking').resolves({
         getError: () => undefined,
     });
@@ -66,7 +65,7 @@ const setupTargetAndModels = () => {
         timestamp: 0,
     });
     const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-    assertNotNullOrUndefined(resourceTreeModel);
+    assert.exists(resourceTreeModel);
     return { startSpy, stopSpy, resourceTreeModel };
 };
 describeWithMockConnection('CoverageView', () => {

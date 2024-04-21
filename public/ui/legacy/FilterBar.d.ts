@@ -51,10 +51,8 @@ export type FilterUIEventTypes = {
     [FilterUIEvents.FilterChanged]: void;
 };
 export declare class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper<FilterUIEventTypes> implements FilterUI {
+    #private;
     private readonly filterElement;
-    private readonly filterInputElement;
-    private prompt;
-    private readonly proxyElement;
     private suggestionProvider;
     constructor();
     private completions;
@@ -65,7 +63,6 @@ export declare class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper<Fil
     focus(): void;
     setSuggestionProvider(suggestionProvider: (arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestions>): void;
     private valueChanged;
-    private updateEmptyStyles;
     clear(): void;
 }
 export declare class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper<FilterUIEventTypes> implements FilterUI {

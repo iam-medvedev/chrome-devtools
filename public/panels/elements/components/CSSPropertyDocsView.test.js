@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as ElementsComponents from './components.js';
 describeWithEnvironment('CSSPropertyDocsView', () => {
@@ -19,12 +19,8 @@ describeWithEnvironment('CSSPropertyDocsView', () => {
         };
         const popupComponent = new ElementsComponents.CSSPropertyDocsView.CSSPropertyDocsView(cssProperty);
         renderElementIntoDOM(popupComponent);
-        assertShadowRoot(popupComponent.shadowRoot);
-        const shadowRoot = popupComponent.shadowRoot;
-        const popupDescriptionRendered = shadowRoot.querySelector('#description') !== null;
-        const popupLearnMoreRendered = shadowRoot.querySelector('#learn-more') !== null;
-        assert.isTrue(popupDescriptionRendered);
-        assert.isTrue(popupLearnMoreRendered);
+        assert.isNotNull(popupComponent.shadowRoot.querySelector('#description'));
+        assert.isNotNull(popupComponent.shadowRoot.querySelector('#learn-more'));
     });
 });
 //# sourceMappingURL=CSSPropertyDocsView.test.js.map

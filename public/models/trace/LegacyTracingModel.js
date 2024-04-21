@@ -184,9 +184,6 @@ export class TracingModel {
     minimumRecordTime() {
         return this.#minimumRecordTimeInternal;
     }
-    maximumRecordTime() {
-        return this.#maximumRecordTimeInternal;
-    }
     sortedProcesses() {
         return NamedObject.sort([...this.#processById.values()]);
     }

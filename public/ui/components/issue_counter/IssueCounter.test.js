@@ -1,9 +1,8 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
-import { assertElement, assertElements, assertShadowRoot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import { MockIssuesManager } from '../../../testing/MockIssuesManager.js';
 import * as IconButton from '../icon_button/icon_button.js';
@@ -12,14 +11,14 @@ const renderIssueCounter = (data) => {
     const component = new IssueCounter.IssueCounter.IssueCounter();
     component.data = data;
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     return { component, shadowRoot: component.shadowRoot };
 };
 export const extractIconGroups = (shadowRoot) => {
     const iconButton = shadowRoot.querySelector('icon-button');
-    assertElement(iconButton, IconButton.IconButton.IconButton);
+    assert.instanceOf(iconButton, IconButton.IconButton.IconButton);
     const iconButtonShadowRoot = iconButton.shadowRoot;
-    assertNotNullOrUndefined(iconButtonShadowRoot);
+    assert.exists(iconButtonShadowRoot);
     const icons = iconButtonShadowRoot.querySelectorAll('.status-icon');
     assertElements(icons, IconButton.Icon.Icon);
     const labels = iconButtonShadowRoot.querySelectorAll('.icon-button-title');
@@ -35,11 +34,11 @@ export const extractIconGroups = (shadowRoot) => {
 };
 export const extractButton = (shadowRoot) => {
     const iconButton = shadowRoot.querySelector('icon-button');
-    assertElement(iconButton, IconButton.IconButton.IconButton);
+    assert.instanceOf(iconButton, IconButton.IconButton.IconButton);
     const iconButtonShadowRoot = iconButton.shadowRoot;
-    assertNotNullOrUndefined(iconButtonShadowRoot);
+    assert.exists(iconButtonShadowRoot);
     const button = iconButtonShadowRoot.querySelector('button');
-    assertElement(button, HTMLButtonElement);
+    assert.instanceOf(button, HTMLButtonElement);
     return button;
 };
 describeWithLocale('IssueCounter', () => {

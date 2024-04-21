@@ -6,5 +6,6 @@ export declare enum FrontendMessageType {
 }
 export declare enum FrontendMessageSource {
     CSS = "css",
-    ConsoleAPI = "console-api"
+    ConsoleAPI = "console-api",
+    IssuePanel = "issue-panel"
 }

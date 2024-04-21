@@ -1614,6 +1614,7 @@
       <include file="panels/timeline/PerformanceModel.js" name="PANELS_TIMELINE_PERFORMANCEMODEL_JS" resource_path="panels/timeline/PerformanceModel.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/SaveFileFormatter.js" name="PANELS_TIMELINE_SAVEFILEFORMATTER_JS" resource_path="panels/timeline/SaveFileFormatter.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/SourceMapsResolver.js" name="PANELS_TIMELINE_SOURCEMAPSRESOLVER_JS" resource_path="panels/timeline/SourceMapsResolver.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/TargetForEvent.js" name="PANELS_TIMELINE_TARGETFOREVENT_JS" resource_path="panels/timeline/TargetForEvent.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ThreadAppender.js" name="PANELS_TIMELINE_THREADAPPENDER_JS" resource_path="panels/timeline/ThreadAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineController.js" name="PANELS_TIMELINE_TIMELINECONTROLLER_JS" resource_path="panels/timeline/TimelineController.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimelineDetailsView.js" name="PANELS_TIMELINE_TIMELINEDETAILSVIEW_JS" resource_path="panels/timeline/TimelineDetailsView.js" type="BINDATA" compress="false"/>
@@ -1956,6 +1957,7 @@
       <include file="ui/components/survey_link/SurveyLink.js" name="UI_COMPONENTS_SURVEY_LINK_SURVEYLINK_JS" resource_path="ui/components/survey_link/SurveyLink.js" type="BINDATA" compress="false"/>
       <include file="ui/components/survey_link/surveyLink.css.js" name="UI_COMPONENTS_SURVEY_LINK_SURVEYLINK_CSS_JS" resource_path="ui/components/survey_link/surveyLink.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_editor/AutocompleteHistory.js" name="UI_COMPONENTS_TEXT_EDITOR_AUTOCOMPLETEHISTORY_JS" resource_path="ui/components/text_editor/AutocompleteHistory.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/text_editor/ExecutionPositionHighlighter.js" name="UI_COMPONENTS_TEXT_EDITOR_EXECUTIONPOSITIONHIGHLIGHTER_JS" resource_path="ui/components/text_editor/ExecutionPositionHighlighter.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_editor/TextEditor.js" name="UI_COMPONENTS_TEXT_EDITOR_TEXTEDITOR_JS" resource_path="ui/components/text_editor/TextEditor.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_editor/TextEditorHistory.js" name="UI_COMPONENTS_TEXT_EDITOR_TEXTEDITORHISTORY_JS" resource_path="ui/components/text_editor/TextEditorHistory.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_editor/config.js" name="UI_COMPONENTS_TEXT_EDITOR_CONFIG_JS" resource_path="ui/components/text_editor/config.js" type="BINDATA" compress="false"/>

@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -21,7 +20,7 @@ describeWithMockConnection('LayersPanel', () => {
         it('udpates 3d view when layer painted', async () => {
             const panel = Layers.LayersPanel.LayersPanel.instance({ forceNew: true });
             const layerTreeModel = target.model(Layers.LayerTreeModel.LayerTreeModel);
-            assertNotNullOrUndefined(layerTreeModel);
+            assert.exists(layerTreeModel);
             const updateLayerSnapshot = sinon.stub(panel.layers3DView, 'updateLayerSnapshot');
             const LAYER = { id: () => 'TEST_LAYER' };
             layerTreeModel.dispatchEventToListeners(Layers.LayerTreeModel.Events.LayerPainted, LAYER);
@@ -40,9 +39,9 @@ describeWithMockConnection('LayersPanel', () => {
         const primaryTarget = createTarget({ parentTarget: tabTarget });
         const panel = Layers.LayersPanel.LayersPanel.instance({ forceNew: true });
         const primaryLayerTreeModel = primaryTarget.model(Layers.LayerTreeModel.LayerTreeModel);
-        assertNotNullOrUndefined(primaryLayerTreeModel);
+        assert.exists(primaryLayerTreeModel);
         const prerenderLayerTreeModel = prerenderTarget.model(Layers.LayerTreeModel.LayerTreeModel);
-        assertNotNullOrUndefined(prerenderLayerTreeModel);
+        assert.exists(prerenderLayerTreeModel);
         const updateLayerSnapshot = sinon.stub(panel.layers3DView, 'updateLayerSnapshot');
         const LAYER_1 = { id: () => 'TEST_LAYER_1' };
         const LAYER_2 = { id: () => 'TEST_LAYER_2' };

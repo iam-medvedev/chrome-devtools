@@ -425,7 +425,7 @@ export class LayoutPane extends LegacyWrapper.LegacyWrapper.WrappableComponent {
                                            .iconName=${'select-element'}
                                            .jslogContext=${'elements.select-element'}
                                            .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
-                                           .variant=${"round" /* Buttons.Button.Variant.ROUND */}
+                                           .variant=${"icon" /* Buttons.Button.Variant.ICON */}
                                            @click=${onElementClick}></${Buttons.Button.Button.litTagName}>
     </div>`;
         // clang-format on

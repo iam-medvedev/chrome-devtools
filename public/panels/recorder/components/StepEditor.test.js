@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import * as EnvironmentHelpers from '../../../testing/EnvironmentHelpers.js';
 import * as Models from '../models/models.js';
@@ -43,27 +43,27 @@ describeWithLocale('StepEditor', () => {
     }
     async function addOptionalField(editor, attribute) {
         const button = editor.renderRoot.querySelector(`devtools-button.add-row[data-attribute="${attribute}"]`);
-        assertElement(button, HTMLElement);
+        assert.instanceOf(button, HTMLElement);
         button.click();
         await triggerMicroTaskQueue();
         await editor.updateComplete;
     }
     async function deleteOptionalField(editor, attribute) {
         const button = editor.renderRoot.querySelector(`devtools-button.delete-row[data-attribute="${attribute}"]`);
-        assertElement(button, HTMLElement);
+        assert.instanceOf(button, HTMLElement);
         button.click();
         await triggerMicroTaskQueue();
         await editor.updateComplete;
     }
     async function clickFrameLevelButton(editor, className) {
         const button = editor.renderRoot.querySelector(`.attribute[data-attribute="frame"] devtools-button${className}`);
-        assertElement(button, HTMLElement);
+        assert.instanceOf(button, HTMLElement);
         button.click();
         await editor.updateComplete;
     }
     async function clickSelectorLevelButton(editor, path, className) {
         const button = editor.renderRoot.querySelector(`[data-selector-path="${path.join('.')}"] devtools-button${className}`);
-        assertElement(button, HTMLElement);
+        assert.instanceOf(button, HTMLElement);
         button.click();
         await editor.updateComplete;
     }

@@ -1433,6 +1433,12 @@
   "models/issues_manager/CookieIssue.ts | aSecure": {
     "message": "a secure"
   },
+  "models/issues_manager/CookieIssue.ts | consoleTpcdErrorMessage": {
+    "message": "Third-party cookie is blocked in Chrome as part of Privacy Sandbox."
+  },
+  "models/issues_manager/CookieIssue.ts | consoleTpcdWarningMessage": {
+    "message": "Third-party cookie will be blocked in future Chrome versions as part of Privacy Sandbox."
+  },
   "models/issues_manager/CookieIssue.ts | fileCrosSiteRedirectBug": {
     "message": "File a bug"
   },
@@ -1666,18 +1672,6 @@
   },
   "models/timeline_model/TimelineJSProfile.ts | threadS": {
     "message": "Thread {PH1}"
-  },
-  "models/timeline_model/TimelineModel.ts | dedicatedWorker": {
-    "message": "Dedicated Worker"
-  },
-  "models/timeline_model/TimelineModel.ts | threadS": {
-    "message": "Thread {PH1}"
-  },
-  "models/timeline_model/TimelineModel.ts | workerS": {
-    "message": "Worker — {PH1}"
-  },
-  "models/timeline_model/TimelineModel.ts | workerSS": {
-    "message": "Worker: {PH1} — {PH2}"
   },
   "models/workspace/UISourceCode.ts | index": {
     "message": "(index)"
@@ -3572,6 +3566,9 @@
   "panels/application/IndexedDBViews.ts | expandRecursively": {
     "message": "Expand Recursively"
   },
+  "panels/application/IndexedDBViews.ts | filterByKey": {
+    "message": "Filter by key (show keys greater or equal to)"
+  },
   "panels/application/IndexedDBViews.ts | idb": {
     "message": "IDB"
   },
@@ -3610,9 +3607,6 @@
   },
   "panels/application/IndexedDBViews.ts | someEntriesMayHaveBeenModified": {
     "message": "Some entries may have been modified"
-  },
-  "panels/application/IndexedDBViews.ts | startFromKey": {
-    "message": "Start from key"
   },
   "panels/application/IndexedDBViews.ts | totalEntriesS": {
     "message": "Total entries: {PH1}"
@@ -4215,7 +4209,7 @@
     "message": "Delete Selected"
   },
   "panels/application/ServiceWorkerCacheViews.ts | filterByPath": {
-    "message": "Filter by Path"
+    "message": "Filter by path"
   },
   "panels/application/ServiceWorkerCacheViews.ts | headers": {
     "message": "Headers"
@@ -4414,9 +4408,6 @@
   },
   "panels/application/StorageItemsView.ts | deleteSelected": {
     "message": "Delete Selected"
-  },
-  "panels/application/StorageItemsView.ts | filter": {
-    "message": "Filter"
   },
   "panels/application/StorageItemsView.ts | refresh": {
     "message": "Refresh"
@@ -5018,9 +5009,6 @@
   "panels/console/ConsoleView.ts | errors": {
     "message": "Errors"
   },
-  "panels/console/ConsoleView.ts | filter": {
-    "message": "Filter"
-  },
   "panels/console/ConsoleView.ts | filteredMessagesInConsole": {
     "message": "{PH1} messages in console"
   },
@@ -5303,6 +5291,9 @@
   "panels/coverage/CoverageView.ts | css": {
     "message": "CSS"
   },
+  "panels/coverage/CoverageView.ts | filterByUrl": {
+    "message": "Filter by URL"
+  },
   "panels/coverage/CoverageView.ts | filterCoverageByType": {
     "message": "Filter coverage by type"
   },
@@ -5326,9 +5317,6 @@
   },
   "panels/coverage/CoverageView.ts | sOfSSUsedSoFarSUnused": {
     "message": "{PH1} of {PH2} ({PH3}%) used so far, {PH4} unused."
-  },
-  "panels/coverage/CoverageView.ts | urlFilter": {
-    "message": "URL filter"
   },
   "panels/css_overview/components/CSSOverviewStartView.ts | captureOverview": {
     "message": "Capture overview"
@@ -5534,8 +5522,8 @@
   "panels/developer_resources/DeveloperResourcesView.ts | enableLoadingThroughTarget": {
     "message": "Load through website"
   },
-  "panels/developer_resources/DeveloperResourcesView.ts | enterTextToSearchTheUrlAndError": {
-    "message": "Enter text to search the URL and Error columns"
+  "panels/developer_resources/DeveloperResourcesView.ts | filterByText": {
+    "message": "Filter by URL and error"
   },
   "panels/developer_resources/DeveloperResourcesView.ts | loadHttpsDeveloperResources": {
     "message": "Load HTTP(S) developer resources through the website you inspect, not through DevTools"
@@ -5641,12 +5629,6 @@
   },
   "panels/elements/components/StylePropertyEditor.ts | selectButton": {
     "message": "Add {propertyName}: {propertyValue}"
-  },
-  "panels/elements/ComputedStyleWidget.ts | filter": {
-    "message": "Filter"
-  },
-  "panels/elements/ComputedStyleWidget.ts | filterComputedStyles": {
-    "message": "Filter Computed Styles"
   },
   "panels/elements/ComputedStyleWidget.ts | group": {
     "message": "Group"
@@ -6032,12 +6014,6 @@
   "panels/elements/PlatformFontsWidget.ts | renderedFonts": {
     "message": "Rendered Fonts"
   },
-  "panels/elements/PropertiesWidget.ts | filter": {
-    "message": "Filter"
-  },
-  "panels/elements/PropertiesWidget.ts | filterProperties": {
-    "message": "Filter Properties"
-  },
   "panels/elements/PropertiesWidget.ts | noMatchingProperty": {
     "message": "No matching property"
   },
@@ -6148,12 +6124,6 @@
   },
   "panels/elements/StylesSidebarPane.ts | copyAllCSSChanges": {
     "message": "Copy CSS changes"
-  },
-  "panels/elements/StylesSidebarPane.ts | filter": {
-    "message": "Filter"
-  },
-  "panels/elements/StylesSidebarPane.ts | filterStyles": {
-    "message": "Filter Styles"
   },
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelHundred": {
     "message": "Increment/decrement with mousewheel or up/down keys. {PH1}: ±100, Shift: ±10, Alt: ±0.1"
@@ -7499,8 +7469,8 @@
   "panels/media/PlayerMessagesView.ts | errorStackLabel": {
     "message": "Stacktrace:"
   },
-  "panels/media/PlayerMessagesView.ts | filterLogMessages": {
-    "message": "Filter log messages"
+  "panels/media/PlayerMessagesView.ts | filterByLogMessages": {
+    "message": "Filter by log messages"
   },
   "panels/media/PlayerMessagesView.ts | info": {
     "message": "Info"
@@ -8024,11 +7994,11 @@
   "panels/network/EventSourceMessagesView.ts | data": {
     "message": "Data"
   },
-  "panels/network/EventSourceMessagesView.ts | enterRegex": {
-    "message": "Enter regex, for example: https?"
-  },
   "panels/network/EventSourceMessagesView.ts | eventSource": {
     "message": "Event Source"
+  },
+  "panels/network/EventSourceMessagesView.ts | filterByRegex": {
+    "message": "Filter using regex (example: https?)"
   },
   "panels/network/EventSourceMessagesView.ts | id": {
     "message": "Id"
@@ -9041,11 +9011,11 @@
   "panels/network/ResourceWebSocketFrameView.ts | data": {
     "message": "Data"
   },
-  "panels/network/ResourceWebSocketFrameView.ts | enterRegex": {
-    "message": "Enter regex, for example: (web)?socket"
-  },
   "panels/network/ResourceWebSocketFrameView.ts | filter": {
     "message": "Filter"
+  },
+  "panels/network/ResourceWebSocketFrameView.ts | filterUsingRegex": {
+    "message": "Filter using regex (example: (web)?socket)"
   },
   "panels/network/ResourceWebSocketFrameView.ts | length": {
     "message": "Length"
@@ -9473,9 +9443,6 @@
   "panels/profiler/HeapSnapshotView.ts | captureNumericValue": {
     "message": "Include numerical values in capture"
   },
-  "panels/profiler/HeapSnapshotView.ts | classFilter": {
-    "message": "Class filter"
-  },
   "panels/profiler/HeapSnapshotView.ts | code": {
     "message": "Code"
   },
@@ -9490,6 +9457,9 @@
   },
   "panels/profiler/HeapSnapshotView.ts | filter": {
     "message": "Filter"
+  },
+  "panels/profiler/HeapSnapshotView.ts | filterByClass": {
+    "message": "Filter by class"
   },
   "panels/profiler/HeapSnapshotView.ts | find": {
     "message": "Find"
@@ -12338,9 +12308,6 @@
   "panels/timeline/EventsTimelineTreeView.ts | durationFilter": {
     "message": "Duration filter"
   },
-  "panels/timeline/EventsTimelineTreeView.ts | filterEventLog": {
-    "message": "Filter event log"
-  },
   "panels/timeline/EventsTimelineTreeView.ts | startTime": {
     "message": "Start Time"
   },
@@ -12851,17 +12818,8 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | frames": {
     "message": "Frames"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | frameS": {
-    "message": "Frame — {PH1}"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Idle Frame"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | main": {
-    "message": "Main"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | mainS": {
-    "message": "Main — {PH1}"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | onIgnoreList": {
     "message": "On ignore list"
@@ -12869,20 +12827,8 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "Partially Presented Frame"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | raster": {
-    "message": "Raster"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | rasterizerThreadS": {
-    "message": "Rasterizer Thread {PH1}"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | sSelfS": {
     "message": "{PH1} (self {PH2})"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | subframe": {
-    "message": "Subframe"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | thread": {
-    "message": "Thread"
   },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} at {PH2}"
@@ -13093,15 +13039,6 @@
   },
   "panels/timeline/TimelineTreeView.ts | chromeExtensionsOverhead": {
     "message": "[Chrome extensions overhead]"
-  },
-  "panels/timeline/TimelineTreeView.ts | filter": {
-    "message": "Filter"
-  },
-  "panels/timeline/TimelineTreeView.ts | filterBottomup": {
-    "message": "Filter bottom-up"
-  },
-  "panels/timeline/TimelineTreeView.ts | filterCallTree": {
-    "message": "Filter call tree"
   },
   "panels/timeline/TimelineTreeView.ts | fms": {
     "message": "{PH1} ms"
@@ -13436,7 +13373,7 @@
   "panels/timeline/TimelineUIUtils.ts | scriptLoadedFromCache": {
     "message": "script loaded from cache"
   },
-  "panels/timeline/TimelineUIUtils.ts | scriptNotEligible": {
+  "panels/timeline/TimelineUIUtils.ts | scriptNotEligibleToBeLoadedFromCache": {
     "message": "script not eligible"
   },
   "panels/timeline/TimelineUIUtils.ts | selectorStatsTitle": {
@@ -14564,9 +14501,6 @@
   "ui/legacy/FilterBar.ts | allStrings": {
     "message": "All"
   },
-  "ui/legacy/FilterBar.ts | clearFilter": {
-    "message": "Clear input"
-  },
   "ui/legacy/FilterBar.ts | egSmalldUrlacomb": {
     "message": "e.g. /small[d]+/ url:a.com/b"
   },
@@ -14748,7 +14682,10 @@
     "message": "Once page is reloaded, DevTools will automatically reconnect."
   },
   "ui/legacy/Toolbar.ts | clearInput": {
-    "message": "Clear input"
+    "message": "Clear"
+  },
+  "ui/legacy/Toolbar.ts | filter": {
+    "message": "Filter"
   },
   "ui/legacy/Toolbar.ts | notPressed": {
     "message": "not pressed"

@@ -234,7 +234,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         const selectionObject = this.selection.object;
         if (TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selectionObject)) {
             const event = selectionObject;
-            const networkDetails = await TimelineUIUtils.buildSyntheticNetworkRequestDetails(event, this.model.timelineModel(), this.detailsLinkifier);
+            const networkDetails = await TimelineUIUtils.buildSyntheticNetworkRequestDetails(this.#traceEngineData, event, this.detailsLinkifier);
             this.setContent(networkDetails);
         }
         else if (TimelineSelection.isTraceEventSelection(selectionObject)) {
@@ -345,12 +345,13 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         this.appendTab(Tab.PaintProfiler, i18nString(UIStrings.paintProfiler), paintProfilerView);
     }
     updateSelectedRangeStats(startTime, endTime) {
-        if (!this.model || !this.#selectedEvents) {
+        if (!this.model || !this.#selectedEvents || !this.#traceEngineData) {
             return;
         }
+        const minBoundsMilli = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(this.#traceEngineData.Meta.traceBounds).min;
         const aggregatedStats = TimelineUIUtils.statsForTimeRange(this.#selectedEvents, startTime, endTime);
-        const startOffset = startTime - this.model.timelineModel().minimumRecordTime();
-        const endOffset = endTime - this.model.timelineModel().minimumRecordTime();
+        const startOffset = startTime - minBoundsMilli;
+        const endOffset = endTime - minBoundsMilli;
         const contentHelper = new TimelineDetailsContentHelper(null, null);
         contentHelper.addSection(i18nString(UIStrings.rangeSS, { PH1: i18n.TimeUtilities.millisToString(startOffset), PH2: i18n.TimeUtilities.millisToString(endOffset) }));
         const pieChart = TimelineUIUtils.generatePieChart(aggregatedStats);

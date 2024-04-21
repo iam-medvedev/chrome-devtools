@@ -17,7 +17,7 @@ export declare class ChildTargetManager extends SDKModel<EventTypes> implements 
     targetCreated({ targetInfo }: Protocol.Target.TargetCreatedEvent): void;
     targetInfoChanged({ targetInfo }: Protocol.Target.TargetInfoChangedEvent): void;
     targetDestroyed({ targetId }: Protocol.Target.TargetDestroyedEvent): void;
-    targetCrashed(_event: Protocol.Target.TargetCrashedEvent): void;
+    targetCrashed({ targetId }: Protocol.Target.TargetCrashedEvent): void;
     private fireAvailableTargetsChanged;
     getParentTargetId(): Promise<Protocol.Target.TargetID>;
     getTargetInfo(): Promise<Protocol.Target.TargetInfo>;

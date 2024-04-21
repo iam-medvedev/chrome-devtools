@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import { createFakeSetting, createTarget, describeWithEnvironment, } from '../../testing/EnvironmentHelpers.js';
@@ -35,7 +34,7 @@ describeWithEnvironment('AggregatedIssue', () => {
 function createModel() {
     const target = createTarget();
     const model = target.model(SDK.IssuesModel.IssuesModel);
-    assertNotNullOrUndefined(model);
+    assert.exists(model);
     return model;
 }
 describeWithMockConnection('IssueAggregator', () => {

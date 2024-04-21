@@ -459,6 +459,32 @@ export class TimelinePanel extends UI.Panel.Panel {
     getMinimap() {
         return this.#minimapComponent;
     }
+    /**
+     * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
+     * DO NOT use this method within DevTools. It is marked as deprecated so
+     * within DevTools you are warned when using the method.
+     * @deprecated
+     **/
+    getTraceEngineDataForLayoutTests() {
+        const data = this.#traceEngineModel.traceParsedData(this.#traceEngineActiveTraceIndex);
+        if (data === null) {
+            throw new Error('No trace engine data found.');
+        }
+        return data;
+    }
+    /**
+     * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
+     * DO NOT use this method within DevTools. It is marked as deprecated so
+     * within DevTools you are warned when using the method.
+     * @deprecated
+     **/
+    getTraceEngineRawTraceEventsForLayoutTests() {
+        const data = this.#traceEngineModel.traceEvents(this.#traceEngineActiveTraceIndex);
+        if (data === null) {
+            throw new Error('No trace engine data found.');
+        }
+        return data;
+    }
     #onChartPlayableStateChange(event) {
         if (event.data) {
             const dateObj = new Date();
@@ -921,6 +947,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async startRecording() {
+        this.#saveAnnotationsForActiveTrace();
         console.assert(!this.statusPane, 'Status pane is already opened.');
         this.setState("StartPending" /* State.StartPending */);
         this.showRecordingStarted();
@@ -1099,8 +1126,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 entryToNodeMap: samplesAndRendererEventsEntryToNodeMap,
                 wholeTraceBounds: traceBounds?.micro.entireTraceBounds,
             });
-            if (Root.Runtime.experiments.isEnabled("save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */) &&
-                annotations) {
+            if (annotations) {
                 AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.applyAnnotations(annotations);
             }
             this.#applyActiveFilters(traceParsedData.Meta.traceIsGeneric, exclusiveFilter);

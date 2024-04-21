@@ -1,7 +1,6 @@
 // Copyright (c) 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
@@ -49,7 +48,7 @@ describeWithMockConnection('WebAuthn pane', () => {
             target = targetFactory();
             SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
             model = target.model(SDK.WebAuthnModel.WebAuthnModel);
-            assertNotNullOrUndefined(model);
+            assert.exists(model);
             panel = new Webauthn.WebauthnPane.WebauthnPaneImpl();
         });
         it('adds an authenticator with large blob option', async () => {

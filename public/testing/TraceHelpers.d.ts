@@ -1,4 +1,3 @@
-import type * as TimelineModel from '../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../models/trace/trace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as PerfUI from '../ui/legacy/components/perf_ui/perf_ui.js';
@@ -22,23 +21,6 @@ export declare class MockFlameChartDelegate implements PerfUI.FlameChart.FlameCh
  * @returns a flame chart element and its corresponding data provider.
  */
 export declare function getMainFlameChartWithTracks(traceFileName: string, trackAppenderNames: Set<Timeline.CompatibilityTracksAppender.TrackAppenderName>, expanded: boolean, trackName?: string): Promise<{
-    flameChart: PerfUI.FlameChart.FlameChart;
-    dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider;
-}>;
-/**
- * Draws a track in the flame chart using the legacy system. For this to work,
- * a codepath to append the track must be available in the implementation of
- * TimelineFlameChartDataProvider.appendLegacyTrackData.
- *
- * @param traceFileName The name of the trace file to be loaded to the flame
- * chart.
- * @param trackType the legacy "type" of the track to be rendered. For
- * example: "GPU"
- * @param expanded if the track is expanded
- * @param trackNameFilter used to further filter down the tracks rendered by seeing if their name contains this string.
- * @returns a flame chart element and its corresponding data provider.
- */
-export declare function getMainFlameChartWithLegacyTrackTypes(traceFileName: string, trackType: TimelineModel.TimelineModel.TrackType, expanded: boolean, trackNameFilter?: string): Promise<{
     flameChart: PerfUI.FlameChart.FlameChart;
     dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider;
 }>;

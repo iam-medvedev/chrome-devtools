@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents } from '../../../../testing/DataGridHelpers.js';
-import { assertShadowRoot, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
@@ -12,7 +12,7 @@ async function renderPreloadingMismatchedHeadersGrid(data) {
     const component = new PreloadingComponents.PreloadingMismatchedHeadersGrid.PreloadingMismatchedHeadersGrid();
     component.data = data;
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     await coordinator.done();
     return component;
 }
@@ -32,7 +32,7 @@ async function testPreloadingMismatchedHeadersGrid(recievedMismatchedHeaders, ro
         nodeIds: [1],
     };
     const component = await renderPreloadingMismatchedHeadersGrid(data);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     assertGridContents(component, ['Header name', 'Value in initial navigation', 'Value in activation navigation'], rowExpected);
 }
 describeWithEnvironment('PreloadingMismatchedHeadersGrid', () => {

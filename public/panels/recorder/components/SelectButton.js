@@ -106,24 +106,24 @@ export class SelectButton extends HTMLElement {
         }
         const classes = {
             primary: this.#props.variant === "primary" /* Variant.PRIMARY */,
-            secondary: this.#props.variant === "secondary" /* Variant.SECONDARY */,
+            secondary: this.#props.variant === "outlined" /* Variant.OUTLINED */,
         };
-        const buttonVariant = this.#props.variant === "secondary" /* Variant.SECONDARY */ ? "secondary" /* Buttons.Button.Variant.SECONDARY */ : "primary" /* Buttons.Button.Variant.PRIMARY */;
+        const buttonVariant = this.#props.variant === "outlined" /* Variant.OUTLINED */ ? "outlined" /* Buttons.Button.Variant.OUTLINED */ : "primary" /* Buttons.Button.Variant.PRIMARY */;
         const label = selectedItem.buttonLabel ? selectedItem.buttonLabel() : selectedItem.label();
         // clang-format off
         LitHtml.render(LitHtml.html `
       <div class="select-button" title=${this.#getTitle(label) || LitHtml.nothing}>
-        ${selectedItem
+      ${selectedItem
             ? LitHtml.html `
-        <${Buttons.Button.Button.litTagName}
-            .disabled=${this.#props.disabled}
-            .variant=${buttonVariant}
-            .iconName=${selectedItem.buttonIconName}
-            @click=${this.#handleClick}>
-            ${label}
-        </${Buttons.Button.Button.litTagName}>`
+      <${Buttons.Button.Button.litTagName}
+          .disabled=${this.#props.disabled}
+          .variant=${buttonVariant}
+          .iconName=${selectedItem.buttonIconName}
+          @click=${this.#handleClick}>
+          ${label}
+      </${Buttons.Button.Button.litTagName}>`
             : ''}
-        <${Menus.SelectMenu.SelectMenu.litTagName}
+      <${Menus.SelectMenu.SelectMenu.litTagName}
           class=${LitHtml.Directives.classMap(classes)}
           @selectmenuselected=${this.#handleSelectMenuSelect}
           ?disabled=${this.#props.disabled}

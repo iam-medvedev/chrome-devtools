@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
-import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../../testing/EnvironmentHelpers.js';
 import * as UI from '../../legacy.js';
 import * as InlineEditor from './inline_editor.js';
 function assertSwatch(swatch, expected) {
     const swatchEl = swatch.shadowRoot.querySelector('.color-swatch');
-    assertElement(swatchEl, HTMLElement);
+    assert.instanceOf(swatchEl, HTMLElement);
     const swatchInnerEl = swatch.shadowRoot.querySelector('.color-swatch-inner');
-    assertElement(swatchInnerEl, HTMLElement);
+    assert.instanceOf(swatchInnerEl, HTMLElement);
     const slotEl = swatch.shadowRoot.querySelector('slot');
-    assertElement(slotEl, HTMLElement);
+    assert.instanceOf(slotEl, HTMLElement);
     if (expected.backgroundColor) {
         assert.strictEqual(swatchInnerEl.style.backgroundColor, expected.backgroundColor, 'The swatch has the correct color');
     }

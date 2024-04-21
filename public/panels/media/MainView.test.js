@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -21,7 +20,7 @@ describeWithMockConnection('MediaMainView', () => {
         mainView.markAsRoot();
         mainView.show(document.body);
         const model = target.model(Media.MediaModel.MediaModel);
-        assertNotNullOrUndefined(model);
+        assert.exists(model);
         model.dispatchEventToListeners("PlayersCreated" /* Media.MediaModel.Events.PlayersCreated */, [PLAYER_ID]);
         const field = [{ name: 'kResolution', value: '{}', data: {}, stack: [], cause: [] }];
         const data = { playerId: PLAYER_ID, properties: field, events: field, messages: field, errors: field };

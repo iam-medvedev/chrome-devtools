@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -34,7 +33,7 @@ describeWithMockConnection('NetworkOverview', () => {
         networkOverview.markAsRoot();
         networkOverview.show(document.body);
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assertNotNullOrUndefined(resourceTreeModel);
+        assert.exists(resourceTreeModel);
         assert.isFalse(calculator.computePosition.called);
         resourceTreeModel.dispatchEventToListeners(event, ...[{ loadTime: 42 }]);
         await coordinator.done();

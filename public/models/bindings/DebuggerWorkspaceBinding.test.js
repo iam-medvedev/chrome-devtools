@@ -41,7 +41,6 @@ describeWithMockConnection('DebuggerWorkspaceBinding', () => {
         // Await the promise to retrieve the uiSourceCode.
         const uiSourceCode = await uiSourceCodePromise;
         // Check if the uiSourceCode is the expected one (from the main target, and having the correct sourceURL).
-        assert.isNotNull(uiSourceCode);
         assert.strictEqual(uiSourceCode.url(), scriptUrl);
         assert.deepEqual(Bindings.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode), target);
     });

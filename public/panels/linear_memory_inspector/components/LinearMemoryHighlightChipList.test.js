@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertShadowRoot, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 export const HIGHLIGHT_CHIP = '.highlight-chip';
@@ -27,19 +27,15 @@ describeWithLocale('LinearMemoryInspectorHighlightChipList', () => {
         };
     }
     it('renders a highlight chip button', () => {
-        const shadowRoot = component.shadowRoot;
-        assertShadowRoot(shadowRoot);
-        const button = shadowRoot.querySelector(HIGHLIGHT_PILL_JUMP_BUTTON_SELECTOR);
-        assertElement(button, HTMLButtonElement);
-        const expressionName = shadowRoot.querySelector(HIGHLIGHT_PILL_VARIABLE_NAME);
-        assertElement(expressionName, HTMLSpanElement);
+        const button = component.shadowRoot.querySelector(HIGHLIGHT_PILL_JUMP_BUTTON_SELECTOR);
+        assert.instanceOf(button, HTMLButtonElement);
+        const expressionName = component.shadowRoot.querySelector(HIGHLIGHT_PILL_VARIABLE_NAME);
+        assert.instanceOf(expressionName, HTMLSpanElement);
         assert.strictEqual(expressionName.innerText, 'myNumber');
     });
     it('focuses a highlight chip button', async () => {
-        const shadowRoot = component.shadowRoot;
-        assertShadowRoot(shadowRoot);
-        const chip = shadowRoot.querySelector(HIGHLIGHT_CHIP);
-        assertElement(chip, HTMLDivElement);
+        const chip = component.shadowRoot.querySelector(HIGHLIGHT_CHIP);
+        assert.instanceOf(chip, HTMLDivElement);
         assert.isTrue(!chip.classList.contains('focused'));
         const highlightedMemory = {
             startAddress: 10,
@@ -55,7 +51,6 @@ describeWithLocale('LinearMemoryInspectorHighlightChipList', () => {
         assert.isTrue(chip.classList.contains('focused'));
     });
     it('renders multiple chips', () => {
-        const shadowRoot = component.shadowRoot;
         const highlightInfos = [
             {
                 startAddress: 10,
@@ -73,25 +68,20 @@ describeWithLocale('LinearMemoryInspectorHighlightChipList', () => {
         component.data = {
             highlightInfos: highlightInfos,
         };
-        assertShadowRoot(shadowRoot);
-        const chips = shadowRoot.querySelectorAll(HIGHLIGHT_CHIP);
+        const chips = component.shadowRoot.querySelectorAll(HIGHLIGHT_CHIP);
         assert.strictEqual(chips.length, highlightInfos.length);
     });
     it('sends event when clicking on jump to highlighted memory', async () => {
         const eventPromise = getEventPromise(component, LinearMemoryInspectorComponents.LinearMemoryHighlightChipList.JumpToHighlightedMemoryEvent.eventName);
-        const shadowRoot = component.shadowRoot;
-        assertShadowRoot(shadowRoot);
-        const button = shadowRoot.querySelector(HIGHLIGHT_PILL_JUMP_BUTTON_SELECTOR);
-        assertElement(button, HTMLButtonElement);
+        const button = component.shadowRoot.querySelector(HIGHLIGHT_PILL_JUMP_BUTTON_SELECTOR);
+        assert.instanceOf(button, HTMLButtonElement);
         button.click();
         assert.isNotNull(await eventPromise);
     });
     it('sends event when clicking on delete highlight chip', async () => {
         const eventPromise = getEventPromise(component, LinearMemoryInspectorComponents.LinearMemoryHighlightChipList.DeleteMemoryHighlightEvent.eventName);
-        const shadowRoot = component.shadowRoot;
-        assertShadowRoot(shadowRoot);
-        const button = shadowRoot.querySelector(HIGHLIGHT_ROW_REMOVE_BUTTON_SELECTOR);
-        assertElement(button, HTMLButtonElement);
+        const button = component.shadowRoot.querySelector(HIGHLIGHT_ROW_REMOVE_BUTTON_SELECTOR);
+        assert.instanceOf(button, HTMLButtonElement);
         button.click();
         assert.isNotNull(await eventPromise);
     });

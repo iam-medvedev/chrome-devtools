@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
@@ -82,7 +81,7 @@ describeWithMockConnection('SharedStorageListTreeElement', function () {
             resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         });
         it('shows view on select', async () => {
-            assertNotNullOrUndefined(sharedStorageModel);
+            assert.exists(sharedStorageModel);
             sinon.stub(sharedStorageModel, 'enable').resolves();
             const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
             panel.markAsRoot();
@@ -98,7 +97,7 @@ describeWithMockConnection('SharedStorageListTreeElement', function () {
             panel.detach();
         });
         it('adds events', async () => {
-            assertNotNullOrUndefined(sharedStorageModel);
+            assert.exists(sharedStorageModel);
             sinon.stub(sharedStorageModel, 'enable').resolves();
             const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
             treeElement = new Application.SharedStorageListTreeElement.SharedStorageListTreeElement(panel);
@@ -111,7 +110,7 @@ describeWithMockConnection('SharedStorageListTreeElement', function () {
             panel.detach();
         });
         it('clears events upon main frame navigation', async () => {
-            assertNotNullOrUndefined(sharedStorageModel);
+            assert.exists(sharedStorageModel);
             sinon.stub(sharedStorageModel, 'enable').resolves();
             const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
             treeElement = new Application.SharedStorageListTreeElement.SharedStorageListTreeElement(panel);
@@ -122,7 +121,7 @@ describeWithMockConnection('SharedStorageListTreeElement', function () {
             }
             assert.deepEqual(view.getEventsForTesting(), EVENTS);
             // Events are cleared on main frame navigation.
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(resourceTreeModel);
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame: MOCK_MAIN_FRAME, type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Navigation */ });
             assert.deepEqual(view.getEventsForTesting(), []);
             panel.detach();

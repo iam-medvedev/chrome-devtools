@@ -723,7 +723,7 @@ export class RecordingView extends HTMLElement {
               <${Buttons.Button.Button.litTagName}
                 title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.hideCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */)}
                 .data=${{
-                variant: "round" /* Buttons.Button.Variant.ROUND */,
+                variant: "icon" /* Buttons.Button.Variant.ICON */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
                 iconName: 'cross',
             }}
@@ -752,7 +752,7 @@ export class RecordingView extends HTMLElement {
     #renderReplayOrAbortButton() {
         if (this.#replayState.isPlaying) {
             return LitHtml.html `
-        <${Buttons.Button.Button.litTagName} .jslogContext=${'abort-replay'} @click=${this.#handleAbortReplay} .iconName=${'pause'} .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}>
+        <${Buttons.Button.Button.litTagName} .jslogContext=${'abort-replay'} @click=${this.#handleAbortReplay} .iconName=${'pause'} .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>
           ${i18nString(UIStrings.cancelReplay)}
         </${Buttons.Button.Button.litTagName}>`;
         }
@@ -857,7 +857,7 @@ export class RecordingView extends HTMLElement {
           @click=${this.showCodeToggle}
           class="show-code"
           .data=${{
-                variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+                variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
                 title: Models.Tooltip.getTooltipForActions(i18nString(UIStrings.showCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */),
             }}
           jslog=${VisualLogging.toggleSubpane("chrome-recorder.toggle-code-view" /* Actions.RecorderActions.ToggleCodeView */).track({ click: true })}
@@ -900,7 +900,7 @@ export class RecordingView extends HTMLElement {
                   ${!this.#recordingTogglingInProgress && this.#isRecording && i === this.#sections.length - 1 ? LitHtml.html `<devtools-button
                     class="step add-assertion-button"
                     .data=${{
-            variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             title: i18nString(UIStrings.addAssertion),
             jslogContext: 'add-assertion',
         }}
@@ -963,7 +963,7 @@ export class RecordingView extends HTMLElement {
                   @click=${this.#handleMeasurePerformanceClickEvent}
                   .data=${{
                 disabled: this.#replayState.isPlaying,
-                variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+                variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
                 iconName: 'performance',
                 title: i18nString(UIStrings.performancePanel),
                 jslogContext: 'measure-performance',

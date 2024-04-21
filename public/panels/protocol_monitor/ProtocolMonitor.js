@@ -320,7 +320,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         const keys = ['method', 'request', 'response', 'type', 'target', 'session'];
         this.filterParser = new TextUtils.TextUtils.FilterParser(keys);
         this.suggestionBuilder = new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(keys);
-        this.textFilterUI = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), '', 1, .2, '', this.suggestionBuilder.completions.bind(this.suggestionBuilder), true, 'filter');
+        this.textFilterUI = new UI.Toolbar.ToolbarFilter(undefined, 1, .2, '', this.suggestionBuilder.completions.bind(this.suggestionBuilder), true, 'filter');
         this.textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, event => {
             const query = event.data;
             const filters = this.filterParser.parse(query);

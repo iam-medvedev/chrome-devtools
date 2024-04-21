@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
-import * as TimelineModel from '../../../../models/timeline_model/timeline_model.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
 import * as Timeline from '../../../../panels/timeline/timeline.js';
 import * as EnvHelpers from '../../../../testing/EnvironmentHelpers.js';
@@ -59,9 +58,6 @@ async function renderContent(expanded) {
         if (Timeline.CompatibilityTracksAppender.TrackNames.includes(track)) {
             const trackAppenderName = track;
             flameChartData = await FrontendHelpers.getMainFlameChartWithTracks(file, new Set([trackAppenderName]), expanded, additionalTrackFilter);
-        }
-        else if (track in TimelineModel.TimelineModel.TrackType) {
-            flameChartData = await FrontendHelpers.getMainFlameChartWithLegacyTrackTypes(file, track, expanded, additionalTrackFilter);
         }
         else if (track === 'Network') {
             flameChartData = await FrontendHelpers.getNetworkFlameChartWithLegacyTrack(file, expanded);

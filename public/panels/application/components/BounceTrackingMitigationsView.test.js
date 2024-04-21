@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getValuesOfAllBodyRows } from '../../../testing/DataGridHelpers.js';
-import { assertElement, assertShadowRoot, dispatchClickEvent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../../testing/MockConnection.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
@@ -20,7 +20,7 @@ async function renderBounceTrackingMitigationsView() {
 function getInternalDataGridShadowRoot(component) {
     const dataGridController = getElementWithinComponent(component, 'devtools-data-grid-controller', DataGrid.DataGridController.DataGridController);
     const dataGrid = getElementWithinComponent(dataGridController, 'devtools-data-grid', DataGrid.DataGrid.DataGrid);
-    assertShadowRoot(dataGrid.shadowRoot);
+    assert.isNotNull(dataGrid.shadowRoot);
     return dataGrid.shadowRoot;
 }
 describeWithMockConnection('BounceTrackingMitigationsView', () => {
@@ -61,7 +61,7 @@ describeWithMockConnection('BounceTrackingMitigationsView', () => {
         const component = await renderBounceTrackingMitigationsView();
         await coordinator.done();
         const forceRunButton = component.shadowRoot.querySelector('[aria-label="Force run"]');
-        assertElement(forceRunButton, HTMLElement);
+        assert.instanceOf(forceRunButton, HTMLElement);
         dispatchClickEvent(forceRunButton);
         await coordinator.done();
         const nullGridElement = component.shadowRoot.querySelector('devtools-data-grid-controller');
@@ -82,7 +82,7 @@ describeWithMockConnection('BounceTrackingMitigationsView', () => {
         const component = await renderBounceTrackingMitigationsView();
         await coordinator.done();
         const forceRunButton = component.shadowRoot.querySelector('[aria-label="Force run"]');
-        assertElement(forceRunButton, HTMLElement);
+        assert.instanceOf(forceRunButton, HTMLElement);
         dispatchClickEvent(forceRunButton);
         await coordinator.done({ waitForWork: true });
         const dataGridShadowRoot = getInternalDataGridShadowRoot(component);

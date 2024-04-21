@@ -461,7 +461,7 @@ export class ConsoleInsight extends HTMLElement {
       class="cancel-button"
       @click=${this.#onClose}
       .data=${{
-            variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             jslogContext: 'cancel',
         }}
     >
@@ -475,7 +475,7 @@ export class ConsoleInsight extends HTMLElement {
       @click=${this.#onDisableFeature}
       class="disable-button"
       .data=${{
-            variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             jslogContext: 'disable',
         }}
     >
@@ -502,7 +502,7 @@ export class ConsoleInsight extends HTMLElement {
         return html `<${Buttons.Button.Button.litTagName}
       @click=${this.#goToPrevPage}
       .data=${{
-            variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             jslogContext: 'back',
         }}
     >
@@ -531,7 +531,7 @@ export class ConsoleInsight extends HTMLElement {
       @click=${this.#onSearch}
       class="search-button"
       .data=${{
-            variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             jslogContext: 'search',
         }}
     >
@@ -723,7 +723,7 @@ export class ConsoleInsight extends HTMLElement {
           <${Buttons.Button.Button.litTagName}
             data-rating=${'true'}
             .data=${{
-                    variant: "round" /* Buttons.Button.Variant.ROUND */,
+                    variant: "icon" /* Buttons.Button.Variant.ICON */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-up',
                     active: this.#selectedRating !== undefined && this.#selectedRating,
@@ -735,7 +735,7 @@ export class ConsoleInsight extends HTMLElement {
           <${Buttons.Button.Button.litTagName}
             data-rating=${'false'}
             .data=${{
-                    variant: "round" /* Buttons.Button.Variant.ROUND */,
+                    variant: "icon" /* Buttons.Button.Variant.ICON */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-down',
                     active: this.#selectedRating !== undefined && !this.#selectedRating,
@@ -746,7 +746,7 @@ export class ConsoleInsight extends HTMLElement {
           ></${Buttons.Button.Button.litTagName}>
           <${Buttons.Button.Button.litTagName}
             .data=${{
-                    variant: "round" /* Buttons.Button.Variant.ROUND */,
+                    variant: "icon" /* Buttons.Button.Variant.ICON */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'report',
                     title: i18nString(UIStrings.report),
@@ -798,7 +798,7 @@ export class ConsoleInsight extends HTMLElement {
           <div>
             <${Buttons.Button.Button.litTagName}
               .data=${{
-            variant: "round" /* Buttons.Button.Variant.ROUND */,
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
             iconName: 'cross',
             title: i18nString(UIStrings.closeInsight),

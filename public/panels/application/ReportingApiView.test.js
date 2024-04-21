@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -15,7 +14,7 @@ describeWithMockConnection('ReportingApiView', () => {
     it('updates endpoints grid when they change without tab target', () => {
         const target = createTarget();
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
-        assertNotNullOrUndefined(networkManager);
+        assert.exists(networkManager);
         const endpointsGrid = new ApplicationComponents.EndpointsGrid.EndpointsGrid();
         new Application.ReportingApiView.ReportingApiView(endpointsGrid);
         const endpointsGridData = sinon.spy(endpointsGrid, 'data', ['set']);
@@ -31,7 +30,7 @@ describeWithMockConnection('ReportingApiView', () => {
         const frameTarget = createTarget({ parentTarget: tabTarget });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         const networkManager = frameTarget.model(SDK.NetworkManager.NetworkManager);
-        assertNotNullOrUndefined(networkManager);
+        assert.exists(networkManager);
         const endpointsGrid = new ApplicationComponents.EndpointsGrid.EndpointsGrid();
         new Application.ReportingApiView.ReportingApiView(endpointsGrid);
         const endpointsGridData = sinon.spy(endpointsGrid, 'data', ['set']);

@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
@@ -10,7 +10,7 @@ async function renderRuleSetDetailsView(data) {
     const component = new PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView();
     component.data = data;
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     await coordinator.done();
     return component;
 }
@@ -18,7 +18,7 @@ describeWithEnvironment('RuleSetDetailsView', () => {
     it('renders nothing if not selected', async () => {
         const data = null;
         const component = await renderRuleSetDetailsView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         assert.strictEqual(component.shadowRoot.textContent, '');
     });
     it('renders rule set', async () => {

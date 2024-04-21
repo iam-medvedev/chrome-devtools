@@ -114,6 +114,24 @@ PerformanceTestRunner.performanceModel = function() {
   return Timeline.TimelinePanel.TimelinePanel.instance().performanceModel;
 };
 
+PerformanceTestRunner.traceEngineParsedData = function() {
+  return Timeline.TimelinePanel.TimelinePanel.instance().getTraceEngineDataForLayoutTests();
+};
+PerformanceTestRunner.traceEngineRawEvents = function() {
+  return Timeline.TimelinePanel.TimelinePanel.instance().getTraceEngineRawTraceEventsForLayoutTests();
+};
+
+// NOTE: if you are here and trying to use this method, please think first if
+// you can instead add a unit test to the DevTools repository. That is
+// preferred to layout tests, if possible.
+PerformanceTestRunner.createTraceEngineDataFromEvents = async function(events) {
+  const model = Trace.TraceModel.Model.createWithAllHandlers(Trace.Types.Configuration.DEFAULT);
+  await model.parse(events);
+  // Model only has one trace, so we can hardcode 0 here to get the latest
+  // result.
+  return model.traceParsedData(0);
+};
+
 PerformanceTestRunner.timelineModel = function() {
   return PerformanceTestRunner.performanceModel().timelineModel();
 };
@@ -210,17 +228,6 @@ PerformanceTestRunner.printTimelineRecordsWithDetails = async function(...names)
   }
 };
 
-PerformanceTestRunner.walkTimelineEventTree = async function(callback) {
-  const view = new Timeline.EventsTimelineTreeView.EventsTimelineTreeView(
-      Timeline.TimelinePanel.TimelinePanel.instance().filters, null);
-  view.setModel(PerformanceTestRunner.performanceModel(), PerformanceTestRunner.mainTrack());
-  const selection = Timeline.TimelineSelection.TimelineSelection.fromRange(
-      PerformanceTestRunner.timelineModel().minimumRecordTime(),
-      PerformanceTestRunner.timelineModel().maximumRecordTime());
-  view.updateContents(selection);
-  await PerformanceTestRunner.walkTimelineEventTreeUnderNode(callback, view.currentTree, 0);
-};
-
 PerformanceTestRunner.walkTimelineEventTreeUnderNode = async function(callback, root, level) {
   const event = root.event;
 
@@ -290,24 +297,6 @@ PerformanceTestRunner.printTraceEventPropertiesWithDetails = async function(even
   TestRunner.addResult(`Text details for ${event.name}: ${details}`);
 };
 
-PerformanceTestRunner.mainTrack = function() {
-  let mainTrack;
-  for (const track of PerformanceTestRunner.timelineModel().tracks()) {
-    if (track.type === TimelineModel.TimelineModel.TrackType.MainThread && track.forMainFrame) {
-      mainTrack = track;
-    }
-  }
-  return mainTrack;
-};
-
-PerformanceTestRunner.mainTrackEvents = function() {
-  return PerformanceTestRunner.mainTrack().events;
-};
-
-PerformanceTestRunner.findTimelineEvent = function(name, index) {
-  return PerformanceTestRunner.mainTrackEvents().filter(e => e.name === name)[index || 0];
-};
-
 PerformanceTestRunner.findChildEvent = function(events, parentIndex, name) {
   const endTime = events[parentIndex].endTime;
 
@@ -349,14 +338,6 @@ PerformanceTestRunner.dumpFrame = function(frame) {
   }
 
   TestRunner.addObject(formatFields(frame));
-};
-
-PerformanceTestRunner.dumpInvalidations = function(recordType, index, comment) {
-  const event = PerformanceTestRunner.findTimelineEvent(recordType, index || 0);
-
-  TestRunner.addArray(
-      TimelineModel.TimelineModel.InvalidationTracker.invalidationEventsFor(event) || [],
-      PerformanceTestRunner.InvalidationFormatters, '', comment);
 };
 
 PerformanceTestRunner.dumpFlameChartProvider = function(provider, includeGroups) {

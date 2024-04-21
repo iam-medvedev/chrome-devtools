@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockConnection.js';
@@ -35,9 +34,9 @@ describeWithMockConnection('ConsoleContextSelector', () => {
             },
         });
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-        assertNotNullOrUndefined(runtimeModel);
+        assert.exists(runtimeModel);
         const executionContext = runtimeModel.executionContext(id);
-        assertNotNullOrUndefined(executionContext);
+        assert.exists(executionContext);
         return executionContext;
     }
     const tests = (inScope) => () => {

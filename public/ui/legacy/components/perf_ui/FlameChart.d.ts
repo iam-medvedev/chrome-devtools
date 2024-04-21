@@ -29,7 +29,6 @@
  */
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import type * as TimelineModel from '../../../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
@@ -521,7 +520,6 @@ export interface Group {
     hidden?: boolean;
     selectable?: boolean;
     style: GroupStyle;
-    track?: TimelineModel.TimelineModel.Track | null;
     showStackContextMenu?: boolean;
 }
 export interface GroupStyle {

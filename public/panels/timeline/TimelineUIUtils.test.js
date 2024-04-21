@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
@@ -339,7 +338,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             if (!cssRequest) {
                 throw new Error('Could not find expected network request.');
             }
-            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildSyntheticNetworkRequestDetails(cssRequest, data.timelineModel, new Components.Linkifier.Linkifier());
+            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildSyntheticNetworkRequestDetails(data.traceParsedData, cssRequest, new Components.Linkifier.Linkifier());
             const titleSwatch = details.querySelector('.timeline-details-chip-title div');
             assert.strictEqual(titleSwatch?.style.backgroundColor, 'rgb(4, 4, 4)');
         });
@@ -512,7 +511,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         it('renders the details for a layout shift properly', async function () {
             // Set related CDP methods responses to return our mock document and node.
             const domModel = target.model(SDK.DOMModel.DOMModel);
-            assertNotNullOrUndefined(domModel);
+            assert.exists(domModel);
             const documentNode = { nodeId: 1 };
             const docc = new SDK.DOMModel.DOMNode(domModel);
             const domNode2 = new SDK.DOMModel.DOMNode(domModel);
@@ -749,7 +748,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             if (!cssRequest) {
                 throw new Error('Could not find expected network request.');
             }
-            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildSyntheticNetworkRequestDetails(cssRequest, data.timelineModel, new Components.Linkifier.Linkifier());
+            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildSyntheticNetworkRequestDetails(data.traceParsedData, cssRequest, new Components.Linkifier.Linkifier());
             const rowData = getRowDataForDetailsElement(details);
             assert.deepEqual(rowData, [
                 { title: 'URL', value: 'chromedevtools.github.io/performance-stories/lcp-web-font/app.css' },

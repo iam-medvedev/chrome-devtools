@@ -179,10 +179,6 @@ const UIStrings = {
      */
     searching: 'Searching…',
     /**
-     *@description Text to filter result items
-     */
-    filter: 'Filter',
-    /**
      *@description Text in Console View of the Console panel
      */
     egEventdCdnUrlacom: 'e.g. `/event\d/ -cdn url:a.com`',
@@ -1377,7 +1373,7 @@ export class ConsoleViewFilter {
         UI.Context.Context.instance().addFlavorChangeListener(SDK.RuntimeModel.ExecutionContext, this.onFilterChanged, this);
         const filterKeys = Object.values(FilterType);
         this.suggestionBuilder = new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(filterKeys);
-        this.textFilterUI = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), '', 1, 1, i18nString(UIStrings.egEventdCdnUrlacom), this.suggestionBuilder.completions.bind(this.suggestionBuilder), true);
+        this.textFilterUI = new UI.Toolbar.ToolbarFilter(undefined, 1, 1, i18nString(UIStrings.egEventdCdnUrlacom), this.suggestionBuilder.completions.bind(this.suggestionBuilder), true);
         this.textFilterSetting = Common.Settings.Settings.instance().createSetting('console.text-filter', '');
         if (this.textFilterSetting.get()) {
             this.textFilterUI.setValue(this.textFilterSetting.get());

@@ -7,6 +7,7 @@ import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../../testing/ExpectStubCall.js';
 import { TestPlugin } from '../../../testing/LanguagePluginHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { MockExecutionContext } from '../../../testing/MockExecutionContext.js';
@@ -55,15 +56,9 @@ describeWithEnvironment('TextEditor', () => {
             editor.remove();
         });
         it('should restore scroll to the same position after reconnecting to DOM when it is scrollable', async () => {
-            let resolveEventPromise;
             const editor = new TextEditor.TextEditor.TextEditor(makeState('line1\nline2\nline3\nline4\nline5\nline6andthisisalonglinesothatwehaveenoughspacetoscrollhorizontally', [CodeMirror.EditorView.theme({ '&.cm-editor': { height: '50px', width: '50px' }, '.cm-scroller': { overflow: 'auto' } })]));
-            const waitForFirstScrollPromise = new Promise(r => {
-                resolveEventPromise = r;
-            });
-            sinon.stub(editor, 'scrollEventHandledToSaveScrollPositionForTest').callsFake(() => {
-                // Resolves the waitForScrollPromise(s) after 'scrollEventHandledToSaveScrollPositionForTest' is called
-                resolveEventPromise();
-            });
+            const scrollEventHandledToSaveScrollPositionForTest = sinon.stub(editor, 'scrollEventHandledToSaveScrollPositionForTest');
+            const waitForFirstScrollPromise = expectCall(scrollEventHandledToSaveScrollPositionForTest);
             renderElementIntoDOM(editor);
             editor.editor.dispatch({
                 effects: CodeMirror.EditorView.scrollIntoView(0, {
@@ -76,9 +71,7 @@ describeWithEnvironment('TextEditor', () => {
             await waitForFirstScrollPromise;
             const scrollTopBeforeRemove = editor.editor.scrollDOM.scrollTop;
             const scrollLeftBeforeRemove = editor.editor.scrollDOM.scrollLeft;
-            const waitForSecondScrollPromise = new Promise(r => {
-                resolveEventPromise = r;
-            });
+            const waitForSecondScrollPromise = expectCall(scrollEventHandledToSaveScrollPositionForTest);
             editor.remove();
             renderElementIntoDOM(editor);
             await waitForSecondScrollPromise;

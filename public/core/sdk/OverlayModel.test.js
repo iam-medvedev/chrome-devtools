@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
-import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
 describeWithMockConnection('OverlayModel', () => {
     const DOCUMENT_URL_FOR_TEST = 'https://example.com/';
@@ -36,7 +35,7 @@ describeWithMockConnection('OverlayModel', () => {
         const target = createTarget({ url: DOCUMENT_URL_FOR_TEST });
         overlayModel = target.model(SDK.OverlayModel.OverlayModel);
         cssModel = target.model(SDK.CSSModel.CSSModel);
-        assertNotNullOrUndefined(cssModel);
+        assert.exists(cssModel);
         windowControls = new SDK.OverlayModel.WindowControls(cssModel);
         // Set up mock response handler to get the default style sheet
         setMockConnectionResponseHandler('CSS.getStyleSheetText', () => {
@@ -44,7 +43,7 @@ describeWithMockConnection('OverlayModel', () => {
         });
     });
     it('toggles controls toolbar', async () => {
-        assertNotNullOrUndefined(overlayModel);
+        assert.exists(overlayModel);
         let config;
         // Set up mock response handler to set the configuration
         setMockConnectionResponseHandler('Overlay.setShowWindowControlsOverlay', request => {
@@ -60,8 +59,8 @@ describeWithMockConnection('OverlayModel', () => {
         assert.deepEqual(config, expectedDefaultConfig, 'Expect default config sent when toolbar is toggled true');
     });
     it('initializes the style sheet text', async () => {
-        assertNotNullOrUndefined(cssModel);
-        assertNotNullOrUndefined(windowControls);
+        assert.exists(cssModel);
+        assert.exists(windowControls);
         // Verify the style sheet is not initialized when no styles are present
         const checkStyleSheet = await windowControls.initializeStyleSheetText(DOCUMENT_URL_FOR_TEST);
         assert.isFalse(checkStyleSheet, 'Style should not be initialized if no CSS stylesheets are present');
@@ -74,8 +73,8 @@ describeWithMockConnection('OverlayModel', () => {
         assert.isTrue(isInitialized, 'Expect the style sheet to be initialized when CSS stylesheets are present');
     });
     it('toggles the emulated overlay', async () => {
-        assertNotNullOrUndefined(cssModel);
-        assertNotNullOrUndefined(windowControls);
+        assert.exists(cssModel);
+        assert.exists(windowControls);
         let styleSheet;
         // Set up mock response handler to set the style sheet
         setMockConnectionResponseHandler('CSS.setStyleSheetText', req => {
@@ -105,7 +104,7 @@ describeWithMockConnection('OverlayModel', () => {
         assert.strictEqual(styleSheet, defaultStyleSheet, 'Expect original default stylesheet to be used');
     });
     it('parses styles and replaces variables for style sheet correctly', () => {
-        assertNotNullOrUndefined(windowControls);
+        assert.exists(windowControls);
         const x = 85;
         const y = 0;
         const width = 185;
