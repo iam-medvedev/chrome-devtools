@@ -148,10 +148,10 @@ describeWithEnvironment('FlameChart', () => {
             // Ensure that the highlighted div is positioned. We cannot assert exact
             // pixels due to differences in screen sizes and resolution across
             // machines, but we can ensure that they have all been set.
-            assert.isDefined(chartInstance.highlightElement.style.height);
-            assert.isDefined(chartInstance.highlightElement.style.top);
-            assert.isDefined(chartInstance.highlightElement.style.left);
-            assert.isDefined(chartInstance.highlightElement.style.width);
+            assert.exists(chartInstance.highlightElement.style.height);
+            assert.exists(chartInstance.highlightElement.style.top);
+            assert.exists(chartInstance.highlightElement.style.left);
+            assert.exists(chartInstance.highlightElement.style.width);
             // And that it is not hidden.
             assert.isFalse(chartInstance.highlightElement.classList.contains('hidden'));
             // Ensure that the event listener was called with the right index

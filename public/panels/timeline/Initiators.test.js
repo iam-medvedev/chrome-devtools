@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
@@ -10,9 +9,9 @@ describe('Initiators', () => {
         const traceData = await TraceLoader.traceEngine(this, 'set-timeout-long-task.json.gz');
         const timerFireEvent = Array.from(traceData.Initiators.eventToInitiator.keys())
             .find(TraceEngine.Types.TraceEvents.isTraceEventTimerFire);
-        assertNotNullOrUndefined(timerFireEvent);
+        assert.exists(timerFireEvent);
         const timerInstallEvent = traceData.Initiators.eventToInitiator.get(timerFireEvent);
-        assertNotNullOrUndefined(timerInstallEvent);
+        assert.exists(timerInstallEvent);
         const initiatorData = Timeline.Initiators.initiatorsDataToDraw(traceData, timerFireEvent, [], []);
         assert.deepEqual(initiatorData, [{
                 event: timerFireEvent,
@@ -26,12 +25,12 @@ describe('Initiators', () => {
         const fibonacciCall = traceData.Renderer.allTraceEntries.find(entry => {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
         });
-        assertNotNullOrUndefined(fibonacciCall);
+        assert.exists(fibonacciCall);
         const timerFireEvent = Array.from(traceData.Initiators.eventToInitiator.keys())
             .find(TraceEngine.Types.TraceEvents.isTraceEventTimerFire);
-        assertNotNullOrUndefined(timerFireEvent);
+        assert.exists(timerFireEvent);
         const timerInstallEvent = traceData.Initiators.eventToInitiator.get(timerFireEvent);
-        assertNotNullOrUndefined(timerInstallEvent);
+        assert.exists(timerInstallEvent);
         // Find the initator data but starting at the fibonacci()
         // call.
         const initiatorsData = Timeline.Initiators.initiatorsDataToDraw(traceData, fibonacciCall, [], []);
@@ -47,7 +46,7 @@ describe('Initiators', () => {
         const fibonacciCall = traceData.Renderer.allTraceEntries.find(entry => {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
         });
-        assertNotNullOrUndefined(fibonacciCall);
+        assert.exists(fibonacciCall);
         // Find the initators data but starting at the fibonacci()
         // call. We expect to find two initiatorData objects here:
         // 1. fibonacci() ===> TimerFire caused by TimerInstall
@@ -66,7 +65,7 @@ describe('Initiators', () => {
         const timerInstall = traceData.Renderer.allTraceEntries.find(entry => {
             return entry.name === "TimerInstall" /* TraceEngine.Types.TraceEvents.KnownEventName.TimerInstall */;
         });
-        assertNotNullOrUndefined(timerInstall);
+        assert.exists(timerInstall);
         // Find the initatorData objects starting at the TimerInstall
         // call. We expect to find one initatorData here:
         // TimerFire that was initiated by the entry we found - TimerInstall
@@ -84,11 +83,11 @@ describe('Initiators', () => {
         const timerInstall = traceData.Renderer.allTraceEntries.find(entry => {
             return entry.name === "TimerInstall" /* TraceEngine.Types.TraceEvents.KnownEventName.TimerInstall */;
         });
-        assertNotNullOrUndefined(timerInstall);
+        assert.exists(timerInstall);
         // Get the parent of InstallTimer to add to the modified events array.
         // When we add TimerInstall to hidden entries list, it will be the closest modified parent and the initiator should point to it.
         const timerInstallParent = traceData.Renderer.entryToNode.get(timerInstall)?.parent;
-        assertNotNullOrUndefined(timerInstallParent);
+        assert.exists(timerInstallParent);
         // Find the initatorData objects starting at the TimerInstall
         // call. We expect to find one initatorData here:
         // TimerFire that was initiated by the entry we found - Parent of TimerInstall because TimerInstall is hidden
@@ -109,7 +108,7 @@ describe('Initiators', () => {
         const fibonacciCall = traceData.Renderer.allTraceEntries.find(entry => {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'fibonacci';
         });
-        assertNotNullOrUndefined(fibonacciCall);
+        assert.exists(fibonacciCall);
         // Find the initatorData objects but starting at the fibonacci()
         // call. We expect to find two initiatorData objects here:
         // 1. fibonacci() ===> TimerFire caused by TimerInstall

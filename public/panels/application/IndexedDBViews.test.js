@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertShadowRoot, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../ui/components/report_view/report_view.js';
@@ -25,10 +25,10 @@ describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
         };
         const component = new Application.IndexedDBViews.IDBDatabaseView(model, database);
         renderElementIntoDOM(component);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         await coordinator.done();
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
-        assertShadowRoot(report.shadowRoot);
+        assert.isNotNull(report.shadowRoot);
         const titleElement = report.shadowRoot.querySelector('.report-title');
         assert.strictEqual(titleElement?.textContent, 'My Database');
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
@@ -57,10 +57,10 @@ describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
         };
         const component = new Application.IndexedDBViews.IDBDatabaseView(model, database);
         renderElementIntoDOM(component);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         await coordinator.done();
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
-        assertShadowRoot(report.shadowRoot);
+        assert.isNotNull(report.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, ['Origin', 'Is third-party', 'Is opaque', 'Version', 'Object stores']);
         const values = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-value');
@@ -86,10 +86,10 @@ describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
         };
         const component = new Application.IndexedDBViews.IDBDatabaseView(model, database);
         renderElementIntoDOM(component);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         await coordinator.done();
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
-        assertShadowRoot(report.shadowRoot);
+        assert.isNotNull(report.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, [
             'Origin',
@@ -134,18 +134,18 @@ describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
         };
         const component = new Application.IndexedDBViews.IDBDatabaseView(model, database);
         renderElementIntoDOM(component);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         await coordinator.done({ waitForWork: true });
         const buttons = component.shadowRoot.querySelectorAll('devtools-button');
         assert.strictEqual(buttons.length, 2);
-        assertElement(buttons[0], HTMLElement);
+        assert.instanceOf(buttons[0], HTMLElement);
         assert.strictEqual(buttons[0].textContent?.trim(), 'Delete database');
         const showDialog = sinon.stub(UI.UIUtils.ConfirmDialog, 'show').resolves(true);
         buttons[0].click();
         assert.isTrue(showDialog.calledOnce);
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isTrue(model.deleteDatabase.calledOnceWithExactly(databaseId));
-        assertElement(buttons[1], HTMLElement);
+        assert.instanceOf(buttons[1], HTMLElement);
         assert.strictEqual(buttons[1].textContent?.trim(), 'Refresh database');
         buttons[1].click();
         assert.isTrue(model.refreshDatabase.calledOnceWithExactly(databaseId));

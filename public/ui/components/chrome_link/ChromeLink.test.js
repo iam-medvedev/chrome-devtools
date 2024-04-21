@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
@@ -23,11 +23,11 @@ describeWithMockConnection('ChromeLink', () => {
         renderElementIntoDOM(container);
         await coordinator.done();
         const chromeLink = container.querySelector('devtools-chrome-link');
-        assertElement(chromeLink, ChromeLink.ChromeLink.ChromeLink);
-        assertShadowRoot(chromeLink.shadowRoot);
+        assert.instanceOf(chromeLink, ChromeLink.ChromeLink.ChromeLink);
+        assert.isNotNull(chromeLink.shadowRoot);
         assert.strictEqual(chromeLink.innerHTML.trim(), 'link text');
         const link = chromeLink.shadowRoot.querySelector('a');
-        assertElement(link, HTMLAnchorElement);
+        assert.instanceOf(link, HTMLAnchorElement);
         assert.isTrue(spy.notCalled);
         link.click();
         assert.isTrue(spy.calledOnce);

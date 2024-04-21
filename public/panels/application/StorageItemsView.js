@@ -12,10 +12,6 @@ const UIStrings = {
      */
     refresh: 'Refresh',
     /**
-     *@description Text to filter result items
-     */
-    filter: 'Filter',
-    /**
      *@description Text to clear everything
      */
     clearAll: 'Clear All',
@@ -48,7 +44,7 @@ export class StorageItemsView extends UI.Widget.VBox {
         this.refreshButton.element.setAttribute('jslog', `${VisualLogging.action('storage-items-view.refresh').track({ click: true })}`);
         this.mainToolbar = new UI.Toolbar.Toolbar('top-resources-toolbar', this.element);
         this.mainToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
-        this.filterItem = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filter), '', 0.4);
+        this.filterItem = new UI.Toolbar.ToolbarFilter(undefined, 0.4);
         this.filterItem.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.filterChanged, this);
         const toolbarSeparator = new UI.Toolbar.ToolbarSeparator();
         this.deleteAllButton = this.addButton(i18nString(UIStrings.clearAll), 'clear', this.deleteAllItems);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getAllRows, getHeaderCellForColumnId, getValuesForColumn, getValuesOfAllBodyRows, } from '../../../testing/DataGridHelpers.js';
-import { assertShadowRoot, dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import { TEXT_NODE, withMutations } from '../../../testing/MutationHelpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
@@ -10,7 +10,7 @@ import * as DataGrid from './data_grid.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const getInternalDataGridShadowRoot = (component) => {
     const { shadowRoot } = component.shadowRoot.querySelector('devtools-data-grid');
-    assertShadowRoot(shadowRoot);
+    assert.isNotNull(shadowRoot);
     return shadowRoot;
 };
 describe('DataGridController', () => {
@@ -32,7 +32,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             await withMutations([{
@@ -52,7 +52,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows: numericRows, columns };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const keyHeader = getHeaderCellForColumnId(internalDataGridShadow, 'key');
@@ -76,7 +76,7 @@ describe('DataGridController', () => {
                 },
             };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const cellValues = getValuesForColumn(internalDataGridShadow, 'key');
@@ -93,7 +93,7 @@ describe('DataGridController', () => {
                 },
             };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const keyHeader = getHeaderCellForColumnId(internalDataGridShadow, 'key');
@@ -108,7 +108,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const keyHeader = getHeaderCellForColumnId(internalDataGridShadow, 'key');
@@ -125,7 +125,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const keyHeader = getHeaderCellForColumnId(internalDataGridShadow, 'key');
@@ -147,7 +147,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const keyHeader = getHeaderCellForColumnId(internalDataGridShadow, 'key');
@@ -214,7 +214,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns, filters: [createPlainTextFilter('bravo')] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const renderedRowValues = getValuesOfAllBodyRows(internalDataGridShadow, { onlyVisible: true });
@@ -226,7 +226,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns, filters: [createPlainTextFilter('e')] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             let renderedRowValues = getValuesOfAllBodyRows(internalDataGridShadow, { onlyVisible: true });
@@ -249,7 +249,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns, filters: [createPlainTextFilter('bravo')] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const renderedRows = getAllRows(internalDataGridShadow);
@@ -259,7 +259,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns, filters: [createPlainTextFilter('bravo')] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             let renderedRowValues = getValuesOfAllBodyRows(internalDataGridShadow, { onlyVisible: true });
@@ -276,7 +276,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns, filters: [createRegexFilter('bravo')] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const renderedRowValues = getValuesOfAllBodyRows(internalDataGridShadow, { onlyVisible: true });
@@ -290,7 +290,7 @@ describe('DataGridController', () => {
             filter.negative = true;
             component.data = { rows, columns, filters: [filter] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const renderedRowValues = getValuesOfAllBodyRows(internalDataGridShadow, { onlyVisible: true });
@@ -304,7 +304,7 @@ describe('DataGridController', () => {
             // This matches no rows, as no row can match both of these filters
             component.data = { rows, columns, filters: [createPlainTextFilter('alpha'), createPlainTextFilter('charlie')] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const renderedRowValues = getValuesOfAllBodyRows(internalDataGridShadow, { onlyVisible: true });
@@ -315,7 +315,7 @@ describe('DataGridController', () => {
             // By filtering for values with `e` we expect to only get the "Letter C: Charlie" row as it's the only value field with an `e` in.
             component.data = { rows, columns, filters: [createColumnFilter('value', 'e')] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const renderedRowValues = getValuesOfAllBodyRows(internalDataGridShadow, { onlyVisible: true });
@@ -329,7 +329,7 @@ describe('DataGridController', () => {
             filter.negative = true;
             component.data = { rows, columns, filters: [filter] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             const renderedRowValues = getValuesOfAllBodyRows(internalDataGridShadow, { onlyVisible: true });
@@ -342,7 +342,7 @@ describe('DataGridController', () => {
             const component = new DataGrid.DataGridController.DataGridController();
             component.data = { rows, columns, filters: [createPlainTextFilter('h')] };
             renderElementIntoDOM(component);
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             await coordinator.done();
             const internalDataGridShadow = getInternalDataGridShadowRoot(component);
             let renderedRowValues = getValuesOfAllBodyRows(internalDataGridShadow, { onlyVisible: true });

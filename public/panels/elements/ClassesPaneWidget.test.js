@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -24,7 +23,7 @@ describeWithMockConnection('ClassesPaneWidget', () => {
         view.markAsRoot();
         view.show(document.body);
         const model = target.model(SDK.DOMModel.DOMModel);
-        assertNotNullOrUndefined(model);
+        assert.exists(model);
         const node = new SDK.DOMModel.DOMNode(model);
         const createCheckboxLabel = sinon.spy(UI.UIUtils.CheckboxLabel, 'create');
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);

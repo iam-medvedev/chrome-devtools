@@ -120,6 +120,9 @@
       "path": "../components/adorners/bundle-tsconfig.json"
     },
     {
+      "path": "../components/buttons/bundle-tsconfig.json"
+    },
+    {
       "path": "../components/helpers/bundle-tsconfig.json"
     },
     {

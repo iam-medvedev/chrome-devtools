@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createFakeSetting, createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
@@ -13,7 +12,7 @@ describeWithMockConnection('IssuesManager', () => {
     beforeEach(() => {
         target = createTarget();
         const maybeModel = target.model(SDK.IssuesModel.IssuesModel);
-        assertNotNullOrUndefined(maybeModel);
+        assert.exists(maybeModel);
         model = maybeModel;
     });
     it('collects issues from an issues model', () => {
@@ -38,7 +37,7 @@ describeWithMockConnection('IssuesManager', () => {
         model.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.IssueAdded */, { issuesModel: model, inspectorIssue: mkInspectorCspIssue('url1') });
         const prerenderTarget = createTarget({ subtype: 'prerender' });
         const prerenderModel = prerenderTarget.model(SDK.IssuesModel.IssuesModel);
-        assertNotNullOrUndefined(prerenderModel);
+        assert.exists(prerenderModel);
         prerenderModel.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.IssueAdded */, { issuesModel: prerenderModel, inspectorIssue: mkInspectorCspIssue('url2') });
         const expected = ['url1'];
         assert.deepStrictEqual(dispatchedIssues.map(getBlockedUrl), expected);
@@ -53,7 +52,7 @@ describeWithMockConnection('IssuesManager', () => {
     it('keeps issues of prerendered page upon activation', () => {
         const { issuesManager, prerenderTarget } = assertOutOfScopeIssuesAreFiltered();
         const resourceTreeModel = prerenderTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assertNotNullOrUndefined(resourceTreeModel);
+        assert.exists(resourceTreeModel);
         const frame = { url: 'http://example.com/', resourceTreeModel: () => resourceTreeModel };
         SDK.TargetManager.TargetManager.instance().setScopeTarget(prerenderTarget);
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame, type: "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Activation */ });

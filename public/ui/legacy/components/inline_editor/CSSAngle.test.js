@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import * as InlineEditor from './inline_editor.js';
 const assertPopoverOpen = (root) => {
     const popover = root.querySelector('.popover');
@@ -43,7 +43,7 @@ describe('CSSAngle', () => {
         const component = new InlineEditor.CSSAngle.CSSAngle();
         renderElementIntoDOM(component);
         component.data = initialData;
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         assertPopoverClosed(component.shadowRoot);
         togglePopover(component.shadowRoot);
         assertPopoverOpen(component.shadowRoot);
@@ -59,7 +59,7 @@ describe('CSSAngle', () => {
             const popoverToggledEvent = event;
             isPopoverOpen = popoverToggledEvent.data.open;
         });
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         assertPopoverClosed(component.shadowRoot);
         togglePopover(component.shadowRoot);
         assertPopoverOpen(component.shadowRoot);
@@ -72,7 +72,7 @@ describe('CSSAngle', () => {
         const component = new InlineEditor.CSSAngle.CSSAngle();
         renderElementIntoDOM(component);
         component.data = initialData;
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         let cssAngleText = initialData.angleText;
         component.addEventListener('unitchanged', (event) => {
             const { data } = event;
@@ -90,7 +90,7 @@ describe('CSSAngle', () => {
         const component = new InlineEditor.CSSAngle.CSSAngle();
         renderElementIntoDOM(component);
         component.data = initialData;
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         let cssAngleText = initialData.angleText;
         component.addEventListener('valuechanged', (event) => {
             const { data } = event;
@@ -119,7 +119,7 @@ describe('CSSAngle', () => {
                 const popoverEvent = event;
                 assert.strictEqual(popoverEvent.data.open, shouldPopoverEventBeOpen);
             });
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             assertPopoverClosed(component.shadowRoot);
             shouldPopoverEventBeOpen = true;
             togglePopover(component.shadowRoot);

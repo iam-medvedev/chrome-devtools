@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { assertElement } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as Network from './network.js';
 describeWithEnvironment('NetworkLogView', () => {
@@ -18,7 +17,7 @@ describeWithEnvironment('NetworkLogView', () => {
         networkRequestNode.renderCell(el, 'name');
         const marker = el.querySelector('.network-override-marker');
         const tooltip = el.querySelector('[title="Request headers are overridden"]');
-        assertElement(marker, HTMLDivElement);
+        assert.instanceOf(marker, HTMLDivElement);
         assert.isNotNull(tooltip);
     });
     it('adds marker to requests with overridden content', async () => {
@@ -31,7 +30,7 @@ describeWithEnvironment('NetworkLogView', () => {
         networkRequestNode.renderCell(el, 'name');
         const marker = el.querySelector('.network-override-marker');
         const tooltip = el.querySelector('[title="Request content is overridden"]');
-        assertElement(marker, HTMLDivElement);
+        assert.instanceOf(marker, HTMLDivElement);
         assert.isNotNull(tooltip);
     });
     it('adds marker to requests with overridden headers and content', async () => {
@@ -46,7 +45,7 @@ describeWithEnvironment('NetworkLogView', () => {
         networkRequestNode.renderCell(el, 'name');
         const marker = el.querySelector('.network-override-marker');
         const tooltip = el.querySelector('[title="Both request content and headers are overridden"]');
-        assertElement(marker, HTMLDivElement);
+        assert.instanceOf(marker, HTMLDivElement);
         assert.isNotNull(tooltip);
     });
     it('does not add marker to unoverridden request', async () => {

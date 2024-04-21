@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../../front_end/ui/components/text_editor/AutocompleteHistory.ts",
+    "../../../../../../../front_end/ui/components/text_editor/ExecutionPositionHighlighter.ts",
     "../../../../../../../front_end/ui/components/text_editor/TextEditor.ts",
     "../../../../../../../front_end/ui/components/text_editor/TextEditorHistory.ts",
     "../../../../../../../front_end/ui/components/text_editor/config.ts",

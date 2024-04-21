@@ -62,6 +62,20 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     loadFromEvents(events: TraceEngine.TracingManager.EventPayload[]): void;
     getFlameChart(): TimelineFlameChartView;
     getMinimap(): TimelineMiniMap;
+    /**
+     * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
+     * DO NOT use this method within DevTools. It is marked as deprecated so
+     * within DevTools you are warned when using the method.
+     * @deprecated
+     **/
+    getTraceEngineDataForLayoutTests(): TraceEngine.Handlers.Types.TraceParseData;
+    /**
+     * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
+     * DO NOT use this method within DevTools. It is marked as deprecated so
+     * within DevTools you are warned when using the method.
+     * @deprecated
+     **/
+    getTraceEngineRawTraceEventsForLayoutTests(): readonly TraceEngine.Types.TraceEvents.TraceEventData[];
     private loadFromCpuProfile;
     private setState;
     private createSettingCheckbox;

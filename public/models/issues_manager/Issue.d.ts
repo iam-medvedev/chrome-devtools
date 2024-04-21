@@ -77,6 +77,7 @@ export declare abstract class Issue<IssueCode extends string = string> {
     getIssueId(): Protocol.Audits.IssueId | undefined;
     isHidden(): boolean;
     setHidden(hidden: boolean): void;
+    maybeCreateConsoleMessage(): SDK.ConsoleModel.ConsoleMessage | undefined;
 }
 export declare function toZeroBasedLocation(location: Protocol.Audits.SourceCodeLocation | undefined): {
     url: Platform.DevToolsPath.UrlString;

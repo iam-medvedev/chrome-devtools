@@ -148,7 +148,7 @@ export class RecordingListView extends HTMLElement {
                               <${Buttons.Button.Button.litTagName}
                                 title=${i18nString(UIStrings.playRecording)}
                                 .data=${{
-                    variant: "round" /* Buttons.Button.Variant.ROUND */,
+                    variant: "icon" /* Buttons.Button.Variant.ICON */,
                     iconName: 'play',
                     jslogContext: 'play-recording',
                 }}
@@ -161,7 +161,7 @@ export class RecordingListView extends HTMLElement {
                         class="delete-recording-button"
                         title=${i18nString(UIStrings.deleteRecording)}
                         .data=${{
-                variant: "round" /* Buttons.Button.Variant.ROUND */,
+                variant: "icon" /* Buttons.Button.Variant.ICON */,
                 iconName: 'bin',
                 jslogContext: 'delete-recording',
             }}

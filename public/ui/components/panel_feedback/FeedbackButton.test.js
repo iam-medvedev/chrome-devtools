@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
-import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as PanelFeedback from './panel_feedback.js';
@@ -17,7 +17,7 @@ describeWithLocale('Feedback button', () => {
         renderElementIntoDOM(component);
         await coordinator.done();
         const button = component.shadowRoot.querySelector('devtools-button');
-        assertElement(button, HTMLElement);
+        assert.instanceOf(button, HTMLElement);
         dispatchClickEvent(button);
         assert.strictEqual(openInNewTabStub.callCount, 1);
         assert.isTrue(openInNewTabStub.firstCall.calledWith('https://feedbackurl.com'), 'openInNewTab was not called with the expected URL.');

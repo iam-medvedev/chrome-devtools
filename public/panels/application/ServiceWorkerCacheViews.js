@@ -30,7 +30,7 @@ const UIStrings = {
     /**
      *@description Text in Service Worker Cache Views of the Application panel
      */
-    filterByPath: 'Filter by Path',
+    filterByPath: 'Filter by path',
     /**
      *@description Text in Service Worker Cache Views of the Application panel
      */
@@ -126,7 +126,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
             void this.deleteButtonClicked(null);
         });
         editorToolbar.appendToolbarItem(this.deleteSelectedButton);
-        const entryPathFilterBox = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.filterByPath), '', 1);
+        const entryPathFilterBox = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByPath), 1);
         editorToolbar.appendToolbarItem(entryPathFilterBox);
         const entryPathFilterThrottler = new Common.Throttler.Throttler(300);
         this.entryPathFilter = '';

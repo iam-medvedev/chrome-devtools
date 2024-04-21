@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getCellByIndexes, getValuesOfAllBodyRows, } from '../../../testing/DataGridHelpers.js';
-import { assertElement, assertShadowRoot, dispatchClickEvent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
@@ -20,7 +20,7 @@ async function renderTrustTokensView() {
 function getInternalDataGridShadowRoot(component) {
     const dataGridController = getElementWithinComponent(component, 'devtools-data-grid-controller', DataGrid.DataGridController.DataGridController);
     const dataGrid = getElementWithinComponent(dataGridController, 'devtools-data-grid', DataGrid.DataGrid.DataGrid);
-    assertShadowRoot(dataGrid.shadowRoot);
+    assert.isNotNull(dataGrid.shadowRoot);
     return dataGrid.shadowRoot;
 }
 describeWithMockConnection('TrustTokensView', () => {
@@ -79,7 +79,7 @@ describeWithMockConnection('TrustTokensView', () => {
         const nullGridElement = component.shadowRoot.querySelector('devtools-data-grid-controller');
         assert.isNull(nullGridElement);
         const noTrustTokensElement = component.shadowRoot.querySelector('div.no-tt-message');
-        assertElement(noTrustTokensElement, HTMLDivElement);
+        assert.instanceOf(noTrustTokensElement, HTMLDivElement);
     });
     it('calls the delete handler with the right issuer when the delete button is clicked in a row', async () => {
         // Create a Promise that resolves with the issuer for which the delete button was clicked.
@@ -95,7 +95,7 @@ describeWithMockConnection('TrustTokensView', () => {
         const dataGridShadowRoot = getInternalDataGridShadowRoot(component);
         const deleteCell = getCellByIndexes(dataGridShadowRoot, { column: 2, row: 1 });
         const deleteButtonComponent = deleteCell.querySelector('devtools-button');
-        assertElement(deleteButtonComponent, HTMLElement);
+        assert.instanceOf(deleteButtonComponent, HTMLElement);
         dispatchClickEvent(deleteButtonComponent);
         assert.isTrue(clearTrustTokens.calledOnceWith({ issuerOrigin: 'bar.org' }));
     });

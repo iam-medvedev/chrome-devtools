@@ -51,31 +51,19 @@ export const resetTestDOM = () => {
     document.body.appendChild(newContainer);
 };
 /**
- * An easy way to assert the component's shadowRoot exists so you're able to assert on its contents.
- */
-export function assertShadowRoot(shadowRoot) {
-    assert.instanceOf(shadowRoot, ShadowRoot);
-}
-/**
- * Asserts that `element` is of type `T`.
- */
-export function assertElement(element, elementClass) {
-    assert.instanceOf(element, elementClass);
-}
-/**
  * Asserts that all emenents of `nodeList` are at least of type `T`.
  */
 export function assertElements(nodeList, elementClass) {
     nodeList.forEach(e => assert.instanceOf(e, elementClass));
 }
 export function getElementWithinComponent(component, selector, elementClass) {
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     const element = component.shadowRoot.querySelector(selector);
-    assertElement(element, elementClass);
+    assert.instanceOf(element, elementClass);
     return element;
 }
 export function getElementsWithinComponent(component, selector, elementClass) {
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     const elements = component.shadowRoot.querySelectorAll(selector);
     assertElements(elements, elementClass);
     return elements;
@@ -221,7 +209,7 @@ export function getCleanTextContentFromElements(el, selector) {
     });
 }
 export function assertNodeTextContent(component, expectedContent) {
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     const content = Array.from(component.shadowRoot.querySelectorAll('span')).map(span => span.textContent).join('');
     assert.strictEqual(content, expectedContent);
 }

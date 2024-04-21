@@ -38,6 +38,7 @@
   },
   "files": [
     "../../../../../../../front_end/ui/components/text_editor/AutocompleteHistory.test.ts",
+    "../../../../../../../front_end/ui/components/text_editor/ExecutionPositionHighlighter.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/TextEditor.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/TextEditorHistory.test.ts",
     "../../../../../../../front_end/ui/components/text_editor/javascript.test.ts",

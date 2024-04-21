@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Platform from '../../core/platform/platform.js';
 import * as Issues from '../../panels/issues/issues.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import { MockIssuesManager } from '../../testing/MockIssuesManager.js';
@@ -106,7 +105,7 @@ describeWithLocale('StylesheetLoadingIssue', () => {
         assert.deepStrictEqual(Array.from(aggregatedIssues[1].sources()), [issueDetails[2].sourceCodeLocation, issueDetails[3].sourceCodeLocation]);
         assert.deepStrictEqual(Array.from(aggregatedIssues[0].requests()), []);
         const { url, requestId } = issueDetails[3].failedRequestInfo;
-        Platform.assertNotNullOrUndefined(requestId);
+        assert.exists(requestId);
         assert.deepStrictEqual(Array.from(aggregatedIssues[1].requests()), [{ url, requestId }]);
     });
 });

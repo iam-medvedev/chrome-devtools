@@ -50,53 +50,6 @@ export async function getMainFlameChartWithTracks(traceFileName, trackAppenderNa
     return { flameChart, dataProvider };
 }
 /**
- * Draws a track in the flame chart using the legacy system. For this to work,
- * a codepath to append the track must be available in the implementation of
- * TimelineFlameChartDataProvider.appendLegacyTrackData.
- *
- * @param traceFileName The name of the trace file to be loaded to the flame
- * chart.
- * @param trackType the legacy "type" of the track to be rendered. For
- * example: "GPU"
- * @param expanded if the track is expanded
- * @param trackNameFilter used to further filter down the tracks rendered by seeing if their name contains this string.
- * @returns a flame chart element and its corresponding data provider.
- */
-export async function getMainFlameChartWithLegacyTrackTypes(traceFileName, trackType, expanded, trackNameFilter) {
-    await initializeGlobalVars();
-    // This function is used to load a component example.
-    const { traceParsedData, performanceModel, timelineModel } = await TraceLoader.allModels(/* context= */ null, traceFileName);
-    const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
-    // The data provider still needs a reference to the legacy model to
-    // work properly.
-    dataProvider.setModel(performanceModel, traceParsedData);
-    // We use filter() here because some tracks (e.g. Rasterizer) actually can
-    // have N tracks for a given trace, depending on how many
-    // CompositorTileWorker threads there were. So in this case, we want to
-    // render all of them, not just the first one we find.
-    const tracks = timelineModel.tracks().filter(track => {
-        const isRightType = track.type === trackType;
-        if (!trackNameFilter) {
-            return isRightType;
-        }
-        return isRightType && track.name.includes(trackNameFilter);
-    });
-    if (tracks.length === 0) {
-        throw new Error(`Legacy track with of type ${trackType} not found in timeline model.`);
-    }
-    for (const track of tracks) {
-        dataProvider.appendLegacyTrackData(track, expanded);
-    }
-    const delegate = new MockFlameChartDelegate();
-    const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
-    const minTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceParsedData.Meta.traceBounds.min);
-    const maxTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceParsedData.Meta.traceBounds.max);
-    flameChart.setWindowTimes(minTime, maxTime);
-    flameChart.markAsRoot();
-    flameChart.update();
-    return { flameChart, dataProvider };
-}
-/**
  * Draws the network track in the flame chart using the legacy system.
  *
  * @param traceFileName The name of the trace file to be loaded to the flame

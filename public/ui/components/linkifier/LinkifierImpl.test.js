@@ -6,7 +6,7 @@ import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as Linkifier from './linkifier.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-import { assertElement, assertShadowRoot, dispatchClickEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 describeWithLocale('Linkifier', () => {
     it('renders a link when given a URL', async () => {
         const component = new Linkifier.Linkifier.Linkifier();
@@ -15,9 +15,9 @@ describeWithLocale('Linkifier', () => {
         };
         renderElementIntoDOM(component);
         await coordinator.done();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const link = component.shadowRoot.querySelector('a');
-        assertElement(link, HTMLAnchorElement);
+        assert.instanceOf(link, HTMLAnchorElement);
         assert.strictEqual(link.innerText, 'example.com');
     });
     it('throws when given an invalid URL', () => {
@@ -34,9 +34,9 @@ describeWithLocale('Linkifier', () => {
         };
         renderElementIntoDOM(component);
         await coordinator.done();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const link = component.shadowRoot.querySelector('a');
-        assertElement(link, HTMLAnchorElement);
+        assert.instanceOf(link, HTMLAnchorElement);
         assert.strictEqual(link.innerText, 'example.com:2');
     });
     it('emits an event when clicked', async () => {
@@ -54,9 +54,9 @@ describeWithLocale('Linkifier', () => {
         });
         renderElementIntoDOM(component);
         await coordinator.done();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const link = component.shadowRoot.querySelector('a');
-        assertElement(link, HTMLAnchorElement);
+        assert.instanceOf(link, HTMLAnchorElement);
         const clickEventPromise = getEventPromise(component, 'linkifieractivated');
         dispatchClickEvent(link, {
             cancelable: true,

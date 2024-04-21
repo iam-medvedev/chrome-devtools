@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
@@ -102,7 +102,7 @@ ${paragraphText}
         const component = new MarkdownView.MarkdownView.MarkdownView();
         renderElementIntoDOM(component);
         component.data = { tokens: Marked.Marked.lexer(string), renderer };
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const element = component.shadowRoot.querySelector(selector);
         return element ? element : document.createElement('span');
     };
@@ -111,7 +111,7 @@ ${paragraphText}
             const component = new MarkdownView.MarkdownView.MarkdownView();
             renderElementIntoDOM(component);
             component.data = { tokens: Marked.Marked.lexer(markdownString) };
-            assertShadowRoot(component.shadowRoot);
+            assert.isNotNull(component.shadowRoot);
             const paragraphs = Array.from(component.shadowRoot.querySelectorAll('p'));
             assert.strictEqual(paragraphs.length, 1);
             assert.strictEqual(paragraphs[0].innerText, paragraphText);

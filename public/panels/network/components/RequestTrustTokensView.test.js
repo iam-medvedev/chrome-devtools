@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
 import { getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as NetworkComponents from './components.js';
@@ -42,7 +41,7 @@ describeWithLocale('RequestTrustTokensView', () => {
             requestId: mockId,
         }));
         const simpleText = getElementWithinComponent(component, 'span > strong', HTMLElement);
-        assertNotNullOrUndefined(simpleText);
+        assert.exists(simpleText);
         assert.strictEqual(simpleText.textContent, 'Success');
     });
     it('renders a result section with failure status for failed requests', () => {
@@ -52,7 +51,7 @@ describeWithLocale('RequestTrustTokensView', () => {
             requestId: mockId,
         }));
         const simpleText = getElementWithinComponent(component, 'span > strong', HTMLElement);
-        assertNotNullOrUndefined(simpleText);
+        assert.exists(simpleText);
         assert.strictEqual(simpleText.textContent, 'Failure');
     });
 });

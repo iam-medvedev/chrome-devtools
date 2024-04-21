@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Workspace from '../../models/workspace/workspace.js';
-import { assertElement, dispatchPasteEvent } from '../../testing/DOMHelpers.js';
+import { dispatchPasteEvent } from '../../testing/DOMHelpers.js';
 import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
+import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
@@ -39,35 +39,30 @@ describeWithMockConnection('ConsoleView', () => {
     async function canSaveToFile(targetFactory) {
         const target = targetFactory();
         const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
-        assertNotNullOrUndefined(consoleModel);
+        assert.exists(consoleModel);
         consoleModel.addMessage(createConsoleMessage(target, 'message 1'));
         consoleModel.addMessage(createConsoleMessage(target, 'message 2'));
         const messagesElement = consoleView.element.querySelector('#console-messages');
-        assertNotNullOrUndefined(messagesElement);
+        assert.exists(messagesElement);
         const contextMenuShow = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
         const contextMenuSetHandler = sinon.spy(UI.ContextMenu.ContextMenu.prototype, 'setHandler');
         messagesElement.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }));
         assert.isTrue(contextMenuShow.calledOnce);
         const saveAsItem = contextMenuShow.thisValues[0].saveSection().items.find((item) => item.buildDescriptor().label === 'Save as...');
-        assertNotNullOrUndefined(saveAsItem);
+        assert.exists(saveAsItem);
         const saveAsHandler = contextMenuSetHandler.getCalls().find(c => c.args[0] === saveAsItem.id());
-        assertNotNullOrUndefined(saveAsHandler);
+        assert.exists(saveAsHandler);
         const TIMESTAMP = 42;
         const URL_HOST = 'example.com';
         sinon.stub(Date, 'now').returns(TIMESTAMP);
         target.setInspectedURL(`http://${URL_HOST}/foo`);
         const FILENAME = `${URL_HOST}-${TIMESTAMP}.log`;
-        const fileManager = Workspace.FileManager.FileManager.instance();
-        const fileManagerSave = sinon.stub(fileManager, 'save').resolves({ fileSystemPath: FILENAME });
-        const fileManagerAppendCall = new Promise(resolve => sinon.stub(fileManager, 'append')
-            .withArgs(FILENAME, sinon.match('message 1\nmessage 2\n'))
-            .callsFake((_1, _2) => resolve()));
-        const fileManagerCloseCall = new Promise(resolve => sinon.stub(fileManager, 'close').callsFake(_ => resolve()));
+        const fileManager = stubFileManager();
+        const fileManagerCloseCall = expectCall(fileManager.close);
         saveAsHandler.args[1]();
-        assert.isTrue(fileManagerSave.calledOnceWith(FILENAME, '', true));
-        await fileManagerAppendCall;
-        fileManager.dispatchEventToListeners("AppendedToURL" /* Workspace.FileManager.Events.AppendedToURL */, FILENAME);
+        assert.isTrue(fileManager.save.calledOnceWith(FILENAME, '', true));
         await fileManagerCloseCall;
+        assert.isTrue(fileManager.append.calledOnceWith(FILENAME, sinon.match('message 1\nmessage 2\n')));
     }
     it('can save to file without tab target', () => canSaveToFile(() => createTarget()));
     it('can save to file with tab target', () => canSaveToFile(() => {
@@ -77,7 +72,7 @@ describeWithMockConnection('ConsoleView', () => {
     }));
     async function getConsoleMessages() {
         const messagesElement = consoleView.element.querySelector('#console-messages');
-        assertNotNullOrUndefined(messagesElement);
+        assert.exists(messagesElement);
         await new Promise(resolve => setTimeout(resolve, 0));
         return [...messagesElement.querySelectorAll('.console-message-text')].map(e => e.innerText);
     }
@@ -91,7 +86,7 @@ describeWithMockConnection('ConsoleView', () => {
         });
         it('adds messages', async () => {
             const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
-            assertNotNullOrUndefined(consoleModel);
+            assert.exists(consoleModel);
             SDK.ConsoleModel.ConsoleModel.requestClearMessages();
             consoleModel.addMessage(createConsoleMessage(target, 'message 1'));
             consoleModel.addMessage(createConsoleMessage(target, 'message 2'));
@@ -100,9 +95,9 @@ describeWithMockConnection('ConsoleView', () => {
         });
         it('prints results', async () => {
             const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
-            assertNotNullOrUndefined(consoleModel);
+            assert.exists(consoleModel);
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-            assertNotNullOrUndefined(runtimeModel);
+            assert.exists(runtimeModel);
             SDK.ConsoleModel.ConsoleModel.requestClearMessages();
             consoleModel.dispatchEventToListeners(SDK.ConsoleModel.Events.CommandEvaluated, {
                 result: new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, undefined, 'number', undefined, 42),
@@ -122,11 +117,11 @@ describeWithMockConnection('ConsoleView', () => {
         consoleView.markAsRoot();
         consoleView.show(document.body);
         const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
-        assertNotNullOrUndefined(consoleModel);
+        assert.exists(consoleModel);
         consoleModel.addMessage(createConsoleMessage(target, 'message 1'));
         consoleModel.addMessage(createConsoleMessage(target, 'message 2'));
         const anotherConsoleModel = anotherTarget.model(SDK.ConsoleModel.ConsoleModel);
-        assertNotNullOrUndefined(anotherConsoleModel);
+        assert.exists(anotherConsoleModel);
         anotherConsoleModel.addMessage(createConsoleMessage(anotherTarget, 'message 3'));
         assert.deepEqual(await getConsoleMessages(), ['message 1', 'message 2']);
         SDK.TargetManager.TargetManager.instance().setScopeTarget(anotherTarget);
@@ -147,15 +142,15 @@ describeWithMockConnection('ConsoleView', () => {
             const dt = new DataTransfer();
             dt.setData('text/plain', 'foo');
             const messagesElement = consoleView.element.querySelector('#console-messages');
-            assertElement(messagesElement, HTMLElement);
+            assert.instanceOf(messagesElement, HTMLElement);
             dispatchPasteEvent(messagesElement, { clipboardData: dt, bubbles: true });
             assert.strictEqual(Common.Console.Console.instance().messages()[0].text, 'Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘allow pasting’ below and hit Enter to allow pasting.');
         });
         it('is turned off when console history reaches a length of 5', async () => {
             const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
-            assertNotNullOrUndefined(consoleModel);
+            assert.exists(consoleModel);
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-            assertNotNullOrUndefined(runtimeModel);
+            assert.exists(runtimeModel);
             SDK.ConsoleModel.ConsoleModel.requestClearMessages();
             const selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
             for (let i = 0; i < 5; i++) {
@@ -171,7 +166,7 @@ describeWithMockConnection('ConsoleView', () => {
         consoleView.markAsRoot();
         consoleView.show(document.body);
         const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
-        assertNotNullOrUndefined(consoleModel);
+        assert.exists(consoleModel);
         const consoleHistorySetting = Common.Settings.Settings.instance().createLocalSetting('console-history', []);
         consoleModel.dispatchEventToListeners(SDK.ConsoleModel.Events.MessageAdded, createConsoleMessage(target, 'await new Promise(() => ())', SDK.ConsoleModel.FrontendMessageType.Command));
         assert.deepStrictEqual(consoleHistorySetting.get(), ['await new Promise(() => ())']);

@@ -19,6 +19,10 @@ styles.replaceSync(
   .watch-expression-title:hover & {
     opacity: 100%;
   }
+
+  .watch-expression-title:focus-within & {
+    opacity: 100%;
+  }
 }
 
 :host-context(.-theme-with-dark-background) .watch-expression-delete-button {
@@ -108,6 +112,10 @@ li.watch-expression-tree-item.selected {
 }
 
 li.watch-expression-tree-item.selected:focus {
+  background: var(--sys-color-tonal-container);
+}
+
+li.watch-expression-tree-item.selected:focus-within:focus-visible {
   background: var(--sys-color-tonal-container);
 }
 

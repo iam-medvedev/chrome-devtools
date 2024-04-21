@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
-import { assertElement, assertShadowRoot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as IconButton from '../icon_button/icon_button.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
@@ -13,15 +13,15 @@ const renderIssueLinkIcon = async (data) => {
     const component = new IssueCounter.IssueLinkIcon.IssueLinkIcon();
     component.data = data;
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     await coordinator.done();
     return { component, shadowRoot: component.shadowRoot };
 };
 export const extractElements = (shadowRoot) => {
     const icon = shadowRoot.querySelector('devtools-icon');
-    assertElement(icon, IconButton.Icon.Icon);
+    assert.instanceOf(icon, IconButton.Icon.Icon);
     const button = shadowRoot.querySelector('button');
-    assertElement(button, HTMLButtonElement);
+    assert.instanceOf(button, HTMLButtonElement);
     return { icon, button };
 };
 class MockIssueResolver {

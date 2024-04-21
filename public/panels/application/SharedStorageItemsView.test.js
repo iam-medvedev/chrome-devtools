@@ -1,8 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
-import { assertShadowRoot, dispatchClickEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, raf, } from '../../testing/DOMHelpers.js';
+import { dispatchClickEvent, dispatchKeyDownEvent, getCleanTextContentFromElements, raf, } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -217,12 +216,12 @@ describeWithMockConnection('SharedStorageItemsView', function () {
     beforeEach(() => {
         target = createTarget();
         sharedStorageModel = target.model(Resources.SharedStorageModel.SharedStorageModel);
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         sharedStorage = new Resources.SharedStorageModel.SharedStorageForOrigin(sharedStorageModel, TEST_ORIGIN);
         assert.strictEqual(sharedStorage.securityOrigin, TEST_ORIGIN);
     });
     it('displays metadata and entries', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata')
             .withArgs({ ownerOrigin: TEST_ORIGIN })
             .resolves({
@@ -243,8 +242,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         await refreshedPromise;
         assert.deepEqual(view.getEntriesForTesting(), ENTRIES);
         const metadataView = view.innerSplitWidget.sidebarWidget()?.contentElement.firstChild;
-        assertNotNullOrUndefined(metadataView);
-        assertShadowRoot(metadataView.shadowRoot);
+        assert.exists(metadataView);
+        assert.isNotNull(metadataView.shadowRoot);
         await coordinator.done();
         const keys = getCleanTextContentFromElements(metadataView.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, [
@@ -265,7 +264,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('displays metadata with placeholder message if origin is not using API', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         sinon.stub(sharedStorage, 'getMetadata').resolves(null);
         sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageEntries')
             .withArgs({ ownerOrigin: TEST_ORIGIN })
@@ -281,8 +280,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         await refreshedPromise;
         assert.strictEqual(view.getEntriesForTesting().length, 0);
         const metadataView = view.innerSplitWidget.sidebarWidget()?.contentElement.firstChild;
-        assertNotNullOrUndefined(metadataView);
-        assertShadowRoot(metadataView.shadowRoot);
+        assert.exists(metadataView);
+        assert.isNotNull(metadataView.shadowRoot);
         await coordinator.done();
         const keys = getCleanTextContentFromElements(metadataView.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, [
@@ -303,7 +302,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('has placeholder sidebar when there are no entries', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata')
             .withArgs({ ownerOrigin: TEST_ORIGIN })
             .resolves({
@@ -327,7 +326,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('updates sidebarWidget upon receiving SelectedNode Event', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata')
             .withArgs({ ownerOrigin: TEST_ORIGIN })
             .resolves({
@@ -347,13 +346,13 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.show(document.body);
         await refreshedPromise;
         // Select the second row.
-        assertNotNullOrUndefined(selectNodeByKey(view.dataGrid, 'key2'));
+        assert.exists(selectNodeByKey(view.dataGrid, 'key2'));
         await raf();
         assert.instanceOf(view.outerSplitWidget.sidebarWidget(), UI.SearchableView.SearchableView);
         view.detach();
     });
     it('refreshes when "Refresh" is clicked', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         const getMetadataSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata').resolves({
             metadata: METADATA,
             getError: () => undefined,
@@ -390,7 +389,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('clears entries when "Delete All" is clicked', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         const getMetadataSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata');
         getMetadataSpy.onCall(0).resolves({
             metadata: METADATA,
@@ -444,7 +443,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('clears filtered entries when "Delete All" is clicked with a filter set', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         const getMetadataSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata');
         getMetadataSpy.onCall(0).resolves({
             metadata: METADATA,
@@ -538,7 +537,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('deletes selected entry when "Delete Selected" is clicked', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         const getMetadataSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata');
         getMetadataSpy.onCall(0).resolves({
             metadata: METADATA,
@@ -579,7 +578,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
         assert.deepEqual(view.getEntriesForTesting(), ENTRIES);
         // Select the second row.
-        assertNotNullOrUndefined(selectNodeByKey(view.dataGrid, 'key2'));
+        assert.exists(selectNodeByKey(view.dataGrid, 'key2'));
         await raf();
         // Clicking "Delete Selected" will cause `deleteEntry()`, `getMetadata()`, and `getEntries()` to be called.
         const deletedPromise = itemsListener.waitForItemsDeletedTotal(1);
@@ -596,7 +595,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('edits key of selected entry to a non-preexisting key', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         const getMetadataSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata');
         getMetadataSpy.onCall(0).resolves({
             metadata: METADATA,
@@ -641,12 +640,12 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         assert.deepEqual(view.getEntriesForTesting(), ENTRIES);
         // Select the second row.
         const node = selectNodeByKey(view.dataGrid, 'key2');
-        assertNotNullOrUndefined(node);
+        assert.exists(node);
         await raf();
         const selectedNode = node;
         view.dataGrid.startEditingNextEditableColumnOfDataGridNode(selectedNode, 'key', true);
         const cellElement = getCellElementFromNodeAndColumnId(view.dataGrid, selectedNode, 'key');
-        assertNotNullOrUndefined(cellElement);
+        assert.exists(cellElement);
         //  Editing a key will cause `deleteEntry()`, `setEntry()`, `getMetadata()`, and `getEntries()` to be called.
         const editedPromise = itemsListener.waitForItemsEditedTotal(1);
         cellElement.textContent = 'key0';
@@ -666,7 +665,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('edits key of selected entry to a preexisting key', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         const getMetadataSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata');
         getMetadataSpy.onCall(0).resolves({
             metadata: METADATA,
@@ -711,12 +710,12 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         assert.deepEqual(view.getEntriesForTesting(), ENTRIES);
         // Select the second row.
         const node = selectNodeByKey(view.dataGrid, 'key2');
-        assertNotNullOrUndefined(node);
+        assert.exists(node);
         await raf();
         const selectedNode = node;
         view.dataGrid.startEditingNextEditableColumnOfDataGridNode(selectedNode, 'key', true);
         const cellElement = getCellElementFromNodeAndColumnId(view.dataGrid, selectedNode, 'key');
-        assertNotNullOrUndefined(cellElement);
+        assert.exists(cellElement);
         // Editing a key will cause `deleteEntry()`, `setEntry()`, `getMetadata()`, and `getEntries()` to be called.
         const editedPromise = itemsListener.waitForItemsEditedTotal(1);
         cellElement.textContent = 'key1';
@@ -738,7 +737,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('edits value of selected entry to a new value', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         const getMetadataSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata');
         getMetadataSpy.onCall(0).resolves({
             metadata: METADATA,
@@ -783,12 +782,12 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         assert.deepEqual(view.getEntriesForTesting(), ENTRIES);
         // Select the second row.
         const node = selectNodeByKey(view.dataGrid, 'key2');
-        assertNotNullOrUndefined(node);
+        assert.exists(node);
         await raf();
         const selectedNode = node;
         view.dataGrid.startEditingNextEditableColumnOfDataGridNode(selectedNode, 'value', true);
         const cellElement = getCellElementFromNodeAndColumnId(view.dataGrid, selectedNode, 'value');
-        assertNotNullOrUndefined(cellElement);
+        assert.exists(cellElement);
         // Editing a value will cause `setEntry()`, `getMetadata()`, and `getEntries()` to be called.
         const editedPromise = itemsListener.waitForItemsEditedTotal(1);
         cellElement.textContent = 'd';
@@ -810,7 +809,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('adds an entry when the key cell of the empty data row is edited', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         const getMetadataSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata');
         getMetadataSpy.onCall(0).resolves({
             metadata: METADATA,
@@ -855,12 +854,12 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         assert.deepEqual(view.getEntriesForTesting(), ENTRIES);
         // Select the empty (null) row.
         const node = selectNodeByKey(view.dataGrid, null);
-        assertNotNullOrUndefined(node);
+        assert.exists(node);
         await raf();
         const selectedNode = node;
         view.dataGrid.startEditingNextEditableColumnOfDataGridNode(selectedNode, 'key', true);
         const cellElement = getCellElementFromNodeAndColumnId(view.dataGrid, selectedNode, 'key');
-        assertNotNullOrUndefined(cellElement);
+        assert.exists(cellElement);
         // Editing a key will cause `deleteEntry()`, `setEntry()`, `getMetadata()`, and `getEntries()` to be called.
         const editedPromise = itemsListener.waitForItemsEditedTotal(1);
         cellElement.textContent = 'key4';
@@ -882,7 +881,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.detach();
     });
     it('attempting to edit key of selected entry to an empty key cancels the edit', async () => {
-        assertNotNullOrUndefined(sharedStorageModel);
+        assert.exists(sharedStorageModel);
         const getMetadataSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata').resolves({
             metadata: METADATA,
             getError: () => undefined,
@@ -913,12 +912,12 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         assert.deepEqual(view.getEntriesForTesting(), ENTRIES);
         // Select the second row.
         const node = selectNodeByKey(view.dataGrid, 'key2');
-        assertNotNullOrUndefined(node);
+        assert.exists(node);
         await raf();
         const selectedNode = node;
         view.dataGrid.startEditingNextEditableColumnOfDataGridNode(selectedNode, 'key', true);
         const cellElement = getCellElementFromNodeAndColumnId(view.dataGrid, selectedNode, 'key');
-        assertNotNullOrUndefined(cellElement);
+        assert.exists(cellElement);
         // Editing a key with the edit canceled will cause `getMetadata()` and `getEntries()` to be called.
         itemsListener.resetRefreshed();
         const refreshedPromise2 = itemsListener.waitForItemsRefreshed();

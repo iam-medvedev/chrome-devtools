@@ -1,40 +1,22 @@
 // Copyright (c) 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const SkipSubTreeObject = {};
 export class ESTreeWalker {
     #beforeVisit;
     #afterVisit;
-    #walkNulls;
     constructor(beforeVisit, afterVisit) {
         this.#beforeVisit = beforeVisit;
-        this.#afterVisit = afterVisit || function () { };
-        this.#walkNulls = false;
-    }
-    static get ['SkipSubtree']() {
-        return SkipSubTreeObject;
-    }
-    setWalkNulls(value) {
-        this.#walkNulls = value;
+        this.#afterVisit = afterVisit;
     }
     walk(ast) {
         this.#innerWalk(ast, null);
     }
     #innerWalk(node, parent) {
-        if (!node && parent && this.#walkNulls) {
-            const result = { raw: 'null', value: null, parent: null };
-            // Otherwise Closure can't handle the definition
-            result.type = 'Literal';
-            node = result;
-        }
         if (!node) {
             return;
         }
         node.parent = parent;
-        if (this.#beforeVisit.call(null, node) === ESTreeWalker.SkipSubtree) {
-            this.#afterVisit.call(null, node);
-            return;
-        }
+        this.#beforeVisit.call(null, node);
         const walkOrder = WALK_ORDER[node.type];
         if (!walkOrder) {
             console.error('Walk order not defined for ' + node.type);

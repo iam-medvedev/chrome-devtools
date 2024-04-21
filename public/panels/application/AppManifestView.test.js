@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { assertElement, getCleanTextContentFromElements } from '../../testing/DOMHelpers.js';
+import { getCleanTextContentFromElements } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -31,11 +30,12 @@ describeWithMockConnection('AppManifestView', () => {
         });
         it('shows report view once manifest available', async () => {
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(resourceTreeModel);
             const URL = 'http://example.com';
             const fetchAppManifest = sinon.stub(resourceTreeModel, 'fetchAppManifest');
             fetchAppManifest.onCall(0).resolves({ url: URL, data: null, errors: [] });
             fetchAppManifest.onCall(1).resolves({ url: URL, data: '{}', errors: [] });
+            fetchAppManifest.onCall(2).resolves({ url: URL, data: '{"short_name": "example.com"}', errors: [] });
             sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);
             sinon.stub(resourceTreeModel, 'getAppId').resolves({});
             view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
@@ -50,12 +50,18 @@ describeWithMockConnection('AppManifestView', () => {
             await new Promise(resolve => {
                 view.addEventListener("ManifestDetected" /* Application.AppManifestView.Events.ManifestDetected */, resolve, { once: true });
             });
+            assert.isTrue(emptyView.isShowing());
+            assert.isFalse(reportView.isShowing());
+            resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.DOMContentLoaded, 42);
+            await new Promise(resolve => {
+                view.addEventListener("ManifestDetected" /* Application.AppManifestView.Events.ManifestDetected */, resolve, { once: true });
+            });
             assert.isFalse(emptyView.isShowing());
             assert.isTrue(reportView.isShowing());
         });
         it('shows pwa wco if available', async () => {
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(resourceTreeModel);
             const URL = 'https://www.example.com';
             const fetchAppManifest = sinon.stub(resourceTreeModel, 'fetchAppManifest');
             fetchAppManifest.resolves({ url: URL, data: '{"display_override": ["window-controls-overlay"]}', errors: [] });
@@ -89,7 +95,7 @@ describeWithMockConnection('AppManifestView', () => {
         });
         async function renderWithWarnings(manifest) {
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(resourceTreeModel);
             const URL = window.location.origin;
             const fetchAppManifest = sinon.stub(resourceTreeModel, 'fetchAppManifest');
             fetchAppManifest.resolves({ url: URL, data: manifest, errors: [] });
@@ -102,9 +108,9 @@ describeWithMockConnection('AppManifestView', () => {
                 view.addEventListener("ManifestRendered" /* Application.AppManifestView.Events.ManifestRendered */, resolve, { once: true });
             });
             const warningSection = reportView.element.shadowRoot?.querySelector('.report-section');
-            assertNotNullOrUndefined(warningSection);
+            assert.exists(warningSection);
             const warnings = warningSection.querySelectorAll('.report-row');
-            assertNotNullOrUndefined(warnings);
+            assert.exists(warnings);
             return Array.from(warnings).map(warning => warning.textContent || '');
         }
         it('displays warnings for too many shortcuts and not enough screenshots', async () => {
@@ -269,7 +275,7 @@ describeWithMockConnection('AppManifestView', () => {
         ]
       }`);
             const screenshotSection = reportView.element.shadowRoot?.querySelectorAll('.report-section')[7] || null;
-            assertElement(screenshotSection, HTMLDivElement);
+            assert.instanceOf(screenshotSection, HTMLDivElement);
             assert.deepStrictEqual(getCleanTextContentFromElements(screenshotSection, '.report-field-name').slice(0, 3), ['Form factor', 'Label', 'Platform']);
             assert.deepStrictEqual(getCleanTextContentFromElements(screenshotSection, '.report-field-value').slice(0, 3), ['wide', 'Dummy Screenshot', 'windows']);
         });

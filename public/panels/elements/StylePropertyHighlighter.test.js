@@ -1,7 +1,6 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { describeWithRealConnection } from '../../testing/RealConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -10,9 +9,9 @@ import * as Elements from './elements.js';
 describeWithRealConnection('StylePropertyHighlighter', () => {
     async function setupStylesPane() {
         const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-        assertNotNullOrUndefined(target);
+        assert.exists(target);
         const domModel = target.model(SDK.DOMModel.DOMModel);
-        assertNotNullOrUndefined(domModel);
+        assert.exists(domModel);
         await domModel.requestDocument();
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, domModel.existingDocument());
         const stylesSidebarPane = Elements.StylesSidebarPane.StylesSidebarPane.instance({ forceNew: true });
@@ -73,7 +72,7 @@ describeWithRealConnection('StylePropertyHighlighter', () => {
         const highlightSpy = sinon.spy(PanelUtils.PanelUtils, 'highlightElement');
         highlighter.findAndHighlightSectionBlock('dontcare');
         const firstChild = section.propertiesTreeOutline.firstChild();
-        assertNotNullOrUndefined(firstChild);
+        assert.exists(firstChild);
         assert.deepEqual(firstChild.property, property);
         assert.isTrue(highlightSpy.calledOnceWithExactly(block.titleElement()));
     });
@@ -112,7 +111,7 @@ describeWithRealConnection('StylePropertyHighlighter', () => {
         assert.isFalse(block1ExpandSpy.called);
         assert.isTrue(block2ExpandSpy.called);
         const element = block2.sections[1].propertiesTreeOutline.firstChild()?.listItemElement;
-        assertNotNullOrUndefined(element);
+        assert.exists(element);
         assert.isTrue(highlightSpy.calledOnceWithExactly(element));
     });
 });

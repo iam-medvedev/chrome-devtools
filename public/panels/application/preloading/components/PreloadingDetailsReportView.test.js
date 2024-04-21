@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../../../core/sdk/sdk.js';
-import { assertShadowRoot, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../../ui/components/report_view/report_view.js';
@@ -16,7 +16,7 @@ const renderPreloadingDetailsReportView = async (data) => {
     const component = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
     component.data = data;
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     await coordinator.done();
     return component;
 };
@@ -26,7 +26,7 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
     it('renders place holder if not selected', async () => {
         const data = null;
         const component = await renderPreloadingDetailsReportView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const placeholder = component.shadowRoot.querySelector('.preloading-noselected');
         assert.include(placeholder?.textContent, 'Select an element for more details');
     });

@@ -3,19 +3,19 @@
 // found in the LICENSE file.
 import * as DataGrid from '../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../ui/components/render_coordinator/render_coordinator.js';
-import { assertElement, assertElements, assertShadowRoot, dispatchFocusEvent, dispatchKeyDownEvent, getElementWithinComponent, } from './DOMHelpers.js';
+import { assertElements, dispatchFocusEvent, dispatchKeyDownEvent, getElementWithinComponent, } from './DOMHelpers.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 export const getFocusableCell = (shadowRoot) => {
     // We only expect one here, but we qSA so we can assert on only one.
     // Can't use td as it may be a th if the user has focused a column header.
     const tabIndexCells = shadowRoot.querySelectorAll('table [tabindex="0"]');
-    assertElements(tabIndexCells, HTMLTableCellElement);
     assert.lengthOf(tabIndexCells, 1);
+    assert.instanceOf(tabIndexCells[0], HTMLTableCellElement);
     return tabIndexCells[0];
 };
 export const getCellByIndexes = (shadowRoot, indexes) => {
     const cell = shadowRoot.querySelector(`[data-row-index="${indexes.row}"][data-col-index="${indexes.column}"]`);
-    assertElement(cell, HTMLTableCellElement);
+    assert.instanceOf(cell, HTMLTableCellElement);
     return cell;
 };
 export const getHeaderCells = (shadowRoot, options = {
@@ -57,7 +57,7 @@ export const assertCurrentFocusedCellIs = (shadowRoot, { column, row }) => {
 };
 export const assertSelectedRowIs = (shadowRoot, row) => {
     const selectedRow = shadowRoot.querySelector('tr.selected');
-    assertElement(selectedRow, HTMLTableRowElement);
+    assert.instanceOf(selectedRow, HTMLTableRowElement);
     assert.strictEqual(selectedRow.getAttribute('aria-rowindex'), String(row), 'The row index was not as expected.');
 };
 export const getDataGrid = (gridComponent) => {
@@ -66,7 +66,7 @@ export const getDataGrid = (gridComponent) => {
 };
 export const assertGridContents = (gridComponent, headerExpected, rowsExpected) => {
     const grid = getDataGrid(gridComponent);
-    assertShadowRoot(grid.shadowRoot);
+    assert.isNotNull(grid.shadowRoot);
     const headerActual = getHeaderCells(grid.shadowRoot).map(({ textContent }) => textContent.trim());
     assert.deepEqual(headerActual, headerExpected);
     const rowsActual = getValuesOfAllBodyRows(grid.shadowRoot).map(row => row.map(cell => cell.trim()));
@@ -79,7 +79,7 @@ export const focusCurrentlyFocusableCell = (shadowRoot) => {
 };
 export const emulateUserKeyboardNavigation = (shadowRoot, key) => {
     const table = shadowRoot.querySelector('table');
-    assertElement(table, HTMLTableElement);
+    assert.instanceOf(table, HTMLTableElement);
     dispatchKeyDownEvent(table, { key });
 };
 export const emulateUserFocusingCellAt = async (shadowRoot, position) => {
@@ -107,12 +107,12 @@ export const getValuesOfAllBodyRows = (shadowRoot, options = {
 };
 export const getBodyRowByAriaIndex = (shadowRoot, rowIndex) => {
     const row = shadowRoot.querySelector(`[aria-rowindex="${rowIndex}"]`);
-    assertElement(row, HTMLTableRowElement);
+    assert.instanceOf(row, HTMLTableRowElement);
     return row;
 };
 export const getHeaderCellForColumnId = (shadowRoot, columnId) => {
     const cell = shadowRoot.querySelector(`[data-grid-header-cell="${columnId}`);
-    assertElement(cell, HTMLTableCellElement);
+    assert.instanceOf(cell, HTMLTableCellElement);
     return cell;
 };
 export const getValuesForColumn = (shadowRoot, columnId) => {

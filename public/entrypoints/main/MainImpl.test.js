@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
@@ -29,7 +28,7 @@ describeWithMockConnection('MainMenuItem', () => {
         it('includes focus debuggee item when undocked', async () => {
             UI.DockController.DockController.instance().setDockSide("undocked" /* UI.DockController.DockState.UNDOCKED */);
             const item = Main.MainImpl.MainMenuItem.instance({ forceNew: true }).item();
-            assertNotNullOrUndefined(item);
+            assert.exists(item);
             const contextMenuShow = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
             item.clicked(new MouseEvent('click', {
                 bubbles: true,
@@ -41,7 +40,7 @@ describeWithMockConnection('MainMenuItem', () => {
         it('does not include focus debuggee item when docked', async () => {
             UI.DockController.DockController.instance().setDockSide("bottom" /* UI.DockController.DockState.BOTTOM */);
             const item = Main.MainImpl.MainMenuItem.instance({ forceNew: true }).item();
-            assertNotNullOrUndefined(item);
+            assert.exists(item);
             const contextMenuShow = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
             item.clicked(new MouseEvent('click', {
                 bubbles: true,

@@ -4,7 +4,6 @@
 import { createTarget, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import * as Host from '../host/host.js';
-import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
 describeWithMockConnection('TargetManager', () => {
     let targetManager;
@@ -13,7 +12,7 @@ describeWithMockConnection('TargetManager', () => {
     });
     function resourceTreeModel(target) {
         const model = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assertNotNullOrUndefined(model);
+        assert.exists(model);
         return model;
     }
     it('allows observing targets', () => {

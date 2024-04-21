@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertShadowRoot, dispatchClickEvent, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, getCleanTextContentFromElements, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
@@ -22,7 +22,7 @@ describeWithLocale('SharedStorageMetadataView', () => {
             bytesUsed: 200,
         });
         renderElementIntoDOM(component);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         await coordinator.done();
         const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
         const { textContent } = report.shadowRoot.querySelector('.report-title');
@@ -36,7 +36,7 @@ describeWithLocale('SharedStorageMetadataView', () => {
             bytesUsed: 200,
         });
         renderElementIntoDOM(component);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         await coordinator.done({ waitForWork: true });
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, [
@@ -58,7 +58,7 @@ describeWithLocale('SharedStorageMetadataView', () => {
     it('renders default view when data is empty', async () => {
         const component = makeView('', {});
         renderElementIntoDOM(component);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         await coordinator.done({ waitForWork: true });
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, [
@@ -88,7 +88,7 @@ describeWithLocale('SharedStorageMetadataView', () => {
         renderElementIntoDOM(component);
         await coordinator.done({ waitForWork: true });
         const resetButtonComponent = component.shadowRoot.querySelector('devtools-button');
-        assertElement(resetButtonComponent, HTMLElement);
+        assert.instanceOf(resetButtonComponent, HTMLElement);
         dispatchClickEvent(resetButtonComponent);
         assert.isTrue(resetBudgetHandlerSpy.calledOnce);
     });

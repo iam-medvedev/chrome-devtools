@@ -194,12 +194,9 @@ describe('FrameManager', () => {
         // step 3) frame removed from existing target
         mockParentModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameDetached, { frame: frameOldTarget, isSwap: true });
         const frame = frameManager.getFrame(frameId);
-        assert.isNotNull(frame);
-        if (frame) {
-            const { creationStackTrace, creationStackTraceTarget } = frame.getCreationStackTraceData();
-            assert.deepEqual(creationStackTrace, trace);
-            assert.strictEqual(creationStackTraceTarget.id(), parentTargetId);
-        }
+        const { creationStackTrace, creationStackTraceTarget } = frame.getCreationStackTraceData();
+        assert.deepEqual(creationStackTrace, trace);
+        assert.strictEqual(creationStackTraceTarget.id(), parentTargetId);
     });
     it('transfers frame creation stack traces during OOPIF transfer (case 2)', () => {
         const frameManager = new SDK.FrameManager.FrameManager();
@@ -232,12 +229,9 @@ describe('FrameManager', () => {
         const frameNewTarget = new SDK.ResourceTreeModel.ResourceTreeFrame(mockChildModel, null, frameId, null, null);
         mockChildModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameAdded, frameNewTarget);
         const frame = frameManager.getFrame(frameId);
-        assert.isNotNull(frame);
-        if (frame) {
-            const { creationStackTrace, creationStackTraceTarget } = frame.getCreationStackTraceData();
-            assert.deepEqual(creationStackTrace, trace);
-            assert.strictEqual(creationStackTraceTarget.id(), parentTargetId);
-        }
+        const { creationStackTrace, creationStackTraceTarget } = frame.getCreationStackTraceData();
+        assert.deepEqual(creationStackTrace, trace);
+        assert.strictEqual(creationStackTraceTarget.id(), parentTargetId);
     });
     describe('getOutermostFrame', () => {
         it('returns null when no frames are attached', () => {

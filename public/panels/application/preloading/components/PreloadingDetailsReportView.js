@@ -229,7 +229,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
             @click=${inspect}
             .title=${i18nString(UIStrings.buttonClickToInspect)}
             .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
-            .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}
+            .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
             .disabled=${disabled}
             jslog=${VisualLogging.action('inspect-prerendered-page').track({ click: true })}
           >

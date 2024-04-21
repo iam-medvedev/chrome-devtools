@@ -133,6 +133,9 @@ export class Issue {
     setHidden(hidden) {
         this.#hidden = hidden;
     }
+    maybeCreateConsoleMessage() {
+        return;
+    }
 }
 export function toZeroBasedLocation(location) {
     if (!location) {

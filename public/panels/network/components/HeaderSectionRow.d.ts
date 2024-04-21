@@ -62,6 +62,7 @@ export interface HeaderDetailsDescriptor {
 export interface HeaderEditorDescriptor {
     name: Platform.StringUtilities.LowerCaseString;
     value: string | null;
+    originalName?: string | null;
     originalValue?: string | null;
     isOverride?: boolean;
     valueEditable?: boolean;

@@ -10,12 +10,12 @@ export declare const enum CookieIssueSubCategory {
 }
 export declare class CookieIssue extends Issue {
     #private;
-    constructor(code: string, issueDetails: Protocol.Audits.CookieIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
+    constructor(code: string, issueDetails: Protocol.Audits.CookieIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel, issueId: Protocol.Audits.IssueId | undefined);
     primaryKey(): string;
     /**
      * Returns an array of issues from a given CookieIssueDetails.
      */
-    static createIssuesFromCookieIssueDetails(cookieIssueDetails: Protocol.Audits.CookieIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel): CookieIssue[];
+    static createIssuesFromCookieIssueDetails(cookieIssueDetails: Protocol.Audits.CookieIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel, issueId: Protocol.Audits.IssueId | undefined): CookieIssue[];
     /**
      * Calculates an issue code from a reason, an operation, and an array of warningReasons. All these together
      * can uniquely identify a specific cookie issue.
@@ -34,8 +34,9 @@ export declare class CookieIssue extends Issue {
     getKind(): IssueKind;
     static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): CookieIssue[];
     static getSubCategory(code: string): CookieIssueSubCategory;
+    maybeCreateConsoleMessage(): SDK.ConsoleModel.ConsoleMessage | undefined;
 }
 /**
  * Exported for unit test.
  */
-export declare function isCausedByThirdParty(outermostFrame: SDK.ResourceTreeModel.ResourceTreeFrame | null, cookieUrl?: string): boolean;
+export declare function isCausedByThirdParty(outermostFrame: SDK.ResourceTreeModel.ResourceTreeFrame | null, cookieUrl?: string, siteForCookies?: string): boolean;

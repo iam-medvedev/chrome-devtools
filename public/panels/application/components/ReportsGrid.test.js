@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Root from '../../../core/root/root.js';
 import { getHeaderCells, getValuesOfAllBodyRows } from '../../../testing/DataGridHelpers.js';
-import { assertShadowRoot, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
@@ -15,15 +15,15 @@ const renderReportsGrid = async (data) => {
         component.data = data;
     }
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     await coordinator.done();
     if (!data) {
         return component;
     }
     const controller = getElementWithinComponent(component, 'devtools-data-grid-controller', DataGrid.DataGridController.DataGridController);
-    assertShadowRoot(controller.shadowRoot);
+    assert.isNotNull(controller.shadowRoot);
     const datagrid = getElementWithinComponent(controller, 'devtools-data-grid', DataGrid.DataGrid.DataGrid);
-    assertShadowRoot(datagrid.shadowRoot);
+    assert.isNotNull(datagrid.shadowRoot);
     return datagrid;
 };
 const getHeaderText = (cell) => {
@@ -59,7 +59,7 @@ describeWithEnvironment('ReportsGrid', () => {
                 }],
         };
         const dataGrid = await renderReportsGrid(data);
-        assertShadowRoot(dataGrid.shadowRoot);
+        assert.isNotNull(dataGrid.shadowRoot);
         const headerCells = getHeaderCells(dataGrid.shadowRoot);
         const values = Array.from(headerCells, getHeaderText);
         assert.deepEqual(values, ['URL', 'Type', 'Status', 'Destination', 'Generated at', 'Body']);
@@ -93,7 +93,7 @@ describeWithEnvironment('ReportsGrid', () => {
                 }],
         };
         const dataGrid = await renderReportsGrid(data);
-        assertShadowRoot(dataGrid.shadowRoot);
+        assert.isNotNull(dataGrid.shadowRoot);
         const headerCells = getHeaderCells(dataGrid.shadowRoot);
         const values = Array.from(headerCells, getHeaderText);
         assert.deepEqual(values, ['ID', 'URL', 'Type', 'Status', 'Destination', 'Generated at', 'Body']);

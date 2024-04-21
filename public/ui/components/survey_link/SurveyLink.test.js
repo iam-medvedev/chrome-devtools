@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
-import { assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as SurveyLink from './survey_link.js';
 function canShowSuccessfulCallback(trigger, callback) {
@@ -24,7 +23,7 @@ describeWithLocale('SurveyLink', () => {
         const link = new SurveyLink.SurveyLink.SurveyLink();
         link.data = { trigger: 'test trigger', promptText: empty, canShowSurvey: () => { }, showSurvey: () => { } };
         renderElementIntoDOM(link);
-        assertShadowRoot(link.shadowRoot);
+        assert.isNotNull(link.shadowRoot);
         assert.strictEqual(link.shadowRoot.childElementCount, 0);
     });
     it('shows no link when canShowSurvey is false', () => {
@@ -32,7 +31,7 @@ describeWithLocale('SurveyLink', () => {
         link.data =
             { trigger: 'test trigger', promptText: empty, canShowSurvey: canShowFailureCallback, showSurvey: () => { } };
         renderElementIntoDOM(link);
-        assertShadowRoot(link.shadowRoot);
+        assert.isNotNull(link.shadowRoot);
         assert.strictEqual(link.shadowRoot.childElementCount, 0);
     });
     it('shows a link when canShowSurvey is true', () => {
@@ -40,7 +39,7 @@ describeWithLocale('SurveyLink', () => {
         link.data =
             { trigger: 'test trigger', promptText: empty, canShowSurvey: canShowSuccessfulCallback, showSurvey: () => { } };
         renderElementIntoDOM(link);
-        assertShadowRoot(link.shadowRoot);
+        assert.isNotNull(link.shadowRoot);
         const linkNode = link.shadowRoot.querySelector('button');
         assert.isNotNull(linkNode);
     });
@@ -49,15 +48,15 @@ describeWithLocale('SurveyLink', () => {
         link.data =
             { trigger: 'test trigger', promptText: empty, canShowSurvey: canShowSuccessfulCallback, showSurvey: () => { } };
         renderElementIntoDOM(link);
-        assertShadowRoot(link.shadowRoot);
+        assert.isNotNull(link.shadowRoot);
         const linkNode = link.shadowRoot.querySelector('button');
-        assertNotNullOrUndefined(linkNode);
+        assert.exists(linkNode);
         assert.notInclude(linkNode.textContent?.trim(), '…');
         linkNode.click();
         // The only output signal we have is the link text which we don't want to assert exactly, so we
         // assume that the pending state has an elipsis.
         const pendingLink = link.shadowRoot.querySelector('button');
-        assertNotNullOrUndefined(pendingLink);
+        assert.exists(pendingLink);
         assert.include(pendingLink.textContent?.trim(), '…');
     });
     it('shows a successful state after showing the survey', () => {
@@ -69,12 +68,12 @@ describeWithLocale('SurveyLink', () => {
             showSurvey: showSuccessfulCallback,
         };
         renderElementIntoDOM(link);
-        assertShadowRoot(link.shadowRoot);
+        assert.isNotNull(link.shadowRoot);
         const linkNode = link.shadowRoot.querySelector('button');
-        assertNotNullOrUndefined(linkNode);
+        assert.exists(linkNode);
         linkNode.click();
         const successLink = link.shadowRoot.querySelector('button');
-        assertNotNullOrUndefined(successLink);
+        assert.exists(successLink);
         assert.include(successLink.textContent?.trim(), 'Thank you');
     });
     it('shows a failure state when failing to show the survey', () => {
@@ -86,12 +85,12 @@ describeWithLocale('SurveyLink', () => {
             showSurvey: showFailureCallback,
         };
         renderElementIntoDOM(link);
-        assertShadowRoot(link.shadowRoot);
+        assert.isNotNull(link.shadowRoot);
         const linkNode = link.shadowRoot.querySelector('button');
-        assertNotNullOrUndefined(linkNode);
+        assert.exists(linkNode);
         linkNode.click();
         const successLink = link.shadowRoot.querySelector('button');
-        assertNotNullOrUndefined(successLink);
+        assert.exists(successLink);
         assert.include(successLink.textContent?.trim(), 'error');
     });
 });

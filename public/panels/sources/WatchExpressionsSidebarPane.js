@@ -398,13 +398,18 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     createWatchExpressionHeader(expressionValue, exceptionDetails) {
         const headerElement = this.element.createChild('div', 'watch-expression-header');
         const deleteButton = new Buttons.Button.Button();
-        deleteButton.variant = "round" /* Buttons.Button.Variant.ROUND */;
+        deleteButton.variant = "icon" /* Buttons.Button.Variant.ICON */;
         deleteButton.iconName = 'bin';
         deleteButton.className = 'watch-expression-delete-button';
         deleteButton.jslogContext = 'delete-watch-expression';
         deleteButton.size = "SMALL" /* Buttons.Button.Size.SMALL */;
         UI.Tooltip.Tooltip.install(deleteButton, i18nString(UIStrings.deleteWatchExpression));
         deleteButton.addEventListener('click', this.deleteWatchExpression.bind(this), false);
+        deleteButton.addEventListener('keydown', event => {
+            if (event.key === 'Enter') {
+                this.deleteWatchExpression(event);
+            }
+        });
         const titleElement = headerElement.createChild('div', 'watch-expression-title tree-element-title');
         titleElement.appendChild(deleteButton);
         this.nameElement =

@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -29,15 +28,15 @@ describeWithMockConnection('BackgroundServiceView', () => {
             shortcutTitleForAction: () => { },
             shortcutsForAction: () => [new UI.KeyboardShortcut.KeyboardShortcut([{ key: 0, name: '' }], '', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DefaultShortcut */)],
         });
-        assertNotNullOrUndefined(backgroundServiceModel);
+        assert.exists(backgroundServiceModel);
         view = new Resources.BackgroundServiceView.BackgroundServiceView(serviceName, backgroundServiceModel);
     });
     afterEach(() => {
         UI.ActionRegistration.maybeRemoveActionExtension('background-service.toggle-recording');
     });
     it('updates event list when main storage key changes', () => {
-        assertNotNullOrUndefined(backgroundServiceModel);
-        assertNotNullOrUndefined(manager);
+        assert.exists(backgroundServiceModel);
+        assert.exists(manager);
         backgroundServiceModel.backgroundServiceEventReceived({
             backgroundServiceEvent: {
                 timestamp: 1556889085, // 2019-05-03 14:11:25.000.

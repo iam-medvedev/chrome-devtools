@@ -90,7 +90,6 @@ describe('UserInteractionsHandler', function () {
         const expectedLongestEvent = data.interactionEvents.find(event => {
             return event.type === 'keydown' && event.interactionId === 7378;
         });
-        assert.isNotNull(expectedLongestEvent);
         assert.strictEqual(data.longestInteractionEvent, expectedLongestEvent);
     });
     it('returns a set of all interactions that exceed the threshold', async () => {

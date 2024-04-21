@@ -4,6 +4,7 @@
 import * as Host from '../../../core/host/host.js';
 import { dispatchClickEvent, dispatchKeyDownEvent, dispatchMouseMoveEvent, getEventPromise, raf, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../../testing/ExpectStubCall.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -965,20 +966,15 @@ describeWithEnvironment('JSONEditor', () => {
             },
         ];
         await jsonEditor.updateComplete;
-        const isCalled = sinon.promise();
-        const copyText = sinon
-            .stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText')
-            .callsFake(() => {
-            void isCalled.resolve(true);
-        });
+        const copyText = expectCall(sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText'));
         const toolbar = jsonEditor.renderRoot.querySelector('devtools-pm-toolbar');
         if (!toolbar) {
             throw Error('No toolbar found !');
         }
         const event = new ProtocolComponents.Toolbar.CopyCommandEvent();
         toolbar.dispatchEvent(event);
-        await isCalled;
-        assert.isTrue(copyText.calledWith(JSON.stringify({ command: 'Test.test', parameters: { 'test': 'test' } })));
+        const [text] = await copyText;
+        assert.strictEqual(JSON.stringify({ command: 'Test.test', parameters: { 'test': 'test' } }), text);
     });
     it('should display the correct parameters with a command with array nested inside object', async () => {
         const command = 'Test.test9';

@@ -14,7 +14,6 @@ export declare class TracingModel {
     private addSampleEvent;
     profileGroup(event: Event): ProfileEventsGroup | null;
     minimumRecordTime(): number;
-    maximumRecordTime(): number;
     sortedProcesses(): Process[];
     getProcessByName(name: string): Process | null;
     getProcessById(pid: number): Process | null;

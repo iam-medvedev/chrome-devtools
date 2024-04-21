@@ -1781,6 +1781,11 @@ export const NativeFunctions = [
         receivers: ["DOMMatrixReadOnly"]
     },
     {
+        name: "translate",
+        signatures: [["input"]],
+        receivers: ["LanguageTranslator"]
+    },
+    {
         name: "drawFocusIfNeeded",
         signatures: [["element"], ["path", "element"]]
     },
@@ -6801,6 +6806,10 @@ export const NativeFunctions = [
         signatures: [["startTime", "endTime", "text"]]
     },
     {
+        name: "DeviceProperties",
+        signatures: [["?devicePropertiesInitDict"]]
+    },
+    {
         name: "InputDeviceCapabilities",
         signatures: [["?deviceInitDict"]]
     },
@@ -7920,6 +7929,14 @@ export const NativeFunctions = [
         signatures: [["timestamp"]]
     },
     {
+        name: "canTranslate",
+        signatures: [["options"]]
+    },
+    {
+        name: "createTranslator",
+        signatures: [["options"]]
+    },
+    {
         name: "AbortPaymentEvent",
         signatures: [["type", "eventInitDict"]]
     },
@@ -7986,10 +8003,6 @@ export const NativeFunctions = [
     {
         name: "RTCEncodedAudioFrame",
         signatures: [["originalFrame", "?newMetadata"]]
-    },
-    {
-        name: "setTimestamp",
-        signatures: [["timestamp"]]
     },
     {
         name: "setMetadata",

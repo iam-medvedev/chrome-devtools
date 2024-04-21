@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, dispatchClickEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import * as UI from './legacy.js';
 describe('Infobar', () => {
@@ -14,11 +14,11 @@ describe('Infobar', () => {
     const checkDetailsMessage = (component, messageText) => {
         renderElementIntoDOM(component.element);
         const infobar = component.element.shadowRoot.querySelector('.infobar');
-        assertElement(infobar, HTMLDivElement);
+        assert.instanceOf(infobar, HTMLDivElement);
         const learnMoreButton = infobar.querySelector('button.text-button');
-        assertElement(learnMoreButton, HTMLButtonElement);
+        assert.instanceOf(learnMoreButton, HTMLButtonElement);
         const detailsRow = infobar.querySelector('.infobar-details-rows');
-        assertElement(detailsRow, HTMLDivElement);
+        assert.instanceOf(detailsRow, HTMLDivElement);
         assert.isTrue(detailsRow.classList.contains('hidden'), 'Details row should initially be hidden');
         assert.strictEqual(detailsRow.textContent, messageText);
         dispatchClickEvent(learnMoreButton);

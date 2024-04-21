@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as PanelFeedback from './panel_feedback.js';
@@ -20,7 +20,7 @@ describeWithLocale('Panel Feedback', () => {
     }
     it('uses the correct href for the feedback x-link', async () => {
         const component = await renderFeedbackComponent();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         // Note that whilst they aren't HTMLAnchorElements, it is good enough for
         // this test as all we need is a type that has an `href` attribute.
         const allXLinks = Array.from(component.shadowRoot.querySelectorAll('x-link'));
@@ -29,7 +29,7 @@ describeWithLocale('Panel Feedback', () => {
     });
     it('uses the correct href for the quick start x-link', async () => {
         const component = await renderFeedbackComponent();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         // Note that whilst they aren't HTMLAnchorElements, it is good enough for
         // this test as all we need is a type that has an `href` attribute.
         const allXLinks = Array.from(component.shadowRoot.querySelectorAll('x-link'));

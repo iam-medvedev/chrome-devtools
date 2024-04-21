@@ -1,6 +1,5 @@
 import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 /**
  * Builds the style for the group.
  * Each group has a predefined style and a reference to the definition of the legacy track (which should be removed in the future).
@@ -16,9 +15,10 @@ export declare function buildGroupStyle(extra?: Object): PerfUI.FlameChart.Group
  * @param selectable if the track is selectable.
  * @param expanded if the track is expanded.
  * @param track this is set only when `selectable` is true, and it is used for selecting a track in the details panel.
+ * @param showStackContextMenu whether menu with options to merge/collapse entries in track is shown.
  * @returns the group that built from the give data
  */
-export declare function buildTrackHeader(startLevel: number, name: string, style: PerfUI.FlameChart.GroupStyle, selectable: boolean, expanded?: boolean, track?: TimelineModel.TimelineModel.Track | null, showStackContextMenu?: boolean): PerfUI.FlameChart.Group;
+export declare function buildTrackHeader(startLevel: number, name: string, style: PerfUI.FlameChart.GroupStyle, selectable: boolean, expanded?: boolean, showStackContextMenu?: boolean): PerfUI.FlameChart.Group;
 /**
  * Returns the time info shown when an event is hovered in the timeline.
  * @param totalTime the total time of the hovered event.

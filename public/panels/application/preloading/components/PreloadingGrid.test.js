@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents, getCellByIndexes } from '../../../../testing/DataGridHelpers.js';
-import { assertShadowRoot, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as PreloadingComponents from './components.js';
@@ -253,7 +253,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                 'Failure - The prerendered page used a forbidden JavaScript API that is currently not supported. (Internal Mojo interface: device.mojom.GamepadMonitor)',
             ],
         ]);
-        assertShadowRoot(grid.shadowRoot);
+        assert.isNotNull(grid.shadowRoot);
         const cell = getCellByIndexes(grid.shadowRoot, { row: 1, column: 3 });
         const div = cell.querySelector('div');
         assert.strictEqual(div.getAttribute('style'), 'color: var(--sys-color-error);');

@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { withMutations } from '../../../testing/MutationHelpers.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
 import * as ExpandableList from './expandable_list.js';
@@ -15,7 +15,7 @@ describe('ExpandableList', () => {
                 LitHtml.html `<div class="row">row 2</div>`,
             ],
         };
-        assertShadowRoot(list.shadowRoot);
+        assert.isNotNull(list.shadowRoot);
         // checks that list is not expanded initially
         let rows = list.shadowRoot.querySelectorAll('.row');
         assert.strictEqual(rows.length, 1);
@@ -38,7 +38,7 @@ describe('ExpandableList', () => {
         list.data = {
             rows: [],
         };
-        assertShadowRoot(list.shadowRoot);
+        assert.isNotNull(list.shadowRoot);
         // checks that list is not rendered
         const rows = list.shadowRoot.querySelectorAll('.row');
         assert.strictEqual(rows.length, 0);
@@ -53,7 +53,7 @@ describe('ExpandableList', () => {
                 LitHtml.html `<div class="row">row 1</div>`,
             ],
         };
-        assertShadowRoot(list.shadowRoot);
+        assert.isNotNull(list.shadowRoot);
         // checks that list contains 1 row
         const rows = list.shadowRoot.querySelectorAll('.row');
         assert.strictEqual(rows.length, 1);

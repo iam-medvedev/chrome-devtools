@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Root from '../../../core/root/root.js';
-import { assertElement, assertShadowRoot, dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as PanelFeedback from './panel_feedback.js';
@@ -24,9 +24,9 @@ describeWithLocale('Preview toggle', () => {
         };
         renderElementIntoDOM(component);
         await coordinator.done();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const input = component.shadowRoot.querySelector('input');
-        assertElement(input, HTMLElement);
+        assert.instanceOf(input, HTMLElement);
         dispatchClickEvent(input);
         assert.strictEqual(setEnabledStub.callCount, 1);
         assert.isTrue(setEnabledStub.firstCall.calledWith('testExperiment', true), 'experiments.setEnabled was not called with the correct experiment');
@@ -50,7 +50,7 @@ describeWithLocale('Preview toggle', () => {
         renderElementIntoDOM(component);
         await coordinator.done();
         const input = component.shadowRoot.querySelector('input');
-        assertElement(input, HTMLElement);
+        assert.instanceOf(input, HTMLElement);
         dispatchClickEvent(input);
         assert.strictEqual(setEnabledStub.callCount, 1);
         assert.isTrue(setEnabledStub.firstCall.calledWith('testExperiment', false), 'experiments.setEnabled was not called with the correct experiment');

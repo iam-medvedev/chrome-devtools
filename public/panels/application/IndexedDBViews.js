@@ -115,7 +115,7 @@ const UIStrings = {
     /**
      *@description Text in Indexed DBViews of the Application panel
      */
-    startFromKey: 'Start from key',
+    filterByKey: 'Filter by key (show keys greater or equal to)',
     /**
      *@description Text in Context menu for expanding objects in IndexedDB tables
      */
@@ -164,7 +164,7 @@ export class IDBDatabaseView extends ApplicationComponents.StorageMetadataView.S
       <${ReportView.ReportView.ReportSection.litTagName}>
       <${Buttons.Button.Button.litTagName}
           aria-label=${i18nString(UIStrings.deleteDatabase)}
-          .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}
+          .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
           @click=${this.deleteDatabase}
           jslog=${VisualLogging.action('delete-database').track({
             click: true,
@@ -173,7 +173,7 @@ export class IDBDatabaseView extends ApplicationComponents.StorageMetadataView.S
       </${Buttons.Button.Button.litTagName}>&nbsp;
       <${Buttons.Button.Button.litTagName}
           aria-label=${i18nString(UIStrings.refreshDatabase)}
-          .variant=${"secondary" /* Buttons.Button.Variant.SECONDARY */}
+          .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
           @click=${this.refreshDatabaseButtonClicked}
           jslog=${VisualLogging.action('refresh-database').track({
             click: true,
@@ -379,7 +379,7 @@ export class IDBDataView extends UI.View.SimpleView {
         this.pageForwardButton.setEnabled(false);
         this.pageForwardButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.pageForwardButtonClicked, this);
         editorToolbar.appendToolbarItem(this.pageForwardButton);
-        this.keyInput = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.startFromKey), '', 0.5);
+        this.keyInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByKey), 0.5);
         this.keyInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.updateData.bind(this, false));
         editorToolbar.appendToolbarItem(this.keyInput);
         editorToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator());

@@ -246,7 +246,7 @@ export class ThreadAppender {
         if (this.#headerNestingLevel !== null) {
             style.nestingLevel = this.#headerNestingLevel;
         }
-        const group = buildTrackHeader(currentLevel, this.trackName(), style, /* selectable= */ true, this.#expanded, /* track= */ null, 
+        const group = buildTrackHeader(currentLevel, this.trackName(), style, /* selectable= */ true, this.#expanded, 
         /* showStackContextMenu= */ true);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }

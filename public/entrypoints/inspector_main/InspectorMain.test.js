@@ -5,6 +5,7 @@ import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import * as InspectorMain from './inspector_main.js';
 describeWithMockConnection('FocusDebuggeeActionDelegate', () => {
@@ -97,7 +98,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
         assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
         const debuggerPause = sinon.stub();
         setMockConnectionResponseHandler('Debugger.pause', debuggerPause);
-        const debuggerPauseCalled = new Promise(resolve => debuggerPause.callsFake(resolve));
+        const debuggerPauseCalled = expectCall(debuggerPause);
         let debuggerEnable = (_) => { };
         setMockConnectionResponseHandler('Debugger.enable', () => new Promise(resolve => {
             debuggerEnable = resolve;

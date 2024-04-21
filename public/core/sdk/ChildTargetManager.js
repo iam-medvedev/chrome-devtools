@@ -96,7 +96,14 @@ export class ChildTargetManager extends SDKModel {
         this.fireAvailableTargetsChanged();
         this.dispatchEventToListeners("TargetDestroyed" /* Events.TargetDestroyed */, targetId);
     }
-    targetCrashed(_event) {
+    targetCrashed({ targetId }) {
+        this.#targetInfosInternal.delete(targetId);
+        const target = this.#childTargetsById.get(targetId);
+        if (target) {
+            target.dispose('targetCrashed event from CDP');
+        }
+        this.fireAvailableTargetsChanged();
+        this.dispatchEventToListeners("TargetDestroyed" /* Events.TargetDestroyed */, targetId);
     }
     fireAvailableTargetsChanged() {
         TargetManager.instance().dispatchEventToListeners("AvailableTargetsChanged" /* TargetManagerEvents.AvailableTargetsChanged */, [...this.#targetInfosInternal.values()]);

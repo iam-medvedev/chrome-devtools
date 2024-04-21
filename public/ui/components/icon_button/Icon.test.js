@@ -1,13 +1,13 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertShadowRoot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as IconButton from './icon_button.js';
 function getSpanElement(icon) {
     const { shadowRoot } = icon;
-    assertShadowRoot(shadowRoot);
+    assert.isNotNull(shadowRoot);
     const span = shadowRoot.querySelector('span');
-    assertElement(span, HTMLSpanElement);
+    assert.instanceOf(span, HTMLSpanElement);
     return span;
 }
 describe('Icon', () => {

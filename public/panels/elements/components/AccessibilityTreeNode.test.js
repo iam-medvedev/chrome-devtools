@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ElementsComponents from './components.js';
@@ -18,7 +18,6 @@ describeWithLocale('AccessibilityTreeNode', () => {
             id: 'NodeId',
         };
         await coordinator.done();
-        assertShadowRoot(component.shadowRoot);
         assert.strictEqual(component.shadowRoot.textContent, 'NodeRole\xa0"NodeName"');
     });
     it('renders ignored nodes as "ignored"', async () => {
@@ -32,7 +31,6 @@ describeWithLocale('AccessibilityTreeNode', () => {
             id: 'NodeId',
         };
         await coordinator.done();
-        assertShadowRoot(component.shadowRoot);
         assert.strictEqual(component.shadowRoot.textContent, 'Ignored');
     });
 });

@@ -1,7 +1,7 @@
 import type * as Actions from '../recorder-actions/recorder-actions.js';
 export declare const enum Variant {
     PRIMARY = "primary",
-    SECONDARY = "secondary"
+    OUTLINED = "outlined"
 }
 type SelectMenuGroup = {
     name: string;

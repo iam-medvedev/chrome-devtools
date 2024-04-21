@@ -14,6 +14,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { CountersGraph } from './CountersGraph.js';
 import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
+import { targetForEvent } from './TargetForEvent.js';
 import { TimelineDetailsView } from './TimelineDetailsView.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineFlameChartDataProvider, } from './TimelineFlameChartDataProvider.js';
@@ -266,7 +267,9 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (!event) {
             return;
         }
-        const target = this.model && this.model.timelineModel().targetByEvent(event);
+        const target = this.#traceEngineData && TraceEngine.Legacy.eventIsFromNewEngine(event) ?
+            targetForEvent(this.#traceEngineData, event) :
+            null;
         if (!target) {
             return;
         }

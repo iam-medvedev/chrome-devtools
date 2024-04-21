@@ -13,10 +13,6 @@ import { TimelineTreeView } from './TimelineTreeView.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 const UIStrings = {
     /**
-     *@description Aria-label for filter bar in Event Log view
-     */
-    filterEventLog: 'Filter event log',
-    /**
      *@description Text for the start time of an activity
      */
     startTime: 'Start Time',
@@ -57,9 +53,6 @@ export class EventsTimelineTreeView extends TimelineTreeView {
         if (TimelineSelection.isTraceEventSelection(selection.object)) {
             this.selectEvent(selection.object, true);
         }
-    }
-    getToolbarInputAccessiblePlaceHolder() {
-        return i18nString(UIStrings.filterEventLog);
     }
     buildTree() {
         this.currentTree = this.buildTopDownTree(true, null);

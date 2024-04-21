@@ -1,5 +1,5 @@
 import * as Common from '../../core/common/common.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
+import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { CompatibilityTracksAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
@@ -53,7 +53,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
         filterThreadsByName?: string;
         expandedTracks?: Set<TrackAppenderName>;
     }): void;
-    groupTrack(group: PerfUI.FlameChart.Group): TimelineModel.TimelineModel.Track | null;
     groupTreeEvents(group: PerfUI.FlameChart.Group): TraceEngine.Types.TraceEvents.TraceEventData[] | null;
     mainFrameNavigationStartEvents(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
     entryTitle(entryIndex: number): string | null;
@@ -67,13 +66,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
      * file. The result built data is cached and returned.
      */
     timelineData(rebuild?: boolean): PerfUI.FlameChart.FlameChartTimelineData;
-    private processInspectorTrace;
-    /**
-     * Appends a track in the flame chart using the legacy system.
-     * @param track the legacy track to be rendered.
-     * @param expanded if the track is expanded.
-     */
-    appendLegacyTrackData(track: TimelineModel.TimelineModel.Track, expanded?: boolean): void;
     minimumBoundary(): number;
     totalTime(): number;
     /**
@@ -82,12 +74,9 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
      */
     static isEntryRegularEvent(entry: TimelineFlameChartEntry): entry is (TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Legacy.Event);
     search(startTime: number, endTime: number, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): number[];
-    private appendSyncEvents;
     isIgnoreListedEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): boolean;
     private isIgnoreListedURL;
-    private appendAsyncEventsGroup;
     getEntryTypeForLevel(level: number): EntryType;
-    private appendFrames;
     private entryType;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
     prepareHighlightedHiddenEntriesArrowInfo(entryIndex: number): Element | null;

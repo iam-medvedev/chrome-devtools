@@ -208,7 +208,7 @@ export class CreateRecordingView extends HTMLElement {
               title=${i18nString(UIStrings.cancelRecording)}
               jslog=${VisualLogging.close().track({ click: true })}
               .data=${{
-            variant: "round" /* Buttons.Button.Variant.ROUND */,
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
             iconName: 'cross',
         }}

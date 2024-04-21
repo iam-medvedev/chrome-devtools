@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -62,7 +61,7 @@ describeWithMockConnection('NavigatorView', () => {
         await resourceTreeModel.once(SDK.ResourceTreeModel.Events.CachedResourcesLoaded);
         resourceTreeModel.frameAttached(mainFrameId, null);
         const childFrame = resourceTreeModel.frameAttached(childFrameId, mainFrameId);
-        assertNotNullOrUndefined(childFrame);
+        assert.exists(childFrame);
         const { project } = addResourceAndUISourceCode(url, childFrame, '', 'text/html', resourceTreeModel);
         const navigatorView = Sources.SourcesNavigator.NetworkNavigatorView.instance({ forceNew: true });
         const children = navigatorView.scriptsTree.rootElement().children();

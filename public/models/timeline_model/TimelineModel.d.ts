@@ -1,11 +1,9 @@
 import * as Platform from '../../core/platform/platform.js';
-import * as SDK from '../../core/sdk/sdk.js';
+import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as TraceEngine from '../trace/trace.js';
 export declare class TimelineModelImpl {
     #private;
-    private tracksInternal;
-    private namedTracks;
     private inspectedTargetEventsInternal;
     private sessionId;
     private mainFrameNodeId;
@@ -14,7 +12,6 @@ export declare class TimelineModelImpl {
     private requestsFromBrowser;
     private mainFrame;
     private minimumRecordTimeInternal;
-    private maximumRecordTimeInternal;
     private lastScheduleStyleRecalculation;
     private paintImageEventByPixelRefId;
     private lastPaintForLayer;
@@ -25,7 +22,6 @@ export declare class TimelineModelImpl {
     private legacyCurrentPage;
     private currentTaskLayoutAndRecalcEvents;
     private tracingModelInternal;
-    private mainFrameLayerTreeId?;
     private lastRecalculateStylesEvent;
     constructor();
     /**
@@ -67,7 +63,6 @@ export declare class TimelineModelImpl {
     isLayoutShiftEvent(event: TraceEngine.Legacy.Event): boolean;
     static globalEventId(event: TraceEngine.Legacy.Event, field: string): string;
     static eventFrameId(event: TraceEngine.Legacy.Event): Protocol.Page.FrameId | null;
-    targetByEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): SDK.Target.Target | null;
     isFreshRecording(): boolean;
     setEvents(tracingModel: TraceEngine.Legacy.TracingModel, isFreshRecording?: boolean): void;
     private processGenericTrace;
@@ -75,21 +70,15 @@ export declare class TimelineModelImpl {
     private processThreadsForBrowserFrames;
     private processMetadataEvents;
     private processSyncBrowserEvents;
-    private processAsyncBrowserEvents;
     private resetProcessingState;
     private processThreadEvents;
-    private processAsyncEvents;
     private processEvent;
     private processBrowserEvent;
-    private ensureNamedTrack;
     private findAncestorEvent;
     private addPageFrame;
     private reset;
     tracingModel(): TraceEngine.Legacy.TracingModel | null;
-    minimumRecordTime(): number;
-    maximumRecordTime(): number;
     inspectedTargetEvents(): TraceEngine.Legacy.Event[];
-    tracks(): Track[];
     rootFrames(): PageFrame[];
     pageURL(): Platform.DevToolsPath.UrlString;
     pageFrameById(frameId: Protocol.Page.FrameId): PageFrame | null;
@@ -258,61 +247,6 @@ export declare namespace TimelineModelImpl {
         ForcedLayout: number;
         IdleCallbackAddon: number;
     };
-}
-export declare class Track {
-    name: string;
-    type: TrackType;
-    forMainFrame: boolean;
-    url: Platform.DevToolsPath.UrlString;
-    /**
-     * For tracks that correspond to a thread in a trace, this field contains all the events in the
-     * thread (both sync and async). Other tracks (like Timings) only include events with instant
-     * ("I") or mark ("R") phases.
-     */
-    events: TraceEngine.Legacy.Event[];
-    /**
-     * For tracks that correspond to a thread in a trace, this field will be empty. Other tracks (like
-     * Interactions and Animations) have non-instant/mark events.
-     */
-    asyncEvents: TraceEngine.Legacy.AsyncEvent[];
-    tasks: TraceEngine.Legacy.Event[];
-    private eventsForTreeViewInternal;
-    thread: TraceEngine.Legacy.Thread | null;
-    constructor();
-    /**
-     * Gets trace events that can be organized in a tree structure. This
-     * is used for the tree views in the Bottom-up, Call tree and Event
-     * log view in the details pane.
-     *
-     * Depending on the type of track, this data can vary:
-     * 1. Tracks that correspond to a thread in a trace:
-     *    Returns all the events (sync and async). For these tracks, all
-     *    events will be inside the `events` field. Async events will be
-     *    filtered later when the trees are actually built. For these
-     *    tracks, the asyncEvents field will be empty.
-     *
-     * 2. Other tracks (Interactions, Timings, etc.):
-     *    Returns instant events (which for these tracks are stored in the
-     *    `events` field) and async events (contained in `syncEvents`) if
-     *    they can be organized in a tree structure. This latter condition
-     *    is met if there is *not* a pair of async events e1 and e2 where:
-     *
-     *    e1.startTime <= e2.startTime && e1.endTime > e2.startTime && e1.endTime > e2.endTime.
-     *    or, graphically:
-     *    |------- e1 ------|
-     *      |------- e2 --------|
-     *    Because async events are filtered later, fake sync events are
-     *    created from the async events when the condition above is met.
-     */
-    eventsForTreeView(): TraceEngine.Legacy.Event[];
-}
-export declare enum TrackType {
-    MainThread = "MainThread",
-    Worker = "Worker",
-    Animation = "Animation",
-    Raster = "Raster",
-    Experience = "Experience",
-    Other = "Other"
 }
 export declare class PageFrame {
     frameId: any;

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
-import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../../testing/MockConnection.js';
@@ -37,7 +36,7 @@ describeWithMockConnection('PaletteGenerator', () => {
     it('does not interpret selectors as colors', async () => {
         createTarget();
         const [model] = SDK.TargetManager.TargetManager.instance().models(SDK.CSSModel.CSSModel);
-        Platform.assertNotNullOrUndefined(model);
+        assert.exists(model);
         const stylesheet = sinon.createStubInstance(SDK.CSSStyleSheetHeader.CSSStyleSheetHeader);
         sinon.stub(model, 'allStyleSheets').returns([stylesheet]);
         const content = `

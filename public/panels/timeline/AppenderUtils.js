@@ -39,13 +39,11 @@ export function buildGroupStyle(extra) {
  * @param selectable if the track is selectable.
  * @param expanded if the track is expanded.
  * @param track this is set only when `selectable` is true, and it is used for selecting a track in the details panel.
+ * @param showStackContextMenu whether menu with options to merge/collapse entries in track is shown.
  * @returns the group that built from the give data
  */
-export function buildTrackHeader(startLevel, name, style, selectable, expanded, track, showStackContextMenu) {
+export function buildTrackHeader(startLevel, name, style, selectable, expanded, showStackContextMenu) {
     const group = { startLevel, name, style, selectable, expanded, showStackContextMenu };
-    if (selectable && track) {
-        group.track = track;
-    }
     return group;
 }
 /**

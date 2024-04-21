@@ -13,7 +13,7 @@ export class Button extends HTMLElement {
     #boundRender = this.#render.bind(this);
     #boundOnClick = this.#onClick.bind(this);
     #props = {
-        size: "MEDIUM" /* Size.MEDIUM */,
+        size: "REGULAR" /* Size.REGULAR */,
         disabled: false,
         active: false,
         spinner: false,
@@ -34,7 +34,7 @@ export class Button extends HTMLElement {
         this.#props.variant = data.variant;
         this.#props.iconUrl = data.iconUrl;
         this.#props.iconName = data.iconName;
-        this.#props.size = "MEDIUM" /* Size.MEDIUM */;
+        this.#props.size = "REGULAR" /* Size.REGULAR */;
         if ('size' in data && data.size) {
             this.#props.size = data.size;
         }
@@ -144,12 +144,12 @@ export class Button extends HTMLElement {
                 throw new Error('Toolbar button does not accept children');
             }
         }
-        if (this.#props.variant === "round" /* Variant.ROUND */) {
+        if (this.#props.variant === "icon" /* Variant.ICON */) {
             if (!this.#props.iconUrl && !this.#props.iconName) {
-                throw new Error('Round button requires an icon');
+                throw new Error('Icon button requires an icon');
             }
             if (!this.#isEmpty) {
-                throw new Error('Round button does not accept children');
+                throw new Error('Icon button does not accept children');
             }
         }
         if (this.#props.iconName && this.#props.iconUrl) {
@@ -159,19 +159,21 @@ export class Button extends HTMLElement {
         const classes = {
             primary: this.#props.variant === "primary" /* Variant.PRIMARY */,
             tonal: this.#props.variant === "tonal" /* Variant.TONAL */,
-            secondary: this.#props.variant === "secondary" /* Variant.SECONDARY */,
+            outlined: this.#props.variant === "outlined" /* Variant.OUTLINED */,
+            text: this.#props.variant === "text" /* Variant.TEXT */,
             toolbar: this.#isToolbarVariant(),
             'primary-toolbar': this.#props.variant === "primary_toolbar" /* Variant.PRIMARY_TOOLBAR */,
-            round: this.#props.variant === "round" /* Variant.ROUND */,
+            icon: this.#props.variant === "icon" /* Variant.ICON */,
             'text-with-icon': hasIcon && !this.#isEmpty,
             'only-icon': hasIcon && this.#isEmpty,
             'only-text': !hasIcon && !this.#isEmpty,
+            micro: this.#props.size === "MICRO" /* Size.MICRO */,
             small: Boolean(this.#props.size === "SMALL" /* Size.SMALL */),
             active: this.#props.active,
         };
         const spinnerClasses = {
             primary: this.#props.variant === "primary" /* Variant.PRIMARY */,
-            secondary: this.#props.variant === "secondary" /* Variant.SECONDARY */,
+            outlined: this.#props.variant === "outlined" /* Variant.OUTLINED */,
             disabled: Boolean(this.#props.disabled),
             spinner: true,
         };

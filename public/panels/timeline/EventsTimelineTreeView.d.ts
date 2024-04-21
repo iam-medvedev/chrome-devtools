@@ -12,7 +12,6 @@ export declare class EventsTimelineTreeView extends TimelineTreeView {
     constructor(delegate: TimelineModeViewDelegate);
     filters(): TimelineModel.TimelineModelFilter.TimelineModelFilter[];
     updateContents(selection: TimelineSelection): void;
-    getToolbarInputAccessiblePlaceHolder(): string;
     buildTree(): TimelineModel.TimelineProfileTree.Node;
     private onFilterChanged;
     private findNodeWithEvent;

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import { assertElement, dispatchMouseUpEvent } from '../../testing/DOMHelpers.js';
+import { dispatchMouseUpEvent } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { stabilizeEvent, stabilizeImpressions } from '../../testing/VisualLoggingHelpers.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
@@ -11,7 +11,7 @@ import * as UI from './legacy.js';
 function getContextMenuElement() {
     const container = document.querySelector('div[data-devtools-glass-pane]');
     const softMenuElement = container.shadowRoot.querySelector('.widget > .soft-context-menu');
-    assertElement(softMenuElement, HTMLElement);
+    assert.instanceOf(softMenuElement, HTMLElement);
     return softMenuElement;
 }
 describeWithEnvironment('ContextMenu', () => {
@@ -38,9 +38,9 @@ describeWithEnvironment('ContextMenu', () => {
         softMenu.show(document, new AnchorBox(0, 0, 0, 0));
         const softMenuElement = getContextMenuElement();
         const item0 = softMenuElement.querySelector('[aria-label^="item0"]');
-        assertElement(item0, HTMLElement);
+        assert.instanceOf(item0, HTMLElement);
         const item1 = softMenuElement.querySelector('[aria-label^="item1"]');
-        assertElement(item1, HTMLElement);
+        assert.instanceOf(item1, HTMLElement);
         assert.isFalse(item0.hasAttribute('checked'));
         assert.isFalse(item1.hasAttribute('checked'));
         dispatchMouseUpEvent(item0);
@@ -60,7 +60,7 @@ describeWithEnvironment('ContextMenu', () => {
         softMenu.show(document, new AnchorBox(0, 0, 0, 0));
         const softMenuElement = getContextMenuElement();
         const item0 = softMenuElement.querySelector('[aria-label^="item0"]');
-        assertElement(item0, HTMLElement);
+        assert.instanceOf(item0, HTMLElement);
         dispatchMouseUpEvent(item0);
         assert.isTrue(contextMenuDiscardSpy.called);
         softMenu.discard();

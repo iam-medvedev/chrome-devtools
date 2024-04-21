@@ -49,6 +49,7 @@
     "../../../../../../front_end/panels/timeline/PerformanceModel.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.ts",
     "../../../../../../front_end/panels/timeline/SourceMapsResolver.ts",
+    "../../../../../../front_end/panels/timeline/TargetForEvent.ts",
     "../../../../../../front_end/panels/timeline/ThreadAppender.ts",
     "../../../../../../front_end/panels/timeline/TimelineController.ts",
     "../../../../../../front_end/panels/timeline/TimelineDetailsView.ts",

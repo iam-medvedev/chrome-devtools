@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, dispatchKeyDownEvent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { dispatchKeyDownEvent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as Buttons from './buttons.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
@@ -13,7 +13,7 @@ describe('Button', () => {
         const button = new Buttons.Button.Button();
         button.data = data;
         // Toolbar and round buttons do not take text, and error if you try to set any.
-        if (data.variant !== "toolbar" /* Buttons.Button.Variant.TOOLBAR */ && data.variant !== "round" /* Buttons.Button.Variant.ROUND */) {
+        if (data.variant !== "toolbar" /* Buttons.Button.Variant.TOOLBAR */ && data.variant !== "icon" /* Buttons.Button.Variant.ICON */) {
             button.innerText = text;
         }
         renderElementIntoDOM(button);
@@ -28,7 +28,7 @@ describe('Button', () => {
         let clicks = 0;
         button.onclick = () => clicks++;
         const innerButton = button.shadowRoot?.querySelector('button');
-        assertElement(innerButton, HTMLButtonElement);
+        assert.instanceOf(innerButton, HTMLButtonElement);
         innerButton.click();
         dispatchKeyDownEvent(innerButton, {
             key: 'Enter',
@@ -48,12 +48,12 @@ describe('Button', () => {
     });
     it('secondary button can be clicked', async () => {
         await testClick({
-            variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
         });
     });
     it('disabled secondary button cannot be clicked', async () => {
         await testClick({
-            variant: "secondary" /* Buttons.Button.Variant.SECONDARY */,
+            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             disabled: true,
         }, 0);
     });

@@ -34,13 +34,6 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
     static eventNameForSorting(event: TraceEngine.Legacy.Event): string;
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
     setModelWithEvents(model: PerformanceModel | null, selectedEvents: TraceEngine.Legacy.CompatibleTraceEvent[] | null, traceParseData?: TraceEngine.Handlers.Types.TraceParseData | null): void;
-    /**
-     * This method is included only for preventing layout test failures.
-     * TODO(crbug.com/1433692): Port problematic layout tests to unit
-     * tests.
-     */
-    setModel(model: PerformanceModel | null, track: TimelineModel.TimelineModel.Track | null): void;
-    getToolbarInputAccessiblePlaceHolder(): string;
     model(): PerformanceModel | null;
     traceParseData(): TraceEngine.Handlers.Types.TraceParseData | null;
     init(): void;
@@ -97,13 +90,6 @@ export declare class AggregatedTimelineTreeView extends TimelineTreeView {
     private executionContextNamesByOrigin;
     constructor();
     setGroupBySettingForTests(groupBy: AggregatedTimelineTreeView.GroupBy): void;
-    setModelWithEvents(model: PerformanceModel | null, selectedEvents: TraceEngine.Legacy.CompatibleTraceEvent[] | null, traceParseData?: TraceEngine.Handlers.Types.TraceParseData | null): void;
-    /**
-     * This method is included only for preventing layout test failures.
-     * TODO(crbug.com/1433692): Port problematic layout tests to unit
-     * tests.
-     */
-    setModel(model: PerformanceModel | null, track: TimelineModel.TimelineModel.Track | null): void;
     updateContents(selection: TimelineSelection): void;
     private updateExtensionResolver;
     private beautifyDomainName;
@@ -138,12 +124,10 @@ export declare namespace AggregatedTimelineTreeView {
 }
 export declare class CallTreeTimelineTreeView extends AggregatedTimelineTreeView {
     constructor();
-    getToolbarInputAccessiblePlaceHolder(): string;
     buildTree(): TimelineModel.TimelineProfileTree.Node;
 }
 export declare class BottomUpTimelineTreeView extends AggregatedTimelineTreeView {
     constructor();
-    getToolbarInputAccessiblePlaceHolder(): string;
     buildTree(): TimelineModel.TimelineProfileTree.Node;
 }
 declare const TimelineStackView_base: (new (...args: any[]) => {

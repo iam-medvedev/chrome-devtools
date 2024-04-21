@@ -13,6 +13,7 @@ export default {
 .text-prompt-root {
   display: flex;
   align-items: center;
+  font-size: var(--sys-size-6);
 }
 
 .text-prompt-editing {
@@ -43,9 +44,15 @@ export default {
   color: var(--sys-color-token-subtle) !important; /* stylelint-disable-line declaration-no-important */
 }
 
-.text-prompt[data-placeholder]:empty::before {
-  content: attr(data-placeholder);
-  color: var(--sys-color-token-subtle);
+.text-prompt[data-placeholder] {
+  &:empty::before {
+    content: attr(data-placeholder);
+    color: var(--sys-color-on-surface-subtle);
+  }
+
+  &.disabled:empty::before {
+    color: var(--sys-color-state-disabled);
+  }
 }
 
 .text-prompt:not([data-placeholder]):empty::after {

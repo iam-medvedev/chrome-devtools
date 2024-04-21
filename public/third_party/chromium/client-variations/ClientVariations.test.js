@@ -8,21 +8,21 @@ describe('formatClientVariations', () => {
             variationIds: [111, 222, 333],
             triggerVariationIds: [444, 555],
         });
-        assert.deepEqual(result, 'message ClientVariations {\n  // Active client experiment variation IDs.\n  repeated int32 variation_id = [111, 222, 333];\n  // Active client experiment variation IDs that trigger server-side behavior.\n  repeated int32 trigger_variation_id = [444, 555];\n}');
+        assert.deepEqual(result, 'message ClientVariations {\n  // Active Google-visible variation IDs on this client. These are reported for analysis, but do not directly affect any server-side behavior.\n  repeated int32 variation_id = [111, 222, 333];\n  // Active Google-visible variation IDs on this client that trigger server-side behavior. These are reported for analysis *and* directly affect server-side behavior.\n  repeated int32 trigger_variation_id = [444, 555];\n}');
     });
     it('formats input containing only plain variation IDs', () => {
         const result = ClientVariations.formatClientVariations({
             variationIds: [111, 222, 333],
             triggerVariationIds: [],
         });
-        assert.deepEqual(result, 'message ClientVariations {\n  // Active client experiment variation IDs.\n  repeated int32 variation_id = [111, 222, 333];\n}');
+        assert.deepEqual(result, 'message ClientVariations {\n  // Active Google-visible variation IDs on this client. These are reported for analysis, but do not directly affect any server-side behavior.\n  repeated int32 variation_id = [111, 222, 333];\n}');
     });
     it('formats input containing only trigger variation IDs', () => {
         const result = ClientVariations.formatClientVariations({
             variationIds: [],
             triggerVariationIds: [444, 555],
         });
-        assert.deepEqual(result, 'message ClientVariations {\n  // Active client experiment variation IDs that trigger server-side behavior.\n  repeated int32 trigger_variation_id = [444, 555];\n}');
+        assert.deepEqual(result, 'message ClientVariations {\n  // Active Google-visible variation IDs on this client that trigger server-side behavior. These are reported for analysis *and* directly affect server-side behavior.\n  repeated int32 trigger_variation_id = [444, 555];\n}');
     });
     it('formats input containing no variation IDs', () => {
         const result = ClientVariations.formatClientVariations({

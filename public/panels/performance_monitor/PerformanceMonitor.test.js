@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as PerformanceMonitor from './performance_monitor.js';
 describeWithMockConnection('PerformanceMonitor', () => {
@@ -16,23 +17,13 @@ describeWithMockConnection('PerformanceMonitor', () => {
             performanceMonitor.detach();
         });
         it('updates metrics', async () => {
-            let metrics = { metrics: [{ name: 'LayoutCount', value: 42 }] };
-            let onGetMetrics = () => { };
-            sinon.stub(target.performanceAgent(), 'invoke_getMetrics').callsFake(() => {
-                onGetMetrics();
-                return Promise.resolve(metrics);
-            });
+            const getMetrics = sinon.stub(target.performanceAgent(), 'invoke_getMetrics');
             performanceMonitor = new PerformanceMonitor.PerformanceMonitor.PerformanceMonitorImpl(0);
             performanceMonitor.markAsRoot();
             performanceMonitor.show(document.body);
             assert.isFalse([...performanceMonitor.contentElement.querySelectorAll('.perfmon-indicator-value')].some(e => e.textContent));
-            await new Promise(resolve => {
-                onGetMetrics = resolve;
-            });
-            metrics = { metrics: [{ name: 'LayoutCount', value: 84 }] };
-            await new Promise(resolve => {
-                onGetMetrics = resolve;
-            });
+            await expectCall(getMetrics, () => Promise.resolve({ metrics: [{ name: 'LayoutCount', value: 42 }] }));
+            await expectCall(getMetrics, () => Promise.resolve({ metrics: [{ name: 'LayoutCount', value: 84 }] }));
             assert.isTrue([...performanceMonitor.contentElement.querySelectorAll('.perfmon-indicator-value')].some(e => e.textContent));
         });
     };

@@ -110,9 +110,14 @@ export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
     setValue(value: string, notify?: boolean): void;
     value(): string;
     valueWithoutSuggestion(): string;
+    clearAutocomplete(): void;
+    focus(): void;
     private onKeydownCallback;
     private onChangeCallback;
     private updateEmptyStyles;
+}
+export declare class ToolbarFilter extends ToolbarInput {
+    constructor(filterBy?: Common.UIString.LocalizedString, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean, jslogContext?: string);
 }
 export declare namespace ToolbarInput {
     const enum Event {

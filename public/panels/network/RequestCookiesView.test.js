@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -23,7 +22,7 @@ describeWithMockConnection('RequestCookiesView', () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.example.com/foo.html', '', null, null, null);
         const component = renderCookiesView(request);
         const message = component.element.querySelector('.site-has-cookies-in-other-partition');
-        assertNotNullOrUndefined(message);
+        assert.exists(message);
         assert.isTrue(message.classList.contains('hidden'));
         request.addExtraRequestInfo({
             siteHasCookieInOtherPartition: true,

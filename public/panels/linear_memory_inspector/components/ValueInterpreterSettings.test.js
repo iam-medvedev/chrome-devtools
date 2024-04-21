@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, getElementsWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { getElementsWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 const SETTINGS_INPUT_SELECTOR = '[data-input]';
@@ -41,9 +41,9 @@ describeWithLocale('ValueInterpreterSettings', () => {
         const labels = getElementsWithinComponent(component, SETTINGS_LABEL_SELECTOR, HTMLLabelElement);
         for (const label of labels) {
             const checkbox = label.querySelector(SETTINGS_INPUT_SELECTOR);
-            assertElement(checkbox, HTMLInputElement);
+            assert.instanceOf(checkbox, HTMLInputElement);
             const title = label.querySelector(SETTINGS_TITLE_SELECTOR);
-            assertElement(title, HTMLSpanElement);
+            assert.instanceOf(title, HTMLSpanElement);
             const checked = checkbox.checked;
             const eventPromise = getEventPromise(component, 'typetoggle');
             checkbox.click();
@@ -58,8 +58,8 @@ describeWithLocale('ValueInterpreterSettings', () => {
         const elements = Array.from(labels).map(label => {
             const checkbox = label.querySelector(SETTINGS_INPUT_SELECTOR);
             const title = label.querySelector(SETTINGS_TITLE_SELECTOR);
-            assertElement(checkbox, HTMLInputElement);
-            assertElement(title, HTMLSpanElement);
+            assert.instanceOf(checkbox, HTMLInputElement);
+            assert.instanceOf(title, HTMLSpanElement);
             return { title, checked: checkbox.checked };
         });
         assert.isAtLeast(data.valueTypes.size, 1);

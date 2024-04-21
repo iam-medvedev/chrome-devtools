@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
-import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as SDK from './sdk.js';
 function navigateFrameWithMockConnection(storageKey, resourceTreeModel) {
     setMockConnectionResponseHandler('Storage.getStorageKeyForFrame', () => ({ storageKey }));
@@ -87,7 +86,7 @@ describeWithMockConnection('ResourceTreeModel', () => {
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.isEmpty(resourceTreeModel?.frames());
         const manager = target.model(SDK.StorageKeyManager.StorageKeyManager);
-        assertNotNullOrUndefined(manager);
+        assert.exists(manager);
         const storageKeyAddedPromise = new Promise(resolve => {
             manager.addEventListener("StorageKeyAdded" /* SDK.StorageKeyManager.Events.StorageKeyAdded */, () => {
                 resolve();
@@ -112,7 +111,7 @@ describeWithMockConnection('ResourceTreeModel', () => {
     });
     function getResourceTreeModel(target) {
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assertNotNullOrUndefined(resourceTreeModel);
+        assert.exists(resourceTreeModel);
         return resourceTreeModel;
     }
     it('calls reloads only top frames without tab target', () => {
@@ -154,7 +153,7 @@ describeWithMockConnection('ResourceTreeModel', () => {
     it('emits PrimaryPageChanged event upon prerender activation', async () => {
         const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
         const childTargetManager = tabTarget.model(SDK.ChildTargetManager.ChildTargetManager);
-        assertNotNullOrUndefined(childTargetManager);
+        assert.exists(childTargetManager);
         const targetId = 'target_id';
         const targetInfo = {
             targetId,
@@ -168,9 +167,9 @@ describeWithMockConnection('ResourceTreeModel', () => {
         childTargetManager.targetCreated({ targetInfo });
         await childTargetManager.attachedToTarget({ sessionId: 'session_id', targetInfo, waitingForDebugger: false });
         const prerenderTarget = SDK.TargetManager.TargetManager.instance().targetById(targetId);
-        assertNotNullOrUndefined(prerenderTarget);
+        assert.exists(prerenderTarget);
         const resourceTreeModel = prerenderTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assertNotNullOrUndefined(resourceTreeModel);
+        assert.exists(resourceTreeModel);
         const primaryPageChangedEvents = [];
         resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, event => primaryPageChangedEvents.push(event.data));
         const frame = resourceTreeModel.frameAttached('frame_id', null);

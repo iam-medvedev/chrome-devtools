@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertShadowRoot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
@@ -19,7 +19,7 @@ describeWithEnvironment('InteractionBreakdown', () => {
         breakdown.entry = longInteraction;
         renderElementIntoDOM(breakdown);
         await coordinator.done();
-        assertShadowRoot(breakdown.shadowRoot);
+        assert.isNotNull(breakdown.shadowRoot);
         const inputDelay = breakdown.shadowRoot.querySelector('[data-entry="input-delay"] .value')?.textContent;
         assert.strictEqual(inputDelay, '1ms');
         const processingDuration = breakdown.shadowRoot.querySelector('[data-entry="processing-duration"] .value')?.textContent;

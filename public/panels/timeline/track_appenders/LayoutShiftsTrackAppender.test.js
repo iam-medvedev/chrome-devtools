@@ -49,7 +49,7 @@ describeWithEnvironment('LayoutShiftsTrackAppender', function () {
         const events = traceParsedData.LayoutShifts.clusters.flatMap(c => c.events);
         for (const event of events) {
             const markerIndex = entryData.indexOf(event);
-            assert.isDefined(markerIndex);
+            assert.exists(markerIndex);
             assert.strictEqual(flameChartData.entryStartTimes[markerIndex], TraceModel.Helpers.Timing.microSecondsToMilliseconds(event.ts));
         }
     });
@@ -58,7 +58,7 @@ describeWithEnvironment('LayoutShiftsTrackAppender', function () {
         const events = traceParsedData.LayoutShifts.clusters.flatMap(c => c.events);
         for (const event of events) {
             const markerIndex = entryData.indexOf(event);
-            assert.isDefined(markerIndex);
+            assert.exists(markerIndex);
             assert.strictEqual(flameChartData.entryTotalTimes[markerIndex], 5);
         }
     });

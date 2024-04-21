@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as Root from '../../../core/root/root.js';
-import { assertElement, assertShadowRoot, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createFakeSetting } from '../../../testing/EnvironmentHelpers.js';
 import * as Settings from './settings.js';
 function renderSettingCheckbox(data) {
     const component = new Settings.SettingCheckbox.SettingCheckbox();
     component.data = data;
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     const checkbox = component.shadowRoot.querySelector('input');
-    assertElement(checkbox, HTMLInputElement);
+    assert.instanceOf(checkbox, HTMLInputElement);
     return { component, checkbox };
 }
 describe('SettingCheckbox', () => {

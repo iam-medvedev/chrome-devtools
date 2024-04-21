@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -41,7 +40,7 @@ describeWithLocale('RequestPreviewView', () => {
         const component = renderPreviewView(request);
         const widget = await component.showPreview();
         const frame = widget.contentElement.querySelector('iframe');
-        assertNotNullOrUndefined(frame);
+        assert.exists(frame);
         assert.notInclude(frame.src, 'charset=utf-8');
         assert.notInclude(frame.src, ' base64');
     });
@@ -55,7 +54,7 @@ describeWithLocale('RequestPreviewView', () => {
         const component = renderPreviewView(request);
         const widget = await component.showPreview();
         const frame = widget.contentElement.querySelector('iframe');
-        assertNotNullOrUndefined(frame);
+        assert.exists(frame);
         assert.include(frame.src, 'charset=utf-16');
         assert.include(frame.src, 'base64');
     });

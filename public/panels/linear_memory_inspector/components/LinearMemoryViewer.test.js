@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertElements, assertShadowRoot, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { assertElements, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 const NUM_BYTES_PER_GROUP = 4;
 export const VIEWER_BYTE_CELL_SELECTOR = '.byte-cell';
@@ -61,19 +61,19 @@ describe('LinearMemoryViewer', () => {
         return data;
     }
     function getCellsPerRow(component, cellSelector) {
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const row = component.shadowRoot.querySelector(VIEWER_ROW_SELECTOR);
-        assertElement(row, HTMLDivElement);
+        assert.instanceOf(row, HTMLDivElement);
         const cellsPerRow = row.querySelectorAll(cellSelector);
         assert.isNotEmpty(cellsPerRow);
         assertElements(cellsPerRow, HTMLSpanElement);
         return cellsPerRow;
     }
     function assertSelectedCellIsHighlighted(component, cellSelector, index) {
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const selectedCells = component.shadowRoot.querySelectorAll(cellSelector + '.selected');
         assert.lengthOf(selectedCells, 1);
-        assertElements(selectedCells, HTMLSpanElement);
+        assert.instanceOf(selectedCells[0], HTMLSpanElement);
         const selectedCell = selectedCells[0];
         const allCells = getCellsPerRow(component, cellSelector);
         assert.isAtLeast(allCells.length, index);
@@ -114,7 +114,7 @@ describe('LinearMemoryViewer', () => {
     });
     it('renders one address per row', async () => {
         const { component } = await setUpComponent();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const rows = component.shadowRoot.querySelectorAll(VIEWER_ROW_SELECTOR);
         const addresses = component.shadowRoot.querySelectorAll(VIEWER_ADDRESS_SELECTOR);
         assert.isNotEmpty(rows);
@@ -124,12 +124,12 @@ describe('LinearMemoryViewer', () => {
         const { component, data } = await setUpComponent();
         const bytesPerRow = getCellsPerRow(component, VIEWER_BYTE_CELL_SELECTOR);
         const numBytesPerRow = bytesPerRow.length;
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const addresses = component.shadowRoot.querySelectorAll(VIEWER_ADDRESS_SELECTOR);
         assert.isNotEmpty(addresses);
         for (let i = 0, currentAddress = data.memoryOffset; i < addresses.length; currentAddress += numBytesPerRow, ++i) {
             const addressElement = addresses[i];
-            assertElement(addressElement, HTMLSpanElement);
+            assert.instanceOf(addressElement, HTMLSpanElement);
             const hex = currentAddress.toString(16).toUpperCase().padStart(8, '0');
             assert.strictEqual(addressElement.innerText, hex);
         }
@@ -146,7 +146,7 @@ describe('LinearMemoryViewer', () => {
     });
     it('renders byte values corresponding to memory set', async () => {
         const { component, data } = await setUpComponent();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const bytes = component.shadowRoot.querySelectorAll(VIEWER_BYTE_CELL_SELECTOR);
         assertElements(bytes, HTMLSpanElement);
         const memory = data.memory;
@@ -160,9 +160,9 @@ describe('LinearMemoryViewer', () => {
     });
     it('triggers an event on selecting a byte value', async () => {
         const { component, data } = await setUpComponent();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const byte = component.shadowRoot.querySelector(VIEWER_BYTE_CELL_SELECTOR);
-        assertElement(byte, HTMLSpanElement);
+        assert.instanceOf(byte, HTMLSpanElement);
         const eventPromise = getEventPromise(component, 'byteselected');
         byte.click();
         const { data: address } = await eventPromise;
@@ -176,7 +176,7 @@ describe('LinearMemoryViewer', () => {
     });
     it('renders ascii values corresponding to bytes', async () => {
         const { component } = await setUpComponent();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const asciiValues = component.shadowRoot.querySelectorAll(VIEWER_TEXT_CELL_SELECTOR);
         const byteValues = component.shadowRoot.querySelectorAll(VIEWER_BYTE_CELL_SELECTOR);
         assertElements(asciiValues, HTMLSpanElement);
@@ -197,9 +197,9 @@ describe('LinearMemoryViewer', () => {
     });
     it('triggers an event on selecting an ascii value', async () => {
         const { component, data } = await setUpComponent();
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const asciiCell = component.shadowRoot.querySelector(VIEWER_TEXT_CELL_SELECTOR);
-        assertElement(asciiCell, HTMLSpanElement);
+        assert.instanceOf(asciiCell, HTMLSpanElement);
         const eventPromise = getEventPromise(component, 'byteselected');
         asciiCell.click();
         const { data: address } = await eventPromise;

@@ -1,10 +1,9 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import { assertGridContents } from '../../../../testing/DataGridHelpers.js';
-import { assertElement, assertShadowRoot, getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../../ui/components/report_view/report_view.js';
@@ -14,7 +13,7 @@ async function renderUsedPreloadingView(data) {
     const component = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
     component.data = data;
     renderElementIntoDOM(component);
-    assertShadowRoot(component.shadowRoot);
+    assert.isNotNull(component.shadowRoot);
     await coordinator.done();
     return component;
 }
@@ -54,7 +53,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 2);
@@ -103,7 +102,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 2);
@@ -152,7 +151,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 3);
@@ -203,7 +202,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 3);
@@ -265,7 +264,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         const grid = getElementWithinComponent(component, 'devtools-resources-preloading-mismatched-headers-grid', PreloadingComponents.PreloadingMismatchedHeadersGrid.PreloadingMismatchedHeadersGrid);
@@ -321,7 +320,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 3);
@@ -344,7 +343,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 2);
@@ -379,7 +378,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 2);
@@ -416,7 +415,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 4);
@@ -428,7 +427,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
         assert.include(sections[1]?.textContent, 'https://example.com/prerendered.html#alpha');
         assert.include(headers[2]?.textContent, 'URLs being speculatively loaded by the initiating page');
         const grid = sections[2].querySelector('devtools-resources-mismatched-preloading-grid');
-        assertElement(grid, PreloadingComponents.MismatchedPreloadingGrid.MismatchedPreloadingGrid);
+        assert.instanceOf(grid, PreloadingComponents.MismatchedPreloadingGrid.MismatchedPreloadingGrid);
         assertGridContents(grid, ['URL', 'Action', 'Status'], [
             ['https://example.com/prerendered.html#betalpha', 'Prerender', 'Ready'],
         ]);
@@ -473,7 +472,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             currentAttempts: [],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 4);
@@ -484,7 +483,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
         assert.include(headers[1]?.textContent, 'Current URL');
         assert.include(sections[1]?.textContent, 'https://example.com/no-preloads.html');
         assert.include(headers[2]?.textContent, 'URLs being speculatively loaded by the initiating page');
-        assertNotNullOrUndefined(sections[2].querySelector('devtools-resources-mismatched-preloading-grid'));
+        assert.exists(sections[2].querySelector('devtools-resources-mismatched-preloading-grid'));
         assert.include(headers[3]?.textContent, 'Speculations initiated by this page');
         const badges = sections[3]?.querySelectorAll('.status-badge span') || [];
         assert.strictEqual(badges.length, 1);
@@ -579,7 +578,7 @@ describeWithEnvironment('UsedPreloadingView', () => {
             ],
         };
         const component = await renderUsedPreloadingView(data);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const headers = getElementsWithinComponent(component, 'devtools-report devtools-report-section-header', ReportView.ReportView.ReportSectionHeader);
         const sections = getElementsWithinComponent(component, 'devtools-report devtools-report-section', ReportView.ReportView.ReportSection);
         assert.strictEqual(headers.length, 2);

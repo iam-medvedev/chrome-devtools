@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -197,7 +196,7 @@ export const y = "";
             const RELATED_CODE = `${'\n'.repeat(LINE_NUMBER)}console.error('kaboom!')`;
             const { uiSourceCode, project } = createContentProviderUISourceCode({ url: URL, mimeType: 'text/javascript', content: RELATED_CODE });
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
-            assertNotNullOrUndefined(debuggerModel);
+            assert.exists(debuggerModel);
             const mapping = createFakeScriptMapping(debuggerModel, uiSourceCode, LINE_NUMBER, SCRIPT_ID);
             debuggerWorkspaceBinding.addSourceMapping(mapping);
             const ERROR_MESSAGE = 'kaboom!';
@@ -237,7 +236,7 @@ export const y = "";
             const RELATED_CODE = `${'\n'.repeat(LINE_NUMBER)}console.error('kaboom!')`;
             const { uiSourceCode, project } = createContentProviderUISourceCode({ url: URL, mimeType: 'text/javascript', content: RELATED_CODE });
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
-            assertNotNullOrUndefined(debuggerModel);
+            assert.exists(debuggerModel);
             const mapping = createFakeScriptMapping(debuggerModel, uiSourceCode, LINE_NUMBER, SCRIPT_ID);
             debuggerWorkspaceBinding.addSourceMapping(mapping);
             const ERROR_MESSAGE = 'kaboom!';
@@ -349,7 +348,7 @@ export const y = "";
             const RELATED_CODE = 'console.error(\'kaboom!\')';
             const { uiSourceCode, project } = createContentProviderUISourceCode({ url: URL, mimeType: 'text/javascript', content: RELATED_CODE });
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
-            assertNotNullOrUndefined(debuggerModel);
+            assert.isNotNull(debuggerModel);
             const mapping = createFakeScriptMapping(debuggerModel, uiSourceCode, LINE_NUMBER, SCRIPT_ID);
             debuggerWorkspaceBinding.addSourceMapping(mapping);
             const ERROR_MESSAGE = 'kaboom!';

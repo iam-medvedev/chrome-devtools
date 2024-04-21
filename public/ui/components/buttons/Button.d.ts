@@ -6,14 +6,16 @@ declare global {
 export declare const enum Variant {
     PRIMARY = "primary",
     TONAL = "tonal",
-    SECONDARY = "secondary",
+    OUTLINED = "outlined",
+    TEXT = "text",
     TOOLBAR = "toolbar",
     PRIMARY_TOOLBAR = "primary_toolbar",
-    ROUND = "round"
+    ICON = "icon"
 }
 export declare const enum Size {
+    MICRO = "MICRO",
     SMALL = "SMALL",
-    MEDIUM = "MEDIUM"
+    REGULAR = "REGULAR"
 }
 type ButtonType = 'button' | 'submit' | 'reset';
 interface CommonButtonData {
@@ -30,13 +32,13 @@ interface CommonButtonData {
     jslogContext?: string;
 }
 export type ButtonData = CommonButtonData & ({
-    variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ROUND;
+    variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ICON;
     iconUrl: string;
 } | {
-    variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ROUND;
+    variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ICON;
     iconName: string;
 } | {
-    variant: Variant.PRIMARY | Variant.SECONDARY | Variant.TONAL;
+    variant: Variant.PRIMARY | Variant.OUTLINED | Variant.TONAL | Variant.TEXT;
 });
 export declare class Button extends HTMLElement {
     #private;

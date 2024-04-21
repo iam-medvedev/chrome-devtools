@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
@@ -65,7 +64,7 @@ describeWithMockConnection('PersistenceImpl', () => {
     async function attachNetworkScript(breakpointLine) {
         const script = await backend.addScript(target, SCRIPT_DESCRIPTION, null);
         const uiSourceCode = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiSourceCodeForScript(script);
-        assertNotNullOrUndefined(uiSourceCode);
+        assert.exists(uiSourceCode);
         // Set the breakpoint response for our upcoming request to set the breakpoint on the network file.
         await backend.responderToBreakpointByUrlRequest(script.sourceURL, breakpointLine)({
             breakpointId: NETWORK_BREAKPOINT_ID,
@@ -116,7 +115,7 @@ describeWithMockConnection('PersistenceImpl', () => {
         // over to the file system uiSourceCode.
         const persistence = Persistence.Persistence.PersistenceImpl.instance();
         const binding = persistence.binding(fileSystemUiSourceCode);
-        assertNotNullOrUndefined(binding);
+        assert.exists(binding);
         // Set the breakpoint response for our upcoming request on the file system.
         const moveResponse = backend.responderToBreakpointByUrlRequest(fileSystemUiSourceCode.url(), breakpointLine)({
             breakpointId: FILE_SYSTEM_BREAK_ID,

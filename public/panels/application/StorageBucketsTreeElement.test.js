@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
@@ -70,7 +69,7 @@ describeWithMockConnection('StorageBucketsTreeElement', function () {
             return STORAGE_BUCKET_INFOS.filter(({ bucket }) => bucket.name !== undefined);
         };
         const setStorageBucketTrackingStub = ({ storageKey }) => {
-            assertNotNullOrUndefined(storageBucketsModel);
+            assert.exists(storageBucketsModel);
             for (const bucketInfo of getBucketsForStorageKeys(storageKey)) {
                 storageBucketsModel.storageBucketCreatedOrUpdated({ bucketInfo });
             }
@@ -88,7 +87,7 @@ describeWithMockConnection('StorageBucketsTreeElement', function () {
             storageBucketsModel = target.model(SDK.StorageBucketsModel.StorageBucketsModel);
         });
         it('adds bucket tree elements on non default buckets added', async () => {
-            assertNotNullOrUndefined(storageBucketsModel);
+            assert.exists(storageBucketsModel);
             sinon.stub(storageBucketsModel.storageAgent, 'invoke_setStorageBucketTracking')
                 .callsFake(setStorageBucketTrackingStub);
             storageKeyManager.updateStorageKeys(new Set(STORAGE_KEYS));
@@ -103,7 +102,7 @@ describeWithMockConnection('StorageBucketsTreeElement', function () {
             panel.detach();
         });
         it('shows view on select', async () => {
-            assertNotNullOrUndefined(storageBucketsModel);
+            assert.exists(storageBucketsModel);
             const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
             panel.markAsRoot();
             panel.show(document.body);

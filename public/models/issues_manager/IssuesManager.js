@@ -242,6 +242,10 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         const issues = createIssuesFromProtocolIssue(issuesModel, inspectorIssue);
         for (const issue of issues) {
             this.addIssue(issuesModel, issue);
+            const message = issue.maybeCreateConsoleMessage();
+            if (message) {
+                issuesModel.target().model(SDK.ConsoleModel.ConsoleModel)?.addMessage(message);
+            }
         }
     }
     addIssue(issuesModel, issue) {

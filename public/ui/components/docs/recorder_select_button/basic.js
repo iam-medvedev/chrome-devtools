@@ -58,13 +58,13 @@ litRender(LitHtml.html `
     <${RecorderComponents.SelectButton.SelectButton.litTagName} .disabled=${true} .items=${items} .value=${items[0].value}></${RecorderComponents.SelectButton.SelectButton.litTagName}>`);
 litRender(LitHtml.html `
     <${RecorderComponents.SelectButton.SelectButton.litTagName}
-    .variant=${"secondary" /* RecorderComponents.SelectButton.Variant.SECONDARY */}
+    .variant=${"outlined" /* RecorderComponents.SelectButton.Variant.OUTLINED */}
     .items=${replayItems}
     .value=${replayItems[0].value}></${RecorderComponents.SelectButton.SelectButton.litTagName}>`);
 litRender(LitHtml.html `
     <${RecorderComponents.SelectButton.SelectButton.litTagName}
     .disabled=${true}
-    .variant=${"secondary" /* RecorderComponents.SelectButton.Variant.SECONDARY */}
+    .variant=${"outlined" /* RecorderComponents.SelectButton.Variant.OUTLINED */}
     .items=${replayItems}
     .value=${replayItems[2].value}></${RecorderComponents.SelectButton.SelectButton.litTagName}>`);
 //# sourceMappingURL=basic.js.map

@@ -1,7 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as ElementsComponents from './components.js';
 describeWithLocale('StylePropertyEditor', () => {
@@ -69,7 +69,7 @@ describeWithLocale('StylePropertyEditor', () => {
             assertValues(component, ['flex-direction: row', 'flex-wrap:', 'align-content:', 'justify-content:', 'align-items:']);
             const eventPromise = getEventPromise(component, 'propertyselected');
             const flexDirectionColumnButton = component.shadowRoot.querySelector('.row .buttons .button:nth-child(2)');
-            assertElement(flexDirectionColumnButton, HTMLButtonElement);
+            assert.instanceOf(flexDirectionColumnButton, HTMLButtonElement);
             flexDirectionColumnButton.click();
             const event = await eventPromise;
             assert.deepEqual(event.data, { name: 'flex-direction', value: 'column' });
@@ -86,7 +86,7 @@ describeWithLocale('StylePropertyEditor', () => {
             assertValues(component, ['flex-direction: column', 'flex-wrap:', 'align-content:', 'justify-content:', 'align-items:']);
             const eventPromise = getEventPromise(component, 'propertydeselected');
             const flexDirectionColumnButton = component.shadowRoot.querySelector('.row .buttons .button:nth-child(2)');
-            assertElement(flexDirectionColumnButton, HTMLButtonElement);
+            assert.instanceOf(flexDirectionColumnButton, HTMLButtonElement);
             flexDirectionColumnButton.click();
             const event = await eventPromise;
             assert.deepEqual(event.data, { name: 'flex-direction', value: 'column' });
@@ -144,7 +144,7 @@ describeWithLocale('StylePropertyEditor', () => {
             assertValues(component, ['align-content:', 'justify-content:', 'align-items:', 'justify-items: normal']);
             const eventPromise = getEventPromise(component, 'propertyselected');
             const justifyItemsButton = component.shadowRoot.querySelector('.row:nth-child(4) .buttons .button:nth-child(1)');
-            assertElement(justifyItemsButton, HTMLButtonElement);
+            assert.instanceOf(justifyItemsButton, HTMLButtonElement);
             justifyItemsButton.click();
             const event = await eventPromise;
             assert.deepEqual(event.data, { name: 'justify-items', value: 'center' });
@@ -161,7 +161,7 @@ describeWithLocale('StylePropertyEditor', () => {
             assertValues(component, ['align-content:', 'justify-content:', 'align-items:', 'justify-items: center']);
             const eventPromise = getEventPromise(component, 'propertydeselected');
             const justifyItemsButton = component.shadowRoot.querySelector('.row:nth-child(4) .buttons .button:nth-child(1)');
-            assertElement(justifyItemsButton, HTMLButtonElement);
+            assert.instanceOf(justifyItemsButton, HTMLButtonElement);
             justifyItemsButton.click();
             const event = await eventPromise;
             assert.deepEqual(event.data, { name: 'justify-items', value: 'center' });

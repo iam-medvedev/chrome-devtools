@@ -660,5 +660,6 @@ export const MessageSourceDisplayName = new Map(([
     ["intervention" /* Protocol.Log.LogEntrySource.Intervention */, 'intervention'],
     ["recommendation" /* Protocol.Log.LogEntrySource.Recommendation */, 'recommendation'],
     ["other" /* Protocol.Log.LogEntrySource.Other */, 'other'],
+    [FrontendMessageSource.IssuePanel, 'issue-panel'],
 ]));
 //# sourceMappingURL=ConsoleModel.js.map

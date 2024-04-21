@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
@@ -173,7 +172,7 @@ describeWithMockConnection('NameResolver', () => {
             const callFrame = await backend.createCallFrame(target, { url: URL, content: test.source }, test.scopes, { url: 'file:///dummy.map', content: dummyMapContent });
             const parsedScopeChain = await SourceMapScopes.NamesResolver.findScopeChainForDebuggerScope(callFrame.scopeChain()[0]);
             const scope = parsedScopeChain.pop();
-            assertNotNullOrUndefined(scope);
+            assert.exists(scope);
             const identifiers = await SourceMapScopes.NamesResolver.scopeIdentifiers(callFrame.script, scope, parsedScopeChain);
             const boundIdentifiers = identifiers?.boundVariables ?? [];
             const freeIdentifiers = identifiers?.freeVariables ?? [];
@@ -432,7 +431,7 @@ function mulWithOffset(param1, param2, offset) {
         });
         it('has the right mapping on a function scope without shadowing', async () => {
             const location = script.rawLocation(0, 30); // Beginning of function scope.
-            assertNotNullOrUndefined(location);
+            assert.exists(location);
             const mapping = await SourceMapScopes.NamesResolver.allVariablesAtPosition(location);
             assert.strictEqual(mapping.get('param1'), 'n');
             assert.strictEqual(mapping.get('param2'), 't');
@@ -442,14 +441,14 @@ function mulWithOffset(param1, param2, offset) {
         });
         it('has the right mapping in a block scope with shadowing in the authored code', async () => {
             const location = script.rawLocation(0, 70); // Beginning of block scope.
-            assertNotNullOrUndefined(location);
+            assert.exists(location);
             const mapping = await SourceMapScopes.NamesResolver.allVariablesAtPosition(location);
             // Block scope {intermediate} shadows function scope {intermediate}.
             assert.strictEqual(mapping.get('intermediate'), 'n');
         });
         it('has the right mapping in a block scope with shadowing in the compiled code', async () => {
             const location = script.rawLocation(0, 70); // Beginning of block scope.
-            assertNotNullOrUndefined(location);
+            assert.exists(location);
             const mapping = await SourceMapScopes.NamesResolver.allVariablesAtPosition(location);
             assert.isNull(mapping.get('param1'));
         });

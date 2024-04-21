@@ -30,7 +30,7 @@ const UIStrings = {
     /**
      *@description Text in Coverage View of the Coverage tab
      */
-    urlFilter: 'URL filter',
+    filterByUrl: 'Filter by URL',
     /**
      *@description Label for the type filter in the Converage Panel
      */
@@ -169,7 +169,7 @@ export class CoverageView extends UI.Widget.VBox {
         toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.exportAction));
         this.textFilterRegExp = null;
         toolbar.appendSeparator();
-        this.filterInput = new UI.Toolbar.ToolbarInput(i18nString(UIStrings.urlFilter), '', 0.4, 1);
+        this.filterInput = new UI.Toolbar.ToolbarFilter(i18nString(UIStrings.filterByUrl), 0.4, 1);
         this.filterInput.setEnabled(false);
         this.filterInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.onFilterChanged, this);
         toolbar.appendToolbarItem(this.filterInput);

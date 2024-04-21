@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
@@ -45,7 +44,7 @@ describeWithMockConnection('ElementsPanel', () => {
     });
     it('records metrics when the styles and computed tabs are selected', () => {
         const panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
-        assertNotNullOrUndefined(panel.sidebarPaneView);
+        assert.exists(panel.sidebarPaneView);
         const tabbedPane = panel.sidebarPaneView.tabbedPane();
         // The first event is not recorded
         tabbedPane.selectTab("styles" /* Elements.ElementsPanel.SidebarPaneTabId.Styles */);
@@ -59,11 +58,11 @@ describeWithMockConnection('ElementsPanel', () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
         Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
         const model = target.model(SDK.DOMModel.DOMModel);
-        assertNotNullOrUndefined(model);
+        assert.exists(model);
         assert.strictEqual(Boolean(Elements.ElementsTreeOutline.ElementsTreeOutline.forDOMModel(model)), inScope);
         const subtraget = createTarget({ parentTarget: target });
         const submodel = subtraget.model(SDK.DOMModel.DOMModel);
-        assertNotNullOrUndefined(submodel);
+        assert.exists(submodel);
         assert.strictEqual(Boolean(Elements.ElementsTreeOutline.ElementsTreeOutline.forDOMModel(model)), inScope);
         subtraget.dispose('');
         assert.isNull(Elements.ElementsTreeOutline.ElementsTreeOutline.forDOMModel(submodel));
@@ -73,18 +72,18 @@ describeWithMockConnection('ElementsPanel', () => {
     it('expands the tree even when target added later', async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(null);
         const model = target.model(SDK.DOMModel.DOMModel);
-        assertNotNullOrUndefined(model);
+        assert.exists(model);
         await model.requestDocument();
         const panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
         panel.markAsRoot();
         panel.show(document.body);
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         const treeOutline = Elements.ElementsTreeOutline.ElementsTreeOutline.forDOMModel(model);
-        assertNotNullOrUndefined(treeOutline);
+        assert.exists(treeOutline);
         const selectedNode = treeOutline.selectedDOMNode();
-        assertNotNullOrUndefined(selectedNode);
+        assert.exists(selectedNode);
         const selectedTreeElement = treeOutline.findTreeElement(selectedNode);
-        assertNotNullOrUndefined(selectedTreeElement);
+        assert.exists(selectedTreeElement);
         assert.isTrue(selectedTreeElement.expanded);
         panel.detach();
     });
@@ -92,10 +91,10 @@ describeWithMockConnection('ElementsPanel', () => {
         const anotherTarget = createTarget();
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         const inScopeModel = target.model(SDK.DOMModel.DOMModel);
-        assertNotNullOrUndefined(inScopeModel);
+        assert.exists(inScopeModel);
         const inScopeSearch = sinon.spy(inScopeModel, 'performSearch');
         const outOfScopeModel = anotherTarget.model(SDK.DOMModel.DOMModel);
-        assertNotNullOrUndefined(outOfScopeModel);
+        assert.exists(outOfScopeModel);
         const outOfScopeSearch = sinon.spy(outOfScopeModel, 'performSearch');
         const panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
         panel.performSearch({ query: 'foo' }, false);

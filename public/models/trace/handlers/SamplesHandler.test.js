@@ -31,13 +31,13 @@ describeWithEnvironment('SamplesHandler', function () {
         assert.strictEqual(data.profilesInProcess.size, 3);
         const profilesFirstProcess = data.profilesInProcess.get(firstProcessId);
         assert.strictEqual(profilesFirstProcess?.size, 1);
-        assert.isDefined(profilesFirstProcess?.get(threadId));
+        assert.exists(profilesFirstProcess?.get(threadId));
         const profilesSecondProcess = data.profilesInProcess.get(secondProcessId);
         assert.strictEqual(profilesSecondProcess?.size, 1);
-        assert.isDefined(profilesSecondProcess?.get(threadId));
+        assert.exists(profilesSecondProcess?.get(threadId));
         const profilesThirdProcess = data.profilesInProcess.get(thirdProcessId);
         assert.strictEqual(profilesThirdProcess?.size, 1);
-        assert.isDefined(profilesThirdProcess?.get(threadId));
+        assert.exists(profilesThirdProcess?.get(threadId));
     });
     describe('profile calls building', () => {
         const pid = TraceModel.Types.TraceEvents.ProcessID(0);

@@ -25,7 +25,7 @@ describe('ComputedStyleProperty', () => {
         }
         goto.click();
         const event = await navigateEvent;
-        assert.isDefined(event);
+        assert.exists(event);
     });
 });
 //# sourceMappingURL=ComputedStyleProperty.test.js.map

@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { assertElement, assertShadowRoot, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as NetworkComponents from './components.js';
@@ -11,8 +11,8 @@ async function renderRequestHeaderSection(request) {
     renderElementIntoDOM(component);
     component.data = { request };
     await coordinator.done();
-    assertElement(component, HTMLElement);
-    assertShadowRoot(component.shadowRoot);
+    assert.instanceOf(component, HTMLElement);
+    assert.isNotNull(component.shadowRoot);
     return component;
 }
 describeWithEnvironment('RequestHeaderSection', () => {
@@ -26,7 +26,7 @@ describeWithEnvironment('RequestHeaderSection', () => {
             requestHeadersText: () => undefined,
         };
         const component = await renderRequestHeaderSection(request);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         assert.strictEqual(getCleanTextContentFromElements(component.shadowRoot, '.call-to-action')[0], 'Provisional headers are shown. Disable cache to see full headers. Learn more');
     });
     it('sorts headers alphabetically', async () => {
@@ -41,10 +41,10 @@ describeWithEnvironment('RequestHeaderSection', () => {
             requestHeadersText: () => 'placeholderText',
         };
         const component = await renderRequestHeaderSection(request);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         const sorted = Array.from(rows).map(row => {
-            assertShadowRoot(row.shadowRoot);
+            assert.isNotNull(row.shadowRoot);
             return [
                 row.shadowRoot.querySelector('.header-name')?.textContent?.trim() || '',
                 row.shadowRoot.querySelector('.header-value')?.textContent?.trim() || '',
@@ -69,10 +69,10 @@ describeWithEnvironment('RequestHeaderSection', () => {
             requestHeadersText: () => 'placeholderText',
         };
         const component = await renderRequestHeaderSection(request);
-        assertShadowRoot(component.shadowRoot);
+        assert.isNotNull(component.shadowRoot);
         const rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         for (const row of rows) {
-            assertShadowRoot(row.shadowRoot);
+            assert.isNotNull(row.shadowRoot);
             assert.isNull(row.shadowRoot.querySelector('.disallowed-characters'));
         }
     });

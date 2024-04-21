@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
-import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -289,7 +288,7 @@ describeWithMockConnection('NetworkLog', () => {
         const subframeTarget = createTarget({ parentTarget: mainFrameWithoutTabTarget });
         const navigateTarget = (target) => {
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(resourceTreeModel);
             const frame = {
                 url: 'http://example.com/',
                 backForwardCacheDetails: {},
@@ -315,7 +314,7 @@ describeWithMockConnection('NetworkLog', () => {
             Common.Settings.Settings.instance().moduleSetting('network-log.preserve-log').set(false);
             const target = createTarget();
             const networkManager = target.model(SDK.NetworkManager.NetworkManager);
-            assertNotNullOrUndefined(networkManager);
+            assert.exists(networkManager);
             networkLog = Logs.NetworkLog.NetworkLog.instance();
             const networkDispatcher = new SDK.NetworkManager.NetworkDispatcher(networkManager);
             const requestWillBeSentEvent1 = { requestId: 'mockId1', request: { url: 'example.com' } };
@@ -332,12 +331,12 @@ describeWithMockConnection('NetworkLog', () => {
             };
         });
         it('discards requests with mismatched loaderId on navigation', () => {
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(resourceTreeModel);
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame, type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Navigation */ });
             assert.deepEqual(networkLog.requests().map(request => request.requestId()), ['mockId1']);
         });
         it('does not discard requests on prerender activation', () => {
-            assertNotNullOrUndefined(resourceTreeModel);
+            assert.exists(resourceTreeModel);
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame, type: "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Activation */ });
             assert.deepEqual(networkLog.requests().map(request => request.requestId()), ['mockId1', 'mockId2']);
         });

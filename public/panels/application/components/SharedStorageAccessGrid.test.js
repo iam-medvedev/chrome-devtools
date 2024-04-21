@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { getValuesOfAllBodyRows } from '../../../testing/DataGridHelpers.js';
-import { assertElement, assertShadowRoot, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as DataGrid from '../../../ui/components/data_grid/data_grid.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
@@ -20,7 +20,7 @@ async function renderSharedStorageAccessGrid(events) {
 function getInternalDataGridShadowRoot(component) {
     const dataGridController = getElementWithinComponent(component, 'devtools-data-grid-controller', DataGrid.DataGridController.DataGridController);
     const dataGrid = getElementWithinComponent(dataGridController, 'devtools-data-grid', DataGrid.DataGrid.DataGrid);
-    assertShadowRoot(dataGrid.shadowRoot);
+    assert.isNotNull(dataGrid.shadowRoot);
     return dataGrid.shadowRoot;
 }
 describeWithLocale('SharedStorageAccessGrid', () => {
@@ -57,7 +57,7 @@ describeWithLocale('SharedStorageAccessGrid', () => {
         const nullGridElement = component.shadowRoot.querySelector('devtools-data-grid-controller');
         assert.isNull(nullGridElement);
         const noEventsElement = component.shadowRoot.querySelector('div.no-events-message');
-        assertElement(noEventsElement, HTMLDivElement);
+        assert.instanceOf(noEventsElement, HTMLDivElement);
     });
 });
 //# sourceMappingURL=SharedStorageAccessGrid.test.js.map

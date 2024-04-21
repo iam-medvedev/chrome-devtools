@@ -32,13 +32,11 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import { ActiveFilters } from './ActiveFilters.js';
 import { CompatibilityTracksAppender } from './CompatibilityTracksAppender.js';
 import * as Components from './components/components.js';
 import { initiatorsDataToDraw } from './Initiators.js';
@@ -52,36 +50,6 @@ const UIStrings = {
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
      */
     onIgnoreList: 'On ignore list',
-    /**
-     * @description Text in Timeline Flame Chart Data Provider of the Performance panel *
-     * @example{example.com} PH1
-     */
-    mainS: 'Main — {PH1}',
-    /**
-     * @description Text that refers to the main target
-     */
-    main: 'Main',
-    /**
-     * @description Text in Timeline Flame Chart Data Provider of the Performance panel * @example {https://example.com} PH1
-     */
-    frameS: 'Frame — {PH1}',
-    /**
-     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
-     */
-    subframe: 'Subframe',
-    /**
-     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
-     */
-    raster: 'Raster',
-    /**
-     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
-     *@example {2} PH1
-     */
-    rasterizerThreadS: 'Rasterizer Thread {PH1}',
-    /**
-     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
-     */
-    thread: 'Thread',
     /**
      *@description Text for rendering frames
      */
@@ -127,12 +95,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     legacyTimelineModel;
     traceEngineData;
     isCpuProfile = false;
-    /**
-     * Raster threads are tracked and enumerated with this property. This is also
-     * used to group all raster threads together in the same track, instead of
-     * rendering a track for thread.
-     */
-    #rasterCount = 0;
     minimumBoundaryInternal;
     timeSpan;
     headerLevel1;
@@ -269,9 +231,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             this.currentLevel = appender.appendTrackAtLevel(this.currentLevel, expanded);
         }
     }
-    groupTrack(group) {
-        return group.track || null;
-    }
     groupTreeEvents(group) {
         return this.compatibilityTracksAppender?.groupEventsForTreeView(group) ?? null;
     }
@@ -368,7 +327,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 this.#processGenericTrace();
             }
             else {
-                this.processInspectorTrace();
+                this.#processInspectorTrace();
             }
         }
         return this.timelineDataInternal;
@@ -388,41 +347,28 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             }
         }
     }
-    processInspectorTrace() {
+    #processInspectorTrace() {
         if (!this.isCpuProfile) {
-            this.appendFrames();
+            // CPU Profiles do not have frames and screenshots.
+            this.#appendFramesAndScreenshotsTrack();
         }
         const weight = (track) => {
-            if (track.appenderName !== undefined) {
-                switch (track.appenderName) {
-                    case 'Animations':
-                        return 0;
-                    case 'Timings':
-                        return 1;
-                    case 'Interactions':
-                        return 2;
-                    case 'LayoutShifts':
-                        return 3;
-                    case 'GPU':
-                        return 8;
-                    case 'Thread':
-                        return 4;
-                    case 'Thread_AuctionWorklet':
-                        return 10;
-                    case 'Extension':
-                        return 11;
-                    default:
-                        return 12;
-                }
-            }
-            switch (track.type) {
-                case TimelineModel.TimelineModel.TrackType.MainThread:
-                    return track.forMainFrame ? 5 : 6;
-                case TimelineModel.TimelineModel.TrackType.Worker:
-                    return 7;
-                case TimelineModel.TimelineModel.TrackType.Raster:
-                    return 9;
-                case TimelineModel.TimelineModel.TrackType.Other:
+            switch (track.appenderName) {
+                case 'Animations':
+                    return 0;
+                case 'Timings':
+                    return 1;
+                case 'Interactions':
+                    return 2;
+                case 'LayoutShifts':
+                    return 3;
+                case 'GPU':
+                    return 8;
+                case 'Thread':
+                    return 4;
+                case 'Thread_AuctionWorklet':
+                    return 10;
+                case 'Extension':
                     return 11;
                 default:
                     return 12;
@@ -455,54 +401,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         if (this.timelineDataInternal && this.timelineDataInternal.selectedGroup) {
             this.timelineDataInternal.selectedGroup.expanded = true;
-        }
-    }
-    #addDecorationToEvent(eventIndex, decoration) {
-        if (!this.timelineDataInternal) {
-            return;
-        }
-        const decorationsForEvent = this.timelineDataInternal.entryDecorations[eventIndex] || [];
-        decorationsForEvent.push(decoration);
-        this.timelineDataInternal.entryDecorations[eventIndex] = decorationsForEvent;
-    }
-    /**
-     * Appends a track in the flame chart using the legacy system.
-     * @param track the legacy track to be rendered.
-     * @param expanded if the track is expanded.
-     */
-    appendLegacyTrackData(track, expanded) {
-        this.#instantiateTimelineData();
-        const eventEntryType = "Event" /* EntryType.Event */;
-        switch (track.type) {
-            case TimelineModel.TimelineModel.TrackType.MainThread: {
-                if (track.forMainFrame) {
-                    const group = this.appendSyncEvents(track, track.events, track.url ? i18nString(UIStrings.mainS, { PH1: track.url }) : i18nString(UIStrings.main), this.headerLevel1, eventEntryType, true /* selectable */, expanded);
-                    if (group && this.timelineDataInternal) {
-                        this.timelineDataInternal.selectedGroup = group;
-                    }
-                }
-                else {
-                    this.appendSyncEvents(track, track.events, track.url ? i18nString(UIStrings.frameS, { PH1: track.url }) : i18nString(UIStrings.subframe), this.headerLevel1, eventEntryType, true /* selectable */, expanded);
-                }
-                break;
-            }
-            case TimelineModel.TimelineModel.TrackType.Worker: {
-                this.appendSyncEvents(track, track.events, track.name, this.headerLevel1, eventEntryType, true /* selectable */, expanded);
-                break;
-            }
-            case TimelineModel.TimelineModel.TrackType.Raster: {
-                if (!this.#rasterCount) {
-                    this.appendHeader(i18nString(UIStrings.raster), this.headerLevel1, false /* selectable */, expanded);
-                }
-                ++this.#rasterCount;
-                this.appendSyncEvents(track, track.events, i18nString(UIStrings.rasterizerThreadS, { PH1: this.#rasterCount }), this.headerLevel2, eventEntryType, true /* selectable */, expanded);
-                break;
-            }
-            case TimelineModel.TimelineModel.TrackType.Other: {
-                this.appendSyncEvents(track, track.events, track.name || i18nString(UIStrings.thread), this.headerLevel1, eventEntryType, true /* selectable */, expanded);
-                this.appendAsyncEventsGroup(track, track.name, track.asyncEvents, this.headerLevel1, eventEntryType, true /* selectable */, expanded);
-                break;
-            }
         }
     }
     minimumBoundary() {
@@ -568,93 +466,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         });
         return result;
     }
-    appendSyncEvents(track, events, title, style, entryType, selectable, expanded) {
-        if (!events.length) {
-            return null;
-        }
-        if (!this.legacyPerformanceModel || !this.legacyTimelineModel) {
-            return null;
-        }
-        const openEvents = [];
-        const ignoreListingEnabled = Root.Runtime.experiments.isEnabled('ignore-list-js-frames-on-timeline');
-        let maxStackDepth = 0;
-        let group = null;
-        if (track && track.type === TimelineModel.TimelineModel.TrackType.MainThread) {
-            group = this.appendHeader(title, style, selectable, expanded);
-            group.track = track;
-        }
-        for (let i = 0; i < events.length; ++i) {
-            const event = events[i];
-            const { duration: eventDuration } = TraceEngine.Legacy.timesForEventInMilliseconds(event);
-            // TODO(crbug.com/1386091) this check should happen at the model level.
-            // Skip Layout Shifts and TTI events when dealing with the main thread.
-            if (this.legacyPerformanceModel) {
-                const isInteractiveTime = this.legacyPerformanceModel.timelineModel().isInteractiveTimeEvent(event);
-                const isLayoutShift = this.legacyPerformanceModel.timelineModel().isLayoutShiftEvent(event);
-                const skippableEvent = isInteractiveTime || isLayoutShift;
-                if (track && track.type === TimelineModel.TimelineModel.TrackType.MainThread && skippableEvent) {
-                    continue;
-                }
-            }
-            if (!TraceEngine.Types.TraceEvents.isFlowPhase(event.phase)) {
-                if (!event.endTime && event.phase !== "I" /* TraceEngine.Types.TraceEvents.Phase.INSTANT */) {
-                    continue;
-                }
-                if (TraceEngine.Types.TraceEvents.isAsyncPhase(event.phase)) {
-                    continue;
-                }
-                if (!ActiveFilters.instance().isVisible(event)) {
-                    continue;
-                }
-            }
-            // Handle events belonging to a stack. E.g. A call stack in the main thread flame chart.
-            while (openEvents.length &&
-                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-                // @ts-expect-error
-                (openEvents[openEvents.length - 1].endTime) <= event.startTime) {
-                openEvents.pop();
-            }
-            this.#eventToDisallowRoot.set(event, false);
-            if (ignoreListingEnabled && this.isIgnoreListedEvent(event)) {
-                const parent = openEvents[openEvents.length - 1];
-                if (parent && this.#eventToDisallowRoot.get(parent)) {
-                    continue;
-                }
-                this.#eventToDisallowRoot.set(event, true);
-            }
-            if (!group && title) {
-                group = this.appendHeader(title, style, selectable, expanded);
-                if (selectable) {
-                    group.track = track;
-                }
-            }
-            const level = this.currentLevel + openEvents.length;
-            const index = this.appendEvent(event, level);
-            if (openEvents.length) {
-                this.entryParent[index] = openEvents[openEvents.length - 1];
-            }
-            const trackIsMainThreadMainFrame = Boolean(track?.forMainFrame && track?.type === TimelineModel.TimelineModel.TrackType.MainThread);
-            // If we are dealing with the Main Thread, find any long tasks and add
-            // the candy striping to them. Doing it here avoids having to do another
-            // pass through the events at a later point.
-            if (trackIsMainThreadMainFrame && event.name === TimelineModel.TimelineModel.RecordType.Task &&
-                TraceEngine.Helpers.Timing.millisecondsToMicroseconds(eventDuration) >
-                    TraceEngine.Handlers.ModelHandlers.Warnings.LONG_MAIN_THREAD_TASK_THRESHOLD) {
-                this.#addDecorationToEvent(index, {
-                    type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
-                    startAtTime: TraceEngine.Handlers.ModelHandlers.Warnings.LONG_MAIN_THREAD_TASK_THRESHOLD,
-                });
-            }
-            maxStackDepth = Math.max(maxStackDepth, openEvents.length + 1);
-            if (event.endTime) {
-                openEvents.push(event);
-            }
-        }
-        this.entryTypeByLevel.length = this.currentLevel + maxStackDepth;
-        this.entryTypeByLevel.fill(entryType, this.currentLevel);
-        this.currentLevel += maxStackDepth;
-        return group;
-    }
     isIgnoreListedEvent(event) {
         if (TraceEngine.Legacy.eventIsFromNewEngine(event) && TraceEngine.Types.TraceEvents.isProfileCall(event)) {
             return this.isIgnoreListedURL(event.callFrame.url);
@@ -664,50 +475,20 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     isIgnoreListedURL(url) {
         return Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url);
     }
-    appendAsyncEventsGroup(track, title, events, style, entryType, selectable, expanded) {
-        if (!events.length) {
-            return null;
-        }
-        const lastUsedTimeByLevel = [];
-        let group = null;
-        for (let i = 0; i < events.length; ++i) {
-            const asyncEvent = events[i];
-            if (!this.legacyPerformanceModel || !ActiveFilters.instance().isVisible(asyncEvent)) {
-                continue;
-            }
-            if (!group && title) {
-                group = this.appendHeader(title, style, selectable, expanded);
-                if (selectable) {
-                    group.track = track;
-                }
-            }
-            const startTime = asyncEvent.startTime;
-            let level;
-            for (level = 0; level < lastUsedTimeByLevel.length && lastUsedTimeByLevel[level] > startTime; ++level) {
-            }
-            this.appendAsyncEvent(asyncEvent, this.currentLevel + level);
-            lastUsedTimeByLevel[level] = asyncEvent.endTime;
-        }
-        this.entryTypeByLevel.length = this.currentLevel + lastUsedTimeByLevel.length;
-        this.entryTypeByLevel.fill(entryType, this.currentLevel);
-        this.currentLevel += lastUsedTimeByLevel.length;
-        return group;
-    }
     getEntryTypeForLevel(level) {
         return this.entryTypeByLevel[level];
     }
-    appendFrames() {
-        if (!this.legacyPerformanceModel || !this.timelineDataInternal || !this.legacyTimelineModel ||
-            !this.traceEngineData) {
+    /**
+     * The frames and screenshots track is special cased because it is rendered
+     * differently to the rest of the tracks and not as a series of events. This
+     * is why it is not done via the appender system; we track frames &
+     * screenshots as a different EntryType to the TrackAppender entries,
+     * because then when it comes to drawing we can decorate them differently.
+     **/
+    #appendFramesAndScreenshotsTrack() {
+        if (!this.traceEngineData) {
             return;
         }
-        // TODO: Long term we want to move both the Frames track and the screenshots
-        // track into the TrackAppender system. However right now the frames track
-        // expects data in a different form to how the new engine parses frame
-        // information. Therefore we have migrated the screenshots to use the new
-        // data model in place without creating a new TrackAppender. When we can
-        // migrate the frames track to the new appender system, we can migrate the
-        // screnshots then as well.
         const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(this.traceEngineData);
         const hasScreenshots = filmStrip.frames.length > 0;
         this.framesHeader.collapsible = hasScreenshots;
@@ -724,7 +505,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.#appendScreenshots(filmStrip);
     }
     #appendScreenshots(filmStrip) {
-        if (!this.timelineDataInternal || !this.legacyTimelineModel) {
+        if (!this.timelineDataInternal || !this.legacyTimelineModel || !this.traceEngineData) {
             return;
         }
         this.appendHeader('', this.screenshotsHeader, false /* selectable */);
@@ -741,9 +522,9 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             prevTimestamp = screenshotTimeInMilliSeconds;
         }
         if (filmStrip.frames.length && prevTimestamp !== undefined) {
+            const maxRecordTimeMillis = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(this.traceEngineData.Meta.traceBounds).max;
             // Set the total time of the final screenshot so it takes up the remainder of the trace.
-            this.timelineDataInternal.entryTotalTimes
-                .push(this.legacyTimelineModel.maximumRecordTime() - prevTimestamp);
+            this.timelineDataInternal.entryTotalTimes.push(maxRecordTimeMillis - prevTimestamp);
         }
         ++this.currentLevel;
     }
