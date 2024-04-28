@@ -4,6 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
@@ -644,6 +645,7 @@ export class ConsoleInsight extends HTMLElement {
         // clang-format on
     }
     #renderFooter() {
+        const showThumbsUpDownButtons = Root.Runtime.Runtime.queryParam('ci_disallowLogging') !== 'true';
         // clang-format off
         const disclaimer = LitHtml.html `<span>
               This feature may display inaccurate or offensive information that doesn't represent Google's views.
@@ -720,9 +722,10 @@ export class ConsoleInsight extends HTMLElement {
         </div>
         <div class="filler"></div>
         <div class="rating">
-          <${Buttons.Button.Button.litTagName}
-            data-rating=${'true'}
-            .data=${{
+          ${showThumbsUpDownButtons ? html `
+            <${Buttons.Button.Button.litTagName}
+              data-rating=${'true'}
+              .data=${{
                     variant: "icon" /* Buttons.Button.Variant.ICON */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-up',
@@ -730,11 +733,11 @@ export class ConsoleInsight extends HTMLElement {
                     title: i18nString(UIStrings.thumbsUp),
                     jslogContext: 'thumbs-up',
                 }}
-            @click=${this.#onRating}
-          ></${Buttons.Button.Button.litTagName}>
-          <${Buttons.Button.Button.litTagName}
-            data-rating=${'false'}
-            .data=${{
+              @click=${this.#onRating}
+            ></${Buttons.Button.Button.litTagName}>
+            <${Buttons.Button.Button.litTagName}
+              data-rating=${'false'}
+              .data=${{
                     variant: "icon" /* Buttons.Button.Variant.ICON */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-down',
@@ -742,8 +745,9 @@ export class ConsoleInsight extends HTMLElement {
                     title: i18nString(UIStrings.thumbsDown),
                     jslogContext: 'thumbs-down',
                 }}
-            @click=${this.#onRating}
-          ></${Buttons.Button.Button.litTagName}>
+              @click=${this.#onRating}
+            ></${Buttons.Button.Button.litTagName}>
+          ` : LitHtml.nothing}
           <${Buttons.Button.Button.litTagName}
             .data=${{
                     variant: "icon" /* Buttons.Button.Variant.ICON */,

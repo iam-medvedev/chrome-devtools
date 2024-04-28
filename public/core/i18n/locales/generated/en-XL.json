@@ -1532,6 +1532,9 @@
   "models/issues_manager/SharedArrayBufferIssue.ts | enablingSharedArrayBuffer": {
     "message": "Êńâb́l̂ín̂ǵ SharedArrayBuffer"
   },
+  "models/issues_manager/SharedDictionaryIssue.ts | compressionDictionaryTransport": {
+    "message": "Ĉóm̂ṕr̂éŝśîón̂ D́îćt̂íôńâŕŷ T́r̂án̂śp̂ór̂t́"
+  },
   "models/logs/logs-meta.ts | clear": {
     "message": "ĉĺêár̂"
   },
@@ -5045,9 +5048,6 @@
   "panels/console/ConsoleView.ts | issueToolbarTooltipGeneral": {
     "message": "Ŝóm̂é p̂ŕôb́l̂ém̂ś n̂ó l̂ón̂ǵêŕ ĝén̂ér̂át̂é ĉón̂śôĺê ḿêśŝáĝéŝ, b́ût́ âŕê śûŕf̂áĉéd̂ ín̂ t́ĥé îśŝúêś t̂áb̂."
   },
-  "panels/console/ConsoleView.ts | logLevels": {
-    "message": "L̂óĝ ĺêv́êĺŝ"
-  },
   "panels/console/ConsoleView.ts | logLevelS": {
     "message": "L̂óĝ ĺêv́êĺ: {PH1}"
   },
@@ -6842,22 +6842,22 @@
   "panels/issues/IssueView.ts | warned": {
     "message": "Ŵár̂ńêd́"
   },
-  "panels/js_profiler/js_profiler-meta.ts | performance": {
+  "panels/js_timeline/js_timeline-meta.ts | performance": {
     "message": "P̂ér̂f́ôŕm̂án̂ćê"
   },
-  "panels/js_profiler/js_profiler-meta.ts | record": {
+  "panels/js_timeline/js_timeline-meta.ts | record": {
     "message": "R̂éĉór̂d́"
   },
-  "panels/js_profiler/js_profiler-meta.ts | showPerformance": {
+  "panels/js_timeline/js_timeline-meta.ts | showPerformance": {
     "message": "Ŝh́ôẃ P̂ér̂f́ôŕm̂án̂ćê"
   },
-  "panels/js_profiler/js_profiler-meta.ts | showRecentTimelineSessions": {
+  "panels/js_timeline/js_timeline-meta.ts | showRecentTimelineSessions": {
     "message": "Ŝh́ôẃ r̂éĉén̂t́ t̂ím̂él̂ín̂é ŝéŝśîón̂ś"
   },
-  "panels/js_profiler/js_profiler-meta.ts | startProfilingAndReloadPage": {
+  "panels/js_timeline/js_timeline-meta.ts | startProfilingAndReloadPage": {
     "message": "Ŝt́âŕt̂ ṕr̂óf̂íl̂ín̂ǵ âńd̂ ŕêĺôád̂ ṕâǵê"
   },
-  "panels/js_profiler/js_profiler-meta.ts | stop": {
+  "panels/js_timeline/js_timeline-meta.ts | stop": {
     "message": "Ŝt́ôṕ"
   },
   "panels/layer_viewer/layer_viewer-meta.ts | panOrRotateDown": {
@@ -9167,51 +9167,6 @@
   "panels/performance_monitor/PerformanceMonitor.ts | styleRecalcsSec": {
     "message": "Ŝt́ŷĺê ŕêćâĺĉś / ŝéĉ"
   },
-  "panels/profiler/CPUProfileView.ts | aggregatedSelfTime": {
-    "message": "Âǵĝŕêǵât́êd́ ŝél̂f́ t̂ím̂é"
-  },
-  "panels/profiler/CPUProfileView.ts | aggregatedTotalTime": {
-    "message": "Âǵĝŕêǵât́êd́ t̂ót̂ál̂ t́îḿê"
-  },
-  "panels/profiler/CPUProfileView.ts | cpuProfiles": {
-    "message": "ĈṔÛ ṔR̂ÓF̂ÍL̂ÉŜ"
-  },
-  "panels/profiler/CPUProfileView.ts | cpuProfilesShow": {
-    "message": "ĈṔÛ ṕr̂óf̂íl̂éŝ śĥóŵ ẃĥér̂é t̂h́ê éx̂éĉút̂íôń t̂ím̂é îś ŝṕêńt̂ ín̂ ýôúr̂ ṕâǵê'ś Ĵáv̂áŜćr̂íp̂t́ f̂ún̂ćt̂íôńŝ."
-  },
-  "panels/profiler/CPUProfileView.ts | fms": {
-    "message": "{PH1} m̂ś"
-  },
-  "panels/profiler/CPUProfileView.ts | formatPercent": {
-    "message": "{PH1} %"
-  },
-  "panels/profiler/CPUProfileView.ts | name": {
-    "message": "N̂ám̂é"
-  },
-  "panels/profiler/CPUProfileView.ts | notOptimized": {
-    "message": "N̂ót̂ óp̂t́îḿîźêd́"
-  },
-  "panels/profiler/CPUProfileView.ts | recording": {
-    "message": "R̂éĉór̂d́îńĝ…"
-  },
-  "panels/profiler/CPUProfileView.ts | recordJavascriptCpuProfile": {
-    "message": "R̂éĉór̂d́ Ĵáv̂áŜćr̂íp̂t́ ĈṔÛ Ṕr̂óf̂íl̂é"
-  },
-  "panels/profiler/CPUProfileView.ts | selfTime": {
-    "message": "Ŝél̂f́ T̂ím̂é"
-  },
-  "panels/profiler/CPUProfileView.ts | startCpuProfiling": {
-    "message": "Ŝt́âŕt̂ ĆP̂Ú p̂ŕôf́îĺîńĝ"
-  },
-  "panels/profiler/CPUProfileView.ts | stopCpuProfiling": {
-    "message": "Ŝt́ôṕ ĈṔÛ ṕr̂óf̂íl̂ín̂ǵ"
-  },
-  "panels/profiler/CPUProfileView.ts | totalTime": {
-    "message": "T̂ót̂ál̂ T́îḿê"
-  },
-  "panels/profiler/CPUProfileView.ts | url": {
-    "message": "ÛŔL̂"
-  },
   "panels/profiler/HeapProfilerPanel.ts | revealInSummaryView": {
     "message": "R̂év̂éâĺ îń Ŝúm̂ḿâŕŷ v́îéŵ"
   },
@@ -9748,15 +9703,6 @@
   },
   "panels/profiler/ProfilesPanel.ts | cantLoadProfileWhileAnother": {
     "message": "Ĉán̂’t́ l̂óâd́ p̂ŕôf́îĺê ẃĥíl̂é âńôt́ĥér̂ ṕr̂óf̂íl̂é îś b̂éîńĝ ŕêćôŕd̂éd̂."
-  },
-  "panels/profiler/ProfilesPanel.ts | deprecationWarnMsg": {
-    "message": "T̂h́îś p̂án̂él̂ ẃîĺl̂ b́ê d́êṕr̂éĉát̂éd̂ ín̂ t́ĥé ûṕĉóm̂ín̂ǵ v̂ér̂śîón̂. Úŝé t̂h́ê Ṕêŕf̂ór̂ḿâńĉé p̂án̂él̂ t́ô ŕêćôŕd̂ J́âv́âŚĉŕîṕt̂ ĆP̂Ú p̂ŕôf́îĺêś."
-  },
-  "panels/profiler/ProfilesPanel.ts | feedback": {
-    "message": "F̂éêd́b̂áĉḱ"
-  },
-  "panels/profiler/ProfilesPanel.ts | goToPerformancePanel": {
-    "message": "Ĝó t̂ó P̂ér̂f́ôŕm̂án̂ćê Ṕâńêĺ"
   },
   "panels/profiler/ProfilesPanel.ts | profileLoadingFailedS": {
     "message": "P̂ŕôf́îĺê ĺôád̂ín̂ǵ f̂áîĺêd́: {PH1}."
@@ -12461,9 +12407,6 @@
   "panels/timeline/EventUICategory.ts | imageDecode": {
     "message": "Îḿâǵê D́êćôd́ê"
   },
-  "panels/timeline/EventUICategory.ts | imageResize": {
-    "message": "Îḿâǵê Ŕêśîźê"
-  },
   "panels/timeline/EventUICategory.ts | installTimer": {
     "message": "Îńŝt́âĺl̂ T́îḿêŕ"
   },
@@ -12821,14 +12764,8 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Îd́l̂é F̂ŕâḿê"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | onIgnoreList": {
-    "message": "Ôń îǵn̂ór̂é l̂íŝt́"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "P̂ár̂t́îál̂ĺŷ Ṕr̂éŝén̂t́êd́ F̂ŕâḿê"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | sSelfS": {
-    "message": "{PH1} (ŝél̂f́ {PH2})"
   },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} ât́ {PH2}"

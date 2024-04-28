@@ -8,7 +8,6 @@ export declare class UserMetrics {
      */
     panelClosed(panelName: string): void;
     panelShownInLocation(panelName: string, location: 'main' | 'drawer'): void;
-    elementsSidebarTabShown(sidebarPaneName: string): void;
     sourcesSidebarTabShown(sidebarPaneName: string): void;
     settingsPanelShown(settingsViewId: string): void;
     sourcesPanelFileDebugged(mediaType?: string): void;
@@ -49,7 +48,6 @@ export declare class UserMetrics {
     colorPickerOpenedFrom(type: ColorPickerOpenedFrom): void;
     cssPropertyDocumentation(type: CSSPropertyDocumentation): void;
     swatchActivated(swatch: SwatchType): void;
-    badgeActivated(badge: BadgeType): void;
     animationPlaybackRateChanged(playbackRate: AnimationsPlaybackRate): void;
     animationPointDragged(dragType: AnimationPointDragType): void;
     workspacesPopulated(wallClockTimeInMilliseconds: number): void;
@@ -316,8 +314,6 @@ export declare enum PanelWithLocation {
     'sources.search-drawer' = 28,
     'security-main' = 29,
     'security-drawer' = 30,
-    'js_profiler-main' = 31,
-    'js_profiler-drawer' = 32,
     'lighthouse-main' = 33,
     'lighthouse-drawer' = 34,
     'coverage-main' = 35,

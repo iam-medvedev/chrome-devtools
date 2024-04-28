@@ -944,6 +944,31 @@ export declare namespace Audits {
         NoRegisterOsSourceHeader = "NoRegisterOsSourceHeader",
         NoRegisterOsTriggerHeader = "NoRegisterOsTriggerHeader"
     }
+    const enum SharedDictionaryError {
+        UseErrorCrossOriginNoCorsRequest = "UseErrorCrossOriginNoCorsRequest",
+        UseErrorDictionaryLoadFailure = "UseErrorDictionaryLoadFailure",
+        UseErrorMatchingDictionaryNotUsed = "UseErrorMatchingDictionaryNotUsed",
+        UseErrorUnexpectedContentDictionaryHeader = "UseErrorUnexpectedContentDictionaryHeader",
+        WriteErrorCossOriginNoCorsRequest = "WriteErrorCossOriginNoCorsRequest",
+        WriteErrorDisallowedBySettings = "WriteErrorDisallowedBySettings",
+        WriteErrorExpiredResponse = "WriteErrorExpiredResponse",
+        WriteErrorFeatureDisabled = "WriteErrorFeatureDisabled",
+        WriteErrorInsufficientResources = "WriteErrorInsufficientResources",
+        WriteErrorInvalidMatchField = "WriteErrorInvalidMatchField",
+        WriteErrorInvalidStructuredHeader = "WriteErrorInvalidStructuredHeader",
+        WriteErrorNavigationRequest = "WriteErrorNavigationRequest",
+        WriteErrorNoMatchField = "WriteErrorNoMatchField",
+        WriteErrorNonListMatchDestField = "WriteErrorNonListMatchDestField",
+        WriteErrorNonSecureContext = "WriteErrorNonSecureContext",
+        WriteErrorNonStringIdField = "WriteErrorNonStringIdField",
+        WriteErrorNonStringInMatchDestList = "WriteErrorNonStringInMatchDestList",
+        WriteErrorNonStringMatchField = "WriteErrorNonStringMatchField",
+        WriteErrorNonTokenTypeField = "WriteErrorNonTokenTypeField",
+        WriteErrorRequestAborted = "WriteErrorRequestAborted",
+        WriteErrorShuttingDown = "WriteErrorShuttingDown",
+        WriteErrorTooLongIdField = "WriteErrorTooLongIdField",
+        WriteErrorUnsupportedType = "WriteErrorUnsupportedType"
+    }
     /**
      * Details for issues around "Attribution Reporting API" usage.
      * Explainer: https://github.com/WICG/attribution-reporting-api
@@ -972,6 +997,10 @@ export declare namespace Audits {
     interface NavigatorUserAgentIssueDetails {
         url: string;
         location?: SourceCodeLocation;
+    }
+    interface SharedDictionaryIssueDetails {
+        sharedDictionaryError: SharedDictionaryError;
+        request: AffectedRequest;
     }
     const enum GenericIssueErrorType {
         CrossOriginPortalPostMessageError = "CrossOriginPortalPostMessageError",
@@ -1195,7 +1224,8 @@ export declare namespace Audits {
         CookieDeprecationMetadataIssue = "CookieDeprecationMetadataIssue",
         StylesheetLoadingIssue = "StylesheetLoadingIssue",
         FederatedAuthUserInfoRequestIssue = "FederatedAuthUserInfoRequestIssue",
-        PropertyRuleIssue = "PropertyRuleIssue"
+        PropertyRuleIssue = "PropertyRuleIssue",
+        SharedDictionaryIssue = "SharedDictionaryIssue"
     }
     /**
      * This struct holds a list of optional fields with additional information
@@ -1223,6 +1253,7 @@ export declare namespace Audits {
         stylesheetLoadingIssueDetails?: StylesheetLoadingIssueDetails;
         propertyRuleIssueDetails?: PropertyRuleIssueDetails;
         federatedAuthUserInfoRequestIssueDetails?: FederatedAuthUserInfoRequestIssueDetails;
+        sharedDictionaryIssueDetails?: SharedDictionaryIssueDetails;
     }
     /**
      * A unique id for a DevTools inspector issue. Allows other entities (e.g.
@@ -4089,6 +4120,25 @@ export declare namespace DOM {
          * NodeIds of top layer elements
          */
         nodeIds: NodeId[];
+    }
+    const enum GetElementByRelationRequestRelation {
+        PopoverTarget = "PopoverTarget"
+    }
+    interface GetElementByRelationRequest {
+        /**
+         * Id of the node from which to query the relation.
+         */
+        nodeId: NodeId;
+        /**
+         * Type of relation to get.
+         */
+        relation: GetElementByRelationRequestRelation;
+    }
+    interface GetElementByRelationResponse extends ProtocolResponseWithError {
+        /**
+         * NodeId of the element matching the queried relation.
+         */
+        nodeId: NodeId;
     }
     interface RemoveAttributeRequest {
         /**
@@ -11293,7 +11343,8 @@ export declare namespace Page {
         EmbedderExtensions = "EmbedderExtensions",
         EmbedderExtensionMessaging = "EmbedderExtensionMessaging",
         EmbedderExtensionMessagingForOpenPort = "EmbedderExtensionMessagingForOpenPort",
-        EmbedderExtensionSentMessageToCachedFrame = "EmbedderExtensionSentMessageToCachedFrame"
+        EmbedderExtensionSentMessageToCachedFrame = "EmbedderExtensionSentMessageToCachedFrame",
+        RequestedByWebViewClient = "RequestedByWebViewClient"
     }
     /**
      * Types of not restored reasons for back-forward cache.

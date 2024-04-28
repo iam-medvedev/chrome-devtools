@@ -10,6 +10,14 @@ export declare function clearCacheForTesting(): void;
  */
 export declare function domNodeForBackendNodeID(modelData: Handlers.Types.TraceParseData, nodeId: Protocol.DOM.BackendNodeId): Promise<SDK.DOMModel.DOMNode | null>;
 /**
+ * Extracts a set of NodeIds for a given event.
+ * NOTE: you probably don't want to call this and instead use
+ * `extractRelatedDOMNodesFromEvent`, which will fetch the nodes over CDP.
+ * This method is primarily exported so we can test the logic more easily
+ * without having to mock the CDP layer.
+ **/
+export declare function nodeIdsForEvent(modelData: Handlers.Types.TraceParseData, event: Types.TraceEvents.TraceEventData): Set<Protocol.DOM.BackendNodeId>;
+/**
  * Looks up for backend node ids in different types of trace events
  * and resolves them into related DOM nodes.
  * This method should be progressively updated to support more events

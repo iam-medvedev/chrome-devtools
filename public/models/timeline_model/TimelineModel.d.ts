@@ -3,7 +3,6 @@ import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as TraceEngine from '../trace/trace.js';
 export declare class TimelineModelImpl {
-    #private;
     private inspectedTargetEventsInternal;
     private sessionId;
     private mainFrameNodeId;
@@ -51,20 +50,8 @@ export declare class TimelineModelImpl {
      */
     static forEachEvent(events: TraceEngine.Legacy.CompatibleTraceEvent[], onStartEvent: (arg0: TraceEngine.Legacy.CompatibleTraceEvent) => void, onEndEvent: (arg0: TraceEngine.Legacy.CompatibleTraceEvent) => void, onInstantEvent?: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent, arg1: TraceEngine.Legacy.CompatibleTraceEvent | null) => void), startTime?: number, endTime?: number, filter?: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent) => boolean), ignoreAsyncEvents?: boolean): void;
     private static topLevelEventEndingAfter;
-    /**
-     * Determines if an event is potentially a marker event. A marker event here
-     * is a single moment in time that we want to highlight on the timeline, such as
-     * the LCP point. This method does not filter out events: for example, it treats
-     * every LCP Candidate event as a potential marker event. The logic to pick the
-     * right candidate to use is implemeneted in the TimelineFlameChartDataProvider.
-     **/
-    isMarkerEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): boolean;
-    isInteractiveTimeEvent(event: TraceEngine.Legacy.Event): boolean;
-    isLayoutShiftEvent(event: TraceEngine.Legacy.Event): boolean;
-    static globalEventId(event: TraceEngine.Legacy.Event, field: string): string;
     static eventFrameId(event: TraceEngine.Legacy.Event): Protocol.Page.FrameId | null;
-    isFreshRecording(): boolean;
-    setEvents(tracingModel: TraceEngine.Legacy.TracingModel, isFreshRecording?: boolean): void;
+    setEvents(tracingModel: TraceEngine.Legacy.TracingModel): void;
     private processGenericTrace;
     private processMetadataAndThreads;
     private processThreadsForBrowserFrames;
@@ -195,7 +182,6 @@ export declare enum RecordType {
     TracingSessionIdForWorker = "TracingSessionIdForWorker",
     StartProfiling = "CpuProfiler::StartProfiling",
     DecodeImage = "Decode Image",
-    ResizeImage = "Resize Image",
     DrawLazyPixelRef = "Draw LazyPixelRef",
     DecodeLazyPixelRef = "Decode LazyPixelRef",
     LazyPixelRef = "LazyPixelRef",
@@ -269,18 +255,10 @@ export declare class PageFrame {
 }
 export declare class EventOnTimelineData {
     url: Platform.DevToolsPath.UrlString | null;
-    backendNodeIds: Protocol.DOM.BackendNodeId[];
-    stackTrace: Protocol.Runtime.CallFrame[] | null;
     frameId: Protocol.Page.FrameId | null;
     constructor();
-    topFrame(): Protocol.Runtime.CallFrame | null;
     static forEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): EventOnTimelineData;
     static forTraceEventData(event: TraceEngine.Types.TraceEvents.TraceEventData): EventOnTimelineData;
-    static reset(): void;
-}
-export interface InvalidationCause {
-    reason: string;
-    stackTrace: Protocol.Runtime.CallFrame[] | null;
 }
 export interface MetadataEvents {
     page: TraceEngine.Legacy.Event[];

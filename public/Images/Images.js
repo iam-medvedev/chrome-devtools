@@ -162,6 +162,7 @@ style.setProperty('--image-file-justify-items-center', 'url(\"' + new URL(new UR
 style.setProperty('--image-file-justify-items-end', 'url(\"' + new URL(new URL('justify-items-end.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-items-start', 'url(\"' + new URL(new URL('justify-items-start.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-items-stretch', 'url(\"' + new URL(new URL('justify-items-stretch.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-keyboard-arrow-right', 'url(\"' + new URL(new URL('keyboard-arrow-right.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-keyboard-pen', 'url(\"' + new URL(new URL('keyboard-pen.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-large-arrow-right-filled', 'url(\"' + new URL(new URL('large-arrow-right-filled.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-layers-filled', 'url(\"' + new URL(new URL('layers-filled.svg', import.meta.url).href, import.meta.url).toString() + '\")');

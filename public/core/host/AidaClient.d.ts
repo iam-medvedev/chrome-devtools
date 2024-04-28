@@ -5,6 +5,9 @@ export interface AidaRequest {
         temperature?: Number;
         model_id?: string;
     };
+    metadata?: {
+        disable_user_content_logging: boolean;
+    };
 }
 export interface AidaResponse {
     explanation: string;

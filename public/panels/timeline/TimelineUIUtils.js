@@ -50,6 +50,7 @@ import { CLSRect } from './CLSLinkifier.js';
 import * as TimelineComponents from './components/components.js';
 import { getCategoryStyles, getEventStyle, maybeInitSylesMap, TimelineRecordStyle, visibleTypes, } from './EventUICategory.js';
 import * as Extensions from './extensions/extensions.js';
+import { Tracker } from './FreshRecording.js';
 import { titleForInteractionEvent } from './InteractionsTrackAppender.js';
 import { SourceMapsResolver } from './SourceMapsResolver.js';
 import { targetForEvent } from './TargetForEvent.js';
@@ -831,7 +832,6 @@ export class TimelineUIUtils {
             case recordType.ResourceFinish:
             case recordType.PaintImage:
             case recordType.DecodeImage:
-            case recordType.ResizeImage:
             case recordType.DecodeLazyPixelRef: {
                 const url = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).url;
                 if (url) {
@@ -859,7 +859,9 @@ export class TimelineUIUtils {
         }
         return detailsText;
         async function linkifyTopCallFrameAsText() {
-            const frame = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).topFrame();
+            const frame = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
+                TraceEngine.Helpers.Trace.stackTraceForEvent(event)?.at(0) :
+                null;
             if (!frame) {
                 return null;
             }
@@ -894,7 +896,6 @@ export class TimelineUIUtils {
             }
             case recordType.PaintImage:
             case recordType.DecodeImage:
-            case recordType.ResizeImage:
             case recordType.DecodeLazyPixelRef:
             case recordType.XHRReadyStateChange:
             case recordType.XHRLoad:
@@ -1083,7 +1084,7 @@ export class TimelineUIUtils {
             contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheStatus), i18nString(UIStrings.scriptNotEligibleToBeLoadedFromCache));
         }
     }
-    static async buildTraceEventDetails(event, model, linkifier, detailed, 
+    static async buildTraceEventDetails(event, linkifier, detailed, 
     // TODO(crbug.com/1430809): the order of these arguments is slightly
     // awkward because to change them is to cause a lot of layout tests to be
     // updated. We should rewrite those tests as unit tests in this codebase,
@@ -1091,42 +1092,26 @@ export class TimelineUIUtils {
     traceParseData = null) {
         const maybeTarget = maybeTargetForEvent(traceParseData, event);
         const { duration, selfTime } = TraceEngine.Legacy.timesForEventInMilliseconds(event);
-        let relatedNodesMap = null;
+        const relatedNodesMap = traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event) ?
+            await TraceEngine.Extras.FetchNodes.extractRelatedDOMNodesFromEvent(traceParseData, event) :
+            null;
         if (maybeTarget) {
-            const target = maybeTarget;
             // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
             if (typeof event[previewElementSymbol] === 'undefined') {
                 let previewElement = null;
                 const url = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).url;
                 if (url) {
-                    previewElement = await LegacyComponents.ImagePreview.ImagePreview.build(target, url, false, {
+                    previewElement = await LegacyComponents.ImagePreview.ImagePreview.build(maybeTarget, url, false, {
                         imageAltText: LegacyComponents.ImagePreview.ImagePreview.defaultAltTextForImageURL(url),
                         precomputedFeatures: undefined,
                     });
                 }
                 else if (traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event) &&
                     TraceEngine.Types.TraceEvents.isTraceEventPaint(event)) {
-                    previewElement = await TimelineUIUtils.buildPicturePreviewContent(traceParseData, event, target);
+                    previewElement = await TimelineUIUtils.buildPicturePreviewContent(traceParseData, event, maybeTarget);
                 }
                 // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
                 event[previewElementSymbol] = previewElement;
-            }
-            const nodeIdsToResolve = new Set();
-            const timelineData = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event);
-            if (timelineData.backendNodeIds) {
-                for (let i = 0; i < timelineData.backendNodeIds.length; ++i) {
-                    nodeIdsToResolve.add(timelineData.backendNodeIds[i]);
-                }
-            }
-            if (nodeIdsToResolve.size) {
-                const domModel = target.model(SDK.DOMModel.DOMModel);
-                if (domModel) {
-                    relatedNodesMap = await domModel.pushNodesByBackendIdsToFrontend(nodeIdsToResolve);
-                }
-            }
-            if (traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event) &&
-                TraceEngine.Types.TraceEvents.isSyntheticLayoutShift(event)) {
-                relatedNodesMap = await TraceEngine.Extras.FetchNodes.extractRelatedDOMNodesFromEvent(traceParseData, event);
             }
         }
         const recordTypes = TimelineModel.TimelineModel.RecordType;
@@ -1138,7 +1123,8 @@ export class TimelineUIUtils {
         let relatedNodeLabel;
         const contentHelper = new TimelineDetailsContentHelper(maybeTargetForEvent(traceParseData, event), linkifier);
         const defaultColorForEvent = this.eventColor(event);
-        const color = model.isMarkerEvent(event) ? TimelineUIUtils.markerStyleForEvent(event).color : defaultColorForEvent;
+        const isMarker = traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event) && isMarkerEvent(traceParseData, event);
+        const color = isMarker ? TimelineUIUtils.markerStyleForEvent(event).color : defaultColorForEvent;
         contentHelper.addSection(TimelineUIUtils.eventTitle(event), color);
         const eventData = event.args['data'];
         const timelineData = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event);
@@ -1191,6 +1177,7 @@ export class TimelineUIUtils {
                 contentHelper.appendTextRow(key, value);
             }
         }
+        const isFreshRecording = Boolean(traceParseData && Tracker.instance().recordingIsFresh(traceParseData));
         switch (event.name) {
             case recordTypes.GCEvent:
             case recordTypes.MajorGC:
@@ -1205,7 +1192,7 @@ export class TimelineUIUtils {
             case recordTypes.JSIdleFrame:
             case recordTypes.JSSystemFrame:
             case recordTypes.FunctionCall: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, model.isFreshRecording());
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.function), detailsNode);
                 }
@@ -1291,7 +1278,6 @@ export class TimelineUIUtils {
             case recordTypes.PaintImage:
             case recordTypes.DecodeLazyPixelRef:
             case recordTypes.DecodeImage:
-            case recordTypes.ResizeImage:
             case recordTypes.DrawLazyPixelRef: {
                 relatedNodeLabel = i18nString(UIStrings.ownerElement);
                 url = timelineData.url;
@@ -1408,7 +1394,7 @@ export class TimelineUIUtils {
                 break;
             }
             case recordTypes.EventTiming: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, model.isFreshRecording());
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.details), detailsNode);
                 }
@@ -1462,7 +1448,7 @@ export class TimelineUIUtils {
                 break;
             }
             default: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, model.isFreshRecording());
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.details), detailsNode);
                 }
@@ -1657,7 +1643,9 @@ export class TimelineUIUtils {
             contentHelper.appendTextRow(i18nString(UIStrings.decodedBody), Platform.NumberUtilities.bytesToString(event.args.data.decodedBodyLength));
         }
         const title = i18nString(UIStrings.initiatedBy);
-        const topFrame = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).topFrame();
+        const topFrame = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
+            TraceEngine.Helpers.Trace.stackTraceForEvent(event)?.at(0) :
+            null;
         if (topFrame) {
             const link = linkifier.maybeLinkifyConsoleCallFrame(maybeTarget, topFrame, { tabStop: true, inlineFrameIndex: 0, showColumnNumber: true });
             if (link) {
@@ -1752,6 +1740,7 @@ export class TimelineUIUtils {
         const link = document.createElement('span');
         const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
         if (!traceBoundsState) {
+            console.error('Tried to link to an entry without any traceBoundsState. This should never happen.');
             return link;
         }
         // Check is the entry is outside of the current breadcrumb. If it is, don't create a link to navigate to it because there is no way to navigate outside breadcrumb without removing it. Instead, just display the name and "outside breadcrumb" text
@@ -2141,13 +2130,10 @@ export class TimelineUIUtils {
         }
         return colorGenerator.colorForID(id);
     }
-    static displayNameForFrame(frame, trimAt = 30) {
+    static displayNameForFrame(frame, trimAt = 80) {
         const url = frame.url;
-        if (!trimAt) {
-            trimAt = 30;
-        }
         return Common.ParsedURL.schemeIs(url, 'about:') ? `"${Platform.StringUtilities.trimMiddle(frame.name, trimAt)}"` :
-            frame.url.trimEnd(trimAt);
+            frame.url.slice(0, trimAt);
     }
 }
 export const aggregatedStatsKey = Symbol('aggregatedStats');
@@ -2275,6 +2261,40 @@ export function timeStampForEventAdjustedForClosestNavigationIfPossible(event, t
     }
     const time = TraceEngine.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(event, traceParsedData.Meta.traceBounds, traceParsedData.Meta.navigationsByNavigationId, traceParsedData.Meta.navigationsByFrameId);
     return TraceEngine.Helpers.Timing.microSecondsToMilliseconds(time);
+}
+/**
+ * Determines if an event is potentially a marker event. A marker event here
+ * is a single moment in time that we want to highlight on the timeline, such as
+ * the LCP time. This method does not filter out events: for example, it treats
+ * every LCP Candidate event as a potential marker event.
+ **/
+export function isMarkerEvent(traceParseData, event) {
+    const { KnownEventName } = TraceEngine.Types.TraceEvents;
+    if (event.name === "TimeStamp" /* KnownEventName.TimeStamp */) {
+        return true;
+    }
+    if (TraceEngine.Types.TraceEvents.isTraceEventFirstContentfulPaint(event) ||
+        TraceEngine.Types.TraceEvents.isTraceEventFirstPaint(event)) {
+        return event.args.frame === traceParseData.Meta.mainFrameId;
+    }
+    if (TraceEngine.Types.TraceEvents.isTraceEventMarkDOMContent(event) ||
+        TraceEngine.Types.TraceEvents.isTraceEventMarkLoad(event) ||
+        TraceEngine.Types.TraceEvents.isTraceEventLargestContentfulPaintCandidate(event)) {
+        // isOutermostMainFrame was added in 2022, so we fallback to isMainFrame
+        // for older traces.
+        if (!event.args.data) {
+            return false;
+        }
+        const { isOutermostMainFrame, isMainFrame } = event.args.data;
+        if (typeof isOutermostMainFrame !== 'undefined') {
+            // If isOutermostMainFrame is defined we want to use that and not
+            // fallback to isMainFrame, even if isOutermostMainFrame is false. Hence
+            // this check.
+            return isOutermostMainFrame;
+        }
+        return Boolean(isMainFrame);
+    }
+    return false;
 }
 // This function only exists to abstract dealing with two different event types
 // whilst we are in the middle of the migration. We are working on removing the

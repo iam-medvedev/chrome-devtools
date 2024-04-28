@@ -225,7 +225,7 @@ export default {
 
   /* Universal surfaces */
 
-  --sys-color-surface: var(--ref-palette-neutral100);
+  --sys-color-surface: var(--ref-palette-neutral99);
   --sys-color-surface-variant: var(--ref-palette-neutral-variant90);
 
   /* Containers */
@@ -428,6 +428,11 @@ export default {
   --app-color-coverage-used: var(--ref-palette-neutral80);
   --app-color-coverage-unused: var(--sys-color-error-bright);
   --app-color-toolbar-background: var(--sys-color-surface4);
+
+  /**
+   * Colors for menus.
+   */
+  --app-color-menu-background: var(--sys-color-surface);
 }
 
 :root.baseline-default {
@@ -450,6 +455,7 @@ export default {
 :root.baseline-default,
 :root.baseline-grayscale {
   --sys-color-base: var(--ref-palette-neutral100);
+  --sys-color-surface: var(--ref-palette-neutral100);
 
   &.-theme-with-dark-background {
     --sys-color-surface5: color-mix(in sRGB, #d1e1ff 14%, var(--ref-palette-neutral10));
@@ -459,6 +465,7 @@ export default {
     --sys-color-surface1: color-mix(in sRGB, #d1e1ff 5%, var(--ref-palette-neutral10));
     --sys-color-divider: var(--ref-palette-neutral40);
     --sys-color-base: var(--ref-palette-neutral25);
+    --sys-color-surface: var(--ref-palette-neutral10);
   }
 }
 
@@ -836,6 +843,11 @@ export default {
   --app-color-coverage-used: var(--ref-palette-neutral40);
   --app-color-coverage-unused: var(--sys-color-error-bright);
   --app-color-toolbar-background: var(--sys-color-base);
+
+  /**
+   * Colors for menus.
+   */
+  --app-color-menu-background: var(--sys-color-surface3);
 }
 `
 };

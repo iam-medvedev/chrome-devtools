@@ -11,6 +11,7 @@ describe('Timeline breadcrumbs', () => {
             max: TraceEngine.Types.Timing.MicroSeconds(10),
             range: TraceEngine.Types.Timing.MicroSeconds(9),
         };
+        TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true }).resetWithNewBounds(initialTraceWindow);
         const crumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(initialTraceWindow);
         const traceWindow1 = {
             min: TraceEngine.Types.Timing.MicroSeconds(3),
@@ -45,6 +46,7 @@ describe('Timeline breadcrumbs', () => {
             max: TraceEngine.Types.Timing.MicroSeconds(10),
             range: TraceEngine.Types.Timing.MicroSeconds(9),
         };
+        TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true }).resetWithNewBounds(initialTraceWindow);
         const crumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(initialTraceWindow);
         const traceWindow1 = {
             min: TraceEngine.Types.Timing.MicroSeconds(3),
@@ -84,6 +86,7 @@ describe('Timeline breadcrumbs', () => {
                 max: TraceEngine.Types.Timing.MicroSeconds(10),
                 range: TraceEngine.Types.Timing.MicroSeconds(9),
             };
+            TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true }).resetWithNewBounds(initialTraceWindow);
             const crumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(initialTraceWindow);
             const traceWindow1 = {
                 min: TraceEngine.Types.Timing.MicroSeconds(1),
@@ -99,6 +102,7 @@ describe('Timeline breadcrumbs', () => {
             max: TraceEngine.Types.Timing.MicroSeconds(10),
             range: TraceEngine.Types.Timing.MicroSeconds(9),
         };
+        TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true }).resetWithNewBounds(initialTraceWindow);
         const crumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(initialTraceWindow);
         const traceWindow1 = {
             min: TraceEngine.Types.Timing.MicroSeconds(1),
@@ -133,6 +137,7 @@ describe('Timeline breadcrumbs', () => {
             max: TraceEngine.Types.Timing.MicroSeconds(10000),
             range: TraceEngine.Types.Timing.MicroSeconds(9000),
         };
+        TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true }).resetWithNewBounds(initialTraceWindow);
         const crumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(initialTraceWindow);
         const traceWindow1 = {
             min: TraceEngine.Types.Timing.MicroSeconds(1000),

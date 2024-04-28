@@ -25,6 +25,7 @@ export function getOrCreateLoggingState(loggable, config, parent) {
         config,
         veid: nextVeId(),
         parent: parent ? getLoggingState(parent) : null,
+        size: new DOMRect(0, 0, 0, 0),
     };
     state.set(loggable, loggableState);
     return loggableState;

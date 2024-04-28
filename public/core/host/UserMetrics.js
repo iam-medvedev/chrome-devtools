@@ -66,10 +66,6 @@ export class UserMetrics {
         const panelWithLocation = PanelWithLocation[panelWithLocationName] || 0;
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShownInLocation" /* EnumeratedHistogram.PanelShownInLocation */, panelWithLocation, PanelWithLocation.MaxValue);
     }
-    elementsSidebarTabShown(sidebarPaneName) {
-        const code = ElementsSidebarTabCodes[sidebarPaneName] || 0;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.Elements.SidebarTabShown" /* EnumeratedHistogram.ElementsSidebarTabShown */, code, ElementsSidebarTabCodes.MaxValue);
-    }
     sourcesSidebarTabShown(sidebarPaneName) {
         const code = SourcesSidebarTabCodes[sidebarPaneName] || 0;
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.Sources.SidebarTabShown" /* EnumeratedHistogram.SourcesSidebarTabShown */, code, SourcesSidebarTabCodes.MaxValue);
@@ -264,9 +260,6 @@ export class UserMetrics {
     }
     swatchActivated(swatch) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 11 /* SwatchType.MaxValue */);
-    }
-    badgeActivated(badge) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.BadgeActivated" /* EnumeratedHistogram.BadgeActivated */, badge, 9 /* BadgeType.MaxValue */);
     }
     animationPlaybackRateChanged(playbackRate) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.AnimationPlaybackRateChanged" /* EnumeratedHistogram.AnimationPlaybackRateChanged */, playbackRate, 4 /* AnimationsPlaybackRate.MaxValue */);
@@ -578,8 +571,6 @@ export var PanelWithLocation;
     PanelWithLocation[PanelWithLocation["sources.search-drawer"] = 28] = "sources.search-drawer";
     PanelWithLocation[PanelWithLocation["security-main"] = 29] = "security-main";
     PanelWithLocation[PanelWithLocation["security-drawer"] = 30] = "security-drawer";
-    PanelWithLocation[PanelWithLocation["js_profiler-main"] = 31] = "js_profiler-main";
-    PanelWithLocation[PanelWithLocation["js_profiler-drawer"] = 32] = "js_profiler-drawer";
     PanelWithLocation[PanelWithLocation["lighthouse-main"] = 33] = "lighthouse-main";
     PanelWithLocation[PanelWithLocation["lighthouse-drawer"] = 34] = "lighthouse-drawer";
     PanelWithLocation[PanelWithLocation["coverage-main"] = 35] = "coverage-main";

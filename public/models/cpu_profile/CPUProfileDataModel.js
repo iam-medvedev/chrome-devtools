@@ -149,13 +149,13 @@ export class CPUProfileDataModel extends ProfileTreeModel {
                 const node = nodes[i];
                 // @ts-ignore Legacy types
                 const parentNode = protocolNodeById.get(node.parent);
-                // @ts-ignore Legacy types
+                if (!parentNode) {
+                    continue;
+                }
                 if (parentNode.children) {
-                    // @ts-ignore Legacy types
                     parentNode.children.push(node.id);
                 }
                 else {
-                    // @ts-ignore Legacy types
                     parentNode.children = [node.id];
                 }
             }

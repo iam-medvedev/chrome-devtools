@@ -268,6 +268,10 @@ export interface SyntheticNetworkRequest extends TraceEventComplete {
             }>;
             fetchPriorityHint: FetchPriorityHint;
             url: string;
+            /** True only if got a 'resourceFinish' event indicating a failure. */
+            failed: boolean;
+            /** True only if got a 'resourceFinish' event. */
+            finished: boolean;
             initiator?: Initiator;
             requestMethod?: string;
             timing?: TraceEventResourceReceiveResponseTimingData;
@@ -551,6 +555,7 @@ export interface TraceEventMarkDOMContent extends TraceEventInstant {
         data?: TraceEventArgsData & {
             frame: string;
             isMainFrame: boolean;
+            isOutermostMainFrame?: boolean;
             page: string;
         };
     };
@@ -562,6 +567,7 @@ export interface TraceEventMarkLoad extends TraceEventInstant {
             frame: string;
             isMainFrame: boolean;
             page: string;
+            isOutermostMainFrame?: boolean;
         };
     };
 }
@@ -799,6 +805,14 @@ export interface TraceEventStyleInvalidatorInvalidationTracking extends TraceEve
     };
 }
 export declare function isTraceEventStyleInvalidatorInvalidationTracking(event: TraceEventData): event is TraceEventStyleInvalidatorInvalidationTracking;
+export interface TraceEventBeginCommitCompositorFrame extends TraceEventInstant {
+    name: KnownEventName.BeginCommitCompositorFrame;
+    args: TraceEventArgs & {
+        frame: string;
+        is_mobile_optimized: boolean;
+    };
+}
+export declare function isTraceEventBeginCommitCompositorFrame(event: TraceEventData): event is TraceEventBeginCommitCompositorFrame;
 export interface TraceEventScheduleStyleRecalculation extends TraceEventInstant {
     name: KnownEventName.ScheduleStyleRecalculation;
     args: TraceEventArgs & {
@@ -1118,6 +1132,27 @@ export interface SyntheticInvalidation extends TraceEventInstant {
     stackTrace?: TraceEventCallFrame[];
 }
 export declare function isSyntheticInvalidation(event: TraceEventData): event is SyntheticInvalidation;
+export interface TraceEventDrawLazyPixelRef extends TraceEventInstant {
+    name: KnownEventName.DrawLazyPixelRef;
+    args?: TraceEventArgs & {
+        LazyPixelRef: number;
+    };
+}
+export declare function isTraceEventDrawLazyPixelRef(event: TraceEventData): event is TraceEventDrawLazyPixelRef;
+export interface TraceEventDecodeLazyPixelRef extends TraceEventInstant {
+    name: KnownEventName.DecodeLazyPixelRef;
+    args?: TraceEventArgs & {
+        LazyPixelRef: number;
+    };
+}
+export declare function isTraceEventDecodeLazyPixelRef(event: TraceEventData): event is TraceEventDecodeLazyPixelRef;
+export interface TraceEventDecodeImage extends TraceEventComplete {
+    name: KnownEventName.DecodeImage;
+    args: TraceEventArgs & {
+        imageType: string;
+    };
+}
+export declare function isTraceEventDecodeImage(event: TraceEventData): event is TraceEventDecodeImage;
 export interface SelectorTiming {
     'elapsed (us)': number;
     'fast_reject_count': number;
@@ -1266,11 +1301,37 @@ export interface TraceEventPaint extends TraceEventComplete {
             clip: number[];
             frame: string;
             layerId: number;
-            nodeId: number;
+            nodeId?: Protocol.DOM.BackendNodeId;
         };
     };
 }
 export declare function isTraceEventPaint(event: TraceEventData): event is TraceEventPaint;
+export interface TraceEventPaintImage extends TraceEventComplete {
+    name: KnownEventName.PaintImage;
+    args: TraceEventArgs & {
+        data: TraceEventData & {
+            height: number;
+            width: number;
+            x: number;
+            y: number;
+            url?: string;
+            srcHeight: number;
+            srcWidth: number;
+            nodeId?: Protocol.DOM.BackendNodeId;
+        };
+    };
+}
+export declare function isTraceEventPaintImage(event: TraceEventData): event is TraceEventPaintImage;
+export interface TraceEventScrollLayer extends TraceEventComplete {
+    name: KnownEventName.ScrollLayer;
+    args: TraceEventArgs & {
+        data: TraceEventData & {
+            frame: string;
+            nodeId?: Protocol.DOM.BackendNodeId;
+        };
+    };
+}
+export declare function isTraceEventScrollLayer(event: TraceEventData): event is TraceEventScrollLayer;
 export interface TraceEventSetLayerTreeId extends TraceEventInstant {
     name: KnownEventName.SetLayerTreeId;
     args: TraceEventArgs & {
@@ -1555,6 +1616,7 @@ export declare const enum KnownEventName {
     StyleRecalcInvalidationTracking = "StyleRecalcInvalidationTracking",
     StyleInvalidatorInvalidationTracking = "StyleInvalidatorInvalidationTracking",
     SelectorStats = "SelectorStats",
+    BeginCommitCompositorFrame = "BeginCommitCompositorFrame",
     ScrollLayer = "ScrollLayer",
     UpdateLayer = "UpdateLayer",
     PaintSetup = "PaintSetup",
@@ -1566,7 +1628,6 @@ export declare const enum KnownEventName {
     ImageDecodeTask = "ImageDecodeTask",
     ImageUploadTask = "ImageUploadTask",
     DecodeImage = "Decode Image",
-    ResizeImage = "Resize Image",
     DrawLazyPixelRef = "Draw LazyPixelRef",
     DecodeLazyPixelRef = "Decode LazyPixelRef",
     GPUTask = "GPUTask",

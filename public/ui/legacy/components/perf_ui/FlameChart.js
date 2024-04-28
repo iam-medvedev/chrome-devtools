@@ -168,7 +168,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     contextMenu;
     viewportElement;
     canvas;
-    entryInfo;
+    popoverElement;
     markerHighlighElement;
     highlightElement;
     revealDescendantsArrowHighlightElement;
@@ -244,7 +244,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.canvas.addEventListener('click', this.onClick.bind(this), false);
         this.canvas.addEventListener('keydown', this.onKeyDown.bind(this), false);
         this.canvas.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
-        this.entryInfo = this.viewportElement.createChild('div', 'flame-chart-entry-info');
+        this.popoverElement = this.viewportElement.createChild('div', 'flame-chart-entry-info');
         this.markerHighlighElement = this.viewportElement.createChild('div', 'flame-chart-marker-highlight-element');
         this.highlightElement = this.viewportElement.createChild('div', 'flame-chart-highlight-element');
         this.revealDescendantsArrowHighlightElement =
@@ -329,7 +329,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     hideHighlight() {
         if (this.#searchResultEntryIndex === -1) {
-            this.entryInfo.removeChildren();
+            this.popoverElement.removeChildren();
             this.lastPopoverState = {
                 entryIndex: -1,
                 hiddenEntriesPopover: false,
@@ -435,6 +435,15 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.chartViewport.setWindowTimes(startTime, endTime, animate);
         this.updateHighlight();
     }
+    /**
+     * Handle the mouse move event.
+     *
+     * And the handle priority will be:
+     * 1. Track configuration icons -> show tooltip for the icons
+     * 2. Inside a track header -> mouse style will be a "pointer", show edit icon
+     * 3.1 Inside a track -> show edit icon, update the highlight of hovered event
+     * 3.2 Outside all tracks -> clear all highlights
+     */
     onMouseMove(event) {
         this.#searchResultEntryIndex = -1;
         const mouseEvent = event;
@@ -447,29 +456,78 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return;
         }
         // Check if the mouse is hovering any group's header area
-        const { groupIndex: groupIndexHeaderArea } = this.coordinatesToGroupIndexAndButton(mouseEvent.offsetX, mouseEvent.offsetY, true /* headerOnly */);
-        if (groupIndexHeaderArea >= 0) {
-            this.hideHighlight();
-            this.viewportElement.style.cursor = 'pointer';
-            // Show edit icon for the hovered group
-            this.resetCanvas();
-            this.draw(/* hoveredGroupIndex= */ groupIndexHeaderArea);
-            return;
+        const { groupIndex, hoverType } = this.coordinatesToGroupIndexAndHoverType(mouseEvent.offsetX, mouseEvent.offsetY);
+        switch (hoverType) {
+            case "TRACK_CONFIG_UP_BUTTON" /* HoverType.TRACK_CONFIG_UP_BUTTON */:
+            case "TRACK_CONFIG_DOWN_BUTTON" /* HoverType.TRACK_CONFIG_DOWN_BUTTON */:
+            case "TRACK_CONFIG_HIDE_BUTTON" /* HoverType.TRACK_CONFIG_HIDE_BUTTON */:
+            case "TRACK_CONFIG_SHOW_BUTTON" /* HoverType.TRACK_CONFIG_SHOW_BUTTON */:
+            case "TRACK_CONFIG_SAVE_BUTTON" /* HoverType.TRACK_CONFIG_SAVE_BUTTON */: {
+                this.hideHighlight();
+                this.viewportElement.style.cursor = 'pointer';
+                const iconTooltipElement = this.#prepareIconInfo(groupIndex, hoverType);
+                if (iconTooltipElement) {
+                    this.popoverElement.appendChild(iconTooltipElement);
+                    this.updatePopoverOffset();
+                }
+                return;
+            }
+            case "TRACK_CONFIG_EDIT_BUTTON" /* HoverType.TRACK_CONFIG_EDIT_BUTTON */:
+            case "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */:
+                this.hideHighlight();
+                this.viewportElement.style.cursor = 'pointer';
+                // Show edit icon for the hovered group
+                this.draw(/* hoveredGroupIndex= */ groupIndex);
+                return;
+            case "INSIDE_TRACK" /* HoverType.INSIDE_TRACK */:
+                // Show edit icon for the hovered group
+                this.draw(/* hoveredGroupIndex= */ groupIndex);
+                this.updateHighlight();
+                return;
+            case "OUTSIDE_TRACKS" /* HoverType.OUTSIDE_TRACKS */:
+                // No group is hovered.
+                // Redraw the flame chart to clear the potentially previously draw edit icon.
+                this.draw();
+                this.updateHighlight();
+                return;
         }
-        // Check if the mouse is hovering any group's non-header area
-        const { groupIndex } = this.coordinatesToGroupIndexAndButton(mouseEvent.offsetX, mouseEvent.offsetY);
-        if (groupIndex >= 0) {
-            // Show edit icon for the hovered group
-            this.resetCanvas();
-            this.draw(/* hoveredGroupIndex= */ groupIndex);
+    }
+    #prepareIconInfo(groupIndex, iconType) {
+        const group = this.rawTimelineData?.groups[groupIndex];
+        if (!group) {
+            return null;
         }
-        else {
-            // No group is hovered.
-            // Redraw the flame chart to clear the potentially previously draw edit icon.
-            this.resetCanvas();
-            this.draw();
+        // Only show first 20 characters to make the tooltip not too long.
+        const maxTitleChars = 20;
+        const displayName = Platform.StringUtilities.trimMiddle(group.name, maxTitleChars);
+        let iconTooltip = '';
+        switch (iconType) {
+            case "TRACK_CONFIG_UP_BUTTON" /* HoverType.TRACK_CONFIG_UP_BUTTON */:
+                iconTooltip = `Move ${displayName} track up`;
+                break;
+            case "TRACK_CONFIG_DOWN_BUTTON" /* HoverType.TRACK_CONFIG_DOWN_BUTTON */:
+                iconTooltip = `Move ${displayName} track down`;
+                break;
+            case "TRACK_CONFIG_HIDE_BUTTON" /* HoverType.TRACK_CONFIG_HIDE_BUTTON */:
+                if (this.groupIsLastVisibleTopLevel(group)) {
+                    iconTooltip = 'Can not hide the last top level track';
+                }
+                else {
+                    iconTooltip = `Hide ${displayName} track`;
+                }
+                break;
+            case "TRACK_CONFIG_SHOW_BUTTON" /* HoverType.TRACK_CONFIG_SHOW_BUTTON */:
+                iconTooltip = `Show ${displayName} track`;
+                break;
+            case "TRACK_CONFIG_SAVE_BUTTON" /* HoverType.TRACK_CONFIG_SAVE_BUTTON */:
+                iconTooltip = 'Save current track configuration';
+                break;
+            default:
+                return null;
         }
-        this.updateHighlight();
+        const element = document.createElement('div');
+        element.createChild('span', 'timeline-info-title').textContent = iconTooltip;
+        return element;
     }
     updateHighlight() {
         const entryIndex = this.coordinatesToEntryIndex(this.lastMouseOffsetX, this.lastMouseOffsetY);
@@ -479,7 +537,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // No entry is hovered.
         if (entryIndex === -1) {
             this.hideHighlight();
-            const { groupIndex } = this.coordinatesToGroupIndexAndButton(this.lastMouseOffsetX, this.lastMouseOffsetY, false /* headerOnly */);
+            const { groupIndex } = this.coordinatesToGroupIndexAndHoverType(this.lastMouseOffsetX, this.lastMouseOffsetY);
             if (groupIndex >= 0 && this.rawTimelineData && this.rawTimelineData.groups &&
                 this.rawTimelineData.groups[groupIndex].selectable) {
                 // This means the mouse is in a selectable group's area, and not hovering any entry.
@@ -495,7 +553,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (this.chartViewport.isDragging()) {
             return;
         }
-        this.updatePopover(entryIndex);
+        this.#updatePopoverForEntry(entryIndex);
         this.viewportElement.style.cursor = this.dataProvider.canJumpToEntry(entryIndex) ? 'pointer' : 'default';
         this.highlightEntry(entryIndex);
     }
@@ -506,28 +564,28 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     showPopoverForSearchResult(selectedSearchResult) {
         this.#searchResultEntryIndex = selectedSearchResult;
-        this.updatePopover(selectedSearchResult);
+        this.#updatePopoverForEntry(selectedSearchResult);
     }
-    updatePopover(entryIndex) {
+    #updatePopoverForEntry(entryIndex) {
         // Just update position if cursor is hovering the same entry.
         const isMouseOverRevealChildrenArrow = this.isMouseOverRevealChildrenArrow(this.lastMouseOffsetX, entryIndex);
         if (entryIndex === this.lastPopoverState.entryIndex &&
             isMouseOverRevealChildrenArrow === this.lastPopoverState.hiddenEntriesPopover) {
             return this.updatePopoverOffset();
         }
-        this.entryInfo.removeChildren();
+        this.popoverElement.removeChildren();
         const data = this.timelineData();
         if (!data) {
             return;
         }
         const group = data.groups.at(this.selectedGroupIndex);
         // If the mouse is hovering over the hidden descendants arrow, get an element that shows how many children are hidden, otherwise an element with the event name and length
-        const popoverElement = (isMouseOverRevealChildrenArrow && group) ?
+        const entryInfo = (isMouseOverRevealChildrenArrow && group) ?
             this.dataProvider.prepareHighlightedHiddenEntriesArrowInfo &&
                 this.dataProvider.prepareHighlightedHiddenEntriesArrowInfo(entryIndex) :
             this.dataProvider.prepareHighlightedEntryInfo(entryIndex);
-        if (popoverElement) {
-            this.entryInfo.appendChild(popoverElement);
+        if (entryInfo) {
+            this.popoverElement.appendChild(entryInfo);
             this.updatePopoverOffset();
         }
         this.lastPopoverState = {
@@ -545,10 +603,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             mouseX = coordinate?.x ? coordinate.x - canvasViewportOffsetX : mouseX;
             mouseY = coordinate?.y ? coordinate.y - canvasViewportOffsetY : mouseY;
         }
-        const parentWidth = this.entryInfo.parentElement ? this.entryInfo.parentElement.clientWidth : 0;
-        const parentHeight = this.entryInfo.parentElement ? this.entryInfo.parentElement.clientHeight : 0;
-        const infoWidth = this.entryInfo.clientWidth;
-        const infoHeight = this.entryInfo.clientHeight;
+        const parentWidth = this.popoverElement.parentElement ? this.popoverElement.parentElement.clientWidth : 0;
+        const parentHeight = this.popoverElement.parentElement ? this.popoverElement.parentElement.clientHeight : 0;
+        const infoWidth = this.popoverElement.clientWidth;
+        const infoHeight = this.popoverElement.clientHeight;
         const /** @const */ offsetX = 10;
         const /** @const */ offsetY = 6;
         let x;
@@ -562,9 +620,20 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 break;
             }
         }
-        this.entryInfo.style.left = x + 'px';
-        this.entryInfo.style.top = y + 'px';
+        this.popoverElement.style.left = x + 'px';
+        this.popoverElement.style.top = y + 'px';
     }
+    /**
+     * Handle mouse click event in flame chart
+     *
+     * And the handle priority will be:
+     * 1. Track configuration icons -> Config a track
+     * 1.1 if it's edit mode ignore others.
+     * 2. Inside a track header -> Select and Expand/Collapse a track
+     * 3. Inside a track -> Select a track
+     * 3.1 shift + click -> Select the time range of clicked event
+     * 3.2 click -> update highlight (handle in other functions)
+     */
     onClick(event) {
         const mouseEvent = event;
         this.focus();
@@ -576,49 +645,50 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return;
         }
         // If any button is clicked, we should handle the action only and ignore others.
-        const { groupIndex, editButtonType } = this.coordinatesToGroupIndexAndButton(mouseEvent.offsetX, mouseEvent.offsetY);
+        const { groupIndex, hoverType } = this.coordinatesToGroupIndexAndHoverType(mouseEvent.offsetX, mouseEvent.offsetY);
         if (groupIndex >= 0) {
-            switch (editButtonType) {
-                case "UP" /* EditButtonType.UP */:
+            switch (hoverType) {
+                case "TRACK_CONFIG_UP_BUTTON" /* HoverType.TRACK_CONFIG_UP_BUTTON */:
                     this.moveGroupUp(groupIndex);
                     return;
-                case "DOWN" /* EditButtonType.DOWN */:
+                case "TRACK_CONFIG_DOWN_BUTTON" /* HoverType.TRACK_CONFIG_DOWN_BUTTON */:
                     this.moveGroupDown(groupIndex);
                     return;
-                case "HIDE" /* EditButtonType.HIDE */:
+                case "TRACK_CONFIG_HIDE_BUTTON" /* HoverType.TRACK_CONFIG_HIDE_BUTTON */:
                     if (this.groupIsLastVisibleTopLevel(this.rawTimelineData?.groups[groupIndex])) {
                         // If this is the last visible top-level group, we will not allow you hiding the track.
                         return;
                     }
-                    this.#toggleGroupHiddenState(groupIndex, !this.rawTimelineData?.groups[groupIndex].hidden);
+                    this.hideGroup(groupIndex);
                     return;
-                case "SAVE" /* EditButtonType.SAVE */:
-                case "EDIT" /* EditButtonType.EDIT */:
+                case "TRACK_CONFIG_SHOW_BUTTON" /* HoverType.TRACK_CONFIG_SHOW_BUTTON */:
+                    this.showGroup(groupIndex);
+                    return;
+                case "TRACK_CONFIG_SAVE_BUTTON" /* HoverType.TRACK_CONFIG_SAVE_BUTTON */:
+                case "TRACK_CONFIG_EDIT_BUTTON" /* HoverType.TRACK_CONFIG_EDIT_BUTTON */:
                     this.#editMode = !this.#editMode;
                     this.updateLevelPositions();
-                    this.resetCanvas();
                     this.draw();
                     return;
+                case "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */:
+                    this.selectGroup(groupIndex);
+                    this.toggleGroupExpand(groupIndex);
+                    return;
+                case "INSIDE_TRACK" /* HoverType.INSIDE_TRACK */: {
+                    this.selectGroup(groupIndex);
+                    const timelineData = this.timelineData();
+                    if (mouseEvent.shiftKey && this.highlightedEntryIndex !== -1 && timelineData) {
+                        const start = timelineData.entryStartTimes[this.highlightedEntryIndex];
+                        const end = start + timelineData.entryTotalTimes[this.highlightedEntryIndex];
+                        this.chartViewport.setRangeSelection(start, end);
+                    }
+                    else {
+                        this.chartViewport.onClick(mouseEvent);
+                        this.dispatchEventToListeners("EntryInvoked" /* Events.EntryInvoked */, this.highlightedEntryIndex);
+                    }
+                    return;
+                }
             }
-            // Ignore any other actions when user is customizing the tracks.
-            // For example, we won't toggle the expand status in the editing mode.
-            if (this.#editMode) {
-                return;
-            }
-        }
-        const { groupIndex: groupIndexForSelection } = this.coordinatesToGroupIndexAndButton(mouseEvent.offsetX, mouseEvent.offsetY, false /* headerOnly */);
-        const { groupIndex: groupIndexForToggleExpand } = this.coordinatesToGroupIndexAndButton(mouseEvent.offsetX, mouseEvent.offsetY, true /* headerOnly */);
-        this.selectGroup(groupIndexForSelection);
-        this.toggleGroupExpand(groupIndexForToggleExpand);
-        const timelineData = this.timelineData();
-        if (mouseEvent.shiftKey && this.highlightedEntryIndex !== -1 && timelineData) {
-            const start = timelineData.entryStartTimes[this.highlightedEntryIndex];
-            const end = start + timelineData.entryTotalTimes[this.highlightedEntryIndex];
-            this.chartViewport.setRangeSelection(start, end);
-        }
-        else {
-            this.chartViewport.onClick(mouseEvent);
-            this.dispatchEventToListeners("EntryInvoked" /* Events.EntryInvoked */, this.highlightedEntryIndex);
         }
     }
     selectGroup(groupIndex) {
@@ -642,7 +712,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         else {
             this.selectedGroupIndex = groupIndex;
             this.flameChartDelegate.updateSelectedGroup(this, groups[groupIndex]);
-            this.resetCanvas();
             this.draw();
             UI.ARIAUtils.alert(i18nString(UIStrings.sSelected, { PH1: groupName }));
         }
@@ -650,13 +719,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     deselectAllGroups() {
         this.selectedGroupIndex = -1;
         this.flameChartDelegate.updateSelectedGroup(this, null);
-        this.resetCanvas();
         this.draw();
     }
     deselectAllEntries() {
         this.selectedEntryIndex = -1;
         this.rawTimelineData?.resetFlowData();
-        this.resetCanvas();
         this.draw();
     }
     isGroupFocused(index) {
@@ -726,7 +793,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             }
         }
         this.updateHeight();
-        this.resetCanvas();
         this.draw();
         this.scrollGroupIntoView(groupIndex);
         // We only want to read expanded/collapsed state on user inputted expand/collapse
@@ -761,7 +827,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updateLevelPositions();
         this.updateHighlight();
         this.updateHeight();
-        this.resetCanvas();
         this.draw();
     }
     moveGroupDown(groupIndex) {
@@ -788,7 +853,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updateLevelPositions();
         this.updateHighlight();
         this.updateHeight();
-        this.resetCanvas();
         this.draw();
     }
     hideGroup(groupIndex) {
@@ -818,7 +882,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updateLevelPositions();
         this.updateHighlight();
         this.updateHeight();
-        this.resetCanvas();
         this.draw();
     }
     modifyTree(treeAction, index) {
@@ -1322,25 +1385,29 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         return this.contextMenu;
     }
     /**
-     * Given offset of the cursor, returns the index of the group and the button user clicked.
-     * Will return -1 for index if no group is clicked.
-     * And return undefined for button if no button is clicked.
+     * Given offset of the cursor, returns the index of the group and the hover type of current mouse position.
+     * Will return -1 for index and HoverType.OUTSIDE_TRACKS if no group is hovered/clicked.
+     * And the handle priority will be:
+     * 1. Track configuration icons
+     * 2. Inside a track header (track label and the expansion arrow)
+     * 3. Inside a track
+     * 4. Outside all tracks
+     *
      * This function is public for test purpose.
      * @param x
      * @param y
      * @returns the index of the group and the button user clicked. If there is no button the button type will be
      * undefined.
      */
-    coordinatesToGroupIndexAndButton(x, y, headerOnly = false) {
+    coordinatesToGroupIndexAndHoverType(x, y) {
         if (!this.rawTimelineData || !this.rawTimelineData.groups || !this.groupOffsets) {
-            return { groupIndex: -1 };
+            return { groupIndex: -1, hoverType: "ERROR" /* HoverType.ERROR */ };
         }
         if (x < 0 || y < 0) {
-            return { groupIndex: -1 };
+            return { groupIndex: -1, hoverType: "ERROR" /* HoverType.ERROR */ };
         }
         y += this.chartViewport.scrollOffset();
         const groups = this.rawTimelineData.groups || [];
-        let groupIndex = -1;
         // The real order of the groups is the preorder traversal, and it will match the order in the sortedGroup.
         // So we first do a preorder traversal to get an array of GroupIndex. And then based on the visual index we got
         // before, we can get the real group index.
@@ -1360,7 +1427,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             // error.
             if (sortedGroupIndexes.length !== groups.length) {
                 console.warn('The data from the group tree doesn\'t match the data from DataProvider.');
-                return { groupIndex: -1 };
+                return { groupIndex: -1, hoverType: "ERROR" /* HoverType.ERROR */ };
             }
             // Add an extra index, which is equal to the length of the |groups|, this
             // will be used for the coordinates after the last group.
@@ -1369,50 +1436,53 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             // this array same length as the |groupOffsets|.
             sortedGroupIndexes.push(groups.length);
             for (let i = 0; i < sortedGroupIndexes.length; i++) {
-                const index = sortedGroupIndexes[i];
+                const groupIndex = sortedGroupIndexes[i];
                 const nextIndex = sortedGroupIndexes[i + 1] ?? sortedGroupIndexes.length;
-                if (y >= this.groupOffsets[index] && y < this.groupOffsets[nextIndex]) {
-                    if (!headerOnly || y < this.groupOffsets[index] + groups[index].style.height) {
-                        groupIndex = index;
+                if (y >= this.groupOffsets[groupIndex] && y < this.groupOffsets[nextIndex]) {
+                    // This section is used to calculate the position of current group's header and save icon.
+                    const context = this.canvas.getContext('2d');
+                    context.save();
+                    context.font = this.#font;
+                    const saveIconLeft = HEADER_LEFT_PADDING + EDITION_MODE_INDENT + this.labelWidthForGroup(context, groups[groupIndex]);
+                    const headerRight = HEADER_LEFT_PADDING + (this.#editMode ? EDITION_MODE_INDENT : EDIT_BUTTON_SIZE) +
+                        this.labelWidthForGroup(context, groups[groupIndex]);
+                    context.restore();
+                    const mouseInHeaderRow = y >= this.groupOffsets[groupIndex] && y < this.groupOffsets[groupIndex] + groups[groupIndex].style.height;
+                    if (this.#editMode) {
+                        if (mouseInHeaderRow) {
+                            if (UP_ICON_LEFT <= x && x < UP_ICON_LEFT + EDIT_BUTTON_SIZE) {
+                                return { groupIndex: groupIndex, hoverType: "TRACK_CONFIG_UP_BUTTON" /* HoverType.TRACK_CONFIG_UP_BUTTON */ };
+                            }
+                            if (DOWN_ICON_LEFT <= x && x < DOWN_ICON_LEFT + EDIT_BUTTON_SIZE) {
+                                return { groupIndex: groupIndex, hoverType: "TRACK_CONFIG_DOWN_BUTTON" /* HoverType.TRACK_CONFIG_DOWN_BUTTON */ };
+                            }
+                            if (HIDE_ICON_LEFT <= x && x < HIDE_ICON_LEFT + EDIT_BUTTON_SIZE) {
+                                return {
+                                    groupIndex: groupIndex,
+                                    hoverType: groups[groupIndex].hidden ? "TRACK_CONFIG_SHOW_BUTTON" /* HoverType.TRACK_CONFIG_SHOW_BUTTON */ :
+                                        "TRACK_CONFIG_HIDE_BUTTON" /* HoverType.TRACK_CONFIG_HIDE_BUTTON */,
+                                };
+                            }
+                            if (saveIconLeft <= x && x < saveIconLeft + EDIT_BUTTON_SIZE) {
+                                return { groupIndex: groupIndex, hoverType: "TRACK_CONFIG_SAVE_BUTTON" /* HoverType.TRACK_CONFIG_SAVE_BUTTON */ };
+                            }
+                        }
+                        // Ignore any other actions when user is customizing the tracks.
+                        // For example, we won't toggle the expand status in the editing mode.
                     }
-                    break;
+                    else {
+                        if (mouseInHeaderRow && EDIT_ICON_LEFT <= x && x < EDIT_ICON_LEFT + EDIT_BUTTON_SIZE) {
+                            return { groupIndex: groupIndex, hoverType: "TRACK_CONFIG_EDIT_BUTTON" /* HoverType.TRACK_CONFIG_EDIT_BUTTON */ };
+                        }
+                        if (mouseInHeaderRow && x <= headerRight) {
+                            return { groupIndex: groupIndex, hoverType: "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */ };
+                        }
+                        return { groupIndex: groupIndex, hoverType: "INSIDE_TRACK" /* HoverType.INSIDE_TRACK */ };
+                    }
                 }
             }
         }
-        if (groupIndex < 0 || groupIndex >= groups.length) {
-            return { groupIndex: -1 };
-        }
-        const context = this.canvas.getContext('2d');
-        context.save();
-        context.font = this.#font;
-        const saveIconLeft = HEADER_LEFT_PADDING + EDITION_MODE_INDENT + this.labelWidthForGroup(context, groups[groupIndex]);
-        const headerRight = HEADER_LEFT_PADDING + (this.#editMode ? EDITION_MODE_INDENT : EDIT_BUTTON_SIZE) +
-            this.labelWidthForGroup(context, groups[groupIndex]);
-        context.restore();
-        const mouseInHeaderRow = y >= this.groupOffsets[groupIndex] && y < this.groupOffsets[groupIndex] + groups[groupIndex].style.height;
-        if (this.#editMode && mouseInHeaderRow) {
-            if (UP_ICON_LEFT <= x && x < UP_ICON_LEFT + EDIT_BUTTON_SIZE) {
-                return { groupIndex, editButtonType: "UP" /* EditButtonType.UP */ };
-            }
-            if (DOWN_ICON_LEFT <= x && x < DOWN_ICON_LEFT + EDIT_BUTTON_SIZE) {
-                return { groupIndex, editButtonType: "DOWN" /* EditButtonType.DOWN */ };
-            }
-            if (HIDE_ICON_LEFT <= x && x < HIDE_ICON_LEFT + EDIT_BUTTON_SIZE) {
-                return { groupIndex, editButtonType: "HIDE" /* EditButtonType.HIDE */ };
-            }
-            if (saveIconLeft <= x && x < saveIconLeft + EDIT_BUTTON_SIZE) {
-                return { groupIndex, editButtonType: "SAVE" /* EditButtonType.SAVE */ };
-            }
-        }
-        else if (mouseInHeaderRow) {
-            if (EDIT_ICON_LEFT <= x && x < EDIT_ICON_LEFT + EDIT_BUTTON_SIZE) {
-                return { groupIndex, editButtonType: "EDIT" /* EditButtonType.EDIT */ };
-            }
-        }
-        if (headerOnly && x > headerRight) {
-            return { groupIndex: -1 };
-        }
-        return { groupIndex };
+        return { groupIndex: -1, hoverType: "OUTSIDE_TRACKS" /* HoverType.OUTSIDE_TRACKS */ };
     }
     markerIndexBeforeTime(time) {
         const timelineData = this.timelineData();
@@ -1430,6 +1500,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (!timelineData) {
             return;
         }
+        this.resetCanvas();
         const canvasWidth = this.offsetWidth;
         const canvasHeight = this.offsetHeight;
         const context = this.canvas.getContext('2d');
@@ -2922,7 +2993,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (!this.timelineData()) {
             return;
         }
-        this.resetCanvas();
         this.updateHeight();
         this.updateBoundaries();
         this.draw();

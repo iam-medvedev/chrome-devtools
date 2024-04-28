@@ -339,6 +339,9 @@ export class BottomUpRootNode extends Node {
         }
         const groupNodes = new Map();
         for (const node of flatNodes.values()) {
+            if (!node.event) {
+                continue;
+            }
             const groupId = this.eventGroupIdCallback(node.event);
             let groupNode = groupNodes.get(groupId);
             if (!groupNode) {
