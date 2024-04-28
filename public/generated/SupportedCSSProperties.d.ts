@@ -59,9 +59,6 @@ export const generatedPropertyValues: {
     "-webkit-rtl-ordering": {
         values: string[];
     };
-    "-webkit-ruby-position": {
-        values: string[];
-    };
     "-webkit-text-security": {
         values: string[];
     };
@@ -386,6 +383,9 @@ export const generatedPropertyValues: {
     "font-variant-east-asian": {
         values: string[];
     };
+    "font-variant-emoji": {
+        values: string[];
+    };
     "font-variant-ligatures": {
         values: string[];
     };
@@ -636,6 +636,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "row-gap": {
+        values: string[];
+    };
+    "ruby-position": {
         values: string[];
     };
     rx: {

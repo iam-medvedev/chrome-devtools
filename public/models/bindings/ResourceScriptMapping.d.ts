@@ -26,6 +26,8 @@ export declare class ResourceScriptMapping implements DebuggerSourceMapping {
 }
 export declare class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapper<ResourceScriptFile.EventTypes> {
     #private;
+    readonly uiSourceCode: Workspace.UISourceCode.UISourceCode;
+    readonly script: SDK.Script.Script | null;
     constructor(resourceScriptMapping: ResourceScriptMapping, uiSourceCode: Workspace.UISourceCode.UISourceCode, script: SDK.Script.Script);
     private isDiverged;
     private workingCopyChanged;
@@ -44,8 +46,6 @@ export declare class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapp
     addDebugInfoURL(debugInfoURL: Platform.DevToolsPath.UrlString): void;
     hasSourceMapURL(): boolean;
     missingSymbolFiles(): Promise<SDK.DebuggerModel.MissingDebugFiles[] | null>;
-    get script(): SDK.Script.Script | null;
-    get uiSourceCode(): Workspace.UISourceCode.UISourceCode;
 }
 export declare namespace ResourceScriptFile {
     const enum Events {

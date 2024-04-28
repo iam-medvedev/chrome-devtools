@@ -409,10 +409,6 @@ const UIStrings = {
      */
     imageDecode: 'Image Decode',
     /**
-     *@description Event category in the Performance panel for time spent to resize an image
-     */
-    imageResize: 'Image Resize',
-    /**
      *@description Event category in the Performance panel for time spent to perform Garbage Collection for the Document Object Model
      */
     domGc: 'DOM GC',
@@ -684,7 +680,6 @@ export function maybeInitSylesMap() {
         ["WebSocketDestroy" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketDestroy */]: new TimelineRecordStyle(i18nString(UIStrings.destroyWebsocket), defaultCategoryStyles.scripting),
         ["EmbedderCallback" /* TraceEngine.Types.TraceEvents.KnownEventName.EmbedderCallback */]: new TimelineRecordStyle(i18nString(UIStrings.embedderCallback), defaultCategoryStyles.scripting),
         ["Decode Image" /* TraceEngine.Types.TraceEvents.KnownEventName.DecodeImage */]: new TimelineRecordStyle(i18nString(UIStrings.imageDecode), defaultCategoryStyles.painting),
-        ["Resize Image" /* TraceEngine.Types.TraceEvents.KnownEventName.ResizeImage */]: new TimelineRecordStyle(i18nString(UIStrings.imageResize), defaultCategoryStyles.painting),
         ["GPUTask" /* TraceEngine.Types.TraceEvents.KnownEventName.GPUTask */]: new TimelineRecordStyle(i18nString(UIStrings.gpu), defaultCategoryStyles.gpu),
         ["BlinkGC.AtomicPhase" /* TraceEngine.Types.TraceEvents.KnownEventName.GCCollectGarbage */]: new TimelineRecordStyle(i18nString(UIStrings.domGc), defaultCategoryStyles.scripting),
         ["DoEncrypt" /* TraceEngine.Types.TraceEvents.KnownEventName.CryptoDoEncrypt */]: new TimelineRecordStyle(i18nString(UIStrings.encrypt), defaultCategoryStyles.scripting),

@@ -6,7 +6,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -21,7 +20,6 @@ import { TimelineFlameChartDataProvider, } from './TimelineFlameChartDataProvide
 import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
 import { TimelineSelection } from './TimelineSelection.js';
 import { AggregatedTimelineTreeView } from './TimelineTreeView.js';
-import { TimelineUIUtils } from './TimelineUIUtils.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart View of the Performance panel
@@ -39,8 +37,6 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     searchResults;
     eventListeners;
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    showMemoryGraphSetting;
     networkSplitWidget;
     mainDataProvider;
     mainFlameChart;
@@ -79,7 +75,6 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.model = null;
         this.eventListeners = [];
         this.#traceEngineData = null;
-        this.showMemoryGraphSetting = Common.Settings.Settings.instance().createSetting('timeline-show-memory', false);
         // Create main and network flamecharts.
         this.networkSplitWidget = new UI.SplitWidget.SplitWidget(false, false, 'timeline-flamechart-main-view', 150);
         // Ensure that the network panel & resizer appears above the main thread.
@@ -111,7 +106,6 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.chartSplitWidget.setSidebarWidget(this.countersView);
         this.chartSplitWidget.hideDefaultResizer();
         this.chartSplitWidget.installResizer(this.countersView.resizerElement());
-        this.updateCountersGraphToggle();
         // Create top level properties splitter.
         this.detailsSplitWidget = new UI.SplitWidget.SplitWidget(false, true, 'timeline-panel-details-split-view-state');
         this.detailsSplitWidget.element.classList.add('timeline-details-split');
@@ -130,10 +124,9 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.element.addEventListener('keydown', this.#keydownHandler.bind(this));
         this.boundRefresh = this.#reset.bind(this);
         this.#selectedEvents = null;
-        this.mainDataProvider.setEventColorMapping(TimelineUIUtils.eventColor);
         this.groupBySetting = Common.Settings.Settings.instance().createSetting('timeline-tree-group-by', AggregatedTimelineTreeView.GroupBy.None);
-        this.groupBySetting.addChangeListener(this.updateColorMapper, this);
-        this.updateColorMapper();
+        this.groupBySetting.addChangeListener(this.refreshMainFlameChart, this);
+        this.refreshMainFlameChart();
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
     }
     #keydownHandler(event) {
@@ -184,11 +177,10 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     getMainDataProvider() {
         return this.mainDataProvider;
     }
-    updateColorMapper() {
+    refreshMainFlameChart() {
         if (!this.model) {
             return;
         }
-        this.mainDataProvider.setEventColorMapping(TimelineUIUtils.eventColor);
         this.mainFlameChart.update();
     }
     windowChanged(windowStartTime, windowEndTime, animate) {
@@ -230,7 +222,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.networkDataProvider.setWindowTimes(visibleWindow.min, visibleWindow.max);
         this.networkFlameChart.setWindowTimes(visibleWindow.min, visibleWindow.max);
         this.updateSearchResults(false, false);
-        this.updateColorMapper();
+        this.refreshMainFlameChart();
         this.#updateFlameCharts();
     }
     #reset() {
@@ -259,36 +251,17 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     onEntryHighlighted(commonEvent) {
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
         const entryIndex = commonEvent.data;
-        // TODO(crbug.com/1431166): explore how we can make highlighting agnostic
-        // and take either legacy events, or new trace engine events. Currently if
-        // this highlight comes from a TrackAppender, we create a new legacy event
-        // from the event payload, mainly to satisfy this method.
         const event = this.mainDataProvider.eventByIndex(entryIndex);
-        if (!event) {
+        if (!event || !this.#traceEngineData) {
             return;
         }
-        const target = this.#traceEngineData && TraceEngine.Legacy.eventIsFromNewEngine(event) ?
-            targetForEvent(this.#traceEngineData, event) :
-            null;
+        const target = targetForEvent(this.#traceEngineData, event);
         if (!target) {
             return;
         }
-        let backendNodeIds;
-        // Events for tracks that are migrated to the new engine won't use
-        // TimelineModel.TimelineData.
-        if (event instanceof TraceEngine.Legacy.Event) {
-            const timelineData = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event);
-            backendNodeIds = timelineData.backendNodeIds;
-        }
-        else if (TraceEngine.Types.TraceEvents.isTraceEventLayoutShift(event)) {
-            const impactedNodes = event.args.data?.impacted_nodes ?? [];
-            backendNodeIds = impactedNodes.map(node => node.node_id);
-        }
-        if (!backendNodeIds) {
-            return;
-        }
-        for (let i = 0; i < backendNodeIds.length; ++i) {
-            new SDK.DOMModel.DeferredDOMNode(target, backendNodeIds[i]).highlight();
+        const nodeIds = TraceEngine.Extras.FetchNodes.nodeIdsForEvent(this.#traceEngineData, event);
+        for (const nodeId of nodeIds) {
+            new SDK.DOMModel.DeferredDOMNode(target, nodeId).highlight();
         }
     }
     highlightEvent(event) {
@@ -302,20 +275,18 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     willHide() {
         this.networkFlameChartGroupExpansionSetting.removeChangeListener(this.resizeToPreferredHeights, this);
-        this.showMemoryGraphSetting.removeChangeListener(this.updateCountersGraphToggle, this);
         Bindings.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.boundRefresh);
     }
     wasShown() {
         this.networkFlameChartGroupExpansionSetting.addChangeListener(this.resizeToPreferredHeights, this);
-        this.showMemoryGraphSetting.addChangeListener(this.updateCountersGraphToggle, this);
         Bindings.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.boundRefresh);
         if (this.needsResizeToPreferredHeights) {
             this.resizeToPreferredHeights();
         }
         this.#updateFlameCharts();
     }
-    updateCountersGraphToggle() {
-        if (this.showMemoryGraphSetting.get()) {
+    updateCountersGraphToggle(showMemoryGraph) {
+        if (showMemoryGraph) {
             this.chartSplitWidget.showBoth();
         }
         else {

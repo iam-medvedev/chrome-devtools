@@ -13,6 +13,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import { getCategoryStyles, stringIsEventCategory } from './EventUICategory.js';
 import * as Extensions from './extensions/extensions.js';
+import { Tracker } from './FreshRecording.js';
 import { targetForEvent } from './TargetForEvent.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
@@ -305,6 +306,14 @@ export class TimelineTreeView extends UI.Widget.VBox {
         }
     }
     refreshTree() {
+        if (!this.element.parentElement) {
+            // This function can be called in different views (Bottom-Up and
+            // Call Tree) by the same single event whenever the group-by
+            // dropdown changes value. Thus, we bail out whenever the view is
+            // not visible, which we know if the related element is detached
+            // from the document.
+            return;
+        }
         this.linkifier.reset();
         this.dataGrid.rootNode().removeChildren();
         if (!this.modelInternal) {
@@ -552,7 +561,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             const traceData = this.treeView.traceParseData();
             const target = traceData && TraceEngine.Legacy.eventIsFromNewEngine(event) ? targetForEvent(traceData, event) : null;
             const linkifier = this.treeView.linkifier;
-            const isFreshRecording = Boolean(this.treeView.modelInternal?.timelineModel().isFreshRecording());
+            const isFreshRecording = Boolean(traceData && Tracker.instance().recordingIsFresh(traceData));
             this.linkElement = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
                 TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording) :
                 null;
@@ -718,8 +727,8 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
                 if (!this.modelInternal) {
                     throw new Error('Unable to find model for group by frame operation');
                 }
-                const frame = id ? this.modelInternal.timelineModel().pageFrameById(id) : undefined;
-                const frameName = frame ? TimelineUIUtils.displayNameForFrame(frame, 80) : i18nString(UIStrings.page);
+                const frame = id ? this.traceParseData()?.PageFrames.frames.get(id) : undefined;
+                const frameName = frame ? TimelineUIUtils.displayNameForFrame(frame) : i18nString(UIStrings.page);
                 return { name: frameName, color: color, icon: undefined };
             }
             default:

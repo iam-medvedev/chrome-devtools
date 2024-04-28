@@ -270,7 +270,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                             splitWidget.toggleSidebar();
                         }
                         this.dispatchEventToListeners("CommandChange" /* Events.CommandChange */, { command, parameters, targetId });
-                    }, { jslogContext: 'edit-and-resend' });
+                    }, { jslogContext: 'edit-and-resend', disabled: typeColumn.title !== 'sent' });
                     /**
                      * You can click the "Filter" item in the context menu to filter the
                      * protocol monitor entries to those that match the method of the
@@ -289,7 +289,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                             return;
                         }
                         const [domain, method] = String(methodColumn.value).split('.');
-                        const type = typeColumn.value === 'sent' ? 'method' : 'event';
+                        const type = typeColumn.title === 'sent' ? 'method' : 'event';
                         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(`https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}`);
                     }, { jslogContext: 'documentation' });
                 },

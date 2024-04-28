@@ -33,12 +33,17 @@ import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
 import { type Calculator } from './TimelineGrid.js';
-export declare const enum EditButtonType {
-    UP = "UP",
-    DOWN = "DOWN",
-    HIDE = "HIDE",
-    EDIT = "EDIT",
-    SAVE = "SAVE"
+export declare const enum HoverType {
+    TRACK_CONFIG_UP_BUTTON = "TRACK_CONFIG_UP_BUTTON",
+    TRACK_CONFIG_DOWN_BUTTON = "TRACK_CONFIG_DOWN_BUTTON",
+    TRACK_CONFIG_HIDE_BUTTON = "TRACK_CONFIG_HIDE_BUTTON",
+    TRACK_CONFIG_SHOW_BUTTON = "TRACK_CONFIG_SHOW_BUTTON",
+    TRACK_CONFIG_EDIT_BUTTON = "TRACK_CONFIG_EDIT_BUTTON",
+    TRACK_CONFIG_SAVE_BUTTON = "TRACK_CONFIG_SAVE_BUTTON",
+    INSIDE_TRACK_HEADER = "INSIDE_TRACK_HEADER",
+    INSIDE_TRACK = "INSIDE_TRACK",
+    OUTSIDE_TRACKS = "OUTSIDE_TRACKS",
+    ERROR = "ERROR"
 }
 export declare class FlameChartDelegate {
     windowChanged(_startTime: number, _endTime: number, _animate: boolean): void;
@@ -75,7 +80,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private contextMenu?;
     private viewportElement;
     private canvas;
-    private entryInfo;
+    private popoverElement;
     private readonly markerHighlighElement;
     readonly highlightElement: HTMLElement;
     readonly revealDescendantsArrowHighlightElement: HTMLElement;
@@ -143,12 +148,31 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     timelineData(rebuid?: boolean): FlameChartTimelineData | null;
     private revealEntry;
     setWindowTimes(startTime: number, endTime: number, animate?: boolean): void;
+    /**
+     * Handle the mouse move event.
+     *
+     * And the handle priority will be:
+     * 1. Track configuration icons -> show tooltip for the icons
+     * 2. Inside a track header -> mouse style will be a "pointer", show edit icon
+     * 3.1 Inside a track -> show edit icon, update the highlight of hovered event
+     * 3.2 Outside all tracks -> clear all highlights
+     */
     private onMouseMove;
     private updateHighlight;
     private onMouseOut;
     showPopoverForSearchResult(selectedSearchResult: number): void;
-    private updatePopover;
     private updatePopoverOffset;
+    /**
+     * Handle mouse click event in flame chart
+     *
+     * And the handle priority will be:
+     * 1. Track configuration icons -> Config a track
+     * 1.1 if it's edit mode ignore others.
+     * 2. Inside a track header -> Select and Expand/Collapse a track
+     * 3. Inside a track -> Select a track
+     * 3.1 shift + click -> Select the time range of clicked event
+     * 3.2 click -> update highlight (handle in other functions)
+     */
     private onClick;
     private selectGroup;
     private deselectAllGroups;
@@ -219,18 +243,23 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     getScrollOffset(): number;
     getContextMenu(): UI.ContextMenu.ContextMenu | undefined;
     /**
-     * Given offset of the cursor, returns the index of the group and the button user clicked.
-     * Will return -1 for index if no group is clicked.
-     * And return undefined for button if no button is clicked.
+     * Given offset of the cursor, returns the index of the group and the hover type of current mouse position.
+     * Will return -1 for index and HoverType.OUTSIDE_TRACKS if no group is hovered/clicked.
+     * And the handle priority will be:
+     * 1. Track configuration icons
+     * 2. Inside a track header (track label and the expansion arrow)
+     * 3. Inside a track
+     * 4. Outside all tracks
+     *
      * This function is public for test purpose.
      * @param x
      * @param y
      * @returns the index of the group and the button user clicked. If there is no button the button type will be
      * undefined.
      */
-    coordinatesToGroupIndexAndButton(x: number, y: number, headerOnly?: boolean): {
+    coordinatesToGroupIndexAndHoverType(x: number, y: number): {
         groupIndex: number;
-        editButtonType?: EditButtonType;
+        hoverType: HoverType;
     };
     private markerIndexBeforeTime;
     private draw;

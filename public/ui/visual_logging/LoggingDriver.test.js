@@ -4,13 +4,28 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { expectCall, expectCalled } from '../../testing/ExpectStubCall.js';
 import { stabilizeEvent, stabilizeImpressions } from '../../testing/VisualLoggingHelpers.js';
 import * as VisualLoggingTesting from './visual_logging-testing.js';
 describe('LoggingDriver', () => {
     let recordImpression;
     let throttler;
+    let throttle;
+    let onerror;
+    before(() => {
+        onerror = window.onerror;
+        window.onerror = (message, url, lineNumber, column, error) => {
+            if (message !== 'ResizeObserver loop completed with undelivered notifications.' && onerror) {
+                onerror.apply(window, [message, url, lineNumber, column, error]);
+            }
+        };
+    });
+    after(() => {
+        window.onerror = onerror;
+    });
     beforeEach(() => {
         throttler = new Common.Throttler.Throttler(1000000000);
+        throttle = sinon.stub(throttler, 'schedule');
         recordImpression = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordImpression');
     });
     afterEach(() => {
@@ -35,15 +50,14 @@ describe('LoggingDriver', () => {
         await VisualLoggingTesting.LoggingDriver.startLogging();
         assert.isTrue(recordImpression.calledOnce);
         assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [
-            { id: 1, type: 1, context: 42, parent: 0, 'width': 300, 'height': 300 },
-            { id: 0, type: 1, 'width': 300, 'height': 300 },
+            { id: 1, type: 1, context: 42, parent: 0, width: 300, height: 300 },
+            { id: 0, type: 1, width: 300, height: 300 },
         ]);
     });
     async function assertImpressionRecordedDeferred() {
-        await new Promise(resolve => setTimeout(resolve, 0));
+        const [work] = await expectCalled(throttle);
         assert.isFalse(recordImpression.called);
-        assert.exists(throttler.process);
-        await throttler.process?.();
+        await work();
         assert.isTrue(recordImpression.called);
     }
     it('does not log impressions when hidden', async () => {
@@ -68,21 +82,22 @@ describe('LoggingDriver', () => {
         const parent = document.getElementById('parent');
         parent.style.marginTop = '2000px';
         await VisualLoggingTesting.LoggingDriver.startLogging({ processingThrottler: throttler });
-        let scrollendPromise = new Promise(resolve => window.addEventListener('scrollend', resolve, { once: true }));
+        const scrollend = sinon.stub();
+        window.addEventListener('scrollend', scrollend);
         window.scrollTo({
             top: 2000,
             left: 0,
             behavior: 'instant',
         });
-        await scrollendPromise;
+        await expectCalled(scrollend);
         await assertImpressionRecordedDeferred();
-        scrollendPromise = new Promise(resolve => window.addEventListener('scrollend', resolve, { once: true }));
+        scrollend.resetHistory();
         window.scrollTo({
             top: 0,
             left: 0,
             behavior: 'instant',
         });
-        await scrollendPromise;
+        await expectCalled(scrollend);
     });
     it('logs impressions on mutation', async () => {
         await VisualLoggingTesting.LoggingDriver.startLogging({ processingThrottler: throttler });
@@ -141,8 +156,7 @@ describe('LoggingDriver', () => {
         const recordClick = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordClick');
         const element = document.getElementById('element');
         element.click();
-        await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isTrue(recordClick.calledOnce);
+        await expectCalled(recordClick);
     });
     it('logs right clicks', async () => {
         addLoggableElements();
@@ -150,8 +164,7 @@ describe('LoggingDriver', () => {
         const recordClick = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordClick');
         const element = document.getElementById('element');
         element.dispatchEvent(new MouseEvent('contextmenu'));
-        await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isTrue(recordClick.calledOnce);
+        await expectCalled(recordClick);
     });
     it('does not log clicks if not configured', async () => {
         addLoggableElements();
@@ -163,34 +176,31 @@ describe('LoggingDriver', () => {
         assert.isFalse(recordClick.called);
     });
     it('does not log click on double click', async () => {
-        const clickLogThrottler = new Common.Throttler.Throttler(1000000000);
         addLoggableElements();
         const element = document.getElementById('element');
         element.setAttribute('jslog', 'TreeItem; context:42; track: click, dblclick');
-        await VisualLoggingTesting.LoggingDriver.startLogging({ clickLogThrottler });
+        await VisualLoggingTesting.LoggingDriver.startLogging({ clickLogThrottler: throttler });
         const recordClick = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordClick');
         element.dispatchEvent(new MouseEvent('click'));
         element.dispatchEvent(new MouseEvent('dblclick'));
-        await new Promise(resolve => setTimeout(resolve, 0));
-        assert.exists(clickLogThrottler.process);
+        const [logging] = await expectCalled(throttle);
+        assert.isTrue(throttle.calledTwice);
         assert.isFalse(recordClick.called);
-        await clickLogThrottler.process?.();
+        await logging();
         assert.isTrue(recordClick.calledOnce);
         assert.isTrue(recordClick.firstCall.firstArg.doubleClick);
     });
     it('does not log click on parent when clicked on child', async () => {
-        const clickLogThrottler = new Common.Throttler.Throttler(1000000000);
         addLoggableElements();
         const parent = document.getElementById('parent');
         parent.setAttribute('jslog', 'TreeItem; track: click');
-        await VisualLoggingTesting.LoggingDriver.startLogging({ clickLogThrottler });
+        await VisualLoggingTesting.LoggingDriver.startLogging({ clickLogThrottler: throttler });
         const recordClick = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordClick');
         const element = document.getElementById('element');
         element.click();
-        await new Promise(resolve => setTimeout(resolve, 0));
-        assert.exists(clickLogThrottler.process);
+        const [logging] = await expectCalled(throttle);
         assert.isFalse(recordClick.called);
-        await clickLogThrottler.process?.();
+        await logging();
         assert.isTrue(recordClick.calledOnce);
         assert.deepStrictEqual(stabilizeEvent(recordClick.firstCall.firstArg).veid, 0);
     });
@@ -205,17 +215,18 @@ describe('LoggingDriver', () => {
         await VisualLoggingTesting.LoggingDriver.startLogging({ processingThrottler: throttler });
         assert.isTrue(recordImpression.calledOnce);
         assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [
-            { id: 0, type: 1, 'width': 30, 'height': 20, context: 0 },
+            { id: 0, type: 1, width: 30, height: 20, context: 0 },
         ]);
         recordImpression.resetHistory();
         const select = document.getElementById('select');
         assert.exists(select);
         select.dispatchEvent(event);
-        await new Promise(resolve => setTimeout(resolve, 0));
-        assert.exists(throttler.process);
-        await throttler.process?.();
+        await expectCalled(throttle).then(([work]) => work());
         assert.isTrue(recordImpression.calledOnce);
-        assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [{ 'id': 0, 'type': 1, 'parent': 1, 'context': 1 }, { 'id': 2, 'type': 1, 'parent': 1, 'context': 2 }]);
+        assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [
+            { id: 0, type: 1, parent: 1, context: 1, width: 0, height: 0 },
+            { id: 2, type: 1, parent: 1, context: 2, width: 0, height: 0 },
+        ]);
     };
     it('logs impressions on select options on click', logsSelectOptions(new MouseEvent('click')));
     it('logs impressions on select options on space press', logsSelectOptions(new KeyboardEvent('keypress', { key: ' ' })));
@@ -228,52 +239,48 @@ describe('LoggingDriver', () => {
         <option jslog="TreeItem; context: 2; track: click">2</option>
       </select>`;
         renderElementIntoDOM(parent);
-        await VisualLoggingTesting.LoggingDriver.startLogging({ processingThrottler: throttler });
+        await VisualLoggingTesting.LoggingDriver.startLogging({ clickLogThrottler: throttler });
         const recordClick = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordClick');
         const select = document.getElementById('select');
         assert.exists(select);
         select.selectedIndex = 1;
         select.dispatchEvent(new Event('change'));
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await expectCalled(throttle).then(([logging]) => logging());
         assert.isTrue(recordClick.calledOnce);
-        assert.deepStrictEqual(stabilizeEvent(recordClick.firstCall.firstArg), { 'veid': 0, 'doubleClick': false });
+        assert.deepStrictEqual(stabilizeEvent(recordClick.firstCall.firstArg), { veid: 0, doubleClick: false });
     });
     it('logs keydown', async () => {
-        const keyboardLogThrottler = new Common.Throttler.Throttler(1000000000);
         addLoggableElements();
-        await VisualLoggingTesting.LoggingDriver.startLogging({ keyboardLogThrottler });
+        await VisualLoggingTesting.LoggingDriver.startLogging({ keyboardLogThrottler: throttler });
         const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
         const element = document.getElementById('element');
-        element.dispatchEvent(new KeyboardEvent('keydown', { 'key': 'a' }));
-        element.dispatchEvent(new KeyboardEvent('keydown', { 'key': 'b' }));
-        await new Promise(resolve => setTimeout(resolve, 0));
-        assert.exists(keyboardLogThrottler.process);
+        element.dispatchEvent(new KeyboardEvent('keydown', { key: 'a' }));
+        element.dispatchEvent(new KeyboardEvent('keydown', { key: 'b' }));
+        const [logging] = await expectCalled(throttle);
+        assert.isTrue(throttle.calledTwice);
         assert.isFalse(recordKeyDown.called);
-        await keyboardLogThrottler.process?.();
+        await logging();
         assert.isTrue(recordKeyDown.calledOnce);
     });
     it('logs keydown for specific codes', async () => {
-        const keyboardLogThrottler = new Common.Throttler.Throttler(1000000000);
         addLoggableElements();
         const element = document.getElementById('element');
         element.setAttribute('jslog', 'TreeItem; context:42; track: keydown: KeyA|KeyB');
-        await VisualLoggingTesting.LoggingDriver.startLogging({ keyboardLogThrottler });
+        await VisualLoggingTesting.LoggingDriver.startLogging({ keyboardLogThrottler: throttler });
         const recordKeyDown = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordKeyDown');
-        element.dispatchEvent(new KeyboardEvent('keydown', { 'code': 'KeyC' }));
+        element.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyC' }));
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.strictEqual(keyboardLogThrottler.process, null);
-        element.dispatchEvent(new KeyboardEvent('keydown', { 'code': 'KeyA' }));
-        await new Promise(resolve => setTimeout(resolve, 0));
-        assert.exists(keyboardLogThrottler.process);
+        assert.isFalse(throttle.called);
+        element.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyA' }));
+        let [logging] = await expectCalled(throttle);
         assert.isFalse(recordKeyDown.called);
-        await keyboardLogThrottler.process?.();
+        await logging();
         assert.isTrue(recordKeyDown.calledOnce);
         recordKeyDown.resetHistory();
-        element.dispatchEvent(new KeyboardEvent('keydown', { 'code': 'KeyB' }));
-        await new Promise(resolve => setTimeout(resolve, 0));
-        assert.exists(keyboardLogThrottler.process);
+        element.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyB' }));
+        [logging] = await expectCalled(throttle);
         assert.isFalse(recordKeyDown.called);
-        await keyboardLogThrottler.process?.();
+        await logging();
         assert.isTrue(recordKeyDown.calledOnce);
     });
     it('logs hover', async () => {
@@ -362,10 +369,9 @@ describe('LoggingDriver', () => {
         const recordResize = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordResize');
         const element = document.getElementById('element');
         element.style.height = '400px';
-        await new Promise(resolve => new ResizeObserver(resolve).observe(element));
-        assert.exists(throttler.process);
+        const [logging] = await expectCall(throttle);
         assert.isFalse(recordResize.called);
-        await throttler.process?.();
+        await logging();
         assert.isTrue(recordResize.calledOnce);
     });
     it('does not log resize if too small', async () => {
@@ -382,20 +388,105 @@ describe('LoggingDriver', () => {
         const recordResize = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordResize');
         const element = document.getElementById('element');
         element.style.display = 'none';
-        await new Promise(resolve => new IntersectionObserver(resolve).observe(element));
-        assert.exists(throttler.process);
+        let [logging] = await expectCall(throttle);
         assert.isFalse(recordResize.called);
-        await throttler.process?.();
+        await logging();
         assert.isTrue(recordResize.calledOnce);
         assert.deepStrictEqual(stabilizeEvent(recordResize.firstCall.firstArg), { veid: 0, width: 0, height: 0 });
         recordResize.resetHistory();
         element.style.display = 'block';
-        await new Promise(resolve => new IntersectionObserver(resolve).observe(element));
-        assert.exists(throttler.process);
+        [logging] = await expectCall(throttle);
         assert.isFalse(recordResize.called);
-        await throttler.process?.();
+        await logging();
         assert.isTrue(recordResize.calledOnce);
         assert.deepStrictEqual(stabilizeEvent(recordResize.firstCall.firstArg), { veid: 0, width: 300, height: 300 });
+    });
+    it('throttles resize per element', async () => {
+        addLoggableElements();
+        const element1 = document.getElementById('element');
+        const element2 = element1.cloneNode();
+        document.getElementById('parent')?.appendChild(element2);
+        await VisualLoggingTesting.LoggingDriver.startLogging({ resizeLogThrottler: throttler });
+        const recordResize = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordResize');
+        element1.style.height = '200px';
+        await expectCall(throttle);
+        element2.style.height = '200px';
+        await expectCall(throttle);
+        element1.style.height = '100px';
+        await expectCall(throttle);
+        element2.style.height = '100px';
+        const [work] = await expectCall(throttle);
+        assert.isFalse(recordResize.called);
+        await work();
+        assert.isTrue(recordResize.calledTwice);
+        assert.strictEqual(recordResize.firstCall.firstArg.height, 100);
+        assert.strictEqual(recordResize.lastCall.firstArg.height, 100);
+        assert.notStrictEqual(recordResize.firstCall.firstArg.veid, recordResize.lastCall.firstArg.veid);
+    });
+    it('only logs resize of the outer element', async () => {
+        addLoggableElements();
+        const element = document.getElementById('element');
+        const child = document.createElement('div');
+        child.setAttribute('jslog', 'TreeItem; track: resize');
+        child.style.width = '100%';
+        child.style.height = '100%';
+        element.appendChild(child);
+        await VisualLoggingTesting.LoggingDriver.startLogging({ resizeLogThrottler: throttler });
+        const recordResize = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordResize');
+        element.style.width = '400px';
+        await expectCall(throttle);
+        const [work] = await expectCall(throttle);
+        assert.isFalse(recordResize.called);
+        await work();
+        assert.isTrue(recordResize.calledOnce);
+        assert.deepStrictEqual(stabilizeEvent(recordResize.firstCall.firstArg), { veid: 0, width: 400, height: 300 });
+    });
+    it('does not log resize intial impressions due to visibility change', async () => {
+        addLoggableElements();
+        const element = document.getElementById('element');
+        element.style.display = 'none';
+        await VisualLoggingTesting.LoggingDriver.startLogging({ processingThrottler: throttler, resizeLogThrottler: throttler });
+        const recordResize = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordResize');
+        recordImpression.resetHistory();
+        element.style.display = 'block';
+        await expectCalled(throttle).then(([work]) => work());
+        assert.isTrue(throttle.calledOnce);
+        assert.isTrue(recordImpression.calledOnce);
+        assert.isFalse(recordResize.called);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isFalse(recordResize.called);
+    });
+    it('properly handles the switch between visible elements', async () => {
+        addLoggableElements();
+        const element1 = document.getElementById('element');
+        const child = document.createElement('div');
+        child.id = 'child';
+        child.setAttribute('jslog', 'TreeItem; track: resize');
+        child.style.width = '100%';
+        child.style.height = '100%';
+        element1.appendChild(child);
+        const element2 = element1.cloneNode(/* deep=*/ true);
+        element2.id = 'element2';
+        document.getElementById('parent')?.appendChild(element2);
+        // First ensure both top level elements have impressions logged
+        await VisualLoggingTesting.LoggingDriver.startLogging({ resizeLogThrottler: throttler });
+        const recordResize = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordResize');
+        // Now hide one and wait for logging to finish
+        throttle.callsArg(0);
+        element2.style.display = 'none';
+        await expectCalled(recordResize);
+        throttle.reset();
+        recordResize.reset();
+        // Now the actual test: hiding one element and show the other one
+        element1.style.display = 'none';
+        element2.style.display = 'block';
+        await expectCalled(throttle); // Throttler is called by both resize observe and intersectin observer
+        await expectCall(throttle).then(([work]) => work());
+        assert.isTrue(recordResize.calledTwice);
+        assert.sameDeepMembers(recordResize.getCalls().map(c => c.firstArg), [
+            { veid: VisualLoggingTesting.LoggingState.getLoggingState(element1)?.veid, width: 0, height: 0 },
+            { veid: VisualLoggingTesting.LoggingState.getLoggingState(element2)?.veid, width: 300, height: 300 },
+        ]);
     });
     it('logs resize when removed from DOM', async () => {
         addLoggableElements();
@@ -404,11 +495,9 @@ describe('LoggingDriver', () => {
         const element = document.getElementById('element');
         const parent = document.getElementById('parent');
         parent.removeChild(element);
-        await new Promise(resolve => new IntersectionObserver(resolve).observe(element));
-        await new Promise(resolve => new IntersectionObserver(resolve).observe(element));
-        assert.exists(throttler.process);
+        const [logging] = await expectCall(throttle);
         assert.isFalse(recordResize.called);
-        await throttler.process?.();
+        await logging();
         assert.isTrue(recordResize.calledOnce);
         assert.deepStrictEqual(stabilizeEvent(recordResize.firstCall.firstArg), { veid: 0, width: 0, height: 0 });
     });
@@ -419,9 +508,9 @@ describe('LoggingDriver', () => {
         await VisualLoggingTesting.LoggingDriver.startLogging();
         assert.isTrue(recordImpression.calledOnce);
         assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [
-            { id: 2, type: 1, context: 123, parent: 0 },
-            { id: 1, type: 1, context: 42, parent: 0, 'width': 300, 'height': 300 },
-            { id: 0, type: 1, 'width': 300, 'height': 300 },
+            { id: 2, type: 1, context: 123, parent: 0, width: 0, height: 0 },
+            { id: 1, type: 1, context: 42, parent: 0, width: 300, height: 300 },
+            { id: 0, type: 1, width: 300, height: 300 },
         ]);
         assert.isEmpty(VisualLoggingTesting.NonDomState.getNonDomState().loggables);
     });
@@ -432,9 +521,9 @@ describe('LoggingDriver', () => {
         await VisualLoggingTesting.LoggingDriver.startLogging();
         assert.isTrue(recordImpression.calledOnce);
         assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [
-            { id: 2, type: 1, context: 123 },
-            { id: 1, type: 1, context: 42, parent: 0, 'width': 300, 'height': 300 },
-            { id: 0, type: 1, 'width': 300, 'height': 300 },
+            { id: 2, type: 1, context: 123, width: 0, height: 0 },
+            { id: 1, type: 1, context: 42, parent: 0, width: 300, height: 300 },
+            { id: 0, type: 1, width: 300, height: 300 },
         ]);
         assert.isEmpty(VisualLoggingTesting.NonDomState.getNonDomState().loggables);
     });
@@ -446,8 +535,8 @@ describe('LoggingDriver', () => {
         await VisualLoggingTesting.LoggingDriver.startLogging();
         assert.isTrue(recordImpression.calledOnce);
         assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [
-            { id: 1, type: 1, context: 42, parent: 0, 'width': 300, 'height': 300 },
-            { id: 0, type: 1, 'width': 300, 'height': 300 },
+            { id: 1, type: 1, context: 42, parent: 0, width: 300, height: 300 },
+            { id: 0, type: 1, width: 300, height: 300 },
         ]);
         assert.deepInclude(VisualLoggingTesting.NonDomState.getNonDomState().loggables, { loggable, config: { ve: 1, context: '123' }, parent });
     });

@@ -8,7 +8,7 @@ import * as NonDomState from './NonDomState.js';
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logImpressions, logChange } from './LoggingEvents.js';
 export const logClick = (l, e) => LoggingEvents.logClick(LoggingDriver.clickLogThrottler)(l, e);
-export const logResize = (l, s) => LoggingEvents.logResize(LoggingDriver.resizeLogThrottler)(l, s);
+export const logResize = (l, s) => LoggingEvents.logResize(l, s);
 export const logKeyDown = async (l, e, context) => LoggingEvents.logKeyDown(LoggingDriver.keyboardLogThrottler)(l, e, context);
 export { registerParentProvider, setMappedParent } from './LoggingState.js';
 export function registerLoggable(loggable, config, parent) {

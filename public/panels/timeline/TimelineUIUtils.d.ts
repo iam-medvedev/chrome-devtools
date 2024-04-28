@@ -33,7 +33,7 @@ export declare class TimelineUIUtils {
         cacheRejected?: boolean;
         cacheKind?: string;
     }, contentHelper: TimelineDetailsContentHelper): void;
-    static buildTraceEventDetails(event: TraceEngine.Legacy.CompatibleTraceEvent, model: TimelineModel.TimelineModel.TimelineModelImpl, linkifier: LegacyComponents.Linkifier.Linkifier, detailed: boolean, traceParseData?: TraceEngine.Handlers.Types.TraceParseData | null): Promise<DocumentFragment>;
+    static buildTraceEventDetails(event: TraceEngine.Legacy.CompatibleTraceEvent, linkifier: LegacyComponents.Linkifier.Linkifier, detailed: boolean, traceParseData?: TraceEngine.Handlers.Types.TraceParseData | null): Promise<DocumentFragment>;
     static statsForTimeRange(events: TraceEngine.Legacy.CompatibleTraceEvent[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): {
         [x: string]: number;
     };
@@ -59,7 +59,7 @@ export declare class TimelineUIUtils {
     static markerShortTitle(event: TraceEngine.Legacy.Event): string | null;
     static markerStyleForEvent(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): TimelineMarkerStyle;
     static colorForId(id: string): string;
-    static displayNameForFrame(frame: TimelineModel.TimelineModel.PageFrame, trimAt?: number): string;
+    static displayNameForFrame(frame: TraceEngine.Types.TraceEvents.TraceFrame, trimAt?: number): string;
 }
 export declare const enum NetworkCategory {
     HTML = "HTML",
@@ -107,4 +107,11 @@ export interface TimelineMarkerStyle {
  * the LCP (for example) relative to the last navigation.
  **/
 export declare function timeStampForEventAdjustedForClosestNavigationIfPossible(event: TraceEngine.Types.TraceEvents.TraceEventData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null): TraceEngine.Types.Timing.MilliSeconds;
+/**
+ * Determines if an event is potentially a marker event. A marker event here
+ * is a single moment in time that we want to highlight on the timeline, such as
+ * the LCP time. This method does not filter out events: for example, it treats
+ * every LCP Candidate event as a potential marker event.
+ **/
+export declare function isMarkerEvent(traceParseData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
 export {};

@@ -87,14 +87,21 @@ export declare function setDescription(element: Element, description: string): v
 export declare function setActiveDescendant(element: Element, activedescendant: Element | null): void;
 export declare function setSetSize(element: Element, size: number): void;
 export declare function setPositionInSet(element: Element, position: number): void;
+type AlertState = {
+    one: HTMLDivElement;
+    two: HTMLDivElement;
+    alertToggle: boolean;
+};
+export declare function getOrCreateAlertElements(container?: HTMLElement): AlertState;
 /**
  * This function instantiates and switches off returning one of two offscreen alert elements.
  * We utilize two alert elements to ensure that alerts with the same string are still registered
  * as changes and trigger screen reader announcement.
  */
-export declare function alertElementInstance(): HTMLElement;
+export declare function alertElementInstance(container?: HTMLElement): HTMLElement;
 /**
  * This function is used to announce a message with the screen reader.
  * Setting the textContent would allow the SR to access the offscreen element via browse mode
  */
 export declare function alert(message: string): void;
+export {};

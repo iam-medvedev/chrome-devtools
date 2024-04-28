@@ -1532,6 +1532,9 @@
   "models/issues_manager/SharedArrayBufferIssue.ts | enablingSharedArrayBuffer": {
     "message": "Enabling SharedArrayBuffer"
   },
+  "models/issues_manager/SharedDictionaryIssue.ts | compressionDictionaryTransport": {
+    "message": "Compression Dictionary Transport"
+  },
   "models/logs/logs-meta.ts | clear": {
     "message": "clear"
   },
@@ -5045,9 +5048,6 @@
   "panels/console/ConsoleView.ts | issueToolbarTooltipGeneral": {
     "message": "Some problems no longer generate console messages, but are surfaced in the issues tab."
   },
-  "panels/console/ConsoleView.ts | logLevels": {
-    "message": "Log levels"
-  },
   "panels/console/ConsoleView.ts | logLevelS": {
     "message": "Log level: {PH1}"
   },
@@ -6842,22 +6842,22 @@
   "panels/issues/IssueView.ts | warned": {
     "message": "Warned"
   },
-  "panels/js_profiler/js_profiler-meta.ts | performance": {
+  "panels/js_timeline/js_timeline-meta.ts | performance": {
     "message": "Performance"
   },
-  "panels/js_profiler/js_profiler-meta.ts | record": {
+  "panels/js_timeline/js_timeline-meta.ts | record": {
     "message": "Record"
   },
-  "panels/js_profiler/js_profiler-meta.ts | showPerformance": {
+  "panels/js_timeline/js_timeline-meta.ts | showPerformance": {
     "message": "Show Performance"
   },
-  "panels/js_profiler/js_profiler-meta.ts | showRecentTimelineSessions": {
+  "panels/js_timeline/js_timeline-meta.ts | showRecentTimelineSessions": {
     "message": "Show recent timeline sessions"
   },
-  "panels/js_profiler/js_profiler-meta.ts | startProfilingAndReloadPage": {
+  "panels/js_timeline/js_timeline-meta.ts | startProfilingAndReloadPage": {
     "message": "Start profiling and reload page"
   },
-  "panels/js_profiler/js_profiler-meta.ts | stop": {
+  "panels/js_timeline/js_timeline-meta.ts | stop": {
     "message": "Stop"
   },
   "panels/layer_viewer/layer_viewer-meta.ts | panOrRotateDown": {
@@ -9167,51 +9167,6 @@
   "panels/performance_monitor/PerformanceMonitor.ts | styleRecalcsSec": {
     "message": "Style recalcs / sec"
   },
-  "panels/profiler/CPUProfileView.ts | aggregatedSelfTime": {
-    "message": "Aggregated self time"
-  },
-  "panels/profiler/CPUProfileView.ts | aggregatedTotalTime": {
-    "message": "Aggregated total time"
-  },
-  "panels/profiler/CPUProfileView.ts | cpuProfiles": {
-    "message": "CPU PROFILES"
-  },
-  "panels/profiler/CPUProfileView.ts | cpuProfilesShow": {
-    "message": "CPU profiles show where the execution time is spent in your page's JavaScript functions."
-  },
-  "panels/profiler/CPUProfileView.ts | fms": {
-    "message": "{PH1} ms"
-  },
-  "panels/profiler/CPUProfileView.ts | formatPercent": {
-    "message": "{PH1} %"
-  },
-  "panels/profiler/CPUProfileView.ts | name": {
-    "message": "Name"
-  },
-  "panels/profiler/CPUProfileView.ts | notOptimized": {
-    "message": "Not optimized"
-  },
-  "panels/profiler/CPUProfileView.ts | recording": {
-    "message": "Recording…"
-  },
-  "panels/profiler/CPUProfileView.ts | recordJavascriptCpuProfile": {
-    "message": "Record JavaScript CPU Profile"
-  },
-  "panels/profiler/CPUProfileView.ts | selfTime": {
-    "message": "Self Time"
-  },
-  "panels/profiler/CPUProfileView.ts | startCpuProfiling": {
-    "message": "Start CPU profiling"
-  },
-  "panels/profiler/CPUProfileView.ts | stopCpuProfiling": {
-    "message": "Stop CPU profiling"
-  },
-  "panels/profiler/CPUProfileView.ts | totalTime": {
-    "message": "Total Time"
-  },
-  "panels/profiler/CPUProfileView.ts | url": {
-    "message": "URL"
-  },
   "panels/profiler/HeapProfilerPanel.ts | revealInSummaryView": {
     "message": "Reveal in Summary view"
   },
@@ -9748,15 +9703,6 @@
   },
   "panels/profiler/ProfilesPanel.ts | cantLoadProfileWhileAnother": {
     "message": "Can’t load profile while another profile is being recorded."
-  },
-  "panels/profiler/ProfilesPanel.ts | deprecationWarnMsg": {
-    "message": "This panel will be deprecated in the upcoming version. Use the Performance panel to record JavaScript CPU profiles."
-  },
-  "panels/profiler/ProfilesPanel.ts | feedback": {
-    "message": "Feedback"
-  },
-  "panels/profiler/ProfilesPanel.ts | goToPerformancePanel": {
-    "message": "Go to Performance Panel"
   },
   "panels/profiler/ProfilesPanel.ts | profileLoadingFailedS": {
     "message": "Profile loading failed: {PH1}."
@@ -12461,9 +12407,6 @@
   "panels/timeline/EventUICategory.ts | imageDecode": {
     "message": "Image Decode"
   },
-  "panels/timeline/EventUICategory.ts | imageResize": {
-    "message": "Image Resize"
-  },
   "panels/timeline/EventUICategory.ts | installTimer": {
     "message": "Install Timer"
   },
@@ -12821,14 +12764,8 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Idle Frame"
   },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | onIgnoreList": {
-    "message": "On ignore list"
-  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "Partially Presented Frame"
-  },
-  "panels/timeline/TimelineFlameChartDataProvider.ts | sSelfS": {
-    "message": "{PH1} (self {PH2})"
   },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} at {PH2}"

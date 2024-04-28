@@ -531,7 +531,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.interestGroupTreeElement.addEvent(event.data);
     }
     addCookieDocument(frame) {
-        // In case the current frame was unreachable, show it's cookies
+        // In case the current frame was unreachable, show its cookies
         // instead of the error interstitials because they might help to
         // debug why the frame was unreachable.
         const urlToParse = frame.unreachableUrl() || frame.url;

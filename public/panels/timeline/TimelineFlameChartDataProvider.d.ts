@@ -28,11 +28,8 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private entryTypeByLevel;
     private screenshotImageCache;
     private entryIndexToTitle;
-    private asyncColorByCategory;
     private lastInitiatorEntry;
-    private entryParent;
     private lastSelection?;
-    private colorForEvent?;
     constructor();
     modifyTree(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
     findPossibleContextMenuActions(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
@@ -81,15 +78,12 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
     prepareHighlightedHiddenEntriesArrowInfo(entryIndex: number): Element | null;
     entryColor(entryIndex: number): string;
-    private genericTraceEventColor;
     private preparePatternCanvas;
     private drawFrame;
     private drawScreenshot;
     decorateEntry(entryIndex: number, context: CanvasRenderingContext2D, text: string | null, barX: number, barY: number, barWidth: number, barHeight: number, unclippedBarX: number, timeToPixelRatio: number): boolean;
     forceDecoration(entryIndex: number): boolean;
     private appendHeader;
-    private appendEvent;
-    private appendAsyncEvent;
     createSelection(entryIndex: number): TimelineSelection | null;
     formatValue(value: number, precision?: number): string;
     canJumpToEntry(_entryIndex: number): boolean;
@@ -101,8 +95,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
      * @returns if we should re-render the flame chart (canvas)
      */
     buildFlowForInitiator(entryIndex: number): boolean;
-    eventByIndex(entryIndex: number): TraceEngine.Legacy.CompatibleTraceEvent | null;
-    setEventColorMapping(colorForEvent: (arg0: TraceEngine.Legacy.Event) => string): void;
+    eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | null;
     get performanceModel(): PerformanceModel | null;
 }
 export declare const InstantEventVisibleDurationMs = 0.001;
@@ -114,7 +107,6 @@ export type EventTypes = {
 };
 export declare const enum EntryType {
     Frame = "Frame",
-    Event = "Event",
     TrackAppender = "TrackAppender",
     Screenshot = "Screenshot"
 }

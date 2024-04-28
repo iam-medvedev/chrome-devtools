@@ -52,7 +52,6 @@ export class TimelineModelImpl {
     currentTaskLayoutAndRecalcEvents;
     tracingModelInternal;
     lastRecalculateStylesEvent;
-    #isFreshRecording = false;
     constructor() {
         this.minimumRecordTimeInternal = 0;
         this.reset();
@@ -139,52 +138,11 @@ export class TimelineModelImpl {
         }
         return Math.max(index, 0);
     }
-    /**
-     * Determines if an event is potentially a marker event. A marker event here
-     * is a single moment in time that we want to highlight on the timeline, such as
-     * the LCP point. This method does not filter out events: for example, it treats
-     * every LCP Candidate event as a potential marker event. The logic to pick the
-     * right candidate to use is implemeneted in the TimelineFlameChartDataProvider.
-     **/
-    isMarkerEvent(event) {
-        switch (event.name) {
-            case RecordType.TimeStamp:
-                return true;
-            case RecordType.MarkFirstPaint:
-            case RecordType.MarkFCP:
-                return Boolean(this.mainFrame) && event.args.frame === this.mainFrame.frameId && Boolean(event.args.data);
-            case RecordType.MarkDOMContent:
-            case RecordType.MarkLoad:
-            case RecordType.MarkLCPCandidate:
-            case RecordType.MarkLCPInvalidate:
-                return Boolean(event.args['data']['isOutermostMainFrame'] ?? event.args['data']['isMainFrame']);
-            default:
-                return false;
-        }
-    }
-    isInteractiveTimeEvent(event) {
-        return event.name === RecordType.InteractiveTime;
-    }
-    isLayoutShiftEvent(event) {
-        return event.name === RecordType.LayoutShift;
-    }
-    static globalEventId(event, field) {
-        const data = event.args['data'] || event.args['beginData'];
-        const id = data && data[field];
-        if (!id) {
-            return '';
-        }
-        return `${event.thread.process().id()}.${id}`;
-    }
     static eventFrameId(event) {
         const data = event.args['data'] || event.args['beginData'];
         return data && data['frame'] || null;
     }
-    isFreshRecording() {
-        return this.#isFreshRecording;
-    }
-    setEvents(tracingModel, isFreshRecording = false) {
-        this.#isFreshRecording = isFreshRecording;
+    setEvents(tracingModel) {
         this.reset();
         this.resetProcessingState();
         this.tracingModelInternal = tracingModel;
@@ -422,24 +380,6 @@ export class TimelineModelImpl {
         }
         const eventData = event.args['data'] || event.args['beginData'] || {};
         const timelineData = EventOnTimelineData.forEvent(event);
-        if (eventData['stackTrace']) {
-            timelineData.stackTrace = eventData['stackTrace'].map((callFrameOrProfileNode) => {
-                // `callFrameOrProfileNode` can also be a `SDK.ProfileTreeModel.ProfileNode` for JSSample; that class
-                // has accessors to mimic a `CallFrame`, but apparently we don't adjust stack traces in that case. Whether
-                // we should is unclear.
-                if (event.name !== RecordType.JSSample && event.name !== RecordType.JSSystemSample &&
-                    event.name !== RecordType.JSIdleSample) {
-                    // We need to copy the data so we can safely modify it below.
-                    const frame = { ...callFrameOrProfileNode };
-                    // TraceEvents come with 1-based line & column numbers. The frontend code
-                    // requires 0-based ones. Adjust the values.
-                    --frame.lineNumber;
-                    --frame.columnNumber;
-                    return frame;
-                }
-                return callFrameOrProfileNode;
-            });
-        }
         let pageFrameId = TimelineModelImpl.eventFrameId(event);
         const last = eventStack[eventStack.length - 1];
         if (!pageFrameId && last) {
@@ -474,17 +414,6 @@ export class TimelineModelImpl {
                 const frameId = event.args?.beginData?.frame;
                 if (!frameId) {
                     break;
-                }
-                // In case we have no closing Layout event, endData is not available.
-                if (event.args['endData']) {
-                    if (event.args['endData']['layoutRoots']) {
-                        for (let i = 0; i < event.args['endData']['layoutRoots'].length; ++i) {
-                            timelineData.backendNodeIds.push(event.args['endData']['layoutRoots'][i]['nodeId']);
-                        }
-                    }
-                    else {
-                        timelineData.backendNodeIds.push(event.args['endData']['rootNode']);
-                    }
                 }
                 if (this.currentScriptEvent) {
                     this.currentTaskLayoutAndRecalcEvents.push(event);
@@ -534,11 +463,6 @@ export class TimelineModelImpl {
                 break;
             }
             case RecordType.Paint: {
-                // With CompositeAfterPaint enabled, paint events are no longer
-                // associated with a Node, and nodeId will not be present.
-                if ('nodeId' in eventData) {
-                    timelineData.backendNodeIds.push(eventData['nodeId']);
-                }
                 // Only keep layer paint events, skip paints for subframes that get painted to the same layer as parent.
                 if (!eventData['layerId']) {
                     break;
@@ -547,17 +471,11 @@ export class TimelineModelImpl {
                 this.lastPaintForLayer[layerId] = event;
                 break;
             }
-            case RecordType.ScrollLayer: {
-                timelineData.backendNodeIds.push(eventData['nodeId']);
-                break;
-            }
             case RecordType.PaintImage: {
-                timelineData.backendNodeIds.push(eventData['nodeId']);
                 timelineData.url = eventData['url'];
                 break;
             }
-            case RecordType.DecodeImage:
-            case RecordType.ResizeImage: {
+            case RecordType.DecodeImage: {
                 let paintImageEvent = this.findAncestorEvent(RecordType.PaintImage);
                 if (!paintImageEvent) {
                     const decodeLazyPixelRefEvent = this.findAncestorEvent(RecordType.DecodeLazyPixelRef);
@@ -568,7 +486,6 @@ export class TimelineModelImpl {
                     break;
                 }
                 const paintImageData = EventOnTimelineData.forEvent(paintImageEvent);
-                timelineData.backendNodeIds.push(paintImageData.backendNodeIds[0]);
                 timelineData.url = paintImageData.url;
                 break;
             }
@@ -579,7 +496,6 @@ export class TimelineModelImpl {
                 }
                 this.paintImageEventByPixelRefId[event.args['LazyPixelRef']] = paintImageEvent;
                 const paintImageData = EventOnTimelineData.forEvent(paintImageEvent);
-                timelineData.backendNodeIds.push(paintImageData.backendNodeIds[0]);
                 timelineData.url = paintImageData.url;
                 break;
             }
@@ -587,10 +503,6 @@ export class TimelineModelImpl {
                 if (timelineData.frameId !== event.args['frame']) {
                     return false;
                 }
-                break;
-            }
-            case RecordType.MarkLCPCandidate: {
-                timelineData.backendNodeIds.push(eventData['nodeId']);
                 break;
             }
             case RecordType.MarkDOMContent:
@@ -897,7 +809,6 @@ export var RecordType;
     RecordType["TracingSessionIdForWorker"] = "TracingSessionIdForWorker";
     RecordType["StartProfiling"] = "CpuProfiler::StartProfiling";
     RecordType["DecodeImage"] = "Decode Image";
-    RecordType["ResizeImage"] = "Resize Image";
     RecordType["DrawLazyPixelRef"] = "Draw LazyPixelRef";
     RecordType["DecodeLazyPixelRef"] = "Decode LazyPixelRef";
     RecordType["LazyPixelRef"] = "LazyPixelRef";
@@ -1000,17 +911,10 @@ export class PageFrame {
 }
 export class EventOnTimelineData {
     url;
-    backendNodeIds;
-    stackTrace;
     frameId;
     constructor() {
         this.url = null;
-        this.backendNodeIds = [];
-        this.stackTrace = null;
         this.frameId = null;
-    }
-    topFrame() {
-        return this.stackTrace && this.stackTrace[0] || null;
     }
     static forEvent(event) {
         if (event instanceof TraceEngine.Legacy.PayloadEvent) {
@@ -1024,9 +928,6 @@ export class EventOnTimelineData {
     static forTraceEventData(event) {
         return getOrCreateEventData(event);
     }
-    static reset() {
-        eventToData = new Map();
-    }
 }
 function getOrCreateEventData(event) {
     let data = eventToData.get(event);
@@ -1036,5 +937,5 @@ function getOrCreateEventData(event) {
     }
     return data;
 }
-let eventToData = new Map();
+const eventToData = new Map();
 //# sourceMappingURL=TimelineModel.js.map

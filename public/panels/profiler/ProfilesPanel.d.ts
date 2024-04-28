@@ -85,16 +85,6 @@ export declare class ProfilesSidebarTreeElement extends UI.TreeOutline.TreeEleme
     onselect(): boolean;
     onattach(): void;
 }
-export declare class JSProfilerPanel extends ProfilesPanel implements UI.ActionRegistration.ActionDelegate {
-    #private;
-    constructor();
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): JSProfilerPanel;
-    wasShown(): void;
-    willHide(): void;
-    handleAction(_context: UI.Context.Context, _actionId: string): boolean;
-}
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;
 }

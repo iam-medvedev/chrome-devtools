@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import { alert } from '../../legacy/ARIAUtils.js';
+import * as UI from '../../legacy/legacy.js';
 import { DataGrid } from './DataGrid.js';
 import dataGridControllerStyles from './dataGridController.css.js';
 import { getRowEntryForColumnId, getStringifiedCellValues, } from './DataGridUtils.js';
@@ -179,7 +179,7 @@ export class DataGridController extends HTMLElement {
         const headerName = column.title;
         if (this.#sortState) {
             this.#sortRows(this.#sortState);
-            alert(this.#sortState.direction === "ASC" /* SortDirection.ASC */ ?
+            UI.ARIAUtils.alert(this.#sortState.direction === "ASC" /* SortDirection.ASC */ ?
                 i18nString(UIStrings.sortInAscendingOrder, { PH1: headerName || '' }) :
                 i18nString(UIStrings.sortInDescendingOrder, { PH1: headerName || '' }));
         }
@@ -187,7 +187,7 @@ export class DataGridController extends HTMLElement {
             // No sortstate = render the original rows.
             this.#rows = this.#cloneAndFilterRows(this.#originalRows, this.#filters);
             this.#render();
-            alert(i18nString(UIStrings.sortingCanceled, { PH1: headerName || '' }));
+            UI.ARIAUtils.alert(i18nString(UIStrings.sortingCanceled, { PH1: headerName || '' }));
         }
     }
     #onContextMenuColumnSortClick(event) {

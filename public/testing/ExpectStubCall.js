@@ -11,4 +11,11 @@ export function expectCall(stub, fakeFn) {
         });
     });
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function expectCalled(stub, fakeFn) {
+    if (stub.called) {
+        return Promise.resolve(stub.lastCall.args);
+    }
+    return expectCall(stub, fakeFn);
+}
 //# sourceMappingURL=ExpectStubCall.js.map

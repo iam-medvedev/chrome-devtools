@@ -11,6 +11,7 @@ import { data as metaHandlerData } from './MetaHandler.js';
 // We don't need to know which process / thread these events occurred in,
 // because they are effectively global, so we just track all that we find.
 const allEvents = [];
+const beginCommitCompositorFrameEvents = [];
 export const LONG_INTERACTION_THRESHOLD = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(200));
 let longestInteractionEvent = null;
 const interactionEvents = [];
@@ -20,6 +21,7 @@ const eventTimingStartEventsForInteractions = [];
 let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 export function reset() {
     allEvents.length = 0;
+    beginCommitCompositorFrameEvents.length = 0;
     interactionEvents.length = 0;
     eventTimingStartEventsForInteractions.length = 0;
     eventTimingEndEventsById.clear();
@@ -30,6 +32,10 @@ export function reset() {
 export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('Handler is not initialized');
+    }
+    if (Types.TraceEvents.isTraceEventBeginCommitCompositorFrame(event)) {
+        beginCommitCompositorFrameEvents.push(event);
+        return;
     }
     if (!Types.TraceEvents.isTraceEventEventTiming(event)) {
         return;
@@ -263,6 +269,7 @@ export async function finalize() {
 export function data() {
     return {
         allEvents,
+        beginCommitCompositorFrameEvents,
         interactionEvents,
         interactionEventsWithNoNesting,
         longestInteractionEvent,

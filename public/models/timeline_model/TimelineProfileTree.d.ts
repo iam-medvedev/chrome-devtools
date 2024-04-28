@@ -57,7 +57,7 @@ export declare class BottomUpRootNode extends Node {
     readonly endTime: number;
     private eventGroupIdCallback;
     totalTime: number;
-    constructor(events: TraceEngine.Legacy.CompatibleTraceEvent[], textFilter: TimelineModelFilter, filters: TimelineModelFilter[], startTime: number, endTime: number, eventGroupIdCallback: ((arg0: TraceEngine.Legacy.Event) => string) | null);
+    constructor(events: TraceEngine.Legacy.CompatibleTraceEvent[], textFilter: TimelineModelFilter, filters: TimelineModelFilter[], startTime: number, endTime: number, eventGroupIdCallback: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent) => string) | null);
     hasChildren(): boolean;
     filterChildren(children: ChildrenCache): ChildrenCache;
     children(): ChildrenCache;

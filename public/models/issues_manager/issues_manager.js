@@ -23,7 +23,8 @@ import * as PropertyRuleIssue from './PropertyRuleIssue.js';
 import * as QuirksModeIssue from './QuirksModeIssue.js';
 import * as RelatedIssue from './RelatedIssue.js';
 import * as SharedArrayBufferIssue from './SharedArrayBufferIssue.js';
+import * as SharedDictionaryIssue from './SharedDictionaryIssue.js';
 import * as SourceFrameIssuesManager from './SourceFrameIssuesManager.js';
 import * as StylesheetLoadingIssue from './StylesheetLoadingIssue.js';
-export { AttributionReportingIssue, CheckFormsIssuesTrigger, ClientHintIssue, ContentSecurityPolicyIssue, ContrastCheckTrigger, CookieIssue, CorsIssue, CrossOriginEmbedderPolicyIssue, DeprecationIssue, FederatedAuthUserInfoRequestIssue, GenericIssue, HeavyAdIssue, Issue, IssueResolver, IssuesManager, LowTextContrastIssue, MarkdownIssueDescription, MixedContentIssue, PropertyRuleIssue, QuirksModeIssue, RelatedIssue, SharedArrayBufferIssue, SourceFrameIssuesManager, StylesheetLoadingIssue, };
+export { AttributionReportingIssue, CheckFormsIssuesTrigger, ClientHintIssue, ContentSecurityPolicyIssue, ContrastCheckTrigger, CookieIssue, CorsIssue, CrossOriginEmbedderPolicyIssue, DeprecationIssue, FederatedAuthUserInfoRequestIssue, GenericIssue, HeavyAdIssue, Issue, IssueResolver, IssuesManager, LowTextContrastIssue, MarkdownIssueDescription, MixedContentIssue, PropertyRuleIssue, QuirksModeIssue, RelatedIssue, SharedArrayBufferIssue, SharedDictionaryIssue, SourceFrameIssuesManager, StylesheetLoadingIssue, };
 //# sourceMappingURL=issues_manager.js.map

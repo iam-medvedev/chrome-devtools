@@ -27,17 +27,15 @@ export async function logImpressions(loggables) {
         processImpressionsForDebugging(loggables.map(l => getLoggingState(l)));
     }
 }
-export const logResize = (throttler) => (loggable, size) => {
+export const logResize = (loggable, size) => {
     const loggingState = getLoggingState(loggable);
     if (!loggingState) {
         return;
     }
     loggingState.size = size;
     const resizeEvent = { veid: loggingState.veid, width: loggingState.size.width, height: loggingState.size.height };
-    void throttler.schedule(async () => {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordResize(resizeEvent);
-        processEventForDebugging('Resize', loggingState, { width: size.width, height: size.height });
-    });
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordResize(resizeEvent);
+    processEventForDebugging('Resize', loggingState, { width: size.width, height: size.height });
 };
 export const logClick = (throttler) => (loggable, event, options) => {
     const loggingState = getLoggingState(loggable);

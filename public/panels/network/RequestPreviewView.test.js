@@ -31,7 +31,7 @@ describeWithLocale('RequestPreviewView', () => {
         expect(frame?.getAttribute('csp')).to.eql('default-src \'none\';img-src data:;style-src \'unsafe-inline\'');
         component.detach();
     });
-    it('does not add utf-8 charset to the data URL for the HTML preview for already decoded content', async () => {
+    it('does add utf-8 charset to the data URL for the HTML preview for already decoded content', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'http://devtools-frontend.test/index.html', '', null, null, null);
         request.setContentDataProvider(() => Promise.resolve(new TextUtils.ContentData.ContentData('<!DOCTYPE html>\n<p>Iñtërnâtiônàlizætiøn☃𝌆</p>', false, 'text/html', 'utf-16')));
         request.mimeType = "text/html" /* Platform.MimeType.MimeType.HTML */;
@@ -41,7 +41,7 @@ describeWithLocale('RequestPreviewView', () => {
         const widget = await component.showPreview();
         const frame = widget.contentElement.querySelector('iframe');
         assert.exists(frame);
-        assert.notInclude(frame.src, 'charset=utf-8');
+        assert.include(frame.src, 'charset=utf-8');
         assert.notInclude(frame.src, ' base64');
     });
     it('does add the correct charset to the data URL for the HTML preview for base64 content', async () => {

@@ -9,7 +9,7 @@ import * as TraceEngine from '../trace.js';
 function nodeId(x) {
     return x;
 }
-describeWithMockConnection('TraceSDKServices', function () {
+describeWithMockConnection('FetchNodes', function () {
     beforeEach(async () => {
         clearAllMockConnectionResponseHandlers();
         TraceEngine.Extras.FetchNodes.clearCacheForTesting();
@@ -88,6 +88,72 @@ describeWithMockConnection('TraceSDKServices', function () {
                 [nodeId(2), domNodeId2],
                 [nodeId(3), domNodeId3],
             ]);
+        });
+    });
+    describe('nodeIdsForEvent', () => {
+        it('identifies node ids for a Layout event', async function () {
+            const traceData = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const layoutEvent = traceData.Renderer.allTraceEntries.find(TraceEngine.Types.TraceEvents.isTraceEventLayout);
+            assert.isOk(layoutEvent);
+            const nodeIds = TraceEngine.Extras.FetchNodes.nodeIdsForEvent(traceData, layoutEvent);
+            assert.deepEqual(Array.from(nodeIds), [2]);
+        });
+        it('identifies node ids for a LayoutShift event', async function () {
+            const traceData = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const layoutShiftEvent = traceData.LayoutShifts.clusters[0].events.at(0);
+            assert.isOk(layoutShiftEvent);
+            const nodeIds = TraceEngine.Extras.FetchNodes.nodeIdsForEvent(traceData, layoutShiftEvent);
+            assert.deepEqual(Array.from(nodeIds), [
+                193,
+                195,
+                178,
+                189,
+                188,
+            ]);
+        });
+        it('identifies node ids for a Paint event', async function () {
+            const traceData = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const paintEvent = traceData.Renderer.allTraceEntries.find(TraceEngine.Types.TraceEvents.isTraceEventPaint);
+            assert.isOk(paintEvent);
+            const nodeIds = TraceEngine.Extras.FetchNodes.nodeIdsForEvent(traceData, paintEvent);
+            assert.deepEqual(Array.from(nodeIds), [75]);
+        });
+        it('identifies node ids for a PaintImage event', async function () {
+            const traceData = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const paintImageEvent = traceData.Renderer.allTraceEntries.find(TraceEngine.Types.TraceEvents.isTraceEventPaintImage);
+            assert.isOk(paintImageEvent);
+            const nodeIds = TraceEngine.Extras.FetchNodes.nodeIdsForEvent(traceData, paintImageEvent);
+            assert.deepEqual(Array.from(nodeIds), [107]);
+        });
+        it('identifies node ids for a ScrollLayer event', async function () {
+            // This trace chosen as it happens to have ScrollLayer events, unlike the
+            // web-dev traces used in tests above.
+            const traceData = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
+            const scrollLayerEvent = traceData.Renderer.allTraceEntries.find(TraceEngine.Types.TraceEvents.isTraceEventScrollLayer);
+            assert.isOk(scrollLayerEvent);
+            const nodeIds = TraceEngine.Extras.FetchNodes.nodeIdsForEvent(traceData, scrollLayerEvent);
+            assert.deepEqual(Array.from(nodeIds), [4]);
+        });
+        it('identifies node ids for a DecodeImage event', async function () {
+            const traceData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const decodeImageEvent = traceData.Renderer.allTraceEntries.find(TraceEngine.Types.TraceEvents.isTraceEventDecodeImage);
+            assert.isOk(decodeImageEvent);
+            const nodeIds = TraceEngine.Extras.FetchNodes.nodeIdsForEvent(traceData, decodeImageEvent);
+            assert.deepEqual(Array.from(nodeIds), [240]);
+        });
+        it('identifies node ids for a DrawLazyPixelRef event', async function () {
+            const traceData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const drawLazyPixelRefEvent = traceData.Renderer.allTraceEntries.find(TraceEngine.Types.TraceEvents.isTraceEventDrawLazyPixelRef);
+            assert.isOk(drawLazyPixelRefEvent);
+            const nodeIds = TraceEngine.Extras.FetchNodes.nodeIdsForEvent(traceData, drawLazyPixelRefEvent);
+            assert.deepEqual(Array.from(nodeIds), [212]);
+        });
+        it('identifies node ids for a MarkLCP event', async function () {
+            const traceData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const lcpCandidateEvent = traceData.PageLoadMetrics.allMarkerEvents.find(TraceEngine.Types.TraceEvents.isTraceEventLargestContentfulPaintCandidate);
+            assert.isOk(lcpCandidateEvent);
+            const nodeIds = TraceEngine.Extras.FetchNodes.nodeIdsForEvent(traceData, lcpCandidateEvent);
+            assert.deepEqual(Array.from(nodeIds), [209]);
         });
     });
     describe('LayoutShifts', () => {

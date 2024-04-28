@@ -156,7 +156,7 @@ export declare class ConsoleViewFilter {
     private readonly filterParser;
     currentFilter: ConsoleFilter;
     private levelLabels;
-    readonly levelMenuButton: UI.Toolbar.ToolbarButton;
+    readonly levelMenuButton: UI.Toolbar.ToolbarMenuButton;
     constructor(filterChangedCallback: () => void);
     onMessageAdded(message: SDK.ConsoleModel.ConsoleMessage): void;
     setLevelMenuOverridden(overridden: boolean): void;
@@ -164,7 +164,7 @@ export declare class ConsoleViewFilter {
     private updateCurrentFilter;
     private onFilterChanged;
     private updateLevelMenuButtonText;
-    private showLevelContextMenu;
+    private appendLevelMenuItems;
     addMessageURLFilter(url: Platform.DevToolsPath.UrlString): void;
     shouldBeVisible(viewMessage: ConsoleViewMessage): boolean;
     clear(): void;

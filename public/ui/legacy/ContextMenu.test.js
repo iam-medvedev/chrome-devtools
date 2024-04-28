@@ -91,7 +91,11 @@ describeWithEnvironment('ContextMenu', () => {
         assert.exists(throttler.process);
         await throttler.process?.();
         assert.isTrue(recordImpression.calledOnce);
-        assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [{ id: 0, type: 67 }, { id: 1, type: 29, parent: 0, context: 42 }, { id: 2, type: 29, parent: 0, context: 44 }]);
+        assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [
+            { id: 0, type: 67, height: 0, width: 0 },
+            { id: 1, type: 29, parent: 0, context: 42, height: 0, width: 0 },
+            { id: 2, type: 29, parent: 0, context: 44, height: 0, width: 0 },
+        ]);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, 1);
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isTrue(recordClick.calledOnce);

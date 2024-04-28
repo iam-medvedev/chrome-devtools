@@ -7,8 +7,8 @@ export class PerformanceModel {
     constructor() {
         this.timelineModelInternal = new TimelineModel.TimelineModel.TimelineModelImpl();
     }
-    async setTracingModel(model, isFreshRecording = false) {
-        this.timelineModelInternal.setEvents(model, isFreshRecording);
+    async setTracingModel(model) {
+        this.timelineModelInternal.setEvents(model);
     }
     timelineModel() {
         return this.timelineModelInternal;

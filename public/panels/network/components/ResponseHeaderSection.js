@@ -13,7 +13,7 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { compareHeaders, HeaderSectionRow, } from './HeaderSectionRow.js';
+import { compareHeaders, HeaderSectionRow, isValidHeaderName, } from './HeaderSectionRow.js';
 import responseHeaderSectionStyles from './ResponseHeaderSection.css.js';
 const { render, html } = LitHtml;
 const UIStrings = {
@@ -289,8 +289,10 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
             return;
         }
         const index = Number(target.dataset.index);
-        this.#updateOverrides(event.headerName, event.headerValue, index);
-        Host.userMetrics.actionTaken(Host.UserMetrics.Action.HeaderOverrideHeaderEdited);
+        if (isValidHeaderName(event.headerName)) {
+            this.#updateOverrides(event.headerName, event.headerValue, index);
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.HeaderOverrideHeaderEdited);
+        }
     }
     #fileNameFromUrl(url) {
         const rawPath = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().rawPathFromUrl(url, true);

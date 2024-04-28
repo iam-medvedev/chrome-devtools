@@ -52,6 +52,9 @@ export function isTraceEventStyleRecalcInvalidationTracking(event) {
 export function isTraceEventStyleInvalidatorInvalidationTracking(event) {
     return event.name === "StyleInvalidatorInvalidationTracking" /* KnownEventName.StyleInvalidatorInvalidationTracking */;
 }
+export function isTraceEventBeginCommitCompositorFrame(event) {
+    return event.name === "BeginCommitCompositorFrame" /* KnownEventName.BeginCommitCompositorFrame */;
+}
 export function isTraceEventScheduleStyleRecalculation(event) {
     return event.name === "ScheduleStyleRecalculation" /* KnownEventName.ScheduleStyleRecalculation */;
 }
@@ -103,6 +106,15 @@ export function isTraceEventActivateLayerTree(event) {
 }
 export function isSyntheticInvalidation(event) {
     return event.name === 'SyntheticInvalidation';
+}
+export function isTraceEventDrawLazyPixelRef(event) {
+    return event.name === "Draw LazyPixelRef" /* KnownEventName.DrawLazyPixelRef */;
+}
+export function isTraceEventDecodeLazyPixelRef(event) {
+    return event.name === "Decode LazyPixelRef" /* KnownEventName.DecodeLazyPixelRef */;
+}
+export function isTraceEventDecodeImage(event) {
+    return event.name === "Decode Image" /* KnownEventName.DecodeImage */;
 }
 export function isStyleRecalcSelectorStats(event) {
     return event.name === "SelectorStats" /* KnownEventName.SelectorStats */;
@@ -345,6 +357,12 @@ export function isProfileCall(event) {
 }
 export function isTraceEventPaint(event) {
     return event.name === "Paint" /* KnownEventName.Paint */;
+}
+export function isTraceEventPaintImage(event) {
+    return event.name === "PaintImage" /* KnownEventName.PaintImage */;
+}
+export function isTraceEventScrollLayer(event) {
+    return event.name === "ScrollLayer" /* KnownEventName.ScrollLayer */;
 }
 export function isTraceEventSetLayerId(event) {
     return event.name === "SetLayerTreeId" /* KnownEventName.SetLayerTreeId */;

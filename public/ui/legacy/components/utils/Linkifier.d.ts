@@ -5,6 +5,7 @@ import * as SDK from '../../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../../generated/protocol.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
+import type * as TraceEngine from '../../../../models/trace/trace.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
 import type * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as UI from '../../legacy.js';
@@ -33,7 +34,7 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     maybeLinkifyScriptLocation(target: SDK.Target.Target | null, scriptId: Protocol.Runtime.ScriptId | null, sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number | undefined, options?: LinkifyOptions): HTMLElement | null;
     linkifyScriptLocation(target: SDK.Target.Target | null, scriptId: Protocol.Runtime.ScriptId | null, sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number | undefined, options?: LinkifyOptions): HTMLElement;
     linkifyRawLocation(rawLocation: SDK.DebuggerModel.Location, fallbackUrl: Platform.DevToolsPath.UrlString, className?: string): Element;
-    maybeLinkifyConsoleCallFrame(target: SDK.Target.Target | null, callFrame: Protocol.Runtime.CallFrame, options?: LinkifyOptions): HTMLElement | null;
+    maybeLinkifyConsoleCallFrame(target: SDK.Target.Target | null, callFrame: Protocol.Runtime.CallFrame | TraceEngine.Types.TraceEvents.TraceEventCallFrame, options?: LinkifyOptions): HTMLElement | null;
     linkifyStackTraceTopFrame(target: SDK.Target.Target | null, stackTrace: Protocol.Runtime.StackTrace): HTMLElement;
     linkifyCSSLocation(rawLocation: SDK.CSSModel.CSSLocation, classes?: string): Element;
     reset(): void;

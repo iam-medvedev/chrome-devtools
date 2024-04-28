@@ -163,6 +163,7 @@ style.setProperty('--image-file-justify-items-center', 'url(\"' + new URL('./src
 style.setProperty('--image-file-justify-items-end', 'url(\"' + new URL('./src/justify-items-end.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-items-start', 'url(\"' + new URL('./src/justify-items-start.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-items-stretch', 'url(\"' + new URL('./src/justify-items-stretch.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-keyboard-arrow-right', 'url(\"' + new URL('./src/keyboard-arrow-right.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-keyboard-pen', 'url(\"' + new URL('./src/keyboard-pen.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-large-arrow-right-filled', 'url(\"' + new URL('./src/large-arrow-right-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-layers-filled', 'url(\"' + new URL('./src/layers-filled.svg', import.meta.url).toString() + '\")');

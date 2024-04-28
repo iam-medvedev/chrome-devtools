@@ -419,4 +419,7 @@ export declare const NotRestoredReasonDescription: {
     BroadcastChannelOnMessage: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    RequestedByWebViewClient: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
 };

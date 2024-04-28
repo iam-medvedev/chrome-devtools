@@ -15,7 +15,7 @@ describe('RequestHTMLView', () => {
         const iframe = htmlView.contentElement.querySelector('iframe');
         assert.exists(iframe);
         assert.strictEqual(iframe.src, contentData.asDataUrl());
-        assert.strictEqual(decodeURIComponent(iframe.src), 'data:text/html,' + content);
+        assert.strictEqual(decodeURIComponent(iframe.src), 'data:text/html;charset=utf-8,' + content);
         htmlView.detach();
     });
 });

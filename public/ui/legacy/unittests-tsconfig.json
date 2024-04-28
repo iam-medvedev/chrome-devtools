@@ -37,6 +37,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/ui/legacy/ARIAUtils.test.ts",
     "../../../../../../front_end/ui/legacy/ActionRegistration.test.ts",
     "../../../../../../front_end/ui/legacy/Context.test.ts",
     "../../../../../../front_end/ui/legacy/ContextMenu.test.ts",

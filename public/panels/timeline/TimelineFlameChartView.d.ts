@@ -12,7 +12,6 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private model;
     private searchResults;
     private eventListeners;
-    private readonly showMemoryGraphSetting;
     private readonly networkSplitWidget;
     private mainDataProvider;
     private readonly mainFlameChart;
@@ -38,7 +37,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     fixMe(): void;
     isNetworkTrackShownForTests(): boolean;
     getMainDataProvider(): TimelineFlameChartDataProvider;
-    updateColorMapper(): void;
+    refreshMainFlameChart(): void;
     windowChanged(windowStartTime: TraceEngine.Types.Timing.MilliSeconds, windowEndTime: TraceEngine.Types.Timing.MilliSeconds, animate: boolean): void;
     updateRangeSelection(startTime: number, endTime: number): void;
     getMainFlameChart(): PerfUI.FlameChart.FlameChart;
@@ -48,7 +47,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     highlightEvent(event: TraceEngine.Legacy.Event | null): void;
     willHide(): void;
     wasShown(): void;
-    private updateCountersGraphToggle;
+    updateCountersGraphToggle(showMemoryGraph: boolean): void;
     setSelection(selection: TimelineSelection | null): void;
     private onEntrySelected;
     resizeToPreferredHeights(): void;

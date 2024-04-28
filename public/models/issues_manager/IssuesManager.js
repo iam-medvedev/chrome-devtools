@@ -20,6 +20,7 @@ import { MixedContentIssue } from './MixedContentIssue.js';
 import { PropertyRuleIssue } from './PropertyRuleIssue.js';
 import { QuirksModeIssue } from './QuirksModeIssue.js';
 import { SharedArrayBufferIssue } from './SharedArrayBufferIssue.js';
+import { SharedDictionaryIssue } from './SharedDictionaryIssue.js';
 import { SourceFrameIssuesManager } from './SourceFrameIssuesManager.js';
 import { StylesheetLoadingIssue } from './StylesheetLoadingIssue.js';
 let issuesManagerInstance = null;
@@ -55,6 +56,10 @@ const issueCodeHandlers = new Map([
     [
         "SharedArrayBufferIssue" /* Protocol.Audits.InspectorIssueCode.SharedArrayBufferIssue */,
         SharedArrayBufferIssue.fromInspectorIssue,
+    ],
+    [
+        "SharedDictionaryIssue" /* Protocol.Audits.InspectorIssueCode.SharedDictionaryIssue */,
+        SharedDictionaryIssue.fromInspectorIssue,
     ],
     [
         "LowTextContrastIssue" /* Protocol.Audits.InspectorIssueCode.LowTextContrastIssue */,

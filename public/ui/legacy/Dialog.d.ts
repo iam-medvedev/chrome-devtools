@@ -18,6 +18,7 @@ export declare class Dialog extends Dialog_base {
     private escapeKeyCallback;
     constructor(jslogContext?: string);
     static hasInstance(): boolean;
+    static getInstance(): Dialog | null;
     show(where?: Document | Element): void;
     hide(): void;
     setCloseOnEscape(close: boolean): void;

@@ -26,7 +26,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -40,7 +39,6 @@ import { ProfileLauncherView } from './ProfileLauncherView.js';
 import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
 import profilesPanelStyles from './profilesPanel.css.js';
 import profilesSidebarTreeStyles from './profilesSidebarTree.css.js';
-import { instance } from './ProfileTypeRegistry.js';
 const UIStrings = {
     /**
      *@description Text in Profiles Panel of a profiler tool
@@ -65,18 +63,6 @@ const UIStrings = {
      *@description Text in Profiles Panel of a profiler tool
      */
     profiles: 'Profiles',
-    /**
-     *@description Text in the JS Profiler panel to show warning to user that JS profiler will be deprecated.
-     */
-    deprecationWarnMsg: 'This panel will be deprecated in the upcoming version. Use the Performance panel to record JavaScript CPU profiles.',
-    /**
-     *@description Text of a button in the JS Profiler panel to let user give feedback.
-     */
-    feedback: 'Feedback',
-    /**
-     *@description Text of a button in the JS Profiler panel to let user go to Performance panel.
-     */
-    goToPerformancePanel: 'Go to Performance Panel',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/profiler/ProfilesPanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -565,69 +551,6 @@ export class ProfilesSidebarTreeElement extends UI.TreeOutline.TreeElement {
             .createChild('span', 'title-container')
             .createChild('span', 'title')
             .textContent = i18nString(UIStrings.profiles);
-    }
-}
-let jsProfilerPanelInstance;
-export class JSProfilerPanel extends ProfilesPanel {
-    constructor() {
-        const registry = instance;
-        super('js-profiler', [registry.cpuProfileType], 'profiler.js-toggle-recording');
-        this.splitWidget().mainWidget()?.setMinimumSize(350, 0);
-        this.#showDeprecationInfobar();
-    }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!jsProfilerPanelInstance || forceNew) {
-            jsProfilerPanelInstance = new JSProfilerPanel();
-        }
-        return jsProfilerPanelInstance;
-    }
-    #showDeprecationInfobar() {
-        function openFeedbackLink() {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab('https://crbug.com/1354548');
-        }
-        async function openPerformancePanel() {
-            await UI.InspectorView.InspectorView.instance().showPanel('timeline');
-        }
-        const infobar = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.Warning */, 
-        /* text */ i18nString(UIStrings.deprecationWarnMsg), /* actions? */ [
-            {
-                text: i18nString(UIStrings.feedback),
-                highlight: false,
-                delegate: openFeedbackLink,
-                dismiss: false,
-                jslogContext: 'feedback',
-            },
-            {
-                text: i18nString(UIStrings.goToPerformancePanel),
-                highlight: true,
-                delegate: openPerformancePanel,
-                dismiss: false,
-                jslogContext: 'go-to-performance-panel',
-            },
-        ], 
-        /* disableSetting? */ undefined, 
-        /* isCloseable TODO(crbug.com/1354548) Remove the prop from infobar with JS Profiler deprecation */ false, 'panel-deprecated');
-        infobar.setParentView(this);
-        this.splitWidget().mainWidget()?.element.prepend(infobar.element);
-    }
-    wasShown() {
-        super.wasShown();
-        UI.Context.Context.instance().setFlavor(JSProfilerPanel, this);
-    }
-    willHide() {
-        UI.Context.Context.instance().setFlavor(JSProfilerPanel, null);
-        super.willHide();
-    }
-    handleAction(_context, _actionId) {
-        const panel = UI.Context.Context.instance().flavor(JSProfilerPanel);
-        if (panel instanceof JSProfilerPanel) {
-            panel.toggleRecord();
-        }
-        else {
-            throw new Error('non-null JSProfilerPanel expected!');
-        }
-        return true;
     }
 }
 export class ActionDelegate {

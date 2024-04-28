@@ -8,8 +8,8 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { BottomUpProfileDataGridTree } from './BottomUpProfileDataGrid.js';
-import { CPUProfileFlameChart, type ProfileFlameChartDataProvider } from './CPUProfileFlameChart.js';
 import { type Formatter, ProfileDataGridTree } from './ProfileDataGrid.js';
+import { ProfileFlameChart, type ProfileFlameChartDataProvider } from './ProfileFlameChartDataProvider.js';
 import { type DataDisplayDelegate, ProfileHeader, type ProfileType } from './ProfileHeader.js';
 import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
 import { TopDownProfileDataGridTree } from './TopDownProfileDataGrid.js';
@@ -30,9 +30,9 @@ export declare class ProfileView extends UI.View.SimpleView implements UI.Search
     topDownProfileDataGridTree?: TopDownProfileDataGridTree | null;
     currentSearchResultIndex?: number;
     dataProvider?: ProfileFlameChartDataProvider;
-    flameChart?: CPUProfileFlameChart;
-    visibleView?: CPUProfileFlameChart | DataGrid.DataGrid.DataGridWidget<unknown>;
-    searchableElement?: ProfileDataGridTree | CPUProfileFlameChart;
+    flameChart?: ProfileFlameChart;
+    visibleView?: ProfileFlameChart | DataGrid.DataGrid.DataGridWidget<unknown>;
+    searchableElement?: ProfileDataGridTree | ProfileFlameChart;
     profileDataGridTree?: ProfileDataGridTree;
     constructor();
     static buildPopoverTable(entryInfo: {

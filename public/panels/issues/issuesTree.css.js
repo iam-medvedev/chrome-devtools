@@ -127,10 +127,6 @@ p {
   visibility: visible;
 }
 
-.header devtools-hide-issues-menu.has-context-menu-opened {
-  visibility: visible;
-}
-
 .title {
   flex: 1;
   font-size: 12px;

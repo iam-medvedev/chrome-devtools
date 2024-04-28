@@ -664,5 +664,6 @@ export const NotRestoredReasonDescription = {
     'UnloadHandler': { name: i18nLazyString(UIStrings.UnloadHandler) },
     'ParserAborted': { name: i18nLazyString(UIStrings.ParserAborted) },
     'BroadcastChannelOnMessage': { name: i18nLazyString(UIStrings.BroadcastChannelOnMessage) },
+    'RequestedByWebViewClient': { name: i18nLazyString(UIStrings.BroadcastChannelOnMessage) },
 };
 //# sourceMappingURL=BackForwardCacheStrings.js.map

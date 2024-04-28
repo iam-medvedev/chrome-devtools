@@ -27,7 +27,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -35,7 +34,6 @@ import * as ARIAUtils from './ARIAUtils.js';
 import { GlassPane } from './GlassPane.js';
 import { InspectorView } from './InspectorView.js';
 import softContextMenuStyles from './softContextMenu.css.legacy.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
 import { Tooltip } from './Tooltip.js';
 import { createTextChild, ElementFocusRestorer } from './UIUtils.js';
 const UIStrings = {
@@ -295,16 +293,8 @@ export class SoftContextMenu {
         }
         createTextChild(menuItemElement, item.label || '');
         ARIAUtils.setExpanded(menuItemElement, false);
-        // TODO: Consider removing this branch and use the same icon on all platforms.
-        if (Host.Platform.isMac() && !ThemeSupport.ThemeSupport.instance().hasTheme()) {
-            const subMenuArrowElement = menuItemElement.createChild('span', 'soft-context-menu-item-submenu-arrow');
-            ARIAUtils.markAsHidden(subMenuArrowElement);
-            subMenuArrowElement.textContent = '\u25B6'; // BLACK RIGHT-POINTING TRIANGLE
-        }
-        else {
-            const subMenuArrowElement = IconButton.Icon.create('triangle-right', 'soft-context-menu-item-submenu-arrow');
-            menuItemElement.appendChild(subMenuArrowElement);
-        }
+        const subMenuArrowElement = IconButton.Icon.create('keyboard-arrow-right', 'soft-context-menu-item-submenu-arrow');
+        menuItemElement.appendChild(subMenuArrowElement);
         menuItemElement.addEventListener('mousedown', this.menuItemMouseDown.bind(this), false);
         menuItemElement.addEventListener('mouseup', this.menuItemMouseUp.bind(this), false);
         // Manually manage hover highlight since :hover does not work in case of click-and-hold menu invocation.
@@ -405,10 +395,10 @@ export class SoftContextMenu {
         this.subMenu = new SoftContextMenu(detailsForElement.subItems, this.itemSelectedCallback, false, this);
         const anchorBox = menuItemElement.boxInWindow();
         // Adjust for padding.
-        anchorBox.y -= 5;
+        anchorBox.y -= 9;
         anchorBox.x += 3;
         anchorBox.width -= 6;
-        anchorBox.height += 10;
+        anchorBox.height += 18;
         this.subMenu.show(this.document, anchorBox);
     }
     menuItemMouseOver(event) {

@@ -21,6 +21,11 @@ export class AidaClient {
             request.options ??= {};
             request.options.model_id = modelId;
         }
+        if (Root.Runtime.Runtime.queryParam('ci_disallowLogging') === 'true') {
+            request.metadata = {
+                disable_user_content_logging: true,
+            };
+        }
         return request;
     }
     async *fetch(input) {

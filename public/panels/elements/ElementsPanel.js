@@ -882,7 +882,6 @@ export class ElementsPanel extends UI.Panel.Panel {
                 this.stylesWidget.addEventListener("StylesUpdateCompleted" /* StylesSidebarPaneEvents.StylesUpdateCompleted */, toggleMetricsWidget);
             }
         };
-        let skippedInitialTabSelectedEvent = false;
         const toggleMetricsWidget = (event) => {
             this.metricsWidget.toggleVisibility(event.data.hasMatchedStyles);
         };
@@ -895,14 +894,6 @@ export class ElementsPanel extends UI.Panel.Panel {
             else if (tabId === "styles" /* SidebarPaneTabId.Styles */) {
                 stylesSplitWidget.setSidebarWidget(computedStylePanesWrapper);
                 showMetricsWidgetInStylesPane();
-            }
-            if (skippedInitialTabSelectedEvent) {
-                // We don't log the initially selected sidebar pane to UMA because
-                // it will skew the histogram heavily toward the Styles pane
-                Host.userMetrics.elementsSidebarTabShown(tabId);
-            }
-            else {
-                skippedInitialTabSelectedEvent = true;
             }
         };
         this.sidebarPaneView = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => UI.ViewManager.ViewManager.instance().showView('elements'), 'styles-pane-sidebar', true, true);

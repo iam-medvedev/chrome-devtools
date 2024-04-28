@@ -286,7 +286,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             columnNumber: callFrame.columnNumber,
             inlineFrameIndex: options?.inlineFrameIndex ?? 0,
         };
-        return this.maybeLinkifyScriptLocation(target, callFrame.scriptId, callFrame.url, callFrame.lineNumber, linkifyOptions);
+        return this.maybeLinkifyScriptLocation(target, String(callFrame.scriptId), callFrame.url, callFrame.lineNumber, linkifyOptions);
     }
     linkifyStackTraceTopFrame(target, stackTrace) {
         console.assert(stackTrace.callFrames.length > 0);

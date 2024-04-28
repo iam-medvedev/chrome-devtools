@@ -11,8 +11,8 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { BottomUpProfileDataGridTree } from './BottomUpProfileDataGrid.js';
-import { CPUProfileFlameChart } from './CPUProfileFlameChart.js';
 import { ProfileDataGridTree } from './ProfileDataGrid.js';
+import { ProfileFlameChart } from './ProfileFlameChartDataProvider.js';
 import { ProfileHeader } from './ProfileHeader.js';
 import { ProfileSidebarTreeElement } from './ProfileSidebarTreeElement.js';
 import { TopDownProfileDataGridTree } from './TopDownProfileDataGrid.js';
@@ -345,7 +345,7 @@ export class ProfileView extends UI.View.SimpleView {
             return;
         }
         this.dataProvider = this.createFlameChartDataProvider();
-        this.flameChart = new CPUProfileFlameChart(this.searchableViewInternal, this.dataProvider);
+        this.flameChart = new ProfileFlameChart(this.searchableViewInternal, this.dataProvider);
         this.flameChart.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.EntryInvoked */, event => {
             void this.onEntryInvoked(event);
         });

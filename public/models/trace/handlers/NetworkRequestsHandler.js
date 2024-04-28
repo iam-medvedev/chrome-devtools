@@ -317,6 +317,8 @@ export async function finalize() {
                     stackTrace: finalSendRequest.args.data.stackTrace,
                     timing,
                     url,
+                    failed: request.resourceFinish?.args.data.didFail ?? false,
+                    finished: Boolean(request.resourceFinish),
                 },
             },
             cat: 'loading',

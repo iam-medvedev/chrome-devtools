@@ -136,6 +136,7 @@ models/issues_manager/LowTextContrastIssue.test.js
 models/issues_manager/MarkdownIssueDescription.test.js
 models/issues_manager/PropertyRuleIssue.test.js
 models/issues_manager/RelatedIssue.test.js
+models/issues_manager/SharedDictionaryIssue.test.js
 models/issues_manager/StylesheetLoadingIssue.test.js
 models/javascript_metadata/JavaScriptMetadata.test.js
 models/logs/NetworkLog.test.js
@@ -169,6 +170,7 @@ models/trace/handlers/AuctionWorkletsHandler.test.js
 models/trace/handlers/ExtensionTraceDataHandler.test.js
 models/trace/handlers/FramesHandler.test.js
 models/trace/handlers/GPUHandler.test.js
+models/trace/handlers/ImagePaintingHandler.test.js
 models/trace/handlers/InitiatorsHandler.test.js
 models/trace/handlers/InvalidationsHandler.test.js
 models/trace/handlers/LargestImagePaintHandler.test.js
@@ -178,6 +180,7 @@ models/trace/handlers/LayoutShiftsHandler.test.js
 models/trace/handlers/MemoryHandler.test.js
 models/trace/handlers/MetaHandler.test.js
 models/trace/handlers/NetworkRequestsHandler.test.js
+models/trace/handlers/PageFramesHandler.test.js
 models/trace/handlers/PageLoadMetricsHandler.test.js
 models/trace/handlers/RendererHandler.test.js
 models/trace/handlers/SamplesHandler.test.js
@@ -194,6 +197,7 @@ models/trace/helpers/TreeHelpers.test.js
 models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LargestContentfulPaint.test.js
 models/trace/insights/RenderBlocking.test.js
+models/trace/insights/Viewport.test.js
 models/trace/root-causes/LayoutShift.test.js
 models/trace/types/TraceEvents.test.js
 models/workspace/SearchConfig.test.js
@@ -336,7 +340,6 @@ panels/network/components/RequestHeadersView.test.js
 panels/network/components/RequestTrustTokensView.test.js
 panels/network/components/ResponseHeaderSection.test.js
 panels/performance_monitor/PerformanceMonitor.test.js
-panels/profiler/CPUProfileView.test.js
 panels/protocol_monitor/ProtocolMonitor.test.js
 panels/protocol_monitor/components/JSONEditor.test.js
 panels/recorder/RecorderController.test.js
@@ -388,6 +391,7 @@ panels/sources/components/BreakpointsViewUtils.test.js
 panels/sources/components/HeadersView.test.js
 panels/timeline/Breadcrumbs.test.js
 panels/timeline/EventTypeHelpers.test.js
+panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
 panels/timeline/SaveFileFormatter.test.js
 panels/timeline/SourceMapsResolver.test.js
@@ -464,6 +468,7 @@ ui/components/text_editor/javascript.test.js
 ui/components/text_prompt/TextPrompt.test.js
 ui/components/tree_outline/TreeOutline.test.js
 ui/components/two_states_counter/TwoStatesCounter.test.js
+ui/legacy/ARIAUtils.test.js
 ui/legacy/ActionRegistration.test.js
 ui/legacy/Context.test.js
 ui/legacy/ContextMenu.test.js

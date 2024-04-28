@@ -52,7 +52,7 @@
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
-      "path": "../../panels/js_profiler/meta-tsconfig.json"
+      "path": "../../panels/js_timeline/meta-tsconfig.json"
     },
     {
       "path": "../../panels/mobile_throttling/meta-tsconfig.json"

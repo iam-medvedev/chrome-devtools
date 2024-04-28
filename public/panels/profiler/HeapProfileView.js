@@ -10,8 +10,8 @@ import * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { ProfileFlameChartDataProvider } from './CPUProfileFlameChart.js';
 import { HeapTimelineOverview } from './HeapTimelineOverview.js';
+import { ProfileFlameChartDataProvider } from './ProfileFlameChartDataProvider.js';
 import { ProfileType } from './ProfileHeader.js';
 import { ProfileView, WritableProfileHeader } from './ProfileView.js';
 const UIStrings = {

@@ -68,6 +68,9 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
     static hasInstance() {
         return Boolean(Dialog.instance);
     }
+    static getInstance() {
+        return Dialog.instance;
+    }
     show(where) {
         const document = (where instanceof Document ? where : (where || InspectorView.instance().element).ownerDocument);
         this.targetDocument = document;

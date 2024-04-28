@@ -4,6 +4,8 @@ export declare const LONG_INTERACTION_THRESHOLD: Types.Timing.MicroSeconds;
 export interface UserInteractionsData {
     /** All the user events we found in the trace */
     allEvents: readonly Types.TraceEvents.TraceEventEventTiming[];
+    /** All the BeginCommitCompositorFrame events we found in the trace */
+    beginCommitCompositorFrameEvents: readonly Types.TraceEvents.TraceEventBeginCommitCompositorFrame[];
     /** All the interaction events we found in the trace that had an
      * interactionId and a duration > 0
      **/

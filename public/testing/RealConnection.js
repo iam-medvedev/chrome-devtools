@@ -8,11 +8,6 @@ import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';
 import * as Main from '../entrypoints/main/main.js';
 import { deinitializeGlobalVars } from './EnvironmentHelpers.js';
-export let markStaticTestsLoaded;
-const staticTestsLoaded = new Promise(resolve => {
-    markStaticTestsLoaded = resolve;
-});
-let hasOnly = false;
 let initialized = false;
 function describeBody(fn) {
     before(async function () {
@@ -59,32 +54,29 @@ function describeBody(fn) {
         await new Promise(resolve => runAfterPendingDispatches(resolve));
     });
 }
+const realConnectionSuites = [];
 export function describeWithRealConnection(title, fn) {
-    if (fn.toString().match(/(^|\s)(?:describe|it).only\(['|"][^]+['|"],.*\)/)?.length) {
-        // eslint-disable-next-line mocha/no-exclusive-tests
-        describeWithRealConnection.only(title, fn);
-        return;
-    }
-    staticTestsLoaded
-        .then(event => {
-        if (hasOnly || event.hasOnly) {
-            return;
-        }
-        describe(title, function () {
-            describeBody(fn.bind(this));
-        });
-    })
-        .catch(e => {
-        throw e;
-    });
+    realConnectionSuites.push({ title, fn, only: false });
 }
+// eslint-disable-next-line mocha/no-exclusive-tests
 describeWithRealConnection.only = function (title, fn) {
-    hasOnly = true;
-    // eslint-disable-next-line mocha/no-exclusive-tests
-    describe.only(title, function () {
-        describeBody(fn.bind(this));
-    });
+    realConnectionSuites.push({ title, fn, only: true });
 };
+export function flushRealConnectionSuits() {
+    for (const { title, fn, only } of realConnectionSuites) {
+        if (only) {
+            // eslint-disable-next-line mocha/no-exclusive-tests
+            describe.only(title, function () {
+                describeBody(fn.bind(this));
+            });
+        }
+        else {
+            describe(title, function () {
+                describeBody(fn.bind(this));
+            });
+        }
+    }
+}
 export async function getExecutionContext(runtimeModel) {
     let executionContexts = runtimeModel.executionContexts();
     if (!executionContexts.length) {

@@ -7,5 +7,6 @@ export var InsightWarning;
     InsightWarning["NO_LCP"] = "NO_LCP";
     // No network request could be identified as the primary HTML document.
     InsightWarning["NO_DOCUMENT_REQUEST"] = "NO_DOCUMENT_REQUEST";
+    InsightWarning["NO_LAYOUT"] = "NO_LAYOUT";
 })(InsightWarning || (InsightWarning = {}));
 //# sourceMappingURL=types.js.map

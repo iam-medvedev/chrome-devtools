@@ -69,7 +69,9 @@ export class BoundsManager extends EventTarget {
     }
     setMiniMapBounds(newBounds) {
         if (!this.#currentState) {
-            // If we don't have the existing state and know the trace bounds, we cannot set the minimap bounds.
+            // If we don't have the existing state and know the trace bounds, we
+            // cannot set the minimap bounds.
+            console.error('TraceBounds.setMiniMapBounds could not set bounds because there is no existing trace window set.');
             return;
         }
         const existingBounds = this.#currentState.minimapTraceBounds;
@@ -89,6 +91,10 @@ export class BoundsManager extends EventTarget {
         shouldAnimate: false,
     }) {
         if (!this.#currentState) {
+            // This is a weird state to be in: we can't change the visible timeline
+            // window if we don't alreayd have an existing state with the trace
+            // bounds set.
+            console.error('TraceBounds.setTimelineVisibleWindow could not set bounds because there is no existing trace window set.');
             return;
         }
         const existingWindow = this.#currentState.timelineTraceWindow;

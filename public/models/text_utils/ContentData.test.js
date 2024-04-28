@@ -30,15 +30,15 @@ describe('ContentData', () => {
     });
     it('converts to a data URL', () => {
         const textContent = new ContentData('a simple text', false, "text/html" /* MimeType.HTML */);
-        assert.strictEqual(textContent.asDataUrl(), 'data:text/html,a%20simple%20text');
+        assert.strictEqual(textContent.asDataUrl(), 'data:text/html;charset=utf-8,a%20simple%20text');
         const binaryData = new ContentData('AQIDBA==', true, 'application/wasm');
         assert.strictEqual(binaryData.asDataUrl(), 'data:application/wasm;base64,AQIDBA==');
         const textAsBase64Utf16 = new ContentData('//48ACEARABPAEMAVABZAFAARQAgAGgAdABtAGwAPgAKADwAcAA+AEkA8QB0AOsAcgBuAOIAdABpAPQAbgDgAGwAaQB6AOYAdABpAPgAbgADJjTYBt88AC8AcAA+AAoA', true, "text/html" /* MimeType.HTML */, 'utf-16');
         assert.strictEqual(textAsBase64Utf16.asDataUrl(), 'data:text/html;charset=utf-16;base64,//48ACEARABPAEMAVABZAFAARQAgAGgAdABtAGwAPgAKADwAcAA+AEkA8QB0AOsAcgBuAOIAdABpAPQAbgDgAGwAaQB6AOYAdABpAPgAbgADJjTYBt88AC8AcAA+AAoA');
     });
-    it('does not include charset for already decoded text in the data URL', () => {
+    it('does include utf-8 charset for already decoded text in the data URL', () => {
         const textWithCharsetContent = new ContentData('a simple text', false, "text/html" /* MimeType.HTML */, 'utf-16');
-        assert.strictEqual(textWithCharsetContent.asDataUrl(), 'data:text/html,a%20simple%20text');
+        assert.strictEqual(textWithCharsetContent.asDataUrl(), 'data:text/html;charset=utf-8,a%20simple%20text');
     });
     it('converts to DeferredContent', () => {
         const textContent = new ContentData('a simple text', false, "text/html" /* MimeType.HTML */);

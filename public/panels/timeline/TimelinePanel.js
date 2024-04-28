@@ -50,6 +50,7 @@ import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import { TraceLoadEvent } from './BenchmarkEvents.js';
 import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
+import { Tracker } from './FreshRecording.js';
 import historyToolbarButtonStyles from './historyToolbarButton.css.js';
 import { IsolateSelector } from './IsolateSelector.js';
 import { PerformanceModel } from './PerformanceModel.js';
@@ -525,12 +526,14 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.onClearButton());
         this.panelToolbar.appendToolbarItem(this.clearButton);
         // Load / Save
-        this.loadButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.loadProfile), 'import');
+        this.loadButton =
+            new UI.Toolbar.ToolbarButton(i18nString(UIStrings.loadProfile), 'import', undefined, 'timeline.load-from-file');
         this.loadButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceImported);
             this.selectFileToLoad();
         });
-        this.saveButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveProfile), 'download');
+        this.saveButton =
+            new UI.Toolbar.ToolbarButton(i18nString(UIStrings.saveProfile), 'download', undefined, 'timeline.save-to-file');
         this.saveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, _event => {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
             void this.saveToFile();
@@ -764,6 +767,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         });
     }
     onModeChanged() {
+        this.flameChart.updateCountersGraphToggle(this.showMemorySetting.get());
         this.updateOverviewControls();
         this.doResize();
         this.select(null);
@@ -1288,8 +1292,12 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     #onSourceMapsNodeNamesResolved() {
-        this.flameChart.updateColorMapper();
+        this.flameChart.refreshMainFlameChart();
     }
+    /**
+     * This is called with we are done loading a trace from a file, or after we
+     * have recorded a fresh trace.
+     **/
     async loadingComplete(collectedEvents, tracingModel, exclusiveFilter = null, isCpuProfile, recordingStartTime, metadata) {
         // Before loading a new trace, update annotations of the previous one
         this.#saveAnnotationsForActiveTrace();
@@ -1317,7 +1325,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             await Promise.all([
                 // Calling setTracingModel now and setModel so much later, leads to several problems due to addEventListener order being unexpected
                 // TODO(paulirish): Resolve this, or just wait for the death of tracingModel. :)
-                this.performanceModel.setTracingModel(tracingModel, recordingIsFresh),
+                this.performanceModel.setTracingModel(tracingModel),
                 this.#executeNewTraceEngine(collectedEvents, recordingIsFresh, metadata),
             ]);
             // This code path is only executed when a new trace is recorded/imported,
@@ -1332,6 +1340,9 @@ export class TimelinePanel extends UI.Panel.Panel {
             const traceData = this.#traceEngineModel.traceParsedData(this.#traceEngineActiveTraceIndex);
             if (!traceData) {
                 throw new Error(`Could not get trace data at index ${this.#traceEngineActiveTraceIndex}`);
+            }
+            if (recordingIsFresh) {
+                Tracker.instance().registerFreshRecording(traceData);
             }
             // Set up SourceMapsResolver to ensure we resolve any function names in
             // profile calls.
