@@ -101,5 +101,11 @@ export default {
 .flame-chart-entry-info table tr td span {
   margin-right: 5px;
 }
+
+.flame-chart-edit-confirm {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+}
 `
 };

@@ -68,7 +68,8 @@ describeWithEnvironment('FilmStripView', function () {
             const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, 0);
-            const previousBtn = shadowRoot.querySelector('[title="Previous frame"]');
+            const previousBtn = shadowRoot.querySelector('devtools-button');
+            assert.isTrue(previousBtn?.textContent === '◀' || previousBtn?.textContent === '&#9664;');
             if (!previousBtn) {
                 throw new Error('Could not find previous button');
             }
@@ -82,7 +83,8 @@ describeWithEnvironment('FilmStripView', function () {
             const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, 1);
-            const previousBtn = shadowRoot.querySelector('[title="Previous frame"]');
+            const previousBtn = shadowRoot.querySelector('devtools-button');
+            assert.isTrue(previousBtn?.textContent === '◀' || previousBtn?.textContent === '&#9664;');
             if (!previousBtn) {
                 throw new Error('Could not find previous button');
             }
@@ -112,7 +114,8 @@ describeWithEnvironment('FilmStripView', function () {
             const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, 0);
-            const nextBtn = shadowRoot.querySelector('[title="Next frame"]');
+            const nextBtn = shadowRoot.querySelectorAll('devtools-button')[1];
+            assert.isTrue(nextBtn.textContent === '▶' || nextBtn.textContent === '&#9654;');
             if (!nextBtn) {
                 throw new Error('Could not find next button');
             }
@@ -129,7 +132,8 @@ describeWithEnvironment('FilmStripView', function () {
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, numberOfFrames - 1);
             let renderedImage = shadowRoot.querySelector('[data-film-strip-dialog-img]');
             assert.isTrue(renderedImage?.currentSrc.includes(traceParsedData.Screenshots[numberOfFrames - 1].args.dataUri));
-            const nextBtn = shadowRoot.querySelector('[title="Next frame"]');
+            const nextBtn = shadowRoot.querySelectorAll('devtools-button')[1];
+            assert.isTrue(nextBtn.textContent === '▶' || nextBtn.textContent === '&#9654;');
             if (!nextBtn) {
                 throw new Error('Could not find next button');
             }

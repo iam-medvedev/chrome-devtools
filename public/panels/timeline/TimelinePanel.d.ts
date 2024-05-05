@@ -131,7 +131,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     jumpToFrame(offset: number): true | undefined;
     select(selection: TimelineSelection | null): void;
     selectEntryAtTime(events: TraceEngine.Types.TraceEvents.TraceEventData[] | null, time: number): void;
-    highlightEvent(event: TraceEngine.Legacy.Event | null): void;
+    highlightEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
     private handleDrop;
 }
 export declare const enum State {
@@ -147,7 +147,7 @@ export declare const headerHeight = 20;
 export interface TimelineModeViewDelegate {
     select(selection: TimelineSelection | null): void;
     selectEntryAtTime(events: TraceEngine.Types.TraceEvents.TraceEventData[] | null, time: number): void;
-    highlightEvent(event: TraceEngine.Legacy.CompatibleTraceEvent | null): void;
+    highlightEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
 }
 export declare class StatusPane extends UI.Widget.VBox {
     #private;

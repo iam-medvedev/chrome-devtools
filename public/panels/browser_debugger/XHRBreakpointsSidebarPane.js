@@ -107,6 +107,7 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
         const inputElementContainer = document.createElement('p');
         inputElementContainer.classList.add('breakpoint-condition');
         inputElementContainer.textContent = i18nString(UIStrings.breakWhenUrlContains);
+        inputElementContainer.setAttribute('jslog', `${VisualLogging.value('condition').track({ change: true })}`);
         const inputElement = inputElementContainer.createChild('span', 'breakpoint-condition-input');
         UI.ARIAUtils.setLabel(inputElement, i18nString(UIStrings.urlBreakpoint));
         this.addListElement(inputElementContainer, this.#list.element.firstChild);
@@ -279,6 +280,7 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
         const inputElement = document.createElement('span');
         inputElement.classList.add('breakpoint-condition');
         inputElement.textContent = breakKeyword;
+        inputElement.setAttribute('jslog', `${VisualLogging.value('condition').track({ change: true })}`);
         if (element) {
             this.#list.element.insertBefore(inputElement, element);
             element.classList.add('hidden');

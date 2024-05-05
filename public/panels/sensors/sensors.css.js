@@ -61,6 +61,10 @@ styles.replaceSync(
   margin-bottom: 10px;
 }
 
+.manage-locations {
+  margin-left: var(--sys-size-4);
+}
+
 .geo-fields {
   flex: 2 0 200px;
 }

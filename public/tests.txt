@@ -185,6 +185,7 @@ models/trace/handlers/PageLoadMetricsHandler.test.js
 models/trace/handlers/RendererHandler.test.js
 models/trace/handlers/SamplesHandler.test.js
 models/trace/handlers/ScreenshotsHandler.test.js
+models/trace/handlers/SelectorStatsHandler.test.js
 models/trace/handlers/Threads.test.js
 models/trace/handlers/UserInteractionsHandler.test.js
 models/trace/handlers/UserTimingsHandler.test.js
@@ -194,6 +195,7 @@ models/trace/helpers/SamplesIntegrator.test.js
 models/trace/helpers/Timing.test.js
 models/trace/helpers/Trace.test.js
 models/trace/helpers/TreeHelpers.test.js
+models/trace/insights/CumulativeLayoutShift.test.js
 models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LargestContentfulPaint.test.js
 models/trace/insights/RenderBlocking.test.js

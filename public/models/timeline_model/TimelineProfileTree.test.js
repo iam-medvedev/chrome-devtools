@@ -305,6 +305,8 @@ describeWithEnvironment('TimelineProfileTree', () => {
         });
         it('generates the right ID for new engine native profile call events', async function () {
             const traceParsedData = await TraceLoader.traceEngine(this, 'invalid-animation-events.json.gz', {
+                initTraceBounds: false,
+            }, {
                 ...TraceEngine.Types.Configuration.DEFAULT,
                 experiments: {
                     ...TraceEngine.Types.Configuration.DEFAULT.experiments,

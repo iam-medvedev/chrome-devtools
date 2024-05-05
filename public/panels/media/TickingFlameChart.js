@@ -312,6 +312,9 @@ class TickingFlameChartDataProvider {
         // The current sum of all group heights.
         this.maxLevel = 0;
     }
+    hasTrackConfigurationMode() {
+        return false;
+    }
     /**
      * Add a group with |name| that can contain |depth| different tracks.
      */

@@ -713,14 +713,14 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#saveAnnotationsForActiveTrace();
         const recordingData = await this.#historyManager.showHistoryDropDown();
         if (recordingData && recordingData.traceParseDataIndex !== this.#traceEngineActiveTraceIndex) {
-            this.setModel(recordingData.legacyModel, /* exclusiveFilter= */ null, recordingData.traceParseDataIndex);
+            this.setModel(null, /* exclusiveFilter= */ null, recordingData.traceParseDataIndex);
         }
     }
     navigateHistory(direction) {
         this.#saveAnnotationsForActiveTrace();
         const recordingData = this.#historyManager.navigate(direction);
         if (recordingData && recordingData.traceParseDataIndex !== this.#traceEngineActiveTraceIndex) {
-            this.setModel(recordingData.legacyModel, /* exclusiveFilter= */ null, recordingData.traceParseDataIndex);
+            this.setModel(null, /* exclusiveFilter= */ null, recordingData.traceParseDataIndex);
         }
         return true;
     }
@@ -1135,7 +1135,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             }
             this.#applyActiveFilters(traceParsedData.Meta.traceIsGeneric, exclusiveFilter);
         }
-        if (model) {
+        if (traceParsedData) {
             this.searchableViewInternal.showWidget();
         }
         else {
@@ -1143,7 +1143,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.fixMeButtonAdded = false;
             this.panelToolbar.removeToolbarItem(this.fixMeButton);
         }
-        this.flameChart.setModel(model, traceParsedData, isCpuProfile);
+        this.flameChart.setModel(traceParsedData, isCpuProfile);
         this.flameChart.setSelection(null);
         // Set up line level profiling with CPU profiles, if we found any.
         PerfUI.LineLevelProfile.Performance.instance().reset();
@@ -1320,14 +1320,20 @@ export class TimelinePanel extends UI.Panel.Panel {
         metadata = metadata ?
             metadata :
             await TraceEngine.Extras.Metadata.forNewRecording(isCpuProfile, recordingStartTime ?? undefined);
+        const enginePromises = [
+            this.#executeNewTraceEngine(collectedEvents, recordingIsFresh, metadata),
+        ];
+        // An experiment added in April 2024 that is ENABLED BY DEFAULT
+        // To aid us in spotting bugs as we turn down and remove usage of the legacy engine.
+        // TODO(crbug.com/40287735): remove this experiment and remove the old engine.
+        const shouldRunOldEngine = Root.Runtime.experiments.isEnabled("timeline-enable-old-timeline-model-engine" /* Root.Runtime.ExperimentName.TIMELINE_EXECUTE_OLD_ENGINE */);
+        if (shouldRunOldEngine) {
+            enginePromises.push(this.performanceModel.setTracingModel(tracingModel));
+        }
         try {
-            // Run the new engine in parallel with the parsing done in the performanceModel
-            await Promise.all([
-                // Calling setTracingModel now and setModel so much later, leads to several problems due to addEventListener order being unexpected
-                // TODO(paulirish): Resolve this, or just wait for the death of tracingModel. :)
-                this.performanceModel.setTracingModel(tracingModel),
-                this.#executeNewTraceEngine(collectedEvents, recordingIsFresh, metadata),
-            ]);
+            // TODO(crbug.com/40287735): once we don't run the old engine, we don't
+            // need the Promise.all() here with a single promise.
+            await Promise.all(enginePromises);
             // This code path is only executed when a new trace is recorded/imported,
             // so we know that the active index will be the size of the model because
             // the newest trace will be automatically set to active.
@@ -1349,12 +1355,12 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.#sourceMapsResolver = new SourceMapsResolver(traceData);
             this.#sourceMapsResolver.addEventListener(NodeNamesUpdated.eventName, this.#onSourceMapsNodeNamesResolvedBound);
             await this.#sourceMapsResolver.install();
-            // We store the Performance Model and the index of the active trace.
+            // We store the index of the active trace so we can load it back easily
+            // if the user goes to a different trace then comes back.
             // However we also pass in the full trace data because we use it to build
             // the preview overview thumbnail of the trace that gets shown in the UI.
             this.#historyManager.addRecording({
                 data: {
-                    legacyModel: this.performanceModel,
                     traceParseDataIndex: this.#traceEngineActiveTraceIndex,
                 },
                 filmStripForPreview: TraceEngine.Extras.FilmStrip.fromTraceData(traceData),
@@ -1450,9 +1456,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             return null;
         }
         if (TimelineSelection.isTraceEventSelection(selection.object)) {
-            if (!this.performanceModel) {
-                return null;
-            }
             const traceData = this.#traceEngineModel.traceParsedData(this.#traceEngineActiveTraceIndex);
             if (!traceData) {
                 return null;
@@ -1601,7 +1604,6 @@ export class StatusPane extends UI.Widget.VBox {
         const buttonText = options.buttonText || i18nString(UIStrings.stop);
         this.button = UI.UIUtils.createTextButton(buttonText, buttonCallback, {
             jslogContext: 'timeline.stop-recording',
-            primary: true,
         });
         // Profiling can't be stopped during initialization.
         this.button.disabled = !options.buttonDisabled === false;

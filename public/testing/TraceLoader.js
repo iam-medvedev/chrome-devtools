@@ -102,10 +102,16 @@ export class TraceLoader {
      * @param file The name of the trace file to be loaded.
      * The trace file should be in ../panels/timeline/fixtures/traces folder.
      *
+     * @param options Additional trace options.
+     * @param options.initTraceBounds after the trace is loaded, the TraceBounds
+     * manager will automatically be initialised using the bounds from the trace.
+     *
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
-    static async traceEngine(context, name, config = TraceEngine.Types.Configuration.DEFAULT) {
+    static async traceEngine(context, name, options = {
+        initTraceBounds: false,
+    }, config = TraceEngine.Types.Configuration.DEFAULT) {
         // Force the TraceBounds to be reset to empty. This ensures that in
         // tests where we are using the new engine data we don't accidentally
         // rely on the fact that a previous test has set the BoundsManager.
@@ -113,6 +119,9 @@ export class TraceLoader {
         const configCacheKey = TraceEngine.Types.Configuration.configToCacheKey(config);
         const fromCache = traceEngineCache.get(name)?.get(configCacheKey);
         if (fromCache) {
+            if (options.initTraceBounds) {
+                TraceLoader.initTraceBoundsManager(fromCache);
+            }
             return fromCache;
         }
         const fileContents = await TraceLoader.fixtureContents(context, name);
@@ -120,6 +129,9 @@ export class TraceLoader {
         const cacheByName = traceEngineCache.get(name) || new Map();
         cacheByName.set(configCacheKey, traceEngineData.traceParsedData);
         traceEngineCache.set(name, cacheByName);
+        if (options.initTraceBounds) {
+            TraceLoader.initTraceBoundsManager(traceEngineData.traceParsedData);
+        }
         return traceEngineData.traceParsedData;
     }
     /**

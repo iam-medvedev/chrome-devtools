@@ -539,7 +539,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
             void view.populateNodes(payload.nodes);
             this.#viewMap.set(id, view);
         }
-        this.#elementContainer.appendTab(id, tabTitle, view, true);
+        this.#elementContainer.appendTab(id, tabTitle, view, payload.type);
     }
     #fontInfoToFragment(fontInfo) {
         const fonts = Array.from(fontInfo.entries());
@@ -709,9 +709,9 @@ export class DetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
             this.dispatchEventToListeners("TabClosed" /* Events.TabClosed */, this.#tabbedPane.tabIds().length);
         });
     }
-    appendTab(id, tabTitle, view, isCloseable) {
+    appendTab(id, tabTitle, view, jslogContext) {
         if (!this.#tabbedPane.hasTab(id)) {
-            this.#tabbedPane.appendTab(id, tabTitle, view, undefined, undefined, isCloseable);
+            this.#tabbedPane.appendTab(id, tabTitle, view, undefined, undefined, /* isCloseable */ true, undefined, undefined, jslogContext);
         }
         this.#tabbedPane.selectTab(id);
     }

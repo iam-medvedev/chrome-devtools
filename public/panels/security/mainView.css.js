@@ -169,6 +169,10 @@ styles.replaceSync(
   max-width: 400px;
 }
 
+.origin-button {
+  margin-top: var(--sys-size-4);
+}
+
 .security-explanation .security-property {
   flex: none;
   width: 16px;

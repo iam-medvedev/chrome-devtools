@@ -221,7 +221,6 @@ describeWithMockConnection('BreakpointManager', () => {
             assert.notInclude(breakpoint.backendCondition(), '//# sourceURL=');
         });
         it('substitutes source-mapped variables', async () => {
-            Root.Runtime.experiments.enableForTest('evaluate-expressions-with-source-maps');
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
             assert.exists(debuggerModel);
             const scriptInfo = { url: URL, content: 'function adder(n,r){const t=n+r;return t}' };
@@ -257,11 +256,9 @@ describeWithMockConnection('BreakpointManager', () => {
             assert.strictEqual(lineNumber, 0);
             assert.strictEqual(columnNumber, 20);
             assert.strictEqual(condition, 'n > 0\n\n//# sourceURL=debugger://breakpoint');
-            Root.Runtime.experiments.disableForTest('evaluate-expressions-with-source-maps');
         });
     });
     it('substitutes source-mapped variables for the same original script in different bundles correctly', async () => {
-        Root.Runtime.experiments.enableForTest('evaluate-expressions-with-source-maps');
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
         // Create two 'bundles' that are identical modulo variable names.
@@ -313,7 +310,6 @@ describeWithMockConnection('BreakpointManager', () => {
         assert.exists(req2);
         assert.strictEqual(req2.url, url2);
         assert.strictEqual(req2.condition, 'o > 0\n\n//# sourceURL=debugger://breakpoint');
-        Root.Runtime.experiments.disableForTest('evaluate-expressions-with-source-maps');
     });
     it('allows awaiting the restoration of breakpoints', async () => {
         Root.Runtime.experiments.enableForTest("instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */);

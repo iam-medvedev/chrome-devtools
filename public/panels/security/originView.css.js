@@ -126,11 +126,6 @@ styles.replaceSync(
   display: none;
 }
 
-.origin-button {
-  margin-top: 4px;
-  margin-left: 0;
-}
-
 .origin-view-section:last-child {
   border-bottom: none;
 }

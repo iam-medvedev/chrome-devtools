@@ -28,6 +28,9 @@ export default {
 .button {
   text-align: right;
   margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sys-size-6);
 }
 
 .button button {

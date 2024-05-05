@@ -1,4 +1,4 @@
-function getThreadTypeForRendererThread(auctionWorkletsData, pid, thread) {
+function getThreadTypeForRendererThread(pid, thread, auctionWorkletsData) {
     let threadType = "OTHER" /* ThreadType.OTHER */;
     if (thread.name === 'CrRendererMain') {
         threadType = "MAIN_THREAD" /* ThreadType.MAIN_THREAD */;
@@ -33,7 +33,7 @@ export function threadsInRenderer(rendererData, auctionWorkletsData) {
                     // filtering we need.
                     continue;
                 }
-                const threadType = getThreadTypeForRendererThread(auctionWorkletsData, pid, thread);
+                const threadType = getThreadTypeForRendererThread(pid, thread, auctionWorkletsData);
                 foundThreads.push({
                     name: thread.name,
                     pid,

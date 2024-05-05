@@ -21,7 +21,7 @@ export class ExtensionTrackAppender {
         return this.#compatibilityBuilder.appendEventsAtLevel(this.#trackData.flameChartEntries, trackStartLevel, this);
     }
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
-        const style = buildGroupStyle({ shareHeaderLine: false, collapsible: true });
+        const style = buildGroupStyle({ collapsible: true });
         const group = buildTrackHeader(currentLevel, this.#trackData.name, style, 
         /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);

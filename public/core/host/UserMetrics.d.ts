@@ -630,7 +630,6 @@ export declare enum DevtoolsExperiments {
     'contrast-issues' = 44,
     'experimental-cookie-features' = 45,
     'styles-pane-css-changes' = 55,
-    'evaluate-expressions-with-source-maps' = 58,
     'instrumentation-breakpoints' = 61,
     'authored-deployed-grouping' = 63,
     'important-dom-properties' = 64,
@@ -640,7 +639,6 @@ export declare enum DevtoolsExperiments {
     'highlight-errors-elements-panel' = 73,
     'set-all-breakpoints-eagerly' = 74,
     'use-source-map-scopes' = 76,
-    'storage-buckets-tree' = 77,
     'network-panel-filter-bar-redesign' = 79,
     'autofill-view' = 82,
     'sources-frame-indentation-markers-temporarily-disable' = 83,
@@ -649,7 +647,11 @@ export declare enum DevtoolsExperiments {
     'timeline-show-postmessage-events' = 86,
     'save-and-load-trace-with-annotations' = 87,
     'timeline-extensions' = 89,
-    'MaxValue' = 90
+    'timeline-enhanced-traces' = 90,
+    'timeline-compiled-sources' = 91,
+    'timeline-enable-old-timeline-model-engine' = 92,
+    'timeline-debug-mode' = 93,
+    'MaxValue' = 94
 }
 export declare const enum BreakpointEditDialogRevealedFrom {
     BreakpointSidebarContextMenu = 0,

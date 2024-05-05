@@ -144,6 +144,7 @@ export declare function makeMockRendererHandlerData(entries: TraceEngine.Types.T
 export declare function makeMockSamplesHandlerData(profileCalls: TraceEngine.Types.TraceEvents.SyntheticProfileCall[]): TraceEngine.Handlers.ModelHandlers.Samples.SamplesHandlerData;
 export declare class FakeFlameChartProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     minimumBoundary(): number;
+    hasTrackConfigurationMode(): boolean;
     totalTime(): number;
     formatValue(value: number): string;
     maxStackDepth(): number;
@@ -160,4 +161,10 @@ export declare class FakeFlameChartProvider implements PerfUI.FlameChart.FlameCh
 export declare function getMainThread(data: TraceEngine.Handlers.ModelHandlers.Renderer.RendererHandlerData): TraceEngine.Handlers.ModelHandlers.Renderer.RendererThread;
 type TraceParseData = TraceEngine.Handlers.Types.TraceParseData;
 export declare function getBaseTraceParseModelData(overrides?: Partial<TraceParseData>): TraceParseData;
+/**
+ * A helper that will query the given array of events and find the first event
+ * matching the predicate. It will also assert that a match is found, which
+ * saves the need to do that for every test.
+ */
+export declare function getEventOfType<T extends TraceEngine.Types.TraceEvents.TraceEventData>(events: TraceEngine.Types.TraceEvents.TraceEventData[], predicate: (e: TraceEngine.Types.TraceEvents.TraceEventData) => e is T): T;
 export {};

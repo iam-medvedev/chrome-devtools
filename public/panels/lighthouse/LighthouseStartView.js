@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Presets, RuntimeSettings } from './LighthouseController.js';
 import lighthouseStartViewStyles from './lighthouseStartView.css.js';
@@ -191,8 +192,7 @@ export class StartView extends UI.Widget.Widget {
         const startButtonContainer = this.contentElement.querySelector('.lighthouse-start-button-container');
         if (startButtonContainer) {
             startButtonContainer.textContent = '';
-            this.startButton =
-                UI.UIUtils.createTextButton(buttonLabel, callback, { primary: true, jslogContext: 'lighthouse.start' });
+            this.startButton = UI.UIUtils.createTextButton(buttonLabel, callback, { variant: "primary" /* Buttons.Button.Variant.PRIMARY */, jslogContext: 'lighthouse.start' });
             startButtonContainer.append(this.startButton);
         }
     }

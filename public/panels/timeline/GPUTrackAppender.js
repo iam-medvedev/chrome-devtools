@@ -49,7 +49,7 @@ export class GPUTrackAppender {
      * @param expanded wether the track should be rendered expanded.
      */
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
-        const style = buildGroupStyle({ shareHeaderLine: false });
+        const style = buildGroupStyle({ collapsible: false });
         const group = buildTrackHeader(currentLevel, i18nString(UIStrings.gpu), style, /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }

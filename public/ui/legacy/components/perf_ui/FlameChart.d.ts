@@ -38,8 +38,6 @@ export declare const enum HoverType {
     TRACK_CONFIG_DOWN_BUTTON = "TRACK_CONFIG_DOWN_BUTTON",
     TRACK_CONFIG_HIDE_BUTTON = "TRACK_CONFIG_HIDE_BUTTON",
     TRACK_CONFIG_SHOW_BUTTON = "TRACK_CONFIG_SHOW_BUTTON",
-    TRACK_CONFIG_EDIT_BUTTON = "TRACK_CONFIG_EDIT_BUTTON",
-    TRACK_CONFIG_SAVE_BUTTON = "TRACK_CONFIG_SAVE_BUTTON",
     INSIDE_TRACK_HEADER = "INSIDE_TRACK_HEADER",
     INSIDE_TRACK = "INSIDE_TRACK",
     OUTSIDE_TRACKS = "OUTSIDE_TRACKS",
@@ -174,7 +172,6 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      * 3.2 click -> update highlight (handle in other functions)
      */
     private onClick;
-    private selectGroup;
     private deselectAllGroups;
     private deselectAllEntries;
     private isGroupFocused;
@@ -187,7 +184,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     showGroup(groupIndex: number): void;
     modifyTree(treeAction: TraceEngine.EntriesFilter.FilterAction, index: number): void;
     getPossibleActions(): TraceEngine.EntriesFilter.PossibleFilterActions | void;
-    onContextMenu(_event: Event): void;
+    onContextMenu(event: MouseEvent): void;
     private handleFlameChartTransformEvent;
     private onKeyDown;
     bindCanvasEvent(eventName: string, onEvent: (arg0: Event) => void): void;
@@ -262,6 +259,10 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
         hoverType: HoverType;
     };
     private markerIndexBeforeTime;
+    /**
+     * Draw the whole flame chart.
+     * Make sure |setWindowTimes| is called with correct time range before this function.
+     */
     private draw;
     entryWidth(entryIndex: number): number;
     /**
@@ -495,6 +496,8 @@ export interface FlameChartDataProvider {
     mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
     modifyTree?(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
     findPossibleContextMenuActions?(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
+    hasTrackConfigurationMode(): boolean;
+    eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | null;
 }
 export interface FlameChartMarker {
     startTime(): number;
@@ -549,17 +552,21 @@ export interface Group {
     hidden?: boolean;
     selectable?: boolean;
     style: GroupStyle;
+    /** Should be turned on if the track supports user editable stacks. */
     showStackContextMenu?: boolean;
 }
 export interface GroupStyle {
     height: number;
     padding: number;
     collapsible: boolean;
+    /** The color of the group title text. */
     color: string;
+    /** The background color of the group title when the track is collapsed,
+     * and this is usually around same length as the title text. */
     backgroundColor: string;
     nestingLevel: number;
     itemsHeight?: number;
-    /** Allow entries to be placed on the same horizontal level as the text heading */
+    /** Allow entries to be placed on the same horizontal level as the text heading. True by default for Timeline */
     shareHeaderLine?: boolean;
     useFirstLineForOverview?: boolean;
     useDecoratorsForOverview?: boolean;

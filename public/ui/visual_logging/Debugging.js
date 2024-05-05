@@ -83,10 +83,8 @@ export function processEventForDebugging(event, state, extraInfo) {
     if (veDebuggingEnabled) {
         showDebugPopover(`${Object.entries(entry).map(([k, v]) => `${k}: ${v}`).join('; ')}`);
     }
-    if (veDebugLoggingEnabled) {
-        const time = Date.now() - sessionStartTime;
-        veDebugEventsLog.push({ ...entry, veid: state?.veid, time });
-    }
+    const time = Date.now() - sessionStartTime;
+    maybeLogDebugEvent({ ...entry, veid: state?.veid, time });
 }
 export function processImpressionsForDebugging(states) {
     if (!localStorage.getItem('veDebugLoggingEnabled')) {
@@ -119,10 +117,10 @@ export function processImpressionsForDebugging(states) {
     const entries = [...impressions.values()].filter(i => 'parent' in i);
     if (entries.length === 1) {
         entries[0].time = Date.now() - sessionStartTime;
-        veDebugEventsLog.push(entries[0]);
+        maybeLogDebugEvent(entries[0]);
     }
     else {
-        veDebugEventsLog.push({ event: 'Impression', children: entries, time: Date.now() - sessionStartTime });
+        maybeLogDebugEvent({ event: 'Impression', children: entries, time: Date.now() - sessionStartTime });
     }
 }
 function processNonDomLoggableForDebugging(loggable, loggingState) {
@@ -169,6 +167,14 @@ export function debugString(config) {
     return components.join('; ');
 }
 const veDebugEventsLog = [];
+function maybeLogDebugEvent(entry) {
+    if (!localStorage.getItem('veDebugLoggingEnabled')) {
+        return;
+    }
+    veDebugEventsLog.push(entry);
+    // eslint-disable-next-line no-console
+    console.info('VE Debug:', entry);
+}
 function setVeDebugLoggingEnabled(enabled) {
     if (enabled) {
         localStorage.setItem('veDebugLoggingEnabled', 'true');
@@ -201,11 +207,8 @@ function findVeDebugImpression(veid, includeAncestorChain) {
 }
 let sessionStartTime = Date.now();
 export function processStartLoggingForDebugging() {
-    if (!localStorage.getItem('veDebugLoggingEnabled')) {
-        return;
-    }
     sessionStartTime = Date.now();
-    veDebugEventsLog.push({ event: 'SessionStart' });
+    maybeLogDebugEvent({ event: 'SessionStart' });
 }
 // @ts-ignore
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;

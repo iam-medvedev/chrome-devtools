@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../../core/platform/platform.js';
-import * as Root from '../../../../core/root/root.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Formatter from '../../../../models/formatter/formatter.js';
 import * as SourceMapScopes from '../../../../models/source_map_scopes/source_map_scopes.js';
@@ -45,16 +44,14 @@ export class JavaScriptREPL {
             return { preview: document.createDocumentFragment(), result: null };
         }
         let expression = text;
-        if (Root.Runtime.experiments.isEnabled('evaluate-expressions-with-source-maps')) {
-            const callFrame = executionContext.debuggerModel.selectedCallFrame();
-            if (callFrame) {
-                const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);
-                try {
-                    expression =
-                        await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(expression, nameMap);
-                }
-                catch {
-                }
+        const callFrame = executionContext.debuggerModel.selectedCallFrame();
+        if (callFrame) {
+            const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);
+            try {
+                expression =
+                    await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(expression, nameMap);
+            }
+            catch {
             }
         }
         expression = JavaScriptREPL.wrapObjectLiteral(expression);

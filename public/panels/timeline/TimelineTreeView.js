@@ -39,14 +39,6 @@ const UIStrings = {
      */
     selectItemForDetails: 'Select item for details.',
     /**
-     * @description This message is presented as a tooltip when developers investigate the performance
-     * of a page. The tooltip alerts developers that some parts of code in execution were not optimized
-     * (made to run faster) and that associated timing information must be considered with this in
-     * mind. The placeholder text is the reason the code was not optimized.
-     * @example {Optimized too many times} PH1
-     */
-    notOptimizedS: 'Not optimized: {PH1}',
-    /**
      *@description Time in miliseconds
      *@example {30.1} PH1
      */
@@ -149,7 +141,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineTreeView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TimelineTreeView extends UI.Widget.VBox {
-    modelInternal;
     #selectedEvents;
     searchResults;
     linkifier;
@@ -175,7 +166,6 @@ export class TimelineTreeView extends UI.Widget.VBox {
     #traceParseData = null;
     constructor() {
         super();
-        this.modelInternal = null;
         this.#selectedEvents = null;
         this.element.classList.add('timeline-tree-view');
         this.searchResults = [];
@@ -187,13 +177,9 @@ export class TimelineTreeView extends UI.Widget.VBox {
     setSearchableView(searchableView) {
         this.searchableView = searchableView;
     }
-    setModelWithEvents(model, selectedEvents, traceParseData = null) {
-        this.modelInternal = model;
+    setModelWithEvents(selectedEvents, traceParseData = null) {
         this.#traceParseData = traceParseData;
         this.#selectedEvents = selectedEvents;
-    }
-    model() {
-        return this.modelInternal;
     }
     traceParseData() {
         return this.#traceParseData;
@@ -280,7 +266,8 @@ export class TimelineTreeView extends UI.Widget.VBox {
         textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, this.#filterChanged, this);
         toolbar.appendToolbarItem(textFilterUI);
     }
-    modelEvents() {
+    selectedEvents() {
+        // TODO: can we make this type readonly?
         return this.#selectedEvents || [];
     }
     onHover(_node) {
@@ -316,7 +303,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
         }
         this.linkifier.reset();
         this.dataGrid.rootNode().removeChildren();
-        if (!this.modelInternal) {
+        if (!this.#traceParseData) {
             this.updateDetailsForSelection();
             return;
         }
@@ -348,7 +335,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
         throw new Error('Not Implemented');
     }
     buildTopDownTree(doNotAggregate, groupIdCallback) {
-        return new TimelineModel.TimelineProfileTree.TopDownRootNode(this.modelEvents(), this.filters(), this.startTime, this.endTime, doNotAggregate, groupIdCallback);
+        return new TimelineModel.TimelineProfileTree.TopDownRootNode(this.selectedEvents(), this.filters(), this.startTime, this.endTime, doNotAggregate, groupIdCallback);
     }
     populateColumns(columns) {
         columns.push({ id: 'self', title: i18nString(UIStrings.selfTime), width: '120px', fixedWidth: true, sortable: true });
@@ -389,7 +376,11 @@ export class TimelineTreeView extends UI.Widget.VBox {
             const nodeB = b;
             const eventA = nodeA.profileNode.event;
             const eventB = nodeB.profileNode.event;
-            return eventA.startTime - eventB.startTime;
+            // Should not happen, but guard against the nodes not having events.
+            if (!eventA || !eventB) {
+                return 0;
+            }
+            return eventA.ts - eventB.ts;
         }
         function compareTotalTime(a, b) {
             const nodeA = a;
@@ -401,6 +392,10 @@ export class TimelineTreeView extends UI.Widget.VBox {
             const nodeB = b;
             const eventA = nodeA.profileNode.event;
             const eventB = nodeB.profileNode.event;
+            // Should not happen, but guard against the nodes not having events.
+            if (!eventA || !eventB) {
+                return 0;
+            }
             const nameA = TimelineTreeView.eventNameForSorting(eventA);
             const nameB = TimelineTreeView.eventNameForSorting(eventB);
             return nameA.localeCompare(nameB);
@@ -551,20 +546,12 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             }
         }
         else if (event) {
-            const data = event.args['data'];
-            const deoptReason = data && data['deoptReason'];
-            if (deoptReason) {
-                container.createChild('div', 'activity-warning').title =
-                    i18nString(UIStrings.notOptimizedS, { PH1: deoptReason });
-            }
             name.textContent = TimelineUIUtils.eventTitle(event);
             const traceData = this.treeView.traceParseData();
-            const target = traceData && TraceEngine.Legacy.eventIsFromNewEngine(event) ? targetForEvent(traceData, event) : null;
+            const target = traceData ? targetForEvent(traceData, event) : null;
             const linkifier = this.treeView.linkifier;
             const isFreshRecording = Boolean(traceData && Tracker.instance().recordingIsFresh(traceData));
-            this.linkElement = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
-                TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording) :
-                null;
+            this.linkElement = TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording);
             if (this.linkElement) {
                 container.createChild('div', 'activity-link').appendChild(this.linkElement);
             }
@@ -572,8 +559,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             const eventCategory = eventStyle.category;
             UI.ARIAUtils.setLabel(icon, eventCategory.title);
             icon.style.backgroundColor = eventCategory.getComputedColorValue();
-            if (TraceEngine.Legacy.eventIsFromNewEngine(event) &&
-                TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event)) {
+            if (TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event)) {
                 icon.style.backgroundColor = Extensions.ExtensionUI.extensionEntryColor(event);
             }
         }
@@ -595,7 +581,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                     if (!traceParseData) {
                         throw new Error('Unable to load trace data for tree view');
                     }
-                    const timings = event && TraceEngine.Legacy.timesForEventInMilliseconds(event);
+                    const timings = event && TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(event);
                     const startTime = timings?.startTime ?? 0;
                     value = startTime - TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceParseData.Meta.traceBounds.min);
                 }
@@ -724,9 +710,6 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case AggregatedTimelineTreeView.GroupBy.URL:
                 break;
             case AggregatedTimelineTreeView.GroupBy.Frame: {
-                if (!this.modelInternal) {
-                    throw new Error('Unable to find model for group by frame operation');
-                }
                 const frame = id ? this.traceParseData()?.PageFrames.frames.get(id) : undefined;
                 const frameName = frame ? TimelineUIUtils.displayNameForFrame(frame) : i18nString(UIStrings.page);
                 return { name: frameName, color: color, icon: undefined };
@@ -798,7 +781,10 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case GroupBy.URL:
                 return (event) => TimelineModel.TimelineProfileTree.eventURL(event) || '';
             case GroupBy.Frame:
-                return (event) => TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).frameId || '';
+                return (event) => {
+                    const frameId = TraceEngine.Helpers.Trace.frameIDForEvent(event);
+                    return frameId || this.traceParseData()?.Meta.mainFrameId || '';
+                };
             default:
                 console.assert(false, `Unexpected aggregation setting: ${groupBy}`);
                 return null;
@@ -830,22 +816,6 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         }
         const domainMatch = /([^.]*\.)?[^.]*$/.exec(parsedURL.host);
         return domainMatch && domainMatch[0] || '';
-    }
-    appendContextMenuItems(contextMenu, node) {
-        if (this.groupBySetting.get() !== AggregatedTimelineTreeView.GroupBy.Frame) {
-            return;
-        }
-        if (!node.isGroupNode()) {
-            return;
-        }
-        if (!this.modelInternal) {
-            return;
-        }
-        const frame = this.modelInternal.timelineModel().pageFrameById(node.id);
-        if (!frame || !frame.ownerNode) {
-            return;
-        }
-        contextMenu.appendApplicableItems(frame.ownerNode);
     }
     static isExtensionInternalURL(url) {
         return url.startsWith(AggregatedTimelineTreeView.extensionInternalPrefix);
@@ -884,7 +854,7 @@ export class BottomUpTimelineTreeView extends AggregatedTimelineTreeView {
         this.dataGrid.markColumnAsSortedBy('self', DataGrid.DataGrid.Order.Descending);
     }
     buildTree() {
-        return new TimelineModel.TimelineProfileTree.BottomUpRootNode(this.modelEvents(), this.textFilter(), this.filtersWithoutTextFilter(), this.startTime, this.endTime, this.groupingFunction(this.groupBySetting.get()));
+        return new TimelineModel.TimelineProfileTree.BottomUpRootNode(this.selectedEvents(), this.textFilter(), this.filtersWithoutTextFilter(), this.startTime, this.endTime, this.groupingFunction(this.groupBySetting.get()));
     }
 }
 export class TimelineStackView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {

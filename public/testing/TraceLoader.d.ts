@@ -9,6 +9,9 @@ export type AllModelsLoaded = Readonly<{
     performanceModel: Timeline.PerformanceModel.PerformanceModel;
     traceParsedData: TraceEngine.Handlers.Types.TraceParseData;
 }>;
+export interface TraceEngineLoaderOptions {
+    initTraceBounds: boolean;
+}
 /**
  * Loads trace files defined as fixtures in front_end/panels/timeline/fixtures/traces.
  *
@@ -53,10 +56,14 @@ export declare class TraceLoader {
      * @param file The name of the trace file to be loaded.
      * The trace file should be in ../panels/timeline/fixtures/traces folder.
      *
+     * @param options Additional trace options.
+     * @param options.initTraceBounds after the trace is loaded, the TraceBounds
+     * manager will automatically be initialised using the bounds from the trace.
+     *
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
-    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, config?: TraceEngine.Types.Configuration.Configuration): Promise<TraceEngine.Handlers.Types.TraceParseData>;
+    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, options?: TraceEngineLoaderOptions, config?: TraceEngine.Types.Configuration.Configuration): Promise<TraceEngine.Handlers.Types.TraceParseData>;
     /**
      * Initialise the BoundsManager with the bounds from a trace.
      * This isn't always required, but some of our code - particularly at the UI

@@ -1,24 +1,14 @@
-import * as Platform from '../../core/platform/platform.js';
-import type * as SDK from '../../core/sdk/sdk.js';
-import type * as Protocol from '../../generated/protocol.js';
 import * as TraceEngine from '../trace/trace.js';
 export declare class TimelineModelImpl {
     private inspectedTargetEventsInternal;
     private sessionId;
     private mainFrameNodeId;
-    private pageFrames;
-    private workerIdByThread;
     private requestsFromBrowser;
-    private mainFrame;
-    private minimumRecordTimeInternal;
     private lastScheduleStyleRecalculation;
-    private paintImageEventByPixelRefId;
     private lastPaintForLayer;
     private currentScriptEvent;
     private eventStack;
     private browserFrameTracking;
-    private persistentIds;
-    private legacyCurrentPage;
     private currentTaskLayoutAndRecalcEvents;
     private tracingModelInternal;
     private lastRecalculateStylesEvent;
@@ -50,7 +40,6 @@ export declare class TimelineModelImpl {
      */
     static forEachEvent(events: TraceEngine.Legacy.CompatibleTraceEvent[], onStartEvent: (arg0: TraceEngine.Legacy.CompatibleTraceEvent) => void, onEndEvent: (arg0: TraceEngine.Legacy.CompatibleTraceEvent) => void, onInstantEvent?: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent, arg1: TraceEngine.Legacy.CompatibleTraceEvent | null) => void), startTime?: number, endTime?: number, filter?: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent) => boolean), ignoreAsyncEvents?: boolean): void;
     private static topLevelEventEndingAfter;
-    static eventFrameId(event: TraceEngine.Legacy.Event): Protocol.Page.FrameId | null;
     setEvents(tracingModel: TraceEngine.Legacy.TracingModel): void;
     private processGenericTrace;
     private processMetadataAndThreads;
@@ -61,15 +50,9 @@ export declare class TimelineModelImpl {
     private processThreadEvents;
     private processEvent;
     private processBrowserEvent;
-    private findAncestorEvent;
-    private addPageFrame;
     private reset;
     tracingModel(): TraceEngine.Legacy.TracingModel | null;
     inspectedTargetEvents(): TraceEngine.Legacy.Event[];
-    rootFrames(): PageFrame[];
-    pageURL(): Platform.DevToolsPath.UrlString;
-    pageFrameById(frameId: Protocol.Page.FrameId): PageFrame | null;
-    static findRecalculateStyleEvents(events: TraceEngine.Types.TraceEvents.TraceEventData[], startTime?: number, endTime?: number): TraceEngine.Legacy.Event[];
 }
 export declare enum RecordType {
     Task = "RunTask",
@@ -233,32 +216,6 @@ export declare namespace TimelineModelImpl {
         ForcedLayout: number;
         IdleCallbackAddon: number;
     };
-}
-export declare class PageFrame {
-    frameId: any;
-    url: any;
-    name: any;
-    children: PageFrame[];
-    parent: PageFrame | null;
-    processes: {
-        time: number;
-        processId: number;
-        processPseudoId: string | null;
-        url: Platform.DevToolsPath.UrlString;
-    }[];
-    deletedTime: number | null;
-    ownerNode: SDK.DOMModel.DeferredDOMNode | null;
-    constructor(payload: any);
-    update(time: number, payload: any): void;
-    processReady(processPseudoId: string, processId: number): void;
-    addChild(child: PageFrame): void;
-}
-export declare class EventOnTimelineData {
-    url: Platform.DevToolsPath.UrlString | null;
-    frameId: Protocol.Page.FrameId | null;
-    constructor();
-    static forEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): EventOnTimelineData;
-    static forTraceEventData(event: TraceEngine.Types.TraceEvents.TraceEventData): EventOnTimelineData;
 }
 export interface MetadataEvents {
     page: TraceEngine.Legacy.Event[];

@@ -6,8 +6,8 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from '../timeline.js';
-function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel) {
-    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel);
+function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel) {
+    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.layoutShiftsTrackAppender();
 }
 describeWithEnvironment('LayoutShiftsTrackAppender', function () {
@@ -15,8 +15,8 @@ describeWithEnvironment('LayoutShiftsTrackAppender', function () {
         const entryTypeByLevel = [];
         const entryData = [];
         const flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
-        const { traceParsedData, timelineModel } = await TraceLoader.allModels(context, trace);
-        const layoutShiftsTrackAppender = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel);
+        const traceParsedData = await TraceLoader.traceEngine(context, trace);
+        const layoutShiftsTrackAppender = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
         layoutShiftsTrackAppender.appendTrackAtLevel(0);
         return {
             entryTypeByLevel,

@@ -7,6 +7,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null): void;
     isEmpty(): boolean;
     maxStackDepth(): number;
+    hasTrackConfigurationMode(): boolean;
     timelineData(): PerfUI.FlameChart.FlameChartTimelineData;
     minimumBoundary(): number;
     totalTime(): number;

@@ -319,6 +319,8 @@ export async function finalize() {
                     url,
                     failed: request.resourceFinish?.args.data.didFail ?? false,
                     finished: Boolean(request.resourceFinish),
+                    connectionId: request.receiveResponse.args.data.connectionId,
+                    connectionReused: request.receiveResponse.args.data.connectionReused,
                 },
             },
             cat: 'loading',

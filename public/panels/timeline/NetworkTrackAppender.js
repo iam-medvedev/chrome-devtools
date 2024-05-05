@@ -70,7 +70,6 @@ export class NetworkTrackAppender {
      */
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
         const style = buildGroupStyle({
-            font: this.#flameChartData,
             shareHeaderLine: false,
             useFirstLineForOverview: false,
             useDecoratorsForOverview: true,

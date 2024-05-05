@@ -79,7 +79,7 @@ function populateContextMenu(link, event) {
     contextMenu.appendApplicableItems(event);
     void contextMenu.show();
 }
-export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, updateCallback) {
+export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, updateCallback, showColumnNumber) {
     const stackTraceRows = [];
     if (updateCallback) {
         const throttler = new Common.Throttler.Throttler(100);
@@ -102,6 +102,7 @@ export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, upd
             let ignoreListHide = false;
             const functionName = UI.UIUtils.beautifyFunctionName(stackFrame.functionName);
             const link = linkifier.maybeLinkifyConsoleCallFrame(target, stackFrame, {
+                showColumnNumber: showColumnNumber,
                 tabStop: Boolean(tabStops),
                 inlineFrameIndex: 0,
                 revealBreakpoint: previousStackFrameWasBreakpointCondition,
@@ -197,7 +198,7 @@ export function buildStackTracePreviewContents(target, linkifier, options = {
         return { element, links: [] };
     }
     const updateCallback = renderStackTraceTable.bind(null, contentElement);
-    const stackTraceRows = buildStackTraceRows(stackTrace, target, linkifier, tabStops, updateCallback);
+    const stackTraceRows = buildStackTraceRows(stackTrace, target, linkifier, tabStops, updateCallback, options.showColumnNumber);
     const links = renderStackTraceTable(contentElement, stackTraceRows);
     return { element, links };
 }

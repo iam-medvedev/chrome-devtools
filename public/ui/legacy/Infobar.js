@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import infobarStyles from './infobar.css.legacy.js';
@@ -92,7 +93,7 @@ export class Infobar {
             this.actionContainer.appendChild(disableButton);
         }
         this.closeContainer = this.mainRow.createChild('div', 'infobar-close-container');
-        this.toggleElement = createTextButton(i18nString(UIStrings.showMore), this.onToggleDetails.bind(this), { className: 'link-style devtools-link hidden', jslogContext: 'show-more' });
+        this.toggleElement = createTextButton(i18nString(UIStrings.showMore), this.onToggleDetails.bind(this), { className: 'hidden show-more', jslogContext: 'show-more', variant: "text" /* Buttons.Button.Variant.TEXT */ });
         this.toggleElement.setAttribute('role', 'link');
         this.closeContainer.appendChild(this.toggleElement);
         this.closeButton = this.closeContainer.createChild('div', 'close-button', 'dt-close-button');

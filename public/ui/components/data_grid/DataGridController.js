@@ -46,6 +46,7 @@ export class DataGridController extends HTMLElement {
     #originalRows = [];
     #sortState = null;
     #filters = [];
+    #autoScrollToBottom = true;
     #paddingRowsCount;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [dataGridControllerStyles];
@@ -55,6 +56,7 @@ export class DataGridController extends HTMLElement {
             columns: this.#originalColumns,
             rows: this.#originalRows,
             filters: this.#filters,
+            autoScrollToBottom: this.#autoScrollToBottom,
             contextMenus: this.#contextMenus,
             label: this.#label,
             paddingRowsCount: this.#paddingRowsCount,
@@ -71,6 +73,9 @@ export class DataGridController extends HTMLElement {
         this.#label = data.label;
         this.#showScrollbar = data.showScrollbar;
         this.#striped = data.striped;
+        if (typeof data.autoScrollToBottom === 'boolean') {
+            this.#autoScrollToBottom = data.autoScrollToBottom;
+        }
         this.#columns = [...this.#originalColumns];
         this.#rows = this.#cloneAndFilterRows(data.rows, this.#filters);
         if (!this.#hasRenderedAtLeastOnce && data.initialSort) {
@@ -211,6 +216,7 @@ export class DataGridController extends HTMLElement {
             paddingRowsCount: this.#paddingRowsCount,
             showScrollbar: this.#showScrollbar,
             striped: this.#striped,
+            autoScrollToBottom: this.#autoScrollToBottom,
         }}
         @columnheaderclick=${this.#onColumnHeaderClick}
         @contextmenucolumnsortclick=${this.#onContextMenuColumnSortClick}

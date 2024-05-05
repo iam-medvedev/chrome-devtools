@@ -68,6 +68,9 @@ export class ProfileFlameChartDataProvider {
     maxStackDepth() {
         return this.maxStackDepthInternal;
     }
+    hasTrackConfigurationMode() {
+        return false;
+    }
     timelineData() {
         return this.timelineDataInternal || this.calculateTimelineData();
     }

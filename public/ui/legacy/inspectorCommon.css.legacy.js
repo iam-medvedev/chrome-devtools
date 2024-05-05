@@ -156,6 +156,12 @@ body {
   white-space: pre-wrap;
 }
 
+.source-code .devtools-link.text-button {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 img {
   -webkit-user-drag: none;
 }
@@ -530,10 +536,9 @@ button.link {
 }
 
 button.link:focus-visible {
-  --override-link-focus-background-color: rgb(0 0 0 / 8%);
-
-  background-color: var(--override-link-focus-background-color);
-  border-radius: 2px;
+  outline: 2px solid var(--sys-color-state-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--sys-shape-corner-full);
 }
 
 .-theme-with-dark-background button.link:focus-visible,

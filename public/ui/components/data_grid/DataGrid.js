@@ -61,6 +61,7 @@ export class DataGrid extends HTMLElement {
     #paddingRowsCount = 10;
     #showScrollbar = false;
     #striped = false;
+    #autoScrollToBottom = true;
     #currentResize = null;
     // Because we only render a subset of rows, we need a way to look up the
     // actual row index from the original dataset. We could use this.rows[index]
@@ -103,6 +104,7 @@ export class DataGrid extends HTMLElement {
             rows: this.#rows,
             activeSort: this.#sortState,
             contextMenus: this.#contextMenus,
+            autoScrollToBottom: this.#autoScrollToBottom,
             label: this.#label,
             paddingRowsCount: this.#paddingRowsCount,
             showScrollbar: this.#showScrollbar,
@@ -120,6 +122,9 @@ export class DataGrid extends HTMLElement {
         this.#label = data.label;
         this.#showScrollbar = data.showScrollbar;
         this.#striped = data.striped;
+        if (typeof data.autoScrollToBottom === 'boolean') {
+            this.#autoScrollToBottom = data.autoScrollToBottom;
+        }
         /**
          * On first render, now we have data, we can figure out which cell is the
          * focusable cell for the table.
@@ -158,6 +163,9 @@ export class DataGrid extends HTMLElement {
         void this.#render();
     }
     #shouldAutoScrollToBottom() {
+        if (!this.#autoScrollToBottom) {
+            return false;
+        }
         /**
          * If the user's last scroll took them to the bottom, then we assume they
          * want to automatically scroll.
@@ -665,7 +673,7 @@ export class DataGrid extends HTMLElement {
                 const tabbableCell = this.#tabbableCell();
                 const cellIsFocusableCell = anyColumnsSortable && columnIndex === tabbableCell[0] && tabbableCell[1] === 0;
                 return LitHtml.html `<th class=${thClasses}
-                  jslog=${VisualLogging.tableHeader().track({ click: anyColumnsSortable }).context(col.id)}
+                  jslog=${VisualLogging.tableHeader().track({ click: anyColumnsSortable, resize: true }).context(col.id)}
                   style=${LitHtml.Directives.ifDefined(col.styles ? LitHtml.Directives.styleMap(col.styles) : undefined)}
                   data-grid-header-cell=${col.id}
                   @focus=${() => {
@@ -733,7 +741,7 @@ export class DataGrid extends HTMLElement {
                     const cellOutput = col.visible ? renderCellValue(cell) : null;
                     return LitHtml.html `<td
                     class=${cellClasses}
-                    jslog=${VisualLogging.tableCell().track({ click: true, resize: true })}).context(col.id)}
+                    jslog=${VisualLogging.tableCell().track({ click: true })}).context(col.id)}
                     style=${LitHtml.Directives.ifDefined(col.styles ? LitHtml.Directives.styleMap(col.styles) : undefined)}
                     tabindex=${cellIsFocusableCell ? '0' : '-1'}
                     aria-colindex=${columnIndex + 1}

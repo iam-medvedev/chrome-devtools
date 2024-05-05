@@ -1292,12 +1292,6 @@
   "generated/Deprecation.ts | WebSQL": {
     "message": "Web SQL is deprecated. Please use SQLite WebAssembly or Indexed Database"
   },
-  "generated/Deprecation.ts | WindowPlacementPermissionDescriptorUsed": {
-    "message": "The permission descriptor window-placement is deprecated. Use window-management instead. For more help, check https://bit.ly/window-placement-rename."
-  },
-  "generated/Deprecation.ts | WindowPlacementPermissionPolicyParsed": {
-    "message": "The permission policy window-placement is deprecated. Use window-management instead. For more help, check https://bit.ly/window-placement-rename."
-  },
   "generated/Deprecation.ts | XHRJSONEncodingDetection": {
     "message": "UTF-16 is not supported by response json in XMLHttpRequest"
   },
@@ -5949,7 +5943,7 @@
     "message": "reveal"
   },
   "panels/elements/ElementsTreeOutline.ts | showAllNodesDMore": {
-    "message": "Show All Nodes ({PH1} More)"
+    "message": "Show all nodes ({PH1} more)"
   },
   "panels/elements/ElementsTreeOutline.ts | storeAsGlobalVariable": {
     "message": "Store as global variable"
@@ -6057,7 +6051,7 @@
     "message": "{PH1}[Attributes Style]"
   },
   "panels/elements/StylePropertiesSection.ts | showAllPropertiesSMore": {
-    "message": "Show All Properties ({PH1} more)"
+    "message": "Show all properties ({PH1} more)"
   },
   "panels/elements/StylePropertiesSection.ts | styleAttribute": {
     "message": "style attribute"
@@ -13022,9 +13016,6 @@
   "panels/timeline/TimelineTreeView.ts | noGrouping": {
     "message": "No Grouping"
   },
-  "panels/timeline/TimelineTreeView.ts | notOptimizedS": {
-    "message": "Not optimized: {PH1}"
-  },
   "panels/timeline/TimelineTreeView.ts | page": {
     "message": "Page"
   },
@@ -13378,6 +13369,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | totalTime": {
     "message": "Total Time"
+  },
+  "panels/timeline/TimelineUIUtils.ts | traceEvent": {
+    "message": "Trace Event"
   },
   "panels/timeline/TimelineUIUtils.ts | type": {
     "message": "Type"
@@ -14123,6 +14117,15 @@
   "ui/legacy/components/perf_ui/FilmStripView.ts | screenshotForSSelectToView": {
     "message": "Screenshot for {PH1} - select to view preceding requests."
   },
+  "ui/legacy/components/perf_ui/FlameChart.ts | addScriptToIgnoreList": {
+    "message": "Add script to ignore list"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | enterTrackConfigurationMode": {
+    "message": "Configure tracks…"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | exitTrackConfigurationMode": {
+    "message": "Finish configuring tracks"
+  },
   "ui/legacy/components/perf_ui/FlameChart.ts | flameChart": {
     "message": "Flame Chart"
   },
@@ -14134,6 +14137,9 @@
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | hideRepeatingChildren": {
     "message": "Hide repeating children"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | removeScriptFromIgnoreList": {
+    "message": "Remove script from ignore list"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | resetChildren": {
     "message": "Reset children"

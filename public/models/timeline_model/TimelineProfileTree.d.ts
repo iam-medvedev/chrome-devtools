@@ -6,12 +6,12 @@ export declare class Node {
     totalTime: number;
     selfTime: number;
     id: string | symbol;
-    event: TraceEngine.Legacy.CompatibleTraceEvent | null;
+    event: TraceEngine.Types.TraceEvents.TraceEventData | null;
     parent: Node | null;
     groupId: string;
     isGroupNodeInternal: boolean;
     depth: number;
-    constructor(id: string | symbol, event: TraceEngine.Legacy.CompatibleTraceEvent | null);
+    constructor(id: string | symbol, event: TraceEngine.Types.TraceEvents.TraceEventData | null);
     isGroupNode(): boolean;
     hasChildren(): boolean;
     setHasChildren(_value: boolean): void;
@@ -27,7 +27,7 @@ export declare class TopDownNode extends Node {
     private hasChildrenInternal;
     childrenInternal: ChildrenCache | null;
     parent: TopDownNode | null;
-    constructor(id: string | symbol, event: TraceEngine.Legacy.CompatibleTraceEvent | null, parent: TopDownNode | null);
+    constructor(id: string | symbol, event: TraceEngine.Types.TraceEvents.TraceEventData | null, parent: TopDownNode | null);
     hasChildren(): boolean;
     setHasChildren(value: boolean): void;
     children(): ChildrenCache;
@@ -36,17 +36,17 @@ export declare class TopDownNode extends Node {
 }
 export declare class TopDownRootNode extends TopDownNode {
     readonly filter: (e: TraceEngine.Legacy.CompatibleTraceEvent) => boolean;
-    readonly events: TraceEngine.Legacy.CompatibleTraceEvent[];
+    readonly events: TraceEngine.Types.TraceEvents.TraceEventData[];
     readonly startTime: number;
     readonly endTime: number;
-    eventGroupIdCallback: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent) => string) | null | undefined;
+    eventGroupIdCallback: ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null | undefined;
     readonly doNotAggregate: boolean | undefined;
     totalTime: number;
     selfTime: number;
-    constructor(events: TraceEngine.Legacy.CompatibleTraceEvent[], filters: TimelineModelFilter[], startTime: number, endTime: number, doNotAggregate?: boolean, eventGroupIdCallback?: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent) => string) | null);
+    constructor(events: TraceEngine.Types.TraceEvents.TraceEventData[], filters: TimelineModelFilter[], startTime: number, endTime: number, doNotAggregate?: boolean, eventGroupIdCallback?: ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null);
     children(): ChildrenCache;
     private grouppedTopNodes;
-    getEventGroupIdCallback(): ((arg0: TraceEngine.Legacy.CompatibleTraceEvent) => string) | null | undefined;
+    getEventGroupIdCallback(): ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null | undefined;
 }
 export declare class BottomUpRootNode extends Node {
     private childrenInternal;
@@ -57,7 +57,7 @@ export declare class BottomUpRootNode extends Node {
     readonly endTime: number;
     private eventGroupIdCallback;
     totalTime: number;
-    constructor(events: TraceEngine.Legacy.CompatibleTraceEvent[], textFilter: TimelineModelFilter, filters: TimelineModelFilter[], startTime: number, endTime: number, eventGroupIdCallback: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent) => string) | null);
+    constructor(events: TraceEngine.Legacy.CompatibleTraceEvent[], textFilter: TimelineModelFilter, filters: TimelineModelFilter[], startTime: number, endTime: number, eventGroupIdCallback: ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null);
     hasChildren(): boolean;
     filterChildren(children: ChildrenCache): ChildrenCache;
     children(): ChildrenCache;
@@ -67,7 +67,7 @@ export declare class BottomUpRootNode extends Node {
 export declare class GroupNode extends Node {
     private readonly childrenInternal;
     isGroupNodeInternal: boolean;
-    constructor(id: string, parent: BottomUpRootNode | TopDownRootNode, event: TraceEngine.Legacy.Event);
+    constructor(id: string, parent: BottomUpRootNode | TopDownRootNode, event: TraceEngine.Types.TraceEvents.TraceEventData);
     addChild(child: BottomUpNode, selfTime: number, totalTime: number): void;
     hasChildren(): boolean;
     children(): ChildrenCache;
@@ -78,7 +78,7 @@ export declare class BottomUpNode extends Node {
     depth: number;
     private cachedChildren;
     private hasChildrenInternal;
-    constructor(root: BottomUpRootNode, id: string, event: TraceEngine.Legacy.CompatibleTraceEvent, hasChildren: boolean, parent: Node);
+    constructor(root: BottomUpRootNode, id: string, event: TraceEngine.Types.TraceEvents.TraceEventData, hasChildren: boolean, parent: Node);
     hasChildren(): boolean;
     setHasChildren(value: boolean): void;
     children(): ChildrenCache;

@@ -7,22 +7,19 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
-function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel) {
-    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel);
+function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel) {
+    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.gpuTrackAppender();
 }
 describeWithEnvironment('GPUTrackAppender', function () {
     let traceParsedData;
-    let timelineModel;
     let gpuTrackAppender;
     let entryData = [];
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     let entryTypeByLevel = [];
     beforeEach(async function () {
-        const data = await TraceLoader.allModels(this, 'threejs-gpu.json.gz');
-        traceParsedData = data.traceParsedData;
-        timelineModel = data.timelineModel;
-        gpuTrackAppender = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel);
+        traceParsedData = await TraceLoader.traceEngine(this, 'threejs-gpu.json.gz');
+        gpuTrackAppender = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
         gpuTrackAppender.appendTrackAtLevel(0);
     });
     afterEach(() => {

@@ -1,4 +1,5 @@
 import * as Common from '../../core/common/common.js';
+import type * as Buttons from '../components/buttons/buttons.js';
 import type * as IconButton from '../components/icon_button/icon_button.js';
 import { type Config } from './InplaceEditor.js';
 export declare enum Events {
@@ -94,7 +95,7 @@ export declare class TreeElement {
     private expandable;
     private collapsible;
     toggleOnClick: boolean;
-    button: HTMLButtonElement | null;
+    button: Buttons.Button.Button | null;
     root: boolean;
     private tooltipInternal;
     private leadingIconsElement;

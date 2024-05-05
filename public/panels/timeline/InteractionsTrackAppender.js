@@ -47,7 +47,7 @@ export class InteractionsTrackAppender {
      */
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
         const trackIsCollapsible = this.#traceParsedData.UserInteractions.interactionEvents.length > 0;
-        const style = buildGroupStyle({ shareHeaderLine: false, collapsible: trackIsCollapsible });
+        const style = buildGroupStyle({ collapsible: trackIsCollapsible, useDecoratorsForOverview: true });
         const group = buildTrackHeader(currentLevel, i18nString(UIStrings.interactions), style, /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }

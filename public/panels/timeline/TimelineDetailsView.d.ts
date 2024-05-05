@@ -1,6 +1,5 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type PerformanceModel } from './PerformanceModel.js';
 import { type TimelineModeViewDelegate } from './TimelinePanel.js';
 import { TimelineSelection } from './TimelineSelection.js';
 export declare class TimelineDetailsView extends UI.Widget.VBox {
@@ -10,7 +9,6 @@ export declare class TimelineDetailsView extends UI.Widget.VBox {
     private readonly defaultDetailsWidget;
     private readonly defaultDetailsContentElement;
     private rangeDetailViews;
-    private model;
     private lazyPaintProfilerView?;
     private lazyLayersView?;
     private preferredTabId?;
@@ -20,7 +18,7 @@ export declare class TimelineDetailsView extends UI.Widget.VBox {
     constructor(delegate: TimelineModeViewDelegate);
     private selectorStatsView;
     getDetailsContentElementForTest(): HTMLElement;
-    setModel(model: PerformanceModel | null, traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, selectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[] | null): Promise<void>;
+    setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, selectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[] | null): Promise<void>;
     private setContent;
     private updateContents;
     private appendTab;
@@ -42,7 +40,7 @@ export declare class TimelineDetailsView extends UI.Widget.VBox {
     private layersView;
     private paintProfilerView;
     private showSnapshotInPaintProfiler;
-    private showSelectorStats;
+    private showSelectorStatsForIndividualEvent;
     private showAggregatedSelectorStats;
     private appendDetailsTabsForTraceEventAndShowDetails;
     private showEventInPaintProfiler;

@@ -5,6 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import blockedURLsPaneStyles from './blockedURLsPane.css.js';
@@ -81,7 +82,11 @@ export class BlockedURLsPane extends UI.Widget.VBox {
     }
     createEmptyPlaceholder() {
         const element = this.contentElement.createChild('div', 'no-blocked-urls');
-        const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addPattern), this.addPattern.bind(this), { className: 'add-button', jslogContext: 'network.add-network-request-blocking-pattern', primary: true });
+        const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addPattern), this.addPattern.bind(this), {
+            className: 'add-button',
+            jslogContext: 'network.add-network-request-blocking-pattern',
+            variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
+        });
         UI.ARIAUtils.setLabel(addButton, i18nString(UIStrings.addNetworkRequestBlockingPattern));
         element.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.networkRequestsAreNotBlockedS, { PH1: addButton }));
         return element;

@@ -28,7 +28,7 @@ export declare enum VisualElements {
     Section = 10,
     SectionHeader = 11,
     Timeline = 12,
-    StylesSelector = 13,
+    CssQuery = 13,
     Expand = 14,
     ToggleSubpane = 15,
     ControlPoint = 16,

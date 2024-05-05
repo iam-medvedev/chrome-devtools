@@ -1,5 +1,6 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import { Size } from './Geometry.js';
 import { type ToolbarButton } from './Toolbar.js';
@@ -64,8 +65,9 @@ export declare const createTextChildren: (element: Element | DocumentFragment, .
 export declare function createTextButton(text: string, clickHandler?: ((arg0: Event) => void), opts?: {
     className?: string;
     jslogContext?: string;
-    primary?: boolean;
-}): HTMLButtonElement;
+    variant?: Buttons.Button.Variant;
+    title?: string;
+}): Buttons.Button.Button;
 export declare function createInput(className?: string, type?: string, jslogContext?: string): HTMLInputElement;
 export declare function createSelect(name: string, options: string[] | Map<string, string[]>[] | Set<string>): HTMLSelectElement;
 export declare function createOption(title: string, value?: string, jslogContext?: string): HTMLOptionElement;

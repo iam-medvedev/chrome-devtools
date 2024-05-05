@@ -15,7 +15,6 @@ export class EditableSpan extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [editableSpanStyles];
         this.#shadow.addEventListener('focusin', this.#selectAllText.bind(this));
         this.#shadow.addEventListener('keydown', this.#onKeyDown.bind(this));
-        this.#shadow.addEventListener('paste', this.#onPaste.bind(this));
         this.#shadow.addEventListener('input', this.#onInput.bind(this));
     }
     set data(data) {
@@ -49,25 +48,6 @@ export class EditableSpan extends HTMLElement {
         selection?.removeAllRanges();
         selection?.addRange(range);
     }
-    #onPaste(event) {
-        const clipboardEvent = event;
-        event.preventDefault();
-        if (clipboardEvent.clipboardData) {
-            const text = clipboardEvent.clipboardData.getData('text/plain');
-            const range = this.#shadow.getSelection()?.getRangeAt(0);
-            if (!range) {
-                return;
-            }
-            range.deleteContents();
-            const textNode = document.createTextNode(text);
-            range.insertNode(textNode);
-            range.selectNodeContents(textNode);
-            range.collapse(false);
-            const selection = window.getSelection();
-            selection?.removeAllRanges();
-            selection?.addRange(range);
-        }
-    }
     #render() {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
             throw new Error('HeaderSectionRow render was not scheduled');
@@ -75,11 +55,11 @@ export class EditableSpan extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `<span
-        contenteditable="true"
+        contenteditable="plaintext-only"
         class="editable"
         tabindex="0"
         .innerText=${this.#value}
-        jslog=${VisualLogging.value('header-editor').track({ keydown: 'Enter|Escape' })}
+        jslog=${VisualLogging.value('header-editor').track({ change: true, keydown: 'Enter|Escape' })}
     </span>`, this.#shadow, { host: this });
         // clang-format on
     }

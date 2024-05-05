@@ -127,6 +127,12 @@
       "path": "../../services/trace_bounds/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/buttons/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/code_highlighter/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/data_grid/bundle-tsconfig.json"
     },
     {

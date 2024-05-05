@@ -29,12 +29,6 @@ export class CompatibilityTracksAppender {
     #colorGenerator;
     #allTrackAppenders = [];
     #visibleTrackNames = new Set([...TrackNames]);
-    // TODO(crbug.com/1416533)
-    // These are used only for compatibility with the legacy flame chart
-    // architecture of the panel. Once all tracks have been migrated to
-    // use the new engine and flame chart architecture, the reference can
-    // be removed.
-    #legacyTimelineModel;
     #legacyEntryTypeByLevel;
     #timingsTrackAppender;
     #animationsTrackAppender;
@@ -55,7 +49,7 @@ export class CompatibilityTracksAppender {
      * architecture and should be removed once all tracks use the new
      * system.
      */
-    constructor(flameChartData, traceParsedData, entryData, legacyEntryTypeByLevel, legacyTimelineModel) {
+    constructor(flameChartData, traceParsedData, entryData, legacyEntryTypeByLevel) {
         this.#flameChartData = flameChartData;
         this.#traceParsedData = traceParsedData;
         this.#entryData = entryData;
@@ -65,7 +59,6 @@ export class CompatibilityTracksAppender {
         /* lightnessSpace= */ 50, 
         /* alphaSpace= */ 0.7);
         this.#legacyEntryTypeByLevel = legacyEntryTypeByLevel;
-        this.#legacyTimelineModel = legacyTimelineModel;
         this.#timingsTrackAppender = new TimingsTrackAppender(this, this.#traceParsedData, this.#colorGenerator);
         this.#allTrackAppenders.push(this.#timingsTrackAppender);
         this.#interactionsTrackAppender = new InteractionsTrackAppender(this, this.#traceParsedData, this.#colorGenerator);
@@ -143,12 +136,17 @@ export class CompatibilityTracksAppender {
         };
         const threads = TraceEngine.Handlers.Threads.threadsInTrace(this.#traceParsedData);
         const processedAuctionWorkletsIds = new Set();
+        const showAllEvents = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
         for (const { pid, tid, name, type } of threads) {
             if (this.#traceParsedData.Meta.traceIsGeneric) {
                 // If the trace is generic, we just push all of the threads with no
                 // effort to differentiate them, hence overriding the thread type to be
                 // OTHER for all threads.
                 this.#threadAppenders.push(new ThreadAppender(this, this.#traceParsedData, pid, tid, name, "OTHER" /* TraceEngine.Handlers.Threads.ThreadType.OTHER */));
+                continue;
+            }
+            // These threads have no useful information. Omit them
+            if ((name === 'Chrome_ChildIOThread' || name === 'Compositor' || name === 'GpuMemoryThread') && !showAllEvents) {
                 continue;
             }
             const maybeWorklet = this.#traceParsedData.AuctionWorklets.worklets.get(pid);
@@ -171,18 +169,6 @@ export class CompatibilityTracksAppender {
         }
         this.#threadAppenders.sort((a, b) => weight(a) - weight(b));
         this.#allTrackAppenders.push(...this.#threadAppenders);
-    }
-    /**
-     * Given a trace event returns instantiates a legacy SDK.Event. This should
-     * be used for compatibility purposes only.
-     */
-    getLegacyEvent(event) {
-        const process = this.#legacyTimelineModel.tracingModel()?.getProcessById(event.pid);
-        const thread = process?.threadById(event.tid);
-        if (!thread) {
-            return null;
-        }
-        return TraceEngine.Legacy.PayloadEvent.fromPayload(event, thread);
     }
     timingsTrackAppender() {
         return this.#timingsTrackAppender;

@@ -74,9 +74,9 @@ export class TimelineEventOverview extends PerfUI.TimelineOverviewPane.TimelineO
     }
 }
 const HIGH_NETWORK_PRIORITIES = new Set([
-    'VeryHigh',
-    'High',
-    'Medium',
+    "VeryHigh" /* Protocol.Network.ResourcePriority.VeryHigh */,
+    "High" /* Protocol.Network.ResourcePriority.High */,
+    "Medium" /* Protocol.Network.ResourcePriority.Medium */,
 ]);
 export class TimelineEventOverviewNetwork extends TimelineEventOverview {
     #traceParsedData;

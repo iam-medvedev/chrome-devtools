@@ -1,7 +1,6 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as JavaScriptMetaData from '../../../models/javascript_metadata/javascript_metadata.js';
@@ -345,12 +344,7 @@ async function completeExpressionInScope() {
     if (!selectedFrame) {
         return result;
     }
-    const scopeObjectForScope = (scope) => 
-    // TODO(crbug.com/1444349): Inline into `map` call below when experiment is removed.
-    Root.Runtime.experiments.isEnabled('evaluate-expressions-with-source-maps') ?
-        SourceMapScopes.NamesResolver.resolveScopeInObject(scope) :
-        scope.object();
-    const scopes = await Promise.all(selectedFrame.scopeChain().map(scope => scopeObjectForScope(scope).getAllProperties(false, false)));
+    const scopes = await Promise.all(selectedFrame.scopeChain().map(scope => SourceMapScopes.NamesResolver.resolveScopeInObject(scope).getAllProperties(false, false)));
     for (const scope of scopes) {
         for (const property of scope.properties || []) {
             result.add({

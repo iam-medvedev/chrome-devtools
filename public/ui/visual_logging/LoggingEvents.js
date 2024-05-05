@@ -75,8 +75,13 @@ export async function logChange(event) {
     const loggingState = getLoggingState(event.currentTarget);
     assertNotNullOrUndefined(loggingState);
     const changeEvent = { veid: loggingState.veid };
+    const context = loggingState.lastInputEventType;
+    delete loggingState.lastInputEventType;
+    if (context) {
+        changeEvent.context = await contextAsNumber(context);
+    }
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordChange(changeEvent);
-    processEventForDebugging('Change', loggingState);
+    processEventForDebugging('Change', loggingState, { context });
 }
 let pendingKeyDownContext = null;
 export const logKeyDown = (throttler) => async (loggable, event, context) => {

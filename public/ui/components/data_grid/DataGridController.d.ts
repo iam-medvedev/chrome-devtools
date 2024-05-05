@@ -16,6 +16,10 @@ export interface DataGridControllerData {
     paddingRowsCount?: number;
     showScrollbar?: boolean;
     striped?: boolean;
+    /**
+     * Disable the auto-scroll on new data feature. This is enabled by default.
+     */
+    autoScrollToBottom?: boolean;
 }
 export declare class DataGridController extends HTMLElement {
     #private;

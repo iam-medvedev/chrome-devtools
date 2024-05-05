@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/models/trace/insights/CumulativeLayoutShift.ts",
     "../../../../../../../front_end/models/trace/insights/InsightRunners.ts",
     "../../../../../../../front_end/models/trace/insights/InteractionToNextPaint.ts",
     "../../../../../../../front_end/models/trace/insights/LargestContentfulPaint.ts",

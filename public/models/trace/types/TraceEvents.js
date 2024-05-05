@@ -116,7 +116,7 @@ export function isTraceEventDecodeLazyPixelRef(event) {
 export function isTraceEventDecodeImage(event) {
     return event.name === "Decode Image" /* KnownEventName.DecodeImage */;
 }
-export function isStyleRecalcSelectorStats(event) {
+export function isTraceEventSelectorStats(event) {
     return event.name === "SelectorStats" /* KnownEventName.SelectorStats */;
 }
 export function isTraceEventUpdateLayoutTree(event) {
@@ -212,7 +212,8 @@ export function isTraceEventNavigationStart(traceEventData) {
     return traceEventData.name === 'navigationStart';
 }
 export function isTraceEventAnimation(traceEventData) {
-    return traceEventData.name === 'Animation';
+    // We've found some rare traces with an Animtation trace event from a different category: https://crbug.com/1472375#comment7
+    return traceEventData.name === 'Animation' && traceEventData.cat.includes('devtools.timeline');
 }
 export function isTraceEventLayoutShift(traceEventData) {
     return traceEventData.name === 'LayoutShift';
@@ -224,7 +225,7 @@ export function isTraceEventFirstContentfulPaint(traceEventData) {
     return traceEventData.name === 'firstContentfulPaint';
 }
 export function isTraceEventLargestContentfulPaintCandidate(traceEventData) {
-    return traceEventData.name === 'largestContentfulPaint::Candidate';
+    return traceEventData.name === "largestContentfulPaint::Candidate" /* KnownEventName.MarkLCPCandidate */;
 }
 export function isTraceEventLargestImagePaintCandidate(traceEventData) {
     return traceEventData.name === 'LargestImagePaint::Candidate';
@@ -409,6 +410,9 @@ export function isWebSocketTraceEvent(event) {
 }
 export function isTraceEventV8Compile(event) {
     return event.name === "v8.compile" /* KnownEventName.Compile */;
+}
+export function isTraceEventFunctionCall(event) {
+    return event.name === "FunctionCall" /* KnownEventName.FunctionCall */;
 }
 /**
  * Generally, before JS is executed, a trace event is dispatched that

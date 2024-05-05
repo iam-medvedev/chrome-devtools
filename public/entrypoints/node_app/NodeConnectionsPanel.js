@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import nodeConnectionsPanelStyles from './nodeConnectionsPanel.css.js';
 const UIStrings = {
@@ -80,7 +81,7 @@ export class NodeConnectionsView extends UI.Widget.VBox {
         this.#list.setEmptyPlaceholder(placeholder);
         this.#list.show(this.element);
         this.#editor = null;
-        const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addConnection), this.#addNetworkTargetButtonClicked.bind(this), { className: 'add-network-target-button', primary: true });
+        const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addConnection), this.#addNetworkTargetButtonClicked.bind(this), { className: 'add-network-target-button', variant: "primary" /* Buttons.Button.Variant.PRIMARY */ });
         this.element.appendChild(addButton);
         this.#networkDiscoveryConfig = [];
         this.element.classList.add('node-frontend');

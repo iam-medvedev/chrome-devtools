@@ -646,7 +646,7 @@ export class Breakpoint {
             }
             return `${condition}\n\n//# sourceURL=${sourceUrl}`;
         };
-        if (Root.Runtime.experiments.isEnabled('evaluate-expressions-with-source-maps') && location) {
+        if (location) {
             return SourceMapScopes.NamesResolver.allVariablesAtPosition(location)
                 .then(nameMap => nameMap.size > 0 ?
                 Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(condition, nameMap) :

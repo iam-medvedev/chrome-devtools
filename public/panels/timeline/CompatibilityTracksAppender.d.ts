@@ -1,4 +1,3 @@
-import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
@@ -77,14 +76,9 @@ export declare class CompatibilityTracksAppender {
      * architecture and should be removed once all tracks use the new
      * system.
      */
-    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[], legacyTimelineModel: TimelineModel.TimelineModel.TimelineModelImpl);
+    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]);
     setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: TimelineFlameChartEntry[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
-    /**
-     * Given a trace event returns instantiates a legacy SDK.Event. This should
-     * be used for compatibility purposes only.
-     */
-    getLegacyEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): TraceEngine.Legacy.Event | null;
     timingsTrackAppender(): TimingsTrackAppender;
     animationsTrackAppender(): AnimationsTrackAppender;
     interactionsTrackAppender(): InteractionsTrackAppender;
