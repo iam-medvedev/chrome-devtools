@@ -3,18 +3,15 @@ import type * as TimelineModel from '../../models/timeline_model/timeline_model.
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { CompatibilityTracksAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
-import { type PerformanceModel } from './PerformanceModel.js';
 import { TimelineSelection } from './TimelineSelection.js';
-export type TimelineFlameChartEntry = (TraceEngine.Legacy.Event | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | TraceEngine.Types.TraceEvents.TraceEventData);
+export type TimelineFlameChartEntry = TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | TraceEngine.Types.TraceEvents.TraceEventData;
 export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     private droppedFramePatternCanvas;
     private partialFramePatternCanvas;
     private timelineDataInternal;
     private currentLevel;
-    private legacyPerformanceModel;
     private compatibilityTracksAppender;
-    private legacyTimelineModel;
     private traceEngineData;
     private isCpuProfile;
     private minimumBoundaryInternal;
@@ -31,10 +28,11 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private lastInitiatorEntry;
     private lastSelection?;
     constructor();
+    hasTrackConfigurationMode(): boolean;
     modifyTree(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
     findPossibleContextMenuActions(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
     private buildGroupStyle;
-    setModel(performanceModel: PerformanceModel | null, newTraceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
+    setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
     /**
      * Instances and caches a CompatibilityTracksAppender using the
      * internal flame chart data and the trace parsed data coming from the
@@ -65,13 +63,9 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     timelineData(rebuild?: boolean): PerfUI.FlameChart.FlameChartTimelineData;
     minimumBoundary(): number;
     totalTime(): number;
-    /**
-     * Narrows an entry of type TimelineFlameChartEntry to the 2 types of
-     * simple trace events (legacy and new engine definitions).
-     */
-    static isEntryRegularEvent(entry: TimelineFlameChartEntry): entry is (TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Legacy.Event);
-    search(startTime: number, endTime: number, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): number[];
-    isIgnoreListedEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): boolean;
+    static timelineEntryIsTraceEvent(entry: TimelineFlameChartEntry): entry is TraceEngine.Types.TraceEvents.TraceEventData;
+    search(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): number[];
+    isIgnoreListedEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
     private isIgnoreListedURL;
     getEntryTypeForLevel(level: number): EntryType;
     private entryType;
@@ -96,7 +90,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
      */
     buildFlowForInitiator(entryIndex: number): boolean;
     eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | null;
-    get performanceModel(): PerformanceModel | null;
 }
 export declare const InstantEventVisibleDurationMs = 0.001;
 export declare const enum Events {

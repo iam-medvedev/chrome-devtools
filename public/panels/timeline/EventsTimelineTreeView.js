@@ -117,11 +117,15 @@ export class EventsTimelineTreeView extends TimelineTreeView {
         this.filtersControl.populateToolbar(toolbar);
     }
     showDetailsForNode(node) {
+        const traceParseData = this.traceParseData();
+        if (!traceParseData) {
+            return false;
+        }
         const traceEvent = node.event;
         if (!traceEvent) {
             return false;
         }
-        void TimelineUIUtils.buildTraceEventDetails(traceEvent, this.linkifier, false, this.traceParseData())
+        void TimelineUIUtils.buildTraceEventDetails(traceParseData, traceEvent, this.linkifier, false)
             .then(fragment => this.detailsView.element.appendChild(fragment));
         return true;
     }

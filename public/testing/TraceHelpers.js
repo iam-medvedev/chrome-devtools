@@ -32,11 +32,11 @@ export class MockFlameChartDelegate {
 export async function getMainFlameChartWithTracks(traceFileName, trackAppenderNames, expanded, trackName) {
     await initializeGlobalVars();
     // This function is used to load a component example.
-    const { traceParsedData, performanceModel } = await TraceLoader.allModels(/* context= */ null, traceFileName);
+    const traceParsedData = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
     const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
     // The data provider still needs a reference to the legacy model to
     // work properly.
-    dataProvider.setModel(performanceModel, traceParsedData);
+    dataProvider.setModel(traceParsedData);
     const tracksAppender = dataProvider.compatibilityTracksAppenderInstance();
     tracksAppender.setVisibleTracks(trackAppenderNames);
     dataProvider.buildFromTrackAppenders({ filterThreadsByName: trackName, expandedTracks: expanded ? trackAppenderNames : undefined });
@@ -113,7 +113,6 @@ export function getTree(thread) {
     const tree = thread.tree;
     if (!tree) {
         assert(false, `Couldn't get tree in thread ${thread.name}`);
-        return null;
     }
     return tree;
 }
@@ -126,7 +125,6 @@ export function getRootAt(thread, index) {
     const node = [...tree.roots][index];
     if (node === undefined) {
         assert(false, `Couldn't get the id of the root at index ${index} in thread ${thread.name}`);
-        return null;
     }
     return node;
 }
@@ -164,7 +162,6 @@ export function getNodeFor(thread, nodeId) {
     const node = findNode(tree.roots, nodeId);
     if (!node) {
         assert(false, `Couldn't get the node with id ${nodeId} in thread ${thread.name}`);
-        return null;
     }
     return node;
 }
@@ -420,6 +417,9 @@ export class FakeFlameChartProvider {
     minimumBoundary() {
         return 0;
     }
+    hasTrackConfigurationMode() {
+        return false;
+    }
     totalTime() {
         return 100;
     }
@@ -542,5 +542,17 @@ export function getBaseTraceParseModelData(overrides = {}) {
         LargestTextPaint: new Map(),
         ...overrides,
     };
+}
+/**
+ * A helper that will query the given array of events and find the first event
+ * matching the predicate. It will also assert that a match is found, which
+ * saves the need to do that for every test.
+ */
+export function getEventOfType(events, predicate) {
+    const match = events.find(predicate);
+    if (!match) {
+        throw new Error('Failed to find matching event of type.');
+    }
+    return match;
 }
 //# sourceMappingURL=TraceHelpers.js.map

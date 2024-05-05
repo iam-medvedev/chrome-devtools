@@ -103,6 +103,7 @@ export default {
   align-items: center;
   justify-content: flex-start;
   padding: 5px;
+  gap: var(--sys-size-6);
 }
 
 .editor-buttons > button {

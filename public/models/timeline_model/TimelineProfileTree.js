@@ -97,6 +97,9 @@ export class TopDownNode extends Node {
         // Walk on the full event tree to find this node's children.
         TimelineModelImpl.forEachEvent(root.events, onStartEvent, onEndEvent, instantEventCallback, startTime, endTime, root.filter, false);
         function onStartEvent(e) {
+            if (!TraceEngine.Legacy.eventIsFromNewEngine(e)) {
+                return;
+            }
             const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Legacy.timesForEventInMilliseconds(e);
             ++depth;
             if (depth > path.length + 2) {
@@ -113,6 +116,9 @@ export class TopDownNode extends Node {
             processEvent(e, duration);
         }
         function onInstantEvent(e) {
+            if (!TraceEngine.Legacy.eventIsFromNewEngine(e)) {
+                return;
+            }
             ++depth;
             if (matchedDepth === path.length && depth <= path.length + 2) {
                 processEvent(e, 0);
@@ -233,6 +239,9 @@ export class TopDownRootNode extends TopDownNode {
         }
         const groupNodes = new Map();
         for (const node of flatNodes.values()) {
+            if (!node.event) {
+                continue;
+            }
             const groupId = this.eventGroupIdCallback(node.event);
             let groupNode = groupNodes.get(groupId);
             if (!groupNode) {
@@ -308,11 +317,14 @@ export class BottomUpRootNode extends Node {
             }
             firstNodeStack.push(noNodeOnStack);
         }
-        function onEndEvent(e) {
-            const id = generateEventID(e);
+        function onEndEvent(event) {
+            if (!TraceEngine.Legacy.eventIsFromNewEngine(event)) {
+                return;
+            }
+            const id = generateEventID(event);
             let node = nodeById.get(id);
             if (!node) {
-                node = new BottomUpNode(root, id, e, false, root);
+                node = new BottomUpNode(root, id, event, false, root);
                 nodeById.set(id, node);
             }
             node.selfTime += selfTimeStack.pop() || 0;
@@ -409,7 +421,10 @@ export class BottomUpNode extends Node {
         const self = this;
         TimelineModelImpl.forEachEvent(this.root.events, onStartEvent, onEndEvent, undefined, startTime, endTime, this.root.filter, false);
         function onStartEvent(e) {
-            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Legacy.timesForEventInMilliseconds(e);
+            if (!TraceEngine.Legacy.eventIsFromNewEngine(e)) {
+                return;
+            }
+            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
             const actualEndTime = currentEndTime !== undefined ? Math.min(currentEndTime, endTime) : endTime;
             const duration = actualEndTime - Math.max(currentStartTime, startTime);
             if (duration < 0) {
@@ -422,7 +437,10 @@ export class BottomUpNode extends Node {
             eventStack.push(e);
         }
         function onEndEvent(e) {
-            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Legacy.timesForEventInMilliseconds(e);
+            if (!TraceEngine.Legacy.eventIsFromNewEngine(e)) {
+                return;
+            }
+            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
             const selfTime = selfTimeStack.pop();
             const id = eventIdStack.pop();
             eventStack.pop();

@@ -232,12 +232,8 @@ let SuggestionInput = class SuggestionInput extends LitElement {
     }
     #handleBlurEvent = () => {
         window.getSelection()?.removeAllRanges();
-        const changed = this.value !== this.#editableContent.value;
         this.value = this.#editableContent.value;
         this.expression = this.#editableContent.value;
-        if (changed) {
-            this.dispatchEvent(new Event('change'));
-        }
     };
     #handleFocusEvent = (event) => {
         assert(event.target instanceof Node);

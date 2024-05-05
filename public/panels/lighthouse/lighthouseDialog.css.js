@@ -127,7 +127,7 @@ styles.replaceSync(
 
 .lighthouse-action-buttons {
   align-self: end;
-  column-gap: 8px;
+  column-gap: var(--sys-size-6);
 }
 
 /*# sourceURL=lighthouseDialog.css */

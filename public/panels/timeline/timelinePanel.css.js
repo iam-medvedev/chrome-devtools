@@ -201,6 +201,7 @@ styles.replaceSync(
   overflow: hidden;
   padding-right: 10px;
   display: inline-block;
+  vertical-align: top;
 }
 
 .timeline-details-warning {
@@ -221,7 +222,6 @@ styles.replaceSync(
 .timeline-details-view-row-value {
   display: inline-block;
   user-select: text;
-  white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   padding: 0 3px;

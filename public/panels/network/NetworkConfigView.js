@@ -98,7 +98,7 @@ export class NetworkConfigView extends UI.Widget.VBox {
         }
         userAgentSelectElement.selectedIndex = 0;
         const otherUserAgentElement = UI.UIUtils.createInput('', 'text');
-        otherUserAgentElement.setAttribute('jslog', `${VisualLogging.textField().track({ keydown: true }).context(userAgentSetting.name)}`);
+        otherUserAgentElement.setAttribute('jslog', `${VisualLogging.textField().track({ change: true }).context(userAgentSetting.name)}`);
         otherUserAgentElement.value = userAgentSetting.get();
         UI.Tooltip.Tooltip.install(otherUserAgentElement, userAgentSetting.get());
         otherUserAgentElement.placeholder = i18nString(UIStrings.enterACustomUserAgent);

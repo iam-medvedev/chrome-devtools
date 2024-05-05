@@ -63,7 +63,7 @@ declare const DetailsView_base: (new (...args: any[]) => {
 export declare class DetailsView extends DetailsView_base {
     #private;
     constructor();
-    appendTab(id: string, tabTitle: string, view: UI.Widget.Widget, isCloseable?: boolean): void;
+    appendTab(id: string, tabTitle: string, view: UI.Widget.Widget, jslogContext?: string): void;
     closeTabs(): void;
 }
 export declare const enum Events {

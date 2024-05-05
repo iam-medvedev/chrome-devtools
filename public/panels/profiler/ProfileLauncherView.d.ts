@@ -1,4 +1,5 @@
 import * as Common from '../../core/common/common.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type ProfileType } from './ProfileHeader.js';
 import { type ProfilesPanel } from './ProfilesPanel.js';
@@ -16,8 +17,8 @@ export declare class ProfileLauncherView extends ProfileLauncherView_base {
     readonly selectedProfileTypeSetting: Common.Settings.Setting<string>;
     profileTypeHeaderElement: HTMLElement;
     readonly profileTypeSelectorForm: HTMLElement;
-    controlButton: HTMLButtonElement;
-    readonly loadButton: HTMLButtonElement;
+    controlButton: Buttons.Button.Button;
+    readonly loadButton: Buttons.Button.Button;
     recordButtonEnabled: boolean;
     typeIdToOptionElementAndProfileType: Map<string, {
         optionElement: HTMLInputElement;

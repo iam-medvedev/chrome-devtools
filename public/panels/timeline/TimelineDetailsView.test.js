@@ -32,7 +32,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
             throw new Error('Could not find expected network request.');
         }
         const selection = Timeline.TimelineSelection.TimelineSelection.fromTraceEvent(cssRequest);
-        await detailsView.setModel(data.performanceModel, data.traceParsedData, null);
+        await detailsView.setModel(data.traceParsedData, null);
         await detailsView.setSelection(selection);
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
         assert.strictEqual(detailsContentElement.childNodes.length, 1);

@@ -65,13 +65,25 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TimelineSelectorStatsView extends UI.Widget.VBox {
     #datagrid;
     #selectorLocations;
-    constructor() {
+    #traceParsedData = null;
+    /**
+     * We store the last event (or array of events) that we renderered. We do
+     * this because as the user zooms around the panel this view is updated,
+     * however if the set of events that are populating the view is the same as it
+     * was the last time, we can bail without doing any re-rendering work.
+     * If the user views a single event, this will be set to that single event, but if they are viewing a range of events, this will be set to an array.
+     * If it's null, that means we have not rendered yet.
+     */
+    #lastStatsSourceEventOrEvents = null;
+    constructor(traceParsedData) {
         super();
         this.#datagrid = new DataGrid.DataGridController.DataGridController();
         this.#selectorLocations = new Map();
+        this.#traceParsedData = traceParsedData;
         this.#datagrid.data = {
             label: i18nString(UIStrings.selectorStats),
             showScrollbar: true,
+            autoScrollToBottom: false,
             initialSort: {
                 columnId: "elapsed (us)" /* SelectorTimingsKey.Elapsed */,
                 direction: "DESC" /* DataGrid.DataGridUtils.SortDirection.DESC */,
@@ -176,29 +188,57 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
         this.contentElement.appendChild(this.#datagrid);
     }
     setEvent(event) {
-        const selectorStats = event.args['selector_stats'];
+        if (!this.#traceParsedData) {
+            return false;
+        }
+        if (this.#lastStatsSourceEventOrEvents === event) {
+            // The event that is populating the selector stats table has not changed,
+            // so no need to do any work because the data will be the same.
+            return false;
+        }
+        this.#lastStatsSourceEventOrEvents = event;
+        const selectorStats = this.#traceParsedData.SelectorStats.dataForUpdateLayoutEvent.get(event);
         if (!selectorStats) {
             this.#datagrid.data = { ...this.#datagrid.data, rows: [] };
             return false;
         }
-        // Host.userMetrics.recordPerformancePanelAction(Host.UserMetrics.PerformancePanelAction.ViewSelectorStats);
-        const timings = selectorStats['selector_timings'];
+        const timings = selectorStats.timings;
         void this.createRowsForTable(timings).then(rows => {
             this.#datagrid.data = { ...this.#datagrid.data, rows };
         });
         return true;
     }
-    setAggregatedEvent(events) {
+    setAggregatedEvents(events) {
         const timings = [];
         const selectorMap = new Map();
-        while (events.length > 0) {
-            const e = events.pop();
-            const selectorStats = e?.args['selector_stats'];
+        if (!this.#traceParsedData) {
+            return;
+        }
+        // Now we want to check if the set of events we have been given matches the
+        // set of events we last rendered. We can't just compare the arrays because
+        // they will be different events, so instead for each event in the new
+        // array we see if it has a match in the old set of events at the same
+        // index.
+        if (Array.isArray(this.#lastStatsSourceEventOrEvents)) {
+            if (this.#lastStatsSourceEventOrEvents.length === events.length && events.every((event, index) => {
+                // This is true due to the isArray check, but without this cast TS
+                // would want us to repeat the isArray() check inside this callback,
+                // but we want to avoid that extra work.
+                const previousEvents = this.#lastStatsSourceEventOrEvents;
+                return event === previousEvents[index];
+            })) {
+                return;
+            }
+        }
+        this.#lastStatsSourceEventOrEvents = events;
+        for (let i = 0; i < events.length; i++) {
+            const event = events[i];
+            const selectorStats = event ? this.#traceParsedData.SelectorStats.dataForUpdateLayoutEvent.get(event) : undefined;
             if (!selectorStats) {
                 continue;
             }
             else {
-                const data = selectorStats['selector_timings'];
+                const data = selectorStats.timings;
                 for (const timing of data) {
                     const key = timing["selector" /* SelectorTimingsKey.Selector */] + '_' + timing["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */];
                     const findTiming = selectorMap.get(key);
@@ -222,12 +262,11 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
         }
         else {
             this.#datagrid.data = { ...this.#datagrid.data, rows: [] };
-            return false;
+            return;
         }
         void this.createRowsForTable(timings).then(rows => {
             this.#datagrid.data = { ...this.#datagrid.data, rows };
         });
-        return true;
     }
     async createRowsForTable(timings) {
         async function toSourceFileLocation(cssModel, styleSheetId, selectorText, selectorLocations) {

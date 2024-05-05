@@ -1,10 +1,19 @@
 import type * as CPUProfile from '../../cpu_profile/cpu_profile.js';
 import * as Types from '../types/types.js';
 type MatchedPairType<T extends Types.TraceEvents.TraceEventPairableAsync> = Types.TraceEvents.SyntheticEventPair<T>;
-export declare function stackTraceForEvent(event: Types.TraceEvents.TraceEventData): Types.TraceEvents.TraceEventCallFrame[] | null;
+type MatchingPairableAsyncEvents = {
+    begin: Types.TraceEvents.TraceEventPairableAsyncBegin | null;
+    end: Types.TraceEvents.TraceEventPairableAsyncEnd | null;
+    instant?: Types.TraceEvents.TraceEventPairableAsyncInstant[];
+};
 export declare function extractOriginFromTrace(firstNavigationURL: string): string | null;
 export type EventsInThread<T extends Types.TraceEvents.TraceEventData> = Map<Types.TraceEvents.ThreadID, T[]>;
 export declare function addEventToProcessThread<T extends Types.TraceEvents.TraceEventData>(event: T, eventsInProcessThread: Map<Types.TraceEvents.ProcessID, EventsInThread<T>>): void;
+type TimeSpan = {
+    ts: Types.Timing.MicroSeconds;
+    dur?: Types.Timing.MicroSeconds;
+};
+export declare function eventTimeComparator(a: TimeSpan, b: TimeSpan): -1 | 0 | 1;
 /**
  * Sorts all the events in place, in order, by their start time. If they have
  * the same start time, orders them by longest first.
@@ -26,13 +35,36 @@ export declare function activeURLForFrameAtTime(frameId: string, time: Types.Tim
 }[]>>): string | null;
 export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.ProfileNode, ts: Types.Timing.MicroSeconds, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID): Types.TraceEvents.SyntheticProfileCall;
 export declare function makeSyntheticTraceEntry(name: string, ts: Types.Timing.MicroSeconds, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID): Types.TraceEvents.SyntheticTraceEntry;
-export declare function matchBeginningAndEndEvents(unpairedEvents: Types.TraceEvents.TraceEventPairableAsync[]): Map<string, {
-    begin: Types.TraceEvents.TraceEventPairableAsyncBegin | null;
-    end: Types.TraceEvents.TraceEventPairableAsyncEnd | null;
-}>;
+/**
+ * Matches beginning events with TraceEventPairableAsyncEnd and TraceEventPairableAsyncInstant (ASYNC_NESTABLE_INSTANT)
+ * if provided, though currently only coming from Animations. Traces may contain multiple instant events so we need to
+ * account for that.
+ *
+ * @returns {Map<string, MatchingPairableAsyncEvents>} Map of the animation's ID to it's matching events.
+ */
+export declare function matchEvents(unpairedEvents: Types.TraceEvents.TraceEventPairableAsync[]): Map<string, MatchingPairableAsyncEvents>;
 export declare function createSortedSyntheticEvents<T extends Types.TraceEvents.TraceEventPairableAsync>(matchedPairs: Map<string, {
     begin: Types.TraceEvents.TraceEventPairableAsyncBegin | null;
     end: Types.TraceEvents.TraceEventPairableAsyncEnd | null;
+    instant?: Types.TraceEvents.TraceEventPairableAsyncInstant[];
 }>, syntheticEventCallback?: (syntheticEvent: MatchedPairType<T>) => void): MatchedPairType<T>[];
 export declare function createMatchedSortedSyntheticEvents<T extends Types.TraceEvents.TraceEventPairableAsync>(unpairedAsyncEvents: T[], syntheticEventCallback?: (syntheticEvent: MatchedPairType<T>) => void): MatchedPairType<T>[];
+/**
+ * Different trace events return line/column numbers that are 1 or 0 indexed.
+ * This function knows which events return 1 indexed numbers and normalizes
+ * them. The UI expects 0 indexed line numbers, so that is what we return.
+ */
+export declare function getZeroIndexedLineAndColumnForEvent(event: Types.TraceEvents.TraceEventData): {
+    lineNumber?: number;
+    columnNumber?: number;
+};
+/**
+ * Different trace events contain stack traces with line/column numbers
+ * that are 1 or 0 indexed.
+ * This function knows which events return 1 indexed numbers and normalizes
+ * them. The UI expects 0 indexed line numbers, so that is what we return.
+ */
+export declare function getZeroIndexedStackTraceForEvent(event: Types.TraceEvents.TraceEventData): Types.TraceEvents.TraceEventCallFrame[] | null;
+export declare function frameIDForEvent(event: Types.TraceEvents.TraceEventData): string | null;
+export declare function findUpdateLayoutTreeEvents(events: Types.TraceEvents.TraceEventData[], startTime: Types.Timing.MicroSeconds, endTime?: Types.Timing.MicroSeconds): Types.TraceEvents.TraceEventUpdateLayoutTree[];
 export {};

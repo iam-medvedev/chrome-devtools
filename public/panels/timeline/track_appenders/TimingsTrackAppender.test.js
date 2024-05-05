@@ -8,8 +8,8 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
-function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel) {
-    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel);
+function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel) {
+    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.timingsTrackAppender();
 }
 describeWithEnvironment('TimingTrackAppender', function () {
@@ -19,10 +19,8 @@ describeWithEnvironment('TimingTrackAppender', function () {
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     let entryTypeByLevel = [];
     beforeEach(async function () {
-        const data = await TraceLoader.allModels(this, 'timings-track.json.gz');
-        traceParsedData = data.traceParsedData;
-        timingsTrackAppender =
-            initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, data.timelineModel);
+        traceParsedData = await TraceLoader.traceEngine(this, 'timings-track.json.gz');
+        timingsTrackAppender = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
         timingsTrackAppender.appendTrackAtLevel(0);
     });
     afterEach(() => {
@@ -212,10 +210,8 @@ describeWithEnvironment('TimingTrackAppender', function () {
     describe('extension markers', () => {
         beforeEach(async function () {
             Root.Runtime.experiments.enableForTest('timeline-extensions');
-            const data = await TraceLoader.allModels(this, 'extension-tracks-and-marks.json.gz');
-            traceParsedData = data.traceParsedData;
-            timingsTrackAppender =
-                initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, data.timelineModel);
+            traceParsedData = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
+            timingsTrackAppender = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
             timingsTrackAppender.appendTrackAtLevel(0);
             // Rather than use the real colours here and burden the test with having to
             // inject loads of CSS, we fake out the colours. this is fine for our tests as
@@ -270,8 +266,9 @@ describeWithEnvironment('TimingTrackAppender', function () {
             }
         });
         it('returns the tool tip info for an entry correctly', function () {
-            const extensionMarkers = traceParsedData.ExtensionTraceData.extensionMarkers;
-            const highlightedEntryInfo = timingsTrackAppender.highlightedEntryInfo(extensionMarkers[0]);
+            const extensionMarker = traceParsedData.ExtensionTraceData.extensionMarkers.at(0);
+            assert.isOk(extensionMarker, 'did not find any extension markers');
+            const highlightedEntryInfo = timingsTrackAppender.highlightedEntryInfo(extensionMarker);
             assert.strictEqual(highlightedEntryInfo.title, 'A mark');
         });
     });

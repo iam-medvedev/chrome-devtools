@@ -282,10 +282,8 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         storageTreeElement.appendChild(this.sharedStorageListTreeElement);
         this.cacheStorageListTreeElement = new ServiceWorkerCacheTreeElement(panel);
         storageTreeElement.appendChild(this.cacheStorageListTreeElement);
-        if (Root.Runtime.experiments.isEnabled("storage-buckets-tree" /* Root.Runtime.ExperimentName.STORAGE_BUCKETS_TREE */)) {
-            this.storageBucketsTreeElement = new StorageBucketsTreeParentElement(panel);
-            storageTreeElement.appendChild(this.storageBucketsTreeElement);
-        }
+        this.storageBucketsTreeElement = new StorageBucketsTreeParentElement(panel);
+        storageTreeElement.appendChild(this.storageBucketsTreeElement);
         const backgroundServiceSectionTitle = i18nString(UIStrings.backgroundServices);
         const backgroundServiceTreeElement = this.addSidebarSection(backgroundServiceSectionTitle);
         this.backForwardCacheListTreeElement = new BackForwardCacheTreeElement(panel);

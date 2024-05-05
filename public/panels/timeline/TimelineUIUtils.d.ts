@@ -23,21 +23,22 @@ export declare class TimelineUIUtils {
     static isUserFrame(frame: Protocol.Runtime.CallFrame): boolean;
     static syntheticNetworkRequestCategory(request: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest): NetworkCategory;
     static networkCategoryColor(category: NetworkCategory): string;
-    static buildDetailsTextForTraceEvent(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): Promise<string | null>;
-    static buildDetailsNodeForTraceEvent(event: TraceEngine.Legacy.CompatibleTraceEvent, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Promise<Node | null>;
+    static buildDetailsTextForTraceEvent(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null): Promise<string | null>;
+    static buildDetailsNodeForTraceEvent(event: TraceEngine.Legacy.CompatibleTraceEvent, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording: boolean | undefined, traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null): Promise<Node | null>;
     static linkifyLocation(linkifyOptions: LinkifyLocationOptions): Element | null;
     static linkifyTopCallFrame(event: TraceEngine.Types.TraceEvents.TraceEventData, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Element | null;
-    static buildDetailsNodeForPerformanceEvent(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): Element;
+    static buildDetailsNodeForMarkerEvents(event: TraceEngine.Types.TraceEvents.MarkerEvent): HTMLElement;
     static buildConsumeCacheDetails(eventData: {
         consumedCacheSize?: number;
         cacheRejected?: boolean;
         cacheKind?: string;
     }, contentHelper: TimelineDetailsContentHelper): void;
-    static buildTraceEventDetails(event: TraceEngine.Legacy.CompatibleTraceEvent, linkifier: LegacyComponents.Linkifier.Linkifier, detailed: boolean, traceParseData?: TraceEngine.Handlers.Types.TraceParseData | null): Promise<DocumentFragment>;
+    static buildTraceEventDetails(traceParseData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventData, linkifier: LegacyComponents.Linkifier.Linkifier, detailed: boolean): Promise<DocumentFragment>;
     static statsForTimeRange(events: TraceEngine.Legacy.CompatibleTraceEvent[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): {
         [x: string]: number;
     };
     static buildSyntheticNetworkRequestDetails(traceParseData: TraceEngine.Handlers.Types.TraceParseData | null, event: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest, linkifier: LegacyComponents.Linkifier.Linkifier): Promise<DocumentFragment>;
+    private static renderEventJson;
     static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | TraceEngine.Types.TraceEvents.TraceEventCallFrame[]): Protocol.Runtime.StackTrace;
     private static generateCauses;
     private static createEntryLink;
@@ -114,4 +115,5 @@ export declare function timeStampForEventAdjustedForClosestNavigationIfPossible(
  * every LCP Candidate event as a potential marker event.
  **/
 export declare function isMarkerEvent(traceParseData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
+export declare function urlForEvent(traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null, event: TraceEngine.Legacy.CompatibleTraceEvent): Platform.DevToolsPath.UrlString | null;
 export {};

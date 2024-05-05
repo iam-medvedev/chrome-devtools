@@ -1,9 +1,7 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type PerformanceModel } from './PerformanceModel.js';
 import { type TimelineMiniMap } from './TimelineMiniMap.js';
 export type RecordingData = {
-    legacyModel: PerformanceModel;
     traceParseDataIndex: number;
 };
 export interface NewHistoryRecordingData {

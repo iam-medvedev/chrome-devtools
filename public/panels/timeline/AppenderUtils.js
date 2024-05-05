@@ -1,6 +1,9 @@
+// Copyright 2023 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+import * as i18n from '../../core/i18n/i18n.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import * as i18n from '../../core/i18n/i18n.js';
 const UIStrings = {
     /**
      * @description Text in the Performance panel to show how long was spent in a particular part of the code.

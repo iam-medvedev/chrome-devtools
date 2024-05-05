@@ -8,9 +8,9 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
-function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel) {
+function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel) {
     Timeline.ExtensionDataGatherer.ExtensionDataGatherer.instance().modelChanged(traceParsedData);
-    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel);
+    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.allVisibleTrackAppenders().filter(track => track.appenderName === 'Extension');
 }
 describeWithEnvironment('ExtensionTrackAppender', function () {
@@ -21,10 +21,8 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
     let entryTypeByLevel = [];
     beforeEach(async function () {
         Root.Runtime.experiments.enableForTest('timeline-extensions');
-        const data = await TraceLoader.allModels(this, 'extension-tracks-and-marks.json.gz');
-        traceParsedData = data.traceParsedData;
-        extensionTrackAppenders =
-            initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, data.timelineModel);
+        traceParsedData = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
+        extensionTrackAppenders = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
         let level = 0;
         extensionTrackAppenders.forEach(appender => {
             level = appender.appendTrackAtLevel(level);

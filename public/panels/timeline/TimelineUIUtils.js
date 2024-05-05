@@ -34,16 +34,22 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
+import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import codeHighlighterStyles from '../../ui/components/code_highlighter/codeHighlighter.css.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import imagePreviewStyles from '../../ui/legacy/components/utils/imagePreview.css.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
+// eslint-disable-next-line rulesdir/es_modules_import
+import inspectorCommonStyles from '../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { CLSRect } from './CLSLinkifier.js';
@@ -441,6 +447,10 @@ const UIStrings = {
      */
     initiatorFor: 'Initiator for',
     /**
+     *@description Text for the underlying data behing a specific flamechart selection. Trace events are the browser instrumentation that are emitted as JSON objects.
+     */
+    traceEvent: 'Trace Event',
+    /**
      *@description Call site stack label in Timeline UIUtils of the Performance panel
      */
     timerInstalled: 'Timer Installed',
@@ -581,7 +591,7 @@ export class TimelineUIUtils {
                 tokens.push(TraceEngine.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(traceParsedData.Samples, traceEvent));
             }
         }
-        const url = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(traceEvent).url;
+        const url = urlForEvent(traceParsedData ?? null, traceEvent);
         if (url) {
             tokens.push(url);
         }
@@ -740,7 +750,7 @@ export class TimelineUIUtils {
         }
         return ThemeSupport.ThemeSupport.instance().getComputedValue(cssVarName);
     }
-    static async buildDetailsTextForTraceEvent(event) {
+    static async buildDetailsTextForTraceEvent(event, traceParsedData) {
         const recordType = TimelineModel.TimelineModel.RecordType;
         let detailsText;
         const eventData = event.args['data'];
@@ -752,12 +762,13 @@ export class TimelineUIUtils {
                 detailsText = i18nString(UIStrings.sCollected, { PH1: Platform.NumberUtilities.bytesToString(delta) });
                 break;
             }
-            case recordType.FunctionCall:
-                if (eventData && eventData['url'] && eventData['lineNumber'] !== undefined &&
-                    eventData['columnNumber'] !== undefined) {
-                    detailsText = eventData.url + ':' + (eventData.lineNumber + 1) + ':' + (eventData.columnNumber + 1);
+            case recordType.FunctionCall: {
+                const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                if (lineNumber !== undefined && columnNumber !== undefined) {
+                    detailsText = eventData.url + ':' + (lineNumber + 1) + ':' + (columnNumber + 1);
                 }
                 break;
+            }
             case recordType.JSRoot:
             case recordType.JSFrame:
             case recordType.JSIdleFrame:
@@ -794,9 +805,10 @@ export class TimelineUIUtils {
             case recordType.CompileScript:
             case recordType.CacheScript:
             case recordType.EvaluateScript: {
+                const { lineNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
                 const url = eventData && eventData['url'];
                 if (url) {
-                    detailsText = Bindings.ResourceUtils.displayNameForURL(url) + ':' + (eventData['lineNumber'] + 1);
+                    detailsText = Bindings.ResourceUtils.displayNameForURL(url) + ':' + ((lineNumber || 0) + 1);
                 }
                 break;
             }
@@ -833,7 +845,7 @@ export class TimelineUIUtils {
             case recordType.PaintImage:
             case recordType.DecodeImage:
             case recordType.DecodeLazyPixelRef: {
-                const url = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).url;
+                const url = urlForEvent(traceParsedData, event);
                 if (url) {
                     detailsText = Bindings.ResourceUtils.displayNameForURL(url);
                 }
@@ -853,14 +865,14 @@ export class TimelineUIUtils {
                     detailsText = null;
                 }
                 else {
-                    detailsText = await linkifyTopCallFrameAsText();
+                    detailsText = linkifyTopCallFrameAsText();
                 }
                 break;
         }
         return detailsText;
-        async function linkifyTopCallFrameAsText() {
+        function linkifyTopCallFrameAsText() {
             const frame = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
-                TraceEngine.Helpers.Trace.stackTraceForEvent(event)?.at(0) :
+                TraceEngine.Helpers.Trace.getZeroIndexedStackTraceForEvent(event)?.at(0) :
                 null;
             if (!frame) {
                 return null;
@@ -868,7 +880,7 @@ export class TimelineUIUtils {
             return frame.url + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1);
         }
     }
-    static async buildDetailsNodeForTraceEvent(event, target, linkifier, isFreshRecording = false) {
+    static async buildDetailsNodeForTraceEvent(event, target, linkifier, isFreshRecording = false, traceParsedData) {
         const recordType = TimelineModel.TimelineModel.RecordType;
         let details = null;
         let detailsText;
@@ -891,7 +903,7 @@ export class TimelineUIUtils {
             case recordType.WebSocketSendHandshakeRequest:
             case recordType.WebSocketReceiveHandshakeResponse:
             case recordType.WebSocketDestroy: {
-                detailsText = await TimelineUIUtils.buildDetailsTextForTraceEvent(event);
+                detailsText = await TimelineUIUtils.buildDetailsTextForTraceEvent(event, traceParsedData);
                 break;
             }
             case recordType.PaintImage:
@@ -904,7 +916,7 @@ export class TimelineUIUtils {
             case recordType.ResourceReceivedData:
             case recordType.ResourceReceiveResponse:
             case recordType.ResourceFinish: {
-                const url = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).url;
+                const url = urlForEvent(traceParsedData, event);
                 if (url) {
                     const options = {
                         tabStop: true,
@@ -922,11 +934,12 @@ export class TimelineUIUtils {
             case recordType.JSFrame: {
                 details = document.createElement('span');
                 UI.UIUtils.createTextChild(details, TimelineUIUtils.frameDisplayName(eventData));
+                const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
                 const location = this.linkifyLocation({
                     scriptId: eventData['scriptId'],
                     url: eventData['url'],
-                    lineNumber: eventData['lineNumber'],
-                    columnNumber: eventData['columnNumber'],
+                    lineNumber: lineNumber || 0,
+                    columnNumber: columnNumber,
                     target,
                     isFreshRecording,
                     linkifier,
@@ -955,10 +968,11 @@ export class TimelineUIUtils {
             case recordType.EvaluateScript: {
                 const url = eventData['url'];
                 if (url) {
+                    const { lineNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
                     details = this.linkifyLocation({
                         scriptId: null,
                         url,
-                        lineNumber: eventData['lineNumber'],
+                        lineNumber: lineNumber || 0,
                         columnNumber: 0,
                         target,
                         isFreshRecording,
@@ -1032,7 +1046,10 @@ export class TimelineUIUtils {
         return LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options);
     }
     static linkifyTopCallFrame(event, target, linkifier, isFreshRecording = false) {
-        const frame = TimelineModel.TimelineProfileTree.eventStackFrame(event);
+        let frame = TraceEngine.Helpers.Trace.getZeroIndexedStackTraceForEvent(event)?.[0];
+        if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
+            frame = event.callFrame;
+        }
         if (!frame) {
             return null;
         }
@@ -1049,23 +1066,23 @@ export class TimelineUIUtils {
         }
         return LegacyComponents.Linkifier.Linkifier.linkifyURL(frame.url, options);
     }
-    static buildDetailsNodeForPerformanceEvent(event) {
+    static buildDetailsNodeForMarkerEvents(event) {
         let link = 'https://web.dev/user-centric-performance-metrics/';
         let name = 'page performance metrics';
-        const recordType = TimelineModel.TimelineModel.RecordType;
         switch (event.name) {
-            case recordType.MarkLCPCandidate:
+            case "largestContentfulPaint::Candidate" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkLCPCandidate */:
                 link = 'https://web.dev/lcp/';
                 name = 'largest contentful paint';
                 break;
-            case recordType.MarkFCP:
+            case "firstContentfulPaint" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkFCP */:
                 link = 'https://web.dev/first-contentful-paint/';
                 name = 'first contentful paint';
                 break;
             default:
                 break;
         }
-        return UI.Fragment.html `<div>${UI.XLink.XLink.create(link, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')} about ${name}.</div>`;
+        const html = UI.Fragment.html `<div>${UI.XLink.XLink.create(link, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more')} about ${name}.</div>`;
+        return html;
     }
     static buildConsumeCacheDetails(eventData, contentHelper) {
         if (typeof eventData.consumedCacheSize === 'number') {
@@ -1084,30 +1101,22 @@ export class TimelineUIUtils {
             contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheStatus), i18nString(UIStrings.scriptNotEligibleToBeLoadedFromCache));
         }
     }
-    static async buildTraceEventDetails(event, linkifier, detailed, 
-    // TODO(crbug.com/1430809): the order of these arguments is slightly
-    // awkward because to change them is to cause a lot of layout tests to be
-    // updated. We should rewrite those tests as unit tests in this codebase,
-    // and then we can more easily change this method.
-    traceParseData = null) {
+    static async buildTraceEventDetails(traceParseData, event, linkifier, detailed) {
         const maybeTarget = maybeTargetForEvent(traceParseData, event);
-        const { duration, selfTime } = TraceEngine.Legacy.timesForEventInMilliseconds(event);
-        const relatedNodesMap = traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event) ?
-            await TraceEngine.Extras.FetchNodes.extractRelatedDOMNodesFromEvent(traceParseData, event) :
-            null;
+        const { duration, selfTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(event);
+        const relatedNodesMap = await TraceEngine.Extras.FetchNodes.extractRelatedDOMNodesFromEvent(traceParseData, event);
         if (maybeTarget) {
             // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
             if (typeof event[previewElementSymbol] === 'undefined') {
                 let previewElement = null;
-                const url = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event).url;
+                const url = urlForEvent(traceParseData, event);
                 if (url) {
                     previewElement = await LegacyComponents.ImagePreview.ImagePreview.build(maybeTarget, url, false, {
                         imageAltText: LegacyComponents.ImagePreview.ImagePreview.defaultAltTextForImageURL(url),
                         precomputedFeatures: undefined,
                     });
                 }
-                else if (traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event) &&
-                    TraceEngine.Types.TraceEvents.isTraceEventPaint(event)) {
+                else if (TraceEngine.Types.TraceEvents.isTraceEventPaint(event)) {
                     previewElement = await TimelineUIUtils.buildPicturePreviewContent(traceParseData, event, maybeTarget);
                 }
                 // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
@@ -1126,14 +1135,14 @@ export class TimelineUIUtils {
         const isMarker = traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event) && isMarkerEvent(traceParseData, event);
         const color = isMarker ? TimelineUIUtils.markerStyleForEvent(event).color : defaultColorForEvent;
         contentHelper.addSection(TimelineUIUtils.eventTitle(event), color);
-        const eventData = event.args['data'];
-        const timelineData = TimelineModel.TimelineModel.EventOnTimelineData.forEvent(event);
-        const initiator = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
-            traceParseData?.Initiators.eventToInitiator.get(event) ?? null :
-            null;
-        const initiatorFor = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
-            traceParseData?.Initiators.initiatorToEvents.get(event) ?? null :
-            null;
+        // TODO: as part of the removal of the old engine, produce a typesafe way
+        // to look up args and data for events.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const unsafeEventArgs = event.args;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const unsafeEventData = event.args?.data;
+        const initiator = traceParseData.Initiators.eventToInitiator.get(event) ?? null;
+        const initiatorFor = traceParseData.Initiators.initiatorToEvents.get(event) ?? null;
         let url = null;
         if (TraceEngine.Legacy.eventIsFromNewEngine(event) && traceParseData) {
             const warnings = TimelineComponents.DetailsView.buildWarningElementsForEvent(event, traceParseData);
@@ -1145,23 +1154,15 @@ export class TimelineUIUtils {
             contentHelper.appendTextRow(i18nString(UIStrings.totalTime), i18n.TimeUtilities.millisToString(duration || 0, true));
             contentHelper.appendTextRow(i18nString(UIStrings.selfTime), i18n.TimeUtilities.millisToString(selfTime, true));
         }
-        if (traceParseData?.Meta.traceIsGeneric) {
-            for (const key in event.args) {
-                try {
-                    contentHelper.appendTextRow(key, JSON.stringify(event.args[key]));
-                }
-                catch (e) {
-                    contentHelper.appendTextRow(key, `<${typeof event.args[key]}>`);
-                }
-            }
+        if (traceParseData.Meta.traceIsGeneric) {
+            TimelineUIUtils.renderEventJson(event, contentHelper);
             return contentHelper.fragment;
         }
-        if (TraceEngine.Legacy.eventIsFromNewEngine(event) && TraceEngine.Types.TraceEvents.isTraceEventV8Compile(event)) {
+        if (TraceEngine.Types.TraceEvents.isTraceEventV8Compile(event)) {
             url = event.args.data?.url;
             if (url) {
-                const lineNumber = event.args?.data?.lineNumber || 0;
-                const columnNumber = event.args?.data?.columnNumber;
-                contentHelper.appendLocationRow(i18nString(UIStrings.script), url, lineNumber, columnNumber);
+                const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                contentHelper.appendLocationRow(i18nString(UIStrings.script), url, lineNumber || 0, columnNumber);
             }
             const isEager = Boolean(event.args.data?.eager);
             if (isEager) {
@@ -1169,10 +1170,11 @@ export class TimelineUIUtils {
             }
             const isStreamed = Boolean(event.args.data?.streamed);
             contentHelper.appendTextRow(i18nString(UIStrings.streamed), isStreamed + (isStreamed ? '' : `: ${event.args.data?.notStreamedReason || ''}`));
-            TimelineUIUtils.buildConsumeCacheDetails(eventData, contentHelper);
+            if (event.args.data) {
+                TimelineUIUtils.buildConsumeCacheDetails(event.args.data, contentHelper);
+            }
         }
-        if (TraceEngine.Legacy.eventIsFromNewEngine(event) &&
-            TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event)) {
+        if (TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event)) {
             for (const [key, value] of event.args.detailsPairs || []) {
                 contentHelper.appendTextRow(key, value);
             }
@@ -1182,7 +1184,7 @@ export class TimelineUIUtils {
             case recordTypes.GCEvent:
             case recordTypes.MajorGC:
             case recordTypes.MinorGC: {
-                const delta = event.args['usedHeapSizeBefore'] - event.args['usedHeapSizeAfter'];
+                const delta = unsafeEventArgs['usedHeapSizeBefore'] - unsafeEventArgs['usedHeapSizeAfter'];
                 contentHelper.appendTextRow(i18nString(UIStrings.collected), Platform.NumberUtilities.bytesToString(delta));
                 break;
             }
@@ -1192,7 +1194,7 @@ export class TimelineUIUtils {
             case recordTypes.JSIdleFrame:
             case recordTypes.JSSystemFrame:
             case recordTypes.FunctionCall: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording);
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording, traceParseData);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.function), detailsNode);
                 }
@@ -1201,19 +1203,19 @@ export class TimelineUIUtils {
             case recordTypes.TimerFire:
             case recordTypes.TimerInstall:
             case recordTypes.TimerRemove: {
-                contentHelper.appendTextRow(i18nString(UIStrings.timerId), eventData['timerId']);
+                contentHelper.appendTextRow(i18nString(UIStrings.timerId), unsafeEventData.timerId);
                 if (event.name === recordTypes.TimerInstall) {
-                    contentHelper.appendTextRow(i18nString(UIStrings.timeout), i18n.TimeUtilities.millisToString(eventData['timeout']));
-                    contentHelper.appendTextRow(i18nString(UIStrings.repeats), !eventData['singleShot']);
+                    contentHelper.appendTextRow(i18nString(UIStrings.timeout), i18n.TimeUtilities.millisToString(unsafeEventData['timeout']));
+                    contentHelper.appendTextRow(i18nString(UIStrings.repeats), !unsafeEventData['singleShot']);
                 }
                 break;
             }
             case recordTypes.FireAnimationFrame: {
-                contentHelper.appendTextRow(i18nString(UIStrings.callbackId), eventData['id']);
+                contentHelper.appendTextRow(i18nString(UIStrings.callbackId), unsafeEventData['id']);
                 break;
             }
             case recordTypes.CompileModule: {
-                contentHelper.appendLocationRow(i18nString(UIStrings.module), event.args['fileName'], 0);
+                contentHelper.appendLocationRow(i18nString(UIStrings.module), unsafeEventArgs['fileName'], 0);
                 break;
             }
             case recordTypes.CompileScript: {
@@ -1221,22 +1223,24 @@ export class TimelineUIUtils {
                 break;
             }
             case recordTypes.CacheModule: {
-                url = eventData && eventData['url'];
-                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), Platform.NumberUtilities.bytesToString(eventData['producedCacheSize']));
+                url = unsafeEventData && unsafeEventData['url'];
+                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), Platform.NumberUtilities.bytesToString(unsafeEventData['producedCacheSize']));
                 break;
             }
             case recordTypes.CacheScript: {
-                url = eventData && eventData['url'];
+                url = unsafeEventData && unsafeEventData['url'];
                 if (url) {
-                    contentHelper.appendLocationRow(i18nString(UIStrings.script), url, eventData['lineNumber'], eventData['columnNumber']);
+                    const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                    contentHelper.appendLocationRow(i18nString(UIStrings.script), url, lineNumber || 0, columnNumber);
                 }
-                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), Platform.NumberUtilities.bytesToString(eventData['producedCacheSize']));
+                contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), Platform.NumberUtilities.bytesToString(unsafeEventData['producedCacheSize']));
                 break;
             }
             case recordTypes.EvaluateScript: {
-                url = eventData && eventData['url'];
+                url = unsafeEventData && unsafeEventData['url'];
                 if (url) {
-                    contentHelper.appendLocationRow(i18nString(UIStrings.script), url, eventData['lineNumber'], eventData['columnNumber']);
+                    const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                    contentHelper.appendLocationRow(i18nString(UIStrings.script), url, lineNumber || 0, columnNumber);
                 }
                 break;
             }
@@ -1245,16 +1249,16 @@ export class TimelineUIUtils {
             case recordTypes.WasmCachedModule:
             case recordTypes.WasmModuleCacheHit:
             case recordTypes.WasmModuleCacheInvalid: {
-                if (eventData) {
-                    url = event.args['url'];
+                if (unsafeEventData) {
+                    url = unsafeEventArgs['url'];
                     if (url) {
                         contentHelper.appendTextRow(i18nString(UIStrings.url), url);
                     }
-                    const producedCachedSize = event.args['producedCachedSize'];
+                    const producedCachedSize = unsafeEventArgs['producedCachedSize'];
                     if (producedCachedSize) {
                         contentHelper.appendTextRow(i18nString(UIStrings.producedCacheSize), producedCachedSize);
                     }
-                    const consumedCachedSize = event.args['consumedCachedSize'];
+                    const consumedCachedSize = unsafeEventArgs['consumedCachedSize'];
                     if (consumedCachedSize) {
                         contentHelper.appendTextRow(i18nString(UIStrings.consumedCacheSize), consumedCachedSize);
                     }
@@ -1263,7 +1267,7 @@ export class TimelineUIUtils {
             }
             // @ts-ignore Fall-through intended.
             case recordTypes.Paint: {
-                const clip = eventData['clip'];
+                const clip = unsafeEventData['clip'];
                 contentHelper.appendTextRow(i18nString(UIStrings.location), i18nString(UIStrings.sSCurlyBrackets, { PH1: clip[0], PH2: clip[1] }));
                 const clipWidth = TimelineUIUtils.quadWidth(clip);
                 const clipHeight = TimelineUIUtils.quadHeight(clip);
@@ -1280,7 +1284,7 @@ export class TimelineUIUtils {
             case recordTypes.DecodeImage:
             case recordTypes.DrawLazyPixelRef: {
                 relatedNodeLabel = i18nString(UIStrings.ownerElement);
-                url = timelineData.url;
+                url = urlForEvent(traceParseData, event);
                 if (url) {
                     const options = {
                         tabStop: true,
@@ -1292,7 +1296,7 @@ export class TimelineUIUtils {
                 break;
             }
             case recordTypes.ParseAuthorStyleSheet: {
-                url = eventData['styleSheetUrl'];
+                url = unsafeEventData['styleSheetUrl'];
                 if (url) {
                     const options = {
                         tabStop: true,
@@ -1305,7 +1309,7 @@ export class TimelineUIUtils {
             }
             case recordTypes.UpdateLayoutTree: // We don't want to see default details.
             case recordTypes.RecalculateStyles: {
-                contentHelper.appendTextRow(i18nString(UIStrings.elementsAffected), event.args['elementCount']);
+                contentHelper.appendTextRow(i18nString(UIStrings.elementsAffected), unsafeEventArgs['elementCount']);
                 const selectorStatsSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false);
                 if (!selectorStatsSetting.get()) {
                     const note = document.createElement('span');
@@ -1315,7 +1319,7 @@ export class TimelineUIUtils {
                 break;
             }
             case recordTypes.Layout: {
-                const beginData = event.args['beginData'];
+                const beginData = unsafeEventArgs['beginData'];
                 contentHelper.appendTextRow(i18nString(UIStrings.nodesThatNeedLayout), i18nString(UIStrings.sOfS, { PH1: beginData['dirtyObjects'], PH2: beginData['totalObjects'] }));
                 relatedNodeLabel = i18nString(UIStrings.layoutRoot);
                 break;
@@ -1339,19 +1343,19 @@ export class TimelineUIUtils {
                 break;
             }
             case recordTypes.EmbedderCallback: {
-                contentHelper.appendTextRow(i18nString(UIStrings.callbackFunction), eventData['callbackName']);
+                contentHelper.appendTextRow(i18nString(UIStrings.callbackFunction), unsafeEventData['callbackName']);
                 break;
             }
             case recordTypes.Animation: {
                 if (TraceEngine.Legacy.phaseForEvent(event) === "n" /* TraceEngine.Types.TraceEvents.Phase.ASYNC_NESTABLE_INSTANT */) {
-                    contentHelper.appendTextRow(i18nString(UIStrings.state), eventData['state']);
+                    contentHelper.appendTextRow(i18nString(UIStrings.state), unsafeEventData['state']);
                 }
                 break;
             }
             case recordTypes.ParseHTML: {
-                const beginData = event.args['beginData'];
+                const beginData = unsafeEventArgs['beginData'];
                 const startLine = beginData['startLine'] - 1;
-                const endLine = event.args['endData'] ? event.args['endData']['endLine'] - 1 : undefined;
+                const endLine = unsafeEventArgs['endData'] ? unsafeEventArgs['endData']['endLine'] - 1 : undefined;
                 url = beginData['url'];
                 if (url) {
                     contentHelper.appendLocationRange(i18nString(UIStrings.range), url, startLine, endLine);
@@ -1360,22 +1364,22 @@ export class TimelineUIUtils {
             }
             // @ts-ignore Fall-through intended.
             case recordTypes.FireIdleCallback: {
-                contentHelper.appendTextRow(i18nString(UIStrings.allottedTime), i18n.TimeUtilities.millisToString(eventData['allottedMilliseconds']));
-                contentHelper.appendTextRow(i18nString(UIStrings.invokedByTimeout), eventData['timedOut']);
+                contentHelper.appendTextRow(i18nString(UIStrings.allottedTime), i18n.TimeUtilities.millisToString(unsafeEventData['allottedMilliseconds']));
+                contentHelper.appendTextRow(i18nString(UIStrings.invokedByTimeout), unsafeEventData['timedOut']);
             }
             case recordTypes.RequestIdleCallback:
             case recordTypes.CancelIdleCallback: {
-                contentHelper.appendTextRow(i18nString(UIStrings.callbackId), eventData['id']);
+                contentHelper.appendTextRow(i18nString(UIStrings.callbackId), unsafeEventData['id']);
                 break;
             }
             case recordTypes.EventDispatch: {
-                contentHelper.appendTextRow(i18nString(UIStrings.type), eventData['type']);
+                contentHelper.appendTextRow(i18nString(UIStrings.type), unsafeEventData['type']);
                 break;
             }
             // @ts-ignore Fall-through intended.
             case recordTypes.MarkLCPCandidate: {
-                contentHelper.appendTextRow(i18nString(UIStrings.type), String(eventData['type']));
-                contentHelper.appendTextRow(i18nString(UIStrings.size), String(eventData['size']));
+                contentHelper.appendTextRow(i18nString(UIStrings.type), String(unsafeEventData['type']));
+                contentHelper.appendTextRow(i18nString(UIStrings.size), String(unsafeEventData['size']));
             }
             case recordTypes.MarkFirstPaint:
             case recordTypes.MarkFCP:
@@ -1389,27 +1393,23 @@ export class TimelineUIUtils {
                 if (traceParseData && TraceEngine.Legacy.eventIsFromNewEngine(event)) {
                     const adjustedEventTimeStamp = timeStampForEventAdjustedForClosestNavigationIfPossible(event, traceParseData);
                     contentHelper.appendTextRow(i18nString(UIStrings.timestamp), i18n.TimeUtilities.preciseMillisToString(adjustedEventTimeStamp, 1));
-                    contentHelper.appendElementRow(i18nString(UIStrings.details), TimelineUIUtils.buildDetailsNodeForPerformanceEvent(event));
+                    if (TraceEngine.Legacy.eventIsFromNewEngine(event) &&
+                        TraceEngine.Types.TraceEvents.isTraceEventMarkerEvent(event)) {
+                        contentHelper.appendElementRow(i18nString(UIStrings.details), TimelineUIUtils.buildDetailsNodeForMarkerEvents(event));
+                    }
                 }
                 break;
             }
             case recordTypes.EventTiming: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording);
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording, traceParseData);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.details), detailsNode);
                 }
-                let payload = null;
-                if (TraceEngine.Legacy.eventIsFromNewEngine(event)) {
-                    payload = event;
-                }
-                else if (TraceEngine.Legacy.eventHasPayload(event)) {
-                    payload = event.rawPayload();
-                }
-                if (payload && TraceEngine.Types.TraceEvents.isSyntheticInteractionEvent(payload)) {
-                    const inputDelay = TraceEngine.Helpers.Timing.formatMicrosecondsTime(payload.inputDelay);
-                    const mainThreadTime = TraceEngine.Helpers.Timing.formatMicrosecondsTime(payload.mainThreadHandling);
-                    const presentationDelay = TraceEngine.Helpers.Timing.formatMicrosecondsTime(payload.presentationDelay);
-                    contentHelper.appendTextRow(i18nString(UIStrings.interactionID), payload.interactionId);
+                if (TraceEngine.Types.TraceEvents.isSyntheticInteractionEvent(event)) {
+                    const inputDelay = TraceEngine.Helpers.Timing.formatMicrosecondsTime(event.inputDelay);
+                    const mainThreadTime = TraceEngine.Helpers.Timing.formatMicrosecondsTime(event.mainThreadHandling);
+                    const presentationDelay = TraceEngine.Helpers.Timing.formatMicrosecondsTime(event.presentationDelay);
+                    contentHelper.appendTextRow(i18nString(UIStrings.interactionID), event.interactionId);
                     contentHelper.appendTextRow(i18nString(UIStrings.inputDelay), inputDelay);
                     contentHelper.appendTextRow(i18nString(UIStrings.processingDuration), mainThreadTime);
                     contentHelper.appendTextRow(i18nString(UIStrings.presentationDelay), presentationDelay);
@@ -1436,8 +1436,8 @@ export class TimelineUIUtils {
                 contentHelper.appendTextRow(i18nString(UIStrings.cumulativeScore), layoutShiftEventData['cumulative_score'].toPrecision(4));
                 contentHelper.appendTextRow(i18nString(UIStrings.currentClusterId), layoutShift.parsedData.sessionWindowData.id);
                 contentHelper.appendTextRow(i18nString(UIStrings.currentClusterScore), layoutShift.parsedData.sessionWindowData.cumulativeWindowScore.toPrecision(4));
-                contentHelper.appendTextRow(i18nString(UIStrings.hadRecentInput), eventData['had_recent_input'] ? i18nString(UIStrings.yes) : i18nString(UIStrings.no));
-                for (const impactedNode of eventData['impacted_nodes']) {
+                contentHelper.appendTextRow(i18nString(UIStrings.hadRecentInput), unsafeEventData['had_recent_input'] ? i18nString(UIStrings.yes) : i18nString(UIStrings.no));
+                for (const impactedNode of unsafeEventData['impacted_nodes']) {
                     const oldRect = new CLSRect(impactedNode['old_rect']);
                     const newRect = new CLSRect(impactedNode['new_rect']);
                     const linkedOldRect = await Common.Linkifier.Linkifier.linkify(oldRect);
@@ -1448,7 +1448,7 @@ export class TimelineUIUtils {
                 break;
             }
             default: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording);
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording, traceParseData);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.details), detailsNode);
                 }
@@ -1469,10 +1469,13 @@ export class TimelineUIUtils {
             contentHelper.appendElementRow('', event[previewElementSymbol]);
         }
         if (TraceEngine.Legacy.eventIsFromNewEngine(event) && traceParseData) {
-            const stackTrace = TraceEngine.Helpers.Trace.stackTraceForEvent(event);
+            const stackTrace = TraceEngine.Helpers.Trace.getZeroIndexedStackTraceForEvent(event);
             if (initiator || initiatorFor || stackTrace || traceParseData?.Invalidations.invalidationsForEvent.get(event)) {
                 await TimelineUIUtils.generateCauses(event, contentHelper, traceParseData);
             }
+        }
+        if (Root.Runtime.experiments.isEnabled("timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */)) {
+            TimelineUIUtils.renderEventJson(event, contentHelper);
         }
         const stats = {};
         const showPieChart = detailed && traceParseData && TimelineUIUtils.aggregatedStatsForTraceEvent(stats, traceParseData, event);
@@ -1644,7 +1647,7 @@ export class TimelineUIUtils {
         }
         const title = i18nString(UIStrings.initiatedBy);
         const topFrame = TraceEngine.Legacy.eventIsFromNewEngine(event) ?
-            TraceEngine.Helpers.Trace.stackTraceForEvent(event)?.at(0) :
+            TraceEngine.Helpers.Trace.getZeroIndexedStackTraceForEvent(event)?.at(0) :
             null;
         if (topFrame) {
             const link = linkifier.maybeLinkifyConsoleCallFrame(maybeTarget, topFrame, { tabStop: true, inlineFrameIndex: 0, showColumnNumber: true });
@@ -1664,6 +1667,25 @@ export class TimelineUIUtils {
             contentHelper.appendElementRow(i18nString(UIStrings.preview), requestPreviewElement);
         }
         return contentHelper.fragment;
+    }
+    static renderEventJson(event, contentHelper) {
+        contentHelper.addSection(i18nString(UIStrings.traceEvent));
+        const eventWithArgsFirst = {
+            ...{ args: event.args },
+            ...event,
+        };
+        const indentLength = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get().length;
+        // Elide if the data is huge. Then remove the initial new-line for a denser UI
+        const eventStr = JSON.stringify(eventWithArgsFirst, null, indentLength).slice(0, 3000).replace(/{\n  /, '{ ');
+        // Use CodeHighlighter for syntax highlighting.
+        const highlightContainer = document.createElement('div');
+        const shadowRoot = highlightContainer.attachShadow({ mode: 'open' });
+        shadowRoot.adoptedStyleSheets = [inspectorCommonStyles, codeHighlighterStyles];
+        const elem = shadowRoot.createChild('div');
+        elem.classList.add('monospace', 'source-code');
+        elem.textContent = eventStr;
+        void CodeHighlighter.CodeHighlighter.highlightNode(elem, 'text/javascript');
+        contentHelper.appendElementRow('', highlightContainer);
     }
     static stackTraceFromCallFrames(callFrames) {
         return { callFrames: callFrames };
@@ -1692,7 +1714,7 @@ export class TimelineUIUtils {
                 stackLabel = i18nString(UIStrings.layoutForced);
                 break;
         }
-        const stackTrace = TraceEngine.Helpers.Trace.stackTraceForEvent(event);
+        const stackTrace = TraceEngine.Helpers.Trace.getZeroIndexedStackTraceForEvent(event);
         if (stackTrace && stackTrace.length) {
             contentHelper.addSection(stackLabel);
             contentHelper.createChildStackTraceElement(TimelineUIUtils.stackTraceFromCallFrames(stackTrace));
@@ -1703,7 +1725,7 @@ export class TimelineUIUtils {
         if (initiator) {
             // If we have an initiator for the event, we can show its stack trace, a link to reveal the initiator,
             // and the time since the initiator (Pending For).
-            const stackTrace = TraceEngine.Helpers.Trace.stackTraceForEvent(initiator);
+            const stackTrace = TraceEngine.Helpers.Trace.getZeroIndexedStackTraceForEvent(initiator);
             if (stackTrace) {
                 contentHelper.addSection(initiatorStackLabel);
                 contentHelper.createChildStackTraceElement(TimelineUIUtils.stackTraceFromCallFrames(stackTrace.map(frame => {
@@ -1805,7 +1827,7 @@ export class TimelineUIUtils {
         }
         const generatedItems = new Set();
         for (const invalidation of invalidations) {
-            const stackTrace = TraceEngine.Helpers.Trace.stackTraceForEvent(invalidation);
+            const stackTrace = TraceEngine.Helpers.Trace.getZeroIndexedStackTraceForEvent(invalidation);
             let scriptLink = null;
             const callFrame = stackTrace?.at(0);
             if (callFrame) {
@@ -2243,7 +2265,7 @@ export class TimelineDetailsContentHelper {
             return;
         }
         const stackTraceElement = this.tableElement.createChild('div', 'timeline-details-view-row timeline-details-stack-values');
-        const callFrameContents = LegacyComponents.JSPresentationUtils.buildStackTracePreviewContents(this.target, this.linkifierInternal, { stackTrace, tabStops: true });
+        const callFrameContents = LegacyComponents.JSPresentationUtils.buildStackTracePreviewContents(this.target, this.linkifierInternal, { stackTrace, tabStops: true, showColumnNumber: true });
         stackTraceElement.appendChild(callFrameContents.element);
     }
 }
@@ -2311,5 +2333,44 @@ function maybeTargetForEvent(traceParsedData, event) {
         return null;
     }
     return targetForEvent(traceParsedData, event);
+}
+// This function only exists to abstract dealing with two different event types
+// whilst we are in the middle of the migration. We are working on removing the
+// CompatibleTraceEvent type, at which point this method can be removed and we
+// can use the method in TraceEngine.Helpers directly
+function getZeroIndexedLineAndColumnNumbersForEvent(event) {
+    if (TraceEngine.Legacy.eventIsFromNewEngine(event)) {
+        return TraceEngine.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
+    }
+    return {
+        lineNumber: undefined,
+        columnNumber: undefined,
+    };
+}
+// TODO: once the CompatibleTraceEvent type is removed, this function can be
+// updated to take only new types.
+export function urlForEvent(traceParsedData, event) {
+    if (!traceParsedData || !TraceEngine.Legacy.eventIsFromNewEngine(event)) {
+        return null;
+    }
+    // DecodeImage events use the URL from the relevant PaintImage event.
+    if (TraceEngine.Types.TraceEvents.isTraceEventDecodeImage(event)) {
+        const paintEvent = traceParsedData.ImagePainting.paintImageForEvent.get(event);
+        return paintEvent ? urlForEvent(traceParsedData, paintEvent) : null;
+    }
+    // DrawLazyPixelRef events use the URL from the relevant PaintImage event.
+    if (TraceEngine.Types.TraceEvents.isTraceEventDrawLazyPixelRef(event) && event.args?.LazyPixelRef) {
+        const paintEvent = traceParsedData.ImagePainting.paintImageByDrawLazyPixelRef.get(event.args.LazyPixelRef);
+        return paintEvent ? urlForEvent(traceParsedData, paintEvent) : null;
+    }
+    // ParseHTML events store the URL under beginData, not data.
+    if (TraceEngine.Types.TraceEvents.isTraceEventParseHTML(event)) {
+        return event.args.beginData.url;
+    }
+    // For all other events, try to see if the URL is provided, else return null.
+    if (event.args?.data?.url) {
+        return event.args.data.url;
+    }
+    return null;
 }
 //# sourceMappingURL=TimelineUIUtils.js.map

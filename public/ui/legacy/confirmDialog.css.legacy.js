@@ -33,6 +33,9 @@ export default {
 .button {
   text-align: center;
   margin-top: 20px;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: var(--sys-size-6);
 }
 
 /* Ensure the button has a minimum width */

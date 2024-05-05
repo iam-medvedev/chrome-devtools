@@ -31,6 +31,7 @@ export declare const counter: (context?: string | undefined) => LoggingConfig.Co
  */
 export declare const controlPoint: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const cssColorMix: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
+export declare const cssQuery: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const deviceModeRuler: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const domBreakpoint: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const drawer: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
@@ -70,7 +71,6 @@ export declare const showStyleEditor: (context?: string | undefined) => LoggingC
 export declare const slider: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const section: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const sectionHeader: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
-export declare const stylesSelector: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const tableRow: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const tableCell: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const tableHeader: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;

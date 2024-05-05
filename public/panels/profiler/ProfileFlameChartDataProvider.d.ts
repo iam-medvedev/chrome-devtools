@@ -29,9 +29,9 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import type * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import type * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
 export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     readonly colorGeneratorInternal: Common.Color.Generator;
@@ -45,6 +45,7 @@ export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.
     totalTime(): number;
     formatValue(value: number, precision?: number): string;
     maxStackDepth(): number;
+    hasTrackConfigurationMode(): boolean;
     timelineData(): PerfUI.FlameChart.FlameChartTimelineData | null;
     calculateTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;
     prepareHighlightedEntryInfo(_entryIndex: number): Element | null;

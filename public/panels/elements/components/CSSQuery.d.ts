@@ -3,6 +3,7 @@ export interface CSSQueryData {
     queryName?: string;
     queryText: string;
     onQueryTextClick?: (event: Event) => void;
+    jslogContext: string;
 }
 export declare class CSSQuery extends HTMLElement {
     #private;

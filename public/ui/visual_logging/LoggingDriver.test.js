@@ -39,7 +39,7 @@ describe('LoggingDriver', () => {
         parent.style.height = '300px';
         const element = document.createElement('div');
         element.id = 'element';
-        element.setAttribute('jslog', 'TreeItem; context:42; track: click, keydown, hover, drag, resize');
+        element.setAttribute('jslog', 'TreeItem; context:42; track: click, keydown, hover, drag, resize, change');
         element.style.width = '300px';
         element.style.height = '300px';
         parent.appendChild(element);
@@ -282,6 +282,53 @@ describe('LoggingDriver', () => {
         assert.isFalse(recordKeyDown.called);
         await logging();
         assert.isTrue(recordKeyDown.calledOnce);
+    });
+    it('logs change', async () => {
+        addLoggableElements();
+        await VisualLoggingTesting.LoggingDriver.startLogging({ hoverLogThrottler: throttler });
+        const recordChange = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordChange');
+        const element = document.getElementById('element');
+        element.dispatchEvent(new Event('change'));
+        assert.isTrue(recordChange.calledOnce);
+    });
+    it('logs change for each input type', async () => {
+        addLoggableElements();
+        await VisualLoggingTesting.LoggingDriver.startLogging({ hoverLogThrottler: throttler });
+        const recordChange = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordChange');
+        const element = document.getElementById('element');
+        element.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isFalse(recordChange.called);
+        element.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isFalse(recordChange.called);
+        let logging = expectCalled(recordChange);
+        element.dispatchEvent(new InputEvent('input', { inputType: 'inserFromPaste' }));
+        await logging;
+        logging = expectCalled(recordChange);
+        element.dispatchEvent(new InputEvent('input', { inputType: 'inserFromDrop' }));
+        await logging;
+        logging = expectCalled(recordChange);
+        element.dispatchEvent(new Event('change'));
+        await logging;
+    });
+    it('logs change on focus out after input', async () => {
+        addLoggableElements();
+        await VisualLoggingTesting.LoggingDriver.startLogging({ hoverLogThrottler: throttler });
+        const recordChange = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordChange');
+        const element = document.getElementById('element');
+        element.dispatchEvent(new InputEvent('input', { inputType: 'insertText' }));
+        element.dispatchEvent(new Event('focusout'));
+        await expectCalled(recordChange);
+    });
+    it('does not log change on focus out without input', async () => {
+        addLoggableElements();
+        await VisualLoggingTesting.LoggingDriver.startLogging({ hoverLogThrottler: throttler });
+        const recordChange = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordChange');
+        const element = document.getElementById('element');
+        element.dispatchEvent(new Event('focusout'));
+        await new Promise(resolve => setTimeout(resolve, 0));
+        assert.isFalse(recordChange.calledOnce);
     });
     it('logs hover', async () => {
         const hoverLogThrottler = new Common.Throttler.Throttler(1000000000);
@@ -527,7 +574,7 @@ describe('LoggingDriver', () => {
         ]);
         assert.isEmpty(VisualLoggingTesting.NonDomState.getNonDomState().loggables);
     });
-    it('postpones loging non-DOM impressions with detached parent', async () => {
+    it('postpones logging non-DOM impressions with detached parent', async () => {
         addLoggableElements();
         const loggable = {};
         const parent = document.createElement('div');

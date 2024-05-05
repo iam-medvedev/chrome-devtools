@@ -34,7 +34,11 @@ export function uiLabelToNetworkPriority(priorityLabel) {
     if (uiLabelToPriorityMapInstance.size === 0) {
         priorityUILabelMap().forEach((value, key) => uiLabelToPriorityMapInstance.set(value, key));
     }
-    return uiLabelToPriorityMapInstance.get(priorityLabel) || '';
+    const priority = uiLabelToPriorityMapInstance.get(priorityLabel);
+    if (priority) {
+        return priority;
+    }
+    throw new Error('Priority not found');
 }
 const priorityUILabelMapInstance = new Map();
 export function priorityUILabelMap() {

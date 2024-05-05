@@ -20,7 +20,6 @@ export class TimelineFlameChartNetworkDataProvider {
     #networkTrackAppender;
     #timelineDataInternal;
     #lastSelection;
-    #priorityToValue;
     #traceEngineData;
     constructor() {
         this.#minimumBoundaryInternal = 0;
@@ -44,6 +43,9 @@ export class TimelineFlameChartNetworkDataProvider {
     }
     maxStackDepth() {
         return this.#maxLevel;
+    }
+    hasTrackConfigurationMode() {
+        return false;
     }
     timelineData() {
         if (this.#timelineDataInternal && this.#timelineDataInternal.entryLevels.length !== 0) {
@@ -230,22 +232,13 @@ export class TimelineFlameChartNetworkDataProvider {
                 i18n.TimeUtilities.millisToString(duration, true);
         }
         const div = contents.createChild('span');
-        div.textContent = PerfUI.NetworkPriorities.uiLabelForNetworkPriority(event.args.data.priority);
+        div.textContent = PerfUI.NetworkPriorities.uiLabelForNetworkPriority((event.args.data.priority));
         div.style.color = this.#colorForPriority(event.args.data.priority) || 'black';
         contents.createChild('span').textContent = Platform.StringUtilities.trimMiddle(event.args.data.url, maxURLChars);
         return element;
     }
     #colorForPriority(priority) {
-        if (!this.#priorityToValue) {
-            this.#priorityToValue = new Map([
-                ["VeryLow" /* Protocol.Network.ResourcePriority.VeryLow */, 1],
-                ["Low" /* Protocol.Network.ResourcePriority.Low */, 2],
-                ["Medium" /* Protocol.Network.ResourcePriority.Medium */, 3],
-                ["High" /* Protocol.Network.ResourcePriority.High */, 4],
-                ["VeryHigh" /* Protocol.Network.ResourcePriority.VeryHigh */, 5],
-            ]);
-        }
-        const value = this.#priorityToValue.get(priority);
+        const value = PerfUI.NetworkPriorities.networkPriorityWeight(priority);
         return value ? `hsla(214, 80%, 50%, ${value / 5})` : null;
     }
     /**

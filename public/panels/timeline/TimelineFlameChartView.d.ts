@@ -1,7 +1,6 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type PerformanceModel } from './PerformanceModel.js';
 import { TimelineFlameChartDataProvider } from './TimelineFlameChartDataProvider.js';
 import { type TimelineModeViewDelegate } from './TimelinePanel.js';
 import { TimelineSelection } from './TimelineSelection.js';
@@ -9,7 +8,6 @@ import { type TimelineMarkerStyle } from './TimelineUIUtils.js';
 export declare class TimelineFlameChartView extends UI.Widget.VBox implements PerfUI.FlameChart.FlameChartDelegate, UI.SearchableView.Searchable {
     #private;
     private readonly delegate;
-    private model;
     private searchResults;
     private eventListeners;
     private readonly networkSplitWidget;
@@ -27,7 +25,6 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private readonly detailsView;
     private readonly onMainEntrySelected;
     private readonly onNetworkEntrySelected;
-    private readonly boundRefresh;
     private readonly groupBySetting;
     private searchableView;
     private needsResizeToPreferredHeights?;
@@ -41,10 +38,11 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     windowChanged(windowStartTime: TraceEngine.Types.Timing.MilliSeconds, windowEndTime: TraceEngine.Types.Timing.MilliSeconds, animate: boolean): void;
     updateRangeSelection(startTime: number, endTime: number): void;
     getMainFlameChart(): PerfUI.FlameChart.FlameChart;
+    getNetworkFlameChart(): PerfUI.FlameChart.FlameChart;
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;
-    setModel(model: PerformanceModel | null, newTraceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
+    setModel(newTraceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
     private onEntryHighlighted;
-    highlightEvent(event: TraceEngine.Legacy.Event | null): void;
+    highlightEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
     willHide(): void;
     wasShown(): void;
     updateCountersGraphToggle(showMemoryGraph: boolean): void;

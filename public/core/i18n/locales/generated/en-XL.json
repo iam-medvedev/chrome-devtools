@@ -1292,12 +1292,6 @@
   "generated/Deprecation.ts | WebSQL": {
     "message": "Ŵéb̂ ŚQ̂Ĺ îś d̂ép̂ŕêćât́êd́. P̂ĺêáŝé ûśê ŚQ̂Ĺît́ê Ẃêb́Âśŝém̂b́l̂ý ôŕ Îńd̂éx̂éd̂ D́ât́âb́âśê"
   },
-  "generated/Deprecation.ts | WindowPlacementPermissionDescriptorUsed": {
-    "message": "T̂h́ê ṕêŕm̂íŝśîón̂ d́êśĉŕîṕt̂ór̂ window-placement íŝ d́êṕr̂éĉát̂éd̂. Úŝé window-management îńŝt́êád̂. F́ôŕ m̂ór̂é ĥél̂ṕ, ĉh́êćk̂ h́t̂t́p̂ś://b̂ít̂.ĺŷ/ẃîńd̂óŵ-ṕl̂áĉém̂én̂t́-r̂én̂ám̂é."
-  },
-  "generated/Deprecation.ts | WindowPlacementPermissionPolicyParsed": {
-    "message": "T̂h́ê ṕêŕm̂íŝśîón̂ ṕôĺîćŷ window-placement íŝ d́êṕr̂éĉát̂éd̂. Úŝé window-management îńŝt́êád̂. F́ôŕ m̂ór̂é ĥél̂ṕ, ĉh́êćk̂ h́t̂t́p̂ś://b̂ít̂.ĺŷ/ẃîńd̂óŵ-ṕl̂áĉém̂én̂t́-r̂én̂ám̂é."
-  },
   "generated/Deprecation.ts | XHRJSONEncodingDetection": {
     "message": "ÛT́F̂-16 íŝ ńôt́ ŝúp̂ṕôŕt̂éd̂ b́ŷ ŕêśp̂ón̂śê j́ŝón̂ ín̂ XMLHttpRequest"
   },
@@ -5949,7 +5943,7 @@
     "message": "r̂év̂éâĺ"
   },
   "panels/elements/ElementsTreeOutline.ts | showAllNodesDMore": {
-    "message": "Ŝh́ôẃ Âĺl̂ Ńôd́êś ({PH1} M̂ór̂é)"
+    "message": "Ŝh́ôẃ âĺl̂ ńôd́êś ({PH1} m̂ór̂é)"
   },
   "panels/elements/ElementsTreeOutline.ts | storeAsGlobalVariable": {
     "message": "Ŝt́ôŕê áŝ ǵl̂ób̂ál̂ v́âŕîáb̂ĺê"
@@ -6057,7 +6051,7 @@
     "message": "{PH1}[Ât́t̂ŕîb́ût́êś Ŝt́ŷĺê]"
   },
   "panels/elements/StylePropertiesSection.ts | showAllPropertiesSMore": {
-    "message": "Ŝh́ôẃ Âĺl̂ Ṕr̂óp̂ér̂t́îéŝ ({PH1} ḿôŕê)"
+    "message": "Ŝh́ôẃ âĺl̂ ṕr̂óp̂ér̂t́îéŝ ({PH1} ḿôŕê)"
   },
   "panels/elements/StylePropertiesSection.ts | styleAttribute": {
     "message": "style ât́t̂ŕîb́ût́ê"
@@ -13022,9 +13016,6 @@
   "panels/timeline/TimelineTreeView.ts | noGrouping": {
     "message": "N̂ó Ĝŕôúp̂ín̂ǵ"
   },
-  "panels/timeline/TimelineTreeView.ts | notOptimizedS": {
-    "message": "N̂ót̂ óp̂t́îḿîźêd́: {PH1}"
-  },
   "panels/timeline/TimelineTreeView.ts | page": {
     "message": "P̂áĝé"
   },
@@ -13378,6 +13369,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | totalTime": {
     "message": "T̂ót̂ál̂ T́îḿê"
+  },
+  "panels/timeline/TimelineUIUtils.ts | traceEvent": {
+    "message": "T̂ŕâćê Év̂én̂t́"
   },
   "panels/timeline/TimelineUIUtils.ts | type": {
     "message": "T̂ýp̂é"
@@ -14123,6 +14117,15 @@
   "ui/legacy/components/perf_ui/FilmStripView.ts | screenshotForSSelectToView": {
     "message": "Ŝćr̂éêńŝh́ôt́ f̂ór̂ {PH1} - śêĺêćt̂ t́ô v́îéŵ ṕr̂éĉéd̂ín̂ǵ r̂éq̂úêśt̂ś."
   },
+  "ui/legacy/components/perf_ui/FlameChart.ts | addScriptToIgnoreList": {
+    "message": "Âd́d̂ śĉŕîṕt̂ t́ô íĝńôŕê ĺîśt̂"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | enterTrackConfigurationMode": {
+    "message": "Ĉón̂f́îǵûŕê t́r̂áĉḱŝ…"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | exitTrackConfigurationMode": {
+    "message": "F̂ín̂íŝh́ ĉón̂f́îǵûŕîńĝ t́r̂áĉḱŝ"
+  },
   "ui/legacy/components/perf_ui/FlameChart.ts | flameChart": {
     "message": "F̂ĺâḿê Ćĥár̂t́"
   },
@@ -14134,6 +14137,9 @@
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | hideRepeatingChildren": {
     "message": "Ĥíd̂é r̂ép̂éât́îńĝ ćĥíl̂d́r̂én̂"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | removeScriptFromIgnoreList": {
+    "message": "R̂ém̂óv̂é ŝćr̂íp̂t́ f̂ŕôḿ îǵn̂ór̂é l̂íŝt́"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | resetChildren": {
     "message": "R̂éŝét̂ ćĥíl̂d́r̂én̂"

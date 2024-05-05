@@ -1,12 +1,12 @@
-import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 /**
  * Builds the style for the group.
  * Each group has a predefined style and a reference to the definition of the legacy track (which should be removed in the future).
  * @param extra the customized fields with value.
  * @returns the built GroupStyle
  */
-export declare function buildGroupStyle(extra?: Object): PerfUI.FlameChart.GroupStyle;
+export declare function buildGroupStyle(extra?: Partial<PerfUI.FlameChart.GroupStyle>): PerfUI.FlameChart.GroupStyle;
 /**
  * Builds the header corresponding to the track. A header is added in the shape of a group in the flame chart data.
  * @param startLevel the flame chart level at which the track header is appended.

@@ -232,7 +232,7 @@ export class SamplesIntegrator {
         }
         return calls;
     }
-    #getStackTraceFromProfileCall(profileCall) {
+    #makeProfileCallsForChildren(profileCall) {
         let node = this.#profileModel.nodeById(profileCall.nodeId);
         const isGarbageCollection = node?.id === this.#profileModel.gcNode?.id;
         if (isGarbageCollection) {
@@ -252,6 +252,7 @@ export class SamplesIntegrator {
             // Place the garbage collection call frame on top of the stack.
             callFrames[i--] = profileCall;
         }
+        // Many of these ProfileCalls will be GC'd later when we estimate the frame durations
         while (node) {
             callFrames[i--] = makeProfileCall(node, profileCall.ts, this.#processId, this.#threadId);
             node = node.parent;
@@ -262,7 +263,7 @@ export class SamplesIntegrator {
      * Update tracked stack using this event's call stack.
      */
     #extractStackTrace(event) {
-        const stackTrace = Types.TraceEvents.isProfileCall(event) ? this.#getStackTraceFromProfileCall(event) : this.#currentJSStack;
+        const stackTrace = Types.TraceEvents.isProfileCall(event) ? this.#makeProfileCallsForChildren(event) : this.#currentJSStack;
         SamplesIntegrator.filterStackFrames(stackTrace, this.#engineConfig);
         const endTime = event.ts + (event.dur || 0);
         const minFrames = Math.min(stackTrace.length, this.#currentJSStack.length);

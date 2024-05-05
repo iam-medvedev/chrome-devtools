@@ -60,7 +60,6 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     defaultDetailsWidget;
     defaultDetailsContentElement;
     rangeDetailViews;
-    model;
     #selectedEvents;
     lazyPaintProfilerView;
     lazyLayersView;
@@ -102,7 +101,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         if (this.lazySelectorStatsView) {
             return this.lazySelectorStatsView;
         }
-        this.lazySelectorStatsView = new TimelineSelectorStatsView();
+        this.lazySelectorStatsView = new TimelineSelectorStatsView(this.#traceEngineData);
         return this.lazySelectorStatsView;
     }
     getDetailsContentElementForTest() {
@@ -124,18 +123,20 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             }
         }
     }
-    async setModel(model, traceEngineData, selectedEvents) {
-        if (this.model !== model) {
-            this.model = model;
+    async setModel(traceEngineData, selectedEvents) {
+        if (this.#traceEngineData !== traceEngineData) {
+            // Clear the selector stats view, so the next time the user views it we
+            // reconstruct it with the new trace data.
+            this.lazySelectorStatsView = null;
+            this.#traceEngineData = traceEngineData;
         }
-        this.#traceEngineData = traceEngineData;
         if (traceEngineData) {
             this.#filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceEngineData);
         }
         this.#selectedEvents = selectedEvents;
         this.tabbedPane.closeTabs([Tab.PaintProfiler, Tab.LayerViewer], false);
         for (const view of this.rangeDetailViews.values()) {
-            view.setModelWithEvents(model, selectedEvents, traceEngineData);
+            view.setModelWithEvents(selectedEvents, traceEngineData);
         }
         this.lazyPaintProfilerView = null;
         this.lazyLayersView = null;
@@ -184,7 +185,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
      * behaviour.
      */
     scheduleUpdateContentsFromWindow(forceImmediateUpdate = false) {
-        if (!this.model) {
+        if (!this.#traceEngineData) {
             this.setContent(UI.Fragment.html `<div/>`);
             return;
         }
@@ -237,9 +238,11 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             const networkDetails = await TimelineUIUtils.buildSyntheticNetworkRequestDetails(this.#traceEngineData, event, this.detailsLinkifier);
             this.setContent(networkDetails);
         }
-        else if (TimelineSelection.isTraceEventSelection(selectionObject)) {
+        else if (TimelineSelection.isTraceEventSelection(selectionObject) && this.#traceEngineData &&
+            TraceEngine.Legacy.eventIsFromNewEngine(selectionObject)) {
+            // TODO: the eventIsFromNewEngine check can be removed once crrev.com/c/5505573 lands.
             const event = selectionObject;
-            const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(event, this.detailsLinkifier, true, this.#traceEngineData);
+            const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#traceEngineData, event, this.detailsLinkifier, true);
             this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
         }
         else if (TimelineSelection.isFrameObject(selectionObject)) {
@@ -272,8 +275,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         if (this.lazyLayersView) {
             return this.lazyLayersView;
         }
-        this.lazyLayersView =
-            new TimelineLayersView(this.model.timelineModel(), this.showSnapshotInPaintProfiler.bind(this));
+        this.lazyLayersView = new TimelineLayersView(this.showSnapshotInPaintProfiler.bind(this));
         return this.lazyLayersView;
     }
     paintProfilerView() {
@@ -297,7 +299,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         }
         this.tabbedPane.selectTab(Tab.PaintProfiler, true);
     }
-    showSelectorStats(event) {
+    showSelectorStatsForIndividualEvent(event) {
         const selectorStatsView = this.selectorStatsView();
         selectorStatsView.setEvent(event);
         if (!this.tabbedPane.hasTab(Tab.SelectorStats)) {
@@ -306,7 +308,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
     }
     showAggregatedSelectorStats(events) {
         const selectorStatsView = this.selectorStatsView();
-        selectorStatsView.setAggregatedEvent(events);
+        selectorStatsView.setAggregatedEvents(events);
         if (!this.tabbedPane.hasTab(Tab.SelectorStats)) {
             this.appendTab(Tab.SelectorStats, i18nString(UIStrings.selectorStats), selectorStatsView);
         }
@@ -320,10 +322,9 @@ export class TimelineDetailsView extends UI.Widget.VBox {
                 TraceEngine.Types.TraceEvents.isTraceEventRasterTask(event)) {
                 this.showEventInPaintProfiler(event);
             }
-        }
-        if (event.name === TimelineModel.TimelineModel.RecordType.RecalculateStyles ||
-            event.name === TimelineModel.TimelineModel.RecordType.UpdateLayoutTree) {
-            this.showSelectorStats(event);
+            if (TraceEngine.Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
+                this.showSelectorStatsForIndividualEvent(event);
+            }
         }
     }
     showEventInPaintProfiler(event) {
@@ -345,7 +346,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         this.appendTab(Tab.PaintProfiler, i18nString(UIStrings.paintProfiler), paintProfilerView);
     }
     updateSelectedRangeStats(startTime, endTime) {
-        if (!this.model || !this.#selectedEvents || !this.#traceEngineData) {
+        if (!this.#selectedEvents || !this.#traceEngineData) {
             return;
         }
         const minBoundsMilli = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(this.#traceEngineData.Meta.traceBounds).min;
@@ -360,7 +361,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         // Find all recalculate style events data from range
         const isSelectorStatsEnabled = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false).get();
         if (this.#selectedEvents && isSelectorStatsEnabled) {
-            const eventsInRange = TimelineModel.TimelineModel.TimelineModelImpl.findRecalculateStyleEvents(this.#selectedEvents, startTime, endTime);
+            const eventsInRange = TraceEngine.Helpers.Trace.findUpdateLayoutTreeEvents(this.#selectedEvents, TraceEngine.Helpers.Timing.millisecondsToMicroseconds(startTime), TraceEngine.Helpers.Timing.millisecondsToMicroseconds(endTime));
             if (eventsInRange.length > 0) {
                 this.showAggregatedSelectorStats(eventsInRange);
             }

@@ -136,7 +136,7 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
         this.placeholderCompartment = new CodeMirror.Compartment();
         const editorWrapper = this.contentElement.appendChild(document.createElement('div'));
         editorWrapper.classList.add('condition-editor');
-        editorWrapper.setAttribute('jslog', `${VisualLogging.textField()}`);
+        editorWrapper.setAttribute('jslog', `${VisualLogging.textField().track({ change: true })}`);
         this.editor = new TextEditor.TextEditor.TextEditor(CodeMirror.EditorState.create({
             doc: content,
             selection: { anchor: 0, head: content.length },

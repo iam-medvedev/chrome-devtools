@@ -413,7 +413,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
           @input=${handleInputChange}
           .value=${value}
           placeholder=${placeholder}
-          jslog=${VisualLogging.textField().track({ keydown: true }).context(Platform.StringUtilities.toKebabCase(stateKey))}
+          jslog=${VisualLogging.textField().track({ change: true }).context(Platform.StringUtilities.toKebabCase(stateKey))}
           />
       </label>
     `;
@@ -439,7 +439,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
           placeholder=${i18nString(UIStrings.platformPlaceholder)}
           aria-label=${i18nString(UIStrings.platformLabel)}
           jslog=${VisualLogging.textField('platform').track({
-            keydown: true,
+            change: true,
         })}
         />
         <input
@@ -450,7 +450,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
           placeholder=${i18nString(UIStrings.platformVersion)}
           aria-label=${i18nString(UIStrings.platformVersion)}
           jslog=${VisualLogging.textField('platform-version').track({
-            keydown: true,
+            change: true,
         })}
         />
       </div>
@@ -487,7 +487,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
           .value=${model}
           placeholder=${i18nString(UIStrings.deviceModel)}
           jslog=${VisualLogging.textField('model').track({
-            keydown: true,
+            change: true,
         })}
         />
         ${mobileCheckboxInput}
@@ -533,7 +533,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
                 PH1: index + 1,
             })}
             jslog=${VisualLogging.textField('brand-name').track({
-                keydown: true,
+                change: true,
             })}
           />
           <input
@@ -546,7 +546,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
                 PH1: index + 1,
             })}
             jslog=${VisualLogging.textField('brand-version').track({
-                keydown: true,
+                change: true,
             })}
           />
           <${IconButton.Icon.Icon.litTagName}
@@ -627,7 +627,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
                 PH1: index + 1,
             })}
             jslog=${VisualLogging.textField('brand-name').track({
-                keydown: true,
+                change: true,
             })}
           />
           <input
@@ -640,7 +640,7 @@ export class UserAgentClientHintsForm extends HTMLElement {
                 PH1: index + 1,
             })}
             jslog=${VisualLogging.textField('brand-version').track({
-                keydown: true,
+                change: true,
             })}
           />
           <${IconButton.Icon.Icon.litTagName}

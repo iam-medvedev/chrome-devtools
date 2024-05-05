@@ -6,8 +6,8 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from '../timeline.js';
-function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel) {
-    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel, timelineModel);
+function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel) {
+    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.interactionsTrackAppender();
 }
 describeWithEnvironment('InteractionsTrackAppender', function () {
@@ -15,12 +15,12 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
         const entryTypeByLevel = [];
         const entryData = [];
         const flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
-        const allModels = await TraceLoader.allModels(context, trace);
-        const interactionsTrackAppender = initTrackAppender(flameChartData, allModels.traceParsedData, entryData, entryTypeByLevel, allModels.timelineModel);
+        const traceParsedData = await TraceLoader.traceEngine(context, trace);
+        const interactionsTrackAppender = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
         interactionsTrackAppender.appendTrackAtLevel(0);
         return {
             entryTypeByLevel,
-            traceParsedData: allModels.traceParsedData,
+            traceParsedData,
             flameChartData,
             interactionsTrackAppender,
             entryData,

@@ -11,8 +11,8 @@ export declare const enum SelectorTimingsKey {
 }
 export declare class TimelineSelectorStatsView extends UI.Widget.VBox {
     #private;
-    constructor();
-    setEvent(event: TraceEngine.Legacy.CompatibleTraceEvent): boolean;
-    setAggregatedEvent(events: TraceEngine.Legacy.Event[]): boolean;
+    constructor(traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null);
+    setEvent(event: TraceEngine.Types.TraceEvents.TraceEventUpdateLayoutTree): boolean;
+    setAggregatedEvents(events: TraceEngine.Types.TraceEvents.TraceEventUpdateLayoutTree[]): void;
     private createRowsForTable;
 }

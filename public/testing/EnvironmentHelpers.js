@@ -99,7 +99,6 @@ const REGISTERED_EXPERIMENTS = [
     "header-overrides" /* Root.Runtime.ExperimentName.HEADER_OVERRIDES */,
     "highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */,
     "set-all-breakpoints-eagerly" /* Root.Runtime.ExperimentName.SET_ALL_BREAKPOINTS_EAGERLY */,
-    'evaluate-expressions-with-source-maps',
     "use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */,
     'font-editor',
     "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
@@ -107,6 +106,8 @@ const REGISTERED_EXPERIMENTS = [
     "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
     "save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */,
     "timeline-extensions" /* Root.Runtime.ExperimentName.TIMELINE_EXTENSIONS */,
+    "timeline-enable-old-timeline-model-engine" /* Root.Runtime.ExperimentName.TIMELINE_EXECUTE_OLD_ENGINE */,
+    "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -203,6 +204,9 @@ export async function initializeGlobalVars({ reset = true } = {}) {
     for (const experimentName of REGISTERED_EXPERIMENTS) {
         Root.Runtime.experiments.register(experimentName, '');
     }
+    Root.Runtime.experiments.enableExperimentsByDefault([
+        "timeline-enable-old-timeline-model-engine" /* Root.Runtime.ExperimentName.TIMELINE_EXECUTE_OLD_ENGINE */,
+    ]);
     // Dynamically import UI after the rest of the environment is set up, otherwise it will fail.
     UI = await import('../ui/legacy/legacy.js');
     UI.ZoomManager.ZoomManager.instance({ forceNew: true, win: window, frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance });

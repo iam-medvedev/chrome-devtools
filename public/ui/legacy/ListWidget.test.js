@@ -14,7 +14,7 @@ describeWithLocale('ListWidget', () => {
                 cancelled = true;
             }
             editor.beginEdit('test', 0, 'Commit', () => { }, cancel);
-            const buttons = editor.element.getElementsByClassName('text-button');
+            const buttons = editor.element.querySelectorAll('devtools-button');
             for (const button of buttons) {
                 if (button.innerHTML === 'Cancel') {
                     dispatchClickEvent(button);
@@ -23,7 +23,7 @@ describeWithLocale('ListWidget', () => {
             }
             assert.isTrue(cancelled);
         });
-        it('Commit buttton triggers on mouse click event', () => {
+        it('Commit button triggers on mouse click event', () => {
             const editor = new UI.ListWidget.Editor();
             renderElementIntoDOM(editor.element);
             let committed = false;
@@ -31,7 +31,7 @@ describeWithLocale('ListWidget', () => {
                 committed = true;
             }
             editor.beginEdit('test', 0, 'Commit', commit, () => { });
-            const buttons = editor.element.getElementsByClassName('text-button');
+            const buttons = editor.element.querySelectorAll('devtools-button');
             for (const button of buttons) {
                 if (button.innerHTML === 'Commit') {
                     dispatchClickEvent(button);

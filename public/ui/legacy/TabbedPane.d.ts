@@ -62,7 +62,7 @@ export declare class TabbedPane extends TabbedPane_base {
     tabbedPaneContentElement(): Element;
     isTabCloseable(id: string): boolean;
     setTabDelegate(delegate: TabbedPaneTabDelegate): void;
-    appendTab(id: string, tabTitle: string, view: Widget, tabTooltip?: string, userGesture?: boolean, isCloseable?: boolean, isPreviewFeature?: boolean, index?: number): void;
+    appendTab(id: string, tabTitle: string, view: Widget, tabTooltip?: string, userGesture?: boolean, isCloseable?: boolean, isPreviewFeature?: boolean, index?: number, jslogContext?: string): void;
     closeTab(id: string, userGesture?: boolean): void;
     closeTabs(ids: string[], userGesture?: boolean): void;
     private innerCloseTab;
@@ -153,10 +153,12 @@ export declare class TabbedPaneTab {
     private delegate?;
     private titleElement?;
     private dragStartX?;
-    constructor(tabbedPane: TabbedPane, id: string, title: string, closeable: boolean, previewFeature: boolean, view: Widget, tooltip?: string);
+    private jslogContextInternal?;
+    constructor(tabbedPane: TabbedPane, id: string, title: string, closeable: boolean, previewFeature: boolean, view: Widget, tooltip?: string, jslogContext?: string);
     get id(): string;
     get title(): string;
     set title(title: string);
+    get jslogContext(): string;
     isCloseable(): boolean;
     setIcon(icon: IconButton.Icon.Icon | null): void;
     toggleClass(className: string, force?: boolean): boolean;

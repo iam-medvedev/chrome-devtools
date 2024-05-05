@@ -103,10 +103,10 @@ export class TimelineHistoryManager {
         this.enabled = true;
     }
     addRecording(newInput) {
-        const { legacyModel, traceParseDataIndex } = newInput.data;
+        const { traceParseDataIndex } = newInput.data;
         const filmStrip = newInput.filmStripForPreview;
         this.lastActiveTraceIndex = traceParseDataIndex;
-        this.recordings.unshift({ legacyModel: legacyModel, traceParseDataIndex });
+        this.recordings.unshift({ traceParseDataIndex });
         // Order is important: this needs to happen first because lots of the
         // subsequent code depends on us storing the preview data into the map.
         this.#buildAndStorePreviewData(traceParseDataIndex, newInput.traceParsedData, filmStrip, newInput.startTime);

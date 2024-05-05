@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { dispatchClickEvent, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
+import * as Buttons from '../components/buttons/buttons.js';
 import * as UI from './legacy.js';
 describe('Infobar', () => {
     before(async () => {
@@ -15,8 +16,8 @@ describe('Infobar', () => {
         renderElementIntoDOM(component.element);
         const infobar = component.element.shadowRoot.querySelector('.infobar');
         assert.instanceOf(infobar, HTMLDivElement);
-        const learnMoreButton = infobar.querySelector('button.text-button');
-        assert.instanceOf(learnMoreButton, HTMLButtonElement);
+        const learnMoreButton = infobar.querySelector('devtools-button');
+        assert.instanceOf(learnMoreButton, Buttons.Button.Button);
         const detailsRow = infobar.querySelector('.infobar-details-rows');
         assert.instanceOf(detailsRow, HTMLDivElement);
         assert.isTrue(detailsRow.classList.contains('hidden'), 'Details row should initially be hidden');

@@ -37,6 +37,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/models/trace/insights/CumulativeLayoutShift.test.ts",
     "../../../../../../../front_end/models/trace/insights/InteractionToNextPaint.test.ts",
     "../../../../../../../front_end/models/trace/insights/LargestContentfulPaint.test.ts",
     "../../../../../../../front_end/models/trace/insights/RenderBlocking.test.ts",

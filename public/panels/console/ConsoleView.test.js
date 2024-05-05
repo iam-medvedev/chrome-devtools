@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { dispatchPasteEvent } from '../../testing/DOMHelpers.js';
 import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
@@ -158,6 +159,17 @@ describeWithMockConnection('ConsoleView', () => {
                 consoleModel.dispatchEventToListeners(SDK.ConsoleModel.Events.MessageAdded, createConsoleMessage(target, String(i), SDK.ConsoleModel.FrontendMessageType.Command));
             }
             assert.isTrue(selfXssWarningDisabledSetting.get());
+        });
+        it('is not shown when disabled via command line', () => {
+            const stub = sinon.stub(Root.Runtime.Runtime, 'queryParam');
+            stub.withArgs('disableSelfXssWarnings').returns('true');
+            const dt = new DataTransfer();
+            dt.setData('text/plain', 'foo');
+            const messagesElement = consoleView.element.querySelector('#console-messages');
+            assert.instanceOf(messagesElement, HTMLElement);
+            dispatchPasteEvent(messagesElement, { clipboardData: dt, bubbles: true });
+            assert.strictEqual(Common.Console.Console.instance().messages().length, 0);
+            stub.restore();
         });
     });
     it('appends commands to the history right away', async () => {

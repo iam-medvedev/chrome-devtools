@@ -4,7 +4,14 @@
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
-export function stackTraceForEvent(event) {
+/**
+ * Extracts the raw stack trace of known trace events. Most likely than
+ * not you want to use `getZeroIndexedStackTraceForEvent`, which returns
+ * the stack with zero based numbering. Since some trace events are
+ * one based this function can yield unexpected results when used
+ * indiscriminately.
+ */
+function stackTraceForEvent(event) {
     if (Types.TraceEvents.isSyntheticInvalidation(event)) {
         return event.stackTrace || null;
     }
@@ -44,7 +51,7 @@ export function addEventToProcessThread(event, eventsInProcessThread) {
     eventsInThread.set(event.tid, events);
     eventsInProcessThread.set(event.pid, eventsInThread);
 }
-function eventTimeComparator(a, b) {
+export function eventTimeComparator(a, b) {
     const aBeginTime = a.ts;
     const bBeginTime = b.ts;
     if (aBeginTime < bBeginTime) {
@@ -161,7 +168,14 @@ export function makeSyntheticTraceEntry(name, ts, pid, tid) {
         selfTime: Types.Timing.MicroSeconds(0),
     };
 }
-export function matchBeginningAndEndEvents(unpairedEvents) {
+/**
+ * Matches beginning events with TraceEventPairableAsyncEnd and TraceEventPairableAsyncInstant (ASYNC_NESTABLE_INSTANT)
+ * if provided, though currently only coming from Animations. Traces may contain multiple instant events so we need to
+ * account for that.
+ *
+ * @returns {Map<string, MatchingPairableAsyncEvents>} Map of the animation's ID to it's matching events.
+ */
+export function matchEvents(unpairedEvents) {
     // map to store begin and end of the event
     const matchedPairs = new Map();
     // looking for start and end
@@ -174,15 +188,22 @@ export function matchBeginningAndEndEvents(unpairedEvents) {
         // Console timings can be dispatched with the same id, so use the
         // event name as well to generate unique ids.
         const otherEventsWithID = Platform.MapUtilities.getWithDefault(matchedPairs, syntheticId, () => {
-            return { begin: null, end: null };
+            return { begin: null, end: null, instant: [] };
         });
         const isStartEvent = event.ph === "b" /* Types.TraceEvents.Phase.ASYNC_NESTABLE_START */;
         const isEndEvent = event.ph === "e" /* Types.TraceEvents.Phase.ASYNC_NESTABLE_END */;
+        const isInstantEvent = event.ph === "n" /* Types.TraceEvents.Phase.ASYNC_NESTABLE_INSTANT */;
         if (isStartEvent) {
             otherEventsWithID.begin = event;
         }
         else if (isEndEvent) {
             otherEventsWithID.end = event;
+        }
+        else if (isInstantEvent) {
+            if (!otherEventsWithID.instant) {
+                otherEventsWithID.instant = [];
+            }
+            otherEventsWithID.instant.push(event);
         }
     }
     return matchedPairs;
@@ -193,36 +214,44 @@ function getSyntheticId(event) {
 }
 export function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback) {
     const syntheticEvents = [];
-    for (const [id, eventsPair] of matchedPairs.entries()) {
-        const beginEvent = eventsPair.begin;
-        const endEvent = eventsPair.end;
-        if (!beginEvent || !endEvent) {
+    for (const [id, eventsTriplet] of matchedPairs.entries()) {
+        const beginEvent = eventsTriplet.begin;
+        const endEvent = eventsTriplet.end;
+        const instantEvents = eventsTriplet.instant;
+        if (!beginEvent || !(endEvent || instantEvents)) {
             // This should never happen, the backend only creates the events once it
-            // has them both, so we should never get into this state.
+            // has them both (beginEvent & endEvent/instantEvents), so we should never get into this state.
             // If we do, something is very wrong, so let's just drop that problematic event.
             continue;
         }
-        const pair = { beginEvent, endEvent };
+        const triplet = { beginEvent, endEvent, instantEvents };
+        /**
+         * When trying to pair events with instant events present, there are times when these
+         * ASYNC_NESTABLE_INSTANT ('n') don't have a corresponding ASYNC_NESTABLE_END ('e') event.
+         * In these cases, pair without needing the endEvent.
+         */
         function eventsArePairable(data) {
-            return Boolean(getSyntheticId(data.beginEvent)) &&
-                getSyntheticId(data.beginEvent) === getSyntheticId(data.endEvent);
+            const instantEventsMatch = data.instantEvents ? data.instantEvents.some(e => id === getSyntheticId(e)) : false;
+            const endEventMatch = data.endEvent ? id === getSyntheticId(data.endEvent) : false;
+            return Boolean(id) && (instantEventsMatch || endEventMatch);
         }
-        if (!eventsArePairable(pair)) {
+        if (!eventsArePairable(triplet)) {
             continue;
         }
+        const targetEvent = endEvent || beginEvent;
         const event = {
-            cat: endEvent.cat,
-            ph: endEvent.ph,
-            pid: endEvent.pid,
-            tid: endEvent.tid,
+            cat: targetEvent.cat,
+            ph: targetEvent.ph,
+            pid: targetEvent.pid,
+            tid: targetEvent.tid,
             id,
             // Both events have the same name, so it doesn't matter which we pick to
             // use as the description
             name: beginEvent.name,
-            dur: Types.Timing.MicroSeconds(endEvent.ts - beginEvent.ts),
+            dur: Types.Timing.MicroSeconds(targetEvent.ts - beginEvent.ts),
             ts: beginEvent.ts,
             args: {
-                data: pair,
+                data: triplet,
             },
         };
         if (event.dur < 0) {
@@ -238,8 +267,134 @@ export function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback
     return syntheticEvents.sort((a, b) => a.ts - b.ts);
 }
 export function createMatchedSortedSyntheticEvents(unpairedAsyncEvents, syntheticEventCallback) {
-    const matchedPairs = matchBeginningAndEndEvents(unpairedAsyncEvents);
+    const matchedPairs = matchEvents(unpairedAsyncEvents);
     const syntheticEvents = createSortedSyntheticEvents(matchedPairs, syntheticEventCallback);
     return syntheticEvents;
+}
+/**
+ * Different trace events return line/column numbers that are 1 or 0 indexed.
+ * This function knows which events return 1 indexed numbers and normalizes
+ * them. The UI expects 0 indexed line numbers, so that is what we return.
+ */
+export function getZeroIndexedLineAndColumnForEvent(event) {
+    // Some events emit line numbers that are 1 indexed, but the UI layer expects
+    // numbers to be 0 indexed. So here, if the event matches a known 1-indexed
+    // number event, we subtract one from the line and column numbers.
+    // Otherwise, if the event has args.data.lineNumber/colNumber, we return it
+    // as is.
+    const numbers = getRawLineAndColumnNumbersForEvent(event);
+    const { lineNumber, columnNumber } = numbers;
+    switch (event.name) {
+        // All these events have line/column numbers which are 1 indexed; so we
+        // subtract to make them 0 indexed.
+        case "FunctionCall" /* Types.TraceEvents.KnownEventName.FunctionCall */:
+        case "EvaluateScript" /* Types.TraceEvents.KnownEventName.EvaluateScript */:
+        case "v8.compile" /* Types.TraceEvents.KnownEventName.Compile */:
+        case "v8.produceCache" /* Types.TraceEvents.KnownEventName.CacheScript */: {
+            return {
+                lineNumber: typeof lineNumber === 'number' ? lineNumber - 1 : undefined,
+                columnNumber: typeof columnNumber === 'number' ? columnNumber - 1 : undefined,
+            };
+        }
+        default: {
+            return numbers;
+        }
+    }
+}
+/**
+ * Different trace events contain stack traces with line/column numbers
+ * that are 1 or 0 indexed.
+ * This function knows which events return 1 indexed numbers and normalizes
+ * them. The UI expects 0 indexed line numbers, so that is what we return.
+ */
+export function getZeroIndexedStackTraceForEvent(event) {
+    const stack = stackTraceForEvent(event);
+    if (!stack) {
+        return null;
+    }
+    return stack.map(callFrame => {
+        const normalizedCallFrame = { ...callFrame };
+        switch (event.name) {
+            case "RecalculateStyles" /* Types.TraceEvents.KnownEventName.RecalculateStyles */:
+            case "ScheduleStyleRecalculation" /* Types.TraceEvents.KnownEventName.ScheduleStyleRecalculation */:
+            case "InvalidateLayout" /* Types.TraceEvents.KnownEventName.InvalidateLayout */:
+            case "UpdateLayoutTree" /* Types.TraceEvents.KnownEventName.UpdateLayoutTree */: {
+                normalizedCallFrame.lineNumber = callFrame.lineNumber && callFrame.lineNumber - 1;
+                normalizedCallFrame.columnNumber = callFrame.columnNumber && callFrame.columnNumber - 1;
+            }
+        }
+        return normalizedCallFrame;
+    });
+}
+/**
+ * NOTE: you probably do not want this function! (Which is why it is not exported).
+ *
+ * Some trace events have 0 indexed line/column numbers, and others have 1
+ * indexed. This function does NOT normalize them, but
+ * `getZeroIndexedLineAndColumnNumbersForEvent` does. It is best to use that!
+ *
+ * @see {@link getZeroIndexedLineAndColumnForEvent}
+ **/
+function getRawLineAndColumnNumbersForEvent(event) {
+    if (!event.args?.data) {
+        return {
+            lineNumber: undefined,
+            columnNumber: undefined,
+        };
+    }
+    let lineNumber = undefined;
+    let columnNumber = undefined;
+    if ('lineNumber' in event.args.data && typeof event.args.data.lineNumber === 'number') {
+        lineNumber = event.args.data.lineNumber;
+    }
+    if ('columnNumber' in event.args.data && typeof event.args.data.columnNumber === 'number') {
+        columnNumber = event.args.data.columnNumber;
+    }
+    return { lineNumber, columnNumber };
+}
+export function frameIDForEvent(event) {
+    // There are a few events (for example UpdateLayoutTree, ParseHTML) that have
+    // the frame stored in args.beginData
+    // Rather than list them all we just check for the presence of the field, so
+    // we are robust against future trace events also doing this.
+    // This check seems very robust, but it also helps satisfy TypeScript and
+    // prevents us against unexpected data.
+    if (event.args && 'beginData' in event.args && typeof event.args.beginData === 'object' &&
+        event.args.beginData !== null && 'frame' in event.args.beginData &&
+        typeof event.args.beginData.frame === 'string') {
+        return event.args.beginData.frame;
+    }
+    // Otherwise, we expect frame to be in args.data
+    if (event.args?.data?.frame) {
+        return event.args.data.frame;
+    }
+    // No known frame for this event.
+    return null;
+}
+const DevToolsTimelineEventCategory = 'disabled-by-default-devtools.timeline';
+function isTopLevelEvent(event) {
+    return event.cat.includes(DevToolsTimelineEventCategory) && event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RunTask */;
+}
+function topLevelEventIndexEndingAfter(events, time) {
+    let index = Platform.ArrayUtilities.upperBound(events, time, (time, event) => time - event.ts) - 1;
+    while (index > 0 && !isTopLevelEvent(events[index])) {
+        index--;
+    }
+    return Math.max(index, 0);
+}
+export function findUpdateLayoutTreeEvents(events, startTime, endTime) {
+    const foundEvents = [];
+    const startEventIndex = topLevelEventIndexEndingAfter(events, startTime);
+    for (let i = startEventIndex; i < events.length; i++) {
+        const event = events[i];
+        if (!Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
+            continue;
+        }
+        if (event.ts >= (endTime || Infinity)) {
+            continue;
+        }
+        foundEvents.push(event);
+    }
+    return foundEvents;
 }
 //# sourceMappingURL=Trace.js.map
