@@ -27,5 +27,6 @@ export declare function throttlingManager(): CPUThrottlingManager;
 export declare enum CPUThrottlingRates {
     NoThrottling = 1,
     MidTierMobile = 4,
-    LowEndMobile = 6
+    LowEndMobile = 6,
+    ExtraSlow = 20
 }

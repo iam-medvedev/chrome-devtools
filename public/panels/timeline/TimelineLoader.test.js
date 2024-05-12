@@ -97,8 +97,7 @@ describeWithEnvironment('TimelineLoader', () => {
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the
         // loadingComplete parameters.
-        const [collectedEvents, tracingModel, exclusiveFilter, isCpuProfile] = loadingCompleteSpy.args[0];
-        assert.deepEqual(exclusiveFilter, Timeline.TimelineLoader.TimelineLoader.getCpuProfileFilter());
+        const [collectedEvents, tracingModel, /* exclusiveFilter */ , isCpuProfile] = loadingCompleteSpy.args[0];
         if (!tracingModel) {
             throw new Error('No tracing model found from results of loadTraceFromFile');
         }
@@ -161,8 +160,7 @@ describeWithEnvironment('TimelineLoader', () => {
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the
         // loadingComplete parameters.
-        const [collectedEvents, tracingModel, exclusiveFilter, isCpuProfile] = loadingCompleteSpy.args[0];
-        assert.deepEqual(exclusiveFilter, Timeline.TimelineLoader.TimelineLoader.getCpuProfileFilter());
+        const [collectedEvents, tracingModel, /* exclusiveFilter */ , isCpuProfile] = loadingCompleteSpy.args[0];
         if (!tracingModel) {
             throw new Error('No tracing model found from results of loadTraceFromFile');
         }

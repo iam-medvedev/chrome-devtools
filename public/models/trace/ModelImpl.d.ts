@@ -25,12 +25,6 @@ export declare class Model<EnabledModelHandlers extends {
     static createWithAllHandlers(config?: Types.Configuration.Configuration): Model<typeof Handlers.ModelHandlers>;
     constructor(handlers: EnabledModelHandlers, config?: Types.Configuration.Configuration);
     /**
-     * Updates the configuration. Useful if a user changes a setting - this lets
-     * us update the model without having to destroy it and recreate it with the
-     * new settings.
-     */
-    updateConfiguration(config: Types.Configuration.Configuration): void;
-    /**
      * Parses an array of trace events into a structured object containing all the
      * information parsed by the trace handlers.
      * You can `await` this function to pause execution until parsing is complete,

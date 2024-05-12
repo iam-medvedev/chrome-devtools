@@ -1,5 +1,11 @@
+// Copyright 2022 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+import * as SDK from '../core/sdk/sdk.js';
+import * as Bindings from '../models/bindings/bindings.js';
 import * as CPUProfile from '../models/cpu_profile/cpu_profile.js';
 import * as TraceEngine from '../models/trace/trace.js';
+import * as Workspace from '../models/workspace/workspace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as PerfUI from '../ui/legacy/components/perf_ui/perf_ui.js';
 import { initializeGlobalVars } from './EnvironmentHelpers.js';
@@ -57,10 +63,9 @@ export async function getMainFlameChartWithTracks(traceFileName, trackAppenderNa
  * @param expanded if the track is expanded
  * @returns a flame chart element and its corresponding data provider.
  */
-export async function getNetworkFlameChartWithLegacyTrack(traceFileName, expanded) {
+export async function getNetworkFlameChart(traceFileName, expanded) {
     await initializeGlobalVars();
-    // This function is used to load a component example.
-    const { traceParsedData } = await TraceLoader.allModels(/* context= */ null, traceFileName);
+    const traceParsedData = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
     const minTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceParsedData.Meta.traceBounds.min);
     const maxTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(traceParsedData.Meta.traceBounds.max);
     const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
@@ -214,6 +219,28 @@ export function makeCompleteEvent(name, ts, dur, cat = '*', pid = 0, tid = 0) {
         dur: TraceEngine.Types.Timing.MicroSeconds(dur),
     };
 }
+export function makeAsyncStartEvent(name, ts, pid = 0, tid = 0) {
+    return {
+        args: {},
+        cat: '*',
+        name,
+        ph: "b" /* TraceEngine.Types.TraceEvents.Phase.ASYNC_NESTABLE_START */,
+        pid: TraceEngine.Types.TraceEvents.ProcessID(pid),
+        tid: TraceEngine.Types.TraceEvents.ThreadID(tid),
+        ts: TraceEngine.Types.Timing.MicroSeconds(ts),
+    };
+}
+export function makeAsyncEndEvent(name, ts, pid = 0, tid = 0) {
+    return {
+        args: {},
+        cat: '*',
+        name,
+        ph: "e" /* TraceEngine.Types.TraceEvents.Phase.ASYNC_NESTABLE_END */,
+        pid: TraceEngine.Types.TraceEvents.ProcessID(pid),
+        tid: TraceEngine.Types.TraceEvents.ThreadID(tid),
+        ts: TraceEngine.Types.Timing.MicroSeconds(ts),
+    };
+}
 export function makeCompleteEventInMilliseconds(name, tsMillis, durMillis, cat = '*', pid = 0, tid = 0) {
     return makeCompleteEvent(name, TraceEngine.Helpers.Timing.millisecondsToMicroseconds(TraceEngine.Types.Timing.MilliSeconds(tsMillis)), TraceEngine.Helpers.Timing.millisecondsToMicroseconds(TraceEngine.Types.Timing.MilliSeconds(durMillis)), cat, pid, tid);
 }
@@ -265,6 +292,8 @@ export function makeProfileCall(functionName, tsMs, durMs, pid = TraceEngine.Typ
         cat: '',
         name: 'ProfileCall',
         nodeId,
+        sampleIndex: 0,
+        profileId: TraceEngine.Types.TraceEvents.ProfileID('fake-profile-id'),
         ph: "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */,
         pid,
         tid,
@@ -406,6 +435,7 @@ export function makeMockSamplesHandlerData(profileCalls) {
         parsedProfile: new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(profile),
         profileCalls,
         profileTree: tree,
+        profileId: TraceEngine.Types.TraceEvents.ProfileID('fake-profile-id'),
     };
     const profilesInThread = new Map([[1, profileData]]);
     return {
@@ -554,5 +584,25 @@ export function getEventOfType(events, predicate) {
         throw new Error('Failed to find matching event of type.');
     }
     return match;
+}
+/**
+ * The Performance Panel is integrated with the IgnoreListManager so in tests
+ * that render a flame chart or a track appender, it needs to be setup to avoid
+ * errors.
+ */
+export function setupIgnoreListManagerEnvironment() {
+    const targetManager = SDK.TargetManager.TargetManager.instance({ forceNew: true });
+    const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
+    const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+    const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+        forceNew: true,
+        resourceMapping,
+        targetManager,
+    });
+    const ignoreListManager = Bindings.IgnoreListManager.IgnoreListManager.instance({
+        forceNew: true,
+        debuggerWorkspaceBinding,
+    });
+    return { ignoreListManager };
 }
 //# sourceMappingURL=TraceHelpers.js.map

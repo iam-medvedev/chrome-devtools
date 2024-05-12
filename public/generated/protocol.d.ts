@@ -15687,7 +15687,10 @@ export declare namespace Preload {
         MaxNumOfRunningEmbedderPrerendersExceeded = "MaxNumOfRunningEmbedderPrerendersExceeded",
         PrerenderingUrlHasEffectiveUrl = "PrerenderingUrlHasEffectiveUrl",
         RedirectedPrerenderingUrlHasEffectiveUrl = "RedirectedPrerenderingUrlHasEffectiveUrl",
-        ActivationUrlHasEffectiveUrl = "ActivationUrlHasEffectiveUrl"
+        ActivationUrlHasEffectiveUrl = "ActivationUrlHasEffectiveUrl",
+        JavaScriptInterfaceAdded = "JavaScriptInterfaceAdded",
+        JavaScriptInterfaceRemoved = "JavaScriptInterfaceRemoved",
+        AllPrerenderingCanceled = "AllPrerenderingCanceled"
     }
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This
@@ -15942,6 +15945,16 @@ export declare namespace PWA {
     }
     interface UninstallRequest {
         manifestId: string;
+    }
+    interface LaunchRequest {
+        manifestId: string;
+        url?: string;
+    }
+    interface LaunchResponse extends ProtocolResponseWithError {
+        /**
+         * ID of the tab target created as a result.
+         */
+        targetId: Target.TargetID;
     }
 }
 /**

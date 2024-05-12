@@ -75,6 +75,10 @@ export declare class HeapSnapshotView extends UI.View.SimpleView implements Data
     jumpToSearchResult(searchResultIndex: number): Promise<void>;
     refreshVisibleData(): void;
     changeBase(): void;
+    static readonly ALWAYS_AVAILABLE_FILTERS: readonly {
+        uiName: string;
+        filterName: string;
+    }[];
     changeFilter(): void;
     profiles(): ProfileHeader[];
     selectionChanged(event: Common.EventTarget.EventTargetEvent<DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode>>): void;

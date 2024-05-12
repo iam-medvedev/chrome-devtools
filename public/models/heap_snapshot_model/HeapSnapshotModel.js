@@ -236,13 +236,14 @@ export class NodeFilter {
     minNodeId;
     maxNodeId;
     allocationNodeId;
+    filterName;
     constructor(minNodeId, maxNodeId) {
         this.minNodeId = minNodeId;
         this.maxNodeId = maxNodeId;
     }
     equals(o) {
         return this.minNodeId === o.minNodeId && this.maxNodeId === o.maxNodeId &&
-            this.allocationNodeId === o.allocationNodeId;
+            this.allocationNodeId === o.allocationNodeId && this.filterName === o.filterName;
     }
 }
 export class SearchConfig {

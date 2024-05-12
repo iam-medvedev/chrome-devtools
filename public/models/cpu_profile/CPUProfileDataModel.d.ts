@@ -57,7 +57,7 @@ export declare class CPUProfileDataModel extends ProfileTreeModel {
      * Traverses the call tree derived from the samples calling back when a call is opened
      * and when it's closed
      */
-    forEachFrame(openFrameCallback: (depth: number, node: ProfileNode, timestamp: number) => void, closeFrameCallback: (depth: number, node: ProfileNode, timestamp: number, dur: number, selfTime: number) => void, startTime?: number, stopTime?: number): void;
+    forEachFrame(openFrameCallback: (depth: number, node: ProfileNode, sampleIndex: number, timestamp: number) => void, closeFrameCallback: (depth: number, node: ProfileNode, sampleIndex: number, timestamp: number, dur: number, selfTime: number) => void, startTime?: number, stopTime?: number): void;
     /**
      * Returns the node that corresponds to a given index of a sample.
      */

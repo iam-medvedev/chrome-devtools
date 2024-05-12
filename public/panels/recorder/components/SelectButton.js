@@ -18,6 +18,14 @@ export class SelectButtonClickEvent extends Event {
         this.value = value;
     }
 }
+export class SelectMenuSelectedEvent extends Event {
+    value;
+    static eventName = 'selectmenuselected';
+    constructor(value) {
+        super(SelectMenuSelectedEvent.eventName, { bubbles: true, composed: true });
+        this.value = value;
+    }
+}
 export class SelectButton extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-select-button`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -25,6 +33,7 @@ export class SelectButton extends HTMLElement {
         disabled: false,
         value: '',
         items: [],
+        buttonLabel: '',
         groups: [],
         variant: "primary" /* Variant.PRIMARY */,
     };
@@ -45,6 +54,9 @@ export class SelectButton extends HTMLElement {
     set items(items) {
         this.#props.items = items;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+    }
+    set buttonLabel(buttonLabel) {
+        this.#props.buttonLabel = buttonLabel;
     }
     set groups(groups) {
         this.#props.groups = groups;
@@ -73,7 +85,7 @@ export class SelectButton extends HTMLElement {
         this.dispatchEvent(new SelectButtonClickEvent(this.#props.value));
     }
     #handleSelectMenuSelect(evt) {
-        this.dispatchEvent(new SelectButtonClickEvent(evt.itemValue));
+        this.dispatchEvent(new SelectMenuSelectedEvent(evt.itemValue));
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #renderSelectItem(item, selectedItem) {
@@ -109,20 +121,10 @@ export class SelectButton extends HTMLElement {
             secondary: this.#props.variant === "outlined" /* Variant.OUTLINED */,
         };
         const buttonVariant = this.#props.variant === "outlined" /* Variant.OUTLINED */ ? "outlined" /* Buttons.Button.Variant.OUTLINED */ : "primary" /* Buttons.Button.Variant.PRIMARY */;
-        const label = selectedItem.buttonLabel ? selectedItem.buttonLabel() : selectedItem.label();
+        const menuLabel = selectedItem.buttonLabel ? selectedItem.buttonLabel() : selectedItem.label();
         // clang-format off
         LitHtml.render(LitHtml.html `
-      <div class="select-button" title=${this.#getTitle(label) || LitHtml.nothing}>
-      ${selectedItem
-            ? LitHtml.html `
-      <${Buttons.Button.Button.litTagName}
-          .disabled=${this.#props.disabled}
-          .variant=${buttonVariant}
-          .iconName=${selectedItem.buttonIconName}
-          @click=${this.#handleClick}>
-          ${label}
-      </${Buttons.Button.Button.litTagName}>`
-            : ''}
+      <div class="select-button" title=${this.#getTitle(menuLabel) || LitHtml.nothing}>
       <${Menus.SelectMenu.SelectMenu.litTagName}
           class=${LitHtml.Directives.classMap(classes)}
           @selectmenuselected=${this.#handleSelectMenuSelect}
@@ -131,7 +133,7 @@ export class SelectButton extends HTMLElement {
           .sideButton=${false}
           .showSelectedItem=${true}
           .disabled=${this.#props.disabled}
-          .buttonTitle=${LitHtml.html ``}
+          .buttonTitle=${LitHtml.html `${menuLabel}`}
           .position=${"bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */}
           .horizontalAlignment=${"right" /* Dialogs.Dialog.DialogHorizontalAlignment.RIGHT */}
         >
@@ -139,6 +141,16 @@ export class SelectButton extends HTMLElement {
             ? this.#props.groups.map(group => this.#renderSelectGroup(group, selectedItem))
             : this.#props.items.map(item => this.#renderSelectItem(item, selectedItem))}
         </${Menus.SelectMenu.SelectMenu.litTagName}>
+        ${selectedItem
+            ? LitHtml.html `
+        <${Buttons.Button.Button.litTagName}
+            .disabled=${this.#props.disabled}
+            .variant=${buttonVariant}
+            .iconName=${selectedItem.buttonIconName}
+            @click=${this.#handleClick}>
+            ${this.#props.buttonLabel}
+        </${Buttons.Button.Button.litTagName}>`
+            : ''}
       </div>`, this.#shadow, { host: this });
         // clang-format on
     };

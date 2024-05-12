@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { stabilizeEvent, stabilizeImpressions } from '../../testing/VisualLoggingHelpers.js';
 import * as VisualLogging from './visual_logging-testing.js';
 describe('LoggingEvents', () => {
@@ -129,8 +130,8 @@ describe('LoggingEvents', () => {
         const recordHover = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordHover');
         const event = new MouseEvent('click', { button: 1 });
         sinon.stub(event, 'currentTarget').value(element);
-        void VisualLogging.LoggingEvents.logHover(throttler)(event);
-        await assertThrottled(recordHover);
+        void VisualLogging.LoggingEvents.logHover(new Common.Throttler.Throttler(0))(event);
+        await expectCalled(recordHover);
         assert.deepStrictEqual(stabilizeEvent(recordHover.firstCall.firstArg), { veid: 0 });
     });
     it('calls UI binding to log a drag event', async () => {

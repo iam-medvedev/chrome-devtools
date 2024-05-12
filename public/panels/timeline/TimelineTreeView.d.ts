@@ -15,8 +15,8 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
     private lastHoveredProfileNode;
     private textFilterInternal;
     private taskFilter;
-    protected startTime: number;
-    protected endTime: number;
+    protected startTime: TraceEngine.Types.Timing.MilliSeconds;
+    protected endTime: TraceEngine.Types.Timing.MilliSeconds;
     splitWidget: UI.SplitWidget.SplitWidget;
     detailsView: UI.Widget.Widget;
     private searchableView;
@@ -36,7 +36,7 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
     init(): void;
     lastSelectedNode(): TimelineModel.TimelineProfileTree.Node | null | undefined;
     updateContents(selection: TimelineSelection): void;
-    setRange(startTime: number, endTime: number): void;
+    setRange(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): void;
     filters(): TimelineModel.TimelineModelFilter.TimelineModelFilter[];
     filtersWithoutTextFilter(): TimelineModel.TimelineModelFilter.TimelineModelFilter[];
     textFilter(): TimelineRegExp;

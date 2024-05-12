@@ -13,12 +13,14 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
+import { setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { createContentProviderUISourceCodes } from '../../testing/UISourceCodeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 describeWithMockConnection('NetworkNavigatorView', () => {
     let workspace;
     beforeEach(async () => {
+        setMockResourceTree(false);
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();
@@ -36,11 +38,13 @@ describeWithMockConnection('NetworkNavigatorView', () => {
         Root.Runtime.experiments.register("authored-deployed-grouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, '');
         Root.Runtime.experiments.register("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, '');
     });
-    const revealMainTarget = (targetFactory) => {
+    describe('reveals main target', () => {
         let target;
         let project;
         beforeEach(async () => {
-            target = targetFactory();
+            const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+            createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
+            target = createTarget({ parentTarget: tabTarget });
             ({ project } = createContentProviderUISourceCodes({
                 items: [
                     { url: 'http://example.com/', mimeType: 'text/html' },
@@ -116,13 +120,7 @@ describeWithMockConnection('NetworkNavigatorView', () => {
             assert.isTrue(navigatorView.scriptsTree.firstChild()?.expanded);
             assert.isTrue(navigatorView.scriptsTree.firstChild()?.firstChild()?.selected);
         });
-    };
-    describe('without tab target', () => revealMainTarget(createTarget));
-    describe('with tab target', () => revealMainTarget(() => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
-        createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
-        return createTarget({ parentTarget: tabTarget });
-    }));
+    });
     it('updates in scope change', () => {
         const target = createTarget();
         const { project } = createContentProviderUISourceCodes({

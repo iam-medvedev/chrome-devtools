@@ -17,11 +17,11 @@ export class TraceProcessor extends EventTarget {
     // the model handlers the user passes in and the Meta handler.
     #traceHandlers;
     #status = "IDLE" /* Status.IDLE */;
-    #modelConfiguration = Types.Configuration.DEFAULT;
+    #modelConfiguration = Types.Configuration.defaults();
     #data = null;
     #insights = null;
     static createWithAllHandlers() {
-        return new TraceProcessor(Handlers.ModelHandlers, Types.Configuration.DEFAULT);
+        return new TraceProcessor(Handlers.ModelHandlers, Types.Configuration.defaults());
     }
     constructor(traceHandlers, modelConfiguration) {
         super();
@@ -33,10 +33,6 @@ export class TraceProcessor extends EventTarget {
         if (modelConfiguration) {
             this.#modelConfiguration = modelConfiguration;
         }
-        this.#passConfigToHandlers();
-    }
-    updateConfiguration(config) {
-        this.#modelConfiguration = config;
         this.#passConfigToHandlers();
     }
     #passConfigToHandlers() {
@@ -109,11 +105,15 @@ export class TraceProcessor extends EventTarget {
         }
     }
     async #parse(traceEvents, freshRecording) {
-        // This iterator steps through all events, periodically yielding back to the
-        // main thread to avoid blocking execution. It uses `dispatchEvent` to
-        // provide status update events, and other various bits of config like the
-        // pause duration and frequency.
-        const { pauseDuration, eventsPerChunk } = this.#modelConfiguration.processing;
+        /**
+         * We want to yield regularly to maintain responsiveness. If we yield too often, we're wasting idle time.
+         * We could do this by checking `performance.now()` regularly, but it's an expensive call in such a hot loop.
+         * `eventsPerChunk` is an approximated proxy metric.
+         * But how big a chunk? We're aiming for long tasks that are no smaller than 100ms and not bigger than 200ms.
+         * It's CPU dependent, so it should be calibrated on oldish hardware.
+         * Illustration of a previous change to `eventsPerChunk`: https://imgur.com/wzp8BnR
+         */
+        const eventsPerChunk = 50_000;
         // Convert to array so that we are able to iterate all handlers multiple times.
         const sortedHandlers = [...sortHandlers(this.#traceHandlers).values()];
         // Reset.
@@ -130,9 +130,8 @@ export class TraceProcessor extends EventTarget {
             if (i % eventsPerChunk === 0 && i) {
                 // Take the opportunity to provide status update events.
                 this.dispatchEvent(new TraceParseProgressEvent({ index: i, total: traceEvents.length }));
-                // Wait for rendering before resuming.
-                // TODO(paulirish): consider using `scheduler.await()` or `scheduler.postTask(() => {}, {priority: 'user-blocking'})`
-                await new Promise(resolve => setTimeout(resolve, pauseDuration));
+                // TODO(paulirish): consider using `scheduler.yield()` or `scheduler.postTask(() => {}, {priority: 'user-blocking'})`
+                await new Promise(resolve => setTimeout(resolve, 0));
             }
             const event = traceEvents[i];
             for (let j = 0; j < sortedHandlers.length; ++j) {

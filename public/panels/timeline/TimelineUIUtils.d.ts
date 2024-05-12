@@ -34,7 +34,7 @@ export declare class TimelineUIUtils {
         cacheKind?: string;
     }, contentHelper: TimelineDetailsContentHelper): void;
     static buildTraceEventDetails(traceParseData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.TraceEventData, linkifier: LegacyComponents.Linkifier.Linkifier, detailed: boolean): Promise<DocumentFragment>;
-    static statsForTimeRange(events: TraceEngine.Legacy.CompatibleTraceEvent[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): {
+    static statsForTimeRange(events: TraceEngine.Types.TraceEvents.TraceEventData[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): {
         [x: string]: number;
     };
     static buildSyntheticNetworkRequestDetails(traceParseData: TraceEngine.Handlers.Types.TraceParseData | null, event: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest, linkifier: LegacyComponents.Linkifier.Linkifier): Promise<DocumentFragment>;

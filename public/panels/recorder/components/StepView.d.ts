@@ -1,5 +1,8 @@
+import * as Buttons from '../../../ui/components/buttons/buttons.js';
+import * as Menus from '../../../ui/components/menus/menus.js';
 import type * as Converters from '../converters/converters.js';
 import * as Models from '../models/models.js';
+import { type StepEditedEvent } from './StepEditor.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-step-view': StepView;
@@ -31,7 +34,7 @@ export interface StepViewData {
     builtInConverters: Converters.Converter.Converter[];
     extensionConverters: Converters.Converter.Converter[];
     isSelected: boolean;
-    recorderSettings: Models.RecorderSettings.RecorderSettings;
+    recorderSettings?: Models.RecorderSettings.RecorderSettings;
 }
 export declare class CaptureSelectorsEvent extends Event {
     static readonly eventName = "captureselectors";
@@ -78,13 +81,59 @@ export declare class RemoveBreakpointEvent extends Event {
     index: number;
     constructor(index: number);
 }
+type Action = {
+    id: string;
+    label: string;
+    group: string;
+    groupTitle: string;
+    jslogContext?: string;
+};
+export interface ViewInput extends StepViewData {
+    step?: Models.Schema.Step;
+    section?: Models.Section.Section;
+    state: State;
+    error?: Error;
+    showDetails: boolean;
+    isEndOfGroup: boolean;
+    isStartOfGroup: boolean;
+    stepIndex: number;
+    sectionIndex: number;
+    isFirstSection: boolean;
+    isLastSection: boolean;
+    isRecording: boolean;
+    isPlaying: boolean;
+    actionsMenuButton?: Buttons.Button.Button;
+    actionsMenuExpanded: boolean;
+    isVisible: boolean;
+    hasBreakpoint: boolean;
+    removable: boolean;
+    builtInConverters: Converters.Converter.Converter[];
+    extensionConverters: Converters.Converter.Converter[];
+    isSelected: boolean;
+    recorderSettings?: Models.RecorderSettings.RecorderSettings;
+    actions: Array<Action>;
+    stepEdited: (event: StepEditedEvent) => void;
+    onToggleActionsMenu: (event: Event) => void;
+    onCloseActionsMenu: () => void;
+    onBreakpointClick: () => void;
+    getActionsMenuButton: () => Buttons.Button.Button;
+    handleStepAction: (event: Menus.Menu.MenuItemSelectedEvent) => void;
+    toggleShowDetails: () => void;
+    onToggleShowDetailsKeydown: (event: Event) => void;
+    onStepContextMenu: (event: MouseEvent) => void;
+}
+export interface ViewOutput {
+    actionsMenuButton?: Buttons.Button.Button;
+}
+declare function viewFunction(input: ViewInput, output: ViewOutput, target: HTMLElement | ShadowRoot): void;
 export declare class StepView extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
-    constructor();
+    constructor(view?: typeof viewFunction);
     set data(data: StepViewData);
     get step(): Models.Schema.Step | undefined;
     get section(): Models.Section.Section | undefined;
     connectedCallback(): void;
     disconnectedCallback(): void;
 }
+export {};

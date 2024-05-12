@@ -13,7 +13,6 @@ export default {
 .text-prompt-root {
   display: flex;
   align-items: center;
-  font-size: var(--sys-size-6);
 }
 
 .text-prompt-editing {

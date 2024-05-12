@@ -42,6 +42,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         const headerData = {
             name: Platform.StringUtilities.toLowerCaseString('some-header-name'),
             value: 'someHeaderValue',
+            valueEditable: 0 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Disabled */,
         };
         const { component, scrollIntoViewSpy } = await renderHeaderSectionRow(headerData);
         assert.isNotNull(component.shadowRoot);
@@ -57,6 +58,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         const headerData = {
             name: Platform.StringUtilities.toLowerCaseString('cross-origin-resource-policy'),
             value: null,
+            valueEditable: 0 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Disabled */,
             headerNotSet: true,
             blockedDetails: {
                 explanation: () => 'To use this resource from a different origin, the server needs to specify a cross-origin resource policy in the response headers:',
@@ -92,6 +94,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         const headerData = {
             name: Platform.StringUtilities.toLowerCaseString('x-client-data'),
             value: 'CJa2yQEIpLbJAQiTocsB',
+            valueEditable: 0 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Disabled */,
         };
         const { component } = await renderHeaderSectionRow(headerData);
         assert.isNotNull(component.shadowRoot);
@@ -108,6 +111,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         const headerData = {
             name: Platform.StringUtilities.toLowerCaseString('set-cookie'),
             value: 'secure=only; Secure',
+            valueEditable: 0 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Disabled */,
             setCookieBlockedReasons: ["SecureOnly" /* Protocol.Network.SetCookieBlockedReason.SecureOnly */, "OverwriteSecure" /* Protocol.Network.SetCookieBlockedReason.OverwriteSecure */],
         };
         const { component } = await renderHeaderSectionRow(headerData);
@@ -129,6 +133,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         const headerData = {
             name: Platform.StringUtilities.toLowerCaseString('some-header-name'),
             value: 'someHeaderValue',
+            valueEditable: 0 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Disabled */,
             highlight: true,
         };
         const { component, scrollIntoViewSpy } = await renderHeaderSectionRow(headerData);
@@ -144,7 +149,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             name: originalHeaderName,
             value: originalHeaderValue,
             nameEditable: true,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const editedHeaderName = 'new-header-name';
         const editedHeaderValue = 'new value for header';
@@ -204,7 +209,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             name: headerName,
             value: 'someHeaderValue',
             nameEditable: true,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const { component, nameEditable } = await renderHeaderSectionRow(headerData);
         assert.isNotNull(component.shadowRoot);
@@ -225,7 +230,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             name: Platform.StringUtilities.toLowerCaseString('some-header-name'),
             value: originalHeaderValue,
             originalValue: originalHeaderValue,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const { component, valueEditable } = await renderHeaderSectionRow(headerData);
         assert.isNotNull(component.shadowRoot);
@@ -247,7 +252,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         const headerData = {
             name: Platform.StringUtilities.toLowerCaseString('some-header-name'),
             value: 'someHeaderValue',
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const editedHeaderValue = 'new value for header';
         const { component, valueEditable } = await renderHeaderSectionRow(headerData);
@@ -270,7 +275,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             name: Platform.StringUtilities.toLowerCaseString('some-header-name'),
             value: 'someHeaderValue',
             originalValue: 'someHeaderValue',
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
             highlight: true,
         };
         const { component, valueEditable } = await renderHeaderSectionRow(headerData);
@@ -296,7 +301,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             name: Platform.StringUtilities.toLowerCaseString('some-header-name'),
             value: null,
             originalValue: null,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const { component, valueEditable } = await renderHeaderSectionRow(headerData);
         assert.isNotNull(component.shadowRoot);
@@ -318,7 +323,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             value: 'someHeaderValue',
             originalValue: 'someHeaderValue',
             nameEditable: true,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const { component, nameEditable } = await renderHeaderSectionRow(headerData);
         assert.isNotNull(component.shadowRoot);
@@ -345,7 +350,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             name: originalHeaderName,
             value: originalHeaderValue,
             nameEditable: true,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const editedHeaderName = 'permissions-Policy: unload=(https://xyz.com)';
         const { component, nameEditable, valueEditable } = await renderHeaderSectionRow(headerData);
@@ -389,7 +394,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             name: originalHeaderName,
             value: originalHeaderValue,
             nameEditable: true,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const editedHeaderName = ':abc';
         const { component, nameEditable, valueEditable } = await renderHeaderSectionRow(headerData);
@@ -421,7 +426,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             name: originalHeaderName,
             value: originalHeaderValue,
             nameEditable: true,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const editedHeaderName = 'permissions-Policy: unload=(https://xyz.com)';
         const { component, nameEditable, valueEditable } = await renderHeaderSectionRow(headerData);
@@ -460,7 +465,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         const headerData = {
             name: headerName,
             value: headerValue,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const { component } = await renderHeaderSectionRow(headerData);
         assert.isNotNull(component.shadowRoot);
@@ -485,7 +490,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
             name: originalHeaderName,
             value: originalHeaderValue,
             nameEditable: true,
-            valueEditable: true,
+            valueEditable: 1 /* NetworkComponents.HeaderSectionRow.EditingAllowedStatus.Enabled */,
         };
         const editedHeaderName = ' new-header-name ';
         const editedHeaderValue = ' new value for header ';

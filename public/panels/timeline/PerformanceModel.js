@@ -10,8 +10,5 @@ export class PerformanceModel {
     async setTracingModel(model) {
         this.timelineModelInternal.setEvents(model);
     }
-    timelineModel() {
-        return this.timelineModelInternal;
-    }
 }
 //# sourceMappingURL=PerformanceModel.js.map

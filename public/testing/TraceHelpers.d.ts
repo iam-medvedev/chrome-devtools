@@ -1,3 +1,4 @@
+import * as Bindings from '../models/bindings/bindings.js';
 import * as TraceEngine from '../models/trace/trace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as PerfUI from '../ui/legacy/components/perf_ui/perf_ui.js';
@@ -32,7 +33,7 @@ export declare function getMainFlameChartWithTracks(traceFileName: string, track
  * @param expanded if the track is expanded
  * @returns a flame chart element and its corresponding data provider.
  */
-export declare function getNetworkFlameChartWithLegacyTrack(traceFileName: string, expanded: boolean): Promise<{
+export declare function getNetworkFlameChart(traceFileName: string, expanded: boolean): Promise<{
     flameChart: PerfUI.FlameChart.FlameChart;
     dataProvider: Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider;
 }>;
@@ -73,6 +74,8 @@ export declare function prettyPrint(tree: TraceEngine.Helpers.TreeHelpers.TraceE
  * Builds a mock TraceEventComplete.
  */
 export declare function makeCompleteEvent(name: string, ts: number, dur: number, cat?: string, pid?: number, tid?: number): TraceEngine.Types.TraceEvents.TraceEventComplete;
+export declare function makeAsyncStartEvent(name: string, ts: number, pid?: number, tid?: number): TraceEngine.Types.TraceEvents.TraceEventAsync;
+export declare function makeAsyncEndEvent(name: string, ts: number, pid?: number, tid?: number): TraceEngine.Types.TraceEvents.TraceEventAsync;
 export declare function makeCompleteEventInMilliseconds(name: string, tsMillis: number, durMillis: number, cat?: string, pid?: number, tid?: number): TraceEngine.Types.TraceEvents.TraceEventComplete;
 /**
  * Builds a mock TraceEventInstant.
@@ -167,4 +170,12 @@ export declare function getBaseTraceParseModelData(overrides?: Partial<TracePars
  * saves the need to do that for every test.
  */
 export declare function getEventOfType<T extends TraceEngine.Types.TraceEvents.TraceEventData>(events: TraceEngine.Types.TraceEvents.TraceEventData[], predicate: (e: TraceEngine.Types.TraceEvents.TraceEventData) => e is T): T;
+/**
+ * The Performance Panel is integrated with the IgnoreListManager so in tests
+ * that render a flame chart or a track appender, it needs to be setup to avoid
+ * errors.
+ */
+export declare function setupIgnoreListManagerEnvironment(): {
+    ignoreListManager: Bindings.IgnoreListManager.IgnoreListManager;
+};
 export {};

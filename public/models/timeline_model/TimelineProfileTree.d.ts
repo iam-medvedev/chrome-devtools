@@ -35,29 +35,29 @@ export declare class TopDownNode extends Node {
     getRoot(): TopDownRootNode | null;
 }
 export declare class TopDownRootNode extends TopDownNode {
-    readonly filter: (e: TraceEngine.Legacy.CompatibleTraceEvent) => boolean;
+    readonly filter: (e: TraceEngine.Types.TraceEvents.TraceEventData) => boolean;
     readonly events: TraceEngine.Types.TraceEvents.TraceEventData[];
-    readonly startTime: number;
-    readonly endTime: number;
+    readonly startTime: TraceEngine.Types.Timing.MilliSeconds;
+    readonly endTime: TraceEngine.Types.Timing.MilliSeconds;
     eventGroupIdCallback: ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null | undefined;
     readonly doNotAggregate: boolean | undefined;
     totalTime: number;
     selfTime: number;
-    constructor(events: TraceEngine.Types.TraceEvents.TraceEventData[], filters: TimelineModelFilter[], startTime: number, endTime: number, doNotAggregate?: boolean, eventGroupIdCallback?: ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null);
+    constructor(events: TraceEngine.Types.TraceEvents.TraceEventData[], filters: TimelineModelFilter[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, doNotAggregate?: boolean, eventGroupIdCallback?: ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null);
     children(): ChildrenCache;
     private grouppedTopNodes;
     getEventGroupIdCallback(): ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null | undefined;
 }
 export declare class BottomUpRootNode extends Node {
     private childrenInternal;
-    readonly events: TraceEngine.Legacy.CompatibleTraceEvent[];
+    readonly events: TraceEngine.Types.TraceEvents.TraceEventData[];
     private textFilter;
-    readonly filter: (e: TraceEngine.Legacy.CompatibleTraceEvent) => boolean;
-    readonly startTime: number;
-    readonly endTime: number;
+    readonly filter: (e: TraceEngine.Types.TraceEvents.TraceEventData) => boolean;
+    readonly startTime: TraceEngine.Types.Timing.MilliSeconds;
+    readonly endTime: TraceEngine.Types.Timing.MilliSeconds;
     private eventGroupIdCallback;
     totalTime: number;
-    constructor(events: TraceEngine.Legacy.CompatibleTraceEvent[], textFilter: TimelineModelFilter, filters: TimelineModelFilter[], startTime: number, endTime: number, eventGroupIdCallback: ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null);
+    constructor(events: TraceEngine.Types.TraceEvents.TraceEventData[], textFilter: TimelineModelFilter, filters: TimelineModelFilter[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, eventGroupIdCallback: ((arg0: TraceEngine.Types.TraceEvents.TraceEventData) => string) | null);
     hasChildren(): boolean;
     filterChildren(children: ChildrenCache): ChildrenCache;
     children(): ChildrenCache;
@@ -82,9 +82,9 @@ export declare class BottomUpNode extends Node {
     hasChildren(): boolean;
     setHasChildren(value: boolean): void;
     children(): ChildrenCache;
-    searchTree(matchFunction: (arg0: TraceEngine.Legacy.CompatibleTraceEvent) => boolean, results?: Node[]): Node[];
+    searchTree(matchFunction: (arg0: TraceEngine.Types.TraceEvents.TraceEventData) => boolean, results?: Node[]): Node[];
 }
 export declare function eventURL(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): Platform.DevToolsPath.UrlString | null;
 export declare function eventStackFrame(event: TraceEngine.Types.TraceEvents.TraceEventData): Protocol.Runtime.CallFrame | null;
-export declare function generateEventID(event: TraceEngine.Legacy.CompatibleTraceEvent): string;
+export declare function generateEventID(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
 export type ChildrenCache = Map<string | symbol, Node>;

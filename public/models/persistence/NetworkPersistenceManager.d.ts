@@ -48,7 +48,8 @@ export declare class NetworkPersistenceManager extends Common.ObjectWrapper.Obje
     saveUISourceCodeForOverrides(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<void>;
     private fileCreatedForTest;
     private patternForFileSystemUISourceCode;
-    private isForbiddenUrl;
+    private isForbiddenFileUrl;
+    static isForbiddenNetworkUrl(urlString: Platform.DevToolsPath.UrlString): boolean;
     private onUISourceCodeAdded;
     private canHandleNetworkUISourceCode;
     private networkUISourceCodeAdded;

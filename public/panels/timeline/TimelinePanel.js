@@ -83,7 +83,7 @@ const UIStrings = {
     /**
      *@description Title of CSS selector stats setting in timeline panel of the performance panel
      */
-    enableSelectorStats: 'Enable CSS selector stats',
+    enableSelectorStats: 'Enable CSS selector stats (slow)',
     /**
      *@description Title of show screenshots setting in timeline panel of the performance panel
      */
@@ -338,10 +338,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         };
         this.fixMeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.fixMe), adorner);
         this.fixMeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.onFixMe());
-        const config = TraceEngine.Types.Configuration.DEFAULT;
-        config.experiments.timelineShowAllEvents = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
-        config.experiments.timelineV8RuntimeCallStats =
-            Root.Runtime.experiments.isEnabled('timeline-v8-runtime-call-stats');
+        const config = TraceEngine.Types.Configuration.defaults();
+        config.showAllEvents = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
+        config.includeRuntimeCallStats = Root.Runtime.experiments.isEnabled('timeline-v8-runtime-call-stats');
+        config.debugMode = Root.Runtime.experiments.isEnabled("timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */);
         this.#traceEngineModel = TraceEngine.TraceModel.Model.createWithAllHandlers(config);
         this.element.addEventListener('contextmenu', this.contextMenu.bind(this), false);
         this.dropTarget = new UI.DropTarget.DropTarget(this.element, [UI.DropTarget.Type.File, UI.DropTarget.Type.URI], i18nString(UIStrings.dropTimelineFileOrUrlHere), this.handleDrop.bind(this));
@@ -357,11 +357,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.disableCaptureJSProfileSetting =
             Common.Settings.Settings.instance().createSetting('timeline-disable-js-sampling', false);
         this.disableCaptureJSProfileSetting.setTitle(i18nString(UIStrings.disableJavascriptSamples));
-        this.captureLayersAndPicturesSetting =
-            Common.Settings.Settings.instance().createSetting('timeline-capture-layers-and-pictures', false);
+        this.captureLayersAndPicturesSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-layers-and-pictures', false, "Session" /* Common.Settings.SettingStorageType.Session */);
         this.captureLayersAndPicturesSetting.setTitle(i18nString(UIStrings.enableAdvancedPaint));
-        this.captureSelectorStatsSetting =
-            Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false);
+        this.captureSelectorStatsSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false, "Session" /* Common.Settings.SettingStorageType.Session */);
         this.captureSelectorStatsSetting.setTitle(i18nString(UIStrings.enableSelectorStats));
         this.showScreenshotsSetting =
             Common.Settings.Settings.instance().createSetting('timeline-show-screenshots', isNode ? false : true);
@@ -654,9 +652,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         const traceEvents = this.#traceEngineModel.traceEvents(this.#traceEngineActiveTraceIndex);
         const metadata = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex);
-        // Save annotations into the metadata if annotations the experiment is on
-        if (Root.Runtime.experiments.isEnabled("save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */) &&
-            metadata) {
+        // Save annotations into the metadata if annotations experiment is on
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.PERF_PANEL_ANNOTATIONS */) && metadata) {
             metadata.annotations = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getAnnotations();
         }
         if (!traceEvents) {

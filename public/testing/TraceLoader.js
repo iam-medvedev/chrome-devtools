@@ -1,14 +1,11 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TimelineModel from '../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../models/trace/trace.js';
-import * as Timeline from '../panels/timeline/timeline.js';
 import * as TraceBounds from '../services/trace_bounds/trace_bounds.js';
-// We maintain three caches:
+// We maintain two caches:
 // 1. The file contents JSON.parsed for a given trace file.
-// 2. The created set of models for a given file (used by the allModels function)
-// 3. The trace engine models for a given file (used by the traceEngine function)
+// 2. The trace engine models for a given file (used by the traceEngine function)
 // Both the file contents and the model data are not expected to change during
 // the lifetime of an instance of DevTools, so they are safe to cache and
 // re-use across tests to avoid extra time spent loading and parsing the same
@@ -27,7 +24,6 @@ const fileContentsCache = new Map();
 // and will reparse. This is required as some of the settings and experiments
 // change if events are kept and dropped.
 const traceEngineCache = new Map();
-const allModelsCache = new Map();
 /**
  * Loads trace files defined as fixtures in front_end/panels/timeline/fixtures/traces.
  *
@@ -103,15 +99,16 @@ export class TraceLoader {
      * The trace file should be in ../panels/timeline/fixtures/traces folder.
      *
      * @param options Additional trace options.
-     * @param options.initTraceBounds after the trace is loaded, the TraceBounds
-     * manager will automatically be initialised using the bounds from the trace.
+     * @param options.initTraceBounds (defaults to `true`) after the trace is
+     * loaded, the TraceBounds manager will automatically be initialised using
+     * the bounds from the trace.
      *
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
     static async traceEngine(context, name, options = {
-        initTraceBounds: false,
-    }, config = TraceEngine.Types.Configuration.DEFAULT) {
+        initTraceBounds: true,
+    }, config = TraceEngine.Types.Configuration.defaults()) {
         // Force the TraceBounds to be reset to empty. This ensures that in
         // tests where we are using the new engine data we don't accidentally
         // rely on the fact that a previous test has set the BoundsManager.
@@ -146,59 +143,6 @@ export class TraceLoader {
             forceNew: true,
         })
             .resetWithNewBounds(data.Meta.traceBounds);
-    }
-    /**
-     * Returns tracingModel, timelineModel, performanceModel, traceParsedData
-     * from the given trace file.
-     *
-     * @deprecated: we are almost done removing the old models from the
-     * codebase. All new features and tests should rely only on the new engine
-     * and soon this method will be removed. Talk to @jacktfranklin if you have
-     * to use this helper in any new tests.
-     *
-     * @param context The Mocha test context. |allModelsFromFile| function easily
-     * takes up more than our default Mocha timeout, which is 2s. So we have to
-     * increase this test's timeout. It might be null when we only render a
-     * component example.
-     * @param file The name of the trace file to be loaded. The trace file should
-     * be in ../panels/timeline/fixtures/traces folder.
-     * @returns tracingModel, timelineModel, performanceModel, traceParsedData
-     * from this trace file
-     */
-    static async allModels(context, name) {
-        const fromCache = allModelsCache.get(name);
-        if (fromCache) {
-            return fromCache;
-        }
-        // Load the contents of the file and get the array of all the events.
-        let fileContents = await TraceLoader.fixtureContents(context, name);
-        if (name.endsWith('.cpuprofile.gz')) {
-            const rawEvents = await TraceLoader.rawCPUProfile(context, name);
-            fileContents = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(rawEvents, 1, true);
-        }
-        const events = 'traceEvents' in fileContents ? fileContents.traceEvents : fileContents;
-        // Execute the new trace engine
-        const traceEngineData = await TraceLoader.executeTraceEngineOnFileContents(fileContents);
-        // Execute and populate the legacy models
-        const tracingModel = new TraceEngine.Legacy.TracingModel();
-        const performanceModel = new Timeline.PerformanceModel.PerformanceModel();
-        tracingModel.addEvents(events);
-        tracingModel.tracingComplete();
-        await performanceModel.setTracingModel(tracingModel);
-        const timelineModel = performanceModel.timelineModel();
-        TraceBounds.TraceBounds.BoundsManager
-            .instance({
-            forceNew: true,
-        })
-            .resetWithNewBounds(traceEngineData.traceParsedData.Meta.traceBounds);
-        const result = {
-            tracingModel,
-            timelineModel,
-            performanceModel,
-            traceParsedData: traceEngineData.traceParsedData,
-        };
-        allModelsCache.set(name, result);
-        return result;
     }
     static async executeTraceEngineOnFileContents(contents, emulateFreshRecording = false, traceEngineConfig) {
         const events = 'traceEvents' in contents ? contents.traceEvents : contents;

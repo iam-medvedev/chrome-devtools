@@ -111,9 +111,13 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
     #headerEditors = [];
     #uiSourceCode = null;
     #overrides = [];
-    #headersAreOverrideable = false;
+    #isEditingAllowed = 0 /* EditingAllowedStatus.Disabled */;
     set data(data) {
         this.#request = data.request;
+        this.#isEditingAllowed =
+            Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(this.#request.url()) ?
+                2 /* EditingAllowedStatus.Forbidden */ :
+                0 /* EditingAllowedStatus.Disabled */;
         // If the request has been locally overridden, its 'sortedResponseHeaders'
         // contains no 'set-cookie' headers, because they have been filtered out by
         // the Chromium backend. DevTools therefore uses previously stored values.
@@ -176,8 +180,12 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
             this.#headerEditors = dataAssociatedWithRequest;
         }
         else {
-            this.#headerEditors =
-                this.headerDetails.map(header => ({ name: header.name, value: header.value, originalValue: header.value }));
+            this.#headerEditors = this.headerDetails.map(header => ({
+                name: header.name,
+                value: header.value,
+                originalValue: header.value,
+                valueEditable: this.#isEditingAllowed,
+            }));
             this.#markOverrides();
         }
         void this.#loadOverridesFileInfo();
@@ -188,9 +196,16 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
         if (!this.#request) {
             return;
         }
-        this.#headersAreOverrideable = false;
-        this.#headerEditors =
-            this.headerDetails.map(header => ({ name: header.name, value: header.value, originalValue: header.value }));
+        this.#isEditingAllowed =
+            Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(this.#request.url()) ?
+                2 /* EditingAllowedStatus.Forbidden */ :
+                0 /* EditingAllowedStatus.Disabled */;
+        this.#headerEditors = this.headerDetails.map(header => ({
+            name: header.name,
+            value: header.value,
+            originalValue: header.value,
+            valueEditable: this.#isEditingAllowed,
+        }));
         this.#markOverrides();
         this.#request.setAssociatedData(RESPONSE_HEADER_SECTION_DATA_KEY, this.#headerEditors);
     }
@@ -212,10 +227,12 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
             if (!this.#overrides.every(Persistence.NetworkPersistenceManager.isHeaderOverride)) {
                 throw 'Type mismatch after parsing';
             }
-            this.#headersAreOverrideable =
-                Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').get();
+            if (Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').get() &&
+                this.#isEditingAllowed === 0 /* EditingAllowedStatus.Disabled */) {
+                this.#isEditingAllowed = 1 /* EditingAllowedStatus.Enabled */;
+            }
             for (const header of this.#headerEditors) {
-                header.valueEditable = this.#headersAreOverrideable;
+                header.valueEditable = this.#isEditingAllowed;
             }
         }
         catch (error) {
@@ -352,7 +369,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
         if (headerName === 'set-cookie') {
             // Special case for 'set-cookie' headers: each such header is treated
             // separately without looking at other 'set-cookie' headers.
-            headersToUpdate.push({ name: headerName, value: headerValue });
+            headersToUpdate.push({ name: headerName, value: headerValue, valueEditable: this.#isEditingAllowed });
         }
         else {
             // If multiple headers have the same name 'foo', we treat them as a unit.
@@ -417,7 +434,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
             value: i18n.i18n.lockedString('header value'),
             isOverride: true,
             nameEditable: true,
-            valueEditable: true,
+            valueEditable: 1 /* EditingAllowedStatus.Enabled */,
         });
         const index = this.#headerEditors.length - 1;
         this.#updateOverrides(this.#headerEditors[index].name, this.#headerEditors[index].value || '', index);
@@ -445,7 +462,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
             jslog=${VisualLogging.item('response-header')}
         ></${HeaderSectionRow.litTagName}>
       `)}
-      ${this.#headersAreOverrideable ? html `
+      ${this.#isEditingAllowed === 1 /* EditingAllowedStatus.Enabled */ ? html `
         <${Buttons.Button.Button.litTagName}
           class="add-header-button"
           .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}

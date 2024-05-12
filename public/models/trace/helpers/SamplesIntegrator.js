@@ -88,11 +88,18 @@ export class SamplesIntegrator {
      */
     #nodeForGC = new Map();
     #engineConfig;
-    constructor(profileModel, pid, tid, configuration) {
+    #profileId;
+    /**
+     * Keeps track of the individual samples from the CPU Profile.
+     * Only used with Debug Mode experiment enabled.
+     */
+    jsSampleEvents = [];
+    constructor(profileModel, profileId, pid, tid, configuration) {
         this.#profileModel = profileModel;
         this.#threadId = tid;
         this.#processId = pid;
-        this.#engineConfig = configuration || Types.Configuration.DEFAULT;
+        this.#engineConfig = configuration || Types.Configuration.defaults();
+        this.#profileId = profileId;
     }
     buildProfileCalls(traceEvents) {
         const mergedEvents = mergeEventsInOrder(traceEvents, this.callsFromProfileSamples());
@@ -208,6 +215,7 @@ export class SamplesIntegrator {
     callsFromProfileSamples() {
         const samples = this.#profileModel.samples;
         const timestamps = this.#profileModel.timestamps;
+        const debugModeEnabled = this.#engineConfig.debugMode;
         if (!samples) {
             return [];
         }
@@ -219,8 +227,11 @@ export class SamplesIntegrator {
             if (!node) {
                 continue;
             }
-            const call = makeProfileCall(node, timestamp, this.#processId, this.#threadId);
+            const call = makeProfileCall(node, this.#profileId, i, timestamp, this.#processId, this.#threadId);
             calls.push(call);
+            if (debugModeEnabled) {
+                this.jsSampleEvents.push(this.#makeJSSampleEvent(call, timestamp));
+            }
             if (node.id === this.#profileModel.gcNode?.id && prevNode) {
                 // GC samples have no stack, so we just put GC node on top of the
                 // last recorded sample. Cache the previous sample for future
@@ -232,7 +243,7 @@ export class SamplesIntegrator {
         }
         return calls;
     }
-    #makeProfileCallsForChildren(profileCall) {
+    #makeProfileCallsForStack(profileCall) {
         let node = this.#profileModel.nodeById(profileCall.nodeId);
         const isGarbageCollection = node?.id === this.#profileModel.gcNode?.id;
         if (isGarbageCollection) {
@@ -252,9 +263,10 @@ export class SamplesIntegrator {
             // Place the garbage collection call frame on top of the stack.
             callFrames[i--] = profileCall;
         }
-        // Many of these ProfileCalls will be GC'd later when we estimate the frame durations
+        // Many of these ProfileCalls will be GC'd later when we estimate the frame
+        // durations
         while (node) {
-            callFrames[i--] = makeProfileCall(node, profileCall.ts, this.#processId, this.#threadId);
+            callFrames[i--] = makeProfileCall(node, profileCall.profileId, profileCall.sampleIndex, profileCall.ts, this.#processId, this.#threadId);
             node = node.parent;
         }
         return callFrames;
@@ -263,7 +275,7 @@ export class SamplesIntegrator {
      * Update tracked stack using this event's call stack.
      */
     #extractStackTrace(event) {
-        const stackTrace = Types.TraceEvents.isProfileCall(event) ? this.#makeProfileCallsForChildren(event) : this.#currentJSStack;
+        const stackTrace = Types.TraceEvents.isProfileCall(event) ? this.#makeProfileCallsForStack(event) : this.#currentJSStack;
         SamplesIntegrator.filterStackFrames(stackTrace, this.#engineConfig);
         const endTime = event.ts + (event.dur || 0);
         const minFrames = Math.min(stackTrace.length, this.#currentJSStack.length);
@@ -352,6 +364,21 @@ export class SamplesIntegrator {
         }
         this.#currentJSStack.length = depth;
     }
+    #makeJSSampleEvent(call, timestamp) {
+        const JSSampleEvent = {
+            name: "JSSample" /* Types.TraceEvents.KnownEventName.JSSample */,
+            cat: 'devtools.timeline',
+            args: {
+                data: { stackTrace: this.#makeProfileCallsForStack(call).map(e => e.callFrame) },
+            },
+            ph: "I" /* Types.TraceEvents.Phase.INSTANT */,
+            ts: timestamp,
+            dur: Types.Timing.MicroSeconds(0),
+            pid: this.#processId,
+            tid: this.#threadId,
+        };
+        return JSSampleEvent;
+    }
     static framesAreEqual(frame1, frame2) {
         return frame1.scriptId === frame2.scriptId && frame1.functionName === frame2.functionName &&
             frame1.lineNumber === frame2.lineNumber;
@@ -372,7 +399,7 @@ export class SamplesIntegrator {
         return frame.url === 'native V8Runtime';
     }
     static filterStackFrames(stack, engineConfig) {
-        const showAllEvents = engineConfig.experiments.timelineShowAllEvents;
+        const showAllEvents = engineConfig.showAllEvents;
         if (showAllEvents) {
             return;
         }
@@ -382,7 +409,7 @@ export class SamplesIntegrator {
             const frame = stack[i].callFrame;
             const nativeRuntimeFrame = SamplesIntegrator.isNativeRuntimeFrame(frame);
             if (nativeRuntimeFrame &&
-                !SamplesIntegrator.showNativeName(frame.functionName, engineConfig.experiments.timelineV8RuntimeCallStats)) {
+                !SamplesIntegrator.showNativeName(frame.functionName, engineConfig.includeRuntimeCallStats)) {
                 continue;
             }
             const nativeFrameName = nativeRuntimeFrame ? SamplesIntegrator.nativeGroup(frame.functionName) : null;

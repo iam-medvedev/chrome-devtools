@@ -1,7 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import type * as Protocol from '../../generated/protocol.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import { type Client } from './TimelineController.js';
 /**
@@ -23,7 +22,6 @@ export declare class TimelineLoader implements Common.StringOutputStream.OutputS
     constructor(client: Client, title?: string);
     static loadFromFile(file: File, client: Client): Promise<TimelineLoader>;
     static loadFromEvents(events: TraceEngine.TracingManager.EventPayload[], client: Client): TimelineLoader;
-    static getCpuProfileFilter(): TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter;
     static loadFromCpuProfile(profile: Protocol.Profiler.Profile | null, client: Client, title?: string): TimelineLoader;
     static loadFromURL(url: Platform.DevToolsPath.UrlString, client: Client): Promise<TimelineLoader>;
     addEvents(events: TraceEngine.TracingManager.EventPayload[]): Promise<void>;

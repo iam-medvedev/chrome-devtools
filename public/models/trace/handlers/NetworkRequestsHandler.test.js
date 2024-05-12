@@ -3,19 +3,6 @@
 // found in the LICENSE file.
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceModel from '../trace.js';
-async function parseAndFinalizeFile(context, traceFile) {
-    const traceEvents = await TraceLoader.rawEvents(context, traceFile);
-    TraceModel.Handlers.ModelHandlers.Meta.reset();
-    TraceModel.Handlers.ModelHandlers.Meta.initialize();
-    TraceModel.Handlers.ModelHandlers.NetworkRequests.initialize();
-    for (const event of traceEvents) {
-        TraceModel.Handlers.ModelHandlers.Meta.handleEvent(event);
-        TraceModel.Handlers.ModelHandlers.NetworkRequests.handleEvent(event);
-    }
-    await TraceModel.Handlers.ModelHandlers.Meta.finalize();
-    await TraceModel.Handlers.ModelHandlers.NetworkRequests.finalize();
-    return traceEvents;
-}
 describe('NetworkRequestsHandler', function () {
     describe('error handling', () => {
         it('throws if handleEvent is called before it is initialized', () => {
@@ -33,13 +20,6 @@ describe('NetworkRequestsHandler', function () {
             }
             assert.strictEqual(thrown?.message, 'Network Request handler is not initialized');
         });
-    });
-    it('parses search param strings for network requests', async () => {
-        await parseAndFinalizeFile(this, 'request-with-query-param.json.gz');
-        const { byTime } = TraceModel.Handlers.ModelHandlers.NetworkRequests.data();
-        // Filter to the requests that have search params.
-        const withSearchParams = byTime.filter(request => Boolean(request.args.data.search));
-        assert.deepEqual(['?test-query=hello'], withSearchParams.map(request => request.args.data.search));
     });
     describe('network requests calculations', () => {
         beforeEach(() => {

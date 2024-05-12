@@ -55,7 +55,7 @@ export const logHover = (throttler) => async (event) => {
     const loggingState = getLoggingState(event.currentTarget);
     assertNotNullOrUndefined(loggingState);
     const hoverEvent = { veid: loggingState.veid };
-    void throttler.schedule(async () => { }); // Ensure the logging won't get scheduled immediately
+    await throttler.schedule(async () => { }); // Ensure the logging won't get scheduled immediately
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordHover(hoverEvent);
         processEventForDebugging('Hover', loggingState);

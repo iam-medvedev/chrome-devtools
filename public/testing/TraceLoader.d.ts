@@ -1,14 +1,6 @@
 /// <reference types="mocha" />
 import type * as Protocol from '../generated/protocol.js';
-import * as TimelineModel from '../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../models/trace/trace.js';
-import * as Timeline from '../panels/timeline/timeline.js';
-export type AllModelsLoaded = Readonly<{
-    tracingModel: TraceEngine.Legacy.TracingModel;
-    timelineModel: TimelineModel.TimelineModel.TimelineModelImpl;
-    performanceModel: Timeline.PerformanceModel.PerformanceModel;
-    traceParsedData: TraceEngine.Handlers.Types.TraceParseData;
-}>;
 export interface TraceEngineLoaderOptions {
     initTraceBounds: boolean;
 }
@@ -57,8 +49,9 @@ export declare class TraceLoader {
      * The trace file should be in ../panels/timeline/fixtures/traces folder.
      *
      * @param options Additional trace options.
-     * @param options.initTraceBounds after the trace is loaded, the TraceBounds
-     * manager will automatically be initialised using the bounds from the trace.
+     * @param options.initTraceBounds (defaults to `true`) after the trace is
+     * loaded, the TraceBounds manager will automatically be initialised using
+     * the bounds from the trace.
      *
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
@@ -71,25 +64,6 @@ export declare class TraceLoader {
      * parsing a trace in a test does not automatically set it.
      **/
     static initTraceBoundsManager(data: TraceEngine.Handlers.Types.TraceParseData): void;
-    /**
-     * Returns tracingModel, timelineModel, performanceModel, traceParsedData
-     * from the given trace file.
-     *
-     * @deprecated: we are almost done removing the old models from the
-     * codebase. All new features and tests should rely only on the new engine
-     * and soon this method will be removed. Talk to @jacktfranklin if you have
-     * to use this helper in any new tests.
-     *
-     * @param context The Mocha test context. |allModelsFromFile| function easily
-     * takes up more than our default Mocha timeout, which is 2s. So we have to
-     * increase this test's timeout. It might be null when we only render a
-     * component example.
-     * @param file The name of the trace file to be loaded. The trace file should
-     * be in ../panels/timeline/fixtures/traces folder.
-     * @returns tracingModel, timelineModel, performanceModel, traceParsedData
-     * from this trace file
-     */
-    static allModels(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<AllModelsLoaded>;
     static executeTraceEngineOnFileContents(contents: TraceEngine.Types.File.Contents, emulateFreshRecording?: boolean, traceEngineConfig?: TraceEngine.Types.Configuration.Configuration): Promise<{
         metadata: TraceEngine.Types.File.MetaData;
         traceParsedData: TraceEngine.Handlers.Types.TraceParseData;

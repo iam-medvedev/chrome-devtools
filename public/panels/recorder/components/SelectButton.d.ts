@@ -1,3 +1,4 @@
+import { type LocalizedString } from '../../../core/platform/UIString.js';
 import type * as Actions from '../recorder-actions/recorder-actions.js';
 export declare const enum Variant {
     PRIMARY = "primary",
@@ -26,8 +27,13 @@ export interface SelectButtonItem {
     buttonLabel?: () => string;
 }
 export declare class SelectButtonClickEvent extends Event {
-    value: string;
+    value?: string | undefined;
     static readonly eventName = "selectbuttonclick";
+    constructor(value?: string | undefined);
+}
+export declare class SelectMenuSelectedEvent extends Event {
+    value: string;
+    static readonly eventName = "selectmenuselected";
     constructor(value: string);
 }
 export declare class SelectButton extends HTMLElement {
@@ -38,6 +44,7 @@ export declare class SelectButton extends HTMLElement {
     set disabled(disabled: boolean);
     get items(): SelectButtonItem[];
     set items(items: SelectButtonItem[]);
+    set buttonLabel(buttonLabel: LocalizedString);
     set groups(groups: Array<SelectMenuGroup>);
     get value(): string;
     set value(value: string);

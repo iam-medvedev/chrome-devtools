@@ -110,6 +110,7 @@ export class ThrottlingPresets {
         SDK.CPUThrottlingManager.CPUThrottlingRates.NoThrottling,
         SDK.CPUThrottlingManager.CPUThrottlingRates.MidTierMobile,
         SDK.CPUThrottlingManager.CPUThrottlingRates.LowEndMobile,
+        SDK.CPUThrottlingManager.CPUThrottlingRates.ExtraSlow,
     ];
 }
 // @ts-ignore exported for Tests.js

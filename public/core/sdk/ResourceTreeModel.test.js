@@ -15,24 +15,6 @@ function navigateFrameWithMockConnection(storageKey, resourceTreeModel) {
     }, undefined);
 }
 describeWithMockConnection('ResourceTreeModel', () => {
-    const beforeGetResourceTree = Promise.resolve();
-    beforeEach(async () => {
-        setMockConnectionResponseHandler('Page.getResourceTree', async () => {
-            await beforeGetResourceTree;
-            return {
-                frameTree: {
-                    frame: {
-                        id: 'main',
-                        loaderId: 'test',
-                        url: 'http://example.com',
-                        securityOrigin: 'http://example.com',
-                        mimeType: 'text/html',
-                    },
-                    resources: [],
-                },
-            };
-        });
-    });
     it('calls clearRequests on reloadPage', () => {
         const target = createTarget();
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -114,16 +96,7 @@ describeWithMockConnection('ResourceTreeModel', () => {
         assert.exists(resourceTreeModel);
         return resourceTreeModel;
     }
-    it('calls reloads only top frames without tab target', () => {
-        const mainFrameTarget = createTarget();
-        const subframeTarget = createTarget({ parentTarget: mainFrameTarget });
-        const reloadMainFramePage = sinon.spy(getResourceTreeModel(mainFrameTarget), 'reloadPage');
-        const reloadSubframePage = sinon.spy(getResourceTreeModel(subframeTarget), 'reloadPage');
-        SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages();
-        assert.isTrue(reloadMainFramePage.calledOnce);
-        assert.isTrue(reloadSubframePage.notCalled);
-    });
-    it('calls reloads only top frames with tab target', () => {
+    it('calls reloads only top frames', () => {
         const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
         const mainFrameTarget = createTarget({ parentTarget: tabTarget });
         const subframeTarget = createTarget({ parentTarget: mainFrameTarget });
@@ -133,15 +106,7 @@ describeWithMockConnection('ResourceTreeModel', () => {
         assert.isTrue(reloadMainFramePage.calledOnce);
         assert.isTrue(reloadSubframePage.notCalled);
     });
-    it('identifies top frame without tab target', async () => {
-        const mainFrameTarget = createTarget();
-        const subframeTarget = createTarget({ parentTarget: mainFrameTarget });
-        dispatchEvent(mainFrameTarget, 'Page.frameNavigated', frameNavigatedEvent());
-        dispatchEvent(subframeTarget, 'Page.frameNavigated', frameNavigatedEvent('parentId'));
-        assert.isTrue(getResourceTreeModel(mainFrameTarget).mainFrame.isOutermostFrame());
-        assert.isFalse(getResourceTreeModel(subframeTarget).mainFrame.isOutermostFrame());
-    });
-    it('identifies not top frame with tab target', async () => {
+    it('identifies not top frame', async () => {
         const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
         const mainFrameTarget = createTarget({ parentTarget: tabTarget });
         const subframeTarget = createTarget({ parentTarget: mainFrameTarget });

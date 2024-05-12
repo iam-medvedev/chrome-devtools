@@ -4,6 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
+import { eventTimingsMicroSeconds } from './Timing.js';
 /**
  * Extracts the raw stack trace of known trace events. Most likely than
  * not you want to use `getZeroIndexedStackTraceForEvent`, which returns
@@ -140,7 +141,17 @@ export function activeURLForFrameAtTime(frameId, time, rendererProcessesByFrame)
     }
     return null;
 }
-export function makeProfileCall(node, ts, pid, tid) {
+/**
+ * @param node the node attached to the profile call. Here a node represents a function in the call tree.
+ * @param profileId the profile ID that the sample came from that backs this call.
+ * @param sampleIndex the index of the sample in the given profile that this call was created from
+ * @param ts the timestamp of the profile call
+ * @param pid the process ID of the profile call
+ * @param tid the thread ID of the profile call
+ *
+ * See `panels/timeline/docs/profile_calls.md` for more context on how these events are created.
+ */
+export function makeProfileCall(node, profileId, sampleIndex, ts, pid, tid) {
     return {
         cat: '',
         name: 'ProfileCall',
@@ -153,6 +164,8 @@ export function makeProfileCall(node, ts, pid, tid) {
         dur: Types.Timing.MicroSeconds(0),
         selfTime: Types.Timing.MicroSeconds(0),
         callFrame: node.callFrame,
+        sampleIndex,
+        profileId,
     };
 }
 export function makeSyntheticTraceEntry(name, ts, pid, tid) {
@@ -315,7 +328,6 @@ export function getZeroIndexedStackTraceForEvent(event) {
     return stack.map(callFrame => {
         const normalizedCallFrame = { ...callFrame };
         switch (event.name) {
-            case "RecalculateStyles" /* Types.TraceEvents.KnownEventName.RecalculateStyles */:
             case "ScheduleStyleRecalculation" /* Types.TraceEvents.KnownEventName.ScheduleStyleRecalculation */:
             case "InvalidateLayout" /* Types.TraceEvents.KnownEventName.InvalidateLayout */:
             case "UpdateLayoutTree" /* Types.TraceEvents.KnownEventName.UpdateLayoutTree */: {
@@ -396,5 +408,87 @@ export function findUpdateLayoutTreeEvents(events, startTime, endTime) {
         foundEvents.push(event);
     }
     return foundEvents;
+}
+/**
+ * Iterates events in a tree hierarchically, from top to bottom,
+ * calling back on every event's start and end in the order
+ * dictated by the corresponding timestamp.
+ *
+ * Events are assumed to be in ascendent order by timestamp.
+ *
+ * Events with 0 duration are treated as instant events. These do not have a
+ * begin and end, but will be passed to the config.onInstantEvent callback as
+ * they are discovered. Do not provide this callback if you are not interested
+ * in them.
+ *
+ * For example, given this tree, the following callbacks
+ * are expected to be made in the following order
+ * |---------------A---------------|
+ *  |------B------||-------D------|
+ *    |---C---|
+ *
+ * 1. Start A
+ * 3. Start B
+ * 4. Start C
+ * 5. End C
+ * 6. End B
+ * 7. Start D
+ * 8. End D
+ * 9. End A
+ *
+ * By default, async events are skipped. This behaviour can be
+ * overriden making use of the config.ignoreAsyncEvents parameter.
+ */
+export function forEachEvent(events, config) {
+    const globalStartTime = config.startTime || Types.Timing.MicroSeconds(0);
+    const globalEndTime = config.endTime || Types.Timing.MicroSeconds(Infinity);
+    const ignoreAsyncEvents = config.ignoreAsyncEvents === false ? false : true;
+    const stack = [];
+    const startEventIndex = topLevelEventIndexEndingAfter(events, globalStartTime);
+    for (let i = startEventIndex; i < events.length; i++) {
+        const currentEvent = events[i];
+        const currentEventTimings = eventTimingsMicroSeconds(currentEvent);
+        if (currentEventTimings.endTime < globalStartTime) {
+            continue;
+        }
+        if (currentEventTimings.startTime > globalEndTime) {
+            break;
+        }
+        const isIgnoredAsyncEvent = ignoreAsyncEvents && Types.TraceEvents.isAsyncPhase(currentEvent.ph);
+        if (isIgnoredAsyncEvent || Types.TraceEvents.isFlowPhase(currentEvent.ph)) {
+            continue;
+        }
+        // If we have now reached an event that is after a bunch of events, we need
+        // to call the onEndEvent callback for those events before moving on.
+        let lastEventOnStack = stack.at(-1);
+        let lastEventEndTime = lastEventOnStack ? eventTimingsMicroSeconds(lastEventOnStack).endTime : null;
+        while (lastEventOnStack && lastEventEndTime && lastEventEndTime <= currentEventTimings.startTime) {
+            stack.pop();
+            config.onEndEvent(lastEventOnStack);
+            lastEventOnStack = stack.at(-1);
+            lastEventEndTime = lastEventOnStack ? eventTimingsMicroSeconds(lastEventOnStack).endTime : null;
+        }
+        // Now we have dealt with all events prior to this one, see if we need to care about this one.
+        if (config.eventFilter && !config.eventFilter(currentEvent)) {
+            // The user has chosen to filter this event out, so continue on and do nothing
+            continue;
+        }
+        if (currentEventTimings.duration) {
+            config.onStartEvent(currentEvent);
+            stack.push(currentEvent);
+        }
+        else if (config.onInstantEvent) {
+            // An event with 0 duration is an instant event.
+            config.onInstantEvent(currentEvent);
+        }
+    }
+    // Now we have finished looping over all events; any events remaining on the
+    // stack need to have their onEndEvent called.
+    while (stack.length) {
+        const last = stack.pop();
+        if (last) {
+            config.onEndEvent(last);
+        }
+    }
 }
 //# sourceMappingURL=Trace.js.map

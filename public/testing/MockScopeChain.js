@@ -17,7 +17,6 @@ export class MockProtocolBackend {
         setMockConnectionResponseHandler('Debugger.getScriptSource', this.#getScriptSourceHandler.bind(this));
         setMockConnectionResponseHandler('Runtime.getProperties', this.#getPropertiesHandler.bind(this));
         setMockConnectionResponseHandler('Debugger.setBreakpointByUrl', this.#setBreakpointByUrlHandler.bind(this));
-        setMockConnectionResponseHandler('Page.getResourceTree', this.#getResourceTreeHandler.bind(this));
         setMockConnectionResponseHandler('Storage.getStorageKeyForFrame', () => ({ storageKey: 'test-key' }));
         setMockConnectionResponseHandler('Debugger.removeBreakpoint', this.#removeBreakpointHandler.bind(this));
         setMockConnectionResponseHandler('Debugger.resume', () => ({}));
@@ -251,27 +250,6 @@ export class MockProtocolBackend {
         }
         return {
             result,
-            getError() {
-                return undefined;
-            },
-        };
-    }
-    #getResourceTreeHandler() {
-        return {
-            frameTree: {
-                frame: {
-                    id: 'main',
-                    loaderId: 'test',
-                    url: 'http://example.com',
-                    securityOrigin: 'http://example.com',
-                    mimeType: 'text/html',
-                    domainAndRegistry: 'example.com',
-                    secureContextType: "Secure" /* Protocol.Page.SecureContextType.Secure */,
-                    crossOriginIsolatedContextType: "Isolated" /* Protocol.Page.CrossOriginIsolatedContextType.Isolated */,
-                    gatedAPIFeatures: [],
-                },
-                resources: [],
-            },
             getError() {
                 return undefined;
             },

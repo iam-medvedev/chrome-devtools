@@ -597,6 +597,7 @@ export function maybeInitSylesMap() {
     eventStylesMap = {
         ["RunTask" /* TraceEngine.Types.TraceEvents.KnownEventName.RunTask */]: new TimelineRecordStyle(i18nString(UIStrings.task), defaultCategoryStyles.other),
         ["ProfileCall" /* TraceEngine.Types.TraceEvents.KnownEventName.ProfileCall */]: new TimelineRecordStyle(i18nString(UIStrings.jsFrame), defaultCategoryStyles.scripting),
+        ["JSSample" /* TraceEngine.Types.TraceEvents.KnownEventName.JSSample */]: new TimelineRecordStyle("JSSample" /* TraceEngine.Types.TraceEvents.KnownEventName.JSSample */, defaultCategoryStyles.scripting),
         ["Program" /* TraceEngine.Types.TraceEvents.KnownEventName.Program */]: new TimelineRecordStyle(i18nString(UIStrings.other), defaultCategoryStyles.other),
         ["CpuProfiler::StartProfiling" /* TraceEngine.Types.TraceEvents.KnownEventName.StartProfiling */]: new TimelineRecordStyle(i18nString(UIStrings.profilingOverhead), defaultCategoryStyles.other),
         ["Animation" /* TraceEngine.Types.TraceEvents.KnownEventName.Animation */]: new TimelineRecordStyle(i18nString(UIStrings.animation), defaultCategoryStyles.rendering),
@@ -607,7 +608,6 @@ export function maybeInitSylesMap() {
         ["DrawFrame" /* TraceEngine.Types.TraceEvents.KnownEventName.DrawFrame */]: new TimelineRecordStyle(i18nString(UIStrings.drawFrame), defaultCategoryStyles.rendering, true),
         ["HitTest" /* TraceEngine.Types.TraceEvents.KnownEventName.HitTest */]: new TimelineRecordStyle(i18nString(UIStrings.hitTest), defaultCategoryStyles.rendering),
         ["ScheduleStyleRecalculation" /* TraceEngine.Types.TraceEvents.KnownEventName.ScheduleStyleRecalculation */]: new TimelineRecordStyle(i18nString(UIStrings.scheduleStyleRecalculation), defaultCategoryStyles.rendering),
-        ["RecalculateStyles" /* TraceEngine.Types.TraceEvents.KnownEventName.RecalculateStyles */]: new TimelineRecordStyle(i18nString(UIStrings.recalculateStyle), defaultCategoryStyles.rendering),
         ["UpdateLayoutTree" /* TraceEngine.Types.TraceEvents.KnownEventName.UpdateLayoutTree */]: new TimelineRecordStyle(i18nString(UIStrings.recalculateStyle), defaultCategoryStyles.rendering),
         ["InvalidateLayout" /* TraceEngine.Types.TraceEvents.KnownEventName.InvalidateLayout */]: new TimelineRecordStyle(i18nString(UIStrings.invalidateLayout), defaultCategoryStyles.rendering, true),
         ["Layerize" /* TraceEngine.Types.TraceEvents.KnownEventName.Layerize */]: new TimelineRecordStyle(i18nString(UIStrings.layerize), defaultCategoryStyles.rendering),

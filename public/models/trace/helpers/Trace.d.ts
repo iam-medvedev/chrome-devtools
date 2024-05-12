@@ -33,7 +33,17 @@ export declare function activeURLForFrameAtTime(frameId: string, time: Types.Tim
     frame: Types.TraceEvents.TraceFrame;
     window: Types.Timing.TraceWindowMicroSeconds;
 }[]>>): string | null;
-export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.ProfileNode, ts: Types.Timing.MicroSeconds, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID): Types.TraceEvents.SyntheticProfileCall;
+/**
+ * @param node the node attached to the profile call. Here a node represents a function in the call tree.
+ * @param profileId the profile ID that the sample came from that backs this call.
+ * @param sampleIndex the index of the sample in the given profile that this call was created from
+ * @param ts the timestamp of the profile call
+ * @param pid the process ID of the profile call
+ * @param tid the thread ID of the profile call
+ *
+ * See `panels/timeline/docs/profile_calls.md` for more context on how these events are created.
+ */
+export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.ProfileNode, profileId: Types.TraceEvents.ProfileID, sampleIndex: number, ts: Types.Timing.MicroSeconds, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID): Types.TraceEvents.SyntheticProfileCall;
 export declare function makeSyntheticTraceEntry(name: string, ts: Types.Timing.MicroSeconds, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID): Types.TraceEvents.SyntheticTraceEntry;
 /**
  * Matches beginning events with TraceEventPairableAsyncEnd and TraceEventPairableAsyncInstant (ASYNC_NESTABLE_INSTANT)
@@ -67,4 +77,44 @@ export declare function getZeroIndexedLineAndColumnForEvent(event: Types.TraceEv
 export declare function getZeroIndexedStackTraceForEvent(event: Types.TraceEvents.TraceEventData): Types.TraceEvents.TraceEventCallFrame[] | null;
 export declare function frameIDForEvent(event: Types.TraceEvents.TraceEventData): string | null;
 export declare function findUpdateLayoutTreeEvents(events: Types.TraceEvents.TraceEventData[], startTime: Types.Timing.MicroSeconds, endTime?: Types.Timing.MicroSeconds): Types.TraceEvents.TraceEventUpdateLayoutTree[];
+export interface ForEachEventConfig {
+    onStartEvent: (event: Types.TraceEvents.TraceEventData) => void;
+    onEndEvent: (event: Types.TraceEvents.TraceEventData) => void;
+    onInstantEvent?: (event: Types.TraceEvents.TraceEventData) => void;
+    eventFilter?: (event: Types.TraceEvents.TraceEventData) => boolean;
+    startTime?: Types.Timing.MicroSeconds;
+    endTime?: Types.Timing.MicroSeconds;
+    ignoreAsyncEvents?: boolean;
+}
+/**
+ * Iterates events in a tree hierarchically, from top to bottom,
+ * calling back on every event's start and end in the order
+ * dictated by the corresponding timestamp.
+ *
+ * Events are assumed to be in ascendent order by timestamp.
+ *
+ * Events with 0 duration are treated as instant events. These do not have a
+ * begin and end, but will be passed to the config.onInstantEvent callback as
+ * they are discovered. Do not provide this callback if you are not interested
+ * in them.
+ *
+ * For example, given this tree, the following callbacks
+ * are expected to be made in the following order
+ * |---------------A---------------|
+ *  |------B------||-------D------|
+ *    |---C---|
+ *
+ * 1. Start A
+ * 3. Start B
+ * 4. Start C
+ * 5. End C
+ * 6. End B
+ * 7. Start D
+ * 8. End D
+ * 9. End A
+ *
+ * By default, async events are skipped. This behaviour can be
+ * overriden making use of the config.ignoreAsyncEvents parameter.
+ */
+export declare function forEachEvent(events: Types.TraceEvents.TraceEventData[], config: ForEachEventConfig): void;
 export {};

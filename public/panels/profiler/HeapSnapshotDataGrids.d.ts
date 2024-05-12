@@ -130,7 +130,7 @@ export declare class HeapSnapshotConstructorsDataGrid extends HeapSnapshotViewpo
         [x: string]: HeapSnapshotModel.HeapSnapshotModel.Aggregate;
     }): void;
     populateChildren(maybeNodeFilter?: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<void>;
-    filterSelectIndexChanged(profiles: HeapProfileHeader[], profileIndex: number): void;
+    filterSelectIndexChanged(profiles: HeapProfileHeader[], profileIndex: number, filterName: string | undefined): void;
 }
 export declare class HeapSnapshotDiffDataGrid extends HeapSnapshotViewportDataGrid {
     baseSnapshot?: HeapSnapshotProxy;

@@ -26,6 +26,7 @@ styles.replaceSync(
 }
 
 .link-swatch-link.undefined {
+  opacity: 100%;
   color: var(--text-disabled);
 }
 

@@ -37,8 +37,10 @@ describeWithMockConnection('ConsoleView', () => {
     function createConsoleMessage(target, message, type = "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */) {
         return new SDK.ConsoleModel.ConsoleMessage(target.model(SDK.RuntimeModel.RuntimeModel), "javascript" /* Protocol.Log.LogEntrySource.Javascript */, null, message, { type });
     }
-    async function canSaveToFile(targetFactory) {
-        const target = targetFactory();
+    it('can save to file', async () => {
+        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
+        const target = createTarget({ parentTarget: tabTarget });
         const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
         assert.exists(consoleModel);
         consoleModel.addMessage(createConsoleMessage(target, 'message 1'));
@@ -64,13 +66,7 @@ describeWithMockConnection('ConsoleView', () => {
         assert.isTrue(fileManager.save.calledOnceWith(FILENAME, '', true));
         await fileManagerCloseCall;
         assert.isTrue(fileManager.append.calledOnceWith(FILENAME, sinon.match('message 1\nmessage 2\n')));
-    }
-    it('can save to file without tab target', () => canSaveToFile(() => createTarget()));
-    it('can save to file with tab target', () => canSaveToFile(() => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
-        createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
-        return createTarget({ parentTarget: tabTarget });
-    }));
+    });
     async function getConsoleMessages() {
         const messagesElement = consoleView.element.querySelector('#console-messages');
         assert.exists(messagesElement);

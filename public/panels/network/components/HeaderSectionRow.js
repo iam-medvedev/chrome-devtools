@@ -123,7 +123,7 @@ export class HeaderSectionRow extends HTMLElement {
             row: true,
             'header-highlight': Boolean(this.#header.highlight),
             'header-overridden': Boolean(this.#header.isOverride) || this.#isHeaderValueEdited,
-            'header-editable': Boolean(this.#header.valueEditable),
+            'header-editable': this.#header.valueEditable === 1 /* EditingAllowedStatus.Enabled */,
             'header-deleted': Boolean(this.#header.isDeleted),
         });
         const headerNameClasses = LitHtml.Directives.classMap({
@@ -138,7 +138,7 @@ export class HeaderSectionRow extends HTMLElement {
         // The header name is only editable when the header value is editable as well.
         // This ensures the header name's editability reacts correctly to enabling or
         // disabling local overrides.
-        const isHeaderNameEditable = this.#header.nameEditable && this.#header.valueEditable;
+        const isHeaderNameEditable = this.#header.nameEditable && this.#header.valueEditable === 1 /* EditingAllowedStatus.Enabled */;
         // Case 1: Headers which were just now added via the 'Add header button'.
         //         'nameEditable' is true only for such headers.
         // Case 2: Headers for which the user clicked the 'remove' button.
@@ -200,12 +200,14 @@ export class HeaderSectionRow extends HTMLElement {
         if (this.#header.name === 'x-client-data' && !this.#header.isResponseHeader) {
             return this.#renderXClientDataHeader(this.#header);
         }
-        if (this.#header.isDeleted || !this.#header.valueEditable) {
+        if (this.#header.isDeleted || this.#header.valueEditable !== 1 /* EditingAllowedStatus.Enabled */) {
+            const showEditHeaderButton = this.#header.isResponseHeader && !this.#header.isDeleted &&
+                this.#header.valueEditable !== 2 /* EditingAllowedStatus.Forbidden */;
             // clang-format off
             return html `
       ${this.#header.value || ''}
       ${this.#maybeRenderHeaderValueSuffix(this.#header)}
-      ${this.#header.isResponseHeader && !this.#header.isDeleted ? html `
+      ${showEditHeaderButton ? html `
         <${Buttons.Button.Button.litTagName}
           title=${i18nString(UIStrings.editHeader)}
           .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
@@ -452,6 +454,7 @@ export class HeaderSectionRow extends HTMLElement {
             valueEL.value = headerValue;
             valueEL.dispatchEvent(new Event('input'));
         }
+        event.preventDefault();
     }
 }
 customElements.define('devtools-header-section-row', HeaderSectionRow);

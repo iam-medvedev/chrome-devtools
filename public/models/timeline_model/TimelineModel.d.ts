@@ -1,45 +1,11 @@
 import * as TraceEngine from '../trace/trace.js';
 export declare class TimelineModelImpl {
-    private inspectedTargetEventsInternal;
     private sessionId;
-    private mainFrameNodeId;
-    private requestsFromBrowser;
-    private lastScheduleStyleRecalculation;
     private lastPaintForLayer;
     private currentScriptEvent;
     private eventStack;
     private browserFrameTracking;
-    private currentTaskLayoutAndRecalcEvents;
-    private tracingModelInternal;
-    private lastRecalculateStylesEvent;
     constructor();
-    /**
-     * Iterates events in a tree hierarchically, from top to bottom,
-     * calling back on every event's start and end in the order
-     * dictated by the corresponding timestamp.
-     *
-     * Events are assumed to be in ascendent order by timestamp.
-     *
-     * For example, given this tree, the following callbacks
-     * are expected to be made in the following order
-     * |---------------A---------------|
-     *  |------B------||-------D------|
-     *    |---C---|
-     *
-     * 1. Start A
-     * 3. Start B
-     * 4. Start C
-     * 5. End C
-     * 6. End B
-     * 7. Start D
-     * 8. End D
-     * 9. End A
-     *
-     * By default, async events are filtered. This behaviour can be
-     * overriden making use of the filterAsyncEvents parameter.
-     */
-    static forEachEvent(events: TraceEngine.Legacy.CompatibleTraceEvent[], onStartEvent: (arg0: TraceEngine.Legacy.CompatibleTraceEvent) => void, onEndEvent: (arg0: TraceEngine.Legacy.CompatibleTraceEvent) => void, onInstantEvent?: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent, arg1: TraceEngine.Legacy.CompatibleTraceEvent | null) => void), startTime?: number, endTime?: number, filter?: ((arg0: TraceEngine.Legacy.CompatibleTraceEvent) => boolean), ignoreAsyncEvents?: boolean): void;
-    private static topLevelEventEndingAfter;
     setEvents(tracingModel: TraceEngine.Legacy.TracingModel): void;
     private processGenericTrace;
     private processMetadataAndThreads;
@@ -51,8 +17,6 @@ export declare class TimelineModelImpl {
     private processEvent;
     private processBrowserEvent;
     private reset;
-    tracingModel(): TraceEngine.Legacy.TracingModel | null;
-    inspectedTargetEvents(): TraceEngine.Legacy.Event[];
 }
 export declare enum RecordType {
     Task = "RunTask",
@@ -69,7 +33,6 @@ export declare enum RecordType {
     DroppedFrame = "DroppedFrame",
     HitTest = "HitTest",
     ScheduleStyleRecalculation = "ScheduleStyleRecalculation",
-    RecalculateStyles = "RecalculateStyles",
     UpdateLayoutTree = "UpdateLayoutTree",
     InvalidateLayout = "InvalidateLayout",
     Layerize = "Layerize",
@@ -199,8 +162,6 @@ export declare namespace TimelineModelImpl {
     const WorkerThreadName = "DedicatedWorker thread";
     const WorkerThreadNameLegacy = "DedicatedWorker Thread";
     const RendererMainThreadName = "CrRendererMain";
-    const BrowserMainThreadName = "CrBrowserMain";
-    const UtilityMainThreadNameSuffix = "CrUtilityMain";
     const DevToolsMetadataEvent: {
         TracingStartedInBrowser: string;
         TracingStartedInPage: string;
@@ -208,13 +169,6 @@ export declare namespace TimelineModelImpl {
         FrameCommittedInBrowser: string;
         ProcessReadyInBrowser: string;
         FrameDeletedInBrowser: string;
-    };
-    const Thresholds: {
-        LongTask: number;
-        Handler: number;
-        RecurringHandler: number;
-        ForcedLayout: number;
-        IdleCallbackAddon: number;
     };
 }
 export interface MetadataEvents {

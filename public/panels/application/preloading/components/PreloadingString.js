@@ -303,6 +303,21 @@ const UIStrings = {
      * Description text for PrenderFinalStatus::kActivationUrlHasEffectiveUrl.
      */
     prerenderFinalStatusActivationUrlHasEffectiveUrl: 'The prerender was not used because during activation time, navigation has an effective URL that is different from its normal URL. (For example, the New Tab Page, or hosted apps.)',
+    // TODO(nhiroki): Please provide meaningful description.
+    /**
+     * Description text for PrenderFinalStatus::kJavaScriptInterfaceAdded.
+     */
+    prerenderFinalStatusJavaScriptInterfaceAdded: 'Unknown',
+    // TODO(nhiroki): Please provide meaningful description.
+    /**
+     * Description text for PrenderFinalStatus::kJavaScriptInterfaceRemoved.
+     */
+    prerenderFinalStatusJavaScriptInterfaceRemoved: 'Unknown',
+    // TODO(nhiroki): Please provide meaningful description.
+    /**
+     * Description text for PrenderFinalStatus::kAllPrerenderingCanceled.
+     */
+    prerenderFinalStatusAllPrerenderingCanceled: 'Unknown',
     /**
      *@description Text in grid and details: Preloading attempt is not yet triggered.
      */
@@ -597,6 +612,12 @@ export function prerenderFailureReason(attempt) {
             return i18nString(UIStrings.prerenderFinalStatusRedirectedPrerenderingUrlHasEffectiveUrl);
         case "ActivationUrlHasEffectiveUrl" /* Protocol.Preload.PrerenderFinalStatus.ActivationUrlHasEffectiveUrl */:
             return i18nString(UIStrings.prerenderFinalStatusActivationUrlHasEffectiveUrl);
+        case "JavaScriptInterfaceAdded" /* Protocol.Preload.PrerenderFinalStatus.JavaScriptInterfaceAdded */:
+            return i18nString(UIStrings.prerenderFinalStatusJavaScriptInterfaceAdded);
+        case "JavaScriptInterfaceRemoved" /* Protocol.Preload.PrerenderFinalStatus.JavaScriptInterfaceRemoved */:
+            return i18nString(UIStrings.prerenderFinalStatusJavaScriptInterfaceRemoved);
+        case "AllPrerenderingCanceled" /* Protocol.Preload.PrerenderFinalStatus.AllPrerenderingCanceled */:
+            return i18nString(UIStrings.prerenderFinalStatusAllPrerenderingCanceled);
         default:
             // Note that we use switch and exhaustiveness check to prevent to
             // forget updating these strings, but allow to handle unknown

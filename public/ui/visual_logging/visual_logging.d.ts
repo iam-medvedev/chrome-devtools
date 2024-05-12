@@ -31,7 +31,7 @@ export declare const counter: (context?: string | undefined) => LoggingConfig.Co
  */
 export declare const controlPoint: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const cssColorMix: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
-export declare const cssQuery: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
+export declare const cssRuleHeader: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const deviceModeRuler: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const domBreakpoint: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const drawer: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
