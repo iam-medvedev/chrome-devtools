@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { describeWithDevtoolsExtension, getExtensionOrigin, } from '../../testing/ExtensionHelpers.js';
+import { FRAME_URL } from '../../testing/ResourceTreeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Extensions from '../extensions/extensions.js';
@@ -194,7 +195,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         await context.chrome.devtools?.recorder.unregisterRecorderExtensionPlugin(extensionPlugin);
     });
 });
-const allowedUrl = 'http://example.com';
+const allowedUrl = FRAME_URL;
 const blockedUrl = 'http://web.dev';
 const hostsPolicy = {
     runtimeAllowedHosts: [allowedUrl],

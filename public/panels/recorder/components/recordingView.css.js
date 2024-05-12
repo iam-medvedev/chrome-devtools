@@ -262,6 +262,12 @@ styles.replaceSync(
   gap: 12px;
 }
 
+.actions .separator {
+  width: 1px;
+  height: 24px;
+  background-color: var(--sys-color-divider);
+}
+
 .is-recording .header-title::before {
   background: var(--sys-color-error-bright);
 }

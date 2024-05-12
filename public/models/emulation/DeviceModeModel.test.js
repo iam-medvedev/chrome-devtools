@@ -68,32 +68,26 @@ describe('Rect', () => {
     });
 });
 describeWithMockConnection('DeviceModeModel', () => {
-    const tests = (targetFactory) => {
-        let target;
-        beforeEach(() => {
-            stubNoopSettings();
-            target = targetFactory();
-        });
-        it('shows hinge on main frame resize', () => {
-            EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
-            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            const setShowHinge = sinon.spy(target.overlayAgent(), 'invoke_setShowHinge');
-            resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameResized);
-            assert.isTrue(setShowHinge.calledOnce);
-        });
-        it('shows hinge on main frame navigation', () => {
-            EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
-            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            const setShowHinge = sinon.spy(target.overlayAgent(), 'invoke_setShowHinge');
-            resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {});
-            assert.isTrue(setShowHinge.calledOnce);
-        });
-    };
-    describe('without tab target', () => tests(createTarget));
-    describe('with tab target', () => tests(() => {
+    let target;
+    beforeEach(() => {
+        stubNoopSettings();
         const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
-        return createTarget({ parentTarget: tabTarget });
-    }));
+        target = createTarget({ parentTarget: tabTarget });
+    });
+    it('shows hinge on main frame resize', () => {
+        EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        const setShowHinge = sinon.spy(target.overlayAgent(), 'invoke_setShowHinge');
+        resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameResized);
+        assert.isTrue(setShowHinge.calledOnce);
+    });
+    it('shows hinge on main frame navigation', () => {
+        EmulationModel.DeviceModeModel.DeviceModeModel.instance({ forceNew: true });
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        const setShowHinge = sinon.spy(target.overlayAgent(), 'invoke_setShowHinge');
+        resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {});
+        assert.isTrue(setShowHinge.calledOnce);
+    });
 });
 //# sourceMappingURL=DeviceModeModel.test.js.map

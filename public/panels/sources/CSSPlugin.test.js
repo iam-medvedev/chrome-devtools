@@ -25,58 +25,52 @@ describe('CSSPlugin', () => {
     });
 });
 describeWithMockConnection('CSSPlugin', () => {
-    const classNameCompletion = (targetFactory) => {
-        beforeEach(() => {
-            sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
-                shortcutTitleForAction: () => { },
-                shortcutsForAction: () => [],
-                getShortcutListener: () => { },
-            });
-            targetFactory();
+    beforeEach(() => {
+        sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
+            shortcutTitleForAction: () => { },
+            shortcutsForAction: () => [],
+            getShortcutListener: () => { },
         });
-        function findAutocompletion(extensions) {
-            if ('value' in extensions && extensions.value.override) {
-                return extensions.value.override[0] || null;
-            }
-            if ('length' in extensions) {
-                for (let i = 0; i < extensions.length; ++i) {
-                    const result = findAutocompletion(extensions[i]);
-                    if (result) {
-                        return result;
-                    }
-                }
-            }
-            return null;
-        }
-        it('suggests CSS class names from the stylesheet', async () => {
-            const URL = 'http://example.com/styles.css';
-            const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
-            uiSourceCode.url.returns(URL);
-            const plugin = new CSSPlugin(uiSourceCode);
-            const autocompletion = findAutocompletion(plugin.editorExtension());
-            const FROM = 42;
-            sinon.stub(CodeMirror.Tree.prototype, 'resolveInner')
-                .returns({ name: 'ClassName', from: FROM });
-            const STYLESHEET_ID = 'STYLESHEET_ID';
-            sinon.stub(SDK.CSSModel.CSSModel.prototype, 'getStyleSheetIdsForURL').withArgs(URL).returns([STYLESHEET_ID]);
-            const CLASS_NAMES = ['foo', 'bar', 'baz'];
-            sinon.stub(SDK.CSSModel.CSSModel.prototype, 'getClassNames').withArgs(STYLESHEET_ID).resolves(CLASS_NAMES);
-            const completionResult = await autocompletion({ state: { field: () => { } } });
-            assert.deepStrictEqual(completionResult, {
-                from: FROM,
-                options: [
-                    { type: 'constant', label: CLASS_NAMES[0] },
-                    { type: 'constant', label: CLASS_NAMES[1] },
-                    { type: 'constant', label: CLASS_NAMES[2] },
-                ],
-            });
-        });
-    };
-    describe('class name completion without tab target', () => classNameCompletion(createTarget));
-    describe('class name completion with tab target', () => classNameCompletion(() => {
         const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
-        return createTarget({ parentTarget: tabTarget });
-    }));
+        createTarget({ parentTarget: tabTarget });
+    });
+    function findAutocompletion(extensions) {
+        if ('value' in extensions && extensions.value.override) {
+            return extensions.value.override[0] || null;
+        }
+        if ('length' in extensions) {
+            for (let i = 0; i < extensions.length; ++i) {
+                const result = findAutocompletion(extensions[i]);
+                if (result) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+    it('suggests CSS class names from the stylesheet', async () => {
+        const URL = 'http://example.com/styles.css';
+        const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
+        uiSourceCode.url.returns(URL);
+        const plugin = new CSSPlugin(uiSourceCode);
+        const autocompletion = findAutocompletion(plugin.editorExtension());
+        const FROM = 42;
+        sinon.stub(CodeMirror.Tree.prototype, 'resolveInner')
+            .returns({ name: 'ClassName', from: FROM });
+        const STYLESHEET_ID = 'STYLESHEET_ID';
+        sinon.stub(SDK.CSSModel.CSSModel.prototype, 'getStyleSheetIdsForURL').withArgs(URL).returns([STYLESHEET_ID]);
+        const CLASS_NAMES = ['foo', 'bar', 'baz'];
+        sinon.stub(SDK.CSSModel.CSSModel.prototype, 'getClassNames').withArgs(STYLESHEET_ID).resolves(CLASS_NAMES);
+        const completionResult = await autocompletion({ state: { field: () => { } } });
+        assert.deepStrictEqual(completionResult, {
+            from: FROM,
+            options: [
+                { type: 'constant', label: CLASS_NAMES[0] },
+                { type: 'constant', label: CLASS_NAMES[1] },
+                { type: 'constant', label: CLASS_NAMES[2] },
+            ],
+        });
+    });
 });
 //# sourceMappingURL=CSSPlugin.test.js.map

@@ -19,7 +19,7 @@ describeWithEnvironment('FilmStripView', function () {
         return filmStripView;
     }
     it('generates frames and timestamps', async function () {
-        const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
+        const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
         const filmStrip = await renderView(TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData));
         const renderedFrames = Array.from(filmStrip.contentElement.querySelectorAll('button.frame'));
         assert.lengthOf(renderedFrames, 5);
@@ -57,7 +57,7 @@ describeWithEnvironment('FilmStripView', function () {
             return { dialog: dialogWidget, shadowRoot: containerShadowRoot };
         }
         it('renders and shows the provided frame by default', async function () {
-            const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, 0);
             const renderedImage = shadowRoot.querySelector('[data-film-strip-dialog-img]');
@@ -65,7 +65,7 @@ describeWithEnvironment('FilmStripView', function () {
             dialog.hide();
         });
         it('does not let the user navigate back if they are at the first frame already', async function () {
-            const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, 0);
             const previousBtn = shadowRoot.querySelector('devtools-button');
@@ -80,7 +80,7 @@ describeWithEnvironment('FilmStripView', function () {
             dialog.hide();
         });
         it('lets the user navigate back to the previous frame with the mouse', async function () {
-            const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, 1);
             const previousBtn = shadowRoot.querySelector('devtools-button');
@@ -95,7 +95,7 @@ describeWithEnvironment('FilmStripView', function () {
             dialog.hide();
         });
         it('lets the user navigate back to the previous frame with the keyboard', async function () {
-            const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, 1);
             const renderedImage = shadowRoot.querySelector('[data-film-strip-dialog-img]');
@@ -111,7 +111,7 @@ describeWithEnvironment('FilmStripView', function () {
             dialog.hide();
         });
         it('lets the user navigate forwards to the next frame with the mouse', async function () {
-            const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, 0);
             const nextBtn = shadowRoot.querySelectorAll('devtools-button')[1];
@@ -126,7 +126,7 @@ describeWithEnvironment('FilmStripView', function () {
             dialog.hide();
         });
         it('does not let the user go beyond the last image', async function () {
-            const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const numberOfFrames = filmStrip.frames.length;
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, numberOfFrames - 1);
@@ -144,7 +144,7 @@ describeWithEnvironment('FilmStripView', function () {
             dialog.hide();
         });
         it('lets the user navigate forwards to the next frame with the keyboard', async function () {
-            const { traceParsedData } = await TraceLoader.allModels(this, 'web-dev.json.gz');
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const filmStrip = TraceEngine.Extras.FilmStrip.fromTraceData(traceParsedData);
             const { dialog, shadowRoot } = await renderDialogWithTraceEngine(filmStrip, 0);
             const renderedImage = shadowRoot.querySelector('[data-film-strip-dialog-img]');

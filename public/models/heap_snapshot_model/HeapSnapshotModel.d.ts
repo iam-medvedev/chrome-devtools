@@ -136,6 +136,7 @@ export declare class NodeFilter {
     minNodeId: number | undefined;
     maxNodeId: number | undefined;
     allocationNodeId: number | undefined;
+    filterName: string | undefined;
     constructor(minNodeId?: number, maxNodeId?: number);
     equals(o: NodeFilter): boolean;
 }

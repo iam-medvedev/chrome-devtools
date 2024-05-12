@@ -399,7 +399,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
             if (gcNode && node === gcNode) {
                 // GC samples have no stack, so we just put GC node on top of the last recorded sample.
                 gcParentNode = prevNode;
-                openFrameCallback(gcParentNode.depth + 1, gcNode, sampleTime);
+                openFrameCallback(gcParentNode.depth + 1, gcNode, sampleIndex, sampleTime);
                 stackStartTimes[++stackTop] = sampleTime;
                 stackChildrenDuration[stackTop] = 0;
                 prevId = id;
@@ -410,7 +410,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
                 const start = stackStartTimes[stackTop];
                 const duration = sampleTime - start;
                 stackChildrenDuration[stackTop - 1] += duration;
-                closeFrameCallback(gcParentNode.depth + 1, gcNode, start, duration, duration - stackChildrenDuration[stackTop]);
+                closeFrameCallback(gcParentNode.depth + 1, gcNode, sampleIndex, start, duration, duration - stackChildrenDuration[stackTop]);
                 --stackTop;
                 prevNode = gcParentNode;
                 prevId = prevNode.id;
@@ -445,7 +445,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
                 const start = stackStartTimes[stackTop];
                 const duration = sampleTime - start;
                 stackChildrenDuration[stackTop - 1] += duration;
-                closeFrameCallback(prevNode.depth, prevNode, start, duration, duration - stackChildrenDuration[stackTop]);
+                closeFrameCallback(prevNode.depth, prevNode, sampleIndex, start, duration, duration - stackChildrenDuration[stackTop]);
                 --stackTop;
                 // Track calls to open after previous calls were closed
                 // In the example above, this would add E to the tracking stack.
@@ -462,7 +462,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
                     break;
                 }
                 node = currentNode;
-                openFrameCallback(currentNode.depth, currentNode, sampleTime);
+                openFrameCallback(currentNode.depth, currentNode, sampleIndex, sampleTime);
                 stackStartTimes[++stackTop] = sampleTime;
                 stackChildrenDuration[stackTop] = 0;
             }
@@ -474,7 +474,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
             const start = stackStartTimes[stackTop];
             const duration = sampleTime - start;
             stackChildrenDuration[stackTop - 1] += duration;
-            closeFrameCallback(gcParentNode.depth + 1, node, start, duration, duration - stackChildrenDuration[stackTop]);
+            closeFrameCallback(gcParentNode.depth + 1, node, sampleIndex, start, duration, duration - stackChildrenDuration[stackTop]);
             --stackTop;
             prevId = gcParentNode.id;
         }
@@ -482,7 +482,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
             const start = stackStartTimes[stackTop];
             const duration = sampleTime - start;
             stackChildrenDuration[stackTop - 1] += duration;
-            closeFrameCallback(node.depth, node, start, duration, duration - stackChildrenDuration[stackTop]);
+            closeFrameCallback(node.depth, node, sampleIndex, start, duration, duration - stackChildrenDuration[stackTop]);
             --stackTop;
         }
     }

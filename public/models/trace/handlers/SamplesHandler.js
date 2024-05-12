@@ -30,17 +30,23 @@ function buildProfileCalls() {
             const profileModel = new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(preProcessedData.rawProfile);
             const profileTree = Helpers.TreeHelpers.makeEmptyTraceEntryTree();
             profileTree.maxDepth = profileModel.maxDepth;
-            const finalizedData = { rawProfile: preProcessedData.rawProfile, parsedProfile: profileModel, profileCalls: [], profileTree };
+            const finalizedData = {
+                rawProfile: preProcessedData.rawProfile,
+                parsedProfile: profileModel,
+                profileCalls: [],
+                profileTree,
+                profileId,
+            };
             const dataByThread = Platform.MapUtilities.getWithDefault(profilesInProcess, processId, () => new Map());
             profileModel.forEachFrame(openFrameCallback, closeFrameCallback);
             dataByThread.set(threadId, finalizedData);
-            function openFrameCallback(depth, node, timeStampMs) {
+            function openFrameCallback(depth, node, sampleIndex, timeStampMilliseconds) {
                 if (threadId === undefined) {
                     return;
                 }
-                const ts = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(timeStampMs));
+                const ts = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(timeStampMilliseconds));
                 const nodeId = node.id;
-                const profileCall = Helpers.Trace.makeProfileCall(node, ts, processId, threadId);
+                const profileCall = Helpers.Trace.makeProfileCall(node, profileId, sampleIndex, ts, processId, threadId);
                 finalizedData.profileCalls.push(profileCall);
                 indexStack.push(finalizedData.profileCalls.length - 1);
                 const traceEntryNode = Helpers.TreeHelpers.makeEmptyTraceEntryNode(profileCall, nodeId);
@@ -51,7 +57,7 @@ function buildProfileCalls() {
                     finalizedData.profileTree?.roots.add(traceEntryNode);
                 }
             }
-            function closeFrameCallback(_depth, node, _timeStamp, durMs, selfTimeMs) {
+            function closeFrameCallback(_depth, _node, _sampleIndex, _timeStampMillis, durMs, selfTimeMs) {
                 const profileCallIndex = indexStack.pop();
                 const profileCall = profileCallIndex !== undefined && finalizedData.profileCalls[profileCallIndex];
                 if (!profileCall) {

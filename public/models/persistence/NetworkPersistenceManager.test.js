@@ -7,6 +7,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createWorkspaceProject, setUpEnvironment } from '../../testing/OverridesHelpers.js';
+import { setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Persistence from '../persistence/persistence.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -76,11 +77,18 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         ];
         assert.deepStrictEqual(patterns, expected);
     });
+    it('recognizes forbidden network URLs', () => {
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl('chrome://version'));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl('https://chromewebstore.google.com/index.html'));
+        assert.isTrue(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl('https://chrome.google.com/script.js'));
+        assert.isFalse(Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl('https://www.example.com/script.js'));
+    });
 });
 describeWithMockConnection('NetworkPersistenceManager', () => {
     let networkPersistenceManager;
     beforeEach(async () => {
         SDK.NetworkManager.MultitargetNetworkManager.dispose();
+        setMockResourceTree(false);
         const target = createTarget();
         networkPersistenceManager =
             await createWorkspaceProject('file:///path/to/overrides', [

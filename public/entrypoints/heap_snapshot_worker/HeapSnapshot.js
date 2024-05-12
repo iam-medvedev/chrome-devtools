@@ -302,6 +302,9 @@ export class HeapSnapshotNode {
     isArray() {
         throw new Error('Not implemented');
     }
+    isSynthetic() {
+        throw new Error('Not implemented');
+    }
     isDocumentDOMTreesRoot() {
         throw new Error('Not implemented');
     }
@@ -355,6 +358,22 @@ export class HeapSnapshotNode {
     rawType() {
         const snapshot = this.snapshot;
         return snapshot.nodes.getValue(this.nodeIndex + snapshot.nodeTypeOffset);
+    }
+    isFlatConsString() {
+        if (this.rawType() !== this.snapshot.nodeConsStringType) {
+            return false;
+        }
+        for (let iter = this.edges(); iter.hasNext(); iter.next()) {
+            const edge = iter.edge;
+            if (!edge.isInternal()) {
+                continue;
+            }
+            const edgeName = edge.name();
+            if ((edgeName === 'first' || edgeName === 'second') && edge.node().name() === '') {
+                return true;
+            }
+        }
+        return false;
     }
 }
 export class HeapSnapshotNodeIterator {
@@ -486,6 +505,7 @@ export class HeapSnapshot {
     nodeHiddenType;
     nodeObjectType;
     nodeNativeType;
+    nodeStringType;
     nodeConsStringType;
     nodeSlicedStringType;
     nodeCodeType;
@@ -560,6 +580,7 @@ export class HeapSnapshot {
         this.nodeHiddenType = this.nodeTypes.indexOf('hidden');
         this.nodeObjectType = this.nodeTypes.indexOf('object');
         this.nodeNativeType = this.nodeTypes.indexOf('native');
+        this.nodeStringType = this.nodeTypes.indexOf('string');
         this.nodeConsStringType = this.nodeTypes.indexOf('concatenated string');
         this.nodeSlicedStringType = this.nodeTypes.indexOf('sliced string');
         this.nodeCodeType = this.nodeTypes.indexOf('code');
@@ -717,9 +738,7 @@ export class HeapSnapshot {
         return this.firstDominatedNodeIndex[nodeIndex / this.nodeFieldCount];
     }
     createFilter(nodeFilter) {
-        const minNodeId = nodeFilter.minNodeId;
-        const maxNodeId = nodeFilter.maxNodeId;
-        const allocationNodeId = nodeFilter.allocationNodeId;
+        const { minNodeId, maxNodeId, allocationNodeId, filterName } = nodeFilter;
         let filter;
         if (typeof allocationNodeId === 'number') {
             filter = this.createAllocationStackFilter(allocationNodeId);
@@ -733,6 +752,11 @@ export class HeapSnapshot {
             filter = this.createNodeIdFilter(minNodeId, maxNodeId);
             // @ts-ignore key can be added as a static property
             filter.key = 'NodeIdRange: ' + minNodeId + '..' + maxNodeId;
+        }
+        else if (filterName !== undefined) {
+            filter = this.createNamedFilter(filterName);
+            // @ts-ignore key can be added as a static property
+            filter.key = 'NamedFilter: ' + filterName;
         }
         return filter;
     }
@@ -804,6 +828,90 @@ export class HeapSnapshot {
             return Boolean(set[node.traceNodeId()]);
         }
         return traceIdFilter;
+    }
+    createNamedFilter(filterName) {
+        // Allocate an array with a single bit per node, which can be used by each
+        // specific filter implemented below.
+        const bitmap = new Uint8Array(Math.ceil(this.nodeCount / 8));
+        const getBit = (node) => {
+            const ordinal = node.nodeIndex / this.nodeFieldCount;
+            const value = bitmap[ordinal >> 3] & (1 << (ordinal & 7));
+            return value !== 0;
+        };
+        const setBit = (nodeOrdinal) => {
+            bitmap[nodeOrdinal >> 3] |= (1 << (nodeOrdinal & 7));
+        };
+        // Traverses the graph in breadth-first order with the given filter, and
+        // sets the bit in `bitmap` for every visited node.
+        const traverse = (filter) => {
+            const distances = new Int32Array(this.nodeCount);
+            for (let i = 0; i < this.nodeCount; ++i) {
+                distances[i] = this.#noDistance;
+            }
+            const nodesToVisit = new Uint32Array(this.nodeCount);
+            distances[this.rootNode().ordinal()] = 0;
+            nodesToVisit[0] = this.rootNode().nodeIndex;
+            const nodesToVisitLength = 1;
+            this.bfs(nodesToVisit, nodesToVisitLength, distances, filter);
+            for (let i = 0; i < this.nodeCount; ++i) {
+                if (distances[i] !== this.#noDistance) {
+                    setBit(i);
+                }
+            }
+        };
+        const markUnreachableNodes = () => {
+            for (let i = 0; i < this.nodeCount; ++i) {
+                if (this.nodeDistances[i] === this.#noDistance) {
+                    setBit(i);
+                }
+            }
+        };
+        switch (filterName) {
+            case 'objectsRetainedByDetachedDomNodes':
+                // Traverse the graph, avoiding detached nodes.
+                traverse((node, edge) => {
+                    return this.nodes.getValue(edge.nodeIndex() + this.#nodeDetachednessOffset) !== 2 /* DOMLinkState.Detached */;
+                });
+                markUnreachableNodes();
+                return (node) => !getBit(node);
+            case 'objectsRetainedByConsole':
+                // Traverse the graph, avoiding edges that represent globals owned by
+                // the DevTools console.
+                traverse((node, edge) => {
+                    return !(node.isSynthetic() && edge.hasStringName() && edge.name().endsWith(' / DevTools console'));
+                });
+                markUnreachableNodes();
+                return (node) => !getBit(node);
+            case 'duplicatedStrings': {
+                const stringToNodeIndexMap = new Map();
+                const node = this.createNode(0);
+                for (let i = 0; i < this.nodeCount; ++i) {
+                    node.nodeIndex = i * this.nodeFieldCount;
+                    const rawType = node.rawType();
+                    if (rawType === this.nodeStringType || rawType === this.nodeConsStringType) {
+                        // Check whether the cons string is already "flattened", meaning
+                        // that one of its two parts is the empty string. If so, we should
+                        // skip it. We don't help anyone by reporting a flattened cons
+                        // string as a duplicate with its own content, since V8 controls
+                        // that behavior internally.
+                        if (node.isFlatConsString()) {
+                            continue;
+                        }
+                        const name = node.name();
+                        const alreadyVisitedNodeIndex = stringToNodeIndexMap.get(name);
+                        if (alreadyVisitedNodeIndex === undefined) {
+                            stringToNodeIndexMap.set(name, node.nodeIndex);
+                        }
+                        else {
+                            setBit(alreadyVisitedNodeIndex / this.nodeFieldCount);
+                            setBit(node.nodeIndex / this.nodeFieldCount);
+                        }
+                    }
+                }
+                return getBit;
+            }
+        }
+        throw new Error('Invalid filter name');
     }
     getAggregatesByClassName(sortedIndexes, key, filter) {
         const aggregates = this.buildAggregates(filter);

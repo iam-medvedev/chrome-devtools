@@ -3908,6 +3908,9 @@
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusActivationUrlHasEffectiveUrl": {
     "message": "T̂h́ê ṕr̂ér̂én̂d́êŕ ŵáŝ ńôt́ ûśêd́ b̂éĉáûśê d́ûŕîńĝ áĉt́îv́ât́îón̂ t́îḿê, ńâv́îǵât́îón̂ h́âś âń êf́f̂éĉt́îv́ê ÚR̂Ĺ t̂h́ât́ îś d̂íf̂f́êŕêńt̂ f́r̂óm̂ ít̂ś n̂ór̂ḿâĺ ÛŔL̂. (F́ôŕ êx́âḿp̂ĺê, t́ĥé N̂éŵ T́âb́ P̂áĝé, ôŕ ĥóŝt́êd́ âṕp̂ś.)"
   },
+  "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusAllPrerenderingCanceled": {
+    "message": "Ûńk̂ńôẃn̂"
+  },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusAudioOutputDeviceRequested": {
     "message": "T̂h́ê ṕr̂ér̂én̂d́êŕêd́ p̂áĝé r̂éq̂úêśt̂éd̂ áûd́îó ôút̂ṕût́, ŵh́îćĥ íŝ ćûŕr̂én̂t́l̂ý n̂ót̂ śûṕp̂ór̂t́êd́."
   },
@@ -3946,6 +3949,12 @@
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusInvalidSchemeRedirect": {
     "message": "T̂h́ê ṕr̂ér̂én̂d́êŕîńĝ ńâv́îǵât́îón̂ f́âíl̂éd̂ b́êćâúŝé ît́ r̂éd̂ír̂éĉt́êd́ t̂ó â ÚR̂Ĺ ŵh́ôśê śĉh́êḿê ẃâś n̂ót̂ h́t̂t́p̂: ór̂ h́t̂t́p̂ś:."
+  },
+  "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusJavaScriptInterfaceAdded": {
+    "message": "Ûńk̂ńôẃn̂"
+  },
+  "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusJavaScriptInterfaceRemoved": {
+    "message": "Ûńk̂ńôẃn̂"
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusLoginAuthRequested": {
     "message": "T̂h́ê ṕr̂ér̂én̂d́êŕîńĝ ńâv́îǵât́îón̂ ŕêq́ûír̂éd̂ H́T̂T́P̂ áût́ĥén̂t́îćât́îón̂, ẃĥíĉh́ îś ĉúr̂ŕêńt̂ĺŷ ńôt́ ŝúp̂ṕôŕt̂éd̂."
@@ -9401,6 +9410,9 @@
   "panels/profiler/HeapSnapshotView.ts | containment": {
     "message": "Ĉón̂t́âín̂ḿêńt̂"
   },
+  "panels/profiler/HeapSnapshotView.ts | duplicatedStrings": {
+    "message": "D̂úp̂ĺîćât́êd́ ŝt́r̂ín̂ǵŝ"
+  },
   "panels/profiler/HeapSnapshotView.ts | exposeInternals": {
     "message": "Êx́p̂óŝé îńt̂ér̂ńâĺŝ (ín̂ćl̂úd̂éŝ ád̂d́ît́îón̂ál̂ ím̂ṕl̂ém̂én̂t́ât́îón̂-śp̂éĉíf̂íĉ d́êt́âíl̂ś)"
   },
@@ -9439,6 +9451,12 @@
   },
   "panels/profiler/HeapSnapshotView.ts | objectsAllocatedBetweenSAndS": {
     "message": "Ôb́ĵéĉt́ŝ ál̂ĺôćât́êd́ b̂ét̂ẃêén̂ {PH1} án̂d́ {PH2}"
+  },
+  "panels/profiler/HeapSnapshotView.ts | objectsRetainedByConsole": {
+    "message": "Ôb́ĵéĉt́ŝ ŕêt́âín̂éd̂ b́ŷ t́ĥé D̂év̂T́ôól̂ś ĉón̂śôĺê"
+  },
+  "panels/profiler/HeapSnapshotView.ts | objectsRetainedByDetachedDomNodes": {
+    "message": "Ôb́ĵéĉt́ŝ ŕêt́âín̂éd̂ b́ŷ d́êt́âćĥéd̂ D́ÔḾ n̂ód̂éŝ"
   },
   "panels/profiler/HeapSnapshotView.ts | percentagePlaceholder": {
     "message": "{PH1}%"
@@ -9992,34 +10010,37 @@
   "panels/recorder/components/RecordingView.ts | upload": {
     "message": "Ûṕl̂óâd́: {value}"
   },
-  "panels/recorder/components/ReplayButton.ts | extensionGroup": {
+  "panels/recorder/components/ReplaySection.ts | extensionGroup": {
     "message": "Êx́t̂én̂śîón̂ś"
   },
-  "panels/recorder/components/ReplayButton.ts | ReplayExtremelySlowButtonLabel": {
-    "message": "Êx́t̂ŕêḿêĺŷ śl̂óŵ ŕêṕl̂áŷ"
-  },
-  "panels/recorder/components/ReplayButton.ts | ReplayExtremelySlowItemLabel": {
-    "message": "Êx́t̂ŕêḿêĺŷ śl̂óŵ"
-  },
-  "panels/recorder/components/ReplayButton.ts | ReplayNormalButtonLabel": {
+  "panels/recorder/components/ReplaySection.ts | Replay": {
     "message": "R̂ép̂ĺâý"
   },
-  "panels/recorder/components/ReplayButton.ts | ReplayNormalItemLabel": {
+  "panels/recorder/components/ReplaySection.ts | ReplayExtremelySlowButtonLabel": {
+    "message": "Êx́t̂ŕêḿêĺŷ śl̂óŵ śp̂éêd́"
+  },
+  "panels/recorder/components/ReplaySection.ts | ReplayExtremelySlowItemLabel": {
+    "message": "Êx́t̂ŕêḿêĺŷ śl̂óŵ"
+  },
+  "panels/recorder/components/ReplaySection.ts | ReplayNormalButtonLabel": {
+    "message": "N̂ór̂ḿâĺ ŝṕêéd̂"
+  },
+  "panels/recorder/components/ReplaySection.ts | ReplayNormalItemLabel": {
     "message": "N̂ór̂ḿâĺ (D̂éf̂áûĺt̂)"
   },
-  "panels/recorder/components/ReplayButton.ts | ReplaySlowButtonLabel": {
-    "message": "Ŝĺôẃ r̂ép̂ĺâý"
+  "panels/recorder/components/ReplaySection.ts | ReplaySlowButtonLabel": {
+    "message": "Ŝĺôẃ ŝṕêéd̂"
   },
-  "panels/recorder/components/ReplayButton.ts | ReplaySlowItemLabel": {
+  "panels/recorder/components/ReplaySection.ts | ReplaySlowItemLabel": {
     "message": "Ŝĺôẃ"
   },
-  "panels/recorder/components/ReplayButton.ts | ReplayVerySlowButtonLabel": {
-    "message": "V̂ér̂ý ŝĺôẃ r̂ép̂ĺâý"
+  "panels/recorder/components/ReplaySection.ts | ReplayVerySlowButtonLabel": {
+    "message": "V̂ér̂ý ŝĺôẃ ŝṕêéd̂"
   },
-  "panels/recorder/components/ReplayButton.ts | ReplayVerySlowItemLabel": {
+  "panels/recorder/components/ReplaySection.ts | ReplayVerySlowItemLabel": {
     "message": "V̂ér̂ý ŝĺôẃ"
   },
-  "panels/recorder/components/ReplayButton.ts | speedGroup": {
+  "panels/recorder/components/ReplaySection.ts | speedGroup": {
     "message": "Ŝṕêéd̂"
   },
   "panels/recorder/components/StartView.ts | createRecording": {
@@ -12846,7 +12867,7 @@
     "message": "Êńâb́l̂é âd́v̂án̂ćêd́ p̂áîńt̂ ín̂śt̂ŕûḿêńt̂át̂íôń (ŝĺôẃ)"
   },
   "panels/timeline/TimelinePanel.ts | enableSelectorStats": {
-    "message": "Êńâb́l̂é ĈŚŜ śêĺêćt̂ór̂ śt̂át̂ś"
+    "message": "Êńâb́l̂é ĈŚŜ śêĺêćt̂ór̂ śt̂át̂ś (ŝĺôẃ)"
   },
   "panels/timeline/TimelinePanel.ts | failedToSaveTimelineSS": {
     "message": "F̂áîĺêd́ t̂ó ŝáv̂é t̂ím̂él̂ín̂é: {PH1} ({PH2})"

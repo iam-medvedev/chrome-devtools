@@ -138,7 +138,6 @@ export class ThreadAppender {
     #headerAppended = false;
     threadType = "MAIN_THREAD" /* TraceEngine.Handlers.Threads.ThreadType.MAIN_THREAD */;
     isOnMainFrame;
-    #ignoreListingEnabled = Root.Runtime.experiments.isEnabled('ignore-list-js-frames-on-timeline');
     #showAllEventsEnabled = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
     #url = '';
     #headerNestingLevel = null;
@@ -456,9 +455,6 @@ export class ThreadAppender {
         });
     }
     isIgnoreListedEntry(entry) {
-        if (!this.#ignoreListingEnabled) {
-            return false;
-        }
         if (!TraceEngine.Types.TraceEvents.isProfileCall(entry)) {
             return false;
         }

@@ -102,6 +102,7 @@ export declare class HeapSnapshotNode implements HeapSnapshotItem {
     isUserRoot(): boolean;
     isHidden(): boolean;
     isArray(): boolean;
+    isSynthetic(): boolean;
     isDocumentDOMTreesRoot(): boolean;
     name(): string;
     retainedSize(): number;
@@ -118,6 +119,7 @@ export declare class HeapSnapshotNode implements HeapSnapshotItem {
     ordinal(): number;
     nextNodeIndex(): number;
     rawType(): number;
+    isFlatConsString(): boolean;
 }
 export declare class HeapSnapshotNodeIterator implements HeapSnapshotItemIterator {
     #private;
@@ -191,6 +193,7 @@ export declare abstract class HeapSnapshot {
     nodeHiddenType: number;
     nodeObjectType: number;
     nodeNativeType: number;
+    nodeStringType: number;
     nodeConsStringType: number;
     nodeSlicedStringType: number;
     nodeCodeType: number;
@@ -238,6 +241,7 @@ export declare abstract class HeapSnapshot {
     };
     private createNodeIdFilter;
     private createAllocationStackFilter;
+    private createNamedFilter;
     getAggregatesByClassName(sortedIndexes: boolean, key?: string, filter?: ((arg0: HeapSnapshotNode) => boolean)): {
         [x: string]: HeapSnapshotModel.HeapSnapshotModel.Aggregate;
     };

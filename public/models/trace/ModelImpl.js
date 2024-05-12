@@ -25,7 +25,7 @@ export class Model extends EventTarget {
     #recordingsAvailable = [];
     #lastRecordingIndex = 0;
     #processor;
-    #config = Types.Configuration.DEFAULT;
+    #config = Types.Configuration.defaults();
     static createWithAllHandlers(config) {
         return new Model(Handlers.ModelHandlers, config);
     }
@@ -35,15 +35,6 @@ export class Model extends EventTarget {
             this.#config = config;
         }
         this.#processor = new TraceProcessor(handlers, this.#config);
-    }
-    /**
-     * Updates the configuration. Useful if a user changes a setting - this lets
-     * us update the model without having to destroy it and recreate it with the
-     * new settings.
-     */
-    updateConfiguration(config) {
-        this.#config = config;
-        this.#processor.updateConfiguration(config);
     }
     /**
      * Parses an array of trace events into a structured object containing all the

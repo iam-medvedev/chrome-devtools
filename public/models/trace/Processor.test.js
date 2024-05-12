@@ -107,21 +107,15 @@ describeWithEnvironment('TraceProcessor', function () {
             Renderer: TraceModel.Handlers.ModelHandlers.Renderer,
             Samples: TraceModel.Handlers.ModelHandlers.Samples,
             AuctionWorklets: TraceModel.Handlers.ModelHandlers.AuctionWorklets,
-        }, {
-            ...TraceModel.Types.Configuration.DEFAULT,
-            processing: {
-                ...TraceModel.Types.Configuration.DEFAULT.processing,
-                // This trace is 8252 events long, lets emit 8 updates
-                eventsPerChunk: 1_000,
-            },
-        });
+        }, TraceModel.Types.Configuration.defaults());
         let updateEventCount = 0;
         processor.addEventListener(TraceModel.Processor.TraceParseProgressEvent.eventName, () => {
             updateEventCount++;
         });
-        const rawEvents = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
+        const rawEvents = await TraceLoader.rawEvents(this, 'web-dev-outermost-frames.json.gz');
+        // This trace has 106,110 events. At default of 50k chunks we should see 2 updates
         await processor.parse(rawEvents).then(() => {
-            assert.strictEqual(updateEventCount, 8);
+            assert.strictEqual(updateEventCount, 2);
         });
     });
     describe('handler sorting', () => {

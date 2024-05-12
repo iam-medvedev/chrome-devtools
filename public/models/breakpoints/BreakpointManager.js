@@ -57,11 +57,9 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#workspace = workspace;
         this.targetManager = targetManager;
         this.debuggerWorkspaceBinding = debuggerWorkspaceBinding;
-        if (Root.Runtime.experiments.isEnabled("set-all-breakpoints-eagerly" /* Root.Runtime.ExperimentName.SET_ALL_BREAKPOINTS_EAGERLY */)) {
-            this.storage.mute();
-            this.#setInitialBreakpoints(restoreInitialBreakpointCount ?? INITIAL_RESTORE_BREAKPOINT_COUNT);
-            this.storage.unmute();
-        }
+        this.storage.mute();
+        this.#setInitialBreakpoints(restoreInitialBreakpointCount ?? INITIAL_RESTORE_BREAKPOINT_COUNT);
+        this.storage.unmute();
         this.#workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAdded, this);
         this.#workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemoved, this);
         this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.projectRemoved, this);
@@ -465,9 +463,6 @@ export class Breakpoint {
     }
     updateLastResolvedState(locations) {
         this.#lastResolvedState = locations;
-        if (!Root.Runtime.experiments.isEnabled("set-all-breakpoints-eagerly" /* Root.Runtime.ExperimentName.SET_ALL_BREAKPOINTS_EAGERLY */)) {
-            return;
-        }
         let locationsOrUndefined = undefined;
         if (locations) {
             locationsOrUndefined = locations.map(p => ({ url: p.url, lineNumber: p.lineNumber, columnNumber: p.columnNumber, condition: p.condition }));

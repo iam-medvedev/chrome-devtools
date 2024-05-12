@@ -7,6 +7,7 @@ import * as ComponentHelpers from '../../helpers/helpers.js';
 await ComponentHelpers.ComponentServerSetup.setup();
 await FrontendHelpers.initializeGlobalVars();
 const testIcon = 'file-image';
+const toggledIconName = 'file-document';
 const plusIcon = 'plus';
 const minusIcon = 'minus';
 function appendButton(button) {
@@ -185,6 +186,28 @@ secondaryIconOnlyButton.data = {
     iconName: testIcon,
 };
 appendButton(secondaryIconOnlyButton);
+// Primary Toggle
+const primaryToggleIconButton = new Buttons.Button.Button();
+primaryToggleIconButton.style.width = '24px';
+primaryToggleIconButton.data = {
+    variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
+    toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
+    iconName: testIcon,
+    toggledIconName: toggledIconName,
+    toggled: false,
+};
+appendButton(primaryToggleIconButton);
+// Red Toggle
+const redToggleIconButton = new Buttons.Button.Button();
+redToggleIconButton.style.width = '24px';
+redToggleIconButton.data = {
+    variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
+    toggleType: "red-toggle" /* Buttons.Button.ToggleType.RED */,
+    iconName: testIcon,
+    toggledIconName: toggledIconName,
+    toggled: true,
+};
+appendButton(redToggleIconButton);
 // Small Primary Icon
 const smallPrimaryIconButton = new Buttons.Button.Button();
 smallPrimaryIconButton.innerText = 'Click me';

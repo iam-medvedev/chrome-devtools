@@ -251,12 +251,16 @@ export interface SyntheticNetworkRequest extends TraceEventComplete {
             frame: string;
             fromServiceWorker: boolean;
             isLinkPreload: boolean;
-            host: string;
             mimeType: string;
-            pathname: string;
-            search: string;
             priority: Protocol.Network.ResourcePriority;
             initialPriority: Protocol.Network.ResourcePriority;
+            /**
+             * This is the protocol used to resolve the request.
+             *
+             * Note, this is not the same as URL.protocol.
+             *
+             * Example values (not exhaustive): http/0.9, http/1.0, http/1.1, http, h2, h3-Q050, data, blob
+             */
             protocol: string;
             redirects: SyntheticNetworkRedirect[];
             renderBlocking: RenderBlocking;
@@ -712,6 +716,14 @@ export interface TraceEventResourceReceiveResponse extends TraceEventInstant {
     name: 'ResourceReceiveResponse';
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
+            /**
+             * This is the protocol used to resolve the request.
+             *
+             * Note, this is not the same as URL.protocol.
+             *
+             * Example values (not exhaustive): http/0.9, http/1.0, http/1.1, http, h2, h3-Q050, data, blob
+             */
+            protocol: string;
             encodedDataLength: number;
             frame: string;
             fromCache: boolean;
@@ -1024,10 +1036,32 @@ export interface SyntheticTraceEntry extends TraceEventData {
 /**
  * A profile call created in the frontend from samples disguised as a
  * trace event.
+ *
+ * We store the sampleIndex, profileId and nodeId so that we can easily link
+ * back a Synthetic Trace Entry to an indivdual Sample trace event within a
+ * Profile.
+ *
+ * Because a sample contains a set of call frames representing the stack at the
+ * point in time that the sample was created, we also have to store the ID of
+ * the Node that points to the function call that this profile call represents.
  */
 export interface SyntheticProfileCall extends SyntheticTraceEntry {
     callFrame: Protocol.Runtime.CallFrame;
     nodeId: Protocol.integer;
+    sampleIndex: number;
+    profileId: ProfileID;
+}
+/**
+ * A JS Sample reflects a single sample from the V8 CPU Profile
+ */
+export interface SyntheticJSSample extends SyntheticTraceEntry {
+    name: KnownEventName.JSSample;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            stackTrace: Protocol.Runtime.CallFrame[];
+        };
+    };
+    ph: Phase.INSTANT;
 }
 /**
  * A trace event augmented synthetically in the frontend to contain
@@ -1630,7 +1664,6 @@ export declare const enum KnownEventName {
     GCCollectGarbage = "BlinkGC.AtomicPhase",
     CPPGCSweep = "CppGC.IncrementalSweep",
     ScheduleStyleRecalculation = "ScheduleStyleRecalculation",
-    RecalculateStyles = "RecalculateStyles",
     Layout = "Layout",
     UpdateLayoutTree = "UpdateLayoutTree",
     InvalidateLayout = "InvalidateLayout",
@@ -1706,6 +1739,7 @@ export declare const enum KnownEventName {
     StartProfiling = "CpuProfiler::StartProfiling",
     ProfileChunk = "ProfileChunk",
     UpdateCounters = "UpdateCounters",
+    JSSample = "JSSample",
     Animation = "Animation",
     ParseAuthorStyleSheet = "ParseAuthorStyleSheet",
     EmbedderCallback = "EmbedderCallback",

@@ -72,19 +72,11 @@ export class TimelineLoader {
         });
         return loader;
     }
-    static getCpuProfileFilter() {
-        const visibleTypes = [];
-        visibleTypes.push(TimelineModel.TimelineModel.RecordType.JSFrame);
-        visibleTypes.push(TimelineModel.TimelineModel.RecordType.JSIdleFrame);
-        visibleTypes.push(TimelineModel.TimelineModel.RecordType.JSSystemFrame);
-        return new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter(visibleTypes);
-    }
     static loadFromCpuProfile(profile, client, title) {
         const loader = new TimelineLoader(client, title);
         loader.#traceIsCPUProfile = true;
         try {
             const events = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, /* tid */ 1, /* injectPageEvent */ true);
-            loader.filter = TimelineLoader.getCpuProfileFilter();
             window.setTimeout(async () => {
                 void loader.addEvents(events);
             });
@@ -226,7 +218,6 @@ export class TimelineLoader {
     }
     parseCPUProfileFormat(parsedTrace) {
         const traceEvents = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(parsedTrace, /* tid */ 1, /* injectPageEvent */ true);
-        this.filter = TimelineLoader.getCpuProfileFilter();
         this.tracingModel.addEvents(traceEvents);
         this.#collectEvents(traceEvents);
     }

@@ -32,7 +32,12 @@ import * as Types from '../types/types.js';
  */
 export declare class SamplesIntegrator {
     #private;
-    constructor(profileModel: CPUProfile.CPUProfileDataModel.CPUProfileDataModel, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID, configuration?: Types.Configuration.Configuration);
+    /**
+     * Keeps track of the individual samples from the CPU Profile.
+     * Only used with Debug Mode experiment enabled.
+     */
+    jsSampleEvents: Types.TraceEvents.SyntheticJSSample[];
+    constructor(profileModel: CPUProfile.CPUProfileDataModel.CPUProfileDataModel, profileId: Types.TraceEvents.ProfileID, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID, configuration?: Types.Configuration.Configuration);
     buildProfileCalls(traceEvents: Types.TraceEvents.TraceEventData[]): Types.TraceEvents.SyntheticProfileCall[];
     /**
      * Builds the initial calls with no duration from samples. Their

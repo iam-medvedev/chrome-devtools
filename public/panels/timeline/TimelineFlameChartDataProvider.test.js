@@ -1,12 +1,9 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../core/root/root.js';
-import * as SDK from '../../core/sdk/sdk.js';
-import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import * as Workspace from '../../models/workspace/workspace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as PerfUi from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from './timeline.js';
@@ -45,6 +42,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         });
     });
     it('adds candy stripe and triangle decorations to long tasks in the main thread', async function () {
+        setupIgnoreListManagerEnvironment();
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const traceParsedData = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
         dataProvider.setModel(traceParsedData);
@@ -92,19 +90,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
     });
     describe('ignoring frames', function () {
         it('removes entries from the data that match the ignored URL', async function () {
-            Root.Runtime.experiments.enableForTest('ignore-list-js-frames-on-timeline');
-            const targetManager = SDK.TargetManager.TargetManager.instance({ forceNew: true });
-            const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
-            const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-            const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
-                forceNew: true,
-                resourceMapping,
-                targetManager,
-            });
-            const ignoreListManager = Bindings.IgnoreListManager.IgnoreListManager.instance({
-                forceNew: true,
-                debuggerWorkspaceBinding,
-            });
+            const { ignoreListManager } = setupIgnoreListManagerEnvironment();
             const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
             const traceParsedData = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
             dataProvider.setModel(traceParsedData);

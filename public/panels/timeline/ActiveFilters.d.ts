@@ -11,5 +11,5 @@ export declare class ActiveFilters {
     static removeInstance(): void;
     activeFilters(): readonly TimelineModel.TimelineModelFilter.TimelineModelFilter[];
     setFilters(newFilters: TimelineModel.TimelineModelFilter.TimelineModelFilter[]): void;
-    isVisible(event: TraceEngine.Legacy.CompatibleTraceEvent): boolean;
+    isVisible(event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
 }

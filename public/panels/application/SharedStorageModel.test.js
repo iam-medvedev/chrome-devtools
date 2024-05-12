@@ -4,6 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import * as Resources from './application.js';
 class SharedStorageListener {
     #model;
@@ -138,6 +139,7 @@ describeWithMockConnection('SharedStorageModel', () => {
         },
     ];
     beforeEach(() => {
+        setMockResourceTree(false);
         target = createTarget();
         sharedStorageModel = target.model(Resources.SharedStorageModel.SharedStorageModel);
         listener = new SharedStorageListener(sharedStorageModel);

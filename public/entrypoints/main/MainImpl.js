@@ -243,7 +243,6 @@ export class MainImpl {
     #initializeExperiments() {
         Root.Runtime.experiments.register('apply-custom-stylesheet', 'Allow extensions to load custom stylesheets');
         Root.Runtime.experiments.register('capture-node-creation-stacks', 'Capture node creation stacks');
-        Root.Runtime.experiments.register('ignore-list-js-frames-on-timeline', 'Ignore list for JavaScript frames in Performance panel', true);
         Root.Runtime.experiments.register('live-heap-profile', 'Live heap profile', true);
         Root.Runtime.experiments.register('protocol-monitor', 'Protocol Monitor', undefined, 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor');
         Root.Runtime.experiments.register('sampling-heap-profiler-timeline', 'Sampling heap profiler timeline', true);
@@ -262,7 +261,6 @@ export class MainImpl {
         /* unstable= */ false, 'https://developer.chrome.com/blog/new-in-devtools-121/#indentation', 'https://crbug.com/1479986');
         // Debugging
         Root.Runtime.experiments.register('instrumentation-breakpoints', 'Enable instrumentation breakpoints', true);
-        Root.Runtime.experiments.register('set-all-breakpoints-eagerly', 'Set all breakpoints eagerly at startup');
         Root.Runtime.experiments.register('use-source-map-scopes', 'Use scope information from source maps', true);
         // Advanced Perceptual Contrast Algorithm.
         Root.Runtime.experiments.register('apca', 'Enable new Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines', undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#apca');
@@ -292,11 +290,10 @@ export class MainImpl {
         Root.Runtime.experiments.register("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
         Root.Runtime.experiments.register("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Autofill panel', false, 'https://goo.gle/devtools-autofill-panel', 'https://crbug.com/329106326');
         Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Performance panel: show postMessage dispatch and handling flows');
-        Root.Runtime.experiments.register("save-and-load-trace-with-annotations" /* Root.Runtime.ExperimentName.SAVE_AND_LOAD_TRACE_WITH_ANNOTATIONS */, 'Enable saving and loading traces with annotations in the Performance panel');
+        Root.Runtime.experiments.register("perf-panel-annotations" /* Root.Runtime.ExperimentName.PERF_PANEL_ANNOTATIONS */, 'Enable saving and loading traces with annotations in the Performance panel');
         Root.Runtime.experiments.register("timeline-enable-old-timeline-model-engine" /* Root.Runtime.ExperimentName.TIMELINE_EXECUTE_OLD_ENGINE */, 'Enable the legacy tracing model when inspecting Chrome traces using the performance panel', true);
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
-            'set-all-breakpoints-eagerly',
             "outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
             "preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
             "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,

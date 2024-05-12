@@ -1467,7 +1467,10 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         }
         copyMenu.footerSection().appendItem(i18nString(UIStrings.copyAllAsHar), this.copyAllAsHAR.bind(this), { jslogContext: 'copy-all-as-har' });
         contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAllAsHarWithContent), this.exportAll.bind(this), { jslogContext: 'save-all-as-har-with-content' });
-        contextMenu.overrideSection().appendItem(i18nString(UIStrings.overrideHeaders), this.#handleCreateResponseHeaderOverrideClick.bind(this, request), { jslogContext: 'override-headers' });
+        contextMenu.overrideSection().appendItem(i18nString(UIStrings.overrideHeaders), this.#handleCreateResponseHeaderOverrideClick.bind(this, request), {
+            disabled: Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(request.url()),
+            jslogContext: 'override-headers',
+        });
         contextMenu.editSection().appendItem(i18nString(UIStrings.clearBrowserCache), this.clearBrowserCache.bind(this), { jslogContext: 'clear-browser-cache' });
         contextMenu.editSection().appendItem(i18nString(UIStrings.clearBrowserCookies), this.clearBrowserCookies.bind(this), { jslogContext: 'clear-browser-cookies' });
         if (request) {

@@ -22,7 +22,7 @@ export var VisualElements;
     VisualElements[VisualElements["Section"] = 10] = "Section";
     VisualElements[VisualElements["SectionHeader"] = 11] = "SectionHeader";
     VisualElements[VisualElements["Timeline"] = 12] = "Timeline";
-    VisualElements[VisualElements["CssQuery"] = 13] = "CssQuery";
+    VisualElements[VisualElements["CSSRuleHeader"] = 13] = "CSSRuleHeader";
     VisualElements[VisualElements["Expand"] = 14] = "Expand";
     VisualElements[VisualElements["ToggleSubpane"] = 15] = "ToggleSubpane";
     VisualElements[VisualElements["ControlPoint"] = 16] = "ControlPoint";

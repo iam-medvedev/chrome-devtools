@@ -10,9 +10,8 @@ describeWithMockConnection('ExecutionContextSelector', () => {
     it('switches to the default context once available', () => {
         new Main.ExecutionContextSelector.ExecutionContextSelector(SDK.TargetManager.TargetManager.instance(), UI.Context.Context.instance());
         const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
-        const mainFrameUnderTabTarget = createTarget({ type: SDK.Target.Type.Frame, parentTarget: tabTarget });
-        const mainFrameWithoutTabTarget = createTarget({ type: SDK.Target.Type.Frame });
-        const subframeTarget = createTarget({ type: SDK.Target.Type.Frame, parentTarget: mainFrameWithoutTabTarget });
+        const mainFrameTarget = createTarget({ type: SDK.Target.Type.Frame, parentTarget: tabTarget });
+        const subframeTarget = createTarget({ type: SDK.Target.Type.Frame, parentTarget: mainFrameTarget });
         const prerenderTarget = createTarget({ type: SDK.Target.Type.Frame, parentTarget: tabTarget, subtype: 'prerender' });
         const contextSetFlavor = sinon.spy(UI.Context.Context.instance(), 'setFlavor');
         const sentExecutionContextCreated = (target) => {
@@ -33,10 +32,7 @@ describeWithMockConnection('ExecutionContextSelector', () => {
         contextSetFlavor.resetHistory();
         sentExecutionContextCreated(subframeTarget);
         assert.isTrue(contextSetFlavor.notCalled);
-        sentExecutionContextCreated(mainFrameUnderTabTarget);
-        assert.isTrue(contextSetFlavor.called);
-        contextSetFlavor.resetHistory();
-        sentExecutionContextCreated(mainFrameWithoutTabTarget);
+        sentExecutionContextCreated(mainFrameTarget);
         assert.isTrue(contextSetFlavor.called);
         contextSetFlavor.resetHistory();
         sentExecutionContextCreated(prerenderTarget);

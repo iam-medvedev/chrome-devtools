@@ -1,13 +1,12 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import * as Workspace from '../../models/workspace/workspace.js';
 import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -32,9 +31,10 @@ describeWithEnvironment('TimelineFlameChartView', function () {
     beforeEach(() => {
         boundsManager =
             TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true }).resetWithNewBounds(baseTraceWindow);
+        setupIgnoreListManagerEnvironment();
     });
     it('Can search for events by name in the timeline', async function () {
-        const traceParsedData = await TraceLoader.traceEngine(this, 'lcp-images.json.gz', { initTraceBounds: true });
+        const traceParsedData = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
         // The timeline flamechart view will invoke the `select` method
         // of this delegate every time an event has matched on a search.
         const mockViewDelegate = new MockViewDelegate();
@@ -67,7 +67,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
     // This test is still failing after bumping up the timeout to 20 seconds. So
     // skip it while we work on a fix for the trace load speed.
     it.skip('[crbug.com/1492405] Shows the network track correctly', async function () {
-        const traceParsedData = await TraceLoader.traceEngine(this, 'load-simple.json.gz', { initTraceBounds: true });
+        const traceParsedData = await TraceLoader.traceEngine(this, 'load-simple.json.gz');
         // The timeline flamechart view will invoke the `select` method
         // of this delegate every time an event has matched on a search.
         const mockViewDelegate = new MockViewDelegate();
@@ -76,7 +76,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         assert.isTrue(flameChartView.isNetworkTrackShownForTests());
     });
     it('Does not show the network track when there is no network request', async function () {
-        const traceParsedData = await TraceLoader.traceEngine(this, 'basic.json.gz', { initTraceBounds: true });
+        const traceParsedData = await TraceLoader.traceEngine(this, 'basic.json.gz');
         // The timeline flamechart view will invoke the `select` method
         // of this delegate every time an event has matched on a search.
         const mockViewDelegate = new MockViewDelegate();
@@ -85,7 +85,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         assert.isFalse(flameChartView.isNetworkTrackShownForTests());
     });
     it('Adds Hidden Descendants Arrow as a decoration when a Context Menu action is applied on a node', async function () {
-        const traceParsedData = await TraceLoader.traceEngine(this, 'load-simple.json.gz', { initTraceBounds: true });
+        const traceParsedData = await TraceLoader.traceEngine(this, 'load-simple.json.gz');
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
         flameChartView.setModel(traceParsedData);
@@ -124,7 +124,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         ]);
     });
     it('Adds Hidden Descendants Arrow as a decoration when a Context Menu action is applied on a selected node with a key shortcut event', async function () {
-        const traceParsedData = await TraceLoader.traceEngine(this, 'load-simple.json.gz', { initTraceBounds: true });
+        const traceParsedData = await TraceLoader.traceEngine(this, 'load-simple.json.gz');
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
         flameChartView.setModel(traceParsedData);
@@ -165,7 +165,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         ]);
     });
     it('Removes Hidden Descendants Arrow as a decoration when Reset Children action is applied on a node', async function () {
-        const traceParsedData = await TraceLoader.traceEngine(this, 'load-simple.json.gz', { initTraceBounds: true });
+        const traceParsedData = await TraceLoader.traceEngine(this, 'load-simple.json.gz');
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
         flameChartView.setModel(traceParsedData);
@@ -217,17 +217,9 @@ describeWithEnvironment('TimelineFlameChartView', function () {
     });
     describe('Context Menu', function () {
         let flameChartView;
-        let debuggerWorkspaceBinding;
-        let workspace;
         let traceParsedData;
         this.beforeEach(async () => {
-            // This code block will create a new IgnoreListManager for test.
-            const targetManager = SDK.TargetManager.TargetManager.instance();
-            workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
-            const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-            debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
-            Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
-            traceParsedData = await TraceLoader.traceEngine(this, 'recursive-blocking-js.json.gz', { initTraceBounds: true });
+            traceParsedData = await TraceLoader.traceEngine(this, 'recursive-blocking-js.json.gz');
             const mockViewDelegate = new MockViewDelegate();
             flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
             flameChartView.setModel(traceParsedData);

@@ -13,6 +13,7 @@ export interface SamplesHandlerData {
     entryToNode: typeof entryToNode;
 }
 export type ProfileData = {
+    profileId: Types.TraceEvents.ProfileID;
     rawProfile: CPUProfile.CPUProfileDataModel.ExtendedProfile;
     parsedProfile: CPUProfile.CPUProfileDataModel.CPUProfileDataModel;
     /**

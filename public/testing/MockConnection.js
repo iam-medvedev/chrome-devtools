@@ -4,6 +4,7 @@
 import * as ProtocolClient from '../core/protocol_client/protocol_client.js';
 import { resetTestDOM } from './DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars } from './EnvironmentHelpers.js';
+import { setMockResourceTree } from './ResourceTreeHelpers.js';
 // Note that we can't set the Function to the correct handler on the basis
 // that we don't know which ProtocolCommand will be stored.
 const responseMap = new Map();
@@ -54,6 +55,7 @@ async function enable({ reset = true } = {}) {
     // before it can run. This function will ensure those things are
     // minimally there.
     await initializeGlobalVars({ reset });
+    setMockResourceTree(true);
     ProtocolClient.InspectorBackend.Connection.setFactory(() => new MockConnection());
 }
 class MockConnection extends ProtocolClient.InspectorBackend.Connection {

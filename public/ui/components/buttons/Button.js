@@ -34,6 +34,7 @@ export class Button extends HTMLElement {
         this.#props.variant = data.variant;
         this.#props.iconUrl = data.iconUrl;
         this.#props.iconName = data.iconName;
+        this.#props.toggledIconName = data.toggledIconName;
         this.#props.size = "REGULAR" /* Size.REGULAR */;
         if ('size' in data && data.size) {
             this.#props.size = data.size;
@@ -44,6 +45,8 @@ export class Button extends HTMLElement {
         if ('type' in data && data.type) {
             this.#props.type = data.type;
         }
+        this.#props.toggled = data.toggled;
+        this.#props.toggleType = data.toggleType;
         this.#setDisabledProperty(data.disabled || false);
         this.#props.title = data.title;
         this.#props.jslogContext = data.jslogContext;
@@ -56,6 +59,12 @@ export class Button extends HTMLElement {
     set iconName(iconName) {
         this.#props.iconName = iconName;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    set toggledIconName(toggledIconName) {
+        this.#props.toggledIconName = toggledIconName;
+    }
+    set toggleType(toggleType) {
+        this.#props.toggleType = toggleType;
     }
     set variant(variant) {
         this.#props.variant = variant;
@@ -75,6 +84,10 @@ export class Button extends HTMLElement {
     }
     set disabled(disabled) {
         this.#setDisabledProperty(disabled);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    set toggled(toggled) {
+        this.#props.toggled = toggled;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set active(active) {
@@ -122,6 +135,9 @@ export class Button extends HTMLElement {
             event.preventDefault();
             this.form.reset();
         }
+        if (this.#props.variant === "icon_toggle" /* Variant.ICON_TOGGLE */ && this.#props.iconName) {
+            this.toggled = !this.#props.toggled;
+        }
     }
     #onSlotChange(event) {
         const slot = event.target;
@@ -163,7 +179,10 @@ export class Button extends HTMLElement {
             text: this.#props.variant === "text" /* Variant.TEXT */,
             toolbar: this.#isToolbarVariant(),
             'primary-toolbar': this.#props.variant === "primary_toolbar" /* Variant.PRIMARY_TOOLBAR */,
-            icon: this.#props.variant === "icon" /* Variant.ICON */,
+            icon: this.#props.variant === "icon" /* Variant.ICON */ || this.#props.variant === "icon_toggle" /* Variant.ICON_TOGGLE */,
+            'primary-toggle': this.#props.toggleType === "primary-toggle" /* ToggleType.PRIMARY */,
+            'red-toggle': this.#props.toggleType === "red-toggle" /* ToggleType.RED */,
+            toggled: Boolean(this.#props.toggled),
             'text-with-icon': hasIcon && !this.#isEmpty,
             'only-icon': hasIcon && this.#isEmpty,
             'only-text': !hasIcon && !this.#isEmpty,
@@ -183,7 +202,7 @@ export class Button extends HTMLElement {
         <button title=${LitHtml.Directives.ifDefined(this.#props.title)} .disabled=${this.#props.disabled} class=${LitHtml.Directives.classMap(classes)} jslog=${LitHtml.Directives.ifDefined(jslog)}>
           ${hasIcon
             ? LitHtml.html `
-                <${IconButton.Icon.Icon.litTagName} name=${this.#props.iconName || this.#props.iconUrl}>
+                <${IconButton.Icon.Icon.litTagName} name=${this.#props.toggled ? this.#props.toggledIconName : this.#props.iconName || this.#props.iconUrl}>
                 </${IconButton.Icon.Icon.litTagName}>`
             : ''}
           ${this.#props.spinner ? LitHtml.html `<span class=${LitHtml.Directives.classMap(spinnerClasses)}></span>` : ''}

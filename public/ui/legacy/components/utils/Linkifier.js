@@ -386,10 +386,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
                         event.consume(true);
                         void Common.Revealer.reveal(header.ownerNode || null);
                     }, false);
-                    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-                    // This workaround is needed to make stylelint happy
-                    Linkifier.setTrimmedText(anchor, '<' +
-                        'style>');
+                    Linkifier.setTrimmedText(anchor, '<style>');
                 }
             }
             anchor.classList.add('invalid-link');
@@ -499,11 +496,14 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     }
     static createLink(text, className, options = {}) {
         const { maxLength, title, href, preventClick, tabStop, bypassURLTrimming, jslogContext } = options;
-        const link = document.createElement('button');
+        const link = document.createElement(options.preventClick ? 'span' : 'button');
         if (className) {
             link.className = className;
         }
-        link.classList.add('devtools-link', 'text-button', 'link-style');
+        link.classList.add('devtools-link');
+        if (!options.preventClick) {
+            link.classList.add('text-button', 'link-style');
+        }
         if (title) {
             UI.Tooltip.Tooltip.install(link, title);
         }

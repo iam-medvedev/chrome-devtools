@@ -19,7 +19,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
 import { ExtensionView } from './ExtensionView.js';
 import recordingViewStyles from './recordingView.css.js';
-import { ReplayButton, } from './ReplayButton.js';
+import { ReplaySection, } from './ReplaySection.js';
 import { StepView, } from './StepView.js';
 const UIStrings = {
     /**
@@ -757,7 +757,7 @@ export class RecordingView extends HTMLElement {
         </${Buttons.Button.Button.litTagName}>`;
         }
         // clang-format off
-        return LitHtml.html `<${ReplayButton.litTagName}
+        return LitHtml.html `<${ReplaySection.litTagName}
         .data=${{
             settings: this.#recorderSettings,
             replayExtensions: this.#replayExtensions,
@@ -765,7 +765,7 @@ export class RecordingView extends HTMLElement {
         .disabled=${this.#replayState.isPlaying}
         @startreplay=${this.#handleTogglePlaying}
         >
-      </${ReplayButton.litTagName}>`;
+      </${ReplaySection.litTagName}>`;
         // clang-format on
     }
     #handleMeasurePerformanceClickEvent(event) {
@@ -971,6 +971,7 @@ export class RecordingView extends HTMLElement {
                 >
                   ${i18nString(UIStrings.performancePanel)}
                 </${Buttons.Button.Button.litTagName}>
+                <div class="separator"></div>
                 ${this.#renderReplayOrAbortButton()}
               </div>`
             : ''}

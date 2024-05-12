@@ -768,13 +768,17 @@ export class HeapSnapshotConstructorsDataGrid extends HeapSnapshotViewportDataGr
             this.aggregatesReceived(nodeFilter, aggregates);
         }
     }
-    filterSelectIndexChanged(profiles, profileIndex) {
+    filterSelectIndexChanged(profiles, profileIndex, filterName) {
         this.profileIndex = profileIndex;
         this.nodeFilterInternal = undefined;
         if (profileIndex !== -1) {
             const minNodeId = profileIndex > 0 ? profiles[profileIndex - 1].maxJSObjectId : 0;
             const maxNodeId = profiles[profileIndex].maxJSObjectId;
             this.nodeFilterInternal = new HeapSnapshotModel.HeapSnapshotModel.NodeFilter(minNodeId, maxNodeId);
+        }
+        else if (filterName !== undefined) {
+            this.nodeFilterInternal = new HeapSnapshotModel.HeapSnapshotModel.NodeFilter();
+            this.nodeFilterInternal.filterName = filterName;
         }
         void this.populateChildren(this.nodeFilterInternal);
     }

@@ -34,7 +34,7 @@
     "../../../../../../../front_end/panels/recorder/components/ExtensionView.ts",
     "../../../../../../../front_end/panels/recorder/components/RecordingListView.ts",
     "../../../../../../../front_end/panels/recorder/components/RecordingView.ts",
-    "../../../../../../../front_end/panels/recorder/components/ReplayButton.ts",
+    "../../../../../../../front_end/panels/recorder/components/ReplaySection.ts",
     "../../../../../../../front_end/panels/recorder/components/SelectButton.ts",
     "../../../../../../../front_end/panels/recorder/components/StartView.ts",
     "../../../../../../../front_end/panels/recorder/components/StepEditor.ts",

@@ -767,6 +767,28 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         checkHeaderSectionRow(rows[0], 'server:', 'overridden server', true, false, true);
         checkHeaderSectionRow(rows[1], 'header-name:', 'header value', true, true, true);
     });
+    it('can show the "edit header" button', async () => {
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'https://www.foo.com/index.html', '', null, null, null);
+        request.responseHeaders = [{ name: 'foo', value: 'bar' }];
+        request.originalResponseHeaders = [{ name: 'foo', value: 'bar' }];
+        const { component } = await setupHeaderEditingWithRequest('[]', request);
+        assert.isNotNull(component.shadowRoot);
+        const rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
+        assert.strictEqual(rows.length, 1);
+        assert.isNotNull(rows[0].shadowRoot);
+        assert.isNotNull(rows[0].shadowRoot.querySelector('.enable-editing'));
+    });
+    it('does not show the "edit header" button for requests with a forbidden URL', async () => {
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'chrome://terms/', '', null, null, null);
+        request.responseHeaders = [{ name: 'foo', value: 'bar' }];
+        request.originalResponseHeaders = [{ name: 'foo', value: 'bar' }];
+        const { component } = await setupHeaderEditingWithRequest('[]', request);
+        assert.isNotNull(component.shadowRoot);
+        const rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
+        assert.strictEqual(rows.length, 1);
+        assert.isNotNull(rows[0].shadowRoot);
+        assert.isNull(rows[0].shadowRoot.querySelector('.enable-editing'));
+    });
     it('can edit multiple headers', async () => {
         const headerOverridesFileContent = `[
       {

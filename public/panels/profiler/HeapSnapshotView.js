@@ -123,6 +123,21 @@ const UIStrings = {
      */
     objectsAllocatedBetweenSAndS: 'Objects allocated between {PH1} and {PH2}',
     /**
+     *@description An option which will filter the heap snapshot to show only
+     * strings which exactly match at least one other string
+     */
+    duplicatedStrings: 'Duplicated strings',
+    /**
+     *@description An option which will filter the heap snapshot to show only
+     * detached DOM nodes and other objects kept alive by detached DOM nodes
+     */
+    objectsRetainedByDetachedDomNodes: 'Objects retained by detached DOM nodes',
+    /**
+     *@description An option which will filter the heap snapshot to show only
+     * objects kept alive by the DevTools console
+     */
+    objectsRetainedByConsole: 'Objects retained by the DevTools console',
+    /**
      *@description Text for the summary view
      */
     summary: 'Summary',
@@ -630,13 +645,26 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         // Then perform the search again with the same query and callback.
         this.performSearch(this.currentQuery, false);
     }
+    static ALWAYS_AVAILABLE_FILTERS = [
+        { uiName: i18nString(UIStrings.duplicatedStrings), filterName: 'duplicatedStrings' },
+        { uiName: i18nString(UIStrings.objectsRetainedByDetachedDomNodes), filterName: 'objectsRetainedByDetachedDomNodes' },
+        { uiName: i18nString(UIStrings.objectsRetainedByConsole), filterName: 'objectsRetainedByConsole' },
+    ];
     changeFilter() {
-        const profileIndex = this.filterSelect.selectedIndex() - 1;
+        let selectedIndex = this.filterSelect.selectedIndex();
+        let filterName = undefined;
+        const indexOfFirstAlwaysAvailableFilter = this.filterSelect.size() - HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS.length;
+        if (selectedIndex >= indexOfFirstAlwaysAvailableFilter) {
+            filterName =
+                HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS[selectedIndex - indexOfFirstAlwaysAvailableFilter].filterName;
+            selectedIndex = 0;
+        }
+        const profileIndex = selectedIndex - 1;
         if (!this.dataGrid) {
             return;
         }
         this.dataGrid
-            .filterSelectIndexChanged(this.profiles(), profileIndex);
+            .filterSelectIndexChanged(this.profiles(), profileIndex, filterName);
         if (!this.currentQuery || !this.searchResults) {
             return;
         }
@@ -831,6 +859,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
     updateFilterOptions() {
         const list = this.profiles();
         const selectedIndex = this.filterSelect.selectedIndex();
+        const originalSize = this.filterSelect.size();
         this.filterSelect.removeOptions();
         this.filterSelect.createOption(i18nString(UIStrings.allObjects));
         for (let i = 0; i < list.length; ++i) {
@@ -843,8 +872,29 @@ export class HeapSnapshotView extends UI.View.SimpleView {
             }
             this.filterSelect.createOption(title);
         }
+        // Create a dividing line using em dashes.
+        const dividerIndex = this.filterSelect.size();
+        const divider = this.filterSelect.createOption('\u2014'.repeat(18));
+        divider.disabled = true;
+        for (const filter of HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS) {
+            this.filterSelect.createOption(filter.uiName);
+        }
+        const newSize = this.filterSelect.size();
         if (selectedIndex > -1) {
-            this.filterSelect.setSelectedIndex(selectedIndex);
+            const distanceFromEnd = originalSize - selectedIndex;
+            if (distanceFromEnd <= HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS.length) {
+                // If one of the always-available filters was selected, then select the
+                // same filter again even though its index may have changed.
+                this.filterSelect.setSelectedIndex(newSize - distanceFromEnd);
+            }
+            else if (selectedIndex >= dividerIndex) {
+                // If the select list is now shorter than it was, such that we can't
+                // keep the index unchanged, set it to -1, which causes it to be blank.
+                this.filterSelect.setSelectedIndex(-1);
+            }
+            else {
+                this.filterSelect.setSelectedIndex(selectedIndex);
+            }
         }
     }
     updateControls() {

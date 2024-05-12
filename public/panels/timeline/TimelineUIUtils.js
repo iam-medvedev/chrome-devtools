@@ -1307,8 +1307,7 @@ export class TimelineUIUtils {
                 }
                 break;
             }
-            case recordTypes.UpdateLayoutTree: // We don't want to see default details.
-            case recordTypes.RecalculateStyles: {
+            case recordTypes.UpdateLayoutTree: {
                 contentHelper.appendTextRow(i18nString(UIStrings.elementsAffected), unsafeEventArgs['elementCount']);
                 const selectorStatsSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false);
                 if (!selectorStatsSetting.get()) {
@@ -1537,7 +1536,10 @@ export class TimelineUIUtils {
             const aggregatedStats = {};
             const categoryStack = [];
             let lastTime = 0;
-            TimelineModel.TimelineModel.TimelineModelImpl.forEachEvent(events, onStartEvent, onEndEvent);
+            TraceEngine.Helpers.Trace.forEachEvent(events, {
+                onStartEvent,
+                onEndEvent,
+            });
             function updateCategory(category, time) {
                 let statsArrays = aggregatedStats[category];
                 if (!statsArrays) {
@@ -1561,7 +1563,7 @@ export class TimelineUIUtils {
                 }
             }
             function onStartEvent(e) {
-                const { startTime } = TraceEngine.Legacy.timesForEventInMilliseconds(e);
+                const { startTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
                 const category = getEventStyle(e.name)?.category.name ||
                     getCategoryStyles().other.name;
                 const parentCategory = categoryStack.length ? categoryStack[categoryStack.length - 1] : null;
@@ -1571,7 +1573,7 @@ export class TimelineUIUtils {
                 categoryStack.push(category);
             }
             function onEndEvent(e) {
-                const { endTime } = TraceEngine.Legacy.timesForEventInMilliseconds(e);
+                const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
                 const category = categoryStack.pop();
                 const parentCategory = categoryStack.length ? categoryStack[categoryStack.length - 1] : null;
                 if (category !== parentCategory) {
@@ -1705,7 +1707,6 @@ export class TimelineUIUtils {
                 initiatorStackLabel = i18nString(UIStrings.idleCallbackRequested);
                 break;
             case "UpdateLayoutTree" /* TraceEngine.Types.TraceEvents.KnownEventName.UpdateLayoutTree */:
-            case "RecalculateStyles" /* TraceEngine.Types.TraceEvents.KnownEventName.RecalculateStyles */:
                 initiatorStackLabel = i18nString(UIStrings.firstInvalidated);
                 stackLabel = i18nString(UIStrings.recalculationForced);
                 break;

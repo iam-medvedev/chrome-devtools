@@ -11,6 +11,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 describeWithMockConnection('NavigatorView', () => {
@@ -19,6 +20,7 @@ describeWithMockConnection('NavigatorView', () => {
     beforeEach(() => {
         Root.Runtime.experiments.register("authored-deployed-grouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, '');
         Root.Runtime.experiments.register("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, '');
+        setMockResourceTree(false);
         setMockConnectionResponseHandler('Page.getResourceTree', async () => {
             return {
                 frameTree: null,

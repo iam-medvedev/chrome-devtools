@@ -10,20 +10,28 @@ export declare const enum Variant {
     TEXT = "text",
     TOOLBAR = "toolbar",
     PRIMARY_TOOLBAR = "primary_toolbar",
-    ICON = "icon"
+    ICON = "icon",
+    ICON_TOGGLE = "icon_toggle"
 }
 export declare const enum Size {
     MICRO = "MICRO",
     SMALL = "SMALL",
     REGULAR = "REGULAR"
 }
+export declare const enum ToggleType {
+    PRIMARY = "primary-toggle",
+    RED = "red-toggle"
+}
 type ButtonType = 'button' | 'submit' | 'reset';
 interface CommonButtonData {
     variant: Variant;
     iconUrl?: string;
     iconName?: string;
+    toggledIconName?: string;
+    toggleType?: ToggleType;
     size?: Size;
     disabled?: boolean;
+    toggled?: boolean;
     active?: boolean;
     spinner?: boolean;
     type?: ButtonType;
@@ -39,6 +47,12 @@ export type ButtonData = CommonButtonData & ({
     iconName: string;
 } | {
     variant: Variant.PRIMARY | Variant.OUTLINED | Variant.TONAL | Variant.TEXT;
+} | {
+    variant: Variant.ICON_TOGGLE;
+    iconName: string;
+    toggledIconName: string;
+    toggleType: ToggleType;
+    toggled: boolean;
 });
 export declare class Button extends HTMLElement {
     #private;
@@ -52,11 +66,14 @@ export declare class Button extends HTMLElement {
     set data(data: ButtonData);
     set iconUrl(iconUrl: string | undefined);
     set iconName(iconName: string | undefined);
+    set toggledIconName(toggledIconName: string);
+    set toggleType(toggleType: ToggleType);
     set variant(variant: Variant);
     set size(size: Size);
     set type(type: ButtonType);
     set title(title: string);
     set disabled(disabled: boolean);
+    set toggled(toggled: boolean);
     set active(active: boolean);
     get active(): boolean;
     set spinner(spinner: boolean);

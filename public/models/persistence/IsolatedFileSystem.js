@@ -68,10 +68,10 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     domFileSystem;
     excludedFoldersSetting;
     excludedFoldersInternal;
-    excludedEmbedderFolders;
-    initialFilePathsInternal;
-    initialGitFoldersInternal;
-    fileLocks;
+    excludedEmbedderFolders = [];
+    initialFilePathsInternal = new Set();
+    initialGitFoldersInternal = new Set();
+    fileLocks = new Map();
     constructor(manager, path, embedderPath, domFileSystem, type) {
         super(path, type);
         this.manager = manager;
@@ -80,10 +80,6 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         this.excludedFoldersSetting =
             Common.Settings.Settings.instance().createLocalSetting('workspace-excluded-folders', {});
         this.excludedFoldersInternal = new Set(this.excludedFoldersSetting.get()[path] || []);
-        this.excludedEmbedderFolders = [];
-        this.initialFilePathsInternal = new Set();
-        this.initialGitFoldersInternal = new Set();
-        this.fileLocks = new Map();
     }
     static async create(manager, path, embedderPath, type, name, rootURL) {
         const domFileSystem = Host.InspectorFrontendHost.InspectorFrontendHostInstance.isolatedFileSystem(name, rootURL);
@@ -97,7 +93,6 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         });
     }
     static errorMessage(error) {
-        // @ts-ignore TODO(crbug.com/1172300) Properly type this after jsdoc to ts migration
         return i18nString(UIStrings.fileSystemErrorS, { PH1: error.message });
     }
     serializedFileOperation(path, operation) {
@@ -106,19 +101,16 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         return promise;
     }
     getMetadata(path) {
-        let fulfill;
-        const promise = new Promise(f => {
-            fulfill = f;
-        });
+        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
         this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), undefined, fileEntryLoaded, errorHandler);
         return promise;
         function fileEntryLoaded(entry) {
-            entry.getMetadata(fulfill, errorHandler);
+            entry.getMetadata(resolve, errorHandler);
         }
         function errorHandler(error) {
             const errorMessage = IsolatedFileSystem.errorMessage(error);
             console.error(errorMessage + ' when getting file metadata \'' + path);
-            fulfill(null);
+            resolve(null);
         }
     }
     initialFilePaths() {
@@ -218,17 +210,14 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         }
     }
     deleteFile(path) {
-        let resolveCallback;
-        const promise = new Promise(resolve => {
-            resolveCallback = resolve;
-        });
+        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
         this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), undefined, fileEntryLoaded.bind(this), errorHandler.bind(this));
         return promise;
         function fileEntryLoaded(fileEntry) {
             fileEntry.remove(fileEntryRemoved, errorHandler.bind(this));
         }
         function fileEntryRemoved() {
-            resolveCallback(true);
+            resolve(true);
         }
         /**
          * TODO(jsbell): Update externs replacing DOMError with DOMException. https://crbug.com/496901
@@ -236,21 +225,18 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         function errorHandler(error) {
             const errorMessage = IsolatedFileSystem.errorMessage(error);
             console.error(errorMessage + ' when deleting file \'' + (this.path() + '/' + path) + '\'');
-            resolveCallback(false);
+            resolve(false);
         }
     }
     deleteDirectoryRecursively(path) {
-        let resolveCallback;
-        const promise = new Promise(resolve => {
-            resolveCallback = resolve;
-        });
+        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
         this.domFileSystem.root.getDirectory(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), undefined, dirEntryLoaded.bind(this), errorHandler.bind(this));
         return promise;
         function dirEntryLoaded(dirEntry) {
             dirEntry.removeRecursively(dirEntryRemoved, errorHandler.bind(this));
         }
         function dirEntryRemoved() {
-            resolveCallback(true);
+            resolve(true);
         }
         /**
          * TODO(jsbell): Update externs replacing DOMError with DOMException. https://crbug.com/496901
@@ -258,7 +244,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         function errorHandler(error) {
             const errorMessage = IsolatedFileSystem.errorMessage(error);
             console.error(errorMessage + ' when deleting directory \'' + (this.path() + '/' + path) + '\'');
-            resolveCallback(false);
+            resolve(false);
         }
     }
     requestFileBlob(path) {
@@ -453,7 +439,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         if (this.excludedFoldersInternal.has(folderPath)) {
             return true;
         }
-        const regex = this.manager.workspaceFolderExcludePatternSetting().asRegExp();
+        const regex = (this.manager.workspaceFolderExcludePatternSetting()).asRegExp();
         return Boolean(regex && regex.test(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(folderPath)));
     }
     excludedFolders() {

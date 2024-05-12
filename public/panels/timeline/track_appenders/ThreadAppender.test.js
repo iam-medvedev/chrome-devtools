@@ -7,11 +7,12 @@ import * as Bindings from '../../../models/bindings/bindings.js';
 import * as TraceModel from '../../../models/trace/trace.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { makeMockRendererHandlerData as makeRendererHandlerData, makeProfileCall, } from '../../../testing/TraceHelpers.js';
+import { makeMockRendererHandlerData as makeRendererHandlerData, makeProfileCall, setupIgnoreListManagerEnvironment, } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from '../timeline.js';
 function initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel) {
+    setupIgnoreListManagerEnvironment();
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
     return compatibilityTracksAppender.threadAppenders();
 }
@@ -320,7 +321,6 @@ describeWithEnvironment('ThreadAppender', function () {
     describe('ignore listing', () => {
         let ignoreListManager;
         beforeEach(() => {
-            Root.Runtime.experiments.enableForTest('ignore-list-js-frames-on-timeline');
             const targetManager = SDK.TargetManager.TargetManager.instance({ forceNew: true });
             const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
             const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);

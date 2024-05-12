@@ -31,7 +31,7 @@ describeWithMockConnection('MultitargetNetworkManager', () => {
             assert.strictEqual(startedRequests[0].trustTokenOperationDoneEvent(), mockEvent);
         });
     });
-    it('uses main frame under tab target to get certificate', () => {
+    it('uses main frame to get certificate', () => {
         SDK.ChildTargetManager.ChildTargetManager.install();
         const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
         const mainFrameTarget = createTarget({ parentTarget: tabTarget });
@@ -43,16 +43,6 @@ describeWithMockConnection('MultitargetNetworkManager', () => {
         for (const unexpectedCall of unexpectedCalls) {
             assert.isTrue(unexpectedCall.notCalled);
         }
-        assert.isTrue(expectedCall.calledOnceWith({ origin: 'https://example.com' }));
-    });
-    it('uses main frame without tab target to get certificate', () => {
-        SDK.ChildTargetManager.ChildTargetManager.install();
-        const mainFrameTarget = createTarget();
-        const subframeTarget = createTarget({ parentTarget: mainFrameTarget });
-        const unexpectedCall = sinon.spy(subframeTarget.networkAgent(), 'invoke_getCertificate');
-        const expectedCall = sinon.spy(mainFrameTarget.networkAgent(), 'invoke_getCertificate');
-        void SDK.NetworkManager.MultitargetNetworkManager.instance().getCertificate('https://example.com');
-        assert.isTrue(unexpectedCall.notCalled);
         assert.isTrue(expectedCall.calledOnceWith({ origin: 'https://example.com' }));
     });
 });

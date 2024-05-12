@@ -21,7 +21,6 @@ export declare class TraceProcessor<EnabledModelHandlers extends {
     #private;
     static createWithAllHandlers(): TraceProcessor<typeof Handlers.ModelHandlers>;
     constructor(traceHandlers: EnabledModelHandlers, modelConfiguration?: Types.Configuration.Configuration);
-    updateConfiguration(config: Types.Configuration.Configuration): void;
     reset(): void;
     parse(traceEvents: readonly Types.TraceEvents.TraceEventData[], freshRecording?: boolean): Promise<void>;
     get traceParsedData(): Handlers.Types.EnabledHandlerDataWithMeta<EnabledModelHandlers> | null;

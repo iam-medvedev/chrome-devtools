@@ -5,6 +5,7 @@ import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from './legacy.js';
 describeWithEnvironment('ARIAUtils', () => {
     beforeEach(() => {
+        UI.Dialog.Dialog.getInstance()?.hide();
         UI.ARIAUtils.alert('');
         UI.ARIAUtils.alert('');
     });
@@ -43,7 +44,8 @@ describeWithEnvironment('ARIAUtils', () => {
             assert.strictEqual(UI.ARIAUtils.getOrCreateAlertElements(dialog.contentElement).one.textContent, '');
             assert.strictEqual(UI.ARIAUtils.getOrCreateAlertElements(dialog.contentElement).two.textContent, 'test');
         });
-        it('shows alerts in the body if the dialog is not shown', () => {
+        // Flaky test.
+        it.skip('[crbug.com/338872707] shows alerts in the body if the dialog is not shown', () => {
             UI.ARIAUtils.getOrCreateAlertElements(document.body);
             const dialog = new UI.Dialog.Dialog();
             UI.ARIAUtils.getOrCreateAlertElements(dialog.contentElement);

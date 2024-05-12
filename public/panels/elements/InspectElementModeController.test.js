@@ -4,6 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, registerNoopActions, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { setMockResourceTree, } from '../../testing/ResourceTreeHelpers.js';
 import * as Elements from './elements.js';
 const NODE_ID = 1;
 describeWithMockConnection('InspectElementModeController', () => {
@@ -21,6 +22,7 @@ describeWithMockConnection('InspectElementModeController', () => {
         model.addEventListener("InspectModeWillBeToggled" /* SDK.OverlayModel.Events.InspectModeWillBeToggled */, () => assert.fail('Unexected mode toggle on out of scope target'));
     }
     beforeEach(() => {
+        setMockResourceTree(false);
         stubNoopSettings();
         registerNoopActions(['elements.toggle-element-search']);
         const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
