@@ -74,6 +74,7 @@ export declare class Button extends HTMLElement {
     set title(title: string);
     set disabled(disabled: boolean);
     set toggled(toggled: boolean);
+    get toggled(): boolean;
     set active(active: boolean);
     get active(): boolean;
     set spinner(spinner: boolean);

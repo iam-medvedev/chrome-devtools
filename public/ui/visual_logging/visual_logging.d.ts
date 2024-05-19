@@ -2,7 +2,7 @@ import type * as LoggableModule from './Loggable.js';
 import * as LoggingConfig from './LoggingConfig.js';
 export type Loggable = LoggableModule.Loggable;
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
-export { logImpressions, logChange } from './LoggingEvents.js';
+export { logImpressions } from './LoggingEvents.js';
 export declare const logClick: (l: Loggable, e: Event) => void;
 export declare const logResize: (l: Loggable, s: DOMRect) => void;
 export declare const logKeyDown: (l: Loggable | null, e: Event, context?: string) => Promise<void>;

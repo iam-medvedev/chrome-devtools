@@ -4,7 +4,6 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Elements from '../../panels/elements/elements.js';
@@ -18,9 +17,6 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from './timeline.js';
 describeWithMockConnection('TimelineUIUtils', function () {
-    let tracingModel;
-    let process;
-    let thread;
     let target;
     // Trace events contain script ids as strings. However, the linkifier
     // utilities assume it is a number because that's how it's defined at
@@ -30,9 +26,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
     const SCRIPT_ID_STRING = String(SCRIPT_ID_NUMBER);
     beforeEach(() => {
         target = createTarget();
-        tracingModel = new TraceEngine.Legacy.TracingModel();
-        process = new TraceEngine.Legacy.Process(tracingModel, 1);
-        thread = new TraceEngine.Legacy.Thread(process, 1);
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
@@ -347,7 +340,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.strictEqual('var(--app-color-scripting)', cssVariable);
         });
         it('treats the v8.parseOnBackgroundWaiting as scripting even though it would usually be idle', function () {
-            const event = new TraceEngine.Legacy.ConstructedEvent('v8,devtools.timeline,disabled-by-default-v8.compile', TimelineModel.TimelineModel.RecordType.StreamingCompileScriptWaiting, "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */, 10, thread);
+            const event = makeCompleteEvent("v8.parseOnBackgroundWaiting" /* TraceEngine.Types.TraceEvents.KnownEventName.StreamingCompileScriptWaiting */, 1, 1, 'v8,devtools.timeline,disabled-by-default-v8.compile');
             assert.strictEqual('rgb(2 2 2)', Timeline.TimelineUIUtils.TimelineUIUtils.eventColor(event));
         });
         it('assigns the correct color to the swatch of an event\'s title', async function () {

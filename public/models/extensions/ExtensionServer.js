@@ -695,7 +695,15 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     handleOpenURL(port, contentProvider, lineNumber) {
         port.postMessage({ command: 'open-resource', resource: this.makeResource(contentProvider), lineNumber: lineNumber + 1 });
     }
-    onReload(message) {
+    extensionAllowedOnURL(url, port) {
+        const origin = extensionOrigins.get(port);
+        const extension = origin && this.registeredExtensions.get(origin);
+        return Boolean(extension?.isAllowedOnTarget(url));
+    }
+    extensionAllowedOnTarget(target, port) {
+        return this.extensionAllowedOnURL(target.inspectedURL(), port);
+    }
+    onReload(message, port) {
         if (message.command !== "Reload" /* PrivateAPI.Commands.Reload */) {
             return this.status.E_BADARG('command', `expected ${"Reload" /* PrivateAPI.Commands.Reload */}`);
         }
@@ -705,7 +713,15 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (options.injectedScript) {
             injectedScript = '(function(){' + options.injectedScript + '})()';
         }
-        SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(Boolean(options.ignoreCache), injectedScript);
+        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        if (!target) {
+            return this.status.OK();
+        }
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        if (!this.extensionAllowedOnTarget(target, port)) {
+            return this.status.E_FAILED('Permission denied');
+        }
+        resourceTreeModel?.reloadPage(Boolean(options.ignoreCache), injectedScript);
         return this.status.OK();
     }
     onEvaluateOnInspectedPage(message, port) {
@@ -732,9 +748,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (message.command !== "getHAR" /* PrivateAPI.Commands.GetHAR */) {
             return this.status.E_BADARG('command', `expected ${"getHAR" /* PrivateAPI.Commands.GetHAR */}`);
         }
-        const origin = extensionOrigins.get(port);
-        const extension = origin && this.registeredExtensions.get(origin);
-        const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(r => extension?.isAllowedOnTarget(r.url()));
+        const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(r => this.extensionAllowedOnURL(r.url(), port));
         const harLog = await HAR.Log.Log.build(requests);
         for (let i = 0; i < harLog.entries.length; ++i) {
             // @ts-ignore
@@ -745,7 +759,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     makeResource(contentProvider) {
         return { url: contentProvider.contentURL(), type: contentProvider.contentType().name() };
     }
-    onGetPageResources() {
+    onGetPageResources(_message, port) {
         const resources = new Map();
         function pushResourceData(contentProvider) {
             if (!resources.has(contentProvider.contentURL())) {
@@ -757,15 +771,14 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         uiSourceCodes = uiSourceCodes.concat(Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodesForProjectType(Workspace.Workspace.projectTypes.ContentScripts));
         uiSourceCodes.forEach(pushResourceData.bind(this));
         for (const resourceTreeModel of SDK.TargetManager.TargetManager.instance().models(SDK.ResourceTreeModel.ResourceTreeModel)) {
-            resourceTreeModel.forAllResources(pushResourceData.bind(this));
+            if (this.extensionAllowedOnTarget(resourceTreeModel.target(), port)) {
+                resourceTreeModel.forAllResources(pushResourceData.bind(this));
+            }
         }
         return [...resources.values()];
     }
     async getResourceContent(contentProvider, message, port) {
-        const url = contentProvider.contentURL();
-        const origin = extensionOrigins.get(port);
-        const extension = origin && this.registeredExtensions.get(origin);
-        if (!extension?.isAllowedOnTarget(url)) {
+        if (!this.extensionAllowedOnURL(contentProvider.contentURL(), port)) {
             this.dispatchCallback(message.requestId, port, this.status.E_FAILED('Permission denied'));
             return undefined;
         }
@@ -805,9 +818,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             const response = error ? this.status.E_FAILED(error) : this.status.OK();
             this.dispatchCallback(requestId, port, response);
         }
-        const origin = extensionOrigins.get(port);
-        const extension = origin && this.registeredExtensions.get(origin);
-        if (!extension?.isAllowedOnTarget(url)) {
+        if (!this.extensionAllowedOnURL(url, port)) {
             return this.status.E_FAILED('Permission denied');
         }
         const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);

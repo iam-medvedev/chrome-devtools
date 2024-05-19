@@ -17,7 +17,6 @@ export class AdvancedApp {
     toolboxDocument;
     constructor() {
         UI.DockController.DockController.instance().addEventListener("BeforeDockSideChanged" /* UI.DockController.Events.BeforeDockSideChanged */, this.openToolboxWindow, this);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged, () => ThemeSupport.ThemeSupport.fetchColors(this.toolboxDocument));
     }
     /**
      * Note: it's used by toolbox.ts without real type checks.
@@ -60,11 +59,7 @@ export class AdvancedApp {
         this.toolboxWindow = window.open(url, undefined);
     }
     deviceModeEmulationFrameLoaded(toolboxDocument) {
-        ThemeSupport.ThemeSupport.instance().applyTheme(toolboxDocument);
-        ThemeSupport.ThemeSupport.fetchColors(toolboxDocument);
-        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
-            ThemeSupport.ThemeSupport.instance().applyTheme(toolboxDocument);
-        });
+        ThemeSupport.ThemeSupport.instance().addDocumentToTheme(toolboxDocument);
         UI.UIUtils.initializeUIUtils(toolboxDocument);
         UI.UIUtils.installComponentRootStyles(toolboxDocument.body);
         UI.ContextMenu.ContextMenu.installHandler(toolboxDocument);

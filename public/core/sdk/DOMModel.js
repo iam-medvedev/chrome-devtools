@@ -1303,6 +1303,9 @@ export class DOMModel extends SDKModel {
     getTopLayerElements() {
         return this.agent.invoke_getTopLayerElements().then(({ nodeIds }) => nodeIds);
     }
+    getElementByRelation(nodeId, relation) {
+        return this.agent.invoke_getElementByRelation({ nodeId, relation }).then(({ nodeId }) => nodeId);
+    }
     markUndoableState(minorChange) {
         void DOMModelUndoStack.instance().markUndoableState(this, minorChange || false);
     }

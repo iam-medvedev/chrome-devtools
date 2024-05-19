@@ -316,6 +316,10 @@ export class ResourceTreeModel extends SDKModel {
         }
     }
     reloadPage(ignoreCache, scriptToEvaluateOnLoad) {
+        const loaderId = this.mainFrame?.loaderId;
+        if (!loaderId) {
+            return;
+        }
         // Only dispatch PageReloadRequested upon first reload request to simplify client logic.
         if (!this.#pendingReloadOptions) {
             this.dispatchEventToListeners(Events.PageReloadRequested, this);
@@ -330,7 +334,7 @@ export class ResourceTreeModel extends SDKModel {
             networkManager.clearRequests();
         }
         this.dispatchEventToListeners(Events.WillReloadPage);
-        void this.agent.invoke_reload({ ignoreCache, scriptToEvaluateOnLoad });
+        void this.agent.invoke_reload({ ignoreCache, scriptToEvaluateOnLoad, loaderId });
     }
     navigate(url) {
         return this.agent.invoke_navigate({ url });
@@ -528,7 +532,7 @@ export class ResourceTreeFrame {
         this.#sameTargetParentFrameInternal = parentFrame;
         this.#idInternal = frameId;
         this.crossTargetParentFrameId = null;
-        this.#loaderIdInternal = payload?.loaderId || '';
+        this.#loaderIdInternal = payload?.loaderId ?? '';
         this.#nameInternal = payload && payload.name;
         this.#urlInternal =
             payload && payload.url || Platform.DevToolsPath.EmptyUrlString;

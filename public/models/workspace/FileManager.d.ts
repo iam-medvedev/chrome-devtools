@@ -9,7 +9,7 @@ export declare class FileManager extends Common.ObjectWrapper.ObjectWrapper<Even
     static instance(opts?: {
         forceNew: boolean | null;
     }): FileManager;
-    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean): Promise<SaveCallbackParam | null>;
+    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean, isBase64: boolean): Promise<SaveCallbackParam | null>;
     private savedURL;
     private canceledSavedURL;
     append(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string): void;

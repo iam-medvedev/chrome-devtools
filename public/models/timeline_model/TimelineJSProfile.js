@@ -4,7 +4,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as TraceEngine from '../trace/trace.js';
-import { RecordType } from './TimelineModel.js';
 const UIStrings = {
     /**
      *@description Text for the name of a thread of the page
@@ -27,28 +26,34 @@ export class TimelineJSProfileProcessor {
         }
         return null;
     }
-    static createFakeTraceFromCpuProfile(profile, tid, injectPageEvent, name) {
+    static createFakeTraceFromCpuProfile(profile, tid) {
         const events = [];
-        if (injectPageEvent) {
-            appendEvent('TracingStartedInPage', { data: { 'sessionId': '1' } }, 0, 0, 'M');
-        }
-        if (!name) {
-            name = i18nString(UIStrings.threadS, { PH1: tid });
-        }
-        appendEvent("thread_name" /* TraceEngine.Types.TraceEvents.KnownEventName.ThreadName */, { name }, 0, 0, 'M', '__metadata');
+        const threadName = i18nString(UIStrings.threadS, { PH1: tid });
+        appendEvent('TracingStartedInPage', { data: { 'sessionId': '1' } }, 0, 0, "M" /* TraceEngine.Types.TraceEvents.Phase.METADATA */);
+        appendEvent("thread_name" /* TraceEngine.Types.TraceEvents.KnownEventName.ThreadName */, { name: threadName }, 0, 0, "M" /* TraceEngine.Types.TraceEvents.Phase.METADATA */, '__metadata');
         if (!profile) {
             return events;
         }
         // Append a root to show the start time of the profile (which is earlier than first sample), so the Performance
         // panel won't truncate this time period.
-        appendEvent(RecordType.JSRoot, {}, profile.startTime, profile.endTime - profile.startTime, 'X', 'toplevel');
+        // 'JSRoot' doesn't exist in the new engine and is not the name of an actual trace event, but changing it might break other trace processing tools that rely on this, so we stick with this name.
+        // TODO(crbug.com/341234884): consider removing this or clarify why it's required.
+        appendEvent('JSRoot', {}, profile.startTime, profile.endTime - profile.startTime, "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */, 'toplevel');
         // TODO: create a `Profile` event instead, as `cpuProfile` is legacy
-        appendEvent('CpuProfile', { data: { 'cpuProfile': profile } }, profile.endTime, 0, 'I');
+        appendEvent('CpuProfile', { data: { 'cpuProfile': profile } }, profile.endTime, 0, "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */);
         return events;
         function appendEvent(name, args, ts, dur, ph, cat) {
-            const event = { cat: cat || 'disabled-by-default-devtools.timeline', name, ph: ph || 'X', pid: 1, tid, ts, args };
+            const event = {
+                cat: cat || 'disabled-by-default-devtools.timeline',
+                name,
+                ph: ph || "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */,
+                pid: TraceEngine.Types.TraceEvents.ProcessID(1),
+                tid,
+                ts: TraceEngine.Types.Timing.MicroSeconds(ts),
+                args,
+            };
             if (dur) {
-                event.dur = dur;
+                event.dur = TraceEngine.Types.Timing.MicroSeconds(dur);
             }
             events.push(event);
             return event;

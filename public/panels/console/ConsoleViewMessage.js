@@ -1213,6 +1213,7 @@ export class ConsoleViewMessage {
         button.classList.add('hover-button');
         button.ariaLabel = this.getExplainLabel();
         button.tabIndex = 0;
+        button.setAttribute('jslog', `${VisualLogging.action(EXPLAIN_HOVER_ACTION_ID).track({ click: true })}`);
         hoverButtonObserver.observe(button);
         return button;
     }

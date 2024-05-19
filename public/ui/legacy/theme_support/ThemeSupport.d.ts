@@ -1,5 +1,6 @@
 import * as Common from '../../../core/common/common.js';
 export declare class ThemeSupport extends EventTarget {
+    #private;
     private setting;
     private themeNameInternal;
     private customSheets;
@@ -10,6 +11,11 @@ export declare class ThemeSupport extends EventTarget {
         forceNew: boolean | null;
         setting: Common.Settings.Setting<string> | null;
     }): ThemeSupport;
+    /**
+     * Adds additional `Document` instances that should be themed besides the default
+     * `window.document` in which this ThemeSupport instance was created.
+     */
+    addDocumentToTheme(document: Document): void;
     getComputedValue(propertyName: string, target?: Element | null): string;
     hasTheme(): boolean;
     themeName(): string;
@@ -19,9 +25,8 @@ export declare class ThemeSupport extends EventTarget {
     }): void;
     injectCustomStyleSheets(element: Element | ShadowRoot): void;
     addCustomStylesheet(sheetText: string): void;
-    applyTheme(document: Document): void;
     static clearThemeCache(): void;
-    static fetchColors(document?: Document): void;
+    fetchColorsAndApplyHostTheme(): void;
 }
 export declare class ThemeChangeEvent extends Event {
     static readonly eventName = "themechange";

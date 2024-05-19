@@ -47,10 +47,10 @@ export class FileManager extends Common.ObjectWrapper.ObjectWrapper {
         return fileManagerInstance;
     }
     // close() *must* be called, for the InspectorFrontendHostStub case, to complete the saving.
-    save(url, content, forceSaveAs) {
+    save(url, content, forceSaveAs, isBase64) {
         // Remove this url from the saved URLs while it is being saved.
         const result = new Promise(resolve => this.saveCallbacks.set(url, resolve));
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.save(url, content, forceSaveAs);
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.save(url, content, forceSaveAs, isBase64);
         return result;
     }
     savedURL(event) {

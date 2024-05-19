@@ -689,8 +689,6 @@ export class FilmStripRecorder {
         this.callback = null;
     }
     traceEventsCollected(events) {
-        // TODO(crbug.com/339804979): once the old trace engine is removed, update
-        // the TS types here to avoid this typecast.
         this.#collectedTraceEvents.push(...events);
     }
     async tracingComplete() {

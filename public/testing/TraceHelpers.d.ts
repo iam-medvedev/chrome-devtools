@@ -37,11 +37,6 @@ export declare function getNetworkFlameChart(traceFileName: string, expanded: bo
     flameChart: PerfUI.FlameChart.FlameChart;
     dataProvider: Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider;
 }>;
-/**
- * Takes a TracingModel and returns a set of all events that have a payload, sorted by timestamp.
- * Useful in tests to locate a legacy SDK Event to use for tests.
- **/
-export declare function getAllTracingModelPayloadEvents(tracingModel: TraceEngine.Legacy.TracingModel): TraceEngine.Legacy.PayloadEvent[];
 export declare const defaultTraceEvent: TraceEngine.Types.TraceEvents.TraceEventData;
 /**
  * Gets the tree in a thread.
@@ -90,51 +85,7 @@ export declare function makeBeginEvent(name: string, ts: number, cat?: string, p
  */
 export declare function makeEndEvent(name: string, ts: number, cat?: string, pid?: number, tid?: number): TraceEngine.Types.TraceEvents.TraceEventEnd;
 export declare function makeProfileCall(functionName: string, tsMs: number, durMs: number, pid?: TraceEngine.Types.TraceEvents.ProcessID, tid?: TraceEngine.Types.TraceEvents.ThreadID, nodeId?: number, url?: string): TraceEngine.Types.TraceEvents.SyntheticProfileCall;
-/**
- * Provides a stubbed TraceEngine.Legacy.Thread instance.
- * IMPORTANT: this is not designed to be a fully stubbed Thread, but one that is
- * stubbed enough to be able to use it to instantiate an TraceEngine.Legacy.Event.
- * If you pass this fake thread around into places that expect actual threads,
- * you will get errors. Use this only for simple cases where you need a one off
- * event to test something. For anything more, you should use the helpers in
- * TraceHelpers.ts to load and parse a real trace to get real data.
- **/
-export declare class StubbedThread {
-    id: number;
-    static make(id: number): TraceEngine.Legacy.Thread;
-    constructor(id: number);
-    getModel(): TraceEngine.Legacy.TracingModel;
-}
 export declare const DevToolsTimelineCategory = "disabled-by-default-devtools.timeline";
-export interface FakeEventPayload {
-    name: string;
-    categories: string[];
-    tid?: number;
-    ts: number;
-    pid?: number;
-    dur?: number;
-    ph: TraceEngine.Types.TraceEvents.Phase;
-    args?: any;
-    id?: string;
-    scope?: string[];
-    [x: string]: unknown;
-}
-/**
- * Creates an object that represents an EventPayload - one that looks exactly
- * like an event from a real trace could.
- * You must provide some of the options, but the others will revert to sensible
- * defaults. The goal here is not to use this to emulate an entire trace (you
- * should use an actual trace file if you need that), but to allow the
- * construction of single events to make testing utility methods easier.
- **/
-export declare function makeFakeEventPayload(payload: FakeEventPayload): TraceEngine.TracingManager.EventPayload;
-/**
- * Given an object representing a fake payload - see @FakeEventPayload - this
- * function will create a fake SDK Event with a stubbed thread that tries to
- * mimic the real thing. It is not designed to be used to emulate entire traces,
- * but more to create single events that can be used in unit tests.
- */
-export declare function makeFakeSDKEventFromPayload(payloadOptions: FakeEventPayload): TraceEngine.Legacy.PayloadEvent;
 /**
  * Mocks an object compatible with the return type of the
  * RendererHandler using only an array of ordered entries.

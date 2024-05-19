@@ -34,6 +34,12 @@ styles.replaceSync(
   display: flex;
   justify-content: center;
   padding: 10px;
+
+  & devtools-button {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--sys-size-8);
+  }
 }
 
 .no-blocked-urls > span {

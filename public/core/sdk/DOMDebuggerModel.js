@@ -403,7 +403,20 @@ export class DOMDebuggerManager {
         this.createEventListenerBreakpoints("picture-in-picture" /* Category.PictureInPicture */, ['resize'], ['PictureInPictureWindow']);
         this.createEventListenerBreakpoints("picture-in-picture" /* Category.PictureInPicture */, ['enter'], ['documentPictureInPicture']);
         this.createEventListenerBreakpoints("clipboard" /* Category.Clipboard */, ['copy', 'cut', 'paste', 'beforecopy', 'beforecut', 'beforepaste'], ['*']);
-        this.createEventListenerBreakpoints("control" /* Category.Control */, ['resize', 'scroll', 'scrollend', 'zoom', 'focus', 'blur', 'select', 'change', 'submit', 'reset'], ['*']);
+        this.createEventListenerBreakpoints("control" /* Category.Control */, [
+            'resize',
+            'scroll',
+            'scrollend',
+            'scrollsnapchange',
+            'scrollsnapchanging',
+            'zoom',
+            'focus',
+            'blur',
+            'select',
+            'change',
+            'submit',
+            'reset',
+        ], ['*']);
         this.createEventListenerBreakpoints("device" /* Category.Device */, ['deviceorientation', 'devicemotion'], ['*']);
         this.createEventListenerBreakpoints("dom-mutation" /* Category.DomMutation */, [
             'DOMActivate',

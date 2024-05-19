@@ -4,7 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { setMockResourceTree } from '../../testing/ResourceTreeHelpers.js';
+import { getInitializedResourceTreeModel, getMainFrame, MAIN_FRAME_ID, navigate, } from '../../testing/ResourceTreeHelpers.js';
 import * as Resources from './application.js';
 class SharedStorageListener {
     #model;
@@ -73,7 +73,6 @@ describeWithMockConnection('SharedStorageModel', () => {
     const TEST_ORIGIN_A = 'http://a.test';
     const TEST_ORIGIN_B = 'http://b.test';
     const TEST_ORIGIN_C = 'http://c.test';
-    const ID = 'AA';
     const METADATA = {
         creationTime: 100,
         length: 3,
@@ -98,49 +97,49 @@ describeWithMockConnection('SharedStorageModel', () => {
         {
             accessTime: 0,
             type: "documentAppend" /* Protocol.Storage.SharedStorageAccessType.DocumentAppend */,
-            mainFrameId: ID,
+            mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_A,
             params: { key: 'key0', value: 'value0' },
         },
         {
             accessTime: 10,
             type: "workletGet" /* Protocol.Storage.SharedStorageAccessType.WorkletGet */,
-            mainFrameId: ID,
+            mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_A,
             params: { key: 'key0' },
         },
         {
             accessTime: 15,
             type: "workletLength" /* Protocol.Storage.SharedStorageAccessType.WorkletLength */,
-            mainFrameId: ID,
+            mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_B,
             params: {},
         },
         {
             accessTime: 20,
             type: "documentClear" /* Protocol.Storage.SharedStorageAccessType.DocumentClear */,
-            mainFrameId: ID,
+            mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_B,
             params: {},
         },
         {
             accessTime: 100,
             type: "workletSet" /* Protocol.Storage.SharedStorageAccessType.WorkletSet */,
-            mainFrameId: ID,
+            mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_C,
             params: { key: 'key0', value: 'value1', ignoreIfPresent: true },
         },
         {
             accessTime: 150,
             type: "workletRemainingBudget" /* Protocol.Storage.SharedStorageAccessType.WorkletRemainingBudget */,
-            mainFrameId: ID,
+            mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_C,
             params: {},
         },
     ];
-    beforeEach(() => {
-        setMockResourceTree(false);
+    beforeEach(async () => {
         target = createTarget();
+        await getInitializedResourceTreeModel(target);
         sharedStorageModel = target.model(Resources.SharedStorageModel.SharedStorageModel);
         listener = new SharedStorageListener(sharedStorageModel);
     });
@@ -213,13 +212,11 @@ describeWithMockConnection('SharedStorageModel', () => {
         assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
         assert.isEmpty(sharedStorageModel.storages());
         const addedPromise = listener.waitForStoragesAdded(1);
-        const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
-        assert.exists(manager);
-        manager.dispatchEventToListeners(SDK.SecurityOriginManager.Events.SecurityOriginAdded, TEST_ORIGIN_A);
+        navigate(getMainFrame(target), { url: TEST_ORIGIN_A });
         await addedPromise;
         assert.exists(sharedStorageModel.storageForOrigin(TEST_ORIGIN_A));
         assert.strictEqual(1, sharedStorageModel.numStoragesForTesting());
-        manager.dispatchEventToListeners(SDK.SecurityOriginManager.Events.SecurityOriginAdded, TEST_ORIGIN_A);
+        navigate(getMainFrame(target), { url: TEST_ORIGIN_A });
         assert.strictEqual(1, sharedStorageModel.numStoragesForTesting());
     });
     it('adds/removes SecurityOrigins when model is enabled/disabled', async () => {
@@ -271,7 +268,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             sharedStorageModel.sharedStorageAccessed(event);
         }
         await addedPromise;
-        assert.strictEqual(3, sharedStorageModel.numStoragesForTesting());
+        assert.strictEqual(4, sharedStorageModel.numStoragesForTesting());
         assert.deepEqual(EVENTS, listener.accessEvents);
         assert.isTrue(listener.changeEventsEmpty());
         // All events will be dispatched as `SharedStorageAccess` events, but only change
@@ -286,7 +283,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             {
                 accessTime: 0,
                 type: "documentAppend" /* Protocol.Storage.SharedStorageAccessType.DocumentAppend */,
-                mainFrameId: ID,
+                mainFrameId: MAIN_FRAME_ID,
                 params: { key: 'key0', value: 'value0' },
             },
         ]);
@@ -296,7 +293,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             {
                 accessTime: 20,
                 type: "documentClear" /* Protocol.Storage.SharedStorageAccessType.DocumentClear */,
-                mainFrameId: ID,
+                mainFrameId: MAIN_FRAME_ID,
                 params: {},
             },
         ]);
@@ -306,7 +303,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             {
                 accessTime: 100,
                 type: "workletSet" /* Protocol.Storage.SharedStorageAccessType.WorkletSet */,
-                mainFrameId: ID,
+                mainFrameId: MAIN_FRAME_ID,
                 params: { key: 'key0', value: 'value1', ignoreIfPresent: true },
             },
         ]);

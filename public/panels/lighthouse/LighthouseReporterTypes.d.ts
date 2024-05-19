@@ -73,7 +73,7 @@ export interface DetailsJSON {
 export interface RunnerResultArtifacts {
     traces: {
         defaultPass: {
-            traceEvents: TraceEngine.TracingManager.EventPayload[];
+            traceEvents: TraceEngine.Types.TraceEvents.TraceEventData[];
         };
     };
     settings: {

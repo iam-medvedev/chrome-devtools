@@ -61,8 +61,8 @@ class TestSearchView extends Search.SearchView.SearchView {
     /** Fills in the UI elements of the SearchView and hits 'Enter'. */
     triggerSearch(query, matchCase, isRegex) {
         this.search.value = query;
-        this.matchCaseButton.setToggled(matchCase);
-        this.regexButton.setToggled(isRegex);
+        this.matchCaseButton.toggled = matchCase;
+        this.regexButton.toggled = isRegex;
         dispatchKeyDownEvent(this.search, { keyCode: UI.KeyboardShortcut.Keys.Enter.code });
     }
     get currentSearchResultMessage() {

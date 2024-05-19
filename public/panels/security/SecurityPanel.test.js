@@ -4,6 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as Security from './security.js';
 describeWithMockConnection('SecurityPanel', () => {
     let target;
@@ -61,13 +62,8 @@ describeWithMockConnection('SecurityPanel', () => {
         assert.isTrue(securityPanel.mainView.contentElement.querySelector('.security-summary')
             ?.classList.contains('security-summary-secure'));
         // Check that the SecurityPanel listens to any PrimaryPageChanged event
-        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assert.exists(resourceTreeModel);
         const sidebarTreeClearSpy = sinon.spy(securityPanel.sidebarTree, 'clearOrigins');
-        resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, {
-            frame: { url: 'https://www.example.com' },
-            type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Navigation */,
-        });
+        navigate(getMainFrame(target));
         assert.isTrue(sidebarTreeClearSpy.calledOnce);
     });
     it('shows \'reload page\' message when no data is available', async () => {
@@ -90,12 +86,7 @@ describeWithMockConnection('SecurityPanel', () => {
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.RequestFinished, request);
         assert.isTrue(reloadMessage.classList.contains('hidden'));
         // Check that reload message is hidden after clearing data.
-        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assert.exists(resourceTreeModel);
-        resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, {
-            frame: { url: 'https://www.example.com' },
-            type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Navigation */,
-        });
+        navigate(getMainFrame(target));
         assert.isFalse(reloadMessage.classList.contains('hidden'));
     });
 });

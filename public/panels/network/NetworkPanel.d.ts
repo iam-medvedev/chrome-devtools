@@ -109,7 +109,7 @@ export declare class FilmStripRecorder implements TraceEngine.TracingManager.Tra
     private readonly filmStripView;
     private callback;
     constructor(timeCalculator: NetworkTimeCalculator, filmStripView: PerfUI.FilmStripView.FilmStripView);
-    traceEventsCollected(events: TraceEngine.TracingManager.EventPayload[]): void;
+    traceEventsCollected(events: TraceEngine.Types.TraceEvents.TraceEventData[]): void;
     tracingComplete(): Promise<void>;
     tracingBufferUsage(): void;
     eventsRetrievalProgress(_progress: number): void;

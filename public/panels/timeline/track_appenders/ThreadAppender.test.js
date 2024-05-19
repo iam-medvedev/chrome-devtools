@@ -413,7 +413,7 @@ describeWithEnvironment('ThreadAppender', function () {
                 if (!regularEvent) {
                     return 'Unknown type';
                 }
-                if (TraceModel.Legacy.eventIsFromNewEngine(entry) && TraceModel.Types.TraceEvents.isProfileCall(entry)) {
+                if (TraceModel.Types.TraceEvents.isProfileCall(entry)) {
                     return entry.callFrame.functionName;
                 }
                 return entry.name;

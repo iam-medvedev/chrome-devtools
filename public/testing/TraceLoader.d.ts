@@ -30,7 +30,7 @@ export declare class TraceLoader {
      * Will default to typing those events using the types from TraceEngine, but
      * can be overriden by passing the legacy EventPayload type as the generic.
      **/
-    static rawEvents<T extends TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.TracingManager.EventPayload = TraceEngine.Types.TraceEvents.TraceEventData>(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<readonly T[]>;
+    static rawEvents(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<readonly TraceEngine.Types.TraceEvents.TraceEventData[]>;
     /**
      * Load an array of raw events from the trace file.
      * Will default to typing those events using the types from TraceEngine, but

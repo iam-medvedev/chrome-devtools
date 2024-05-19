@@ -34,7 +34,7 @@ export declare abstract class AffectedResourcesView extends UI.TreeOutline.TreeE
     protected affectedResourcesCountElement: HTMLElement;
     protected affectedResources: HTMLElement;
     protected requestResolver: Logs.RequestResolver.RequestResolver;
-    constructor(parent: IssueView, issue: AggregatedIssue);
+    constructor(parent: IssueView, issue: AggregatedIssue, jslogContext: string);
     /**
      * Sets the issue to take the resources from. Does not
      * trigger an update, the caller needs to do that explicitly.

@@ -16,6 +16,7 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     private readonly debugToolbar;
     private readonly debugToolbarDrawer;
     private readonly debuggerPausedMessage;
+    private overlayLoggables?;
     private splitWidget;
     editorView: UI.SplitWidget.SplitWidget;
     private navigatorTabbedLocation;
@@ -58,6 +59,7 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     private debuggerPaused;
     private debugInfoAttached;
     private showDebuggerPausedDetails;
+    private maybeLogOverlayAction;
     private debuggerResumed;
     private debuggerWasEnabled;
     get visibleView(): UI.Widget.Widget | null;

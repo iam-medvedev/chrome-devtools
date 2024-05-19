@@ -208,6 +208,9 @@ export class Entry {
             bodySize: this.responseBodySize,
             _transferSize: this.request.transferSize,
             _error: this.request.localizedFailDescription,
+            _fetchedViaServiceWorker: this.request.fetchedViaServiceWorker,
+            _responseCacheStorageCacheName: this.request.getResponseCacheStorageCacheName(),
+            _serviceWorkerResponseSource: this.request.serviceWorkerResponseSource(),
         };
     }
     buildContent() {
@@ -278,6 +281,11 @@ export class Entry {
                 result.send = 0;
             }
             highestTime = Math.max(sendEnd, connectEnd, sslEnd, dnsEnd, blockedStart, 0);
+            // Custom fields for service worker timings.
+            result._workerStart = timing.workerStart;
+            result._workerReady = timing.workerReady;
+            result._workerFetchStart = timing.workerFetchStart;
+            result._workerRespondWithSettled = timing.workerRespondWithSettled;
         }
         else if (this.request.responseReceivedTime === -1) {
             // Means that we don't have any more details after blocked, so attribute all to blocked.

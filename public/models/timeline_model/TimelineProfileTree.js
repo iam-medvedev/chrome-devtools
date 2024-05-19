@@ -104,7 +104,7 @@ export class TopDownNode extends Node {
             ignoreAsyncEvents: false,
         });
         function onStartEvent(e) {
-            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Legacy.timesForEventInMilliseconds(e);
+            const { startTime: currentStartTime, endTime: currentEndTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
             ++depth;
             if (depth > path.length + 2) {
                 return;
@@ -167,7 +167,7 @@ export class TopDownNode extends Node {
          * is cached on `matchedDepth`, for future checks.
          */
         function matchPath(e) {
-            const { endTime } = TraceEngine.Legacy.timesForEventInMilliseconds(e);
+            const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(e);
             if (matchedDepth === path.length) {
                 return true;
             }
@@ -485,24 +485,16 @@ export class BottomUpNode extends Node {
     }
 }
 export function eventURL(event) {
-    const data = event.args['data'] || event.args['beginData'];
-    if (data && data['url']) {
-        return data['url'];
+    // TODO(40287735): this overlaps a lot with the method in
+    // TimelineUIUtils; but this cannot call that because the Model cannot
+    // depend on the UIUtils module. Restructure this and that method so we
+    // can call the same method in both places.
+    if (event.args?.data?.url) {
+        return event.args.data.url;
     }
-    // Temporary break to aid migration: no events are from the old engine now,
-    // and we are incrementally removing these checks
-    if (!TraceEngine.Legacy.eventIsFromNewEngine(event)) {
-        return null;
-    }
-    let frame = eventStackFrame(event);
-    while (frame) {
-        const url = frame['url'];
-        if (url) {
-            return url;
-        }
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        frame = (frame.parent);
+    const frame = eventStackFrame(event);
+    if (frame) {
+        return frame.url;
     }
     return null;
 }

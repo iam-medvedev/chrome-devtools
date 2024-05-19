@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as HAR from '../../models/har/har.js';
@@ -12,6 +11,7 @@ import { dispatchClickEvent, dispatchMouseUpEvent, raf, } from '../../testing/DO
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
+import { activate } from '../../testing/ResourceTreeHelpers.js';
 import * as Coordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
@@ -268,14 +268,7 @@ describeWithMockConnection('NetworkLogView', () => {
         await coordinator.done();
         const rootNode = networkLogView.columns().dataGrid().rootNode();
         assert.deepEqual(rootNode.children.map(n => n.request()), [request1, request2]);
-        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assert.exists(resourceTreeModel);
-        const frame = {
-            url: 'http://example.com/',
-            unreachableUrl: () => Platform.DevToolsPath.EmptyUrlString,
-            resourceTreeModel: () => resourceTreeModel,
-        };
-        resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame, type: "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Activation */ });
+        activate(target);
         await coordinator.done();
         assert.deepEqual(rootNode.children.map(n => n.request()), [request1, request2, request3]);
         networkLogView.detach();

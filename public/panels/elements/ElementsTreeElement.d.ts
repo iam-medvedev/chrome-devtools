@@ -101,6 +101,7 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     updateDecorations(): void;
     private updateDecorationsInternal;
     private buildAttributeDOM;
+    private linkifyElementByRelation;
     private buildPseudoElementDOM;
     private buildTagDOM;
     private convertWhitespaceToEntities;

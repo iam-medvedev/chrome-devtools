@@ -17,6 +17,8 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     connectionReused: boolean;
     hasNetworkData: boolean;
     localizedFailDescription: string | null;
+    responseReceivedPromise?: Promise<void>;
+    responseReceivedPromiseResolve?: () => void;
     constructor(requestId: string, backendRequestId: Protocol.Network.RequestId | undefined, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId | null, loaderId: Protocol.Network.LoaderId | null, initiator: Protocol.Network.Initiator | null, hasUserGesture?: boolean);
     static create(backendRequestId: Protocol.Network.RequestId, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId | null, loaderId: Protocol.Network.LoaderId | null, initiator: Protocol.Network.Initiator | null, hasUserGesture?: boolean): NetworkRequest;
     static createForWebSocket(backendRequestId: Protocol.Network.RequestId, requestURL: Platform.DevToolsPath.UrlString, initiator?: Protocol.Network.Initiator): NetworkRequest;
@@ -244,6 +246,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     deleteAssociatedData(key: string): void;
     hasThirdPartyCookiePhaseoutIssue(): boolean;
     addDataReceivedEvent({ timestamp, dataLength, encodedDataLength, data }: Protocol.Network.DataReceivedEvent): void;
+    waitForResponseReceived(): Promise<void>;
 }
 export declare enum Events {
     FinishedLoading = "FinishedLoading",

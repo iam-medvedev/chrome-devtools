@@ -120,8 +120,8 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/issues/CorsIssueDetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CorsIssueDetailsView extends AffectedResourcesView {
-    constructor(parent, issue) {
-        super(parent, issue);
+    constructor(parent, issue, jslogContext) {
+        super(parent, issue, jslogContext);
         this.affectedResourcesCountElement.classList.add('cors-issue-affected-resource-label');
     }
     #appendStatus(element, isWarning) {

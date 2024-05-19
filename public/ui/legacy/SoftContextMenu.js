@@ -324,6 +324,7 @@ export class SoftContextMenu {
     }
     menuItemMouseUp(event) {
         this.triggerAction(event.target, event);
+        void VisualLogging.logClick(event.target, event);
         event.consume();
     }
     root() {

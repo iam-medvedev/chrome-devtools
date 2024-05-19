@@ -38,7 +38,6 @@
   },
   "files": [
     "../../../../../../front_end/models/trace/EntriesFilter.test.ts",
-    "../../../../../../front_end/models/trace/LegacyTracingModel.test.ts",
     "../../../../../../front_end/models/trace/ModelImpl.test.ts",
     "../../../../../../front_end/models/trace/Processor.test.ts",
     "../../../../../../front_end/models/trace/TracingManager.test.ts",

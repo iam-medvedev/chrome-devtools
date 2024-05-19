@@ -5,7 +5,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { dispatchMouseUpEvent } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { stabilizeEvent, stabilizeImpressions } from '../../testing/VisualLoggingHelpers.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as UI from './legacy.js';
 function getContextMenuElement() {
@@ -91,15 +90,17 @@ describeWithEnvironment('ContextMenu', () => {
         assert.exists(throttler.process);
         await throttler.process?.();
         assert.isTrue(recordImpression.calledOnce);
-        assert.sameDeepMembers(stabilizeImpressions(recordImpression.firstCall.firstArg.impressions), [
+        const impressions = recordImpression.firstCall.firstArg.impressions;
+        const menuId = impressions.find(i => !i.parent)?.id;
+        assert.exists(menuId);
+        assert.sameDeepMembers(impressions.map(i => ({ ...i, id: 0 })), [
             { id: 0, type: 67, height: 0, width: 0 },
-            { id: 1, type: 29, parent: 0, context: 42, height: 0, width: 0 },
-            { id: 2, type: 29, parent: 0, context: 44, height: 0, width: 0 },
+            { id: 0, type: 29, parent: menuId, context: 42, height: 0, width: 0 },
+            { id: 0, type: 29, parent: menuId, context: 44, height: 0, width: 0 },
         ]);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, 1);
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isTrue(recordClick.calledOnce);
-        assert.deepStrictEqual(stabilizeEvent(recordClick.firstCall.firstArg), { veid: 0, doubleClick: false });
         VisualLogging.stopLogging();
     });
 });

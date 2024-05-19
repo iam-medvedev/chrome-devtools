@@ -4,6 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createFakeSetting, createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
+import { activate, getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import { mkInspectorCspIssue, StubIssue, ThirdPartyStubIssue, } from '../../testing/StubIssue.js';
 import * as IssuesManager from '../issues_manager/issues_manager.js';
 describeWithMockConnection('IssuesManager', () => {
@@ -51,31 +52,15 @@ describeWithMockConnection('IssuesManager', () => {
     });
     it('keeps issues of prerendered page upon activation', () => {
         const { issuesManager, prerenderTarget } = assertOutOfScopeIssuesAreFiltered();
-        const resourceTreeModel = prerenderTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assert.exists(resourceTreeModel);
-        const frame = { url: 'http://example.com/', resourceTreeModel: () => resourceTreeModel };
         SDK.TargetManager.TargetManager.instance().setScopeTarget(prerenderTarget);
-        resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame, type: "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Activation */ });
+        activate(prerenderTarget);
         assert.deepStrictEqual(Array.from(issuesManager.issues()).map(getBlockedUrl), ['url2']);
     });
     const updatesOnPrimaryPageChange = (primary) => () => {
         const issuesManager = new IssuesManager.IssuesManager.IssuesManager();
         model.dispatchEventToListeners("IssueAdded" /* SDK.IssuesModel.Events.IssueAdded */, { issuesModel: model, inspectorIssue: mkInspectorCspIssue('url1') });
         assert.strictEqual(issuesManager.numberOfIssues(), 1);
-        const FRAME = {
-            id: 'main',
-            loaderId: 'test',
-            url: 'http://example.com',
-            securityOrigin: 'http://example.com',
-            mimeType: 'text/html',
-        };
-        if (primary) {
-            dispatchEvent(target, 'Page.frameNavigated', { frame: FRAME });
-        }
-        else {
-            const prerenderTarget = createTarget({ subtype: 'prerender' });
-            dispatchEvent(prerenderTarget, 'Page.frameNavigated', { frame: FRAME });
-        }
+        navigate(getMainFrame(primary ? target : createTarget({ subtype: 'prerender' })));
         assert.strictEqual(issuesManager.numberOfIssues(), primary ? 0 : 1);
     };
     it('clears issues after primary page navigation', updatesOnPrimaryPageChange(true));
@@ -284,14 +269,8 @@ describeWithMockConnection('IssuesManager', () => {
             request: { url: 'http://example.com' },
             hasUserGesture: false,
         });
-        const frame1 = {
-            id: 'main',
-            loaderId: 'loaderId1',
-            url: 'http://example.com',
-            securityOrigin: 'http://example.com',
-            mimeType: 'text/html',
-        };
-        dispatchEvent(target, 'Page.frameNavigated', { frame: frame1 });
+        const frame = getMainFrame(target);
+        navigate(frame, { loaderId: 'loaderId1' });
         assert.strictEqual(issuesManager.numberOfIssues(), 1);
         dispatchEvent(target, 'Network.requestWillBeSent', {
             requestId: 'requestId2',
@@ -299,14 +278,7 @@ describeWithMockConnection('IssuesManager', () => {
             request: { url: 'http://example.com/page' },
             hasUserGesture: true,
         });
-        const frame2 = {
-            id: 'main',
-            loaderId: 'loaderId2',
-            url: 'http://example.com/page',
-            securityOrigin: 'http://example.com',
-            mimeType: 'text/html',
-        };
-        dispatchEvent(target, 'Page.frameNavigated', { frame: frame2 });
+        navigate(frame, { loaderId: 'loaderId2' });
         assert.strictEqual(issuesManager.numberOfIssues(), 0);
     });
 });

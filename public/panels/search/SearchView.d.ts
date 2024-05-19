@@ -1,4 +1,5 @@
 import * as Common from '../../core/common/common.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type SearchScope } from './SearchScope.js';
 export declare class SearchView extends UI.Widget.VBox {
@@ -19,15 +20,16 @@ export declare class SearchView extends UI.Widget.VBox {
     private readonly searchPanelElement;
     private readonly searchResultsElement;
     protected readonly search: UI.HistoryInput.HistoryInput;
-    protected readonly matchCaseButton: UI.Toolbar.ToolbarToggle;
-    protected readonly regexButton: UI.Toolbar.ToolbarToggle;
+    protected readonly matchCaseButton: Buttons.Button.Button;
+    protected readonly regexButton: Buttons.Button.Button;
     private searchMessageElement;
     private readonly searchProgressPlaceholderElement;
     private searchResultsMessageElement;
     private readonly advancedSearchConfig;
     private searchScope;
     constructor(settingKey: string, throttler: Common.Throttler.Throttler);
-    private static appendToolbarToggle;
+    regexButtonToggled(): void;
+    matchCaseButtonToggled(): void;
     private buildSearchConfig;
     toggle(queryCandidate: string, searchImmediately?: boolean): void;
     createScope(): SearchScope;

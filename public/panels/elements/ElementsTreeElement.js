@@ -197,6 +197,10 @@ const UIStrings = {
      * to the Media Panel.
      */
     openMediaPanel: 'Jump to Media panel',
+    /**
+     *@description Text of a tooltip to redirect to another element in the Elements panel
+     */
+    showPopoverTarget: 'Show popover target',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/ElementsTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -1345,6 +1349,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         else {
             setValueWithEntities.call(this, attrValueElement, value);
         }
+        if (name === 'popovertarget') {
+            const linkedPart = value ? attrValueElement : attrNameElement;
+            void this.linkifyElementByRelation(linkedPart, "PopoverTarget" /* Protocol.DOM.GetElementByRelationRequestRelation.PopoverTarget */, i18nString(UIStrings.showPopoverTarget));
+        }
         if (hasText) {
             UI.UIUtils.createTextChild(attrSpanElement, '"');
         }
@@ -1401,6 +1409,21 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             return fragment;
         }
         return attrSpanElement;
+    }
+    async linkifyElementByRelation(linkContainer, relation, tooltip) {
+        const relatedElementId = await this.nodeInternal.domModel().getElementByRelation(this.nodeInternal.id, relation);
+        const relatedElement = this.nodeInternal.domModel().nodeForId(relatedElementId);
+        if (!relatedElement) {
+            return;
+        }
+        const link = await Common.Linkifier.Linkifier.linkify(relatedElement, {
+            preventKeyboardFocus: true,
+            tooltip,
+            textContent: linkContainer.textContent || undefined,
+            isDynamicLink: true,
+        });
+        linkContainer.removeChildren();
+        linkContainer.append(link);
     }
     buildPseudoElementDOM(parentElement, pseudoElementName) {
         const pseudoElement = parentElement.createChild('span', 'webkit-html-pseudo-element');

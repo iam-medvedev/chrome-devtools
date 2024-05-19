@@ -87,4 +87,24 @@ export declare function walkTreeFromEntry(entryToNode: Map<Types.TraceEvents.Syn
  *
  */
 export declare function walkEntireTree(entryToNode: Map<Types.TraceEvents.SyntheticTraceEntry, TraceEntryNode>, tree: TraceEntryTree, onEntryStart: (entry: Types.TraceEvents.SyntheticTraceEntry) => void, onEntryEnd: (entry: Types.TraceEvents.SyntheticTraceEntry) => void, traceWindowToInclude?: Types.Timing.TraceWindowMicroSeconds, minDuration?: Types.Timing.MicroSeconds): void;
+/**
+ * Determines if the given events, which are assumed to be ordered can
+ * be organized into tree structures.
+ * This condition is met if there is *not* a pair of async events
+ * e1 and e2 where:
+ *
+ * e1.startTime < e2.startTime && e1.endTime > e2.startTime && e1.endTime < e2.endTime.
+ * or, graphically:
+ * |------- e1 ------|
+ *   |------- e2 --------|
+ *
+ * Because a parent-child relationship cannot be made from the example
+ * above, a tree cannot be made from the set of events.
+ *
+ * Sync events from the same thread are tree-able by definition.
+ *
+ * Note that this will also return true if multiple trees can be
+ * built, for example if none of the events overlap with each other.
+ */
+export declare function canBuildTreesFromEvents(events: readonly Types.TraceEvents.TraceEventData[]): boolean;
 export {};

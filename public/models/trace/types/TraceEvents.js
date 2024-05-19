@@ -12,6 +12,16 @@ export function isAsyncPhase(phase) {
 export function isFlowPhase(phase) {
     return phase === "s" /* Phase.FLOW_START */ || phase === "t" /* Phase.FLOW_STEP */ || phase === "f" /* Phase.FLOW_END */;
 }
+export function objectIsTraceEventCallFrame(object) {
+    return ('functionName' in object && typeof object.functionName === 'string') &&
+        ('scriptId' in object && (typeof object.scriptId === 'string' || typeof object.scriptId === 'number')) &&
+        ('columnNumber' in object && typeof object.columnNumber === 'number') &&
+        ('lineNumber' in object && typeof object.lineNumber === 'number') &&
+        ('url' in object && typeof object.url === 'string');
+}
+export function isTraceEventRunTask(event) {
+    return event.name === "RunTask" /* KnownEventName.RunTask */;
+}
 export function isTraceEventAuctionWorkletRunningInProcess(event) {
     return event.name === 'AuctionWorkletRunningInProcess';
 }
@@ -435,4 +445,11 @@ export function isJSInvocationEvent(event) {
     }
     return false;
 }
+// NOT AN EXHAUSTIVE LIST: just some categories we use and refer
+// to in multiple places.
+export const Categories = {
+    Console: 'blink.console',
+    UserTiming: 'blink.user_timing',
+    Loading: 'loading',
+};
 //# sourceMappingURL=TraceEvents.js.map

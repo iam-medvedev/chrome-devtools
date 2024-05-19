@@ -47,7 +47,6 @@
     "../../../../../../front_end/panels/timeline/IsolateSelector.ts",
     "../../../../../../front_end/panels/timeline/LayoutShiftsTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/NetworkTrackAppender.ts",
-    "../../../../../../front_end/panels/timeline/PerformanceModel.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.ts",
     "../../../../../../front_end/panels/timeline/SourceMapsResolver.ts",
     "../../../../../../front_end/panels/timeline/TargetForEvent.ts",

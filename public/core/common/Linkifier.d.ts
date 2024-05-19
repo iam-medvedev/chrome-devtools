@@ -5,6 +5,8 @@ export declare abstract class Linkifier {
 export interface Options {
     tooltip?: string;
     preventKeyboardFocus?: boolean;
+    textContent?: string;
+    isDynamicLink?: boolean;
 }
 export declare function registerLinkifier(registration: LinkifierRegistration): void;
 export declare function getApplicableRegisteredlinkifiers(object: Object): LinkifierRegistration[];

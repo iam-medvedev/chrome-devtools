@@ -1,4 +1,3 @@
-import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import type * as Converters from '../converters/converters.js';
 import * as Models from '../models/models.js';
@@ -102,8 +101,6 @@ export interface ViewInput extends StepViewData {
     isLastSection: boolean;
     isRecording: boolean;
     isPlaying: boolean;
-    actionsMenuButton?: Buttons.Button.Button;
-    actionsMenuExpanded: boolean;
     isVisible: boolean;
     hasBreakpoint: boolean;
     removable: boolean;
@@ -113,19 +110,14 @@ export interface ViewInput extends StepViewData {
     recorderSettings?: Models.RecorderSettings.RecorderSettings;
     actions: Array<Action>;
     stepEdited: (event: StepEditedEvent) => void;
-    onToggleActionsMenu: (event: Event) => void;
-    onCloseActionsMenu: () => void;
     onBreakpointClick: () => void;
-    getActionsMenuButton: () => Buttons.Button.Button;
     handleStepAction: (event: Menus.Menu.MenuItemSelectedEvent) => void;
     toggleShowDetails: () => void;
     onToggleShowDetailsKeydown: (event: Event) => void;
     onStepContextMenu: (event: MouseEvent) => void;
 }
-export interface ViewOutput {
-    actionsMenuButton?: Buttons.Button.Button;
-}
-declare function viewFunction(input: ViewInput, output: ViewOutput, target: HTMLElement | ShadowRoot): void;
+export type ViewOutput = unknown;
+declare function viewFunction(input: ViewInput, _output: ViewOutput, target: HTMLElement | ShadowRoot): void;
 export declare class StepView extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;

@@ -103,7 +103,7 @@ export class ListWidget extends VBox {
         }
         const content = this.delegate.renderItem(item, editable);
         if (!content.hasAttribute('jslog')) {
-            content.setAttribute('jslog', `${VisualLogging.item()}`);
+            element.setAttribute('jslog', `${VisualLogging.item()}`);
         }
         element.appendChild(content);
         if (editable) {
@@ -256,6 +256,7 @@ export class Editor {
     constructor() {
         this.element = document.createElement('div');
         this.element.classList.add('editor-container');
+        this.element.setAttribute('jslog', `${VisualLogging.pane('editor').track({ resize: true })}`);
         this.element.addEventListener('keydown', onKeyDown.bind(null, Platform.KeyboardUtilities.isEscKey, this.cancelClicked.bind(this)), false);
         this.contentElementInternal = this.element.createChild('div', 'editor-content');
         this.contentElementInternal.addEventListener('keydown', onKeyDown.bind(null, event => {

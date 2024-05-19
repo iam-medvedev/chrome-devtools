@@ -291,13 +291,11 @@ export class MainImpl {
         Root.Runtime.experiments.register("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Autofill panel', false, 'https://goo.gle/devtools-autofill-panel', 'https://crbug.com/329106326');
         Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Performance panel: show postMessage dispatch and handling flows');
         Root.Runtime.experiments.register("perf-panel-annotations" /* Root.Runtime.ExperimentName.PERF_PANEL_ANNOTATIONS */, 'Enable saving and loading traces with annotations in the Performance panel');
-        Root.Runtime.experiments.register("timeline-enable-old-timeline-model-engine" /* Root.Runtime.ExperimentName.TIMELINE_EXECUTE_OLD_ENGINE */, 'Enable the legacy tracing model when inspecting Chrome traces using the performance panel', true);
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
             "outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
             "preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
             "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
-            "timeline-enable-old-timeline-model-engine" /* Root.Runtime.ExperimentName.TIMELINE_EXECUTE_OLD_ENGINE */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
@@ -332,19 +330,6 @@ export class MainImpl {
         if (!ThemeSupport.ThemeSupport.hasInstance()) {
             ThemeSupport.ThemeSupport.instance({ forceNew: true, setting: themeSetting });
         }
-        ThemeSupport.ThemeSupport.instance().applyTheme(document);
-        const onThemeChange = () => {
-            ThemeSupport.ThemeSupport.instance().applyTheme(document);
-        };
-        // When the theme changes we instantiate a new theme support and reapply.
-        // Equally if the user has set to match the system and the OS preference changes
-        // we perform the same change.
-        const darkThemeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const highContrastMediaQuery = window.matchMedia('(forced-colors: active)');
-        darkThemeMediaQuery.addEventListener('change', onThemeChange);
-        highContrastMediaQuery.addEventListener('change', onThemeChange);
-        themeSetting.addChangeListener(onThemeChange);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged, () => ThemeSupport.ThemeSupport.fetchColors(document));
         UI.UIUtils.installComponentRootStyles(document.body);
         this.#addMainEventListeners(document);
         const canDock = Boolean(Root.Runtime.Runtime.queryParam('can_dock'));
@@ -425,7 +410,7 @@ export class MainImpl {
         const app = appProvider.createApp();
         // It is important to kick controller lifetime after apps are instantiated.
         UI.DockController.DockController.instance().initialize();
-        ThemeSupport.ThemeSupport.fetchColors(document);
+        ThemeSupport.ThemeSupport.instance().fetchColorsAndApplyHostTheme();
         app.presentUI(document);
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-element-search')) {
             const toggleSearchNodeAction = UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');

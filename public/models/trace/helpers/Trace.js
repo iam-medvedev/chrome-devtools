@@ -384,7 +384,14 @@ export function frameIDForEvent(event) {
     return null;
 }
 const DevToolsTimelineEventCategory = 'disabled-by-default-devtools.timeline';
-function isTopLevelEvent(event) {
+export function isTopLevelEvent(event) {
+    if (event.name === 'JSRoot' && event.cat === 'toplevel') {
+        // This is used in TimelineJSProfile to insert a fake event prior to the
+        // CPU Profile in order to ensure the trace isn't truncated. So if we see
+        // this, we want to treat it as a top level event.
+        // TODO(crbug.com/341234884): do we need this?
+        return true;
+    }
     return event.cat.includes(DevToolsTimelineEventCategory) && event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RunTask */;
 }
 function topLevelEventIndexEndingAfter(events, time) {
@@ -490,5 +497,15 @@ export function forEachEvent(events, config) {
             config.onEndEvent(last);
         }
     }
+}
+// Parsed categories are cached to prevent calling cat.split()
+// multiple times on the same categories string.
+const parsedCategories = new Map();
+export function eventHasCategory(event, category) {
+    let parsedCategoriesForEvent = parsedCategories.get(event.cat);
+    if (!parsedCategoriesForEvent) {
+        parsedCategoriesForEvent = new Set(event.cat.split(',') || []);
+    }
+    return parsedCategoriesForEvent.has(category);
 }
 //# sourceMappingURL=Trace.js.map

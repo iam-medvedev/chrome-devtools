@@ -69,42 +69,72 @@ function processElementForDebugging(element, loggingState) {
     }
 }
 export function processEventForDebugging(event, state, extraInfo) {
-    const veDebugLoggingEnabled = localStorage.getItem('veDebugLoggingEnabled');
-    if (!veDebuggingEnabled && !veDebugLoggingEnabled) {
+    const format = localStorage.getItem('veDebugLoggingEnabled');
+    if (!format) {
         return;
     }
-    const entry = { event, ve: state ? VisualElements[state?.config.ve] : undefined, context: state?.config.context, ...extraInfo };
+    switch (format) {
+        case DebugLoggingFormat.Intuitive:
+            processEventForIntuitiveDebugging(event, state, extraInfo);
+            break;
+        case DebugLoggingFormat.AdHocAnalysis:
+            processEventForAdHocAnalysisDebugging(event, state, extraInfo);
+            break;
+    }
+}
+export function processEventForIntuitiveDebugging(event, state, extraInfo) {
+    const entry = {
+        event,
+        ve: state ? VisualElements[state?.config.ve] : undefined,
+        veid: state?.veid,
+        context: state?.config.context,
+        time: Date.now() - sessionStartTime,
+        ...extraInfo,
+    };
+    deleteUndefinedFields(entry);
+    maybeLogDebugEvent(entry);
+}
+export function processEventForAdHocAnalysisDebugging(event, state, extraInfo) {
+    const ve = state ? adHocAnalysisEntries.get(state.veid) : null;
+    if (ve) {
+        const interaction = { time: Date.now() - sessionStartTime, type: event, ...extraInfo };
+        deleteUndefinedFields(interaction);
+        ve.interactions.push(interaction);
+    }
+}
+function deleteUndefinedFields(entry) {
     for (const stringKey in entry) {
         const key = stringKey;
         if (typeof entry[key] === 'undefined') {
             delete entry[key];
         }
     }
-    if (veDebuggingEnabled) {
-        showDebugPopover(`${Object.entries(entry).map(([k, v]) => `${k}: ${v}`).join('; ')}`);
-    }
-    const time = Date.now() - sessionStartTime;
-    maybeLogDebugEvent({ ...entry, veid: state?.veid, time });
 }
 export function processImpressionsForDebugging(states) {
-    if (!localStorage.getItem('veDebugLoggingEnabled')) {
-        return;
+    const format = localStorage.getItem('veDebugLoggingEnabled');
+    switch (format) {
+        case DebugLoggingFormat.Intuitive:
+            processImpressionsForIntuitiveDebugLog(states);
+            break;
+        case DebugLoggingFormat.AdHocAnalysis:
+            processImpressionsForAdHocAnalysisDebugLog(states);
+            break;
+        default:
     }
+}
+function processImpressionsForIntuitiveDebugLog(states) {
     const impressions = new Map();
     for (const state of states) {
         const entry = {
             event: 'Impression',
             ve: VisualElements[state.config.ve],
+            context: state?.config.context,
+            width: state.size.width,
+            height: state.size.height,
+            veid: state.veid,
         };
-        if (state.config.context) {
-            entry.context = state.config.context;
-        }
-        if (state.size) {
-            entry.width = state.size.width;
-            entry.height = state.size.height;
-        }
-        entry.veid = state.veid,
-            impressions.set(state.veid, entry);
+        deleteUndefinedFields(entry);
+        impressions.set(state.veid, entry);
         if (!state.parent || !impressions.has(state.parent?.veid)) {
             entry.parent = state.parent?.veid;
         }
@@ -121,6 +151,28 @@ export function processImpressionsForDebugging(states) {
     }
     else {
         maybeLogDebugEvent({ event: 'Impression', children: entries, time: Date.now() - sessionStartTime });
+    }
+}
+const adHocAnalysisEntries = new Map();
+function processImpressionsForAdHocAnalysisDebugLog(states) {
+    for (const state of states) {
+        const buildVe = (state) => {
+            const ve = {
+                ve: VisualElements[state.config.ve],
+                veid: state.veid,
+                width: state.size?.width,
+                height: state.size?.height,
+                context: state.config.context,
+            };
+            deleteUndefinedFields(ve);
+            if (state.parent) {
+                ve.parent = buildVe(state.parent);
+            }
+            return ve;
+        };
+        const entry = { ...buildVe(state), interactions: [], time: Date.now() - sessionStartTime };
+        adHocAnalysisEntries.set(state.veid, entry);
+        maybeLogDebugEvent(entry);
     }
 }
 function processNonDomLoggableForDebugging(loggable, loggingState) {
@@ -168,16 +220,24 @@ export function debugString(config) {
 }
 const veDebugEventsLog = [];
 function maybeLogDebugEvent(entry) {
-    if (!localStorage.getItem('veDebugLoggingEnabled')) {
+    const format = localStorage.getItem('veDebugLoggingEnabled');
+    if (!format) {
         return;
     }
     veDebugEventsLog.push(entry);
-    // eslint-disable-next-line no-console
-    console.info('VE Debug:', entry);
+    if (format === DebugLoggingFormat.Intuitive) {
+        // eslint-disable-next-line no-console
+        console.info('VE Debug:', entry);
+    }
 }
-function setVeDebugLoggingEnabled(enabled) {
+var DebugLoggingFormat;
+(function (DebugLoggingFormat) {
+    DebugLoggingFormat["Intuitive"] = "Intuitive";
+    DebugLoggingFormat["AdHocAnalysis"] = "AdHocAnalysis";
+})(DebugLoggingFormat || (DebugLoggingFormat = {}));
+function setVeDebugLoggingEnabled(enabled, format = DebugLoggingFormat.Intuitive) {
     if (enabled) {
-        localStorage.setItem('veDebugLoggingEnabled', 'true');
+        localStorage.setItem('veDebugLoggingEnabled', format);
     }
     else {
         localStorage.removeItem('veDebugLoggingEnabled');
@@ -205,10 +265,169 @@ function findVeDebugImpression(veid, includeAncestorChain) {
     };
     return findImpression({ children: veDebugEventsLog });
 }
+function fieldValuesForSql(obj, fields) {
+    return [
+        ...fields.strings.map(f => obj[f] ? `"${obj[f]}"` : '$NullString'),
+        ...fields.numerics.map(f => obj[f] ?? 'null'),
+        ...fields.booleans.map(f => obj[f] ?? '$NullBool'),
+    ].join(', ');
+}
+function exportAdHocAnalysisLogForSql() {
+    const VE_FIELDS = {
+        strings: ['ve', 'context'],
+        numerics: ['veid', 'width', 'height'],
+        booleans: [],
+    };
+    const INTERACTION_FIELDS = {
+        strings: ['type', 'context'],
+        numerics: ['width', 'height', 'mouseButton', 'time'],
+        booleans: ['width', 'height', 'mouseButton', 'time'],
+    };
+    const fieldsDefsForSql = (fields) => fields.map((f, i) => `$${i + 1} as ${f}`).join(', ');
+    const veForSql = (e) => `$VeFields(${fieldValuesForSql(e, VE_FIELDS)}, ${e.parent ? `STRUCT(${veForSql(e.parent)})` : null})`;
+    const interactionForSql = (i) => `$Interaction(${fieldValuesForSql(i, INTERACTION_FIELDS)})`;
+    const entryForSql = (e) => `$Entry(${veForSql(e)}, ([${e.interactions.map(interactionForSql).join(', ')}]), ${e.time})`;
+    const entries = veDebugEventsLog;
+    // eslint-disable-next-line no-console
+    console.log(`
+DEFINE MACRO NullString CAST(null AS STRING);
+DEFINE MACRO NullBool CAST(null AS BOOL);
+DEFINE MACRO VeFields ${fieldsDefsForSql([
+        ...VE_FIELDS.strings,
+        ...VE_FIELDS.numerics,
+        'parent',
+    ])};
+DEFINE MACRO Interaction STRUCT(${fieldsDefsForSql([
+        ...INTERACTION_FIELDS.strings,
+        ...INTERACTION_FIELDS.numerics,
+        ...INTERACTION_FIELDS.booleans,
+    ])});
+DEFINE MACRO Entry STRUCT($1, $2 AS interactions, $3 AS time);
+
+// This fake entry put first fixes nested struct fiels names being lost
+DEFINE MACRO FakeVeFields $VeFields("", $NullString, 0, 0, 0, $1);
+DEFINE MACRO FakeVe STRUCT($FakeVeFields($1));
+DEFINE MACRO FakeEntry $Entry($FakeVeFields($FakeVe($FakeVe($FakeVe($FakeVe($FakeVe($FakeVe($FakeVe(null)))))))), ([]), 0);
+
+WITH
+  processed_logs AS (
+      SELECT * FROM UNNEST([
+        $FakeEntry,
+        ${entries.map(entryForSql).join(', \n')}
+      ])
+    )
+
+
+
+SELECT * FROM processed_logs;`);
+}
+function getStateFlowMutations() {
+    const mutations = [];
+    for (const entry of veDebugEventsLog) {
+        mutations.push(entry);
+        const veid = entry.veid;
+        for (const interaction of entry.interactions) {
+            mutations.push({ ...interaction, veid });
+        }
+    }
+    mutations.sort((e1, e2) => e1.time - e2.time);
+    return mutations;
+}
+class StateFlowElementsByArea {
+    #data = new Map();
+    add(e) {
+        this.#data.set(e.veid, e);
+    }
+    get(veid) {
+        return this.#data.get(veid);
+    }
+    getArea(e) {
+        let area = (e.width || 0) * (e.height || 0);
+        const parent = e.parent ? this.#data.get(e.parent?.veid) : null;
+        if (!parent) {
+            return area;
+        }
+        const parentArea = this.getArea(parent);
+        if (area > parentArea) {
+            area = parentArea;
+        }
+        return area;
+    }
+    get data() {
+        return [...this.#data.values()].filter(e => this.getArea(e)).sort((e1, e2) => this.getArea(e2) - this.getArea(e1));
+    }
+}
+function updateStateFlowTree(rootNode, elements, time, interactions) {
+    let node = rootNode;
+    for (const element of elements.data) {
+        if (!('children' in node)) {
+            return;
+        }
+        let nextNode = node.children[node.children.length - 1];
+        const nextNodeId = nextNode?.type === 'Impression' ? nextNode.veid : null;
+        if (nextNodeId !== element.veid) {
+            node.children.push(...interactions);
+            interactions.length = 0;
+            nextNode = { type: 'Impression', ve: element.ve, veid: element.veid, context: element.context, time, children: [] };
+            node.children.push(nextNode);
+        }
+        node = nextNode;
+    }
+}
+function normalizeNode(node) {
+    if (node.type !== 'Impression') {
+        return;
+    }
+    while (node.children.length === 1) {
+        if (node.children[0].type === 'Impression') {
+            node.children = node.children[0].children;
+        }
+    }
+    for (const child of node.children) {
+        normalizeNode(child);
+    }
+}
+function buildStateFlow() {
+    const mutations = getStateFlowMutations();
+    const elements = new StateFlowElementsByArea();
+    const rootNode = { type: 'Session', children: [] };
+    let time = mutations[0].time;
+    const interactions = [];
+    for (const mutation of mutations) {
+        if (mutation.time > time + 1000) {
+            updateStateFlowTree(rootNode, elements, time, interactions);
+            interactions.length = 0;
+        }
+        if (!('type' in mutation)) {
+            elements.add(mutation);
+        }
+        else if (mutation.type === 'Resize') {
+            const element = elements.get(mutation.veid);
+            if (!element) {
+                continue;
+            }
+            const oldArea = elements.getArea(element);
+            element.width = mutation.width;
+            element.height = mutation.height;
+            if (elements.getArea(element) !== 0 && oldArea !== 0) {
+                interactions.push(mutation);
+            }
+        }
+        else {
+            interactions.push(mutation);
+        }
+        time = mutation.time;
+    }
+    updateStateFlowTree(rootNode, elements, time, interactions);
+    normalizeNode(rootNode);
+    return rootNode;
+}
 let sessionStartTime = Date.now();
 export function processStartLoggingForDebugging() {
     sessionStartTime = Date.now();
-    maybeLogDebugEvent({ event: 'SessionStart' });
+    if (localStorage.getItem('veDebugLoggingEnabled') === DebugLoggingFormat.Intuitive) {
+        maybeLogDebugEvent({ event: 'SessionStart' });
+    }
 }
 // @ts-ignore
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
@@ -216,4 +435,8 @@ globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
 globalThis.veDebugEventsLog = veDebugEventsLog;
 // @ts-ignore
 globalThis.findVeDebugImpression = findVeDebugImpression;
+// @ts-ignore
+globalThis.exportAdHocAnalysisLogForSql = exportAdHocAnalysisLogForSql;
+// @ts-ignore
+globalThis.buildStateFlow = buildStateFlow;
 //# sourceMappingURL=Debugging.js.map

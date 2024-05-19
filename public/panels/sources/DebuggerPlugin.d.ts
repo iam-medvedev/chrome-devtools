@@ -68,6 +68,7 @@ export declare class DebuggerPlugin extends Plugin {
     private asyncStepIn;
     private fetchBreakpoints;
     private lineBreakpoints;
+    private linePossibleBreakpoints;
     private computeBreakpointDecoration;
     private restoreBreakpointsAfterEditing;
     private refreshBreakpoints;
@@ -82,6 +83,7 @@ export declare class DebuggerPlugin extends Plugin {
     private showSourceMapInfobarIfNeeded;
     private handleGutterClick;
     private toggleBreakpoint;
+    private defaultBreakpointLocation;
     private createNewBreakpoint;
     private setBreakpoint;
     private breakpointWasSetForTest;
