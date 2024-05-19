@@ -9,7 +9,6 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -265,39 +264,17 @@ function getSectionPreview(section) {
     }
     return section.url;
 }
-function renderStepActions(input, output) {
-    const actions = input.actions;
-    const groupsById = new Map();
-    for (const action of actions) {
-        const group = groupsById.get(action.group);
-        if (!group) {
-            groupsById.set(action.group, [action]);
-        }
-        else {
-            group.push(action);
-        }
-    }
-    const groups = [];
-    for (const [group, actions] of groupsById) {
-        groups.push({
-            group,
-            groupTitle: actions[0].groupTitle,
-            actions,
-        });
-    }
+function renderStepActions(input) {
     // clang-format off
     return LitHtml.html `
     <${Buttons.Button.Button.litTagName}
       class="step-actions"
       title=${i18nString(UIStrings.openStepActions)}
       aria-label=${i18nString(UIStrings.openStepActions)}
-      @click=${input.onToggleActionsMenu}
+      @click=${input.onStepContextMenu}
       @keydown=${(event) => {
         event.stopPropagation();
     }}
-      on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
-        output.actionsMenuButton = node;
-    })}
       jslog=${VisualLogging.dropDown('step-actions').track({ click: true })}
       .data=${{
         variant: "icon" /* Buttons.Button.Variant.ICON */,
@@ -305,36 +282,10 @@ function renderStepActions(input, output) {
         title: i18nString(UIStrings.openStepActions),
     }}
     ></${Buttons.Button.Button.litTagName}>
-    <${Menus.Menu.Menu.litTagName}
-      @menucloserequest=${input.onCloseActionsMenu}
-      @menuitemselected=${input.handleStepAction}
-      .origin=${input.getActionsMenuButton}
-      .showSelectedItem=${false}
-      .showConnector=${false}
-      .open=${input.actionsMenuExpanded}
-    >
-      ${LitHtml.Directives.repeat(groups, item => item.group, item => {
-        return LitHtml.html `
-          <${Menus.Menu.MenuGroup.litTagName}
-            .name=${item.groupTitle}
-          >
-            ${LitHtml.Directives.repeat(item.actions, item => item.id, item => {
-            return LitHtml.html `<${Menus.Menu.MenuItem.litTagName}
-                    .value=${item.id}
-                    jslog=${VisualLogging.action().track({ click: true }).context(`${item.jslogContext || item.id}`)}
-                  >
-                    ${item.label}
-                  </${Menus.Menu.MenuItem.litTagName}>
-                `;
-        })}
-          </${Menus.Menu.MenuGroup.litTagName}>
-        `;
-    })}
-    </${Menus.Menu.Menu.litTagName}>
   `;
     // clang-format on
 }
-function viewFunction(input, output, target) {
+function viewFunction(input, _output, target) {
     if (!input.step && !input.section) {
         return;
     }
@@ -395,7 +346,7 @@ function viewFunction(input, output, target) {
           </div>
         </div>
         <div class="filler"></div>
-        ${renderStepActions(input, output)}
+        ${renderStepActions(input)}
       </div>
       <div class="details">
         ${input.step &&
@@ -440,7 +391,6 @@ export class StepView extends HTMLElement {
         isLastSection: false,
         isRecording: false,
         isPlaying: false,
-        actionsMenuExpanded: false,
         isVisible: false,
         hasBreakpoint: false,
         removable: true,
@@ -449,10 +399,7 @@ export class StepView extends HTMLElement {
         isSelected: false,
         recorderSettings: undefined,
         actions: [],
-        getActionsMenuButton: this.#getActionsMenuButton.bind(this),
         stepEdited: this.#stepEdited.bind(this),
-        onToggleActionsMenu: this.#onToggleActionsMenu.bind(this),
-        onCloseActionsMenu: this.#onCloseActionsMenu.bind(this),
         onBreakpointClick: this.#onBreakpointClick.bind(this),
         handleStepAction: this.#handleStepAction.bind(this),
         toggleShowDetails: this.#toggleShowDetails.bind(this),
@@ -583,16 +530,6 @@ export class StepView extends HTMLElement {
             }
         }
     }
-    #onToggleActionsMenu(event) {
-        event.stopPropagation();
-        event.preventDefault();
-        this.#viewInput.actionsMenuExpanded = !this.#viewInput.actionsMenuExpanded;
-        this.#render();
-    }
-    #onCloseActionsMenu() {
-        this.#viewInput.actionsMenuExpanded = false;
-        this.#render();
-    }
     #onBreakpointClick() {
         if (this.#viewInput.hasBreakpoint) {
             this.dispatchEvent(new RemoveBreakpointEvent(this.#viewInput.stepIndex));
@@ -601,12 +538,6 @@ export class StepView extends HTMLElement {
             this.dispatchEvent(new AddBreakpointEvent(this.#viewInput.stepIndex));
         }
         this.#render();
-    }
-    #getActionsMenuButton() {
-        if (!this.#viewInput.actionsMenuButton) {
-            throw new Error('Missing actionsMenuButton');
-        }
-        return this.#viewInput.actionsMenuButton;
     }
     #getActions = () => {
         const actions = [];
@@ -674,11 +605,6 @@ export class StepView extends HTMLElement {
         return actions;
     };
     #onStepContextMenu(event) {
-        if (event.button !== 2) {
-            // 2 = secondary button = right click. We only show context menus if the
-            // user has right clicked.
-            return;
-        }
         const menu = new UI.ContextMenu.ContextMenu(event);
         const actions = this.#getActions();
         const copyActions = actions.filter(item => item.id.startsWith(COPY_ACTION_PREFIX));
@@ -711,7 +637,6 @@ export class StepView extends HTMLElement {
     #render() {
         const output = {};
         this.#view(this.#viewInput, output, this.#shadow);
-        this.#viewInput.actionsMenuButton = output.actionsMenuButton;
     }
 }
 customElements.define('devtools-step-view', StepView);

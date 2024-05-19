@@ -1,9 +1,8 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { makeFakeEventPayload } from '../../testing/TraceHelpers.js';
+import { makeInstantEvent } from '../../testing/TraceHelpers.js';
 import * as Timeline from './timeline.js';
 async function loadWebDevTraceAsFile() {
     const file = new URL('./fixtures/traces/web-dev.json.gz', import.meta.url);
@@ -40,8 +39,8 @@ describeWithEnvironment('TimelineLoader', () => {
         async processingStarted() {
             processingStartedSpy();
         },
-        async loadingComplete(collectedEvents, tracingModel, exclusiveFilter, isCpuProfile) {
-            loadingCompleteSpy(collectedEvents, tracingModel, exclusiveFilter, isCpuProfile);
+        async loadingComplete(collectedEvents, exclusiveFilter, isCpuProfile) {
+            loadingCompleteSpy(collectedEvents, exclusiveFilter, isCpuProfile);
         },
         recordingProgress: function (usage) {
             recordingProgressSpy(usage);
@@ -73,13 +72,9 @@ describeWithEnvironment('TimelineLoader', () => {
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the
         // loadingComplete parameters.
-        const [collectedEvents, tracingModel, exclusiveFilter, isCpuProfile] = loadingCompleteSpy.args[0];
+        const [collectedEvents, exclusiveFilter, isCpuProfile] = loadingCompleteSpy.args[0];
         assert.isNull(exclusiveFilter); // We are not filtering out any events for this trace.
-        if (!tracingModel) {
-            throw new Error('No tracing model found from results of loadTraceFromFile');
-        }
         // Ensure that we loaded something that looks about right!
-        assert.lengthOf(tracingModel.allRawEvents(), 8252);
         assert.lengthOf(collectedEvents, 8252);
         assert.isFalse(isCpuProfile);
     });
@@ -97,32 +92,17 @@ describeWithEnvironment('TimelineLoader', () => {
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the
         // loadingComplete parameters.
-        const [collectedEvents, tracingModel, /* exclusiveFilter */ , isCpuProfile] = loadingCompleteSpy.args[0];
-        if (!tracingModel) {
-            throw new Error('No tracing model found from results of loadTraceFromFile');
-        }
-        // We create fake trace event for CPU profile, includes one for TracingStartedInPage,
-        // one for metadata, one for root, and one for CPU profile
-        assert.lengthOf(tracingModel.allRawEvents(), 4);
+        const [collectedEvents, /* exclusiveFilter */ , isCpuProfile] = loadingCompleteSpy.args[0];
+        // We create fake trace event for CPU profile, includes one for
+        // TracingStartedInPage, one for metadata, one for root, and one for CPU
+        // profile
         assert.lengthOf(collectedEvents, 4);
         assert.isTrue(isCpuProfile);
     });
     it('can load recorded trace events correctly', async () => {
         const testTraceEvents = [
-            makeFakeEventPayload({
-                name: 'test-event',
-                ph: "B" /* TraceEngine.Types.TraceEvents.Phase.BEGIN */,
-                categories: ['testing1', 'testing2'],
-                ts: 1_000,
-                dur: 5_000,
-            }),
-            makeFakeEventPayload({
-                name: 'test-event',
-                ph: "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */,
-                categories: ['testing1', 'testing2'],
-                ts: 10_000,
-                dur: 5_000,
-            }),
+            makeInstantEvent('test-event-1', 1),
+            makeInstantEvent('test-event-2', 2),
         ];
         const loader = Timeline.TimelineLoader.TimelineLoader.loadFromEvents(testTraceEvents, client);
         await loader.traceFinalizedForTest();
@@ -136,13 +116,9 @@ describeWithEnvironment('TimelineLoader', () => {
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the
         // loadingComplete parameters.
-        const [collectedEvents, tracingModel, exclusiveFilter, isCpuProfile] = loadingCompleteSpy.args[0];
+        const [collectedEvents, exclusiveFilter, isCpuProfile] = loadingCompleteSpy.args[0];
         assert.isNull(exclusiveFilter);
-        if (!tracingModel) {
-            throw new Error('No tracing model found from results of loadTraceFromFile');
-        }
         // Ensure that we loaded something that looks about right!
-        assert.lengthOf(tracingModel.allRawEvents(), testTraceEvents.length);
         assert.lengthOf(collectedEvents, testTraceEvents.length);
         assert.isFalse(isCpuProfile);
     });
@@ -160,13 +136,9 @@ describeWithEnvironment('TimelineLoader', () => {
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the
         // loadingComplete parameters.
-        const [collectedEvents, tracingModel, /* exclusiveFilter */ , isCpuProfile] = loadingCompleteSpy.args[0];
-        if (!tracingModel) {
-            throw new Error('No tracing model found from results of loadTraceFromFile');
-        }
+        const [collectedEvents, /* exclusiveFilter */ , isCpuProfile] = loadingCompleteSpy.args[0];
         // We create fake trace event for CPU profile, includes one for TracingStartedInPage,
         // one for metadata, one for root, and one for CPU profile
-        assert.lengthOf(tracingModel.allRawEvents(), 4);
         assert.lengthOf(collectedEvents, 4);
         assert.isTrue(isCpuProfile);
     });

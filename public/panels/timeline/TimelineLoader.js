@@ -25,7 +25,6 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  */
 export class TimelineLoader {
     client;
-    tracingModel;
     canceledCallback;
     buffer;
     firstRawChunk;
@@ -36,9 +35,8 @@ export class TimelineLoader {
     #metadata;
     #traceFinalizedCallbackForTest;
     #traceFinalizedPromiseForTest;
-    constructor(client, title) {
+    constructor(client) {
         this.client = client;
-        this.tracingModel = new TraceEngine.Legacy.TracingModel(title);
         this.canceledCallback = null;
         this.buffer = '';
         this.firstRawChunk = true;
@@ -72,11 +70,11 @@ export class TimelineLoader {
         });
         return loader;
     }
-    static loadFromCpuProfile(profile, client, title) {
-        const loader = new TimelineLoader(client, title);
+    static loadFromCpuProfile(profile, client) {
+        const loader = new TimelineLoader(client);
         loader.#traceIsCPUProfile = true;
         try {
-            const events = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, /* tid */ 1, /* injectPageEvent */ true);
+            const events = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, TraceEngine.Types.TraceEvents.ThreadID(1));
             window.setTimeout(async () => {
                 void loader.addEvents(events);
             });
@@ -98,16 +96,30 @@ export class TimelineLoader {
             }
             const txt = stream.data();
             const trace = JSON.parse(txt);
-            if (Array.isArray(trace.nodes)) {
-                loader.#traceIsCPUProfile = true;
-                loader.buffer = txt;
-                await loader.close();
-                return;
-            }
-            const events = Array.isArray(trace.traceEvents) ? trace.traceEvents : trace;
-            void loader.addEvents(events);
+            loader.#processParsedFile(trace);
+            await loader.close();
         }
         return loader;
+    }
+    #processParsedFile(trace) {
+        if ('traceEvents' in trace || Array.isArray(trace)) {
+            // We know that this is NOT a raw CPU Profile because it has traceEvents
+            // (either at the top level, or nested under the traceEvents key)
+            const items = Array.isArray(trace) ? trace : trace.traceEvents;
+            this.#collectEvents(items);
+        }
+        else if (trace.nodes) {
+            // We know it's a raw Protocol CPU Profile.
+            this.#parseCPUProfileFormatFromFile(trace);
+            this.#traceIsCPUProfile = true;
+        }
+        else {
+            this.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineDataS));
+            return;
+        }
+        if ('metadata' in trace) {
+            this.#metadata = trace.metadata;
+        }
     }
     async addEvents(events) {
         await this.client?.loadingStarted();
@@ -121,17 +133,15 @@ export class TimelineLoader {
         for (let i = 0; i < events.length; i += eventsPerChunk) {
             const chunk = events.slice(i, i + eventsPerChunk);
             this.#collectEvents(chunk);
-            this.tracingModel.addEvents(chunk);
             await this.client?.loadingProgress((i + chunk.length) / events.length);
             await new Promise(r => window.setTimeout(r, 0)); // Yield event loop to paint.
         }
         void this.close();
     }
     async cancel() {
-        this.tracingModel = null;
         if (this.client) {
             await this.client.loadingComplete(
-            /* collectedEvents */ [], /* tracingModel= */ null, /* exclusiveFilter= */ null, /* isCpuProfile= */ false, 
+            /* collectedEvents */ [], /* exclusiveFilter= */ null, /* isCpuProfile= */ false, 
             /* recordingStartTime= */ null, /* metadata= */ null);
             this.client = null;
         }
@@ -142,7 +152,7 @@ export class TimelineLoader {
     /**
      * As TimelineLoader implements `Common.StringOutputStream.OutputStream`, `write()` is called when a
      * Common.StringOutputStream.StringOutputStream instance has decoded a chunk. This path is only used
-     * by `loadFromURL()`; it's NOT used by `loadFromEvents` or `loadFromFile`.
+     * by `loadFromFile()`; it's NOT used by `loadFromEvents` or `loadFromURL`.
      */
     async write(chunk, endOfFile) {
         if (!this.client) {
@@ -159,7 +169,7 @@ export class TimelineLoader {
             let progress = undefined;
             progress = this.buffer.length / this.totalSize;
             // For compressed traces, we can't provide a definite progress percentage. So, just keep it moving.
-            // For other traces, calculate a laoded part.
+            // For other traces, calculate a loaded part.
             progress = progress > 1 ? progress - Math.floor(progress) : progress;
             await this.client.loadingProgress(progress);
         }
@@ -167,28 +177,13 @@ export class TimelineLoader {
             let trace;
             try {
                 trace = JSON.parse(this.buffer);
+                this.#processParsedFile(trace);
+                return Promise.resolve();
             }
             catch (e) {
                 this.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineDataS, { PH1: e.toString() }));
                 return;
             }
-            if (trace.traceEvents || Array.isArray(trace)) {
-                const items = Array.isArray(trace) ? trace : trace.traceEvents;
-                this.tracingModel.addEvents(items);
-                this.#collectEvents(items);
-            }
-            else if (trace.nodes) {
-                this.parseCPUProfileFormat(trace);
-                this.#traceIsCPUProfile = true;
-            }
-            else {
-                this.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineDataS));
-                return;
-            }
-            if (trace.metadata) {
-                this.#metadata = trace.metadata;
-            }
-            return Promise.resolve();
         }
     }
     reportErrorAndCancelLoading(message) {
@@ -208,23 +203,19 @@ export class TimelineLoader {
         return this.#traceIsCPUProfile;
     }
     async finalizeTrace() {
-        this.tracingModel.tracingComplete();
         await this.client
-            .loadingComplete(this.#collectedEvents, this.tracingModel, this.filter, this.isCpuProfile(), /* recordingStartTime=*/ null, this.#metadata);
+            .loadingComplete(this.#collectedEvents, this.filter, this.isCpuProfile(), /* recordingStartTime=*/ null, this.#metadata);
         this.#traceFinalizedCallbackForTest?.();
     }
     traceFinalizedForTest() {
         return this.#traceFinalizedPromiseForTest;
     }
-    parseCPUProfileFormat(parsedTrace) {
-        const traceEvents = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(parsedTrace, /* tid */ 1, /* injectPageEvent */ true);
-        this.tracingModel.addEvents(traceEvents);
+    #parseCPUProfileFormatFromFile(parsedTrace) {
+        const traceEvents = TimelineModel.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(parsedTrace, TraceEngine.Types.TraceEvents.ThreadID(1));
         this.#collectEvents(traceEvents);
     }
     #collectEvents(events) {
-        // Once the old engine is removed, this can be updated to use the types from the new engine and avoid the `as unknown`.
-        this.#collectedEvents =
-            this.#collectedEvents.concat(events);
+        this.#collectedEvents = this.#collectedEvents.concat(events);
     }
 }
 //# sourceMappingURL=TimelineLoader.js.map

@@ -142,6 +142,7 @@ models/javascript_metadata/JavaScriptMetadata.test.js
 models/logs/NetworkLog.test.js
 models/logs/RequestResolver.test.js
 models/persistence/NetworkPersistenceManager.test.js
+models/persistence/PersistenceAction.test.js
 models/persistence/PersistenceImpl.test.js
 models/persistence/PlatformFileSystem.test.js
 models/source_map_scopes/NamesResolver.test.js
@@ -156,7 +157,6 @@ models/text_utils/TextUtils.test.js
 models/timeline_model/TimelineModelFilter.test.js
 models/timeline_model/TimelineProfileTree.test.js
 models/trace/EntriesFilter.test.js
-models/trace/LegacyTracingModel.test.js
 models/trace/ModelImpl.test.js
 models/trace/Processor.test.js
 models/trace/TracingManager.test.js
@@ -391,7 +391,6 @@ panels/sources/components/BreakpointsView.test.js
 panels/sources/components/BreakpointsViewUtils.test.js
 panels/sources/components/HeadersView.test.js
 panels/timeline/Breadcrumbs.test.js
-panels/timeline/EventTypeHelpers.test.js
 panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
 panels/timeline/SaveFileFormatter.test.js

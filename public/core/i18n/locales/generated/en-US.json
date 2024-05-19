@@ -1640,6 +1640,9 @@
   "models/persistence/PersistenceActions.ts | saveImage": {
     "message": "Save image"
   },
+  "models/persistence/PersistenceActions.ts | saveWasmFailed": {
+    "message": "Unable to save WASM module to disk. Most likely the module is too large."
+  },
   "models/persistence/PersistenceActions.ts | showOverrides": {
     "message": "Show all overrides"
   },
@@ -2299,12 +2302,6 @@
   },
   "panels/application/AppManifestView.ts | customizePwaTitleBar": {
     "message": "Customize the window controls overlay of your PWA's title bar"
-  },
-  "panels/application/AppManifestView.ts | darkBackgroundColor": {
-    "message": "Dark background color"
-  },
-  "panels/application/AppManifestView.ts | darkThemeColor": {
-    "message": "Dark theme color"
   },
   "panels/application/AppManifestView.ts | description": {
     "message": "Description"
@@ -3909,7 +3906,7 @@
     "message": "The prerender was not used because during activation time, navigation has an effective URL that is different from its normal URL. (For example, the New Tab Page, or hosted apps.)"
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusAllPrerenderingCanceled": {
-    "message": "Unknown"
+    "message": "All prerendered pages were unloaded by the browser for some reason (For example, WebViewCompat.addWebMessageListener() was called during prerendering.)"
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusAudioOutputDeviceRequested": {
     "message": "The prerendered page requested audio output, which is currently not supported."
@@ -3951,10 +3948,10 @@
     "message": "The prerendering navigation failed because it redirected to a URL whose scheme was not http: or https:."
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusJavaScriptInterfaceAdded": {
-    "message": "Unknown"
+    "message": "The prerendered page was unloaded because a new JavaScript interface has been injected by WebView.addJavascriptInterface()."
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusJavaScriptInterfaceRemoved": {
-    "message": "Unknown"
+    "message": "The prerendered page was unloaded because a JavaScript interface has been removed by WebView.removeJavascriptInterface()."
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusLoginAuthRequested": {
     "message": "The prerendering navigation required HTTP authentication, which is currently not supported."
@@ -5932,6 +5929,9 @@
   },
   "panels/elements/ElementsTreeElement.ts | showFrameDetails": {
     "message": "Show iframe details"
+  },
+  "panels/elements/ElementsTreeElement.ts | showPopoverTarget": {
+    "message": "Show popover target"
   },
   "panels/elements/ElementsTreeElement.ts | thisFrameWasIdentifiedAsAnAd": {
     "message": "This frame was identified as an ad frame"
@@ -9654,7 +9654,7 @@
     "message": "Not optimized: {PH1}"
   },
   "panels/profiler/ProfileLauncherView.ts | load": {
-    "message": "Load"
+    "message": "Load profile"
   },
   "panels/profiler/ProfileLauncherView.ts | selectJavascriptVmInstance": {
     "message": "Select JavaScript VM instance"
@@ -10281,7 +10281,25 @@
     "message": "Show {PH1} more"
   },
   "panels/search/SearchView.ts | clear": {
+    "message": "Clear search"
+  },
+  "panels/search/SearchView.ts | clearInput": {
     "message": "Clear"
+  },
+  "panels/search/SearchView.ts | disableCaseSensitive": {
+    "message": "Disable case sensitive search"
+  },
+  "panels/search/SearchView.ts | disableRegularExpression": {
+    "message": "Disable regular expressions"
+  },
+  "panels/search/SearchView.ts | enableCaseSensitive": {
+    "message": "Enable case sensitive search"
+  },
+  "panels/search/SearchView.ts | enableRegularExpression": {
+    "message": "Enable regular expressions"
+  },
+  "panels/search/SearchView.ts | find": {
+    "message": "Find"
   },
   "panels/search/SearchView.ts | foundDMatchingLinesInDFiles": {
     "message": "Found {PH1} matching lines in {PH2} files."
@@ -10298,17 +10316,11 @@
   "panels/search/SearchView.ts | indexingInterrupted": {
     "message": "Indexing interrupted."
   },
-  "panels/search/SearchView.ts | matchCase": {
-    "message": "Match Case"
-  },
   "panels/search/SearchView.ts | noMatchesFound": {
     "message": "No matches found."
   },
   "panels/search/SearchView.ts | refresh": {
     "message": "Refresh"
-  },
-  "panels/search/SearchView.ts | search": {
-    "message": "Search"
   },
   "panels/search/SearchView.ts | searchFinished": {
     "message": "Search finished."
@@ -10318,12 +10330,6 @@
   },
   "panels/search/SearchView.ts | searchInterrupted": {
     "message": "Search interrupted."
-  },
-  "panels/search/SearchView.ts | searchQuery": {
-    "message": "Search Query"
-  },
-  "panels/search/SearchView.ts | useRegularExpression": {
-    "message": "Use Regular Expression"
   },
   "panels/security/security-meta.ts | security": {
     "message": "Security"
@@ -11530,12 +11536,6 @@
   },
   "panels/sources/DebuggerPlugin.ts | errorLoading": {
     "message": "Error loading url {PH1}: {PH2}"
-  },
-  "panels/sources/DebuggerPlugin.ts | ignoreContentScripts": {
-    "message": "Ignore extension scripts"
-  },
-  "panels/sources/DebuggerPlugin.ts | ignoreScript": {
-    "message": "Ignore this file"
   },
   "panels/sources/DebuggerPlugin.ts | neverPauseHere": {
     "message": "Never pause here"
@@ -14558,8 +14558,23 @@
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectWhenReadyByReopening": {
     "message": "Reconnect when ready by reopening DevTools."
   },
-  "ui/legacy/SearchableView.ts | cancel": {
-    "message": "Cancel"
+  "ui/legacy/SearchableView.ts | accessibledOfD": {
+    "message": "Shows result {PH1} of {PH2}"
+  },
+  "ui/legacy/SearchableView.ts | clearInput": {
+    "message": "Clear"
+  },
+  "ui/legacy/SearchableView.ts | closeSearchBar": {
+    "message": "Close search bar"
+  },
+  "ui/legacy/SearchableView.ts | disableCaseSensitive": {
+    "message": "Disable case sensitive search"
+  },
+  "ui/legacy/SearchableView.ts | disableFindAndReplace": {
+    "message": "Disable find and replace"
+  },
+  "ui/legacy/SearchableView.ts | disableRegularExpression": {
+    "message": "Disable regular expressions"
   },
   "ui/legacy/SearchableView.ts | dMatches": {
     "message": "{PH1} matches"
@@ -14567,11 +14582,17 @@
   "ui/legacy/SearchableView.ts | dOfD": {
     "message": "{PH1} of {PH2}"
   },
+  "ui/legacy/SearchableView.ts | enableCaseSensitive": {
+    "message": "Enable case sensitive search"
+  },
+  "ui/legacy/SearchableView.ts | enableFindAndReplace": {
+    "message": "Find and replace"
+  },
+  "ui/legacy/SearchableView.ts | enableRegularExpression": {
+    "message": "Enable regular expressions"
+  },
   "ui/legacy/SearchableView.ts | findString": {
     "message": "Find"
-  },
-  "ui/legacy/SearchableView.ts | matchCase": {
-    "message": "Match Case"
   },
   "ui/legacy/SearchableView.ts | matchString": {
     "message": "1 match"
@@ -14583,13 +14604,10 @@
     "message": "Replace all"
   },
   "ui/legacy/SearchableView.ts | searchNext": {
-    "message": "Search next"
+    "message": "Show next result"
   },
   "ui/legacy/SearchableView.ts | searchPrevious": {
-    "message": "Search previous"
-  },
-  "ui/legacy/SearchableView.ts | useRegularExpression": {
-    "message": "Use Regular Expression"
+    "message": "Show previous result"
   },
   "ui/legacy/SettingsUI.ts | oneOrMoreSettingsHaveChanged": {
     "message": "One or more settings have changed which requires a reload to take effect."

@@ -6,7 +6,7 @@ import * as LoggingDriver from './LoggingDriver.js';
 import * as LoggingEvents from './LoggingEvents.js';
 import * as NonDomState from './NonDomState.js';
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
-export { logImpressions, logChange } from './LoggingEvents.js';
+export { logImpressions } from './LoggingEvents.js';
 export const logClick = (l, e) => LoggingEvents.logClick(LoggingDriver.clickLogThrottler)(l, e);
 export const logResize = (l, s) => LoggingEvents.logResize(l, s);
 export const logKeyDown = async (l, e, context) => LoggingEvents.logKeyDown(LoggingDriver.keyboardLogThrottler)(l, e, context);
@@ -16,7 +16,7 @@ export function registerLoggable(loggable, config, parent) {
         return;
     }
     NonDomState.registerLoggable(loggable, LoggingConfig.parseJsLog(config), parent || undefined);
-    LoggingDriver.scheduleProcessing();
+    void LoggingDriver.scheduleProcessing();
 }
 /**
  * Action visual elements are either buttons or menu items that trigger a given action. Use the

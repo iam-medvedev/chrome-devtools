@@ -1,30 +1,11 @@
-function mappedId(id, mapping) {
-    if (mapping.has(id)) {
-        return mapping.get(id);
+// Copyright 2023 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+import * as VisualLogging from '../ui/visual_logging/visual_logging-testing.js';
+export function getVeId(loggable) {
+    if (typeof loggable === 'string') {
+        loggable = document.querySelector(loggable);
     }
-    const lastId = [...mapping.values()].pop() ?? -1;
-    mapping.set(id, lastId + 1);
-    return lastId + 1;
-}
-export function stabilizeImpressions(impressions) {
-    const mapping = new Map();
-    for (const impression of impressions) {
-        impression.id = mappedId(impression.id, mapping);
-        if (impression.parent) {
-            impression.parent = mappedId(impression.parent, mapping);
-        }
-    }
-    return impressions;
-}
-export function stabilizeEvent(event) {
-    event.veid = 0;
-    return event;
-}
-export function stabilizeState(state, mapping = new Map()) {
-    const result = { ...state, veid: mappedId(state.veid, mapping) };
-    if (result.parent) {
-        result.parent = stabilizeState(result.parent, mapping);
-    }
-    return result;
+    return VisualLogging.LoggingState.getLoggingState(loggable).veid;
 }
 //# sourceMappingURL=VisualLoggingHelpers.js.map

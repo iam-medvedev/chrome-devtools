@@ -403,8 +403,8 @@ export class RequestTimingView extends UI.Widget.VBox {
             right = (scale * (endTime - range.end));
             const duration = range.end - range.start;
             const tr = tableElement.createChild('tr');
-            const timingBarTitleEement = tr.createChild('td');
-            UI.UIUtils.createTextChild(timingBarTitleEement, RequestTimingView.timeRangeTitle(rangeName));
+            const timingBarTitleElement = tr.createChild('td');
+            UI.UIUtils.createTextChild(timingBarTitleElement, RequestTimingView.timeRangeTitle(rangeName));
             const row = tr.createChild('td').createChild('div', 'network-timing-row');
             const bar = row.createChild('span', 'network-timing-bar ' + rangeName);
             bar.style.left = left + '%';
@@ -414,11 +414,11 @@ export class RequestTimingView extends UI.Widget.VBox {
             const label = tr.createChild('td').createChild('div', 'network-timing-bar-title');
             label.textContent = i18n.TimeUtilities.secondsToString(duration, true);
             if (range.name === 'serviceworker-respondwith') {
-                timingBarTitleEement.classList.add('network-fetch-timing-bar-clickable');
+                timingBarTitleElement.classList.add('network-fetch-timing-bar-clickable');
                 tableElement.createChild('tr', 'network-fetch-timing-bar-details');
-                timingBarTitleEement.setAttribute('tabindex', '0');
-                timingBarTitleEement.setAttribute('role', 'switch');
-                UI.ARIAUtils.setChecked(timingBarTitleEement, false);
+                timingBarTitleElement.setAttribute('tabindex', '0');
+                timingBarTitleElement.setAttribute('role', 'switch');
+                UI.ARIAUtils.setChecked(timingBarTitleElement, false);
             }
         }
         if (!request.finished && !request.preserved) {

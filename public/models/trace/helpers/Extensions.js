@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import { sortTraceEventsInPlace } from './Trace.js';
+import { canBuildTreesFromEvents, treify } from './TreeHelpers.js';
 export function buildTrackDataFromExtensionEntries(extensionEntries, extensionTrackData) {
     const dataByTrack = new Map();
     for (const entry of extensionEntries) {
@@ -15,6 +16,9 @@ export function buildTrackDataFromExtensionEntries(extensionEntries, extensionTr
     }
     for (const trackData of dataByTrack.values()) {
         sortTraceEventsInPlace(trackData.flameChartEntries);
+        if (canBuildTreesFromEvents(trackData.flameChartEntries)) {
+            treify(trackData.flameChartEntries);
+        }
         extensionTrackData.push(trackData);
     }
     return extensionTrackData;

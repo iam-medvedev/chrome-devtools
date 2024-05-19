@@ -5,9 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Extensions from '../../models/extensions/extensions.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import { PerformanceModel } from './PerformanceModel.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Controller of the Performance panel indicating that the Performance Panel cannot
@@ -22,11 +20,9 @@ export class TimelineController {
     primaryPageTarget;
     rootTarget;
     tracingManager;
-    performanceModel;
     #collectedEvents = [];
     #recordingStartTime = null;
     client;
-    tracingModel;
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tracingCompleteCallback;
@@ -62,9 +58,7 @@ export class TimelineController {
         // Ensure the tracing manager is the one for the Root Target, NOT the
         // primaryPageTarget, as that is the one we have to invoke tracing against.
         this.tracingManager = rootTarget.model(TraceEngine.TracingManager.TracingManager);
-        this.performanceModel = new PerformanceModel();
         this.client = client;
-        this.tracingModel = new TraceEngine.Legacy.TracingModel();
     }
     async dispose() {
         if (this.tracingManager) {
@@ -85,15 +79,15 @@ export class TimelineController {
         //   └ default: on, option: enableJSSampling
         const categoriesArray = [
             Root.Runtime.experiments.isEnabled('timeline-show-all-events') ? '*' : '-*',
-            TimelineModel.TimelineModel.TimelineModelImpl.Category.Console,
-            TimelineModel.TimelineModel.TimelineModelImpl.Category.UserTiming,
+            TraceEngine.Types.TraceEvents.Categories.Console,
+            TraceEngine.Types.TraceEvents.Categories.Loading,
+            TraceEngine.Types.TraceEvents.Categories.UserTiming,
             'devtools.timeline',
             disabledByDefault('devtools.timeline'),
             disabledByDefault('devtools.timeline.frame'),
             disabledByDefault('devtools.timeline.stack'),
             disabledByDefault('v8.compile'),
             disabledByDefault('v8.cpu_profiler.hires'),
-            TimelineModel.TimelineModel.TimelineModelImpl.Category.Loading,
             disabledByDefault('lighthouse'),
             'v8.execute',
             'v8',
@@ -139,10 +133,6 @@ export class TimelineController {
         this.client.loadingStarted();
         await this.waitForTracingToStop(true);
         await this.allSourcesFinished();
-        return this.performanceModel;
-    }
-    getPerformanceModel() {
-        return this.performanceModel;
     }
     async waitForTracingToStop(awaitTracingCompleteCallback) {
         const tracingStoppedPromises = [];
@@ -179,9 +169,7 @@ export class TimelineController {
         await runtimeModel.checkSideEffectSupport();
     }
     traceEventsCollected(events) {
-        this.#collectedEvents =
-            this.#collectedEvents.concat(events);
-        this.tracingModel.addEvents(events);
+        this.#collectedEvents.push(...events);
     }
     tracingComplete() {
         if (!this.tracingCompleteCallback) {
@@ -196,9 +184,9 @@ export class TimelineController {
     }
     async finalizeTrace() {
         await SDK.TargetManager.TargetManager.instance().resumeAllTargets();
-        this.tracingModel.tracingComplete();
         Extensions.ExtensionServer.ExtensionServer.instance().profilingStopped();
-        await this.client.loadingComplete(this.#collectedEvents, this.tracingModel, /* exclusiveFilter= */ null, /* isCpuProfile= */ false, this.#recordingStartTime, /* metadata= */ null);
+        await this.client.loadingComplete(this.#collectedEvents, /* exclusiveFilter= */ null, /* isCpuProfile= */ false, this.#recordingStartTime, 
+        /* metadata= */ null);
         this.client.loadingCompleteForTest();
     }
     tracingBufferUsage(usage) {

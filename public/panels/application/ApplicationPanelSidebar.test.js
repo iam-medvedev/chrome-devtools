@@ -1,11 +1,11 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
+import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 class SharedStorageTreeElementListener {
@@ -228,7 +228,6 @@ describeWithMockConnection('ResourcesSection', () => {
             SDK.FrameManager.FrameManager.instance({ forceNew: true });
             target = createTarget();
         });
-        const FRAME_ID = 'frame-id';
         it('adds tree elements for a frame and resource', () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
             const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
@@ -237,14 +236,10 @@ describeWithMockConnection('ResourcesSection', () => {
             const model = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
             assert.exists(model);
             assert.strictEqual(treeElement.childCount(), 0);
-            const frame = model.frameAttached(FRAME_ID, null);
-            assert.exists(frame);
-            assert.strictEqual(treeElement.childCount(), inScope ? 1 : 0);
-            const mimeType = 'text/html';
+            const frame = getMainFrame(target);
             const url = 'http://example.com';
-            const resource = new SDK.Resource.Resource(model, null, url, url, FRAME_ID, null, Common.ResourceType.ResourceType.fromMimeType(mimeType), mimeType, null, null);
             assert.strictEqual(treeElement.firstChild()?.childCount() ?? 0, 0);
-            model.dispatchEventToListeners(SDK.ResourceTreeModel.Events.ResourceAdded, resource);
+            createResource(frame, url, 'text/html', '');
             assert.strictEqual(treeElement.firstChild()?.childCount() ?? 0, inScope ? 1 : 0);
         });
         it('picks up existing frames and resource', () => {
@@ -252,15 +247,9 @@ describeWithMockConnection('ResourcesSection', () => {
             const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
             const treeElement = new UI.TreeOutline.TreeElement();
             new Application.ApplicationPanelSidebar.ResourcesSection(panel, treeElement);
-            const model = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            assert.exists(model);
-            const frame = model.frameAttached(FRAME_ID, null);
-            assert.exists(frame);
-            const mimeType = 'text/html';
             const url = 'http://example.com';
-            const resource = new SDK.Resource.Resource(model, null, url, url, FRAME_ID, null, Common.ResourceType.ResourceType.fromMimeType(mimeType), mimeType, null, null);
+            createResource(getMainFrame(target), url, 'text/html', '');
             assert.strictEqual(treeElement.firstChild()?.childCount() ?? 0, 0);
-            frame.addResource(resource);
             assert.strictEqual(treeElement.childCount(), 0);
             SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
             assert.strictEqual(treeElement.childCount(), inScope ? 1 : 0);

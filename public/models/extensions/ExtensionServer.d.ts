@@ -89,6 +89,8 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private onSetOpenResourceHandler;
     private onSetThemeChangeHandler;
     private handleOpenURL;
+    private extensionAllowedOnURL;
+    private extensionAllowedOnTarget;
     private onReload;
     private onEvaluateOnInspectedPage;
     private onGetHAR;

@@ -8,6 +8,7 @@ import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.nex
 import * as TextEditor from '../../../ui/components/text_editor/text_editor.js';
 import * as IconButton from '../../components/icon_button/icon_button.js';
 import * as LitHtml from '../../lit-html/lit-html.js';
+import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import styles from './codeBlock.css.js';
 const UIStrings = {
     /**
@@ -88,12 +89,13 @@ export class CodeBlock extends HTMLElement {
             'copy-button': true,
         });
         // clang-format off
-        LitHtml.render(LitHtml.html `<div class="codeblock">
-      <div class="toolbar">
+        LitHtml.render(LitHtml.html `<div class="codeblock" jslog=${VisualLogging.section('code')}>
+      <div class="toolbar" jslog=${VisualLogging.toolbar()}>
         <div class="lang">${this.#codeLang}</div>
         <div class="copy">
           <button class=${copyButtonClasses}
             title=${i18nString(UIStrings.copy)}
+            jslog=${VisualLogging.action('copy').track({ click: true })}
             @click=${this.#onCopy}>
             <${IconButton.Icon.Icon.litTagName}
               .data=${{
@@ -113,7 +115,9 @@ export class CodeBlock extends HTMLElement {
       <div class="editor-wrapper">
         <${TextEditor.TextEditor.TextEditor.litTagName} .state=${this.#editorState}></${TextEditor.TextEditor.TextEditor.litTagName}>
         ${this.#displayNotice ? LitHtml.html `<p class="notice">
-          <x-link class="link" href="https://support.google.com/legal/answer/13505487">${i18nString(UIStrings.disclaimer)}</x-link>
+          <x-link class="link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging.link('code-disclaimer').track({ click: true })}>
+            ${i18nString(UIStrings.disclaimer)}
+         </x-link>
         </p>` : LitHtml.nothing}
       </div>
     </div>`, this.#shadow, {

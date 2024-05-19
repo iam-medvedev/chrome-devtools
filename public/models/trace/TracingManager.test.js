@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
-import { makeFakeEventPayload } from '../../testing/TraceHelpers.js';
+import { makeInstantEvent } from '../../testing/TraceHelpers.js';
 import * as TraceEngine from '../trace/trace.js';
 class FakeClient {
     traceEventsCollected(_events) {
@@ -16,18 +16,8 @@ class FakeClient {
     }
 }
 const fakeEvents = [
-    makeFakeEventPayload({
-        name: 'test-event',
-        categories: ['devtools.timeline'],
-        ts: 1,
-        ph: "I" /* TraceEngine.Types.TraceEvents.Phase.INSTANT */,
-    }),
-    makeFakeEventPayload({
-        name: 'test-event',
-        categories: ['devtools.timeline'],
-        ts: 2,
-        ph: "I" /* TraceEngine.Types.TraceEvents.Phase.INSTANT */,
-    }),
+    makeInstantEvent('test-event-1', 1),
+    makeInstantEvent('test-event-2', 2),
 ];
 describeWithMockConnection('TracingManager', () => {
     beforeEach(() => {

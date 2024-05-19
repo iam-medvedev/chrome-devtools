@@ -87,24 +87,6 @@ export declare class CompatibilityTracksAppender {
     threadAppenders(): ThreadAppender[];
     eventsInTrack(trackAppender: TrackAppender): TraceEngine.Types.TraceEvents.TraceEventData[];
     /**
-     * Determines if the given events, which are assumed to be ordered can
-     * be organized into tree structures.
-     * This condition is met if there is *not* a pair of async events
-     * e1 and e2 where:
-     *
-     * e1.startTime <= e2.startTime && e1.endTime > e2.startTime && e1.endTime > e2.endTime.
-     * or, graphically:
-     * |------- e1 ------|
-     *   |------- e2 --------|
-     *
-     * Because a parent-child relationship cannot be made from the example
-     * above, a tree cannot be made from the set of events.
-     *
-     * Note that this will also return true if multiple trees can be
-     * built, for example if none of the events overlap with each other.
-     */
-    canBuildTreesFromEvents(events: readonly TraceEngine.Types.TraceEvents.TraceEventData[]): boolean;
-    /**
      * Gets the events to be shown in the tree views of the details pane
      * (Bottom-up, Call tree, etc.). These are the events from the track
      * that can be arranged in a tree shape.

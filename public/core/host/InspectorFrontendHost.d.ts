@@ -54,7 +54,7 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     openInNewTab(url: Platform.DevToolsPath.UrlString): void;
     openSearchResultsInNewTab(query: string): void;
     showItemInFolder(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
-    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean): void;
+    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean, isBase64: boolean): void;
     append(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string): void;
     close(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString): void;
     sendMessageToBackend(message: string): void;

@@ -7,5 +7,5 @@ export declare const logClick: (throttler: Common.Throttler.Throttler) => (logga
 }) => void;
 export declare const logHover: (throttler: Common.Throttler.Throttler) => (event: Event) => Promise<void>;
 export declare const logDrag: (throttler: Common.Throttler.Throttler) => (event: Event) => Promise<void>;
-export declare function logChange(event: Event): Promise<void>;
+export declare function logChange(loggable: Loggable): Promise<void>;
 export declare const logKeyDown: (throttler: Common.Throttler.Throttler) => (loggable: Loggable | null, event: Event | null, context?: string) => Promise<void>;

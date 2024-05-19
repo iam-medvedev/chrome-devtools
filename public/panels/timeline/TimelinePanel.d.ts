@@ -3,7 +3,6 @@ import * as Platform from '../../core/platform/platform.js';
 import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { PerformanceModel } from './PerformanceModel.js';
 import { type Client } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
@@ -17,7 +16,6 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private readonly millisecondsToRecordAfterLoadEvent;
     private readonly toggleRecordAction;
     private readonly recordReloadAction;
-    private performanceModel;
     private disableCaptureJSProfileSetting;
     private readonly captureLayersAndPicturesSetting;
     private readonly captureSelectorStatsSetting;
@@ -59,7 +57,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     searchableView(): UI.SearchableView.SearchableView | null;
     wasShown(): void;
     willHide(): void;
-    loadFromEvents(events: TraceEngine.TracingManager.EventPayload[]): void;
+    loadFromEvents(events: TraceEngine.Types.TraceEvents.TraceEventData[]): void;
     getFlameChart(): TimelineFlameChartView;
     getMinimap(): TimelineMiniMap;
     /**
@@ -108,8 +106,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private onFixMe;
     private clear;
     private reset;
-    applyFilters(_perfModel: PerformanceModel | null, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null): void;
-    setModel(model: PerformanceModel | null, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, traceEngineIndex?: number): void;
+    setModel(traceEngineIndex: number, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null): void;
     private recordingStarted;
     recordingProgress(usage: number): void;
     private showLandingPage;
@@ -121,7 +118,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
      * This is called with we are done loading a trace from a file, or after we
      * have recorded a fresh trace.
      **/
-    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
+    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
     recordTraceLoadMetric(): void;
     loadingCompleteForTest(): void;
     private showRecordingStarted;

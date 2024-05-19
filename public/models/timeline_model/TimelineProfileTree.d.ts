@@ -20,7 +20,7 @@ export declare class Node {
      * @returns a map with ordered <nodeId, Node> tuples.
      */
     children(): ChildrenCache;
-    searchTree(matchFunction: (arg0: TraceEngine.Legacy.CompatibleTraceEvent) => boolean, results?: Node[]): Node[];
+    searchTree(matchFunction: (arg0: TraceEngine.Types.TraceEvents.TraceEventData) => boolean, results?: Node[]): Node[];
 }
 export declare class TopDownNode extends Node {
     root: TopDownRootNode | null;
@@ -84,7 +84,7 @@ export declare class BottomUpNode extends Node {
     children(): ChildrenCache;
     searchTree(matchFunction: (arg0: TraceEngine.Types.TraceEvents.TraceEventData) => boolean, results?: Node[]): Node[];
 }
-export declare function eventURL(event: TraceEngine.Legacy.Event | TraceEngine.Types.TraceEvents.TraceEventData): Platform.DevToolsPath.UrlString | null;
+export declare function eventURL(event: TraceEngine.Types.TraceEvents.TraceEventData): Platform.DevToolsPath.UrlString | null;
 export declare function eventStackFrame(event: TraceEngine.Types.TraceEvents.TraceEventData): Protocol.Runtime.CallFrame | null;
 export declare function generateEventID(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
 export type ChildrenCache = Map<string | symbol, Node>;

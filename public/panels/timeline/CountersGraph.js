@@ -151,7 +151,7 @@ export class CountersGraph extends UI.Widget.VBox {
             for (const name in counters) {
                 const counter = this.countersByName.get(name);
                 if (counter) {
-                    const { startTime } = TraceEngine.Legacy.timesForEventInMilliseconds(event);
+                    const { startTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(event);
                     counter.appendSample(startTime, counters[name]);
                 }
             }

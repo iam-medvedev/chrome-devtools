@@ -106,14 +106,6 @@ const UIStrings = {
      */
     backgroundColor: 'Background color',
     /**
-     *@description Text in App Manifest View of the Application panel
-     */
-    darkThemeColor: 'Dark theme color',
-    /**
-     *@description Text in App Manifest View of the Application panel
-     */
-    darkBackgroundColor: 'Dark background color',
-    /**
      *@description Text for the orientation of something
      */
     orientation: 'Orientation',
@@ -444,10 +436,6 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     startURLField;
     themeColorSwatch;
     backgroundColorSwatch;
-    darkThemeColorField;
-    darkThemeColorSwatch;
-    darkBackgroundColorField;
-    darkBackgroundColorSwatch;
     orientationField;
     displayField;
     newNoteUrlField;
@@ -499,12 +487,6 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         const backgroundColorField = this.presentationSection.appendField(i18nString(UIStrings.backgroundColor));
         this.backgroundColorSwatch = new InlineEditor.ColorSwatch.ColorSwatch();
         backgroundColorField.appendChild(this.backgroundColorSwatch);
-        this.darkThemeColorField = this.presentationSection.appendField(i18nString(UIStrings.darkThemeColor));
-        this.darkThemeColorSwatch = new InlineEditor.ColorSwatch.ColorSwatch();
-        this.darkThemeColorField.appendChild(this.darkThemeColorSwatch);
-        this.darkBackgroundColorField = this.presentationSection.appendField(i18nString(UIStrings.darkBackgroundColor));
-        this.darkBackgroundColorSwatch = new InlineEditor.ColorSwatch.ColorSwatch();
-        this.darkBackgroundColorField.appendChild(this.darkBackgroundColorSwatch);
         this.orientationField = this.presentationSection.appendField(i18nString(UIStrings.orientation));
         this.displayField = this.presentationSection.appendField(i18nString(UIStrings.display));
         this.newNoteUrlField = this.presentationSection.appendField(i18nString(UIStrings.newNoteUrl));
@@ -668,27 +650,6 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         const backgroundColor = Common.Color.parse(stringProperty('background_color') || 'white') || Common.Color.parse('white');
         if (backgroundColor) {
             this.backgroundColorSwatch.renderColor(backgroundColor, true);
-        }
-        const userPreferences = parsedManifest['user_preferences'] || {};
-        const colorScheme = userPreferences['color_scheme'] || {};
-        const colorSchemeDark = colorScheme['dark'] || {};
-        const darkThemeColorString = colorSchemeDark['theme_color'];
-        const hasDarkThemeColor = typeof darkThemeColorString === 'string';
-        this.darkThemeColorField.parentElement?.classList.toggle('hidden', !hasDarkThemeColor);
-        if (hasDarkThemeColor) {
-            const darkThemeColor = Common.Color.parse(darkThemeColorString);
-            if (darkThemeColor) {
-                this.darkThemeColorSwatch.renderColor(darkThemeColor, true);
-            }
-        }
-        const darkBackgroundColorString = colorSchemeDark['background_color'];
-        const hasDarkBackgroundColor = typeof darkBackgroundColorString === 'string';
-        this.darkBackgroundColorField.parentElement?.classList.toggle('hidden', !hasDarkBackgroundColor);
-        if (hasDarkBackgroundColor) {
-            const darkBackgroundColor = Common.Color.parse(darkBackgroundColorString);
-            if (darkBackgroundColor) {
-                this.darkBackgroundColorSwatch.renderColor(darkBackgroundColor, true);
-            }
         }
         this.orientationField.textContent = stringProperty('orientation');
         const displayType = stringProperty('display');

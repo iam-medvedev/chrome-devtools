@@ -76,6 +76,7 @@ export declare function getZeroIndexedLineAndColumnForEvent(event: Types.TraceEv
  */
 export declare function getZeroIndexedStackTraceForEvent(event: Types.TraceEvents.TraceEventData): Types.TraceEvents.TraceEventCallFrame[] | null;
 export declare function frameIDForEvent(event: Types.TraceEvents.TraceEventData): string | null;
+export declare function isTopLevelEvent(event: Types.TraceEvents.TraceEventData): boolean;
 export declare function findUpdateLayoutTreeEvents(events: Types.TraceEvents.TraceEventData[], startTime: Types.Timing.MicroSeconds, endTime?: Types.Timing.MicroSeconds): Types.TraceEvents.TraceEventUpdateLayoutTree[];
 export interface ForEachEventConfig {
     onStartEvent: (event: Types.TraceEvents.TraceEventData) => void;
@@ -117,4 +118,5 @@ export interface ForEachEventConfig {
  * overriden making use of the config.ignoreAsyncEvents parameter.
  */
 export declare function forEachEvent(events: Types.TraceEvents.TraceEventData[], config: ForEachEventConfig): void;
+export declare function eventHasCategory(event: Types.TraceEvents.TraceEventData, category: string): boolean;
 export {};

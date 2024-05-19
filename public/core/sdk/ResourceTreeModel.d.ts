@@ -144,7 +144,7 @@ export declare class ResourceTreeFrame {
     get securityOrigin(): string | null;
     getStorageKey(forceFetch: boolean): Promise<string | null>;
     unreachableUrl(): Platform.DevToolsPath.UrlString;
-    get loaderId(): string;
+    get loaderId(): Protocol.Network.LoaderId;
     adFrameType(): Protocol.Page.AdFrameType;
     adFrameStatus(): Protocol.Page.AdFrameStatus | undefined;
     get childFrames(): ResourceTreeFrame[];

@@ -1,10 +1,10 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
 import { createContentProviderUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
@@ -114,11 +114,7 @@ describeWithMockConnection('IgnoreListManager', () => {
         const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew, resourceMapping, targetManager });
         ignoreListManager = Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew, debuggerWorkspaceBinding });
         // Inject the HTML document resource.
-        const frameId = 'main';
-        const mimeType = 'text/html';
-        const resourceTreeModel = notNull(target.model(SDK.ResourceTreeModel.ResourceTreeModel));
-        const frame = resourceTreeModel.frameAttached(frameId, null);
-        frame?.addResource(new SDK.Resource.Resource(resourceTreeModel, null, url, url, frameId, null, Common.ResourceType.ResourceType.fromMimeType(mimeType), mimeType, null, null));
+        createResource(getMainFrame(target), url, 'text/html', '');
         uiSourceCode = notNull(workspace.uiSourceCodeForURL(url));
         // Register the inline <script>s.
         const hash = '';

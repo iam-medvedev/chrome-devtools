@@ -4,7 +4,7 @@ import { type AggregatedIssue } from './IssueAggregator.js';
 import { type IssueView } from './IssueView.js';
 export declare class CorsIssueDetailsView extends AffectedResourcesView {
     #private;
-    constructor(parent: IssueView, issue: AggregatedIssue);
+    constructor(parent: IssueView, issue: AggregatedIssue, jslogContext: string);
     protected getResourceNameWithCount(count: number): Platform.UIString.LocalizedString;
     private static getHeaderFromError;
     private static getProblemFromError;

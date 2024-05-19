@@ -20,14 +20,22 @@ styles.replaceSync(
   display: inline;
   pointer-events: auto;
   outline-offset: 2px;
-}
 
-.node-link:focus-visible {
-  outline-width: unset;
+  &:focus-visible {
+    outline-width: unset;
+  }
+
+  &.dynamic-link:hover {
+    text-decoration: underline;
+  }
 }
 
 .node-label-name {
   color: var(--sys-color-token-property-special);
+
+  .dynamic-link & {
+    color: var(--text-link);
+  }
 }
 
 .node-label-class,

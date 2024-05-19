@@ -12,10 +12,8 @@ export declare class SearchableView extends VBox {
     private searchNavigationPrevElement;
     private searchNavigationNextElement;
     private readonly replaceInputElement;
-    private readonly buttonsContainer;
     private caseSensitiveButton;
     private regexButton;
-    private readonly secondRowButtons;
     private replaceButtonElement;
     private replaceAllButtonElement;
     private minimalSearchQuerySize;

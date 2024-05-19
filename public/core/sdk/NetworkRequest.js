@@ -298,6 +298,8 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #hasOverriddenContent;
     #hasThirdPartyCookiePhaseoutIssue;
     #serverSentEvents;
+    responseReceivedPromise;
+    responseReceivedPromiseResolve;
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         super();
         this.#requestIdInternal = requestId;
@@ -1457,6 +1459,15 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
                 }
             });
         }
+    }
+    waitForResponseReceived() {
+        if (this.responseReceivedPromise) {
+            return this.responseReceivedPromise;
+        }
+        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
+        this.responseReceivedPromise = promise;
+        this.responseReceivedPromiseResolve = resolve;
+        return this.responseReceivedPromise;
     }
 }
 export var Events;

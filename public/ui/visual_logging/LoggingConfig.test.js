@@ -54,9 +54,9 @@ describe('LoggingConfig', () => {
         assert.throws(() => VisualLogging.LoggingConfig.getLoggingConfig(element));
     });
     it('can parse complex track attribute', () => {
-        element.setAttribute('jslog', 'TreeItem; track:click, keydown: Enter; context:42');
+        element.setAttribute('jslog', 'TreeItem; track:click, keydown: :|Enter; context:42');
         const config = VisualLogging.LoggingConfig.getLoggingConfig(element);
-        assert.deepEqual(config.track, { click: true, keydown: 'Enter' });
+        assert.deepEqual(config.track, { click: true, keydown: ':|Enter' });
     });
     describe('can parse simple context attribute', () => {
         it('for TreeItem', () => {

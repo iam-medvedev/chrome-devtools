@@ -37,6 +37,10 @@ export interface Timing {
     receive: number;
     _blocked_queueing: number;
     _blocked_proxy?: number;
+    _workerStart?: number;
+    _workerReady?: number;
+    _workerFetchStart?: number;
+    _workerRespondWithSettled?: number;
 }
 export interface Parameter {
     name: string;
@@ -72,6 +76,9 @@ export interface Response {
     bodySize: number;
     _transferSize: number;
     _error: string | null;
+    _fetchedViaServiceWorker: boolean;
+    _responseCacheStorageCacheName: string | undefined;
+    _serviceWorkerResponseSource: Protocol.Network.ServiceWorkerResponseSource | undefined;
 }
 export interface EntryDTO {
     _fromCache?: string;

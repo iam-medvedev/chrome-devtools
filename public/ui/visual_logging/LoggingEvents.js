@@ -71,12 +71,11 @@ export const logDrag = (throttler) => async (event) => {
         processEventForDebugging('Drag', loggingState);
     });
 };
-export async function logChange(event) {
-    const loggingState = getLoggingState(event.currentTarget);
+export async function logChange(loggable) {
+    const loggingState = getLoggingState(loggable);
     assertNotNullOrUndefined(loggingState);
     const changeEvent = { veid: loggingState.veid };
     const context = loggingState.lastInputEventType;
-    delete loggingState.lastInputEventType;
     if (context) {
         changeEvent.context = await contextAsNumber(context);
     }
@@ -90,7 +89,7 @@ export const logKeyDown = (throttler) => async (loggable, event, context) => {
     }
     const loggingState = loggable ? getLoggingState(loggable) : null;
     const codes = (typeof loggingState?.config.track?.keydown === 'string') ? loggingState.config.track.keydown : '';
-    if (codes.length && !codes.split('|').includes(event.code)) {
+    if (codes.length && !codes.split('|').includes(event.code) && !codes.split('|').includes(event.key)) {
         return;
     }
     const keyDownEvent = { veid: loggingState?.veid };
@@ -114,8 +113,10 @@ function contextFromKeyCodes(event) {
     if (!(event instanceof KeyboardEvent)) {
         return undefined;
     }
+    const key = event.key;
+    const lowerCaseKey = key.toLowerCase();
     const components = [];
-    if (event.shiftKey) {
+    if (event.shiftKey && key !== lowerCaseKey) {
         components.push('shift');
     }
     if (event.ctrlKey) {
@@ -127,7 +128,7 @@ function contextFromKeyCodes(event) {
     if (event.metaKey) {
         components.push('meta');
     }
-    components.push(event.key.toLowerCase());
+    components.push(lowerCaseKey);
     return components.join('-');
 }
 async function contextAsNumber(context) {

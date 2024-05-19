@@ -38,7 +38,6 @@
   },
   "files": [
     "../../../../../../front_end/panels/timeline/Breadcrumbs.test.ts",
-    "../../../../../../front_end/panels/timeline/EventTypeHelpers.test.ts",
     "../../../../../../front_end/panels/timeline/FreshRecording.test.ts",
     "../../../../../../front_end/panels/timeline/Initiators.test.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.test.ts",

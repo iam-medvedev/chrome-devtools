@@ -94,10 +94,10 @@ export class ShortcutDialog extends HTMLElement {
         }}
         .position=${"bottom" /* DialogVerticalPosition.BOTTOM */}
         .horizontalAlignment=${"right" /* DialogHorizontalAlignment.RIGHT */}
+        .jslogContext=${'shortcuts'}
         on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
             this.#dialog = node;
         })}
-        jslog=${VisualLogging.dialog('shortcuts').track({ resize: true, keydown: 'Escape' })}
       >
         <div class="keybinds-category-header">
           <span class="keybinds-category-header-text">${i18nString(UIStrings.dialogTitle)}</span>

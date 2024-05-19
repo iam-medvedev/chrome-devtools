@@ -173,6 +173,7 @@ style.setProperty('--image-file-left-panel-open', 'url(\"' + new URL('./src/left
 style.setProperty('--image-file-lightbulb-spark', 'url(\"' + new URL('./src/lightbulb-spark.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-lighthouse_logo', 'url(\"' + new URL('./src/lighthouse_logo.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-list', 'url(\"' + new URL('./src/list.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-match-case', 'url(\"' + new URL('./src/match-case.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-match-whole-word', 'url(\"' + new URL('./src/match-whole-word.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-memory', 'url(\"' + new URL('./src/memory.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-minus', 'url(\"' + new URL('./src/minus.svg', import.meta.url).toString() + '\")');
@@ -192,6 +193,7 @@ style.setProperty('--image-file-record-start', 'url(\"' + new URL('./src/record-
 style.setProperty('--image-file-record-stop', 'url(\"' + new URL('./src/record-stop.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-redo', 'url(\"' + new URL('./src/redo.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-refresh', 'url(\"' + new URL('./src/refresh.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-regular-expression', 'url(\"' + new URL('./src/regular-expression.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-replace', 'url(\"' + new URL('./src/replace.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-replay', 'url(\"' + new URL('./src/replay.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-report', 'url(\"' + new URL('./src/report.svg', import.meta.url).toString() + '\")');

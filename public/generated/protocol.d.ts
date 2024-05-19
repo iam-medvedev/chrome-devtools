@@ -1060,6 +1060,8 @@ export declare namespace Audits {
      */
     interface CookieDeprecationMetadataIssueDetails {
         allowedSites: string[];
+        optOutPercentage: number;
+        isOptOutTopLevel: boolean;
     }
     const enum ClientHintIssueReason {
         MetaTagAllowListInvalidOrigin = "MetaTagAllowListInvalidOrigin",
@@ -3417,13 +3419,14 @@ export declare namespace DOM {
         Marker = "marker",
         Backdrop = "backdrop",
         Selection = "selection",
+        SearchText = "search-text",
         TargetText = "target-text",
         SpellingError = "spelling-error",
         GrammarError = "grammar-error",
         Highlight = "highlight",
         FirstLineInherited = "first-line-inherited",
         ScrollMarker = "scroll-marker",
-        ScrollMarkers = "scroll-markers",
+        ScrollMarkerGroup = "scroll-marker-group",
         Scrollbar = "scrollbar",
         ScrollbarThumb = "scrollbar-thumb",
         ScrollbarButton = "scrollbar-button",
@@ -8132,7 +8135,8 @@ export declare namespace Network {
         EnterprisePolicy = "EnterprisePolicy",
         StorageAccess = "StorageAccess",
         TopLevelStorageAccess = "TopLevelStorageAccess",
-        CorsOptIn = "CorsOptIn"
+        CorsOptIn = "CorsOptIn",
+        Scheme = "Scheme"
     }
     /**
      * A cookie which was not stored from a response with the corresponding reason.
@@ -11807,6 +11811,12 @@ export declare namespace Page {
          * Argument will be ignored if reloading dataURL origin.
          */
         scriptToEvaluateOnLoad?: string;
+        /**
+         * If set, an error will be thrown if the target page's main frame's
+         * loader id does not match the provided id. This prevents accidentally
+         * reloading an unintended target in case there's a racing navigation.
+         */
+        loaderId?: Network.LoaderId;
     }
     interface RemoveScriptToEvaluateOnLoadRequest {
         identifier: ScriptIdentifier;

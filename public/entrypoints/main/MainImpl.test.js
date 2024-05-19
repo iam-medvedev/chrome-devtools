@@ -1,13 +1,10 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
-import { describeWithRealConnection } from '../../testing/RealConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Main from './main.js';
 describeWithMockConnection('MainMenuItem', () => {
     beforeEach(async () => {
@@ -49,13 +46,6 @@ describeWithMockConnection('MainMenuItem', () => {
         }));
         assert.isTrue(contextMenuShow.calledOnce);
         assert.notExists(contextMenuShow.thisValues[0].defaultSection().items.find((item) => item.buildDescriptor().label === 'Focus page'));
-    });
-});
-describeWithRealConnection('MainImpl', () => {
-    it('calls fetchColors on ColorThemeChanged', async () => {
-        const colorFetchSpy = sinon.spy(ThemeSupport.ThemeSupport, 'fetchColors');
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged);
-        assert.isTrue(colorFetchSpy.called);
     });
 });
 //# sourceMappingURL=MainImpl.test.js.map

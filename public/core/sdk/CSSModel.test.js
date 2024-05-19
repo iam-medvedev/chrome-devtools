@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { activate, getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as SDK from './sdk.js';
 describeWithMockConnection('CSSModel', () => {
     it('gets the FontFace of a source URL', () => {
@@ -43,8 +44,8 @@ describeWithMockConnection('CSSModel', () => {
         assert.deepEqual(cssModelHeader.isConstructed, true);
     });
     describe('on primary page change', () => {
+        let target;
         let cssModel;
-        let resourceTreeModel;
         const header = {
             styleSheetId: 'stylesheet',
             frameId: 'frame',
@@ -62,34 +63,27 @@ describeWithMockConnection('CSSModel', () => {
             endLine: 0,
             endColumn: 0,
         };
-        const frame = {
-            url: 'http://example.com/',
-            resourceTreeModel: () => resourceTreeModel,
-            backForwardCacheDetails: { explanations: [] },
-        };
         beforeEach(() => {
-            const target = createTarget();
-            resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            target = createTarget();
             cssModel = target.model(SDK.CSSModel.CSSModel);
         });
         it('resets on navigation', () => {
             assert.exists(cssModel);
-            assert.exists(resourceTreeModel);
             cssModel.styleSheetAdded(header);
             let styleSheetIds = cssModel.getStyleSheetIdsForURL('http://example.com/styles.css');
             assert.deepEqual(styleSheetIds, ['stylesheet']);
-            resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame, type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Navigation */ });
+            navigate(getMainFrame(target));
             styleSheetIds =
                 cssModel.getStyleSheetIdsForURL('http://example.com/styles.css');
             assert.deepEqual(styleSheetIds, []);
         });
         it('does not reset on prerender activation', () => {
             assert.exists(cssModel);
-            assert.exists(resourceTreeModel);
+            getMainFrame(target);
             cssModel.styleSheetAdded(header);
             let styleSheetIds = cssModel.getStyleSheetIdsForURL('http://example.com/styles.css');
             assert.deepEqual(styleSheetIds, ['stylesheet']);
-            resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame, type: "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Activation */ });
+            activate(target);
             styleSheetIds =
                 cssModel.getStyleSheetIdsForURL('http://example.com/styles.css');
             assert.deepEqual(styleSheetIds, ['stylesheet']);

@@ -1,16 +1,13 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
+import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import { PerformanceModel } from './PerformanceModel.js';
 export declare class TimelineController implements TraceEngine.TracingManager.TracingManagerClient {
     #private;
     readonly primaryPageTarget: SDK.Target.Target;
     readonly rootTarget: SDK.Target.Target;
     private tracingManager;
-    private performanceModel;
     private readonly client;
-    private readonly tracingModel;
     private tracingCompleteCallback?;
     /**
      * We always need to profile against the DevTools root target, which is
@@ -41,12 +38,11 @@ export declare class TimelineController implements TraceEngine.TracingManager.Tr
     constructor(rootTarget: SDK.Target.Target, primaryPageTarget: SDK.Target.Target, client: Client);
     dispose(): Promise<void>;
     startRecording(options: RecordingOptions): Promise<Protocol.ProtocolResponseWithError>;
-    stopRecording(): Promise<PerformanceModel>;
-    getPerformanceModel(): PerformanceModel;
+    stopRecording(): Promise<void>;
     private waitForTracingToStop;
     private startRecordingWithCategories;
     warmupJsProfiler(): Promise<void>;
-    traceEventsCollected(events: TraceEngine.TracingManager.EventPayload[]): void;
+    traceEventsCollected(events: TraceEngine.Types.TraceEvents.TraceEventData[]): void;
     tracingComplete(): void;
     private allSourcesFinished;
     private finalizeTrace;
@@ -58,7 +54,7 @@ export interface Client {
     loadingStarted(): void;
     processingStarted(): void;
     loadingProgress(progress?: number): void;
-    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], tracingModel: TraceEngine.Legacy.TracingModel | null, exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
+    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
     loadingCompleteForTest(): void;
 }
 export interface RecordingOptions {

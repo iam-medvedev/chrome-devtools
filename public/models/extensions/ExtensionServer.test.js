@@ -5,7 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { describeWithDevtoolsExtension, getExtensionOrigin, } from '../../testing/ExtensionHelpers.js';
-import { FRAME_URL } from '../../testing/ResourceTreeHelpers.js';
+import { addChildFrame, FRAME_URL, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Extensions from '../extensions/extensions.js';
@@ -37,6 +37,21 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         target.setInspectedURL(allowedUrl);
         assert.isTrue(addExtensionSpy.calledOnce, 'addExtension called once');
         assert.isTrue(addExtensionSpy.returned(undefined), 'addExtension returned undefined');
+    });
+    it('only returns page resources for allowed targets', async () => {
+        const urls = ['http://example.com', 'chrome://version'];
+        const targets = urls.map(async (url) => {
+            const target = createTarget({ url });
+            const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            assert.isNotNull(resourceTreeModel);
+            await resourceTreeModel.once(SDK.ResourceTreeModel.Events.CachedResourcesLoaded);
+            target.setInspectedURL(url);
+            resourceTreeModel.mainFrame?.addResource(new SDK.Resource.Resource(resourceTreeModel, null, url, url, null, null, Common.ResourceType.resourceTypes.Document, 'application/text', null, null));
+            return target;
+        });
+        await Promise.all(targets);
+        const resources = await new Promise(r => context.chrome.devtools.inspectedWindow.getResources(r));
+        assert.deepStrictEqual(resources.map(r => r.url), ['https://example.com/', 'http://example.com']);
     });
 });
 describeWithDevtoolsExtension('Extensions', {}, context => {
@@ -194,6 +209,22 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         await onHiddenCalled;
         await context.chrome.devtools?.recorder.unregisterRecorderExtensionPlugin(extensionPlugin);
     });
+    it('reload only the main toplevel frame', async () => {
+        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        assert.isNotNull(target);
+        const secondTarget = createTarget();
+        const secondResourceTreeModel = secondTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        assert.isNotNull(secondResourceTreeModel);
+        const secondReloadStub = sinon.stub(secondResourceTreeModel, 'reloadPage');
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        assert.isNotNull(resourceTreeModel);
+        const reloadStub = sinon.stub(resourceTreeModel, 'reloadPage');
+        const reloadPromise = new Promise(resolve => reloadStub.callsFake(resolve));
+        context.chrome.devtools.inspectedWindow.reload();
+        await reloadPromise;
+        assert.isTrue(reloadStub.calledOnce);
+        assert.isTrue(secondReloadStub.notCalled);
+    });
 });
 const allowedUrl = FRAME_URL;
 const blockedUrl = 'http://web.dev';
@@ -278,28 +309,10 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
             assert.notExists(result.entries.find(e => e.request.url === blockedUrl));
         }
     });
-    function setUpFrame(name, url, parentFrame, executionContextOrigin) {
-        const mimeType = 'text/html';
-        const secureContextType = "Secure" /* Protocol.Page.SecureContextType.Secure */;
-        const crossOriginIsolatedContextType = "Isolated" /* Protocol.Page.CrossOriginIsolatedContextType.Isolated */;
-        const loaderId = 'loader';
+    async function setUpFrame(name, url, parentFrame, executionContextOrigin) {
         const parentTarget = parentFrame?.resourceTreeModel()?.target();
         const target = createTarget({ id: `${name}-target-id`, parentTarget });
-        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        assert.exists(resourceTreeModel);
-        const id = `${name}-frame-id`;
-        resourceTreeModel.frameNavigated({
-            id,
-            parentId: parentFrame?.id,
-            loaderId,
-            url,
-            domainAndRegistry: new URL(url).hostname,
-            securityOrigin: new URL(url).origin,
-            mimeType,
-            secureContextType,
-            crossOriginIsolatedContextType,
-            gatedAPIFeatures: [],
-        }, "Navigation" /* Protocol.Page.NavigationType.Navigation */);
+        const frame = parentFrame ? await addChildFrame(target, { url }) : getMainFrame(target, { url });
         if (executionContextOrigin) {
             executionContextOrigin = new URL(executionContextOrigin).origin;
             const parentRuntimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
@@ -309,19 +322,17 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
                 origin: executionContextOrigin,
                 name: executionContextOrigin,
                 uniqueId: executionContextOrigin,
-                auxData: { frameId: id, isDefault: true },
+                auxData: { frameId: frame.id, isDefault: true },
             });
         }
-        const frame = resourceTreeModel.frameForId(id);
-        assert.exists(frame);
         return frame;
     }
     it('blocks evaluation on blocked subframes', async () => {
         assert.isUndefined(context.chrome.devtools);
         const parentFrameUrl = allowedUrl;
         const childFrameUrl = blockedUrl;
-        const parentFrame = setUpFrame('parent', parentFrameUrl);
-        setUpFrame('child', childFrameUrl, parentFrame);
+        const parentFrame = await setUpFrame('parent', parentFrameUrl);
+        await setUpFrame('child', childFrameUrl, parentFrame);
         const result = await new Promise(r => context.chrome.devtools?.inspectedWindow.eval('4', { frameURL: childFrameUrl }, (result, error) => r({ result, error })));
         assert.deepStrictEqual(result.error?.details, ['Permission denied']);
     });
@@ -330,8 +341,8 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         const parentFrameUrl = allowedUrl;
         const childFrameUrl = `${allowedUrl}/2`;
         const childExeContextOrigin = blockedUrl;
-        const parentFrame = setUpFrame('parent', parentFrameUrl, undefined, parentFrameUrl);
-        const childFrame = setUpFrame('child', childFrameUrl, parentFrame, childExeContextOrigin);
+        const parentFrame = await setUpFrame('parent', parentFrameUrl, undefined, parentFrameUrl);
+        const childFrame = await setUpFrame('child', childFrameUrl, parentFrame, childExeContextOrigin);
         // Create a fake content script execution context, i.e., a non-default context with the extension's (== window's)
         // origin.
         const runtimeModel = childFrame.resourceTreeModel()?.target().model(SDK.RuntimeModel.RuntimeModel);
@@ -355,8 +366,8 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         assert.isUndefined(context.chrome.devtools);
         const parentFrameUrl = allowedUrl;
         const childFrameUrl = `${allowedUrl}/2`;
-        const parentFrame = setUpFrame('parent', parentFrameUrl, undefined, parentFrameUrl);
-        const childFrame = setUpFrame('child', childFrameUrl, parentFrame, parentFrameUrl);
+        const parentFrame = await setUpFrame('parent', parentFrameUrl, undefined, parentFrameUrl);
+        const childFrame = await setUpFrame('child', childFrameUrl, parentFrame, parentFrameUrl);
         // Create a non-default context with a blocked origin.
         const childExeContextOrigin = blockedUrl;
         const runtimeModel = childFrame.resourceTreeModel()?.target().model(SDK.RuntimeModel.RuntimeModel);
@@ -379,8 +390,8 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         const parentFrameUrl = allowedUrl;
         const childFrameUrl = `${allowedUrl}/2`;
         const childExeContextOrigin = blockedUrl;
-        const parentFrame = setUpFrame('parent', parentFrameUrl, undefined, parentFrameUrl);
-        setUpFrame('child', childFrameUrl, parentFrame, childExeContextOrigin);
+        const parentFrame = await setUpFrame('parent', parentFrameUrl, undefined, parentFrameUrl);
+        await setUpFrame('child', childFrameUrl, parentFrame, childExeContextOrigin);
         const result = await new Promise(r => context.chrome.devtools?.inspectedWindow.eval('4', { frameURL: childFrameUrl }, (result, error) => r({ result, error })));
         assert.deepStrictEqual(result.error?.details, ['Permission denied']);
     });

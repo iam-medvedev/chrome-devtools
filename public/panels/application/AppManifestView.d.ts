@@ -37,10 +37,6 @@ export declare class AppManifestView extends AppManifestView_base implements SDK
     private readonly startURLField;
     private readonly themeColorSwatch;
     private readonly backgroundColorSwatch;
-    private readonly darkThemeColorField;
-    private readonly darkThemeColorSwatch;
-    private readonly darkBackgroundColorField;
-    private readonly darkBackgroundColorSwatch;
     private orientationField;
     private displayField;
     private readonly newNoteUrlField;

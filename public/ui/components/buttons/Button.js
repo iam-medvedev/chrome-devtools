@@ -90,6 +90,9 @@ export class Button extends HTMLElement {
         this.#props.toggled = toggled;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
+    get toggled() {
+        return Boolean(this.#props.toggled);
+    }
     set active(active) {
         this.#props.active = active;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);

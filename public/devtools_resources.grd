@@ -172,6 +172,7 @@
       <include file="Images/lightbulb-spark.svg" name="IMAGES_LIGHTBULB_SPARK_SVG" resource_path="Images/lightbulb-spark.svg" type="BINDATA" compress="false"/>
       <include file="Images/lighthouse_logo.svg" name="IMAGES_LIGHTHOUSE_LOGO_SVG" resource_path="Images/lighthouse_logo.svg" type="BINDATA" compress="false"/>
       <include file="Images/list.svg" name="IMAGES_LIST_SVG" resource_path="Images/list.svg" type="BINDATA" compress="false"/>
+      <include file="Images/match-case.svg" name="IMAGES_MATCH_CASE_SVG" resource_path="Images/match-case.svg" type="BINDATA" compress="false"/>
       <include file="Images/match-whole-word.svg" name="IMAGES_MATCH_WHOLE_WORD_SVG" resource_path="Images/match-whole-word.svg" type="BINDATA" compress="false"/>
       <include file="Images/memory.svg" name="IMAGES_MEMORY_SVG" resource_path="Images/memory.svg" type="BINDATA" compress="false"/>
       <include file="Images/minus.svg" name="IMAGES_MINUS_SVG" resource_path="Images/minus.svg" type="BINDATA" compress="false"/>
@@ -195,6 +196,7 @@
       <include file="Images/record-stop.svg" name="IMAGES_RECORD_STOP_SVG" resource_path="Images/record-stop.svg" type="BINDATA" compress="false"/>
       <include file="Images/redo.svg" name="IMAGES_REDO_SVG" resource_path="Images/redo.svg" type="BINDATA" compress="false"/>
       <include file="Images/refresh.svg" name="IMAGES_REFRESH_SVG" resource_path="Images/refresh.svg" type="BINDATA" compress="false"/>
+      <include file="Images/regular-expression.svg" name="IMAGES_REGULAR_EXPRESSION_SVG" resource_path="Images/regular-expression.svg" type="BINDATA" compress="false"/>
       <include file="Images/replace.svg" name="IMAGES_REPLACE_SVG" resource_path="Images/replace.svg" type="BINDATA" compress="false"/>
       <include file="Images/replay.svg" name="IMAGES_REPLAY_SVG" resource_path="Images/replay.svg" type="BINDATA" compress="false"/>
       <include file="Images/report.svg" name="IMAGES_REPORT_SVG" resource_path="Images/report.svg" type="BINDATA" compress="false"/>
@@ -955,12 +957,10 @@
       <include file="models/text_utils/TextRange.js" name="MODELS_TEXT_UTILS_TEXTRANGE_JS" resource_path="models/text_utils/TextRange.js" type="BINDATA" compress="false"/>
       <include file="models/text_utils/TextUtils.js" name="MODELS_TEXT_UTILS_TEXTUTILS_JS" resource_path="models/text_utils/TextUtils.js" type="BINDATA" compress="false"/>
       <include file="models/timeline_model/TimelineJSProfile.js" name="MODELS_TIMELINE_MODEL_TIMELINEJSPROFILE_JS" resource_path="models/timeline_model/TimelineJSProfile.js" type="BINDATA" compress="false"/>
-      <include file="models/timeline_model/TimelineModel.js" name="MODELS_TIMELINE_MODEL_TIMELINEMODEL_JS" resource_path="models/timeline_model/TimelineModel.js" type="BINDATA" compress="false"/>
       <include file="models/timeline_model/TimelineModelFilter.js" name="MODELS_TIMELINE_MODEL_TIMELINEMODELFILTER_JS" resource_path="models/timeline_model/TimelineModelFilter.js" type="BINDATA" compress="false"/>
       <include file="models/timeline_model/TimelineProfileTree.js" name="MODELS_TIMELINE_MODEL_TIMELINEPROFILETREE_JS" resource_path="models/timeline_model/TimelineProfileTree.js" type="BINDATA" compress="false"/>
       <include file="models/timeline_model/TracingLayerTree.js" name="MODELS_TIMELINE_MODEL_TRACINGLAYERTREE_JS" resource_path="models/timeline_model/TracingLayerTree.js" type="BINDATA" compress="false"/>
       <include file="models/trace/EntriesFilter.js" name="MODELS_TRACE_ENTRIESFILTER_JS" resource_path="models/trace/EntriesFilter.js" type="BINDATA" compress="false"/>
-      <include file="models/trace/LegacyTracingModel.js" name="MODELS_TRACE_LEGACYTRACINGMODEL_JS" resource_path="models/trace/LegacyTracingModel.js" type="BINDATA" compress="false"/>
       <include file="models/trace/ModelImpl.js" name="MODELS_TRACE_MODELIMPL_JS" resource_path="models/trace/ModelImpl.js" type="BINDATA" compress="false"/>
       <include file="models/trace/Processor.js" name="MODELS_TRACE_PROCESSOR_JS" resource_path="models/trace/Processor.js" type="BINDATA" compress="false"/>
       <include file="models/trace/TracingManager.js" name="MODELS_TRACE_TRACINGMANAGER_JS" resource_path="models/trace/TracingManager.js" type="BINDATA" compress="false"/>
@@ -1642,7 +1642,6 @@
       <include file="panels/timeline/IsolateSelector.js" name="PANELS_TIMELINE_ISOLATESELECTOR_JS" resource_path="panels/timeline/IsolateSelector.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/LayoutShiftsTrackAppender.js" name="PANELS_TIMELINE_LAYOUTSHIFTSTRACKAPPENDER_JS" resource_path="panels/timeline/LayoutShiftsTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/NetworkTrackAppender.js" name="PANELS_TIMELINE_NETWORKTRACKAPPENDER_JS" resource_path="panels/timeline/NetworkTrackAppender.js" type="BINDATA" compress="false"/>
-      <include file="panels/timeline/PerformanceModel.js" name="PANELS_TIMELINE_PERFORMANCEMODEL_JS" resource_path="panels/timeline/PerformanceModel.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/SaveFileFormatter.js" name="PANELS_TIMELINE_SAVEFILEFORMATTER_JS" resource_path="panels/timeline/SaveFileFormatter.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/SourceMapsResolver.js" name="PANELS_TIMELINE_SOURCEMAPSRESOLVER_JS" resource_path="panels/timeline/SourceMapsResolver.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TargetForEvent.js" name="PANELS_TIMELINE_TARGETFOREVENT_JS" resource_path="panels/timeline/TargetForEvent.js" type="BINDATA" compress="false"/>

@@ -187,7 +187,7 @@ export interface InspectorFrontendHostAPI {
     showItemInFolder(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
     removeFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
     requestFileSystems(): void;
-    save(url: Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean): void;
+    save(url: Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean, isBase64: boolean): void;
     append(url: Platform.DevToolsPath.UrlString, content: string): void;
     close(url: Platform.DevToolsPath.UrlString): void;
     searchInPath(requestId: number, fileSystemPath: Platform.DevToolsPath.RawPathString, query: string): void;

@@ -1,4 +1,4 @@
-import { type RunnerResultArtifacts, type ReportJSON } from './LighthouseReporterTypes.js';
+import { type ReportJSON, type RunnerResultArtifacts } from './LighthouseReporterTypes.js';
 interface RenderReportOpts {
     beforePrint?: () => void;
     afterPrint?: () => void;

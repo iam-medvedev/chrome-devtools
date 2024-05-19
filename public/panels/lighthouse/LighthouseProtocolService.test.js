@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 describeWithMockConnection('LighthouseProtocolService', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Lighthouse;
@@ -12,13 +12,6 @@ describeWithMockConnection('LighthouseProtocolService', () => {
     let suspendAllTargets;
     let resumeAllTargets;
     let createParallelConnection;
-    const FRAME = {
-        id: 'main',
-        loaderId: 'test',
-        url: 'http://example.com',
-        securityOrigin: 'http://example.com',
-        mimeType: 'text/html',
-    };
     beforeEach(async () => {
         Lighthouse = await import('./lighthouse.js');
         rootTarget = createTarget({ type: SDK.Target.Type.Tab });
@@ -46,7 +39,6 @@ describeWithMockConnection('LighthouseProtocolService', () => {
                 sessionId: 'foo',
             });
         }
-        dispatchEvent(primaryTarget, 'Page.frameNavigated', { frame: FRAME });
     });
     it('suspends all targets', async () => {
         const service = new Lighthouse.LighthouseProtocolService.ProtocolService();

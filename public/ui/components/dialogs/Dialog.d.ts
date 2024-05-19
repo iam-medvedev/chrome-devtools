@@ -24,9 +24,11 @@ export declare class Dialog extends HTMLElement {
     get getConnectorCustomXPosition(): (() => number) | null;
     set getConnectorCustomXPosition(connectorXPosition: (() => number) | null);
     get dialogShownCallback(): (() => unknown) | null;
+    get jslogContext(): string;
     set dialogShownCallback(dialogShownCallback: (() => unknown) | null);
     set closeOnESC(closeOnESC: boolean);
     set closeOnScroll(closeOnScroll: boolean);
+    set jslogContext(jslogContext: string);
     connectedCallback(): void;
     disconnectedCallback(): void;
     getHitArea(): DOMRect;

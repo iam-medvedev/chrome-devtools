@@ -63,6 +63,7 @@ export interface TraceEventCallFrame {
     lineNumber: number;
     url: string;
 }
+export declare function objectIsTraceEventCallFrame(object: {}): object is TraceEventCallFrame;
 export interface TraceFrame {
     frame: string;
     name: string;
@@ -119,6 +120,10 @@ export interface TraceEventComplete extends TraceEventData {
     ph: Phase.COMPLETE;
     dur: MicroSeconds;
 }
+export interface TraceEventRunTask extends TraceEventComplete {
+    name: KnownEventName.RunTask;
+}
+export declare function isTraceEventRunTask(event: TraceEventData): event is TraceEventRunTask;
 export interface TraceEventFireIdleCallback extends TraceEventComplete {
     name: KnownEventName.FireIdleCallback;
     args: TraceEventArgs & {
@@ -1757,4 +1762,9 @@ export declare const enum KnownEventName {
     SchedulePostMessage = "SchedulePostMessage",
     HandlePostMessage = "HandlePostMessage"
 }
+export declare const Categories: {
+    readonly Console: "blink.console";
+    readonly UserTiming: "blink.user_timing";
+    readonly Loading: "loading";
+};
 export {};

@@ -152,8 +152,6 @@ export class CookieItemsView extends StorageItemsView {
     previewWidget;
     emptyWidget;
     onlyIssuesFilterUI;
-    refreshThrottler;
-    eventDescriptors;
     allCookies;
     shownCookies;
     selectedCookie;
@@ -183,25 +181,17 @@ export class CookieItemsView extends StorageItemsView {
             this.updateWithCookies(this.allCookies);
         }, 'only-show-cookies-with-issues');
         this.appendToolbarItem(this.onlyIssuesFilterUI);
-        this.refreshThrottler = new Common.Throttler.Throttler(300);
-        this.eventDescriptors = [];
         this.allCookies = [];
         this.shownCookies = [];
         this.selectedCookie = null;
         this.setCookiesDomain(model, cookieDomain);
     }
     setCookiesDomain(model, domain) {
+        this.model.removeEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, this.refreshItems, this);
         this.model = model;
         this.cookieDomain = domain;
         this.refreshItems();
-        Common.EventTarget.removeEventListeners(this.eventDescriptors);
-        const networkManager = model.target().model(SDK.NetworkManager.NetworkManager);
-        if (networkManager) {
-            this.eventDescriptors = [
-                networkManager.addEventListener(SDK.NetworkManager.Events.ResponseReceived, this.onResponseReceived, this),
-                networkManager.addEventListener(SDK.NetworkManager.Events.LoadingFinished, this.onLoadingFinished, this),
-            ];
-        }
+        this.model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, this.refreshItems, this);
     }
     showPreview(cookie) {
         if (cookie === this.selectedCookie) {
@@ -284,15 +274,6 @@ export class CookieItemsView extends StorageItemsView {
     }
     refreshItems() {
         void this.model.getCookiesForDomain(this.cookieDomain).then(this.updateWithCookies.bind(this));
-    }
-    refreshItemsThrottled() {
-        void this.refreshThrottler.schedule(() => Promise.resolve(this.refreshItems()));
-    }
-    onResponseReceived() {
-        this.refreshItemsThrottled();
-    }
-    onLoadingFinished() {
-        this.refreshItemsThrottled();
     }
     wasShown() {
         super.wasShown();

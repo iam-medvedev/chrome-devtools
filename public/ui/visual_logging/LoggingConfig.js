@@ -108,12 +108,12 @@ export function parseJsLog(jslog) {
     const trackString = getComponent('track:');
     if (trackString) {
         config.track = {};
-        for (const [key, value] of trackString.split(',').map(t => t.split(':'))) {
-            if (key === 'keydown' && value?.length) {
-                config.track.keydown = value;
+        for (const track of trackString.split(',')) {
+            if (track.startsWith('keydown:')) {
+                config.track.keydown = track.substr('keydown:'.length);
             }
             else {
-                config.track[key] = true;
+                config.track[track] = true;
             }
         }
     }

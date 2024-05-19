@@ -1058,10 +1058,8 @@ export class HeapSnapshot {
         const classIndexes = [];
         const nodes = this.nodes;
         const nodesLength = nodes.length;
-        const nodeNativeType = this.nodeNativeType;
         const nodeFieldCount = this.nodeFieldCount;
         const selfSizeOffset = this.nodeSelfSizeOffset;
-        const nodeTypeOffset = this.nodeTypeOffset;
         const node = this.rootNode();
         const nodeDistances = this.nodeDistances;
         for (let nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
@@ -1070,7 +1068,7 @@ export class HeapSnapshot {
                 continue;
             }
             const selfSize = nodes.getValue(nodeIndex + selfSizeOffset);
-            if (!selfSize && nodes.getValue(nodeIndex + nodeTypeOffset) !== nodeNativeType) {
+            if (!selfSize) {
                 continue;
             }
             const classIndex = node.classIndex();
@@ -1122,10 +1120,7 @@ export class HeapSnapshot {
         const classes = [];
         const seenClassNameIndexes = new Map();
         const nodeFieldCount = this.nodeFieldCount;
-        const nodeTypeOffset = this.nodeTypeOffset;
-        const nodeNativeType = this.nodeNativeType;
         const dominatedNodes = this.dominatedNodes;
-        const nodes = this.nodes;
         const firstDominatedNodeIndex = this.firstDominatedNodeIndex;
         while (list.length) {
             const nodeIndex = list.pop();
@@ -1135,8 +1130,7 @@ export class HeapSnapshot {
             const nodeOrdinal = nodeIndex / nodeFieldCount;
             const dominatedIndexFrom = firstDominatedNodeIndex[nodeOrdinal];
             const dominatedIndexTo = firstDominatedNodeIndex[nodeOrdinal + 1];
-            if (!seen && (!filter || filter(node)) &&
-                (node.selfSize() || nodes.getValue(nodeIndex + nodeTypeOffset) === nodeNativeType)) {
+            if (!seen && (!filter || filter(node)) && node.selfSize()) {
                 aggregates[classIndex].maxRet += node.retainedSize();
                 if (dominatedIndexFrom !== dominatedIndexTo) {
                     seenClassNameIndexes.set(classIndex, true);

@@ -1640,6 +1640,9 @@
   "models/persistence/PersistenceActions.ts | saveImage": {
     "message": "Ŝáv̂é îḿâǵê"
   },
+  "models/persistence/PersistenceActions.ts | saveWasmFailed": {
+    "message": "Ûńâb́l̂é t̂ó ŝáv̂é ŴÁŜḾ m̂ód̂úl̂é t̂ó d̂íŝḱ. M̂óŝt́ l̂ík̂él̂ý t̂h́ê ḿôd́ûĺê íŝ t́ôó l̂ár̂ǵê."
+  },
   "models/persistence/PersistenceActions.ts | showOverrides": {
     "message": "Ŝh́ôẃ âĺl̂ óv̂ér̂ŕîd́êś"
   },
@@ -2299,12 +2302,6 @@
   },
   "panels/application/AppManifestView.ts | customizePwaTitleBar": {
     "message": "Ĉúŝt́ôḿîźê t́ĥé ŵín̂d́ôẃ ĉón̂t́r̂ól̂ś ôv́êŕl̂áŷ óf̂ ýôúr̂ ṔŴÁ'ŝ t́ît́l̂é b̂ár̂"
-  },
-  "panels/application/AppManifestView.ts | darkBackgroundColor": {
-    "message": "D̂ár̂ḱ b̂áĉḱĝŕôún̂d́ ĉól̂ór̂"
-  },
-  "panels/application/AppManifestView.ts | darkThemeColor": {
-    "message": "D̂ár̂ḱ t̂h́êḿê ćôĺôŕ"
   },
   "panels/application/AppManifestView.ts | description": {
     "message": "D̂éŝćr̂íp̂t́îón̂"
@@ -3909,7 +3906,7 @@
     "message": "T̂h́ê ṕr̂ér̂én̂d́êŕ ŵáŝ ńôt́ ûśêd́ b̂éĉáûśê d́ûŕîńĝ áĉt́îv́ât́îón̂ t́îḿê, ńâv́îǵât́îón̂ h́âś âń êf́f̂éĉt́îv́ê ÚR̂Ĺ t̂h́ât́ îś d̂íf̂f́êŕêńt̂ f́r̂óm̂ ít̂ś n̂ór̂ḿâĺ ÛŔL̂. (F́ôŕ êx́âḿp̂ĺê, t́ĥé N̂éŵ T́âb́ P̂áĝé, ôŕ ĥóŝt́êd́ âṕp̂ś.)"
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusAllPrerenderingCanceled": {
-    "message": "Ûńk̂ńôẃn̂"
+    "message": "Âĺl̂ ṕr̂ér̂én̂d́êŕêd́ p̂áĝéŝ ẃêŕê ún̂ĺôád̂éd̂ b́ŷ t́ĥé b̂ŕôẃŝér̂ f́ôŕ ŝóm̂é r̂éâśôń (F̂ór̂ éx̂ám̂ṕl̂é, Ŵéb̂V́îéŵĆôḿp̂át̂.ád̂d́Ŵéb̂ḾêśŝáĝéL̂íŝt́êńêŕ() ŵáŝ ćâĺl̂éd̂ d́ûŕîńĝ ṕr̂ér̂én̂d́êŕîńĝ.)"
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusAudioOutputDeviceRequested": {
     "message": "T̂h́ê ṕr̂ér̂én̂d́êŕêd́ p̂áĝé r̂éq̂úêśt̂éd̂ áûd́îó ôút̂ṕût́, ŵh́îćĥ íŝ ćûŕr̂én̂t́l̂ý n̂ót̂ śûṕp̂ór̂t́êd́."
@@ -3951,10 +3948,10 @@
     "message": "T̂h́ê ṕr̂ér̂én̂d́êŕîńĝ ńâv́îǵât́îón̂ f́âíl̂éd̂ b́êćâúŝé ît́ r̂éd̂ír̂éĉt́êd́ t̂ó â ÚR̂Ĺ ŵh́ôśê śĉh́êḿê ẃâś n̂ót̂ h́t̂t́p̂: ór̂ h́t̂t́p̂ś:."
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusJavaScriptInterfaceAdded": {
-    "message": "Ûńk̂ńôẃn̂"
+    "message": "T̂h́ê ṕr̂ér̂én̂d́êŕêd́ p̂áĝé ŵáŝ ún̂ĺôád̂éd̂ b́êćâúŝé â ńêẃ Ĵáv̂áŜćr̂íp̂t́ îńt̂ér̂f́âćê h́âś b̂éêń îńĵéĉt́êd́ b̂ý Ŵéb̂V́îéŵ.ád̂d́Ĵáv̂áŝćr̂íp̂t́Îńt̂ér̂f́âćê()."
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusJavaScriptInterfaceRemoved": {
-    "message": "Ûńk̂ńôẃn̂"
+    "message": "T̂h́ê ṕr̂ér̂én̂d́êŕêd́ p̂áĝé ŵáŝ ún̂ĺôád̂éd̂ b́êćâúŝé â J́âv́âŚĉŕîṕt̂ ín̂t́êŕf̂áĉé ĥáŝ b́êén̂ ŕêḿôv́êd́ b̂ý Ŵéb̂V́îéŵ.ŕêḿôv́êJ́âv́âśĉŕîṕt̂Ín̂t́êŕf̂áĉé()."
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusLoginAuthRequested": {
     "message": "T̂h́ê ṕr̂ér̂én̂d́êŕîńĝ ńâv́îǵât́îón̂ ŕêq́ûír̂éd̂ H́T̂T́P̂ áût́ĥén̂t́îćât́îón̂, ẃĥíĉh́ îś ĉúr̂ŕêńt̂ĺŷ ńôt́ ŝúp̂ṕôŕt̂éd̂."
@@ -5932,6 +5929,9 @@
   },
   "panels/elements/ElementsTreeElement.ts | showFrameDetails": {
     "message": "Ŝh́ôẃ iframe d̂ét̂áîĺŝ"
+  },
+  "panels/elements/ElementsTreeElement.ts | showPopoverTarget": {
+    "message": "Ŝh́ôẃ p̂óp̂óv̂ér̂ t́âŕĝét̂"
   },
   "panels/elements/ElementsTreeElement.ts | thisFrameWasIdentifiedAsAnAd": {
     "message": "T̂h́îś f̂ŕâḿê ẃâś îd́êńt̂íf̂íêd́ âś âń âd́ f̂ŕâḿê"
@@ -9654,7 +9654,7 @@
     "message": "N̂ót̂ óp̂t́îḿîźêd́: {PH1}"
   },
   "panels/profiler/ProfileLauncherView.ts | load": {
-    "message": "L̂óâd́"
+    "message": "L̂óâd́ p̂ŕôf́îĺê"
   },
   "panels/profiler/ProfileLauncherView.ts | selectJavascriptVmInstance": {
     "message": "Ŝél̂éĉt́ Ĵáv̂áŜćr̂íp̂t́ V̂Ḿ îńŝt́âńĉé"
@@ -10281,7 +10281,25 @@
     "message": "Ŝh́ôẃ {PH1} m̂ór̂é"
   },
   "panels/search/SearchView.ts | clear": {
+    "message": "Ĉĺêár̂ śêár̂ćĥ"
+  },
+  "panels/search/SearchView.ts | clearInput": {
     "message": "Ĉĺêár̂"
+  },
+  "panels/search/SearchView.ts | disableCaseSensitive": {
+    "message": "D̂íŝáb̂ĺê ćâśê śêńŝít̂ív̂é ŝéâŕĉh́"
+  },
+  "panels/search/SearchView.ts | disableRegularExpression": {
+    "message": "D̂íŝáb̂ĺê ŕêǵûĺâŕ êx́p̂ŕêśŝíôńŝ"
+  },
+  "panels/search/SearchView.ts | enableCaseSensitive": {
+    "message": "Êńâb́l̂é ĉáŝé ŝén̂śît́îv́ê śêár̂ćĥ"
+  },
+  "panels/search/SearchView.ts | enableRegularExpression": {
+    "message": "Êńâb́l̂é r̂éĝúl̂ár̂ éx̂ṕr̂éŝśîón̂ś"
+  },
+  "panels/search/SearchView.ts | find": {
+    "message": "F̂ín̂d́"
   },
   "panels/search/SearchView.ts | foundDMatchingLinesInDFiles": {
     "message": "F̂óûńd̂ {PH1} ḿât́ĉh́îńĝ ĺîńêś îń {PH2} f̂íl̂éŝ."
@@ -10298,17 +10316,11 @@
   "panels/search/SearchView.ts | indexingInterrupted": {
     "message": "Îńd̂éx̂ín̂ǵ îńt̂ér̂ŕûṕt̂éd̂."
   },
-  "panels/search/SearchView.ts | matchCase": {
-    "message": "M̂át̂ćĥ Ćâśê"
-  },
   "panels/search/SearchView.ts | noMatchesFound": {
     "message": "N̂ó m̂át̂ćĥéŝ f́ôún̂d́."
   },
   "panels/search/SearchView.ts | refresh": {
     "message": "R̂éf̂ŕêśĥ"
-  },
-  "panels/search/SearchView.ts | search": {
-    "message": "Ŝéâŕĉh́"
   },
   "panels/search/SearchView.ts | searchFinished": {
     "message": "Ŝéâŕĉh́ f̂ín̂íŝh́êd́."
@@ -10318,12 +10330,6 @@
   },
   "panels/search/SearchView.ts | searchInterrupted": {
     "message": "Ŝéâŕĉh́ îńt̂ér̂ŕûṕt̂éd̂."
-  },
-  "panels/search/SearchView.ts | searchQuery": {
-    "message": "Ŝéâŕĉh́ Q̂úêŕŷ"
-  },
-  "panels/search/SearchView.ts | useRegularExpression": {
-    "message": "Ûśê Ŕêǵûĺâŕ Êx́p̂ŕêśŝíôń"
   },
   "panels/security/security-meta.ts | security": {
     "message": "Ŝéĉúr̂ít̂ý"
@@ -11530,12 +11536,6 @@
   },
   "panels/sources/DebuggerPlugin.ts | errorLoading": {
     "message": "Êŕr̂ór̂ ĺôád̂ín̂ǵ ûŕl̂ {PH1}: {PH2}"
-  },
-  "panels/sources/DebuggerPlugin.ts | ignoreContentScripts": {
-    "message": "Îǵn̂ór̂é êx́t̂én̂śîón̂ śĉŕîṕt̂ś"
-  },
-  "panels/sources/DebuggerPlugin.ts | ignoreScript": {
-    "message": "Îǵn̂ór̂é t̂h́îś f̂íl̂é"
   },
   "panels/sources/DebuggerPlugin.ts | neverPauseHere": {
     "message": "N̂év̂ér̂ ṕâúŝé ĥér̂é"
@@ -14558,8 +14558,23 @@
   "ui/legacy/RemoteDebuggingTerminatedScreen.ts | reconnectWhenReadyByReopening": {
     "message": "R̂éĉón̂ńêćt̂ ẃĥén̂ ŕêád̂ý b̂ý r̂éôṕêńîńĝ D́êv́T̂óôĺŝ."
   },
-  "ui/legacy/SearchableView.ts | cancel": {
-    "message": "Ĉán̂ćêĺ"
+  "ui/legacy/SearchableView.ts | accessibledOfD": {
+    "message": "Ŝh́ôẃŝ ŕêśûĺt̂ {PH1} óf̂ {PH2}"
+  },
+  "ui/legacy/SearchableView.ts | clearInput": {
+    "message": "Ĉĺêár̂"
+  },
+  "ui/legacy/SearchableView.ts | closeSearchBar": {
+    "message": "Ĉĺôśê śêár̂ćĥ b́âŕ"
+  },
+  "ui/legacy/SearchableView.ts | disableCaseSensitive": {
+    "message": "D̂íŝáb̂ĺê ćâśê śêńŝít̂ív̂é ŝéâŕĉh́"
+  },
+  "ui/legacy/SearchableView.ts | disableFindAndReplace": {
+    "message": "D̂íŝáb̂ĺê f́îńd̂ án̂d́ r̂ép̂ĺâćê"
+  },
+  "ui/legacy/SearchableView.ts | disableRegularExpression": {
+    "message": "D̂íŝáb̂ĺê ŕêǵûĺâŕ êx́p̂ŕêśŝíôńŝ"
   },
   "ui/legacy/SearchableView.ts | dMatches": {
     "message": "{PH1} m̂át̂ćĥéŝ"
@@ -14567,11 +14582,17 @@
   "ui/legacy/SearchableView.ts | dOfD": {
     "message": "{PH1} ôf́ {PH2}"
   },
+  "ui/legacy/SearchableView.ts | enableCaseSensitive": {
+    "message": "Êńâb́l̂é ĉáŝé ŝén̂śît́îv́ê śêár̂ćĥ"
+  },
+  "ui/legacy/SearchableView.ts | enableFindAndReplace": {
+    "message": "F̂ín̂d́ âńd̂ ŕêṕl̂áĉé"
+  },
+  "ui/legacy/SearchableView.ts | enableRegularExpression": {
+    "message": "Êńâb́l̂é r̂éĝúl̂ár̂ éx̂ṕr̂éŝśîón̂ś"
+  },
   "ui/legacy/SearchableView.ts | findString": {
     "message": "F̂ín̂d́"
-  },
-  "ui/legacy/SearchableView.ts | matchCase": {
-    "message": "M̂át̂ćĥ Ćâśê"
   },
   "ui/legacy/SearchableView.ts | matchString": {
     "message": "1 m̂át̂ćĥ"
@@ -14583,13 +14604,10 @@
     "message": "R̂ép̂ĺâćê ál̂ĺ"
   },
   "ui/legacy/SearchableView.ts | searchNext": {
-    "message": "Ŝéâŕĉh́ n̂éx̂t́"
+    "message": "Ŝh́ôẃ n̂éx̂t́ r̂éŝúl̂t́"
   },
   "ui/legacy/SearchableView.ts | searchPrevious": {
-    "message": "Ŝéâŕĉh́ p̂ŕêv́îóûś"
-  },
-  "ui/legacy/SearchableView.ts | useRegularExpression": {
-    "message": "Ûśê Ŕêǵûĺâŕ Êx́p̂ŕêśŝíôń"
+    "message": "Ŝh́ôẃ p̂ŕêv́îóûś r̂éŝúl̂t́"
   },
   "ui/legacy/SettingsUI.ts | oneOrMoreSettingsHaveChanged": {
     "message": "Ôńê ór̂ ḿôŕê śêt́t̂ín̂ǵŝ h́âv́ê ćĥán̂ǵêd́ ŵh́îćĥ ŕêq́ûír̂éŝ á r̂él̂óâd́ t̂ó t̂ák̂é êf́f̂éĉt́."

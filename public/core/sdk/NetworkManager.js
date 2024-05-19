@@ -171,6 +171,8 @@ export class NetworkManager extends SDKModel {
         if (error) {
             return { error };
         }
+        // Wait for at least the `responseReceived event so we have accurate mimetype and charset.
+        await request.waitForResponseReceived();
         return new TextUtils.ContentData.ContentData(response.bufferedData, /* isBase64=*/ true, request.mimeType, request.charset() ?? undefined);
     }
     static async requestPostData(request) {
@@ -427,6 +429,14 @@ export class NetworkDispatcher {
         const newResourceType = Common.ResourceType.ResourceType.fromMimeTypeOverride(networkRequest.mimeType);
         if (newResourceType) {
             networkRequest.setResourceType(newResourceType);
+        }
+        if (networkRequest.responseReceivedPromiseResolve) {
+            // Anyone interested in waiting for response headers being available?
+            networkRequest.responseReceivedPromiseResolve();
+        }
+        else {
+            // If not, make sure no one will wait on it in the future.
+            networkRequest.responseReceivedPromise = Promise.resolve();
         }
     }
     requestForId(id) {
@@ -1348,7 +1358,10 @@ export class InterceptedRequest {
     }
     async continueRequestWithContent(contentBlob, encoded, responseHeaders, isBodyOverridden) {
         this.#hasRespondedInternal = true;
-        const body = encoded ? await contentBlob.text() : await blobToBase64(contentBlob);
+        const body = encoded ? await contentBlob.text() : await Common.Base64.encode(contentBlob).catch(err => {
+            console.error(err);
+            return '';
+        });
         const responseCode = isBodyOverridden ? 200 : (this.responseStatusCode || 200);
         if (this.networkRequest) {
             const originalSetCookieHeaders = this.networkRequest?.originalResponseHeaders.filter(header => header.name === 'set-cookie') || [];
@@ -1359,24 +1372,6 @@ export class InterceptedRequest {
         }
         void this.#fetchAgent.invoke_fulfillRequest({ requestId: this.requestId, responseCode, body, responseHeaders });
         MultitargetNetworkManager.instance().dispatchEventToListeners("RequestFulfilled" /* MultitargetNetworkManager.Events.RequestFulfilled */, this.request.url);
-        async function blobToBase64(blob) {
-            const reader = new FileReader();
-            const fileContentsLoadedPromise = new Promise(resolve => {
-                reader.onloadend = resolve;
-            });
-            reader.readAsDataURL(blob);
-            await fileContentsLoadedPromise;
-            if (reader.error) {
-                console.error('Could not convert blob to base64.', reader.error);
-                return '';
-            }
-            const result = reader.result;
-            if (result === undefined || result === null || typeof result !== 'string') {
-                console.error('Could not convert blob to base64.');
-                return '';
-            }
-            return result.substring(result.indexOf(',') + 1);
-        }
     }
     continueRequestWithoutChange() {
         console.assert(!this.#hasRespondedInternal);

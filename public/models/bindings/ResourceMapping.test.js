@@ -1,10 +1,10 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
@@ -12,8 +12,8 @@ describeWithMockConnection('ResourceMapping', () => {
     let debuggerModel;
     let resourceMapping;
     let uiSourceCode;
-    let resourceTreeModel;
     let workspace;
+    let target;
     // This test simulates the behavior of the ResourceMapping with the
     // following document, which contains two inline <script>s, one with
     // a `//# sourceURL` annotation and one without.
@@ -56,7 +56,7 @@ describeWithMockConnection('ResourceMapping', () => {
     ];
     const OTHER_SCRIPT_ID = '3';
     beforeEach(async () => {
-        const target = createTarget();
+        target = createTarget();
         const targetManager = target.targetManager();
         targetManager.setScopeTarget(target);
         workspace = Workspace.Workspace.WorkspaceImpl.instance();
@@ -64,12 +64,7 @@ describeWithMockConnection('ResourceMapping', () => {
         Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
         // Inject the HTML document resource.
-        const frameId = 'main';
-        const mimeType = 'text/html';
-        resourceTreeModel =
-            target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        const frame = resourceTreeModel.frameAttached(frameId, null);
-        frame?.addResource(new SDK.Resource.Resource(resourceTreeModel, null, url, url, frameId, null, Common.ResourceType.ResourceType.fromMimeType(mimeType), mimeType, null, null));
+        createResource(getMainFrame(target), url, 'text/html', '');
         uiSourceCode = workspace.uiSourceCodeForURL(url);
         assert.isNotNull(uiSourceCode);
         // Register the inline <script>s.
@@ -84,6 +79,7 @@ describeWithMockConnection('ResourceMapping', () => {
         assert.lengthOf(debuggerModel.scripts(), SCRIPTS.length);
     });
     it('creates UISourceCode for added target', () => {
+        const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         resourceMapping.modelRemoved(resourceTreeModel);
         assert.isNull(workspace.uiSourceCodeForURL(url));
         resourceMapping.modelAdded(resourceTreeModel);
@@ -91,10 +87,8 @@ describeWithMockConnection('ResourceMapping', () => {
     });
     it('creates UISourceCode for added out of scope target', () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(null);
-        const mimeType = 'text/html';
-        const frameId = 'other';
         const otherUrl = 'http://example.com/other.html';
-        resourceTreeModel.frames()[0]?.addResource(new SDK.Resource.Resource(resourceTreeModel, null, otherUrl, otherUrl, frameId, null, Common.ResourceType.ResourceType.fromMimeType(mimeType), mimeType, null, null));
+        createResource(getMainFrame(target), otherUrl, 'text/html', '');
         uiSourceCode = workspace.uiSourceCodeForURL(otherUrl);
         assert.isNotNull(uiSourceCode);
     });

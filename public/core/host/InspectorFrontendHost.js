@@ -135,7 +135,7 @@ export class InspectorFrontendHostStub {
     showItemInFolder(fileSystemPath) {
         Common.Console.Console.instance().error('Show item in folder is not enabled in hosted mode. Please inspect using chrome://inspect');
     }
-    save(url, content, forceSaveAs) {
+    save(url, content, forceSaveAs, isBase64) {
         let buffer = this.#urlsBeingSaved.get(url);
         if (!buffer) {
             buffer = [];

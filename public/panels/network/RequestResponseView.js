@@ -106,7 +106,7 @@ export class RequestResponseView extends UI.Widget.VBox {
             return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData) + ': ' + contentData.error);
         }
         const sourceView = await RequestResponseView.sourceViewForRequest(this.request);
-        if (contentData.content().isEmpty || !sourceView || this.request.statusCode === 204) {
+        if (!sourceView || this.request.statusCode === 204) {
             return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.thisRequestHasNoResponseData));
         }
         return sourceView;

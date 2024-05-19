@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../core/common/common.js';
-import { assertNotNullOrUndefined } from '../core/platform/platform.js';
-import * as SDK from '../core/sdk/sdk.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import { dispatchEvent, } from './MockConnection.js';
+import { createResource, getMainFrame } from './ResourceTreeHelpers.js';
 import { createFileSystemUISourceCode } from './UISourceCodeHelpers.js';
 // This helper sets up a file system and a file system uiSourceCode that can be used for
 // Persistence testing. As soon as a script is added that has the given `networkScriptUrl` and the `content`,
@@ -16,7 +15,7 @@ export function createFileSystemFileForPersistenceTests(fileSystemScript, networ
     const origin = Common.ParsedURL.ParsedURL.extractOrigin(networkScriptUrl);
     dispatchDocumentOpened(target, origin);
     const mimeType = 'text/javascript';
-    const resource = createResourceInMainFrame(target, networkScriptUrl, mimeType, content);
+    const resource = createResource(getMainFrame(target), networkScriptUrl, mimeType, content);
     // Now create the file system uiSourceCode to match the same meta data and content as the
     // created network's resource file.
     const metadata = new Workspace.UISourceCode.UISourceCodeMetadata(resource.lastModified(), resource.contentSize());
@@ -44,15 +43,5 @@ function dispatchDocumentOpened(target, origin) {
             gatedAPIFeatures: [],
         },
     });
-}
-function createResourceInMainFrame(target, networkScriptUrl, mimeType, content) {
-    const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-    assertNotNullOrUndefined(resourceTreeModel);
-    const mainFrameId = 'main';
-    const resource = new SDK.Resource.Resource(resourceTreeModel, null, networkScriptUrl, networkScriptUrl, mainFrameId, null, Common.ResourceType.ResourceType.fromMimeType('text/javascript'), mimeType, null, content.length);
-    const frame = resourceTreeModel.frameForId(mainFrameId);
-    assertNotNullOrUndefined(frame);
-    frame.addResource(resource);
-    return resource;
 }
 //# sourceMappingURL=PersistenceHelpers.js.map
