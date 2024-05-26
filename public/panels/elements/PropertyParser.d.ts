@@ -49,8 +49,8 @@ export declare class BottomUpTreeMatching extends TreeWalker {
     getMatch(node: CodeMirror.SyntaxNode): Match | undefined;
     hasUnresolvedVars(node: CodeMirror.SyntaxNode): boolean;
     hasUnresolvedVarsRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode): boolean;
-    getComputedText(node: CodeMirror.SyntaxNode): string;
-    getComputedTextRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode): string;
+    getComputedText(node: CodeMirror.SyntaxNode, substitutions?: Map<Match, string>): string;
+    getComputedTextRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode, substitutions?: Map<Match, string>): string;
 }
 export declare class ComputedText {
     #private;
@@ -60,7 +60,7 @@ export declare class ComputedText {
     get chunkCount(): number;
     push(match: Match, offset: number): void;
     hasUnresolvedVars(begin: number, end: number): boolean;
-    get(begin: number, end: number): string;
+    get(begin: number, end: number, substitutions?: Map<Match, string>): string;
 }
 export declare function requiresSpace(a: string, b: string): boolean;
 export declare function requiresSpace(a: Node[], b: Node[]): boolean;
@@ -84,6 +84,7 @@ export declare class AngleMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;
     constructor(text: string, node: CodeMirror.SyntaxNode);
+    computedText(): string;
 }
 declare const AngleMatcher_base: {
     new (): {
@@ -152,6 +153,22 @@ declare const URLMatcher_base: {
 };
 export declare class URLMatcher extends URLMatcher_base {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
+export declare class LinearGradientMatch implements Match {
+    readonly text: string;
+    readonly node: CodeMirror.SyntaxNode;
+    constructor(text: string, node: CodeMirror.SyntaxNode);
+}
+declare const LinearGradientMatcher_base: {
+    new (): {
+        matchType: Constructor<LinearGradientMatch>;
+        accepts(_propertyName: string): boolean;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): Match | null;
+    };
+};
+export declare class LinearGradientMatcher extends LinearGradientMatcher_base {
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+    accepts(propertyName: string): boolean;
 }
 export declare class ColorMatch implements Match {
     readonly text: string;

@@ -3,10 +3,6 @@ export declare class UserMetrics {
     constructor();
     breakpointEditDialogRevealedFrom(breakpointEditDialogRevealedFrom: BreakpointEditDialogRevealedFrom): void;
     panelShown(panelName: string, isLaunching?: boolean): void;
-    /**
-     * Fired when a panel is closed (regardless if it exists in the main panel or the drawer)
-     */
-    panelClosed(panelName: string): void;
     panelShownInLocation(panelName: string, location: 'main' | 'drawer'): void;
     sourcesSidebarTabShown(sidebarPaneName: string): void;
     settingsPanelShown(settingsViewId: string): void;
@@ -648,7 +644,8 @@ export declare enum DevtoolsExperiments {
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
     'perf-panel-annotations' = 94,
-    'MaxValue' = 95
+    'timeline-rpp-sidebar' = 95,
+    'MaxValue' = 96
 }
 export declare const enum BreakpointEditDialogRevealedFrom {
     BreakpointSidebarContextMenu = 0,

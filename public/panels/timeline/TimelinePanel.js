@@ -42,13 +42,13 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
-import * as PanelFeedback from '../../ui/components/panel_feedback/panel_feedback.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import { TraceLoadEvent } from './BenchmarkEvents.js';
+import * as TimelineComponents from './components/components.js';
 import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { Tracker } from './FreshRecording.js';
 import historyToolbarButtonStyles from './historyToolbarButton.css.js';
@@ -58,6 +58,7 @@ import { NodeNamesUpdated, SourceMapsResolver } from './SourceMapsResolver.js';
 import { TimelineController } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineHistoryManager } from './TimelineHistoryManager.js';
+import { TimelineLandingPage } from './TimelineLandingPage.js';
 import { TimelineLoader } from './TimelineLoader.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
 import timelinePanelStyles from './timelinePanel.css.js';
@@ -203,32 +204,6 @@ const UIStrings = {
      */
     bufferUsage: 'Buffer usage',
     /**
-     *@description Text for an option to learn more about something
-     */
-    learnmore: 'Learn more',
-    /**
-     *@description Text in Timeline Panel of the Performance panel
-     */
-    wasd: 'WASD',
-    /**
-     *@description Text in Timeline Panel of the Performance panel
-     *@example {record} PH1
-     *@example {Ctrl + R} PH2
-     */
-    clickTheRecordButtonSOrHitSTo: 'Click the record button {PH1} or hit {PH2} to start a new recording.',
-    /**
-     * @description Text in Timeline Panel of the Performance panel
-     * @example {reload button} PH1
-     * @example {Ctrl + R} PH2
-     */
-    clickTheReloadButtonSOrHitSTo: 'Click the reload button {PH1} or hit {PH2} to record the page load.',
-    /**
-     *@description Text in Timeline Panel of the Performance panel
-     *@example {Ctrl + U} PH1
-     *@example {Learn more} PH2
-     */
-    afterRecordingSelectAnAreaOf: 'After recording, select an area of interest in the overview by dragging. Then, zoom and pan the timeline with the mousewheel or {PH1} keys. {PH2}',
-    /**
      *@description Text in Timeline Panel of the Performance panel
      */
     loadingProfile: 'Loading profile…',
@@ -284,6 +259,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     panelRightToolbar;
     timelinePane;
     #minimapComponent = new TimelineMiniMap();
+    #sideBar = new TimelineComponents.Sidebar.SidebarWidget();
     statusPaneContainer;
     flameChart;
     searchableViewInternal;
@@ -375,7 +351,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.updateShowSettingsToolbarButton();
         }
         this.timelinePane = new UI.Widget.VBox();
-        this.timelinePane.show(this.element);
         const topPaneElement = this.timelinePane.element.createChild('div', 'hbox');
         topPaneElement.id = 'timeline-overview-panel';
         this.#minimapComponent.show(topPaneElement);
@@ -419,6 +394,8 @@ export class TimelinePanel extends UI.Panel.Panel {
             },
             targetRemoved: (_) => { },
         });
+        this.#sideBar.setMainWidget(this.timelinePane);
+        this.#sideBar.show(this.element);
     }
     static instance(opts = { forceNew: null, isNode: false }) {
         const { forceNew, isNode: isNodeMode } = opts;
@@ -632,7 +609,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (this.flameChart.getMainFlameChart().coordinatesToEntryIndex(mouseEvent.offsetX, mouseEvent.offsetY) !== -1) {
             return;
         }
-        const contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
         contextMenu.appendItemsAtLocation('timelineMenu');
         void contextMenu.show();
     }
@@ -1195,37 +1172,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.landingPage.show(this.statusPaneContainer);
             return;
         }
-        function encloseWithTag(tagName, contents) {
-            const e = document.createElement(tagName);
-            e.textContent = contents;
-            return e;
-        }
-        const learnMoreNode = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/evaluate-performance/', i18nString(UIStrings.learnmore), undefined, undefined, 'learn-more');
-        const recordKey = encloseWithTag('b', UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('timeline.toggle-recording')[0].title());
-        const reloadKey = encloseWithTag('b', UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('timeline.record-reload')[0].title());
-        const navigateNode = encloseWithTag('b', i18nString(UIStrings.wasd));
-        this.landingPage = new UI.Widget.VBox();
-        this.landingPage.contentElement.classList.add('timeline-landing-page', 'fill');
-        const centered = this.landingPage.contentElement.createChild('div');
-        const recordButton = UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
-        const reloadButton = UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButtonForId('timeline.record-reload'));
-        centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheRecordButtonSOrHitSTo, { PH1: recordButton, PH2: recordKey }));
-        centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheReloadButtonSOrHitSTo, { PH1: reloadButton, PH2: reloadKey }));
-        centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.afterRecordingSelectAnAreaOf, { PH1: navigateNode, PH2: learnMoreNode }));
-        if (isNode) {
-            const previewSection = new PanelFeedback.PanelFeedback.PanelFeedback();
-            previewSection.data = {
-                feedbackUrl: 'https://crbug.com/1354548',
-                quickStartUrl: 'https://goo.gle/js-profiler-deprecation',
-                quickStartLinkText: i18nString(UIStrings.learnmore),
-            };
-            centered.appendChild(previewSection);
-            const feedbackButton = new PanelFeedback.FeedbackButton.FeedbackButton();
-            feedbackButton.data = {
-                feedbackUrl: 'https://crbug.com/1354548',
-            };
-            centered.appendChild(feedbackButton);
-        }
+        this.landingPage = new TimelineLandingPage(this.toggleRecordAction, { isNode });
         this.landingPage.show(this.statusPaneContainer);
     }
     hideLandingPage() {

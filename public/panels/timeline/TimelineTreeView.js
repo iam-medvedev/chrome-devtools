@@ -170,9 +170,12 @@ export class TimelineTreeView extends UI.Widget.VBox {
         this.element.classList.add('timeline-tree-view');
         this.searchResults = [];
     }
-    static eventNameForSorting(event) {
+    #eventNameForSorting(event) {
         const name = TimelineUIUtils.eventTitle(event) || event.name;
-        return name + ':@' + TimelineModel.TimelineProfileTree.eventURL(event);
+        if (!this.#traceParseData) {
+            return name;
+        }
+        return name + ':@' + TraceEngine.Extras.URLForEntry.get(this.#traceParseData, event);
     }
     setSearchableView(searchableView) {
         this.searchableView = searchableView;
@@ -349,6 +352,22 @@ export class TimelineTreeView extends UI.Widget.VBox {
             return;
         }
         let sortFunction;
+        const compareNameSortFn = (a, b) => {
+            const nodeA = a;
+            const nodeB = b;
+            const eventA = nodeA.profileNode.event;
+            const eventB = nodeB.profileNode.event;
+            // Should not happen, but guard against the nodes not having events.
+            if (!eventA || !eventB) {
+                return 0;
+            }
+            if (!this.#traceParseData) {
+                return 0;
+            }
+            const nameA = this.#eventNameForSorting(eventA);
+            const nameB = this.#eventNameForSorting(eventB);
+            return nameA.localeCompare(nameB);
+        };
         switch (columnId) {
             case 'start-time':
                 sortFunction = compareStartTime;
@@ -360,7 +379,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
                 sortFunction = compareTotalTime;
                 break;
             case 'activity':
-                sortFunction = compareName;
+                sortFunction = compareNameSortFn;
                 break;
             default:
                 console.assert(false, 'Unknown sort field: ' + columnId);
@@ -387,19 +406,6 @@ export class TimelineTreeView extends UI.Widget.VBox {
             const nodeA = a;
             const nodeB = b;
             return nodeA.profileNode.totalTime - nodeB.profileNode.totalTime;
-        }
-        function compareName(a, b) {
-            const nodeA = a;
-            const nodeB = b;
-            const eventA = nodeA.profileNode.event;
-            const eventB = nodeB.profileNode.event;
-            // Should not happen, but guard against the nodes not having events.
-            if (!eventA || !eventB) {
-                return 0;
-            }
-            const nameA = TimelineTreeView.eventNameForSorting(eventA);
-            const nameB = TimelineTreeView.eventNameForSorting(eventB);
-            return nameA.localeCompare(nameB);
         }
     }
     #filterChanged() {
@@ -780,7 +786,10 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case GroupBy.Domain:
                 return this.domainByEvent.bind(this, true);
             case GroupBy.URL:
-                return (event) => TimelineModel.TimelineProfileTree.eventURL(event) || '';
+                return (event) => {
+                    const traceParsedData = this.traceParseData();
+                    return traceParsedData ? TraceEngine.Extras.URLForEntry.get(traceParsedData, event) ?? '' : '';
+                };
             case GroupBy.Frame:
                 return (event) => {
                     const frameId = TraceEngine.Helpers.Trace.frameIDForEvent(event);
@@ -792,7 +801,11 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         }
     }
     domainByEvent(groupSubdomains, event) {
-        const url = TimelineModel.TimelineProfileTree.eventURL(event);
+        const traceParsedData = this.traceParseData();
+        if (!traceParsedData) {
+            return '';
+        }
+        const url = TraceEngine.Extras.URLForEntry.get(traceParsedData, event);
         if (!url) {
             return '';
         }

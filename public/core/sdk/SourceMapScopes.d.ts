@@ -28,8 +28,12 @@ export interface GeneratedRange {
      * For each variable this can either be a single expression (valid for the full `GeneratedRange`),
      * or an array of `BindingRange`s, e.g. if computing the value requires different expressions
      * throughout the range or if the variable is only available in parts of the `GeneratedRange`.
+     *
+     * `undefined` denotes that the value of a variable is unavailble in the whole range.
+     * This can happen e.g. if the variable was optimized out and can't be recomputed.
      */
-    values?: (string | BindingRange[])[];
+    values: (string | undefined | BindingRange[])[];
+    children: GeneratedRange[];
 }
 export type ScopeKind = 'global' | 'class' | 'function' | 'block';
 export interface BindingRange {
@@ -44,4 +48,13 @@ export interface Position {
 export interface OriginalPosition extends Position {
     sourceIndex: number;
 }
-export declare function decodeOriginalScopes(encodedOriginalScopes: string[], names: string[]): OriginalScope[];
+interface OriginalScopeTree {
+    readonly root: OriginalScope;
+    readonly scopeForItemIndex: Map<number, OriginalScope>;
+}
+export declare function decodeOriginalScopes(encodedOriginalScopes: string[], names: string[]): OriginalScopeTree[];
+export declare function decodeGeneratedRanges(encodedGeneratedRange: string, originalScopeTrees: OriginalScopeTree[], _names: string[]): GeneratedRange;
+export declare const enum EncodedGeneratedRangeFlag {
+    HasDefinition = 1
+}
+export {};

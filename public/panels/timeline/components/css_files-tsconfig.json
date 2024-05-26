@@ -5,6 +5,7 @@
     },
     "files": [
         "breadcrumbsUI.css.js",
-        "interactionBreakdown.css.js"
+        "interactionBreakdown.css.js",
+        "sidebar.css.js"
     ]
 }

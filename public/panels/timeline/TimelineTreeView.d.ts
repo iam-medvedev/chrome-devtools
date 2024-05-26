@@ -29,7 +29,6 @@ export declare class TimelineTreeView extends UI.Widget.VBox implements UI.Searc
     private regexButton;
     private matchWholeWord;
     constructor();
-    static eventNameForSorting(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
     setModelWithEvents(selectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[] | null, traceParseData?: TraceEngine.Handlers.Types.TraceParseData | null): void;
     traceParseData(): TraceEngine.Handlers.Types.TraceParseData | null;

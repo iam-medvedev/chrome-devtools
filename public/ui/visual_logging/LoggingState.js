@@ -1,7 +1,7 @@
 import { needsLogging } from './LoggingConfig.js';
 const state = new WeakMap();
 function nextVeId() {
-    const result = new Uint32Array(1);
+    const result = new Int32Array(1);
     crypto.getRandomValues(result);
     return result[0];
 }

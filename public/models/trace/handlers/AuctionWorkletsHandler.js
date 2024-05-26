@@ -84,6 +84,7 @@ function workletType(input) {
  */
 function makeSyntheticEventBase(event) {
     return {
+        rawSourceEvent: event,
         name: 'SyntheticAuctionWorkletEvent',
         s: "t" /* Types.TraceEvents.TraceEventScope.THREAD */,
         cat: event.cat,

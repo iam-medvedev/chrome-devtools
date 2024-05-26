@@ -12,11 +12,11 @@ styles.replaceSync(
  */
 
 .tree-outline-disclosure li {
-  padding: 2px 0 0 5px;
+  padding: 0 0 0 5px;
   overflow: hidden;
   display: flex;
-  min-height: 17px;
-  align-items: baseline;
+  min-height: 18px;
+  align-items: center;
 }
 
 .tree-outline-disclosure {
@@ -40,6 +40,12 @@ styles.replaceSync(
 
 .event-listener-details {
   display: flex;
+  min-height: 18px;
+  align-items: center;
+
+  devtools-button {
+    height: 18px;
+  }
 }
 
 .event-listener-tree-subtitle {

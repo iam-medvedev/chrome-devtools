@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as SDK from '../core/sdk/sdk.js';
 const base64Digits = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 export function encodeVlq(n) {
     // Set the sign bit as the least significant bit.
@@ -129,7 +130,6 @@ export class OriginalScopeBuilder {
             this.#encodedScope += encodeVlq(name);
         }
         if (variables !== undefined) {
-            this.#encodedScope += encodeVlq(variables.length);
             this.#encodedScope += encodeVlqList(variables);
         }
         return this;
@@ -160,6 +160,67 @@ export class OriginalScopeBuilder {
             case 'block':
                 return 0x04;
         }
+    }
+}
+export class GeneratedRangeBuilder {
+    #encodedRange = '';
+    #state = {
+        line: 0,
+        column: 0,
+        defSourceIdx: 0,
+        defScopeIdx: 0,
+    };
+    start(line, column, options) {
+        this.#emitLineSeparator(line);
+        this.#emitItemSepratorIfRequired();
+        const emittedColumn = column - (this.#state.line === line ? this.#state.column : 0);
+        this.#encodedRange += encodeVlq(emittedColumn);
+        this.#state.line = line;
+        this.#state.column = column;
+        let flags = 0;
+        if (options?.definition) {
+            flags |= 1 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.HasDefinition */;
+        }
+        this.#encodedRange += encodeVlq(flags);
+        if (options?.definition) {
+            const { sourceIdx, scopeIdx } = options.definition;
+            this.#encodedRange += encodeVlq(sourceIdx - this.#state.defSourceIdx);
+            const emittedScopeIdx = scopeIdx - (this.#state.defSourceIdx === sourceIdx ? this.#state.defScopeIdx : 0);
+            this.#encodedRange += encodeVlq(emittedScopeIdx);
+            this.#state.defSourceIdx = sourceIdx;
+            this.#state.defScopeIdx = scopeIdx;
+        }
+        return this;
+    }
+    end(line, column) {
+        this.#emitLineSeparator(line);
+        this.#emitItemSepratorIfRequired();
+        const emittedColumn = column - (this.#state.line === line ? this.#state.column : 0);
+        this.#encodedRange += encodeVlq(emittedColumn);
+        this.#state.line = line;
+        this.#state.column = column;
+        return this;
+    }
+    #emitLineSeparator(line) {
+        for (let i = this.#state.line; i < line; ++i) {
+            this.#encodedRange += ';';
+        }
+    }
+    #emitItemSepratorIfRequired() {
+        if (this.#encodedRange !== '' && this.#encodedRange[this.#encodedRange.length - 1] !== ';') {
+            this.#encodedRange += ',';
+        }
+    }
+    build() {
+        const result = this.#encodedRange;
+        this.#state = {
+            line: 0,
+            column: 0,
+            defSourceIdx: 0,
+            defScopeIdx: 0,
+        };
+        this.#encodedRange = '';
+        return result;
     }
 }
 //# sourceMappingURL=SourceMapEncoder.js.map

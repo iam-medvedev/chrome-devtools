@@ -33,8 +33,6 @@ const assertNewAngleFromEvent = (angle, event, approximateNewValue) => {
     assert.approximately(newAngle.value, approximateNewValue, 0.1);
 };
 const initialData = {
-    propertyName: 'background',
-    propertyValue: 'linear-gradient(45deg, red, green)',
     angleText: '45deg',
     containingPane: document.createElement('div'),
 };

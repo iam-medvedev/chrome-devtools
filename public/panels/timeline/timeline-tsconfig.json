@@ -59,6 +59,7 @@
     "../../../../../../front_end/panels/timeline/TimelineFlameChartNetworkDataProvider.ts",
     "../../../../../../front_end/panels/timeline/TimelineFlameChartView.ts",
     "../../../../../../front_end/panels/timeline/TimelineHistoryManager.ts",
+    "../../../../../../front_end/panels/timeline/TimelineLandingPage.ts",
     "../../../../../../front_end/panels/timeline/TimelineLayersView.ts",
     "../../../../../../front_end/panels/timeline/TimelineLoader.ts",
     "../../../../../../front_end/panels/timeline/TimelineMiniMap.ts",
@@ -124,6 +125,9 @@
     },
     {
       "path": "../../services/trace_bounds/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../third_party/web-vitals/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"

@@ -19,7 +19,11 @@ const UIStrings = {
     /**
      *@description Column name and percentage of slow mach non-matches computing a style rule
      */
-    rejectPercentage: '% of slow-path non-matches',
+    rejectPercentage: '% of Slow-Path Non-Matches',
+    /**
+     *@description Tooltip description '% of slow-path non-matches'
+     */
+    rejectPercentageExplanation: 'The percentage of non-matching nodes (Match Attempts - Match Count) that couldn\'t be quickly ruled out by the bloom filter. Lower is better.',
     /**
      *@description Column name for count of elements that the engine attempted to match against a style rule
      */
@@ -53,6 +57,10 @@ const UIStrings = {
      *@description Text for announcing that the entire table was copied to clipboard
      */
     tableCopiedToClipboard: 'Table copied to clipboard',
+    /**
+     *@description Text shown as the "Selectelector" cell value for one row of the Selector Stats table, however this particular row is the totals. While normally the Selector cell is values like "div.container", the parenthesis can denote this description is not an actual selector, but a general row description.
+     */
+    totalForAllSelectors: '(Totals for all selectors)',
     /**
      *@description Text for showing the location of a selector in the style sheet
      *@example {256} PH1
@@ -125,6 +133,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                 {
                     id: "reject_percentage" /* SelectorTimingsKey.RejectPercentage */,
                     title: i18nString(UIStrings.rejectPercentage),
+                    titleElement: LitHtml.html `<span title=${i18nString(UIStrings.rejectPercentageExplanation)}>${i18nString(UIStrings.rejectPercentage)}</span>`,
                     sortable: true,
                     widthWeighting: 1,
                     visible: true,
@@ -137,7 +146,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                     id: "selector" /* SelectorTimingsKey.Selector */,
                     title: i18nString(UIStrings.selector),
                     sortable: true,
-                    widthWeighting: 4,
+                    widthWeighting: 3,
                     visible: true,
                     hideable: true,
                 },
@@ -145,7 +154,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                     id: "style_sheet_id" /* SelectorTimingsKey.StyleSheetId */,
                     title: i18nString(UIStrings.styleSheetId),
                     sortable: true,
-                    widthWeighting: 4,
+                    widthWeighting: 1.5,
                     visible: true,
                     hideable: true,
                 },
@@ -214,6 +223,12 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
         if (!this.#traceParsedData) {
             return;
         }
+        const sums = {
+            ["elapsed (us)" /* SelectorTimingsKey.Elapsed */]: 0,
+            ["match_attempts" /* SelectorTimingsKey.MatchAttempts */]: 0,
+            ["match_count" /* SelectorTimingsKey.MatchCount */]: 0,
+            ["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */]: 0,
+        };
         // Now we want to check if the set of events we have been given matches the
         // set of events we last rendered. We can't just compare the arrays because
         // they will be different events, so instead for each event in the new
@@ -251,6 +266,11 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                     else {
                         selectorMap.set(key, structuredClone(timing));
                     }
+                    // Keep track of the total times for a sum row.
+                    sums["elapsed (us)" /* SelectorTimingsKey.Elapsed */] += timing["elapsed (us)" /* SelectorTimingsKey.Elapsed */];
+                    sums["match_attempts" /* SelectorTimingsKey.MatchAttempts */] += timing["match_attempts" /* SelectorTimingsKey.MatchAttempts */];
+                    sums["match_count" /* SelectorTimingsKey.MatchCount */] += timing["match_count" /* SelectorTimingsKey.MatchCount */];
+                    sums["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */] += timing["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */];
                 }
             }
         }
@@ -264,6 +284,15 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
             this.#datagrid.data = { ...this.#datagrid.data, rows: [] };
             return;
         }
+        // Add the sum row.
+        timings.unshift({
+            ["elapsed (us)" /* SelectorTimingsKey.Elapsed */]: sums["elapsed (us)" /* SelectorTimingsKey.Elapsed */],
+            ["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */]: sums["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */],
+            ["match_attempts" /* SelectorTimingsKey.MatchAttempts */]: sums["match_attempts" /* SelectorTimingsKey.MatchAttempts */],
+            ["match_count" /* SelectorTimingsKey.MatchCount */]: sums["match_count" /* SelectorTimingsKey.MatchCount */],
+            ["selector" /* SelectorTimingsKey.Selector */]: i18nString(UIStrings.totalForAllSelectors),
+            ["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */]: 'n/a',
+        });
         void this.createRowsForTable(timings).then(rows => {
             this.#datagrid.data = { ...this.#datagrid.data, rows };
         });
@@ -309,7 +338,9 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
             const elapsedTimeInMs = x["elapsed (us)" /* SelectorTimingsKey.Elapsed */] / 1000.0;
             const nonMatches = x["match_attempts" /* SelectorTimingsKey.MatchAttempts */] - x["match_count" /* SelectorTimingsKey.MatchCount */];
             const rejectPercentage = (nonMatches ? x["fast_reject_count" /* SelectorTimingsKey.FastRejectCount */] / nonMatches : 1) * 100;
-            const locations = await toSourceFileLocation(cssModel, styleSheetId, selectorText, this.#selectorLocations);
+            const locations = styleSheetId === 'n/a' ?
+                null :
+                await toSourceFileLocation(cssModel, styleSheetId, selectorText, this.#selectorLocations);
             return {
                 cells: [
                     {
@@ -323,7 +354,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                         columnId: "reject_percentage" /* SelectorTimingsKey.RejectPercentage */,
                         value: rejectPercentage,
                         renderer() {
-                            return LitHtml.html `${rejectPercentage.toFixed(2)}`;
+                            return LitHtml.html `${rejectPercentage.toFixed(1)}`;
                         },
                     },
                     { columnId: "match_attempts" /* SelectorTimingsKey.MatchAttempts */, value: x["match_attempts" /* SelectorTimingsKey.MatchAttempts */] },
@@ -337,7 +368,10 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                         columnId: "style_sheet_id" /* SelectorTimingsKey.StyleSheetId */,
                         value: x["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */],
                         renderer() {
-                            if (!locations) {
+                            if (locations === null) {
+                                return LitHtml.html `<span></span>`;
+                            }
+                            if (locations === undefined) {
                                 return LitHtml.html `<span title=${i18nString(UIStrings.unableToLinkViaStyleSheetId, {
                                     PH1: x["style_sheet_id" /* SelectorTimingsKey.StyleSheetId */],
                                 })} aria-label=${i18nString(UIStrings.unableToLinkViaStyleSheetId, {

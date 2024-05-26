@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 /* eslint-disable rulesdir/es_modules_import */
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
@@ -17,10 +18,6 @@ const UIStrings = {
      *@description Empty holder text content in Event Listeners View of the Event Listener Debugging pane in the Sources panel
      */
     noEventListeners: 'No event listeners',
-    /**
-     *@description Label for an item to remove something
-     */
-    remove: 'Remove',
     /**
      *@description Delete button title in Event Listeners View of the Event Listener Debugging pane in the Sources panel
      */
@@ -268,9 +265,13 @@ export class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
         this.valueTitle = propertyValue.element;
         title.appendChild(this.valueTitle);
         if (this.eventListenerInternal.canRemove()) {
-            const deleteButton = title.createChild('button', 'event-listener-button');
-            deleteButton.textContent = i18nString(UIStrings.remove);
-            deleteButton.setAttribute('jslog', `${VisualLogging.action('delete-event-listener').track({ click: true })}`);
+            const deleteButton = new Buttons.Button.Button();
+            deleteButton.data = {
+                variant: "icon" /* Buttons.Button.Variant.ICON */,
+                size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                iconName: 'bin',
+                jslogContext: 'delete-event-listener',
+            };
             UI.Tooltip.Tooltip.install(deleteButton, i18nString(UIStrings.deleteEventListener));
             deleteButton.addEventListener('click', event => {
                 this.removeListener();

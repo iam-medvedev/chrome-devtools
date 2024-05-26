@@ -70,6 +70,7 @@ export declare class SplitWidget extends SplitWidget_base {
     private removeAllLayoutProperties;
     showBoth(animate?: boolean): void;
     setResizable(resizable: boolean): void;
+    forceSetSidebarWidth(width: number): void;
     isResizable(): boolean;
     setSidebarSize(size: number): void;
     sidebarSize(): number;

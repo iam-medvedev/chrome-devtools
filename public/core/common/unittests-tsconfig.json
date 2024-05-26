@@ -61,7 +61,6 @@
     "../../../../../../front_end/core/common/TextDictionary.test.ts",
     "../../../../../../front_end/core/common/Throttler.test.ts",
     "../../../../../../front_end/core/common/Trie.test.ts",
-    "../../../../../../front_end/core/common/WasmDisassembly.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../front_end/global_typings/request_idle_callback.d.ts",

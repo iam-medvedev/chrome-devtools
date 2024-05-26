@@ -95,6 +95,9 @@ export declare class DebuggerLanguagePluginManager implements SDK.TargetManager.
     resolveScopeChain(callFrame: SDK.DebuggerModel.CallFrame): Promise<SourceScope[] | null>;
     getFunctionInfo(script: SDK.Script.Script, location: SDK.DebuggerModel.Location): Promise<{
         frames: Array<Chrome.DevTools.FunctionInfo>;
+        missingSymbolFiles: SDK.DebuggerModel.MissingDebugFiles[];
+    } | {
+        frames: Array<Chrome.DevTools.FunctionInfo>;
     } | {
         missingSymbolFiles: SDK.DebuggerModel.MissingDebugFiles[];
     } | null>;

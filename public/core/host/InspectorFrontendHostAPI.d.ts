@@ -303,7 +303,6 @@ export interface SyncInformation {
 export declare const enum EnumeratedHistogram {
     ActionTaken = "DevTools.ActionTaken",
     BreakpointEditDialogRevealedFrom = "DevTools.BreakpointEditDialogRevealedFrom",
-    PanelClosed = "DevTools.PanelClosed",
     PanelShown = "DevTools.PanelShown",
     PanelShownInLocation = "DevTools.PanelShownInLocation",
     SidebarPaneShown = "DevTools.SidebarPaneShown",

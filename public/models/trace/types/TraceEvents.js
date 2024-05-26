@@ -71,6 +71,9 @@ export function isTraceEventScheduleStyleRecalculation(event) {
 export function isTraceEventPipelineReporter(event) {
     return event.name === "PipelineReporter" /* KnownEventName.PipelineReporter */;
 }
+export function isSyntheticEvent(event) {
+    return 'rawSourceEvent' in event;
+}
 export function isSyntheticInteractionEvent(event) {
     return Boolean('interactionId' in event && event.args?.data && 'beginEvent' in event.args.data && 'endEvent' in event.args.data);
 }

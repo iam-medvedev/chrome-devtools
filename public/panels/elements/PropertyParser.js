@@ -140,11 +140,11 @@ export class BottomUpTreeMatching extends TreeWalker {
     hasUnresolvedVarsRange(from, to) {
         return this.computedText.hasUnresolvedVars(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
     }
-    getComputedText(node) {
-        return this.getComputedTextRange(node, node);
+    getComputedText(node, substitutions) {
+        return this.getComputedTextRange(node, node, substitutions);
     }
-    getComputedTextRange(from, to) {
-        return this.computedText.get(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
+    getComputedTextRange(from, to, substitutions) {
+        return this.computedText.get(from.from - this.ast.tree.from, to.to - this.ast.tree.from, substitutions);
     }
 }
 class ComputedTextChunk {
@@ -248,31 +248,44 @@ export class ComputedText {
         }
         return false;
     }
-    // Get a slice of the computed text corresponding to the property text in the range [begin, end). The slice may not
-    // start within a substitution chunk, e.g., it's invalid to request the computed text for the property value text
-    // slice "1px var(--".
-    get(begin, end) {
-        const pieces = [];
-        const push = (text) => {
-            if (text.length === 0) {
-                return;
-            }
-            if (pieces.length > 0 && requiresSpace(pieces[pieces.length - 1], text)) {
-                pieces.push(' ');
-            }
-            pieces.push(text);
-        };
+    *#getPieces(begin, end) {
         for (const chunk of this.#range(begin, end)) {
             const piece = this.text.substring(begin, Math.min(chunk.offset, end));
-            push(piece);
+            yield piece;
             if (end >= chunk.end) {
-                push(chunk.computedText ?? chunk.match.text);
+                yield chunk;
             }
             begin = chunk.end;
         }
         if (begin < end) {
             const piece = this.text.substring(begin, end);
-            push(piece);
+            yield piece;
+        }
+    }
+    // Get a slice of the computed text corresponding to the property text in the range [begin, end). The slice may not
+    // start within a substitution chunk, e.g., it's invalid to request the computed text for the property value text
+    // slice "1px var(--".
+    get(begin, end, substitutions) {
+        const pieces = [];
+        const getText = (piece) => {
+            if (typeof piece === 'string') {
+                return piece;
+            }
+            const substitution = substitutions?.get(piece.match);
+            if (substitution) {
+                return getText(substitution);
+            }
+            return piece.computedText ?? piece.match.text;
+        };
+        for (const piece of this.#getPieces(begin, end)) {
+            const text = getText(piece);
+            if (text.length === 0) {
+                continue;
+            }
+            if (pieces.length > 0 && requiresSpace(pieces[pieces.length - 1], text)) {
+                pieces.push(' ');
+            }
+            pieces.push(text);
         }
         return pieces.join('');
     }
@@ -351,6 +364,9 @@ export class AngleMatch {
     constructor(text, node) {
         this.text = text;
         this.node = node;
+    }
+    computedText() {
+        return this.text;
     }
 }
 // clang-format off
@@ -531,6 +547,28 @@ export class URLMatcher extends matcherBase(URLMatch) {
         const text = matching.ast.text(urlNode);
         const url = (urlNode.name === 'StringLiteral' ? text.substr(1, text.length - 2) : text.trim());
         return new URLMatch(url, matching.ast.text(node), node);
+    }
+}
+export class LinearGradientMatch {
+    text;
+    node;
+    constructor(text, node) {
+        this.text = text;
+        this.node = node;
+    }
+}
+// clang-format off
+export class LinearGradientMatcher extends matcherBase(LinearGradientMatch) {
+    // clang-format on
+    matches(node, matching) {
+        const text = matching.ast.text(node);
+        if (node.name === 'CallExpression' && matching.ast.text(node.getChild('Callee')) === 'linear-gradient') {
+            return new LinearGradientMatch(text, node);
+        }
+        return null;
+    }
+    accepts(propertyName) {
+        return ['background', 'background-image', '-webkit-mask-image'].includes(propertyName);
     }
 }
 export class ColorMatch {

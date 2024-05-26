@@ -68,10 +68,6 @@ styles.replaceSync(
   flex: auto;
 }
 
-.conditions-list-title-text:last-child {
-  text-align: center;
-}
-
 .conditions-list-separator {
   flex: 0 0 1px;
   background-color: var(--sys-color-divider);

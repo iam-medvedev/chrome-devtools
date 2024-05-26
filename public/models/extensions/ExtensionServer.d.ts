@@ -44,6 +44,7 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private readonly extensionAPITestHook?;
     private themeChangeHandlers;
     private constructor();
+    get isEnabledForTest(): boolean;
     dispose(): void;
     static instance(opts?: {
         forceNew: boolean | null;
@@ -126,6 +127,7 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     evaluate(expression: string, exposeCommandLineAPI: boolean, returnByValue: boolean, options: PrivateAPI.EvaluateOptions | undefined, securityOrigin: string, callback: (arg0: string | null, arg1: SDK.RemoteObject.RemoteObject | null, arg2: boolean) => unknown): Record | undefined;
     static canInspectURL(url: Platform.DevToolsPath.UrlString): boolean;
     private disableExtensions;
+    private enableExtensions;
 }
 export declare const enum Events {
     SidebarPaneAdded = "SidebarPaneAdded"

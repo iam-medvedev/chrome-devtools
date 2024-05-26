@@ -15,16 +15,19 @@ export function decodeOriginalScopes(encodedOriginalScopes, names) {
     return encodedOriginalScopes.map(scope => decodeOriginalScope(scope, names));
 }
 function decodeOriginalScope(encodedOriginalScope, names) {
+    const scopeForItemIndex = new Map();
     const scopeStack = [];
     let line = 0;
-    for (const item of decodeOriginalScopeItems(encodedOriginalScope)) {
+    for (const [index, item] of decodeOriginalScopeItems(encodedOriginalScope)) {
         line += item.line;
         const { column } = item;
         if (isStart(item)) {
             const kind = decodeKind(item.kind);
             const name = resolveName(item.name, names);
             const variables = item.variables.map(idx => names[idx]);
-            scopeStack.push({ start: { line, column }, end: { line, column }, kind, name, variables, children: [] });
+            const scope = { start: { line, column }, end: { line, column }, kind, name, variables, children: [] };
+            scopeStack.push(scope);
+            scopeForItemIndex.set(index, scope);
         }
         else {
             const scope = scopeStack.pop();
@@ -34,7 +37,7 @@ function decodeOriginalScope(encodedOriginalScope, names) {
             scope.end = { line, column };
             if (scopeStack.length === 0) {
                 // We are done. There might be more top-level scopes but we only allow one.
-                return scope;
+                return { root: scope, scopeForItemIndex };
             }
             scopeStack[scopeStack.length - 1].children.push(scope);
         }
@@ -47,6 +50,7 @@ function isStart(item) {
 function* decodeOriginalScopeItems(encodedOriginalScope) {
     const iter = new TokenIterator(encodedOriginalScope);
     let prevColumn = 0;
+    let itemCount = 0;
     while (iter.hasNext()) {
         if (iter.peek() === ',') {
             iter.next(); // Consume ','.
@@ -57,7 +61,7 @@ function* decodeOriginalScopeItems(encodedOriginalScope) {
         }
         prevColumn = column;
         if (!iter.hasNext() || iter.peek() === ',') {
-            yield { line, column };
+            yield [itemCount++, { line, column }];
             continue;
         }
         const startItem = {
@@ -71,10 +75,98 @@ function* decodeOriginalScopeItems(encodedOriginalScope) {
             startItem.name = iter.nextVLQ();
         }
         if (startItem.flags & 0x2) {
-            const count = iter.nextVLQ();
-            for (let i = 0; i < count; ++i) {
+            while (iter.hasNext() && iter.peek() !== ',') {
                 startItem.variables.push(iter.nextVLQ());
             }
+        }
+        yield [itemCount++, startItem];
+    }
+}
+export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees, _names) {
+    const rangeStack = [];
+    const rangeToStartItem = new Map();
+    for (const item of decodeGeneratedRangeItems(encodedGeneratedRange)) {
+        if (isRangeStart(item)) {
+            // TODO(crbug.com/40277685): Decode callsite and bindings.
+            const range = {
+                start: { line: item.line, column: item.column },
+                end: { line: item.line, column: item.column },
+                values: [],
+                children: [],
+            };
+            if (item.definition) {
+                const { scopeIdx, sourceIdx } = item.definition;
+                if (!originalScopeTrees[sourceIdx]) {
+                    throw new Error('Invalid source index!');
+                }
+                const originalScope = originalScopeTrees[sourceIdx].scopeForItemIndex.get(scopeIdx);
+                if (!originalScope) {
+                    throw new Error('Invalid original scope index!');
+                }
+                range.originalScope = originalScope;
+            }
+            rangeToStartItem.set(range, item);
+            rangeStack.push(range);
+        }
+        else {
+            const range = rangeStack.pop();
+            if (!range) {
+                throw new Error('Range items not nested properly: encountered "end" item without "start" item');
+            }
+            range.end = { line: item.line, column: item.column };
+            if (rangeStack.length === 0) {
+                // We are done. There might be more top-level scopes but we only allow one.
+                return range;
+            }
+            rangeStack[rangeStack.length - 1].children.push(range);
+        }
+    }
+    throw new Error('Malformed generated range encoding');
+}
+function isRangeStart(item) {
+    return 'flags' in item;
+}
+function* decodeGeneratedRangeItems(encodedGeneratedRange) {
+    const iter = new TokenIterator(encodedGeneratedRange);
+    let line = 0;
+    // The state are the fields of the last produced item, tracked because many
+    // are relative to the preceeding item.
+    const state = {
+        line: 0,
+        column: 0,
+        defSourceIdx: 0,
+        defScopeIdx: 0,
+    };
+    while (iter.hasNext()) {
+        if (iter.peek() === ';') {
+            iter.next(); // Consume ';'.
+            ++line;
+            continue;
+        }
+        else if (iter.peek() === ',') {
+            iter.next(); // Consume ','.
+            continue;
+        }
+        state.column = iter.nextVLQ() + (line === state.line ? state.column : 0);
+        state.line = line;
+        if (iter.peekVLQ() === null) {
+            yield { line, column: state.column };
+            continue;
+        }
+        const startItem = {
+            line,
+            column: state.column,
+            flags: iter.nextVLQ(),
+        };
+        if (startItem.flags & 1 /* EncodedGeneratedRangeFlag.HasDefinition */) {
+            const sourceIdx = iter.nextVLQ();
+            const scopeIdx = iter.nextVLQ();
+            state.defScopeIdx = scopeIdx + (sourceIdx === 0 ? state.defScopeIdx : 0);
+            state.defSourceIdx += sourceIdx;
+            startItem.definition = {
+                sourceIdx: state.defSourceIdx,
+                scopeIdx: state.defScopeIdx,
+            };
         }
         yield startItem;
     }

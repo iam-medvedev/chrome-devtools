@@ -224,6 +224,10 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         return frameTimeMilliSeconds - frame.endTime < 10 ? filmStripFrame : null;
     }
     async setSelection(selection) {
+        if (!this.#traceEngineData) {
+            // You can't make a selection if we have no trace data.
+            return;
+        }
         this.detailsLinkifier.reset();
         this.selection = selection;
         if (!this.selection) {
@@ -238,7 +242,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
             const networkDetails = await TimelineUIUtils.buildSyntheticNetworkRequestDetails(this.#traceEngineData, event, this.detailsLinkifier);
             this.setContent(networkDetails);
         }
-        else if (TimelineSelection.isTraceEventSelection(selectionObject) && this.#traceEngineData) {
+        else if (TimelineSelection.isTraceEventSelection(selectionObject)) {
             const event = selectionObject;
             const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#traceEngineData, event, this.detailsLinkifier, true);
             this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
@@ -298,11 +302,7 @@ export class TimelineDetailsView extends UI.Widget.VBox {
         this.tabbedPane.selectTab(Tab.PaintProfiler, true);
     }
     showSelectorStatsForIndividualEvent(event) {
-        const selectorStatsView = this.selectorStatsView();
-        selectorStatsView.setEvent(event);
-        if (!this.tabbedPane.hasTab(Tab.SelectorStats)) {
-            this.appendTab(Tab.SelectorStats, i18nString(UIStrings.selectorStats), selectorStatsView);
-        }
+        this.showAggregatedSelectorStats([event]);
     }
     showAggregatedSelectorStats(events) {
         const selectorStatsView = this.selectorStatsView();

@@ -484,20 +484,6 @@ export class BottomUpNode extends Node {
         return results;
     }
 }
-export function eventURL(event) {
-    // TODO(40287735): this overlaps a lot with the method in
-    // TimelineUIUtils; but this cannot call that because the Model cannot
-    // depend on the UIUtils module. Restructure this and that method so we
-    // can call the same method in both places.
-    if (event.args?.data?.url) {
-        return event.args.data.url;
-    }
-    const frame = eventStackFrame(event);
-    if (frame) {
-        return frame.url;
-    }
-    return null;
-}
 export function eventStackFrame(event) {
     if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
         return event.callFrame;

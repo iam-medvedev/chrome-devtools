@@ -52,15 +52,6 @@ export class UserMetrics {
             this.#panelChangedSinceLaunch = true;
         }
     }
-    /**
-     * Fired when a panel is closed (regardless if it exists in the main panel or the drawer)
-     */
-    panelClosed(panelName) {
-        const code = PanelCodes[panelName] || 0;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelClosed" /* EnumeratedHistogram.PanelClosed */, code, PanelCodes.MaxValue);
-        // Store that the user has changed the panel so we know launch histograms should not be fired.
-        this.#panelChangedSinceLaunch = true;
-    }
     panelShownInLocation(panelName, location) {
         const panelWithLocationName = `${panelName}-${location}`;
         const panelWithLocation = PanelWithLocation[panelWithLocationName] || 0;
@@ -913,8 +904,9 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";
     DevtoolsExperiments[DevtoolsExperiments["perf-panel-annotations"] = 94] = "perf-panel-annotations";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-rpp-sidebar"] = 95] = "timeline-rpp-sidebar";
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 95] = "MaxValue";
+    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 96] = "MaxValue";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

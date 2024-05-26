@@ -17,7 +17,11 @@ export declare class TestPlugin implements Bindings.DebuggerLanguagePlugins.Debu
     removeRawModule(_rawModuleId: string): Promise<void>;
     getFunctionInfo(_rawLocation: Chrome.DevTools.RawLocation): Promise<{
         frames: Array<Chrome.DevTools.FunctionInfo>;
-        missingSymbolFiles?: Array<string>;
+        missingSymbolFiles: Array<string>;
+    } | {
+        frames: Array<Chrome.DevTools.FunctionInfo>;
+    } | {
+        missingSymbolFiles: Array<string>;
     }>;
     getInlinedFunctionRanges(_rawLocation: Chrome.DevTools.RawLocation): Promise<Chrome.DevTools.RawLocationRange[]>;
     getInlinedCalleesRanges(_rawLocation: Chrome.DevTools.RawLocation): Promise<Chrome.DevTools.RawLocationRange[]>;
