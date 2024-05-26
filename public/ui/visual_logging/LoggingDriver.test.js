@@ -148,7 +148,7 @@ describe('LoggingDriver', () => {
         renderElementIntoDOM(element);
         await VisualLoggingTesting.LoggingDriver.startLogging();
         assert.isTrue(recordImpression.calledOnce);
-        assert.strictEqual(recordImpression.firstCall.firstArg.impressions[0]?.context, 4191634312);
+        assert.strictEqual(recordImpression.firstCall.firstArg.impressions[0]?.context, -103332984);
     });
     it('logs clicks', async () => {
         addLoggableElements();

@@ -33,6 +33,7 @@
     "../../../../../../../front_end/models/trace/extras/FilmStrip.ts",
     "../../../../../../../front_end/models/trace/extras/MainThreadActivity.ts",
     "../../../../../../../front_end/models/trace/extras/Metadata.ts",
+    "../../../../../../../front_end/models/trace/extras/URLForEntry.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../../front_end/global_typings/request_idle_callback.d.ts",

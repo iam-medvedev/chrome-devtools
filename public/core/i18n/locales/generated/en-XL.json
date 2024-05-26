@@ -6335,9 +6335,6 @@
   "panels/event_listeners/EventListenersView.ts | passive": {
     "message": "P̂áŝśîv́ê"
   },
-  "panels/event_listeners/EventListenersView.ts | remove": {
-    "message": "R̂ém̂óv̂é"
-  },
   "panels/event_listeners/EventListenersView.ts | revealInElementsPanel": {
     "message": "R̂év̂éâĺ îń Êĺêḿêńt̂ś p̂án̂él̂"
   },
@@ -6460,6 +6457,33 @@
   },
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ûṕd̂át̂é ŷóûŕ L̂án̂ǵûáĝé p̂ŕêf́êŕêńĉé îń D̂év̂T́ôól̂ś Ŝét̂t́îńĝś t̂ó Êńĝĺîśĥ."
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | acceptButtonTitle": {
+    "message": "Âćĉép̂t́"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | inputDisclaimer": {
+    "message": "F̂ŕêéŝt́ŷĺêŕ m̂áŷ d́îśp̂ĺâý îńâćĉúr̂át̂é îńf̂ór̂ḿât́îón̂ án̂d́ m̂áŷ ńôt́ ĝét̂ ít̂ ŕîǵĥt́"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | inputPlaceholder": {
+    "message": "Âśk̂ F́r̂éêśt̂ýl̂ér̂ ór̂ t́ŷṕê / f́ôŕ ĉóm̂ḿâńd̂ś"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | sendButtonTitle": {
+    "message": "Ŝén̂d́"
+  },
+  "panels/freestyler/freestyler-meta.ts | freestyler": {
+    "message": "F̂ŕêéŝt́ŷĺêŕ"
+  },
+  "panels/freestyler/freestyler-meta.ts | showFreestyler": {
+    "message": "Ŝh́ôẃ F̂ŕêéŝt́ŷĺêŕ"
+  },
+  "panels/freestyler/FreestylerPanel.ts | clearMessages": {
+    "message": "Ĉĺêár̂ ḿêśŝáĝéŝ"
+  },
+  "panels/freestyler/FreestylerPanel.ts | createChat": {
+    "message": "Ĉŕêát̂é ĉh́ât́"
+  },
+  "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
+    "message": "Ŝén̂d́ f̂éêd́b̂áĉḱ"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "B̂ĺôćk̂éd̂ Ŕêśôúr̂ćê"
@@ -12809,11 +12833,23 @@
   "panels/timeline/TimelineHistoryManager.ts | sM": {
     "message": "{PH1} m̂"
   },
+  "panels/timeline/TimelineLandingPage.ts | afterRecordingSelectAnAreaOf": {
+    "message": "Âf́t̂ér̂ ŕêćôŕd̂ín̂ǵ, ŝél̂éĉt́ âń âŕêá ôf́ îńt̂ér̂éŝt́ îń t̂h́ê óv̂ér̂v́îéŵ b́ŷ d́r̂áĝǵîńĝ. T́ĥén̂, źôóm̂ án̂d́ p̂án̂ t́ĥé t̂ím̂él̂ín̂é ŵít̂h́ t̂h́ê ḿôúŝéŵh́êél̂ ór̂ {PH1} ḱêýŝ. {PH2}"
+  },
+  "panels/timeline/TimelineLandingPage.ts | clickTheRecordButtonSOrHitSTo": {
+    "message": "Ĉĺîćk̂ t́ĥé r̂éĉór̂d́ b̂út̂t́ôń {PH1} ôŕ ĥít̂ {PH2} t́ô śt̂ár̂t́ â ńêẃ r̂éĉór̂d́îńĝ."
+  },
+  "panels/timeline/TimelineLandingPage.ts | clickTheReloadButtonSOrHitSTo": {
+    "message": "Ĉĺîćk̂ t́ĥé r̂él̂óâd́ b̂út̂t́ôń {PH1} ôŕ ĥít̂ {PH2} t́ô ŕêćôŕd̂ t́ĥé p̂áĝé l̂óâd́."
+  },
+  "panels/timeline/TimelineLandingPage.ts | learnmore": {
+    "message": "L̂éâŕn̂ ḿôŕê"
+  },
+  "panels/timeline/TimelineLandingPage.ts | wasd": {
+    "message": "ŴÁŜD́"
+  },
   "panels/timeline/TimelineLoader.ts | malformedTimelineDataS": {
     "message": "M̂ál̂f́ôŕm̂éd̂ t́îḿêĺîńê d́ât́â: {PH1}"
-  },
-  "panels/timeline/TimelinePanel.ts | afterRecordingSelectAnAreaOf": {
-    "message": "Âf́t̂ér̂ ŕêćôŕd̂ín̂ǵ, ŝél̂éĉt́ âń âŕêá ôf́ îńt̂ér̂éŝt́ îń t̂h́ê óv̂ér̂v́îéŵ b́ŷ d́r̂áĝǵîńĝ. T́ĥén̂, źôóm̂ án̂d́ p̂án̂ t́ĥé t̂ím̂él̂ín̂é ŵít̂h́ t̂h́ê ḿôúŝéŵh́êél̂ ór̂ {PH1} ḱêýŝ. {PH2}"
   },
   "panels/timeline/TimelinePanel.ts | bufferUsage": {
     "message": "B̂úf̂f́êŕ ûśâǵê"
@@ -12832,12 +12868,6 @@
   },
   "panels/timeline/TimelinePanel.ts | clear": {
     "message": "Ĉĺêár̂"
-  },
-  "panels/timeline/TimelinePanel.ts | clickTheRecordButtonSOrHitSTo": {
-    "message": "Ĉĺîćk̂ t́ĥé r̂éĉór̂d́ b̂út̂t́ôń {PH1} ôŕ ĥít̂ {PH2} t́ô śt̂ár̂t́ â ńêẃ r̂éĉór̂d́îńĝ."
-  },
-  "panels/timeline/TimelinePanel.ts | clickTheReloadButtonSOrHitSTo": {
-    "message": "Ĉĺîćk̂ t́ĥé r̂él̂óâd́ b̂út̂t́ôń {PH1} ôŕ ĥít̂ {PH2} t́ô ŕêćôŕd̂ t́ĥé p̂áĝé l̂óâd́."
   },
   "panels/timeline/TimelinePanel.ts | close": {
     "message": "Ĉĺôśê"
@@ -12883,9 +12913,6 @@
   },
   "panels/timeline/TimelinePanel.ts | JavascriptSamplingIsDisabled": {
     "message": "- Ĵáv̂áŜćr̂íp̂t́ ŝám̂ṕl̂ín̂ǵ îś d̂íŝáb̂ĺêd́"
-  },
-  "panels/timeline/TimelinePanel.ts | learnmore": {
-    "message": "L̂éâŕn̂ ḿôŕê"
   },
   "panels/timeline/TimelinePanel.ts | loadingProfile": {
     "message": "L̂óâd́îńĝ ṕr̂óf̂íl̂é…"
@@ -12947,9 +12974,6 @@
   "panels/timeline/TimelinePanel.ts | time": {
     "message": "T̂ím̂é"
   },
-  "panels/timeline/TimelinePanel.ts | wasd": {
-    "message": "ŴÁŜD́"
-  },
   "panels/timeline/TimelineSelectorStatsView.ts | copyTable": {
     "message": "Ĉóp̂ý T̂áb̂ĺê"
   },
@@ -12966,7 +12990,10 @@
     "message": "M̂át̂ćĥ Ćôún̂t́"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | rejectPercentage": {
-    "message": "% ôf́ ŝĺôẃ-p̂át̂h́ n̂ón̂-ḿât́ĉh́êś"
+    "message": "% ôf́ Ŝĺôẃ-P̂át̂h́ N̂ón̂-Ḿât́ĉh́êś"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | rejectPercentageExplanation": {
+    "message": "T̂h́ê ṕêŕĉén̂t́âǵê óf̂ ńôń-m̂át̂ćĥín̂ǵ n̂ód̂éŝ (Ḿât́ĉh́ Ât́t̂ém̂ṕt̂ś - M̂át̂ćĥ Ćôún̂t́) t̂h́ât́ ĉóûĺd̂ń't̂ b́ê q́ûíĉḱl̂ý r̂úl̂éd̂ óût́ b̂ý t̂h́ê b́l̂óôḿ f̂íl̂t́êŕ. L̂óŵér̂ íŝ b́êt́t̂ér̂."
   },
   "panels/timeline/TimelineSelectorStatsView.ts | selector": {
     "message": "Ŝél̂éĉt́ôŕ"
@@ -12979,6 +13006,9 @@
   },
   "panels/timeline/TimelineSelectorStatsView.ts | tableCopiedToClipboard": {
     "message": "T̂áb̂ĺê ćôṕîéd̂ t́ô ćl̂íp̂b́ôár̂d́"
+  },
+  "panels/timeline/TimelineSelectorStatsView.ts | totalForAllSelectors": {
+    "message": "(T̂ót̂ál̂ś f̂ór̂ ál̂ĺ ŝél̂éĉt́ôŕŝ)"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | unableToLink": {
     "message": "Ûńâb́l̂é t̂ó l̂ín̂ḱ"

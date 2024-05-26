@@ -1,5 +1,5 @@
-import { type TraceEventHandlerName } from './types.js';
 import * as Types from '../types/types.js';
+import { type TraceEventHandlerName } from './types.js';
 interface NetworkRequestData {
     byOrigin: Map<string, {
         renderBlocking: Types.TraceEvents.SyntheticNetworkRequest[];

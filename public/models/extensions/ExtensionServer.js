@@ -205,6 +205,9 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         this.initExtensions();
         ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
     }
+    get isEnabledForTest() {
+        return this.extensionsEnabled;
+    }
     dispose() {
         ThemeSupport.ThemeSupport.instance().removeEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
         // Set up by this.initExtensions in the constructor.
@@ -386,6 +389,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.requests = new Map();
+        this.enableExtensions();
         const url = event.data.inspectedURL();
         this.postNotification("inspected-url-changed" /* PrivateAPI.Events.InspectedURLChanged */, url);
         const extensions = this.#pendingExtensions.splice(0);
@@ -1189,6 +1193,9 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     }
     disableExtensions() {
         this.extensionsEnabled = false;
+    }
+    enableExtensions() {
+        this.extensionsEnabled = true;
     }
 }
 class ExtensionServerPanelView extends UI.View.SimpleView {

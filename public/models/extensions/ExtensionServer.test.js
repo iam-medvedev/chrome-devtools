@@ -36,7 +36,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         assert.isTrue(addExtensionSpy.notCalled, 'addExtension not called');
         target.setInspectedURL(allowedUrl);
         assert.isTrue(addExtensionSpy.calledOnce, 'addExtension called once');
-        assert.isTrue(addExtensionSpy.returned(undefined), 'addExtension returned undefined');
+        assert.isTrue(addExtensionSpy.returned(true), 'addExtension returned true');
     });
     it('only returns page resources for allowed targets', async () => {
         const urls = ['http://example.com', 'chrome://version'];
@@ -224,6 +224,30 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         await reloadPromise;
         assert.isTrue(reloadStub.calledOnce);
         assert.isTrue(secondReloadStub.notCalled);
+    });
+    it('correcly installs blocked extensions after navigation', async () => {
+        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        assert.isOk(target);
+        target.setInspectedURL('chrome://version');
+        const extensionServer = Extensions.ExtensionServer.ExtensionServer.instance();
+        const addExtensionSpy = sinon.spy(extensionServer, 'addExtension');
+        assert.isUndefined(extensionServer.addExtension({
+            startPage: 'about:blank',
+            name: 'ext',
+            exposeExperimentalAPIs: false,
+        }));
+        target.setInspectedURL('http://example.com');
+        assert.deepStrictEqual(addExtensionSpy.returnValues, [undefined, true]);
+    });
+    it('correcly reenables extensions after navigation', async () => {
+        const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        assert.isOk(target);
+        const extensionServer = Extensions.ExtensionServer.ExtensionServer.instance();
+        assert.isTrue(extensionServer.isEnabledForTest);
+        target.setInspectedURL('chrome://version');
+        assert.isFalse(extensionServer.isEnabledForTest);
+        target.setInspectedURL('http://example.com');
+        assert.isTrue(extensionServer.isEnabledForTest);
     });
 });
 const allowedUrl = FRAME_URL;

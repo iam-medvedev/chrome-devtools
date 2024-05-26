@@ -10,6 +10,8 @@ export declare class CookieItemsView extends StorageItemsView {
     private readonly previewWidget;
     private readonly emptyWidget;
     private onlyIssuesFilterUI;
+    private readonly refreshThrottler;
+    private eventDescriptors;
     private allCookies;
     private shownCookies;
     private selectedCookie;
@@ -27,5 +29,8 @@ export declare class CookieItemsView extends StorageItemsView {
     deleteAllItems(): void;
     deleteSelectedItem(): void;
     refreshItems(): void;
+    refreshItemsThrottled(): void;
+    private onResponseReceived;
+    private onLoadingFinished;
     wasShown(): void;
 }

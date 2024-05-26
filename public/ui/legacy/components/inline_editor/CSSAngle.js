@@ -9,7 +9,6 @@ import { convertAngleUnit, getNewAngleFromEvent, getNextUnit, parseText, roundAn
 import { ValueChangedEvent } from './InlineEditorUtils.js';
 const { render, html } = LitHtml;
 const styleMap = LitHtml.Directives.styleMap;
-const ContextAwareProperties = new Set(['color', 'background', 'background-color']);
 export class PopoverToggledEvent extends Event {
     static eventName = 'popovertoggled';
     data;
@@ -35,7 +34,6 @@ export class CSSAngle extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     angle = DefaultAngle;
     displayedAngle = DefaultAngle;
-    propertyName = '';
     propertyValue = '';
     containingPane;
     angleElement = null;
@@ -54,8 +52,6 @@ export class CSSAngle extends HTMLElement {
         }
         this.angle = parsedResult;
         this.displayedAngle = { ...parsedResult };
-        this.propertyName = data.propertyName;
-        this.propertyValue = data.propertyValue;
         this.containingPane = data.containingPane;
         this.render();
     }
@@ -109,8 +105,7 @@ export class CSSAngle extends HTMLElement {
         this.unbindMinifyingAction();
         this.render();
     }
-    updateProperty(name, value) {
-        this.propertyName = name;
+    updateProperty(value) {
         this.propertyValue = value;
         this.render();
     }
@@ -192,9 +187,7 @@ export class CSSAngle extends HTMLElement {
     }
     renderPopover() {
         let contextualBackground = '';
-        // TODO(crbug.com/1143010): for now we ignore values with "url"; when we refactor
-        // CSS value parsing we should properly apply atomic contextual background.
-        if (ContextAwareProperties.has(this.propertyName) && !this.propertyValue.match(/url\(.*\)/i)) {
+        if (this.propertyValue && !this.propertyValue.match(/url\(.*\)/i)) {
             contextualBackground = this.propertyValue;
         }
         // Disabled until https://crbug.com/1079231 is fixed.

@@ -346,7 +346,6 @@ export class InspectorView extends VBox {
     }
     closeDrawerTab(id, userGesture) {
         this.drawerTabbedPane.closeTab(id, userGesture);
-        Host.userMetrics.panelClosed(id);
     }
     keyDown(event) {
         const keyboardEvent = event;
@@ -539,10 +538,6 @@ export class ActionDelegate {
 export class InspectorViewTabDelegate {
     closeTabs(tabbedPane, ids) {
         tabbedPane.closeTabs(ids, true);
-        // Log telemetry about the closure
-        ids.forEach(id => {
-            Host.userMetrics.panelClosed(id);
-        });
     }
     moveToDrawer(tabId) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.TabMovedToDrawer);

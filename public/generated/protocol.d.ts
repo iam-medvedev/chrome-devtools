@@ -1062,6 +1062,7 @@ export declare namespace Audits {
         allowedSites: string[];
         optOutPercentage: number;
         isOptOutTopLevel: boolean;
+        operation: CookieOperation;
     }
     const enum ClientHintIssueReason {
         MetaTagAllowListInvalidOrigin = "MetaTagAllowListInvalidOrigin",
@@ -1116,7 +1117,8 @@ export declare namespace Audits {
         ThirdPartyCookiesBlocked = "ThirdPartyCookiesBlocked",
         NotSignedInWithIdp = "NotSignedInWithIdp",
         MissingTransientUserActivation = "MissingTransientUserActivation",
-        ReplacedByButtonMode = "ReplacedByButtonMode"
+        ReplacedByButtonMode = "ReplacedByButtonMode",
+        RelyingPartyOriginIsOpaque = "RelyingPartyOriginIsOpaque"
     }
     interface FederatedAuthUserInfoRequestIssueDetails {
         federatedAuthUserInfoRequestIssueReason: FederatedAuthUserInfoRequestIssueReason;
@@ -7417,6 +7419,14 @@ export declare namespace Network {
          */
         workerRespondWithSettled: number;
         /**
+         * Started ServiceWorker static routing source evaluation.
+         */
+        workerRouterEvaluationStart?: number;
+        /**
+         * Started cache lookup when the source was evaluated to `cache`.
+         */
+        workerCacheLookupStart?: number;
+        /**
          * Started sending request.
          */
         sendStart: number;
@@ -7769,6 +7779,10 @@ export declare namespace Network {
          * field will be set, otherwise no value will be set.
          */
         matchedSourceType?: ServiceWorkerRouterSource;
+        /**
+         * The actual router source used.
+         */
+        actualSourceType?: ServiceWorkerRouterSource;
     }
     /**
      * HTTP response data.
@@ -15965,6 +15979,16 @@ export declare namespace PWA {
          * ID of the tab target created as a result.
          */
         targetId: Target.TargetID;
+    }
+    interface LaunchFilesInAppRequest {
+        manifestId: string;
+        files: string[];
+    }
+    interface LaunchFilesInAppResponse extends ProtocolResponseWithError {
+        /**
+         * IDs of the tab targets created as the result.
+         */
+        targetIds: Target.TargetID[];
     }
 }
 /**

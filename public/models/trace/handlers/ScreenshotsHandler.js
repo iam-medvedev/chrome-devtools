@@ -33,6 +33,7 @@ export async function finalize() {
     for (const snapshotEvent of snapshotEvents) {
         const { cat, name, ph, pid, tid } = snapshotEvent;
         const syntheticEvent = {
+            rawSourceEvent: snapshotEvent,
             cat,
             name,
             ph,

@@ -28,7 +28,6 @@ import * as StringOutputStream from './StringOutputStream.js';
 import * as TextDictionary from './TextDictionary.js';
 import * as Throttler from './Throttler.js';
 import * as Trie from './Trie.js';
-import * as WasmDisassembly from './WasmDisassembly.js';
 import * as Worker from './Worker.js';
 export { UIString } from '../platform/platform.js';
-export { App, AppProvider, Base64, CharacterIdMap, Color, ColorUtils, ColorConverter, Console, Debouncer, EventTarget, JavaScriptMetaData, Lazy, Linkifier, Mutex, ObjectWrapper, ParsedURL, Progress, QueryParamHandler, ResolverBase, ResourceType, Revealer, Runnable, SegmentedRange, Settings, SettingRegistration, SimpleHistoryManager, StringOutputStream, TextDictionary, Throttler, Trie, Worker, WasmDisassembly, };
+export { App, AppProvider, Base64, CharacterIdMap, Color, ColorUtils, ColorConverter, Console, Debouncer, EventTarget, JavaScriptMetaData, Lazy, Linkifier, Mutex, ObjectWrapper, ParsedURL, Progress, QueryParamHandler, ResolverBase, ResourceType, Revealer, Runnable, SegmentedRange, Settings, SettingRegistration, SimpleHistoryManager, StringOutputStream, TextDictionary, Throttler, Trie, Worker, };

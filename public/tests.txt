@@ -25,7 +25,6 @@ core/common/StringOutputStream.test.js
 core/common/TextDictionary.test.js
 core/common/Throttler.test.js
 core/common/Trie.test.js
-core/common/WasmDisassembly.test.js
 core/dom_extension/DOMExtension.test.js
 core/host/AidaClient.test.js
 core/i18n/DevToolsLocale.test.js
@@ -154,6 +153,7 @@ models/text_utils/Text.test.js
 models/text_utils/TextCursor.test.js
 models/text_utils/TextRange.test.js
 models/text_utils/TextUtils.test.js
+models/text_utils/WasmDisassembly.test.js
 models/timeline_model/TimelineModelFilter.test.js
 models/timeline_model/TimelineProfileTree.test.js
 models/trace/EntriesFilter.test.js
@@ -164,6 +164,7 @@ models/trace/extras/FetchNodes.test.js
 models/trace/extras/FilmStrip.test.js
 models/trace/extras/MainThreadActivity.test.js
 models/trace/extras/Metadata.test.js
+models/trace/extras/URLForEntry.test.js
 models/trace/handlers/AnimationHandler.test.js
 models/trace/handlers/AuctionWorkletsHandler.test.js
 models/trace/handlers/ExtensionTraceDataHandler.test.js

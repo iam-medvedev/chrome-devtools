@@ -6364,7 +6364,7 @@ export const NativeFunctions = [
     },
     {
         name: "caretPositionFromPoint",
-        signatures: [["x", "y"]]
+        signatures: [["x", "y", "...shadowRoots"]]
     },
     {
         name: "hasPrivateToken",
@@ -6777,6 +6777,10 @@ export const NativeFunctions = [
     {
         name: "ImageData",
         signatures: [["sw", "sh", "?settings"], ["data", "sw", "?sh", "?settings"]]
+    },
+    {
+        name: "getSelectionRects",
+        signatures: [["start", "end"]]
     },
     {
         name: "CloseWatcher",
@@ -7242,6 +7246,14 @@ export const NativeFunctions = [
         signatures: [["expires"]]
     },
     {
+        name: "transferToWebGPU",
+        signatures: [["options"]]
+    },
+    {
+        name: "transferFromWebGPU",
+        signatures: [["tex"]]
+    },
+    {
         name: "CanvasFilter",
         signatures: [["init"]]
     },
@@ -7272,10 +7284,6 @@ export const NativeFunctions = [
     {
         name: "drawMesh",
         signatures: [["vertex_buffer", "uv_buffer", "index_buffer", "image"]]
-    },
-    {
-        name: "beginWebGPUAccess",
-        signatures: [["options"]]
     },
     {
         name: "Path2D",

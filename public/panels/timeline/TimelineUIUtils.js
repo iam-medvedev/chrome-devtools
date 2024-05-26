@@ -590,9 +590,11 @@ export class TimelineUIUtils {
                 tokens.push(TraceEngine.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(traceParsedData.Samples, traceEvent));
             }
         }
-        const url = urlForEvent(traceParsedData ?? null, traceEvent);
-        if (url) {
-            tokens.push(url);
+        if (traceParsedData) {
+            const url = TraceEngine.Extras.URLForEntry.get(traceParsedData, traceEvent);
+            if (url) {
+                tokens.push(url);
+            }
         }
         // This works for both legacy and new engine events.
         appendObjectProperties(traceEvent.args, 2);
@@ -743,7 +745,7 @@ export class TimelineUIUtils {
                 break;
             }
             case "FunctionCall" /* TraceEngine.Types.TraceEvents.KnownEventName.FunctionCall */: {
-                const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                const { lineNumber, columnNumber } = TraceEngine.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
                 if (lineNumber !== undefined && columnNumber !== undefined) {
                     detailsText = unsafeEventData.url + ':' + (lineNumber + 1) + ':' + (columnNumber + 1);
                 }
@@ -779,7 +781,7 @@ export class TimelineUIUtils {
             case "V8.CompileScript" /* TraceEngine.Types.TraceEvents.KnownEventName.CompileScript */:
             case "v8.produceCache" /* TraceEngine.Types.TraceEvents.KnownEventName.CacheScript */:
             case "EvaluateScript" /* TraceEngine.Types.TraceEvents.KnownEventName.EvaluateScript */: {
-                const { lineNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                const { lineNumber } = TraceEngine.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
                 const url = unsafeEventData && unsafeEventData['url'];
                 if (url) {
                     detailsText = Bindings.ResourceUtils.displayNameForURL(url) + ':' + ((lineNumber || 0) + 1);
@@ -819,7 +821,7 @@ export class TimelineUIUtils {
             case "PaintImage" /* TraceEngine.Types.TraceEvents.KnownEventName.PaintImage */:
             case "Decode Image" /* TraceEngine.Types.TraceEvents.KnownEventName.DecodeImage */:
             case "Decode LazyPixelRef" /* TraceEngine.Types.TraceEvents.KnownEventName.DecodeLazyPixelRef */: {
-                const url = urlForEvent(traceParsedData, event);
+                const url = TraceEngine.Extras.URLForEntry.get(traceParsedData, event);
                 if (url) {
                     detailsText = Bindings.ResourceUtils.displayNameForURL(url);
                 }
@@ -892,7 +894,7 @@ export class TimelineUIUtils {
             case "ResourceReceivedData" /* TraceEngine.Types.TraceEvents.KnownEventName.ResourceReceivedData */:
             case "ResourceReceiveResponse" /* TraceEngine.Types.TraceEvents.KnownEventName.ResourceReceiveResponse */:
             case "ResourceFinish" /* TraceEngine.Types.TraceEvents.KnownEventName.ResourceFinish */: {
-                const url = urlForEvent(traceParsedData, event);
+                const url = TraceEngine.Extras.URLForEntry.get(traceParsedData, event);
                 if (url) {
                     const options = {
                         tabStop: true,
@@ -910,7 +912,7 @@ export class TimelineUIUtils {
                     TraceEngine.Types.TraceEvents.objectIsTraceEventCallFrame(event.args.data)) {
                     UI.UIUtils.createTextChild(details, TimelineUIUtils.frameDisplayName({ ...event.args.data, scriptId: String(event.args.data.scriptId) }));
                 }
-                const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                const { lineNumber, columnNumber } = TraceEngine.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
                 const location = this.linkifyLocation({
                     scriptId: unsafeEventData['scriptId'],
                     url: unsafeEventData['url'],
@@ -944,7 +946,7 @@ export class TimelineUIUtils {
             case "EvaluateScript" /* TraceEngine.Types.TraceEvents.KnownEventName.EvaluateScript */: {
                 const url = unsafeEventData['url'];
                 if (url) {
-                    const { lineNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                    const { lineNumber } = TraceEngine.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
                     details = this.linkifyLocation({
                         scriptId: null,
                         url,
@@ -1076,14 +1078,14 @@ export class TimelineUIUtils {
         }
     }
     static async buildTraceEventDetails(traceParseData, event, linkifier, detailed) {
-        const maybeTarget = maybeTargetForEvent(traceParseData, event);
+        const maybeTarget = targetForEvent(traceParseData, event);
         const { duration, selfTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(event);
         const relatedNodesMap = await TraceEngine.Extras.FetchNodes.extractRelatedDOMNodesFromEvent(traceParseData, event);
         if (maybeTarget) {
             // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
             if (typeof event[previewElementSymbol] === 'undefined') {
                 let previewElement = null;
-                const url = urlForEvent(traceParseData, event);
+                const url = TraceEngine.Extras.URLForEntry.get(traceParseData, event);
                 if (url) {
                     previewElement = await LegacyComponents.ImagePreview.ImagePreview.build(maybeTarget, url, false, {
                         imageAltText: LegacyComponents.ImagePreview.ImagePreview.defaultAltTextForImageURL(url),
@@ -1103,7 +1105,7 @@ export class TimelineUIUtils {
         }
         // This message may vary per event.name;
         let relatedNodeLabel;
-        const contentHelper = new TimelineDetailsContentHelper(maybeTargetForEvent(traceParseData, event), linkifier);
+        const contentHelper = new TimelineDetailsContentHelper(targetForEvent(traceParseData, event), linkifier);
         const defaultColorForEvent = this.eventColor(event);
         const isMarker = traceParseData && isMarkerEvent(traceParseData, event);
         const color = isMarker ? TimelineUIUtils.markerStyleForEvent(event).color : defaultColorForEvent;
@@ -1134,7 +1136,7 @@ export class TimelineUIUtils {
         if (TraceEngine.Types.TraceEvents.isTraceEventV8Compile(event)) {
             url = event.args.data?.url;
             if (url) {
-                const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                const { lineNumber, columnNumber } = TraceEngine.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
                 contentHelper.appendLocationRow(i18nString(UIStrings.script), url, lineNumber || 0, columnNumber);
             }
             const isEager = Boolean(event.args.data?.eager);
@@ -1163,7 +1165,7 @@ export class TimelineUIUtils {
             }
             case "ProfileCall" /* TraceEngine.Types.TraceEvents.KnownEventName.ProfileCall */:
             case "FunctionCall" /* TraceEngine.Types.TraceEvents.KnownEventName.FunctionCall */: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording, traceParseData);
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(traceParseData, event), linkifier, isFreshRecording, traceParseData);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.function), detailsNode);
                 }
@@ -1199,7 +1201,7 @@ export class TimelineUIUtils {
             case "v8.produceCache" /* TraceEngine.Types.TraceEvents.KnownEventName.CacheScript */: {
                 url = unsafeEventData && unsafeEventData['url'];
                 if (url) {
-                    const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                    const { lineNumber, columnNumber } = TraceEngine.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
                     contentHelper.appendLocationRow(i18nString(UIStrings.script), url, lineNumber || 0, columnNumber);
                 }
                 contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheSize), Platform.NumberUtilities.bytesToString(unsafeEventData['producedCacheSize']));
@@ -1208,7 +1210,7 @@ export class TimelineUIUtils {
             case "EvaluateScript" /* TraceEngine.Types.TraceEvents.KnownEventName.EvaluateScript */: {
                 url = unsafeEventData && unsafeEventData['url'];
                 if (url) {
-                    const { lineNumber, columnNumber } = getZeroIndexedLineAndColumnNumbersForEvent(event);
+                    const { lineNumber, columnNumber } = TraceEngine.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
                     contentHelper.appendLocationRow(i18nString(UIStrings.script), url, lineNumber || 0, columnNumber);
                 }
                 break;
@@ -1253,7 +1255,7 @@ export class TimelineUIUtils {
             case "Decode Image" /* TraceEngine.Types.TraceEvents.KnownEventName.DecodeImage */:
             case "Draw LazyPixelRef" /* TraceEngine.Types.TraceEvents.KnownEventName.DrawLazyPixelRef */: {
                 relatedNodeLabel = i18nString(UIStrings.ownerElement);
-                url = urlForEvent(traceParseData, event);
+                url = TraceEngine.Extras.URLForEntry.get(traceParseData, event);
                 if (url) {
                     const options = {
                         tabStop: true,
@@ -1359,7 +1361,7 @@ export class TimelineUIUtils {
                 break;
             }
             case "EventTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.EventTiming */: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording, traceParseData);
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(traceParseData, event), linkifier, isFreshRecording, traceParseData);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.details), detailsNode);
                 }
@@ -1405,7 +1407,7 @@ export class TimelineUIUtils {
                 break;
             }
             default: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, maybeTargetForEvent(traceParseData, event), linkifier, isFreshRecording, traceParseData);
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(traceParseData, event), linkifier, isFreshRecording, traceParseData);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.details), detailsNode);
                 }
@@ -1542,7 +1544,7 @@ export class TimelineUIUtils {
         }
     }
     static async buildSyntheticNetworkRequestDetails(traceParseData, event, linkifier) {
-        const maybeTarget = maybeTargetForEvent(traceParseData, event);
+        const maybeTarget = targetForEvent(traceParseData, event);
         const contentHelper = new TimelineDetailsContentHelper(maybeTarget, linkifier);
         const category = TimelineUIUtils.syntheticNetworkRequestCategory(event);
         const color = TimelineUIUtils.networkCategoryColor(category);
@@ -2255,45 +2257,5 @@ export function isMarkerEvent(traceParseData, event) {
         return Boolean(isMainFrame);
     }
     return false;
-}
-// This function only exists to abstract dealing with two different event types
-// whilst we are in the middle of the migration. We are working on removing the
-// CompatibleTraceEvent type, at which point this method can be removed and we
-// can use the method in TargetForEvent.ts directly.
-function maybeTargetForEvent(traceParsedData, event) {
-    if (!traceParsedData) {
-        return null;
-    }
-    return targetForEvent(traceParsedData, event);
-}
-// TODO(40287735): remove this functon and use the helper directly.
-function getZeroIndexedLineAndColumnNumbersForEvent(event) {
-    return TraceEngine.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
-}
-// TODO: once the CompatibleTraceEvent type is removed, this function can be
-// updated to take only new types.
-export function urlForEvent(traceParsedData, event) {
-    if (!traceParsedData) {
-        return null;
-    }
-    // DecodeImage events use the URL from the relevant PaintImage event.
-    if (TraceEngine.Types.TraceEvents.isTraceEventDecodeImage(event)) {
-        const paintEvent = traceParsedData.ImagePainting.paintImageForEvent.get(event);
-        return paintEvent ? urlForEvent(traceParsedData, paintEvent) : null;
-    }
-    // DrawLazyPixelRef events use the URL from the relevant PaintImage event.
-    if (TraceEngine.Types.TraceEvents.isTraceEventDrawLazyPixelRef(event) && event.args?.LazyPixelRef) {
-        const paintEvent = traceParsedData.ImagePainting.paintImageByDrawLazyPixelRef.get(event.args.LazyPixelRef);
-        return paintEvent ? urlForEvent(traceParsedData, paintEvent) : null;
-    }
-    // ParseHTML events store the URL under beginData, not data.
-    if (TraceEngine.Types.TraceEvents.isTraceEventParseHTML(event)) {
-        return event.args.beginData.url;
-    }
-    // For all other events, try to see if the URL is provided, else return null.
-    if (event.args?.data?.url) {
-        return event.args.data.url;
-    }
-    return null;
 }
 //# sourceMappingURL=TimelineUIUtils.js.map

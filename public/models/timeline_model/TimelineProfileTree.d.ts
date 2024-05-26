@@ -1,4 +1,3 @@
-import type * as Platform from '../../core/platform/platform.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import { type TimelineModelFilter } from './TimelineModelFilter.js';
@@ -84,7 +83,6 @@ export declare class BottomUpNode extends Node {
     children(): ChildrenCache;
     searchTree(matchFunction: (arg0: TraceEngine.Types.TraceEvents.TraceEventData) => boolean, results?: Node[]): Node[];
 }
-export declare function eventURL(event: TraceEngine.Types.TraceEvents.TraceEventData): Platform.DevToolsPath.UrlString | null;
 export declare function eventStackFrame(event: TraceEngine.Types.TraceEvents.TraceEventData): Protocol.Runtime.CallFrame | null;
 export declare function generateEventID(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
 export type ChildrenCache = Map<string | symbol, Node>;

@@ -31,7 +31,6 @@ import * as StringOutputStream from './StringOutputStream.js';
 import * as TextDictionary from './TextDictionary.js';
 import * as Throttler from './Throttler.js';
 import * as Trie from './Trie.js';
-import * as WasmDisassembly from './WasmDisassembly.js';
 import * as Worker from './Worker.js';
 /*
  * This is re-exported here because we moved UIString into platform from
@@ -39,5 +38,5 @@ import * as Worker from './Worker.js';
  * update all references to `Common.UIString` to `Platform.UIString`.
  */
 export { UIString } from '../platform/platform.js';
-export { App, AppProvider, Base64, CharacterIdMap, Color, ColorUtils, ColorConverter, Console, Debouncer, EventTarget, JavaScriptMetaData, Lazy, Linkifier, Mutex, ObjectWrapper, ParsedURL, Progress, QueryParamHandler, ResolverBase, ResourceType, Revealer, Runnable, SegmentedRange, Settings, SettingRegistration, SimpleHistoryManager, StringOutputStream, TextDictionary, Throttler, Trie, Worker, WasmDisassembly, };
+export { App, AppProvider, Base64, CharacterIdMap, Color, ColorUtils, ColorConverter, Console, Debouncer, EventTarget, JavaScriptMetaData, Lazy, Linkifier, Mutex, ObjectWrapper, ParsedURL, Progress, QueryParamHandler, ResolverBase, ResourceType, Revealer, Runnable, SegmentedRange, Settings, SettingRegistration, SimpleHistoryManager, StringOutputStream, TextDictionary, Throttler, Trie, Worker, };
 //# sourceMappingURL=common.js.map

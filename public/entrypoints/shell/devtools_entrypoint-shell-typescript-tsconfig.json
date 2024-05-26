@@ -73,6 +73,9 @@
       "path": "../../panels/explain/meta-tsconfig.json"
     },
     {
+      "path": "../../panels/freestyler/meta-tsconfig.json"
+    },
+    {
       "path": "../../panels/linear_memory_inspector/meta-tsconfig.json"
     },
     {

@@ -20,8 +20,6 @@ interface EventTypes {
     [ValueChangedEvent.eventName]: ValueChangedEvent;
 }
 export interface CSSAngleData {
-    propertyName: string;
-    propertyValue: string;
     angleText: string;
     containingPane: HTMLElement;
 }
@@ -30,7 +28,6 @@ export declare class CSSAngle extends HTMLElement {
     private readonly shadow;
     private angle;
     private displayedAngle;
-    private propertyName;
     private propertyValue;
     private containingPane?;
     private angleElement;
@@ -46,7 +43,7 @@ export declare class CSSAngle extends HTMLElement {
     addEventListener<K extends keyof EventTypes>(type: K, listener: (this: CSSAngle, ev: EventTypes[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
     addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
     minify(): void;
-    updateProperty(name: string, value: string): void;
+    updateProperty(value: string): void;
     updateAngle(angle: Angle): void;
     private displayNextUnit;
     private bindMinifyingAction;

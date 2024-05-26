@@ -122,7 +122,7 @@ export class Script {
         }
         const { scriptSource, bytecode } = result;
         if (bytecode) {
-            return { content: bytecode, isEncoded: true };
+            return new TextUtils.ContentData.ContentData(bytecode, /* isBase64 */ true, 'application/wasm');
         }
         let content = scriptSource || '';
         if (this.hasSourceURL && Common.ParsedURL.schemeIs(this.sourceURL, 'snippet:')) {
@@ -130,7 +130,7 @@ export class Script {
             // a sourceURL comment before evaluation and removing it here.
             content = Script.trimSourceURLComment(content);
         }
-        return { content, isEncoded: false };
+        return new TextUtils.ContentData.ContentData(content, /* isBase64 */ false, 'text/javascript');
     }
     async loadWasmContent() {
         if (!this.isWasm()) {
@@ -139,8 +139,9 @@ export class Script {
         const result = await this.debuggerModel.target().debuggerAgent().invoke_disassembleWasmModule({ scriptId: this.scriptId });
         if (result.getError()) {
             // Fall through to text content loading if v8-based disassembly fails. This is to ensure backwards compatibility with
-            // older v8 versions;
-            return this.loadTextContent();
+            // older v8 versions.
+            const contentData = await this.loadTextContent();
+            return await disassembleWasm(contentData.base64);
         }
         const { streamId, functionBodyOffsets, chunk: { lines, bytecodeOffsets } } = result;
         const lineChunks = [];
@@ -174,10 +175,9 @@ export class Script {
         for (let i = 0; i < functionBodyOffsets.length; i += 2) {
             functionBodyRanges.push({ start: functionBodyOffsets[i], end: functionBodyOffsets[i + 1] });
         }
-        const wasmDisassemblyInfo = new Common.WasmDisassembly.WasmDisassembly(lines.concat(...lineChunks), bytecodeOffsets.concat(...bytecodeOffsetChunks), functionBodyRanges);
-        return { content: '', isEncoded: false, wasmDisassemblyInfo };
+        return new TextUtils.WasmDisassembly.WasmDisassembly(lines.concat(...lineChunks), bytecodeOffsets.concat(...bytecodeOffsetChunks), functionBodyRanges);
     }
-    requestContent() {
+    requestContentData() {
         if (!this.#contentPromise) {
             const fileSizeToCache = 65535; // We won't bother cacheing files under 64K
             if (this.hash && !this.#isLiveEditInternal && this.contentLength > fileSizeToCache) {
@@ -217,16 +217,20 @@ export class Script {
         }
         return this.#contentPromise;
     }
+    async requestContent() {
+        const contentData = await this.requestContentData();
+        return TextUtils.ContentData.ContentData.asDeferredContent(contentData);
+    }
     async requestContentInternal() {
         if (!this.scriptId) {
-            return { content: null, error: i18nString(UIStrings.scriptRemovedOrDeleted), isEncoded: false };
+            return { error: i18nString(UIStrings.scriptRemovedOrDeleted) };
         }
         try {
             return this.isWasm() ? await this.loadWasmContent() : await this.loadTextContent();
         }
         catch (err) {
             // TODO(bmeurer): Propagate errors as exceptions / rejections.
-            return { content: null, error: i18nString(UIStrings.unableToFetchScriptSource), isEncoded: false };
+            return { error: i18nString(UIStrings.unableToFetchScriptSource) };
         }
     }
     async getWasmBytecode() {
@@ -265,7 +269,8 @@ export class Script {
             throw new Error(`Script#editSource failed for script with id ${this.scriptId}: ${response.getError()}`);
         }
         if (!response.getError() && response.status === "Ok" /* Protocol.Debugger.SetScriptSourceResponseStatus.Ok */) {
-            this.#contentPromise = Promise.resolve({ content: newSource, isEncoded: false });
+            this.#contentPromise =
+                Promise.resolve(new TextUtils.ContentData.ContentData(newSource, /* isBase64 */ false, 'text/javascript'));
         }
         this.debuggerModel.dispatchEventToListeners(Events.ScriptSourceWasEdited, { script: this, status: response.status });
         return { changed: true, status: response.status, exceptionDetails: response.exceptionDetails };
@@ -348,4 +353,32 @@ function frameIdForScript(script) {
     return resourceTreeModel.mainFrame.id;
 }
 export const sourceURLRegex = /^[\040\t]*\/\/[@#] sourceURL=\s*(\S*?)\s*$/;
+async function disassembleWasm(content) {
+    const worker = Common.Worker.WorkerWrapper.fromURL(new URL('../../entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js', import.meta.url));
+    const promise = new Promise((resolve, reject) => {
+        worker.onmessage = ({ data }) => {
+            if ('method' in data) {
+                switch (data.method) {
+                    case 'disassemble':
+                        if ('error' in data) {
+                            reject(data.error);
+                        }
+                        else if ('result' in data) {
+                            const { lines, offsets, functionBodyOffsets } = data.result;
+                            resolve(new TextUtils.WasmDisassembly.WasmDisassembly(lines, offsets, functionBodyOffsets));
+                        }
+                        break;
+                }
+            }
+        };
+        worker.onerror = reject;
+    });
+    worker.postMessage({ method: 'disassemble', params: { content } });
+    try {
+        return await promise; // The await is important here or we terminate the worker too early.
+    }
+    finally {
+        worker.terminate();
+    }
+}
 //# sourceMappingURL=Script.js.map

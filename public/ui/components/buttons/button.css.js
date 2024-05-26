@@ -74,10 +74,6 @@ button {
     height: var(--icon-size);
   }
 
-  &.small {
-    --button-height: 20px;
-  }
-
   &.toolbar,
   &.icon,
   &.only-icon {
@@ -85,12 +81,13 @@ button {
     --button-width: 26px;
     --icon-size: var(--sys-size-9);
 
+    padding: 0;
     border: none;
     overflow: hidden;
 
     &.small {
-      --button-height: var(--sys-size-11);
-      --button-width: var(--sys-size-11);
+      --button-height: var(--sys-size-9);
+      --button-width: var(--sys-size-9);
       --icon-size: var(--sys-size-8);
     }
 
@@ -223,6 +220,10 @@ button {
     &.toolbar,
     &.icon {
       outline-offset: -1px;
+
+      &.small {
+        outline-offset: -2px;
+      }
     }
   }
 

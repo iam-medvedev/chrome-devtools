@@ -229,6 +229,7 @@ export async function finalize() {
         const navigationId = navigation?.args.data?.navigationId;
         const interactionEvent = {
             // Use the start event to define the common fields.
+            rawSourceEvent: interactionStartEvent,
             cat: interactionStartEvent.cat,
             name: interactionStartEvent.name,
             pid: interactionStartEvent.pid,

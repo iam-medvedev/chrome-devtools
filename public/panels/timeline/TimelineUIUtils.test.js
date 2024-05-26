@@ -53,6 +53,9 @@ describeWithMockConnection('TimelineUIUtils', function () {
     });
     describe('script location as an URL', function () {
         it('makes the script location of a call frame a full URL when the inspected target is not the same the call frame was taken from (e.g. a loaded file)', async function () {
+            // The actual trace doesn't matter here, just need one so we can pass
+            // it into buildDetailsNodeForTraceEvent
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const fakeFunctionCall = {
                 name: "FunctionCall" /* TraceEngine.Types.TraceEvents.KnownEventName.FunctionCall */,
                 ph: "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */,
@@ -72,13 +75,16 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 },
             };
             target.setInspectedURL('https://not-google.com');
-            const node = await Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForTraceEvent(fakeFunctionCall, target, new Components.Linkifier.Linkifier(), false, null);
+            const node = await Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForTraceEvent(fakeFunctionCall, target, new Components.Linkifier.Linkifier(), false, traceParsedData);
             if (!node) {
                 throw new Error('Node was unexpectedly null');
             }
             assert.strictEqual(node.textContent, 'test @ google.com/test.js:1:1');
         });
         it('makes the script location of a call frame a script name when the inspected target is the one the call frame was taken from', async function () {
+            // The actual trace doesn't matter here, just need one so we can pass
+            // it into buildDetailsNodeForTraceEvent
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const fakeFunctionCall = {
                 name: "FunctionCall" /* TraceEngine.Types.TraceEvents.KnownEventName.FunctionCall */,
                 ph: "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */,
@@ -98,7 +104,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 },
             };
             target.setInspectedURL('https://google.com');
-            const node = await Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForTraceEvent(fakeFunctionCall, target, new Components.Linkifier.Linkifier(), false, null);
+            const node = await Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForTraceEvent(fakeFunctionCall, target, new Components.Linkifier.Linkifier(), false, traceParsedData);
             if (!node) {
                 throw new Error('Node was unexpectedly null');
             }
@@ -1070,32 +1076,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
             };
             const name = Timeline.TimelineUIUtils.TimelineUIUtils.displayNameForFrame(frame, 10);
             assert.strictEqual(name, '"test-…long"');
-        });
-    });
-    describe('urlForEvent', () => {
-        it('returns the URL if it has one', async function () {
-            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-            const commitLoadEvent = traceParsedData.Renderer.allTraceEntries.find(TraceEngine.Types.TraceEvents.isTraceEventCommitLoad);
-            assert.isOk(commitLoadEvent);
-            const url = Timeline.TimelineUIUtils.urlForEvent(traceParsedData, commitLoadEvent);
-            assert.isNotNull(url);
-            assert.strictEqual(url, commitLoadEvent.args.data?.url);
-        });
-        it('finds the URL for a ParseHTML event', async function () {
-            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-            const parseHTMLEvent = traceParsedData.Renderer.allTraceEntries.find(TraceEngine.Types.TraceEvents.isTraceEventParseHTML);
-            assert.isOk(parseHTMLEvent);
-            const url = Timeline.TimelineUIUtils.urlForEvent(traceParsedData, parseHTMLEvent);
-            assert.isNotNull(url);
-            assert.strictEqual(url, parseHTMLEvent.args.beginData.url);
-        });
-        it('uses the PaintImage URL for a DecodeImage event', async function () {
-            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-            const decodeImage = traceParsedData.Renderer.allTraceEntries.find(TraceEngine.Types.TraceEvents.isTraceEventDecodeImage);
-            assert.isOk(decodeImage);
-            const url = Timeline.TimelineUIUtils.urlForEvent(traceParsedData, decodeImage);
-            assert.isNotNull(url);
-            assert.strictEqual(url, 'https://web-dev.imgix.net/image/admin/WkMOiDtaDgiAA2YkRZ5H.jpg?fit=crop&h=64&w=64&dpr=1&q=75');
         });
     });
     describe('buildDetailsNodeForMarkerEvents', () => {

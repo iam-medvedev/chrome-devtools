@@ -18,7 +18,7 @@ import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, }
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { AngleMatcher, ASTUtils, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinkableNameMatcher, ShadowMatcher, tokenizeDeclaration, VariableMatch, VariableMatcher, } from './PropertyParser.js';
+import { AngleMatch, AngleMatcher, ASTUtils, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, ShadowMatcher, tokenizeDeclaration, VariableMatch, VariableMatcher, } from './PropertyParser.js';
 import { Renderer, RenderingContext, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
@@ -176,6 +176,29 @@ export class VariableRenderer {
         }
     }
 }
+export class LinearGradientRenderer {
+    matcher() {
+        return new LinearGradientMatcher();
+    }
+    render(match, context) {
+        const children = ASTUtils.children(match.node);
+        const { nodes, cssControls } = Renderer.render(children, context);
+        const angles = cssControls.get('angle');
+        const angle = angles?.length === 1 ? angles[0] : null;
+        if (angle instanceof InlineEditor.CSSAngle.CSSAngle) {
+            angle.updateProperty(context.matchedResult.getComputedText(match.node));
+            const args = ASTUtils.callArgs(match.node);
+            const angleNode = args[0]?.find(node => context.matchedResult.getMatch(node) instanceof AngleMatch);
+            const angleMatch = angleNode && context.matchedResult.getMatch(angleNode);
+            if (angleMatch) {
+                angle.addEventListener(InlineEditor.InlineEditorUtils.ValueChangedEvent.eventName, ev => {
+                    angle.updateProperty(context.matchedResult.getComputedText(match.node, new Map([[angleMatch, ev.data.value]])));
+                });
+            }
+        }
+        return nodes;
+    }
+}
 export class ColorRenderer {
     treeElement;
     constructor(treeElement) {
@@ -200,9 +223,10 @@ export class ColorRenderer {
         context.addControl('color', swatch);
         if (cssControls && match.node.name === 'CallExpression' &&
             context.ast.text(match.node.getChild('Callee')).match(/^(hsla?|hwba?)/)) {
-            const angles = cssControls.get('angle');
-            if (angles?.length === 1 && angles[0] instanceof InlineEditor.CSSAngle.CSSAngle) {
-                angles[0].addEventListener(InlineEditor.InlineEditorUtils.ValueChangedEvent.eventName, ev => {
+            const [angle] = cssControls.get('angle') ?? [];
+            if (angle instanceof InlineEditor.CSSAngle.CSSAngle) {
+                angle.updateProperty(swatch.getColor()?.asString() ?? '');
+                angle.addEventListener(InlineEditor.InlineEditorUtils.ValueChangedEvent.eventName, ev => {
                     const hue = Common.Color.parseHueNumeric(ev.data.value);
                     const color = swatch.getColor();
                     if (!hue || !color) {
@@ -214,6 +238,7 @@ export class ColorRenderer {
                     else if (color.is("hwb" /* Common.Color.Format.HWB */) || color.is("hwba" /* Common.Color.Format.HWBA */)) {
                         swatch.renderColor(new Common.Color.HWB(hue, color.w, color.b, color.alpha));
                     }
+                    angle.updateProperty(swatch.getColor()?.asString() ?? '');
                 });
             }
         }
@@ -426,11 +451,7 @@ export class AngleRenderer {
         cssAngle.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context('css-angle')}`);
         const valueElement = document.createElement('span');
         valueElement.textContent = angleText;
-        const computedPropertyValue = this.#treeElement.matchedStyles().computeValue(this.#treeElement.property.ownerStyle, this.#treeElement.property.value) ||
-            '';
         cssAngle.data = {
-            propertyName: this.#treeElement.property.name,
-            propertyValue: computedPropertyValue,
             angleText,
             containingPane: this.#treeElement.parentPane().element.enclosingNodeOrSelfWithClass('style-panes-wrapper'),
         };
@@ -455,9 +476,6 @@ export class AngleRenderer {
         cssAngle.addEventListener('valuechanged', async ({ data }) => {
             valueElement.textContent = data.value;
             await this.#treeElement.applyStyleText(this.#treeElement.renderedPropertyText(), false);
-            const computedPropertyValue = this.#treeElement.matchedStyles().computeValue(this.#treeElement.property.ownerStyle, this.#treeElement.property.value) ||
-                '';
-            cssAngle.updateProperty(this.#treeElement.property.name, computedPropertyValue);
         });
         cssAngle.addEventListener('unitchanged', ({ data }) => {
             valueElement.textContent = data.value;
@@ -1170,6 +1188,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 new FontRenderer(this),
                 new LightDarkColorRenderer(this),
                 new GridTemplateRenderer(),
+                new LinearGradientRenderer(),
             ] :
             [];
         if (!Root.Runtime.experiments.isEnabled('css-type-component-length-deprecate') && this.property.parsedOk) {

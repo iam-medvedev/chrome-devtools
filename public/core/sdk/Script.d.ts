@@ -7,7 +7,7 @@ import { type FrameAssociated } from './FrameAssociated.js';
 import { type PageResourceLoadInitiator } from './PageResourceLoader.js';
 import { type ExecutionContext } from './RuntimeModel.js';
 import { type Target } from './Target.js';
-export declare class Script implements TextUtils.ContentProvider.ContentProvider, FrameAssociated {
+export declare class Script implements TextUtils.ContentProvider.SafeContentProvider, FrameAssociated {
     #private;
     debuggerModel: DebuggerModel;
     scriptId: Protocol.Runtime.ScriptId;
@@ -39,6 +39,7 @@ export declare class Script implements TextUtils.ContentProvider.ContentProvider
     contentType(): Common.ResourceType.ResourceType;
     private loadTextContent;
     private loadWasmContent;
+    requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
     requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
     private requestContentInternal;
     getWasmBytecode(): Promise<ArrayBuffer>;

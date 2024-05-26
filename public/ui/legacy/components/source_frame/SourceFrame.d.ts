@@ -66,7 +66,7 @@ export declare class SourceFrameImpl extends SourceFrameImpl_base implements UI.
     protected onFocus(): void;
     protected onPaste(): boolean;
     showSelfXssWarning(): Promise<void>;
-    get wasmDisassembly(): Common.WasmDisassembly.WasmDisassembly | null;
+    get wasmDisassembly(): TextUtils.WasmDisassembly.WasmDisassembly | null;
     editorLocationToUILocation(lineNumber: number, columnNumber: number): {
         lineNumber: number;
         columnNumber: number;

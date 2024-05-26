@@ -77,6 +77,9 @@ export const generatedPropertyValues: {
     "anchor-name": {
         values: string[];
     };
+    "anchor-scope": {
+        values: string[];
+    };
     "animation-composition": {
         values: string[];
     };
@@ -648,6 +651,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "scroll-behavior": {
+        values: string[];
+    };
+    "scroll-markers": {
         values: string[];
     };
     "scroll-padding-block-end": {

@@ -765,7 +765,7 @@ export class DebuggerLanguagePluginManager {
                     const resourceUrl = resource;
                     return { resourceUrl, initiator };
                 });
-                return { missingSymbolFiles };
+                return { missingSymbolFiles, ...('frames' in functionInfo && { frames: functionInfo.frames }) };
             }
             return functionInfo;
         }

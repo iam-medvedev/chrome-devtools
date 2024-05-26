@@ -219,6 +219,7 @@ async function buildLayoutShiftsClusters() {
             continue;
         }
         const shift = {
+            rawSourceEvent: event,
             ...event,
             args: {
                 frame: event.args.frame,

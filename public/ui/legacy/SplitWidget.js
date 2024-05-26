@@ -355,6 +355,11 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     setResizable(resizable) {
         this.resizerWidget.setEnabled(resizable);
     }
+    forceSetSidebarWidth(width) {
+        this.defaultSidebarWidth = width;
+        this.savedSidebarSizeDIP = width;
+        this.updateLayout();
+    }
     isResizable() {
         return this.resizerWidget.isEnabled();
     }

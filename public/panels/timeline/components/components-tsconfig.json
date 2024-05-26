@@ -33,6 +33,7 @@
     "../../../../../../../front_end/panels/timeline/components/BreadcrumbsUI.ts",
     "../../../../../../../front_end/panels/timeline/components/DetailsView.ts",
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.ts",
+    "../../../../../../../front_end/panels/timeline/components/Sidebar.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../../front_end/global_typings/request_idle_callback.d.ts",

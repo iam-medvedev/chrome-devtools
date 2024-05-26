@@ -7,4 +7,5 @@ import * as Text from './Text.js';
 import * as TextCursor from './TextCursor.js';
 import * as TextRange from './TextRange.js';
 import * as TextUtils from './TextUtils.js';
-export { CodeMirrorUtils, ContentData, ContentProvider, StaticContentProvider, StreamingContentData, Text, TextCursor, TextRange, TextUtils, };
+import * as WasmDisassembly from './WasmDisassembly.js';
+export { CodeMirrorUtils, ContentData, ContentProvider, StaticContentProvider, StreamingContentData, Text, TextCursor, TextRange, TextUtils, WasmDisassembly, };

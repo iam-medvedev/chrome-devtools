@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
-import * as DataGridRenderers from './DataGridRenderers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
+import * as DataGridRenderers from './DataGridRenderers.js';
 export function getStringifiedCellValues(cells) {
     return JSON
         .stringify(cells.map(cell => {
