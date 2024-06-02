@@ -44,8 +44,8 @@ export class Breadcrumbs {
         return (child.min >= parent.min && child.max <= parent.max) &&
             !(child.min === parent.min && child.max === parent.max);
     }
-    // Used to set an initial breadcrumbs from annotations loaded from a file
-    setInitialBreadcrumbFromLoadedAnnotations(initialBreadcrumb) {
+    // Used to set an initial breadcrumbs from modifications loaded from a file
+    setInitialBreadcrumbFromLoadedModifications(initialBreadcrumb) {
         this.initialBreadcrumb = initialBreadcrumb;
         // Make last breadcrumb active
         let lastBreadcrumb = initialBreadcrumb;

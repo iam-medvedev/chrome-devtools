@@ -47,6 +47,7 @@
     "../../../../../../front_end/panels/timeline/IsolateSelector.ts",
     "../../../../../../front_end/panels/timeline/LayoutShiftsTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/NetworkTrackAppender.ts",
+    "../../../../../../front_end/panels/timeline/Overlays.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.ts",
     "../../../../../../front_end/panels/timeline/SourceMapsResolver.ts",
     "../../../../../../front_end/panels/timeline/TargetForEvent.ts",
@@ -121,13 +122,10 @@
       "path": "../profiler/bundle-tsconfig.json"
     },
     {
-      "path": "../../services/annotations_manager/bundle-tsconfig.json"
+      "path": "../../services/modifications_manager/bundle-tsconfig.json"
     },
     {
       "path": "../../services/trace_bounds/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../third_party/web-vitals/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"

@@ -66,6 +66,7 @@ export default {
   flex: auto;
   text-overflow: ellipsis;
   overflow: hidden;
+  line-height: 16px;
   font-weight: bold;
   color: var(--sys-color-on-surface);
 }

@@ -6,6 +6,6 @@ export declare class Breadcrumbs {
     constructor(initialTraceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds);
     add(newBreadcrumbTraceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds): void;
     isTraceWindowWithinTraceWindow(child: TraceEngine.Types.Timing.TraceWindowMicroSeconds, parent: TraceEngine.Types.Timing.TraceWindowMicroSeconds): boolean;
-    setInitialBreadcrumbFromLoadedAnnotations(initialBreadcrumb: TraceEngine.Types.File.Breadcrumb): void;
+    setInitialBreadcrumbFromLoadedModifications(initialBreadcrumb: TraceEngine.Types.File.Breadcrumb): void;
     setLastBreadcrumb(lastBreadcrumb: TraceEngine.Types.File.Breadcrumb): void;
 }

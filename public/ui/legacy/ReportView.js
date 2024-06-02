@@ -93,6 +93,7 @@ export class ReportView extends VBox {
 }
 export class Section extends VBox {
     headerElement;
+    headerButtons;
     titleElement;
     fieldList;
     fieldMap;
@@ -102,6 +103,7 @@ export class Section extends VBox {
         if (className) {
             this.element.classList.add(className);
         }
+        this.headerButtons = [];
         this.headerElement = this.element.createChild('div', 'report-section-header');
         this.titleElement = this.headerElement.createChild('div', 'report-section-title');
         this.setTitle(title);
@@ -135,10 +137,14 @@ export class Section extends VBox {
         ARIAUtils.markAsGroup(this.element);
         ARIAUtils.setLabel(this.element, groupTitle);
     }
-    createToolbar() {
-        const toolbar = new Toolbar('');
-        this.headerElement.appendChild(toolbar.element);
-        return toolbar;
+    appendButtonToHeader(button) {
+        this.headerButtons.push(button);
+        this.headerElement.appendChild(button);
+    }
+    setHeaderButtonsState(disabled) {
+        this.headerButtons.map(button => {
+            button.disabled = disabled;
+        });
     }
     appendField(title, textValue) {
         let row = this.fieldMap.get(title);

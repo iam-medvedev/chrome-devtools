@@ -40,6 +40,7 @@
     "../../../../../../front_end/panels/timeline/Breadcrumbs.test.ts",
     "../../../../../../front_end/panels/timeline/FreshRecording.test.ts",
     "../../../../../../front_end/panels/timeline/Initiators.test.ts",
+    "../../../../../../front_end/panels/timeline/Overlays.test.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.test.ts",
     "../../../../../../front_end/panels/timeline/SourceMapsResolver.test.ts",
     "../../../../../../front_end/panels/timeline/TimelineController.test.ts",

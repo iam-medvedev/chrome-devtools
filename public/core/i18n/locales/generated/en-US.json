@@ -1586,9 +1586,6 @@
   "models/persistence/IsolatedFileSystem.ts | linkedToS": {
     "message": "Linked to {PH1}"
   },
-  "models/persistence/IsolatedFileSystem.ts | unknownErrorReadingFileS": {
-    "message": "Unknown error reading file: {PH1}"
-  },
   "models/persistence/IsolatedFileSystemManager.ts | unableToAddFilesystemS": {
     "message": "Unable to add filesystem: {PH1}"
   },
@@ -4257,7 +4254,7 @@
     "message": "focus"
   },
   "panels/application/ServiceWorkersView.ts | inspect": {
-    "message": "inspect"
+    "message": "Inspect"
   },
   "panels/application/ServiceWorkersView.ts | networkRequests": {
     "message": "Network requests"
@@ -4266,10 +4263,10 @@
     "message": "On page reload, force the service worker to update, and activate it"
   },
   "panels/application/ServiceWorkersView.ts | periodicSync": {
-    "message": "Periodic Sync"
+    "message": "Periodic sync"
   },
   "panels/application/ServiceWorkersView.ts | periodicSyncTag": {
-    "message": "Periodic Sync tag"
+    "message": "Periodic sync tag"
   },
   "panels/application/ServiceWorkersView.ts | pushData": {
     "message": "Push data"
@@ -4308,13 +4305,13 @@
     "message": "{PH1} registration errors"
   },
   "panels/application/ServiceWorkersView.ts | startString": {
-    "message": "start"
+    "message": "Start"
   },
   "panels/application/ServiceWorkersView.ts | status": {
     "message": "Status"
   },
   "panels/application/ServiceWorkersView.ts | stopString": {
-    "message": "stop"
+    "message": "Stop"
   },
   "panels/application/ServiceWorkersView.ts | sTryingToInstall": {
     "message": "#{PH1} trying to install"
@@ -6478,9 +6475,6 @@
   },
   "panels/freestyler/FreestylerPanel.ts | clearMessages": {
     "message": "Clear messages"
-  },
-  "panels/freestyler/FreestylerPanel.ts | createChat": {
-    "message": "Create chat"
   },
   "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
     "message": "Send feedback"

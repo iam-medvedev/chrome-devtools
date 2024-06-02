@@ -247,7 +247,7 @@ export class ViewManager {
     }
     async resolveLocation(location) {
         if (!location) {
-            return Promise.resolve(null);
+            return null;
         }
         const registeredResolvers = getRegisteredLocationResolvers().filter(resolver => resolver.name === location);
         if (registeredResolvers.length > 1) {

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Root from '../../core/root/root.js';
 import * as PanelFeedback from '../../ui/components/panel_feedback/panel_feedback.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Components from './components/components.js';
 const UIStrings = {
     /**
      * @description Text for an option to learn more about something
@@ -39,6 +41,26 @@ export class TimelineLandingPage extends UI.Widget.VBox {
     constructor(toggleRecordAction, options) {
         super();
         this.toggleRecordAction = toggleRecordAction;
+        this.contentElement.classList.add('timeline-landing-page', 'fill');
+        if (Root.Runtime.experiments.isEnabled("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */)) {
+            this.renderLandingPage();
+        }
+        else {
+            this.renderLegacyLandingPage(options);
+        }
+    }
+    renderLandingPage() {
+        const mainWidget = new UI.Widget.Widget();
+        mainWidget.contentElement.append(new Components.LiveMetricsView.LiveMetricsView());
+        const sidebarWidget = new UI.Widget.Widget();
+        const nextSteps = sidebarWidget.contentElement.createChild('div');
+        nextSteps.textContent = 'Next steps';
+        const splitView = new UI.SplitWidget.SplitWidget(true, true);
+        splitView.setMainWidget(mainWidget);
+        splitView.setSidebarWidget(sidebarWidget);
+        splitView.show(this.contentElement);
+    }
+    renderLegacyLandingPage(options) {
         function encloseWithTag(tagName, contents) {
             const e = document.createElement(tagName);
             e.textContent = contents;
@@ -48,7 +70,7 @@ export class TimelineLandingPage extends UI.Widget.VBox {
         const recordKey = encloseWithTag('b', UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('timeline.toggle-recording')[0].title());
         const reloadKey = encloseWithTag('b', UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('timeline.record-reload')[0].title());
         const navigateNode = encloseWithTag('b', i18nString(UIStrings.wasd));
-        this.contentElement.classList.add('timeline-landing-page', 'fill');
+        this.contentElement.classList.add('legacy');
         const centered = this.contentElement.createChild('div');
         const recordButton = UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
         const reloadButton = UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButtonForId('timeline.record-reload'));

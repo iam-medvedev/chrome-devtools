@@ -56,7 +56,6 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     decorations = new Map();
     hasCommitsInternal;
     messagesInternal;
-    contentLoadedInternal;
     contentInternal;
     forceLoadOnCheckContentInternal;
     checkingContent;
@@ -95,7 +94,6 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         this.requestContentPromise = null;
         this.hasCommitsInternal = false;
         this.messagesInternal = null;
-        this.contentLoadedInternal = false;
         this.contentInternal = null;
         this.forceLoadOnCheckContentInternal = false;
         this.checkingContent = false;
@@ -184,35 +182,31 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     project() {
         return this.projectInternal;
     }
-    requestContent({ cachedWasmOnly } = {}) {
+    requestContentData({ cachedWasmOnly } = {}) {
         if (this.requestContentPromise) {
             return this.requestContentPromise;
         }
-        if (this.contentLoadedInternal) {
+        if (this.contentInternal) {
             return Promise.resolve(this.contentInternal);
         }
         if (cachedWasmOnly && this.mimeType() === 'application/wasm') {
-            return Promise.resolve({
-                content: '',
-                isEncoded: false,
-                wasmDisassemblyInfo: new TextUtils.WasmDisassembly.WasmDisassembly([], [], []),
-            });
+            return Promise.resolve(new TextUtils.WasmDisassembly.WasmDisassembly([], [], []));
         }
         this.requestContentPromise = this.requestContentImpl();
         return this.requestContentPromise;
     }
+    async requestContent(options = {}) {
+        return TextUtils.ContentData.ContentData.asDeferredContent(await this.requestContentData(options));
+    }
     async requestContentImpl() {
+        if (this.contentInternal) {
+            throw new Error('Called UISourceCode#requestContentImpl even though content is available for ' + this.urlInternal);
+        }
         try {
-            const content = await this.projectInternal.requestFileContent(this);
-            if (!this.contentLoadedInternal) {
-                this.contentLoadedInternal = true;
-                this.contentInternal = content;
-                this.contentEncodedInternal = content.isEncoded;
-            }
+            this.contentInternal = await this.projectInternal.requestFileContent(this);
         }
         catch (err) {
-            this.contentLoadedInternal = true;
-            this.contentInternal = { content: null, error: err ? String(err) : '', isEncoded: false };
+            this.contentInternal = { error: err ? String(err) : '' };
         }
         return this.contentInternal;
     }
@@ -222,15 +216,22 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         }
         return content.isEncoded && content.content ? window.atob(content.content) : content.content;
     }
+    /** Only used to compare whether content changed */
+    #unsafeDecodeContentData(content) {
+        if (!content || TextUtils.ContentData.ContentData.isError(content)) {
+            return null;
+        }
+        return content.createdFromBase64 ? window.atob(content.base64) : content.text;
+    }
     async checkContentUpdated() {
-        if (!this.contentLoadedInternal && !this.forceLoadOnCheckContentInternal) {
+        if (!this.contentInternal && !this.forceLoadOnCheckContentInternal) {
             return;
         }
         if (!this.projectInternal.canSetFileContent() || this.checkingContent) {
             return;
         }
         this.checkingContent = true;
-        const updatedContent = await this.projectInternal.requestFileContent(this);
+        const updatedContent = TextUtils.ContentData.ContentData.asDeferredContent(await this.projectInternal.requestFileContent(this));
         if ('error' in updatedContent) {
             return;
         }
@@ -244,7 +245,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         if (this.lastAcceptedContent === updatedContent.content) {
             return;
         }
-        if (this.#decodeContent(this.contentInternal) === this.#decodeContent(updatedContent)) {
+        if (this.#unsafeDecodeContentData(this.contentInternal) === this.#decodeContent(updatedContent)) {
             this.lastAcceptedContent = null;
             return;
         }
@@ -274,8 +275,8 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     }
     contentCommitted(content, committedByUser) {
         this.lastAcceptedContent = null;
-        this.contentInternal = { content, isEncoded: false };
-        this.contentLoadedInternal = true;
+        this.contentInternal =
+            new TextUtils.ContentData.ContentData(content, Boolean(this.contentEncodedInternal), this.mimeType());
         this.requestContentPromise = null;
         this.hasCommitsInternal = true;
         this.innerResetWorkingCopy();
@@ -304,7 +305,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
             return { content: this.workingCopyInternal, isEncoded: false };
         }
         if (this.contentInternal) {
-            return this.contentInternal;
+            return TextUtils.ContentData.ContentData.asDeferredContent(this.contentInternal);
         }
         return { content: '', isEncoded: false };
     }
@@ -378,7 +379,10 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return Common.ParsedURL.ParsedURL.extractExtension(this.nameInternal);
     }
     content() {
-        return this.contentInternal?.content || '';
+        if (!this.contentInternal || 'error' in this.contentInternal) {
+            return '';
+        }
+        return this.contentInternal.text;
     }
     loadError() {
         return (this.contentInternal && 'error' in this.contentInternal && this.contentInternal.error) || null;
@@ -391,7 +395,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return Promise.resolve(TextUtils.TextUtils.performSearchInContent(content, query, caseSensitive, isRegex));
     }
     contentLoaded() {
-        return this.contentLoadedInternal;
+        return Boolean(this.contentInternal);
     }
     uiLocation(lineNumber, columnNumber) {
         return new UILocation(this, lineNumber, columnNumber);

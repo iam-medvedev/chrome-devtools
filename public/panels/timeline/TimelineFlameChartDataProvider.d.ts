@@ -26,6 +26,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private screenshotImageCache;
     private entryIndexToTitle;
     private lastInitiatorEntry;
+    private lastInitiatorsData;
     private lastSelection?;
     constructor();
     hasTrackConfigurationMode(): boolean;
@@ -68,7 +69,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     isIgnoreListedEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
     private isIgnoreListedURL;
     getEntryTypeForLevel(level: number): EntryType;
-    private entryType;
     prepareHighlightedEntryInfo(entryIndex: number): Element | null;
     prepareHighlightedHiddenEntriesArrowInfo(entryIndex: number): Element | null;
     entryColor(entryIndex: number): string;
@@ -82,7 +82,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     formatValue(value: number, precision?: number): string;
     canJumpToEntry(_entryIndex: number): boolean;
     entryIndexForSelection(selection: TimelineSelection | null): number;
-    getIndexForEvent(targetEvent: TraceEngine.Types.TraceEvents.TraceEventData): number | null;
+    indexForEvent(targetEvent: TraceEngine.Types.TraceEvents.TraceEventData): number | null;
     /**
      * Build the data for initiators and initiated entries.
      * @param entryIndex

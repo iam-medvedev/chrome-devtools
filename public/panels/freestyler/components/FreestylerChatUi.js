@@ -26,21 +26,11 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-var ChatMessageEntity;
+export var ChatMessageEntity;
 (function (ChatMessageEntity) {
     ChatMessageEntity["MODEL"] = "model";
     ChatMessageEntity["USER"] = "user";
 })(ChatMessageEntity || (ChatMessageEntity = {}));
-const EXAMPLE_MESSAGES = [
-    {
-        entity: ChatMessageEntity.USER,
-        text: 'This is an example message',
-    },
-    {
-        entity: ChatMessageEntity.MODEL,
-        text: 'This is an example message',
-    },
-];
 export class FreestylerChatUi extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-freestyler-chat-ui`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -64,6 +54,7 @@ export class FreestylerChatUi extends HTMLElement {
             return;
         }
         this.#props.onTextSubmit(input.value);
+        input.value = '';
     };
     #renderConsentOnboarding = () => {
         // clang-format off
@@ -72,7 +63,7 @@ export class FreestylerChatUi extends HTMLElement {
         Privacy Notice
       </h2>
       <main>
-        TODO: content
+        This is an example privacy notice.
 
         <div class="consent-buttons-container">
           <${Buttons.Button.Button.litTagName}
@@ -81,8 +72,7 @@ export class FreestylerChatUi extends HTMLElement {
             .data=${{
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             jslogContext: 'accept',
-        }}
-          >
+        }}>
             ${i18nString(UIStrings.acceptButtonTitle)}
           </${Buttons.Button.Button.litTagName}>
         </div>
@@ -103,11 +93,13 @@ export class FreestylerChatUi extends HTMLElement {
     `;
     };
     #renderChatUi = () => {
+        const isLoading = this.#props.state === "chat-view-loading" /* State.CHAT_VIEW_LOADING */;
         // clang-format off
         return LitHtml.html `
       <div class="chat-ui">
         <div class="messages-container">
-          ${EXAMPLE_MESSAGES.map(message => this.#renderChatMessage(message.text, message.entity))}
+          ${this.#props.messages.map(message => this.#renderChatMessage(message.text, message.entity))}
+          ${isLoading ? 'Loading' : ''}
         </div>
         <form class="input-form" @submit=${this.#handleSubmit}>
           <div class="chat-input-container">
@@ -138,7 +130,8 @@ export class FreestylerChatUi extends HTMLElement {
             case "consent" /* State.CONSENT_VIEW */:
                 LitHtml.render(this.#renderConsentOnboarding(), this.#shadow, { host: this });
                 break;
-            case "chat" /* State.CHAT_VIEW */:
+            case "chat-view" /* State.CHAT_VIEW */:
+            case "chat-view-loading" /* State.CHAT_VIEW_LOADING */:
                 LitHtml.render(this.#renderChatUi(), this.#shadow, { host: this });
                 break;
         }

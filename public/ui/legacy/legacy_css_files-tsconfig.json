@@ -6,7 +6,6 @@
     "files": [
         "applicationColorTokens.css.legacy.js",
         "checkboxTextLabel.css.legacy.js",
-        "closeButton.css.legacy.js",
         "confirmDialog.css.legacy.js",
         "designTokens.css.legacy.js",
         "dialog.css.legacy.js",

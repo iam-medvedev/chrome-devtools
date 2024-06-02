@@ -44,6 +44,8 @@ styles.replaceSync(
   text-decoration: underline;
   cursor: pointer;
   outline-offset: 2px;
+  border: none;
+  background: none;
 }
 
 /*# sourceURL=stackTraceRow.css */

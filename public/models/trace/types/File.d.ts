@@ -12,10 +12,10 @@ export declare const enum DataOrigin {
     CPUProfile = "CPUProfile",
     TraceEvents = "TraceEvents"
 }
-export interface Annotations {
-    entriesFilterAnnotations: {
+export interface Modifications {
+    entriesFilterModifications: {
         hiddenEntriesIndexes: number[];
-        modifiedEntriesIndexes: number[];
+        expandableEntriesIndexes: number[];
     };
     initialBreadcrumb: Breadcrumb;
 }
@@ -31,6 +31,6 @@ export interface MetaData {
     cpuThrottling?: number;
     hardwareConcurrency?: number;
     dataOrigin?: DataOrigin;
-    annotations?: Annotations;
+    modifications?: Modifications;
 }
 export type Contents = TraceFile | TraceEventData[];

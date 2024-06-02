@@ -39,7 +39,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
+import * as ModificationsManager from '../../services/modifications_manager/modifications_manager.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -452,7 +452,7 @@ export class TimelinePanel extends UI.Panel.Panel {
      * @deprecated
      **/
     getTraceEngineRawTraceEventsForLayoutTests() {
-        const data = this.#traceEngineModel.traceEvents(this.#traceEngineActiveTraceIndex);
+        const data = this.#traceEngineModel.rawTraceEvents(this.#traceEngineActiveTraceIndex);
         if (data === null) {
             throw new Error('No trace engine data found.');
         }
@@ -617,11 +617,13 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (this.state !== "Idle" /* State.Idle */) {
             return;
         }
-        const traceEvents = this.#traceEngineModel.traceEvents(this.#traceEngineActiveTraceIndex);
+        const traceEvents = this.#traceEngineModel.rawTraceEvents(this.#traceEngineActiveTraceIndex);
         const metadata = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex);
-        // Save annotations into the metadata if annotations experiment is on
-        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.PERF_PANEL_ANNOTATIONS */) && metadata) {
-            metadata.annotations = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getAnnotations();
+        // Save modifications into the metadata if modifications experiment is on
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_WRITE_MODIFICATIONS_TO_DISK */) &&
+            metadata) {
+            metadata.modifications =
+                ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()?.getModifications();
         }
         if (!traceEvents) {
             return;
@@ -674,24 +676,24 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async showHistory() {
-        this.#saveAnnotationsForActiveTrace();
+        this.#saveModificationsForActiveTrace();
         const recordingData = await this.#historyManager.showHistoryDropDown();
         if (recordingData && recordingData.traceParseDataIndex !== this.#traceEngineActiveTraceIndex) {
             this.setModel(recordingData.traceParseDataIndex);
         }
     }
     navigateHistory(direction) {
-        this.#saveAnnotationsForActiveTrace();
+        this.#saveModificationsForActiveTrace();
         const recordingData = this.#historyManager.navigate(direction);
         if (recordingData && recordingData.traceParseDataIndex !== this.#traceEngineActiveTraceIndex) {
             this.setModel(recordingData.traceParseDataIndex);
         }
         return true;
     }
-    #saveAnnotationsForActiveTrace() {
-        const newAnnotations = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getAnnotations();
-        if (newAnnotations) {
-            this.#traceEngineModel.overrideAnnotations(this.#traceEngineActiveTraceIndex, newAnnotations);
+    #saveModificationsForActiveTrace() {
+        const newModifications = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()?.getModifications();
+        if (newModifications) {
+            this.#traceEngineModel.overrideModifications(this.#traceEngineActiveTraceIndex, newModifications);
         }
     }
     selectFileToLoad() {
@@ -915,7 +917,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async startRecording() {
-        this.#saveAnnotationsForActiveTrace();
+        this.#saveModificationsForActiveTrace();
         console.assert(!this.statusPane, 'Status pane is already opened.');
         this.setState("StartPending" /* State.StartPending */);
         this.showRecordingStarted();
@@ -1065,24 +1067,24 @@ export class TimelinePanel extends UI.Panel.Panel {
         const traceParsedData = this.#traceEngineModel.traceParsedData(this.#traceEngineActiveTraceIndex);
         const isCpuProfile = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex)?.dataOrigin ===
             "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPUProfile */;
-        const annotations = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex)?.annotations;
+        const modifications = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex)?.modifications;
         this.#minimapComponent.reset();
         // Order is important: the bounds must be set before we initiate any UI
         // rendering.
         if (traceParsedData) {
             TraceBounds.TraceBounds.BoundsManager.instance().resetWithNewBounds(traceParsedData.Meta.traceBounds);
-            // Since we have a single instance to AnnotationsManager, combine both SyntheticEvent to Node maps
+            // Since we have a single instance to ModificationsManager, combine both SyntheticEvent to Node maps
             const samplesAndRendererEventsEntryToNodeMap = new Map([...traceParsedData.Samples.entryToNode, ...traceParsedData.Renderer.entryToNode]);
-            // If the annotations experiment is on and there are some annotations saved, apply the annotations from the file.
-            // We create AnnotationsManager regardless of the experiment because the EntriesFilterer initiated in the AnnotationsManager
+            // If the modifications experiment is on and there are some modifications saved, apply the modifications from the file.
+            // We create ModificationsManager regardless of the experiment because the EntriesFilterer initiated in the ModificationsManager
             // needs to work even if the experiment is off.
             const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state();
-            AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance({
+            ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance({
                 entryToNodeMap: samplesAndRendererEventsEntryToNodeMap,
                 wholeTraceBounds: traceBounds?.micro.entireTraceBounds,
             });
-            if (annotations) {
-                AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.applyAnnotations(annotations);
+            if (modifications) {
+                ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()?.applyModifications(modifications);
             }
             this.#applyActiveFilters(traceParsedData.Meta.traceIsGeneric, exclusiveFilter);
         }
@@ -1220,8 +1222,8 @@ export class TimelinePanel extends UI.Panel.Panel {
      * have recorded a fresh trace.
      **/
     async loadingComplete(collectedEvents, exclusiveFilter = null, isCpuProfile, recordingStartTime, metadata) {
-        // Before loading a new trace, update annotations of the previous one
-        this.#saveAnnotationsForActiveTrace();
+        // Before loading a new trace, update modifications of the previous one
+        this.#saveModificationsForActiveTrace();
         this.#traceEngineModel.resetProcessor();
         SourceMapsResolver.clearResolvedNodeNames();
         delete this.loader;

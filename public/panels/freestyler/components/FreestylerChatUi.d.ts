@@ -1,11 +1,21 @@
+export declare enum ChatMessageEntity {
+    MODEL = "model",
+    USER = "user"
+}
+export type ChatMessage = {
+    entity: ChatMessageEntity;
+    text: string;
+};
 export declare const enum State {
     CONSENT_VIEW = "consent",
-    CHAT_VIEW = "chat"
+    CHAT_VIEW = "chat-view",
+    CHAT_VIEW_LOADING = "chat-view-loading"
 }
 export type Props = {
     onTextSubmit: (text: string) => void;
     onAcceptPrivacyNotice: () => void;
     state: State;
+    messages: ChatMessage[];
 };
 export declare class FreestylerChatUi extends HTMLElement {
     #private;

@@ -5,5 +5,7 @@ interface Options {
 export declare class TimelineLandingPage extends UI.Widget.VBox {
     private readonly toggleRecordAction;
     constructor(toggleRecordAction: UI.ActionRegistration.Action, options?: Options);
+    private renderLandingPage;
+    private renderLegacyLandingPage;
 }
 export {};

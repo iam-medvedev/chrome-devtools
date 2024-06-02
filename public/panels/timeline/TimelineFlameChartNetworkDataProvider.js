@@ -21,6 +21,7 @@ export class TimelineFlameChartNetworkDataProvider {
     #timelineDataInternal;
     #lastSelection;
     #traceEngineData;
+    #eventIndexByEvent = new Map();
     constructor() {
         this.#minimumBoundaryInternal = 0;
         this.#timeSpan = 0;
@@ -33,6 +34,7 @@ export class TimelineFlameChartNetworkDataProvider {
         this.#timelineDataInternal = null;
         this.#traceEngineData = traceEngineData;
         this.#events = traceEngineData?.NetworkRequests.byTime || [];
+        this.#eventIndexByEvent.clear();
         if (this.#traceEngineData) {
             this.#setTimingBoundsData(this.#traceEngineData);
         }
@@ -77,6 +79,23 @@ export class TimelineFlameChartNetworkDataProvider {
         const event = this.#events[index];
         this.#lastSelection = new Selection(TimelineSelection.fromTraceEvent(event), index);
         return this.#lastSelection.timelineSelection;
+    }
+    indexForEvent(event) {
+        if (!TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestDetailsEvent(event)) {
+            return null;
+        }
+        const fromCache = this.#eventIndexByEvent.get(event);
+        // Cached value might be null, which is OK.
+        if (fromCache !== undefined) {
+            return fromCache;
+        }
+        const index = this.#events.indexOf(event);
+        const result = index > -1 ? index : null;
+        this.#eventIndexByEvent.set(event, result);
+        return result;
+    }
+    eventByIndex(entryIndex) {
+        return this.#events.at(entryIndex) ?? null;
     }
     entryIndexForSelection(selection) {
         if (!selection) {

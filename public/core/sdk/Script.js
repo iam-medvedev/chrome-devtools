@@ -239,7 +239,7 @@ export class Script {
         return response.arrayBuffer();
     }
     originalContentProvider() {
-        return new TextUtils.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), () => this.requestContent());
+        return new TextUtils.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), () => this.requestContentData());
     }
     async searchInContent(query, caseSensitive, isRegex) {
         if (!this.scriptId) {

@@ -218,7 +218,8 @@ async function buildLayoutShiftsClusters() {
         if (!event.args.data) {
             continue;
         }
-        const shift = {
+        const syntheticEventsManager = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
+        const shift = syntheticEventsManager.registerSyntheticBasedEvent({
             rawSourceEvent: event,
             ...event,
             args: {
@@ -237,7 +238,7 @@ async function buildLayoutShiftsClusters() {
                 // value is set when stepping through the built clusters.
                 sessionWindowData: { cumulativeWindowScore: 0, id: clusters.length },
             },
-        };
+        });
         currentCluster.events.push(shift);
         updateTraceWindowMax(currentCluster.clusterWindow, event.ts);
         lastShiftTime = event.ts;

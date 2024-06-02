@@ -5,6 +5,7 @@ import * as Breadcrumbs from './Breadcrumbs.js';
 import * as BreadcrumbsUI from './BreadcrumbsUI.js';
 import * as DetailsView from './DetailsView.js';
 import * as InteractionBreakdown from './InteractionBreakdown.js';
+import * as LiveMetricsView from './LiveMetricsView.js';
 import * as Sidebar from './Sidebar.js';
-export { Breadcrumbs, BreadcrumbsUI, DetailsView, InteractionBreakdown, Sidebar, };
+export { Breadcrumbs, BreadcrumbsUI, DetailsView, InteractionBreakdown, LiveMetricsView, Sidebar, };
 //# sourceMappingURL=components.js.map

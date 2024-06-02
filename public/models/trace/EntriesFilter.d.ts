@@ -28,44 +28,45 @@ export interface PossibleFilterActions {
  * Once actions are applied, the invisibleEntries() method will return the
  * entries that are invisible, and this is the list of entries that should be
  * removed before rendering the resulting thread on the timeline.
- **/
+ */
 export declare class EntriesFilter {
     #private;
     constructor(entryToNodeMap: EntryToNodeMap);
     /**
      * Checks which actions can be applied on an entry. This allows us to only show possible actions in the Context Menu.
      * For example, if an entry has no children, COLLAPSE_FUNCTION will not change the FlameChart, therefore there is no need to show this action as an option.
-     **/
+     */
     findPossibleActions(entry: Types.TraceEvents.SyntheticTraceEntry): PossibleFilterActions;
     /**
      * Returns the amount of entry descendants that belong to the hidden entries array.
-     * **/
+     * */
     findHiddenDescendantsAmount(entry: Types.TraceEvents.SyntheticTraceEntry): number;
     /**
      * Returns the set of entries that are invisible given the set of applied actions.
-     **/
+     */
     invisibleEntries(): Types.TraceEvents.TraceEventData[];
     /**
-     * Sets invisible and modified entries. Called when a trace with annotations is loaded and some entries are set as hidden and modified.
+     * Sets hidden and expandable. Called when a trace with modifications is loaded and some entries are set as hidden and expandable.
      * Both arrays are set together because if there is one, the other must be present too.
-     **/
-    setInvisibleAndModifiedEntries(invisibleEntries: Types.TraceEvents.TraceEventData[], modifiedEntries: Types.TraceEvents.TraceEventData[]): void;
+     */
+    setHiddenAndExpandableEntries(invisibleEntries: Types.TraceEvents.TraceEventData[], expandableEntries: Types.TraceEvents.TraceEventData[]): void;
     inEntryInvisible(entry: Types.TraceEvents.TraceEventData): boolean;
     /**
-     * Returns the array of entries that have a sign indicating that entries below are hidden.
-     **/
-    modifiedEntries(): Types.TraceEvents.TraceEventData[];
+     * Returns the array of entries that have a sign indicating that entries below are hidden,
+     * and so that they can be "expanded" to reveal their hidden children.
+     */
+    expandableEntries(): Types.TraceEvents.TraceEventData[];
     /**
      * Applies an action to hide entries or removes entries
      * from hidden entries array depending on the action.
-     **/
+     */
     applyFilterAction(action: UserFilterAction): Types.TraceEvents.TraceEventData[];
     /**
      * If an entry was selected from a link instead of clicking on it,
      * it might be in the invisible entries array.
-     * If it is, reveal it by resetting clidren the closest modified entry,
+     * If it is, reveal it by resetting clidren the closest expandable entry,
      */
     revealEntry(entry: Types.TraceEvents.SyntheticTraceEntry): void;
-    isEntryModified(event: Types.TraceEvents.TraceEventData): boolean;
+    isEntryExpandable(event: Types.TraceEvents.TraceEventData): boolean;
 }
 export {};

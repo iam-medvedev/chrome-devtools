@@ -18,7 +18,7 @@ export declare class PlatformFileSystem {
     deleteFile(_path: Platform.DevToolsPath.EncodedPathString): Promise<boolean>;
     deleteDirectoryRecursively(_path: Platform.DevToolsPath.EncodedPathString): Promise<boolean>;
     requestFileBlob(_path: Platform.DevToolsPath.EncodedPathString): Promise<Blob | null>;
-    requestFileContent(_path: Platform.DevToolsPath.EncodedPathString): Promise<TextUtils.ContentProvider.DeferredContent>;
+    requestFileContent(_path: Platform.DevToolsPath.EncodedPathString): Promise<TextUtils.ContentData.ContentDataOrError>;
     setFileContent(_path: Platform.DevToolsPath.EncodedPathString, _content: string, _isBase64: boolean): void;
     renameFile(_path: Platform.DevToolsPath.EncodedPathString, _newName: Platform.DevToolsPath.RawPathString, callback: (arg0: boolean, arg1?: string | undefined) => void): void;
     addExcludedFolder(_path: Platform.DevToolsPath.EncodedPathString): void;

@@ -43,8 +43,8 @@ import { ComputedStyleModel } from './ComputedStyleModel.js';
 import computedStyleSidebarPaneStyles from './computedStyleSidebarPane.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { PlatformFontsWidget } from './PlatformFontsWidget.js';
+import { ColorMatcher } from './PropertyMatchers.js';
 import { categorizePropertyName, DefaultCategoryOrder } from './PropertyNameCategories.js';
-import { ColorMatcher } from './PropertyParser.js';
 import { Renderer, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
 const UIStrings = {

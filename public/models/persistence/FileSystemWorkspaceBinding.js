@@ -234,9 +234,9 @@ export class FileSystem extends Workspace.Workspace.ProjectStore {
     }
     async searchInFileContent(uiSourceCode, query, caseSensitive, isRegex) {
         const filePath = this.filePathForUISourceCode(uiSourceCode);
-        const { content } = await this.fileSystemInternal.requestFileContent(filePath);
-        if (content) {
-            return TextUtils.TextUtils.performSearchInContent(content, query, caseSensitive, isRegex);
+        const content = await this.fileSystemInternal.requestFileContent(filePath);
+        if (!TextUtils.ContentData.ContentData.isError(content) && content.isTextContent) {
+            return TextUtils.TextUtils.performSearchInContent(content.text, query, caseSensitive, isRegex);
         }
         return [];
     }
@@ -315,8 +315,7 @@ export class FileSystem extends Workspace.Workspace.ProjectStore {
         if (!filePath) {
             return null;
         }
-        const uiSourceCode = this.addFile(filePath);
-        uiSourceCode.setContent(content, Boolean(isBase64));
+        const uiSourceCode = this.addFile(filePath, content, isBase64);
         this.creatingFilesGuard.delete(guardFileName);
         return uiSourceCode;
     }
@@ -334,9 +333,12 @@ export class FileSystem extends Workspace.Workspace.ProjectStore {
     remove() {
         this.fileSystemWorkspaceBinding.isolatedFileSystemManager.removeFileSystem(this.fileSystemInternal);
     }
-    addFile(filePath) {
+    addFile(filePath, content, isBase64) {
         const contentType = this.fileSystemInternal.contentType(filePath);
         const uiSourceCode = this.createUISourceCode(Common.ParsedURL.ParsedURL.concatenate(this.fileSystemBaseURL, filePath), contentType);
+        if (content !== undefined) {
+            uiSourceCode.setContent(content, Boolean(isBase64));
+        }
         this.addUISourceCode(uiSourceCode);
         return uiSourceCode;
     }

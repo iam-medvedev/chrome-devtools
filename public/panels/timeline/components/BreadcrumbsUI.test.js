@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 import * as TraceEngine from '../../../models/trace/trace.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TimelineComponents from './components.js';
 function milliToMicro(x) {
     return TraceEngine.Helpers.Timing.millisecondsToMicroseconds(TraceEngine.Types.Timing.MilliSeconds(x));
 }
-describe('BreadcrumbsUI', () => {
+describeWithEnvironment('BreadcrumbsUI', () => {
     const { BreadcrumbsUI } = TimelineComponents.BreadcrumbsUI;
     function queryBreadcrumbs(component) {
         assert.isNotNull(component.shadowRoot);
@@ -34,7 +35,7 @@ describe('BreadcrumbsUI', () => {
         await coordinator.done();
         const breadcrumbsRanges = queryBreadcrumbs(component);
         assert.deepStrictEqual(breadcrumbsRanges.length, 1);
-        assert.deepStrictEqual(breadcrumbsRanges, ['Full range (9.00ms)']);
+        assert.deepStrictEqual(breadcrumbsRanges, ['Full range (9.00 ms)']);
     });
     it('renders all the breadcrumbs provided', async () => {
         const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
@@ -62,7 +63,7 @@ describe('BreadcrumbsUI', () => {
         await coordinator.done();
         const breadcrumbsRanges = queryBreadcrumbs(component);
         assert.deepStrictEqual(breadcrumbsRanges.length, 2);
-        assert.deepStrictEqual(breadcrumbsRanges, ['Full range (9.00ms)', '7.00ms']);
+        assert.deepStrictEqual(breadcrumbsRanges, ['Full range (9.00 ms)', '7.00 ms']);
     });
 });
 //# sourceMappingURL=BreadcrumbsUI.test.js.map

@@ -905,8 +905,9 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";
     DevtoolsExperiments[DevtoolsExperiments["perf-panel-annotations"] = 94] = "perf-panel-annotations";
     DevtoolsExperiments[DevtoolsExperiments["timeline-rpp-sidebar"] = 95] = "timeline-rpp-sidebar";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-observations"] = 96] = "timeline-observations";
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 96] = "MaxValue";
+    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 97] = "MaxValue";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

@@ -55,7 +55,7 @@ class TestFileSystem extends Persistence.FileSystemWorkspaceBinding.FileSystem {
         this.#metadata = options.metadata;
     }
     requestFileContent(_uiSourceCode) {
-        return Promise.resolve({ content: this.#content, isEncoded: false });
+        return Promise.resolve(new TextUtils.ContentData.ContentData(this.#content, /* isBase64 */ false, 'text/plain'));
     }
     requestMetadata(_uiSourceCode) {
         return Promise.resolve(this.#metadata);

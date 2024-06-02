@@ -70,7 +70,7 @@ export class BinaryResourceView extends UI.Widget.VBox {
             new SourceFrame.BinaryResourceViewFactory.BinaryResourceViewFactory(base64content, contentUrl, resourceType);
         this.toolbar = new UI.Toolbar.Toolbar('binary-view-toolbar', this.element);
         this.binaryViewObjects = [
-            new BinaryViewObject('base64', i18n.i18n.lockedString('Base64'), i18nString(UIStrings.copiedAsBase), this.binaryResourceViewFactory.createBase64View.bind(this.binaryResourceViewFactory), this.binaryResourceViewFactory.base64.bind(this.binaryResourceViewFactory)),
+            new BinaryViewObject('base64', i18n.i18n.lockedString('Base64'), i18nString(UIStrings.copiedAsBase), this.binaryResourceViewFactory.createBase64View.bind(this.binaryResourceViewFactory), () => Promise.resolve(this.binaryResourceViewFactory.base64())),
             new BinaryViewObject('hex', i18nString(UIStrings.hexViewer), i18nString(UIStrings.copiedAsHex), this.binaryResourceViewFactory.createHexView.bind(this.binaryResourceViewFactory), this.binaryResourceViewFactory.hex.bind(this.binaryResourceViewFactory)),
             new BinaryViewObject('utf8', i18n.i18n.lockedString('UTF-8'), i18nString(UIStrings.copiedAsUtf), this.binaryResourceViewFactory.createUtf8View.bind(this.binaryResourceViewFactory), this.binaryResourceViewFactory.utf8.bind(this.binaryResourceViewFactory)),
         ];
@@ -104,7 +104,7 @@ export class BinaryResourceView extends UI.Widget.VBox {
         if (!viewObject) {
             return;
         }
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText((await viewObject.content()).content);
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(await viewObject.content());
         this.copiedText.setText(viewObject.copiedMessage);
         this.copiedText.element.classList.remove('fadeout');
         function addFadeoutClass() {
@@ -152,16 +152,16 @@ export class BinaryResourceView extends UI.Widget.VBox {
         const copyMenu = contextMenu.clipboardSection().appendSubMenuItem(submenuItemText, false, 'copy');
         const footerSection = copyMenu.footerSection();
         footerSection.appendItem(i18nString(UIStrings.copyAsBase), async () => {
-            const content = await this.binaryResourceViewFactory.base64();
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content.content);
+            const content = this.binaryResourceViewFactory.base64();
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content);
         }, { jslogContext: 'copy-as-base' });
         footerSection.appendItem(i18nString(UIStrings.copyAsHex), async () => {
             const content = await this.binaryResourceViewFactory.hex();
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content.content);
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content);
         }, { jslogContext: 'copy-as-hex' });
         footerSection.appendItem(i18nString(UIStrings.copyAsUtf), async () => {
             const content = await this.binaryResourceViewFactory.utf8();
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content.content);
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content);
         }, { jslogContext: 'copy-as-utf' });
     }
 }
@@ -172,11 +172,11 @@ export class BinaryViewObject {
     content;
     createViewFn;
     view;
-    constructor(type, label, copiedMessage, createViewFn, deferredContent) {
+    constructor(type, label, copiedMessage, createViewFn, content) {
         this.type = type;
         this.label = label;
         this.copiedMessage = copiedMessage;
-        this.content = deferredContent;
+        this.content = content;
         this.createViewFn = createViewFn;
         this.view = null;
     }

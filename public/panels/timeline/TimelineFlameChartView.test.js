@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
+import * as ModificationsManager from '../../services/modifications_manager/modifications_manager.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
@@ -89,7 +89,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
         flameChartView.setModel(traceParsedData);
-        AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance({
+        ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance({
             entryToNodeMap: traceParsedData.Renderer.entryToNode,
             wholeTraceBounds: boundsManager.state()?.micro.entireTraceBounds,
         });
@@ -128,7 +128,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
         flameChartView.setModel(traceParsedData);
-        AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance({
+        ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance({
             entryToNodeMap: traceParsedData.Renderer.entryToNode,
             wholeTraceBounds: boundsManager.state()?.micro.entireTraceBounds,
         });
@@ -169,7 +169,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
         flameChartView.setModel(traceParsedData);
-        AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance({
+        ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance({
             entryToNodeMap: traceParsedData.Renderer.entryToNode,
             wholeTraceBounds: boundsManager.state()?.micro.entireTraceBounds,
         });
@@ -223,7 +223,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
             const mockViewDelegate = new MockViewDelegate();
             flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
             flameChartView.setModel(traceParsedData);
-            AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance({
+            ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance({
                 entryToNodeMap: traceParsedData.Renderer.entryToNode,
                 wholeTraceBounds: boundsManager.state()?.micro.entireTraceBounds,
             });
@@ -287,7 +287,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
                 flameChartView.getMainFlameChart().onContextMenu(new MouseEvent(''));
             }
             function generateContextMenuForNode(node) {
-                const nodeId = flameChartView.getMainDataProvider().getIndexForEvent(node);
+                const nodeId = flameChartView.getMainDataProvider().indexForEvent(node);
                 assert.isNotNull(nodeId);
                 generateContextMenuForNodeId(nodeId);
             }

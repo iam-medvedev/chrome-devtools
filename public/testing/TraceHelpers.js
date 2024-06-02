@@ -228,7 +228,7 @@ export function makeCompleteEventInMilliseconds(name, tsMillis, durMillis, cat =
 /**
  * Builds a mock TraceEventInstant.
  */
-export function makeInstantEvent(name, ts, cat = '', pid = 0, tid = 0, s = "t" /* TraceEngine.Types.TraceEvents.TraceEventScope.THREAD */) {
+export function makeInstantEvent(name, tsMicroseconds, cat = '', pid = 0, tid = 0, s = "t" /* TraceEngine.Types.TraceEvents.TraceEventScope.THREAD */) {
     return {
         args: {},
         cat,
@@ -236,7 +236,7 @@ export function makeInstantEvent(name, ts, cat = '', pid = 0, tid = 0, s = "t" /
         ph: "I" /* TraceEngine.Types.TraceEvents.Phase.INSTANT */,
         pid: TraceEngine.Types.TraceEvents.ProcessID(pid),
         tid: TraceEngine.Types.TraceEvents.ThreadID(tid),
-        ts: TraceEngine.Types.Timing.MicroSeconds(ts),
+        ts: TraceEngine.Types.Timing.MicroSeconds(tsMicroseconds),
         s,
     };
 }
@@ -302,6 +302,7 @@ export function makeMockRendererHandlerData(entries) {
         tree,
         name: 'thread',
         entries,
+        profileCalls: entries.filter(TraceEngine.Types.TraceEvents.isProfileCall),
     };
     const mockProcess = {
         url: 'url',

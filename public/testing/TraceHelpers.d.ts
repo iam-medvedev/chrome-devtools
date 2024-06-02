@@ -75,7 +75,7 @@ export declare function makeCompleteEventInMilliseconds(name: string, tsMillis: 
 /**
  * Builds a mock TraceEventInstant.
  */
-export declare function makeInstantEvent(name: string, ts: number, cat?: string, pid?: number, tid?: number, s?: TraceEngine.Types.TraceEvents.TraceEventScope): TraceEngine.Types.TraceEvents.TraceEventInstant;
+export declare function makeInstantEvent(name: string, tsMicroseconds: number, cat?: string, pid?: number, tid?: number, s?: TraceEngine.Types.TraceEvents.TraceEventScope): TraceEngine.Types.TraceEvents.TraceEventInstant;
 /**
  * Builds a mock TraceEventBegin.
  */

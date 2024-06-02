@@ -78,10 +78,11 @@ export declare const enum ExperimentName {
     AUTOFILL_VIEW = "autofill-view",
     INDENTATION_MARKERS_TEMP_DISABLE = "sources-frame-indentation-markers-temporarily-disable",
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
-    PERF_PANEL_ANNOTATIONS = "perf-panel-annotations",
+    TIMELINE_WRITE_MODIFICATIONS_TO_DISK = "perf-panel-annotations",
     TIMELINE_SIDEBAR = "timeline-rpp-sidebar",
     TIMELINE_EXTENSIONS = "timeline-extensions",
-    TIMELINE_DEBUG_MODE = "timeline-debug-mode"
+    TIMELINE_DEBUG_MODE = "timeline-debug-mode",
+    TIMELINE_OBSERVATIONS = "timeline-observations"
 }
 /**
  * When defining conditions make sure that objects used by the function have

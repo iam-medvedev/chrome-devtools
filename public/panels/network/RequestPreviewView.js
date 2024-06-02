@@ -66,7 +66,7 @@ export class RequestPreviewView extends RequestResponseView {
         return view;
     }
     async htmlPreview() {
-        const contentData = await this.request.contentData();
+        const contentData = await this.request.requestContentData();
         if (TextUtils.ContentData.ContentData.isError(contentData)) {
             return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData) + ': ' + contentData.error);
         }

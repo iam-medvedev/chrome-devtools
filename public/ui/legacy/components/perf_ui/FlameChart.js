@@ -873,6 +873,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.dataProvider.modifyTree?.(index, treeAction);
         this.dataProvider.timelineData(true);
+        this.dataProvider.buildFlowForInitiator?.(index);
         this.update();
     }
     getPossibleActions() {
@@ -1593,6 +1594,14 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return;
         }
         this.resetCanvas();
+        this.dispatchEventToListeners("LatestDrawDimensions" /* Events.LatestDrawDimensions */, {
+            chart: {
+                widthPixels: this.offsetWidth,
+                heightPixels: this.offsetHeight,
+                scrollOffsetPixels: this.chartViewport.scrollOffset(),
+            },
+            traceWindow: TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(this.minimumBoundary(), this.maximumBoundary()),
+        });
         const canvasWidth = this.offsetWidth;
         const canvasHeight = this.offsetHeight;
         const context = this.canvas.getContext('2d');
@@ -1884,7 +1893,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // often an event such as DCL/LCP.
         const markerIndices = [];
         const { entryTotalTimes, entryStartTimes } = timelineData;
-        const height = this.offsetHeight;
         const top = this.chartViewport.scrollOffset();
         const textPadding = this.textPadding;
         // How wide in pixels / long in duration an event needs to be to make it
@@ -1899,7 +1907,13 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const colorBuckets = new Map();
         for (let level = 0; level < this.dataProvider.maxStackDepth(); ++level) {
             // Since tracks can be reordered the |visibleLevelOffsets| is not necessarily sorted, so we need to check all levels.
-            if (this.levelToOffset(level) < top || this.levelToOffset(level) > top + height) {
+            // Note that to check if a level is off the top of the screen, we can't
+            // just check its offset, because then the level will disappear the
+            // moment it is 1px off the top of the screen. So instead we check that
+            // the entire height of the level is off the top of the screen before
+            // skipping it.
+            if (this.levelToOffset(level) + this.levelHeight(level) < top ||
+                this.levelToOffset(level) > top + this.offsetHeight) {
                 continue;
             }
             if (!this.visibleLevels || !this.visibleLevels[level]) {

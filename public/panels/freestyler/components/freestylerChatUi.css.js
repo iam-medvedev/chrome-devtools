@@ -12,7 +12,7 @@ styles.replaceSync(
  */
 
 :host {
-  max-width: 550px;
+  max-width: 610px;
   width: 100%;
   height: 100%;
   user-select: text;
@@ -72,10 +72,10 @@ styles.replaceSync(
 
 .chat-message {
   max-width: 320px;
+  width: fit-content;
   padding: 8px var(--sys-size-8);
   font-size: 12px;
   border-radius: var(--sys-size-6);
-  margin-left: auto;
 
   &:not(:first-of-type) {
     margin-top: var(--sys-size-6);
@@ -84,12 +84,13 @@ styles.replaceSync(
   &.query {
     /* TODO(ergunsh): Handle dark mode */
     background: #f2f2f2; /* stylelint-disable-line plugin/use_theme_colors */
+    margin-left: auto;
   }
 
   &.answer {
+    max-width: 440px;
     /* TODO(ergunsh): Handle dark mode */
     background: #ecf3fe; /* stylelint-disable-line plugin/use_theme_colors */
-    max-width: unset;
   }
 }
 

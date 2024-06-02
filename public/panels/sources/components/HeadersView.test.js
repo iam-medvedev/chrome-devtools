@@ -94,7 +94,7 @@ describe('HeadersView', () => {
         uiSourceCode.commitWorkingCopy = commitWorkingCopySpy;
         project.canSetFileContent = () => true;
         const editorWrapper = new SourcesComponents.HeadersView.HeadersView(uiSourceCode);
-        await uiSourceCode.requestContent();
+        await uiSourceCode.requestContentData();
         await coordinator.done();
         const editor = editorWrapper.getComponent();
         renderElementIntoDOM(editor);

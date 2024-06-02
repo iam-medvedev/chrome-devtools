@@ -76,6 +76,7 @@ export class TraceLoader {
     static async rawEvents(context, name) {
         const contents = await TraceLoader.fixtureContents(context, name);
         const events = 'traceEvents' in contents ? contents.traceEvents : contents;
+        TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.initSyntheticEventsManagerForTrace(events);
         return events;
     }
     /**

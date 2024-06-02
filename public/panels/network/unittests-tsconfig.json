@@ -49,6 +49,7 @@
     "../../../../../../front_end/panels/network/RequestPayloadView.test.ts",
     "../../../../../../front_end/panels/network/RequestPreviewView.test.ts",
     "../../../../../../front_end/panels/network/RequestResponseView.test.ts",
+    "../../../../../../front_end/panels/network/RequestTimingView.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../front_end/global_typings/request_idle_callback.d.ts",

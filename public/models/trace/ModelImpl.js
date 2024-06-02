@@ -21,6 +21,7 @@ import * as Types from './types/types.js';
  **/
 export class Model extends EventTarget {
     #traces = [];
+    #syntheticEventsManagerByTrace = [];
     #nextNumberByDomain = new Map();
     #recordingsAvailable = [];
     #lastRecordingIndex = 0;
@@ -83,11 +84,13 @@ export class Model extends EventTarget {
         try {
             // Wait for all outstanding promises before finishing the async execution,
             // but perform all tasks in parallel.
+            const syntheticEventsManager = Helpers.SyntheticEvents.SyntheticEventsManager.initSyntheticEventsManagerForTrace(traceEvents);
             await this.#processor.parse(traceEvents, isFreshRecording);
             this.#storeParsedFileData(file, this.#processor.traceParsedData, this.#processor.insights);
             // We only push the file onto this.#traces here once we know it's valid
             // and there's been no errors in the parsing.
             this.#traces.push(file);
+            this.#syntheticEventsManagerByTrace.push(syntheticEventsManager);
         }
         catch (e) {
             throw e;
@@ -131,22 +134,28 @@ export class Model extends EventTarget {
         }
         return this.#traces[index].traceInsights;
     }
-    metadata(index) {
+    metadata(index = this.#traces.length - 1) {
         if (!this.#traces[index]) {
             return null;
         }
         return this.#traces[index].metadata;
     }
-    overrideAnnotations(index, newAnnotations) {
+    overrideModifications(index, newModifications) {
         if (this.#traces[index]) {
-            this.#traces[index].metadata.annotations = newAnnotations;
+            this.#traces[index].metadata.modifications = newModifications;
         }
     }
-    traceEvents(index) {
+    rawTraceEvents(index = this.#traces.length - 1) {
         if (!this.#traces[index]) {
             return null;
         }
         return this.#traces[index].traceEvents;
+    }
+    syntheticTraceEventsManager(index = this.#traces.length - 1) {
+        if (!this.#syntheticEventsManagerByTrace[index]) {
+            return null;
+        }
+        return this.#syntheticEventsManagerByTrace[index];
     }
     size() {
         return this.#traces.length;

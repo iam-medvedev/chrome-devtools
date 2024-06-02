@@ -36,6 +36,12 @@ export declare class ContentData {
     get isTextContent(): boolean;
     get isEmpty(): boolean;
     get createdFromBase64(): boolean;
+    /**
+     * @returns True, iff the contents (base64 or text) are equal.
+     * Does not compare mime type and charset, but will decode base64 data if both
+     * mime types indicate that it's text content.
+     */
+    contentEqualTo(other: ContentData): boolean;
     asDataUrl(): string | null;
     /**
      * @deprecated Used during migration from `DeferredContent` to `ContentData`.

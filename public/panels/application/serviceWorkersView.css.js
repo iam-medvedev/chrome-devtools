@@ -15,6 +15,10 @@ styles.replaceSync(
   display: flex;
   /* The status string can be long, allow this line of the report to wrap. */
   flex-wrap: wrap;
+
+  devtools-button {
+    margin-left: var(--sys-size-3);
+  }
 }
 
 .service-worker-version-stack {
@@ -126,7 +130,7 @@ styles.replaceSync(
 
 .service-worker-client-focus-link {
   flex: none;
-  margin-right: 2px;
+  margin-left: 2px;
   align-self: center;
 }
 

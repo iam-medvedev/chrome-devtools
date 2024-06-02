@@ -1,9 +1,9 @@
-import * as Elements from '../panels/elements/elements.js';
-export declare class Printer extends Elements.PropertyParser.TreeWalker {
+import * as SDK from '../core/sdk/sdk.js';
+export declare class Printer extends SDK.CSSPropertyParser.TreeWalker {
     #private;
-    protected enter({ node }: Elements.PropertyParser.SyntaxNodeRef): boolean;
+    protected enter({ node }: SDK.CSSPropertyParser.SyntaxNodeRef): boolean;
     protected leave(): void;
     get(): string;
-    static log(ast: Elements.PropertyParser.SyntaxTree): void;
+    static log(ast: SDK.CSSPropertyParser.SyntaxTree): void;
     static rule(rule: string): string;
 }

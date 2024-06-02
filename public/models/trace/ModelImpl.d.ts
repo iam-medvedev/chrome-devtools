@@ -1,4 +1,5 @@
 import * as Handlers from './handlers/handlers.js';
+import * as Helpers from './helpers/helpers.js';
 import type * as Insights from './insights/insights.js';
 import * as Types from './types/types.js';
 export interface ParseConfig {
@@ -20,7 +21,7 @@ export interface ParseConfig {
  **/
 export declare class Model<EnabledModelHandlers extends {
     [key: string]: Handlers.Types.TraceEventHandler;
-}> extends EventTarget {
+} = typeof Handlers.ModelHandlers> extends EventTarget {
     #private;
     static createWithAllHandlers(config?: Types.Configuration.Configuration): Model<typeof Handlers.ModelHandlers>;
     constructor(handlers: EnabledModelHandlers, config?: Types.Configuration.Configuration);
@@ -58,9 +59,10 @@ export declare class Model<EnabledModelHandlers extends {
      */
     traceParsedData(index?: number): Handlers.Types.EnabledHandlerDataWithMeta<EnabledModelHandlers> | null;
     traceInsights(index?: number): Insights.Types.TraceInsightData<EnabledModelHandlers> | null;
-    metadata(index: number): Types.File.MetaData | null;
-    overrideAnnotations(index: number, newAnnotations: Types.File.Annotations): void;
-    traceEvents(index: number): readonly Types.TraceEvents.TraceEventData[] | null;
+    metadata(index?: number): Types.File.MetaData | null;
+    overrideModifications(index: number, newModifications: Types.File.Modifications): void;
+    rawTraceEvents(index?: number): readonly Types.TraceEvents.TraceEventData[] | null;
+    syntheticTraceEventsManager(index?: number): Helpers.SyntheticEvents.SyntheticEventsManager | null;
     size(): number;
     deleteTraceByIndex(recordingIndex: number): void;
     getRecordingsAvailable(): string[];

@@ -14,7 +14,6 @@ export declare class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<Eve
     private decorations;
     private hasCommitsInternal;
     private messagesInternal;
-    private contentLoadedInternal;
     private contentInternal;
     private forceLoadOnCheckContentInternal;
     private checkingContent;
@@ -42,7 +41,10 @@ export declare class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<Eve
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
     project(): Project;
-    requestContent({ cachedWasmOnly }?: {
+    requestContentData({ cachedWasmOnly }?: {
+        cachedWasmOnly?: boolean;
+    }): Promise<TextUtils.ContentData.ContentDataOrError>;
+    requestContent(options?: {
         cachedWasmOnly?: boolean;
     }): Promise<TextUtils.ContentProvider.DeferredContent>;
     private requestContentImpl;

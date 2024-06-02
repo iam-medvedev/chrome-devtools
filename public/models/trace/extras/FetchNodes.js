@@ -48,7 +48,7 @@ export function nodeIdsForEvent(modelData, event) {
     }
     const foundIds = new Set();
     if (Types.TraceEvents.isTraceEventLayout(event)) {
-        event.args.endData.layoutRoots.forEach(root => foundIds.add(root.nodeId));
+        event.args.endData?.layoutRoots.forEach(root => foundIds.add(root.nodeId));
     }
     else if (Types.TraceEvents.isSyntheticLayoutShift(event) && event.args.data?.impacted_nodes) {
         event.args.data.impacted_nodes.forEach(node => foundIds.add(node.node_id));

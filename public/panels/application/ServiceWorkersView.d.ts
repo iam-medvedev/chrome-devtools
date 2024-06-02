@@ -32,7 +32,6 @@ export declare class Section {
     private readonly pushNotificationDataSetting;
     private readonly syncTagNameSetting;
     private readonly periodicSyncTagNameSetting;
-    private readonly toolbar;
     private readonly updateCycleView;
     private readonly routerView;
     private readonly networkRequests;

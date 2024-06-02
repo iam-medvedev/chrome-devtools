@@ -31,6 +31,8 @@ export declare const enum RequestTimeRangeNames {
     ServiceWorker = "serviceworker",
     ServiceWorkerPreparation = "serviceworker-preparation",
     ServiceWorkerRespondWith = "serviceworker-respondwith",
+    ServiceWorkerRouterEvaluation = "serviceworker-routerevaluation",
+    ServiceWorkerCacheLookup = "serviceworker-cachelookup",
     SSL = "ssl",
     Total = "total",
     Waiting = "waiting"

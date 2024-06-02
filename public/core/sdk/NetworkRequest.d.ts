@@ -185,7 +185,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
      */
     private parseMultipartFormDataParameters;
     private computeHeaderValue;
-    contentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
+    requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
     setContentDataProvider(dataProvider: () => Promise<TextUtils.ContentData.ContentDataOrError>): void;
     requestStreamingContent(): Promise<TextUtils.StreamingContentData.StreamingContentDataOrError>;
     contentURL(): Platform.DevToolsPath.UrlString;

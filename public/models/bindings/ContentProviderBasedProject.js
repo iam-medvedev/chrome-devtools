@@ -51,32 +51,11 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
     async requestFileContent(uiSourceCode) {
         const { contentProvider } = this.#uiSourceCodeToData.get(uiSourceCode);
         try {
-            const content = await contentProvider.requestContent();
-            if ('error' in content) {
-                return {
-                    error: content.error,
-                    isEncoded: content.isEncoded,
-                    content: null,
-                };
-            }
-            const wasmDisassemblyInfo = 'wasmDisassemblyInfo' in content ? content.wasmDisassemblyInfo : undefined;
-            if (wasmDisassemblyInfo && content.isEncoded === false) {
-                return {
-                    content: '',
-                    wasmDisassemblyInfo,
-                    isEncoded: false,
-                };
-            }
-            return {
-                content: content.content,
-                isEncoded: content.isEncoded,
-            };
+            return await contentProvider.requestContentData();
         }
         catch (err) {
             // TODO(rob.paveza): CRBug 1013683 - Consider propagating exceptions full-stack
             return {
-                content: null,
-                isEncoded: false,
                 error: err ? String(err) : i18nString(UIStrings.unknownErrorLoadingFile),
             };
         }

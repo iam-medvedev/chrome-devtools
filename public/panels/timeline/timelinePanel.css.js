@@ -505,6 +505,9 @@ styles.replaceSync(
 .timeline-landing-page {
   position: absolute;
   background-color: var(--sys-color-cdt-base-container);
+}
+
+.timeline-landing-page.legacy {
   justify-content: center;
   align-items: center;
   overflow: auto;
@@ -539,11 +542,6 @@ styles.replaceSync(
   overflow-x: hidden;
 }
 
-.timeline-landing-page > div {
-  max-width: 450px;
-  margin: 10px;
-}
-
 .timeline-details-chip-title > div {
   width: 12px;
   height: 12px;
@@ -551,6 +549,11 @@ styles.replaceSync(
   display: inline-block;
   margin-right: 4px;
   content: " ";
+}
+
+.timeline-landing-page.legacy > div {
+  max-width: 450px;
+  margin: 10px;
 }
 
 .timeline-paint-profiler-log-split > div:last-child {
@@ -567,7 +570,7 @@ styles.replaceSync(
   pointer-events: auto;
 }
 
-.timeline-landing-page > div > p {
+.timeline-landing-page.legacy > div > p {
   flex: none;
   white-space: pre-line;
   line-height: 18px;

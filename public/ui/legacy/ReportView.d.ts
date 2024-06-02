@@ -1,3 +1,4 @@
+import type * as Buttons from '../components/buttons/buttons.js';
 import { Toolbar } from './Toolbar.js';
 import { VBox } from './Widget.js';
 /**
@@ -24,6 +25,7 @@ export declare class ReportView extends VBox {
 }
 export declare class Section extends VBox {
     private readonly headerElement;
+    private headerButtons;
     private titleElement;
     private fieldList;
     private readonly fieldMap;
@@ -37,7 +39,8 @@ export declare class Section extends VBox {
      * Declares the overall container to be a group and assigns a title.
      */
     setUiGroupTitle(groupTitle: string): void;
-    createToolbar(): Toolbar;
+    appendButtonToHeader(button: Buttons.Button.Button): void;
+    setHeaderButtonsState(disabled: boolean): void;
     appendField(title: string, textValue?: string): HTMLElement;
     appendFlexedField(title: string, textValue?: string): Element;
     removeField(title: string): void;

@@ -5,7 +5,7 @@ import * as Workspace from '../workspace/workspace.js';
 export declare class ContentProviderBasedProject extends Workspace.Workspace.ProjectStore {
     #private;
     constructor(workspace: Workspace.Workspace.WorkspaceImpl, id: string, type: Workspace.Workspace.projectTypes, displayName: string, isServiceProject: boolean);
-    requestFileContent(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<TextUtils.ContentProvider.DeferredContent>;
+    requestFileContent(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<TextUtils.ContentData.ContentDataOrError>;
     isServiceProject(): boolean;
     requestMetadata(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<Workspace.UISourceCode.UISourceCodeMetadata | null>;
     canSetFileContent(): boolean;

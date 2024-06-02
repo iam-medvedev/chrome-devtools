@@ -32,7 +32,8 @@ export async function finalize() {
     }));
     for (const snapshotEvent of snapshotEvents) {
         const { cat, name, ph, pid, tid } = snapshotEvent;
-        const syntheticEvent = {
+        const syntheticManagerInstance = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
+        const syntheticEvent = syntheticManagerInstance.registerSyntheticBasedEvent({
             rawSourceEvent: snapshotEvent,
             cat,
             name,
@@ -44,7 +45,7 @@ export async function finalize() {
             args: {
                 dataUri: `data:image/jpg;base64,${snapshotEvent.args.snapshot}`,
             },
-        };
+        });
         syntheticScreenshotEvents.push(syntheticEvent);
     }
 }

@@ -13,11 +13,10 @@ describe('StaticContentProvider', () => {
     it('lazily fetches its contents when requestContent is called', async () => {
         const jsonContent = '{ "hello": "world" }';
         const provider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(testUrl, jsonResource, jsonContent);
-        const contents = await provider.requestContent();
-        assert.deepEqual(contents, {
-            content: jsonContent,
-            isEncoded: false,
-        });
+        const contents = await provider.requestContentData();
+        assert.instanceOf(contents, TextUtils.ContentData.ContentData);
+        assert.strictEqual(contents.text, jsonContent);
+        assert.isFalse(contents.createdFromBase64);
     });
 });
 //# sourceMappingURL=StaticContentProvider.test.js.map

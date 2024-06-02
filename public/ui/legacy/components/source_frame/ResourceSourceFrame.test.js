@@ -17,6 +17,9 @@ class MockStreamingContentProvider {
     async requestStreamingContent() {
         return this.#content;
     }
+    async requestContentData() {
+        return this.#content.content();
+    }
     contentURL() {
         return this.#contentURL;
     }

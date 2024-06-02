@@ -4,6 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
+import { SyntheticEventsManager } from './SyntheticEvents.js';
 import { eventTimingsMicroSeconds } from './Timing.js';
 /**
  * Extracts the raw stack trace of known trace events. Most likely than
@@ -252,7 +253,8 @@ export function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback
             continue;
         }
         const targetEvent = endEvent || beginEvent;
-        const event = {
+        const syntheticEventsManager = SyntheticEventsManager.getActiveManager();
+        const event = syntheticEventsManager.registerSyntheticBasedEvent({
             rawSourceEvent: beginEvent,
             cat: targetEvent.cat,
             ph: targetEvent.ph,
@@ -267,7 +269,7 @@ export function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback
             args: {
                 data: triplet,
             },
-        };
+        });
         if (event.dur < 0) {
             // We have seen in the backend that sometimes animation events get
             // generated with multiple begin entries, or multiple end entries, and this

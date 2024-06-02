@@ -10,7 +10,7 @@ export interface Project {
     isServiceProject(): boolean;
     displayName(): string;
     requestMetadata(uiSourceCode: UISourceCode): Promise<UISourceCodeMetadata | null>;
-    requestFileContent(uiSourceCode: UISourceCode): Promise<TextUtils.ContentProvider.DeferredContent>;
+    requestFileContent(uiSourceCode: UISourceCode): Promise<TextUtils.ContentData.ContentDataOrError>;
     canSetFileContent(): boolean;
     setFileContent(uiSourceCode: UISourceCode, newContent: string, isBase64: boolean): Promise<void>;
     fullDisplayName(uiSourceCode: UISourceCode): string;
@@ -73,7 +73,7 @@ export declare abstract class ProjectStore implements Project {
     indexContent(_progress: Common.Progress.Progress): void;
     abstract isServiceProject(): boolean;
     abstract requestMetadata(uiSourceCode: UISourceCode): Promise<UISourceCodeMetadata | null>;
-    abstract requestFileContent(uiSourceCode: UISourceCode): Promise<TextUtils.ContentProvider.DeferredContent>;
+    abstract requestFileContent(uiSourceCode: UISourceCode): Promise<TextUtils.ContentData.ContentDataOrError>;
     abstract canSetFileContent(): boolean;
     abstract setFileContent(uiSourceCode: UISourceCode, newContent: string, isBase64: boolean): Promise<void>;
     abstract fullDisplayName(uiSourceCode: UISourceCode): string;

@@ -10,8 +10,8 @@ import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import * as CspEvaluator from '../../../third_party/csp_evaluator/csp_evaluator.js';
+import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
@@ -432,21 +432,6 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
           <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.ownerElement)}</${ReportView.ReportView.ReportKey.litTagName}>
           <${ReportView.ReportView.ReportValue.litTagName} class="without-min-width">
             <div class="inline-items">
-              <button class="link" role="link" tabindex=0
-                @mouseenter=${() => this.#frame?.highlight()}
-                @mouseleave=${() => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight()}
-                @click=${() => Common.Revealer.reveal(linkTargetDOMNode)}
-                title=${i18nString(UIStrings.clickToRevealInElementsPanel)}
-                jslog=${VisualLogging.action('reveal-in-elements').track({ click: true })}
-              >
-                <${IconButton.Icon.Icon.litTagName} .data=${{
-                    iconName: 'code-circle',
-                    color: 'var(--icon-link)',
-                    width: '16px',
-                    height: '16px',
-                }}>
-                </${IconButton.Icon.Icon.litTagName}>
-              </button>
               <button class="link text-link" role="link" tabindex=0 title=${i18nString(UIStrings.clickToRevealInElementsPanel)}
                 @mouseenter=${() => this.#frame?.highlight()}
                 @mouseleave=${() => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight()}
@@ -613,20 +598,16 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         // clang-format off
         return LitHtml.html `
       <${ReportView.ReportView.ReportKey.litTagName}>${cspInfo.isEnforced ? i18n.i18n.lockedString('Content-Security-Policy') :
-            LitHtml.html `${i18n.i18n.lockedString('Content-Security-Policy-Report-Only')}<x-link
-            class="link"
-            href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only"
-            jslog=${VisualLogging.link('learn-more.csp-report-only').track({ click: true })}
-          ><${IconButton.Icon.Icon.litTagName} .data=${{
-                iconName: 'help',
-                color: 'var(--icon-link)',
-                width: '16px',
-                height: '16px',
-            }}>
-            </${IconButton.Icon.Icon.litTagName}></x-link>`}
+            LitHtml.html `${i18n.i18n.lockedString('Content-Security-Policy-Report-Only')}<${Buttons.Button.Button.litTagName}
+          .iconName=${'help'}
+          class='help-button'
+          .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+          .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+          @click=${() => { window.location.href = 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only'; }}
+          jslog=${VisualLogging.link('learn-more.csp-report-only').track({ click: true })}>
+        </${Buttons.Button.Button.litTagName}>`}
       </${ReportView.ReportView.ReportKey.litTagName}>
       <${ReportView.ReportView.ReportValue.litTagName}>
-        <${IconButton.Icon.Icon.litTagName} class="inline-icon" name="code"></${IconButton.Icon.Icon.litTagName}>
         ${cspInfo.source === "HTTP" /* Protocol.Network.ContentSecurityPolicySource.HTTP */ ? i18n.i18n.lockedString('HTTP header') : i18n.i18n.lockedString('Meta tag')}
         ${this.#renderEffectiveDirectives(cspInfo.effectiveDirectives)}
       </${ReportView.ReportView.ReportValue.litTagName}>

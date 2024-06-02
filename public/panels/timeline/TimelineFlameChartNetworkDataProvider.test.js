@@ -55,6 +55,14 @@ describeWithEnvironment('TimelineFlameChartNetworkDataProvider', function () {
             return navEvent.args.frame === mainFrameID;
         }));
     });
+    it('can provide the index for an event and the event for a given index', async function () {
+        const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
+        const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+        dataProvider.setModel(traceParsedData);
+        const event = dataProvider.eventByIndex(0);
+        assert.isOk(event);
+        assert.strictEqual(dataProvider.indexForEvent(event), 0);
+    });
     it('does not render the network track if there is no network requests', async function () {
         const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
         const traceParsedData = await TraceLoader.traceEngine(this, 'basic.json.gz');

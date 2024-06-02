@@ -32,7 +32,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
+import * as ModificationsManager from '../../services/modifications_manager/modifications_manager.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -91,6 +91,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     screenshotImageCache;
     entryIndexToTitle;
     lastInitiatorEntry;
+    lastInitiatorsData = [];
     lastSelection;
     #font;
     #eventIndexByEvent = new WeakMap();
@@ -133,11 +134,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     modifyTree(node, action) {
         const entry = this.entryData[node];
-        AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getEntriesFilter().applyFilterAction({ type: action, entry });
+        ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+            ?.getEntriesFilter()
+            .applyFilterAction({ type: action, entry });
     }
     findPossibleContextMenuActions(node) {
         const entry = this.entryData[node];
-        return AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+        return ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
             ?.getEntriesFilter()
             .findPossibleActions(entry);
     }
@@ -220,7 +223,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         return this.traceEngineData.Meta.mainFrameNavigations;
     }
     entryTitle(entryIndex) {
-        const entryType = this.entryType(entryIndex);
+        const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "Screenshot" /* EntryType.Screenshot */) {
             return '';
         }
@@ -474,9 +477,9 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         ++this.currentLevel;
     }
-    entryType(entryIndex) {
-        return this.entryTypeByLevel[this.timelineDataInternal
-            .entryLevels[entryIndex]];
+    #entryTypeForIndex(entryIndex) {
+        const level = this.timelineData().entryLevels[entryIndex];
+        return this.entryTypeByLevel[level];
     }
     prepareHighlightedEntryInfo(entryIndex) {
         let time = '';
@@ -484,7 +487,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         let warningElements = [];
         let nameSpanTimelineInfoTime = 'timeline-info-time';
         const additionalContent = [];
-        const entryType = this.entryType(entryIndex);
+        const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "TrackAppender" /* EntryType.TrackAppender */) {
             if (!this.compatibilityTracksAppender) {
                 return null;
@@ -550,7 +553,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             delegatesFocus: undefined,
         });
         const entry = this.entryData[entryIndex];
-        const hiddenEntriesAmount = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+        const hiddenEntriesAmount = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
             ?.getEntriesFilter()
             .findHiddenDescendantsAmount(entry);
         if (!hiddenEntriesAmount) {
@@ -561,7 +564,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         return element;
     }
     entryColor(entryIndex) {
-        const entryType = this.entryType(entryIndex);
+        const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "Frame" /* EntryType.Frame */) {
             return 'white';
         }
@@ -670,7 +673,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         context.restore();
     }
     decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixelRatio) {
-        const entryType = this.entryType(entryIndex);
+        const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "Frame" /* EntryType.Frame */) {
             this.drawFrame(entryIndex, context, text, barX, barY, barWidth, barHeight);
             return true;
@@ -775,7 +778,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         context.restore();
     }
     forceDecoration(entryIndex) {
-        const entryType = this.entryType(entryIndex);
+        const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "Frame" /* EntryType.Frame */) {
             return true;
         }
@@ -810,7 +813,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             TraceEngine.Helpers.Timing.microSecondsToMilliseconds(frame.startTime);
     }
     createSelection(entryIndex) {
-        const entryType = this.entryType(entryIndex);
+        const entryType = this.#entryTypeForIndex(entryIndex);
         let timelineSelection = null;
         const entry = this.entryData[entryIndex];
         if (entry && TimelineFlameChartDataProvider.timelineEntryIsTraceEvent(entry)) {
@@ -843,7 +846,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Try revealing the entry and getting the index again.
         if (this.entryData.indexOf(selection.object) === -1 && TimelineSelection.isTraceEventSelection(selection.object)) {
             if (this.timelineDataInternal?.selectedGroup) {
-                AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getEntriesFilter().revealEntry(selection.object);
+                ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()?.getEntriesFilter().revealEntry(selection.object);
                 this.timelineData(true);
             }
         }
@@ -853,7 +856,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         return index;
     }
-    getIndexForEvent(targetEvent) {
+    indexForEvent(targetEvent) {
         // Gets the index for the given event by walking through the array of entryData.
         // This may seem inefficient - but we have seen that by building up large
         // maps keyed by trace events that this has a significant impact on the
@@ -875,13 +878,16 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
      * @returns if we should re-render the flame chart (canvas)
      */
     buildFlowForInitiator(entryIndex) {
-        if (this.lastInitiatorEntry === entryIndex) {
-            return false;
-        }
         if (!this.traceEngineData) {
             return false;
         }
         if (!this.timelineDataInternal) {
+            return false;
+        }
+        if (this.lastInitiatorEntry === entryIndex) {
+            if (this.lastInitiatorsData) {
+                this.timelineDataInternal.initiatorsData = this.lastInitiatorsData;
+            }
             return false;
         }
         if (!this.compatibilityTracksAppender) {
@@ -902,7 +908,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             this.timelineDataInternal.resetFlowData();
             return true;
         }
-        const entryType = this.entryType(entryIndex);
+        const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType !== "TrackAppender" /* EntryType.TrackAppender */) {
             return false;
         }
@@ -910,22 +916,22 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Reset to clear any previous arrows from the last event.
         this.timelineDataInternal.resetFlowData();
         this.lastInitiatorEntry = entryIndex;
-        const hiddenEvents = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+        const hiddenEvents = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
             ?.getEntriesFilter()
             .invisibleEntries() ??
             [];
-        const modifiedEntries = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+        const expandableEntries = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
             ?.getEntriesFilter()
-            .modifiedEntries() ??
+            .expandableEntries() ??
             [];
-        const initiatorsData = initiatorsDataToDraw(this.traceEngineData, event, hiddenEvents, modifiedEntries);
+        const initiatorsData = initiatorsDataToDraw(this.traceEngineData, event, hiddenEvents, expandableEntries);
         // This means there is no change for arrows.
         if (previousInitiatorsDataLength === 0 && initiatorsData.length === 0) {
             return false;
         }
         for (const intiatorData of initiatorsData) {
-            const eventIndex = this.getIndexForEvent(intiatorData.event);
-            const initiatorIndex = this.getIndexForEvent(intiatorData.initiator);
+            const eventIndex = this.indexForEvent(intiatorData.event);
+            const initiatorIndex = this.indexForEvent(intiatorData.initiator);
             if (eventIndex === null || initiatorIndex === null) {
                 continue;
             }
@@ -936,13 +942,14 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 isEntryHidden: intiatorData.isEntryHidden,
             });
         }
+        this.lastInitiatorsData = this.timelineDataInternal.initiatorsData;
         return true;
     }
     eventByIndex(entryIndex) {
         if (entryIndex < 0) {
             return null;
         }
-        const entryType = this.entryType(entryIndex);
+        const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "TrackAppender" /* EntryType.TrackAppender */) {
             return this.entryData[entryIndex];
         }

@@ -1586,9 +1586,6 @@
   "models/persistence/IsolatedFileSystem.ts | linkedToS": {
     "message": "L̂ín̂ḱêd́ t̂ó {PH1}"
   },
-  "models/persistence/IsolatedFileSystem.ts | unknownErrorReadingFileS": {
-    "message": "Ûńk̂ńôẃn̂ ér̂ŕôŕ r̂éâd́îńĝ f́îĺê: {PH1}"
-  },
   "models/persistence/IsolatedFileSystemManager.ts | unableToAddFilesystemS": {
     "message": "Ûńâb́l̂é t̂ó âd́d̂ f́îĺêśŷśt̂ém̂: {PH1}"
   },
@@ -4257,7 +4254,7 @@
     "message": "f̂óĉúŝ"
   },
   "panels/application/ServiceWorkersView.ts | inspect": {
-    "message": "îńŝṕêćt̂"
+    "message": "Îńŝṕêćt̂"
   },
   "panels/application/ServiceWorkersView.ts | networkRequests": {
     "message": "N̂ét̂ẃôŕk̂ ŕêq́ûéŝt́ŝ"
@@ -4266,10 +4263,10 @@
     "message": "Ôń p̂áĝé r̂él̂óâd́, f̂ór̂ćê t́ĥé service worker t̂ó ûṕd̂át̂é, âńd̂ áĉt́îv́ât́ê ít̂"
   },
   "panels/application/ServiceWorkersView.ts | periodicSync": {
-    "message": "P̂ér̂íôd́îć Ŝýn̂ć"
+    "message": "P̂ér̂íôd́îć ŝýn̂ć"
   },
   "panels/application/ServiceWorkersView.ts | periodicSyncTag": {
-    "message": "P̂ér̂íôd́îć Ŝýn̂ć t̂áĝ"
+    "message": "P̂ér̂íôd́îć ŝýn̂ć t̂áĝ"
   },
   "panels/application/ServiceWorkersView.ts | pushData": {
     "message": "P̂úŝh́ d̂át̂á"
@@ -4308,13 +4305,13 @@
     "message": "{PH1} r̂éĝíŝt́r̂át̂íôń êŕr̂ór̂ś"
   },
   "panels/application/ServiceWorkersView.ts | startString": {
-    "message": "ŝt́âŕt̂"
+    "message": "Ŝt́âŕt̂"
   },
   "panels/application/ServiceWorkersView.ts | status": {
     "message": "Ŝt́ât́ûś"
   },
   "panels/application/ServiceWorkersView.ts | stopString": {
-    "message": "ŝt́ôṕ"
+    "message": "Ŝt́ôṕ"
   },
   "panels/application/ServiceWorkersView.ts | sTryingToInstall": {
     "message": "#{PH1} t̂ŕŷín̂ǵ t̂ó îńŝt́âĺl̂"
@@ -6478,9 +6475,6 @@
   },
   "panels/freestyler/FreestylerPanel.ts | clearMessages": {
     "message": "Ĉĺêár̂ ḿêśŝáĝéŝ"
-  },
-  "panels/freestyler/FreestylerPanel.ts | createChat": {
-    "message": "Ĉŕêát̂é ĉh́ât́"
   },
   "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
     "message": "Ŝén̂d́ f̂éêd́b̂áĉḱ"

@@ -97,5 +97,6 @@ export interface RendererThread {
      * samples.
      */
     entries: Types.TraceEvents.SyntheticTraceEntry[];
+    profileCalls: Types.TraceEvents.SyntheticProfileCall[];
     tree?: Helpers.TreeHelpers.TraceEntryTree;
 }

@@ -1,2 +1,3 @@
 export * from './package/dist/modules/index.js';
+export * as Attribution from './package/dist/modules/attribution/index.js';
 //# sourceMappingURL=web-vitals.js.map

@@ -282,6 +282,13 @@ export class RequestTimingView extends UI.Widget.VBox {
                 addRange(name, startTime + (start / 1000), startTime + (end / 1000));
             }
         }
+        // In some situations, argument `start` may come before `startTime` (`timing.requestStart`). This is especially true
+        // in cases such as SW static routing API where fields like `workerRouterEvaluationStart` or `workerCacheLookupStart`
+        // is set before setting `timing.requestStart`. If the `start` and `end` is known to be a valid value (i.e. not default
+        // invalid value -1 or undefined), we allow adding the range.
+        function addMaybeNegativeOffsetRange(name, start, end) {
+            addRange(name, startTime + (start / 1000), startTime + (end / 1000));
+        }
         const timing = request.timing;
         if (!timing) {
             const start = request.issueTime() !== -1 ? request.issueTime() : request.startTime !== -1 ? request.startTime : 0;
@@ -328,6 +335,29 @@ export class RequestTimingView extends UI.Widget.VBox {
             addOffsetRange("ssl" /* RequestTimeRangeNames.SSL */, timing.sslStart, timing.sslEnd);
             addOffsetRange("sending" /* RequestTimeRangeNames.Sending */, timing.sendStart, timing.sendEnd);
             addOffsetRange("waiting" /* RequestTimeRangeNames.Waiting */, Math.max(timing.sendEnd, timing.connectEnd, timing.dnsEnd, timing.proxyEnd, blockingEnd), responseReceived);
+        }
+        const { serviceWorkerRouterInfo } = request;
+        if (serviceWorkerRouterInfo) {
+            if (timing.workerRouterEvaluationStart) {
+                // Depending on the source,the next timestamp will be different. Determine the timestamp by checking
+                // the matched and actual source.
+                let routerEvaluationEnd = timing.sendStart;
+                if (serviceWorkerRouterInfo?.matchedSourceType === "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */ &&
+                    timing.workerCacheLookupStart) {
+                    routerEvaluationEnd = timing.workerCacheLookupStart;
+                }
+                else if (serviceWorkerRouterInfo?.actualSourceType === "fetch-event" /* Protocol.Network.ServiceWorkerRouterSource.FetchEvent */) {
+                    routerEvaluationEnd = timing.workerStart;
+                }
+                addMaybeNegativeOffsetRange("serviceworker-routerevaluation" /* RequestTimeRangeNames.ServiceWorkerRouterEvaluation */, timing.workerRouterEvaluationStart, routerEvaluationEnd);
+            }
+            if (timing.workerCacheLookupStart) {
+                let cacheLookupEnd = timing.sendStart;
+                if (serviceWorkerRouterInfo?.actualSourceType === "cache" /* Protocol.Network.ServiceWorkerRouterSource.Cache */) {
+                    cacheLookupEnd = timing.receiveHeadersStart;
+                }
+                addMaybeNegativeOffsetRange("serviceworker-cachelookup" /* RequestTimeRangeNames.ServiceWorkerCacheLookup */, timing.workerCacheLookupStart, cacheLookupEnd);
+            }
         }
         if (request.endTime !== -1) {
             addRange(timing.pushStart ? "receiving-push" /* RequestTimeRangeNames.ReceivingPush */ : "receiving" /* RequestTimeRangeNames.Receiving */, request.responseReceivedTime, endTime);
@@ -609,6 +639,8 @@ export const ServiceWorkerRangeNames = new Set([
     "serviceworker" /* RequestTimeRangeNames.ServiceWorker */,
     "serviceworker-preparation" /* RequestTimeRangeNames.ServiceWorkerPreparation */,
     "serviceworker-respondwith" /* RequestTimeRangeNames.ServiceWorkerRespondWith */,
+    "serviceworker-routerevaluation" /* RequestTimeRangeNames.ServiceWorkerRouterEvaluation */,
+    "serviceworker-cachelookup" /* RequestTimeRangeNames.ServiceWorkerCacheLookup */,
 ]);
 export const ConnectionSetupRangeNames = new Set([
     "queueing" /* RequestTimeRangeNames.Queueing */,

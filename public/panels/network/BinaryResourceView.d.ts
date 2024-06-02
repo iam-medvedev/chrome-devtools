@@ -1,6 +1,5 @@
 import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
-import type * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class BinaryResourceView extends UI.Widget.VBox {
     private readonly binaryResourceViewFactory;
@@ -23,9 +22,9 @@ export declare class BinaryViewObject {
     type: string;
     label: string;
     copiedMessage: string;
-    content: () => Promise<TextUtils.ContentProvider.DeferredContent>;
+    content: () => Promise<string>;
     private createViewFn;
     private view;
-    constructor(type: string, label: string, copiedMessage: string, createViewFn: () => UI.Widget.Widget, deferredContent: () => Promise<TextUtils.ContentProvider.DeferredContent>);
+    constructor(type: string, label: string, copiedMessage: string, createViewFn: () => UI.Widget.Widget, content: () => Promise<string>);
     getView(): UI.Widget.Widget;
 }

@@ -87,12 +87,12 @@ describeWithEnvironment('TraceModel', function () {
         ];
         assert.deepEqual(model.getRecordingsAvailable(), expectedResults);
     });
-    it('supports overriding annotations in metadata', async function () {
+    it('supports overriding modifications in metadata', async function () {
         const model = TraceModel.TraceModel.Model.createWithAllHandlers();
         const file1 = await TraceLoader.rawEvents(this, 'basic.json.gz');
         await model.parse(file1);
-        // Make sure there are no annotations before any are added
-        assert.isUndefined(model.metadata(0)?.annotations);
+        // Make sure there are no modifications before any are added
+        assert.isUndefined(model.metadata(0)?.modifications);
         const initialBreadcrumb = {
             window: {
                 max: 0,
@@ -101,17 +101,17 @@ describeWithEnvironment('TraceModel', function () {
             },
             child: null,
         };
-        const entriesFilterAnnotations = {
+        const entriesFilterModifications = {
             hiddenEntriesIndexes: [1, 2, 3],
-            modifiedEntriesIndexes: [4],
+            expandableEntriesIndexes: [4],
         };
-        const annotations = {
-            entriesFilterAnnotations,
+        const modifications = {
+            entriesFilterModifications,
             initialBreadcrumb,
         };
-        model.overrideAnnotations(0, annotations);
-        // Make sure metadata contains overwritten annotations
-        assert.strictEqual(model.metadata(0)?.annotations, annotations);
+        model.overrideModifications(0, modifications);
+        // Make sure metadata contains overwritten modifications
+        assert.strictEqual(model.metadata(0)?.modifications, modifications);
     });
 });
 //# sourceMappingURL=ModelImpl.test.js.map

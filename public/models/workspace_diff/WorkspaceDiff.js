@@ -6,6 +6,7 @@ import * as Host from '../../core/host/host.js';
 import * as Diff from '../../third_party/diff/diff.js';
 import * as FormatterModule from '../formatter/formatter.js';
 import * as Persistence from '../persistence/persistence.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
     uiSourceCodeDiffs;
@@ -176,7 +177,10 @@ export class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper {
             return originalNetworkContent;
         }
         const content = await this.uiSourceCode.project().requestFileContent(this.uiSourceCode);
-        return content.content || ('error' in content && content.error) || '';
+        if (TextUtils.ContentData.ContentData.isError(content)) {
+            return content.error;
+        }
+        return content.asDeferedContent().content;
     }
     async innerRequestDiff({ shouldFormatDiff }) {
         if (this.dispose) {

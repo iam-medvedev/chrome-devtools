@@ -59,6 +59,9 @@
     },
     {
       "path": "../formatter/bundle-tsconfig.json"
+    },
+    {
+      "path": "../text_utils/bundle-tsconfig.json"
     }
   ]
 }

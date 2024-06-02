@@ -268,7 +268,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         pluginManager.addPlugin(endpoint);
         return this.status.OK();
     }
-    async loadWasmValue(expression, stopId) {
+    async loadWasmValue(expectValue, convert, expression, stopId) {
         const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
         const callFrame = pluginManager.callFrameForStopId(stopId);
         if (!callFrame) {
@@ -278,11 +278,12 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             callFrameId: callFrame.id,
             expression,
             silent: true,
-            returnByValue: true,
+            returnByValue: !expectValue,
+            generatePreview: expectValue,
             throwOnSideEffect: true,
         });
         if (!result.exceptionDetails && !result.getError()) {
-            return result.result.value;
+            return convert(result.result);
         }
         return this.status.E_FAILED('Failed');
     }
@@ -290,14 +291,38 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (message.command !== "getWasmLinearMemory" /* PrivateAPI.Commands.GetWasmLinearMemory */) {
             return this.status.E_BADARG('command', `expected ${"getWasmLinearMemory" /* PrivateAPI.Commands.GetWasmLinearMemory */}`);
         }
-        return await this.loadWasmValue(`[].slice.call(new Uint8Array(memories[0].buffer, ${Number(message.offset)}, ${Number(message.length)}))`, message.stopId);
+        return await this.loadWasmValue(false, result => result.value, `[].slice.call(new Uint8Array(memories[0].buffer, ${Number(message.offset)}, ${Number(message.length)}))`, message.stopId);
+    }
+    convertWasmValue(valueClass, index) {
+        return obj => {
+            if (obj.type === 'undefined') {
+                return;
+            }
+            if (obj.type !== 'object' || obj.subtype !== 'wasmvalue') {
+                return this.status.E_FAILED('Bad object type');
+            }
+            const type = obj?.description;
+            const value = obj.preview?.properties?.find(o => o.name === 'value')?.value ?? '';
+            switch (type) {
+                case 'i32':
+                case 'f32':
+                case 'f64':
+                    return { type, value: Number(value) };
+                case 'i64':
+                    return { type, value: BigInt(value) };
+                case 'v128':
+                    return { type, value };
+                default:
+                    return { type: 'reftype', valueClass, index };
+            }
+        };
     }
     async onGetWasmGlobal(message) {
         if (message.command !== "getWasmGlobal" /* PrivateAPI.Commands.GetWasmGlobal */) {
             return this.status.E_BADARG('command', `expected ${"getWasmGlobal" /* PrivateAPI.Commands.GetWasmGlobal */}`);
         }
         const global = Number(message.global);
-        const result = await this.loadWasmValue(`globals[${global}]`, message.stopId);
+        const result = await this.loadWasmValue(true, this.convertWasmValue('global', global), `globals[${global}]`, message.stopId);
         return result ?? this.status.E_BADARG('global', `No global with index ${global}`);
     }
     async onGetWasmLocal(message) {
@@ -305,7 +330,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             return this.status.E_BADARG('command', `expected ${"getWasmLocal" /* PrivateAPI.Commands.GetWasmLocal */}`);
         }
         const local = Number(message.local);
-        const result = await this.loadWasmValue(`locals[${local}]`, message.stopId);
+        const result = await this.loadWasmValue(true, this.convertWasmValue('local', local), `locals[${local}]`, message.stopId);
         return result ?? this.status.E_BADARG('local', `No local with index ${local}`);
     }
     async onGetWasmOp(message) {
@@ -313,7 +338,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             return this.status.E_BADARG('command', `expected ${"getWasmOp" /* PrivateAPI.Commands.GetWasmOp */}`);
         }
         const op = Number(message.op);
-        const result = await this.loadWasmValue(`stack[${op}]`, message.stopId);
+        const result = await this.loadWasmValue(true, this.convertWasmValue('operand', op), `stack[${op}]`, message.stopId);
         return result ?? this.status.E_BADARG('op', `No operand with index ${op}`);
     }
     registerRecorderExtensionEndpoint(message, _shared_port) {

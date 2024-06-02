@@ -479,6 +479,7 @@ export declare class FlameChartTimelineData {
     resetFlowData(): void;
 }
 export interface FlameChartDataProvider {
+    buildFlowForInitiator?(index: number): unknown;
     minimumBoundary(): number;
     totalTime(): number;
     formatValue(value: number, precision?: number): string;
@@ -498,6 +499,7 @@ export interface FlameChartDataProvider {
     findPossibleContextMenuActions?(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
     hasTrackConfigurationMode(): boolean;
     eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | null;
+    indexForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData): number | null;
 }
 export interface FlameChartMarker {
     startTime(): number;
@@ -536,7 +538,8 @@ export declare const enum Events {
      * mouse off the event)
      */
     EntryHighlighted = "EntryHighlighted",
-    ChartPlayableStateChange = "ChartPlayableStateChange"
+    ChartPlayableStateChange = "ChartPlayableStateChange",
+    LatestDrawDimensions = "LatestDrawDimensions"
 }
 export type EventTypes = {
     [Events.CanvasFocused]: number | void;
@@ -544,6 +547,14 @@ export type EventTypes = {
     [Events.EntrySelected]: number;
     [Events.EntryHighlighted]: number;
     [Events.ChartPlayableStateChange]: boolean;
+    [Events.LatestDrawDimensions]: {
+        chart: {
+            widthPixels: number;
+            heightPixels: number;
+            scrollOffsetPixels: number;
+        };
+        traceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+    };
 };
 export interface Group {
     name: Common.UIString.LocalizedString;

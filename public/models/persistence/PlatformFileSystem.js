@@ -49,7 +49,7 @@ export class PlatformFileSystem {
         return Promise.resolve(null);
     }
     async requestFileContent(_path) {
-        return { content: null, error: i18nString(UIStrings.unableToReadFilesWithThis), isEncoded: false };
+        return { error: i18nString(UIStrings.unableToReadFilesWithThis) };
     }
     setFileContent(_path, _content, _isBase64) {
         throw new Error('Not implemented');

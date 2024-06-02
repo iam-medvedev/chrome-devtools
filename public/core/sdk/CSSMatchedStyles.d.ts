@@ -4,10 +4,6 @@ import { type CSSProperty } from './CSSProperty.js';
 import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionFallbackRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule } from './CSSRule.js';
 import { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
 import { type DOMNode } from './DOMModel.js';
-export declare function parseCSSVariableNameAndFallback(cssVariableValue: string): {
-    variableName: string | null;
-    fallback: string | null;
-};
 export interface CSSMatchedStylesPayload {
     cssModel: CSSModel;
     node: DOMNode;
@@ -75,21 +71,13 @@ export declare class CSSMatchedStyles {
     nodeForStyle(style: CSSStyleDeclaration): DOMNode | null;
     availableCSSVariables(style: CSSStyleDeclaration): string[];
     computeCSSVariable(style: CSSStyleDeclaration, variableName: string): CSSVariableValue | null;
-    computeValue(style: CSSStyleDeclaration, value: string): string | null;
-    /**
-     * Same as computeValue, but to be used for `var(--#name [,...])` values only
-     */
-    computeSingleVariableValue(style: CSSStyleDeclaration, cssVariableValue: string): {
-        computedValue: string | null;
-        fromFallback: boolean;
-    } | null;
     isInherited(style: CSSStyleDeclaration): boolean;
     propertyState(property: CSSProperty): PropertyState | null;
     resetActiveProperties(): void;
 }
 export interface CSSVariableValue {
     value: string;
-    declaration: CSSProperty | CSSRegisteredProperty | null;
+    declaration: CSSProperty | CSSRegisteredProperty;
 }
 export declare const enum PropertyState {
     Active = "Active",

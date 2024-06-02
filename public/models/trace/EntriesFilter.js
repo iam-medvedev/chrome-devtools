@@ -13,7 +13,7 @@ import * as Types from './types/types.js';
  * Once actions are applied, the invisibleEntries() method will return the
  * entries that are invisible, and this is the list of entries that should be
  * removed before rendering the resulting thread on the timeline.
- **/
+ */
 export class EntriesFilter {
     // Maps from an individual TraceEvent entry to its representation as a
     // RendererEntryNode. We need this so we can then parse the tree structure
@@ -21,9 +21,10 @@ export class EntriesFilter {
     #entryToNode;
     // Track the set of invisible entries.
     #invisibleEntries = [];
-    // List of entries whose children are modified. This list is used to
-    // keep track of entries that should be identified in the UI as modified.
-    #modifiedVisibleEntries = [];
+    // List of entries whose children are hidden. This list is used to
+    // keep track of entries that should be identified in the UI as "expandable",
+    // since they can be clicked to reveal their hidden children.
+    #expandableEntries = [];
     // Cache for descendants of entry that have already been gathered. The descendants
     // will never change so we can avoid running the potentially expensive search again.
     #entryToDescendantsMap = new Map();
@@ -33,7 +34,7 @@ export class EntriesFilter {
     /**
      * Checks which actions can be applied on an entry. This allows us to only show possible actions in the Context Menu.
      * For example, if an entry has no children, COLLAPSE_FUNCTION will not change the FlameChart, therefore there is no need to show this action as an option.
-     **/
+     */
     findPossibleActions(entry) {
         const entryNode = this.#entryToNode.get(entry);
         if (!entryNode) {
@@ -62,7 +63,7 @@ export class EntriesFilter {
     }
     /**
      * Returns the amount of entry descendants that belong to the hidden entries array.
-     * **/
+     * */
     findHiddenDescendantsAmount(entry) {
         const entryNode = this.#entryToNode.get(entry);
         if (!entryNode) {
@@ -73,31 +74,32 @@ export class EntriesFilter {
     }
     /**
      * Returns the set of entries that are invisible given the set of applied actions.
-     **/
+     */
     invisibleEntries() {
         return this.#invisibleEntries;
     }
     /**
-     * Sets invisible and modified entries. Called when a trace with annotations is loaded and some entries are set as hidden and modified.
+     * Sets hidden and expandable. Called when a trace with modifications is loaded and some entries are set as hidden and expandable.
      * Both arrays are set together because if there is one, the other must be present too.
-     **/
-    setInvisibleAndModifiedEntries(invisibleEntries, modifiedEntries) {
+     */
+    setHiddenAndExpandableEntries(invisibleEntries, expandableEntries) {
         this.#invisibleEntries.push(...invisibleEntries);
-        this.#modifiedVisibleEntries.push(...modifiedEntries);
+        this.#expandableEntries.push(...expandableEntries);
     }
     inEntryInvisible(entry) {
         return this.#invisibleEntries.includes(entry);
     }
     /**
-     * Returns the array of entries that have a sign indicating that entries below are hidden.
-     **/
-    modifiedEntries() {
-        return this.#modifiedVisibleEntries;
+     * Returns the array of entries that have a sign indicating that entries below are hidden,
+     * and so that they can be "expanded" to reveal their hidden children.
+     */
+    expandableEntries() {
+        return this.#expandableEntries;
     }
     /**
      * Applies an action to hide entries or removes entries
      * from hidden entries array depending on the action.
-     **/
+     */
     applyFilterAction(action) {
         // We apply new user action to the set of all entries, and mark
         // any that should be hidden by adding them to this set.
@@ -111,11 +113,11 @@ export class EntriesFilter {
                 // children remain visible, so we just have to hide the entry that was
                 // selected.
                 entriesToHide.add(action.entry);
-                // If parent node exists, add it to modifiedVisibleEntries, so it would be possible to uncollapse its' children.
+                // If parent node exists, add it to expandableEntries, so it would be possible to uncollapse its children.
                 const actionNode = this.#entryToNode.get(action.entry) || null;
                 const parentNode = actionNode && this.#findNextVisibleParent(actionNode);
                 if (parentNode) {
-                    this.#addModifiedEntry(parentNode.entry);
+                    this.#addExpandableEntry(parentNode.entry);
                 }
                 break;
             }
@@ -128,7 +130,7 @@ export class EntriesFilter {
                 }
                 const allDescendants = this.#findAllDescendantsOfNode(entryNode);
                 allDescendants.forEach(descendant => entriesToHide.add(descendant));
-                this.#addModifiedEntry(action.entry);
+                this.#addExpandableEntry(action.entry);
                 break;
             }
             case "COLLAPSE_REPEATING_DESCENDANTS" /* FilterAction.COLLAPSE_REPEATING_DESCENDANTS */: {
@@ -140,13 +142,13 @@ export class EntriesFilter {
                 const allRepeatingDescendants = this.#findAllRepeatingDescendantsOfNext(entryNode);
                 allRepeatingDescendants.forEach(descendant => entriesToHide.add(descendant));
                 if (entriesToHide.size > 0) {
-                    this.#addModifiedEntry(action.entry);
+                    this.#addExpandableEntry(action.entry);
                 }
                 break;
             }
             case "UNDO_ALL_ACTIONS" /* FilterAction.UNDO_ALL_ACTIONS */: {
                 this.#invisibleEntries = [];
-                this.#modifiedVisibleEntries = [];
+                this.#expandableEntries = [];
                 break;
             }
             case "RESET_CHILDREN" /* FilterAction.RESET_CHILDREN */: {
@@ -161,12 +163,12 @@ export class EntriesFilter {
     }
     /**
      * Add an entry to the array of entries that have a sign indicating that entries below are hidden.
-     * Also, remove all of the child entries of the new modified entry from the modified array. Do that because
+     * Also, remove all of the child entries of the new expandable entry from the expandable array. Do that because
      * to draw the initiator from the closest visible entry, we need to get the closest entry that is
-     * marked as modified and we do not want to get some that are hidden.
+     * marked as expandable and we do not want to get some that are hidden.
      */
-    #addModifiedEntry(entry) {
-        this.#modifiedVisibleEntries.push(entry);
+    #addExpandableEntry(entry) {
+        this.#expandableEntries.push(entry);
         const entryNode = this.#entryToNode.get(entry);
         if (!entryNode) {
             // Invalid node was given, just ignore and move on.
@@ -174,7 +176,7 @@ export class EntriesFilter {
         }
         const allDescendants = this.#findAllDescendantsOfNode(entryNode);
         if (allDescendants.length > 0) {
-            this.#modifiedVisibleEntries = this.#modifiedVisibleEntries.filter(entry => {
+            this.#expandableEntries = this.#expandableEntries.filter(entry => {
                 return !allDescendants.includes(entry);
             });
         }
@@ -241,7 +243,7 @@ export class EntriesFilter {
     /**
      * If an entry was selected from a link instead of clicking on it,
      * it might be in the invisible entries array.
-     * If it is, reveal it by resetting clidren the closest modified entry,
+     * If it is, reveal it by resetting clidren the closest expandable entry,
      */
     revealEntry(entry) {
         const entryNode = this.#entryToNode.get(entry);
@@ -249,16 +251,16 @@ export class EntriesFilter {
             // Invalid node was given, just ignore and move on.
             return;
         }
-        let closestModifiedParent = entryNode;
-        while (closestModifiedParent.parent && !this.#modifiedVisibleEntries.includes(closestModifiedParent.entry)) {
-            closestModifiedParent = closestModifiedParent.parent;
+        let closestExpandableParent = entryNode;
+        while (closestExpandableParent.parent && !this.#expandableEntries.includes(closestExpandableParent.entry)) {
+            closestExpandableParent = closestExpandableParent.parent;
         }
-        this.#makeEntryChildrenVisible(closestModifiedParent.entry);
+        this.#makeEntryChildrenVisible(closestExpandableParent.entry);
     }
     /**
      * Removes all of the entry children from the
      * invisible entries array to make them visible.
-     **/
+     */
     #makeEntryChildrenVisible(entry) {
         const entryNode = this.#entryToNode.get(entry);
         if (!entryNode) {
@@ -269,7 +271,7 @@ export class EntriesFilter {
         /**
          * Filter out all descendant of the node
          * from the invisible entries list.
-         **/
+         */
         this.#invisibleEntries = this.#invisibleEntries.filter(entry => {
             if (descendants.includes(entry)) {
                 return false;
@@ -277,18 +279,18 @@ export class EntriesFilter {
             return true;
         });
         /**
-         * Filter out all descentants and entry from modified entries
+         * Filter out all descentants and entry from expandable entries
          * list to not show that some entries below those are hidden.
-         **/
-        this.#modifiedVisibleEntries = this.#modifiedVisibleEntries.filter(iterEntry => {
+         */
+        this.#expandableEntries = this.#expandableEntries.filter(iterEntry => {
             if (descendants.includes(iterEntry) || iterEntry === entry) {
                 return false;
             }
             return true;
         });
     }
-    isEntryModified(event) {
-        return this.#modifiedVisibleEntries.includes(event);
+    isEntryExpandable(event) {
+        return this.#expandableEntries.includes(event);
     }
 }
 //# sourceMappingURL=EntriesFilter.js.map

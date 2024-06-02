@@ -18,11 +18,12 @@ import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, }
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { AngleMatch, AngleMatcher, ASTUtils, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, ShadowMatcher, tokenizeDeclaration, VariableMatch, VariableMatcher, } from './PropertyParser.js';
+import { AngleMatch, AngleMatcher, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, ShadowMatcher, } from './PropertyMatchers.js';
 import { Renderer, RenderingContext, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
 import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, } from './StylesSidebarPane.js';
+const ASTUtils = SDK.CSSPropertyParser.ASTUtils;
 const FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 const GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
 export const activeHints = new WeakMap();
@@ -100,27 +101,28 @@ export class VariableRenderer {
         this.#style = style;
     }
     matcher() {
-        return new VariableMatcher(this.computedText.bind(this));
+        return new SDK.CSSPropertyParser.VariableMatcher(this.computedText.bind(this));
     }
     resolveVariable(match) {
         return this.#matchedStyles.computeCSSVariable(this.#style, match.name);
     }
-    fallbackValue(match, matching) {
-        if (match.fallback.length === 0 || match.fallback.some(node => matching.hasUnresolvedVars(node))) {
+    fallbackValue(match) {
+        if (match.fallback.length === 0 ||
+            match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
             return null;
         }
-        return match.fallback.map(node => matching.getComputedText(node)).join(' ');
+        return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
     }
-    computedText(match, matching) {
-        return this.resolveVariable(match)
-            ?.value ??
-            this.fallbackValue(match, matching);
+    // clang-format off
+    computedText(match) {
+        return this.resolveVariable(match)?.value ?? this.fallbackValue(match);
     }
+    // clang-format on
     render(match, context) {
         const renderedFallback = match.fallback.length > 0 ? Renderer.render(match.fallback, context) : undefined;
         const { declaration, value: variableValue } = this.resolveVariable(match) ?? {};
         const fromFallback = !variableValue;
-        const computedValue = variableValue ?? this.fallbackValue(match, context.matchedResult);
+        const computedValue = variableValue ?? this.fallbackValue(match);
         const varSwatch = new InlineEditor.LinkSwatch.CSSVarSwatch();
         varSwatch.data = {
             computedValue,
@@ -219,7 +221,15 @@ export class ColorRenderer {
     }
     render(match, context) {
         const { valueChild, cssControls } = this.#getValueChild(match, context);
-        const swatch = this.renderColorSwatch(context.matchedResult.getComputedText(match.node), valueChild);
+        let color = context.matchedResult.getComputedText(match.node);
+        if (match.node.name === 'CallExpression' && color.match(/^[^)]*\(\W*from\W+/) &&
+            !context.matchedResult.hasUnresolvedVars(match.node) && CSS.supports('color', color)) {
+            const fakeSpan = document.body.appendChild(document.createElement('span'));
+            fakeSpan.style.backgroundColor = color;
+            color = window.getComputedStyle(fakeSpan).backgroundColor?.toString() || color;
+            fakeSpan.remove();
+        }
+        const swatch = this.renderColorSwatch(color, valueChild);
         context.addControl('color', swatch);
         if (cssControls && match.node.name === 'CallExpression' &&
             context.ast.text(match.node.getChild('Callee')).match(/^(hsla?|hwba?)/)) {
@@ -733,14 +743,14 @@ export class ShadowRenderer {
                 }
                 properties.push({ value, source, length, propertyType, expansionContext });
             }
-            else if (match instanceof VariableMatch) {
+            else if (match instanceof SDK.CSSPropertyParser.VariableMatch) {
                 // This doesn't come from any computed text, so we can rely on context here
                 const computedValue = context.matchedResult.getComputedText(value);
-                const computedValueAst = tokenizeDeclaration('--property', computedValue);
+                const computedValueAst = SDK.CSSPropertyParser.tokenizeDeclaration('--property', computedValue);
                 if (!computedValueAst) {
                     return null;
                 }
-                const matches = BottomUpTreeMatching.walkExcludingSuccessors(computedValueAst, [new ColorMatcher()]);
+                const matches = SDK.CSSPropertyParser.BottomUpTreeMatching.walkExcludingSuccessors(computedValueAst, [new ColorMatcher()]);
                 if (matches.hasUnresolvedVars(matches.ast.tree)) {
                     return null;
                 }
@@ -1156,8 +1166,29 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             details: this.#getRegisteredPropertyDetails(variableName),
         });
     }
+    // Resolves a CSS expression to its computed value with `var()` calls updated.
+    // Still returns the string even when a `var()` call is not resolved.
+    #computeCSSExpression(style, text) {
+        const ast = SDK.CSSPropertyParser.tokenizeDeclaration('--unused', text);
+        if (!ast) {
+            return null;
+        }
+        const matching = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new SDK.CSSPropertyParser.VariableMatcher((match) => {
+                const variableValue = this.matchedStylesInternal.computeCSSVariable(style, match.name)?.value;
+                if (variableValue !== undefined) {
+                    return variableValue;
+                }
+                if (match.fallback.length === 0 ||
+                    match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
+                    return null;
+                }
+                return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
+            })]);
+        const decl = SDK.CSSPropertyParser.ASTUtils.siblings(SDK.CSSPropertyParser.ASTUtils.declValue(matching.ast.tree));
+        return matching.getComputedTextRange(decl[0], decl[decl.length - 1]);
+    }
     updateTitleIfComputedValueChanged() {
-        const computedValue = this.matchedStylesInternal.computeValue(this.property.ownerStyle, this.property.value);
+        const computedValue = this.#computeCSSExpression(this.property.ownerStyle, this.property.value);
         if (computedValue === this.lastComputedValue) {
             return;
         }
@@ -1165,7 +1196,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.innerUpdateTitle();
     }
     updateTitle() {
-        this.lastComputedValue = this.matchedStylesInternal.computeValue(this.property.ownerStyle, this.property.value);
+        this.lastComputedValue = this.#computeCSSExpression(this.property.ownerStyle, this.property.value);
         this.innerUpdateTitle();
     }
     innerUpdateTitle() {

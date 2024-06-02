@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 /**
  * There are two metadata events that we care about.
@@ -83,7 +84,8 @@ function workletType(input) {
  * regardless of the type of event.
  */
 function makeSyntheticEventBase(event) {
-    return {
+    return Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
+        .registerSyntheticBasedEvent({
         rawSourceEvent: event,
         name: 'SyntheticAuctionWorkletEvent',
         s: "t" /* Types.TraceEvents.TraceEventScope.THREAD */,
@@ -95,7 +97,7 @@ function makeSyntheticEventBase(event) {
         host: event.args.data.host,
         target: event.args.data.target,
         type: workletType(event.args.data.type),
-    };
+    });
 }
 export async function finalize() {
     // Loop through the utility threads we found to create the worklet events. We

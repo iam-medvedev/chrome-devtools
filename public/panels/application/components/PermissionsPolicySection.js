@@ -5,6 +5,7 @@ import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as NetworkForward from '../../../panels/network/forward/forward.js';
+import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
@@ -59,16 +60,13 @@ export function renderIconLink(iconName, title, clickHandler, jsLogContext) {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     return LitHtml.html `
-    <button class="link" role="link" tabindex=0 @click=${clickHandler} title=${title}
-    jslog=${VisualLogging.action().track({ click: true }).context(jsLogContext)}>
-      <${IconButton.Icon.Icon.litTagName} .data=${{
-        iconName: iconName,
-        color: 'var(--icon-link)',
-        width: '16px',
-        height: '16px',
-    }}>
-      </${IconButton.Icon.Icon.litTagName}>
-    </button>
+  <${Buttons.Button.Button.litTagName}
+    .iconName=${iconName}
+    title=${title}
+    .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+    .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
+    @click=${clickHandler}
+    jslog=${VisualLogging.action().track({ click: true }).context(jsLogContext)}></${Buttons.Button.Button.litTagName}>
   `;
     // clang-format on
 }
@@ -110,12 +108,13 @@ export class PermissionsPolicySection extends HTMLElement {
         <${ReportView.ReportView.ReportKey.litTagName}>${i18nString(UIStrings.disabledFeatures)}</${ReportView.ReportView.ReportKey.litTagName}>
         <${ReportView.ReportView.ReportValue.litTagName}>
           ${disallowed.map(p => p.feature).join(', ')}
-          <button class="link" @click=${() => this.#toggleShowPermissionsDisallowedDetails()}
+          <${Buttons.Button.Button.litTagName}
+          .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+          @click=${() => this.#toggleShowPermissionsDisallowedDetails()}
           jslog=${VisualLogging.action('show-disabled-features-details').track({
                 click: true,
-            })}>
-            ${i18nString(UIStrings.showDetails)}
-          </button>
+            })}>${i18nString(UIStrings.showDetails)}
+        </${Buttons.Button.Button.litTagName}>
         </${ReportView.ReportView.ReportValue.litTagName}>
       `;
         }
@@ -179,12 +178,13 @@ export class PermissionsPolicySection extends HTMLElement {
       <${ReportView.ReportView.ReportValue.litTagName} class="policies-list">
         ${featureRows}
         <div class="permissions-row">
-          <button class="link" @click=${() => this.#toggleShowPermissionsDisallowedDetails()}
+        <${Buttons.Button.Button.litTagName}
+          .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+          @click=${() => this.#toggleShowPermissionsDisallowedDetails()}
           jslog=${VisualLogging.action('hide-disabled-features-details').track({
             click: true,
-        })}>
-            ${i18nString(UIStrings.hideDetails)}
-          </button>
+        })}>${i18nString(UIStrings.hideDetails)}
+        </${Buttons.Button.Button.litTagName}>
         </div>
       </${ReportView.ReportView.ReportValue.litTagName}>
     `;

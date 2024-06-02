@@ -77,15 +77,15 @@ describe('Initiators', () => {
             assert.strictEqual(initatorData.initiator.name, "TimerInstall" /* TraceEngine.Types.TraceEvents.KnownEventName.TimerInstall */);
         }
     });
-    it('will return the closest modified ancestor as an initiator in a pair if the initiator itself is hidden', async function () {
+    it('will return the closest expandable ancestor as an initiator in a pair if the initiator itself is hidden', async function () {
         const traceData = await TraceLoader.traceEngine(this, 'nested-initiators.json.gz');
         // Find any of the InstallTimer calls; they initiate other events.
         const timerInstall = traceData.Renderer.allTraceEntries.find(entry => {
             return entry.name === "TimerInstall" /* TraceEngine.Types.TraceEvents.KnownEventName.TimerInstall */;
         });
         assert.exists(timerInstall);
-        // Get the parent of InstallTimer to add to the modified events array.
-        // When we add TimerInstall to hidden entries list, it will be the closest modified parent and the initiator should point to it.
+        // Get the parent of InstallTimer to add to the expandable events array.
+        // When we add TimerInstall to hidden entries list, it will be the closest expandable parent and the initiator should point to it.
         const timerInstallParent = traceData.Renderer.entryToNode.get(timerInstall)?.parent;
         assert.exists(timerInstallParent);
         // Find the initatorData objects starting at the TimerInstall
@@ -97,11 +97,11 @@ describe('Initiators', () => {
         for (const initiatorData of initiatorsData) {
             assert.strictEqual(initiatorData.event.name, "TimerFire" /* TraceEngine.Types.TraceEvents.KnownEventName.TimerFire */);
             assert.strictEqual(initiatorData.initiator, timerInstallParent.entry);
-            // Ensure the modified entry is marked as hidden
+            // Ensure the expandable entry is marked as hidden
             assert.strictEqual(initiatorData.isInitiatorHidden, true);
         }
     });
-    it('will return the closest modified ancestor as an initiated event in a pair if the event itself is hidden', async function () {
+    it('will return the closest expandable ancestor as an initiated event in a pair if the event itself is hidden', async function () {
         const traceData = await TraceLoader.traceEngine(this, 'nested-initiators.json.gz');
         // Find any of the fibonnaci() calls; they have a parent
         // event (TimerFire) that has an initiator.
@@ -115,7 +115,7 @@ describe('Initiators', () => {
         // 2. The TimerInstall from (1), caused by a prior TimerInstall.
         let initiatorsData = Timeline.Initiators.initiatorsDataToDraw(traceData, fibonacciCall, [], []);
         assert.lengthOf(initiatorsData, 2);
-        // Save the parents of initiated events and the events themselves to get initiators again with those as modified and hidden
+        // Save the parents of initiated events and the events themselves to get initiators again with those as expandable and hidden
         const timerFireParents = [];
         const initiatedEvents = [];
         for (const initiatorData of initiatorsData) {
@@ -128,7 +128,7 @@ describe('Initiators', () => {
                 initiatedEvents.push(initiatorData.event);
             }
         }
-        // Get initiatorData object again, now with the previously initiated events hidden and parents marked as modified
+        // Get initiatorData object again, now with the previously initiated events hidden and parents marked as expandable
         initiatorsData =
             Timeline.Initiators.initiatorsDataToDraw(traceData, fibonacciCall, initiatedEvents, timerFireParents);
         // The length should not change, just the inititated events.
@@ -138,7 +138,7 @@ describe('Initiators', () => {
             // Ensure each initiatorData object has TimerInstall>TimerFire event to initiator.
             assert.strictEqual(initiatorData.event, timerFireParents[i]);
             assert.strictEqual(initiatorData.initiator.name, "TimerInstall" /* TraceEngine.Types.TraceEvents.KnownEventName.TimerInstall */);
-            // Ensure the modified entry is marked as hidden
+            // Ensure the expandable entry is marked as hidden
             assert.strictEqual(initiatorData.isEntryHidden, true);
         }
     });
