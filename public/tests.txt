@@ -192,6 +192,7 @@ models/trace/handlers/UserTimingsHandler.test.js
 models/trace/handlers/WarningsHandler.test.js
 models/trace/handlers/WorkersHandler.test.js
 models/trace/helpers/SamplesIntegrator.test.js
+models/trace/helpers/SyntheticEvents.test.js
 models/trace/helpers/Timing.test.js
 models/trace/helpers/Trace.test.js
 models/trace/helpers/TreeHelpers.test.js
@@ -290,7 +291,7 @@ panels/elements/ElementsTreeElementHighlighter.test.js
 panels/elements/InspectElementModeController.test.js
 panels/elements/PlatformFontsWidget.test.js
 panels/elements/PropertiesWidget.test.js
-panels/elements/PropertyParser.test.js
+panels/elements/PropertyMatchers.test.js
 panels/elements/PropertyRenderer.test.js
 panels/elements/StylePropertiesSection.test.js
 panels/elements/StylePropertyHighlighter.test.js
@@ -336,6 +337,7 @@ panels/network/RequestHTMLView.test.js
 panels/network/RequestPayloadView.test.js
 panels/network/RequestPreviewView.test.js
 panels/network/RequestResponseView.test.js
+panels/network/RequestTimingView.test.js
 panels/network/components/HeaderSectionRow.test.js
 panels/network/components/RequestHeaderSection.test.js
 panels/network/components/RequestHeadersView.test.js
@@ -394,6 +396,7 @@ panels/sources/components/HeadersView.test.js
 panels/timeline/Breadcrumbs.test.js
 panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
+panels/timeline/Overlays.test.js
 panels/timeline/SaveFileFormatter.test.js
 panels/timeline/SourceMapsResolver.test.js
 panels/timeline/TimelineController.test.js
@@ -424,7 +427,7 @@ panels/timeline/track_appenders/TimingsTrackAppender.test.js
 panels/utils/utils.test.js
 panels/web_audio/web_audio.test.js
 panels/webauthn/WebauthnPane.test.js
-services/annotations_manager/AnnotationsManager.test.js
+services/modifications_manager/ModificationsManager.test.js
 services/trace_bounds/TraceBounds.test.js
 third_party/chromium/client-variations/ClientVariations.test.js
 third_party/i18n/i18n.test.js

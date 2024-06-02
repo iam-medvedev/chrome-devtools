@@ -12,4 +12,4 @@ export interface InitiatorData {
  * entire chain: for each, we see if it had an initiator, and
  * work backwards to draw each one, as well as the events initiated directly by the entry.
  */
-export declare function initiatorsDataToDraw(traceEngineData: TraceEngine.Handlers.Types.TraceParseData, selectedEvent: TraceEngine.Types.TraceEvents.TraceEventData, hiddenEntries: TraceEngine.Types.TraceEvents.TraceEventData[], modifiedEntries: TraceEngine.Types.TraceEvents.TraceEventData[]): readonly InitiatorData[];
+export declare function initiatorsDataToDraw(traceEngineData: TraceEngine.Handlers.Types.TraceParseData, selectedEvent: TraceEngine.Types.TraceEvents.TraceEventData, hiddenEntries: TraceEngine.Types.TraceEvents.TraceEventData[], expandableEntries: TraceEngine.Types.TraceEvents.TraceEventData[]): readonly InitiatorData[];

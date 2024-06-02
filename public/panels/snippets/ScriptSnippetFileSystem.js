@@ -6,8 +6,9 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Persistence from '../../models/persistence/persistence.js';
-import * as UI from '../../ui/legacy/legacy.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
      *@description Default snippet name when a new snippet is created in the Sources panel
@@ -65,9 +66,9 @@ export class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFi
         const snippets = this.snippetsSetting.get();
         const snippet = snippets.find(snippet => snippet.name === name);
         if (snippet) {
-            return { content: snippet.content, isEncoded: false };
+            return new TextUtils.ContentData.ContentData(snippet.content, /* isBase64 */ false, 'text/javascript');
         }
-        return { content: null, isEncoded: false, error: `A snippet with name '${name}' was not found` };
+        return { error: `A snippet with name '${name}' was not found` };
     }
     async setFileContent(path, content, _isBase64) {
         const name = unescapeSnippetName(Common.ParsedURL.ParsedURL.substring(path, 1));

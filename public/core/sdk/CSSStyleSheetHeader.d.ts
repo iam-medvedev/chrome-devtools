@@ -6,7 +6,7 @@ import { type CSSModel } from './CSSModel.js';
 import { DeferredDOMNode } from './DOMModel.js';
 import { type FrameAssociated } from './FrameAssociated.js';
 import { type PageResourceLoadInitiator } from './PageResourceLoader.js';
-export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.SafeContentProvider, FrameAssociated {
+export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentProvider, FrameAssociated {
     #private;
     id: Protocol.CSS.StyleSheetId;
     frameId: Protocol.Page.FrameId;
@@ -27,7 +27,7 @@ export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.Sa
     sourceMapURL: Platform.DevToolsPath.UrlString | undefined;
     readonly loadingFailed: boolean;
     constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSStyleSheetHeader);
-    originalContentProvider(): TextUtils.ContentProvider.SafeContentProvider;
+    originalContentProvider(): TextUtils.ContentProvider.ContentProvider;
     setSourceMapURL(sourceMapURL?: Platform.DevToolsPath.UrlString): void;
     cssModel(): CSSModel;
     isAnonymousInlineStyleSheet(): boolean;

@@ -3,7 +3,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import { Context } from './Context.js';
 export interface ActionDelegate {
-    handleAction(_context: Context, _actionId: string): boolean;
+    handleAction(context: Context, actionId: string): boolean;
 }
 export declare class Action extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     private enabledInternal;

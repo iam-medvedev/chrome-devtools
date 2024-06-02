@@ -4,7 +4,7 @@ import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import { type NetworkRequest } from './NetworkRequest.js';
 import { type ResourceTreeFrame, type ResourceTreeModel } from './ResourceTreeModel.js';
-export declare class Resource implements TextUtils.ContentProvider.SafeContentProvider {
+export declare class Resource implements TextUtils.ContentProvider.ContentProvider {
     #private;
     constructor(resourceTreeModel: ResourceTreeModel, request: NetworkRequest | null, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId | null, loaderId: Protocol.Network.LoaderId | null, type: Common.ResourceType.ResourceType, mimeType: string, lastModified: Date | null, contentSize: number | null);
     lastModified(): Date | null;

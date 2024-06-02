@@ -161,7 +161,7 @@ describe('Timeline breadcrumbs', () => {
             window: initialTraceWindow,
             child: breadcrumb1,
         };
-        crumbs.setInitialBreadcrumbFromLoadedAnnotations(initialBreadcrumb);
+        crumbs.setInitialBreadcrumbFromLoadedModifications(initialBreadcrumb);
         assert.deepEqual(TimelineComponents.Breadcrumbs.flattenBreadcrumbs(initialBreadcrumb), [initialBreadcrumb, breadcrumb1, breadcrumb2]);
         assert.deepEqual(crumbs.lastBreadcrumb, breadcrumb2);
         // Make sure the trace bounds were correctly set to the last breadcrumb bounds

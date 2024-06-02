@@ -2,35 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { ContentData } from './ContentData.js';
-import { performSearchInContent, performSearchInContentData } from './TextUtils.js';
+import { performSearchInContentData } from './TextUtils.js';
 export class StaticContentProvider {
-    contentURLInternal;
-    contentTypeInternal;
-    lazyContent;
-    constructor(contentURL, contentType, lazyContent) {
-        this.contentURLInternal = contentURL;
-        this.contentTypeInternal = contentType;
-        this.lazyContent = lazyContent;
-    }
-    static fromString(contentURL, contentType, content) {
-        const lazyContent = () => Promise.resolve({ content, isEncoded: false });
-        return new StaticContentProvider(contentURL, contentType, lazyContent);
-    }
-    contentURL() {
-        return this.contentURLInternal;
-    }
-    contentType() {
-        return this.contentTypeInternal;
-    }
-    requestContent() {
-        return this.lazyContent();
-    }
-    async searchInContent(query, caseSensitive, isRegex) {
-        const { content } = await this.lazyContent();
-        return content ? performSearchInContent(content, query, caseSensitive, isRegex) : [];
-    }
-}
-export class SafeStaticContentProvider {
     #contentURL;
     #contentType;
     #lazyContent;
@@ -38,6 +11,10 @@ export class SafeStaticContentProvider {
         this.#contentURL = contentURL;
         this.#contentType = contentType;
         this.#lazyContent = lazyContent;
+    }
+    static fromString(contentURL, contentType, content) {
+        const lazyContent = () => Promise.resolve(new ContentData(content, /* isBase64 */ false, contentType.canonicalMimeType()));
+        return new StaticContentProvider(contentURL, contentType, lazyContent);
     }
     contentURL() {
         return this.#contentURL;

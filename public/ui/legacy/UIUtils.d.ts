@@ -114,7 +114,7 @@ export declare class DevToolsSmallBubble extends HTMLSpanElement {
     set type(type: string);
 }
 export declare class DevToolsCloseButton extends HTMLDivElement {
-    private buttonElement;
+    private button;
     constructor();
     setAccessibleName(name: string): void;
     setTabbable(tabbable: boolean): void;

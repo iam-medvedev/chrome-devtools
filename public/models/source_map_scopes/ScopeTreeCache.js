@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Formatter from '../formatter/formatter.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 /** If a script failed to parse, we stash null in order to prevent unnecessary re-parsing */
 const scopeTrees = new WeakMap();
 /**
@@ -15,12 +16,12 @@ const scopeTrees = new WeakMap();
 export function scopeTreeForScript(script) {
     let promise = scopeTrees.get(script);
     if (promise === undefined) {
-        promise = script.requestContent().then(({ content }) => {
-            if (content === null) {
+        promise = script.requestContentData().then(content => {
+            if (TextUtils.ContentData.ContentData.isError(content)) {
                 return null;
             }
             const sourceType = script.isModule ? 'module' : 'script';
-            return Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptScopeTree(content, sourceType);
+            return Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptScopeTree(content.text, sourceType);
         });
         scopeTrees.set(script, promise);
     }

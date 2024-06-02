@@ -46,7 +46,7 @@
     "../../../../../../front_end/panels/elements/InspectElementModeController.test.ts",
     "../../../../../../front_end/panels/elements/PlatformFontsWidget.test.ts",
     "../../../../../../front_end/panels/elements/PropertiesWidget.test.ts",
-    "../../../../../../front_end/panels/elements/PropertyParser.test.ts",
+    "../../../../../../front_end/panels/elements/PropertyMatchers.test.ts",
     "../../../../../../front_end/panels/elements/PropertyRenderer.test.ts",
     "../../../../../../front_end/panels/elements/StylePropertiesSection.test.ts",
     "../../../../../../front_end/panels/elements/StylePropertyHighlighter.test.ts",

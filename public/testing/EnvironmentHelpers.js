@@ -102,10 +102,11 @@ const REGISTERED_EXPERIMENTS = [
     "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
     "sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */,
     "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
-    "perf-panel-annotations" /* Root.Runtime.ExperimentName.PERF_PANEL_ANNOTATIONS */,
+    "perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_WRITE_MODIFICATIONS_TO_DISK */,
     "timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */,
     "timeline-extensions" /* Root.Runtime.ExperimentName.TIMELINE_EXTENSIONS */,
     "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
+    "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();

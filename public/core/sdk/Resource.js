@@ -149,7 +149,7 @@ export class Resource {
     async innerRequestContent() {
         if (this.request) {
             // The `contentData` promise only resolves once the request is done.
-            return this.request.contentData();
+            return this.request.requestContentData();
         }
         const response = await this.#resourceTreeModel.target().pageAgent().invoke_getResourceContent({ frameId: this.frameId, url: this.url });
         const error = response.getError();

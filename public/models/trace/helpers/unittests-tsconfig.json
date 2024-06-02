@@ -38,6 +38,7 @@
   },
   "files": [
     "../../../../../../../front_end/models/trace/helpers/SamplesIntegrator.test.ts",
+    "../../../../../../../front_end/models/trace/helpers/SyntheticEvents.test.ts",
     "../../../../../../../front_end/models/trace/helpers/Timing.test.ts",
     "../../../../../../../front_end/models/trace/helpers/Trace.test.ts",
     "../../../../../../../front_end/models/trace/helpers/TreeHelpers.test.ts",

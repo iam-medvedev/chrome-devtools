@@ -13,6 +13,8 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     totalTime(): number;
     setWindowTimes(startTime: number, endTime: number): void;
     createSelection(index: number): TimelineSelection | null;
+    indexForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): number | null;
+    eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | null;
     entryIndexForSelection(selection: TimelineSelection | null): number;
     entryColor(index: number): string;
     textColor(_index: number): string;

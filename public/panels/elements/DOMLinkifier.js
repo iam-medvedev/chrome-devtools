@@ -18,16 +18,26 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/elements/DOMLinkifier.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const decorateNodeLabel = function (node, parentElement, options) {
+    const originalNode = node;
+    const isPseudo = node.nodeType() === Node.ELEMENT_NODE && node.pseudoType();
+    if (isPseudo && node.parentNode) {
+        node = node.parentNode;
+    }
+    // Special case rendering the node links for view transition pseudo elements.
+    // We don't include the ancestor name in the node link because
+    // they always have the same ancestor. See crbug.com/340633630.
+    if (node.isViewTransitionPseudoNode()) {
+        const pseudoElement = parentElement.createChild('span', 'extra node-label-pseudo');
+        const viewTransitionPseudoText = `::${originalNode.pseudoType()}(${originalNode.pseudoIdentifier()})`;
+        UI.UIUtils.createTextChild(pseudoElement, viewTransitionPseudoText);
+        UI.Tooltip.Tooltip.install(parentElement, options.tooltip || viewTransitionPseudoText);
+        return;
+    }
     const nameElement = parentElement.createChild('span', 'node-label-name');
     if (options.textContent) {
         nameElement.textContent = options.textContent;
         UI.Tooltip.Tooltip.install(parentElement, options.tooltip || options.textContent);
         return;
-    }
-    const originalNode = node;
-    const isPseudo = node.nodeType() === Node.ELEMENT_NODE && node.pseudoType();
-    if (isPseudo && node.parentNode) {
-        node = node.parentNode;
     }
     let title = node.nodeNameInCorrectCase();
     nameElement.textContent = title;

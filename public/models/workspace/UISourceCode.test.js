@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { setupMockedUISourceCode } from '../../testing/UISourceCodeHelpers.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from './workspace.js';
 describe('UISourceCode', () => {
     it('can return name', async () => {
@@ -101,14 +102,14 @@ describe('UISourceCode', () => {
     });
     it('can request content', async () => {
         const sutObject = setupMockedUISourceCode();
-        const deferredContentStub = { content: 'Example', isEncoded: true };
-        sutObject.projectStub.requestFileContent.resolves(deferredContentStub);
+        const contentData = new TextUtils.ContentData.ContentData('Example', false, 'text/plain');
+        sutObject.projectStub.requestFileContent.resolves(contentData);
         const result = await sutObject.sut.requestContent();
-        assert.strictEqual(result, deferredContentStub);
+        assert.deepEqual(result, contentData.asDeferedContent());
     });
     it('check if the content is encoded', async () => {
         const sutObject = setupMockedUISourceCode();
-        const deferredContentStub = { content: 'Example', isEncoded: true };
+        const deferredContentStub = new TextUtils.ContentData.ContentData('AQIDBA==', true, 'application/wasm');
         sutObject.projectStub.requestFileContent.resolves(deferredContentStub);
         const { isEncoded } = await sutObject.sut.requestContent();
         assert.isTrue(isEncoded);
@@ -147,7 +148,7 @@ describe('UISourceCode', () => {
     it('can set content', async () => {
         const sutObject = setupMockedUISourceCode();
         sutObject.projectStub.workspace.returns(sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl));
-        sutObject.sut.setContent('New Content', true);
+        sutObject.sut.setContent('New Content', false);
         const result = await sutObject.sut.requestContent();
         assert.deepEqual(result, { content: 'New Content', isEncoded: false });
     });
@@ -187,13 +188,13 @@ describe('UISourceCode', () => {
     it('can return content', async () => {
         const sutObject = setupMockedUISourceCode();
         sutObject.projectStub.workspace.returns(sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl));
-        sutObject.sut.setContent('Example Content', true);
+        sutObject.sut.setContent('Example Content', false);
         const result = sutObject.sut.content();
         assert.strictEqual(result, 'Example Content');
     });
     it('can return load error', async () => {
         const sutObject = setupMockedUISourceCode();
-        const deferredContentStub = { content: 'Content with error', isEncoded: true, error: 'Example Error' };
+        const deferredContentStub = { error: 'Example Error' };
         sutObject.projectStub.requestFileContent.resolves(deferredContentStub);
         sutObject.projectStub.workspace.returns(sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl));
         await sutObject.sut.requestContent();
@@ -203,7 +204,7 @@ describe('UISourceCode', () => {
     it('can search content', async () => {
         const sutObject = setupMockedUISourceCode();
         sutObject.projectStub.workspace.returns(sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl));
-        sutObject.sut.setContent('Example Content', true);
+        sutObject.sut.setContent('Example Content', false);
         const result = await sutObject.sut.searchInContent('Content', true, false);
         assert.deepEqual(result, [{ lineNumber: 0, lineContent: 'Example Content', columnNumber: 8, matchLength: 7 }]);
     });
@@ -261,26 +262,6 @@ describe('UISourceCode', () => {
         const sutObject = setupMockedUISourceCode();
         sutObject.sut.disableEdit();
         assert.isTrue(sutObject.sut.editDisabled());
-    });
-    it('checkContentUpdated updates if content is null', async () => {
-        const sutObject = setupMockedUISourceCode();
-        const deferredContentStub = { content: null, isEncoded: true };
-        sutObject.projectStub.workspace.returns(sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl));
-        sutObject.projectStub.canSetFileContent.returns(true);
-        sutObject.projectStub.requestFileContent.resolves(deferredContentStub);
-        const result = await sutObject.sut.requestContent();
-        await sutObject.sut.checkContentUpdated();
-        assert.deepEqual(result, deferredContentStub);
-    });
-    it('checkContentUpdated updates if there is content', async () => {
-        const sutObject = setupMockedUISourceCode();
-        const deferredContentStub = { content: 'Example Content', isEncoded: true };
-        sutObject.projectStub.workspace.returns(sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl));
-        sutObject.projectStub.canSetFileContent.returns(true);
-        sutObject.projectStub.requestFileContent.resolves(deferredContentStub);
-        const result = await sutObject.sut.requestContent();
-        await sutObject.sut.checkContentUpdated();
-        assert.deepEqual(result, deferredContentStub);
     });
 });
 describe('UILocation', () => {

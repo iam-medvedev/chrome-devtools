@@ -738,7 +738,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(request.responseHeadersText);
     }
     static async copyResponse(request) {
-        const contentData = await request.contentData();
+        const contentData = await request.requestContentData();
         let content;
         if (TextUtils.ContentData.ContentData.isError(contentData)) {
             content = '';

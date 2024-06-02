@@ -1,6 +1,5 @@
 import type * as Common from '../../../../core/common/common.js';
 import type * as Platform from '../../../../core/platform/platform.js';
-import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import { ResourceSourceFrame } from './ResourceSourceFrame.js';
 export declare class BinaryResourceViewFactory {
     private base64content;
@@ -11,9 +10,9 @@ export declare class BinaryResourceViewFactory {
     private utf8Promise;
     constructor(base64content: string, contentUrl: Platform.DevToolsPath.UrlString, resourceType: Common.ResourceType.ResourceType);
     private fetchContentAsArray;
-    hex(): Promise<TextUtils.ContentProvider.DeferredContent>;
-    base64(): Promise<TextUtils.ContentProvider.DeferredContent>;
-    utf8(): Promise<TextUtils.ContentProvider.DeferredContent>;
+    hex(): Promise<string>;
+    base64(): string;
+    utf8(): Promise<string>;
     createBase64View(): ResourceSourceFrame;
     createHexView(): ResourceSourceFrame;
     createUtf8View(): ResourceSourceFrame;

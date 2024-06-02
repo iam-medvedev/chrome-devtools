@@ -3,7 +3,7 @@ import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.n
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type Hint } from './CSSRuleValidator.js';
-import { AngleMatch, AngleMatcher, type BezierMatch, BezierMatcher, BottomUpTreeMatching, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, type FontMatch, FontMatcher, type GridTemplateMatch, GridTemplateMatcher, type LengthMatch, LengthMatcher, type LightDarkColorMatch, LightDarkColorMatcher, type LinearGradientMatch, type LinkableNameMatch, LinkableNameMatcher, type Matcher, type ShadowMatch, ShadowMatcher, ShadowType, VariableMatch, VariableMatcher } from './PropertyParser.js';
+import { AngleMatch, AngleMatcher, type BezierMatch, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, type FontMatch, FontMatcher, type GridTemplateMatch, GridTemplateMatcher, type LengthMatch, LengthMatcher, type LightDarkColorMatch, LightDarkColorMatcher, type LinearGradientMatch, type LinkableNameMatch, LinkableNameMatcher, type ShadowMatch, ShadowMatcher, ShadowType } from './PropertyMatchers.js';
 import { type MatchRenderer, RenderingContext } from './PropertyRenderer.js';
 import { type StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
@@ -18,17 +18,17 @@ interface StylePropertyTreeElementParams {
     overloaded: boolean;
     newProperty: boolean;
 }
-export declare class VariableRenderer implements MatchRenderer<VariableMatch> {
+export declare class VariableRenderer implements MatchRenderer<SDK.CSSPropertyParser.VariableMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration);
-    matcher(): VariableMatcher;
-    resolveVariable(match: VariableMatch): SDK.CSSMatchedStyles.CSSVariableValue | null;
-    fallbackValue(match: VariableMatch, matching: BottomUpTreeMatching): string | null;
-    computedText(match: VariableMatch, matching: BottomUpTreeMatching): string | null;
-    render(match: VariableMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParser.VariableMatcher;
+    resolveVariable(match: SDK.CSSPropertyParser.VariableMatch): SDK.CSSMatchedStyles.CSSVariableValue | null;
+    fallbackValue(match: SDK.CSSPropertyParser.VariableMatch): string | null;
+    computedText(match: SDK.CSSPropertyParser.VariableMatch): string | null;
+    render(match: SDK.CSSPropertyParser.VariableMatch, context: RenderingContext): Node[];
 }
 export declare class LinearGradientRenderer implements MatchRenderer<LinearGradientMatch> {
-    matcher(): Matcher<LinearGradientMatch>;
+    matcher(): SDK.CSSPropertyParser.Matcher<LinearGradientMatch>;
     render(match: LinearGradientMatch, context: RenderingContext): Node[];
 }
 export declare class ColorRenderer implements MatchRenderer<ColorMatch> {

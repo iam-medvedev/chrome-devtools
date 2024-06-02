@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import * as SDK from './sdk.js';
@@ -35,8 +36,9 @@ console.log("foo");
                 };
             });
             const script = debuggerModel.scriptForId(scriptId);
-            const { content } = await script.originalContentProvider().requestContent();
-            assert.strictEqual(content, scriptSource);
+            const content = await script.originalContentProvider().requestContentData();
+            assert.instanceOf(content, TextUtils.ContentData.ContentData);
+            assert.strictEqual(content.text, scriptSource);
         });
     });
     describe('editSource', () => {
@@ -81,7 +83,9 @@ console.log("foo");
             const newContent = 'console.log("bar")';
             const { status } = await script.editSource(newContent);
             assert.strictEqual(status, "Ok" /* Protocol.Debugger.SetScriptSourceResponseStatus.Ok */);
-            assert.strictEqual((await script.requestContent()).content, newContent);
+            const contentData = await script.requestContentData();
+            assert.instanceOf(contentData, TextUtils.ContentData.ContentData);
+            assert.strictEqual(contentData.text, newContent);
         });
         it('does not update the source content when the live edit fails', async () => {
             const scriptContent = 'console.log("foo")';
@@ -93,7 +97,9 @@ console.log("foo");
             });
             const { status } = await script.editSource('console.log("bar")');
             assert.strictEqual(status, "CompileError" /* Protocol.Debugger.SetScriptSourceResponseStatus.CompileError */);
-            assert.strictEqual((await script.requestContent()).content, scriptContent);
+            const contentData = await script.requestContentData();
+            assert.instanceOf(contentData, TextUtils.ContentData.ContentData);
+            assert.strictEqual(contentData.text, scriptContent);
         });
         it('throws an error for protocol failures', done => {
             const { script, target } = setupEditTest('1', 'console.log("foo")');

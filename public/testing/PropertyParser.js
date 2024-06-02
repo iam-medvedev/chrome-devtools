@@ -1,9 +1,9 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Elements from '../panels/elements/elements.js';
+import * as SDK from '../core/sdk/sdk.js';
 import * as CodeMirror from '../third_party/codemirror.next/codemirror.next.js';
-export class Printer extends Elements.PropertyParser.TreeWalker {
+export class Printer extends SDK.CSSPropertyParser.TreeWalker {
     #printedText = [];
     #indent = 0;
     enter({ node }) {
@@ -23,7 +23,7 @@ export class Printer extends Elements.PropertyParser.TreeWalker {
         console.log(Printer.walk(ast).get());
     }
     static rule(rule) {
-        const ast = new Elements.PropertyParser.SyntaxTree('', rule, CodeMirror.css.cssLanguage.parser.parse(rule).topNode);
+        const ast = new SDK.CSSPropertyParser.SyntaxTree('', rule, CodeMirror.css.cssLanguage.parser.parse(rule).topNode);
         return Printer.walk(ast).get();
     }
 }

@@ -60,6 +60,7 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private registerLanguageExtensionEndpoint;
     private loadWasmValue;
     private onGetWasmLinearMemory;
+    private convertWasmValue;
     private onGetWasmGlobal;
     private onGetWasmLocal;
     private onGetWasmOp;

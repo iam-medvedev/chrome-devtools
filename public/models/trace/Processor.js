@@ -140,7 +140,12 @@ export class TraceProcessor extends EventTarget {
         }
         // Finalize.
         for (const handler of sortedHandlers) {
-            await handler.finalize?.();
+            if (handler.finalize) {
+                // Yield to the UI because finalize() calls can be expensive
+                // TODO(jacktfranklin): consider using `scheduler.yield()` or `scheduler.postTask(() => {}, {priority: 'user-blocking'})`
+                await new Promise(resolve => setTimeout(resolve, 0));
+                await handler.finalize();
+            }
         }
     }
     get traceParsedData() {

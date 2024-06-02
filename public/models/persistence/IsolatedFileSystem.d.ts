@@ -1,6 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
-import type * as TextUtils from '../text_utils/text_utils.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import { type IsolatedFileSystemManager } from './IsolatedFileSystemManager.js';
 import { PlatformFileSystem } from './PlatformFileSystem.js';
 export declare class IsolatedFileSystem extends PlatformFileSystem {
@@ -28,7 +28,7 @@ export declare class IsolatedFileSystem extends PlatformFileSystem {
     deleteFile(path: Platform.DevToolsPath.EncodedPathString): Promise<boolean>;
     deleteDirectoryRecursively(path: Platform.DevToolsPath.EncodedPathString): Promise<boolean>;
     requestFileBlob(path: Platform.DevToolsPath.EncodedPathString): Promise<Blob | null>;
-    requestFileContent(path: Platform.DevToolsPath.EncodedPathString): Promise<TextUtils.ContentProvider.DeferredContent>;
+    requestFileContent(path: Platform.DevToolsPath.EncodedPathString): Promise<TextUtils.ContentData.ContentDataOrError>;
     private innerRequestFileContent;
     setFileContent(path: Platform.DevToolsPath.EncodedPathString, content: string, isBase64: boolean): Promise<void>;
     renameFile(path: Platform.DevToolsPath.EncodedPathString, newName: Platform.DevToolsPath.RawPathString, callback: (arg0: boolean, arg1?: string | undefined) => void): void;

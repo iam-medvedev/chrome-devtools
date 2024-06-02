@@ -41,7 +41,7 @@ export declare class FileSystem extends Workspace.Workspace.ProjectStore {
     isServiceProject(): boolean;
     requestMetadata(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<Workspace.UISourceCode.UISourceCodeMetadata | null>;
     requestFileBlob(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<Blob | null>;
-    requestFileContent(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<TextUtils.ContentProvider.DeferredContent>;
+    requestFileContent(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<TextUtils.ContentData.ContentDataOrError>;
     canSetFileContent(): boolean;
     setFileContent(uiSourceCode: Workspace.UISourceCode.UISourceCode, newContent: string, isBase64: boolean): Promise<void>;
     fullDisplayName(uiSourceCode: Workspace.UISourceCode.UISourceCode): string;

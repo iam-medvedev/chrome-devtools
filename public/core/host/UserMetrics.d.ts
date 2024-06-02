@@ -645,7 +645,8 @@ export declare enum DevtoolsExperiments {
     'timeline-debug-mode' = 93,
     'perf-panel-annotations' = 94,
     'timeline-rpp-sidebar' = 95,
-    'MaxValue' = 96
+    'timeline-observations' = 96,
+    'MaxValue' = 97
 }
 export declare const enum BreakpointEditDialogRevealedFrom {
     BreakpointSidebarContextMenu = 0,

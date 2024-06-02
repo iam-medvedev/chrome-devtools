@@ -8,7 +8,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import * as AnnotationsManager from '../../services/annotations_manager/annotations_manager.js';
+import * as ModificationsManager from '../../services/modifications_manager/modifications_manager.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { addDecorationToEvent, buildGroupStyle, buildTrackHeader, getFormattedTime, } from './AppenderUtils.js';
 import { getCategoryStyles, getEventStyle } from './EventUICategory.js';
@@ -390,7 +390,7 @@ export class ThreadAppender {
      * listed is done before appending.
      */
     #appendNodesAtLevel(nodes, startingLevel, parentIsIgnoredListed = false) {
-        const invisibleEntries = AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()
+        const invisibleEntries = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
             ?.getEntriesFilter()
             .invisibleEntries() ??
             [];
@@ -438,7 +438,9 @@ export class ThreadAppender {
     }
     #addDecorationsToEntry(entry, index) {
         const flameChartData = this.#compatibilityBuilder.getFlameChartTimelineData();
-        if (AnnotationsManager.AnnotationsManager.AnnotationsManager.maybeInstance()?.getEntriesFilter().isEntryModified(entry)) {
+        if (ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+            ?.getEntriesFilter()
+            .isEntryExpandable(entry)) {
             addDecorationToEvent(flameChartData, index, { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ });
         }
         const warnings = this.#traceParsedData.Warnings.perEvent.get(entry);

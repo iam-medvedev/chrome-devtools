@@ -17,7 +17,7 @@ export declare class StylesSourceMapping implements SourceMapping {
     private styleSheetChanged;
     dispose(): void;
 }
-export declare class StyleFile implements TextUtils.ContentProvider.SafeContentProvider {
+export declare class StyleFile implements TextUtils.ContentProvider.ContentProvider {
     #private;
     headers: Set<SDK.CSSStyleSheetHeader.CSSStyleSheetHeader>;
     uiSourceCode: Workspace.UISourceCode.UISourceCode;

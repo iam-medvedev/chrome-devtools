@@ -1128,7 +1128,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         }
         return values.join(', ');
     }
-    contentData() {
+    requestContentData() {
         if (this.#contentDataInternal) {
             return this.#contentDataInternal;
         }
@@ -1148,7 +1148,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         if (this.#streamingContentData) {
             return this.#streamingContentData;
         }
-        const contentPromise = this.finished ? this.contentData() : NetworkManager.streamResponseBody(this);
+        const contentPromise = this.finished ? this.requestContentData() : NetworkManager.streamResponseBody(this);
         this.#streamingContentData = contentPromise.then(contentData => {
             if (TextUtils.ContentData.ContentData.isError(contentData)) {
                 return contentData;
@@ -1166,13 +1166,13 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return this.#resourceTypeInternal;
     }
     async requestContent() {
-        return TextUtils.ContentData.ContentData.asDeferredContent(await this.contentData());
+        return TextUtils.ContentData.ContentData.asDeferredContent(await this.requestContentData());
     }
     async searchInContent(query, caseSensitive, isRegex) {
         if (!this.#contentDataProvider) {
             return NetworkManager.searchInRequest(this, query, caseSensitive, isRegex);
         }
-        const contentData = await this.contentData();
+        const contentData = await this.requestContentData();
         if (TextUtils.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
             return [];
         }
@@ -1218,7 +1218,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return this.#webBundleInnerRequestInfoInternal;
     }
     async populateImageSource(image) {
-        const contentData = await this.contentData();
+        const contentData = await this.requestContentData();
         if (TextUtils.ContentData.ContentData.isError(contentData)) {
             return;
         }

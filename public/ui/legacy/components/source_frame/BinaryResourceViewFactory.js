@@ -29,21 +29,23 @@ export class BinaryResourceViewFactory {
     }
     async hex() {
         if (!this.hexPromise) {
-            const content = await this.fetchContentAsArray();
-            const hexString = BinaryResourceViewFactory.uint8ArrayToHexString(content);
-            return { content: hexString, isEncoded: false };
+            this.hexPromise = new Promise(async (resolve) => {
+                const content = await this.fetchContentAsArray();
+                const hexString = BinaryResourceViewFactory.uint8ArrayToHexString(content);
+                resolve(hexString);
+            });
         }
         return this.hexPromise;
     }
-    async base64() {
-        return { content: this.base64content, isEncoded: true };
+    base64() {
+        return this.base64content;
     }
     async utf8() {
         if (!this.utf8Promise) {
             this.utf8Promise = new Promise(async (resolve) => {
                 const content = await this.fetchContentAsArray();
                 const utf8String = new TextDecoder('utf8').decode(content);
-                resolve({ content: utf8String, isEncoded: false });
+                resolve(utf8String);
             });
         }
         return this.utf8Promise;
@@ -55,12 +57,12 @@ export class BinaryResourceViewFactory {
         const hexViewerContentProvider = new TextUtils.StaticContentProvider.StaticContentProvider(this.contentUrl, this.resourceType, async () => {
             const contentAsArray = await this.fetchContentAsArray();
             const content = BinaryResourceViewFactory.uint8ArrayToHexViewer(contentAsArray);
-            return { content, isEncoded: false };
+            return new TextUtils.ContentData.ContentData(content, /* isBase64 */ false, 'text/plain');
         });
         return new ResourceSourceFrame(hexViewerContentProvider, this.resourceType.canonicalMimeType(), { lineNumbers: false, lineWrapping: false });
     }
     createUtf8View() {
-        const utf8fn = this.utf8.bind(this);
+        const utf8fn = () => this.utf8().then(str => new TextUtils.ContentData.ContentData(str, /* isBase64 */ false, 'text/plain'));
         const utf8ContentProvider = new TextUtils.StaticContentProvider.StaticContentProvider(this.contentUrl, this.resourceType, utf8fn);
         return new ResourceSourceFrame(utf8ContentProvider, this.resourceType.canonicalMimeType(), { lineNumbers: true, lineWrapping: true });
     }
