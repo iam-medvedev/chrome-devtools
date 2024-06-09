@@ -270,6 +270,7 @@ panels/developer_resources/DeveloperResourcesView.test.js
 panels/developer_resources/developer_resources.test.js
 panels/elements/components/AccessibilityTreeNode.test.js
 panels/elements/components/AdornerManager.test.js
+panels/elements/components/AnchorFunctionLinkSwatch.test.js
 panels/elements/components/CSSHintDetailsView.test.js
 panels/elements/components/CSSPropertyDocsView.test.js
 panels/elements/components/CSSPropertyIconResolver.test.js

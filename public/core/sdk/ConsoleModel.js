@@ -31,7 +31,7 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
-import { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
+import { FrontendMessageType } from './ConsoleModelTypes.js';
 import { CPUProfilerModel } from './CPUProfilerModel.js';
 import { COND_BREAKPOINT_SOURCE_URL, Events as DebuggerModelEvents, LOGPOINT_SOURCE_URL, } from './DebuggerModel.js';
 import { LogModel } from './LogModel.js';
@@ -41,7 +41,7 @@ import { Events as RuntimeModelEvents, RuntimeModel, } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
 import { Type } from './Target.js';
 import { TargetManager } from './TargetManager.js';
-export { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
+export { FrontendMessageType } from './ConsoleModelTypes.js';
 const UIStrings = {
     /**
      *@description Text shown when the main frame (page) of the website was navigated to a different URL.
@@ -157,7 +157,7 @@ export class ConsoleModel extends SDKModel {
     }
     addMessage(msg) {
         msg.setPageLoadSequenceNumber(this.#pageLoadSequenceNumber);
-        if (msg.source === FrontendMessageSource.ConsoleAPI &&
+        if (msg.source === Common.Console.FrontendMessageSource.ConsoleAPI &&
             msg.type === "clear" /* Protocol.Runtime.ConsoleAPICalledEventType.Clear */) {
             this.clearIfNecessary();
         }
@@ -235,7 +235,7 @@ export class ConsoleModel extends SDKModel {
             executionContextId: call.executionContextId,
             context: call.context,
         };
-        const consoleMessage = new ConsoleMessage(runtimeModel, FrontendMessageSource.ConsoleAPI, level, message, details);
+        const consoleMessage = new ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, level, message, details);
         for (const msg of this.#messagesByTimestamp.get(consoleMessage.timestamp).values()) {
             if (consoleMessage.isEqual(msg)) {
                 return;
@@ -250,7 +250,7 @@ export class ConsoleModel extends SDKModel {
             parameters: [objects],
             executionContextId,
         };
-        const consoleMessage = new ConsoleMessage(runtimeModel, FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', details);
+        const consoleMessage = new ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, '', details);
         this.addMessage(consoleMessage);
     }
     clearIfNecessary() {
@@ -287,7 +287,7 @@ export class ConsoleModel extends SDKModel {
                 lineNumber: scriptLocation.lineNumber,
                 columnNumber: scriptLocation.columnNumber || 0,
             }];
-        this.addMessage(new ConsoleMessage(cpuProfilerModel.runtimeModel(), FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, messageText, { type, stackTrace: { callFrames } }));
+        this.addMessage(new ConsoleMessage(cpuProfilerModel.runtimeModel(), Common.Console.FrontendMessageSource.ConsoleAPI, "info" /* Protocol.Log.LogEntryLevel.Info */, messageText, { type, stackTrace: { callFrames } }));
     }
     incrementErrorWarningCount(msg) {
         if (msg.source === "violation" /* Protocol.Log.LogEntrySource.Violation */) {
@@ -577,7 +577,7 @@ export class ConsoleMessage {
     isGroupable() {
         const isUngroupableError = this.level === "error" /* Protocol.Log.LogEntryLevel.Error */ &&
             (this.source === "javascript" /* Protocol.Log.LogEntrySource.Javascript */ || this.source === "network" /* Protocol.Log.LogEntrySource.Network */);
-        return (this.source !== FrontendMessageSource.ConsoleAPI && this.type !== FrontendMessageType.Command &&
+        return (this.source !== Common.Console.FrontendMessageSource.ConsoleAPI && this.type !== FrontendMessageType.Command &&
             this.type !== FrontendMessageType.Result && this.type !== FrontendMessageType.System && !isUngroupableError);
     }
     groupCategoryKey() {
@@ -598,10 +598,10 @@ export class ConsoleMessage {
                     // TODO(chromium:1136435): Remove this case.
                     return false;
                 }
-                // Never treat objects as equal - their properties might change over time. Errors can be treated as equal
-                // since they are always formatted as strings.
                 if (msgParam.type === 'object' && msgParam.subtype !== 'error') {
-                    return false;
+                    if (!msgParam.objectId || msgParam.objectId !== param.objectId || msg.timestamp !== this.timestamp) {
+                        return false;
+                    }
                 }
                 if (param.type !== msgParam.type || param.value !== msgParam.value ||
                     param.description !== msgParam.description) {
@@ -648,11 +648,11 @@ export const MessageSourceDisplayName = new Map(([
     ["xml" /* Protocol.Log.LogEntrySource.XML */, 'xml'],
     ["javascript" /* Protocol.Log.LogEntrySource.Javascript */, 'javascript'],
     ["network" /* Protocol.Log.LogEntrySource.Network */, 'network'],
-    [FrontendMessageSource.ConsoleAPI, 'console-api'],
+    [Common.Console.FrontendMessageSource.ConsoleAPI, 'console-api'],
     ["storage" /* Protocol.Log.LogEntrySource.Storage */, 'storage'],
     ["appcache" /* Protocol.Log.LogEntrySource.Appcache */, 'appcache'],
     ["rendering" /* Protocol.Log.LogEntrySource.Rendering */, 'rendering'],
-    [FrontendMessageSource.CSS, 'css'],
+    [Common.Console.FrontendMessageSource.CSS, 'css'],
     ["security" /* Protocol.Log.LogEntrySource.Security */, 'security'],
     ["deprecation" /* Protocol.Log.LogEntrySource.Deprecation */, 'deprecation'],
     ["worker" /* Protocol.Log.LogEntrySource.Worker */, 'worker'],
@@ -660,6 +660,6 @@ export const MessageSourceDisplayName = new Map(([
     ["intervention" /* Protocol.Log.LogEntrySource.Intervention */, 'intervention'],
     ["recommendation" /* Protocol.Log.LogEntrySource.Recommendation */, 'recommendation'],
     ["other" /* Protocol.Log.LogEntrySource.Other */, 'other'],
-    [FrontendMessageSource.IssuePanel, 'issue-panel'],
+    [Common.Console.FrontendMessageSource.IssuePanel, 'issue-panel'],
 ]));
 //# sourceMappingURL=ConsoleModel.js.map

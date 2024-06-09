@@ -1,5 +1,6 @@
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import { type CanShowSurveyResult, type ChangeEvent, type ClickEvent, type ContextMenuDescriptor, type DoAidaConversationResult, type DragEvent, type EnumeratedHistogram, type EventTypes, type ExtensionDescriptor, type HoverEvent, type ImpressionEvent, type InspectorFrontendHostAPI, type KeyDownEvent, type LoadNetworkResourceResult, type ResizeEvent, type ShowSurveyResult, type SyncInformation } from './InspectorFrontendHostAPI.js';
 /**
  * The InspectorFrontendHostStub is a stub interface used the frontend is loaded like a webpage. Examples:
@@ -78,6 +79,7 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     removePreference(name: string): void;
     clearPreferences(): void;
     getSyncInformation(callback: (arg0: SyncInformation) => void): void;
+    getHostConfig(callback: (arg0: Root.Runtime.HostConfig) => void): void;
     upgradeDraggedFileSystemPermissions(fileSystem: FileSystem): void;
     indexPath(requestId: number, fileSystemPath: Platform.DevToolsPath.RawPathString, excludedFolders: string): void;
     stopIndexing(requestId: number): void;

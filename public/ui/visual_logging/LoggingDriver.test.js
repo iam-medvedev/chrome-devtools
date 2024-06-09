@@ -409,7 +409,7 @@ describe('LoggingDriver', () => {
         element.dispatchEvent(new MouseEvent('pointerdown'));
         assert.exists(dragLogThrottler.process);
         assert.isFalse(recordDrag.called);
-        await dragLogThrottler.schedule(async () => { }, true);
+        await dragLogThrottler.schedule(async () => { }, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */);
         await dragLogThrottler.process?.();
         assert.isTrue(recordDrag.called);
         assert.isTrue(recordDrag.calledOnce);

@@ -6,6 +6,7 @@
     "files": [
         "breadcrumbsUI.css.js",
         "interactionBreakdown.css.js",
+        "liveMetricsView.css.js",
         "sidebar.css.js"
     ]
 }

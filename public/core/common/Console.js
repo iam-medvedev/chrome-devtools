@@ -22,16 +22,16 @@ export class Console extends ObjectWrapper {
     static removeInstance() {
         consoleInstance = undefined;
     }
-    addMessage(text, level, show) {
-        const message = new Message(text, level || "info" /* MessageLevel.Info */, Date.now(), show || false);
+    addMessage(text, level, show, source) {
+        const message = new Message(text, level || "info" /* MessageLevel.Info */, Date.now(), show || false, source);
         this.#messagesInternal.push(message);
         this.dispatchEventToListeners("messageAdded" /* Events.MessageAdded */, message);
     }
     log(text) {
         this.addMessage(text, "info" /* MessageLevel.Info */);
     }
-    warn(text) {
-        this.addMessage(text, "warning" /* MessageLevel.Warning */);
+    warn(text, source) {
+        this.addMessage(text, "warning" /* MessageLevel.Warning */, undefined, source);
     }
     error(text) {
         this.addMessage(text, "error" /* MessageLevel.Error */, true);
@@ -46,16 +46,27 @@ export class Console extends ObjectWrapper {
         return reveal(this);
     }
 }
+export var FrontendMessageSource;
+(function (FrontendMessageSource) {
+    FrontendMessageSource["CSS"] = "css";
+    FrontendMessageSource["ConsoleAPI"] = "console-api";
+    FrontendMessageSource["IssuePanel"] = "issue-panel";
+    FrontendMessageSource["SelfXss"] = "self-xss";
+})(FrontendMessageSource || (FrontendMessageSource = {}));
 export class Message {
     text;
     level;
     timestamp;
     show;
-    constructor(text, level, timestamp, show) {
+    source;
+    constructor(text, level, timestamp, show, source) {
         this.text = text;
         this.level = level;
         this.timestamp = (typeof timestamp === 'number') ? timestamp : Date.now();
         this.show = show;
+        if (source) {
+            this.source = source;
+        }
     }
 }
 //# sourceMappingURL=Console.js.map

@@ -17,6 +17,7 @@ export declare class SyntheticEventsManager {
     static getManagerForTrace(traceIndex?: number): SyntheticEventsManager;
     static getActiveManager(): SyntheticEventsManager;
     static reset(): void;
+    static registerSyntheticBasedEvent<T extends Types.TraceEvents.SyntheticBasedEvent>(syntheticEvent: Omit<T, '_tag'>): T;
     private constructor();
     /**
      * Registers and returns a branded synthetic event. Synthetic events need to
@@ -25,5 +26,6 @@ export declare class SyntheticEventsManager {
      */
     registerSyntheticBasedEvent<T extends Types.TraceEvents.SyntheticBasedEvent>(syntheticEvent: Omit<T, '_tag'>): T;
     syntheticEventForRawEventIndex(rawEventIndex: number): Types.TraceEvents.SyntheticBasedEvent;
-    allSyntheticEvents(): Types.TraceEvents.SyntheticBasedEvent[];
+    getSyntheticTraceEvents(): Types.TraceEvents.SyntheticBasedEvent[];
+    getRawTraceEvents(): readonly Types.TraceEvents.TraceEventData[];
 }

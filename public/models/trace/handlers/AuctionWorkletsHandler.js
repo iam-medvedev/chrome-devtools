@@ -84,7 +84,7 @@ function workletType(input) {
  * regardless of the type of event.
  */
 function makeSyntheticEventBase(event) {
-    return Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
+    return Helpers.SyntheticEvents.SyntheticEventsManager
         .registerSyntheticBasedEvent({
         rawSourceEvent: event,
         name: 'SyntheticAuctionWorkletEvent',

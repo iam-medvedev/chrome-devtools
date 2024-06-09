@@ -263,9 +263,9 @@ export async function finalize() {
         const parsedUrl = new URL(url);
         const isHttps = parsedUrl.protocol === 'https:';
         const requestingFrameUrl = Helpers.Trace.activeURLForFrameAtTime(frame, finalSendRequest.ts, rendererProcessesByFrame) || '';
-        const syntheticEventsManager = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
         // Construct a synthetic trace event for this network request.
-        const networkEvent = syntheticEventsManager.registerSyntheticBasedEvent({
+        const networkEvent = Helpers.SyntheticEvents.SyntheticEventsManager
+            .registerSyntheticBasedEvent({
             rawSourceEvent: finalSendRequest,
             args: {
                 data: {
@@ -297,7 +297,7 @@ export async function finalize() {
                     encodedDataLength,
                     frame,
                     fromServiceWorker: request.receiveResponse.args.data.fromServiceWorker,
-                    isLinkPreload: request.receiveResponse.args.data.isLinkPreload || false,
+                    isLinkPreload: finalSendRequest.args.data.isLinkPreload || false,
                     mimeType: request.receiveResponse.args.data.mimeType,
                     priority: finalPriority,
                     initialPriority,

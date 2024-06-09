@@ -43,5 +43,8 @@ export class SimpleView extends VBox {
     isPreviewFeature() {
         return false;
     }
+    iconName() {
+        return undefined;
+    }
 }
 //# sourceMappingURL=View.js.map

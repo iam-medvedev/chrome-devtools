@@ -433,6 +433,12 @@ export default {
    * Colors for menus.
    */
   --app-color-menu-background: var(--sys-color-surface);
+
+  /**
+   * Colors for navigation drawers.
+   */
+  --app-color-navigation-drawer-label-selected: var(--sys-color-on-surface);
+  --app-color-navigation-drawer-background-selected: var(--ref-palette-primary95);
 }
 
 :root.baseline-default {
@@ -441,6 +447,11 @@ export default {
   --sys-color-surface3: color-mix(in sRGB, #6991d6 11%, var(--ref-palette-neutral100));
   --sys-color-surface2: color-mix(in sRGB, #6991d6 8%, var(--ref-palette-neutral100));
   --sys-color-surface1: color-mix(in sRGB, #6991d6 5%, var(--ref-palette-neutral100));
+
+  /**
+   * Color for navigation drawers.
+   */
+  --app-color-navigation-drawer-label-selected: var(--sys-color-primary);
 }
 
 :root.baseline-grayscale {
@@ -850,6 +861,12 @@ export default {
    * Colors for menus.
    */
   --app-color-menu-background: var(--sys-color-surface3);
+
+  /**
+   * Colors for navigation drawers.
+   */
+  --app-color-navigation-drawer-label-selected: var(--ref-palette-primary70);
+  --app-color-navigation-drawer-background-selected: var(--sys-color-surface);
 }
 `
 };

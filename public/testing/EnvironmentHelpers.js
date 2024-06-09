@@ -72,6 +72,7 @@ export function stubNoopSettings() {
             type: () => "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             getAsArray: () => [],
         }),
+        getHostConfig: () => { },
     });
 }
 export function registerNoopActions(actionIds) {
@@ -107,12 +108,16 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-extensions" /* Root.Runtime.ExperimentName.TIMELINE_EXTENSIONS */,
     "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
     "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
+    "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
+    "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
     // Create the appropriate settings needed to boot.
     const settings = [
+        createSettingValue("ADORNER" /* Common.Settings.SettingCategory.ADORNER */, 'adorner-settings', [], "array" /* Common.Settings.SettingType.ARRAY */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'disable-paused-state-overlay', false),
+        createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'sidebar-position', 'auto', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'custom-formatters', false),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'pause-on-exception-enabled', false),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'pause-on-caught-exception', false),
@@ -126,6 +131,8 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'skip-stack-frames-pattern', '/node_modules/|/bower_components/', "regex" /* Common.Settings.SettingType.REGEX */),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'navigator-group-by-folder', true),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-detailed-inspect-tooltip', true),
+        createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-html-comments', true),
+        createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-ua-shadow-dom', false),
         createSettingValue("NETWORK" /* Common.Settings.SettingCategory.NETWORK */, 'cache-disabled', false),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'avif-format-disabled', false),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'emulated-css-media', '', "enum" /* Common.Settings.SettingType.ENUM */),
@@ -274,11 +281,12 @@ export async function initializeGlobalLocaleVars() {
             lookupClosestDevToolsLocale: () => 'en-US',
         },
     });
+    if (i18n.i18n.hasLocaleDataForTest('en-US')) {
+        return;
+    }
     // Load the strings from the resource file.
-    const locale = i18n.DevToolsLocale.DevToolsLocale.instance().locale;
-    // proxied call.
     try {
-        await i18n.i18n.fetchAndRegisterLocaleData(locale);
+        await i18n.i18n.fetchAndRegisterLocaleData('en-US');
     }
     catch (error) {
         // eslint-disable-next-line no-console

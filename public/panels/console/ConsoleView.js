@@ -581,7 +581,8 @@ export class ConsoleView extends UI.Widget.VBox {
                 level = "warning" /* Protocol.Log.LogEntryLevel.Warning */;
                 break;
         }
-        const consoleMessage = new SDK.ConsoleModel.ConsoleMessage(null, "other" /* Protocol.Log.LogEntrySource.Other */, level, message.text, { type: SDK.ConsoleModel.FrontendMessageType.System, timestamp: message.timestamp });
+        const source = message.source || "other" /* Protocol.Log.LogEntrySource.Other */;
+        const consoleMessage = new SDK.ConsoleModel.ConsoleMessage(null, source, level, message.text, { type: SDK.ConsoleModel.FrontendMessageType.System, timestamp: message.timestamp });
         this.addConsoleMessage(consoleMessage);
     }
     consoleTimestampsSettingChanged() {
@@ -1389,9 +1390,7 @@ export class ConsoleViewFilter {
             ["error" /* Protocol.Log.LogEntryLevel.Error */, i18nString(UIStrings.errors)],
         ]));
         this.levelMenuButton =
-            new UI.Toolbar.ToolbarMenuButton(this.appendLevelMenuItems.bind(this), undefined, 'log-level');
-        this.levelMenuButton.setGlyph('');
-        this.levelMenuButton.turnIntoSelect();
+            new UI.Toolbar.ToolbarMenuButton(this.appendLevelMenuItems.bind(this), undefined, undefined, 'log-level');
         this.updateLevelMenuButtonText();
         this.messageLevelFiltersSetting.addChangeListener(this.updateLevelMenuButtonText.bind(this));
     }

@@ -9,9 +9,9 @@ export declare class Console extends ObjectWrapper<EventTypes> {
         forceNew: boolean;
     }): Console;
     static removeInstance(): void;
-    addMessage(text: string, level: MessageLevel, show?: boolean): void;
+    addMessage(text: string, level: MessageLevel, show?: boolean, source?: FrontendMessageSource): void;
     log(text: string): void;
-    warn(text: string): void;
+    warn(text: string, source?: FrontendMessageSource): void;
     error(text: string): void;
     messages(): Message[];
     show(): void;
@@ -28,10 +28,17 @@ export declare const enum MessageLevel {
     Warning = "warning",
     Error = "error"
 }
+export declare enum FrontendMessageSource {
+    CSS = "css",
+    ConsoleAPI = "console-api",
+    IssuePanel = "issue-panel",
+    SelfXss = "self-xss"
+}
 export declare class Message {
     text: string;
     level: MessageLevel;
     timestamp: number;
     show: boolean;
-    constructor(text: string, level: MessageLevel, timestamp: number, show: boolean);
+    source?: FrontendMessageSource;
+    constructor(text: string, level: MessageLevel, timestamp: number, show: boolean, source?: FrontendMessageSource);
 }

@@ -159,7 +159,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         // ASAP to avoid inconsistency between a fresh viewport and stale preview.
         if (this.eagerEvalSetting.get()) {
             const asSoonAsPossible = !TextEditor.Config.contentIncludingHint(this.editor.editor);
-            this.previewRequestForTest = this.textChangeThrottler.schedule(this.requestPreviewBound, asSoonAsPossible);
+            this.previewRequestForTest = this.textChangeThrottler.schedule(this.requestPreviewBound, asSoonAsPossible ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */ : "Default" /* Common.Throttler.Scheduling.Default */);
         }
         this.updatePromptIcon();
         this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
@@ -269,7 +269,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         return isExpressionComplete;
     }
     showSelfXssWarning() {
-        Common.Console.Console.instance().warn(i18nString(UIStrings.selfXssWarning, { PH1: i18nString(UIStrings.allowPasting) }));
+        Common.Console.Console.instance().warn(i18nString(UIStrings.selfXssWarning, { PH1: i18nString(UIStrings.allowPasting) }), Common.Console.FrontendMessageSource.SelfXss);
         this.#selfXssWarningShown = true;
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssWarningConsoleMessageShown);
         this.#updateJavaScriptCompletionCompartment();
@@ -326,7 +326,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     }
     async evaluateCommandInConsole(executionContext, message, expression, useCommandLineAPI) {
         const callFrame = executionContext.debuggerModel.selectedCallFrame();
-        if (callFrame) {
+        if (callFrame && callFrame.script.isJavaScript()) {
             const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);
             expression = await this.substituteNames(expression, nameMap);
         }

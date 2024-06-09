@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TraceEngine from '../models/trace/trace.js';
+import * as ModificationsManager from '../services/modifications_manager/modifications_manager.js';
 import * as TraceBounds from '../services/trace_bounds/trace_bounds.js';
 // We maintain two caches:
 // 1. The file contents JSON.parsed for a given trace file.
@@ -117,16 +118,19 @@ export class TraceLoader {
         const configCacheKey = TraceEngine.Types.Configuration.configToCacheKey(config);
         const fromCache = traceEngineCache.get(name)?.get(configCacheKey);
         if (fromCache) {
+            ModificationsManager.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(fromCache.model, 0);
             if (options.initTraceBounds) {
-                TraceLoader.initTraceBoundsManager(fromCache);
+                TraceLoader.initTraceBoundsManager(fromCache.traceParsedData);
             }
-            return fromCache;
+            return fromCache.traceParsedData;
         }
         const fileContents = await TraceLoader.fixtureContents(context, name);
         const traceEngineData = await TraceLoader.executeTraceEngineOnFileContents(fileContents, /* emulate fresh recording */ false, config);
-        const cacheByName = traceEngineCache.get(name) || new Map();
-        cacheByName.set(configCacheKey, traceEngineData.traceParsedData);
+        const cacheByName = traceEngineCache.get(name) ||
+            new Map();
+        cacheByName.set(configCacheKey, traceEngineData);
         traceEngineCache.set(name, cacheByName);
+        ModificationsManager.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(traceEngineData.model, 0);
         if (options.initTraceBounds) {
             TraceLoader.initTraceBoundsManager(traceEngineData.traceParsedData);
         }
@@ -147,6 +151,7 @@ export class TraceLoader {
     }
     static async executeTraceEngineOnFileContents(contents, emulateFreshRecording = false, traceEngineConfig) {
         const events = 'traceEvents' in contents ? contents.traceEvents : contents;
+        const metadata = 'metadata' in contents ? contents.metadata : {};
         return new Promise((resolve, reject) => {
             const model = TraceEngine.TraceModel.Model.createWithAllHandlers(traceEngineConfig);
             model.addEventListener(TraceEngine.TraceModel.ModelUpdateEvent.eventName, (event) => {
@@ -158,6 +163,7 @@ export class TraceLoader {
                     const traceParsedData = model.traceParsedData(0);
                     if (metadata && traceParsedData) {
                         resolve({
+                            model,
                             metadata,
                             traceParsedData,
                         });
@@ -167,7 +173,7 @@ export class TraceLoader {
                     }
                 }
             });
-            void model.parse(events, { metadata: {}, isFreshRecording: emulateFreshRecording }).catch(e => console.error(e));
+            void model.parse(events, { metadata, isFreshRecording: emulateFreshRecording }).catch(e => console.error(e));
         });
     }
 }

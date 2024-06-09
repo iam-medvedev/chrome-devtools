@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../../core/sdk/sdk.js';
+import * as Bindings from '../../../models/bindings/bindings.js';
+import * as Workspace from '../../../models/workspace/workspace.js';
 import { getCleanTextContentFromElements, getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithRealConnection } from '../../../testing/RealConnection.js';
+import { createTarget } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
 import * as ApplicationComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const makeFrame = () => {
+const makeFrame = (target) => {
     const newFrame = {
         url: 'https://www.example.com/path/page.html',
         securityOrigin: 'https://www.example.com',
@@ -28,7 +31,7 @@ const makeFrame = () => {
         getOwnerDOMNodeOrDocument: () => ({
             nodeName: () => 'iframe',
         }),
-        resourceTreeModel: () => SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.model(SDK.ResourceTreeModel.ResourceTreeModel),
+        resourceTreeModel: () => target.model(SDK.ResourceTreeModel.ResourceTreeModel),
         getCreationStackTraceData: () => ({
             creationStackTrace: {
                 callFrames: [{
@@ -64,9 +67,9 @@ const makeFrame = () => {
     };
     return newFrame;
 };
-describeWithRealConnection('FrameDetailsView', () => {
+describeWithMockConnection('FrameDetailsView', () => {
     it('renders with a title', async () => {
-        const frame = makeFrame();
+        const frame = makeFrame(createTarget());
         const component = new ApplicationComponents.FrameDetailsView.FrameDetailsReportView(frame);
         renderElementIntoDOM(component);
         assert.isNotNull(component.shadowRoot);
@@ -77,18 +80,23 @@ describeWithRealConnection('FrameDetailsView', () => {
         assert.strictEqual(titleElement?.textContent, frame.displayName());
     });
     it('renders report keys and values', async () => {
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
         const targetManager = SDK.TargetManager.TargetManager.instance();
-        const target = targetManager.rootTarget();
-        assert.exists(target);
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping: new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace),
+            targetManager,
+        });
+        const target = createTarget();
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
-        const debuggerId = debuggerModel.debuggerId();
-        const frame = makeFrame();
+        sinon.stub(SDK.DebuggerModel.DebuggerModel, 'modelForDebuggerId').resolves(debuggerModel);
+        const frame = makeFrame(target);
         frame.adFrameType = () => "root" /* Protocol.Page.AdFrameType.Root */;
         frame.parentFrame = () => ({
             getAdScriptId: () => ({
                 scriptId: 'scriptId',
-                debuggerId: debuggerId,
+                debuggerId: '42',
             }),
         });
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
@@ -111,7 +119,7 @@ describeWithRealConnection('FrameDetailsView', () => {
         const component = new ApplicationComponents.FrameDetailsView.FrameDetailsReportView(frame);
         renderElementIntoDOM(component);
         assert.isNotNull(component.shadowRoot);
-        void component.render();
+        await component.render();
         await coordinator.done({ waitForWork: true });
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, [
@@ -155,7 +163,7 @@ describeWithRealConnection('FrameDetailsView', () => {
             assert.isNotNull(row.shadowRoot);
             stackTraceText = stackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
-        assert.deepEqual(stackTraceText[0], 'function1\xA0@\xA0http://www.example.com/script.js:16');
+        assert.deepEqual(stackTraceText[0], 'function1\xA0@\xA0www.example.com/script.js:16');
         const adScriptLink = component.shadowRoot.querySelector('devtools-report-value.ad-script-link');
         assert.exists(adScriptLink);
         assert.strictEqual(adScriptLink.textContent, '');

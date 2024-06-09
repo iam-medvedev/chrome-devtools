@@ -38,6 +38,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineLandingPage.ts
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TimelineLandingPage extends UI.Widget.VBox {
     toggleRecordAction;
+    #splitWidget;
     constructor(toggleRecordAction, options) {
         super();
         this.toggleRecordAction = toggleRecordAction;
@@ -49,16 +50,24 @@ export class TimelineLandingPage extends UI.Widget.VBox {
             this.renderLegacyLandingPage(options);
         }
     }
+    onResize() {
+        const useNarrowLayout = this.contentElement.offsetWidth < 500;
+        if (useNarrowLayout) {
+            this.#splitWidget?.setVertical(false);
+        }
+        else {
+            this.#splitWidget?.setVertical(true);
+        }
+    }
     renderLandingPage() {
         const mainWidget = new UI.Widget.Widget();
         mainWidget.contentElement.append(new Components.LiveMetricsView.LiveMetricsView());
         const sidebarWidget = new UI.Widget.Widget();
-        const nextSteps = sidebarWidget.contentElement.createChild('div');
-        nextSteps.textContent = 'Next steps';
-        const splitView = new UI.SplitWidget.SplitWidget(true, true);
-        splitView.setMainWidget(mainWidget);
-        splitView.setSidebarWidget(sidebarWidget);
-        splitView.show(this.contentElement);
+        sidebarWidget.contentElement.append(new Components.LiveMetricsView.LiveMetricsNextSteps());
+        this.#splitWidget = new UI.SplitWidget.SplitWidget(true, true);
+        this.#splitWidget.setMainWidget(mainWidget);
+        this.#splitWidget.setSidebarWidget(sidebarWidget);
+        this.#splitWidget.show(this.contentElement);
     }
     renderLegacyLandingPage(options) {
         function encloseWithTag(tagName, contents) {

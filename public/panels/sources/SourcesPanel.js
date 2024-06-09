@@ -227,7 +227,8 @@ export class SourcesPanel extends UI.Panel.Panel {
         tabbedPane.setMinimumSize(100, 25);
         tabbedPane.element.classList.add('navigator-tabbed-pane');
         tabbedPane.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('navigator').track({ keydown: 'ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space' })}`);
-        const navigatorMenuButton = new UI.Toolbar.ToolbarMenuButton(this.populateNavigatorMenu.bind(this), true, 'more-options');
+        const navigatorMenuButton = new UI.Toolbar.ToolbarMenuButton(this.populateNavigatorMenu.bind(this), /* isIconDropdown */ true, /* useSoftMenu */ true, 'more-options');
+        navigatorMenuButton.setGlyph('dots-vertical');
         navigatorMenuButton.setTitle(i18nString(UIStrings.moreOptions));
         tabbedPane.rightToolbar().appendToolbarItem(navigatorMenuButton);
         tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, ({ data: { tabId } }) => Host.userMetrics.sourcesSidebarTabShown(tabId));

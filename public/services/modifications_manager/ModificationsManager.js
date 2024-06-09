@@ -3,33 +3,66 @@
 // found in the LICENSE file.
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
-let instance = null;
+import * as EventsSerializer from '../events_serializer/events_serializer.js';
+const modificationsManagerByTraceIndex = [];
+let activeManager;
 export class ModificationsManager {
-    /**
-     * An Array with all trace entries.
-     * We save modifications into the trace file by saving their id in the allEntries Array.
-     **/
-    #allEntries;
     #entriesFilter;
     #timelineBreadcrumbs;
+    #modifications = null;
+    #traceParsedData;
+    #eventsSerializer;
     /**
-     * A new instance is create each time a trace is recorded or loaded from a file.
-     * Both entryToNodeMap and wholeTraceBounds are mandatory to support all modifications and if one of them
-     * is not present, something has gone wrong so let's load the trace without the modifications support.
-     **/
-    static maybeInstance(opts = { entryToNodeMap: null, wholeTraceBounds: null }) {
-        if (opts.entryToNodeMap && opts.wholeTraceBounds) {
-            instance = new ModificationsManager(opts.entryToNodeMap, opts.wholeTraceBounds);
+     * Gets the ModificationsManager instance corresponding to a trace
+     * given its index used in Model#traces. If no index is passed gets
+     * the manager instance for the last trace. If no instance is found,
+     * throws.
+     */
+    static activeManager() {
+        return activeManager;
+    }
+    /**
+     * Initializes a ModificationsManager instance for a parsed trace or changes the active manager for an existing one.
+     * This needs to be called if and a trace has been parsed or switched to.
+     */
+    static initAndActivateModificationsManager(traceModel, traceIndex) {
+        // If a manager for a given index has already been created, active it.
+        if (modificationsManagerByTraceIndex[traceIndex]) {
+            activeManager = modificationsManagerByTraceIndex[traceIndex];
+            ModificationsManager.activeManager()?.applyModificationsIfPresent();
         }
-        return instance;
+        const traceParsedData = traceModel.traceParsedData(traceIndex);
+        if (!traceParsedData) {
+            throw new Error('ModificationsManager was initialized without a corresponding trace data');
+        }
+        const traceBounds = traceParsedData.Meta.traceBounds;
+        const traceEvents = traceModel.rawTraceEvents(traceIndex);
+        if (!traceEvents) {
+            throw new Error('ModificationsManager was initialized without a corresponding raw trace events array');
+        }
+        const syntheticEventsManager = traceModel.syntheticTraceEventsManager(traceIndex);
+        if (!syntheticEventsManager) {
+            throw new Error('ModificationsManager was initialized without a corresponding SyntheticEventsManager');
+        }
+        const metadata = traceModel.metadata(traceIndex);
+        const newModificationsManager = new ModificationsManager({
+            traceParsedData,
+            traceBounds,
+            rawTraceEvents: traceEvents,
+            modifications: metadata?.modifications,
+            syntheticEvents: syntheticEventsManager.getSyntheticTraceEvents(),
+        });
+        modificationsManagerByTraceIndex[traceIndex] = newModificationsManager;
+        activeManager = newModificationsManager;
+        ModificationsManager.activeManager()?.applyModificationsIfPresent();
     }
-    static removeInstance() {
-        instance = null;
-    }
-    constructor(entryToNodeMap, wholeTraceBounds) {
+    constructor({ traceParsedData, traceBounds, modifications }) {
+        const entryToNodeMap = new Map([...traceParsedData.Samples.entryToNode, ...traceParsedData.Renderer.entryToNode]);
         this.#entriesFilter = new TraceEngine.EntriesFilter.EntriesFilter(entryToNodeMap);
-        this.#timelineBreadcrumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(wholeTraceBounds);
-        this.#allEntries = Array.from(entryToNodeMap.keys());
+        this.#timelineBreadcrumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(traceBounds);
+        this.#modifications = modifications || null;
+        this.#traceParsedData = traceParsedData;
+        this.#eventsSerializer = new EventsSerializer.EventsSerializer();
     }
     getEntriesFilter() {
         return this.#entriesFilter;
@@ -37,55 +70,43 @@ export class ModificationsManager {
     getTimelineBreadcrumbs() {
         return this.#timelineBreadcrumbs;
     }
-    getEntryIndex(entry) {
-        return this.#allEntries.indexOf(entry);
-    }
     /**
-     * Builds all modifications and returns the object written into the 'modifications' trace file metada field.
+     * Builds all modifications into a serializable object written into
+     * the 'modifications' trace file metadata field.
      */
-    getModifications() {
-        const indexesOfSynteticEntries = [];
-        const hiddenEntries = this.#entriesFilter.invisibleEntries();
-        if (hiddenEntries) {
-            for (const entry of hiddenEntries) {
-                indexesOfSynteticEntries.push(this.getEntryIndex(entry));
-            }
-        }
-        const indexesOfModifiedEntries = [];
-        const modifiedEntries = this.#entriesFilter.expandableEntries();
-        if (modifiedEntries) {
-            for (const entry of modifiedEntries) {
-                indexesOfModifiedEntries.push(this.getEntryIndex(entry));
-            }
-        }
-        return {
-            entriesFilterModifications: {
-                hiddenEntriesIndexes: indexesOfSynteticEntries,
-                expandableEntriesIndexes: indexesOfModifiedEntries,
+    toJSON() {
+        const hiddenEntries = this.#entriesFilter.invisibleEntries()
+            .map(entry => this.#eventsSerializer.keyForEvent(entry))
+            .filter(key => key !== null);
+        const expandableEntries = this.#entriesFilter.expandableEntries()
+            .map(entry => this.#eventsSerializer.keyForEvent(entry))
+            .filter(key => key !== null);
+        this.#modifications = {
+            entriesModifications: {
+                hiddenEntries: hiddenEntries.map(key => key.join('-')),
+                expandableEntries: expandableEntries.map(key => key.join('-')),
             },
             initialBreadcrumb: this.#timelineBreadcrumbs.initialBreadcrumb,
         };
+        return this.#modifications;
     }
-    applyModifications(modifications) {
-        this.applyEntriesFilterModifications(modifications.entriesFilterModifications.hiddenEntriesIndexes, modifications.entriesFilterModifications.expandableEntriesIndexes);
+    applyModificationsIfPresent() {
+        const modifications = this.#modifications;
+        if (!modifications) {
+            return;
+        }
+        const hiddenEntries = modifications.entriesModifications.hiddenEntries.map(key => key.split('-').map(item => isNaN(parseInt(item, 10)) ? item : parseInt(item, 10)));
+        const expandableEntries = modifications.entriesModifications.expandableEntries.map(key => key.split('-').map(item => isNaN(parseInt(item, 10)) ? item : parseInt(item, 10)));
+        if (!hiddenEntries.every(EventsSerializer.EventsSerializer.isTraceEventSerializableKey) ||
+            !expandableEntries.every(EventsSerializer.EventsSerializer.isTraceEventSerializableKey)) {
+            throw new Error('Invalid event key found in JSON modifications');
+        }
+        this.applyEntriesFilterModifications(hiddenEntries, expandableEntries);
         this.#timelineBreadcrumbs.setInitialBreadcrumbFromLoadedModifications(modifications.initialBreadcrumb);
     }
-    applyEntriesFilterModifications(hiddenEntriesIndexes, expandableEntriesIndexes) {
-        // Build the hidden events array by getting the entries by their index in the allEntries array.
-        const hiddenEntries = [];
-        hiddenEntriesIndexes.map(hiddenEntryHash => {
-            const hiddenEntry = this.#allEntries[hiddenEntryHash];
-            if (hiddenEntry) {
-                hiddenEntries.push(hiddenEntry);
-            }
-        });
-        const expandableEntries = [];
-        expandableEntriesIndexes.map(hiddenEntryHash => {
-            const expandableEntry = this.#allEntries[hiddenEntryHash];
-            if (expandableEntry) {
-                expandableEntries.push(expandableEntry);
-            }
-        });
+    applyEntriesFilterModifications(hiddenEntriesKeys, expandableEntriesKeys) {
+        const hiddenEntries = hiddenEntriesKeys.map(key => this.#eventsSerializer.eventForKey(key, this.#traceParsedData));
+        const expandableEntries = expandableEntriesKeys.map(key => this.#eventsSerializer.eventForKey(key, this.#traceParsedData));
         this.#entriesFilter.setHiddenAndExpandableEntries(hiddenEntries, expandableEntries);
     }
 }

@@ -30,6 +30,7 @@
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
+import * as Root from '../../../../core/root/root.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
@@ -247,6 +248,13 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.revealDescendantsArrowHighlightElement =
             this.viewportElement.createChild('div', 'reveal-descendants-arrow-highlight-element');
         this.selectedElement = this.viewportElement.createChild('div', 'flame-chart-selected-element');
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_WRITE_MODIFICATIONS_TO_DISK */)) {
+            // When this experiment is enabled the new Overlays system is
+            // used to render the selected entry outline, so hide this one.
+            // Once the overlay is ready we can remove this.selectedElement
+            // entirely.
+            this.selectedElement.style.display = 'none';
+        }
         this.canvas.addEventListener('focus', () => {
             this.dispatchEventToListeners("CanvasFocused" /* Events.CanvasFocused */);
         }, false);
@@ -898,7 +906,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (this.#inTrackConfigEditMode) {
             return;
         }
-        this.contextMenu = new UI.ContextMenu.ContextMenu(event);
+        this.contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
         const label = i18nString(UIStrings.enterTrackConfigurationMode);
         this.contextMenu.defaultSection().appendItem(label, () => {
             this.#enterEditMode();
@@ -911,7 +919,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (this.#inTrackConfigEditMode === false) {
             return;
         }
-        this.contextMenu = new UI.ContextMenu.ContextMenu(event);
+        this.contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
         const label = i18nString(UIStrings.exitTrackConfigurationMode);
         this.contextMenu.defaultSection().appendItem(label, () => {
             this.#exitEditMode();
@@ -966,7 +974,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (!possibleActions) {
             return;
         }
-        this.contextMenu = new UI.ContextMenu.ContextMenu(event);
+        this.contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
         const hideEntryOption = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideFunction), () => {
             this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */, this.selectedEntryIndex);
         }, {
@@ -1002,23 +1010,25 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             jslogContext: 'reset-trace',
         });
         const entry = this.dataProvider.eventByIndex?.(this.selectedEntryIndex);
-        const url = (entry && TraceEngine.Types.TraceEvents.isProfileCall(entry)) ?
-            entry.callFrame.url :
-            undefined;
-        if (url) {
-            if (Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
-                this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeScriptFromIgnoreList), () => {
-                    Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
-                }, {
-                    jslogContext: 'remove-from-ignore-list',
-                });
-            }
-            else {
-                this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.addScriptToIgnoreList), () => {
-                    Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
-                }, {
-                    jslogContext: 'add-to-ignore-list',
-                });
+        if (entry && entry instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame === false) {
+            const url = (TraceEngine.Types.TraceEvents.isProfileCall(entry)) ?
+                entry.callFrame.url :
+                undefined;
+            if (url) {
+                if (Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
+                    this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeScriptFromIgnoreList), () => {
+                        Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
+                    }, {
+                        jslogContext: 'remove-from-ignore-list',
+                    });
+                }
+                else {
+                    this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.addScriptToIgnoreList), () => {
+                        Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
+                    }, {
+                        jslogContext: 'add-to-ignore-list',
+                    });
+                }
             }
         }
         void this.contextMenu.show();
@@ -2960,6 +2970,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             return decorationsForEvent.some(decoration => decoration.type === decorationType);
         }
         return false;
+    }
+    getMarkerPixelsForEntryIndex(entryIndex) {
+        return this.markerPositions.get(entryIndex) ?? null;
     }
     /**
      * Update position of an Element. By default, the element is treated as a full entry and it's dimentions are set to the full entry width/length/height.

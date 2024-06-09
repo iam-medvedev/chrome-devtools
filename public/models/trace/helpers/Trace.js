@@ -253,8 +253,7 @@ export function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback
             continue;
         }
         const targetEvent = endEvent || beginEvent;
-        const syntheticEventsManager = SyntheticEventsManager.getActiveManager();
-        const event = syntheticEventsManager.registerSyntheticBasedEvent({
+        const event = SyntheticEventsManager.registerSyntheticBasedEvent({
             rawSourceEvent: beginEvent,
             cat: targetEvent.cat,
             ph: targetEvent.ph,

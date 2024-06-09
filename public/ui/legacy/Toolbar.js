@@ -555,6 +555,69 @@ export class ToolbarButton extends ToolbarItem {
         this.dispatchEventToListeners("MouseDown" /* ToolbarButton.Events.MouseDown */, event);
     }
 }
+export class ToolbarCombobox extends ToolbarItem {
+    glyphElement;
+    textElement;
+    text;
+    glyph;
+    constructor(title, isIconDropdown, jslogContext) {
+        const element = document.createElement('button');
+        element.classList.add('toolbar-button');
+        super(element);
+        this.element.addEventListener('click', this.clicked.bind(this), false);
+        this.element.addEventListener('mousedown', this.mouseDown.bind(this), false);
+        this.glyphElement = new IconButton.Icon.Icon();
+        this.glyphElement.className = 'toolbar-glyph hidden';
+        this.element.appendChild(this.glyphElement);
+        this.textElement = this.element.createChild('div', 'toolbar-text hidden');
+        this.setTitle(title);
+        if (jslogContext) {
+            this.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context(jslogContext)}`);
+        }
+        this.title = '';
+        if (!isIconDropdown) {
+            this.element.classList.add('toolbar-has-dropdown');
+            const dropdownArrowIcon = IconButton.Icon.create('triangle-down', 'toolbar-dropdown-arrow');
+            this.element.appendChild(dropdownArrowIcon);
+        }
+    }
+    setText(text) {
+        if (this.text === text) {
+            return;
+        }
+        this.textElement.textContent = text;
+        this.textElement.classList.toggle('hidden', !text);
+        this.text = text;
+    }
+    setGlyph(glyph) {
+        if (this.glyph === glyph) {
+            return;
+        }
+        this.glyphElement.name = !glyph ? null : glyph;
+        this.glyphElement.classList.toggle('hidden', !glyph);
+        this.element.classList.toggle('toolbar-has-glyph', Boolean(glyph));
+        this.glyph = glyph;
+    }
+    setDarkText() {
+        this.element.classList.add('dark-text');
+    }
+    turnShrinkable() {
+        this.element.classList.add('toolbar-has-dropdown-shrinkable');
+    }
+    clicked(event) {
+        if (!this.enabled) {
+            return;
+        }
+        this.dispatchEventToListeners("Click" /* ToolbarButton.Events.Click */, event);
+        event.consume();
+    }
+    mouseDown(event) {
+        if (!this.enabled) {
+            return;
+        }
+        this.dispatchEventToListeners("MouseDown" /* ToolbarButton.Events.MouseDown */, event);
+    }
+}
 export class ToolbarInput extends ToolbarItem {
     prompt;
     proxyElement;
@@ -693,12 +756,12 @@ export class ToolbarToggle extends ToolbarButton {
         this.element.classList.toggle('toolbar-toggle-with-dot', toggleWithDot);
     }
 }
-export class ToolbarMenuButton extends ToolbarButton {
+export class ToolbarMenuButton extends ToolbarCombobox {
     contextMenuHandler;
     useSoftMenu;
     triggerTimeout;
-    constructor(contextMenuHandler, useSoftMenu, jslogContext) {
-        super('', 'dots-vertical', undefined, jslogContext);
+    constructor(contextMenuHandler, isIconDropdown, useSoftMenu, jslogContext) {
+        super('', isIconDropdown, jslogContext);
         if (jslogContext) {
             this.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context(jslogContext)}`);
         }
@@ -721,8 +784,12 @@ export class ToolbarMenuButton extends ToolbarButton {
             useSoftMenu: this.useSoftMenu,
             x: this.element.getBoundingClientRect().left,
             y: this.element.getBoundingClientRect().top + this.element.offsetHeight,
+            // Without rAF, pointer events will be un-ignored too early, and a single click causes the
+            // context menu to be closed and immediately re-opened on Windows (https://crbug.com/339560549).
+            onSoftMenuClosed: () => requestAnimationFrame(() => this.element.removeAttribute('aria-expanded')),
         });
         this.contextMenuHandler(contextMenu);
+        this.element.setAttribute('aria-expanded', 'true');
         void contextMenu.show();
     }
     clicked(event) {

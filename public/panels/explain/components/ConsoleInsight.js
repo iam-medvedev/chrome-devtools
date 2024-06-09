@@ -372,7 +372,7 @@ export class ConsoleInsight extends HTMLElement {
     async *#getInsight() {
         const { prompt, sources, isPageReloadRecommended } = await this.#promptBuilder.buildPrompt();
         try {
-            for await (const response of this.#aidaClient.fetch(prompt)) {
+            for await (const response of this.#aidaClient.fetch(Host.AidaClient.AidaClient.buildConsoleInsightsRequest(prompt))) {
                 yield { sources, isPageReloadRecommended, ...response };
             }
         }

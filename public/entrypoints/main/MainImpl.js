@@ -138,12 +138,16 @@ export class MainImpl {
     async #loaded() {
         console.timeStamp('Main._loaded');
         Root.Runtime.Runtime.setPlatform(Host.Platform.platform());
-        const prefs = await new Promise(resolve => {
+        const prefsPromise = new Promise(resolve => {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.getPreferences(resolve);
         });
+        const configPromise = new Promise(resolve => {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.getHostConfig(resolve);
+        });
+        const [prefs, config] = await Promise.all([prefsPromise, configPromise]);
         console.timeStamp('Main._gotPreferences');
         this.#initializeGlobalsForLayoutTests();
-        this.createSettings(prefs);
+        this.createSettings(prefs, config);
         await this.requestAndRegisterLocaleData();
         Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting('sync-preferences').get());
         if (Root.Runtime.Runtime.queryParam('veLogging')) {
@@ -192,7 +196,7 @@ export class MainImpl {
             devToolsLocale.forceFallbackLocale();
         }
     }
-    createSettings(prefs) {
+    createSettings(prefs, config) {
         this.#initializeExperiments();
         let storagePrefix = '';
         if (Host.Platform.isCustomDevtoolsFrontend()) {
@@ -233,7 +237,7 @@ export class MainImpl {
         // setting can't change storage buckets during a single DevTools session.
         const syncedStorage = new Common.Settings.SettingsStorage(prefs, hostSyncedStorage, storagePrefix);
         const globalStorage = new Common.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
-        Common.Settings.Settings.instance({ forceNew: true, syncedStorage, globalStorage, localStorage });
+        Common.Settings.Settings.instance({ forceNew: true, syncedStorage, globalStorage, localStorage, config });
         // Needs to be created after Settings are available.
         new SettingTracker();
         if (!Host.InspectorFrontendHost.isUnderTest()) {
@@ -595,7 +599,8 @@ let mainMenuItemInstance;
 export class MainMenuItem {
     #itemInternal;
     constructor() {
-        this.#itemInternal = new UI.Toolbar.ToolbarMenuButton(this.#handleContextMenu.bind(this), true, 'main-menu');
+        this.#itemInternal = new UI.Toolbar.ToolbarMenuButton(this.#handleContextMenu.bind(this), /* isIconDropdown */ true, /* useSoftMenu */ true, 'main-menu');
+        this.#itemInternal.setGlyph('dots-vertical');
         this.#itemInternal.element.classList.add('main-menu');
         this.#itemInternal.setTitle(i18nString(UIStrings.customizeAndControlDevtools));
     }

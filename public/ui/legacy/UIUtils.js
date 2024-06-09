@@ -85,11 +85,6 @@ const UIStrings = {
      */
     promiseRejectedAsync: 'Promise rejected (async)',
     /**
-     *@description Text in UIUtils
-     *@example {Promise} PH1
-     */
-    sAsync: '{PH1} (async)',
-    /**
      *@description Text for the title of asynchronous function calls group in Call Stack
      */
     asyncCall: 'Async Call',
@@ -538,7 +533,7 @@ export function asyncStackTraceLabel(description, previousCallFrames) {
             const lastPreviousFrameName = beautifyFunctionName(lastPreviousFrame.functionName);
             description = `await in ${lastPreviousFrameName}`;
         }
-        return i18nString(UIStrings.sAsync, { PH1: description });
+        return description;
     }
     return i18nString(UIStrings.asyncCall);
 }

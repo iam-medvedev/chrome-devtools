@@ -1,8 +1,9 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import * as i18n from './i18n.js';
-describe('preciseMillisToString', () => {
+describeWithLocale('preciseMillisToString', () => {
     it('formats without a given precision', () => {
         const inputNumber = 7.84;
         const outputString = i18n.TimeUtilities.preciseMillisToString(inputNumber);
@@ -15,7 +16,7 @@ describe('preciseMillisToString', () => {
         assert.strictEqual(outputString, '7.84\xA0ms');
     });
 });
-describe('millisToString', () => {
+describeWithLocale('millisToString', () => {
     it('formats when number is infinite', () => {
         const inputNumber = Infinity;
         const outputString = i18n.TimeUtilities.millisToString(inputNumber);
@@ -65,7 +66,7 @@ describe('millisToString', () => {
         assert.strictEqual(outputString, '1.2\xA0days');
     });
 });
-describe('secondsToString', () => {
+describeWithLocale('secondsToString', () => {
     it('formats infinte numbers correctly', () => {
         const inputNumber = Infinity;
         const outputString = i18n.TimeUtilities.secondsToString(inputNumber);

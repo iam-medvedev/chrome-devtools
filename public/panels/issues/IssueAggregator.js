@@ -21,7 +21,7 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     #deprecationIssues = new Set();
     #issueKind = "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */;
     #lowContrastIssues = new Set();
-    #metadataAllowedSites = new Set();
+    #cookieDeprecationMetadataIssues = new Set();
     #mixedContentIssues = new Set();
     #sharedArrayBufferIssues = new Set();
     #quirksModeIssues = new Set();
@@ -61,8 +61,8 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     getHeavyAdIssues() {
         return this.#heavyAdIssues;
     }
-    getMetadataAllowedSites() {
-        return this.#metadataAllowedSites.values();
+    getCookieDeprecationMetadataIssues() {
+        return this.#cookieDeprecationMetadataIssues;
     }
     getMixedContentIssues() {
         return this.#mixedContentIssues;
@@ -152,10 +152,8 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
                 this.#affectedLocations.set(key, location);
             }
         }
-        for (const site of issue.metadataAllowedSites()) {
-            if (!this.#metadataAllowedSites.has(site)) {
-                this.#metadataAllowedSites.add(site);
-            }
+        if (issue instanceof IssuesManager.CookieDeprecationMetadataIssue.CookieDeprecationMetadataIssue) {
+            this.#cookieDeprecationMetadataIssues.add(issue);
         }
         if (issue instanceof IssuesManager.MixedContentIssue.MixedContentIssue) {
             this.#mixedContentIssues.add(issue);

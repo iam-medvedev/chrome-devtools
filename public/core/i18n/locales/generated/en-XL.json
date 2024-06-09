@@ -272,8 +272,11 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With b̂ĺôćk̂"
   },
+  "core/sdk/NetworkManager.ts | fast4G": {
+    "message": "F̂áŝt́ 4Ĝ"
+  },
   "core/sdk/NetworkManager.ts | fastG": {
-    "message": "F̂áŝt́ 3Ĝ"
+    "message": "Ŝĺôẃ 4Ĝ"
   },
   "core/sdk/NetworkManager.ts | noContentForPreflight": {
     "message": "N̂ó ĉón̂t́êńt̂ áv̂áîĺâb́l̂é f̂ór̂ ṕr̂éf̂ĺîǵĥt́ r̂éq̂úêśt̂"
@@ -300,7 +303,7 @@
     "message": "{PH1} f̂ín̂íŝh́êd́ l̂óâd́îńĝ: {PH2} \"{PH3}\"."
   },
   "core/sdk/NetworkManager.ts | slowG": {
-    "message": "Ŝĺôẃ 3Ĝ"
+    "message": "3Ĝ"
   },
   "core/sdk/NetworkRequest.ts | anUnknownErrorWasEncounteredWhenTrying": {
     "message": "Âń ûńk̂ńôẃn̂ ér̂ŕôŕ ŵáŝ én̂ćôún̂t́êŕêd́ ŵh́êń t̂ŕŷín̂ǵ t̂ó ŝt́ôŕê t́ĥíŝ ćôók̂íê."
@@ -1177,6 +1180,9 @@
   },
   "generated/Deprecation.ts | GeolocationInsecureOriginDeprecatedNotRemoved": {
     "message": "getCurrentPosition() âńd̂ watchPosition() ár̂é d̂ép̂ŕêćât́êd́ ôń îńŝéĉúr̂é ôŕîǵîńŝ. T́ô úŝé t̂h́îś f̂éât́ûŕê, ýôú ŝh́ôúl̂d́ ĉón̂śîd́êŕ ŝẃît́ĉh́îńĝ ýôúr̂ áp̂ṕl̂íĉát̂íôń t̂ó â śêćûŕê ór̂íĝín̂, śûćĥ áŝ H́T̂T́P̂Ś. Ŝéê h́t̂t́p̂ś://ĝóô.ǵl̂é/ĉh́r̂óm̂é-îńŝéĉúr̂é-ôŕîǵîńŝ f́ôŕ m̂ór̂é d̂ét̂áîĺŝ."
+  },
+  "generated/Deprecation.ts | GetInnerHTML": {
+    "message": "T̂h́ê ǵêt́Îńn̂ér̂H́T̂ḾL̂() f́ûńĉt́îón̂ íŝ d́êṕr̂éĉát̂éd̂, án̂d́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂ f́r̂óm̂ t́ĥíŝ b́r̂óŵśêŕ v̂ér̂ý ŝóôń. P̂ĺêáŝé ûśê ǵêt́ĤT́M̂Ĺ() îńŝt́êád̂."
   },
   "generated/Deprecation.ts | GetUserMediaInsecureOrigin": {
     "message": "getUserMedia() n̂ó l̂ón̂ǵêŕ ŵór̂ḱŝ ón̂ ín̂śêćûŕê ór̂íĝín̂ś. T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ŷóû śĥóûĺd̂ ćôńŝíd̂ér̂ śŵít̂ćĥín̂ǵ ŷóûŕ âṕp̂ĺîćât́îón̂ t́ô á ŝéĉúr̂é ôŕîǵîń, ŝúĉh́ âś ĤT́T̂ṔŜ. Śêé ĥt́t̂ṕŝ://ǵôó.ĝĺê/ćĥŕôḿê-ín̂śêćûŕê-ór̂íĝín̂ś f̂ór̂ ḿôŕê d́êt́âíl̂ś."
@@ -5558,6 +5564,9 @@
   "panels/elements/components/AdornerSettingsPane.ts | settingsTitle": {
     "message": "Ŝh́ôẃ b̂ád̂ǵêś"
   },
+  "panels/elements/components/AnchorFunctionLinkSwatch.ts | jumpToAnchorNode": {
+    "message": "Ĵúm̂ṕ t̂ó âńĉh́ôŕ n̂ód̂é"
+  },
   "panels/elements/components/CSSHintDetailsView.ts | learnMore": {
     "message": "L̂éâŕn̂ Ḿôŕê"
   },
@@ -6455,9 +6464,6 @@
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ûṕd̂át̂é ŷóûŕ L̂án̂ǵûáĝé p̂ŕêf́êŕêńĉé îń D̂év̂T́ôól̂ś Ŝét̂t́îńĝś t̂ó Êńĝĺîśĥ."
   },
-  "panels/freestyler/components/FreestylerChatUi.ts | acceptButtonTitle": {
-    "message": "Âćĉép̂t́"
-  },
   "panels/freestyler/components/FreestylerChatUi.ts | inputDisclaimer": {
     "message": "F̂ŕêéŝt́ŷĺêŕ m̂áŷ d́îśp̂ĺâý îńâćĉúr̂át̂é îńf̂ór̂ḿât́îón̂ án̂d́ m̂áŷ ńôt́ ĝét̂ ít̂ ŕîǵĥt́"
   },
@@ -7091,9 +7097,6 @@
   "panels/lighthouse/LighthouseController.ts | doesThisPageFollowBestPractices": {
     "message": "D̂óêś t̂h́îś p̂áĝé f̂ól̂ĺôẃ b̂éŝt́ p̂ŕâćt̂íĉéŝ f́ôŕ m̂ód̂ér̂ń ŵéb̂ d́êv́êĺôṕm̂én̂t́"
   },
-  "panels/lighthouse/LighthouseController.ts | doesThisPageMeetTheStandardOfA": {
-    "message": "D̂óêś t̂h́îś p̂áĝé m̂éêt́ t̂h́ê śt̂án̂d́âŕd̂ óf̂ á P̂ŕôǵr̂éŝśîv́ê Ẃêb́ Âṕp̂"
-  },
   "panels/lighthouse/LighthouseController.ts | enableJavaScriptSampling": {
     "message": "Êńâb́l̂é Ĵáv̂áŜćr̂íp̂t́ ŝám̂ṕl̂ín̂ǵ d̂úr̂ín̂ǵ t̂h́ê Ĺîǵĥt́ĥóûśê ŕûń. T̂h́îś ŵíl̂ĺ p̂ŕôv́îd́ê ḿôŕê éx̂éĉút̂íôń d̂ét̂áîĺŝ ín̂ t́ĥé p̂ér̂f́ôŕm̂án̂ćê ṕâńêĺ ŵh́êń ŷóû v́îéŵ t́ĥé t̂ŕâćê, b́ût́ ĥáŝ h́îǵĥér̂ ĆP̂Ú ôv́êŕĥéâd́ âńd̂ ḿâý îḿp̂áĉt́ t̂h́ê ṕêŕf̂ór̂ḿâńĉé ôf́ t̂h́ê ṕâǵê."
   },
@@ -7135,9 +7138,6 @@
   },
   "panels/lighthouse/LighthouseController.ts | performance": {
     "message": "P̂ér̂f́ôŕm̂án̂ćê"
-  },
-  "panels/lighthouse/LighthouseController.ts | progressiveWebApp": {
-    "message": "P̂ŕôǵr̂éŝśîv́ê Ẃêb́ Âṕp̂"
   },
   "panels/lighthouse/LighthouseController.ts | resetStorageLocalstorage": {
     "message": "R̂éŝét̂ śt̂ór̂áĝé (cache, service workers, êt́ĉ) b́êf́ôŕê áûd́ît́îńĝ. (Ǵôód̂ f́ôŕ p̂ér̂f́ôŕm̂án̂ćê & PWA t́êśt̂ín̂ǵ)"
@@ -12248,6 +12248,12 @@
   "panels/timeline/components/DetailsView.ts | sTookS": {
     "message": "{PH1} t̂óôḱ {PH2}."
   },
+  "panels/timeline/components/DetailsView.ts | webSocketBytes": {
+    "message": "{PH1} b̂ýt̂é(ŝ)"
+  },
+  "panels/timeline/components/DetailsView.ts | webSocketDataLength": {
+    "message": "D̂át̂á L̂én̂ǵt̂h́"
+  },
   "panels/timeline/components/DetailsView.ts | websocketProtocol": {
     "message": "Ŵéb̂Śôćk̂ét̂ Ṕr̂ót̂óĉól̂"
   },
@@ -12616,6 +12622,12 @@
   },
   "panels/timeline/EventUICategory.ts | willSendRequest": {
     "message": "Ŵíl̂ĺ Ŝén̂d́ R̂éq̂úêśt̂"
+  },
+  "panels/timeline/EventUICategory.ts | wsMessageReceived": {
+    "message": "R̂éĉéîv́ê Ẃêb́Ŝóĉḱêt́ M̂éŝśâǵê"
+  },
+  "panels/timeline/EventUICategory.ts | wsMessageSent": {
+    "message": "Ŝén̂d́ Ŵéb̂Śôćk̂ét̂ Ḿêśŝáĝé"
   },
   "panels/timeline/EventUICategory.ts | xhrLoad": {
     "message": "XHR L̂óâd́"
@@ -14731,9 +14743,6 @@
   },
   "ui/legacy/UIUtils.ts | promiseResolvedAsync": {
     "message": "P̂ŕôḿîśê ŕêśôĺv̂éd̂ (áŝýn̂ć)"
-  },
-  "ui/legacy/UIUtils.ts | sAsync": {
-    "message": "{PH1} (âśŷńĉ)"
   },
   "ui/legacy/ViewManager.ts | sPanel": {
     "message": "{PH1} p̂án̂él̂"

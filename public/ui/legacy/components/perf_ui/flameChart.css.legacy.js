@@ -105,7 +105,7 @@ export default {
 .flame-chart-edit-confirm {
   position: fixed;
   bottom: 10px;
-  left: 10px;
+  right: 10px;
 }
 `
 };

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithRealConnection } from '../../testing/RealConnection.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as Elements from './elements.js';
 const stubTopLayerDOMNode = (nodeName, backendNodeId, ownerDocument) => {
@@ -17,7 +17,7 @@ const stubElementsTreeElement = () => {
         adorn: (_unused) => new Adorners.Adorner.Adorner(),
     };
 };
-describeWithRealConnection('TopLayerContainer', () => {
+describeWithMockConnection('TopLayerContainer', () => {
     it('should update top layer elements correctly', async () => {
         const stubDocument = {};
         const topLayerDOMNode1 = stubTopLayerDOMNode('dialog', 1, stubDocument);

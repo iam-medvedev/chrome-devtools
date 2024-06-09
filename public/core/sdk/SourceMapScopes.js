@@ -105,6 +105,17 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
                 }
                 range.originalScope = originalScope;
             }
+            if (item.callsite) {
+                const { sourceIdx, line, column } = item.callsite;
+                if (!originalScopeTrees[sourceIdx]) {
+                    throw new Error('Invalid source index!');
+                }
+                range.callsite = {
+                    sourceIndex: sourceIdx,
+                    line,
+                    column,
+                };
+            }
             rangeToStartItem.set(range, item);
             rangeStack.push(range);
         }
@@ -136,6 +147,9 @@ function* decodeGeneratedRangeItems(encodedGeneratedRange) {
         column: 0,
         defSourceIdx: 0,
         defScopeIdx: 0,
+        callsiteSourceIdx: 0,
+        callsiteLine: 0,
+        callsiteColumn: 0,
     };
     while (iter.hasNext()) {
         if (iter.peek() === ';') {
@@ -166,6 +180,19 @@ function* decodeGeneratedRangeItems(encodedGeneratedRange) {
             startItem.definition = {
                 sourceIdx: state.defSourceIdx,
                 scopeIdx: state.defScopeIdx,
+            };
+        }
+        if (startItem.flags & 2 /* EncodedGeneratedRangeFlag.HasCallsite */) {
+            const sourceIdx = iter.nextVLQ();
+            const line = iter.nextVLQ();
+            const column = iter.nextVLQ();
+            state.callsiteColumn = column + (line === 0 && sourceIdx === 0 ? state.callsiteColumn : 0);
+            state.callsiteLine = line + (sourceIdx === 0 ? state.callsiteLine : 0);
+            state.callsiteSourceIdx += sourceIdx;
+            startItem.callsite = {
+                sourceIdx: state.callsiteSourceIdx,
+                line: state.callsiteLine,
+                column: state.callsiteColumn,
             };
         }
         yield startItem;

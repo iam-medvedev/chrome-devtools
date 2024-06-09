@@ -19,7 +19,7 @@ export declare class Runtime {
     static isDescriptorEnabled(descriptor: {
         experiment: ((string | undefined) | null);
         condition?: Condition;
-    }): boolean;
+    }, config?: HostConfig): boolean;
     loadLegacyModule(modulePath: string): Promise<void>;
 }
 export interface Option {
@@ -84,11 +84,34 @@ export declare const enum ExperimentName {
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_OBSERVATIONS = "timeline-observations"
 }
+export interface HostConfigConsoleInsights {
+    aidaModelId: string;
+    aidaTemperature: number;
+    blocked: boolean;
+    blockedByAge: boolean;
+    blockedByEnterprisePolicy: boolean;
+    blockedByFeatureFlag: boolean;
+    blockedByGeo: boolean;
+    blockedByRollout: boolean;
+    disallowLogging: boolean;
+    enabled: boolean;
+    optIn: boolean;
+}
+export interface HostConfigConsoleInsightsDogfood {
+    aidaModelId: string;
+    aidaTemperature: number;
+    enabled: boolean;
+    optIn: boolean;
+}
+export interface HostConfig {
+    devToolsConsoleInsights: HostConfigConsoleInsights;
+    devToolsConsoleInsightsDogfood: HostConfigConsoleInsightsDogfood;
+}
 /**
  * When defining conditions make sure that objects used by the function have
  * been instantiated.
  */
-export type Condition = () => boolean;
+export type Condition = (config?: HostConfig) => boolean;
 export declare const conditions: {
     canDock: () => boolean;
 };

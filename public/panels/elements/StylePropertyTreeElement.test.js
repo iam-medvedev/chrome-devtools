@@ -3,15 +3,18 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
-import { describeWithRealConnection } from '../../testing/RealConnection.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as ElementsComponents from './components/components.js';
 import * as Elements from './elements.js';
-describeWithRealConnection('StylePropertyTreeElement', () => {
+describeWithMockConnection('StylePropertyTreeElement', () => {
     let stylesSidebarPane;
     let mockStylePropertiesSection;
     let mockCssStyleDeclaration;
@@ -41,6 +44,9 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
         mockCssStyleDeclaration.leadingProperties.returns([]);
         mockCssStyleDeclaration.styleSheetId = 'stylesheet-id';
         mockCssStyleDeclaration.range = new TextUtils.TextRange.TextRange(0, 0, 10, 10);
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
+        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), workspace);
+        Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager: SDK.TargetManager.TargetManager.instance() });
     });
     function getTreeElement(name, value, longhandProperties = []) {
         const property = new SDK.CSSProperty.CSSProperty(mockCssStyleDeclaration, 0, name, value, true, false, true, false, '', undefined, longhandProperties);
@@ -881,6 +887,138 @@ describeWithRealConnection('StylePropertyTreeElement', () => {
             model.renderContents(container);
             assert.strictEqual(container.textContent, '10px y 12px spread');
             assert.deepStrictEqual(properties.map(p => p.source), [null, null, null, null]);
+        });
+    });
+    describe('AnchorFunctionRenderer', () => {
+        let anchorDecoratedForTestStub;
+        let getAnchorBySpecifierStub;
+        let revealStub;
+        let hideDOMNodeHighlightStub;
+        let highlightMock;
+        let fakeParentNode;
+        let fakeDOMNode;
+        beforeEach(() => {
+            fakeParentNode = {
+                localName() {
+                    return 'span';
+                },
+                isSVGNode() {
+                    return false;
+                },
+                getAnchorBySpecifier() {
+                    return Promise.resolve(fakeDOMNode);
+                },
+            };
+            fakeDOMNode = {
+                localName() {
+                    return 'span';
+                },
+                isSVGNode() {
+                    return false;
+                },
+                highlight() {
+                    highlightMock();
+                },
+            };
+            highlightMock = sinon.mock();
+            anchorDecoratedForTestStub =
+                sinon.stub(Elements.StylePropertyTreeElement.AnchorFunctionRenderer.prototype, 'anchorDecoratedForTest');
+            getAnchorBySpecifierStub =
+                sinon.stub(SDK.DOMModel.DOMNode.prototype, 'getAnchorBySpecifier').resolves(fakeDOMNode);
+            revealStub = sinon.stub(Common.Revealer.RevealerRegistry.prototype, 'reveal');
+            hideDOMNodeHighlightStub = sinon.stub(SDK.OverlayModel.OverlayModel, 'hideDOMNodeHighlight');
+        });
+        afterEach(() => {
+            anchorDecoratedForTestStub.restore();
+            getAnchorBySpecifierStub.restore();
+            revealStub.restore();
+            hideDOMNodeHighlightStub.restore();
+        });
+        it('renders anchor() function correctly', async () => {
+            const stylePropertyTreeElement = getTreeElement('left', 'anchor(top)');
+            stylePropertyTreeElement.updateTitle();
+            assert.strictEqual(stylePropertyTreeElement.valueElement.textContent, 'anchor(top)');
+        });
+        it('renders `AnchorFunctionLinkSwatch` after decorating the element', async () => {
+            const waitForDecorationPromise = expectCall(anchorDecoratedForTestStub);
+            const stylePropertyTreeElement = getTreeElement('left', 'anchor(--identifier top)');
+            sinon.stub(stylePropertyTreeElement, 'node').returns(fakeParentNode);
+            stylePropertyTreeElement.updateTitle();
+            await waitForDecorationPromise;
+            const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-anchor-function-link-swatch');
+            assert.strictEqual(anchorFunctionLinkSwatch.dataForTest().identifier, '--identifier');
+        });
+        it('should highlight node when `onMouseEnter` triggered from `AnchorFunctionLinkSwatch`', async () => {
+            const waitForDecorationPromise = expectCall(anchorDecoratedForTestStub);
+            const stylePropertyTreeElement = getTreeElement('left', 'anchor(--identifier top)');
+            sinon.stub(stylePropertyTreeElement, 'node').returns(fakeParentNode);
+            stylePropertyTreeElement.updateTitle();
+            await waitForDecorationPromise;
+            const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-anchor-function-link-swatch');
+            anchorFunctionLinkSwatch.dataForTest().onMouseEnter();
+            assert.isTrue(highlightMock.calledOnce);
+        });
+        it('should clear DOM highlight when `onMouseLeave` triggered from `AnchorFunctionLinkSwatch`', async () => {
+            const waitForDecorationPromise = expectCall(anchorDecoratedForTestStub);
+            const stylePropertyTreeElement = getTreeElement('left', 'anchor(--identifier top)');
+            sinon.stub(stylePropertyTreeElement, 'node').returns(fakeParentNode);
+            stylePropertyTreeElement.updateTitle();
+            await waitForDecorationPromise;
+            const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-anchor-function-link-swatch');
+            anchorFunctionLinkSwatch.dataForTest().onMouseLeave();
+            assert.isTrue(hideDOMNodeHighlightStub.calledOnce);
+        });
+        it('should reveal anchor node when `onLinkActivate` triggered from `AnchorFunctionLinkSwatch`', async () => {
+            const waitForDecorationPromise = expectCall(anchorDecoratedForTestStub);
+            const stylePropertyTreeElement = getTreeElement('left', 'anchor(--identifier top)');
+            sinon.stub(stylePropertyTreeElement, 'node').returns(fakeParentNode);
+            stylePropertyTreeElement.updateTitle();
+            await waitForDecorationPromise;
+            const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-anchor-function-link-swatch');
+            anchorFunctionLinkSwatch.dataForTest().onLinkActivate();
+            assert.isTrue(revealStub.calledOnce);
+            assert.isTrue(revealStub.calledWith(fakeDOMNode));
+        });
+    });
+    describe('AnchorFunctionRenderer', () => {
+        let anchorDecoratedForTestStub;
+        let getAnchorBySpecifierStub;
+        let highlightMock;
+        let fakeDOMNode;
+        beforeEach(() => {
+            fakeDOMNode = {
+                localName() {
+                    return 'span';
+                },
+                isSVGNode() {
+                    return false;
+                },
+                highlight() {
+                    highlightMock();
+                },
+            };
+            highlightMock = sinon.mock();
+            anchorDecoratedForTestStub =
+                sinon.stub(Elements.StylePropertyTreeElement.PositionAnchorRenderer.prototype, 'anchorDecoratedForTest');
+            getAnchorBySpecifierStub =
+                sinon.stub(SDK.DOMModel.DOMNode.prototype, 'getAnchorBySpecifier').resolves(fakeDOMNode);
+        });
+        afterEach(() => {
+            anchorDecoratedForTestStub.restore();
+            getAnchorBySpecifierStub.restore();
+        });
+        it('renders `position-anchor` property correctly before anchor is decorated', async () => {
+            const stylePropertyTreeElement = getTreeElement('position-anchor', '--anchor');
+            stylePropertyTreeElement.updateTitle();
+            assert.strictEqual(stylePropertyTreeElement.valueElement.textContent, '--anchor');
+        });
+        it('renders `position-anchor` property correctly after anchor is decorated', async () => {
+            const waitForDecorationPromise = expectCall(anchorDecoratedForTestStub);
+            const stylePropertyTreeElement = getTreeElement('position-anchor', '--anchor');
+            stylePropertyTreeElement.updateTitle();
+            await waitForDecorationPromise;
+            const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-anchor-function-link-swatch');
+            assert.exists(anchorFunctionLinkSwatch);
         });
     });
     describe('LightDarkColorRenderer', () => {

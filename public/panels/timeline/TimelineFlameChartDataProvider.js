@@ -134,13 +134,13 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     modifyTree(node, action) {
         const entry = this.entryData[node];
-        ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+        ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
             ?.getEntriesFilter()
             .applyFilterAction({ type: action, entry });
     }
     findPossibleContextMenuActions(node) {
         const entry = this.entryData[node];
-        return ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+        return ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
             ?.getEntriesFilter()
             .findPossibleActions(entry);
     }
@@ -553,7 +553,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             delegatesFocus: undefined,
         });
         const entry = this.entryData[entryIndex];
-        const hiddenEntriesAmount = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+        const hiddenEntriesAmount = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
             ?.getEntriesFilter()
             .findHiddenDescendantsAmount(entry);
         if (!hiddenEntriesAmount) {
@@ -846,7 +846,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Try revealing the entry and getting the index again.
         if (this.entryData.indexOf(selection.object) === -1 && TimelineSelection.isTraceEventSelection(selection.object)) {
             if (this.timelineDataInternal?.selectedGroup) {
-                ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()?.getEntriesFilter().revealEntry(selection.object);
+                ModificationsManager.ModificationsManager.ModificationsManager.activeManager()?.getEntriesFilter().revealEntry(selection.object);
                 this.timelineData(true);
             }
         }
@@ -916,11 +916,11 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Reset to clear any previous arrows from the last event.
         this.timelineDataInternal.resetFlowData();
         this.lastInitiatorEntry = entryIndex;
-        const hiddenEvents = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+        const hiddenEvents = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
             ?.getEntriesFilter()
             .invisibleEntries() ??
             [];
-        const expandableEntries = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+        const expandableEntries = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
             ?.getEntriesFilter()
             .expandableEntries() ??
             [];
@@ -951,6 +951,9 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType === "TrackAppender" /* EntryType.TrackAppender */) {
+            return this.entryData[entryIndex];
+        }
+        if (entryType === "Frame" /* EntryType.Frame */) {
             return this.entryData[entryIndex];
         }
         return null;

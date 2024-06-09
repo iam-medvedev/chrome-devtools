@@ -4,11 +4,11 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, describeWithLocale, } from '../../testing/EnvironmentHelpers.js';
-import { describeWithRealConnection } from '../../testing/RealConnection.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Elements from './elements.js';
 describe('StylesSidebarPane', () => {
-    describeWithRealConnection('StylesSidebarPane', () => {
+    describeWithMockConnection('StylesSidebarPane', () => {
         it('unescapes CSS strings', () => {
             assert.strictEqual(Elements.StylesSidebarPane.unescapeCssString(String.raw `"I\F1 t\EB rn\E2 ti\F4 n\E0 liz\E6 ti\F8 n\2603 \1F308  can be \t\r\ic\k\y"`), '"I\xF1t\xEBrn\xE2ti\xF4n\xE0liz\xE6ti\xF8n\u2603\u{1F308} can be tricky"');
             assert.strictEqual(Elements.StylesSidebarPane.unescapeCssString(String.raw `"_\DBFF_\\DBFF_\\\DBFF_\\\\DBFF_\\\\\DBFF_"`), '"_\uFFFD_\\DBFF_\\\\DBFF_\\\\\\DBFF_\\\\\\\\DBFF_"');
@@ -28,7 +28,7 @@ describe('StylesSidebarPane', () => {
                 const stylesSidebarPane = Elements.StylesSidebarPane.StylesSidebarPane.instance({ forceNew: true });
                 const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
                     cssModel: stylesSidebarPane.cssModel(),
-                    node: stylesSidebarPane.node(),
+                    node: sinon.createStubInstance(SDK.DOMModel.DOMNode),
                     inlinePayload: null,
                     attributesPayload: null,
                     matchedPayload: [],
@@ -62,7 +62,7 @@ describe('StylesSidebarPane', () => {
                 const stylesSidebarPane = Elements.StylesSidebarPane.StylesSidebarPane.instance({ forceNew: true });
                 const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
                     cssModel: stylesSidebarPane.cssModel(),
-                    node: stylesSidebarPane.node(),
+                    node: sinon.createStubInstance(SDK.DOMModel.DOMNode),
                     inlinePayload: null,
                     attributesPayload: null,
                     matchedPayload: [],
@@ -95,7 +95,7 @@ describe('StylesSidebarPane', () => {
             const stylesSidebarPane = Elements.StylesSidebarPane.StylesSidebarPane.instance({ forceNew: true });
             const matchedStyles = await SDK.CSSMatchedStyles.CSSMatchedStyles.create({
                 cssModel: stylesSidebarPane.cssModel(),
-                node: stylesSidebarPane.node(),
+                node: sinon.createStubInstance(SDK.DOMModel.DOMNode),
                 inlinePayload: null,
                 attributesPayload: null,
                 matchedPayload: [],

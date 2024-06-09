@@ -601,12 +601,14 @@ export class DebuggerPlugin extends Plugin {
             box,
             show: async (popover) => {
                 let resolvedText = '';
-                const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(selectedCallFrame);
-                try {
-                    resolvedText =
-                        await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(evaluationText, nameMap);
-                }
-                catch {
+                if (selectedCallFrame.script.isJavaScript()) {
+                    const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(selectedCallFrame);
+                    try {
+                        resolvedText =
+                            await Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptSubstitute(evaluationText, nameMap);
+                    }
+                    catch {
+                    }
                 }
                 // We use side-effect free debug-evaluate when the highlighted expression contains a
                 // function/method call. Otherwise we allow side-effects. The motiviation here are

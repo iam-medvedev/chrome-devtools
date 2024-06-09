@@ -12,7 +12,7 @@ export interface CookieExpectation {
     expires?: null | number | string;
     size?: number;
     priority?: Protocol.Network.CookiePriority;
-    partitionKey?: string;
+    partitionKey?: Protocol.Network.CookiePartitionKey | null;
     partitionKeyOpaque?: boolean;
 }
 export declare function expectCookie(cookie: SDK.Cookie.Cookie, cookieExpectation: CookieExpectation): void;

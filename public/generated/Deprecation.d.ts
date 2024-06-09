@@ -72,6 +72,10 @@ export declare const UIStrings: {
      */
     GeolocationInsecureOriginDeprecatedNotRemoved: string;
     /**
+     * @description Warning displayed to developers when non-standard getInnerHTML function is called. This function is deprecated and will be removed.
+     */
+    GetInnerHTML: string;
+    /**
      * @description This warning occurs when the `getUserMedia()` API is invoked on an insecure (e.g., HTTP) site. This is only permitted on secure sites (e.g., HTTPS).
      */
     GetUserMediaInsecureOrigin: string;

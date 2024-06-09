@@ -132,6 +132,7 @@ UI.ViewManager.registerViewExtension({
     settings: [
         'emulation.locations',
     ],
+    iconName: 'location-on',
 });
 Common.Settings.registerSettingExtension({
     storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,

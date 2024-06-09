@@ -390,7 +390,7 @@ export class ThreadAppender {
      * listed is done before appending.
      */
     #appendNodesAtLevel(nodes, startingLevel, parentIsIgnoredListed = false) {
-        const invisibleEntries = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+        const invisibleEntries = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
             ?.getEntriesFilter()
             .invisibleEntries() ??
             [];
@@ -438,7 +438,7 @@ export class ThreadAppender {
     }
     #addDecorationsToEntry(entry, index) {
         const flameChartData = this.#compatibilityBuilder.getFlameChartTimelineData();
-        if (ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+        if (ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
             ?.getEntriesFilter()
             .isEntryExpandable(entry)) {
             addDecorationToEvent(flameChartData, index, { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ });

@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -169,7 +170,7 @@ export const y = "";
                 type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
             };
             const ERROR_MESSAGE = 'kaboom!';
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const { prompt, sources } = await promptBuilder.buildPrompt();
@@ -200,7 +201,7 @@ export const y = "";
             const mapping = createFakeScriptMapping(debuggerModel, uiSourceCode, LINE_NUMBER, SCRIPT_ID);
             debuggerWorkspaceBinding.addSourceMapping(mapping);
             const ERROR_MESSAGE = 'kaboom!';
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const { prompt, sources } = await promptBuilder.buildPrompt();
@@ -240,7 +241,7 @@ export const y = "";
             const mapping = createFakeScriptMapping(debuggerModel, uiSourceCode, LINE_NUMBER, SCRIPT_ID);
             debuggerWorkspaceBinding.addSourceMapping(mapping);
             const ERROR_MESSAGE = 'kaboom!';
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const { prompt, sources } = await promptBuilder.buildPrompt();
@@ -301,7 +302,7 @@ export const y = "";
                 'Response status: 404 Not found',
             ].join('\n');
             const ERROR_MESSAGE = 'kaboom!';
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const { prompt, sources } = await promptBuilder.buildPrompt();
@@ -323,7 +324,7 @@ export const y = "";
             };
             const ERROR_MESSAGE = 'a'.repeat(2000);
             const TRIMMED_ERROR_MESSAGE = 'a'.repeat(1000);
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const { prompt, sources } = await promptBuilder.buildPrompt();
@@ -352,7 +353,7 @@ export const y = "";
             const mapping = createFakeScriptMapping(debuggerModel, uiSourceCode, LINE_NUMBER, SCRIPT_ID);
             debuggerWorkspaceBinding.addSourceMapping(mapping);
             const ERROR_MESSAGE = 'kaboom!';
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const { prompt, sources } = await promptBuilder.buildPrompt();
@@ -398,7 +399,7 @@ export const y = "";
                 'Response status: 404 Not found',
             ].join('\n');
             const ERROR_MESSAGE = 'kaboom!';
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const { prompt, sources, isPageReloadRecommended } = await promptBuilder.buildPrompt();
@@ -425,7 +426,7 @@ export const y = "";
             };
             sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'requestsForId').withArgs(REQUEST_ID).returns([]);
             const ERROR_MESSAGE = 'kaboom!';
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, /* level */ null, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const { sources, isPageReloadRecommended } = await promptBuilder.buildPrompt();
@@ -444,7 +445,7 @@ export const y = "";
                 type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
             };
             const ERROR_MESSAGE = 'kaboom!';
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const query = await promptBuilder.getSearchQuery();
@@ -456,7 +457,7 @@ export const y = "";
                 type: "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */,
             };
             const ERROR_MESSAGE = 'Got an error: ' + new Error('fail').stack;
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, "error" /* Protocol.Log.LogEntryLevel.Error */, ERROR_MESSAGE, messageDetails);
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const promptBuilder = new Explain.PromptBuilder(message);
             const query = await promptBuilder.getSearchQuery();

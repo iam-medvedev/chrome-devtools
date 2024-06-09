@@ -82,14 +82,14 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     formatValue(value: number, precision?: number): string;
     canJumpToEntry(_entryIndex: number): boolean;
     entryIndexForSelection(selection: TimelineSelection | null): number;
-    indexForEvent(targetEvent: TraceEngine.Types.TraceEvents.TraceEventData): number | null;
+    indexForEvent(targetEvent: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
     /**
      * Build the data for initiators and initiated entries.
      * @param entryIndex
      * @returns if we should re-render the flame chart (canvas)
      */
     buildFlowForInitiator(entryIndex: number): boolean;
-    eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | null;
+    eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
 }
 export declare const InstantEventVisibleDurationMs = 0.001;
 export declare const enum Events {

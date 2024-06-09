@@ -24,6 +24,7 @@ const layoutShiftEvents = [];
 const layoutInvalidationEvents = [];
 const scheduleStyleInvalidationEvents = [];
 const styleRecalcInvalidationEvents = [];
+const renderFrameImplCreateChildFrameEvents = [];
 const backendNodeIds = new Set();
 // Layout shifts happen during PrePaint as part of the rendering lifecycle.
 // We determine if a LayoutInvalidation event is a potential root cause of a layout
@@ -50,6 +51,7 @@ export function reset() {
     scheduleStyleInvalidationEvents.length = 0;
     styleRecalcInvalidationEvents.length = 0;
     prePaintEvents.length = 0;
+    renderFrameImplCreateChildFrameEvents.length = 0;
     backendNodeIds.clear();
     clusters.length = 0;
     sessionMaxScore = 0;
@@ -77,6 +79,9 @@ export function handleEvent(event) {
     if (Types.TraceEvents.isTraceEventPrePaint(event)) {
         prePaintEvents.push(event);
         return;
+    }
+    if (Types.TraceEvents.isTraceEventRenderFrameImplCreateChildFrame(event)) {
+        renderFrameImplCreateChildFrameEvents.push(event);
     }
 }
 function traceWindowFromTime(time) {
@@ -143,6 +148,7 @@ export async function finalize() {
     layoutShiftEvents.sort((a, b) => a.ts - b.ts);
     prePaintEvents.sort((a, b) => a.ts - b.ts);
     layoutInvalidationEvents.sort((a, b) => a.ts - b.ts);
+    renderFrameImplCreateChildFrameEvents.sort((a, b) => a.ts - b.ts);
     // Each function transforms the data used by the next, as such the invoke order
     // is important.
     await buildLayoutShiftsClusters();
@@ -218,8 +224,8 @@ async function buildLayoutShiftsClusters() {
         if (!event.args.data) {
             continue;
         }
-        const syntheticEventsManager = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
-        const shift = syntheticEventsManager.registerSyntheticBasedEvent({
+        const shift = Helpers.SyntheticEvents.SyntheticEventsManager
+            .registerSyntheticBasedEvent({
             rawSourceEvent: event,
             ...event,
             args: {
@@ -329,6 +335,7 @@ export function data() {
         layoutInvalidationEvents,
         scheduleStyleInvalidationEvents,
         styleRecalcInvalidationEvents: [],
+        renderFrameImplCreateChildFrameEvents,
         scoreRecords,
         // TODO(crbug/41484172): change the type so no need to clone
         backendNodeIds: [...backendNodeIds],

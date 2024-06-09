@@ -16,6 +16,7 @@ export declare const enum Events {
     Reset = "reset"
 }
 export type MetricChangeEvent = Pick<Spec.MetricChangeEvent, 'value' | 'rating'>;
+export type Rating = Spec.MetricChangeEvent['rating'];
 export interface LCPChangeEvent extends MetricChangeEvent {
     node?: SDK.DOMModel.DOMNode;
 }

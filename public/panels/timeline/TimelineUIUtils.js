@@ -812,6 +812,8 @@ export class TimelineUIUtils {
             case "WebSocketCreate" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketCreate */:
             case "WebSocketSendHandshakeRequest" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketSendHandshakeRequest */:
             case "WebSocketReceiveHandshakeResponse" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketReceiveHandshakeResponse */:
+            case "WebSocketSend" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketSend */:
+            case "WebSocketReceive" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketReceive */:
             case "WebSocketDestroy" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketDestroy */:
             case "ResourceWillSendRequest" /* TraceEngine.Types.TraceEvents.KnownEventName.ResourceWillSendRequest */:
             case "ResourceSendRequest" /* TraceEngine.Types.TraceEvents.KnownEventName.ResourceSendRequest */:
@@ -880,6 +882,8 @@ export class TimelineUIUtils {
             case "WebSocketCreate" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketCreate */:
             case "WebSocketSendHandshakeRequest" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketSendHandshakeRequest */:
             case "WebSocketReceiveHandshakeResponse" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketReceiveHandshakeResponse */:
+            case "WebSocketSend" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketSend */:
+            case "WebSocketReceive" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketReceive */:
             case "WebSocketDestroy" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketDestroy */: {
                 detailsText = await TimelineUIUtils.buildDetailsTextForTraceEvent(event, traceParsedData);
                 break;
@@ -1301,6 +1305,8 @@ export class TimelineUIUtils {
             case "WebSocketCreate" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketCreate */:
             case "WebSocketSendHandshakeRequest" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketSendHandshakeRequest */:
             case "WebSocketReceiveHandshakeResponse" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketReceiveHandshakeResponse */:
+            case "WebSocketSend" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketSend */:
+            case "WebSocketReceive" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketReceive */:
             case "WebSocketDestroy" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketDestroy */: {
                 if (TraceEngine.Types.TraceEvents.isWebSocketTraceEvent(event)) {
                     const rows = TimelineComponents.DetailsView.buildRowsForWebSocketEvent(event, traceParseData);
@@ -1727,7 +1733,7 @@ export class TimelineUIUtils {
         const isEntryOutsideBreadcrumb = traceBoundsState.micro.minimapTraceBounds.min > entry.ts + (entry.dur || 0) ||
             traceBoundsState.micro.minimapTraceBounds.max < entry.ts;
         // Check if it is in the hidden array
-        const isEntryHidden = ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()
+        const isEntryHidden = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
             ?.getEntriesFilter()
             .inEntryInvisible(entry);
         if (!isEntryOutsideBreadcrumb) {

@@ -49,11 +49,17 @@ describe('NetworkRequest', () => {
             blockedResponseCookies: [],
             responseHeaders: [{ name: 'Set-Cookie', value: 'foo=bar' }, { name: 'Set-Cookie', value: 'baz=qux; Secure;Partitioned' }],
             resourceIPAddressSpace: 'Public',
-            cookiePartitionKey: 'partitionKey',
+            cookiePartitionKey: { topLevelSite: 'partitionKey', hasCrossSiteAncestor: false },
         });
         assert.strictEqual(request.responseCookies.length, 2);
         expectCookie(request.responseCookies[0], { name: 'foo', value: 'bar', size: 8 });
-        expectCookie(request.responseCookies[1], { name: 'baz', value: 'qux', secure: true, partitionKey: 'partitionKey', size: 27 });
+        expectCookie(request.responseCookies[1], {
+            name: 'baz',
+            value: 'qux',
+            secure: true,
+            partitionKey: { topLevelSite: 'partitionKey', hasCrossSiteAncestor: false },
+            size: 27,
+        });
     });
     it('determines whether the response headers have been overridden', () => {
         const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', 'url', 'documentURL', null);
@@ -197,7 +203,7 @@ describeWithMockConnection('NetworkRequest', () => {
                 attribute: null,
                 uiString: 'Setting this cookie was blocked due to third-party cookie phaseout. Learn more in the Issues tab.',
             }]));
-        assert.deepStrictEqual(await cookieModel.getCookies([url]), [cookie]);
+        assert.deepStrictEqual(await cookieModel.getCookiesForDomain(''), [cookie]);
         request.addExtraResponseInfo({
             responseHeaders: [{ name: 'Set-Cookie', value: 'name=value; Path=/' }],
             blockedResponseCookies: [],
@@ -212,7 +218,7 @@ describeWithMockConnection('NetworkRequest', () => {
                 }],
         });
         assert.isTrue(removeBlockedCookieSpy.calledOnceWith(cookie));
-        assert.isEmpty(await cookieModel.getCookies([url]));
+        assert.isEmpty(await cookieModel.getCookiesForDomain(''));
     });
 });
 describeWithMockConnection('ServerSentEvents', () => {

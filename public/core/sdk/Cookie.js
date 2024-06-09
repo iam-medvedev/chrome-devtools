@@ -10,7 +10,8 @@ export class Cookie {
     #sizeInternal;
     #priorityInternal;
     #cookieLine;
-    constructor(name, value, type, priority) {
+    #partitionKey;
+    constructor(name, value, type, priority, partitionKey) {
         this.#nameInternal = name;
         this.#valueInternal = value;
         this.#typeInternal = type;
@@ -18,6 +19,7 @@ export class Cookie {
         this.#sizeInternal = 0;
         this.#priorityInternal = (priority || 'Medium');
         this.#cookieLine = null;
+        this.#partitionKey = partitionKey;
     }
     static fromProtocolCookie(protocolCookie) {
         const cookie = new Cookie(protocolCookie.name, protocolCookie.value, null, protocolCookie.priority);
@@ -42,7 +44,9 @@ export class Cookie {
             cookie.addAttribute("source-scheme" /* Attribute.SourceScheme */, protocolCookie.sourceScheme);
         }
         if ('partitionKey' in protocolCookie) {
-            cookie.addAttribute("partition-key" /* Attribute.PartitionKey */, protocolCookie.partitionKey);
+            if (protocolCookie.partitionKey) {
+                cookie.setPartitionKey(protocolCookie.partitionKey ? protocolCookie.partitionKey.topLevelSite : '', protocolCookie.partitionKey ? protocolCookie.partitionKey.hasCrossSiteAncestor : false);
+            }
         }
         if ('partitionKeyOpaque' in protocolCookie && protocolCookie.partitionKeyOpaque) {
             cookie.addAttribute("partition-key" /* Attribute.PartitionKey */, OPAQUE_PARTITION_KEY);
@@ -51,7 +55,10 @@ export class Cookie {
         return cookie;
     }
     key() {
-        return (this.domain() || '-') + ' ' + this.name() + ' ' + (this.path() || '-') + ' ' + (this.partitionKey() || '-');
+        return (this.domain() || '-') + ' ' + this.name() + ' ' + (this.path() || '-') + ' ' +
+            (this.partitionKey() ?
+                (this.topLevelSite() + ' ' + (this.hasCrossSiteAncestor() ? 'cross_site' : 'same_site')) :
+                '-');
     }
     name() {
         return this.#nameInternal;
@@ -77,16 +84,44 @@ export class Cookie {
         return this.#attributes.get("same-site" /* Attribute.SameSite */);
     }
     partitionKey() {
-        return this.#attributes.get("partition-key" /* Attribute.PartitionKey */);
+        return this.#partitionKey;
     }
-    setPartitionKey(key) {
-        this.addAttribute("partition-key" /* Attribute.PartitionKey */, key);
+    setPartitionKey(topLevelSite, hasCrossSiteAncestor) {
+        this.#partitionKey = { topLevelSite, hasCrossSiteAncestor };
+        if (!this.#attributes.has("partitioned" /* Attribute.Partitioned */)) {
+            this.addAttribute("partitioned" /* Attribute.Partitioned */);
+        }
+    }
+    topLevelSite() {
+        if (!this.#partitionKey) {
+            return '';
+        }
+        return this.#partitionKey?.topLevelSite;
+    }
+    setTopLevelSite(topLevelSite, hasCrossSiteAncestor) {
+        this.setPartitionKey(topLevelSite, hasCrossSiteAncestor);
+    }
+    hasCrossSiteAncestor() {
+        if (!this.#partitionKey) {
+            return false;
+        }
+        return this.#partitionKey?.hasCrossSiteAncestor;
+    }
+    setHasCrossSiteAncestor(hasCrossSiteAncestor) {
+        if (!this.partitionKey() || !Boolean(this.topLevelSite())) {
+            return;
+        }
+        this.setPartitionKey(this.topLevelSite(), hasCrossSiteAncestor);
     }
     partitionKeyOpaque() {
-        return (this.#attributes.get("partition-key" /* Attribute.PartitionKey */) === OPAQUE_PARTITION_KEY);
+        if (!this.#partitionKey) {
+            return false;
+        }
+        return (this.topLevelSite() === OPAQUE_PARTITION_KEY);
     }
     setPartitionKeyOpaque() {
         this.addAttribute("partition-key" /* Attribute.PartitionKey */, OPAQUE_PARTITION_KEY);
+        this.setPartitionKey(OPAQUE_PARTITION_KEY, false);
     }
     priority() {
         return this.#priorityInternal;

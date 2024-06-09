@@ -23,4 +23,21 @@ export declare function traceWindowMilliSeconds(bounds: Types.Timing.TraceWindow
 export declare function traceWindowMillisecondsToMicroSeconds(bounds: Types.Timing.TraceWindowMilliSeconds): Types.Timing.TraceWindowMicroSeconds;
 export declare function traceWindowFromMilliSeconds(min: Types.Timing.MilliSeconds, max: Types.Timing.MilliSeconds): Types.Timing.TraceWindowMicroSeconds;
 export declare function traceWindowFromMicroSeconds(min: Types.Timing.MicroSeconds, max: Types.Timing.MicroSeconds): Types.Timing.TraceWindowMicroSeconds;
+export interface BoundsIncludeTimeRange {
+    timeRange: Types.Timing.TraceWindowMicroSeconds;
+    bounds: Types.Timing.TraceWindowMicroSeconds;
+}
+/**
+ * Checks to see if the timeRange is within the bounds. By "within" we mean
+ * "has any overlap":
+ *         |------------------------|
+ *      ==                                     no overlap (entirely before)
+ *       =========                             overlap
+ *            =========                        overlap
+ *                             =========       overlap
+ *                                     ====    no overlap (entirely after)
+ *        ==============================       overlap (time range is larger than bounds)
+ *         |------------------------|
+ */
+export declare function boundsIncludeTimeRange(data: BoundsIncludeTimeRange): boolean;
 export {};

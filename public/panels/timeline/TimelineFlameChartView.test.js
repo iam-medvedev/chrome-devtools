@@ -4,7 +4,6 @@
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as ModificationsManager from '../../services/modifications_manager/modifications_manager.js';
-import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
@@ -21,16 +20,8 @@ class MockViewDelegate {
     highlightEvent(_event) {
     }
 }
-const baseTraceWindow = {
-    min: TraceEngine.Types.Timing.MicroSeconds(0),
-    max: TraceEngine.Types.Timing.MicroSeconds(10_000),
-    range: TraceEngine.Types.Timing.MicroSeconds(10_000),
-};
 describeWithEnvironment('TimelineFlameChartView', function () {
-    let boundsManager;
     beforeEach(() => {
-        boundsManager =
-            TraceBounds.TraceBounds.BoundsManager.instance({ forceNew: true }).resetWithNewBounds(baseTraceWindow);
         setupIgnoreListManagerEnvironment();
     });
     it('Can search for events by name in the timeline', async function () {
@@ -89,10 +80,6 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
         flameChartView.setModel(traceParsedData);
-        ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance({
-            entryToNodeMap: traceParsedData.Renderer.entryToNode,
-            wholeTraceBounds: boundsManager.state()?.micro.entireTraceBounds,
-        });
         // Find the main track to later collapse entries of
         const mainTrack = flameChartView.getMainFlameChart().timelineData()?.groups.find(group => {
             return group.name === 'Main — http://localhost:8080/';
@@ -128,10 +115,6 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
         flameChartView.setModel(traceParsedData);
-        ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance({
-            entryToNodeMap: traceParsedData.Renderer.entryToNode,
-            wholeTraceBounds: boundsManager.state()?.micro.entireTraceBounds,
-        });
         // Find the main track to later collapse entries of
         const mainTrack = flameChartView.getMainFlameChart().timelineData()?.groups.find(group => {
             return group.name === 'Main — http://localhost:8080/';
@@ -169,10 +152,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         const mockViewDelegate = new MockViewDelegate();
         const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
         flameChartView.setModel(traceParsedData);
-        ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance({
-            entryToNodeMap: traceParsedData.Renderer.entryToNode,
-            wholeTraceBounds: boundsManager.state()?.micro.entireTraceBounds,
-        });
+        ModificationsManager.ModificationsManager.ModificationsManager.activeManager();
         // Find the main track to later collapse entries of
         let mainTrack = flameChartView.getMainFlameChart().timelineData()?.groups.find(group => {
             return group.name === 'Main — http://localhost:8080/';
@@ -223,10 +203,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
             const mockViewDelegate = new MockViewDelegate();
             flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
             flameChartView.setModel(traceParsedData);
-            ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance({
-                entryToNodeMap: traceParsedData.Renderer.entryToNode,
-                wholeTraceBounds: boundsManager.state()?.micro.entireTraceBounds,
-            });
+            ModificationsManager.ModificationsManager.ModificationsManager.activeManager();
         });
         it('Does not create customized Context Menu for network track', async function () {
             // The mouse event passed to the Context Menu is used to indicate where the menu should appear. Since we don't

@@ -31,7 +31,7 @@ export declare class CSSVarSwatch extends HTMLElement {
     get link(): BaseLinkSwatch | undefined;
     protected render(data: CSSVarSwatchRenderData): void;
 }
-interface LinkSwatchRenderData {
+export interface LinkSwatchRenderData {
     isDefined: boolean;
     text: string;
     onLinkActivate: (linkText: string) => void;

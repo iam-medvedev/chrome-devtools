@@ -1,11 +1,12 @@
 import * as Protocol from '../../generated/protocol.js';
+import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
-import { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
+import { FrontendMessageType } from './ConsoleModelTypes.js';
 import { RemoteObject } from './RemoteObject.js';
 import { type ExecutionContext, RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
-export { FrontendMessageSource, FrontendMessageType } from './ConsoleModelTypes.js';
+export { FrontendMessageType } from './ConsoleModelTypes.js';
 export declare class ConsoleModel extends SDKModel<EventTypes> {
     #private;
     constructor(target: Target);
@@ -118,7 +119,7 @@ export declare class ConsoleMessage {
     /** @returns true, iff this was a console.* call in a conditional breakpoint */
     get originatesFromConditionalBreakpoint(): boolean;
 }
-export type MessageSource = Protocol.Log.LogEntrySource | FrontendMessageSource;
+export type MessageSource = Protocol.Log.LogEntrySource | Common.Console.FrontendMessageSource;
 export type MessageLevel = Protocol.Log.LogEntryLevel;
 export type MessageType = Protocol.Runtime.ConsoleAPICalledEventType | FrontendMessageType;
 export declare const MessageSourceDisplayName: Map<MessageSource, string>;

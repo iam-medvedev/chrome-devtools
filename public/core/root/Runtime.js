@@ -51,7 +51,7 @@ export class Runtime {
     static platform() {
         return runtimePlatform;
     }
-    static isDescriptorEnabled(descriptor) {
+    static isDescriptorEnabled(descriptor, config) {
         const { experiment } = descriptor;
         if (experiment === '*') {
             return true;
@@ -63,7 +63,7 @@ export class Runtime {
             return false;
         }
         const { condition } = descriptor;
-        return condition ? condition() : true;
+        return condition ? condition(config) : true;
     }
     loadLegacyModule(modulePath) {
         return import(`../../${modulePath}`);

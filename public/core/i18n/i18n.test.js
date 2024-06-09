@@ -100,6 +100,7 @@ describe('fetchAndRegisterLocaleData', () => {
     });
     afterEach(() => {
         fetchStub.restore();
+        i18n.i18n.resetLocaleDataForTest();
     });
     const bundled = 'devtools://devtools/bundled/devtools_app.html';
     const version = '@ffe848af6a5df4fa127e2929331116b7f9f1cb30';

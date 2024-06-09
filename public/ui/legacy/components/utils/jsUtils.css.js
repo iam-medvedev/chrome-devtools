@@ -22,7 +22,7 @@ styles.replaceSync(
 
 .stack-preview-async-description {
   padding: 3px 0 1px;
-  font-style: italic;
+  font-weight: bold;
 }
 
 .stack-preview-container.width-constrained {

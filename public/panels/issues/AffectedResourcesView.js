@@ -215,7 +215,12 @@ export class AffectedResourcesView extends UI.TreeOutline.TreeElement {
     }
     createIssueDetailCell(textContent, additionalClass = null) {
         const cell = document.createElement('td');
-        cell.textContent = textContent;
+        if (typeof textContent === 'string') {
+            cell.textContent = textContent;
+        }
+        else {
+            cell.appendChild(textContent);
+        }
         if (additionalClass) {
             cell.classList.add(additionalClass);
         }

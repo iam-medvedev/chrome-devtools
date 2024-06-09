@@ -101,12 +101,12 @@ describeWithEnvironment('TraceModel', function () {
             },
             child: null,
         };
-        const entriesFilterModifications = {
-            hiddenEntriesIndexes: [1, 2, 3],
-            expandableEntriesIndexes: [4],
+        const entriesModifications = {
+            hiddenEntries: ['r-1', 'r-2', 'r-3'],
+            expandableEntries: ['r-4'],
         };
         const modifications = {
-            entriesFilterModifications,
+            entriesModifications,
             initialBreadcrumb,
         };
         model.overrideModifications(0, modifications);

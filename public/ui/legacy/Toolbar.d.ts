@@ -92,6 +92,19 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes>
     clicked(event: Event): void;
     protected mouseDown(event: MouseEvent): void;
 }
+export declare class ToolbarCombobox extends ToolbarItem<ToolbarButton.EventTypes> {
+    private readonly glyphElement;
+    private textElement;
+    private text?;
+    private glyph?;
+    constructor(title: string, isIconDropdown?: boolean, jslogContext?: string);
+    setText(text: string): void;
+    setGlyph(glyph: string): void;
+    setDarkText(): void;
+    turnShrinkable(): void;
+    clicked(event: Event): void;
+    protected mouseDown(event: MouseEvent): void;
+}
 export declare namespace ToolbarButton {
     const enum Events {
         Click = "Click",
@@ -140,11 +153,11 @@ export declare class ToolbarToggle extends ToolbarButton {
     setToggleWithRedColor(toggleWithRedColor: boolean): void;
     setToggleWithDot(toggleWithDot: boolean): void;
 }
-export declare class ToolbarMenuButton extends ToolbarButton {
+export declare class ToolbarMenuButton extends ToolbarCombobox {
     private readonly contextMenuHandler;
     private readonly useSoftMenu;
     private triggerTimeout?;
-    constructor(contextMenuHandler: (arg0: ContextMenu) => void, useSoftMenu?: boolean, jslogContext?: string);
+    constructor(contextMenuHandler: (arg0: ContextMenu) => void, isIconDropdown?: boolean, useSoftMenu?: boolean, jslogContext?: string);
     mouseDown(event: MouseEvent): void;
     private trigger;
     clicked(event: Event): void;

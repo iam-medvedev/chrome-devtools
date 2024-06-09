@@ -95,6 +95,7 @@ style.setProperty('--image-file-database', 'url(\"' + new URL('./src/database.sv
 style.setProperty('--image-file-deployed', 'url(\"' + new URL('./src/deployed.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-device-fold', 'url(\"' + new URL('./src/device-fold.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-devices', 'url(\"' + new URL('./src/devices.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-devtools', 'url(\"' + new URL('./src/devtools.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dock-bottom', 'url(\"' + new URL('./src/dock-bottom.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dock-left', 'url(\"' + new URL('./src/dock-left.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-dock-right', 'url(\"' + new URL('./src/dock-right.svg', import.meta.url).toString() + '\")');
@@ -165,6 +166,7 @@ style.setProperty('--image-file-justify-items-start', 'url(\"' + new URL('./src/
 style.setProperty('--image-file-justify-items-stretch', 'url(\"' + new URL('./src/justify-items-stretch.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-keyboard-arrow-right', 'url(\"' + new URL('./src/keyboard-arrow-right.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-keyboard-pen', 'url(\"' + new URL('./src/keyboard-pen.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-keyboard', 'url(\"' + new URL('./src/keyboard.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-large-arrow-right-filled', 'url(\"' + new URL('./src/large-arrow-right-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-layers-filled', 'url(\"' + new URL('./src/layers-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-layers', 'url(\"' + new URL('./src/layers.svg', import.meta.url).toString() + '\")');
@@ -173,6 +175,7 @@ style.setProperty('--image-file-left-panel-open', 'url(\"' + new URL('./src/left
 style.setProperty('--image-file-lightbulb-spark', 'url(\"' + new URL('./src/lightbulb-spark.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-lighthouse_logo', 'url(\"' + new URL('./src/lighthouse_logo.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-list', 'url(\"' + new URL('./src/list.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-location-on', 'url(\"' + new URL('./src/location-on.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-match-case', 'url(\"' + new URL('./src/match-case.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-match-whole-word', 'url(\"' + new URL('./src/match-whole-word.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-memory', 'url(\"' + new URL('./src/memory.svg', import.meta.url).toString() + '\")');

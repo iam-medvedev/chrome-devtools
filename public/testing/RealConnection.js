@@ -10,7 +10,7 @@ import * as Main from '../entrypoints/main/main.js';
 import { deinitializeGlobalVars } from './EnvironmentHelpers.js';
 let initialized = false;
 function describeBody(fn) {
-    before(async function () {
+    before('describeWithRealConnection', async function () {
         if (initialized) {
             return;
         }
@@ -41,12 +41,12 @@ function describeBody(fn) {
         await main.readyForTest();
         initialized = true;
     });
-    beforeEach(() => {
+    beforeEach('describeWithRealConnection', () => {
         resetHostBindingStubState();
         Common.Settings.Settings.instance().clearAll();
     });
     fn();
-    afterEach(async () => {
+    afterEach('describeWithRealConnection', async () => {
         const runAfterPendingDispatches = ProtocolClient.InspectorBackend.test.deprecatedRunAfterPendingDispatches;
         if (!runAfterPendingDispatches) {
             throw new Error('Missing deprecatedRunAfterPendingDispatches');

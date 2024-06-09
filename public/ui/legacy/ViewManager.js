@@ -45,6 +45,9 @@ export class PreRegisteredView {
     isPreviewFeature() {
         return Boolean(this.viewRegistration.isPreviewFeature);
     }
+    iconName() {
+        return this.viewRegistration.iconName;
+    }
     isTransient() {
         return this.viewRegistration.persistence === "transient" /* ViewPersistence.TRANSIENT */;
     }
@@ -519,7 +522,8 @@ class TabbedLocation extends Location {
         return this.tabbedPaneInternal;
     }
     enableMoreTabsButton() {
-        const moreTabsButton = new ToolbarMenuButton(this.appendTabsToMenu.bind(this), undefined, 'more-tabs');
+        const moreTabsButton = new ToolbarMenuButton(this.appendTabsToMenu.bind(this), /* isIconDropdown */ true, undefined, 'more-tabs');
+        moreTabsButton.setGlyph('dots-vertical');
         this.tabbedPaneInternal.leftToolbar().appendToolbarItem(moreTabsButton);
         this.tabbedPaneInternal.disableOverflowMenu();
         return moreTabsButton;
@@ -587,6 +591,11 @@ class TabbedLocation extends Location {
     }
     appendTab(view, index) {
         this.tabbedPaneInternal.appendTab(view.viewId(), view.title(), new ContainerWidget(view), undefined, false, view.isCloseable() || view.isTransient(), view.isPreviewFeature(), index);
+        const iconName = view.iconName();
+        if (iconName) {
+            const icon = IconButton.Icon.create(iconName);
+            this.tabbedPaneInternal.setTabIcon(view.viewId(), icon);
+        }
     }
     appendView(view, insertBefore) {
         if (this.tabbedPaneInternal.hasTab(view.viewId())) {

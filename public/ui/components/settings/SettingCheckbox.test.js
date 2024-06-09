@@ -4,7 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as Root from '../../../core/root/root.js';
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { createFakeSetting } from '../../../testing/EnvironmentHelpers.js';
+import { createFakeSetting, stubNoopSettings } from '../../../testing/EnvironmentHelpers.js';
 import * as Settings from './settings.js';
 function renderSettingCheckbox(data) {
     const component = new Settings.SettingCheckbox.SettingCheckbox();
@@ -60,6 +60,7 @@ describe('SettingCheckbox', () => {
         assert.isFalse(setting.get());
     });
     it('can be disabled via registration', () => {
+        stubNoopSettings();
         const setting = createFakeSetting('setting', false);
         setting.setRegistration({
             settingName: 'setting',
@@ -75,6 +76,7 @@ describe('SettingCheckbox', () => {
         assert.isTrue(checkbox.disabled);
     });
     it('shows disabled reason', () => {
+        stubNoopSettings();
         const setting = createFakeSetting('setting', false);
         setting.setRegistration({
             settingName: 'setting',

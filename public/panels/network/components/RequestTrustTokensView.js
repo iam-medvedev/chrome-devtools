@@ -232,7 +232,7 @@ function getDetailedTextForStatusCode(status) {
         case "MissingIssuerKeys" /* Protocol.Network.TrustTokenOperationDoneEventStatus.MissingIssuerKeys */:
             return i18nString(UIStrings.theKeysForThisPSTIssuerAreUnavailable);
         case "FailedPrecondition" /* Protocol.Network.TrustTokenOperationDoneEventStatus.FailedPrecondition */:
-        case "Unavailable" /* Protocol.Network.TrustTokenOperationDoneEventStatus.Unavailable */:
+        case "ResourceLimited" /* Protocol.Network.TrustTokenOperationDoneEventStatus.ResourceLimited */:
         case "InternalError" /* Protocol.Network.TrustTokenOperationDoneEventStatus.InternalError */:
         case "Unauthorized" /* Protocol.Network.TrustTokenOperationDoneEventStatus.Unauthorized */:
         case "UnknownError" /* Protocol.Network.TrustTokenOperationDoneEventStatus.UnknownError */:

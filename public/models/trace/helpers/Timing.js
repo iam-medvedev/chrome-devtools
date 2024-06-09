@@ -159,4 +159,21 @@ export function traceWindowFromMicroSeconds(min, max) {
     };
     return traceWindow;
 }
+/**
+ * Checks to see if the timeRange is within the bounds. By "within" we mean
+ * "has any overlap":
+ *         |------------------------|
+ *      ==                                     no overlap (entirely before)
+ *       =========                             overlap
+ *            =========                        overlap
+ *                             =========       overlap
+ *                                     ====    no overlap (entirely after)
+ *        ==============================       overlap (time range is larger than bounds)
+ *         |------------------------|
+ */
+export function boundsIncludeTimeRange(data) {
+    const { min: visibleMin, max: visibleMax } = data.bounds;
+    const { min: rangeMin, max: rangeMax } = data.timeRange;
+    return visibleMin <= rangeMax && visibleMax >= rangeMin;
+}
 //# sourceMappingURL=Timing.js.map

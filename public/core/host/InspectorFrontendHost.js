@@ -304,6 +304,29 @@ export class InspectorFrontendHostStub {
             arePreferencesSynced: false,
         });
     }
+    getHostConfig(callback) {
+        callback({
+            devToolsConsoleInsights: {
+                aidaModelId: '',
+                aidaTemperature: 0,
+                blocked: true,
+                blockedByAge: false,
+                blockedByEnterprisePolicy: false,
+                blockedByFeatureFlag: true,
+                blockedByGeo: false,
+                blockedByRollout: false,
+                disallowLogging: false,
+                enabled: false,
+                optIn: false,
+            },
+            devToolsConsoleInsightsDogfood: {
+                aidaModelId: '',
+                aidaTemperature: 0,
+                enabled: false,
+                optIn: false,
+            },
+        });
+    }
     upgradeDraggedFileSystemPermissions(fileSystem) {
     }
     indexPath(requestId, fileSystemPath, excludedFolders) {
@@ -424,13 +447,9 @@ class InspectorFrontendAPIImpl {
             // Instantiate stub for web-hosted mode if necessary.
             // @ts-ignore Global injected by devtools-compatibility.js
             globalThis.InspectorFrontendHost = InspectorFrontendHostInstance = new InspectorFrontendHostStub();
-            if ('doAidaConversationForTesting' in globalThis) {
-                InspectorFrontendHostInstance['doAidaConversation'] =
-                    globalThis.doAidaConversationForTesting;
-            }
-            if ('getSyncInformationForTesting' in globalThis) {
-                InspectorFrontendHostInstance['getSyncInformation'] =
-                    globalThis.getSyncInformationForTesting;
+            if ('getHostConfigForTesting' in globalThis) {
+                InspectorFrontendHostInstance['getHostConfig'] =
+                    globalThis.getHostConfigForTesting;
             }
         }
         else {

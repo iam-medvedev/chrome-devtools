@@ -2,7 +2,7 @@ import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { type EventDescriptor, type EventTargetEvent, type GenericEvents } from './EventTarget.js';
 import { ObjectWrapper } from './Object.js';
-import { getLocalizedSettingsCategory, getRegisteredSettings, maybeRemoveSettingExtension, type RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, type SettingExtensionOption, type SettingRegistration, SettingType } from './SettingRegistration.js';
+import { getLocalizedSettingsCategory, maybeRemoveSettingExtension, type RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, type SettingExtensionOption, type SettingRegistration, SettingType } from './SettingRegistration.js';
 export declare class Settings {
     #private;
     readonly syncedStorage: SettingsStorage;
@@ -12,14 +12,17 @@ export declare class Settings {
     orderValuesBySettingCategory: Map<SettingCategory, Set<number>>;
     readonly moduleSettings: Map<string, Setting<unknown>>;
     private constructor();
+    getRegisteredSettings(): SettingRegistration[];
     static hasInstance(): boolean;
     static instance(opts?: {
         forceNew: boolean | null;
         syncedStorage: SettingsStorage | null;
         globalStorage: SettingsStorage | null;
         localStorage: SettingsStorage | null;
+        config?: Root.Runtime.HostConfig;
     }): Settings;
     static removeInstance(): void;
+    getHostConfig(): Root.Runtime.HostConfig | undefined;
     private registerModuleSetting;
     static normalizeSettingName(name: string): string;
     moduleSetting<T = any>(settingName: string): Setting<T>;
@@ -178,7 +181,7 @@ export declare const enum SettingStorageType {
 }
 export declare function moduleSetting(settingName: string): Setting<unknown>;
 export declare function settingForTest(settingName: string): Setting<unknown>;
-export { getLocalizedSettingsCategory, getRegisteredSettings, maybeRemoveSettingExtension, registerSettingExtension, RegExpSettingItem, SettingCategory, SettingExtensionOption, SettingRegistration, SettingType, registerSettingsForTest, resetSettings, };
+export { getLocalizedSettingsCategory, maybeRemoveSettingExtension, registerSettingExtension, RegExpSettingItem, SettingCategory, SettingExtensionOption, SettingRegistration, SettingType, registerSettingsForTest, resetSettings, };
 export interface Serializer<I, O> {
     stringify: (value: I) => string;
     parse: (value: string) => O;

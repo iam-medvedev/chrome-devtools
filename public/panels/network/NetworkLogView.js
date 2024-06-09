@@ -1242,10 +1242,13 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         }
         for (const node of staleNodes) {
             const isFilteredOut = !this.applyFilter(node);
-            if (isFilteredOut && node === this.hoveredNodeInternal) {
-                this.setHoveredNode(null);
+            if (isFilteredOut) {
+                if (node === this.hoveredNodeInternal) {
+                    this.setHoveredNode(null);
+                }
+                node.selected = false;
             }
-            if (!isFilteredOut) {
+            else {
                 nodesToRefresh.push(node);
             }
             const request = node.request();

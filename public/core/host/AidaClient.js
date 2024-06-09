@@ -6,7 +6,7 @@ import * as Root from '../root/root.js';
 import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 import { bindOutputStream } from './ResourceLoader.js';
 export class AidaClient {
-    static buildApiRequest(input) {
+    static buildConsoleInsightsRequest(input) {
         const request = {
             input,
             client: 'CHROME_DEVTOOLS',
@@ -28,7 +28,7 @@ export class AidaClient {
         }
         return request;
     }
-    async *fetch(input) {
+    async *fetch(request) {
         if (!InspectorFrontendHostInstance.doAidaConversation) {
             throw new Error('doAidaConversation is not available');
         }
@@ -49,7 +49,7 @@ export class AidaClient {
             };
         })();
         const streamId = bindOutputStream(stream);
-        InspectorFrontendHostInstance.doAidaConversation(JSON.stringify(AidaClient.buildApiRequest(input)), streamId, result => {
+        InspectorFrontendHostInstance.doAidaConversation(JSON.stringify(request), streamId, result => {
             if (result.statusCode === 403) {
                 stream.fail(new Error('Server responded: permission denied'));
             }

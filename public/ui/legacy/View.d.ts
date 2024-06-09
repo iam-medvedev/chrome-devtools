@@ -7,6 +7,7 @@ export interface View {
     title(): Platform.UIString.LocalizedString;
     isCloseable(): boolean;
     isPreviewFeature(): boolean;
+    iconName(): string | undefined;
     isTransient(): boolean;
     toolbarItems(): Promise<ToolbarItem[]>;
     widget(): Promise<Widget>;
@@ -24,6 +25,7 @@ export declare class SimpleView extends VBox implements View {
     revealView(): Promise<void>;
     disposeView(): void;
     isPreviewFeature(): boolean;
+    iconName(): string | undefined;
 }
 export interface ViewLocation {
     appendApplicableItems(locationName: string): void;

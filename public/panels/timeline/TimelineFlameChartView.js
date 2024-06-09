@@ -4,6 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
@@ -70,7 +71,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #gameKeyMatches = 0;
     #gameTimeout = setTimeout(() => ({}), 0);
     #overlaysContainer = document.createElement('div');
-    #overlays = new Overlays({ container: this.#overlaysContainer });
+    #overlays;
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-flamechart');
@@ -107,6 +108,15 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             this.#overlays.updateChartDimensions('network', dimensions.data.chart);
             this.#overlays.updateVisibleWindow(dimensions.data.traceWindow);
             this.#overlays.update();
+        });
+        this.#overlays = new Overlays({
+            container: this.#overlaysContainer,
+            charts: {
+                mainChart: this.mainFlameChart,
+                mainProvider: this.mainDataProvider,
+                networkChart: this.networkFlameChart,
+                networkProvider: this.networkDataProvider,
+            },
         });
         this.networkPane = new UI.Widget.VBox();
         this.networkPane.setMinimumSize(23, 23);
@@ -278,6 +288,9 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (!event || !this.#traceEngineData) {
             return;
         }
+        if (event instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame) {
+            return;
+        }
         const target = targetForEvent(this.#traceEngineData, event);
         if (!target) {
             return;
@@ -318,6 +331,10 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         }
     }
     setSelection(selection) {
+        const mainIndex = this.mainDataProvider.entryIndexForSelection(selection);
+        const networkIndex = this.networkDataProvider.entryIndexForSelection(selection);
+        this.mainFlameChart.setSelectedEntry(mainIndex);
+        this.networkFlameChart.setSelectedEntry(networkIndex);
         let index = this.mainDataProvider.entryIndexForSelection(selection);
         this.mainFlameChart.setSelectedEntry(index);
         index = this.networkDataProvider.entryIndexForSelection(selection);
@@ -326,14 +343,34 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             // TODO(crbug.com/1459265):  Change to await after migration work.
             void this.detailsView.setSelection(selection);
         }
+        const overlaysEnabled = Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_WRITE_MODIFICATIONS_TO_DISK */);
+        // Create the entry selected overlay, but only if the modifications experiment is enabled.
+        // Hiding it behind this experiment is temporary to allow for us to test in Canary before pushing to stable.
+        if (overlaysEnabled && selection) {
+            if (TimelineSelection.isTraceEventSelection(selection.object) ||
+                TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object) ||
+                TimelineSelection.isFrameObject(selection.object)) {
+                const existingSelectedOverlayForEvent = this.#overlays.overlaysForEntry(selection.object).some(overlay => overlay.type === 'ENTRY_SELECTED');
+                if (existingSelectedOverlayForEvent) {
+                    // We don't need to add a new overlay because it already exists.
+                    return;
+                }
+                // Clear the ENTRY_SELECTED for the previous selected event.
+                this.#overlays.removeOverlaysOfType('ENTRY_SELECTED');
+                this.#overlays.addOverlay({
+                    type: 'ENTRY_SELECTED',
+                    entry: selection.object,
+                });
+                this.#overlays.update();
+            }
+        }
     }
     onEntrySelected(dataProvider, event) {
         const entryIndex = event.data;
         if (dataProvider === this.mainDataProvider) {
             this.mainDataProvider.buildFlowForInitiator(entryIndex);
         }
-        this.delegate.select(dataProvider
-            .createSelection(entryIndex));
+        this.delegate.select(dataProvider.createSelection(entryIndex));
     }
     resizeToPreferredHeights() {
         if (!this.isShowing()) {

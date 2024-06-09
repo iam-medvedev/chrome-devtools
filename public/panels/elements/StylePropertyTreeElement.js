@@ -18,7 +18,7 @@ import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, }
 import * as ElementsComponents from './components/components.js';
 import { cssRuleValidatorsMap } from './CSSRuleValidator.js';
 import { ElementsPanel } from './ElementsPanel.js';
-import { AngleMatch, AngleMatcher, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, ShadowMatcher, } from './PropertyMatchers.js';
+import { AnchorFunctionMatcher, AngleMatch, AngleMatcher, BezierMatcher, ColorMatch, ColorMatcher, ColorMixMatch, ColorMixMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, PositionAnchorMatcher, ShadowMatcher, } from './PropertyMatchers.js';
 import { Renderer, RenderingContext, StringRenderer, URLRenderer } from './PropertyRenderer.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
@@ -892,6 +892,87 @@ export class LengthRenderer {
         return new LengthMatcher();
     }
 }
+async function decorateAnchorForAnchorLink(container, treeElement, options) {
+    const anchorNode = await treeElement.node()?.getAnchorBySpecifier(options.identifier) ?? undefined;
+    const link = new ElementsComponents.AnchorFunctionLinkSwatch.AnchorFunctionLinkSwatch({
+        identifier: options.identifier,
+        anchorNode: anchorNode,
+        needsSpace: options.needsSpace,
+        onLinkActivate: () => {
+            if (!anchorNode) {
+                return;
+            }
+            void Common.Revealer.reveal(anchorNode, false);
+        },
+        onMouseEnter: () => {
+            anchorNode?.highlight();
+        },
+        onMouseLeave: () => {
+            SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+        },
+    });
+    container.removeChildren();
+    container.appendChild(link);
+}
+export class AnchorFunctionRenderer {
+    #treeElement;
+    constructor(treeElement) {
+        this.#treeElement = treeElement;
+    }
+    anchorDecoratedForTest() {
+    }
+    async #decorateAnchor(container, identifier) {
+        await decorateAnchorForAnchorLink(container, this.#treeElement, {
+            identifier,
+            needsSpace: true,
+        });
+        this.anchorDecoratedForTest();
+    }
+    render(match, context) {
+        const content = document.createElement('span');
+        content.appendChild(document.createTextNode(`${match.functionName}(`));
+        const firstArgText = match.matching.ast.text(match.args[0]);
+        const hasDashedIdentifier = firstArgText.startsWith('--');
+        const linkContainer = document.createElement('span');
+        if (hasDashedIdentifier) {
+            linkContainer.textContent = `${firstArgText} `;
+        }
+        content.appendChild(linkContainer);
+        const remainingArgsContainer = content.appendChild(document.createElement('span'));
+        if (hasDashedIdentifier) {
+            Renderer.renderInto(match.args.slice(1), context, remainingArgsContainer);
+        }
+        else {
+            Renderer.renderInto(match.args, context, remainingArgsContainer);
+        }
+        void this.#decorateAnchor(linkContainer, hasDashedIdentifier ? firstArgText : undefined);
+        content.appendChild(document.createTextNode(')'));
+        return [content];
+    }
+    matcher() {
+        return new AnchorFunctionMatcher();
+    }
+}
+export class PositionAnchorRenderer {
+    #treeElement;
+    constructor(treeElement) {
+        this.#treeElement = treeElement;
+    }
+    anchorDecoratedForTest() {
+    }
+    render(match) {
+        const content = document.createElement('span');
+        content.appendChild(document.createTextNode(match.text));
+        void decorateAnchorForAnchorLink(content, this.#treeElement, {
+            identifier: match.text,
+            needsSpace: false,
+        }).then(() => this.anchorDecoratedForTest());
+        return [content];
+    }
+    matcher() {
+        return new PositionAnchorMatcher();
+    }
+}
 export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     style;
     matchedStylesInternal;
@@ -1220,6 +1301,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 new LightDarkColorRenderer(this),
                 new GridTemplateRenderer(),
                 new LinearGradientRenderer(),
+                new AnchorFunctionRenderer(this),
+                new PositionAnchorRenderer(this),
             ] :
             [];
         if (!Root.Runtime.experiments.isEnabled('css-type-component-length-deprecate') && this.property.parsedOk) {

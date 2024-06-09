@@ -1,8 +1,8 @@
-import type * as Platform from '../platform/platform.js';
 import type * as Protocol from '../../generated/protocol.js';
+import type * as Platform from '../platform/platform.js';
 export declare class Cookie {
     #private;
-    constructor(name: string, value: string, type?: Type | null, priority?: Protocol.Network.CookiePriority);
+    constructor(name: string, value: string, type?: Type | null, priority?: Protocol.Network.CookiePriority, partitionKey?: Protocol.Network.CookiePartitionKey);
     static fromProtocolCookie(protocolCookie: Protocol.Network.Cookie): Cookie;
     key(): string;
     name(): string;
@@ -12,8 +12,12 @@ export declare class Cookie {
     secure(): boolean;
     partitioned(): boolean;
     sameSite(): Protocol.Network.CookieSameSite;
-    partitionKey(): string;
-    setPartitionKey(key: string): void;
+    partitionKey(): Protocol.Network.CookiePartitionKey;
+    setPartitionKey(topLevelSite: string, hasCrossSiteAncestor: boolean): void;
+    topLevelSite(): string;
+    setTopLevelSite(topLevelSite: string, hasCrossSiteAncestor: boolean): void;
+    hasCrossSiteAncestor(): boolean;
+    setHasCrossSiteAncestor(hasCrossSiteAncestor: boolean): void;
     partitionKeyOpaque(): boolean;
     setPartitionKeyOpaque(): void;
     priority(): Protocol.Network.CookiePriority;
@@ -56,5 +60,7 @@ export declare const enum Attribute {
     SourcePort = "source-port",
     Priority = "priority",
     Partitioned = "partitioned",
-    PartitionKey = "partition-key"
+    PartitionKey = "partition-key",
+    PartitionKeySite = "partition-key-site",
+    HasCrossSiteAncestor = "has-cross-site-ancestor"
 }

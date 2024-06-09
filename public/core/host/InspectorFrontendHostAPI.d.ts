@@ -1,4 +1,5 @@
 import type * as Platform from '../../core/platform/platform.js';
+import type * as Root from '../root/root.js';
 export declare enum Events {
     AppendedToURL = "appendedToURL",
     CanceledSaveURL = "canceledSaveURL",
@@ -209,6 +210,7 @@ export interface InspectorFrontendHostAPI {
     removePreference(name: string): void;
     clearPreferences(): void;
     getSyncInformation(callback: (arg0: SyncInformation) => void): void;
+    getHostConfig(callback: (arg0: Root.Runtime.HostConfig) => void): void;
     upgradeDraggedFileSystemPermissions(fileSystem: FileSystem): void;
     platform(): string;
     recordCountHistogram(histogramName: string, sample: number, min: number, exclusiveMax: number, bucketSize: number): void;

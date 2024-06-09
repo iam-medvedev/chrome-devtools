@@ -16,6 +16,12 @@ export class I18n {
     registerLocaleData(locale, messages) {
         this.localeData.set(locale, messages);
     }
+    hasLocaleDataForTest(locale) {
+        return this.localeData.has(locale);
+    }
+    resetLocaleDataForTest() {
+        this.localeData.clear();
+    }
     registerFileStrings(filename, stringStructure) {
         return new RegisteredFileStrings(filename, stringStructure, this.localeData);
     }

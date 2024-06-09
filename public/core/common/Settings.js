@@ -31,7 +31,7 @@ import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { Console } from './Console.js';
 import { ObjectWrapper } from './Object.js';
-import { getLocalizedSettingsCategory, getRegisteredSettings, maybeRemoveSettingExtension, registerSettingExtension, registerSettingsForTest, resetSettings, } from './SettingRegistration.js';
+import { getLocalizedSettingsCategory, getRegisteredSettings as getRegisteredSettingsInternal, maybeRemoveSettingExtension, registerSettingExtension, registerSettingsForTest, resetSettings, } from './SettingRegistration.js';
 let settingsInstance;
 export class Settings {
     syncedStorage;
@@ -43,7 +43,8 @@ export class Settings {
     #eventSupport;
     #registry;
     moduleSettings;
-    constructor(syncedStorage, globalStorage, localStorage) {
+    #config;
+    constructor(syncedStorage, globalStorage, localStorage, config) {
         this.syncedStorage = syncedStorage;
         this.globalStorage = globalStorage;
         this.localStorage = localStorage;
@@ -53,12 +54,14 @@ export class Settings {
         this.#eventSupport = new ObjectWrapper();
         this.#registry = new Map();
         this.moduleSettings = new Map();
-        for (const registration of getRegisteredSettings()) {
+        this.#config = config;
+        for (const registration of this.getRegisteredSettings()) {
             const { settingName, defaultValue, storageType } = registration;
             const isRegex = registration.settingType === "regex" /* SettingType.REGEX */;
-            const setting = isRegex && typeof defaultValue === 'string' ?
-                this.createRegExpSetting(settingName, defaultValue, undefined, storageType) :
-                this.createSetting(settingName, defaultValue, storageType);
+            const evaluatedDefaultValue = typeof defaultValue === 'function' ? defaultValue(this.#config) : defaultValue;
+            const setting = isRegex && typeof evaluatedDefaultValue === 'string' ?
+                this.createRegExpSetting(settingName, evaluatedDefaultValue, undefined, storageType) :
+                this.createSetting(settingName, evaluatedDefaultValue, storageType);
             setting.setTitleFunction(registration.title);
             if (registration.userActionCondition) {
                 setting.setRequiresUserAction(Boolean(Root.Runtime.Runtime.queryParam(registration.userActionCondition)));
@@ -67,21 +70,27 @@ export class Settings {
             this.registerModuleSetting(setting);
         }
     }
+    getRegisteredSettings() {
+        return getRegisteredSettingsInternal(this.#config);
+    }
     static hasInstance() {
         return typeof settingsInstance !== 'undefined';
     }
     static instance(opts = { forceNew: null, syncedStorage: null, globalStorage: null, localStorage: null }) {
-        const { forceNew, syncedStorage, globalStorage, localStorage } = opts;
+        const { forceNew, syncedStorage, globalStorage, localStorage, config } = opts;
         if (!settingsInstance || forceNew) {
             if (!syncedStorage || !globalStorage || !localStorage) {
                 throw new Error(`Unable to create settings: global and local storage must be provided: ${new Error().stack}`);
             }
-            settingsInstance = new Settings(syncedStorage, globalStorage, localStorage);
+            settingsInstance = new Settings(syncedStorage, globalStorage, localStorage, config);
         }
         return settingsInstance;
     }
     static removeInstance() {
         settingsInstance = undefined;
+    }
+    getHostConfig() {
+        return this.#config;
     }
     registerModuleSetting(setting) {
         const settingName = setting.name;
@@ -320,7 +329,7 @@ export class Setting {
     }
     disabled() {
         if (this.#registration?.disabledCondition) {
-            const { disabled } = this.#registration.disabledCondition();
+            const { disabled } = this.#registration.disabledCondition(Settings.instance().getHostConfig());
             // If registration does not disable it, pass through to #disabled
             // attribute check.
             if (disabled) {
@@ -331,7 +340,7 @@ export class Setting {
     }
     disabledReason() {
         if (this.#registration?.disabledCondition) {
-            const result = this.#registration.disabledCondition();
+            const result = this.#registration.disabledCondition(Settings.instance().getHostConfig());
             if (result.disabled) {
                 return result.reason;
             }
@@ -1124,5 +1133,5 @@ export function moduleSetting(settingName) {
 export function settingForTest(settingName) {
     return Settings.instance().settingForTest(settingName);
 }
-export { getLocalizedSettingsCategory, getRegisteredSettings, maybeRemoveSettingExtension, registerSettingExtension, registerSettingsForTest, resetSettings, };
+export { getLocalizedSettingsCategory, maybeRemoveSettingExtension, registerSettingExtension, registerSettingsForTest, resetSettings, };
 //# sourceMappingURL=Settings.js.map

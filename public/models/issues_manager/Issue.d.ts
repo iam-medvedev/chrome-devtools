@@ -67,7 +67,6 @@ export declare abstract class Issue<IssueCode extends string = string> {
     requests(): Iterable<Protocol.Audits.AffectedRequest>;
     sources(): Iterable<Protocol.Audits.SourceCodeLocation>;
     trackingSites(): Iterable<string>;
-    metadataAllowedSites(): Iterable<string>;
     isAssociatedWithRequestId(requestId: string): boolean;
     /**
      * The model might be unavailable or belong to a target that has already been disposed.

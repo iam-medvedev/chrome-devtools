@@ -810,15 +810,15 @@ export declare const enum DeveloperResourceScheme {
 }
 export declare enum ResourceType {
     all = 0,
-    Documents = 1,
-    Scripts = 2,
+    Document = 1,
+    JavaScript = 2,
     'Fetch and XHR' = 3,
-    Stylesheets = 4,
-    Fonts = 5,
-    Images = 6,
+    CSS = 4,
+    Font = 5,
+    Image = 6,
     Media = 7,
     Manifest = 8,
-    WebSockets = 9,
+    WebSocket = 9,
     WebAssembly = 10,
     Other = 11,
     MaxValue = 12

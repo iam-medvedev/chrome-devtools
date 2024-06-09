@@ -343,7 +343,7 @@ export interface ExtraResponseInfo {
     responseHeadersText?: string;
     resourceIPAddressSpace: Protocol.Network.IPAddressSpace;
     statusCode: number | undefined;
-    cookiePartitionKey: string | undefined;
+    cookiePartitionKey?: Protocol.Network.CookiePartitionKey;
     cookiePartitionKeyOpaque: boolean | undefined;
     exemptedResponseCookies: {
         cookie: Cookie;
