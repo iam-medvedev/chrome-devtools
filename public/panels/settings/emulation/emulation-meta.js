@@ -36,5 +36,6 @@ UI.ViewManager.registerViewExtension({
         'standard-emulated-device-list',
         'custom-emulated-device-list',
     ],
+    iconName: 'devices',
 });
 //# sourceMappingURL=emulation-meta.js.map

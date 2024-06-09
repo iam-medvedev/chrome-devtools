@@ -10,6 +10,5 @@ export declare class CookieDeprecationMetadataIssue extends Issue {
     details(): Protocol.Audits.CookieDeprecationMetadataIssueDetails;
     getKind(): IssueKind;
     primaryKey(): string;
-    metadataAllowedSites(): Iterable<string>;
     static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): CookieDeprecationMetadataIssue[];
 }

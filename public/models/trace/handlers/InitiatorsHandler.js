@@ -152,18 +152,7 @@ export function handleEvent(event) {
     else if (Types.TraceEvents.isTraceEventWebSocketCreate(event)) {
         webSocketCreateEventsById.set(event.args.data.identifier, event);
     }
-    else if (Types.TraceEvents.isTraceEventWebSocketSendHandshakeRequest(event)) {
-        const matchingCreateEvent = webSocketCreateEventsById.get(event.args.data.identifier);
-        if (matchingCreateEvent) {
-            storeInitiator({
-                event,
-                initiator: matchingCreateEvent,
-            });
-        }
-    }
-    else if (Types.TraceEvents.isTraceEventWebSocketSendHandshakeRequest(event) ||
-        Types.TraceEvents.isTraceEventWebSocketReceiveHandshakeResponse(event) ||
-        Types.TraceEvents.isTraceEventWebSocketDestroy(event)) {
+    else if (Types.TraceEvents.isTraceEventWebSocketInfo(event) || Types.TraceEvents.isTraceEventWebSocketTransfer(event)) {
         const matchingCreateEvent = webSocketCreateEventsById.get(event.args.data.identifier);
         if (matchingCreateEvent) {
             storeInitiator({

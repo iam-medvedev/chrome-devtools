@@ -129,6 +129,7 @@ export declare class DOMNode {
     scrollIntoView(): Promise<void>;
     focus(): Promise<void>;
     simpleSelector(): string;
+    getAnchorBySpecifier(specifier?: string): Promise<DOMNode | null>;
 }
 export declare namespace DOMNode {
     enum ShadowRootTypes {

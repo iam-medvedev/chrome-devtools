@@ -211,7 +211,7 @@ export class CookieIssue extends Issue {
     maybeCreateConsoleMessage() {
         const issuesModel = this.model();
         if (issuesModel && CookieIssue.getSubCategory(this.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.ThirdPartyPhaseoutCookie */) {
-            return new SDK.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK.RuntimeModel.RuntimeModel), SDK.ConsoleModel.FrontendMessageSource.IssuePanel, "warning" /* Protocol.Log.LogEntryLevel.Warning */, this.getKind() === "PageError" /* IssueKind.PageError */ ? UIStrings.consoleTpcdErrorMessage :
+            return new SDK.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK.RuntimeModel.RuntimeModel), Common.Console.FrontendMessageSource.IssuePanel, "warning" /* Protocol.Log.LogEntryLevel.Warning */, this.getKind() === "PageError" /* IssueKind.PageError */ ? UIStrings.consoleTpcdErrorMessage :
                 UIStrings.consoleTpcdWarningMessage, {
                 url: this.#issueDetails.request?.url,
                 affectedResources: { requestId: this.#issueDetails.request?.requestId, issueId: this.issueId },

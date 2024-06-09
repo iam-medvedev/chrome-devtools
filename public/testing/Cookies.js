@@ -13,7 +13,7 @@ const cookieExpectationDefaults = {
     expires: null,
     size: undefined,
     priority: "Medium" /* Protocol.Network.CookiePriority.Medium */,
-    partitionKey: undefined,
+    partitionKey: null,
     partitionKeyOpaque: false,
 };
 const requestDate = new Date('Mon Oct 18 2010 17:00:00 GMT+0000');
@@ -41,7 +41,11 @@ export function expectCookie(cookie, cookieExpectation) {
     }
     assert.strictEqual(cookie.size(), expectation.size, 'size');
     assert.strictEqual(cookie.priority(), expectation.priority, 'priority');
-    assert.strictEqual(cookie.partitionKey(), expectation.partitionKey, 'partitionKey');
+    assert.strictEqual(cookie.partitioned(), Boolean(expectation.partitionKey), 'partitioned');
+    if (cookie.partitioned()) {
+        assert.strictEqual(cookie.hasCrossSiteAncestor(), expectation.partitionKey?.hasCrossSiteAncestor, 'partitionKey');
+        assert.strictEqual(cookie.topLevelSite(), expectation.partitionKey?.topLevelSite, 'topLevelSite');
+    }
     assert.strictEqual(cookie.partitionKeyOpaque(), expectation.partitionKeyOpaque, 'partitionKeyOpaque');
 }
 //# sourceMappingURL=Cookies.js.map

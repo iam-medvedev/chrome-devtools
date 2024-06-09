@@ -227,8 +227,8 @@ export async function finalize() {
         const frameId = interactionStartEvent.args.frame ?? interactionStartEvent.args.data.frame;
         const navigation = Helpers.Trace.getNavigationForTraceEvent(interactionStartEvent, frameId, navigationsByFrameId);
         const navigationId = navigation?.args.data?.navigationId;
-        const syntheticEventsManager = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
-        const interactionEvent = syntheticEventsManager.registerSyntheticBasedEvent({
+        const interactionEvent = Helpers.SyntheticEvents.SyntheticEventsManager
+            .registerSyntheticBasedEvent({
             // Use the start event to define the common fields.
             rawSourceEvent: interactionStartEvent,
             cat: interactionStartEvent.cat,

@@ -32,8 +32,7 @@ export async function finalize() {
     }));
     for (const snapshotEvent of snapshotEvents) {
         const { cat, name, ph, pid, tid } = snapshotEvent;
-        const syntheticManagerInstance = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
-        const syntheticEvent = syntheticManagerInstance.registerSyntheticBasedEvent({
+        const syntheticEvent = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticBasedEvent({
             rawSourceEvent: snapshotEvent,
             cat,
             name,

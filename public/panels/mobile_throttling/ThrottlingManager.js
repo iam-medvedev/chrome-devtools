@@ -190,10 +190,8 @@ export class ThrottlingManager {
         return checkbox;
     }
     createMobileThrottlingButton() {
-        const button = new UI.Toolbar.ToolbarMenuButton(appendItems, undefined, 'mobile-throttling');
+        const button = new UI.Toolbar.ToolbarMenuButton(appendItems, undefined, undefined, 'mobile-throttling');
         button.setTitle(i18nString(UIStrings.throttling));
-        button.setGlyph('');
-        button.turnIntoSelect();
         button.setDarkText();
         let options = [];
         let selectedIndex = -1;
@@ -340,7 +338,7 @@ export class ActionDelegate {
             return true;
         }
         if (actionId === 'network-conditions.network-mid-tier-mobile') {
-            SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(SDK.NetworkManager.Fast3GConditions);
+            SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(SDK.NetworkManager.Slow4GConditions);
             return true;
         }
         if (actionId === 'network-conditions.network-offline') {

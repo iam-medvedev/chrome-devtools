@@ -103,6 +103,10 @@ export interface ViewRegistration {
      * Words used to find the view in the Command Menu.
      */
     tags?: Array<() => Platform.UIString.LocalizedString>;
+    /**
+     * Icon to be used next to view's title.
+     */
+    iconName?: string;
 }
 export declare function registerViewExtension(registration: ViewRegistration): void;
 export declare function getRegisteredViewExtensions(): Array<PreRegisteredView>;

@@ -641,6 +641,9 @@ export const generatedPropertyValues: {
     "row-gap": {
         values: string[];
     };
+    "ruby-align": {
+        values: string[];
+    };
     "ruby-position": {
         values: string[];
     };
@@ -822,6 +825,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "transform-style": {
+        values: string[];
+    };
+    "transition-behavior": {
         values: string[];
     };
     "transition-property": {

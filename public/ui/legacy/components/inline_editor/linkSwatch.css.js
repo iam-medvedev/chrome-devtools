@@ -11,6 +11,10 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+.link-swatch-link {
+  display: inline;
+}
+
 .link-swatch-link:not(.undefined) {
   cursor: pointer;
   text-underline-offset: 2px;

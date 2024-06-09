@@ -310,7 +310,7 @@ export class ConsoleViewMessage {
     buildMessage() {
         let messageElement;
         let messageText = this.message.messageText;
-        if (this.message.source === SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI) {
+        if (this.message.source === Common.Console.FrontendMessageSource.ConsoleAPI) {
             switch (this.message.type) {
                 case "trace" /* Protocol.Runtime.ConsoleAPICalledEventType.Trace */:
                     messageElement = this.format(this.message.parameters || ['console.trace']);
@@ -1119,7 +1119,7 @@ export class ConsoleViewMessage {
         if (this.message.isGroupStartMessage()) {
             this.elementInternal.classList.add('console-group-title');
         }
-        if (this.message.source === SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI) {
+        if (this.message.source === Common.Console.FrontendMessageSource.ConsoleAPI) {
             this.elementInternal.classList.add('console-from-api');
         }
         if (this.inSimilarGroup) {
@@ -1135,20 +1135,24 @@ export class ConsoleViewMessage {
         switch (this.message.level) {
             case "verbose" /* Protocol.Log.LogEntryLevel.Verbose */:
                 this.elementInternal.classList.add('console-verbose-level');
+                UI.ARIAUtils.setLabel(this.elementInternal, this.text);
                 break;
             case "info" /* Protocol.Log.LogEntryLevel.Info */:
                 this.elementInternal.classList.add('console-info-level');
                 if (this.message.type === SDK.ConsoleModel.FrontendMessageType.System) {
                     this.elementInternal.classList.add('console-system-type');
                 }
+                UI.ARIAUtils.setLabel(this.elementInternal, this.text);
                 break;
             case "warning" /* Protocol.Log.LogEntryLevel.Warning */:
                 this.elementInternal.classList.add('console-warning-level');
                 this.elementInternal.role = 'log';
+                UI.ARIAUtils.setLabel(this.elementInternal, this.text);
                 break;
             case "error" /* Protocol.Log.LogEntryLevel.Error */:
                 this.elementInternal.classList.add('console-error-level');
                 this.elementInternal.role = 'log';
+                UI.ARIAUtils.setLabel(this.elementInternal, this.text);
                 break;
         }
         this.updateMessageIcon();
@@ -1165,9 +1169,12 @@ export class ConsoleViewMessage {
         }
     }
     shouldShowInsights() {
-        if (this.message.source === SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI &&
+        if (this.message.source === Common.Console.FrontendMessageSource.ConsoleAPI &&
             this.message.stackTrace?.callFrames[0]?.url === '') {
             // Do not show insights for direct calls to Console APIs from within DevTools Console.
+            return false;
+        }
+        if (this.message.messageText === '' || this.message.source === Common.Console.FrontendMessageSource.SelfXss) {
             return false;
         }
         return this.message.level === "error" /* Protocol.Log.LogEntryLevel.Error */ ||

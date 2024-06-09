@@ -65,6 +65,7 @@ export declare class TraceLoader {
      **/
     static initTraceBoundsManager(data: TraceEngine.Handlers.Types.TraceParseData): void;
     static executeTraceEngineOnFileContents(contents: TraceEngine.Types.File.Contents, emulateFreshRecording?: boolean, traceEngineConfig?: TraceEngine.Types.Configuration.Configuration): Promise<{
+        model: TraceEngine.TraceModel.Model;
         metadata: TraceEngine.Types.File.MetaData;
         traceParsedData: TraceEngine.Handlers.Types.TraceParseData;
     }>;

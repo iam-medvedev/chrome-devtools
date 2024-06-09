@@ -71,6 +71,7 @@ export interface TraceFrame {
     url: string;
     parent?: string;
     isOutermostMainFrame?: boolean;
+    isInPrimaryMainFrame?: boolean;
 }
 export interface TraceEventSample extends TraceEventData {
     ph: Phase.SAMPLE;
@@ -661,6 +662,7 @@ export interface TraceEventResourceSendRequest extends TraceEventInstant {
             requestMethod?: string;
             renderBlocking?: RenderBlocking;
             initiator?: Initiator;
+            isLinkPreload?: boolean;
         };
     };
 }
@@ -743,7 +745,6 @@ export interface TraceEventResourceReceiveResponse extends TraceEventInstant {
             responseTime: MilliSeconds;
             statusCode: number;
             timing: TraceEventResourceReceiveResponseTimingData;
-            isLinkPreload?: boolean;
             connectionId: number;
             connectionReused: boolean;
             headers?: Array<{
@@ -852,6 +853,14 @@ export interface TraceEventScheduleStyleRecalculation extends TraceEventInstant 
     };
 }
 export declare function isTraceEventScheduleStyleRecalculation(event: TraceEventData): event is TraceEventScheduleStyleRecalculation;
+export interface TraceEventRenderFrameImplCreateChildFrame extends TraceEventData {
+    name: KnownEventName.RenderFrameImplCreateChildFrame;
+    args: TraceEventArgs & {
+        child_frame_token: string;
+        frame_token: string;
+    };
+}
+export declare function isTraceEventRenderFrameImplCreateChildFrame(event: TraceEventData): event is TraceEventRenderFrameImplCreateChildFrame;
 export interface TraceEventPrePaint extends TraceEventComplete {
     name: 'PrePaint';
 }
@@ -1069,6 +1078,7 @@ export interface SyntheticProfileCall extends SyntheticTraceEntry {
     nodeId: Protocol.integer;
     sampleIndex: number;
     profileId: ProfileID;
+    selfTime: MicroSeconds;
 }
 /**
  * A JS Sample reflects a single sample from the V8 CPU Profile
@@ -1286,6 +1296,11 @@ declare class CallFrameIdTag {
 }
 export type CallFrameID = number & CallFrameIdTag;
 export declare function CallFrameID(value: number): CallFrameID;
+declare class SampleIndexTag {
+    #private;
+}
+export type SampleIndex = number & SampleIndexTag;
+export declare function SampleIndex(value: number): SampleIndex;
 declare class ProcessIdTag {
     #private;
 }
@@ -1545,12 +1560,64 @@ export interface TraceEventWebSocketCreate extends TraceEventInstant {
             identifier: number;
             url: string;
             frame?: string;
+            workerId?: string;
             websocketProtocol?: string;
             stackTrace?: TraceEventCallFrame;
         };
     };
 }
 export declare function isTraceEventWebSocketCreate(event: TraceEventData): event is TraceEventWebSocketCreate;
+export interface TraceEventWebSocketInfo extends TraceEventInstant {
+    name: KnownEventName.WebSocketDestroy | KnownEventName.WebSocketReceiveHandshake | KnownEventName.WebSocketReceiveHandshakeResponse;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            identifier: number;
+            url: string;
+            frame?: string;
+            workerId?: string;
+        };
+    };
+}
+export interface TraceEventWebSocketTransfer extends TraceEventInstant {
+    name: KnownEventName.WebSocketSend | KnownEventName.WebSocketReceive;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            identifier: number;
+            url: string;
+            frame?: string;
+            workerId?: string;
+            dataLength: number;
+        };
+    };
+}
+export declare function isTraceEventWebSocketInfo(traceEventData: TraceEventData): traceEventData is TraceEventWebSocketInfo;
+export declare function isTraceEventWebSocketTransfer(traceEventData: TraceEventData): traceEventData is TraceEventWebSocketTransfer;
+export interface TraceEventWebSocketSend extends TraceEventInstant {
+    name: KnownEventName.WebSocketSend;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            identifier: number;
+            url: string;
+            frame?: string;
+            workerId?: string;
+            dataLength: number;
+        };
+    };
+}
+export declare function isTraceEventWebSocketSend(event: TraceEventData): event is TraceEventWebSocketSend;
+export interface TraceEventWebSocketReceive extends TraceEventInstant {
+    name: KnownEventName.WebSocketReceive;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            identifier: number;
+            url: string;
+            frame?: string;
+            workerId?: string;
+            dataLength: number;
+        };
+    };
+}
+export declare function isTraceEventWebSocketReceive(event: TraceEventData): event is TraceEventWebSocketReceive;
 export interface TraceEventWebSocketSendHandshakeRequest extends TraceEventInstant {
     name: KnownEventName.WebSocketSendHandshakeRequest;
     args: TraceEventArgs & {
@@ -1581,7 +1648,8 @@ export interface TraceEventWebSocketDestroy extends TraceEventInstant {
     };
 }
 export declare function isTraceEventWebSocketDestroy(event: TraceEventData): event is TraceEventWebSocketDestroy;
-export declare function isWebSocketTraceEvent(event: TraceEventData): event is TraceEventWebSocketCreate | TraceEventWebSocketDestroy | TraceEventWebSocketReceiveHandshakeResponse | TraceEventWebSocketSendHandshakeRequest;
+export declare function isWebSocketTraceEvent(event: TraceEventData): event is TraceEventWebSocketCreate | TraceEventWebSocketInfo | TraceEventWebSocketTransfer;
+export type WebSocketEvent = TraceEventWebSocketCreate | TraceEventWebSocketInfo | TraceEventWebSocketTransfer;
 export interface TraceEventV8Compile extends TraceEventComplete {
     name: KnownEventName.Compile;
     args: TraceEventArgs & {
@@ -1665,6 +1733,8 @@ export declare const enum KnownEventName {
     WebSocketSendHandshake = "WebSocketSendHandshakeRequest",
     WebSocketReceiveHandshake = "WebSocketReceiveHandshakeResponse",
     WebSocketDestroy = "WebSocketDestroy",
+    WebSocketSend = "WebSocketSend",
+    WebSocketReceive = "WebSocketReceive",
     CryptoDoEncrypt = "DoEncrypt",
     CryptoDoEncryptReply = "DoEncryptReply",
     CryptoDoDecrypt = "DoDecrypt",
@@ -1774,7 +1844,8 @@ export declare const enum KnownEventName {
     InputLatencyMouseWheel = "InputLatency::MouseWheel",
     ImplSideFling = "InputHandlerProxy::HandleGestureFling::started",
     SchedulePostMessage = "SchedulePostMessage",
-    HandlePostMessage = "HandlePostMessage"
+    HandlePostMessage = "HandlePostMessage",
+    RenderFrameImplCreateChildFrame = "RenderFrameImpl::createChildFrame"
 }
 export declare const Categories: {
     readonly Console: "blink.console";

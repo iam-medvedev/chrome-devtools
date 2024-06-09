@@ -3677,6 +3677,11 @@ export const NativeFunctions = [
         receivers: ["Window"]
     },
     {
+        name: "prompt",
+        signatures: [["input"]],
+        receivers: ["AITextSession"]
+    },
+    {
         name: "watchAvailability",
         signatures: [["callback"]]
     },
@@ -6364,7 +6369,7 @@ export const NativeFunctions = [
     },
     {
         name: "caretPositionFromPoint",
-        signatures: [["x", "y", "...shadowRoots"]]
+        signatures: [["x", "y", "?options"]]
     },
     {
         name: "hasPrivateToken",
@@ -7111,6 +7116,26 @@ export const NativeFunctions = [
         signatures: [["feature"]]
     },
     {
+        name: "execute",
+        signatures: [["input"]]
+    },
+    {
+        name: "promptStreaming",
+        signatures: [["input"]]
+    },
+    {
+        name: "executeStreaming",
+        signatures: [["input"]]
+    },
+    {
+        name: "createTextSession",
+        signatures: [["?options"]]
+    },
+    {
+        name: "createGenericSession",
+        signatures: [["?options"]]
+    },
+    {
         name: "registerAnimator",
         signatures: [["name", "animatorCtor"]]
     },
@@ -7246,12 +7271,8 @@ export const NativeFunctions = [
         signatures: [["expires"]]
     },
     {
-        name: "transferToWebGPU",
+        name: "transferToGPUTexture",
         signatures: [["options"]]
-    },
-    {
-        name: "transferFromWebGPU",
-        signatures: [["tex"]]
     },
     {
         name: "CanvasFilter",
@@ -7908,18 +7929,6 @@ export const NativeFunctions = [
     {
         name: "build",
         signatures: [["outputs"]]
-    },
-    {
-        name: "execute",
-        signatures: [["input"]]
-    },
-    {
-        name: "executeStreaming",
-        signatures: [["input"]]
-    },
-    {
-        name: "createGenericSession",
-        signatures: [["?options"]]
     },
     {
         name: "getFileSystemAccessTransferToken",

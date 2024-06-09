@@ -9,7 +9,7 @@ import * as SDK from './sdk.js';
 describeWithMockConnection('ConsoleMessage', () => {
     const scriptId1 = '1';
     const scriptId2 = '2';
-    function newMessage({ source = SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI, message = 'Message', url, scriptId, executionContextId, stackTrace, }) {
+    function newMessage({ source = Common.Console.FrontendMessageSource.ConsoleAPI, message = 'Message', url, scriptId, executionContextId, stackTrace, }) {
         return new SDK.ConsoleModel.ConsoleMessage(null, source, null, message, { url, executionContextId, scriptId, stackTrace });
     }
     it('compares using message', () => {
@@ -24,7 +24,7 @@ describeWithMockConnection('ConsoleMessage', () => {
     it('compares using source', () => {
         const a = newMessage({});
         const b = newMessage({});
-        const c = newMessage({ source: SDK.ConsoleModel.FrontendMessageSource.CSS });
+        const c = newMessage({ source: Common.Console.FrontendMessageSource.CSS });
         assert.isTrue(a.isEqual(b));
         assert.isFalse(b.isEqual(c));
         assert.isFalse(c.isEqual(a));

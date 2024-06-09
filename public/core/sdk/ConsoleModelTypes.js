@@ -10,10 +10,4 @@ export var FrontendMessageType;
     FrontendMessageType["System"] = "system";
     FrontendMessageType["QueryObjectResult"] = "queryObjectResult";
 })(FrontendMessageType || (FrontendMessageType = {}));
-export var FrontendMessageSource;
-(function (FrontendMessageSource) {
-    FrontendMessageSource["CSS"] = "css";
-    FrontendMessageSource["ConsoleAPI"] = "console-api";
-    FrontendMessageSource["IssuePanel"] = "issue-panel";
-})(FrontendMessageSource || (FrontendMessageSource = {}));
 //# sourceMappingURL=ConsoleModelTypes.js.map

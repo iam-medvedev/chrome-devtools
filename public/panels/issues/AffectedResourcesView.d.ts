@@ -57,7 +57,7 @@ export declare abstract class AffectedResourcesView extends UI.TreeOutline.TreeE
         columnNumber?: number;
     } | undefined, target: SDK.Target.Target | null | undefined): void;
     protected appendColumnTitle(header: HTMLElement, title: string, additionalClass?: string | null): void;
-    protected createIssueDetailCell(textContent: string, additionalClass?: string | null): HTMLTableDataCellElement;
-    protected appendIssueDetailCell(element: HTMLElement, textContent: string, additionalClass?: string | null): HTMLTableDataCellElement;
+    protected createIssueDetailCell(textContent: string | HTMLElement, additionalClass?: string | null): HTMLTableDataCellElement;
+    protected appendIssueDetailCell(element: HTMLElement, textContent: string | HTMLElement, additionalClass?: string | null): HTMLTableDataCellElement;
     abstract update(): void;
 }

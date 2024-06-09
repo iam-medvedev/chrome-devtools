@@ -1,4 +1,5 @@
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
+import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class MainImpl {
     #private;
@@ -8,7 +9,7 @@ export declare class MainImpl {
     requestAndRegisterLocaleData(): Promise<void>;
     createSettings(prefs: {
         [x: string]: string;
-    }): void;
+    }, config: Root.Runtime.HostConfig): void;
     lateInitDonePromiseForTest(): Promise<void> | null;
     readyForTest(): Promise<void>;
     static instanceForTest: MainImpl | null;

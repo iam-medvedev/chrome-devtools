@@ -53,6 +53,12 @@ export async function fetchAndRegisterLocaleData(locale, location = self.locatio
     const localeData = await Promise.race([timeoutPromise, localeDataTextPromise]);
     i18nInstance.registerLocaleData(locale, localeData);
 }
+export function hasLocaleDataForTest(locale) {
+    return i18nInstance.hasLocaleDataForTest(locale);
+}
+export function resetLocaleDataForTest() {
+    i18nInstance.resetLocaleDataForTest();
+}
 /**
  * Returns an anonymous function that wraps a call to retrieve a localized string.
  * This is introduced so that localized strings can be declared in environments where

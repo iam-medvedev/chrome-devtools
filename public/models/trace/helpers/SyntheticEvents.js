@@ -53,6 +53,18 @@ export class SyntheticEventsManager {
     static reset() {
         syntheticEventsManagerByTraceIndex.length = 0;
     }
+    static registerSyntheticBasedEvent(syntheticEvent) {
+        try {
+            return SyntheticEventsManager.getActiveManager().registerSyntheticBasedEvent(syntheticEvent);
+        }
+        catch (e) {
+            // If no active manager has been initialized, we assume the trace engine is
+            // not running as part of the Performance panel. In this case we don't
+            // register synthetic events because we don't need to support timeline
+            // modifications serialization.
+            return syntheticEvent;
+        }
+    }
     constructor(rawEvents) {
         this.#rawTraceEvents = rawEvents;
     }
@@ -77,8 +89,11 @@ export class SyntheticEventsManager {
         }
         return syntheticEvent;
     }
-    allSyntheticEvents() {
+    getSyntheticTraceEvents() {
         return this.#syntheticTraceEvents;
+    }
+    getRawTraceEvents() {
+        return this.#rawTraceEvents;
     }
 }
 //# sourceMappingURL=SyntheticEvents.js.map

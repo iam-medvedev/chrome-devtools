@@ -15,6 +15,11 @@ export declare class GeneratedRangeBuilder {
             sourceIdx: number;
             scopeIdx: number;
         };
+        callsite?: {
+            sourceIdx: number;
+            line: number;
+            column: number;
+        };
     }): this;
     end(line: number, column: number): this;
     build(): string;

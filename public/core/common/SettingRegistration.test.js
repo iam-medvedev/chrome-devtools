@@ -85,5 +85,35 @@ describe('SettingRegistration', () => {
             });
         });
     });
+    it('can handle settings with condition which depends on host config', () => {
+        const configSettingName = 'mock-setting-with-host-config';
+        Common.Settings.registerSettingExtension({
+            settingName: configSettingName,
+            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            defaultValue: false,
+            condition: config => {
+                return config?.devToolsConsoleInsightsDogfood.enabled === true;
+            },
+        });
+        assert.throws(() => Common.Settings.Settings.instance().moduleSetting(configSettingName));
+        const dummyStorage = new Common.Settings.SettingsStorage({});
+        Common.Settings.Settings.instance({
+            forceNew: true,
+            syncedStorage: dummyStorage,
+            globalStorage: dummyStorage,
+            localStorage: dummyStorage,
+            config: {
+                devToolsConsoleInsightsDogfood: {
+                    aidaModelId: 'mockModel',
+                    aidaTemperature: 0.2,
+                    optIn: false,
+                    enabled: true,
+                },
+            },
+        });
+        const setting = Common.Settings.Settings.instance().moduleSetting(configSettingName);
+        assert.isNotNull(setting);
+        assert.isFalse(setting.get());
+    });
 });
 //# sourceMappingURL=SettingRegistration.test.js.map

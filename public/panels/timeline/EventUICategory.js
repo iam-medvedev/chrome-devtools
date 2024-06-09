@@ -397,6 +397,14 @@ const UIStrings = {
      */
     receiveWebsocketHandshake: 'Receive WebSocket Handshake',
     /**
+     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+     */
+    wsMessageReceived: 'Receive WebSocket Message',
+    /**
+     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+     */
+    wsMessageSent: 'Send WebSocket Message',
+    /**
      *@description Text in Timeline UIUtils of the Performance panel
      */
     destroyWebsocket: 'Destroy WebSocket',
@@ -678,6 +686,8 @@ export function maybeInitSylesMap() {
         ["WebSocketSendHandshakeRequest" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketSendHandshakeRequest */]: new TimelineRecordStyle(i18nString(UIStrings.sendWebsocketHandshake), defaultCategoryStyles.scripting),
         ["WebSocketReceiveHandshakeResponse" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketReceiveHandshakeResponse */]: new TimelineRecordStyle(i18nString(UIStrings.receiveWebsocketHandshake), defaultCategoryStyles.scripting),
         ["WebSocketDestroy" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketDestroy */]: new TimelineRecordStyle(i18nString(UIStrings.destroyWebsocket), defaultCategoryStyles.scripting),
+        ["WebSocketSend" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketSend */]: new TimelineRecordStyle(i18nString(UIStrings.wsMessageSent), defaultCategoryStyles.scripting),
+        ["WebSocketReceive" /* TraceEngine.Types.TraceEvents.KnownEventName.WebSocketReceive */]: new TimelineRecordStyle(i18nString(UIStrings.wsMessageReceived), defaultCategoryStyles.scripting),
         ["EmbedderCallback" /* TraceEngine.Types.TraceEvents.KnownEventName.EmbedderCallback */]: new TimelineRecordStyle(i18nString(UIStrings.embedderCallback), defaultCategoryStyles.scripting),
         ["Decode Image" /* TraceEngine.Types.TraceEvents.KnownEventName.DecodeImage */]: new TimelineRecordStyle(i18nString(UIStrings.imageDecode), defaultCategoryStyles.painting),
         ["GPUTask" /* TraceEngine.Types.TraceEvents.KnownEventName.GPUTask */]: new TimelineRecordStyle(i18nString(UIStrings.gpu), defaultCategoryStyles.gpu),

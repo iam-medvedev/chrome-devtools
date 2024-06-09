@@ -258,7 +258,7 @@ export class Script {
         newSource = Script.trimSourceURLComment(newSource);
         // We append correct #sourceURL to script for consistency only. It's not actually needed for things to work correctly.
         newSource = this.appendSourceURLCommentIfNeeded(newSource);
-        const { content: oldSource } = await this.requestContent();
+        const oldSource = TextUtils.ContentData.ContentData.textOr(await this.requestContentData(), null);
         if (oldSource === newSource) {
             return { changed: false, status: "Ok" /* Protocol.Debugger.SetScriptSourceResponseStatus.Ok */ };
         }

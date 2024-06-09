@@ -29,6 +29,7 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { ContentProviderBasedProject } from './ContentProviderBasedProject.js';
 import { NetworkProject } from './NetworkProject.js';
@@ -200,21 +201,21 @@ export class StyleFile {
             return;
         }
         const mirrorContentBound = this.mirrorContent.bind(this, header, true /* majorChange */);
-        void this.#throttler.schedule(mirrorContentBound, false /* asSoonAsPossible */);
+        void this.#throttler.schedule(mirrorContentBound, "Default" /* Common.Throttler.Scheduling.Default */);
     }
     workingCopyCommitted() {
         if (this.#isAddingRevision) {
             return;
         }
         const mirrorContentBound = this.mirrorContent.bind(this, this.uiSourceCode, true /* majorChange */);
-        void this.#throttler.schedule(mirrorContentBound, true /* asSoonAsPossible */);
+        void this.#throttler.schedule(mirrorContentBound, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */);
     }
     workingCopyChanged() {
         if (this.#isAddingRevision) {
             return;
         }
         const mirrorContentBound = this.mirrorContent.bind(this, this.uiSourceCode, false /* majorChange */);
-        void this.#throttler.schedule(mirrorContentBound, false /* asSoonAsPossible */);
+        void this.#throttler.schedule(mirrorContentBound, "Default" /* Common.Throttler.Scheduling.Default */);
     }
     async mirrorContent(fromProvider, majorChange) {
         if (this.#terminated) {
@@ -226,8 +227,7 @@ export class StyleFile {
             newContent = this.uiSourceCode.workingCopy();
         }
         else {
-            const deferredContent = await fromProvider.requestContent();
-            newContent = deferredContent.content;
+            newContent = TextUtils.ContentData.ContentData.textOr(await fromProvider.requestContentData(), null);
         }
         if (newContent === null || this.#terminated) {
             this.styleFileSyncedForTest();

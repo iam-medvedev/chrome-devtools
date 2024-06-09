@@ -830,6 +830,16 @@ export class DOMNode {
         }
         return lowerCaseName;
     }
+    async getAnchorBySpecifier(specifier) {
+        const response = await this.#agent.invoke_getAnchorElement({
+            nodeId: this.id,
+            anchorSpecifier: specifier,
+        });
+        if (response.getError()) {
+            return null;
+        }
+        return this.domModel().nodeForId(response.nodeId);
+    }
 }
 (function (DOMNode) {
     let ShadowRootTypes;

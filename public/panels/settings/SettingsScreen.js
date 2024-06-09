@@ -105,6 +105,7 @@ export class SettingsScreen extends UI.Widget.VBox {
         this.contentElement.classList.add('settings-window-main');
         this.contentElement.classList.add('vbox');
         const settingsLabelElement = document.createElement('div');
+        settingsLabelElement.classList.add('settings-window-label-element');
         const settingsTitleElement = UI.UIUtils
             .createShadowRootWithCoreStyles(settingsLabelElement, { cssFile: [settingsScreenStyles], delegatesFocus: undefined })
             .createChild('div', 'settings-window-title');
@@ -113,7 +114,7 @@ export class SettingsScreen extends UI.Widget.VBox {
         this.tabbedLocation = UI.ViewManager.ViewManager.instance().createTabbedLocation(() => SettingsScreen.revealSettingsScreen(), 'settings-view');
         const tabbedPane = this.tabbedLocation.tabbedPane();
         tabbedPane.registerCSSFiles([settingsScreenStyles]);
-        tabbedPane.leftToolbar().appendToolbarItem(new UI.Toolbar.ToolbarItem(settingsLabelElement));
+        tabbedPane.headerElement().prepend(settingsLabelElement);
         tabbedPane.setShrinkableTabs(false);
         tabbedPane.makeVerticalTabLayout();
         const keyBindsView = UI.ViewManager.ViewManager.instance().view('keybinds');
@@ -253,7 +254,7 @@ export class GenericSettingsTab extends SettingsTab {
             "SYNC" /* Common.Settings.SettingCategory.SYNC */,
         ];
         // Some settings define their initial ordering.
-        const preRegisteredSettings = Common.Settings.getRegisteredSettings().sort((firstSetting, secondSetting) => {
+        const preRegisteredSettings = Common.Settings.Settings.instance().getRegisteredSettings().sort((firstSetting, secondSetting) => {
             if (firstSetting.order && secondSetting.order) {
                 return (firstSetting.order - secondSetting.order);
             }
@@ -486,7 +487,7 @@ export class Revealer {
             }
             return;
         }
-        for (const settingRegistration of Common.Settings.getRegisteredSettings()) {
+        for (const settingRegistration of Common.Settings.Settings.instance().getRegisteredSettings()) {
             if (!GenericSettingsTab.isSettingVisible(settingRegistration)) {
                 continue;
             }

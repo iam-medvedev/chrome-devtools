@@ -55,6 +55,7 @@ interface OriginalScopeTree {
 export declare function decodeOriginalScopes(encodedOriginalScopes: string[], names: string[]): OriginalScopeTree[];
 export declare function decodeGeneratedRanges(encodedGeneratedRange: string, originalScopeTrees: OriginalScopeTree[], _names: string[]): GeneratedRange;
 export declare const enum EncodedGeneratedRangeFlag {
-    HasDefinition = 1
+    HasDefinition = 1,
+    HasCallsite = 2
 }
 export {};

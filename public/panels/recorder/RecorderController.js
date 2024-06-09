@@ -260,7 +260,7 @@ let RecorderController = class RecorderController extends LitElement {
             if (!settings.networkConditionsSettings && step.type === 'emulateNetworkConditions') {
                 settings.networkConditionsSettings = { ...step };
                 for (const preset of [SDK.NetworkManager.OfflineConditions, SDK.NetworkManager.Slow3GConditions,
-                    SDK.NetworkManager.Fast3GConditions]) {
+                    SDK.NetworkManager.Slow4GConditions, SDK.NetworkManager.Fast4GConditions]) {
                     // Using i18nTitleKey as a title here because we only want to compare the parameters of the network conditions.
                     if (SDK.NetworkManager.networkConditionsEqual({ ...preset, title: preset.i18nTitleKey || '' }, { ...step, title: preset.i18nTitleKey || '' })) {
                         settings.networkConditionsSettings.title = preset.title instanceof Function ? preset.title() : preset.title;

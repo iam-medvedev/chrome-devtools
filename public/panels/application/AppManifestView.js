@@ -548,7 +548,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             this.resourceTreeModel.getInstallabilityErrors(),
             this.resourceTreeModel.getAppId(),
         ]);
-        void this.throttler.schedule(() => this.renderManifest(url, data, errors, installabilityErrors, appId), immediately);
+        void this.throttler.schedule(() => this.renderManifest(url, data, errors, installabilityErrors, appId), immediately ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */ : "Default" /* Common.Throttler.Scheduling.Default */);
     }
     async renderManifest(url, data, errors, installabilityErrors, appIdResponse) {
         const appId = appIdResponse?.appId || null;

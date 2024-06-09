@@ -41,6 +41,9 @@
     },
     {
       "path": "../../panels/timeline/components/bundle-tsconfig.json"
+    },
+    {
+      "path": "../events_serializer/bundle-tsconfig.json"
     }
   ]
 }

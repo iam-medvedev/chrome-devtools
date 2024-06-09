@@ -544,4 +544,61 @@ export class GridTemplateMatcher extends matcherBase(GridTemplateMatch) {
         return new GridTemplateMatch(valueText, node, lines.filter(line => line.length > 0));
     }
 }
+export class AnchorFunctionMatch {
+    text;
+    matching;
+    node;
+    functionName;
+    args;
+    constructor(text, matching, node, functionName, args) {
+        this.text = text;
+        this.matching = matching;
+        this.node = node;
+        this.functionName = functionName;
+        this.args = args;
+    }
+}
+// clang-format off
+export class AnchorFunctionMatcher extends matcherBase(AnchorFunctionMatch) {
+    matches(node, matching) {
+        if (node.name !== 'CallExpression') {
+            return null;
+        }
+        const calleeText = matching.ast.text(node.getChild('Callee'));
+        if (calleeText !== 'anchor' && calleeText !== 'anchor-size') {
+            return null;
+        }
+        const [firstArg] = ASTUtils.callArgs(node);
+        if (!firstArg || firstArg.length === 0) {
+            return null;
+        }
+        return new AnchorFunctionMatch(matching.ast.text(node), matching, node, calleeText, firstArg);
+    }
+}
+// clang-format on
+// For linking `position-anchor: --anchor-name`.
+export class PositionAnchorMatch {
+    text;
+    matching;
+    node;
+    constructor(text, matching, node) {
+        this.text = text;
+        this.matching = matching;
+        this.node = node;
+    }
+}
+// clang-format off
+export class PositionAnchorMatcher extends matcherBase(PositionAnchorMatch) {
+    accepts(propertyName) {
+        return propertyName === 'position-anchor';
+    }
+    matches(node, matching) {
+        if (node.name !== 'VariableName') {
+            return null;
+        }
+        const dashedIdentifier = matching.ast.text(node);
+        return new PositionAnchorMatch(dashedIdentifier, matching, node);
+    }
+}
+// clang-format on
 //# sourceMappingURL=PropertyMatchers.js.map

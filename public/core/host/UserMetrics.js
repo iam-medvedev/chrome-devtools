@@ -1029,15 +1029,15 @@ export var ResourceType;
     /* eslint-disable @typescript-eslint/naming-convention */
     ResourceType[ResourceType["all"] = 0] = "all";
     /* eslint-enable @typescript-eslint/naming-convention */
-    ResourceType[ResourceType["Documents"] = 1] = "Documents";
-    ResourceType[ResourceType["Scripts"] = 2] = "Scripts";
+    ResourceType[ResourceType["Document"] = 1] = "Document";
+    ResourceType[ResourceType["JavaScript"] = 2] = "JavaScript";
     ResourceType[ResourceType["Fetch and XHR"] = 3] = "Fetch and XHR";
-    ResourceType[ResourceType["Stylesheets"] = 4] = "Stylesheets";
-    ResourceType[ResourceType["Fonts"] = 5] = "Fonts";
-    ResourceType[ResourceType["Images"] = 6] = "Images";
+    ResourceType[ResourceType["CSS"] = 4] = "CSS";
+    ResourceType[ResourceType["Font"] = 5] = "Font";
+    ResourceType[ResourceType["Image"] = 6] = "Image";
     ResourceType[ResourceType["Media"] = 7] = "Media";
     ResourceType[ResourceType["Manifest"] = 8] = "Manifest";
-    ResourceType[ResourceType["WebSockets"] = 9] = "WebSockets";
+    ResourceType[ResourceType["WebSocket"] = 9] = "WebSocket";
     ResourceType[ResourceType["WebAssembly"] = 10] = "WebAssembly";
     ResourceType[ResourceType["Other"] = 11] = "Other";
     ResourceType[ResourceType["MaxValue"] = 12] = "MaxValue";

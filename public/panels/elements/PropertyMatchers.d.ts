@@ -214,4 +214,35 @@ export declare class GridTemplateMatcher extends GridTemplateMatcher_base {
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
 }
+export declare class AnchorFunctionMatch implements Match {
+    readonly text: string;
+    readonly matching: BottomUpTreeMatching;
+    readonly node: CodeMirror.SyntaxNode;
+    readonly functionName: string;
+    readonly args: CodeMirror.SyntaxNode[];
+    constructor(text: string, matching: BottomUpTreeMatching, node: CodeMirror.SyntaxNode, functionName: string, args: CodeMirror.SyntaxNode[]);
+}
+declare const AnchorFunctionMatcher_base: new () => {
+    matchType: SDK.CSSPropertyParser.Constructor<AnchorFunctionMatch>;
+    accepts(_propertyName: string): boolean;
+    matches(_node: CodeMirror.SyntaxNode, _matching: SDK.CSSPropertyParser.BottomUpTreeMatching): SDK.CSSPropertyParser.Match | null;
+};
+export declare class AnchorFunctionMatcher extends AnchorFunctionMatcher_base {
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
+export declare class PositionAnchorMatch implements Match {
+    readonly text: string;
+    readonly matching: BottomUpTreeMatching;
+    readonly node: CodeMirror.SyntaxNode;
+    constructor(text: string, matching: BottomUpTreeMatching, node: CodeMirror.SyntaxNode);
+}
+declare const PositionAnchorMatcher_base: new () => {
+    matchType: SDK.CSSPropertyParser.Constructor<PositionAnchorMatch>;
+    accepts(_propertyName: string): boolean;
+    matches(_node: CodeMirror.SyntaxNode, _matching: SDK.CSSPropertyParser.BottomUpTreeMatching): SDK.CSSPropertyParser.Match | null;
+};
+export declare class PositionAnchorMatcher extends PositionAnchorMatcher_base {
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
+}
 export {};

@@ -104,9 +104,6 @@ export class Issue {
     trackingSites() {
         return [];
     }
-    metadataAllowedSites() {
-        return [];
-    }
     isAssociatedWithRequestId(requestId) {
         for (const request of this.requests()) {
             if (request.requestId === requestId) {

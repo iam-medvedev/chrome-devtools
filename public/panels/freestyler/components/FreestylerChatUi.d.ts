@@ -7,7 +7,6 @@ export type ChatMessage = {
     text: string;
 };
 export declare const enum State {
-    CONSENT_VIEW = "consent",
     CHAT_VIEW = "chat-view",
     CHAT_VIEW_LOADING = "chat-view-loading"
 }

@@ -68,6 +68,9 @@ export function isTraceEventBeginCommitCompositorFrame(event) {
 export function isTraceEventScheduleStyleRecalculation(event) {
     return event.name === "ScheduleStyleRecalculation" /* KnownEventName.ScheduleStyleRecalculation */;
 }
+export function isTraceEventRenderFrameImplCreateChildFrame(event) {
+    return event.name === "RenderFrameImpl::createChildFrame" /* KnownEventName.RenderFrameImplCreateChildFrame */;
+}
 export function isTraceEventPipelineReporter(event) {
     return event.name === "PipelineReporter" /* KnownEventName.PipelineReporter */;
 }
@@ -153,6 +156,13 @@ class CallFrameIdTag {
 }
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function CallFrameID(value) {
+    return value;
+}
+class SampleIndexTag {
+    #sampleIndexTag;
+}
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function SampleIndex(value) {
     return value;
 }
 class ProcessIdTag {
@@ -408,6 +418,21 @@ export function isTraceEventRequestIdleCallback(event) {
 export function isTraceEventWebSocketCreate(event) {
     return event.name === "WebSocketCreate" /* KnownEventName.WebSocketCreate */;
 }
+export function isTraceEventWebSocketInfo(traceEventData) {
+    return traceEventData.name === "WebSocketSendHandshakeRequest" /* KnownEventName.WebSocketSendHandshakeRequest */ ||
+        traceEventData.name === "WebSocketReceiveHandshakeResponse" /* KnownEventName.WebSocketReceiveHandshakeResponse */ ||
+        traceEventData.name === "WebSocketDestroy" /* KnownEventName.WebSocketDestroy */;
+}
+export function isTraceEventWebSocketTransfer(traceEventData) {
+    return traceEventData.name === "WebSocketSend" /* KnownEventName.WebSocketSend */ ||
+        traceEventData.name === "WebSocketReceive" /* KnownEventName.WebSocketReceive */;
+}
+export function isTraceEventWebSocketSend(event) {
+    return event.name === "WebSocketSend" /* KnownEventName.WebSocketSend */;
+}
+export function isTraceEventWebSocketReceive(event) {
+    return event.name === "WebSocketReceive" /* KnownEventName.WebSocketReceive */;
+}
 export function isTraceEventWebSocketSendHandshakeRequest(event) {
     return event.name === "WebSocketSendHandshakeRequest" /* KnownEventName.WebSocketSendHandshakeRequest */;
 }
@@ -418,8 +443,7 @@ export function isTraceEventWebSocketDestroy(event) {
     return event.name === "WebSocketDestroy" /* KnownEventName.WebSocketDestroy */;
 }
 export function isWebSocketTraceEvent(event) {
-    return isTraceEventWebSocketCreate(event) || isTraceEventWebSocketDestroy(event) ||
-        isTraceEventWebSocketReceiveHandshakeResponse(event) || isTraceEventWebSocketSendHandshakeRequest(event);
+    return isTraceEventWebSocketCreate(event) || isTraceEventWebSocketInfo(event) || isTraceEventWebSocketTransfer(event);
 }
 export function isTraceEventV8Compile(event) {
     return event.name === "v8.compile" /* KnownEventName.Compile */;

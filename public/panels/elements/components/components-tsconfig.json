@@ -32,6 +32,7 @@
     "../../../../../../../front_end/panels/elements/components/AccessibilityTreeNode.ts",
     "../../../../../../../front_end/panels/elements/components/AdornerManager.ts",
     "../../../../../../../front_end/panels/elements/components/AdornerSettingsPane.ts",
+    "../../../../../../../front_end/panels/elements/components/AnchorFunctionLinkSwatch.ts",
     "../../../../../../../front_end/panels/elements/components/CSSHintDetailsView.ts",
     "../../../../../../../front_end/panels/elements/components/CSSPropertyDocsView.ts",
     "../../../../../../../front_end/panels/elements/components/CSSPropertyIconResolver.ts",
@@ -78,6 +79,9 @@
       "path": "../../../ui/components/icon_button/bundle-tsconfig.json"
     },
     {
+      "path": "../../../ui/components/icon_button/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../ui/components/legacy_wrapper/bundle-tsconfig.json"
     },
     {
@@ -96,7 +100,13 @@
       "path": "../../../ui/legacy/bundle-tsconfig.json"
     },
     {
+      "path": "../../../ui/legacy/components/inline_editor/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../ui/lit-html/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/visual_logging/bundle-tsconfig.json"
     }
   ]
 }

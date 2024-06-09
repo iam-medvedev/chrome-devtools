@@ -12,6 +12,8 @@ export declare class I18n {
     readonly defaultLocale: string;
     constructor(supportedLocales: readonly Intl.UnicodeBCP47LocaleIdentifier[], defaultLocale: Intl.UnicodeBCP47LocaleIdentifier);
     registerLocaleData(locale: Intl.UnicodeBCP47LocaleIdentifier, messages: LocalizedMessages): void;
+    hasLocaleDataForTest(locale: Intl.UnicodeBCP47LocaleIdentifier): boolean;
+    resetLocaleDataForTest(): void;
     registerFileStrings(filename: string, stringStructure: UIStrings): RegisteredFileStrings;
     /**
      * Look up the best available locale for the requested language through these fall backs:

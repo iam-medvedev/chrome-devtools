@@ -15,6 +15,7 @@ export declare class PreRegisteredView implements View {
     commandPrompt(): Common.UIString.LocalizedString;
     isCloseable(): boolean;
     isPreviewFeature(): boolean;
+    iconName(): string | undefined;
     isTransient(): boolean;
     viewId(): string;
     location(): ViewLocationValues | undefined;

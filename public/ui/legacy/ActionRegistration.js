@@ -227,7 +227,10 @@ export function getRegisteredActionExtensions() {
                 return false;
             }
         }
-        return Root.Runtime.Runtime.isDescriptorEnabled({ experiment: action.experiment(), condition: action.condition() });
+        return Root.Runtime.Runtime.isDescriptorEnabled({
+            experiment: action.experiment(),
+            condition: action.condition(),
+        }, Common.Settings.Settings.instance().getHostConfig());
     })
         .sort((firstAction, secondAction) => {
         const order1 = firstAction.order() || 0;

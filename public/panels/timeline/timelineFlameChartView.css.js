@@ -29,6 +29,20 @@ styles.replaceSync(
   left: 0;
 }
 
+.overlay-type-ENTRY_SELECTED {
+  pointer-events: none;
+  border: 2px solid var(--sys-color-primary);
+  background-color: var(--sys-color-state-ripple-primary);
+
+  &.cut-off-top {
+    border-top: none;
+  }
+
+  &.cut-off-bottom {
+    border-bottom: none;
+  }
+}
+
 /*# sourceURL=timelineFlameChartView.css */
 `);
 

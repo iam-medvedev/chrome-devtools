@@ -6,6 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import { ChatMessageEntity, FreestylerChatUi, } from './components/FreestylerChatUi.js';
+import { FreestylerAgent } from './FreestylerAgent.js';
 import freestylerPanelStyles from './freestylerPanel.css.js';
 const UIStrings = {
     /**
@@ -51,7 +52,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
     view;
     #contentContainer;
     #aidaClient;
-    #isAidaFetchCancelled = false;
+    #agent;
     #viewProps;
     constructor(view = defaultView) {
         super('freestyler');
@@ -59,8 +60,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
         createToolbar(this.contentElement, { onClearClick: this.#handleClearClick.bind(this) });
         this.#aidaClient = new Host.AidaClient.AidaClient();
         this.#contentContainer = this.contentElement.createChild('div', 'freestyler-chat-ui-container');
+        this.#agent = new FreestylerAgent({ aidaClient: this.#aidaClient });
         this.#viewProps = {
-            state: "consent" /* FreestylerChatUiState.CONSENT_VIEW */,
+            state: "chat-view" /* FreestylerChatUiState.CHAT_VIEW */,
             messages: [],
             onTextSubmit: this.#handleTextSubmit.bind(this),
             onAcceptPrivacyNotice: this.#handleAcceptPrivacyNotice.bind(this),
@@ -80,38 +82,32 @@ export class FreestylerPanel extends UI.Panel.Panel {
     doUpdate() {
         this.view(this.#viewProps, this, this.#contentContainer);
     }
+    // TODO(ergunsh): Handle cancelling agent run.
     #handleClearClick() {
         this.#viewProps.messages = [];
         this.#viewProps.state = "chat-view" /* FreestylerChatUiState.CHAT_VIEW */;
-        this.#isAidaFetchCancelled = true;
         this.doUpdate();
     }
     async #handleTextSubmit(text) {
-        this.#isAidaFetchCancelled = false;
         this.#viewProps.messages.push({
             entity: ChatMessageEntity.USER,
             text,
         });
         this.#viewProps.state = "chat-view-loading" /* FreestylerChatUiState.CHAT_VIEW_LOADING */;
         this.doUpdate();
-        let systemMessage = undefined;
-        for await (const response of this.#aidaClient.fetch(text)) {
-            if (this.#isAidaFetchCancelled) {
-                return;
-            }
-            if (!systemMessage) {
-                systemMessage = {
-                    entity: ChatMessageEntity.MODEL,
-                    text: response.explanation,
-                };
+        const systemMessage = {
+            entity: ChatMessageEntity.MODEL,
+            text: '',
+        };
+        this.#viewProps.messages.push(systemMessage);
+        await this.#agent.run(text, (step, output) => {
+            if (this.#viewProps.state === "chat-view-loading" /* FreestylerChatUiState.CHAT_VIEW_LOADING */) {
                 this.#viewProps.state = "chat-view" /* FreestylerChatUiState.CHAT_VIEW */;
-                this.#viewProps.messages.push(systemMessage);
             }
-            else {
-                systemMessage.text = response.explanation;
-            }
+            // TODO(ergunsh): Better visualize.
+            systemMessage.text += `\n${output}`;
             this.doUpdate();
-        }
+        });
     }
     #handleAcceptPrivacyNotice() {
         this.#viewProps.state = "chat-view" /* FreestylerChatUiState.CHAT_VIEW */;

@@ -21,18 +21,6 @@ describeWithMockConnection('LayoutPane', () => {
         getNodesByStyle = sinon.stub(domModel, 'getNodesByStyle').resolves([]);
         overlayModel = target.model(SDK.OverlayModel.OverlayModel);
         assert.exists(overlayModel);
-        const dummyStorage = new Common.Settings.SettingsStorage({});
-        Common.Settings.registerSettingExtension({
-            settingName: 'show-ua-shadow-dom',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-        });
-        Common.Settings.Settings.instance({
-            forceNew: true,
-            syncedStorage: dummyStorage,
-            globalStorage: dummyStorage,
-            localStorage: dummyStorage,
-        });
     });
     async function renderComponent() {
         const component = new ElementsComponents.LayoutPane.LayoutPane();

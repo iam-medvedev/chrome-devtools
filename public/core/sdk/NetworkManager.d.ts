@@ -77,10 +77,17 @@ export type EventTypes = {
     [Events.ReportingApiReportUpdated]: Protocol.Network.ReportingApiReport;
     [Events.ReportingApiEndpointsChangedForOrigin]: Protocol.Network.ReportingApiEndpointsChangedForOriginEvent;
 };
+/**
+ * Define some built-in DevTools throttling presets.
+ * Note that for the download, upload and RTT values we multiply them by adjustment factors to make DevTools' emulation more accurate.
+ * @see https://docs.google.com/document/d/10lfVdS1iDWCRKQXPfbxEn4Or99D64mvNlugP1AQuFlE/edit for historical context.
+ * @see https://crbug.com/342406608#comment10 for context around the addition of 4G presets in June 2024.
+ */
 export declare const NoThrottlingConditions: Conditions;
 export declare const OfflineConditions: Conditions;
 export declare const Slow3GConditions: Conditions;
-export declare const Fast3GConditions: Conditions;
+export declare const Slow4GConditions: Conditions;
+export declare const Fast4GConditions: Conditions;
 export declare class FetchDispatcher implements ProtocolProxyApi.FetchDispatcher {
     #private;
     constructor(agent: ProtocolProxyApi.FetchApi, manager: NetworkManager);

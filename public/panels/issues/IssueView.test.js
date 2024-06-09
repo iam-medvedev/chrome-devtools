@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
-import { describeWithRealConnection } from '../../testing/RealConnection.js';
+import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { StubIssue } from '../../testing/StubIssue.js';
 import { recordedMetricsContain } from '../../testing/UserMetricsHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Issues from './issues.js';
-describeWithRealConnection('IssueView', () => {
+describeWithEnvironment('IssueView', () => {
     it('records metrics when an issue is expanded', () => {
         const aggregationKey = 'key';
         const issue = StubIssue.createFromRequestIds(['id1', 'id2']);

@@ -81,6 +81,10 @@ export class TimelineFlameChartNetworkDataProvider {
         return this.#lastSelection.timelineSelection;
     }
     indexForEvent(event) {
+        // In the NetworkDataProvider we will never be dealing with frames, but we need to satisfy the interface for a DataProvider.
+        if (event instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame) {
+            return null;
+        }
         if (!TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestDetailsEvent(event)) {
             return null;
         }

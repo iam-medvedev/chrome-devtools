@@ -22,7 +22,7 @@ export declare class OverviewGrid {
 }
 export declare const MinSelectableSize = 14;
 export declare const WindowScrollSpeedFactor = 0.3;
-export declare const ResizerOffset = 3.5;
+export declare const ResizerOffset = 5;
 export declare const OffsetFromWindowEnds = 10;
 export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
@@ -49,6 +49,7 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     constructor(parentElement: Element, dividersLabelBarElement?: Element, calculator?: Calculator);
     enableCreateBreadcrumbsButton(): HTMLElement;
     set showingScreenshots(isShowing: boolean);
+    private onResizerClicked;
     private onRightResizeElementFocused;
     reset(): void;
     setEnabled(enabled: boolean): void;

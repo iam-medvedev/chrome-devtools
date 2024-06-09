@@ -1,6 +1,6 @@
-import type * as Types from '../types/types.js';
+import * as Types from '../types/types.js';
 import { type InsightResult, type NavigationInsightContext, type RequiredData } from './types.js';
-export declare function deps(): ['Meta', 'Animations'];
+export declare function deps(): ['Meta', 'Animations', 'LayoutShifts', 'NetworkRequests'];
 export declare const enum AnimationFailureReasons {
     UNSUPPORTED_CSS_PROPERTY = "UNSUPPORTED_CSS_PROPERTY",
     TRANSFROM_BOX_SIZE_DEPENDENT = "TRANSFROM_BOX_SIZE_DEPENDENT",
@@ -24,6 +24,11 @@ export interface NoncompositedAnimationFailure {
      */
     unsupportedProperties?: Types.TraceEvents.TraceEventAnimation['args']['data']['unsupportedProperties'];
 }
+export interface LayoutShiftRootCausesData {
+    iframes: Types.TraceEvents.TraceEventRenderFrameImplCreateChildFrame[];
+    fontRequests: Types.TraceEvents.SyntheticNetworkRequest[];
+}
 export declare function generateInsight(traceParsedData: RequiredData<typeof deps>, context: NavigationInsightContext): InsightResult<{
     animationFailures?: readonly NoncompositedAnimationFailure[];
+    shifts?: Map<Types.TraceEvents.TraceEventLayoutShift, LayoutShiftRootCausesData>;
 }>;

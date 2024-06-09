@@ -34,9 +34,9 @@ export function* arrayOfObjectsJsonGenerator(arrayOfObjects) {
  * version with one trace event per line.
  */
 export function* traceJsonGenerator(traceEvents, metadata) {
-    yield '{"traceEvents": ';
+    yield `{"metadata": ${JSON.stringify(metadata || {}, null, 2)}`;
+    yield ',\n"traceEvents": ';
     yield* arrayOfObjectsJsonGenerator(traceEvents);
-    yield `,\n"metadata": ${JSON.stringify(metadata || {}, null, 2)}`;
     yield '}\n';
 }
 /**

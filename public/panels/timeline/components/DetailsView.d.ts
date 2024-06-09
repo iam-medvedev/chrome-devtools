@@ -5,7 +5,7 @@ export interface DetailRow {
     key: string;
     value: string;
 }
-export declare function buildRowsForWebSocketEvent(event: TraceEngine.Types.TraceEvents.TraceEventWebSocketCreate | TraceEngine.Types.TraceEvents.TraceEventWebSocketDestroy | TraceEngine.Types.TraceEvents.TraceEventWebSocketSendHandshakeRequest | TraceEngine.Types.TraceEvents.TraceEventWebSocketReceiveHandshakeResponse, traceParsedData: TraceEngine.Handlers.Types.TraceParseData): readonly DetailRow[];
+export declare function buildRowsForWebSocketEvent(event: TraceEngine.Types.TraceEvents.TraceEventWebSocketCreate | TraceEngine.Types.TraceEvents.TraceEventWebSocketInfo | TraceEngine.Types.TraceEvents.TraceEventWebSocketTransfer, traceParsedData: TraceEngine.Handlers.Types.TraceParseData): readonly DetailRow[];
 /**
  * This method does not output any content but instead takes a list of
  * invalidations and groups them, doing some processing of the data to collect

@@ -196,11 +196,20 @@ export class CookiesTable extends UI.Widget.VBox {
                 editable: editable,
             },
             {
-                id: "partition-key" /* SDK.Cookie.Attribute.PartitionKey */,
-                title: 'Partition Key',
+                id: "partition-key-site" /* SDK.Cookie.Attribute.PartitionKeySite */,
+                title: 'Partition Key Site',
                 sortable: true,
                 weight: 7,
                 editable: editable,
+            },
+            {
+                id: "has-cross-site-ancestor" /* SDK.Cookie.Attribute.HasCrossSiteAncestor */,
+                title: 'Cross Site',
+                sortable: true,
+                align: "center" /* DataGrid.DataGrid.Align.Center */,
+                weight: 7,
+                dataType: "Boolean" /* DataGrid.DataGrid.DataType.Boolean */,
+                editable,
             },
             {
                 id: "priority" /* SDK.Cookie.Attribute.Priority */,
@@ -413,8 +422,10 @@ export class CookiesTable extends UI.Widget.VBox {
                     return String(cookie.secure());
                 case "same-site" /* SDK.Cookie.Attribute.SameSite */:
                     return String(cookie.sameSite());
-                case "partition-key" /* SDK.Cookie.Attribute.PartitionKey */:
-                    return cookie.partitionKeyOpaque() ? i18nString(UIStrings.opaquePartitionKey) : String(cookie.partitionKey());
+                case "partition-key-site" /* SDK.Cookie.Attribute.PartitionKeySite */:
+                    return cookie.partitionKeyOpaque() ? i18nString(UIStrings.opaquePartitionKey) : String(cookie.topLevelSite());
+                case "has-cross-site-ancestor" /* SDK.Cookie.Attribute.HasCrossSiteAncestor */:
+                    return String(cookie.partitioned() ? cookie.hasCrossSiteAncestor() : false);
                 case "source-scheme" /* SDK.Cookie.Attribute.SourceScheme */:
                     return String(cookie.sourceScheme());
                 default:
@@ -516,7 +527,8 @@ export class CookiesTable extends UI.Widget.VBox {
         data["source-port" /* SDK.Cookie.Attribute.SourcePort */] = cookie.sourcePort();
         data["source-scheme" /* SDK.Cookie.Attribute.SourceScheme */] = cookie.sourceScheme();
         data["priority" /* SDK.Cookie.Attribute.Priority */] = cookie.priority() || '';
-        data["partition-key" /* SDK.Cookie.Attribute.PartitionKey */] = cookie.partitionKey() || '';
+        data["partition-key-site" /* SDK.Cookie.Attribute.PartitionKeySite */] = cookie.topLevelSite();
+        data["has-cross-site-ancestor" /* SDK.Cookie.Attribute.HasCrossSiteAncestor */] = cookie.hasCrossSiteAncestor() ? 'true' : '';
         const blockedReasons = this.cookieToBlockedReasons?.get(cookie);
         const exemptionReason = this.cookieToExemptionReason?.get(cookie);
         const node = new DataGridNode(data, cookie, blockedReasons || null, exemptionReason || null);
@@ -599,15 +611,17 @@ export class CookiesTable extends UI.Widget.VBox {
         if ("source-port" /* SDK.Cookie.Attribute.SourcePort */ in data) {
             cookie.addAttribute("source-port" /* SDK.Cookie.Attribute.SourcePort */, Number.parseInt(data["source-port" /* SDK.Cookie.Attribute.SourcePort */], 10) || undefined);
         }
-        if (data["partition-key" /* SDK.Cookie.Attribute.PartitionKey */]) {
-            cookie.addAttribute("partition-key" /* SDK.Cookie.Attribute.PartitionKey */, data["partition-key" /* SDK.Cookie.Attribute.PartitionKey */]);
+        if (data["partition-key-site" /* SDK.Cookie.Attribute.PartitionKeySite */]) {
+            cookie.setPartitionKey(data["partition-key-site" /* SDK.Cookie.Attribute.PartitionKeySite */], Boolean(data["has-cross-site-ancestor" /* SDK.Cookie.Attribute.HasCrossSiteAncestor */] ? data["has-cross-site-ancestor" /* SDK.Cookie.Attribute.HasCrossSiteAncestor */] :
+                false));
         }
         cookie.setSize(data["name" /* SDK.Cookie.Attribute.Name */].length + data["value" /* SDK.Cookie.Attribute.Value */].length);
         return cookie;
     }
     isValidCookieData(data) {
         return (Boolean(data.name) || Boolean(data.value)) && this.isValidDomain(data.domain) &&
-            this.isValidPath(data.path) && this.isValidDate(data.expires) && this.isValidPartitionKey(data.partitionKey);
+            this.isValidPath(data.path) && this.isValidDate(data.expires) &&
+            this.isValidPartitionKey(data.PartitionKeySite);
     }
     isValidDomain(domain) {
         if (!domain) {

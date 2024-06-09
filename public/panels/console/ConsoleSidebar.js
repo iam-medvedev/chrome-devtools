@@ -60,7 +60,7 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         const selectedFilterSetting = Common.Settings.Settings.instance().createSetting('console.sidebar-selected-filter', null);
         const consoleAPIParsedFilters = [{
                 key: FilterType.Source,
-                text: SDK.ConsoleModel.FrontendMessageSource.ConsoleAPI,
+                text: Common.Console.FrontendMessageSource.ConsoleAPI,
                 negative: false,
                 regex: undefined,
             }];

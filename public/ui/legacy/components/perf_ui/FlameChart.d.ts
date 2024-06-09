@@ -368,6 +368,10 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     groupIsLastVisibleTopLevel(group?: Group): boolean;
     setSelectedEntry(entryIndex: number): void;
     private entryHasDecoration;
+    getMarkerPixelsForEntryIndex(entryIndex: number): {
+        x: number;
+        width: number;
+    } | null;
     /**
      * Update position of an Element. By default, the element is treated as a full entry and it's dimentions are set to the full entry width/length/height.
      * If isDecoration parameter is set to true, the element will be positioned on the right side of the entry and have a square shape where width == height of the entry.
@@ -396,7 +400,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      * flame chart.
      */
     levelToOffset(level: number): number;
-    private levelHeight;
+    levelHeight(level: number): number;
     private updateBoundaries;
     private updateHeight;
     onResize(): void;
@@ -498,8 +502,8 @@ export interface FlameChartDataProvider {
     modifyTree?(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
     findPossibleContextMenuActions?(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
     hasTrackConfigurationMode(): boolean;
-    eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | null;
-    indexForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData): number | null;
+    eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
+    indexForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
 }
 export interface FlameChartMarker {
     startTime(): number;

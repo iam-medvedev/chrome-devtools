@@ -16,6 +16,6 @@ export interface AidaResponse {
     };
 }
 export declare class AidaClient {
-    static buildApiRequest(input: string): AidaRequest;
-    fetch(input: string): AsyncGenerator<AidaResponse, void, void>;
+    static buildConsoleInsightsRequest(input: string): AidaRequest;
+    fetch(request: AidaRequest): AsyncGenerator<AidaResponse, void, void>;
 }

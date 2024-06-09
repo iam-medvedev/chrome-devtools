@@ -90,7 +90,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         const newVisibleTraceWindow = TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(breadcrumbTimes.startTime, breadcrumbTimes.endTime);
         if (this.breadcrumbs === null) {
             this.breadcrumbs =
-                ModificationsManager.ModificationsManager.ModificationsManager.maybeInstance()?.getTimelineBreadcrumbs() ??
+                ModificationsManager.ModificationsManager.ModificationsManager.activeManager()?.getTimelineBreadcrumbs() ??
                     null;
         }
         else {

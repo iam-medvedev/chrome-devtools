@@ -50,6 +50,8 @@ export declare class ContentData {
     static isError(contentDataOrError: ContentDataOrError): contentDataOrError is {
         error: string;
     };
+    /** @returns `value` if the passed `ContentDataOrError` is an error, or the text content otherwise */
+    static textOr<T>(contentDataOrError: ContentDataOrError, value: T): string | T;
     /**
      * @deprecated Used during migration from `DeferredContent` to `ContentData`.
      */

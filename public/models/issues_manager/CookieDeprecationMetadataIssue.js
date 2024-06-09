@@ -15,15 +15,27 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CookieDeprecationMetadataIssue extends Issue {
     #issueDetails;
     constructor(issueDetails, issuesModel) {
-        super("CookieDeprecationMetadataIssue" /* Protocol.Audits.InspectorIssueCode.CookieDeprecationMetadataIssue */, issuesModel);
+        // Set a distinct code for ReadCookie and SetCookie issues, so they are grouped separately.
+        const issueCode = "CookieDeprecationMetadataIssue" /* Protocol.Audits.InspectorIssueCode.CookieDeprecationMetadataIssue */ + '_' + issueDetails.operation;
+        super(issueCode, issuesModel);
         this.#issueDetails = issueDetails;
     }
     getCategory() {
         return "Other" /* IssueCategory.Other */;
     }
     getDescription() {
+        const fileName = this.#issueDetails.operation === 'SetCookie' ? 'cookieWarnMetadataGrantSet.md' :
+            'cookieWarnMetadataGrantRead.md';
+        let optOutText = '';
+        if (this.#issueDetails.isOptOutTopLevel && this.#issueDetails.optOutPercentage >= 0) {
+            optOutText = '\n\n (Top level site opt-out: ' + this.#issueDetails.optOutPercentage +
+                '% - [learn more](gracePeriodStagedControlExplainer))';
+        }
         return {
-            file: 'cookieWarnMetadataGrantRead.md',
+            file: fileName,
+            substitutions: new Map([
+                ['PLACEHOLDER_topleveloptout', optOutText],
+            ]),
             links: [
                 {
                     link: 'https://developer.chrome.com/docs/privacy-sandbox/third-party-cookie-phase-out/',
@@ -40,12 +52,6 @@ export class CookieDeprecationMetadataIssue extends Issue {
     }
     primaryKey() {
         return JSON.stringify(this.#issueDetails);
-    }
-    metadataAllowedSites() {
-        if (this.#issueDetails.allowedSites) {
-            return this.#issueDetails.allowedSites;
-        }
-        return [];
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const details = inspectorIssue.details.cookieDeprecationMetadataIssueDetails;

@@ -62,6 +62,7 @@ UI.ViewManager.registerViewExtension({
     settings: [
         'custom-network-conditions',
     ],
+    iconName: 'performance',
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'network-conditions.network-offline',
