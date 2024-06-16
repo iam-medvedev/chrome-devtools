@@ -25,7 +25,7 @@ styles.replaceSync(
   }
 }
 
-:host-context(.-theme-with-dark-background) .watch-expression-delete-button {
+:host-context(.theme-with-dark-background) .watch-expression-delete-button {
   /* This is a workaround due to a sprite with hardcoded color.
      It should no longer be necessary after we update icons. */
   filter: brightness(1.5);

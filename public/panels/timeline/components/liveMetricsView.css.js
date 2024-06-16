@@ -61,20 +61,55 @@ styles.replaceSync(
   font-size: 26px;
 }
 
-.metric-card-value.good {
+.good {
   color: var(--color-tertiary-bright);
 }
 
-.metric-card-value.needs-improvement {
+.needs-improvement {
   color: var(--color-orange-bright);
 }
 
-.metric-card-value.poor {
+.poor {
   color: var(--color-error-bright);
 }
 
 .metric-card-element {
   overflow: hidden;
+}
+
+.interactions-list {
+  padding: 0;
+}
+
+.interaction {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.interaction-type {
+  font-weight: bold;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.interaction-node {
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.interaction-duration {
+  text-align: end;
+  width: max-content;
+  flex-shrink: 0;
+}
+
+.divider {
+  grid-column: 1/-1;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid var(--sys-color-divider);
+  margin: 4px 0;
 }
 
 /*# sourceURL=liveMetricsView.css */

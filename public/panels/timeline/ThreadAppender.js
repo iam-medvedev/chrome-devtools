@@ -307,6 +307,9 @@ export class ThreadAppender {
     getUrl() {
         return this.#url;
     }
+    getEntries() {
+        return this.#entries;
+    }
     #buildNameForAuctionWorklet() {
         const workletMetadataEvent = this.#traceParsedData.AuctionWorklets.worklets.get(this.#processId);
         // We should always have this event - if we do not, we were instantiated with invalid data.

@@ -200,6 +200,7 @@ export class SearchableView extends VBox {
         const replaceInputClearButton = createClearButton('clear-replace-input');
         replaceInputClearButton.addEventListener('click', () => {
             this.replaceInputElement.value = '';
+            this.replaceInputElement.focus();
         });
         replaceInputElements.appendChild(replaceInputClearButton);
         const searchConfigButtons = searchInputElements.createChild('div', 'search-config-buttons');
@@ -207,6 +208,7 @@ export class SearchableView extends VBox {
         clearButton.addEventListener('click', () => {
             this.searchInputElement.value = '';
             this.clearSearch();
+            this.searchInputElement.focus();
         });
         searchConfigButtons.appendChild(clearButton);
         if (this.searchProvider.supportsRegexSearch()) {

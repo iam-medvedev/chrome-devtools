@@ -422,4 +422,19 @@ export declare const NotRestoredReasonDescription: {
     RequestedByWebViewClient: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    WebViewSettingsChanged: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
+    WebViewJavaScriptObjectChanged: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
+    WebViewMessageListenerInjected: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
+    WebViewSafeBrowsingAllowlistChanged: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
+    WebViewDocumentStartJavascriptChanged: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
 };

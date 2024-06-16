@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as WebVitals from '../../../third_party/web-vitals/web-vitals.js';
+import * as OnEachInteraction from './OnEachInteraction.js';
 import * as Spec from './spec/spec.js';
 const { onLCP, onCLS, onINP } = WebVitals.Attribution;
+const { onEachInteraction } = OnEachInteraction;
 function sendEventToDevTools(event) {
     const payload = JSON.stringify(event);
     window[Spec.EVENT_BINDING_NAME](payload);
@@ -42,6 +44,15 @@ function initialize() {
         return;
     }
     sendEventToDevTools({ name: 'reset' });
+    // We want to treat bfcache navigations like a standard navigations, so emit
+    // a reset event when bfcache is restored.
+    //
+    // Metric functions will also re-emit their values using this listener's callback.
+    // To ensure this event is fired before those values are emitted, register this
+    // callback before any others.
+    WebVitals.onBFCacheRestore(() => {
+        sendEventToDevTools({ name: 'reset' });
+    });
     onLCP(metric => {
         const event = {
             name: 'LCP',
@@ -75,6 +86,20 @@ function initialize() {
         }
         sendEventToDevTools(event);
     }, { reportAllChanges: true });
+    onEachInteraction(interaction => {
+        const event = {
+            name: 'Interaction',
+            duration: interaction.value,
+            rating: interaction.rating,
+            interactionId: interaction.attribution.interactionId,
+            interactionType: interaction.attribution.interactionType,
+        };
+        const node = interaction.attribution.interactionTargetElement;
+        if (node) {
+            event.nodeIndex = establishNodeIndex(node);
+        }
+        sendEventToDevTools(event);
+    });
 }
 initialize();
 //# sourceMappingURL=web-vitals-injected.js.map

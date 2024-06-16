@@ -341,6 +341,9 @@
   "core/sdk/NetworkRequest.ts | exemptionReasonEnterprisePolicy": {
     "message": "This cookie is allowed by Chrome Enterprise policy. Learn more: goo.gle/ce-3pc"
   },
+  "core/sdk/NetworkRequest.ts | exemptionReasonScheme": {
+    "message": "This cookie is allowed by the top-level url scheme"
+  },
   "core/sdk/NetworkRequest.ts | exemptionReasonStorageAccessAPI": {
     "message": "This cookie is allowed by the Storage Access API. Learn more: goo.gle/saa"
   },
@@ -348,13 +351,13 @@
     "message": "This cookie is allowed by the top-level Storage Access API. Learn more: goo.gle/saa-top"
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonTPCDDeprecationTrial": {
-    "message": "This cookie is allowed by third-party cookie phaseout deprecation trial."
+    "message": "This cookie is allowed by third-party cookie phaseout deprecation trial. Learn more: goo.gle/ps-dt."
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonTPCDHeuristics": {
     "message": "This cookie is allowed by third-party cookie phaseout heuristics. Learn more: goo.gle/hbe"
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonTPCDMetadata": {
-    "message": "This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/ps-dt."
+    "message": "This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/dt-grace."
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonUserSetting": {
     "message": "This cookie is allowed by user preference."
@@ -2627,9 +2630,6 @@
   "panels/application/components/BackForwardCacheStrings.ts | broadcastChannel": {
     "message": "The page cannot be cached because it has a BroadcastChannel instance with registered listeners."
   },
-  "panels/application/components/BackForwardCacheStrings.ts | BroadcastChannelOnMessage": {
-    "message": "Undefined"
-  },
   "panels/application/components/BackForwardCacheStrings.ts | cacheControlNoStore": {
     "message": "Pages with cache-control:no-store header cannot enter back/forward cache."
   },
@@ -2680,9 +2680,6 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | cookieDisabled": {
     "message": "Back/forward cache is disabled because cookies are disabled on a page that uses Cache-Control: no-store."
-  },
-  "panels/application/components/BackForwardCacheStrings.ts | CookieFlushed": {
-    "message": "Undefined"
   },
   "panels/application/components/BackForwardCacheStrings.ts | dedicatedWorkerOrWorklet": {
     "message": "Pages that use a dedicated worker or worklet are not currently eligible for back/forward cache."
@@ -2753,9 +2750,6 @@
   "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
     "message": "Pages that use portals are not currently eligible for back/forward cache."
   },
-  "panels/application/components/BackForwardCacheStrings.ts | HTTPAuthRequired": {
-    "message": "Undefined"
-  },
   "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
     "message": "Only pages loaded via a GET request are eligible for back/forward cache."
   },
@@ -2794,9 +2788,6 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | keyboardLock": {
     "message": "Pages that use Keyboard lock are not currently eligible for back/forward cache."
-  },
-  "panels/application/components/BackForwardCacheStrings.ts | LiveMediaStreamTrack": {
-    "message": "Undefined"
   },
   "panels/application/components/BackForwardCacheStrings.ts | loading": {
     "message": "The page did not finish loading before navigating away."
@@ -2842,9 +2833,6 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | outstandingNetworkRequestXHR": {
     "message": "Pages with an in-flight XHR network request are not currently eligible for back/forward cache."
-  },
-  "panels/application/components/BackForwardCacheStrings.ts | ParserAborted": {
-    "message": "Undefined"
   },
   "panels/application/components/BackForwardCacheStrings.ts | paymentManager": {
     "message": "Pages that use PaymentManager are not currently eligible for back/forward cache."
@@ -2909,9 +2897,6 @@
   "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
     "message": "Pages that use SharedWorker are not currently eligible for back/forward cache."
   },
-  "panels/application/components/BackForwardCacheStrings.ts | SmartCard": {
-    "message": "Undefined"
-  },
   "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
     "message": "Pages that use SpeechRecognizer are not currently eligible for back/forward cache."
   },
@@ -2932,9 +2917,6 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | timeoutPuttingInCache": {
     "message": "The page timed out entering back/forward cache (likely due to long-running pagehide handlers)."
-  },
-  "panels/application/components/BackForwardCacheStrings.ts | UnloadHandler": {
-    "message": "Undefined"
   },
   "panels/application/components/BackForwardCacheStrings.ts | unloadHandlerExistsInMainFrame": {
     "message": "The page has an unload handler in the main frame."
@@ -6464,11 +6446,17 @@
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "To use this feature, update your Language preference in DevTools Settings to English."
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | emptyStateText": {
+    "message": "How can I help you?"
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | inputDisclaimer": {
     "message": "Freestyler may display inaccurate information and may not get it right"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | inputPlaceholder": {
     "message": "Ask Freestyler or type / for commands"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | selectAnElement": {
+    "message": "Select an element"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | sendButtonTitle": {
     "message": "Send"

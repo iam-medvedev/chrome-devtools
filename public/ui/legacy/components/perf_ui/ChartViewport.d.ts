@@ -6,6 +6,7 @@ export interface ChartViewportDelegate {
     update(): void;
 }
 export declare class ChartViewport extends UI.Widget.VBox {
+    #private;
     private readonly delegate;
     viewportElement: HTMLElement;
     private alwaysShowVerticalScrollInternal;
@@ -57,6 +58,11 @@ export declare class ChartViewport extends UI.Widget.VBox {
     private startRangeSelection;
     private endRangeSelection;
     hideRangeSelection(): void;
+    /**
+     * @param startTime - the start time of the selection in MilliSeconds
+     * @param endTime - the end time of the selection in MilliSeconds
+     * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
+     */
     setRangeSelection(startTime: number, endTime: number): void;
     onClick(event: Event): void;
     private rangeSelectionDragging;

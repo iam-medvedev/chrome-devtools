@@ -81,7 +81,6 @@ devtools-issue-counter.toolbar-item {
 }
 
 devtools-issue-counter.main-toolbar {
-  margin-top: 1px;
   margin-left: 1px;
   margin-right: 1px;
 }

@@ -72,7 +72,7 @@ export default {
   display: none;
 }
 
-:host-context(.-theme-with-dark-background) .arrow {
+:host-context(.theme-with-dark-background) .arrow {
   filter: invert(80%);
 }
 `

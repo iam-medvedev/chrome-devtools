@@ -31,8 +31,8 @@ styles.replaceSync(
   cursor: pointer;
 }
 
-.-theme-with-dark-background .object-value-function.linkified:hover,
-:host-context(.-theme-with-dark-background) .object-value-function.linkified:hover {
+.theme-with-dark-background .object-value-function.linkified:hover,
+:host-context(.theme-with-dark-background) .object-value-function.linkified:hover {
   --override-linkified-hover-background: rgb(230 230 230 / 10%);
 }
 
@@ -77,10 +77,10 @@ styles.replaceSync(
   flex-direction: column;
 }
 
-.-theme-with-dark-background .object-value-number,
-:host-context(.-theme-with-dark-background) .object-value-number,
-.-theme-with-dark-background .object-value-boolean,
-:host-context(.-theme-with-dark-background) .object-value-boolean {
+.theme-with-dark-background .object-value-number,
+:host-context(.theme-with-dark-background) .object-value-number,
+.theme-with-dark-background .object-value-boolean,
+:host-context(.theme-with-dark-background) .object-value-boolean {
   --override-primitive-dark-mode-color: hsl(252deg 100% 75%);
 
   color: var(--override-primitive-dark-mode-color);

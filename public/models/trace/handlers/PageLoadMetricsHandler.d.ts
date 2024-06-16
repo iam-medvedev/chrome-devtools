@@ -1,5 +1,5 @@
-import { type TraceEventHandlerName } from './types.js';
 import * as Types from '../types/types.js';
+import { type TraceEventHandlerName } from './types.js';
 export declare function reset(): void;
 export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
 export declare function getFrameIdForPageLoadEvent(event: Types.TraceEvents.PageLoadEvent): string;
@@ -61,7 +61,6 @@ export declare const enum MetricName {
     CLS = "CLS"
 }
 export interface MetricScore {
-    score: string;
     metricName: MetricName;
     classification: ScoreClassification;
     event?: Types.TraceEvents.PageLoadEvent;

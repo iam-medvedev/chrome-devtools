@@ -3152,11 +3152,6 @@ export const NativeFunctions = [
         receivers: ["RTCPeerConnection"]
     },
     {
-        name: "clone",
-        signatures: [["?options"]],
-        receivers: ["DocumentPartRoot", "ChildNodePart"]
-    },
-    {
         name: "getTrackById",
         signatures: [["trackId"]],
         receivers: ["MediaStream"]
@@ -6353,7 +6348,7 @@ export const NativeFunctions = [
     },
     {
         name: "AttributePart",
-        signatures: [["root", "element", "localName", "automatic", "?init"]]
+        signatures: [["root", "element", "localName", "?init"]]
     },
     {
         name: "ChildNodePart",
@@ -7712,7 +7707,7 @@ export const NativeFunctions = [
     },
     {
         name: "clamp",
-        signatures: [["?options"], ["input", "?options"]]
+        signatures: [["input", "?options"]]
     },
     {
         name: "conv2d",
@@ -7904,7 +7899,7 @@ export const NativeFunctions = [
     },
     {
         name: "softmax",
-        signatures: [["?input"]]
+        signatures: [["input", "?axis"]]
     },
     {
         name: "softplus",

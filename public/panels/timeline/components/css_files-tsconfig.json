@@ -7,6 +7,8 @@
         "breadcrumbsUI.css.js",
         "interactionBreakdown.css.js",
         "liveMetricsView.css.js",
-        "sidebar.css.js"
+        "sidebar.css.js",
+        "sidebarInsight.css.js",
+        "timeRangeOverlay.css.js"
     ]
 }

@@ -363,6 +363,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             this.targetRemoved(target);
             this.targetAdded(target);
         }
+        this.listeners?.clear();
     }
     dispose() {
         // Create a copy of {keys} so {targetRemoved} can safely modify the map.

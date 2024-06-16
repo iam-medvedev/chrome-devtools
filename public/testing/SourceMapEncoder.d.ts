@@ -20,6 +20,11 @@ export declare class GeneratedRangeBuilder {
             line: number;
             column: number;
         };
+        bindings?: (number | {
+            line: number;
+            column: number;
+            nameIdx: number;
+        }[])[];
     }): this;
     end(line: number, column: number): this;
     build(): string;

@@ -1,7 +1,9 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as TraceEngine from '../../models/trace/trace.js';
+import * as Components from './components/components.js';
 /**
  * Below the network track there is a resize bar the user can click and drag.
  */
@@ -69,13 +71,34 @@ export class Overlays {
     /**
      * Add a new overlay to the view.
      */
-    addOverlay(overlay) {
+    add(overlay) {
         if (this.#overlaysToElements.has(overlay)) {
-            return;
+            return overlay;
         }
         // By setting the value to null, we ensure that on the next render that the
         // overlay will have a new HTML element created for it.
         this.#overlaysToElements.set(overlay, null);
+        return overlay;
+    }
+    /**
+     * Update an existing overlay without destroying and recreating its
+     * associated DOM.
+     *
+     * This is useful if you need to rapidly update an overlay's data - e.g.
+     * dragging to create time ranges - without the thrashing of destroying the
+     * old overlay and re-creating the new one.
+     */
+    updateExisting(existingOverlay, newData) {
+        if (!this.#overlaysToElements.has(existingOverlay)) {
+            console.error('Trying to update an overlay that does not exist.');
+            return;
+        }
+        for (const [key, value] of Object.entries(newData)) {
+            // newData is of type Partial<T>, so each key must exist in T, but
+            // Object.entries doesn't carry that information.
+            const k = key;
+            existingOverlay[k] = value;
+        }
     }
     /**
      * @returns the list of overlays associated with a given entry.
@@ -83,7 +106,7 @@ export class Overlays {
     overlaysForEntry(entry) {
         const matches = [];
         for (const [overlay] of this.#overlaysToElements) {
-            if (overlay.entry === entry) {
+            if ('entry' in overlay && overlay.entry === entry) {
                 matches.push(overlay);
             }
         }
@@ -97,10 +120,14 @@ export class Overlays {
             return overlay.type === type;
         });
         for (const overlay of overlaysToRemove) {
-            this.#removeOverlay(overlay);
+            this.remove(overlay);
         }
     }
-    #removeOverlay(overlay) {
+    /**
+     * Removes the provided overlay from the list of overlays and destroys any
+     * DOM associated with it.
+     */
+    remove(overlay) {
         const htmlElement = this.#overlaysToElements.get(overlay);
         if (htmlElement && this.#overlaysContainer) {
             this.#overlaysContainer.removeChild(htmlElement);
@@ -144,7 +171,10 @@ export class Overlays {
     update() {
         for (const [overlay, existingElement] of this.#overlaysToElements) {
             const element = existingElement || this.#createElementForNewOverlay(overlay);
-            if (!existingElement) {
+            if (existingElement) {
+                this.#updateOverlayElementIfRequired(overlay, element);
+            }
+            else {
                 // This is a new overlay, so we have to store the element and add it to the DOM.
                 this.#overlaysToElements.set(overlay, element);
                 this.#overlaysContainer.appendChild(element);
@@ -164,10 +194,31 @@ export class Overlays {
                 }
                 break;
             }
+            case 'TIME_RANGE': {
+                this.#positionTimeRangeOverlay(overlay, element);
+                const component = element.querySelector('devtools-time-range-overlay');
+                if (component) {
+                    component.afterOverlayUpdate();
+                }
+                break;
+            }
             default: {
-                console.error(`Unknown overlay type: ${overlay.type}`);
+                Platform.TypeScriptUtilities.assertNever(overlay, `Unknown overlay: ${JSON.stringify(overlay)}`);
             }
         }
+    }
+    #positionTimeRangeOverlay(overlay, element) {
+        // Time ranges span both charts, it doesn't matter which one we pass here.
+        // It's used to get the width of the container, and both charts have the
+        // same width.
+        const leftEdgePixel = this.#xPixelForMicroSeconds('main', overlay.bounds.min);
+        const rightEdgePixel = this.#xPixelForMicroSeconds('main', overlay.bounds.max);
+        if (leftEdgePixel === null || rightEdgePixel === null) {
+            return;
+        }
+        const rangeWidth = rightEdgePixel - leftEdgePixel;
+        element.style.left = `${leftEdgePixel}px`;
+        element.style.width = `${rangeWidth}px`;
     }
     /**
      * Positions an EntrySelected overlay. As we extend the list of overlays,
@@ -262,7 +313,36 @@ export class Overlays {
     #createElementForNewOverlay(overlay) {
         const div = document.createElement('div');
         div.classList.add('overlay-item', `overlay-type-${overlay.type}`);
+        if (overlay.type === 'TIME_RANGE') {
+            const component = new Components.TimeRangeOverlay.TimeRangeOverlay();
+            component.duration = overlay.showDuration ? overlay.bounds.range : null;
+            component.label = overlay.label;
+            component.canvasRect = this.#charts.mainChart.canvasBoundingClientRect();
+            div.appendChild(component);
+        }
         return div;
+    }
+    /**
+     * Some of the HTML elements for overlays might need updating between each render
+     * (for example, if a time range has changed, we update its duration text)
+     */
+    #updateOverlayElementIfRequired(overlay, element) {
+        switch (overlay.type) {
+            case 'ENTRY_SELECTED':
+                // Nothing to do here.
+                break;
+            case 'TIME_RANGE': {
+                const component = element.querySelector('devtools-time-range-overlay');
+                if (component) {
+                    component.duration = overlay.showDuration ? overlay.bounds.range : null;
+                    component.label = overlay.label;
+                    component.canvasRect = this.#charts.mainChart.canvasBoundingClientRect();
+                }
+                break;
+            }
+            default:
+                Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
+        }
     }
     /**
      * @returns true if the entry is visible on chart, which means that both
@@ -404,6 +484,9 @@ export class Overlays {
      * This means if the event is in the main flame chart and below the network,
      * we add the height of the network chart to the Y value to position it
      * correctly.
+     * This can return null if any data waas missing, or if the event is not
+     * visible (if the level it's on is hidden because the track is collapsed,
+     * for example)
      */
     yPixelForEventOnChart(event) {
         const chartName = this.#chartForOverlayEntry(event);
@@ -419,6 +502,9 @@ export class Overlays {
         }
         const level = timelineData.entryLevels.at(indexForEntry);
         if (typeof level === 'undefined') {
+            return null;
+        }
+        if (!chart.levelIsVisible(level)) {
             return null;
         }
         const pixelOffsetForLevel = chart.levelToOffset(level);
@@ -466,6 +552,12 @@ export class Overlays {
         }
         if (this.#dimensions.charts.network.heightPixels === 0) {
             return 0;
+        }
+        // At this point we know the network track exists and has height. But we
+        // need to check if it is collapsed, because if it is collapsed there is no
+        // resizer shown.
+        if (this.#dimensions.charts.network.allGroupsCollapsed) {
+            return this.#dimensions.charts.network.heightPixels;
         }
         return this.#dimensions.charts.network.heightPixels + NETWORK_RESIZE_ELEM_HEIGHT_PX;
     }

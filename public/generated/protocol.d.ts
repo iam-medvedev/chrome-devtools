@@ -1120,7 +1120,8 @@ export declare namespace Audits {
         NotSignedInWithIdp = "NotSignedInWithIdp",
         MissingTransientUserActivation = "MissingTransientUserActivation",
         ReplacedByButtonMode = "ReplacedByButtonMode",
-        RelyingPartyOriginIsOpaque = "RelyingPartyOriginIsOpaque"
+        RelyingPartyOriginIsOpaque = "RelyingPartyOriginIsOpaque",
+        TypeNotMatching = "TypeNotMatching"
     }
     interface FederatedAuthUserInfoRequestIssueDetails {
         federatedAuthUserInfoRequestIssueReason: FederatedAuthUserInfoRequestIssueReason;
@@ -11331,6 +11332,11 @@ export declare namespace Page {
         HTTPAuthRequired = "HTTPAuthRequired",
         CookieFlushed = "CookieFlushed",
         BroadcastChannelOnMessage = "BroadcastChannelOnMessage",
+        WebViewSettingsChanged = "WebViewSettingsChanged",
+        WebViewJavaScriptObjectChanged = "WebViewJavaScriptObjectChanged",
+        WebViewMessageListenerInjected = "WebViewMessageListenerInjected",
+        WebViewSafeBrowsingAllowlistChanged = "WebViewSafeBrowsingAllowlistChanged",
+        WebViewDocumentStartJavascriptChanged = "WebViewDocumentStartJavascriptChanged",
         WebSocket = "WebSocket",
         WebTransport = "WebTransport",
         WebRTC = "WebRTC",

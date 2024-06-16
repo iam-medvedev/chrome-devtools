@@ -367,6 +367,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.flameChart.show(this.searchableViewInternal.element);
         this.flameChart.setSearchableView(this.searchableViewInternal);
         this.searchableViewInternal.hideWidget();
+        this.#sideBar.setMainWidget(this.timelinePane);
+        this.#sideBar.show(this.element);
         this.onModeChanged();
         this.populateToolbar();
         this.showLandingPage();
@@ -620,8 +622,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         const traceEvents = this.#traceEngineModel.rawTraceEvents(this.#traceEngineActiveTraceIndex);
         const metadata = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex);
         // Save modifications into the metadata if modifications experiment is on
-        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_WRITE_MODIFICATIONS_TO_DISK */) &&
-            metadata) {
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */) && metadata) {
             metadata.modifications = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()?.toJSON();
         }
         if (!traceEvents) {
@@ -742,9 +743,11 @@ export class TimelinePanel extends UI.Panel.Panel {
             return;
         }
         if (this.showSettingsPaneSetting.get()) {
+            this.showSettingsPaneButton.setToggled(true);
             this.settingsPane.showWidget();
         }
         else {
+            this.showSettingsPaneButton.setToggled(false);
             this.settingsPane.hideWidget();
         }
     }
@@ -1108,17 +1111,10 @@ export class TimelinePanel extends UI.Panel.Panel {
             if (this.#minimapComponent.breadcrumbsActivated) {
                 this.#minimapComponent.addInitialBreadcrumb();
             }
-            // To calculate the activity we might want to zoom in, we find the last
-            // main thread. Or we find the CPU Profile thread, for e.g. Node traces.
-            const mainThreadTypes = [
-                "MAIN_THREAD" /* TraceEngine.Handlers.Threads.ThreadType.MAIN_THREAD */,
-                "CPU_PROFILE" /* TraceEngine.Handlers.Threads.ThreadType.CPU_PROFILE */,
-            ];
-            const lastMainThread = TraceEngine.Handlers.Threads.threadsInTrace(traceParsedData)
-                .filter(data => mainThreadTypes.includes(data.type))
-                .at(-1);
-            if (lastMainThread) {
-                const zoomedInBounds = TraceEngine.Extras.MainThreadActivity.calculateWindow(traceParsedData.Meta.traceBounds, lastMainThread.entries);
+            // To calculate the activity we might want to zoom in, we use the top-most main-thread track
+            const topMostMainThreadAppender = this.flameChart.getMainDataProvider().compatibilityTracksAppenderInstance().threadAppenders().at(0);
+            if (topMostMainThreadAppender) {
+                const zoomedInBounds = TraceEngine.Extras.MainThreadActivity.calculateWindow(traceParsedData.Meta.traceBounds, topMostMainThreadAppender.getEntries());
                 TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(zoomedInBounds);
             }
         }
@@ -1157,6 +1153,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     showLandingPage() {
         this.updateSettingsPaneVisibility();
+        this.#sideBar.hideSidebar();
         if (this.landingPage) {
             this.landingPage.show(this.statusPaneContainer);
             return;
@@ -1238,9 +1235,16 @@ export class TimelinePanel extends UI.Panel.Panel {
                 this.statusPane.remove();
             }
             this.statusPane = null;
+            if (!isNode && Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */)) {
+                this.#sideBar.showBoth();
+            }
             const traceData = this.#traceEngineModel.traceParsedData(this.#traceEngineActiveTraceIndex);
             if (!traceData) {
                 throw new Error(`Could not get trace data at index ${this.#traceEngineActiveTraceIndex}`);
+            }
+            const traceInsightsData = this.#traceEngineModel.traceInsights(this.#traceEngineActiveTraceIndex);
+            if (traceInsightsData) {
+                this.#sideBar.data = traceInsightsData;
             }
             if (recordingIsFresh) {
                 Tracker.instance().registerFreshRecording(traceData);

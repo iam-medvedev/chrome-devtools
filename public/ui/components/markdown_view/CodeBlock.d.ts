@@ -8,6 +8,7 @@ export declare class CodeBlock extends HTMLElement {
     set codeLang(value: string);
     set timeout(value: number);
     set displayNotice(value: boolean);
+    set displayToolbar(value: boolean);
 }
 declare global {
     interface HTMLElementTagNameMap {

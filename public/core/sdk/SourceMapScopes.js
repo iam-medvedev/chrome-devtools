@@ -82,7 +82,7 @@ function* decodeOriginalScopeItems(encodedOriginalScope) {
         yield [itemCount++, startItem];
     }
 }
-export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees, _names) {
+export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees, names) {
     const rangeStack = [];
     const rangeToStartItem = new Map();
     for (const item of decodeGeneratedRangeItems(encodedGeneratedRange)) {
@@ -125,6 +125,7 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
                 throw new Error('Range items not nested properly: encountered "end" item without "start" item');
             }
             range.end = { line: item.line, column: item.column };
+            resolveBindings(range, names, rangeToStartItem.get(range)?.bindings);
             if (rangeStack.length === 0) {
                 // We are done. There might be more top-level scopes but we only allow one.
                 return range;
@@ -133,6 +134,26 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
         }
     }
     throw new Error('Malformed generated range encoding');
+}
+function resolveBindings(range, names, bindingsForAllVars) {
+    if (bindingsForAllVars === undefined) {
+        return;
+    }
+    range.values = bindingsForAllVars.map(bindings => {
+        if (bindings.length === 1) {
+            return resolveName(bindings[0].nameIdx, names);
+        }
+        const bindingRanges = bindings.map(binding => ({
+            from: { line: binding.line, column: binding.column },
+            to: { line: binding.line, column: binding.column },
+            value: resolveName(binding.nameIdx, names),
+        }));
+        for (let i = 1; i < bindingRanges.length; ++i) {
+            bindingRanges[i - 1].to = { ...bindingRanges[i].from };
+        }
+        bindingRanges[bindingRanges.length - 1].to = { ...range.end };
+        return bindingRanges;
+    });
 }
 function isRangeStart(item) {
     return 'flags' in item;
@@ -171,6 +192,7 @@ function* decodeGeneratedRangeItems(encodedGeneratedRange) {
             line,
             column: state.column,
             flags: iter.nextVLQ(),
+            bindings: [],
         };
         if (startItem.flags & 1 /* EncodedGeneratedRangeFlag.HasDefinition */) {
             const sourceIdx = iter.nextVLQ();
@@ -194,6 +216,31 @@ function* decodeGeneratedRangeItems(encodedGeneratedRange) {
                 line: state.callsiteLine,
                 column: state.callsiteColumn,
             };
+        }
+        while (iter.hasNext() && iter.peek() !== ';' && iter.peek() !== ',') {
+            const value = iter.nextVLQ();
+            const bindings = [{ line: startItem.line, column: startItem.column, nameIdx: value }];
+            startItem.bindings.push(bindings);
+            const nextVlq = iter.peekVLQ();
+            if (nextVlq === null || nextVlq >= -1) {
+                // Variable is available under the same expression in the whole range, or it's unavailable in the whole range.
+                continue;
+            }
+            // Variable is available under different expressions in this range or unavailable in parts of this range.
+            const rangeCount = -iter.nextVLQ();
+            for (let i = 0; i < rangeCount - 1; ++i) {
+                // line, column, valueOffset
+                const line = iter.nextVLQ();
+                const column = iter.nextVLQ();
+                const nameIdx = iter.nextVLQ();
+                const lastLine = bindings.at(-1)?.line ?? 0; // Only to make TS happy. `bindings` has one entry guaranteed.
+                const lastColumn = bindings.at(-1)?.column ?? 0; // Only to make TS happy. `bindings` has one entry guaranteed.
+                bindings.push({
+                    line: line + lastLine,
+                    column: column + (line === 0 ? lastColumn : 0),
+                    nameIdx,
+                });
+            }
         }
         yield startItem;
     }

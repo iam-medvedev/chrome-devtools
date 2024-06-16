@@ -11,18 +11,15 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
-.sidebar {
-  padding-top: 8px;
-}
-
-.toggle-sidebar-button {
+.sidebar-toggle-button {
   width: 24px;
   height: 24px;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .tab-bar {
   display: flex;
-
   /* When the sidebar is collapsed, position the expand icon in the
    * center of it */
   .is-closed & {
@@ -35,6 +32,80 @@ styles.replaceSync(
     margin-left: auto;
     margin-right: 4px;
   }
+}
+
+.tabs-header {
+  overflow: hidden;
+  display: flex;
+  justify-content: space-evenly;
+  /* This is same as the sidebar expansion toggle button */
+  height: 40px;
+  margin-right: auto;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.tabs-header input {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  box-sizing: border-box;
+  padding: 0 10px;
+}
+
+.tabs-header input[active] {
+  color: var(--color-text-primary);
+}
+
+.tab-slider {
+  position: absolute;
+  /* This is same as the height of tabs-header */
+  top: 40px;
+  height: 1px;
+  background-color: var(--color-text-primary);
+  transition: left 150ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.tab-headers-bottom-line {
+  height: 1px;
+  width: 100%;
+  background-color: var(--sys-color-divider);
+}
+
+.sidebar-body {
+  padding: 0 4px;
+}
+
+.table-container dl {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+}
+
+.table-container dt {
+  padding: 3px;
+}
+
+.table-container dd {
+  display: grid;
+  justify-items: end;
+  margin-inline-start: auto;
+}
+
+.insight-description {
+  border-bottom: 1px solid var(--color-input-outline);
+  padding-bottom: 10px;
+}
+
+.link {
+  color: var(--sys-color-primary);
+}
+
+.dl-title {
+  font-weight: bold;
+}
+
+.dl-value {
+  font-weight: bold;
 }
 
 /*# sourceURL=sidebar.css */

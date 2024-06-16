@@ -7,75 +7,62 @@ export class EventsSerializer {
     #modifiedProfileCallByKey = new Map();
     keyForEvent(event) {
         if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
-            return ['p', event.pid, event.tid, TraceEngine.Types.TraceEvents.SampleIndex(event.sampleIndex), event.nodeId];
+            return `${"p" /* TraceEngine.Types.File.EventKeyType.ProfileCall */}-${event.pid}-${event.tid}-${TraceEngine.Types.TraceEvents.SampleIndex(event.sampleIndex)}-${event.nodeId}`;
         }
         const rawEvents = TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
-        const key = TraceEngine.Types.TraceEvents.isSyntheticBasedEvent(event) ? ['s', rawEvents.indexOf(event.rawSourceEvent)] :
-            ['r', rawEvents.indexOf(event)];
-        if (key[1] < 0) {
+        const key = TraceEngine.Types.TraceEvents.isSyntheticBasedEvent(event) ?
+            `${"s" /* TraceEngine.Types.File.EventKeyType.SyntheticEvent */}-${rawEvents.indexOf(event.rawSourceEvent)}` :
+            `${"r" /* TraceEngine.Types.File.EventKeyType.RawEvent */}-${rawEvents.indexOf(event)}`;
+        if (key.length < 3) {
             return null;
         }
         return key;
     }
-    static isTraceEventSerializableKey(key) {
-        const maybeValidKey = key;
-        if (EventsSerializer.isProfileCallKey(maybeValidKey)) {
-            return key.length === 5 &&
-                key.every((entry, i) => i === 0 || typeof entry === 'number' || !isNaN(parseInt(entry, 10)));
-        }
-        if (EventsSerializer.isRawEventKey(maybeValidKey) || EventsSerializer.isSyntheticEventKey(maybeValidKey)) {
-            return key.length === 2 && (typeof key[1] === 'number' || !isNaN(parseInt(key[1], 10)));
-        }
-        return false;
-    }
     eventForKey(key, traceParsedData) {
-        if (EventsSerializer.isProfileCallKey(key)) {
-            return this.#getModifiedProfileCallByKey(key, traceParsedData);
+        const eventValues = TraceEngine.Types.File.traceEventKeyToValues(key);
+        if (EventsSerializer.isProfileCallKey(eventValues)) {
+            return this.#getModifiedProfileCallByKeyValues(eventValues, traceParsedData);
         }
-        if (EventsSerializer.isSyntheticEventKey(key)) {
+        if (EventsSerializer.isSyntheticEventKey(eventValues)) {
             const syntheticEvents = TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getSyntheticTraceEvents();
-            const syntheticEvent = syntheticEvents.at(key[1]);
+            const syntheticEvent = syntheticEvents.at(eventValues.rawIndex);
             if (!syntheticEvent) {
-                throw new Error(`Attempted to get a synthetic event from an unknown raw event index: ${key[1]}`);
+                throw new Error(`Attempted to get a synthetic event from an unknown raw event index: ${eventValues.rawIndex}`);
             }
             return syntheticEvent;
         }
-        if (EventsSerializer.isRawEventKey(key)) {
+        if (EventsSerializer.isRawEventKey(eventValues)) {
             const rawEvents = TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
-            return rawEvents[key[1]];
+            return rawEvents[eventValues.rawIndex];
         }
-        throw new Error(`Unknown trace event serializable key: ${key.join('-')}`);
+        throw new Error(`Unknown trace event serializable key values: ${eventValues.join('-')}`);
     }
     static isProfileCallKey(key) {
-        return key[0] === 'p';
+        return key.type === "p" /* TraceEngine.Types.File.EventKeyType.ProfileCall */;
     }
     static isRawEventKey(key) {
-        return key[0] === 'r';
+        return key.type === "r" /* TraceEngine.Types.File.EventKeyType.RawEvent */;
     }
     static isSyntheticEventKey(key) {
-        return key[0] === 's';
+        return key.type === "s" /* TraceEngine.Types.File.EventKeyType.SyntheticEvent */;
     }
-    #getModifiedProfileCallByKey(key, traceParsedData) {
+    #getModifiedProfileCallByKeyValues(key, traceParsedData) {
         const cacheResult = this.#modifiedProfileCallByKey.get(key);
         if (cacheResult) {
             return cacheResult;
         }
-        const processId = key[1];
-        const threadId = key[2];
-        const sampleIndex = key[3];
-        const nodeId = key[4];
-        const profileCallsInThread = traceParsedData.Renderer.processes.get(processId)?.threads.get(threadId)?.profileCalls;
+        const profileCallsInThread = traceParsedData.Renderer.processes.get(key.processID)?.threads.get(key.threadID)?.profileCalls;
         if (!profileCallsInThread) {
-            throw new Error(`Unknown profile call serializable key: ${key.join('-')}`);
+            throw new Error(`Unknown profile call serializable key: ${(key)}`);
         }
         // Do a binary search on the complete profile call list to efficiently lookup for a
         // match based on sample index and node id. We need both because multiple calls can share
         // the same sample index, in which case we need to break the tie with the node id (by which
         // calls in a sample stack are ordered, allowing us to do a single search).
-        const matchRangeStartIndex = Platform.ArrayUtilities.nearestIndexFromBeginning(profileCallsInThread, e => e.sampleIndex >= sampleIndex && e.nodeId >= nodeId);
+        const matchRangeStartIndex = Platform.ArrayUtilities.nearestIndexFromBeginning(profileCallsInThread, e => e.sampleIndex >= key.sampleIndex && e.nodeId >= key.protocol);
         const match = matchRangeStartIndex !== null && profileCallsInThread.at(matchRangeStartIndex);
         if (!match) {
-            throw new Error(`Unknown profile call serializable key: ${key.join('-')}`);
+            throw new Error(`Unknown profile call serializable key: ${(key)}`);
         }
         // Cache to avoid looking up in subsequent calls.
         this.#modifiedProfileCallByKey.set(key, match);

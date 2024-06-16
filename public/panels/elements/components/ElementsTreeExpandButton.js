@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import elementsTreeExpandButtonStyles from './elementsTreeExpandButton.css.js';
@@ -36,7 +37,7 @@ export class ElementsTreeExpandButton extends HTMLElement {
         tabindex="-1"
         aria-label=${i18nString(UIStrings.expand)}
         jslog=${VisualLogging.action('expand').track({ click: true })}
-        @click=${this.#clickHandler}><span class="dot"></span><span class="dot"></span><span class="dot"></span></button>`, this.#shadow, { host: this });
+        @click=${this.#clickHandler}><${IconButton.Icon.Icon.litTagName} name="dots-horizontal"></${IconButton.Icon.Icon.litTagName}></button>`, this.#shadow, { host: this });
         // clang-format on
     }
 }

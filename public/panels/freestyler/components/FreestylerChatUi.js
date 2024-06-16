@@ -1,10 +1,14 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
+import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
+import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import { Step } from '../FreestylerAgent.js';
 import freestylerChatUiStyles from './freestylerChatUi.css.js';
 const UIStrings = {
     /**
@@ -19,6 +23,14 @@ const UIStrings = {
      *@description Title for the send icon button.
      */
     sendButtonTitle: 'Send',
+    /**
+     *@description Label for the "select an element" button.
+     */
+    selectAnElement: 'Select an element',
+    /**
+     *@description Text for the empty state of the Freestyler panel.
+     */
+    emptyStateText: 'How can I help you?',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -43,6 +55,13 @@ export class FreestylerChatUi extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [freestylerChatUiStyles];
         this.#render();
     }
+    focusTextInput() {
+        const input = this.#shadow.querySelector('.chat-input');
+        if (!input) {
+            return;
+        }
+        input.focus();
+    }
     #handleSubmit = (ev) => {
         ev.preventDefault();
         const input = this.#shadow.querySelector('.chat-input');
@@ -52,30 +71,73 @@ export class FreestylerChatUi extends HTMLElement {
         this.#props.onTextSubmit(input.value);
         input.value = '';
     };
-    #renderChatMessage = (content, entity) => {
-        const classes = LitHtml.Directives.classMap({
-            'chat-message': true,
-            'query': entity === ChatMessageEntity.USER,
-            'answer': entity === ChatMessageEntity.MODEL,
-        });
+    #renderActionResult = ({ code, output }) => {
         return LitHtml.html `
-      <div class=${classes}>
-        ${content}
+      <div class="action-result">
+        <${MarkdownView.CodeBlock.CodeBlock.litTagName} .code=${code.trim()} .codeLang="js" .displayToolbar=${false}></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
+        <div class="js-code-output">${output}</div>
       </div>
     `;
     };
-    #renderChatUi = () => {
+    #renderChatMessage = (message) => {
+        if (message.entity === ChatMessageEntity.USER) {
+            return LitHtml.html `<div class="chat-message query">${message.text}</div>`;
+        }
+        const { steps } = message;
+        // clang-format off
+        return LitHtml.html `
+      <div class="chat-message answer">
+        ${steps.map(step => LitHtml.html `${step.step === Step.ACTION ? this.#renderActionResult(step) : LitHtml.html `<p>${step.text}</p>`}`)}
+      </div>
+    `;
+        // clang-format on
+    };
+    #renderSelectAnElement = () => {
+        // clang-format off
+        return LitHtml.html `
+      <${Buttons.Button.Button.litTagName} .data=${{
+            variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+            iconName: 'select-element',
+            toggledIconName: 'select-element',
+            toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
+            toggled: this.#props.inspectElementToggled,
+            title: i18nString(UIStrings.sendButtonTitle),
+        }} @click=${this.#props.onInspectElementClick}></${Buttons.Button.Button.litTagName}>
+      <span class="select-an-element-text">${i18nString(UIStrings.selectAnElement)}</span>
+    `;
+        // clang-format on
+    };
+    #renderMessages = () => {
         const isLoading = this.#props.state === "chat-view-loading" /* State.CHAT_VIEW_LOADING */;
         // clang-format off
         return LitHtml.html `
+      <div class="messages-container">
+        ${this.#props.messages.map(message => this.#renderChatMessage(message))}
+        ${isLoading ? 'Loading' : ''}
+      </div>
+    `;
+        // clang-format on
+    };
+    #renderEmptyState = () => {
+        // clang-format off
+        return LitHtml.html `<div class="empty-state-container">
+      <${IconButton.Icon.Icon.litTagName} name="spark" style="width: 36px; height: 36px;"></${IconButton.Icon.Icon.litTagName}>
+      ${i18nString(UIStrings.emptyStateText)}
+    </div>`;
+        // clang-format on
+    };
+    #renderChatUi = () => {
+        // clang-format off
+        return LitHtml.html `
       <div class="chat-ui">
-        <div class="messages-container">
-          ${this.#props.messages.map(message => this.#renderChatMessage(message.text, message.entity))}
-          ${isLoading ? 'Loading' : ''}
-        </div>
+        ${this.#props.messages.length > 0 ? this.#renderMessages() : this.#renderEmptyState()}
         <form class="input-form" @submit=${this.#handleSubmit}>
+          <div class="dom-node-link-container">
+            ${this.#props.selectedNode ? LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#props.selectedNode)) : this.#renderSelectAnElement()}
+          </div>
           <div class="chat-input-container">
-            <input type="text" class="chat-input" autofocus
+            <input type="text" class="chat-input" .disabled=${!this.#props.selectedNode}
               placeholder=${i18nString(UIStrings.inputPlaceholder)}>
             <${Buttons.Button.Button.litTagName}
               class="step-actions"

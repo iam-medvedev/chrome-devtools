@@ -16,6 +16,41 @@ describeWithLocale('preciseMillisToString', () => {
         assert.strictEqual(outputString, '7.84\xA0ms');
     });
 });
+describeWithLocale('formatMicroSecondsTime', () => {
+    const { formatMicroSecondsTime } = i18n.TimeUtilities;
+    it('formats small microsecond values', async () => {
+        const time = 8;
+        assert.strictEqual(formatMicroSecondsTime(time), '8\xA0μs');
+    });
+    it('formats larger microsecond values as milliseconds', async () => {
+        const time = 892;
+        assert.strictEqual(formatMicroSecondsTime(time), '0.89\xA0ms');
+    });
+    it('formats milliseconds', async () => {
+        const time = 8.9122 * 1_000;
+        assert.strictEqual(formatMicroSecondsTime(time), '8.91\xA0ms');
+    });
+    it('formats seconds', async () => {
+        const time = 8.9122 * 1_000 * 1_000;
+        assert.strictEqual(formatMicroSecondsTime(time), '8.91\xA0s');
+    });
+    it('formats minutes', async () => {
+        // 203 = 3 minutes, 23 seconds
+        const time = 203 * 1_000 * 1_000;
+        assert.strictEqual(formatMicroSecondsTime(time), '3.4\xA0min');
+    });
+});
+describeWithLocale('formatMicroSecondsAsSeconds', () => {
+    const { formatMicroSecondsAsSeconds } = i18n.TimeUtilities;
+    it('formats smaller second values', async () => {
+        const time = 0.03 * 1_000 * 1_000;
+        assert.strictEqual(formatMicroSecondsAsSeconds(time), '0.03\xA0s');
+    });
+    it('formats larger second values', async () => {
+        const time = 8.9122 * 1_000 * 1_000;
+        assert.strictEqual(formatMicroSecondsAsSeconds(time), '8.91\xA0s');
+    });
+});
 describeWithLocale('millisToString', () => {
     it('formats when number is infinite', () => {
         const inputNumber = Infinity;

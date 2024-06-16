@@ -41,6 +41,10 @@ export class CodeBlock extends HTMLElement {
      * blocks.
      */
     #displayNotice = false;
+    /**
+     * Whether to display the toolbar on the top.
+     */
+    #displayToolbar = true;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
         this.#render();
@@ -73,6 +77,10 @@ export class CodeBlock extends HTMLElement {
         this.#displayNotice = value;
         this.#render();
     }
+    set displayToolbar(value) {
+        this.#displayToolbar = value;
+        this.#render();
+    }
     #onCopy() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.#code);
         this.#copied = true;
@@ -90,7 +98,7 @@ export class CodeBlock extends HTMLElement {
         });
         // clang-format off
         LitHtml.render(LitHtml.html `<div class="codeblock" jslog=${VisualLogging.section('code')}>
-      <div class="toolbar" jslog=${VisualLogging.toolbar()}>
+      ${this.#displayToolbar ? LitHtml.html `<div class="toolbar" jslog=${VisualLogging.toolbar()}>
         <div class="lang">${this.#codeLang}</div>
         <div class="copy">
           <button class=${copyButtonClasses}
@@ -111,7 +119,7 @@ export class CodeBlock extends HTMLElement {
             i18nString(UIStrings.copy)}</span>
           </button>
         </div>
-      </div>
+      </div>` : ''}
       <div class="editor-wrapper">
         <${TextEditor.TextEditor.TextEditor.litTagName} .state=${this.#editorState}></${TextEditor.TextEditor.TextEditor.litTagName}>
         ${this.#displayNotice ? LitHtml.html `<p class="notice">

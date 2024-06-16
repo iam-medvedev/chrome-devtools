@@ -35,6 +35,8 @@
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.ts",
     "../../../../../../../front_end/panels/timeline/components/LiveMetricsView.ts",
     "../../../../../../../front_end/panels/timeline/components/Sidebar.ts",
+    "../../../../../../../front_end/panels/timeline/components/SidebarInsight.ts",
+    "../../../../../../../front_end/panels/timeline/components/TimeRangeOverlay.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../../front_end/global_typings/request_idle_callback.d.ts",
@@ -70,6 +72,9 @@
     },
     {
       "path": "../../../ui/lit-html/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/visual_logging/bundle-tsconfig.json"
     }
   ]
 }
