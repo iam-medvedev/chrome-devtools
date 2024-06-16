@@ -164,11 +164,11 @@ const UIStrings = {
     /**
      *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
      */
-    exemptionReasonTPCDMetadata: 'This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/ps-dt.',
+    exemptionReasonTPCDMetadata: 'This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/dt-grace.',
     /**
      *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
      */
-    exemptionReasonTPCDDeprecationTrial: 'This cookie is allowed by third-party cookie phaseout deprecation trial.',
+    exemptionReasonTPCDDeprecationTrial: 'This cookie is allowed by third-party cookie phaseout deprecation trial. Learn more: goo.gle/ps-dt.',
     /**
      *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
      */
@@ -189,6 +189,10 @@ const UIStrings = {
      *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
      */
     exemptionReasonCorsOptIn: 'This cookie is allowed by CORS opt-in. Learn more: goo.gle/cors',
+    /**
+     *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+     */
+    exemptionReasonScheme: 'This cookie is allowed by the top-level url scheme',
 };
 // clang-format on
 const str_ = i18n.i18n.registerUIStrings('core/sdk/NetworkRequest.ts', UIStrings);
@@ -1505,6 +1509,8 @@ export const cookieExemptionReasonToUiString = function (exemptionReason) {
             return i18nString(UIStrings.exemptionReasonTopLevelStorageAccessAPI);
         case "CorsOptIn" /* Protocol.Network.CookieExemptionReason.CorsOptIn */:
             return i18nString(UIStrings.exemptionReasonCorsOptIn);
+        case "Scheme" /* Protocol.Network.CookieExemptionReason.Scheme */:
+            return i18nString(UIStrings.exemptionReasonScheme);
     }
     return '';
 };

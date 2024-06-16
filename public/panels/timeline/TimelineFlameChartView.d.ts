@@ -36,6 +36,11 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     getMainDataProvider(): TimelineFlameChartDataProvider;
     refreshMainFlameChart(): void;
     windowChanged(windowStartTime: TraceEngine.Types.Timing.MilliSeconds, windowEndTime: TraceEngine.Types.Timing.MilliSeconds, animate: boolean): void;
+    /**
+     * @param startTime - the start time of the selection in MilliSeconds
+     * @param endTime - the end time of the selection in MilliSeconds
+     * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
+     */
     updateRangeSelection(startTime: number, endTime: number): void;
     getMainFlameChart(): PerfUI.FlameChart.FlameChart;
     getNetworkFlameChart(): PerfUI.FlameChart.FlameChart;

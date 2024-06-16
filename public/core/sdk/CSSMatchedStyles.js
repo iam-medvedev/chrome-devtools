@@ -459,7 +459,7 @@ export class CSSMatchedStyles {
         return this.#cssModelInternal;
     }
     hasMatchingSelectors(rule) {
-        return this.getMatchingSelectors(rule).length > 0 && queryMatches(rule.style);
+        return (rule.selectors.length === 0 || this.getMatchingSelectors(rule).length > 0) && queryMatches(rule.style);
     }
     getParentLayoutNodeId() {
         return this.#parentLayoutNodeId;

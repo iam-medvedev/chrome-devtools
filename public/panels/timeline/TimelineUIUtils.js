@@ -1372,9 +1372,9 @@ export class TimelineUIUtils {
                     contentHelper.appendElementRow(i18nString(UIStrings.details), detailsNode);
                 }
                 if (TraceEngine.Types.TraceEvents.isSyntheticInteractionEvent(event)) {
-                    const inputDelay = TraceEngine.Helpers.Timing.formatMicrosecondsTime(event.inputDelay);
-                    const mainThreadTime = TraceEngine.Helpers.Timing.formatMicrosecondsTime(event.mainThreadHandling);
-                    const presentationDelay = TraceEngine.Helpers.Timing.formatMicrosecondsTime(event.presentationDelay);
+                    const inputDelay = i18n.TimeUtilities.formatMicroSecondsTime(event.inputDelay);
+                    const mainThreadTime = i18n.TimeUtilities.formatMicroSecondsTime(event.mainThreadHandling);
+                    const presentationDelay = i18n.TimeUtilities.formatMicroSecondsTime(event.presentationDelay);
                     contentHelper.appendTextRow(i18nString(UIStrings.interactionID), event.interactionId);
                     contentHelper.appendTextRow(i18nString(UIStrings.inputDelay), inputDelay);
                     contentHelper.appendTextRow(i18nString(UIStrings.processingDuration), mainThreadTime);
@@ -1564,15 +1564,15 @@ export class TimelineUIUtils {
         // The time from queueing the request until resource processing is finished.
         const fullDuration = event.dur;
         if (isFinite(fullDuration)) {
-            let textRow = TraceEngine.Helpers.Timing.formatMicrosecondsTime(fullDuration);
+            let textRow = i18n.TimeUtilities.formatMicroSecondsTime(fullDuration);
             // The time from queueing the request until the download is finished. This
             // corresponds to the total time reported for the request in the network tab.
             const networkDuration = event.args.data.syntheticData.finishTime - event.ts;
             // The time it takes to make the resource available to the renderer process.
             const processingDuration = event.ts + event.dur - event.args.data.syntheticData.finishTime;
             if (isFinite(networkDuration) && isFinite(processingDuration)) {
-                const networkDurationStr = TraceEngine.Helpers.Timing.formatMicrosecondsTime(networkDuration);
-                const processingDurationStr = TraceEngine.Helpers.Timing.formatMicrosecondsTime(processingDuration);
+                const networkDurationStr = i18n.TimeUtilities.formatMicroSecondsTime(networkDuration);
+                const processingDurationStr = i18n.TimeUtilities.formatMicroSecondsTime(processingDuration);
                 const cached = event.args.data.syntheticData.isMemoryCached || event.args.data.syntheticData.isDiskCached;
                 const cacheOrNetworkLabel = cached ? i18nString(UIStrings.loadFromCache) : i18nString(UIStrings.networkTransfer);
                 textRow += i18nString(UIStrings.SSSResourceLoading, { PH1: networkDurationStr, PH2: cacheOrNetworkLabel, PH3: processingDurationStr });
@@ -1640,7 +1640,7 @@ export class TimelineUIUtils {
         };
         const indentLength = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get().length;
         // Elide if the data is huge. Then remove the initial new-line for a denser UI
-        const eventStr = JSON.stringify(eventWithArgsFirst, null, indentLength).slice(0, 3000).replace(/{\n  /, '{ ');
+        const eventStr = JSON.stringify(eventWithArgsFirst, null, indentLength).slice(0, 10_000).replace(/{\n  /, '{ ');
         // Use CodeHighlighter for syntax highlighting.
         const highlightContainer = document.createElement('div');
         const shadowRoot = highlightContainer.attachShadow({ mode: 'open' });

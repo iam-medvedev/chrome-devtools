@@ -6,6 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { TimelineEventOverviewCPUActivity, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, } from './TimelineEventOverview.js';
 import timelineHistoryManagerStyles from './timelineHistoryManager.css.js';
 const UIStrings = {
@@ -229,6 +230,7 @@ export class TimelineHistoryManager {
         const preview = document.createElement('div');
         preview.classList.add('preview-item');
         preview.classList.add('vbox');
+        preview.setAttribute('jslog', `${VisualLogging.dropDown('performance.history-item').track({ click: true })}`);
         const data = {
             preview,
             title: titleWithSequenceNumber,

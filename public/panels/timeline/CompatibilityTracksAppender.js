@@ -100,25 +100,18 @@ export class CompatibilityTracksAppender {
         }
     }
     #addThreadAppenders() {
-        const weight = (appender) => {
+        const threadTrackOrder = (appender) => {
             switch (appender.threadType) {
                 case "MAIN_THREAD" /* TraceEngine.Handlers.Threads.ThreadType.MAIN_THREAD */: {
-                    // Within tracks of the main thread, those with data
-                    // from about:blank are treated with the lowest priority,
-                    // since there's a chance they have only noise from the
-                    // navigation to about:blank done on record and reload.
-                    if (!appender.getUrl()) {
-                        // We expect each appender to have a URL as we filter out empty URL
-                        // processes, but in the event that we do not have a URL (can
-                        // happen for a generic trace), return 2, to ensure these are put
-                        // below any that do have value URLs.
-                        return 2;
+                    if (appender.isOnMainFrame) {
+                        // Ensure `about:blank` or `chrome://new-tab-page` are deprioritized, as they're likely not the profiling targets
+                        const url = appender.getUrl();
+                        if (url.startsWith('about:') || url.startsWith('chrome:')) {
+                            return 2;
+                        }
+                        return 0;
                     }
-                    const asUrl = new URL(appender.getUrl());
-                    if (asUrl.protocol === 'about:') {
-                        return 2;
-                    }
-                    return (appender.isOnMainFrame && appender.getUrl() !== '') ? 0 : 1;
+                    return 1;
                 }
                 case "WORKER" /* TraceEngine.Handlers.Threads.ThreadType.WORKER */:
                     return 3;
@@ -167,7 +160,8 @@ export class CompatibilityTracksAppender {
             }
             this.#threadAppenders.push(new ThreadAppender(this, this.#traceParsedData, pid, tid, name, type));
         }
-        this.#threadAppenders.sort((a, b) => weight(a) - weight(b));
+        // Sort first by track order, then break ties by placing busier tracks first.
+        this.#threadAppenders.sort((a, b) => (threadTrackOrder(a) - threadTrackOrder(b)) || (b.getEntries().length - a.getEntries().length));
         this.#allTrackAppenders.push(...this.#threadAppenders);
     }
     timingsTrackAppender() {
@@ -215,7 +209,7 @@ export class CompatibilityTracksAppender {
                 events.push(this.#entryData[i]);
             }
         }
-        events.sort((a, b) => a.ts - b.ts);
+        events.sort((a, b) => a.ts - b.ts); // TODO(paulirish): Remove as I'm 90% it's already sorted.
         this.#eventsForTrack.set(trackAppender, events);
         return events;
     }

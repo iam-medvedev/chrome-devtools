@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
 const LIVE_METRICS_WORLD_NAME = 'live_metrics_world';
+let liveMetricsInstance;
 class InjectedScript {
     static #injectedScript;
     static async get() {
@@ -19,9 +20,34 @@ class InjectedScript {
 export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
     #target;
     #scriptIdentifier;
+    #lastResetContextId;
+    #lcpValue;
+    #clsValue;
+    #inpValue;
+    #interactions = [];
+    #mutex = new Common.Mutex.Mutex();
     constructor() {
         super();
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
+    }
+    static instance(opts = { forceNew: null }) {
+        const { forceNew } = opts;
+        if (!liveMetricsInstance || forceNew) {
+            liveMetricsInstance = new LiveMetrics();
+        }
+        return liveMetricsInstance;
+    }
+    get lcpValue() {
+        return this.#lcpValue;
+    }
+    get clsValue() {
+        return this.#clsValue;
+    }
+    get inpValue() {
+        return this.#inpValue;
+    }
+    get interactions() {
+        return this.#interactions;
     }
     /**
      * DOM nodes can't be sent over a runtime binding, so we have to retrieve
@@ -49,12 +75,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         const remoteObject = runtimeModel.createRemoteObject(result);
         return domModel.pushObjectAsNodeToFrontend(remoteObject);
     }
-    async #onBindingCalled(event) {
-        const { data } = event;
-        if (data.name !== Spec.EVENT_BINDING_NAME) {
-            return;
-        }
-        const webVitalsEvent = JSON.parse(data.payload);
+    async #handleWebVitalsEvent(webVitalsEvent, executionContextId) {
         switch (webVitalsEvent.name) {
             case 'LCP': {
                 const lcpEvent = {
@@ -62,19 +83,20 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                     rating: webVitalsEvent.rating,
                 };
                 if (webVitalsEvent.nodeIndex !== undefined) {
-                    const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, data.executionContextId);
+                    const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
                     if (node) {
                         lcpEvent.node = node;
                     }
                 }
-                this.dispatchEventToListeners("lcp_changed" /* Events.LCPChanged */, lcpEvent);
+                this.#lcpValue = lcpEvent;
                 break;
             }
             case 'CLS': {
-                this.dispatchEventToListeners("cls_changed" /* Events.CLSChanged */, {
+                const event = {
                     value: webVitalsEvent.value,
                     rating: webVitalsEvent.rating,
-                });
+                };
+                this.#clsValue = event;
                 break;
             }
             case 'INP': {
@@ -84,33 +106,75 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                     interactionType: webVitalsEvent.interactionType,
                 };
                 if (webVitalsEvent.nodeIndex !== undefined) {
-                    const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, data.executionContextId);
+                    const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
                     if (node) {
                         inpEvent.node = node;
                     }
                 }
-                this.dispatchEventToListeners("inp_changed" /* Events.INPChanged */, inpEvent);
+                this.#inpValue = inpEvent;
+                break;
+            }
+            case 'Interaction': {
+                const { nodeIndex, ...rest } = webVitalsEvent;
+                const interactionEvent = rest;
+                if (nodeIndex !== undefined) {
+                    const node = await this.#resolveDomNode(nodeIndex, executionContextId);
+                    if (node) {
+                        interactionEvent.node = node;
+                    }
+                }
+                this.#interactions.push(interactionEvent);
                 break;
             }
             case 'reset': {
-                this.dispatchEventToListeners("reset" /* Events.Reset */);
+                this.#lcpValue = undefined;
+                this.#clsValue = undefined;
+                this.#inpValue = undefined;
+                this.#interactions = [];
                 break;
             }
         }
+        this.dispatchEventToListeners("status" /* Events.Status */, {
+            lcp: this.#lcpValue,
+            cls: this.#clsValue,
+            inp: this.#inpValue,
+            interactions: this.#interactions,
+        });
+    }
+    async #onBindingCalled(event) {
+        const { data } = event;
+        if (data.name !== Spec.EVENT_BINDING_NAME) {
+            return;
+        }
+        const webVitalsEvent = JSON.parse(data.payload);
+        // Previously injected scripts will persist if DevTools is closed and reopened.
+        // Ensure we only handle events from the same execution context as the most recent "reset" event.
+        // "reset" events are only emitted once when the script is injected.
+        if (webVitalsEvent.name === 'reset') {
+            this.#lastResetContextId = data.executionContextId;
+        }
+        else if (this.#lastResetContextId !== data.executionContextId) {
+            return;
+        }
+        // Async tasks can be performed while handling an event (e.g. resolving DOM node)
+        // Use a mutex here to ensure the events are handled in the order they are received.
+        await this.#mutex.run(async () => {
+            await this.#handleWebVitalsEvent(webVitalsEvent, data.executionContextId);
+        });
     }
     targetAdded(target) {
         if (target !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
             return;
         }
-        void this.enable(target);
+        void this.#enable(target);
     }
     targetRemoved(target) {
         if (target !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
             return;
         }
-        void this.disable();
+        void this.#disable();
     }
-    async enable(target) {
+    async #enable(target) {
         if (this.#target) {
             return;
         }
@@ -132,7 +196,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         this.#scriptIdentifier = identifier;
         this.#target = target;
     }
-    async disable() {
+    async #disable() {
         if (!this.#target) {
             return;
         }

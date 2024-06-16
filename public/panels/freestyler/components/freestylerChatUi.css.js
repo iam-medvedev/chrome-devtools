@@ -68,9 +68,12 @@ styles.replaceSync(
 .chat-input-disclaimer {
   text-align: center;
   color: var(--sys-color-on-surface-subtle);
+  margin-bottom: 2px;
 }
 
 .chat-message {
+  user-select: text;
+  cursor: initial;
   max-width: 320px;
   width: fit-content;
   padding: 8px var(--sys-size-8);
@@ -102,6 +105,46 @@ styles.replaceSync(
 
 .consent-onboarding-heading {
   font-size: 1.2em;
+}
+
+.dom-node-link-container {
+  margin-bottom: 2px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 20px;
+}
+
+.select-an-element-text {
+  margin-left: 2px;
+}
+
+.empty-state-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 16px;
+  opacity: 70%;
+}
+
+.action-result {
+  margin: 8px 0;
+}
+
+.js-code-output {
+  margin-top: -8px;
+  white-space: pre;
+  max-width: 100%;
+  overflow: auto;
+  scrollbar-width: none;
+  padding: 4px 6px;
+  background-color: var(--sys-color-surface3);
+  color: var(--sys-color-on-surface);
+  font-size: 10px;
+  font-family: var(--source-code-font-family);
 }
 
 /*# sourceURL=./components/freestylerChatUi.css */

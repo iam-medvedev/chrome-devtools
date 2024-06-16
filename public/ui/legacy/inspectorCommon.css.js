@@ -59,7 +59,7 @@ styles.replaceSync(
   --sys-motion-easing-emphasized-accelerate: cubic-bezier(0.2, 0, 0, 1);
 }
 
-.-theme-with-dark-background {
+.theme-with-dark-background {
   /**
    * Inherit the native form control colors when using a dark theme.
    * Override them using CSS variables if needed.
@@ -277,8 +277,8 @@ input::placeholder {
   color: var(--override-input-placeholder-color);
 }
 
-.-theme-with-dark-background input::placeholder,
-:host-context(.-theme-with-dark-background) input::placeholder {
+.theme-with-dark-background input::placeholder,
+:host-context(.theme-with-dark-background) input::placeholder {
   --override-input-placeholder-color: rgb(230 230 230 / 54%);
 }
 
@@ -365,8 +365,8 @@ input[type="checkbox"]:not(.-theme-preserve) {
   opacity: 38%;
 }
 
-.-theme-with-dark-background .chrome-select,
-:host-context(.-theme-with-dark-background) .chrome-select {
+.theme-with-dark-background .chrome-select,
+:host-context(.theme-with-dark-background) .chrome-select {
   background-image: var(--image-file-arrow-drop-down-dark);
 }
 
@@ -391,8 +391,8 @@ input[type="checkbox"]:not(.-theme-preserve) {
     background-image: var(--image-file-arrow-drop-down-light);
   }
 
-  .-theme-with-dark-background .chrome-select,
-  :host-context(.-theme-with-dark-background) .chrome-select {
+  .theme-with-dark-background .chrome-select,
+  :host-context(.theme-with-dark-background) .chrome-select {
     background-image: var(--image-file-arrow-drop-down-light);
   }
 }
@@ -402,8 +402,8 @@ input[type="checkbox"]:not(.-theme-preserve) {
     background-image: var(--image-file-arrow-drop-down-dark);
   }
 
-  .-theme-with-dark-background .chrome-select,
-  :host-context(.-theme-with-dark-background) .chrome-select {
+  .theme-with-dark-background .chrome-select,
+  :host-context(.theme-with-dark-background) .chrome-select {
     background-image: var(--image-file-arrow-drop-down-dark);
   }
 }
@@ -542,8 +542,8 @@ button.link:focus-visible {
   border-radius: var(--sys-shape-corner-full);
 }
 
-.-theme-with-dark-background button.link:focus-visible,
-:host-context(.-theme-with-dark-background) button.link:focus-visible {
+.theme-with-dark-background button.link:focus-visible,
+:host-context(.theme-with-dark-background) button.link:focus-visible {
   --override-link-focus-background-color: rgb(230 230 230 / 8%);
 }
 
@@ -614,7 +614,7 @@ input.custom-search-input::-webkit-search-cancel-button:hover {
   margin-left: 3px;
 }
 
-:host-context(.-theme-with-dark-background) devtools-adorner {
+:host-context(.theme-with-dark-background) devtools-adorner {
   --override-adorner-border-color: var(--sys-color-tonal-outline);
   --override-adorner-focus-border-color: var(--sys-color-state-focus-ring);
   --override-adorner-active-background-color: var(--sys-color-state-riple-neutral-on-subtle);

@@ -1,27 +1,44 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
 import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 import { bindOutputStream } from './ResourceLoader.js';
+export var Entity;
+(function (Entity) {
+    Entity[Entity["UNKNOWN"] = 0] = "UNKNOWN";
+    Entity[Entity["USER"] = 1] = "USER";
+    Entity[Entity["SYSTEM"] = 2] = "SYSTEM";
+})(Entity || (Entity = {}));
 export class AidaClient {
     static buildConsoleInsightsRequest(input) {
         const request = {
             input,
             client: 'CHROME_DEVTOOLS',
         };
-        const temperature = parseFloat(Root.Runtime.Runtime.queryParam('aidaTemperature') || '');
+        const config = Common.Settings.Settings.instance().getHostConfig();
+        let temperature = NaN;
+        let modelId = null;
+        let disallowLogging = false;
+        if (config?.devToolsConsoleInsightsDogfood.enabled) {
+            temperature = config.devToolsConsoleInsightsDogfood.aidaTemperature;
+            modelId = config.devToolsConsoleInsightsDogfood.aidaModelId;
+        }
+        else if (config?.devToolsConsoleInsights.enabled) {
+            temperature = config.devToolsConsoleInsights.aidaTemperature;
+            modelId = config.devToolsConsoleInsights.aidaModelId;
+            disallowLogging = config.devToolsConsoleInsights.disallowLogging;
+        }
         if (!isNaN(temperature)) {
             request.options ??= {};
             request.options.temperature = temperature;
         }
-        const modelId = Root.Runtime.Runtime.queryParam('aidaModelId');
         if (modelId) {
             request.options ??= {};
             request.options.model_id = modelId;
         }
-        if (Root.Runtime.Runtime.queryParam('ci_disallowLogging') === 'true') {
+        if (disallowLogging) {
             request.metadata = {
                 disable_user_content_logging: true,
             };

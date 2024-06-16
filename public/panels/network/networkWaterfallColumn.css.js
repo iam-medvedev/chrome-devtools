@@ -21,7 +21,7 @@ styles.replaceSync(
   z-index: 200;
 }
 
-.-theme-with-dark-background .network-waterfall-v-scroll {
+.theme-with-dark-background .network-waterfall-v-scroll {
   /**
   * Waterfall scrollbars are implemented as overflowing elements on top of the
   * scrollable content. The actual content is a viewport without scrollbars.

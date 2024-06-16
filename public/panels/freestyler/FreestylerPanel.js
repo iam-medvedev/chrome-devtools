@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import { ChatMessageEntity, FreestylerChatUi, } from './components/FreestylerChatUi.js';
@@ -37,36 +38,52 @@ function createToolbar(target, { onClearClick }) {
 function defaultView(input, output, target) {
     // clang-format off
     LitHtml.render(LitHtml.html `
-    <${FreestylerChatUi.litTagName} .props=${{
-        onTextSubmit: input.onTextSubmit,
-        onAcceptPrivacyNotice: input.onAcceptPrivacyNotice,
-        state: input.state,
-        messages: input.messages,
-    }} >
-    </${FreestylerChatUi.litTagName}>
+    <${FreestylerChatUi.litTagName} .props=${input} ${LitHtml.Directives.ref((el) => {
+        if (!el || !(el instanceof FreestylerChatUi)) {
+            return;
+        }
+        output.freestylerChatUi = el;
+    })}></${FreestylerChatUi.litTagName}>
   `, target, { host: input }); // eslint-disable-line rulesdir/lit_html_host_this
     // clang-format on
 }
 let freestylerPanelInstance;
 export class FreestylerPanel extends UI.Panel.Panel {
     view;
+    static panelName = 'freestyler';
+    #toggleSearchElementAction;
+    #selectedNode;
     #contentContainer;
     #aidaClient;
     #agent;
     #viewProps;
+    #viewOutput = {};
     constructor(view = defaultView) {
-        super('freestyler');
+        super(FreestylerPanel.panelName);
         this.view = view;
         createToolbar(this.contentElement, { onClearClick: this.#handleClearClick.bind(this) });
+        this.#toggleSearchElementAction =
+            UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         this.#aidaClient = new Host.AidaClient.AidaClient();
         this.#contentContainer = this.contentElement.createChild('div', 'freestyler-chat-ui-container');
         this.#agent = new FreestylerAgent({ aidaClient: this.#aidaClient });
+        this.#selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         this.#viewProps = {
             state: "chat-view" /* FreestylerChatUiState.CHAT_VIEW */,
             messages: [],
+            inspectElementToggled: this.#toggleSearchElementAction.toggled(),
+            selectedNode: this.#selectedNode,
             onTextSubmit: this.#handleTextSubmit.bind(this),
-            onAcceptPrivacyNotice: this.#handleAcceptPrivacyNotice.bind(this),
+            onInspectElementClick: this.#handleSelectElementClick.bind(this),
         };
+        this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.Toggled */, ev => {
+            this.#viewProps.inspectElementToggled = ev.data;
+            this.doUpdate();
+        });
+        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, ev => {
+            this.#viewProps.selectedNode = ev.data;
+            this.doUpdate();
+        });
         this.doUpdate();
     }
     static instance(opts = { forceNew: null }) {
@@ -78,9 +95,27 @@ export class FreestylerPanel extends UI.Panel.Panel {
     }
     wasShown() {
         this.registerCSSFiles([freestylerPanelStyles]);
+        this.#viewOutput.freestylerChatUi?.focusTextInput();
     }
     doUpdate() {
-        this.view(this.#viewProps, this, this.#contentContainer);
+        this.view(this.#viewProps, this.#viewOutput, this.#contentContainer);
+    }
+    #handleSelectElementClick() {
+        void this.#toggleSearchElementAction.execute();
+    }
+    handleAction(actionId) {
+        switch (actionId) {
+            case 'freestyler.element-panel-context': {
+                // TODO(340805362): Add UMA
+                this.#handleClearClick();
+                break;
+            }
+            case 'freestyler.style-tab-context': {
+                // TODO(340805362): Add UMA
+                this.#handleClearClick();
+                break;
+            }
+        }
     }
     // TODO(ergunsh): Handle cancelling agent run.
     #handleClearClick() {
@@ -97,21 +132,35 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.doUpdate();
         const systemMessage = {
             entity: ChatMessageEntity.MODEL,
-            text: '',
+            steps: [],
         };
         this.#viewProps.messages.push(systemMessage);
-        await this.#agent.run(text, (step, output) => {
+        await this.#agent.run(text, (data) => {
             if (this.#viewProps.state === "chat-view-loading" /* FreestylerChatUiState.CHAT_VIEW_LOADING */) {
                 this.#viewProps.state = "chat-view" /* FreestylerChatUiState.CHAT_VIEW */;
             }
-            // TODO(ergunsh): Better visualize.
-            systemMessage.text += `\n${output}`;
+            systemMessage.steps.push(data);
             this.doUpdate();
         });
     }
-    #handleAcceptPrivacyNotice() {
-        this.#viewProps.state = "chat-view" /* FreestylerChatUiState.CHAT_VIEW */;
-        this.doUpdate();
+}
+export class ActionDelegate {
+    handleAction(_context, actionId) {
+        switch (actionId) {
+            case 'freestyler.element-panel-context':
+            case 'freestyler.style-tab-context': {
+                void (async () => {
+                    const view = UI.ViewManager.ViewManager.instance().view(FreestylerPanel.panelName);
+                    if (view) {
+                        await UI.ViewManager.ViewManager.instance().showView(FreestylerPanel.panelName);
+                        const widget = (await view.widget());
+                        widget.handleAction(actionId);
+                    }
+                })();
+                return true;
+            }
+        }
+        return false;
     }
 }
 //# sourceMappingURL=FreestylerPanel.js.map

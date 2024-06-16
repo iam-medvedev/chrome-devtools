@@ -30,7 +30,6 @@
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import * as Root from '../../../../core/root/root.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
@@ -170,7 +169,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     markerHighlighElement;
     highlightElement;
     revealDescendantsArrowHighlightElement;
-    selectedElement;
+    selectedElement = null;
     rulerEnabled;
     barHeight;
     // Additional space around an entry that is added for operations with entry.
@@ -217,13 +216,19 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #searchResultEntryIndex;
     #searchResultHighlightElements = [];
     #inTrackConfigEditMode = false;
-    constructor(dataProvider, flameChartDelegate, groupExpansionSetting) {
+    // Stored because we cache this value to save extra lookups and layoffs.
+    #canvasBoundingClientRect = null;
+    #selectedElementOutlineEnabled = true;
+    constructor(dataProvider, flameChartDelegate, optionalConfig = {}) {
         super(true);
         this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
         this.registerRequiredCSS(flameChartStyles);
         this.contentElement.classList.add('flame-chart-main-pane');
-        this.groupExpansionSetting = groupExpansionSetting;
-        this.groupExpansionState = groupExpansionSetting && groupExpansionSetting.get() || {};
+        if (typeof optionalConfig.selectedElementOutline === 'boolean') {
+            this.#selectedElementOutlineEnabled = optionalConfig.selectedElementOutline;
+        }
+        this.groupExpansionSetting = optionalConfig.groupExpansionSetting;
+        this.groupExpansionState = optionalConfig.groupExpansionSetting?.get() || {};
         this.groupHiddenState = {};
         this.flameChartDelegate = flameChartDelegate;
         this.chartViewport = new ChartViewport(this);
@@ -247,13 +252,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.highlightElement = this.viewportElement.createChild('div', 'flame-chart-highlight-element');
         this.revealDescendantsArrowHighlightElement =
             this.viewportElement.createChild('div', 'reveal-descendants-arrow-highlight-element');
-        this.selectedElement = this.viewportElement.createChild('div', 'flame-chart-selected-element');
-        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_WRITE_MODIFICATIONS_TO_DISK */)) {
-            // When this experiment is enabled the new Overlays system is
-            // used to render the selected entry outline, so hide this one.
-            // Once the overlay is ready we can remove this.selectedElement
-            // entirely.
-            this.selectedElement.style.display = 'none';
+        if (this.#selectedElementOutlineEnabled) {
+            this.selectedElement = this.viewportElement.createChild('div', 'flame-chart-selected-element');
         }
         this.canvas.addEventListener('focus', () => {
             this.dispatchEventToListeners("CanvasFocused" /* Events.CanvasFocused */);
@@ -285,6 +285,13 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     willHide() {
         this.hideHighlight();
+    }
+    canvasBoundingClientRect() {
+        if (this.#canvasBoundingClientRect) {
+            return this.#canvasBoundingClientRect;
+        }
+        this.#canvasBoundingClientRect = this.canvas.getBoundingClientRect();
+        return this.#canvasBoundingClientRect;
     }
     getBarHeight() {
         return this.barHeight;
@@ -1609,6 +1616,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 widthPixels: this.offsetWidth,
                 heightPixels: this.offsetHeight,
                 scrollOffsetPixels: this.chartViewport.scrollOffset(),
+                // If there are no groups because we have no timeline data, we treat
+                // that as all being collapsed.
+                allGroupsCollapsed: this.rawTimelineData?.groups.every(g => !g.expanded) ?? true,
             },
             traceWindow: TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(this.minimumBoundary(), this.maximumBoundary()),
         });
@@ -2979,6 +2989,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
      * If isDecoration parameter is set to true, the element will be positioned on the right side of the entry and have a square shape where width == height of the entry.
      */
     updateElementPosition(element, entryIndex, isDecoration) {
+        if (!element) {
+            return;
+        }
         const elementMinWidthPx = 2;
         element.classList.add('hidden');
         if (entryIndex === -1) {
@@ -3068,9 +3081,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     /**
      * Returns the visibility of a level in the.
      * flame chart.
-     * Now this function is only used for tests.
      */
-    levelVisibilityForTest(level) {
+    levelIsVisible(level) {
         if (!this.visibleLevels) {
             throw new Error('No level visiblibities');
         }
@@ -3102,6 +3114,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.chartViewport.setContentHeight(height);
     }
     onResize() {
+        // Clear the rect cache because we have been resized.
+        this.#canvasBoundingClientRect = null;
         this.scheduleUpdate();
     }
     update() {

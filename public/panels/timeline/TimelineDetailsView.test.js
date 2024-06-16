@@ -39,7 +39,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const rowData = getRowDataForDetailsElement(detailsContentElement);
         assert.deepEqual(rowData, [
             { title: 'URL', value: 'chromedevtools.github.io/performance-stories/lcp-web-font/app.css' },
-            { title: 'Duration', value: '12.582ms (8.291ms load from cache + 4.291ms resource loading)' },
+            { title: 'Duration', value: '12.58\xA0ms (8.29\xA0ms load from cache + 4.29\xA0ms resource loading)' },
             { title: 'Request Method', value: 'GET' },
             { title: 'Initial Priority', value: 'Highest' },
             { title: 'Priority', value: 'Highest' },

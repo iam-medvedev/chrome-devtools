@@ -35,7 +35,7 @@ const p = document.createElement('p');
 await renderContent(expanded === 'false' ? false : true);
 async function renderContent(expanded) {
     if (darkMode) {
-        document.documentElement.classList.add('-theme-with-dark-background');
+        document.documentElement.classList.add('theme-with-dark-background');
     }
     const container = document.getElementById('container');
     if (!container) {

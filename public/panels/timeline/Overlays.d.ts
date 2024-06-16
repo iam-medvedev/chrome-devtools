@@ -26,9 +26,19 @@ export interface EntrySelected {
     entry: OverlayEntry;
 }
 /**
+ * Represents a time range on the trace. Also used when the user shift+clicks
+ * and drags to create a time range.
+ */
+export interface TimeRangeLabel {
+    type: 'TIME_RANGE';
+    bounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+    label: string;
+    showDuration: boolean;
+}
+/**
  * All supported overlay types. Expected to grow in time!
  */
-export type TimelineOverlay = EntrySelected;
+export type TimelineOverlay = EntrySelected | TimeRangeLabel;
 /**
  * The dimensions each flame chart reports. Note that in the current UI they
  * will always have the same width, so theoretically we could only gather that
@@ -39,6 +49,7 @@ interface FlameChartDimensions {
     widthPixels: number;
     heightPixels: number;
     scrollOffsetPixels: number;
+    allGroupsCollapsed: boolean;
 }
 export interface TimelineCharts {
     mainChart: PerfUI.FlameChart.FlameChart;
@@ -55,7 +66,16 @@ export declare class Overlays {
     /**
      * Add a new overlay to the view.
      */
-    addOverlay(overlay: TimelineOverlay): void;
+    add<T extends TimelineOverlay>(overlay: T): T;
+    /**
+     * Update an existing overlay without destroying and recreating its
+     * associated DOM.
+     *
+     * This is useful if you need to rapidly update an overlay's data - e.g.
+     * dragging to create time ranges - without the thrashing of destroying the
+     * old overlay and re-creating the new one.
+     */
+    updateExisting<T extends TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
     /**
      * @returns the list of overlays associated with a given entry.
      */
@@ -64,6 +84,11 @@ export declare class Overlays {
      * Removes any active overlays that match the provided type.
      */
     removeOverlaysOfType(type: TimelineOverlay['type']): void;
+    /**
+     * Removes the provided overlay from the list of overlays and destroys any
+     * DOM associated with it.
+     */
+    remove(overlay: TimelineOverlay): void;
     /**
      * Update the dimenions of a chart.
      * IMPORTANT: this does not trigger a re-draw. You must call the render() method manually.
@@ -106,6 +131,9 @@ export declare class Overlays {
      * This means if the event is in the main flame chart and below the network,
      * we add the height of the network chart to the Y value to position it
      * correctly.
+     * This can return null if any data waas missing, or if the event is not
+     * visible (if the level it's on is hidden because the track is collapsed,
+     * for example)
      */
     yPixelForEventOnChart(event: OverlayEntry): number | null;
     /**

@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const DARK_THEME_CLASS = '-theme-with-dark-background';
+const DARK_THEME_CLASS = 'theme-with-dark-background';
 function toggleDarkMode(force) {
     // Only use the second arg if its not undefined. The spec treats `undefined` as falsy. :/
     document.body.classList.toggle(...[DARK_THEME_CLASS, ...force !== undefined ? [force] : []]);

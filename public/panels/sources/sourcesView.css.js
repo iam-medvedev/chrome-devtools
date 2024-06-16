@@ -62,7 +62,7 @@ styles.replaceSync(
   background-color: var(--override-debugger-background-tint);
 }
 
-.-theme-with-dark-background .source-frame-debugger-script {
+.theme-with-dark-background .source-frame-debugger-script {
   --override-debugger-background-tint: rgb(61 61 0 / 50%);
 }
 

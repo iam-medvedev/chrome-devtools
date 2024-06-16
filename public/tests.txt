@@ -306,6 +306,8 @@ panels/emulation/MediaQueryInspector.test.js
 panels/explain/PromptBuilder.test.js
 panels/explain/components/ConsoleInsight.test.js
 panels/explain/components/MarkdownRenderer.test.js
+panels/freestyler/FreestylerAgent.test.js
+panels/freestyler/FreestylerEvaluateAction.test.js
 panels/issues/IssueAggregator.test.js
 panels/issues/IssueView.test.js
 panels/layer_viewer/layer_viewer.test.js
@@ -415,6 +417,8 @@ panels/timeline/TimelineUIUtils.test.js
 panels/timeline/components/BreadcrumbsUI.test.js
 panels/timeline/components/InteractionBreakdown.test.js
 panels/timeline/components/Invalidations.test.js
+panels/timeline/components/LiveMetricsView.test.js
+panels/timeline/components/SidebarInsight.test.js
 panels/timeline/track_appenders/AnimationsTrackAppender.test.js
 panels/timeline/track_appenders/AppenderUtils.test.js
 panels/timeline/track_appenders/CompatibilityTracksAppender.test.js

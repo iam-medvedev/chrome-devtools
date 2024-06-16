@@ -72,6 +72,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #gameTimeout = setTimeout(() => ({}), 0);
     #overlaysContainer = document.createElement('div');
     #overlays;
+    #timeRangeSelectionOverlay = null;
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-flamechart');
@@ -90,7 +91,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         const mainViewGroupExpansionSetting = Common.Settings.Settings.instance().createSetting('timeline-flamechart-main-view-group-expansion', {});
         this.mainDataProvider = new TimelineFlameChartDataProvider();
         this.mainDataProvider.addEventListener("DataChanged" /* TimelineFlameChartDataProviderEvents.DataChanged */, () => this.mainFlameChart.scheduleUpdate());
-        this.mainFlameChart = new PerfUI.FlameChart.FlameChart(this.mainDataProvider, this, mainViewGroupExpansionSetting);
+        this.mainFlameChart = new PerfUI.FlameChart.FlameChart(this.mainDataProvider, this, {
+            groupExpansionSetting: mainViewGroupExpansionSetting,
+            // The TimelineOverlays are used for selected elements
+            selectedElementOutline: false,
+        });
         this.mainFlameChart.alwaysShowVerticalScroll();
         this.mainFlameChart.enableRuler(false);
         this.mainFlameChart.addEventListener("LatestDrawDimensions" /* PerfUI.FlameChart.Events.LatestDrawDimensions */, dimensions => {
@@ -101,8 +106,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.networkFlameChartGroupExpansionSetting =
             Common.Settings.Settings.instance().createSetting('timeline-flamechart-network-view-group-expansion', {});
         this.networkDataProvider = new TimelineFlameChartNetworkDataProvider();
-        this.networkFlameChart =
-            new PerfUI.FlameChart.FlameChart(this.networkDataProvider, this, this.networkFlameChartGroupExpansionSetting);
+        this.networkFlameChart = new PerfUI.FlameChart.FlameChart(this.networkDataProvider, this, {
+            groupExpansionSetting: this.networkFlameChartGroupExpansionSetting,
+            // The TimelineOverlays are used for selected elements
+            selectedElementOutline: false,
+        });
         this.networkFlameChart.alwaysShowVerticalScroll();
         this.networkFlameChart.addEventListener("LatestDrawDimensions" /* PerfUI.FlameChart.Events.LatestDrawDimensions */, dimensions => {
             this.#overlays.updateChartDimensions('network', dimensions.data.chart);
@@ -210,8 +218,30 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     windowChanged(windowStartTime, windowEndTime, animate) {
         TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(TraceEngine.Types.Timing.MilliSeconds(windowStartTime), TraceEngine.Types.Timing.MilliSeconds(windowEndTime)), { shouldAnimate: animate });
     }
+    /**
+     * @param startTime - the start time of the selection in MilliSeconds
+     * @param endTime - the end time of the selection in MilliSeconds
+     * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
+     */
     updateRangeSelection(startTime, endTime) {
         this.delegate.select(TimelineSelection.fromRange(startTime, endTime));
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */)) {
+            const bounds = TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(TraceEngine.Types.Timing.MilliSeconds(startTime), TraceEngine.Types.Timing.MilliSeconds(endTime));
+            if (this.#timeRangeSelectionOverlay) {
+                this.#overlays.updateExisting(this.#timeRangeSelectionOverlay, {
+                    bounds,
+                });
+            }
+            else {
+                this.#timeRangeSelectionOverlay = this.#overlays.add({
+                    type: 'TIME_RANGE',
+                    label: '',
+                    showDuration: true,
+                    bounds,
+                });
+            }
+            this.#overlays.update();
+        }
     }
     getMainFlameChart() {
         return this.mainFlameChart;
@@ -335,6 +365,17 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         const networkIndex = this.networkDataProvider.entryIndexForSelection(selection);
         this.mainFlameChart.setSelectedEntry(mainIndex);
         this.networkFlameChart.setSelectedEntry(networkIndex);
+        // Clear any existing entry selection.
+        this.#overlays.removeOverlaysOfType('ENTRY_SELECTED');
+        // If:
+        // 1. There is no selection, or the selection is not a range selection
+        // AND 2. we have an active time range selection overlay
+        // then we need to remove it.
+        if ((selection === null || !TimelineSelection.isRangeSelection(selection.object)) &&
+            this.#timeRangeSelectionOverlay) {
+            this.#overlays.remove(this.#timeRangeSelectionOverlay);
+            this.#timeRangeSelectionOverlay = null;
+        }
         let index = this.mainDataProvider.entryIndexForSelection(selection);
         this.mainFlameChart.setSelectedEntry(index);
         index = this.networkDataProvider.entryIndexForSelection(selection);
@@ -343,26 +384,16 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             // TODO(crbug.com/1459265):  Change to await after migration work.
             void this.detailsView.setSelection(selection);
         }
-        const overlaysEnabled = Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_WRITE_MODIFICATIONS_TO_DISK */);
-        // Create the entry selected overlay, but only if the modifications experiment is enabled.
-        // Hiding it behind this experiment is temporary to allow for us to test in Canary before pushing to stable.
-        if (overlaysEnabled && selection) {
-            if (TimelineSelection.isTraceEventSelection(selection.object) ||
+        // Create the entry selected overlay if the selection represents a frame or trace event (either network, or anything else)
+        if (selection &&
+            (TimelineSelection.isTraceEventSelection(selection.object) ||
                 TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object) ||
-                TimelineSelection.isFrameObject(selection.object)) {
-                const existingSelectedOverlayForEvent = this.#overlays.overlaysForEntry(selection.object).some(overlay => overlay.type === 'ENTRY_SELECTED');
-                if (existingSelectedOverlayForEvent) {
-                    // We don't need to add a new overlay because it already exists.
-                    return;
-                }
-                // Clear the ENTRY_SELECTED for the previous selected event.
-                this.#overlays.removeOverlaysOfType('ENTRY_SELECTED');
-                this.#overlays.addOverlay({
-                    type: 'ENTRY_SELECTED',
-                    entry: selection.object,
-                });
-                this.#overlays.update();
-            }
+                TimelineSelection.isFrameObject(selection.object))) {
+            this.#overlays.add({
+                type: 'ENTRY_SELECTED',
+                entry: selection.object,
+            });
+            this.#overlays.update();
         }
     }
     onEntrySelected(dataProvider, event) {

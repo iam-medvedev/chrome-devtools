@@ -19,8 +19,8 @@ export default {
   --override-background-list-item-color: hsl(0deg 0% 96%);
 }
 
-.-theme-with-dark-background .list,
-:host-context(.-theme-with-dark-background) .list {
+.theme-with-dark-background .list,
+:host-context(.theme-with-dark-background) .list {
   --override-background-list-item-color: hsl(0deg 0% 16%);
 }
 

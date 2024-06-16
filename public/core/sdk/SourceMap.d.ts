@@ -16,6 +16,8 @@ export type SourceMapV3Object = {
     'names'?: string[];
     'mappings': string;
     'ignoreList'?: number[];
+    'originalScopes'?: string[];
+    'generatedRanges'?: string;
     'x_google_linecount'?: number;
     'x_google_ignoreList'?: number[];
     'x_com_bloomberg_sourcesFunctionMappings'?: string[];
@@ -100,7 +102,7 @@ export declare class SourceMap {
     private eachSection;
     private parseSources;
     private parseMap;
-    private parseScopes;
+    private parseBloombergScopes;
     private buildScopeTree;
     findScopeEntry(sourceURL: Platform.DevToolsPath.UrlString, sourceLineNumber: number, sourceColumnNumber: number): ScopeEntry | null;
     private isSeparator;

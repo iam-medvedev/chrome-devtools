@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../platform/platform.js';
 import { getLocalizedString, registerUIStrings } from './i18nImpl.js';
 const UIStrings = {
     /**
@@ -40,6 +41,14 @@ export const preciseMillisToString = function (ms, precision) {
     precision = precision || 0;
     return i18nString(UIStrings.fms, { PH1: ms.toFixed(precision) });
 };
+export function formatMicroSecondsTime(time) {
+    return millisToString(Platform.Timing.microSecondsToMilliSeconds(time), true);
+}
+export function formatMicroSecondsAsSeconds(time) {
+    const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
+    const seconds = Platform.Timing.milliSecondsToSeconds(milliseconds);
+    return i18nString(UIStrings.fs, { PH1: (seconds).toFixed(2) });
+}
 export const millisToString = function (ms, higherResolution) {
     if (!isFinite(ms)) {
         return '-';

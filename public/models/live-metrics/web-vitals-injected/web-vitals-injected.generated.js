@@ -1942,12 +1942,69 @@
     });
 
     // Copyright 2024 The Chromium Authors. All rights reserved.
+    function valueToRating(score) {
+        if (score < INPThresholds[0]) {
+            return 'good';
+        }
+        if (score <= INPThresholds[1]) {
+            return 'needs-improvement';
+        }
+        return 'poor';
+    }
+    function onEachInteraction$1(callback) {
+        const eventObserver = new PerformanceObserver(list => {
+            const entries = list.getEntries();
+            const interactions = new Map();
+            const performanceEventTimings = entries.filter((entry) => 'interactionId' in entry)
+                .filter(entry => entry.interactionId);
+            for (const entry of performanceEventTimings) {
+                const interaction = interactions.get(entry.interactionId) || [];
+                interaction.push(entry);
+                interactions.set(entry.interactionId, interaction);
+            }
+            // Will report as a single interaction even if parts are in separate frames.
+            // Consider splitting by animation frame.
+            for (const [interactionId, interaction] of interactions.entries()) {
+                const longestEntry = interaction.reduce((prev, curr) => prev.duration >= curr.duration ? prev : curr);
+                const value = longestEntry.duration;
+                const firstEntryWithTarget = interaction.find(entry => entry.target);
+                callback({
+                    attribution: {
+                        interactionTargetElement: firstEntryWithTarget?.target ?? null,
+                        interactionTime: longestEntry.startTime,
+                        interactionType: longestEntry.name.startsWith('key') ? 'keyboard' : 'pointer',
+                        interactionId,
+                    },
+                    entries: interaction,
+                    rating: valueToRating(value),
+                    value,
+                });
+            }
+        });
+        eventObserver.observe({
+            type: 'first-input',
+            buffered: true,
+        });
+        eventObserver.observe({
+            type: 'event',
+            durationThreshold: 0,
+            buffered: true,
+        });
+    }
+
+    var OnEachInteraction = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        onEachInteraction: onEachInteraction$1
+    });
+
+    // Copyright 2024 The Chromium Authors. All rights reserved.
     // Use of this source code is governed by a BSD-style license that can be
     // found in the LICENSE file.
     const EVENT_BINDING_NAME = '__chromium_devtools_metrics_reporter';
 
     // Copyright 2024 The Chromium Authors. All rights reserved.
     const { onLCP, onCLS, onINP } = index;
+    const { onEachInteraction } = OnEachInteraction;
     function sendEventToDevTools(event) {
         const payload = JSON.stringify(event);
         window[EVENT_BINDING_NAME](payload);
@@ -1986,6 +2043,15 @@
             return;
         }
         sendEventToDevTools({ name: 'reset' });
+        // We want to treat bfcache navigations like a standard navigations, so emit
+        // a reset event when bfcache is restored.
+        //
+        // Metric functions will also re-emit their values using this listener's callback.
+        // To ensure this event is fired before those values are emitted, register this
+        // callback before any others.
+        onBFCacheRestore(() => {
+            sendEventToDevTools({ name: 'reset' });
+        });
         onLCP(metric => {
             const event = {
                 name: 'LCP',
@@ -2019,6 +2085,20 @@
             }
             sendEventToDevTools(event);
         }, { reportAllChanges: true });
+        onEachInteraction(interaction => {
+            const event = {
+                name: 'Interaction',
+                duration: interaction.value,
+                rating: interaction.rating,
+                interactionId: interaction.attribution.interactionId,
+                interactionType: interaction.attribution.interactionType,
+            };
+            const node = interaction.attribution.interactionTargetElement;
+            if (node) {
+                event.nodeIndex = establishNodeIndex(node);
+            }
+            sendEventToDevTools(event);
+        });
     }
     initialize();
 

@@ -7,9 +7,6 @@ import * as TraceModel from '../trace.js';
 function milliToMicro(value) {
     return TraceModel.Types.Timing.MicroSeconds(value * 1000);
 }
-function secToMicro(value) {
-    return milliToMicro(value * 1000);
-}
 describeWithEnvironment('Timing helpers', () => {
     describe('Timing conversions', () => {
         it('can convert milliseconds to microseconds', () => {
@@ -69,42 +66,6 @@ describeWithEnvironment('Timing helpers', () => {
             endTime: TraceModel.Types.Timing.Seconds(0.15),
             duration: TraceModel.Types.Timing.Seconds(0.05),
             selfTime: TraceModel.Types.Timing.Seconds(0.05),
-        });
-    });
-    describe('detectBestTimeUnit', () => {
-        it('detects microseconds', () => {
-            const time = TraceModel.Types.Timing.MicroSeconds(890);
-            assert.strictEqual(TraceModel.Helpers.Timing.detectBestTimeUnit(time), 0 /* TraceModel.Types.Timing.TimeUnit.MICROSECONDS */);
-        });
-        it('detects milliseconds', () => {
-            const time = milliToMicro(8.9122);
-            assert.strictEqual(TraceModel.Helpers.Timing.detectBestTimeUnit(time), 1 /* TraceModel.Types.Timing.TimeUnit.MILLISECONDS */);
-        });
-        it('detects seconds', () => {
-            const time = secToMicro(TraceModel.Types.Timing.Seconds(8.9134));
-            assert.strictEqual(TraceModel.Helpers.Timing.detectBestTimeUnit(time), 2 /* TraceModel.Types.Timing.TimeUnit.SECONDS */);
-        });
-        it('detects minutes', () => {
-            const time = secToMicro(TraceModel.Types.Timing.Seconds(203)); // 3 mins, 23 sec in seconds.
-            assert.strictEqual(TraceModel.Helpers.Timing.detectBestTimeUnit(time), 3 /* TraceModel.Types.Timing.TimeUnit.MINUTES */);
-        });
-    });
-    describe('formatTime', () => {
-        it('formats microseconds', () => {
-            const time = TraceModel.Types.Timing.MicroSeconds(890);
-            assert.strictEqual(TraceModel.Helpers.Timing.formatMicrosecondsTime(time), '890μs');
-        });
-        it('formats milliseconds', () => {
-            const time = milliToMicro(8.9122);
-            assert.strictEqual(TraceModel.Helpers.Timing.formatMicrosecondsTime(time), '8.912ms');
-        });
-        it('formats seconds', () => {
-            const time = secToMicro(TraceModel.Types.Timing.Seconds(8.9134));
-            assert.strictEqual(TraceModel.Helpers.Timing.formatMicrosecondsTime(time), '8.913s');
-        });
-        it('formats minutes', () => {
-            const time = secToMicro(TraceModel.Types.Timing.Seconds(203)); // 3 mins, 23 sec in seconds.
-            assert.strictEqual(TraceModel.Helpers.Timing.formatMicrosecondsTime(time), '3m 23s');
         });
     });
     describe('timeStampForEventAdjustedByClosestNavigation', () => {

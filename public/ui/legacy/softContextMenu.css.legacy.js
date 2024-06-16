@@ -21,7 +21,7 @@ export default {
   box-shadow: var(--sys-elevation-level3); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
-:host-context(.-theme-with-dark-background) .soft-context-menu {
+:host-context(.theme-with-dark-background) .soft-context-menu {
   border: none;
 }
 
@@ -121,8 +121,8 @@ export default {
   }
 
   .soft-context-menu-item.soft-context-menu-item-mouse-over,
-  .-theme-with-dark-background .soft-context-menu-item.soft-context-menu-item-mouse-over,
-  :host-context(.-theme-with-dark-background) .soft-context-menu-item.soft-context-menu-item-mouse-over {
+  .theme-with-dark-background .soft-context-menu-item.soft-context-menu-item-mouse-over,
+  :host-context(.theme-with-dark-background) .soft-context-menu-item.soft-context-menu-item-mouse-over {
     background-color: Highlight;
     color: HighlightText;
     forced-color-adjust: none;

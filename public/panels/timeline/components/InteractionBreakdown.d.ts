@@ -1,4 +1,4 @@
-import * as TraceEngine from '../../../models/trace/trace.js';
+import type * as TraceEngine from '../../../models/trace/trace.js';
 export declare class InteractionBreakdown extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;

@@ -31,44 +31,33 @@ export class LiveMetricsNextSteps extends HTMLElement {
 export class LiveMetricsView extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-live-metrics-view`;
     #shadow = this.attachShadow({ mode: 'open' });
-    #liveMetrics = new LiveMetrics.LiveMetrics();
     #lcpValue;
     #clsValue;
     #inpValue;
+    #interactions = [];
     constructor() {
         super();
         this.#render();
     }
-    #onReset = () => {
-        this.#lcpValue = undefined;
-        this.#clsValue = undefined;
-        this.#inpValue = undefined;
+    #onMetricStatus(event) {
+        this.#lcpValue = event.data.lcp;
+        this.#clsValue = event.data.cls;
+        this.#inpValue = event.data.inp;
+        this.#interactions = event.data.interactions;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-    };
-    #onLcpChange = (event) => {
-        this.#lcpValue = event.data;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-    };
-    #onClsChange = (event) => {
-        this.#clsValue = event.data;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-    };
-    #onInpChange = (event) => {
-        this.#inpValue = event.data;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-    };
+    }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [liveMetricsViewStyles];
-        this.#liveMetrics.addEventListener("reset" /* LiveMetrics.Events.Reset */, this.#onReset);
-        this.#liveMetrics.addEventListener("lcp_changed" /* LiveMetrics.Events.LCPChanged */, this.#onLcpChange);
-        this.#liveMetrics.addEventListener("cls_changed" /* LiveMetrics.Events.CLSChanged */, this.#onClsChange);
-        this.#liveMetrics.addEventListener("inp_changed" /* LiveMetrics.Events.INPChanged */, this.#onInpChange);
+        const liveMetrics = LiveMetrics.LiveMetrics.instance();
+        liveMetrics.addEventListener("status" /* LiveMetrics.Events.Status */, this.#onMetricStatus, this);
+        this.#lcpValue = liveMetrics.lcpValue;
+        this.#clsValue = liveMetrics.clsValue;
+        this.#inpValue = liveMetrics.inpValue;
+        this.#interactions = liveMetrics.interactions;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     disconnectedCallback() {
-        this.#liveMetrics.removeEventListener("reset" /* LiveMetrics.Events.Reset */, this.#onReset);
-        this.#liveMetrics.removeEventListener("lcp_changed" /* LiveMetrics.Events.LCPChanged */, this.#onLcpChange);
-        this.#liveMetrics.removeEventListener("cls_changed" /* LiveMetrics.Events.CLSChanged */, this.#onClsChange);
-        this.#liveMetrics.removeEventListener("inp_changed" /* LiveMetrics.Events.INPChanged */, this.#onInpChange);
+        LiveMetrics.LiveMetrics.instance().removeEventListener("status" /* LiveMetrics.Events.Status */, this.#onMetricStatus, this);
     }
     #renderLiveLcp(lcpValue) {
         const title = 'Largest Contentful Paint (LCP)';
@@ -89,7 +78,7 @@ export class LiveMetricsView extends HTMLElement {
         if (!inpValue) {
             return this.#renderLiveMetric(title);
         }
-        return this.#renderLiveMetric(title, i18n.TimeUtilities.millisToString(inpValue.value), inpValue.rating, inpValue.node);
+        return this.#renderLiveMetric(title, i18n.TimeUtilities.millisToString(inpValue.value), inpValue.rating);
     }
     #renderLiveMetric(title, valueStr, rating, node) {
         const ratingClass = rating || 'waiting';
@@ -114,21 +103,33 @@ export class LiveMetricsView extends HTMLElement {
         // clang-format on
     }
     #render = () => {
+        // clang-format off
         const output = html `
       <div class="live-metrics">
         <h3>Local and Field Metrics</h3>
         <div class="metric-cards">
-          <div>
+          <div id="lcp">
             ${this.#renderLiveLcp(this.#lcpValue)}
           </div>
-          <div>
+          <div id="cls">
             ${this.#renderLiveCls(this.#clsValue)}
           </div>
-          <div>
+          <div id="inp">
             ${this.#renderLiveInp(this.#inpValue)}
           </div>
         </div>
         <h3>Interactions</h3>
+        <ol class="interactions-list">
+          ${this.#interactions.map((interaction, index) => html `
+            ${index === 0 ? html `<hr class="divider">` : nothing}
+            <li class="interaction">
+              <span class="interaction-type">${interaction.interactionType}</span>
+              <span class="interaction-node">${interaction.node && until(Common.Linkifier.Linkifier.linkify(interaction.node))}</span>
+              <span class=${`interaction-duration ${interaction.rating}`}>${i18n.TimeUtilities.millisToString(interaction.duration)}</span>
+            </li>
+            <hr class="divider">
+          `)}
+        </ol>
       </div>
     `;
         LitHtml.render(output, this.#shadow, { host: this });

@@ -32,8 +32,8 @@ export default {
   color: var(--override-reason-color);
 }
 
-.-theme-with-dark-background .reason,
-:host-context(.-theme-with-dark-background) .reason {
+.theme-with-dark-background .reason,
+:host-context(.theme-with-dark-background) .reason {
   --override-reason-color: rgb(255 116 116);
 }
 `

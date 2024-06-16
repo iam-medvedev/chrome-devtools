@@ -23,6 +23,7 @@ export declare class ThreadAppender implements TrackAppender {
     headerAppended(): boolean;
     trackName(): string;
     getUrl(): string;
+    getEntries(): TraceEngine.Types.TraceEvents.TraceEventData[];
     isIgnoreListedEntry(entry: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
     private isIgnoreListedURL;
     /**

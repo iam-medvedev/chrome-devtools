@@ -58,6 +58,15 @@ interface GroupTreeNode {
     endLevel: number;
     children: GroupTreeNode[];
 }
+export interface OptionalFlameChartConfig {
+    /**
+     * The FlameChart will highlight the entry that is selected by default. In
+     * some cases (Performance Panel) we manage this ourselves with the Overlays
+     * system, so we disable the built in one.
+     */
+    selectedElementOutline?: boolean;
+    groupExpansionSetting?: Common.Settings.Setting<GroupExpansionState>;
+}
 declare const FlameChart_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -122,8 +131,9 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private entryColorsCache?;
     private totalTime?;
     private lastPopoverState;
-    constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, groupExpansionSetting?: Common.Settings.Setting<GroupExpansionState>);
+    constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, optionalConfig?: OptionalFlameChartConfig);
     willHide(): void;
+    canvasBoundingClientRect(): DOMRect | null;
     getBarHeight(): number;
     setBarHeight(value: number): void;
     setTextBaseline(value: number): void;
@@ -392,9 +402,8 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     /**
      * Returns the visibility of a level in the.
      * flame chart.
-     * Now this function is only used for tests.
      */
-    levelVisibilityForTest(level: number): boolean;
+    levelIsVisible(level: number): boolean;
     /**
      * Returns the amount of pixels a level is vertically offset in the.
      * flame chart.
@@ -556,6 +565,7 @@ export type EventTypes = {
             widthPixels: number;
             heightPixels: number;
             scrollOffsetPixels: number;
+            allGroupsCollapsed: boolean;
         };
         traceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
     };

@@ -34,6 +34,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
+import { decodeGeneratedRanges, decodeOriginalScopes, } from './SourceMapScopes.js';
 /**
  * Parses the {@link content} as JSON, ignoring BOM markers in the beginning, and
  * also handling the CORB bypass prefix correctly.
@@ -108,6 +109,10 @@ export class SourceMap {
     #baseURL;
     #mappingsInternal;
     #sourceInfos;
+    /* eslint-disable-next-line no-unused-private-class-members */
+    #originalScopes = null;
+    /* eslint-disable-next-line no-unused-private-class-members */
+    #generatedRanges = null;
     /**
      * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
      * for format description.
@@ -394,10 +399,11 @@ export class SourceMap {
             this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
         }
         if (Root.Runtime.experiments.isEnabled("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */)) {
-            this.parseScopes(map);
+            this.parseBloombergScopes(map);
+            this.#parseScopes(map);
         }
     }
-    parseScopes(map) {
+    parseBloombergScopes(map) {
         if (!map.x_com_bloomberg_sourcesFunctionMappings) {
             return;
         }
@@ -470,6 +476,15 @@ export class SourceMap {
             stack.push(entry);
         }
         return toplevel;
+    }
+    #parseScopes(map) {
+        if (!map.originalScopes || !map.generatedRanges) {
+            return;
+        }
+        const names = map.names ?? [];
+        const scopeTrees = decodeOriginalScopes(map.originalScopes, names);
+        this.#originalScopes = scopeTrees.map(tree => tree.root);
+        this.#generatedRanges = decodeGeneratedRanges(map.generatedRanges, scopeTrees, names);
     }
     findScopeEntry(sourceURL, sourceLineNumber, sourceColumnNumber) {
         const sourceInfo = this.#sourceInfos.get(sourceURL);
