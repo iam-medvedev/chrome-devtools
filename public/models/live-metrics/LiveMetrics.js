@@ -75,6 +75,32 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         const remoteObject = runtimeModel.createRemoteObject(result);
         return domModel.pushObjectAsNodeToFrontend(remoteObject);
     }
+    async #refreshNode(domModel, node) {
+        const backendNodeId = node.backendNodeId();
+        const nodes = await domModel.pushNodesByBackendIdsToFrontend(new Set([backendNodeId]));
+        return nodes?.get(backendNodeId) || undefined;
+    }
+    /**
+     * If there is a document update then any node handles we have already resolved will be invalid.
+     * This function should re-resolve any relevant DOM nodes after a document update.
+     */
+    async #onDocumentUpdate(event) {
+        const domModel = event.data;
+        if (this.lcpValue?.node) {
+            this.lcpValue.node = await this.#refreshNode(domModel, this.lcpValue.node);
+        }
+        for (const interaction of this.interactions) {
+            if (interaction.node) {
+                interaction.node = await this.#refreshNode(domModel, interaction.node);
+            }
+        }
+        this.dispatchEventToListeners("status" /* Events.Status */, {
+            lcp: this.#lcpValue,
+            cls: this.#clsValue,
+            inp: this.#inpValue,
+            interactions: this.#interactions,
+        });
+    }
     async #handleWebVitalsEvent(webVitalsEvent, executionContextId) {
         switch (webVitalsEvent.name) {
             case 'LCP': {
@@ -103,22 +129,14 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                 const inpEvent = {
                     value: webVitalsEvent.value,
                     rating: webVitalsEvent.rating,
-                    interactionType: webVitalsEvent.interactionType,
                 };
-                if (webVitalsEvent.nodeIndex !== undefined) {
-                    const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
-                    if (node) {
-                        inpEvent.node = node;
-                    }
-                }
                 this.#inpValue = inpEvent;
                 break;
             }
             case 'Interaction': {
-                const { nodeIndex, ...rest } = webVitalsEvent;
-                const interactionEvent = rest;
-                if (nodeIndex !== undefined) {
-                    const node = await this.#resolveDomNode(nodeIndex, executionContextId);
+                const interactionEvent = webVitalsEvent;
+                if (webVitalsEvent.nodeIndex !== undefined) {
+                    const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
                     if (node) {
                         interactionEvent.node = node;
                     }
@@ -178,6 +196,11 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         if (this.#target) {
             return;
         }
+        const domModel = target.model(SDK.DOMModel.DOMModel);
+        if (!domModel) {
+            return;
+        }
+        domModel.addEventListener(SDK.DOMModel.Events.DocumentUpdated, this.#onDocumentUpdate, this);
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
         if (!runtimeModel) {
             return;
@@ -201,18 +224,21 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         const runtimeModel = this.#target.model(SDK.RuntimeModel.RuntimeModel);
-        if (!runtimeModel) {
-            return;
+        if (runtimeModel) {
+            await runtimeModel.removeBinding({
+                name: Spec.EVENT_BINDING_NAME,
+            });
+            runtimeModel.removeEventListener(SDK.RuntimeModel.Events.BindingCalled, this.#onBindingCalled, this);
+        }
+        const domModel = this.#target.model(SDK.DOMModel.DOMModel);
+        if (domModel) {
+            domModel.removeEventListener(SDK.DOMModel.Events.DocumentUpdated, this.#onDocumentUpdate, this);
         }
         if (this.#scriptIdentifier) {
             await this.#target.pageAgent().invoke_removeScriptToEvaluateOnNewDocument({
                 identifier: this.#scriptIdentifier,
             });
         }
-        await runtimeModel.removeBinding({
-            name: Spec.EVENT_BINDING_NAME,
-        });
-        runtimeModel.removeEventListener(SDK.RuntimeModel.Events.BindingCalled, this.#onBindingCalled, this);
         this.#target = undefined;
     }
 }

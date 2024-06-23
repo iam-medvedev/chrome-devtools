@@ -108,6 +108,10 @@ styles.replaceSync(
   column-width: initial;
   overflow: hidden;
   padding-right: 10px;
+
+  > devtools-button {
+    margin: 0 0 3px 5px;
+  }
 }
 
 /*# sourceURL=workspaceSettingsTab.css */

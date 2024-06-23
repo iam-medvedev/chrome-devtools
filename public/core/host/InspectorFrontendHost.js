@@ -319,11 +319,10 @@ export class InspectorFrontendHostStub {
                 enabled: false,
                 optIn: false,
             },
-            devToolsConsoleInsightsDogfood: {
+            devToolsFreestylerDogfood: {
                 aidaModelId: '',
                 aidaTemperature: 0,
                 enabled: false,
-                optIn: false,
             },
         });
     }

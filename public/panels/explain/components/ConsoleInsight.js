@@ -174,12 +174,8 @@ const REPORT_URL = 'https://support.google.com/legal/troubleshooter/1114905?hl=e
 const CHROME_SETTINGS_URL = 'chrome://settings';
 export class ConsoleInsight extends HTMLElement {
     static async create(promptBuilder, aidaClient) {
-        const syncData = await new Promise(resolve => {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
-                resolve(syncInfo);
-            });
-        });
-        return new ConsoleInsight(promptBuilder, aidaClient, syncData);
+        const aidaAvailability = await Host.AidaClient.AidaClient.getAidaClientAvailability();
+        return new ConsoleInsight(promptBuilder, aidaClient, aidaAvailability);
     }
     static litTagName = LitHtml.literal `devtools-console-insight`;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -190,34 +186,33 @@ export class ConsoleInsight extends HTMLElement {
     #state;
     // Rating sub-form state.
     #selectedRating;
-    constructor(promptBuilder, aidaClient, syncInfo) {
+    constructor(promptBuilder, aidaClient, aidaAvailability) {
         super();
         this.#promptBuilder = promptBuilder;
         this.#aidaClient = aidaClient;
-        this.#state = {
-            type: "not-logged-in" /* State.NOT_LOGGED_IN */,
-        };
-        if (syncInfo?.accountEmail && syncInfo.isSyncActive) {
-            this.#state = {
-                type: "loading" /* State.LOADING */,
-                consentReminderConfirmed: false,
-                consentOnboardingFinished: this.#getOnboardingCompletedSetting().get(),
-            };
-        }
-        else if (!syncInfo?.accountEmail) {
-            this.#state = {
-                type: "not-logged-in" /* State.NOT_LOGGED_IN */,
-            };
-        }
-        else if (!syncInfo?.isSyncActive) {
-            this.#state = {
-                type: "sync-is-off" /* State.SYNC_IS_OFF */,
-            };
-        }
-        if (!navigator.onLine) {
-            this.#state = {
-                type: "offline" /* State.OFFLINE */,
-            };
+        switch (aidaAvailability) {
+            case Host.AidaClient.AidaAvailability.AVAILABLE:
+                this.#state = {
+                    type: "loading" /* State.LOADING */,
+                    consentReminderConfirmed: false,
+                    consentOnboardingFinished: this.#getOnboardingCompletedSetting().get(),
+                };
+                break;
+            case Host.AidaClient.AidaAvailability.NO_ACCOUNT_EMAIL:
+                this.#state = {
+                    type: "not-logged-in" /* State.NOT_LOGGED_IN */,
+                };
+                break;
+            case Host.AidaClient.AidaAvailability.NO_ACTIVE_SYNC:
+                this.#state = {
+                    type: "sync-is-off" /* State.SYNC_IS_OFF */,
+                };
+                break;
+            case Host.AidaClient.AidaAvailability.NO_INTERNET:
+                this.#state = {
+                    type: "offline" /* State.OFFLINE */,
+                };
+                break;
         }
         this.#render();
         // Stop keyboard event propagation to avoid Console acting on the events

@@ -18,6 +18,8 @@ styles.replaceSync(
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .metric-cards {
@@ -79,6 +81,9 @@ styles.replaceSync(
 
 .interactions-list {
   padding: 0;
+  overflow: auto;
+  flex-grow: 1;
+  min-height: 100px;
 }
 
 .interaction {

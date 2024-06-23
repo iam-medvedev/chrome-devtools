@@ -89,6 +89,10 @@ h1 {
   margin-left: 3px;
 }
 
+.keybinds-shortcut .devtools-link {
+  padding: 4px 0;
+}
+
 .keybinds-info .devtools-link {
   padding-top: 6px;
 }

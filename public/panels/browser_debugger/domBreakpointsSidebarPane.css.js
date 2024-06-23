@@ -32,10 +32,6 @@ styles.replaceSync(
   background-color: var(--sys-color-tonal-container);
 }
 
-.breakpoint-list .breakpoint-entry:not(:focus-visible):hover {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
 .breakpoint-hit {
   background-color: var(--sys-color-neutral-container);
   color: var(--sys-color-on-surface);

@@ -78,6 +78,22 @@ export function stopLogging() {
     pendingResize.clear();
     pendingChange.clear();
 }
+export function pendingWorkComplete() {
+    return Promise
+        .all([
+        processingThrottler,
+        keyboardLogThrottler,
+        hoverLogThrottler,
+        dragLogThrottler,
+        clickLogThrottler,
+        resizeLogThrottler,
+    ].map(async (throttler) => {
+        while (throttler.process) {
+            await throttler.processCompleted;
+        }
+    }))
+        .then(() => { });
+}
 async function yieldToInteractions() {
     while (clickLogThrottler.process) {
         await clickLogThrottler.processCompleted;

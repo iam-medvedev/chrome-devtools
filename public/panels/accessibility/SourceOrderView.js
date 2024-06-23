@@ -44,8 +44,8 @@ export class SourceOrderPane extends AccessibilitySubPane {
         this.warning = this.createInfo(i18nString(UIStrings.thereMayBeADelayInDisplaying));
         this.warning.id = 'source-order-warning';
         this.checked = false;
-        this.checkboxLabel =
-            UI.UIUtils.CheckboxLabel.create(/* title */ i18nString(UIStrings.showSourceOrder), /* checked */ false);
+        this.checkboxLabel = UI.UIUtils.CheckboxLabel.create(
+        /* title */ i18nString(UIStrings.showSourceOrder), /* checked */ false);
         this.checkboxElement = this.checkboxLabel.checkboxElement;
         this.checkboxLabel.classList.add('source-order-checkbox');
         this.checkboxLabel.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true })}`);

@@ -26,7 +26,7 @@ export declare function handleEvent(event: Types.TraceEvents.TraceEventData): vo
 export declare function finalize(): Promise<void>;
 export declare function data(): LayoutShifts;
 export declare function deps(): TraceEventHandlerName[];
-export declare function stateForLayoutShiftScore(score: number): ScoreClassification;
+export declare function scoreClassificationForLayoutShift(score: number): ScoreClassification;
 export interface LayoutShiftCluster {
     clusterWindow: Types.Timing.TraceWindowMicroSeconds;
     clusterCumulativeScore: number;

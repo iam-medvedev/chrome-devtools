@@ -30,7 +30,8 @@ export class AnimationsTrackAppender {
     }
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
         const style = buildGroupStyle({ useFirstLineForOverview: false });
-        const group = buildTrackHeader(currentLevel, i18nString(UIStrings.animations), style, /* selectable= */ true, expanded);
+        const group = buildTrackHeader("animations" /* VisualLoggingTrackName.ANIMATIONS */, currentLevel, i18nString(UIStrings.animations), style, 
+        /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }
     colorForEvent() {

@@ -1,5 +1,6 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Platform from '../platform/platform.js';
+import { type CallFrame } from './DebuggerModel.js';
 /**
  * Type of the base source map JSON object, which contains the sources and the mappings at the very least, plus
  * some additional fields.
@@ -87,7 +88,8 @@ export declare class SourceMap {
     url(): Platform.DevToolsPath.UrlString;
     sourceURLs(): Platform.DevToolsPath.UrlString[];
     embeddedContentByURL(sourceURL: Platform.DevToolsPath.UrlString): string | null;
-    findEntry(lineNumber: number, columnNumber: number): SourceMapEntry | null;
+    hasScopeInfo(): boolean;
+    findEntry(lineNumber: number, columnNumber: number, inlineFrameIndex?: number): SourceMapEntry | null;
     findEntryRanges(lineNumber: number, columnNumber: number): {
         range: TextUtils.TextRange.TextRange;
         sourceRange: TextUtils.TextRange.TextRange;
@@ -141,6 +143,7 @@ export declare class SourceMap {
      *          for it.
      */
     compatibleForURL(sourceURL: Platform.DevToolsPath.UrlString, other: SourceMap): boolean;
+    expandCallFrame(frame: CallFrame): CallFrame[];
 }
 export declare class TokenIterator {
     #private;

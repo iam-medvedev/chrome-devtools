@@ -26,7 +26,14 @@ export interface AidaResponse {
         rpcGlobalId?: number;
     };
 }
+export declare enum AidaAvailability {
+    AVAILABLE = "available",
+    NO_ACCOUNT_EMAIL = "no-account-email",
+    NO_ACTIVE_SYNC = "no-active-sync",
+    NO_INTERNET = "no-internet"
+}
 export declare class AidaClient {
     static buildConsoleInsightsRequest(input: string): AidaRequest;
+    static getAidaClientAvailability(): Promise<AidaAvailability>;
     fetch(request: AidaRequest): AsyncGenerator<AidaResponse, void, void>;
 }

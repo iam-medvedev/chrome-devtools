@@ -5,7 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { FreestylerEvaluateAction } from './FreestylerEvaluateAction.js';
+import { ExecutionError, FreestylerEvaluateAction } from './FreestylerEvaluateAction.js';
 const preamble = `You are a CSS debugging agent integrated into Chrome DevTools.
 You are going to receive a query about the CSS on the page and you are going to answer to this query in these steps:
 * THOUGHT
@@ -48,6 +48,7 @@ export var Step;
     Step["THOUGHT"] = "thought";
     Step["ACTION"] = "action";
     Step["ANSWER"] = "answer";
+    Step["ERROR"] = "error";
 })(Step || (Step = {}));
 async function executeJsCode(code) {
     const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
@@ -66,13 +67,24 @@ async function executeJsCode(code) {
     if (!executionContext) {
         throw new Error('Execution context is not found for executing code');
     }
-    return FreestylerEvaluateAction.execute(code, executionContext);
+    try {
+        return await FreestylerEvaluateAction.execute(code, executionContext);
+    }
+    catch (err) {
+        if (err instanceof ExecutionError) {
+            return `Error: ${err.message}`;
+        }
+        throw err;
+    }
 }
 const MAX_STEPS = 5;
 export class FreestylerAgent {
     #aidaClient;
-    constructor({ aidaClient }) {
+    #chatHistory = [];
+    #execJs;
+    constructor({ aidaClient, execJs }) {
         this.#aidaClient = aidaClient;
+        this.#execJs = execJs ?? executeJsCode;
     }
     static buildRequest(input, preamble, chatHistory) {
         const config = Common.Settings.Settings.instance().getHostConfig();
@@ -83,11 +95,8 @@ export class FreestylerAgent {
             chat_history: chatHistory,
             client: 'CHROME_DEVTOOLS',
             options: {
-                // TODO: have a config for temperature
-                temperature: 0,
-                // TODO: have a separate config for modelId
-                model_id: config?.devToolsConsoleInsightsDogfood.aidaModelId ?? config?.devToolsConsoleInsights.aidaModelId ??
-                    undefined,
+                temperature: config?.devToolsFreestylerDogfood.aidaTemperature ?? 0,
+                model_id: config?.devToolsFreestylerDogfood.aidaModelId ?? undefined,
             },
             metadata: {
                 // TODO: enable logging later.
@@ -95,6 +104,9 @@ export class FreestylerAgent {
             },
         };
         return request;
+    }
+    get chatHistoryForTesting() {
+        return this.#chatHistory;
     }
     static parseResponse(response) {
         const lines = response.split('\n');
@@ -113,12 +125,15 @@ export class FreestylerAgent {
                 const actionLines = [];
                 let j = i + 1;
                 while (j < lines.length && lines[j].trim() !== 'STOP') {
-                    actionLines.push(lines[j]);
+                    // Sometimes the code block is in the form of "`````\njs\n{code}`````"
+                    if (lines[j].trim() !== 'js') {
+                        actionLines.push(lines[j]);
+                    }
                     j++;
                 }
                 // TODO: perhaps trying to parse with a Markdown parser would
                 // yield more reliable results.
-                action = actionLines.join('\n').replaceAll('```', '').trim();
+                action = actionLines.join('\n').replaceAll('```', '').replaceAll('``', '').trim();
                 i = j + 1;
             }
             else if (trimmed.startsWith('ANSWER:') && !answer) {
@@ -144,57 +159,66 @@ export class FreestylerAgent {
         return { thought, action, answer };
     }
     async #aidaFetch(request) {
-        let result;
+        let response = '';
+        let rpcId;
         for await (const lastResult of this.#aidaClient.fetch(request)) {
-            result = lastResult.explanation;
+            response = lastResult.explanation;
+            rpcId = lastResult.metadata.rpcGlobalId ?? rpcId;
         }
-        return result ?? '';
+        return { response, rpcId };
     }
-    async run(query, onStep) {
+    resetHistory() {
+        this.#chatHistory = [];
+    }
+    async *run(query) {
         const structuredLog = [];
-        const chatHistory = [];
         query = `QUERY: ${query}`;
         for (let i = 0; i < MAX_STEPS; i++) {
-            const request = FreestylerAgent.buildRequest(query, preamble, chatHistory.length ? chatHistory : undefined);
-            const response = await this.#aidaFetch(request);
-            debugLog(`Iteration: ${i}: ${JSON.stringify(request)}\n${response}`);
+            const request = FreestylerAgent.buildRequest(query, preamble, this.#chatHistory.length ? this.#chatHistory : undefined);
+            let response;
+            let rpcId;
+            try {
+                const fetchResult = await this.#aidaFetch(request);
+                response = fetchResult.response;
+                rpcId = fetchResult.rpcId;
+            }
+            catch (err) {
+                yield { step: Step.ERROR, text: err.message, rpcId };
+                break;
+            }
+            debugLog(`Iteration: ${i}`, 'Request', request, 'Response', response);
             structuredLog.push({
-                request: request,
+                request: structuredClone(request),
                 response: response,
             });
-            chatHistory.push({
+            this.#chatHistory.push({
                 text: query,
-                entity: i === 0 ? Host.AidaClient.Entity.USER : Host.AidaClient.Entity.SYSTEM,
+                entity: Host.AidaClient.Entity.USER,
+            }, {
+                text: response,
+                entity: Host.AidaClient.Entity.SYSTEM,
             });
             const { thought, action, answer } = FreestylerAgent.parseResponse(response);
             if (!thought && !action && !answer) {
-                onStep({ step: Step.ANSWER, text: 'Sorry, I could not help you with this query.' });
+                yield { step: Step.ANSWER, text: 'Sorry, I could not help you with this query.', rpcId };
                 break;
             }
             if (answer) {
-                onStep({ step: Step.ANSWER, text: answer });
-                chatHistory.push({
-                    text: `ANSWER: ${answer}`,
-                    entity: Host.AidaClient.Entity.SYSTEM,
-                });
+                yield { step: Step.ANSWER, text: answer, rpcId };
                 break;
             }
             if (thought) {
-                onStep({ step: Step.THOUGHT, text: thought });
-                chatHistory.push({
-                    text: `THOUGHT: ${thought}`,
-                    entity: Host.AidaClient.Entity.SYSTEM,
-                });
+                yield { step: Step.THOUGHT, text: thought, rpcId };
             }
             if (action) {
-                chatHistory.push({
-                    text: `ACTION\n${action}\nSTOP`,
-                    entity: Host.AidaClient.Entity.SYSTEM,
-                });
-                const observation = await executeJsCode(`{${action};data}`);
-                debugLog(`Executed action: ${action}\nResult: ${observation}`);
-                onStep({ step: Step.ACTION, code: action, output: observation });
+                debugLog(`Action to execute: ${action}`);
+                const observation = await this.#execJs(`{${action};((typeof data !== "undefined") ? data : undefined)}`);
+                debugLog(`Action result: ${observation}`);
+                yield { step: Step.ACTION, code: action, output: observation, rpcId };
                 query = `OBSERVATION: ${observation}`;
+            }
+            if (i === MAX_STEPS - 1) {
+                yield { step: Step.ERROR, text: 'Max steps reached, please try again.' };
             }
         }
         if (isDebugMode()) {
@@ -206,12 +230,12 @@ export class FreestylerAgent {
 function isDebugMode() {
     return Boolean(localStorage.getItem('debugFreestylerEnabled'));
 }
-function debugLog(log) {
+function debugLog(...log) {
     if (!isDebugMode()) {
         return;
     }
     // eslint-disable-next-line no-console
-    console.log(log);
+    console.log(...log);
 }
 function setDebugFreestylerEnabled(enabled) {
     if (enabled) {

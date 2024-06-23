@@ -218,6 +218,17 @@ export class JavaScriptFormatter {
                 return node.id ? 'ts' : 't';
             }
         }
+        else if (nodeType === 'ArrowFunctionExpression') {
+            if (AT.punctuator(token, ',)')) {
+                return 'ts';
+            }
+            if (AT.punctuator(token, '(')) {
+                return 'st';
+            }
+            if (AT.arrowIdentifier(token, '=>')) {
+                return 'sts';
+            }
+        }
         else if (nodeType === 'WithStatement') {
             if (AT.punctuator(token, ')')) {
                 return node.body && node.body.type === 'BlockStatement' ? 'ts' : 'tn>';

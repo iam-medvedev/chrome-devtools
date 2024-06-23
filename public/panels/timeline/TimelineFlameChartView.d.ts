@@ -23,6 +23,8 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private readonly countersView;
     private readonly detailsSplitWidget;
     private readonly detailsView;
+    private readonly onMainAnnotateEntry;
+    private readonly onNetworkAnnotateEntry;
     private readonly onMainEntrySelected;
     private readonly onNetworkEntrySelected;
     private readonly groupBySetting;
@@ -52,6 +54,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     wasShown(): void;
     updateCountersGraphToggle(showMemoryGraph: boolean): void;
     setSelection(selection: TimelineSelection | null): void;
+    private onAnnotateEntry;
     private onEntrySelected;
     resizeToPreferredHeights(): void;
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
@@ -92,3 +95,8 @@ export declare class TimelineFlameChartMarker implements PerfUI.FlameChart.Flame
 export declare const enum ColorBy {
     URL = "URL"
 }
+/**
+ * Find the Group that contains the provided level, or `null` if no group is
+ * found.
+ */
+export declare function groupForLevel(groups: PerfUI.FlameChart.Group[], level: number): PerfUI.FlameChart.Group | null;

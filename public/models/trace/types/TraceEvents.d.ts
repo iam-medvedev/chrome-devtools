@@ -925,6 +925,55 @@ export interface TraceEventTimeStamp extends TraceEventData {
         };
     };
 }
+export interface TraceEventTargetRundown extends TraceEventData {
+    cat: 'disabled-by-default-devtools.target-rundown';
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            frame: string;
+            frameType: string;
+            url: string;
+            isolate: string;
+            v8context: string;
+            origin: string;
+            scriptId: number;
+            isDefault?: boolean;
+            contextType?: string;
+        };
+    };
+}
+export declare function isTraceEventTargetRundown(traceEventData: TraceEventData): traceEventData is TraceEventTargetRundown;
+export interface TraceEventScriptRundown extends TraceEventData {
+    cat: 'disabled-by-default-devtools.v8-source-rundown';
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            isolate: string;
+            executionContextId: number;
+            scriptId: number;
+            startLine: number;
+            startColumn: number;
+            endLine: number;
+            endColumn: number;
+            url: string;
+            hash: string;
+            isModule: boolean;
+            hasSourceUrl: boolean;
+            sourceMapUrl?: string;
+        };
+    };
+}
+export declare function isTraceEventScriptRundown(traceEventData: TraceEventData): traceEventData is TraceEventScriptRundown;
+export interface TraceEventScriptRundownSource extends TraceEventData {
+    cat: 'disabled-by-default-devtools.v8-source-rundown-sources';
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            isolate: string;
+            scriptId: number;
+            length?: number;
+            sourceText?: string;
+        };
+    };
+}
+export declare function isTraceEventScriptRundownSource(traceEventData: TraceEventData): traceEventData is TraceEventScriptRundownSource;
 /** ChromeFrameReporter args for PipelineReporter event.
     Matching proto: https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/trace/track_event/chrome_frame_reporter.proto
  */

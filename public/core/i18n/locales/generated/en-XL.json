@@ -6446,6 +6446,21 @@
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ûṕd̂át̂é ŷóûŕ L̂án̂ǵûáĝé p̂ŕêf́êŕêńĉé îń D̂év̂T́ôól̂ś Ŝét̂t́îńĝś t̂ó Êńĝĺîśĥ."
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | acceptButtonTitle": {
+    "message": "Âćĉép̂t́"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | consentScreenHeading": {
+    "message": "T̂h́îńĝś t̂ó ĉón̂śîd́êŕ"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | consentTextAiDisclaimer": {
+    "message": "T̂h́îś f̂éât́ûŕê úŝéŝ ÁÎ án̂d́ ŵón̂'t́ âĺŵáŷś ĝét̂ ít̂ ŕîǵĥt́."
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | consentTextDataDisclaimer": {
+    "message": "Ŷóûŕ îńp̂út̂ś âńd̂ t́ĥé îńf̂ór̂ḿât́îón̂ f́r̂óm̂ t́ĥé p̂áĝé ŷóû ár̂é ûśîńĝ t́ĥíŝ f́êát̂úr̂é f̂ór̂ ár̂é ŝén̂t́ t̂ó Ĝóôǵl̂é."
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | consentTextVisibilityDisclaimer": {
+    "message": "D̂át̂á m̂áŷ b́ê śêén̂ b́ŷ t́r̂áîńêd́ r̂év̂íêẃêŕŝ t́ô ím̂ṕr̂óv̂é t̂h́îś f̂éât́ûŕê."
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | emptyStateText": {
     "message": "Ĥóŵ ćâń Î h́êĺp̂ ýôú?"
   },
@@ -6453,13 +6468,34 @@
     "message": "F̂ŕêéŝt́ŷĺêŕ m̂áŷ d́îśp̂ĺâý îńâćĉúr̂át̂é îńf̂ór̂ḿât́îón̂ án̂d́ m̂áŷ ńôt́ ĝét̂ ít̂ ŕîǵĥt́"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | inputPlaceholder": {
-    "message": "Âśk̂ F́r̂éêśt̂ýl̂ér̂ ór̂ t́ŷṕê / f́ôŕ ĉóm̂ḿâńd̂ś"
+    "message": "Âśk̂ á q̂úêśt̂íôń âb́ôút̂ t́ĥé ŝél̂éĉt́êd́ êĺêḿêńt̂"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | notLoggedIn": {
+    "message": "T̂h́îś f̂éât́ûŕê íŝ ón̂ĺŷ áv̂áîĺâb́l̂é ŵh́êń ŷóû śîǵn̂ ín̂t́ô Ćĥŕôḿê ẃît́ĥ ýôúr̂ Ǵôóĝĺê áĉćôún̂t́."
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | offline": {
+    "message": "Ĉh́êćk̂ ýôúr̂ ín̂t́êŕn̂ét̂ ćôńn̂éĉt́îón̂ án̂d́ t̂ŕŷ áĝáîń."
   },
   "panels/freestyler/components/FreestylerChatUi.ts | selectAnElement": {
     "message": "Ŝél̂éĉt́ âń êĺêḿêńt̂"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | sendButtonTitle": {
     "message": "Ŝén̂d́"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | syncIsOff": {
+    "message": "T̂h́îś f̂éât́ûŕê ŕêq́ûír̂éŝ ýôú t̂ó t̂úr̂ń ôń Ĉh́r̂óm̂é ŝýn̂ć."
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | thumbsDown": {
+    "message": "T̂h́ûḿb̂ś d̂óŵń"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | thumbsUp": {
+    "message": "T̂h́ûḿb̂ś ûṕ"
+  },
+  "panels/freestyler/freestyler-meta.ts | askFreestyler": {
+    "message": "Âśk̂ F́r̂éêśt̂ýl̂ér̂"
+  },
+  "panels/freestyler/freestyler-meta.ts | enableFreestyler": {
+    "message": "Êńâb́l̂é F̂ŕêéŝt́ŷĺêŕ"
   },
   "panels/freestyler/freestyler-meta.ts | freestyler": {
     "message": "F̂ŕêéŝt́ŷĺêŕ"
@@ -6469,6 +6505,9 @@
   },
   "panels/freestyler/FreestylerPanel.ts | clearMessages": {
     "message": "Ĉĺêár̂ ḿêśŝáĝéŝ"
+  },
+  "panels/freestyler/FreestylerPanel.ts | help": {
+    "message": "Ĥél̂ṕ"
   },
   "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
     "message": "Ŝén̂d́ f̂éêd́b̂áĉḱ"
@@ -12892,6 +12931,12 @@
   },
   "panels/timeline/TimelinePanel.ts | enableSelectorStats": {
     "message": "Êńâb́l̂é ĈŚŜ śêĺêćt̂ór̂ śt̂át̂ś (ŝĺôẃ)"
+  },
+  "panels/timeline/TimelinePanel.ts | exportEnhancedTraces": {
+    "message": "Êńĥán̂ćêd́ P̂ér̂f́ôŕm̂án̂ćê T́r̂áĉéŝ"
+  },
+  "panels/timeline/TimelinePanel.ts | exportNormalTraces": {
+    "message": "B̂áŝíĉ Ṕêŕf̂ór̂ḿâńĉé T̂ŕâćêś"
   },
   "panels/timeline/TimelinePanel.ts | failedToSaveTimelineSS": {
     "message": "F̂áîĺêd́ t̂ó ŝáv̂é t̂ím̂él̂ín̂é: {PH1} ({PH2})"

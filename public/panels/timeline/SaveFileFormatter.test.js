@@ -35,6 +35,7 @@ describe('SaveFileFormatter', () => {
                 networkThrottling: '4',
                 cpuThrottling: 1,
                 hardwareConcurrency: 1,
+                enhancedTraceVersion: 1,
             };
             const formatted = Array.from(Timeline.SaveFileFormatter.traceJsonGenerator(events, metadata)).join('');
             assertValidJSON(formatted);
@@ -43,7 +44,8 @@ describe('SaveFileFormatter', () => {
   "startTime": "1234",
   "networkThrottling": "4",
   "cpuThrottling": 1,
-  "hardwareConcurrency": 1
+  "hardwareConcurrency": 1,
+  "enhancedTraceVersion": 1
 },
 "traceEvents": [
   {"name":"event_one","tid":0,"pid":0,"ts":0,"cat":"test","ph":"M"},

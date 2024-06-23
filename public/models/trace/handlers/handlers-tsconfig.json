@@ -31,6 +31,7 @@
   "files": [
     "../../../../../../../front_end/models/trace/handlers/AnimationHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/AuctionWorkletsHandler.ts",
+    "../../../../../../../front_end/models/trace/handlers/EnhancedTracesHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/ExtensionTraceDataHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/FramesHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/GPUHandler.ts",
@@ -59,7 +60,6 @@
     "../../../../../../../front_end/models/trace/handlers/types.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../../front_end/global_typings/request_idle_callback.d.ts",
     "../../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [

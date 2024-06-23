@@ -170,7 +170,7 @@ export class CompilerScriptMapping {
         if (!project) {
             return null;
         }
-        const entry = sourceMap.findEntry(lineNumber, columnNumber);
+        const entry = sourceMap.findEntry(lineNumber, columnNumber, rawLocation.inlineFrameIndex);
         if (!entry || !entry.sourceURL) {
             return null;
         }

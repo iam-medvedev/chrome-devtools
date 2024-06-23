@@ -1045,7 +1045,7 @@ export class CheckboxLabel extends HTMLSpanElement {
         this.textElement.setAttribute('for', id);
         this.shadowRootInternal.createChild('slot');
     }
-    static create(title, checked, subtitle, jslogContext) {
+    static create(title, checked, subtitle, jslogContext, small) {
         if (!CheckboxLabel.constructorInternal) {
             CheckboxLabel.constructorInternal = registerCustomElement('span', 'dt-checkbox', CheckboxLabel);
         }
@@ -1061,6 +1061,7 @@ export class CheckboxLabel extends HTMLSpanElement {
                 element.textElement.createChild('div', 'dt-checkbox-subtitle').textContent = subtitle;
             }
         }
+        element.checkboxElement.classList.toggle('small', small);
         return element;
     }
     static lastId = 0;

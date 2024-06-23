@@ -39,9 +39,9 @@
   "files": [
     "../../../../../../front_end/panels/freestyler/FreestylerAgent.test.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerEvaluateAction.test.ts",
+    "../../../../../../front_end/panels/freestyler/FreestylerPanel.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../front_end/global_typings/request_idle_callback.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [
@@ -53,6 +53,9 @@
     },
     {
       "path": "../../core/host/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
       "path": "../../core/sdk/bundle-tsconfig.json"

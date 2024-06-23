@@ -79,6 +79,10 @@ export default {
 
 .report-row {
   margin: 10px 0 2px 18px;
+
+  &:has(span[is="dt-checkbox"]) {
+    margin-top: 7px;
+  }
 }
 
 .report-field-name {

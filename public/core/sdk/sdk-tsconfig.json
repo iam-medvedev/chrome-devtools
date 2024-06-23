@@ -99,6 +99,7 @@
     "../../../../../../front_end/core/sdk/SourceMap.ts",
     "../../../../../../front_end/core/sdk/SourceMapManager.ts",
     "../../../../../../front_end/core/sdk/SourceMapScopes.ts",
+    "../../../../../../front_end/core/sdk/SourceMapScopesInfo.ts",
     "../../../../../../front_end/core/sdk/StorageBucketsModel.ts",
     "../../../../../../front_end/core/sdk/StorageKeyManager.ts",
     "../../../../../../front_end/core/sdk/Target.ts",
@@ -106,7 +107,6 @@
     "../../../../../../front_end/core/sdk/WebAuthnModel.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../front_end/global_typings/request_idle_callback.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [

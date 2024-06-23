@@ -19,10 +19,38 @@ class MockViewDelegate {
     }
     highlightEvent(_event) {
     }
+    element = document.createElement('div');
 }
 describeWithEnvironment('TimelineFlameChartView', function () {
     beforeEach(() => {
         setupIgnoreListManagerEnvironment();
+    });
+    describe('groupForLevel', () => {
+        const { groupForLevel } = Timeline.TimelineFlameChartView;
+        it('finds the right group for the given level', async () => {
+            const groups = [
+                {
+                    name: 'group-1',
+                    startLevel: 0,
+                    style: {},
+                },
+                {
+                    name: 'group-2',
+                    startLevel: 10,
+                    style: {},
+                },
+                {
+                    name: 'group-3',
+                    startLevel: 12,
+                    style: {},
+                },
+            ];
+            assert.strictEqual(groupForLevel(groups, 1), groups[0]);
+            assert.strictEqual(groupForLevel(groups, 10), groups[1]);
+            assert.strictEqual(groupForLevel(groups, 11), groups[1]);
+            assert.strictEqual(groupForLevel(groups, 12), groups[2]);
+            assert.strictEqual(groupForLevel(groups, 999), groups[2]);
+        });
     });
     it('Can search for events by name in the timeline', async function () {
         const traceParsedData = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');

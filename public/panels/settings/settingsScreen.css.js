@@ -96,7 +96,7 @@ label {
 }
 
 .settings-tab p {
-  margin: 12px 0;
+  margin: 6px 0;
 }
 
 .settings-block p p {

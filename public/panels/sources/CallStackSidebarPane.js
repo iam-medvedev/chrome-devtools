@@ -190,10 +190,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         const itemPromises = [];
         const uniqueWarnings = new Set();
         for (const frame of details.callFrames) {
-            const itemPromise = Item.createForDebuggerCallFrame(frame, this.locationPool, this.refreshItem.bind(this)).then(item => {
-                itemToCallFrame.set(item, frame);
-                return item;
-            });
+            const itemPromise = Item.createForDebuggerCallFrame(frame, this.locationPool, this.refreshItem.bind(this));
             itemPromises.push(itemPromise);
             if (frame.missingDebugInfoDetails) {
                 uniqueWarnings.add(frame.missingDebugInfoDetails.details);
@@ -294,11 +291,11 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
             if (item.isIgnoreListed) {
                 UI.ARIAUtils.setDescription(element, i18nString(UIStrings.onIgnoreList));
             }
-            if (!itemToCallFrame.has(item)) {
+            if (!item.frame) {
                 UI.ARIAUtils.setDisabled(element, true);
             }
         }
-        const callframe = itemToCallFrame.get(item);
+        const callframe = item.frame;
         const isSelected = callframe === UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
         element.classList.toggle('selected', isSelected);
         UI.ARIAUtils.setSelected(element, isSelected);
@@ -387,7 +384,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
             return;
         }
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        const debuggerCallFrame = itemToCallFrame.get(item);
+        const debuggerCallFrame = item.frame;
         if (debuggerCallFrame) {
             contextMenu.defaultSection().appendItem(i18nString(UIStrings.restartFrame), () => {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.StackFrameRestarted);
@@ -412,7 +409,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
             return;
         }
         this.list.selectItem(item);
-        const debuggerCallFrame = itemToCallFrame.get(item);
+        const debuggerCallFrame = item.frame;
         const oldItem = this.activeCallFrameItem();
         if (debuggerCallFrame && oldItem !== item) {
             debuggerCallFrame.debuggerModel.setSelectedCallFrame(debuggerCallFrame);
@@ -429,7 +426,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
     activeCallFrameItem() {
         const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
         if (callFrame) {
-            return this.items.find(callFrameItem => itemToCallFrame.get(callFrameItem) === callFrame) || null;
+            return this.items.find(callFrameItem => callFrameItem.frame === callFrame) || null;
         }
         return null;
     }
@@ -453,7 +450,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         const startIndex = oldItem ? this.items.indexOf(oldItem) + 1 : 0;
         for (let i = startIndex; i < this.items.length; i++) {
             const newItem = this.items.at(i);
-            if (itemToCallFrame.has(newItem)) {
+            if (newItem.frame) {
                 this.activateItem(newItem);
                 break;
             }
@@ -464,7 +461,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         const startIndex = oldItem ? this.items.indexOf(oldItem) - 1 : this.items.length - 1;
         for (let i = startIndex; i >= 0; i--) {
             const newItem = this.items.at(i);
-            if (itemToCallFrame.has(newItem)) {
+            if (newItem.frame) {
                 this.activateItem(newItem);
                 break;
             }
@@ -486,7 +483,6 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         this.registerCSSFiles([callStackSidebarPaneStyles]);
     }
 }
-const itemToCallFrame = new WeakMap();
 export const elementSymbol = Symbol('element');
 export const defaultMaxAsyncStackChainDepth = 32;
 export class ActionDelegate {
@@ -509,9 +505,11 @@ export class Item {
     uiLocation;
     isAsyncHeader;
     updateDelegate;
+    /** Only set for synchronous frames */
+    frame;
     static async createForDebuggerCallFrame(frame, locationPool, updateDelegate) {
         const name = frame.functionName;
-        const item = new Item(UI.UIUtils.beautifyFunctionName(name), updateDelegate);
+        const item = new Item(UI.UIUtils.beautifyFunctionName(name), updateDelegate, frame);
         await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createCallFrameLiveLocation(frame.location(), item.update.bind(item), locationPool);
         void SourceMapScopes.NamesResolver.resolveDebuggerFrameFunctionName(frame).then(functionName => {
             if (functionName && functionName !== name) {
@@ -560,13 +558,14 @@ export class Item {
             }
         }
     }
-    constructor(title, updateDelegate) {
+    constructor(title, updateDelegate, frame) {
         this.isIgnoreListed = false;
         this.title = title;
         this.linkText = '';
         this.uiLocation = null;
         this.isAsyncHeader = false;
         this.updateDelegate = updateDelegate;
+        this.frame = frame;
     }
     async update(liveLocation) {
         const uiLocation = await liveLocation.uiLocation();

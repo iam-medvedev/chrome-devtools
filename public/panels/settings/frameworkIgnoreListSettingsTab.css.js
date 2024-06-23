@@ -38,7 +38,7 @@ styles.replaceSync(
 }
 
 .ignore-list-option-group {
-  margin-top: 16px;
+  margin-top: 13px;
   margin-bottom: 3px;
   margin-left: 8px;
   flex-shrink: 0;
@@ -59,7 +59,7 @@ styles.replaceSync(
   padding: 3px 0;
   color: var(--sys-color-token-subtle);
   font-size: 120%;
-  margin-top: 20px;
+  margin-top: 17px;
 }
 
 .ignore-list-item {

@@ -1,5 +1,6 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import { type VisualLoggingTrackName } from './CompatibilityTracksAppender.js';
 /**
  * Builds the style for the group.
  * Each group has a predefined style and a reference to the definition of the legacy track (which should be removed in the future).
@@ -9,6 +10,10 @@ import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 export declare function buildGroupStyle(extra?: Partial<PerfUI.FlameChart.GroupStyle>): PerfUI.FlameChart.GroupStyle;
 /**
  * Builds the header corresponding to the track. A header is added in the shape of a group in the flame chart data.
+ * @param jslogContext the text that will be set as the logging context
+ *                          for the Visual Elements logging framework. Pass
+ *                          `null` to not set a context and consequently
+ *                          cause this group not to be logged.
  * @param startLevel the flame chart level at which the track header is appended.
  * @param name the display name of the track.
  * @param style the GroupStyle for the track header.
@@ -18,7 +23,7 @@ export declare function buildGroupStyle(extra?: Partial<PerfUI.FlameChart.GroupS
  * @param showStackContextMenu whether menu with options to merge/collapse entries in track is shown.
  * @returns the group that built from the give data
  */
-export declare function buildTrackHeader(startLevel: number, name: string, style: PerfUI.FlameChart.GroupStyle, selectable: boolean, expanded?: boolean, showStackContextMenu?: boolean): PerfUI.FlameChart.Group;
+export declare function buildTrackHeader(jslogContext: VisualLoggingTrackName | null, startLevel: number, name: string, style: PerfUI.FlameChart.GroupStyle, selectable: boolean, expanded?: boolean, showStackContextMenu?: boolean): PerfUI.FlameChart.Group;
 /**
  * Returns the time info shown when an event is hovered in the timeline.
  * @param totalTime the total time of the hovered event.

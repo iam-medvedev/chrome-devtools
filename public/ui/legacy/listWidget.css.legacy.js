@@ -38,8 +38,7 @@ export default {
   overflow: hidden;
 }
 
-.list-item:focus-within,
-.list-item:hover {
+.list-item:focus-within:not(:active) {
   background: var(--sys-color-state-hover-on-subtle);
 }
 
@@ -60,8 +59,7 @@ export default {
   flex: 0 1 50px;
 }
 
-.list-item:focus-within .controls-gradient,
-.list-item:hover .controls-gradient {
+.list-item:focus-within:not(:active) .controls-gradient {
   background-image: linear-gradient(90deg, transparent, var(--override-background-list-item-color));
 }
 
@@ -72,10 +70,14 @@ export default {
   align-items: center;
   pointer-events: auto;
   visibility: hidden;
+  background-color: var(--sys-color-cdt-base-container);
+
+  .list-item:hover & {
+    visibility: visible;
+  }
 }
 
-.list-item:focus-within .controls-buttons,
-.list-item:hover .controls-buttons {
+.list-item:focus-within:not(:active) .controls-buttons {
   background-color: var(--override-background-list-item-color);
   visibility: visible;
 }

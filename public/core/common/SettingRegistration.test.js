@@ -92,7 +92,7 @@ describe('SettingRegistration', () => {
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             defaultValue: false,
             condition: config => {
-                return config?.devToolsConsoleInsightsDogfood.enabled === true;
+                return config?.devToolsConsoleInsights.enabled === true;
             },
         });
         assert.throws(() => Common.Settings.Settings.instance().moduleSetting(configSettingName));
@@ -103,7 +103,7 @@ describe('SettingRegistration', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
             config: {
-                devToolsConsoleInsightsDogfood: {
+                devToolsConsoleInsights: {
                     aidaModelId: 'mockModel',
                     aidaTemperature: 0.2,
                     optIn: false,

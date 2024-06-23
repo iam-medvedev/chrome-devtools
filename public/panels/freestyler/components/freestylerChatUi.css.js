@@ -12,7 +12,7 @@ styles.replaceSync(
  */
 
 :host {
-  max-width: 610px;
+  max-width: 720px;
   width: 100%;
   height: 100%;
   user-select: text;
@@ -75,6 +75,7 @@ styles.replaceSync(
   user-select: text;
   cursor: initial;
   max-width: 320px;
+  min-width: 160px;
   width: fit-content;
   padding: 8px var(--sys-size-8);
   font-size: 12px;
@@ -85,26 +86,21 @@ styles.replaceSync(
   }
 
   &.query {
-    /* TODO(ergunsh): Handle dark mode */
-    background: #f2f2f2; /* stylelint-disable-line plugin/use_theme_colors */
+    color: var(--sys-color-on-surface);
+    background: var(--sys-color-surface2);
     margin-left: auto;
   }
 
   &.answer {
     max-width: 440px;
-    /* TODO(ergunsh): Handle dark mode */
-    background: #ecf3fe; /* stylelint-disable-line plugin/use_theme_colors */
+    color: var(--sys-color-on-surface);
+    background: var(--sys-color-surface2);
   }
-}
 
-.consent-buttons-container {
-  width: 100%;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.consent-onboarding-heading {
-  font-size: 1.2em;
+  & .chat-loading {
+    margin: 4px 0;
+    padding: 4px 0;
+  }
 }
 
 .dom-node-link-container {
@@ -145,6 +141,27 @@ styles.replaceSync(
   color: var(--sys-color-on-surface);
   font-size: 10px;
   font-family: var(--source-code-font-family);
+}
+
+.error-step {
+  color: var(--sys-color-error);
+}
+
+.consent-view {
+  padding: 24px;
+  text-wrap: pretty;
+
+  .accept-button {
+    margin-top: 8px;
+  }
+
+  ul {
+    padding: 0 13px;
+  }
+
+  h2 {
+    font-weight: 500;
+  }
 }
 
 /*# sourceURL=./components/freestylerChatUi.css */

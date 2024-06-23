@@ -958,10 +958,11 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
 }
 export class ToolbarCheckbox extends ToolbarItem {
     inputElement;
-    constructor(text, tooltip, listener, jslogContext) {
+    constructor(text, tooltip, listener, jslogContext, small) {
         super(CheckboxLabel.create(text));
         this.element.classList.add('checkbox');
         this.inputElement = this.element.checkboxElement;
+        this.inputElement.classList.toggle('small', small);
         if (tooltip) {
             // install on the checkbox
             Tooltip.install(this.inputElement, tooltip);

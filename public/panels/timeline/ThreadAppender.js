@@ -245,9 +245,30 @@ export class ThreadAppender {
         if (this.#headerNestingLevel !== null) {
             style.nestingLevel = this.#headerNestingLevel;
         }
-        const group = buildTrackHeader(currentLevel, this.trackName(), style, /* selectable= */ true, this.#expanded, 
+        const visualLoggingName = this.#visualLoggingNameForThread();
+        const group = buildTrackHeader(visualLoggingName, currentLevel, this.trackName(), style, /* selectable= */ true, this.#expanded, 
         /* showStackContextMenu= */ true);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
+    }
+    #visualLoggingNameForThread() {
+        switch (this.threadType) {
+            case "MAIN_THREAD" /* TraceEngine.Handlers.Threads.ThreadType.MAIN_THREAD */:
+                return this.isOnMainFrame ? "thread.main" /* VisualLoggingTrackName.THREAD_MAIN */ : "thread.frame" /* VisualLoggingTrackName.THREAD_FRAME */;
+            case "WORKER" /* TraceEngine.Handlers.Threads.ThreadType.WORKER */:
+                return "thread.worker" /* VisualLoggingTrackName.THREAD_WORKER */;
+            case "RASTERIZER" /* TraceEngine.Handlers.Threads.ThreadType.RASTERIZER */:
+                return "thread.rasterizer" /* VisualLoggingTrackName.THREAD_RASTERIZER */;
+            case "AUCTION_WORKLET" /* TraceEngine.Handlers.Threads.ThreadType.AUCTION_WORKLET */:
+                return "thread.auction-worklet" /* VisualLoggingTrackName.THREAD_AUCTION_WORKLET */;
+            case "OTHER" /* TraceEngine.Handlers.Threads.ThreadType.OTHER */:
+                return "thread.other" /* VisualLoggingTrackName.THREAD_OTHER */;
+            case "CPU_PROFILE" /* TraceEngine.Handlers.Threads.ThreadType.CPU_PROFILE */:
+                return "thread.cpu-profile" /* VisualLoggingTrackName.THREAD_CPU_PROFILE */;
+            case "THREAD_POOL" /* TraceEngine.Handlers.Threads.ThreadType.THREAD_POOL */:
+                return "thread.pool" /* VisualLoggingTrackName.THREAD_POOL */;
+            default:
+                return null;
+        }
     }
     /**
      * Raster threads are rendered under a single header in the
@@ -259,7 +280,9 @@ export class ThreadAppender {
         if (currentTrackCount === 0) {
             const trackIsCollapsible = this.#entries.length > 0;
             const headerStyle = buildGroupStyle({ shareHeaderLine: false, collapsible: trackIsCollapsible });
-            const headerGroup = buildTrackHeader(trackStartLevel, this.trackName(), headerStyle, /* selectable= */ false, this.#expanded);
+            // Don't set any jslogcontext (first argument) because this is a shared
+            // header group. Each child will have its context set.
+            const headerGroup = buildTrackHeader(null, trackStartLevel, this.trackName(), headerStyle, /* selectable= */ false, this.#expanded);
             this.#compatibilityBuilder.getFlameChartTimelineData().groups.push(headerGroup);
         }
         // Nesting is set to 1 because the track is appended inside the
@@ -268,7 +291,8 @@ export class ThreadAppender {
         const rasterizerTitle = this.threadType === "RASTERIZER" /* TraceEngine.Handlers.Threads.ThreadType.RASTERIZER */ ?
             i18nString(UIStrings.rasterizerThreadS, { PH1: currentTrackCount + 1 }) :
             i18nString(UIStrings.threadPoolThreadS, { PH1: currentTrackCount + 1 });
-        const titleGroup = buildTrackHeader(trackStartLevel, rasterizerTitle, titleStyle, /* selectable= */ true, this.#expanded);
+        const visualLoggingName = this.#visualLoggingNameForThread();
+        const titleGroup = buildTrackHeader(visualLoggingName, trackStartLevel, rasterizerTitle, titleStyle, /* selectable= */ true, this.#expanded);
         this.#compatibilityBuilder.registerTrackForGroup(titleGroup, this);
     }
     trackName() {

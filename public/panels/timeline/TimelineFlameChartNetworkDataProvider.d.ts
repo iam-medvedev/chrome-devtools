@@ -1,10 +1,12 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { TimelineSelection } from './TimelineSelection.js';
 export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     constructor();
     setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null): void;
+    setVisualElementLoggingParent(parent: VisualLogging.Loggable | null): void;
     isEmpty(): boolean;
     maxStackDepth(): number;
     hasTrackConfigurationMode(): boolean;

@@ -46,8 +46,8 @@ export function registerViewExtension(registration) {
     viewIdSet.add(viewId);
     registeredViewExtensions.push(new PreRegisteredView(registration));
 }
-export function getRegisteredViewExtensions() {
-    return registeredViewExtensions.filter(view => Root.Runtime.Runtime.isDescriptorEnabled({ experiment: view.experiment(), condition: view.condition() }));
+export function getRegisteredViewExtensions(config) {
+    return registeredViewExtensions.filter(view => Root.Runtime.Runtime.isDescriptorEnabled({ experiment: view.experiment(), condition: view.condition() }, config));
 }
 export function maybeRemoveViewExtension(viewId) {
     const viewIndex = registeredViewExtensions.findIndex(view => view.viewId() === viewId);

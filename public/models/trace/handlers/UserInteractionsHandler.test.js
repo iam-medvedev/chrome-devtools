@@ -19,6 +19,18 @@ beforeEach(() => {
     TraceModel.Handlers.ModelHandlers.Meta.initialize();
 });
 describe('UserInteractionsHandler', function () {
+    function makeFakeInteraction(type, options) {
+        const event = {
+            name: 'EventTiming',
+            type,
+            ts: TraceModel.Types.Timing.MicroSeconds(options.startTime),
+            dur: TraceModel.Types.Timing.MicroSeconds(options.endTime - options.startTime),
+            processingStart: TraceModel.Types.Timing.MicroSeconds(options.processingStart || 0),
+            processingEnd: TraceModel.Types.Timing.MicroSeconds(options.processingEnd || 0),
+            interactionId: options.interactionId,
+        };
+        return event;
+    }
     describe('error handling', () => {
         it('throws if not initialized', async () => {
             TraceModel.Handlers.ModelHandlers.Meta.reset();
@@ -238,18 +250,6 @@ describe('UserInteractionsHandler', function () {
         assert.lengthOf(timings, 3);
     });
     describe('collapsing nested interactions', () => {
-        function makeFakeInteraction(type, options) {
-            const event = {
-                name: 'EventTiming',
-                type,
-                ts: TraceModel.Types.Timing.MicroSeconds(options.startTime),
-                dur: TraceModel.Types.Timing.MicroSeconds(options.endTime - options.startTime),
-                processingStart: TraceModel.Types.Timing.MicroSeconds(options.processingStart || 0),
-                processingEnd: TraceModel.Types.Timing.MicroSeconds(options.processingEnd || 0),
-                interactionId: options.interactionId,
-            };
-            return event;
-        }
         const { removeNestedInteractions } = TraceModel.Handlers.ModelHandlers.UserInteractions;
         it('removes interactions that have the same end time but are not the first event in that block', () => {
             /**
@@ -388,6 +388,14 @@ describe('UserInteractionsHandler', function () {
             assert.isTrue(visibleEventInteractionIds.includes('keydown:3628'));
             assert.isFalse(visibleEventInteractionIds.includes('keydown:3621'));
         });
+    });
+    it('gets the correct score classification for Interaction to Next Paint event', () => {
+        const eventA = makeFakeInteraction('pointerdown', { startTime: 0, endTime: 10_000, interactionId: 1 });
+        assert.strictEqual(TraceModel.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(eventA.dur), "good" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */);
+        const eventB = makeFakeInteraction('pointerdown', { startTime: 0, endTime: 250_000, interactionId: 1 });
+        assert.strictEqual(TraceModel.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(eventB.dur), "ok" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.OK */);
+        const eventC = makeFakeInteraction('pointerdown', { startTime: 0, endTime: 1_000_000, interactionId: 1 });
+        assert.strictEqual(TraceModel.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(eventC.dur), "bad" /* TraceModel.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.BAD */);
     });
 });
 //# sourceMappingURL=UserInteractionsHandler.test.js.map

@@ -17,6 +17,10 @@ export interface GeneratedRange {
     end: Position;
     originalScope?: OriginalScope;
     /**
+     * Whether this generated range is an actual JavaScript scope in the generated code.
+     */
+    isScope: boolean;
+    /**
      * If this `GeneratedRange` is the result of inlining `originalScope`, then `callsite`
      * refers to where `originalScope` was called in the original ("authored") code.
      */
@@ -56,6 +60,7 @@ export declare function decodeOriginalScopes(encodedOriginalScopes: string[], na
 export declare function decodeGeneratedRanges(encodedGeneratedRange: string, originalScopeTrees: OriginalScopeTree[], names: string[]): GeneratedRange;
 export declare const enum EncodedGeneratedRangeFlag {
     HasDefinition = 1,
-    HasCallsite = 2
+    HasCallsite = 2,
+    IsScope = 4
 }
 export {};

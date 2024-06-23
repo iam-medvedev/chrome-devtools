@@ -1,7 +1,6 @@
 export declare class UserMetrics {
     #private;
     constructor();
-    breakpointEditDialogRevealedFrom(breakpointEditDialogRevealedFrom: BreakpointEditDialogRevealedFrom): void;
     panelShown(panelName: string, isLaunching?: boolean): void;
     panelShownInLocation(panelName: string, location: 'main' | 'drawer'): void;
     sourcesSidebarTabShown(sidebarPaneName: string): void;
@@ -208,7 +207,9 @@ export declare enum Action {
     AnimationGroupSelected = 142,
     ScrollDrivenAnimationGroupSelected = 143,
     ScrollDrivenAnimationGroupScrubbed = 144,
-    MaxValue = 145
+    FreestylerOpenedFromElementsPanel = 145,
+    FreestylerOpenedFromStylesTab = 146,
+    MaxValue = 147
 }
 export declare enum PanelCodes {
     elements = 1,
@@ -647,16 +648,6 @@ export declare enum DevtoolsExperiments {
     'timeline-rpp-sidebar' = 95,
     'timeline-observations' = 96,
     'MaxValue' = 97
-}
-export declare const enum BreakpointEditDialogRevealedFrom {
-    BreakpointSidebarContextMenu = 0,
-    BreakpointSidebarEditButton = 1,
-    BreakpointMarkerContextMenu = 2,
-    LineGutterContextMenu = 3,
-    KeyboardShortcut = 4,
-    Linkifier = 5,
-    MouseClick = 6,
-    MaxValue = 7
 }
 export declare const enum ColorConvertedFrom {
     ColorSwatch = 0,

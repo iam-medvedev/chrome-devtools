@@ -1,6 +1,7 @@
 import type * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type PageVisibleSecurityState, SecurityModel } from './SecurityModel.js';
 export declare class SecurityPanel extends UI.Panel.PanelWithSidebar implements SDK.TargetManager.SDKModelObserver<SecurityModel> {
@@ -63,12 +64,16 @@ export declare enum OriginGroup {
     Secure = "Secure",
     Unknown = "Unknown"
 }
-export declare class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
+declare class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
+    #private;
     private readonly selectCallback;
-    private readonly cssPrefix;
-    private readonly iconElement;
     private securityStateInternal;
-    constructor(textElement: Element, selectCallback: () => void, className: string, cssPrefix: string);
+    constructor(options: {
+        title: Element;
+        onSelect: () => void;
+        getIconForSecurityState: (securityState: Protocol.Security.SecurityState) => IconButton.Icon.Icon;
+        className: string;
+    });
     setSecurityState(newSecurityState: Protocol.Security.SecurityState): void;
     securityState(): Protocol.Security.SecurityState | null;
     onselect(): boolean;
@@ -118,3 +123,4 @@ export interface OriginState {
     originView?: SecurityOriginView | null;
 }
 export type Origin = Platform.DevToolsPath.UrlString;
+export {};

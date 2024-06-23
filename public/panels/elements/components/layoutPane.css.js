@@ -165,10 +165,6 @@ that uses the dimensions to draw an outline around the element. */
   border-radius: 5px;
 }
 
-.node-text-container:hover {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
 /*# sourceURL=layoutPane.css */
 `);
 

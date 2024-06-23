@@ -4,7 +4,7 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
-import { Location, COND_BREAKPOINT_SOURCE_URL, LOGPOINT_SOURCE_URL, Events, } from './DebuggerModel.js';
+import { COND_BREAKPOINT_SOURCE_URL, Events, Location, LOGPOINT_SOURCE_URL, } from './DebuggerModel.js';
 import { ResourceTreeModel } from './ResourceTreeModel.js';
 const UIStrings = {
     /**
@@ -314,6 +314,13 @@ export class Script {
      */
     get isBreakpointCondition() {
         return [COND_BREAKPOINT_SOURCE_URL, LOGPOINT_SOURCE_URL].includes(this.sourceURL);
+    }
+    /**
+     * @returns the currently attached source map for this Script or `undefined` if there is none or it
+     * hasn't loaded yet.
+     */
+    sourceMap() {
+        return this.debuggerModel.sourceMapManager().sourceMapForClient(this);
     }
     createPageResourceLoadInitiator() {
         return { target: this.target(), frameId: this.frameId, initiatorUrl: this.embedderName() };

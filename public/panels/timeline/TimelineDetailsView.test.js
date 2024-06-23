@@ -11,6 +11,7 @@ class MockViewDelegate {
     }
     highlightEvent(_event) {
     }
+    element = document.createElement('div');
 }
 function getRowDataForDetailsElement(details) {
     return Array.from(details.querySelectorAll('.timeline-details-view-row')).map(row => {

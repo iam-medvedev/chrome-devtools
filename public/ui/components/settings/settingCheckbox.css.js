@@ -21,6 +21,7 @@ input {
   width: 12px;
   min-height: 12px;
   min-width: 12px;
+  margin: 6px;
 }
 
 label {
@@ -28,10 +29,14 @@ label {
   align-items: center;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &:has(input:disabled) {
+    pointer-events: none;
+  }
 }
 
 p {
-  margin: 12px 0;
+  margin: 6px 0;
 }
 
 .disabled-reason {

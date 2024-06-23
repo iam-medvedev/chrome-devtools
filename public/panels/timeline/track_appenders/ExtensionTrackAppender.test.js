@@ -91,17 +91,39 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             const allExtensionTrackEntries = traceParsedData.ExtensionTraceData.extensionTrackData.flatMap(track => track.flameChartEntries);
             for (const event of allExtensionTrackEntries) {
                 assert.strictEqual(extensionTrackAppenders[0].titleForEvent(event), event.name);
-                if (event.args.color === 'primary') {
-                    // "primary" color category is mapped to --ref-palette-primary60
-                    // which is faked out to 4, 4, 4
-                    assert.strictEqual(extensionTrackAppenders[0].colorForEvent(event), 'rgb(4 4 4)');
-                }
-                else {
+                if (event.args.color === 'tertiary-light') {
                     // "tertiary-light" color category is mapped to --ref-palette-tertiary80
                     // which is faked out to 10, 10, 10
                     assert.strictEqual(extensionTrackAppenders[0].colorForEvent(event), 'rgb(10 10 10)');
                 }
+                else {
+                    // Unknown colors are mapped to "primary" by default, and
+                    // "primary" color category is mapped to --ref-palette-primary60
+                    // which is faked out to 4, 4, 4
+                    assert.strictEqual(extensionTrackAppenders[0].colorForEvent(event), 'rgb(4 4 4)');
+                }
             }
+        });
+        it('sets a default value when a color is not set or is set an unknown value', function () {
+            const mockExtensionEntryNoColor = {
+                args: {
+                    metadata: { dataType: 'track-entry', extensionName: 'Extension' },
+                    track: 'A track',
+                },
+                cat: 'devtools.extension',
+            };
+            const mockExtensionEntryUnknownColor = {
+                args: {
+                    metadata: { dataType: 'track-entry', extensionName: 'Extension' },
+                    track: 'A track',
+                    color: 'anUnknownColor',
+                },
+                cat: 'devtools.extension',
+            };
+            // "primary" color category is mapped to --ref-palette-primary60
+            // which is faked out to 4, 4, 4
+            assert.strictEqual(extensionTrackAppenders[0].colorForEvent(mockExtensionEntryNoColor), 'rgb(4 4 4)');
+            assert.strictEqual(extensionTrackAppenders[0].colorForEvent(mockExtensionEntryUnknownColor), 'rgb(4 4 4)');
         });
     });
     describe('highlightedEntryInfo', function () {

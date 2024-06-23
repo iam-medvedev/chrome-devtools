@@ -50,7 +50,7 @@ export class GPUTrackAppender {
      */
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
         const style = buildGroupStyle({ collapsible: false });
-        const group = buildTrackHeader(currentLevel, i18nString(UIStrings.gpu), style, /* selectable= */ true, expanded);
+        const group = buildTrackHeader("gpu" /* VisualLoggingTrackName.GPU */, currentLevel, i18nString(UIStrings.gpu), style, /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }
     /*

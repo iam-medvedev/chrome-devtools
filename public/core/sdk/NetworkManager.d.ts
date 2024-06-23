@@ -141,6 +141,7 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     reportingApiReportAdded(data: Protocol.Network.ReportingApiReportAddedEvent): void;
     reportingApiReportUpdated(data: Protocol.Network.ReportingApiReportUpdatedEvent): void;
     reportingApiEndpointsChangedForOrigin(data: Protocol.Network.ReportingApiEndpointsChangedForOriginEvent): void;
+    policyUpdated(): void;
     /**
      * @deprecated
      * This method is only kept for usage in a web test.

@@ -1,8 +1,10 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import { VisualElements } from './LoggingConfig.js';
+import { pendingWorkComplete, startLogging, stopLogging } from './LoggingDriver.js';
 import { getLoggingState } from './LoggingState.js';
 let veDebuggingEnabled = false;
 let debugPopover = null;
@@ -77,6 +79,9 @@ export function processEventForDebugging(event, state, extraInfo) {
         case DebugLoggingFormat.Intuitive:
             processEventForIntuitiveDebugging(event, state, extraInfo);
             break;
+        case DebugLoggingFormat.Test:
+            processEventForTestDebugging(event, state, extraInfo);
+            break;
         case DebugLoggingFormat.AdHocAnalysis:
             processEventForAdHocAnalysisDebugging(event, state, extraInfo);
             break;
@@ -93,6 +98,10 @@ export function processEventForIntuitiveDebugging(event, state, extraInfo) {
     };
     deleteUndefinedFields(entry);
     maybeLogDebugEvent(entry);
+}
+export function processEventForTestDebugging(event, state, _extraInfo) {
+    lastImpressionLogEntry = null;
+    maybeLogDebugEvent({ interaction: `${event}: ${veTestKeys.get(state?.veid || 0) || ''}` });
 }
 export function processEventForAdHocAnalysisDebugging(event, state, extraInfo) {
     const ve = state ? adHocAnalysisEntries.get(state.veid) : null;
@@ -115,6 +124,9 @@ export function processImpressionsForDebugging(states) {
     switch (format) {
         case DebugLoggingFormat.Intuitive:
             processImpressionsForIntuitiveDebugLog(states);
+            break;
+        case DebugLoggingFormat.Test:
+            processImpressionsForTestDebugLog(states);
             break;
         case DebugLoggingFormat.AdHocAnalysis:
             processImpressionsForAdHocAnalysisDebugLog(states);
@@ -151,6 +163,26 @@ function processImpressionsForIntuitiveDebugLog(states) {
     }
     else {
         maybeLogDebugEvent({ event: 'Impression', children: entries, time: Date.now() - sessionStartTime });
+    }
+}
+const veTestKeys = new Map();
+let lastImpressionLogEntry = null;
+function processImpressionsForTestDebugLog(states) {
+    if (!lastImpressionLogEntry) {
+        lastImpressionLogEntry = { impressions: [] };
+        veDebugEventsLog.push(lastImpressionLogEntry);
+    }
+    for (const state of states) {
+        let key = '';
+        if (state.parent) {
+            key = (veTestKeys.get(state.parent.veid) || '<UNKNOWN>') + ' > ';
+        }
+        key += VisualElements[state.config.ve];
+        if (state.config.context) {
+            key += ': ' + state.config.context;
+        }
+        veTestKeys.set(state.veid, key);
+        lastImpressionLogEntry.impressions.push(key);
     }
 }
 const adHocAnalysisEntries = new Map();
@@ -233,6 +265,7 @@ function maybeLogDebugEvent(entry) {
 var DebugLoggingFormat;
 (function (DebugLoggingFormat) {
     DebugLoggingFormat["Intuitive"] = "Intuitive";
+    DebugLoggingFormat["Test"] = "Test";
     DebugLoggingFormat["AdHocAnalysis"] = "AdHocAnalysis";
 })(DebugLoggingFormat || (DebugLoggingFormat = {}));
 function setVeDebugLoggingEnabled(enabled, format = DebugLoggingFormat.Intuitive) {
@@ -429,6 +462,23 @@ export function processStartLoggingForDebugging() {
         maybeLogDebugEvent({ event: 'SessionStart' });
     }
 }
+async function getVeDebugEventsLog() {
+    await pendingWorkComplete();
+    lastImpressionLogEntry = null;
+    return veDebugEventsLog;
+}
+async function startTestLogging() {
+    setVeDebugLoggingEnabled(true, DebugLoggingFormat.Test);
+    stopLogging();
+    await startLogging({
+        processingThrottler: new Common.Throttler.Throttler(10),
+        keyboardLogThrottler: new Common.Throttler.Throttler(10),
+        hoverLogThrottler: new Common.Throttler.Throttler(10),
+        dragLogThrottler: new Common.Throttler.Throttler(10),
+        clickLogThrottler: new Common.Throttler.Throttler(10),
+        resizeLogThrottler: new Common.Throttler.Throttler(10),
+    });
+}
 // @ts-ignore
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
 // @ts-ignore
@@ -439,4 +489,8 @@ globalThis.findVeDebugImpression = findVeDebugImpression;
 globalThis.exportAdHocAnalysisLogForSql = exportAdHocAnalysisLogForSql;
 // @ts-ignore
 globalThis.buildStateFlow = buildStateFlow;
+// @ts-ignore
+globalThis.getVeDebugEventsLog = getVeDebugEventsLog;
+// @ts-ignore
+globalThis.startTestLogging = startTestLogging;
 //# sourceMappingURL=Debugging.js.map

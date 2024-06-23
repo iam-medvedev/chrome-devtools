@@ -1,23 +1,12 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import * as Common from '../common/common.js';
+import { describeWithEnvironment, getGetHostConfigStub } from '../../testing/EnvironmentHelpers.js';
 import * as Host from './host.js';
 const TEST_MODEL_ID = 'testModelId';
 describeWithEnvironment('AidaClient', () => {
     it('adds no model temperature if console insights is not enabled', () => {
-        const settings = Common.Settings.Settings.instance();
-        const stub = sinon.stub(settings, 'getHostConfig').returns({
-            devToolsConsoleInsights: {
-                enabled: false,
-                aidaTemperature: 0.2,
-            },
-            devToolsConsoleInsightsDogfood: {
-                enabled: false,
-                aidaTemperature: 0.3,
-            },
-        });
+        const stub = getGetHostConfigStub({});
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
         assert.deepStrictEqual(request, {
             input: 'foo',
@@ -26,17 +15,10 @@ describeWithEnvironment('AidaClient', () => {
         stub.restore();
     });
     it('adds a model temperature', () => {
-        const settings = Common.Settings.Settings.instance();
-        const stub = sinon.stub(settings, 'getHostConfig').returns({
+        const stub = getGetHostConfigStub({
             devToolsConsoleInsights: {
                 enabled: true,
-                aidaModelId: '',
                 aidaTemperature: 0.5,
-            },
-            devToolsConsoleInsightsDogfood: {
-                enabled: false,
-                aidaModelId: '',
-                aidaTemperature: 0.3,
             },
         });
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
@@ -50,13 +32,8 @@ describeWithEnvironment('AidaClient', () => {
         stub.restore();
     });
     it('adds a model temperature of 0', () => {
-        const settings = Common.Settings.Settings.instance();
-        const stub = sinon.stub(settings, 'getHostConfig').returns({
+        const stub = getGetHostConfigStub({
             devToolsConsoleInsights: {
-                enabled: true,
-                aidaTemperature: 0.5,
-            },
-            devToolsConsoleInsightsDogfood: {
                 enabled: true,
                 aidaTemperature: 0,
             },
@@ -72,15 +49,11 @@ describeWithEnvironment('AidaClient', () => {
         stub.restore();
     });
     it('adds a model id and temperature', () => {
-        const settings = Common.Settings.Settings.instance();
-        const stub = sinon.stub(settings, 'getHostConfig').returns({
+        const stub = getGetHostConfigStub({
             devToolsConsoleInsights: {
                 enabled: true,
                 aidaModelId: TEST_MODEL_ID,
                 aidaTemperature: 0.5,
-            },
-            devToolsConsoleInsightsDogfood: {
-                enabled: false,
             },
         });
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
@@ -95,16 +68,11 @@ describeWithEnvironment('AidaClient', () => {
         stub.restore();
     });
     it('adds metadata to disallow logging', () => {
-        const settings = Common.Settings.Settings.instance();
-        const stub = sinon.stub(settings, 'getHostConfig').returns({
+        const stub = getGetHostConfigStub({
             devToolsConsoleInsights: {
                 enabled: true,
-                aidaModelId: '',
                 aidaTemperature: 0.5,
                 disallowLogging: true,
-            },
-            devToolsConsoleInsightsDogfood: {
-                enabled: false,
             },
         });
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
@@ -287,6 +255,46 @@ describeWithEnvironment('AidaClient', () => {
             expect(err.message)
                 .equals('Cannot send request: Cannot get OAuth credentials {\'@type\': \'type.googleapis.com/google.rpc.DebugInfo\', \'detail\': \'DETAILS\'}');
         }
+    });
+    describe('getAidaClientAvailability', () => {
+        function mockGetSyncInformation(information) {
+            sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'getSyncInformation').callsFake(cb => {
+                cb(information);
+            });
+        }
+        beforeEach(() => {
+            sinon.restore();
+        });
+        it('should return NO_INTERNET when navigator is not online', async () => {
+            const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+            Object.defineProperty(globalThis, 'navigator', {
+                get() {
+                    return { onLine: false };
+                },
+            });
+            try {
+                const result = await Host.AidaClient.AidaClient.getAidaClientAvailability();
+                assert.strictEqual(result, Host.AidaClient.AidaAvailability.NO_INTERNET);
+            }
+            finally {
+                Object.defineProperty(globalThis, 'navigator', navigatorDescriptor);
+            }
+        });
+        it('should return NO_ACCOUNT_EMAIL when the syncInfo doesn\'t contain accountEmail', async () => {
+            mockGetSyncInformation({ accountEmail: undefined, isSyncActive: true });
+            const result = await Host.AidaClient.AidaClient.getAidaClientAvailability();
+            assert.strictEqual(result, Host.AidaClient.AidaAvailability.NO_ACCOUNT_EMAIL);
+        });
+        it('should return NO_ACTIVE_SYNC when the syncInfo.isSyncActive is not true', async () => {
+            mockGetSyncInformation({ accountEmail: 'some-email', isSyncActive: false });
+            const result = await Host.AidaClient.AidaClient.getAidaClientAvailability();
+            assert.strictEqual(result, Host.AidaClient.AidaAvailability.NO_ACTIVE_SYNC);
+        });
+        it('should return AVAILABLE when navigator is online, accountEmail exists and isSyncActive is true', async () => {
+            mockGetSyncInformation({ accountEmail: 'some-email', isSyncActive: true });
+            const result = await Host.AidaClient.AidaClient.getAidaClientAvailability();
+            assert.strictEqual(result, Host.AidaClient.AidaAvailability.AVAILABLE);
+        });
     });
 });
 //# sourceMappingURL=AidaClient.test.js.map

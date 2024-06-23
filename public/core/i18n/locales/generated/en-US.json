@@ -6446,6 +6446,21 @@
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "To use this feature, update your Language preference in DevTools Settings to English."
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | acceptButtonTitle": {
+    "message": "Accept"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | consentScreenHeading": {
+    "message": "Things to consider"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | consentTextAiDisclaimer": {
+    "message": "This feature uses AI and won't always get it right."
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | consentTextDataDisclaimer": {
+    "message": "Your inputs and the information from the page you are using this feature for are sent to Google."
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | consentTextVisibilityDisclaimer": {
+    "message": "Data may be seen by trained reviewers to improve this feature."
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | emptyStateText": {
     "message": "How can I help you?"
   },
@@ -6453,13 +6468,34 @@
     "message": "Freestyler may display inaccurate information and may not get it right"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | inputPlaceholder": {
-    "message": "Ask Freestyler or type / for commands"
+    "message": "Ask a question about the selected element"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | notLoggedIn": {
+    "message": "This feature is only available when you sign into Chrome with your Google account."
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | offline": {
+    "message": "Check your internet connection and try again."
   },
   "panels/freestyler/components/FreestylerChatUi.ts | selectAnElement": {
     "message": "Select an element"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | sendButtonTitle": {
     "message": "Send"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | syncIsOff": {
+    "message": "This feature requires you to turn on Chrome sync."
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | thumbsDown": {
+    "message": "Thumbs down"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | thumbsUp": {
+    "message": "Thumbs up"
+  },
+  "panels/freestyler/freestyler-meta.ts | askFreestyler": {
+    "message": "Ask Freestyler"
+  },
+  "panels/freestyler/freestyler-meta.ts | enableFreestyler": {
+    "message": "Enable Freestyler"
   },
   "panels/freestyler/freestyler-meta.ts | freestyler": {
     "message": "Freestyler"
@@ -6469,6 +6505,9 @@
   },
   "panels/freestyler/FreestylerPanel.ts | clearMessages": {
     "message": "Clear messages"
+  },
+  "panels/freestyler/FreestylerPanel.ts | help": {
+    "message": "Help"
   },
   "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
     "message": "Send feedback"
@@ -12892,6 +12931,12 @@
   },
   "panels/timeline/TimelinePanel.ts | enableSelectorStats": {
     "message": "Enable CSS selector stats (slow)"
+  },
+  "panels/timeline/TimelinePanel.ts | exportEnhancedTraces": {
+    "message": "Enhanced Performance Traces"
+  },
+  "panels/timeline/TimelinePanel.ts | exportNormalTraces": {
+    "message": "Basic Performance Traces"
   },
   "panels/timeline/TimelinePanel.ts | failedToSaveTimelineSS": {
     "message": "Failed to save timeline: {PH1} ({PH2})"

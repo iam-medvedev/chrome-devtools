@@ -37,9 +37,10 @@ describeWithEnvironment('AppenderUtils', () => {
             selectable: true,
             expanded: true,
             showStackContextMenu: true,
+            jslogContext: 'animations',
         };
         it('builds a track header correctly', () => {
-            const builtHeader = Timeline.AppenderUtils.buildTrackHeader(
+            const builtHeader = Timeline.AppenderUtils.buildTrackHeader("animations" /* Timeline.CompatibilityTracksAppender.VisualLoggingTrackName.ANIMATIONS */, 
             /* startLevel= */ 0, 'Header Name', Timeline.AppenderUtils.buildGroupStyle(), /* selectable= */ true, 
             /* expanded= */ true, /* showStackContextMenu= */ true);
             assert.deepEqual(builtHeader, trackHeader);

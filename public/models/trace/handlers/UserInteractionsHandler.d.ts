@@ -1,4 +1,5 @@
 import * as Types from '../types/types.js';
+import { ScoreClassification } from './PageLoadMetricsHandler.js';
 import { type TraceEventHandlerName } from './types.js';
 export declare const LONG_INTERACTION_THRESHOLD: Types.Timing.MicroSeconds;
 export interface UserInteractionsData {
@@ -59,3 +60,8 @@ export declare function removeNestedInteractions(interactions: readonly Types.Tr
 export declare function finalize(): Promise<void>;
 export declare function data(): UserInteractionsData;
 export declare function deps(): TraceEventHandlerName[];
+/**
+ * Classifications sourced from
+ * https://web.dev/articles/inp#good-score
+ */
+export declare function scoreClassificationForInteractionToNextPaint(timing: Types.Timing.MicroSeconds): ScoreClassification;

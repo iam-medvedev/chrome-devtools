@@ -17,6 +17,9 @@ export function getRemoteBase(location = self.location.toString()) {
     }
     return { base: `devtools://devtools/remote/serve_file/${version[1]}/`, version: version[1] };
 }
+export function getPathName() {
+    return window.location.pathname;
+}
 export class Runtime {
     constructor() {
     }

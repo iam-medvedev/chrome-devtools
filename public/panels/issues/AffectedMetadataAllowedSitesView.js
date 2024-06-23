@@ -35,7 +35,7 @@ export class AffectedMetadataAllowedSitesView extends AffectedResourcesView {
                 const optOutTextElement = document.createElement('span');
                 optOutTextElement.textContent = ' (opt-out: ' + issueData.details().optOutPercentage + '% - ';
                 textContentElement.appendChild(optOutTextElement);
-                const linkElement = UI.XLink.XLink.create('https://github.com/amaliev/3pcd-exemption-heuristics/blob/main/explainer.md', 'learn more');
+                const linkElement = UI.XLink.XLink.create('https://developers.google.com/privacy-sandbox/blog/grace-period-opt-out', 'learn more');
                 textContentElement.appendChild(linkElement);
                 const endTextElement = document.createElement('span');
                 endTextElement.textContent = ')';

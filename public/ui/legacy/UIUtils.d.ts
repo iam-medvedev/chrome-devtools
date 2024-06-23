@@ -87,7 +87,7 @@ export declare class CheckboxLabel extends HTMLSpanElement {
     checkboxElement: HTMLInputElement;
     textElement: HTMLElement;
     constructor();
-    static create(title?: string, checked?: boolean, subtitle?: string, jslogContext?: string): CheckboxLabel;
+    static create(title?: string, checked?: boolean, subtitle?: string, jslogContext?: string, small?: boolean): CheckboxLabel;
     private static lastId;
     static constructorInternal: (() => Element) | null;
 }

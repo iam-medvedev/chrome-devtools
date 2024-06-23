@@ -22,10 +22,7 @@ export type Rating = Spec.MetricChangeEvent['rating'];
 export interface LCPValue extends MetricValue {
     node?: SDK.DOMModel.DOMNode;
 }
-export interface INPValue extends MetricValue {
-    interactionType: Spec.INPChangeEvent['interactionType'];
-    node?: SDK.DOMModel.DOMNode;
-}
+export type INPValue = MetricValue;
 export type CLSValue = MetricValue;
 export type InteractionValue = Pick<Spec.InteractionEvent, 'rating' | 'interactionType' | 'duration'> & {
     node?: SDK.DOMModel.DOMNode;

@@ -91,6 +91,7 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
             const range = {
                 start: { line: item.line, column: item.column },
                 end: { line: item.line, column: item.column },
+                isScope: Boolean(item.flags & 4 /* EncodedGeneratedRangeFlag.IsScope */),
                 values: [],
                 children: [],
             };

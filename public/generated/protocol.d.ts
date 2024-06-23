@@ -201,7 +201,8 @@ export declare namespace Accessibility {
         Errormessage = "errormessage",
         Flowto = "flowto",
         Labelledby = "labelledby",
-        Owns = "owns"
+        Owns = "owns",
+        Url = "url"
     }
     /**
      * A node in the accessibility tree.
@@ -1097,7 +1098,9 @@ export declare namespace Audits {
         ClientMetadataNoResponse = "ClientMetadataNoResponse",
         ClientMetadataInvalidResponse = "ClientMetadataInvalidResponse",
         ClientMetadataInvalidContentType = "ClientMetadataInvalidContentType",
+        IdpNotPotentiallyTrustworthy = "IdpNotPotentiallyTrustworthy",
         DisabledInSettings = "DisabledInSettings",
+        DisabledInFlags = "DisabledInFlags",
         ErrorFetchingSignin = "ErrorFetchingSignin",
         InvalidSigninResponse = "InvalidSigninResponse",
         AccountsHttpNotFound = "AccountsHttpNotFound",
@@ -1120,6 +1123,7 @@ export declare namespace Audits {
         NotSignedInWithIdp = "NotSignedInWithIdp",
         MissingTransientUserActivation = "MissingTransientUserActivation",
         ReplacedByButtonMode = "ReplacedByButtonMode",
+        InvalidFieldsSpecified = "InvalidFieldsSpecified",
         RelyingPartyOriginIsOpaque = "RelyingPartyOriginIsOpaque",
         TypeNotMatching = "TypeNotMatching"
     }
@@ -1669,6 +1673,10 @@ export declare namespace Browser {
          * For "clipboard" permission, may specify allowWithoutSanitization.
          */
         allowWithoutSanitization?: boolean;
+        /**
+         * For "fullscreen" permission, must specify allowWithoutGesture:true.
+         */
+        allowWithoutGesture?: boolean;
         /**
          * For "camera" permission, may specify panTiltZoom.
          */
@@ -13348,7 +13356,8 @@ export declare namespace Storage {
         DestinationBothLimitsReached = "destinationBothLimitsReached",
         ReportingOriginsPerSiteLimitReached = "reportingOriginsPerSiteLimitReached",
         ExceedsMaxChannelCapacity = "exceedsMaxChannelCapacity",
-        ExceedsMaxTriggerStateCardinality = "exceedsMaxTriggerStateCardinality"
+        ExceedsMaxTriggerStateCardinality = "exceedsMaxTriggerStateCardinality",
+        DestinationPerDayReportingLimitReached = "destinationPerDayReportingLimitReached"
     }
     const enum AttributionReportingSourceRegistrationTimeConfig {
         Include = "include",

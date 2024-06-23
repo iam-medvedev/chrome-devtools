@@ -37,12 +37,6 @@ export class UserMetrics {
         this.#firedLaunchHistogram = false;
         this.#launchPanelName = '';
     }
-    breakpointEditDialogRevealedFrom(breakpointEditDialogRevealedFrom) {
-        if (breakpointEditDialogRevealedFrom >= 7 /* BreakpointEditDialogRevealedFrom.MaxValue */) {
-            return;
-        }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.BreakpointEditDialogRevealedFrom" /* EnumeratedHistogram.BreakpointEditDialogRevealedFrom */, breakpointEditDialogRevealedFrom, 7 /* BreakpointEditDialogRevealedFrom.MaxValue */);
-    }
     panelShown(panelName, isLaunching) {
         const code = PanelCodes[panelName] || 0;
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShown" /* EnumeratedHistogram.PanelShown */, code, PanelCodes.MaxValue);
@@ -455,7 +449,9 @@ export var Action;
     Action[Action["AnimationGroupSelected"] = 142] = "AnimationGroupSelected";
     Action[Action["ScrollDrivenAnimationGroupSelected"] = 143] = "ScrollDrivenAnimationGroupSelected";
     Action[Action["ScrollDrivenAnimationGroupScrubbed"] = 144] = "ScrollDrivenAnimationGroupScrubbed";
-    Action[Action["MaxValue"] = 145] = "MaxValue";
+    Action[Action["FreestylerOpenedFromElementsPanel"] = 145] = "FreestylerOpenedFromElementsPanel";
+    Action[Action["FreestylerOpenedFromStylesTab"] = 146] = "FreestylerOpenedFromStylesTab";
+    Action[Action["MaxValue"] = 147] = "MaxValue";
 })(Action || (Action = {}));
 /* eslint-disable @typescript-eslint/naming-convention */
 export var PanelCodes;
@@ -740,7 +736,6 @@ export var KeybindSetSettings;
     KeybindSetSettings[KeybindSetSettings["MaxValue"] = 2] = "MaxValue";
 })(KeybindSetSettings || (KeybindSetSettings = {}));
 /* eslint-enable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/naming-convention */
 export var KeyboardShortcutAction;
 (function (KeyboardShortcutAction) {
     KeyboardShortcutAction[KeyboardShortcutAction["OtherShortcut"] = 0] = "OtherShortcut";

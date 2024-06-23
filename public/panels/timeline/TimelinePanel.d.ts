@@ -83,7 +83,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private prepareToLoadTimeline;
     private createFileSelector;
     private contextMenu;
-    saveToFile(): Promise<void>;
+    saveToFile(isEnhancedTraces?: boolean): Promise<void>;
     showHistory(): Promise<void>;
     navigateHistory(direction: number): boolean;
     selectFileToLoad(): void;
@@ -143,6 +143,7 @@ export declare const rowHeight = 18;
 export declare const headerHeight = 20;
 export interface TimelineModeViewDelegate {
     select(selection: TimelineSelection | null): void;
+    element: Element;
     selectEntryAtTime(events: TraceEngine.Types.TraceEvents.TraceEventData[] | null, time: number): void;
     highlightEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
 }

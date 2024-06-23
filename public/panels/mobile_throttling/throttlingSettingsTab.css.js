@@ -25,7 +25,7 @@ styles.replaceSync(
 
 .add-conditions-button {
   flex: none;
-  margin: 10px 2px;
+  margin: 10px 5px;
   min-width: 140px;
   align-self: flex-start;
 }
@@ -88,8 +88,16 @@ styles.replaceSync(
 }
 
 .conditions-edit-row input {
-  width: 100%;
-  text-align: inherit;
+  &[type="checkbox"] {
+    display: block;
+    margin: auto;
+    top: 6px;
+  }
+
+  &:not([type="checkbox"]) {
+    width: 100%;
+    text-align: inherit;
+  }
 }
 
 .conditions-edit-optional {
