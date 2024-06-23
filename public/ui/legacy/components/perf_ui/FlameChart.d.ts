@@ -30,6 +30,7 @@
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
+import type * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
 import { type Calculator } from './TimelineGrid.js';
@@ -495,6 +496,7 @@ export interface FlameChartDataProvider {
     buildFlowForInitiator?(index: number): unknown;
     minimumBoundary(): number;
     totalTime(): number;
+    setVisualElementLoggingParent?(parent: VisualLogging.Loggable): void;
     formatValue(value: number, precision?: number): string;
     maxStackDepth(): number;
     timelineData(rebuild?: boolean): FlameChartTimelineData | null;
@@ -535,6 +537,7 @@ export declare const enum Events {
      * away from any events)
      */
     EntryInvoked = "EntryInvoked",
+    AnnotateEntry = "AnnotateEntry",
     /**
      * Emitted when an event is selected via keyboard navigation using the arrow
      * keys.
@@ -555,6 +558,7 @@ export declare const enum Events {
     LatestDrawDimensions = "LatestDrawDimensions"
 }
 export type EventTypes = {
+    [Events.AnnotateEntry]: number;
     [Events.CanvasFocused]: number | void;
     [Events.EntryInvoked]: number;
     [Events.EntrySelected]: number;
@@ -579,6 +583,7 @@ export interface Group {
     style: GroupStyle;
     /** Should be turned on if the track supports user editable stacks. */
     showStackContextMenu?: boolean;
+    jslogContext?: string;
 }
 export interface GroupStyle {
     height: number;

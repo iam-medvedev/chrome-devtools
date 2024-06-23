@@ -176,7 +176,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
         }
     }
     createCategory(name) {
-        const labelNode = UI.UIUtils.CheckboxLabel.create(getLocalizedCategory(name), undefined, undefined, name);
+        const labelNode = UI.UIUtils.CheckboxLabel.create(getLocalizedCategory(name), undefined, undefined, name, /* small */ true);
         labelNode.checkboxElement.addEventListener('click', this.categoryCheckboxClicked.bind(this, name), true);
         labelNode.checkboxElement.tabIndex = -1;
         const treeElement = new UI.TreeOutline.TreeElement(labelNode, undefined, name);
@@ -192,7 +192,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
         this.#categories.set(name, { element: treeElement, checkbox: labelNode.checkboxElement });
     }
     createBreakpoint(breakpoint) {
-        const labelNode = UI.UIUtils.CheckboxLabel.create(Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name), undefined, undefined, Platform.StringUtilities.toKebabCase(breakpoint.name));
+        const labelNode = UI.UIUtils.CheckboxLabel.create(Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name), undefined, undefined, Platform.StringUtilities.toKebabCase(breakpoint.name), /* small */ true);
         labelNode.classList.add('source-code');
         labelNode.checkboxElement.addEventListener('click', this.breakpointCheckboxClicked.bind(this, breakpoint), true);
         labelNode.checkboxElement.tabIndex = -1;

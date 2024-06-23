@@ -59,8 +59,10 @@ export declare class Item {
     uiLocation: Workspace.UISourceCode.UILocation | null;
     isAsyncHeader: boolean;
     updateDelegate: (arg0: Item) => void;
+    /** Only set for synchronous frames */
+    readonly frame?: SDK.DebuggerModel.CallFrame;
     static createForDebuggerCallFrame(frame: SDK.DebuggerModel.CallFrame, locationPool: Bindings.LiveLocation.LiveLocationPool, updateDelegate: (arg0: Item) => void): Promise<Item>;
     static createItemsForAsyncStack(title: string, debuggerModel: SDK.DebuggerModel.DebuggerModel, frames: Protocol.Runtime.CallFrame[], locationPool: Bindings.LiveLocation.LiveLocationPool, updateDelegate: (arg0: Item) => void): Promise<Item[]>;
-    constructor(title: string, updateDelegate: (arg0: Item) => void);
+    constructor(title: string, updateDelegate: (arg0: Item) => void, frame?: SDK.DebuggerModel.CallFrame);
     private update;
 }

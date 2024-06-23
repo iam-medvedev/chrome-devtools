@@ -629,7 +629,7 @@ export const generatedPropertyValues: {
     quotes: {
         values: string[];
     };
-    "reading-order-items": {
+    "reading-flow": {
         values: string[];
     };
     resize: {
@@ -690,18 +690,6 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "scroll-snap-type": {
-        values: string[];
-    };
-    "scroll-start-block": {
-        values: string[];
-    };
-    "scroll-start-inline": {
-        values: string[];
-    };
-    "scroll-start-target-block": {
-        values: string[];
-    };
-    "scroll-start-target-inline": {
         values: string[];
     };
     "scroll-start-target-x": {

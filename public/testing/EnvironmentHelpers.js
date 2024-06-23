@@ -110,6 +110,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
     "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
+    "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -201,6 +202,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'console-trace-expand', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'flamechart-mouse-wheel-action', false, "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-css-property-documentation-on-hover', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'freestyler-dogfood-consent-onboarding-finished', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.
@@ -376,6 +378,23 @@ export function expectConsoleLogs(expectedLogs) {
         if (expectedLogs.error) {
             console.error = error;
         }
+    });
+}
+export function getGetHostConfigStub(config) {
+    const settings = Common.Settings.Settings.instance();
+    return sinon.stub(settings, 'getHostConfig').returns({
+        devToolsConsoleInsights: {
+            enabled: false,
+            aidaModelId: '',
+            aidaTemperature: 0.2,
+            ...config.devToolsConsoleInsights,
+        },
+        devToolsFreestylerDogfood: {
+            aidaModelId: '',
+            aidaTemperature: 0,
+            enabled: false,
+            ...config.devToolsFreestylerDogfood,
+        },
     });
 }
 //# sourceMappingURL=EnvironmentHelpers.js.map

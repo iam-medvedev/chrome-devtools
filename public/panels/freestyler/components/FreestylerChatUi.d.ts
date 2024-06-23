@@ -1,3 +1,4 @@
+import * as Host from '../../../core/host/host.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 import { type StepData } from '../FreestylerAgent.js';
 export declare enum ChatMessageEntity {
@@ -12,16 +13,24 @@ export type ChatMessage = {
     steps: StepData[];
 };
 export declare const enum State {
-    CHAT_VIEW = "chat-view",
-    CHAT_VIEW_LOADING = "chat-view-loading"
+    CONSENT_VIEW = "consent-view",
+    CHAT_VIEW = "chat-view"
+}
+export declare const enum Rating {
+    POSITIVE = "positive",
+    NEGATIVE = "negative"
 }
 export type Props = {
     onTextSubmit: (text: string) => void;
     onInspectElementClick: () => void;
+    onRateClick: (rpcId: number, rate: Rating) => void;
+    onAcceptConsentClick: () => void;
     inspectElementToggled: boolean;
     state: State;
+    aidaAvailability: Host.AidaClient.AidaAvailability;
     messages: ChatMessage[];
     selectedNode: SDK.DOMModel.DOMNode | null;
+    isLoading: boolean;
 };
 export declare class FreestylerChatUi extends HTMLElement {
     #private;

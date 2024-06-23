@@ -58,6 +58,7 @@ export interface MetaData {
     hardwareConcurrency?: number;
     dataOrigin?: DataOrigin;
     modifications?: Modifications;
+    enhancedTraceVersion?: number;
 }
 export type Contents = TraceFile | TraceEventData[];
 export declare function traceEventKeyToValues(key: TraceEventSerializableKey): TraceEventSerializableKeyValues;

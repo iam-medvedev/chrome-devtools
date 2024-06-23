@@ -11,6 +11,7 @@ export declare class OriginalScopeBuilder {
 export declare class GeneratedRangeBuilder {
     #private;
     start(line: number, column: number, options?: {
+        isScope?: boolean;
         definition?: {
             sourceIdx: number;
             scopeIdx: number;

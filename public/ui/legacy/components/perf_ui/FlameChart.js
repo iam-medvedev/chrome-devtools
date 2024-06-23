@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Common from '../../../../core/common/common.js';
+import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
@@ -674,10 +675,14 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 case "INSIDE_TRACK" /* HoverType.INSIDE_TRACK */: {
                     this.#selectGroup(groupIndex);
                     const timelineData = this.timelineData();
+                    const isMetaOrControl = Host.Platform.isMac() ? mouseEvent.metaKey : mouseEvent.ctrlKey;
                     if (mouseEvent.shiftKey && this.highlightedEntryIndex !== -1 && timelineData) {
                         const start = timelineData.entryStartTimes[this.highlightedEntryIndex];
                         const end = start + timelineData.entryTotalTimes[this.highlightedEntryIndex];
                         this.chartViewport.setRangeSelection(start, end);
+                    }
+                    else if (isMetaOrControl && this.highlightedEntryIndex !== -1 && timelineData) {
+                        this.dispatchEventToListeners("AnnotateEntry" /* Events.AnnotateEntry */, this.highlightedEntryIndex);
                     }
                     else {
                         this.chartViewport.onClick(mouseEvent);

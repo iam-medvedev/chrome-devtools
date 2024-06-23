@@ -15,7 +15,7 @@ styles.replaceSync(
   display: block;
   width: auto;
   height: auto;
-  margin: 10px;
+  margin: 10px 0;
   border: 1px solid var(--box-shadow-outline-color);
   padding: 10px;
   border-radius: 3px;

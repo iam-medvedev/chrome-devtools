@@ -12,6 +12,7 @@ class MockViewDelegate {
     }
     highlightEvent(_event) {
     }
+    element = document.createElement('div');
 }
 describeWithEnvironment('TimelineTreeView', function () {
     const mockViewDelegate = new MockViewDelegate();

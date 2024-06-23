@@ -25,7 +25,7 @@ styles.replaceSync(
 
 .add-locations-button {
   flex: none;
-  margin: 10px 2px;
+  margin: 10px 5px;
   min-width: 140px;
   align-self: flex-start;
 }

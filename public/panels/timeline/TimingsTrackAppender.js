@@ -63,7 +63,7 @@ export class TimingsTrackAppender {
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
         const trackIsCollapsible = this.#traceParsedData.UserTimings.performanceMeasures.length > 0;
         const style = buildGroupStyle({ useFirstLineForOverview: true, collapsible: trackIsCollapsible });
-        const group = buildTrackHeader(currentLevel, i18nString(UIStrings.timings), style, /* selectable= */ true, expanded);
+        const group = buildTrackHeader("timings" /* VisualLoggingTrackName.TIMINGS */, currentLevel, i18nString(UIStrings.timings), style, /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }
     /**

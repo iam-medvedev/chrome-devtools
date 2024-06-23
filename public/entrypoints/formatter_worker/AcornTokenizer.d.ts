@@ -31,6 +31,7 @@ export declare class AcornTokenizer {
     static punctuator(token: Acorn.Token, values?: string): boolean;
     static keyword(token: Acorn.Token, keyword?: string): boolean;
     static identifier(token: TokenOrComment, identifier?: string): boolean;
+    static arrowIdentifier(token: TokenOrComment, identifier?: string): boolean;
     static lineComment(token: TokenOrComment): boolean;
     static blockComment(token: TokenOrComment): boolean;
     nextToken(): TokenOrComment | null;

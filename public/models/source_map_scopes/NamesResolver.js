@@ -171,7 +171,7 @@ const resolveScope = async (script, scopeChain) => {
         return { variableMapping: new Map(), thisMapping: null };
     }
     let cachedScopeMap = scopeToCachedIdentifiersMap.get(parsedScope);
-    const sourceMap = script.debuggerModel.sourceMapManager().sourceMapForClient(script);
+    const sourceMap = script.sourceMap();
     if (!cachedScopeMap || cachedScopeMap.sourceMap !== sourceMap) {
         const identifiersPromise = (async () => {
             const variableMapping = new Map();
@@ -414,7 +414,7 @@ export const resolveExpression = async (callFrame, originalText, uiSourceCode, l
     if (!script) {
         return '';
     }
-    const sourceMap = script.debuggerModel.sourceMapManager().sourceMapForClient(script);
+    const sourceMap = script.sourceMap();
     if (!sourceMap) {
         return '';
     }
@@ -587,7 +587,7 @@ async function getFunctionNameFromScopeStart(script, lineNumber, columnNumber) {
     // To reduce the overhead of resolving function names,
     // we check for source maps first and immediately leave
     // this function if the script doesn't have a sourcemap.
-    const sourceMap = script.debuggerModel.sourceMapManager().sourceMapForClient(script);
+    const sourceMap = script.sourceMap();
     if (!sourceMap) {
         return null;
     }

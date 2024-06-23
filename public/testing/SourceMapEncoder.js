@@ -187,6 +187,9 @@ export class GeneratedRangeBuilder {
         if (options?.callsite) {
             flags |= 2 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.HasCallsite */;
         }
+        if (options?.isScope) {
+            flags |= 4 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.IsScope */;
+        }
         this.#encodedRange += encodeVlq(flags);
         if (options?.definition) {
             const { sourceIdx, scopeIdx } = options.definition;

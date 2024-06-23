@@ -26,6 +26,14 @@ export interface EntrySelected {
     entry: OverlayEntry;
 }
 /**
+ * Represents an object created when a user creates a label for an entry in the timeline.
+ */
+export interface EntryLabel {
+    type: 'ENTRY_LABEL';
+    entry: OverlayEntry;
+    label: string;
+}
+/**
  * Represents a time range on the trace. Also used when the user shift+clicks
  * and drags to create a time range.
  */
@@ -38,7 +46,7 @@ export interface TimeRangeLabel {
 /**
  * All supported overlay types. Expected to grow in time!
  */
-export type TimelineOverlay = EntrySelected | TimeRangeLabel;
+export type TimelineOverlay = EntrySelected | TimeRangeLabel | EntryLabel;
 /**
  * The dimensions each flame chart reports. Note that in the current UI they
  * will always have the same width, so theoretically we could only gather that

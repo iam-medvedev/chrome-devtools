@@ -16,21 +16,12 @@ const extensionPalette = [
 export function colorIsValid(color) {
     return extensionPalette.includes(color);
 }
-export function validateColorInPayload(payload) {
-    if (!('color' in payload) || !payload.color) {
-        return false;
-    }
-    const color = payload['color'];
-    return colorIsValid(color);
-}
 export function isExtensionPayloadMarker(payload) {
-    const colorIsValid = validateColorInPayload(payload);
-    return payload.metadata.dataType === "marker" /* ExtensionEntryType.MARKER */ && colorIsValid;
+    return payload.metadata.dataType === "marker" /* ExtensionEntryType.MARKER */;
 }
 export function isExtensionPayloadFlameChartEntry(payload) {
-    const colorIsValid = validateColorInPayload(payload);
     const hasTrack = 'track' in payload && Boolean(payload.track);
-    return payload.metadata.dataType === "track-entry" /* ExtensionEntryType.TRACK_ENTRY */ && hasTrack && colorIsValid;
+    return payload.metadata.dataType === "track-entry" /* ExtensionEntryType.TRACK_ENTRY */ && hasTrack;
 }
 export function isSyntheticExtensionEntry(entry) {
     return entry.cat === 'devtools.extension';

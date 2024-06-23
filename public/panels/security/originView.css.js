@@ -47,7 +47,7 @@ styles.replaceSync(
 
 .security-origin-view .origin-display {
   font-size: 12px;
-  padding-left: 32px;
+  padding-left: var(--sys-size-8);
   display: flex;
   align-items: center;
 }
@@ -56,11 +56,10 @@ styles.replaceSync(
   padding: 6px 0 0 16px;
 }
 
-.security-origin-view .origin-display .security-property {
-  display: inline-block;
-  vertical-align: middle;
-  position: absolute;
-  left: 13px;
+.security-origin-view .origin-display devtools-icon {
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
+  margin-right: var(--sys-size-6);
 }
 
 .security-origin-view .origin-view-section-title {

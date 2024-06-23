@@ -13,6 +13,8 @@ import { data as metaHandlerData } from './MetaHandler.js';
 const allEvents = [];
 const beginCommitCompositorFrameEvents = [];
 export const LONG_INTERACTION_THRESHOLD = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(200));
+const INP_GOOD_TIMING = LONG_INTERACTION_THRESHOLD;
+const INP_MEDIUM_TIMING = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(500));
 let longestInteractionEvent = null;
 const interactionEvents = [];
 const interactionEventsWithNoNesting = [];
@@ -282,5 +284,18 @@ export function data() {
 }
 export function deps() {
     return ['Meta'];
+}
+/**
+ * Classifications sourced from
+ * https://web.dev/articles/inp#good-score
+ */
+export function scoreClassificationForInteractionToNextPaint(timing) {
+    if (timing <= INP_GOOD_TIMING) {
+        return "good" /* ScoreClassification.GOOD */;
+    }
+    if (timing <= INP_MEDIUM_TIMING) {
+        return "ok" /* ScoreClassification.OK */;
+    }
+    return "bad" /* ScoreClassification.BAD */;
 }
 //# sourceMappingURL=UserInteractionsHandler.js.map

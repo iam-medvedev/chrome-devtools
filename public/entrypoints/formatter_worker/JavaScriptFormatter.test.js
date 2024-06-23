@@ -8,7 +8,7 @@ function formatJavaScript(text) {
 describe('JavaScriptFormatter', () => {
     it('formats await expressions correctly', () => {
         const formattedCode = formatJavaScript('(async () => { await someFunctionThatNeedsAwaiting(); callSomeOtherFunction(); })();');
-        assert.strictEqual(formattedCode, '(async()=>{\n  await someFunctionThatNeedsAwaiting();\n  callSomeOtherFunction();\n}\n)();\n');
+        assert.strictEqual(formattedCode, '(async () => {\n  await someFunctionThatNeedsAwaiting();\n  callSomeOtherFunction();\n}\n)();\n');
     });
     it('formats async-function expressions correctly', () => {
         const formattedCode = formatJavaScript('async function foo() {return await Promise.resolve(1);}');
@@ -348,7 +348,7 @@ var onStart = function() {}, delay=1000, belay=document.activeElement;`);
 function test(arg) {
   console.log(arg);
 }
-test(a=>a + 2);
+test(a => a + 2);
 var onClick = function() {
   console.log('click!');
 };
@@ -362,6 +362,25 @@ var onStart = function() {
 var onStart = function() {}
   , delay = 1000
   , belay = document.activeElement;
+`);
+    });
+    it('formats arrow functions correctly', () => {
+        const formattedCode1 = formatJavaScript('const double=x=>x*2;');
+        const formattedCode2 = formatJavaScript('const sum=(a,b)=>a+b;');
+        const formattedCode3 = formatJavaScript('const double=x=>{return x*2;}');
+        const formattedCode4 = formatJavaScript('const sum=(a,b,c)=>{const val=a+b+c;return val;}');
+        assert.strictEqual(formattedCode1, `const double = x => x * 2;
+`);
+        assert.strictEqual(formattedCode2, `const sum = (a, b) => a + b;
+`);
+        assert.strictEqual(formattedCode3, `const double = x => {
+  return x * 2;
+}
+`);
+        assert.strictEqual(formattedCode4, `const sum = (a, b, c) => {
+  const val = a + b + c;
+  return val;
+}
 `);
     });
     describe('formats files with comments', () => {

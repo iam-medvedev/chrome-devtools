@@ -54,7 +54,7 @@ async function stringifyRemoteObject(object) {
     }
 }
 export class FreestylerEvaluateAction {
-    static async execute(code, executionContext, options = {}) {
+    static async execute(code, executionContext) {
         const response = await executionContext.evaluate({
             expression: code,
             replMode: true,
@@ -63,7 +63,6 @@ export class FreestylerEvaluateAction {
             silent: false,
             generatePreview: true,
             allowUnsafeEvalBlockedByCSP: false,
-            throwOnSideEffect: options.allowSideEffectForTest ? false : true,
         }, 
         /* userGesture */ false, /* awaitPromise */ true);
         if (!response) {

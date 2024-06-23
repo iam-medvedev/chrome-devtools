@@ -22,7 +22,7 @@ export class ExtensionTrackAppender {
     }
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
         const style = buildGroupStyle({ collapsible: true });
-        const group = buildTrackHeader(currentLevel, this.#trackData.name, style, 
+        const group = buildTrackHeader("extension" /* VisualLoggingTrackName.EXTENSION */, currentLevel, this.#trackData.name, style, 
         /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }

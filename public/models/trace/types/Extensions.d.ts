@@ -16,7 +16,7 @@ export interface ExtensionFlameChartEntryPayload extends ExtensionDataPayload {
     metadata: ExtensionDataPayload['metadata'] & {
         dataType: ExtensionEntryType.TRACK_ENTRY;
     };
-    color: ExtensionColorFromPalette;
+    color?: ExtensionColorFromPalette;
     track: string;
     detailsPairs?: [string, string][];
     hintText?: string;
@@ -25,7 +25,7 @@ export interface ExtensionMarkerPayload extends ExtensionDataPayload {
     metadata: ExtensionDataPayload['metadata'] & {
         dataType: ExtensionEntryType.MARKER;
     };
-    color: ExtensionColorFromPalette;
+    color?: ExtensionColorFromPalette;
     detailsPairs?: [string, string][];
     hintText?: string;
 }
@@ -36,7 +36,6 @@ export interface SyntheticExtensionMarker extends SyntheticTraceEntry {
     args: TraceEventArgs & ExtensionMarkerPayload;
 }
 export type SyntheticExtensionEntry = SyntheticExtensionFlameChartEntry | SyntheticExtensionMarker;
-export declare function validateColorInPayload(payload: ExtensionDataPayload): boolean;
 export declare function isExtensionPayloadMarker(payload: ExtensionDataPayload): payload is ExtensionMarkerPayload;
 export declare function isExtensionPayloadFlameChartEntry(payload: ExtensionDataPayload): payload is ExtensionFlameChartEntryPayload;
 export declare function isSyntheticExtensionEntry(entry: TraceEventData): entry is SyntheticExtensionEntry;

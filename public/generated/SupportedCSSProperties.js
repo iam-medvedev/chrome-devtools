@@ -2808,7 +2808,7 @@ export const generatedProperties = [
             "grid-columns",
             "grid-order"
         ],
-        "name": "reading-order-items"
+        "name": "reading-flow"
     },
     {
         "keywords": [
@@ -3039,29 +3039,9 @@ export const generatedProperties = [
         "name": "scroll-start"
     },
     {
-        "keywords": [
-            "auto",
-            "start",
-            "end",
-            "center",
-            "top",
-            "bottom",
-            "left",
-            "right"
-        ],
         "name": "scroll-start-block"
     },
     {
-        "keywords": [
-            "auto",
-            "start",
-            "end",
-            "center",
-            "top",
-            "bottom",
-            "left",
-            "right"
-        ],
         "name": "scroll-start-inline"
     },
     {
@@ -3072,17 +3052,9 @@ export const generatedProperties = [
         "name": "scroll-start-target"
     },
     {
-        "keywords": [
-            "none",
-            "auto"
-        ],
         "name": "scroll-start-target-block"
     },
     {
-        "keywords": [
-            "none",
-            "auto"
-        ],
         "name": "scroll-start-target-inline"
     },
     {
@@ -5269,7 +5241,7 @@ export const generatedPropertyValues = {
             "none"
         ]
     },
-    "reading-order-items": {
+    "reading-flow": {
         "values": [
             "normal",
             "flex-visual",
@@ -5400,42 +5372,6 @@ export const generatedPropertyValues = {
             "both",
             "mandatory",
             "proximity"
-        ]
-    },
-    "scroll-start-block": {
-        "values": [
-            "auto",
-            "start",
-            "end",
-            "center",
-            "top",
-            "bottom",
-            "left",
-            "right"
-        ]
-    },
-    "scroll-start-inline": {
-        "values": [
-            "auto",
-            "start",
-            "end",
-            "center",
-            "top",
-            "bottom",
-            "left",
-            "right"
-        ]
-    },
-    "scroll-start-target-block": {
-        "values": [
-            "none",
-            "auto"
-        ]
-    },
-    "scroll-start-target-inline": {
-        "values": [
-            "none",
-            "auto"
         ]
     },
     "scroll-start-target-x": {

@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Host from '../../../../core/host/host.js';
 import * as Explain from '../../../../panels/explain/explain.js';
 import * as FrontendHelpers from '../../../../testing/EnvironmentHelpers.js';
 import * as ComponentHelpers from '../../helpers/helpers.js';
@@ -31,9 +32,6 @@ Images: ![https://example.com](https://example.com)
             metadata: {},
         };
     },
-}, {
-    isSyncActive: true,
-    accountEmail: 'some-email',
-});
+}, Host.AidaClient.AidaAvailability.AVAILABLE);
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=loading.js.map

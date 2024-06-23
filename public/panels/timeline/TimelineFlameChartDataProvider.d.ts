@@ -2,6 +2,7 @@ import * as Common from '../../core/common/common.js';
 import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { CompatibilityTracksAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 import { TimelineSelection } from './TimelineSelection.js';
 export type TimelineFlameChartEntry = TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | TraceEngine.Types.TraceEvents.TraceEventData;
@@ -29,6 +30,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private lastInitiatorsData;
     private lastSelection?;
     constructor();
+    setVisualElementLoggingParent(parent: VisualLogging.Loggable | null): void;
     hasTrackConfigurationMode(): boolean;
     modifyTree(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
     findPossibleContextMenuActions(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;

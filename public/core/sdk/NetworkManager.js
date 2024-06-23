@@ -964,6 +964,8 @@ export class NetworkDispatcher {
     reportingApiEndpointsChangedForOrigin(data) {
         this.#manager.dispatchEventToListeners(Events.ReportingApiEndpointsChangedForOrigin, data);
     }
+    policyUpdated() {
+    }
     /**
      * @deprecated
      * This method is only kept for usage in a web test.

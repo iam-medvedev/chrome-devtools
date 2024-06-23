@@ -213,7 +213,7 @@ export declare class ToolbarSettingComboBox extends ToolbarComboBox {
 }
 export declare class ToolbarCheckbox extends ToolbarItem<void> {
     inputElement: HTMLInputElement;
-    constructor(text: string, tooltip?: string, listener?: ((arg0: MouseEvent) => void), jslogContext?: string);
+    constructor(text: string, tooltip?: string, listener?: ((arg0: MouseEvent) => void), jslogContext?: string, small?: boolean);
     checked(): boolean;
     setChecked(value: boolean): void;
     applyEnabledState(enabled: boolean): void;

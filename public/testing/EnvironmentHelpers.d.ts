@@ -1,5 +1,7 @@
 /// <reference types="mocha" />
+/// <reference types="sinon" />
 import * as Common from '../core/common/common.js';
+import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';
 import type * as Protocol from '../generated/protocol.js';
 export declare function createTarget({ id, name, type, parentTarget, subtype, url }?: {
@@ -39,3 +41,8 @@ export declare function expectConsoleLogs(expectedLogs: {
     log?: string[];
     error?: string[];
 }): void;
+export declare function getGetHostConfigStub(config: RecursivePartial<Root.Runtime.HostConfig>): sinon.SinonStub;
+type RecursivePartial<T> = {
+    [P in keyof T]?: RecursivePartial<T[P]>;
+};
+export {};

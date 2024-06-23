@@ -344,7 +344,7 @@ export function data() {
 export function deps() {
     return ['Screenshots', 'Meta'];
 }
-export function stateForLayoutShiftScore(score) {
+export function scoreClassificationForLayoutShift(score) {
     let state = "good" /* ScoreClassification.GOOD */;
     if (score >= 0.1 /* LayoutShiftsThreshold.NEEDS_IMPROVEMENT */) {
         state = "ok" /* ScoreClassification.OK */;

@@ -83,7 +83,7 @@ styles.replaceSync(
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-left: 16px;
+  margin-left: 10px;
 }
 
 /*# sourceURL=storageView.css */

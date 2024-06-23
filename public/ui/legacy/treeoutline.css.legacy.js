@@ -41,11 +41,6 @@ export default {
   color: var(--sys-color-on-surface-subtle);
 }
 
-.tree-outline li:hover .selection {
-  display: block;
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
 .tree-outline:not(.hide-selection-when-blurred) li.selected .selection {
   display: block;
   background-color: var(--sys-color-neutral-container);
@@ -56,6 +51,11 @@ export default {
   margin-top: -2px;
   border-top: 2px solid;
   border-top-color: var(--sys-color-tonal-container);
+}
+
+.tree-outline li:hover:not(:has(span[is="dt-checkbox"])) .selection {
+  display: block;
+  background-color: var(--sys-color-state-hover-on-subtle);
 }
 
 .tree-outline:not(.hide-selection-when-blurred) li.hovered:not(.selected) .selection {

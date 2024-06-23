@@ -122,6 +122,10 @@ styles.replaceSync(
   padding-bottom: 10px;
   align-items: center;
   margin: auto;
+
+  &:has(span[is="dt-checkbox"]) {
+    padding-bottom: 4px;
+  }
 }
 
 .authenticator-option-label {

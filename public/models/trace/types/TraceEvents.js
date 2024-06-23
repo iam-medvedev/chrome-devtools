@@ -71,6 +71,39 @@ export function isTraceEventScheduleStyleRecalculation(event) {
 export function isTraceEventRenderFrameImplCreateChildFrame(event) {
     return event.name === "RenderFrameImpl::createChildFrame" /* KnownEventName.RenderFrameImplCreateChildFrame */;
 }
+export function isTraceEventTargetRundown(traceEventData) {
+    if (traceEventData.cat !== 'disabled-by-default-devtools.target-rundown') {
+        return false;
+    }
+    const data = traceEventData.args?.data;
+    if (!data) {
+        return false;
+    }
+    return 'frame' in data && 'frameType' in data && 'url' in data && 'isolate' in data && 'v8context' in data &&
+        'scriptId' in data;
+}
+export function isTraceEventScriptRundown(traceEventData) {
+    if (traceEventData.cat !== 'disabled-by-default-devtools.v8-source-rundown') {
+        return false;
+    }
+    const data = traceEventData.args?.data;
+    if (!data) {
+        return false;
+    }
+    return 'isolate' in data && 'executionContextId' in data && 'scriptId' in data && 'startLine' in data &&
+        'startColumn' in data && 'endLine' in data && 'endColumn' in data && 'hash' in data && 'isModule' in data &&
+        'hasSourceUrl' in data;
+}
+export function isTraceEventScriptRundownSource(traceEventData) {
+    if (traceEventData.cat !== 'disabled-by-default-devtools.v8-source-rundown-sources') {
+        return false;
+    }
+    const data = traceEventData.args?.data;
+    if (!data) {
+        return false;
+    }
+    return 'isolate' in data && 'scriptId' in data && 'length' in data && 'sourceText' in data;
+}
 export function isTraceEventPipelineReporter(event) {
     return event.name === "PipelineReporter" /* KnownEventName.PipelineReporter */;
 }

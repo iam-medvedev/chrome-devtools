@@ -8,6 +8,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { NetworkTrackAppender } from './NetworkTrackAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
@@ -22,6 +23,7 @@ export class TimelineFlameChartNetworkDataProvider {
     #lastSelection;
     #traceEngineData;
     #eventIndexByEvent = new Map();
+    #visualElementsParent = null;
     constructor() {
         this.#minimumBoundaryInternal = 0;
         this.#timeSpan = 0;
@@ -38,6 +40,9 @@ export class TimelineFlameChartNetworkDataProvider {
         if (this.#traceEngineData) {
             this.#setTimingBoundsData(this.#traceEngineData);
         }
+    }
+    setVisualElementLoggingParent(parent) {
+        this.#visualElementsParent = parent;
     }
     isEmpty() {
         this.timelineData();
@@ -61,6 +66,11 @@ export class TimelineFlameChartNetworkDataProvider {
         this.#events = this.#traceEngineData.NetworkRequests.byTime;
         this.#networkTrackAppender = new NetworkTrackAppender(this.#traceEngineData, this.#timelineDataInternal);
         this.#maxLevel = this.#networkTrackAppender.appendTrackAtLevel(0);
+        for (const group of this.#timelineDataInternal.groups) {
+            if (group.jslogContext) {
+                VisualLogging.registerLoggable(group, `${VisualLogging.section().context(group.jslogContext)}`, this.#visualElementsParent);
+            }
+        }
         return this.#timelineDataInternal;
     }
     minimumBoundary() {

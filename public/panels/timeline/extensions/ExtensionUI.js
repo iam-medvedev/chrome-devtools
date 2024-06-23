@@ -4,7 +4,9 @@
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 export function extensionEntryColor(event) {
     const color = event.args.color;
-    let themeColor = '--app-color-rendering';
+    // Use a default value for when the color of the extension entry
+    // was not passed or was set an unknown value.
+    let themeColor = '--ref-palette-primary60';
     switch (color) {
         case 'primary':
             themeColor = '--ref-palette-primary60';

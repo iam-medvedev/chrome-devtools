@@ -1,6 +1,3 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -36,6 +33,10 @@ export function buildGroupStyle(extra) {
 }
 /**
  * Builds the header corresponding to the track. A header is added in the shape of a group in the flame chart data.
+ * @param jslogContext the text that will be set as the logging context
+ *                          for the Visual Elements logging framework. Pass
+ *                          `null` to not set a context and consequently
+ *                          cause this group not to be logged.
  * @param startLevel the flame chart level at which the track header is appended.
  * @param name the display name of the track.
  * @param style the GroupStyle for the track header.
@@ -45,8 +46,18 @@ export function buildGroupStyle(extra) {
  * @param showStackContextMenu whether menu with options to merge/collapse entries in track is shown.
  * @returns the group that built from the give data
  */
-export function buildTrackHeader(startLevel, name, style, selectable, expanded, showStackContextMenu) {
-    const group = { startLevel, name, style, selectable, expanded, showStackContextMenu };
+export function buildTrackHeader(jslogContext, startLevel, name, style, selectable, expanded, showStackContextMenu) {
+    const group = {
+        startLevel,
+        name: name,
+        style,
+        selectable,
+        expanded,
+        showStackContextMenu,
+    };
+    if (jslogContext !== null) {
+        group.jslogContext = jslogContext;
+    }
     return group;
 }
 /**

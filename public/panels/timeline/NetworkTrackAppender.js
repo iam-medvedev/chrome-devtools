@@ -74,7 +74,7 @@ export class NetworkTrackAppender {
             useFirstLineForOverview: false,
             useDecoratorsForOverview: true,
         });
-        this.#group = buildTrackHeader(0, i18nString(UIStrings.network), style, /* selectable= */ true, expanded);
+        this.#group = buildTrackHeader("network" /* VisualLoggingTrackName.NETWORK */, 0, i18nString(UIStrings.network), style, /* selectable= */ true, expanded);
         this.#flameChartData.groups.push(this.#group);
     }
     /**

@@ -3,6 +3,7 @@ export declare function getRemoteBase(location?: string): {
     base: string;
     version: string;
 } | null;
+export declare function getPathName(): string;
 export declare class Runtime {
     private constructor();
     static instance(opts?: {
@@ -82,7 +83,8 @@ export declare const enum ExperimentName {
     TIMELINE_SIDEBAR = "timeline-rpp-sidebar",
     TIMELINE_EXTENSIONS = "timeline-extensions",
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
-    TIMELINE_OBSERVATIONS = "timeline-observations"
+    TIMELINE_OBSERVATIONS = "timeline-observations",
+    TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces"
 }
 export interface HostConfigConsoleInsights {
     aidaModelId: string;
@@ -97,15 +99,14 @@ export interface HostConfigConsoleInsights {
     enabled: boolean;
     optIn: boolean;
 }
-export interface HostConfigConsoleInsightsDogfood {
+export interface HostConfigFreestylerDogfood {
     aidaModelId: string;
     aidaTemperature: number;
     enabled: boolean;
-    optIn: boolean;
 }
 export interface HostConfig {
     devToolsConsoleInsights: HostConfigConsoleInsights;
-    devToolsConsoleInsightsDogfood: HostConfigConsoleInsightsDogfood;
+    devToolsFreestylerDogfood: HostConfigFreestylerDogfood;
 }
 /**
  * When defining conditions make sure that objects used by the function have

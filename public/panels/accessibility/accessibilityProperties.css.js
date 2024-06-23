@@ -38,7 +38,7 @@ span.ax-internal-role {
 }
 
 .source-order-checkbox {
-  margin: 5px;
+  margin: 2px 2px 2px 5px;
 }
 
 /*# sourceURL=accessibilityProperties.css */

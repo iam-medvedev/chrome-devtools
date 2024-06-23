@@ -33,6 +33,11 @@ styles.replaceSync(
   flex: 2 0 200px;
 }
 
+.network-config-fields span:first-of-type,
+.network-config-fields .network-config-accepted-encoding-custom {
+  padding: 3px 0;
+}
+
 .panel-section-separator {
   height: 1px;
   margin-bottom: 10px;

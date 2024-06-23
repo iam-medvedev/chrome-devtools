@@ -55,6 +55,9 @@ export class AcornTokenizer {
     static identifier(token, identifier) {
         return token.type === Acorn.tokTypes.name && (!identifier || token.value === identifier);
     }
+    static arrowIdentifier(token, identifier) {
+        return token.type === Acorn.tokTypes.arrow && (!identifier || token.type.label === identifier);
+    }
     static lineComment(token) {
         return token.type === 'Line';
     }

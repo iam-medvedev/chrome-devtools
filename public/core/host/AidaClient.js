@@ -11,6 +11,13 @@ export var Entity;
     Entity[Entity["USER"] = 1] = "USER";
     Entity[Entity["SYSTEM"] = 2] = "SYSTEM";
 })(Entity || (Entity = {}));
+export var AidaAvailability;
+(function (AidaAvailability) {
+    AidaAvailability["AVAILABLE"] = "available";
+    AidaAvailability["NO_ACCOUNT_EMAIL"] = "no-account-email";
+    AidaAvailability["NO_ACTIVE_SYNC"] = "no-active-sync";
+    AidaAvailability["NO_INTERNET"] = "no-internet";
+})(AidaAvailability || (AidaAvailability = {}));
 export class AidaClient {
     static buildConsoleInsightsRequest(input) {
         const request = {
@@ -21,11 +28,7 @@ export class AidaClient {
         let temperature = NaN;
         let modelId = null;
         let disallowLogging = false;
-        if (config?.devToolsConsoleInsightsDogfood.enabled) {
-            temperature = config.devToolsConsoleInsightsDogfood.aidaTemperature;
-            modelId = config.devToolsConsoleInsightsDogfood.aidaModelId;
-        }
-        else if (config?.devToolsConsoleInsights.enabled) {
+        if (config?.devToolsConsoleInsights.enabled) {
             temperature = config.devToolsConsoleInsights.aidaTemperature;
             modelId = config.devToolsConsoleInsights.aidaModelId;
             disallowLogging = config.devToolsConsoleInsights.disallowLogging;
@@ -44,6 +47,19 @@ export class AidaClient {
             };
         }
         return request;
+    }
+    static async getAidaClientAvailability() {
+        if (!navigator.onLine) {
+            return AidaAvailability.NO_INTERNET;
+        }
+        const syncInfo = await new Promise(resolve => InspectorFrontendHostInstance.getSyncInformation(syncInfo => resolve(syncInfo)));
+        if (!syncInfo.accountEmail) {
+            return AidaAvailability.NO_ACCOUNT_EMAIL;
+        }
+        if (!syncInfo.isSyncActive) {
+            return AidaAvailability.NO_ACTIVE_SYNC;
+        }
+        return AidaAvailability.AVAILABLE;
     }
     async *fetch(request) {
         if (!InspectorFrontendHostInstance.doAidaConversation) {

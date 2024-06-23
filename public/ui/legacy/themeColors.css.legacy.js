@@ -453,7 +453,7 @@ export default {
    */
   --app-color-navigation-drawer-label-selected: var(--sys-color-primary);
 
-  &.-theme-with-dark-background {
+  &.theme-with-dark-background {
     /**
     * Color for navigation drawers.
     */

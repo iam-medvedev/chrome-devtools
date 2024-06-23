@@ -40,7 +40,7 @@ describeWithEnvironment('LiveMetricsView', () => {
     it('should show INP value', async () => {
         const view = new Components.LiveMetricsView.LiveMetricsView();
         renderElementIntoDOM(view);
-        LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, { inp: { value: 2000, rating: 'poor', interactionType: 'pointer' }, interactions: [] });
+        LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, { inp: { value: 2000, rating: 'poor' }, interactions: [] });
         await coordinator.done();
         const metricEl = view.shadowRoot?.querySelector('#inp');
         const metricValueEl = metricEl.querySelector('.metric-card-value');

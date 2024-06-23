@@ -80,6 +80,7 @@ core/sdk/ServiceWorkerManager.test.js
 core/sdk/SourceMap.test.js
 core/sdk/SourceMapManager.test.js
 core/sdk/SourceMapScopes.test.js
+core/sdk/SourceMapScopesInfo.test.js
 core/sdk/StorageBucketsModel.test.js
 core/sdk/StorageKeyManager.test.js
 core/sdk/Target.test.js
@@ -167,6 +168,7 @@ models/trace/extras/Metadata.test.js
 models/trace/extras/URLForEntry.test.js
 models/trace/handlers/AnimationHandler.test.js
 models/trace/handlers/AuctionWorkletsHandler.test.js
+models/trace/handlers/EnhancedTracesHandler.test.js
 models/trace/handlers/ExtensionTraceDataHandler.test.js
 models/trace/handlers/FramesHandler.test.js
 models/trace/handlers/GPUHandler.test.js
@@ -308,6 +310,7 @@ panels/explain/components/ConsoleInsight.test.js
 panels/explain/components/MarkdownRenderer.test.js
 panels/freestyler/FreestylerAgent.test.js
 panels/freestyler/FreestylerEvaluateAction.test.js
+panels/freestyler/FreestylerPanel.test.js
 panels/issues/IssueAggregator.test.js
 panels/issues/IssueView.test.js
 panels/layer_viewer/layer_viewer.test.js
