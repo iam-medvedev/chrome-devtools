@@ -37,7 +37,7 @@ export declare class ColorSwatch extends HTMLElement {
     private render;
     private onClick;
     private consume;
-    setFormat(format: Common.Color.Format): void;
+    updateColor(color: Common.Color.Color): void;
     private showFormatPicker;
 }
 declare global {

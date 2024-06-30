@@ -29,10 +29,6 @@ label {
   align-items: center;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  &:has(input:disabled) {
-    pointer-events: none;
-  }
 }
 
 p {

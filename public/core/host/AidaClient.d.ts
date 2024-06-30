@@ -7,6 +7,16 @@ export interface Chunk {
     text: string;
     entity: Entity;
 }
+export declare enum FunctionalityType {
+    FUNCTIONALITY_TYPE_UNSPECIFIED = 0,
+    CHAT = 1,
+    EXPLAIN_ERROR = 2
+}
+export declare enum ClientFeature {
+    CLIENT_FEATURE_UNSPECIFIED = 0,
+    CHROME_CONSOLE_INSIGHTS = 1,
+    CHROME_FREESTYLER = 2
+}
 export interface AidaRequest {
     input: string;
     preamble?: string;
@@ -19,6 +29,8 @@ export interface AidaRequest {
     metadata?: {
         disable_user_content_logging: boolean;
     };
+    functionality_type?: FunctionalityType;
+    client_feature?: ClientFeature;
 }
 export interface AidaResponse {
     explanation: string;

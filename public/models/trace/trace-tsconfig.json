@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../front_end/models/trace/EntriesFilter.ts",
+    "../../../../../../front_end/models/trace/LanternComputationData.ts",
     "../../../../../../front_end/models/trace/ModelImpl.ts",
     "../../../../../../front_end/models/trace/Processor.ts",
     "../../../../../../front_end/models/trace/TracingManager.ts",
@@ -58,6 +59,9 @@
     },
     {
       "path": "insights/bundle-tsconfig.json"
+    },
+    {
+      "path": "lantern/bundle-tsconfig.json"
     },
     {
       "path": "root-causes/bundle-tsconfig.json"

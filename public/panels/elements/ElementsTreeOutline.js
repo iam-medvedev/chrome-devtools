@@ -1191,9 +1191,6 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         if (node.isIframe()) {
             return true;
         }
-        if (node.isPortal()) {
-            return true;
-        }
         if (node.contentDocument()) {
             return true;
         }

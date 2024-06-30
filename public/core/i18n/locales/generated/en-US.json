@@ -1172,6 +1172,9 @@
   "generated/Deprecation.ts | DataUrlInSvgUse": {
     "message": "Support for data: URLs in SVGUseElement is deprecated and it will be removed in the future."
   },
+  "generated/Deprecation.ts | DelegatedInkExpectedImprovement": {
+    "message": "DelegatedInkTrailPresenter.expectedImprovement is deprecated due to potential fingerprinting concerns."
+  },
   "generated/Deprecation.ts | DocumentDomainSettingWithoutOriginAgentClusterHeader": {
     "message": "Relaxing the same-origin policy by setting document.domain is deprecated, and will be disabled by default. To continue using this feature, please opt-out of origin-keyed agent clusters by sending an Origin-Agent-Cluster: ?0 header along with the HTTP response for the document and frames. See https://developer.chrome.com/blog/immutable-document-domain/ for more details."
   },
@@ -1489,9 +1492,6 @@
   },
   "models/issues_manager/GenericIssue.ts | corbExplainerPageTitle": {
     "message": "CORB explainer"
-  },
-  "models/issues_manager/GenericIssue.ts | crossOriginPortalPostMessage": {
-    "message": "Portals - Same-origin communication channels"
   },
   "models/issues_manager/GenericIssue.ts | howDoesAutofillWorkPageTitle": {
     "message": "How does autofill work?"
@@ -6449,6 +6449,9 @@
   "panels/freestyler/components/FreestylerChatUi.ts | acceptButtonTitle": {
     "message": "Accept"
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | cancelButtonTitle": {
+    "message": "Cancel"
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | consentScreenHeading": {
     "message": "Things to consider"
   },
@@ -6511,6 +6514,9 @@
   },
   "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
     "message": "Send feedback"
+  },
+  "panels/freestyler/FreestylerPanel.ts | stoppedResponse": {
+    "message": "You stopped this response"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "Blocked Resource"
@@ -9243,7 +9249,7 @@
     "message": "Record memory allocations using sampling method."
   },
   "panels/profiler/HeapProfileView.ts | samplingProfiles": {
-    "message": "SAMPLING PROFILES"
+    "message": "Sampling profiles"
   },
   "panels/profiler/HeapProfileView.ts | sBytes": {
     "message": "{PH1} bytes"
@@ -9435,7 +9441,7 @@
     "message": "Allocation stack"
   },
   "panels/profiler/HeapSnapshotView.ts | allocationTimelines": {
-    "message": "ALLOCATION TIMELINES"
+    "message": "Allocation timelines"
   },
   "panels/profiler/HeapSnapshotView.ts | AllocationTimelinesShowInstrumented": {
     "message": "Allocation timelines show instrumented JavaScript memory allocations over time. Once profile is recorded you can select a time interval to see objects that were allocated within it and still alive by the end of recording. Use this profile type to isolate memory leaks."
@@ -9480,7 +9486,7 @@
     "message": "Heap snapshot profiles show memory distribution among your page's JavaScript objects and related DOM nodes."
   },
   "panels/profiler/HeapSnapshotView.ts | heapSnapshots": {
-    "message": "HEAP SNAPSHOTS"
+    "message": "Heap snapshots"
   },
   "panels/profiler/HeapSnapshotView.ts | jsArrays": {
     "message": "JS arrays"

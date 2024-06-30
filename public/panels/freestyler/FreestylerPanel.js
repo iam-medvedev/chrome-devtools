@@ -28,6 +28,10 @@ const TempUIStrings = {
      *@description Freestyelr UI text for the help button.
      */
     help: 'Help',
+    /**
+     *@description Displayed when the user stop the response
+     */
+    stoppedResponse: 'You stopped this response',
 };
 // TODO(nvitkov): b/346933425
 // const str_ = i18n.i18n.registerUIStrings('panels/freestyler/FreestylerPanel.ts', UIStrings);
@@ -94,6 +98,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             onInspectElementClick: this.#handleSelectElementClick.bind(this),
             onRateClick: this.#handleRateClick.bind(this),
             onAcceptConsentClick: this.#handleAcceptConsentClick.bind(this),
+            onCancelClick: this.#cancel.bind(this),
         };
         this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.Toggled */, ev => {
             this.#viewProps.inspectElementToggled = ev.data;
@@ -104,9 +109,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 return;
             }
             this.#viewProps.selectedNode = ev.data;
-            this.#agent.resetHistory();
             this.#clearMessages();
-            this.doUpdate();
         });
         this.doUpdate();
     }
@@ -151,10 +154,18 @@ export class FreestylerPanel extends UI.Panel.Panel {
             }
         }
     }
-    // TODO(ergunsh): Handle cancelling agent run.
     #clearMessages() {
         this.#viewProps.messages = [];
+        this.#viewProps.isLoading = false;
         this.#agent.resetHistory();
+        this.#cancel();
+        this.doUpdate();
+    }
+    #runAbortController = new AbortController();
+    #cancel() {
+        this.#runAbortController.abort();
+        this.#runAbortController = new AbortController();
+        this.#viewProps.isLoading = false;
         this.doUpdate();
     }
     async #handleTextSubmit(text) {
@@ -169,7 +180,12 @@ export class FreestylerPanel extends UI.Panel.Panel {
         };
         this.#viewProps.messages.push(systemMessage);
         this.doUpdate();
-        for await (const data of this.#agent.run(text)) {
+        this.#runAbortController = new AbortController();
+        const signal = this.#runAbortController.signal;
+        signal.addEventListener('abort', () => {
+            systemMessage.steps.push({ step: Step.ERROR, text: i18nString(TempUIStrings.stoppedResponse) });
+        });
+        for await (const data of this.#agent.run(text, { signal })) {
             if (data.step === Step.ANSWER || data.step === Step.ERROR) {
                 this.#viewProps.isLoading = false;
             }
@@ -178,7 +194,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             // That's why we're removing the `rpcId` from the previous step
             // if there is a new incoming step from the call with the same rpcId.
             const lastStep = systemMessage.steps.at(-1);
-            if (lastStep && lastStep.rpcId !== undefined && lastStep.rpcId === data.rpcId) {
+            if (lastStep && lastStep.rpcId && lastStep.rpcId === data.rpcId) {
                 delete lastStep.rpcId;
             }
             systemMessage.steps.push(data);

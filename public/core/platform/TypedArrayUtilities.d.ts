@@ -24,3 +24,10 @@ export declare function createExpandableBigUint32Array(): BigUint32Array;
  * asUint32ArrayOrFail will succeed. Otherwise, it will throw an exception.
  */
 export declare function createFixedBigUint32Array(length: number, maxLengthForTesting?: number): BigUint32Array;
+export interface BitVector {
+    getBit(index: number): boolean;
+    setBit(index: number): void;
+    clearBit(index: number): void;
+    previous(index: number): number;
+}
+export declare function createBitVector(length: number): BitVector;

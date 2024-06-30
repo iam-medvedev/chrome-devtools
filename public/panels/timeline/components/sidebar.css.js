@@ -97,15 +97,15 @@ devtools-select-menu {
 }
 
 .metric-value-bad {
-  color: var(--sys-color-error);
+  color: var(--app-color-performance-bad);
 }
 
 .metric-value-ok {
-  color: var(--override-accent-orange);
+  color: var(--app-color-performance-ok);
 }
 
 .metric-value-good {
-  color: var(--sys-color-green);
+  color: var(--app-color-performance-good);
 }
 
 .metric-score-unclassified {
@@ -133,7 +133,7 @@ devtools-select-menu {
 }
 
 .insight-description {
-  border-bottom: 1px solid var(--color-input-outline);
+  border-bottom: 1px solid var(--sys-color-outline);
   padding-bottom: 10px;
 }
 

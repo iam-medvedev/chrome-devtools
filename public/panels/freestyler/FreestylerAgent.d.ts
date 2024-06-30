@@ -34,6 +34,8 @@ export declare class FreestylerAgent {
         answer?: string;
     };
     resetHistory(): void;
-    run(query: string): AsyncGenerator<StepData, void, void>;
+    run(query: string, options?: {
+        signal: AbortSignal;
+    }): AsyncGenerator<StepData, void, void>;
 }
 export {};

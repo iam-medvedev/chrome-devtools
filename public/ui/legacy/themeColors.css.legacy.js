@@ -439,6 +439,13 @@ export default {
    */
   --app-color-navigation-drawer-label-selected: var(--sys-color-on-surface);
   --app-color-navigation-drawer-background-selected: var(--ref-palette-primary95);
+
+  /**
+   * Colors for performance panel metric ratings.
+   */
+  --app-color-performance-bad: var(--color-error-bright);
+  --app-color-performance-ok: var(--color-orange-bright);
+  --app-color-performance-good: var(--sys-color-green-bright);
 }
 
 :root.baseline-default {

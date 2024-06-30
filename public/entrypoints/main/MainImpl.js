@@ -40,6 +40,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as AutofillManager from '../../models/autofill_manager/autofill_manager.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
+import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as Extensions from '../../models/extensions/extensions.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as LiveMetrics from '../../models/live-metrics/live-metrics.js';
@@ -402,6 +403,7 @@ export class MainImpl {
         AutofillManager.AutofillManager.AutofillManager.instance();
         if (Root.Runtime.experiments.isEnabled("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */)) {
             LiveMetrics.LiveMetrics.instance({ forceNew: true });
+            CrUXManager.CrUXManager.instance({ forceNew: true });
         }
         new PauseListener();
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });

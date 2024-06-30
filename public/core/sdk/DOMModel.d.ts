@@ -53,7 +53,6 @@ export declare class DOMNode {
     contentDocument(): DOMDocument | null;
     setContentDocument(node: DOMDocument): void;
     isIframe(): boolean;
-    isPortal(): boolean;
     importedDocument(): DOMNode | null;
     nodeType(): number;
     nodeName(): string;

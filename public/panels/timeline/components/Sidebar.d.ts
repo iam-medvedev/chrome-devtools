@@ -8,6 +8,10 @@ declare enum InsightsCategories {
     CLS = "CLS",
     OTHER = "Other"
 }
+export declare class ToggleSidebarInsights extends Event {
+    static readonly eventName = "toggleinsightclick";
+    constructor();
+}
 export declare class SidebarWidget extends UI.SplitWidget.SplitWidget {
     #private;
     constructor();

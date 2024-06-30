@@ -10,7 +10,43 @@ function getFakeToken(token) {
     return token;
 }
 describeWithEnvironment('MarkdownView', () => {
-    describe('renderToken', () => {
+    describe('tokenizer', () => {
+        it('tokenizers links in single quotes', () => {
+            assert.deepStrictEqual(Marked.Marked.lexer('\'https://example.com\''), [
+                {
+                    'raw': '\'https://example.com\'',
+                    'text': '\'https://example.com\'',
+                    'tokens': [
+                        {
+                            'raw': '\'',
+                            'text': '&#39;',
+                            'type': 'text',
+                        },
+                        {
+                            'href': 'https://example.com',
+                            'raw': 'https://example.com',
+                            'text': 'https://example.com',
+                            'tokens': [
+                                {
+                                    'raw': 'https://example.com',
+                                    'text': 'https://example.com',
+                                    'type': 'text',
+                                },
+                            ],
+                            'type': 'link',
+                        },
+                        {
+                            'raw': '\'',
+                            'text': '&#39;',
+                            'type': 'text',
+                        },
+                    ],
+                    'type': 'paragraph',
+                },
+            ]);
+        });
+    });
+    describe('MarkdownLitRenderer renderToken', () => {
         const renderer = new MarkdownView.MarkdownView.MarkdownLitRenderer();
         it('wraps paragraph tokens in <p> tags', () => {
             const renderResult = renderer.renderToken(getFakeToken({ type: 'paragraph', tokens: [] }));
@@ -88,6 +124,25 @@ describeWithEnvironment('MarkdownView', () => {
         it('renders em correctly', () => {
             const renderResult = renderer.renderToken(getFakeToken({ type: 'em', text: 'em text' })).strings.join('');
             assert.isTrue(renderResult.includes('<em'));
+        });
+    });
+    describe('MarkdownInsightRenderer renderToken', () => {
+        const renderer = new MarkdownView.MarkdownView.MarkdownInsightRenderer();
+        it('renders link as an x-link', () => {
+            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'exampleLink' });
+            assert(result.values[0].tagName === 'X-LINK');
+        });
+        it('renders images as an x-link', () => {
+            const result = renderer.renderToken({ type: 'image', text: 'learn more', href: 'exampleLink' });
+            assert(result.values[0].tagName === 'X-LINK');
+        });
+        it('renders headers as a strong element', () => {
+            const result = renderer.renderToken({ type: 'heading', text: 'learn more' });
+            assert(result.strings.join('').includes('<strong>'));
+        });
+        it('renders unsupported tokens', () => {
+            const result = renderer.renderToken({ type: 'html', raw: '<!DOCTYPE html>' });
+            assert(result.values.join('').includes('<!DOCTYPE html>'));
         });
     });
     const paragraphText = 'Single paragraph with a sentence of text and some list items to test that the component works end-to-end.';

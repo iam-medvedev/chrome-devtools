@@ -56,6 +56,10 @@ export declare const UIStrings: {
      */
     DataUrlInSvgUse: string;
     /**
+     * @description Warning displayed to developers that they should not be using `DelegatedInkTrailPresenter.expectedImprovement`.
+     */
+    DelegatedInkExpectedImprovement: string;
+    /**
      * @description This warning occurs when a script modifies `document.domain` without having set on `Origin-Agent-Cluster` http header. In other words, when a script relies on the default behaviour of `Origin-Agent-Cluster` when setting document.domain.
      */
     DocumentDomainSettingWithoutOriginAgentClusterHeader: string;

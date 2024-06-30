@@ -131,6 +131,7 @@ let BidiPage = (() => {
         tracing;
         coverage;
         #cdpEmulationManager;
+        #emulatedNetworkConditions;
         _client() {
             return this.#frame.client;
         }
@@ -326,13 +327,13 @@ let BidiPage = (() => {
         async setViewport(viewport) {
             if (!this.browser().cdpSupported) {
                 await this.#frame.browsingContext.setViewport({
-                    viewport: viewport.width && viewport.height
+                    viewport: viewport?.width && viewport?.height
                         ? {
                             width: viewport.width,
                             height: viewport.height,
                         }
                         : null,
-                    devicePixelRatio: viewport.deviceScaleFactor
+                    devicePixelRatio: viewport?.deviceScaleFactor
                         ? viewport.deviceScaleFactor
                         : null,
                 });
@@ -529,11 +530,54 @@ let BidiPage = (() => {
         setBypassServiceWorker() {
             throw new UnsupportedOperation();
         }
-        setOfflineMode() {
-            throw new UnsupportedOperation();
+        async setOfflineMode(enabled) {
+            if (!this.#browserContext.browser().cdpSupported) {
+                throw new UnsupportedOperation();
+            }
+            if (!this.#emulatedNetworkConditions) {
+                this.#emulatedNetworkConditions = {
+                    offline: false,
+                    upload: -1,
+                    download: -1,
+                    latency: 0,
+                };
+            }
+            this.#emulatedNetworkConditions.offline = enabled;
+            return await this.#applyNetworkConditions();
         }
-        emulateNetworkConditions() {
-            throw new UnsupportedOperation();
+        async emulateNetworkConditions(networkConditions) {
+            if (!this.#browserContext.browser().cdpSupported) {
+                throw new UnsupportedOperation();
+            }
+            if (!this.#emulatedNetworkConditions) {
+                this.#emulatedNetworkConditions = {
+                    offline: false,
+                    upload: -1,
+                    download: -1,
+                    latency: 0,
+                };
+            }
+            this.#emulatedNetworkConditions.upload = networkConditions
+                ? networkConditions.upload
+                : -1;
+            this.#emulatedNetworkConditions.download = networkConditions
+                ? networkConditions.download
+                : -1;
+            this.#emulatedNetworkConditions.latency = networkConditions
+                ? networkConditions.latency
+                : 0;
+            return await this.#applyNetworkConditions();
+        }
+        async #applyNetworkConditions() {
+            if (!this.#emulatedNetworkConditions) {
+                return;
+            }
+            await this._client().send('Network.emulateNetworkConditions', {
+                offline: this.#emulatedNetworkConditions.offline,
+                latency: this.#emulatedNetworkConditions.latency,
+                uploadThroughput: this.#emulatedNetworkConditions.upload,
+                downloadThroughput: this.#emulatedNetworkConditions.download,
+            });
         }
         async setCookie(...cookies) {
             const pageURL = this.url();

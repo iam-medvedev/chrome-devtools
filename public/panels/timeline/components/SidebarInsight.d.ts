@@ -1,5 +1,6 @@
 export interface InsightDetails {
     title: string;
+    expanded: boolean;
 }
 export declare class SidebarInsight extends HTMLElement {
     #private;

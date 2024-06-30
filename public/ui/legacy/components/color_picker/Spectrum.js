@@ -124,12 +124,10 @@ const colorElementToMutable = new WeakMap();
 const colorElementToColor = new WeakMap();
 const srgbGamutFormats = [
     "srgb" /* Common.Color.Format.SRGB */,
-    "nickname" /* Common.Color.Format.Nickname */,
     "rgb" /* Common.Color.Format.RGB */,
     "hex" /* Common.Color.Format.HEX */,
     "hsl" /* Common.Color.Format.HSL */,
     "hwb" /* Common.Color.Format.HWB */,
-    "shorthex" /* Common.Color.Format.ShortHEX */,
 ];
 const IS_NATIVE_EYE_DROPPER_AVAILABLE = 'EyeDropper' in window;
 function doesFormatSupportDisplayP3(format) {
@@ -147,9 +145,6 @@ function convertColorFormat(colorFormat) {
     }
     if (colorFormat === "hexa" /* Common.Color.Format.HEXA */) {
         return "hex" /* Common.Color.Format.HEX */;
-    }
-    if (colorFormat === "shorthexa" /* Common.Color.Format.ShortHEXA */) {
-        return "shorthex" /* Common.Color.Format.ShortHEX */;
     }
     return colorFormat;
 }
@@ -1026,14 +1021,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         if (colorString) {
             return colorString;
         }
-        if (this.colorFormat === "nickname" /* Common.Color.Format.Nickname */) {
-            colorString =
-                color.asString(color.asLegacyColor().hasAlpha() ? "hexa" /* Common.Color.Format.HEXA */ : "hex" /* Common.Color.Format.HEX */);
-        }
-        else if (this.colorFormat === "shorthex" /* Common.Color.Format.ShortHEX */) {
-            colorString = color.asString(color.asLegacyColor().detectHEXFormat());
-        }
-        else if (this.colorFormat === "hex" /* Common.Color.Format.HEX */) {
+        if (this.colorFormat === "hex" /* Common.Color.Format.HEX */) {
             colorString = color.asString("hexa" /* Common.Color.Format.HEXA */);
         }
         else if (this.colorFormat === "hsl" /* Common.Color.Format.HSL */) {
@@ -1066,16 +1054,11 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.alphaSlider.style.left = alphaSlideX + 'px';
     }
     updateInput() {
-        if (this.colorFormat === "hex" /* Common.Color.Format.HEX */ || this.colorFormat === "shorthex" /* Common.Color.Format.ShortHEX */ ||
-            this.colorFormat === "nickname" /* Common.Color.Format.Nickname */) {
+        if (this.colorFormat === "hex" /* Common.Color.Format.HEX */) {
             this.hexContainer.hidden = false;
             this.displayContainer.hidden = true;
-            if (this.colorFormat === "shorthex" /* Common.Color.Format.ShortHEX */) {
-                this.hexValue.value = String(this.color.asString(this.color.asLegacyColor().detectHEXFormat()));
-            }
-            else { // Don't use ShortHEX if original was not in that format.
-                this.hexValue.value = String(this.color.asString(this.color.asLegacyColor().hasAlpha() ? "hexa" /* Common.Color.Format.HEXA */ : "hex" /* Common.Color.Format.HEX */));
-            }
+            this.hexValue.value =
+                this.color.asString((this.color.alpha ?? 1) !== 1 ? "hexa" /* Common.Color.Format.HEXA */ : "hex" /* Common.Color.Format.HEX */);
         }
         else {
             // RGBA, HSLA, HWBA, color() display.
@@ -1133,11 +1116,10 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.hueElement.classList.toggle('display-p3', doesFormatSupportDisplayP3(this.colorFormat));
     }
     async showFormatPicker(event) {
-        const contextMenu = new FormatPickerContextMenu(this.color, this.colorFormat);
+        const contextMenu = new FormatPickerContextMenu(this.color);
         this.isFormatPickerShown = true;
-        await contextMenu.show(event, (format) => {
-            const newColor = this.color.as(format);
-            this.innerSetColor(newColor, undefined, undefined, format, ChangeSource.Other);
+        await contextMenu.show(event, newColor => {
+            this.innerSetColor(newColor, undefined, undefined, newColor.format(), ChangeSource.Other);
             Host.userMetrics.colorConvertedFrom(1 /* Host.UserMetrics.ColorConvertedFrom.ColorPicker */);
         });
         this.isFormatPickerShown = false;
@@ -1168,8 +1150,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         }
         let color = null;
         let colorFormat;
-        if (this.colorFormat === "hex" /* Common.Color.Format.HEX */ || this.colorFormat === "shorthex" /* Common.Color.Format.ShortHEX */ ||
-            this.colorFormat === "nickname" /* Common.Color.Format.Nickname */) {
+        if (this.colorFormat === "hex" /* Common.Color.Format.HEX */) {
             color = Common.Color.parse(this.hexValue.value);
         }
         else {

@@ -1172,6 +1172,9 @@
   "generated/Deprecation.ts | DataUrlInSvgUse": {
     "message": "Ŝúp̂ṕôŕt̂ f́ôŕ d̂át̂á: ÛŔL̂ś îń ŜV́ĜÚŝéÊĺêḿêńt̂ íŝ d́êṕr̂éĉát̂éd̂ án̂d́ ît́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂ ín̂ t́ĥé f̂út̂úr̂é."
   },
+  "generated/Deprecation.ts | DelegatedInkExpectedImprovement": {
+    "message": "DelegatedInkTrailPresenter.expectedImprovement îś d̂ép̂ŕêćât́êd́ d̂úê t́ô ṕôt́êńt̂íâĺ f̂ín̂ǵêŕp̂ŕîńt̂ín̂ǵ ĉón̂ćêŕn̂ś."
+  },
   "generated/Deprecation.ts | DocumentDomainSettingWithoutOriginAgentClusterHeader": {
     "message": "R̂él̂áx̂ín̂ǵ t̂h́ê śâḿê-ór̂íĝín̂ ṕôĺîćŷ b́ŷ śêt́t̂ín̂ǵ document.domain îś d̂ép̂ŕêćât́êd́, âńd̂ ẃîĺl̂ b́ê d́îśâb́l̂éd̂ b́ŷ d́êf́âúl̂t́. T̂ó ĉón̂t́îńûé ûśîńĝ t́ĥíŝ f́êát̂úr̂é, p̂ĺêáŝé ôṕt̂-óût́ ôf́ ôŕîǵîń-k̂éŷéd̂ áĝén̂t́ ĉĺûśt̂ér̂ś b̂ý ŝén̂d́îńĝ án̂ Origin-Agent-Cluster: ?0 h́êád̂ér̂ ál̂ón̂ǵ ŵít̂h́ t̂h́ê H́T̂T́P̂ ŕêśp̂ón̂śê f́ôŕ t̂h́ê d́ôćûḿêńt̂ án̂d́ f̂ŕâḿêś. Ŝéê h́t̂t́p̂ś://d̂év̂él̂óp̂ér̂.ćĥŕôḿê.ćôḿ/b̂ĺôǵ/îḿm̂út̂áb̂ĺê-d́ôćûḿêńt̂-d́ôḿâín̂/ f́ôŕ m̂ór̂é d̂ét̂áîĺŝ."
   },
@@ -1489,9 +1492,6 @@
   },
   "models/issues_manager/GenericIssue.ts | corbExplainerPageTitle": {
     "message": "ĈÓR̂B́ êx́p̂ĺâín̂ér̂"
-  },
-  "models/issues_manager/GenericIssue.ts | crossOriginPortalPostMessage": {
-    "message": "P̂ór̂t́âĺŝ - Śâḿê-ór̂íĝín̂ ćôḿm̂ún̂íĉát̂íôń ĉh́âńn̂él̂ś"
   },
   "models/issues_manager/GenericIssue.ts | howDoesAutofillWorkPageTitle": {
     "message": "Ĥóŵ d́ôéŝ áût́ôf́îĺl̂ ẃôŕk̂?"
@@ -6449,6 +6449,9 @@
   "panels/freestyler/components/FreestylerChatUi.ts | acceptButtonTitle": {
     "message": "Âćĉép̂t́"
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | cancelButtonTitle": {
+    "message": "Ĉán̂ćêĺ"
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | consentScreenHeading": {
     "message": "T̂h́îńĝś t̂ó ĉón̂śîd́êŕ"
   },
@@ -6511,6 +6514,9 @@
   },
   "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
     "message": "Ŝén̂d́ f̂éêd́b̂áĉḱ"
+  },
+  "panels/freestyler/FreestylerPanel.ts | stoppedResponse": {
+    "message": "Ŷóû śt̂óp̂ṕêd́ t̂h́îś r̂éŝṕôńŝé"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "B̂ĺôćk̂éd̂ Ŕêśôúr̂ćê"
@@ -9243,7 +9249,7 @@
     "message": "R̂éĉór̂d́ m̂ém̂ór̂ý âĺl̂óĉát̂íôńŝ úŝín̂ǵ ŝám̂ṕl̂ín̂ǵ m̂ét̂h́ôd́."
   },
   "panels/profiler/HeapProfileView.ts | samplingProfiles": {
-    "message": "ŜÁM̂ṔL̂ÍN̂Ǵ P̂ŔÔF́ÎĹÊŚ"
+    "message": "Ŝám̂ṕl̂ín̂ǵ p̂ŕôf́îĺêś"
   },
   "panels/profiler/HeapProfileView.ts | sBytes": {
     "message": "{PH1} b̂ýt̂éŝ"
@@ -9435,7 +9441,7 @@
     "message": "Âĺl̂óĉát̂íôń ŝt́âćk̂"
   },
   "panels/profiler/HeapSnapshotView.ts | allocationTimelines": {
-    "message": "ÂĹL̂ÓĈÁT̂ÍÔŃ T̂ÍM̂ÉL̂ÍN̂ÉŜ"
+    "message": "Âĺl̂óĉát̂íôń t̂ím̂él̂ín̂éŝ"
   },
   "panels/profiler/HeapSnapshotView.ts | AllocationTimelinesShowInstrumented": {
     "message": "Âĺl̂óĉát̂íôń t̂ím̂él̂ín̂éŝ śĥóŵ ín̂śt̂ŕûḿêńt̂éd̂ J́âv́âŚĉŕîṕt̂ ḿêḿôŕŷ ál̂ĺôćât́îón̂ś ôv́êŕ t̂ím̂é. Ôńĉé p̂ŕôf́îĺê íŝ ŕêćôŕd̂éd̂ ýôú ĉán̂ śêĺêćt̂ á t̂ím̂é îńt̂ér̂v́âĺ t̂ó ŝéê ób̂j́êćt̂ś t̂h́ât́ ŵér̂é âĺl̂óĉát̂éd̂ ẃît́ĥín̂ ít̂ án̂d́ ŝt́îĺl̂ ál̂ív̂é b̂ý t̂h́ê én̂d́ ôf́ r̂éĉór̂d́îńĝ. Úŝé t̂h́îś p̂ŕôf́îĺê t́ŷṕê t́ô íŝól̂át̂é m̂ém̂ór̂ý l̂éâḱŝ."
@@ -9480,7 +9486,7 @@
     "message": "Ĥéâṕ ŝńâṕŝh́ôt́ p̂ŕôf́îĺêś ŝh́ôẃ m̂ém̂ór̂ý d̂íŝt́r̂íb̂út̂íôń âḿôńĝ ýôúr̂ ṕâǵê'ś Ĵáv̂áŜćr̂íp̂t́ ôb́ĵéĉt́ŝ án̂d́ r̂él̂át̂éd̂ D́ÔḾ n̂ód̂éŝ."
   },
   "panels/profiler/HeapSnapshotView.ts | heapSnapshots": {
-    "message": "ĤÉÂṔ ŜŃÂṔŜH́ÔT́Ŝ"
+    "message": "Ĥéâṕ ŝńâṕŝh́ôt́ŝ"
   },
   "panels/profiler/HeapSnapshotView.ts | jsArrays": {
     "message": "ĴŚ âŕr̂áŷś"

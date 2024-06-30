@@ -11,6 +11,8 @@ describeWithEnvironment('AidaClient', () => {
         assert.deepStrictEqual(request, {
             input: 'foo',
             client: 'CHROME_DEVTOOLS',
+            client_feature: 1,
+            functionality_type: 2,
         });
         stub.restore();
     });
@@ -28,6 +30,8 @@ describeWithEnvironment('AidaClient', () => {
             options: {
                 temperature: 0.5,
             },
+            client_feature: 1,
+            functionality_type: 2,
         });
         stub.restore();
     });
@@ -45,6 +49,8 @@ describeWithEnvironment('AidaClient', () => {
             options: {
                 temperature: 0,
             },
+            client_feature: 1,
+            functionality_type: 2,
         });
         stub.restore();
     });
@@ -64,6 +70,8 @@ describeWithEnvironment('AidaClient', () => {
                 model_id: TEST_MODEL_ID,
                 temperature: 0.5,
             },
+            client_feature: 1,
+            functionality_type: 2,
         });
         stub.restore();
     });
@@ -85,6 +93,8 @@ describeWithEnvironment('AidaClient', () => {
             options: {
                 temperature: 0.5,
             },
+            client_feature: 1,
+            functionality_type: 2,
         });
         stub.restore();
     });

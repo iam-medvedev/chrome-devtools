@@ -181,7 +181,7 @@ export class ConsoleInsight extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #promptBuilder;
     #aidaClient;
-    #renderer = new MarkdownRenderer();
+    #renderer = new MarkdownView.MarkdownView.MarkdownInsightRenderer();
     // Main state.
     #state;
     // Rating sub-form state.
@@ -852,29 +852,4 @@ class ConsoleInsightSourcesList extends HTMLElement {
 }
 customElements.define('devtools-console-insight', ConsoleInsight);
 customElements.define('devtools-console-insight-sources-list', ConsoleInsightSourcesList);
-export class MarkdownRenderer extends MarkdownView.MarkdownView.MarkdownLitRenderer {
-    renderToken(token) {
-        const template = this.templateForToken(token);
-        if (template === null) {
-            return LitHtml.html `${token.raw}`;
-        }
-        return template;
-    }
-    templateForToken(token) {
-        switch (token.type) {
-            case 'heading':
-                return html `<strong>${this.renderText(token)}</strong>`;
-            case 'link':
-            case 'image':
-                return LitHtml.html `${UI.XLink.XLink.create(token.href, token.text, undefined, undefined, 'link-in-explanation')}`;
-            case 'code':
-                return LitHtml.html `<${MarkdownView.CodeBlock.CodeBlock.litTagName}
-          .code=${this.unescape(token.text)}
-          .codeLang=${token.lang}
-          .displayNotice=${true}>
-        </${MarkdownView.CodeBlock.CodeBlock.litTagName}>`;
-        }
-        return super.templateForToken(token);
-    }
-}
 //# sourceMappingURL=ConsoleInsight.js.map

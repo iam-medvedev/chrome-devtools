@@ -1,10 +1,11 @@
 import type * as Common from '../../core/common/common.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type DataDisplayDelegate, type ProfileHeader, type StatusUpdate } from './ProfileHeader.js';
 export declare class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     readonly iconElement: HTMLDivElement;
     readonly titlesElement: HTMLDivElement;
-    readonly menuElement: HTMLButtonElement;
+    readonly menuElement: Buttons.Button.Button;
     titleContainer: HTMLElement;
     titleElement: HTMLElement;
     subtitleElement: HTMLElement;

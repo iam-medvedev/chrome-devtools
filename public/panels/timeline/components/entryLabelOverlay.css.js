@@ -29,6 +29,7 @@ styles.replaceSync(
   border-radius: 4px;
   font-family: var(--monospace-font-family);
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .label-box:focus {
@@ -36,9 +37,14 @@ styles.replaceSync(
   color: var(--sys-color-token-variable);
 }
 
+.connectorContainer {
+  overflow: visible;
+}
+
 .entry-highlight-wrapper {
   box-sizing: border-box;
   border: 2px solid var(--sys-color-token-variable);
+  border-radius: 7px;
 }
 
 /*# sourceURL=entryLabelOverlay.css */

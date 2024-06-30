@@ -115,6 +115,7 @@ models/bindings/ResourceScriptMapping.test.js
 models/bindings/ResourceUtils.test.js
 models/breakpoints/BreakpointManager.test.js
 models/cpu_profile/CPUProfileDataModel.test.js
+models/crux-manager/CrUXManager.test.js
 models/emulation/DeviceModeModel.test.js
 models/emulation/EmulatedDevices.test.js
 models/extensions/ExtensionServer.test.js
@@ -203,6 +204,13 @@ models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LargestContentfulPaint.test.js
 models/trace/insights/RenderBlocking.test.js
 models/trace/insights/Viewport.test.js
+models/trace/lantern/core/NetworkAnalyzer.test.js
+models/trace/lantern/graph/BaseNode.test.js
+models/trace/lantern/graph/PageDependencyGraph.test.js
+models/trace/lantern/simulation/ConnectionPool.test.js
+models/trace/lantern/simulation/DNSCache.test.js
+models/trace/lantern/simulation/Simulator.test.js
+models/trace/lantern/simulation/TCPConnection.test.js
 models/trace/root-causes/LayoutShift.test.js
 models/trace/types/TraceEvents.test.js
 models/workspace/SearchConfig.test.js
@@ -307,7 +315,6 @@ panels/emulation/AdvancedApp.test.js
 panels/emulation/MediaQueryInspector.test.js
 panels/explain/PromptBuilder.test.js
 panels/explain/components/ConsoleInsight.test.js
-panels/explain/components/MarkdownRenderer.test.js
 panels/freestyler/FreestylerAgent.test.js
 panels/freestyler/FreestylerEvaluateAction.test.js
 panels/freestyler/FreestylerPanel.test.js
@@ -421,6 +428,7 @@ panels/timeline/components/BreadcrumbsUI.test.js
 panels/timeline/components/InteractionBreakdown.test.js
 panels/timeline/components/Invalidations.test.js
 panels/timeline/components/LiveMetricsView.test.js
+panels/timeline/components/SidebarAnnotationsTab.test.js
 panels/timeline/components/SidebarInsight.test.js
 panels/timeline/track_appenders/AnimationsTrackAppender.test.js
 panels/timeline/track_appenders/AppenderUtils.test.js

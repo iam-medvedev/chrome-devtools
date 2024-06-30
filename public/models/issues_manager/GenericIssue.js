@@ -6,10 +6,6 @@ import { Issue } from './Issue.js';
 import { resolveLazyDescription, } from './MarkdownIssueDescription.js';
 const UIStrings = {
     /**
-     *@description Title for cross-origin portal post message error
-     */
-    crossOriginPortalPostMessage: 'Portals - Same-origin communication channels',
-    /**
      *@description title for autofill documentation page
      */
     howDoesAutofillWorkPageTitle: 'How does autofill work?',
@@ -77,13 +73,6 @@ export class GenericIssue extends Issue {
         return [new GenericIssue(genericDetails, issuesModel, inspectorIssue.issueId)];
     }
 }
-export const genericCrossOriginPortalPostMessageError = {
-    file: 'genericCrossOriginPortalPostMessageError.md',
-    links: [{
-            link: 'https://github.com/WICG/portals#same-origin-communication-channels',
-            linkTitle: i18nLazyString(UIStrings.crossOriginPortalPostMessage),
-        }],
-};
 export const genericFormLabelForNameError = {
     file: 'genericFormLabelForNameError.md',
     links: [{
@@ -158,7 +147,6 @@ export const genericResponseWasBlockedbyORB = {
         }],
 };
 const issueDescriptions = new Map([
-    ["CrossOriginPortalPostMessageError" /* Protocol.Audits.GenericIssueErrorType.CrossOriginPortalPostMessageError */, genericCrossOriginPortalPostMessageError],
     ["FormLabelForNameError" /* Protocol.Audits.GenericIssueErrorType.FormLabelForNameError */, genericFormLabelForNameError],
     ["FormInputWithNoLabelError" /* Protocol.Audits.GenericIssueErrorType.FormInputWithNoLabelError */, genericFormInputWithNoLabelError],
     [
@@ -193,7 +181,6 @@ const issueDescriptions = new Map([
     ],
 ]);
 const issueTypes = new Map([
-    ["CrossOriginPortalPostMessageError" /* Protocol.Audits.GenericIssueErrorType.CrossOriginPortalPostMessageError */, "Improvement" /* IssueKind.Improvement */],
     ["FormLabelForNameError" /* Protocol.Audits.GenericIssueErrorType.FormLabelForNameError */, "PageError" /* IssueKind.PageError */],
     ["FormInputWithNoLabelError" /* Protocol.Audits.GenericIssueErrorType.FormInputWithNoLabelError */, "Improvement" /* IssueKind.Improvement */],
     ["FormAutocompleteAttributeEmptyError" /* Protocol.Audits.GenericIssueErrorType.FormAutocompleteAttributeEmptyError */, "PageError" /* IssueKind.PageError */],

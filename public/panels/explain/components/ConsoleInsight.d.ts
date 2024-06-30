@@ -1,7 +1,4 @@
 import * as Host from '../../../core/host/host.js';
-import * as Marked from '../../../third_party/marked/marked.js';
-import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import { type PromptBuilder, type Source } from '../PromptBuilder.js';
 export declare class CloseEvent extends Event {
     static readonly eventName = "close";
@@ -28,9 +25,5 @@ declare global {
         'devtools-console-insight': ConsoleInsight;
         'devtools-console-insight-sources-list': ConsoleInsightSourcesList;
     }
-}
-export declare class MarkdownRenderer extends MarkdownView.MarkdownView.MarkdownLitRenderer {
-    renderToken(token: Marked.Marked.Token): LitHtml.TemplateResult;
-    templateForToken(token: Marked.Marked.Token): LitHtml.TemplateResult | null;
 }
 export {};

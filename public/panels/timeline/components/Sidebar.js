@@ -12,6 +12,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import sidebarStyles from './sidebar.css.js';
+import * as SidebarAnnotationsTab from './SidebarAnnotationsTab.js';
 import * as SidebarInsight from './SidebarInsight.js';
 const COLLAPSED_WIDTH = 40;
 const DEFAULT_EXPANDED_WIDTH = 240;
@@ -23,6 +24,12 @@ var InsightsCategories;
     InsightsCategories["CLS"] = "CLS";
     InsightsCategories["OTHER"] = "Other";
 })(InsightsCategories || (InsightsCategories = {}));
+export class ToggleSidebarInsights extends Event {
+    static eventName = 'toggleinsightclick';
+    constructor() {
+        super(ToggleSidebarInsights.eventName, { bubbles: true, composed: true });
+    }
+}
 export class SidebarWidget extends UI.SplitWidget.SplitWidget {
     #sidebarExpanded = false;
     #sidebarUI = new SidebarUI();
@@ -62,6 +69,7 @@ export class SidebarUI extends HTMLElement {
     #activeTab = "Insights" /* SidebarTabsName.INSIGHTS */;
     selectedCategory = InsightsCategories.ALL;
     #expanded = false;
+    #lcpPhasesExpanded = false;
     #traceParsedData;
     #inpMetric = null;
     #lcpMetric = null;
@@ -93,14 +101,14 @@ export class SidebarUI extends HTMLElement {
                 { phase: 'Time to first byte', timing: ttfb, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
                 { phase: 'Resource load delay', timing: loadDelay, percent: `${(100 * loadDelay / timing).toFixed(0)}%` },
                 { phase: 'Resource load duration', timing: loadTime, percent: `${(100 * loadTime / timing).toFixed(0)}%` },
-                { phase: 'Resource render delay', timing: renderDelay, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
+                { phase: 'Resource render delay', timing: renderDelay, percent: `${(100 * renderDelay / timing).toFixed(0)}%` },
             ];
             return phaseData;
         }
         // If the lcp is text, we only have ttfb and render delay.
         const phaseData = [
             { phase: 'Time to first byte', timing: ttfb, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
-            { phase: 'Resource render delay', timing: renderDelay, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
+            { phase: 'Resource render delay', timing: renderDelay, percent: `${(100 * renderDelay / timing).toFixed(0)}%` },
         ];
         return phaseData;
     }
@@ -122,6 +130,8 @@ export class SidebarUI extends HTMLElement {
         }
         this.#insights = insights;
         this.#phaseData = this.getLCPInsightData();
+        // Reset toggled insights.
+        this.#lcpPhasesExpanded = false;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     set traceParsedData(traceParsedData) {
@@ -219,6 +229,11 @@ export class SidebarUI extends HTMLElement {
         }
         return this.#renderMetricValue("CLS" /* TraceEngine.Handlers.ModelHandlers.PageLoadMetrics.MetricName.CLS */, this.#clsMetric.clsScore.toPrecision(3), this.#clsMetric.clsScoreClassification);
     }
+    #toggleLCPPhaseClick() {
+        this.#lcpPhasesExpanded = !this.#lcpPhasesExpanded;
+        this.dispatchEvent(new ToggleSidebarInsights());
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+    }
     #renderInsightsForCategory(insightsCategory) {
         switch (insightsCategory) {
             case InsightsCategories.ALL:
@@ -228,12 +243,12 @@ export class SidebarUI extends HTMLElement {
             ${this.#renderLCPMetric()}
             ${this.#renderCLSMetric()}
           </div>
-          <div class="insights">${this.#renderLCPPhases()}</div>
+          <div class="insights" @click=${this.#toggleLCPPhaseClick}>${this.#renderLCPPhases()}</div>
         `;
             case InsightsCategories.LCP:
                 return LitHtml.html `
           ${this.#renderLCPMetric()}
-          <div class="insights">${this.#renderLCPPhases()}</div>
+          <div class="insights" @click=${this.#toggleLCPPhaseClick}>${this.#renderLCPPhases()}</div>
         `;
             case InsightsCategories.CLS:
                 return LitHtml.html `${this.#renderCLSMetric()}`;
@@ -247,10 +262,12 @@ export class SidebarUI extends HTMLElement {
         const lcpTitle = 'LCP by Phase';
         const showLCPPhases = this.#phaseData ? this.#phaseData.length > 0 : false;
         // clang-format off
-        return LitHtml.html `${showLCPPhases ? LitHtml.html `
+        if (this.#lcpPhasesExpanded) {
+            return LitHtml.html `${showLCPPhases ? LitHtml.html `
         <${SidebarInsight.SidebarInsight.litTagName} .data=${{
-            title: lcpTitle,
-        }}>
+                title: lcpTitle,
+                expanded: this.#lcpPhasesExpanded,
+            }}>
           <div slot="insight-description" class="insight-description">
             Each
             <x-link class="link" href="https://web.dev/articles/optimize-lcp#lcp-breakdown">phase has specific recommendations to improve.</x-link>
@@ -267,6 +284,13 @@ export class SidebarUI extends HTMLElement {
             </dl>
           </div>
         </${SidebarInsight.SidebarInsight}>` : LitHtml.nothing}`;
+        }
+        return LitHtml.html `
+      <${SidebarInsight.SidebarInsight.litTagName} .data=${{
+            title: lcpTitle,
+            expanded: this.#lcpPhasesExpanded,
+        }}>
+        </${SidebarInsight.SidebarInsight}>`;
         // clang-format on
     }
     #renderInsightsTabContent() {
@@ -297,20 +321,12 @@ export class SidebarUI extends HTMLElement {
     `;
         // clang-format on
     }
-    #renderAnnotationTabContent() {
-        // clang-format off
-        return LitHtml.html `
-      <h2>Content for Annotation Tab</h2>
-      <p>This is the content of the Annotation tab.</p>
-    `;
-        // clang-format on
-    }
     #renderContent() {
         switch (this.#activeTab) {
             case "Insights" /* SidebarTabsName.INSIGHTS */:
                 return this.#renderInsightsTabContent();
             case "Annotations" /* SidebarTabsName.ANNOTATIONS */:
-                return this.#renderAnnotationTabContent();
+                return new SidebarAnnotationsTab.SidebarAnnotationsTab();
             default:
                 return null;
         }

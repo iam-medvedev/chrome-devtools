@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 const UIStrings = {
@@ -37,12 +37,15 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
         this.titleContainer = this.titlesElement.createChild('span', 'title-container');
         this.titleElement = this.titleContainer.createChild('span', 'title');
         this.subtitleElement = this.titlesElement.createChild('span', 'subtitle');
-        this.menuElement = document.createElement('button');
+        this.menuElement = new Buttons.Button.Button();
+        this.menuElement.data = {
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
+            iconName: 'dots-vertical',
+            title: i18nString(UIStrings.profileOptions),
+        };
         this.menuElement.tabIndex = -1;
-        this.menuElement.appendChild(IconButton.Icon.create('dots-vertical'));
         this.menuElement.addEventListener('click', this.handleContextMenuEvent.bind(this));
         this.menuElement.setAttribute('jslog', `${VisualLogging.dropDown('profile-options').track({ click: true })}`);
-        UI.Tooltip.Tooltip.install(this.menuElement, i18nString(UIStrings.profileOptions));
         this.titleElement.textContent = profile.title;
         this.className = className;
         this.small = false;
@@ -53,7 +56,7 @@ export class ProfileSidebarTreeElement extends UI.TreeOutline.TreeElement {
     updateStatus(event) {
         const statusUpdate = event.data;
         if (statusUpdate.subtitle !== null) {
-            this.subtitleElement.textContent = statusUpdate.subtitle || '';
+            this.subtitleElement.textContent = statusUpdate.subtitle.length > 0 ? `(${statusUpdate.subtitle})` : '';
             this.titlesElement.classList.toggle('no-subtitle', !statusUpdate.subtitle);
             UI.ARIAUtils.setLabel(this.listItemElement, `${this.profile.title}, ${statusUpdate.subtitle}`);
         }

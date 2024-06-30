@@ -790,7 +790,9 @@ export class ConsoleViewMessage {
         const formatErrorStack = async (errorObj, includeCausedByPrefix) => {
             const error = SDK.RemoteObject.RemoteError.objectAsError(errorObj);
             const [details, cause] = await Promise.all([error.exceptionDetails(), error.cause()]);
-            const errorElement = this.tryFormatAsError(error.errorStack, details) ?? this.linkifyStringAsFragment(error.errorStack);
+            const errorElementType = includeCausedByPrefix ? 'div' : 'span';
+            const errorElement = this.tryFormatAsError(error.errorStack, details, errorElementType) ??
+                this.linkifyStringAsFragment(error.errorStack);
             if (includeCausedByPrefix) {
                 errorElement.prepend('Caused by: ');
             }
@@ -1444,7 +1446,7 @@ export class ConsoleViewMessage {
         scriptLocationLink.tabIndex = -1;
         return scriptLocationLink;
     }
-    tryFormatAsError(string, exceptionDetails) {
+    tryFormatAsError(string, exceptionDetails, formattedResultType = 'span') {
         const runtimeModel = this.message.runtimeModel();
         if (!runtimeModel) {
             return null;
@@ -1457,7 +1459,7 @@ export class ConsoleViewMessage {
             augmentErrorStackWithScriptIds(linkInfos, exceptionDetails.stackTrace);
         }
         const debuggerModel = runtimeModel.debuggerModel();
-        const formattedResult = document.createElement('div');
+        const formattedResult = document.createElement(formattedResultType);
         for (let i = 0; i < linkInfos.length; ++i) {
             const newline = i < linkInfos.length - 1 ? '\n' : '';
             const { line, link } = linkInfos[i];

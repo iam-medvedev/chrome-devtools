@@ -216,6 +216,8 @@ c`;
                     model_id: 'test model',
                     temperature: 0,
                 },
+                client_feature: 2,
+                functionality_type: 1,
             });
         });
     });
@@ -366,6 +368,32 @@ c`;
                     text: 'ANSWER: this is the answer',
                 },
             ]);
+        });
+        it('stops when aborted', async () => {
+            let count = 0;
+            async function* generateMultipleTimes() {
+                if (count === 3) {
+                    yield {
+                        explanation: 'ANSWER: this is the answer',
+                        metadata: {},
+                    };
+                    return;
+                }
+                count++;
+                yield {
+                    explanation: `THOUGHT: thought ${count}\nACTION\nconsole.log('test')\nSTOP\n`,
+                    metadata: {},
+                };
+            }
+            const execJs = sinon.spy();
+            const agent = new FreestylerAgent({
+                aidaClient: mockAidaClient(generateMultipleTimes),
+                execJs,
+            });
+            const controller = new AbortController();
+            controller.abort();
+            await Array.fromAsync(agent.run('test', { signal: controller.signal }));
+            assert.deepStrictEqual(agent.chatHistoryForTesting, []);
         });
     });
 });

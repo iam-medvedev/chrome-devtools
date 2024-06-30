@@ -4,6 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
@@ -29,6 +30,10 @@ const TempUIStrings = {
      *@description Title for the send icon button.
      */
     sendButtonTitle: 'Send',
+    /**
+     *@description Title for the cancel icon button.
+     */
+    cancelButtonTitle: 'Cancel',
     /**
      *@description Label for the "select an element" button.
      */
@@ -104,6 +109,7 @@ export var ChatMessageEntity;
 export class FreestylerChatUi extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-freestyler-chat-ui`;
     #shadow = this.attachShadow({ mode: 'open' });
+    #markdownRenderer = new MarkdownView.MarkdownView.MarkdownInsightRenderer();
     #props;
     constructor(props) {
         super();
@@ -132,6 +138,13 @@ export class FreestylerChatUi extends HTMLElement {
         }
         this.#props.onTextSubmit(input.value);
         input.value = '';
+    };
+    #handleCancel = (ev) => {
+        ev.preventDefault();
+        if (!this.#props.isLoading) {
+            return;
+        }
+        this.#props.onCancelClick();
     };
     #renderRateButtons(rpcId) {
         // clang-format off
@@ -162,19 +175,49 @@ export class FreestylerChatUi extends HTMLElement {
       </div>`;
         // clang-format on
     }
+    #renderTextAsMarkdown(text) {
+        let tokens = [];
+        try {
+            tokens = Marked.Marked.lexer(text);
+            for (const token of tokens) {
+                // Try to render all the tokens to make sure that
+                // they all have a template defined for them. If there
+                // isn't any template defined for a token, we'll fallback
+                // to rendering the text as plain text instead of markdown.
+                this.#markdownRenderer.renderToken(token);
+            }
+        }
+        catch (err) {
+            // The tokens were not parsed correctly or
+            // one of the tokens are not supported, so we
+            // continue to render this as text.
+            return LitHtml.html `${text}`;
+        }
+        // clang-format off
+        return LitHtml.html `<${MarkdownView.MarkdownView.MarkdownView.litTagName}
+      .data=${{ tokens, renderer: this.#markdownRenderer }}>
+    </${MarkdownView.MarkdownView.MarkdownView.litTagName}>`;
+        // clang-format on
+    }
     #renderStep(step) {
         if (step.step === Step.ACTION) {
+            // clang-format off
             return LitHtml.html `
         <div class="action-result">
-          <${MarkdownView.CodeBlock.CodeBlock.litTagName} .code=${step.code.trim()} .codeLang="js" .displayToolbar=${false}></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
+          <${MarkdownView.CodeBlock.CodeBlock.litTagName}
+            .code=${step.code.trim()}
+            .codeLang=${'js'}
+            .displayToolbar=${false}
+          ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
           <div class="js-code-output">${step.output}</div>
         </div>
       `;
+            // clang-format on
         }
         if (step.step === Step.ERROR) {
-            return LitHtml.html `<p class="error-step">${step.text}</p>`;
+            return LitHtml.html `<p class="error-step">${this.#renderTextAsMarkdown(step.text)}</p>`;
         }
-        return LitHtml.html `<p>${step.text}</p>`;
+        return LitHtml.html `<p>${this.#renderTextAsMarkdown(step.text)}</p>`;
     }
     #renderChatMessage = (message, { isLast }) => {
         if (message.entity === ChatMessageEntity.USER) {
@@ -197,15 +240,16 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format off
         return LitHtml.html `
       <${Buttons.Button.Button.litTagName} .data=${{
-            variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
+            variant: "text" /* Buttons.Button.Variant.TEXT */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
             iconName: 'select-element',
             toggledIconName: 'select-element',
             toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
             toggled: this.#props.inspectElementToggled,
             title: i18nString(TempUIStrings.sendButtonTitle),
-        }} @click=${this.#props.onInspectElementClick}></${Buttons.Button.Button.litTagName}>
-      <span class="select-an-element-text">${i18nString(TempUIStrings.selectAnElement)}</span>
+        }} @click=${this.#props.onInspectElementClick}>
+        <span class="select-an-element-text">${i18nString(TempUIStrings.selectAnElement)}</span>
+      </${Buttons.Button.Button.litTagName}>
     `;
         // clang-format on
     };
@@ -233,28 +277,49 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format off
         return LitHtml.html `
       <div class="chat-ui">
-        ${this.#props.messages.length > 0 ? this.#renderMessages() : this.#renderEmptyState()}
+        ${this.#props.messages.length > 0
+            ? this.#renderMessages()
+            : this.#renderEmptyState()}
         <form class="input-form" @submit=${this.#handleSubmit}>
           <div class="dom-node-link-container">
-            ${this.#props.selectedNode ? LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#props.selectedNode)) : this.#renderSelectAnElement()}
+            ${this.#props.selectedNode
+            ? LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#props.selectedNode))
+            : this.#renderSelectAnElement()}
           </div>
           <div class="chat-input-container">
             <input type="text" class="chat-input" .disabled=${isTextInputDisabled}
               placeholder=${getInputPlaceholderString(this.#props.aidaAvailability)}>
-            <${Buttons.Button.Button.litTagName}
-              class="step-actions"
-              type="submit"
-              title=${i18nString(TempUIStrings.sendButtonTitle)}
-              aria-label=${i18nString(TempUIStrings.sendButtonTitle)}
-              jslog=${VisualLogging.action('send').track({ click: true })}
-              @click=${this.#handleSubmit}
-              .data=${{
-            variant: "icon" /* Buttons.Button.Variant.ICON */,
-            size: "SMALL" /* Buttons.Button.Size.SMALL */,
-            iconName: 'send',
-            title: i18nString(TempUIStrings.sendButtonTitle),
-        }}
-            ></${Buttons.Button.Button.litTagName}>
+              ${this.#props.isLoading
+            ? LitHtml.html `
+                    <${Buttons.Button.Button.litTagName}
+                      class="step-actions"
+                      type="button"
+                      title=${i18nString(TempUIStrings.cancelButtonTitle)}
+                      aria-label=${i18nString(TempUIStrings.cancelButtonTitle)}
+                      jslog=${VisualLogging.action('stop').track({ click: true })}
+                      @click=${this.#handleCancel}
+                      .data=${{
+                variant: "icon" /* Buttons.Button.Variant.ICON */,
+                size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                iconName: 'stop',
+                title: i18nString(TempUIStrings.cancelButtonTitle),
+            }}
+                    ></${Buttons.Button.Button.litTagName}>`
+            : LitHtml.html `
+                    <${Buttons.Button.Button.litTagName}
+                      class="step-actions"
+                      type="submit"
+                      title=${i18nString(TempUIStrings.sendButtonTitle)}
+                      aria-label=${i18nString(TempUIStrings.sendButtonTitle)}
+                      jslog=${VisualLogging.action('send').track({ click: true })}
+                      @click=${this.#handleSubmit}
+                      .data=${{
+                variant: "icon" /* Buttons.Button.Variant.ICON */,
+                size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                iconName: 'send',
+                title: i18nString(TempUIStrings.sendButtonTitle),
+            }}
+                    ></${Buttons.Button.Button.litTagName}>`}
           </div>
           <span class="chat-input-disclaimer">${i18nString(TempUIStrings.inputDisclaimer)}</span>
         </form>
