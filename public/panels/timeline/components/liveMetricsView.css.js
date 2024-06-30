@@ -11,15 +11,56 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+.container {
+  /* stylelint-disable-next-line property-no-unknown */
+  container-type: inline-size;
+  height: 100%;
+}
+
+.live-metrics-view {
+  --min-main-area-size: 60%;
+
+  background-color: var(--sys-color-cdt-base-container);
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+}
+
 .live-metrics,
 .next-steps {
   padding: 8px 16px;
-  background-color: var(--sys-color-cdt-base-container);
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+}
+
+.live-metrics {
+  flex: 1;
+}
+
+.next-steps {
+  flex: 0 0 30%;
+  box-sizing: border-box;
+  border: none;
+  border-left: 1px solid var(--sys-color-divider);
+  max-width: 300px;
+}
+
+/* stylelint-disable-next-line at-rule-no-unknown */
+@container (max-width: 500px) {
+  .live-metrics-view {
+    flex-direction: column;
+  }
+
+  .next-steps {
+    flex-basis: 40%;
+    border: none;
+    border-top: 1px solid var(--sys-color-divider);
+    max-width: unset;
+  }
 }
 
 .metric-cards {
@@ -35,7 +76,7 @@ styles.replaceSync(
   font-weight: bold;
 }
 
-.metric-card {
+.card {
   border: 1px solid var(--sys-color-divider);
   border-radius: 4px;
   padding: 12px 16px;
@@ -45,13 +86,13 @@ styles.replaceSync(
   background-color: var(--color-background-elevation-1);
 }
 
-.metric-card-title {
+.card-title {
   text-wrap: nowrap;
   font-size: 12px;
   font-weight: bold;
 }
 
-.metric-card-section-title {
+.card-section-title {
   margin-top: 8px;
   text-wrap: nowrap;
   font-size: 12px;
@@ -59,20 +100,39 @@ styles.replaceSync(
 }
 
 .metric-card-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.local-metric-value {
   text-wrap: nowrap;
-  font-size: 26px;
+  font-size: 30px;
+  flex: 1;
 }
 
 .good {
-  color: var(--color-tertiary-bright);
+  color: var(--app-color-performance-good);
 }
 
 .needs-improvement {
-  color: var(--color-orange-bright);
+  color: var(--app-color-performance-ok);
 }
 
 .poor {
-  color: var(--color-error-bright);
+  color: var(--app-color-performance-bad);
+}
+
+.good-bg {
+  background-color: var(--app-color-performance-good);
+}
+
+.needs-improvement-bg {
+  background-color: var(--app-color-performance-ok);
+}
+
+.poor-bg {
+  background-color: var(--app-color-performance-bad);
 }
 
 .metric-card-element {
@@ -115,6 +175,21 @@ styles.replaceSync(
   border: 0;
   border-bottom: 1px solid var(--sys-color-divider);
   margin: 4px 0;
+}
+
+.field-data {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto max-content;
+  grid-auto-rows: 1fr;
+  column-gap: 8px;
+  justify-items: flex-end;
+  align-items: center;
+  flex: 1;
+}
+
+.histogram-bar {
+  height: 6px;
 }
 
 /*# sourceURL=liveMetricsView.css */

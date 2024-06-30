@@ -150,7 +150,6 @@ export class ChildTargetManager extends SDKModel {
         else if (targetInfo.type === 'background_page' || targetInfo.type === 'app' || targetInfo.type === 'popup_page') {
             type = Type.Frame;
         }
-        // TODO(lfg): ensure proper capabilities for child pages (e.g. portals).
         else if (targetInfo.type === 'page') {
             type = Type.Frame;
         }

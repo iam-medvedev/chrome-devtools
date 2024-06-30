@@ -41,7 +41,8 @@ styles.replaceSync(
   display: flex;
 }
 
-.watch-expression-title:hover {
+.watch-expression-title:hover,
+.watch-expression-title:focus-within {
   padding-right: 26px;
 }
 

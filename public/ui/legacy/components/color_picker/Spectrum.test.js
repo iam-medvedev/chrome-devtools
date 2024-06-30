@@ -3,21 +3,17 @@
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
-import { createTarget, deinitializeGlobalVars, initializeGlobalVars, } from '../../../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, } from '../../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../../testing/MockConnection.js';
 import * as UI from '../../legacy.js';
 import * as ColorPicker from './color_picker.js';
 const displayP3Color = Common.Color.parse('color(display-p3 1 1 1)');
 const rgbColor = Common.Color.parse('rgb(255 0 0)');
-describe('ColorPicker aka Spectrum', () => {
+describeWithEnvironment('ColorPicker aka Spectrum', () => {
     beforeEach(async () => {
-        await initializeGlobalVars();
         const forceNew = true;
         const actionRegistry = UI.ActionRegistry.ActionRegistry.instance({ forceNew });
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew, actionRegistry });
-    });
-    afterEach(async () => {
-        await deinitializeGlobalVars();
     });
     describe('sRGB overlay', () => {
         it('should show sRGB overlay when the format supports display-p3 colors', () => {

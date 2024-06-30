@@ -4,6 +4,7 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as Components from './components/components.js';
+import { LAYOUT_SHIFT_SYNTHETIC_DURATION } from './LayoutShiftsTrackAppender.js';
 /**
  * Below the network track there is a resize bar the user can click and drag.
  */
@@ -54,6 +55,15 @@ export class Overlays {
                 startTime: entry.startTime,
                 endTime: entry.endTime,
                 duration: entry.duration,
+                selfTime: TraceEngine.Types.Timing.MicroSeconds(0),
+            };
+        }
+        if (TraceEngine.Types.TraceEvents.isSyntheticLayoutShift(entry)) {
+            const endTime = TraceEngine.Types.Timing.MicroSeconds(entry.ts + LAYOUT_SHIFT_SYNTHETIC_DURATION);
+            return {
+                endTime,
+                duration: LAYOUT_SHIFT_SYNTHETIC_DURATION,
+                startTime: entry.ts,
                 selfTime: TraceEngine.Types.Timing.MicroSeconds(0),
             };
         }
@@ -360,8 +370,10 @@ export class Overlays {
         div.classList.add('overlay-item', `overlay-type-${overlay.type}`);
         switch (overlay.type) {
             case 'ENTRY_LABEL': {
-                const component = new Components.EntryLabelOverlay.EntryLabelOverlay();
-                component.label = overlay.label;
+                const component = new Components.EntryLabelOverlay.EntryLabelOverlay(overlay.label);
+                component.addEventListener(Components.EntryLabelOverlay.EmptyEntryLabelRemoveEvent.eventName, () => {
+                    this.remove(overlay);
+                });
                 div.appendChild(component);
                 return div;
             }

@@ -108,4 +108,45 @@ class ExpandableBigUint32ArrayImpl extends Array {
         return this;
     }
 }
+export function createBitVector(length) {
+    return new BitVectorImpl(length);
+}
+class BitVectorImpl extends Uint8Array {
+    constructor(length) {
+        super(Math.ceil(length / 8));
+    }
+    getBit(index) {
+        const value = this[index >> 3] & (1 << (index & 7));
+        return value !== 0;
+    }
+    setBit(index) {
+        this[index >> 3] |= (1 << (index & 7));
+    }
+    clearBit(index) {
+        this[index >> 3] &= ~(1 << (index & 7));
+    }
+    previous(index) {
+        // First, check for more bits in the current byte.
+        while (index !== ((index >> 3) << 3)) {
+            --index;
+            if (this.getBit(index)) {
+                return index;
+            }
+        }
+        // Next, iterate by bytes to skip over ranges of zeros.
+        let byteIndex;
+        for (byteIndex = (index >> 3) - 1; byteIndex >= 0 && this[byteIndex] === 0; --byteIndex) {
+        }
+        if (byteIndex < 0) {
+            return -1;
+        }
+        // Finally, iterate the nonzero byte to find the highest bit.
+        for (index = (byteIndex << 3) + 7; index >= (byteIndex << 3); --index) {
+            if (this.getBit(index)) {
+                return index;
+            }
+        }
+        throw new Error('Unreachable');
+    }
+}
 //# sourceMappingURL=TypedArrayUtilities.js.map

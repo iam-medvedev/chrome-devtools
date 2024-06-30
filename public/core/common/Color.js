@@ -72,16 +72,10 @@ function parseAngle(angleText) {
 // Returns the `Format` equivalent from the format text
 export function getFormat(formatText) {
     switch (formatText) {
-        case "nickname" /* Format.Nickname */:
-            return "nickname" /* Format.Nickname */;
         case "hex" /* Format.HEX */:
             return "hex" /* Format.HEX */;
-        case "shorthex" /* Format.ShortHEX */:
-            return "shorthex" /* Format.ShortHEX */;
         case "hexa" /* Format.HEXA */:
             return "hexa" /* Format.HEXA */;
-        case "shorthexa" /* Format.ShortHEXA */:
-            return "shorthexa" /* Format.ShortHEXA */;
         case "rgb" /* Format.RGB */:
             return "rgb" /* Format.RGB */;
         case "rgba" /* Format.RGBA */:
@@ -154,7 +148,7 @@ export function parse(text) {
                 return Legacy.fromHex(match[1], text);
             }
             if (match[2]) {
-                return Legacy.fromName(match[2], text);
+                return Nickname.fromName(match[2], text);
             }
             return null;
         }
@@ -543,11 +537,8 @@ export class Lab {
     #authoredText;
     #rawParams;
     static #conversions = {
-        ["nickname" /* Format.Nickname */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "nickname" /* Format.Nickname */),
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
-        ["shorthex" /* Format.ShortHEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "shorthex" /* Format.ShortHEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
-        ["shorthexa" /* Format.ShortHEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "shorthexa" /* Format.ShortHEXA */),
         ["rgb" /* Format.RGB */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "rgb" /* Format.RGB */),
         ["rgba" /* Format.RGBA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "rgba" /* Format.RGBA */),
         ["hsl" /* Format.HSL */]: (self) => new HSL(...rgbToHsl(self.#getRGBArray(/* withAlpha= */ false)), self.alpha),
@@ -661,11 +652,8 @@ export class LCH {
     alpha;
     #authoredText;
     static #conversions = {
-        ["nickname" /* Format.Nickname */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "nickname" /* Format.Nickname */),
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
-        ["shorthex" /* Format.ShortHEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "shorthex" /* Format.ShortHEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
-        ["shorthexa" /* Format.ShortHEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "shorthexa" /* Format.ShortHEXA */),
         ["rgb" /* Format.RGB */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "rgb" /* Format.RGB */),
         ["rgba" /* Format.RGBA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "rgba" /* Format.RGBA */),
         ["hsl" /* Format.HSL */]: (self) => new HSL(...rgbToHsl(self.#getRGBArray(/* withAlpha= */ false)), self.alpha),
@@ -783,11 +771,8 @@ export class Oklab {
     alpha;
     #authoredText;
     static #conversions = {
-        ["nickname" /* Format.Nickname */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "nickname" /* Format.Nickname */),
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
-        ["shorthex" /* Format.ShortHEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "shorthex" /* Format.ShortHEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
-        ["shorthexa" /* Format.ShortHEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "shorthexa" /* Format.ShortHEXA */),
         ["rgb" /* Format.RGB */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "rgb" /* Format.RGB */),
         ["rgba" /* Format.RGBA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "rgba" /* Format.RGBA */),
         ["hsl" /* Format.HSL */]: (self) => new HSL(...rgbToHsl(self.#getRGBArray(/* withAlpha= */ false)), self.alpha),
@@ -901,11 +886,8 @@ export class Oklch {
     alpha;
     #authoredText;
     static #conversions = {
-        ["nickname" /* Format.Nickname */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "nickname" /* Format.Nickname */),
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
-        ["shorthex" /* Format.ShortHEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "shorthex" /* Format.ShortHEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
-        ["shorthexa" /* Format.ShortHEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "shorthexa" /* Format.ShortHEXA */),
         ["rgb" /* Format.RGB */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "rgb" /* Format.RGB */),
         ["rgba" /* Format.RGBA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "rgba" /* Format.RGBA */),
         ["hsl" /* Format.HSL */]: (self) => new HSL(...rgbToHsl(self.#getRGBArray(/* withAlpha= */ false)), self.alpha),
@@ -1019,11 +1001,8 @@ export class ColorFunction {
     colorSpace;
     #authoredText;
     static #conversions = {
-        ["nickname" /* Format.Nickname */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "nickname" /* Format.Nickname */),
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
-        ["shorthex" /* Format.ShortHEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "shorthex" /* Format.ShortHEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
-        ["shorthexa" /* Format.ShortHEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "shorthexa" /* Format.ShortHEXA */),
         ["rgb" /* Format.RGB */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "rgb" /* Format.RGB */),
         ["rgba" /* Format.RGBA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "rgba" /* Format.RGBA */),
         ["hsl" /* Format.HSL */]: (self) => new HSL(...rgbToHsl(self.#getRGBArray(/* withAlpha= */ false)), self.alpha),
@@ -1209,11 +1188,8 @@ export class HSL {
     #rawParams;
     #authoredText;
     static #conversions = {
-        ["nickname" /* Format.Nickname */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "nickname" /* Format.Nickname */),
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
-        ["shorthex" /* Format.ShortHEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "shorthex" /* Format.ShortHEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
-        ["shorthexa" /* Format.ShortHEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "shorthexa" /* Format.ShortHEXA */),
         ["rgb" /* Format.RGB */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "rgb" /* Format.RGB */),
         ["rgba" /* Format.RGBA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "rgba" /* Format.RGBA */),
         ["hsl" /* Format.HSL */]: (self) => self,
@@ -1338,11 +1314,8 @@ export class HWB {
     #rawParams;
     #authoredText;
     static #conversions = {
-        ["nickname" /* Format.Nickname */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "nickname" /* Format.Nickname */),
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
-        ["shorthex" /* Format.ShortHEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "shorthex" /* Format.ShortHEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
-        ["shorthexa" /* Format.ShortHEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "shorthexa" /* Format.ShortHEXA */),
         ["rgb" /* Format.RGB */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "rgb" /* Format.RGB */),
         ["rgba" /* Format.RGBA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "rgba" /* Format.RGBA */),
         ["hsl" /* Format.HSL */]: (self) => new HSL(...rgbToHsl(self.#getRGBArray(/* withAlpha= */ false)), self.alpha),
@@ -1469,17 +1442,105 @@ export class HWB {
 function toRgbValue(value) {
     return Math.round(value * 255);
 }
+class ShortFormatColorBase {
+    color;
+    constructor(color) {
+        this.color = color;
+    }
+    get alpha() {
+        return this.color.alpha;
+    }
+    equal(color) {
+        return this.color.equal(color);
+    }
+    setAlpha(alpha) {
+        return this.color.setAlpha(alpha);
+    }
+    format() {
+        return (this.alpha ?? 1) !== 1 ? "hexa" /* Format.HEXA */ : "hex" /* Format.HEX */;
+    }
+    as(format) {
+        return this.color.as(format);
+    }
+    is(format) {
+        return this.color.is(format);
+    }
+    asLegacyColor() {
+        return this.color.asLegacyColor();
+    }
+    getAuthoredText() {
+        return this.color.getAuthoredText();
+    }
+    getRawParameters() {
+        return this.color.getRawParameters();
+    }
+    isGamutClipped() {
+        return this.color.isGamutClipped();
+    }
+    asString(format) {
+        if (format) {
+            return this.as(format).asString();
+        }
+        const [r, g, b] = this.color.rgba();
+        return this.stringify(r, g, b);
+    }
+    getAsRawString(format) {
+        if (format) {
+            return this.as(format).getAsRawString();
+        }
+        const [r, g, b] = this.getRawParameters();
+        return this.stringify(r, g, b);
+    }
+}
+export class ShortHex extends ShortFormatColorBase {
+    setAlpha(alpha) {
+        return new ShortHex(this.color.setAlpha(alpha));
+    }
+    asString(format) {
+        return format && format !== this.format() ? super.as(format).asString() : super.asString();
+    }
+    stringify(r, g, b) {
+        function toShortHexValue(value) {
+            return (Math.round(value * 255) / 17).toString(16);
+        }
+        if (this.color.hasAlpha()) {
+            return Platform.StringUtilities
+                .sprintf('#%s%s%s%s', toShortHexValue(r), toShortHexValue(g), toShortHexValue(b), toShortHexValue(this.alpha ?? 1))
+                .toLowerCase();
+        }
+        return Platform.StringUtilities.sprintf('#%s%s%s', toShortHexValue(r), toShortHexValue(g), toShortHexValue(b))
+            .toLowerCase();
+    }
+}
+export class Nickname extends ShortFormatColorBase {
+    nickname;
+    constructor(nickname, color) {
+        super(color);
+        this.nickname = nickname;
+    }
+    static fromName(name, text) {
+        const nickname = name.toLowerCase();
+        const rgba = Nicknames.get(nickname);
+        if (rgba !== undefined) {
+            return new Nickname(nickname, Legacy.fromRGBA(rgba, text));
+        }
+        return null;
+    }
+    stringify() {
+        return this.nickname;
+    }
+    getAsRawString(format) {
+        return this.color.getAsRawString(format);
+    }
+}
 export class Legacy {
     #rawParams;
     #rgbaInternal;
     #authoredText;
     #formatInternal;
     static #conversions = {
-        ["nickname" /* Format.Nickname */]: (self) => new Legacy(self.#rgbaInternal, "nickname" /* Format.Nickname */),
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#rgbaInternal, "hex" /* Format.HEX */),
-        ["shorthex" /* Format.ShortHEX */]: (self) => new Legacy(self.#rgbaInternal, "shorthex" /* Format.ShortHEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#rgbaInternal, "hexa" /* Format.HEXA */),
-        ["shorthexa" /* Format.ShortHEXA */]: (self) => new Legacy(self.#rgbaInternal, "shorthexa" /* Format.ShortHEXA */),
         ["rgb" /* Format.RGB */]: (self) => new Legacy(self.#rgbaInternal, "rgb" /* Format.RGB */),
         ["rgba" /* Format.RGBA */]: (self) => new Legacy(self.#rgbaInternal, "rgba" /* Format.RGBA */),
         ["hsl" /* Format.HSL */]: (self) => new HSL(...rgbToHsl([self.#rgbaInternal[0], self.#rgbaInternal[1], self.#rgbaInternal[2]]), self.alpha),
@@ -1507,7 +1568,6 @@ export class Legacy {
     get alpha() {
         switch (this.format()) {
             case "hexa" /* Format.HEXA */:
-            case "shorthexa" /* Format.ShortHEXA */:
             case "rgba" /* Format.RGBA */:
                 return this.#rgbaInternal[3];
             default:
@@ -1516,6 +1576,20 @@ export class Legacy {
     }
     asLegacyColor() {
         return this;
+    }
+    nickname() {
+        const nickname = RGBAToNickname.get(String(this.canonicalRGBA()));
+        return nickname ? new Nickname(nickname, this) : null;
+    }
+    shortHex() {
+        for (let i = 0; i < 4; ++i) {
+            const c = Math.round(this.#rgbaInternal[i] * 255);
+            // Check if the two digits of each are identical: #aabbcc => #abc
+            if (c % 0x11) {
+                return null;
+            }
+        }
+        return new ShortHex(this);
     }
     constructor(rgba, format, authoredText) {
         this.#authoredText = authoredText || null;
@@ -1530,21 +1604,13 @@ export class Legacy {
     }
     static fromHex(hex, text) {
         hex = hex.toLowerCase();
-        let format;
-        if (hex.length === 3) {
-            format = "shorthex" /* Format.ShortHEX */;
-            hex = hex.charAt(0) + hex.charAt(0) + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2);
-        }
-        else if (hex.length === 4) {
-            format = "shorthexa" /* Format.ShortHEXA */;
+        // Possible hex representations with alpha are fffA and ffffffAA
+        const hasAlpha = hex.length === 4 || hex.length === 8;
+        const format = hasAlpha ? "hexa" /* Format.HEXA */ : "hex" /* Format.HEX */;
+        const isShort = hex.length <= 4;
+        if (isShort) {
             hex = hex.charAt(0) + hex.charAt(0) + hex.charAt(1) + hex.charAt(1) + hex.charAt(2) + hex.charAt(2) +
                 hex.charAt(3) + hex.charAt(3);
-        }
-        else if (hex.length === 6) {
-            format = "hex" /* Format.HEX */;
-        }
-        else {
-            format = "hexa" /* Format.HEXA */;
         }
         const r = parseInt(hex.substring(0, 2), 16);
         const g = parseInt(hex.substring(2, 4), 16);
@@ -1553,17 +1619,8 @@ export class Legacy {
         if (hex.length === 8) {
             a = parseInt(hex.substring(6, 8), 16) / 255;
         }
-        return new Legacy([r / 255, g / 255, b / 255, a], format, text);
-    }
-    static fromName(name, text) {
-        const nickname = name.toLowerCase();
-        const rgba = Nicknames.get(nickname);
-        if (rgba !== undefined) {
-            const color = Legacy.fromRGBA(rgba, text);
-            color.#formatInternal = "nickname" /* Format.Nickname */;
-            return color;
-        }
-        return null;
+        const color = new Legacy([r / 255, g / 255, b / 255, a], format, text);
+        return isShort ? new ShortHex(color) : color;
     }
     static fromRGBAFunction(r, g, b, alpha, text) {
         const rgba = [
@@ -1600,18 +1657,7 @@ export class Legacy {
         return this.#rgbaInternal[3] !== 1;
     }
     detectHEXFormat() {
-        let canBeShort = true;
-        for (let i = 0; i < 4; ++i) {
-            const c = Math.round(this.#rgbaInternal[i] * 255);
-            if (c % 17) {
-                canBeShort = false;
-                break;
-            }
-        }
         const hasAlpha = this.hasAlpha();
-        if (canBeShort) {
-            return hasAlpha ? "shorthexa" /* Format.ShortHEXA */ : "shorthex" /* Format.ShortHEX */;
-        }
         return hasAlpha ? "hexa" /* Format.HEXA */ : "hex" /* Format.HEX */;
     }
     asString(format) {
@@ -1628,9 +1674,6 @@ export class Legacy {
             const hex = Math.round(value * 255).toString(16);
             return hex.length === 1 ? '0' + hex : hex;
         }
-        function toShortHexValue(value) {
-            return (Math.round(value * 255) / 17).toString(16);
-        }
         switch (format) {
             case "rgb" /* Format.RGB */:
             case "rgba" /* Format.RGBA */: {
@@ -1640,41 +1683,16 @@ export class Legacy {
                 }
                 return start + ')';
             }
+            case "hex" /* Format.HEX */:
             case "hexa" /* Format.HEXA */: {
-                return Platform.StringUtilities
-                    .sprintf('#%s%s%s%s', toHexValue(r), toHexValue(g), toHexValue(b), toHexValue(this.#rgbaInternal[3]))
-                    .toLowerCase();
-            }
-            case "hex" /* Format.HEX */: {
                 if (this.hasAlpha()) {
-                    return null;
+                    return Platform.StringUtilities
+                        .sprintf('#%s%s%s%s', toHexValue(r), toHexValue(g), toHexValue(b), toHexValue(this.#rgbaInternal[3]))
+                        .toLowerCase();
                 }
                 return Platform.StringUtilities.sprintf('#%s%s%s', toHexValue(r), toHexValue(g), toHexValue(b)).toLowerCase();
             }
-            case "shorthexa" /* Format.ShortHEXA */: {
-                const hexFormat = this.detectHEXFormat();
-                if (hexFormat !== "shorthexa" /* Format.ShortHEXA */ && hexFormat !== "shorthex" /* Format.ShortHEX */) {
-                    return null;
-                }
-                return Platform.StringUtilities
-                    .sprintf('#%s%s%s%s', toShortHexValue(r), toShortHexValue(g), toShortHexValue(b), toShortHexValue(this.#rgbaInternal[3]))
-                    .toLowerCase();
-            }
-            case "shorthex" /* Format.ShortHEX */: {
-                if (this.hasAlpha()) {
-                    return null;
-                }
-                if (this.detectHEXFormat() !== "shorthex" /* Format.ShortHEX */) {
-                    return null;
-                }
-                return Platform.StringUtilities.sprintf('#%s%s%s', toShortHexValue(r), toShortHexValue(g), toShortHexValue(b))
-                    .toLowerCase();
-            }
-            case "nickname" /* Format.Nickname */: {
-                return this.nickname();
-            }
         }
-        return null; // Shouldn't get here.
     }
     getAuthoredText() {
         return this.#authoredText ?? null;
@@ -1701,11 +1719,6 @@ export class Legacy {
         }
         rgba[3] = this.#rgbaInternal[3];
         return rgba;
-    }
-    /** nickname
-     */
-    nickname() {
-        return RGBAToNickname.get(String(this.canonicalRGBA())) || null;
     }
     toProtocolRGBA() {
         const rgba = this.canonicalRGBA();

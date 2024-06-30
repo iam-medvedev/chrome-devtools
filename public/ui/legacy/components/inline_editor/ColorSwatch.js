@@ -141,25 +141,17 @@ export class ColorSwatch extends HTMLElement {
     consume(e) {
         e.stopPropagation();
     }
-    setFormat(format) {
-        const newColor = this.color?.as(format);
-        const text = newColor?.asString();
-        if (!newColor || !text) {
-            return;
-        }
-        this.color = newColor;
-        this.format = this.color.format();
-        this.text = text;
-        this.render();
-        this.dispatchEvent(new ColorChangedEvent(this.text));
+    updateColor(color) {
+        this.renderColor(color);
+        this.dispatchEvent(new ColorChangedEvent(color.asString()));
     }
     showFormatPicker(e) {
         if (!this.color || !this.format) {
             return;
         }
-        const contextMenu = new ColorPicker.FormatPickerContextMenu.FormatPickerContextMenu(this.color, this.format);
-        void contextMenu.show(e, format => {
-            this.setFormat(format);
+        const contextMenu = new ColorPicker.FormatPickerContextMenu.FormatPickerContextMenu(this.color);
+        void contextMenu.show(e, color => {
+            this.updateColor(color);
             Host.userMetrics.colorConvertedFrom(0 /* Host.UserMetrics.ColorConvertedFrom.ColorSwatch */);
         });
     }

@@ -24,6 +24,7 @@ export declare class HeapSnapshotEdge implements HeapSnapshotItem {
     isInvisible(): boolean;
     isWeak(): boolean;
     getValueForSorting(_fieldName: string): number;
+    nameIndex(): number;
 }
 export interface HeapSnapshotItemIterator {
     hasNext(): boolean;
@@ -63,6 +64,7 @@ export declare class HeapSnapshotRetainerEdge implements HeapSnapshotItem {
     clone(): HeapSnapshotRetainerEdge;
     hasStringName(): boolean;
     name(): string;
+    nameIndex(): number;
     node(): HeapSnapshotNode;
     nodeIndex(): number;
     retainerIndex(): number;
@@ -258,7 +260,7 @@ export declare abstract class HeapSnapshot {
     private buildAggregates;
     private calculateClassesRetainedSize;
     private sortAggregateIndexes;
-    static tryParseWeakMapEdgeName(edgeName: string): {
+    tryParseWeakMapEdgeName(edgeNameIndex: number): {
         duplicatedPart: string;
         tableId: string;
     } | undefined;
@@ -330,6 +332,7 @@ export declare abstract class HeapSnapshot {
     getDistanceForRetainersView(nodeIndex: number): number;
     isNodeIgnoredInRetainersView(nodeIndex: number): boolean;
     isEdgeIgnoredInRetainersView(edgeIndex: number): boolean;
+    getIndexForSyntheticClassName(className: string): number;
 }
 declare class HeapSnapshotMetainfo {
     location_fields: string[];
@@ -440,6 +443,7 @@ export declare class JSHeapSnapshotEdge extends HeapSnapshotEdge {
     private nameInternal;
     private nameOrIndex;
     rawType(): number;
+    nameIndex(): number;
 }
 export declare class JSHeapSnapshotRetainerEdge extends HeapSnapshotRetainerEdge {
     constructor(snapshot: JSHeapSnapshot, retainerIndex: number);

@@ -25,6 +25,7 @@ export type Props = {
     onInspectElementClick: () => void;
     onRateClick: (rpcId: number, rate: Rating) => void;
     onAcceptConsentClick: () => void;
+    onCancelClick: () => void;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAvailability;

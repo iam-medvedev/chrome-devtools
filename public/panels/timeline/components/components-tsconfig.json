@@ -36,6 +36,7 @@
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.ts",
     "../../../../../../../front_end/panels/timeline/components/LiveMetricsView.ts",
     "../../../../../../../front_end/panels/timeline/components/Sidebar.ts",
+    "../../../../../../../front_end/panels/timeline/components/SidebarAnnotationsTab.ts",
     "../../../../../../../front_end/panels/timeline/components/SidebarInsight.ts",
     "../../../../../../../front_end/panels/timeline/components/TimeRangeOverlay.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
@@ -48,6 +49,9 @@
     },
     {
       "path": "../../../generated/generated-tsconfig.json"
+    },
+    {
+      "path": "../../../models/crux-manager/bundle-tsconfig.json"
     },
     {
       "path": "../../../models/live-metrics/bundle-tsconfig.json"

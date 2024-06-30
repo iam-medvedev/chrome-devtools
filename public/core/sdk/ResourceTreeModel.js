@@ -808,7 +808,7 @@ export class ResourceTreeFrame {
         if (parentFrame) {
             return highlightFrameOwner(parentFrame.resourceTreeModel().domModel());
         }
-        // Portals.
+        // Fenced frames.
         if (parentTarget?.type() === Type.Frame) {
             const domModel = parentTarget.model(DOMModel);
             if (domModel) {

@@ -41,6 +41,7 @@
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.test.ts",
     "../../../../../../../front_end/panels/timeline/components/Invalidations.test.ts",
     "../../../../../../../front_end/panels/timeline/components/LiveMetricsView.test.ts",
+    "../../../../../../../front_end/panels/timeline/components/SidebarAnnotationsTab.test.ts",
     "../../../../../../../front_end/panels/timeline/components/SidebarInsight.test.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",

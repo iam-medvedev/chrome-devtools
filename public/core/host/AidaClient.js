@@ -11,6 +11,24 @@ export var Entity;
     Entity[Entity["USER"] = 1] = "USER";
     Entity[Entity["SYSTEM"] = 2] = "SYSTEM";
 })(Entity || (Entity = {}));
+export var FunctionalityType;
+(function (FunctionalityType) {
+    // Unspecified functionality type.
+    FunctionalityType[FunctionalityType["FUNCTIONALITY_TYPE_UNSPECIFIED"] = 0] = "FUNCTIONALITY_TYPE_UNSPECIFIED";
+    // The generic AI chatbot functionality.
+    FunctionalityType[FunctionalityType["CHAT"] = 1] = "CHAT";
+    // The explain error functionality.
+    FunctionalityType[FunctionalityType["EXPLAIN_ERROR"] = 2] = "EXPLAIN_ERROR";
+})(FunctionalityType || (FunctionalityType = {}));
+export var ClientFeature;
+(function (ClientFeature) {
+    // Unspecified client feature.
+    ClientFeature[ClientFeature["CLIENT_FEATURE_UNSPECIFIED"] = 0] = "CLIENT_FEATURE_UNSPECIFIED";
+    // Chrome console insights feature.
+    ClientFeature[ClientFeature["CHROME_CONSOLE_INSIGHTS"] = 1] = "CHROME_CONSOLE_INSIGHTS";
+    // Chrome freestyler.
+    ClientFeature[ClientFeature["CHROME_FREESTYLER"] = 2] = "CHROME_FREESTYLER";
+})(ClientFeature || (ClientFeature = {}));
 export var AidaAvailability;
 (function (AidaAvailability) {
     AidaAvailability["AVAILABLE"] = "available";
@@ -23,6 +41,8 @@ export class AidaClient {
         const request = {
             input,
             client: 'CHROME_DEVTOOLS',
+            functionality_type: FunctionalityType.EXPLAIN_ERROR,
+            client_feature: ClientFeature.CHROME_CONSOLE_INSIGHTS,
         };
         const config = Common.Settings.Settings.instance().getHostConfig();
         let temperature = NaN;

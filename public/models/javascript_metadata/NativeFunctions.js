@@ -6823,10 +6823,6 @@ export const NativeFunctions = [
         signatures: [["startTime", "endTime", "text"]]
     },
     {
-        name: "DeviceProperties",
-        signatures: [["?devicePropertiesInitDict"]]
-    },
-    {
         name: "InputDeviceCapabilities",
         signatures: [["?deviceInitDict"]]
     },
@@ -8084,6 +8080,10 @@ export const NativeFunctions = [
     {
         name: "createDTMFSender",
         signatures: [["track"]]
+    },
+    {
+        name: "sendRtp",
+        signatures: [["packet", "options"]]
     },
     {
         name: "setHeaderExtensionsToNegotiate",

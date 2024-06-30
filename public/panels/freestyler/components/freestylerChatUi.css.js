@@ -18,11 +18,14 @@ styles.replaceSync(
   user-select: text;
   display: flex;
   flex-direction: column;
+  background-color: var(--sys-color-cdt-base-container);
 }
 
 .chat-ui {
+  box-sizing: border-box;
   width: 100%;
   margin-top: var(--sys-size-6);
+  padding: 0 var(--sys-size-8);
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -32,8 +35,9 @@ styles.replaceSync(
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  padding-top: var(--sys-size-8);
+  padding: var(--sys-size-8) var(--sys-size-8) 0;
   margin-bottom: var(--sys-size-4);
+  max-width: 100%;
 }
 
 .chat-input-container {

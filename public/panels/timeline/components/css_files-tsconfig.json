@@ -9,6 +9,7 @@
         "interactionBreakdown.css.js",
         "liveMetricsView.css.js",
         "sidebar.css.js",
+        "sidebarAnnotationsTab.css.js",
         "sidebarInsight.css.js",
         "timeRangeOverlay.css.js"
     ]

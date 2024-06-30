@@ -6,26 +6,32 @@ import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ExecutionError, FreestylerEvaluateAction } from './FreestylerEvaluateAction.js';
-const preamble = `You are a CSS debugging agent integrated into Chrome DevTools.
-You are going to receive a query about the CSS on the page and you are going to answer to this query in these steps:
+const preamble = `You are a CSS debugging assistant integrated into Chrome DevTools.
+The user selected a DOM element in the browser's DevTools and sends a CSS-related
+query about the selected DOM element. You are going to answer to the query in these steps:
 * THOUGHT
 * ACTION
 * ANSWER
-Use ACTION to evaluate JS code (without markdown) on the page to gather all the data needed to answer the query and put it inside the data variable - then return STOP.
+Use THOUGHT to explain why you take the ACTION.
+Use ACTION to evaluate JavaScript code on the page to gather all the data needed to answer the query and put it inside the data variable - then return STOP.
+You have access to a special $0 variable referencing the current element in the scope of the JavaScript code.
 OBSERVATION will be the result of running the JS code on the page.
-You can then answer the question with ANSWER or run another ACTION query.
-Please run ACTION again if the information you got is not enough to answer the query.
+After that, you can answer the question with ANSWER or run another ACTION query.
+Please run ACTION again if the information you received is not enough to answer the query.
+Please answer only if you are sure about the answer. Otherwise, explain why you're not able to answer.
+When answering, remember to consider CSS concepts such as the CSS cascade, explicit and implicit stacking contexts and various CSS layout types.
+When answering, always consider MULTIPLE possible solutions.
 
 Example:
 ACTION
 const data = {
-  hoverStyles: window.getComputedStyle($0, 'hover') // USING 'hover' NOT ':hover'
+  color: window.getComputedStyle($0)['color'],
+  backgroundColor: window.getComputedStyle($0)['backgroundColor'],
 }
 STOP
 
-You have access to $0 variable to denote the currently inspected element while executing JS code.
-
 Example session:
+
 QUERY: Why is this element centered in its container?
 THOUGHT: Let's check the layout properties of the container.
 ACTION
@@ -42,7 +48,7 @@ OBSERVATION
 You then output:
 ANSWER: The element is centered on the page because the parent is a flex container with justify-content set to center.
 
-Please answer only if you are sure about the answer. Otherwise, explain why you're not able to answer.`;
+The example session ends here.`;
 export var Step;
 (function (Step) {
     Step["THOUGHT"] = "thought";
@@ -77,10 +83,10 @@ async function executeJsCode(code) {
         throw err;
     }
 }
-const MAX_STEPS = 5;
+const MAX_STEPS = 10;
 export class FreestylerAgent {
     #aidaClient;
-    #chatHistory = [];
+    #chatHistory = new Map();
     #execJs;
     constructor({ aidaClient, execJs }) {
         this.#aidaClient = aidaClient;
@@ -102,11 +108,18 @@ export class FreestylerAgent {
                 // TODO: enable logging later.
                 disable_user_content_logging: true,
             },
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            functionality_type: Host.AidaClient.FunctionalityType.CHAT,
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            client_feature: Host.AidaClient.ClientFeature.CHROME_FREESTYLER,
         };
         return request;
     }
+    get #getHistoryEntry() {
+        return [...this.#chatHistory.values()].flat();
+    }
     get chatHistoryForTesting() {
-        return this.#chatHistory;
+        return this.#getHistoryEntry;
     }
     static parseResponse(response) {
         const lines = response.split('\n');
@@ -168,13 +181,18 @@ export class FreestylerAgent {
         return { response, rpcId };
     }
     resetHistory() {
-        this.#chatHistory = [];
+        this.#chatHistory = new Map();
     }
-    async *run(query) {
+    #runId = 0;
+    async *run(query, options) {
         const structuredLog = [];
         query = `QUERY: ${query}`;
+        const currentRunId = ++this.#runId;
+        options?.signal.addEventListener('abort', () => {
+            this.#chatHistory.delete(currentRunId);
+        });
         for (let i = 0; i < MAX_STEPS; i++) {
-            const request = FreestylerAgent.buildRequest(query, preamble, this.#chatHistory.length ? this.#chatHistory : undefined);
+            const request = FreestylerAgent.buildRequest(query, preamble, this.#chatHistory.size ? this.#getHistoryEntry : undefined);
             let response;
             let rpcId;
             try {
@@ -183,7 +201,13 @@ export class FreestylerAgent {
                 rpcId = fetchResult.rpcId;
             }
             catch (err) {
+                if (options?.signal.aborted) {
+                    break;
+                }
                 yield { step: Step.ERROR, text: err.message, rpcId };
+                break;
+            }
+            if (options?.signal.aborted) {
                 break;
             }
             debugLog(`Iteration: ${i}`, 'Request', request, 'Response', response);
@@ -191,13 +215,18 @@ export class FreestylerAgent {
                 request: structuredClone(request),
                 response: response,
             });
-            this.#chatHistory.push({
-                text: query,
-                entity: Host.AidaClient.Entity.USER,
-            }, {
-                text: response,
-                entity: Host.AidaClient.Entity.SYSTEM,
-            });
+            const currentRunEntries = this.#chatHistory.get(currentRunId) ?? [];
+            this.#chatHistory.set(currentRunId, [
+                ...currentRunEntries,
+                {
+                    text: query,
+                    entity: Host.AidaClient.Entity.USER,
+                },
+                {
+                    text: response,
+                    entity: Host.AidaClient.Entity.SYSTEM,
+                },
+            ]);
             const { thought, action, answer } = FreestylerAgent.parseResponse(response);
             if (!thought && !action && !answer) {
                 yield { step: Step.ANSWER, text: 'Sorry, I could not help you with this query.', rpcId };

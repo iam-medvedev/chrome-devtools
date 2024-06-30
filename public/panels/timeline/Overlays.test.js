@@ -242,6 +242,70 @@ describeWithEnvironment('Overlays', () => {
             const label = elementsWrapper.querySelector('.label-box');
             assert.strictEqual(label?.innerText, 'entry label');
         });
+        it('Inputting `Enter`into label overlay makes it non-editable', async function () {
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const { overlays, container, charts } = setupChartWithDimensions(traceParsedData);
+            const event = charts.mainProvider.eventByIndex(50);
+            assert.isOk(event);
+            assert.notInstanceOf(event, TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame);
+            // Create an entry label overlay
+            overlays.add({
+                type: 'ENTRY_LABEL',
+                entry: event,
+                label: 'label',
+            });
+            overlays.update();
+            // Ensure that the overlay was created.
+            const overlayDOM = container.querySelector('.overlay-type-ENTRY_LABEL');
+            assert.isOk(overlayDOM);
+            const component = overlayDOM?.querySelector('devtools-entry-label-overlay');
+            assert.isOk(component?.shadowRoot);
+            component.connectedCallback();
+            const elementsWrapper = component.shadowRoot.querySelector('.label-parts-wrapper');
+            assert.isOk(elementsWrapper);
+            const label = elementsWrapper.querySelector('.label-box');
+            assert.isOk(label);
+            // Double click on the label box to make it editable and focus on it
+            label.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
+            // Ensure the label content is editable
+            assert.isTrue(label.isContentEditable);
+            // Press `Enter` to make the lable not editable
+            label.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }));
+            // Ensure the label content is not editable
+            assert.isFalse(label.isContentEditable);
+        });
+        it('Removes empty label if it is empty when navigated away from (removed focused from)', async function () {
+            const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const { overlays, container, charts } = setupChartWithDimensions(traceParsedData);
+            const event = charts.mainProvider.eventByIndex(50);
+            assert.isOk(event);
+            // Create an entry label overlay
+            overlays.add({
+                type: 'ENTRY_LABEL',
+                entry: event,
+                label: '',
+            });
+            overlays.update();
+            // Ensure that the overlay was created.
+            const overlayDOM = container.querySelector('.overlay-type-ENTRY_LABEL');
+            assert.isOk(overlayDOM);
+            const component = overlayDOM?.querySelector('devtools-entry-label-overlay');
+            assert.isOk(component?.shadowRoot);
+            component.connectedCallback();
+            const elementsWrapper = component.shadowRoot.querySelector('.label-parts-wrapper');
+            assert.isOk(elementsWrapper);
+            const label = elementsWrapper.querySelector('.label-box');
+            assert.isOk(label);
+            // Double click on the label box to make it editable and focus on it
+            label.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
+            // Ensure that the entry has 1 overlay
+            assert.strictEqual(overlays.overlaysForEntry(event).length, 1);
+            // Change the content to not editable by changing the element blur like when clicking outside of it.
+            // The label is empty since no initial value was passed into it and no characters were entered.
+            label.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+            // Ensure that the entry overlay has been removed because it was saved empty
+            assert.strictEqual(overlays.overlaysForEntry(event).length, 0);
+        });
         it('can render an overlay for a time range', async function () {
             const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const { overlays, container } = setupChartWithDimensions(traceParsedData);
@@ -277,6 +341,25 @@ describeWithEnvironment('Overlays', () => {
             const secondWidth = window.parseInt(overlayDOM.style.width);
             // The new time range is smaller so the DOM element should have less width
             assert.isTrue(secondWidth < firstWidth);
+        });
+        it('renders the overlay for a selected layout shift entry correctly', async function () {
+            const traceParsedData = await TraceLoader.traceEngine(this, 'cls-single-frame.json.gz');
+            const { overlays, container } = setupChartWithDimensions(traceParsedData);
+            const layoutShiftEvent = traceParsedData.LayoutShifts.clusters.at(0)?.events.at(0);
+            if (!layoutShiftEvent) {
+                throw new Error('layoutShiftEvent was unexpectedly undefined');
+            }
+            overlays.add({
+                type: 'ENTRY_SELECTED',
+                entry: layoutShiftEvent,
+            });
+            const boundsRange = TraceEngine.Types.Timing.MicroSeconds(20_000);
+            const boundsMax = TraceEngine.Types.Timing.MicroSeconds(layoutShiftEvent.ts + boundsRange);
+            overlays.updateVisibleWindow({ min: layoutShiftEvent.ts, max: boundsMax, range: boundsRange });
+            overlays.update();
+            const overlayDOM = container.querySelector('.overlay-type-ENTRY_SELECTED');
+            assert.isOk(overlayDOM);
+            assert.strictEqual(window.parseInt(overlayDOM.style.width), 250);
         });
         it('renders the duration and label for a time range overlay', async function () {
             const traceParsedData = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -398,7 +481,8 @@ describeWithEnvironment('Overlays', () => {
             const component = overlayDOM?.querySelector('devtools-entry-label-overlay');
             assert.isOk(component?.shadowRoot);
             const elementsWrapper = component.shadowRoot.querySelector('.label-parts-wrapper');
-            const labelBox = elementsWrapper?.querySelector('.label-box');
+            assert.isOk(elementsWrapper);
+            const labelBox = elementsWrapper.querySelector('.label-box');
             // The label input box should be editable after it is created and before anything else happened
             assert.isTrue(labelBox.isContentEditable);
             // Make the content to editable by changing the element blur like when clicking outside of it.

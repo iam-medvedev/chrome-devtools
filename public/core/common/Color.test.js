@@ -275,7 +275,7 @@ describe('Color', () => {
     it('is able to return the nickname of a color', () => {
         const color = new Color.Legacy([1, 0, 0, 1], "rgba" /* Color.Format.RGBA */, 'testColor');
         const result = color.nickname();
-        assert.strictEqual(result, 'red', 'nickname was not returned correctly');
+        assert.strictEqual(result?.asString(), 'red', 'nickname was not returned correctly');
     });
     it('returns null as a nickname if the color was not recognized', () => {
         const color = new Color.Legacy([0.5, 0.5, 0.5, 0.5], "rgba" /* Color.Format.RGBA */, 'testColor');
@@ -303,30 +303,35 @@ describe('Color', () => {
         const result = color.blendWith(otherColor).rgba();
         assert.deepEqual(result, [0.5, 0, 0.5, 0.75], 'color was not blended correctly');
     });
-    it('returns the nickname when turned into a string if its format was "nickname"', () => {
-        const color = new Color.Legacy([1, 0, 0, 1], "nickname" /* Color.Format.Nickname */);
-        const result = color.asString();
-        assert.strictEqual(result, 'red', 'color was not converted to a string correctly');
-    });
     it('returns the HEX value when turned into a string if its format was "hex"', () => {
         const color = new Color.Legacy([1, 0, 0, 1], "hex" /* Color.Format.HEX */);
         const result = color.asString();
         assert.strictEqual(result, '#ff0000', 'color was not converted to a string correctly');
     });
-    it('returns the short HEX value when turned into a string if its format was "shorthex"', () => {
-        const color = new Color.Legacy([1, 0, 0, 1], "shorthex" /* Color.Format.ShortHEX */);
+    it('returns the short HEX value when turned into a string if the input was a short hex value', () => {
+        const color = Color.Legacy.fromHex('F00', '');
         const result = color.asString();
         assert.strictEqual(result, '#f00', 'color was not converted to a string correctly');
     });
-    it('returns the HEXA value when turned into a string if its format was "hexa"', () => {
-        const color = new Color.Legacy([1, 0, 0, 1], "hexa" /* Color.Format.HEXA */);
-        const result = color.asString();
-        assert.strictEqual(result, '#ff0000ff', 'color was not converted to a string correctly');
+    it('returns the short HEX value when turned into a string after conversion to shorthex', () => {
+        const color = new Color.Legacy([1, 0, 0, 1], "hex" /* Color.Format.HEX */);
+        const result = color.shortHex()?.asString();
+        assert.strictEqual(result, '#f00', 'color was not converted to a string correctly');
     });
-    it('returns the short HEXA value when turned into a string if its format was "shorthexa"', () => {
-        const color = new Color.Legacy([1, 0, 0, 1], "shorthexa" /* Color.Format.ShortHEXA */);
+    it('returns the HEXA value when turned into a string if its format was "hexa"', () => {
+        const color = new Color.Legacy([1, 0, 0, .5], "hexa" /* Color.Format.HEXA */);
         const result = color.asString();
-        assert.strictEqual(result, '#f00f', 'color was not converted to a string correctly');
+        assert.strictEqual(result, '#ff000080', 'color was not converted to a string correctly');
+    });
+    it('returns the short HEXA value when turned into a string if the input was a short hexa value', () => {
+        const color = Color.Legacy.fromHex('F00C', '');
+        const result = color.asString();
+        assert.strictEqual(result, '#f00c', 'color was not converted to a string correctly');
+    });
+    it('returns the short HEXA value when turned into a string after conversion to shorthex', () => {
+        const color = new Color.Legacy([1, 0, 0, 1], "hexa" /* Color.Format.HEXA */);
+        const result = color.shortHex()?.asString();
+        assert.strictEqual(result, '#f00', 'color was not converted to a string correctly');
     });
     it('returns the RGB value when turned into a string if its format was "rgb"', () => {
         const color = new Color.Legacy([1, 0, 0, 1], "rgb" /* Color.Format.RGB */);
@@ -373,15 +378,10 @@ describe('Color', () => {
         const result = color.asString();
         assert.strictEqual(result, 'hwb(0deg 0% 0%)', 'color was not converted to a string correctly');
     });
-    it('is able to return a color in a different format than the one the color was originally set with', () => {
-        const color = new Color.Legacy([1, 0, 0, 1], "rgb" /* Color.Format.RGB */);
-        const result = color.asString("nickname" /* Color.Format.Nickname */);
-        assert.strictEqual(result, 'red', 'color was not converted to a string correctly');
-    });
     it('is able to change color format', () => {
         const color = new Color.Legacy([1, 0, 0, 1], "rgb" /* Color.Format.RGB */);
         color.setFormat("hexa" /* Color.Format.HEXA */);
-        assert.strictEqual(color.asString(), '#ff0000ff', 'format was not set correctly');
+        assert.strictEqual(color.asString(), '#ff0000', 'format was not set correctly');
     });
     it('suggests colors with good contrast', () => {
         const colors = [
@@ -493,11 +493,8 @@ describe('Color', () => {
     });
     it('retains and returns the authored text', () => {
         const lime = {
-            ["nickname" /* Common.Color.Format.Nickname */]: 'lime',
             ["hex" /* Common.Color.Format.HEX */]: '#00ff00',
-            ["shorthex" /* Common.Color.Format.ShortHEX */]: '#0f0',
             ["hexa" /* Common.Color.Format.HEXA */]: '#00ff00ff',
-            ["shorthexa" /* Common.Color.Format.ShortHEXA */]: '#0f0f',
             ["rgb" /* Common.Color.Format.RGB */]: 'rgb(0 255 0)',
             ["rgba" /* Common.Color.Format.RGBA */]: 'rgba(0 255 0 / 100%)',
             ["hsl" /* Common.Color.Format.HSL */]: 'hsl(120deg 100% 50%)',
@@ -527,11 +524,8 @@ describe('Color', () => {
     });
     it('prints the correct color when stringified with format', () => {
         const LIME = [
-            { format: "nickname" /* Common.Color.Format.Nickname */, spec: 'lime' },
             { format: "hex" /* Common.Color.Format.HEX */, spec: '#00ff00' },
-            { format: "shorthex" /* Common.Color.Format.ShortHEX */, spec: '#0f0' },
-            { format: "hexa" /* Common.Color.Format.HEXA */, spec: '#00ff00ff' },
-            { format: "shorthexa" /* Common.Color.Format.ShortHEXA */, spec: '#0f0f' },
+            { format: "hexa" /* Common.Color.Format.HEXA */, spec: '#00ff00' },
             { format: "rgb" /* Common.Color.Format.RGB */, spec: 'rgb(0 255 0)' },
             { format: "rgba" /* Common.Color.Format.RGBA */, spec: 'rgb(0 255 0)' }, // no alpha here because it is ignored at 100%
             { format: "hsl" /* Common.Color.Format.HSL */, spec: 'hsl(120deg 100% 50%)' },
@@ -597,11 +591,8 @@ describe('Color', () => {
             });
         }
         const colors = new Map();
-        colors.set("nickname" /* Common.Color.Format.Nickname */, Common.Color.parse('red'));
         colors.set("hex" /* Common.Color.Format.HEX */, Common.Color.parse('#ff0000'));
-        colors.set("shorthex" /* Common.Color.Format.ShortHEX */, Common.Color.parse('#f00'));
         colors.set("hexa" /* Common.Color.Format.HEXA */, Common.Color.parse('#ff0000ff'));
-        colors.set("shorthexa" /* Common.Color.Format.ShortHEXA */, Common.Color.parse('#f00f'));
         colors.set("rgb" /* Common.Color.Format.RGB */, Common.Color.parse('rgb(255 0 0)'));
         colors.set("rgba" /* Common.Color.Format.RGBA */, Common.Color.parse('rgb(255 0 0)'));
         colors.set("hsl" /* Common.Color.Format.HSL */, Common.Color.parse('hsl(0deg 100% 50%)'));
@@ -643,7 +634,7 @@ describe('Color', () => {
     it('correctly clips results on conversion', () => {
         const nonSRGBColor = Color.parse('lab(99 50 50)');
         assert.strictEqual(nonSRGBColor.asString("hex" /* Common.Color.Format.HEX */), '#ffd39e');
-        assert.strictEqual(nonSRGBColor.asString("hexa" /* Common.Color.Format.HEXA */), '#ffd39eff');
+        assert.strictEqual(nonSRGBColor.asString("hexa" /* Common.Color.Format.HEXA */), '#ffd39e');
         assert.strictEqual(nonSRGBColor.asString("rgb" /* Common.Color.Format.RGB */), 'rgb(255 211 158)');
         assert.strictEqual(nonSRGBColor.asString("rgba" /* Common.Color.Format.RGBA */), 'rgb(255 211 158)');
         assert.strictEqual(nonSRGBColor.asString("hsl" /* Common.Color.Format.HSL */), 'hsl(0deg 0% 100%)');

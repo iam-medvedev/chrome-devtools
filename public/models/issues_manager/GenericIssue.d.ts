@@ -13,13 +13,6 @@ export declare class GenericIssue extends Issue {
     getKind(): IssueKind;
     static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): GenericIssue[];
 }
-export declare const genericCrossOriginPortalPostMessageError: {
-    file: string;
-    links: {
-        link: string;
-        linkTitle: () => import("../../core/platform/UIString.js").LocalizedString;
-    }[];
-};
 export declare const genericFormLabelForNameError: {
     file: string;
     links: {

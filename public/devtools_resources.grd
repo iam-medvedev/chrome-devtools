@@ -335,6 +335,7 @@
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
       <include file="models/breakpoints/breakpoints.js" name="MODELS_BREAKPOINTS_BREAKPOINTS_JS" resource_path="models/breakpoints/breakpoints.js" type="BINDATA" compress="false"/>
       <include file="models/cpu_profile/cpu_profile.js" name="MODELS_CPU_PROFILE_CPU_PROFILE_JS" resource_path="models/cpu_profile/cpu_profile.js" type="BINDATA" compress="false"/>
+      <include file="models/crux-manager/crux-manager.js" name="MODELS_CRUX_MANAGER_CRUX_MANAGER_JS" resource_path="models/crux-manager/crux-manager.js" type="BINDATA" compress="false"/>
       <include file="models/emulation/emulation.js" name="MODELS_EMULATION_EMULATION_JS" resource_path="models/emulation/emulation.js" type="BINDATA" compress="false"/>
       <include file="models/extensions/extensions.js" name="MODELS_EXTENSIONS_EXTENSIONS_JS" resource_path="models/extensions/extensions.js" type="BINDATA" compress="false"/>
       <include file="models/formatter/formatter.js" name="MODELS_FORMATTER_FORMATTER_JS" resource_path="models/formatter/formatter.js" type="BINDATA" compress="false"/>
@@ -436,7 +437,6 @@
       <include file="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotPotentiallyTrustworthy.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_FEDERATEDAUTHUSERINFOREQUESTNOTPOTENTIALLYTRUSTWORTHY_MD" resource_path="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotPotentiallyTrustworthy.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotSameOrigin.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_FEDERATEDAUTHUSERINFOREQUESTNOTSAMEORIGIN_MD" resource_path="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotSameOrigin.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotSignedInWithIdp.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_FEDERATEDAUTHUSERINFOREQUESTNOTSIGNEDINWITHIDP_MD" resource_path="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotSignedInWithIdp.md" type="BINDATA" compress="false"/>
-      <include file="models/issues_manager/descriptions/genericCrossOriginPortalPostMessageError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICCROSSORIGINPORTALPOSTMESSAGEERROR_MD" resource_path="models/issues_manager/descriptions/genericCrossOriginPortalPostMessageError.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormAriaLabelledByToNonExistingId.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMARIALABELLEDBYTONONEXISTINGID_MD" resource_path="models/issues_manager/descriptions/genericFormAriaLabelledByToNonExistingId.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormAutocompleteAttributeEmptyError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMAUTOCOMPLETEATTRIBUTEEMPTYERROR_MD" resource_path="models/issues_manager/descriptions/genericFormAutocompleteAttributeEmptyError.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormDuplicateIdForInputError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMDUPLICATEIDFORINPUTERROR_MD" resource_path="models/issues_manager/descriptions/genericFormDuplicateIdForInputError.md" type="BINDATA" compress="false"/>
@@ -494,6 +494,12 @@
       <include file="models/trace/handlers/handlers.js" name="MODELS_TRACE_HANDLERS_HANDLERS_JS" resource_path="models/trace/handlers/handlers.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/helpers.js" name="MODELS_TRACE_HELPERS_HELPERS_JS" resource_path="models/trace/helpers/helpers.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/insights.js" name="MODELS_TRACE_INSIGHTS_INSIGHTS_JS" resource_path="models/trace/insights/insights.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/core/core.js" name="MODELS_TRACE_LANTERN_CORE_CORE_JS" resource_path="models/trace/lantern/core/core.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/graph/graph.js" name="MODELS_TRACE_LANTERN_GRAPH_GRAPH_JS" resource_path="models/trace/lantern/graph/graph.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/lantern.js" name="MODELS_TRACE_LANTERN_LANTERN_JS" resource_path="models/trace/lantern/lantern.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/metrics/metrics.js" name="MODELS_TRACE_LANTERN_METRICS_METRICS_JS" resource_path="models/trace/lantern/metrics/metrics.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/simulation/simulation.js" name="MODELS_TRACE_LANTERN_SIMULATION_SIMULATION_JS" resource_path="models/trace/lantern/simulation/simulation.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/types/types.js" name="MODELS_TRACE_LANTERN_TYPES_TYPES_JS" resource_path="models/trace/lantern/types/types.js" type="BINDATA" compress="false"/>
       <include file="models/trace/root-causes/root-causes.js" name="MODELS_TRACE_ROOT_CAUSES_ROOT_CAUSES_JS" resource_path="models/trace/root-causes/root-causes.js" type="BINDATA" compress="false"/>
       <include file="models/trace/trace.js" name="MODELS_TRACE_TRACE_JS" resource_path="models/trace/trace.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/types.js" name="MODELS_TRACE_TYPES_TYPES_JS" resource_path="models/trace/types/types.js" type="BINDATA" compress="false"/>
@@ -890,6 +896,7 @@
       <include file="models/breakpoints/BreakpointManager.js" name="MODELS_BREAKPOINTS_BREAKPOINTMANAGER_JS" resource_path="models/breakpoints/BreakpointManager.js" type="BINDATA" compress="false"/>
       <include file="models/cpu_profile/CPUProfileDataModel.js" name="MODELS_CPU_PROFILE_CPUPROFILEDATAMODEL_JS" resource_path="models/cpu_profile/CPUProfileDataModel.js" type="BINDATA" compress="false"/>
       <include file="models/cpu_profile/ProfileTreeModel.js" name="MODELS_CPU_PROFILE_PROFILETREEMODEL_JS" resource_path="models/cpu_profile/ProfileTreeModel.js" type="BINDATA" compress="false"/>
+      <include file="models/crux-manager/CrUXManager.js" name="MODELS_CRUX_MANAGER_CRUXMANAGER_JS" resource_path="models/crux-manager/CrUXManager.js" type="BINDATA" compress="false"/>
       <include file="models/emulation/DeviceModeModel.js" name="MODELS_EMULATION_DEVICEMODEMODEL_JS" resource_path="models/emulation/DeviceModeModel.js" type="BINDATA" compress="false"/>
       <include file="models/emulation/EmulatedDevices.js" name="MODELS_EMULATION_EMULATEDDEVICES_JS" resource_path="models/emulation/EmulatedDevices.js" type="BINDATA" compress="false"/>
       <include file="models/extensions/ExtensionAPI.js" name="MODELS_EXTENSIONS_EXTENSIONAPI_JS" resource_path="models/extensions/ExtensionAPI.js" type="BINDATA" compress="false"/>
@@ -976,6 +983,7 @@
       <include file="models/timeline_model/TimelineProfileTree.js" name="MODELS_TIMELINE_MODEL_TIMELINEPROFILETREE_JS" resource_path="models/timeline_model/TimelineProfileTree.js" type="BINDATA" compress="false"/>
       <include file="models/timeline_model/TracingLayerTree.js" name="MODELS_TIMELINE_MODEL_TRACINGLAYERTREE_JS" resource_path="models/timeline_model/TracingLayerTree.js" type="BINDATA" compress="false"/>
       <include file="models/trace/EntriesFilter.js" name="MODELS_TRACE_ENTRIESFILTER_JS" resource_path="models/trace/EntriesFilter.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/LanternComputationData.js" name="MODELS_TRACE_LANTERNCOMPUTATIONDATA_JS" resource_path="models/trace/LanternComputationData.js" type="BINDATA" compress="false"/>
       <include file="models/trace/ModelImpl.js" name="MODELS_TRACE_MODELIMPL_JS" resource_path="models/trace/ModelImpl.js" type="BINDATA" compress="false"/>
       <include file="models/trace/Processor.js" name="MODELS_TRACE_PROCESSOR_JS" resource_path="models/trace/Processor.js" type="BINDATA" compress="false"/>
       <include file="models/trace/TracingManager.js" name="MODELS_TRACE_TRACINGMANAGER_JS" resource_path="models/trace/TracingManager.js" type="BINDATA" compress="false"/>
@@ -1026,6 +1034,27 @@
       <include file="models/trace/insights/RenderBlocking.js" name="MODELS_TRACE_INSIGHTS_RENDERBLOCKING_JS" resource_path="models/trace/insights/RenderBlocking.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/Viewport.js" name="MODELS_TRACE_INSIGHTS_VIEWPORT_JS" resource_path="models/trace/insights/Viewport.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/types.js" name="MODELS_TRACE_INSIGHTS_TYPES_JS" resource_path="models/trace/insights/types.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/core/LanternError.js" name="MODELS_TRACE_LANTERN_CORE_LANTERNERROR_JS" resource_path="models/trace/lantern/core/LanternError.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/core/NetworkAnalyzer.js" name="MODELS_TRACE_LANTERN_CORE_NETWORKANALYZER_JS" resource_path="models/trace/lantern/core/NetworkAnalyzer.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/graph/BaseNode.js" name="MODELS_TRACE_LANTERN_GRAPH_BASENODE_JS" resource_path="models/trace/lantern/graph/BaseNode.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/graph/CPUNode.js" name="MODELS_TRACE_LANTERN_GRAPH_CPUNODE_JS" resource_path="models/trace/lantern/graph/CPUNode.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/graph/NetworkNode.js" name="MODELS_TRACE_LANTERN_GRAPH_NETWORKNODE_JS" resource_path="models/trace/lantern/graph/NetworkNode.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/graph/PageDependencyGraph.js" name="MODELS_TRACE_LANTERN_GRAPH_PAGEDEPENDENCYGRAPH_JS" resource_path="models/trace/lantern/graph/PageDependencyGraph.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/metrics/FirstContentfulPaint.js" name="MODELS_TRACE_LANTERN_METRICS_FIRSTCONTENTFULPAINT_JS" resource_path="models/trace/lantern/metrics/FirstContentfulPaint.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/metrics/Interactive.js" name="MODELS_TRACE_LANTERN_METRICS_INTERACTIVE_JS" resource_path="models/trace/lantern/metrics/Interactive.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/metrics/LargestContentfulPaint.js" name="MODELS_TRACE_LANTERN_METRICS_LARGESTCONTENTFULPAINT_JS" resource_path="models/trace/lantern/metrics/LargestContentfulPaint.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/metrics/MaxPotentialFID.js" name="MODELS_TRACE_LANTERN_METRICS_MAXPOTENTIALFID_JS" resource_path="models/trace/lantern/metrics/MaxPotentialFID.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/metrics/Metric.js" name="MODELS_TRACE_LANTERN_METRICS_METRIC_JS" resource_path="models/trace/lantern/metrics/Metric.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/metrics/SpeedIndex.js" name="MODELS_TRACE_LANTERN_METRICS_SPEEDINDEX_JS" resource_path="models/trace/lantern/metrics/SpeedIndex.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/metrics/TBTUtils.js" name="MODELS_TRACE_LANTERN_METRICS_TBTUTILS_JS" resource_path="models/trace/lantern/metrics/TBTUtils.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/metrics/TotalBlockingTime.js" name="MODELS_TRACE_LANTERN_METRICS_TOTALBLOCKINGTIME_JS" resource_path="models/trace/lantern/metrics/TotalBlockingTime.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/simulation/ConnectionPool.js" name="MODELS_TRACE_LANTERN_SIMULATION_CONNECTIONPOOL_JS" resource_path="models/trace/lantern/simulation/ConnectionPool.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/simulation/Constants.js" name="MODELS_TRACE_LANTERN_SIMULATION_CONSTANTS_JS" resource_path="models/trace/lantern/simulation/Constants.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/simulation/DNSCache.js" name="MODELS_TRACE_LANTERN_SIMULATION_DNSCACHE_JS" resource_path="models/trace/lantern/simulation/DNSCache.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/simulation/SimulationTimingMap.js" name="MODELS_TRACE_LANTERN_SIMULATION_SIMULATIONTIMINGMAP_JS" resource_path="models/trace/lantern/simulation/SimulationTimingMap.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/simulation/Simulator.js" name="MODELS_TRACE_LANTERN_SIMULATION_SIMULATOR_JS" resource_path="models/trace/lantern/simulation/Simulator.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/simulation/TCPConnection.js" name="MODELS_TRACE_LANTERN_SIMULATION_TCPCONNECTION_JS" resource_path="models/trace/lantern/simulation/TCPConnection.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/lantern/types/Lantern.js" name="MODELS_TRACE_LANTERN_TYPES_LANTERN_JS" resource_path="models/trace/lantern/types/Lantern.js" type="BINDATA" compress="false"/>
       <include file="models/trace/root-causes/LayoutShift.js" name="MODELS_TRACE_ROOT_CAUSES_LAYOUTSHIFT_JS" resource_path="models/trace/root-causes/LayoutShift.js" type="BINDATA" compress="false"/>
       <include file="models/trace/root-causes/RootCauses.js" name="MODELS_TRACE_ROOT_CAUSES_ROOTCAUSES_JS" resource_path="models/trace/root-causes/RootCauses.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/Configuration.js" name="MODELS_TRACE_TYPES_CONFIGURATION_JS" resource_path="models/trace/types/Configuration.js" type="BINDATA" compress="false"/>
@@ -1701,6 +1730,7 @@
       <include file="panels/timeline/components/InteractionBreakdown.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_JS" resource_path="panels/timeline/components/InteractionBreakdown.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/LiveMetricsView.js" name="PANELS_TIMELINE_COMPONENTS_LIVEMETRICSVIEW_JS" resource_path="panels/timeline/components/LiveMetricsView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/Sidebar.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBAR_JS" resource_path="panels/timeline/components/Sidebar.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/SidebarAnnotationsTab.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARANNOTATIONSTAB_JS" resource_path="panels/timeline/components/SidebarAnnotationsTab.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/SidebarInsight.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARINSIGHT_JS" resource_path="panels/timeline/components/SidebarInsight.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/TimeRangeOverlay.js" name="PANELS_TIMELINE_COMPONENTS_TIMERANGEOVERLAY_JS" resource_path="panels/timeline/components/TimeRangeOverlay.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/breadcrumbsUI.css.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_CSS_JS" resource_path="panels/timeline/components/breadcrumbsUI.css.js" type="BINDATA" compress="false"/>
@@ -1708,6 +1738,7 @@
       <include file="panels/timeline/components/interactionBreakdown.css.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_CSS_JS" resource_path="panels/timeline/components/interactionBreakdown.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/liveMetricsView.css.js" name="PANELS_TIMELINE_COMPONENTS_LIVEMETRICSVIEW_CSS_JS" resource_path="panels/timeline/components/liveMetricsView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebar.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBAR_CSS_JS" resource_path="panels/timeline/components/sidebar.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/sidebarAnnotationsTab.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARANNOTATIONSTAB_CSS_JS" resource_path="panels/timeline/components/sidebarAnnotationsTab.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebarInsight.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARINSIGHT_CSS_JS" resource_path="panels/timeline/components/sidebarInsight.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/timeRangeOverlay.css.js" name="PANELS_TIMELINE_COMPONENTS_TIMERANGEOVERLAY_CSS_JS" resource_path="panels/timeline/components/timeRangeOverlay.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/extensions/ExtensionUI.js" name="PANELS_TIMELINE_EXTENSIONS_EXTENSIONUI_JS" resource_path="panels/timeline/extensions/ExtensionUI.js" type="BINDATA" compress="false"/>

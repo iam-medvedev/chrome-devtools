@@ -114,7 +114,7 @@ export class DOMNode {
             this.templateContentInternal.parentNode = this;
             this.childrenInternal = [];
         }
-        const frameOwnerTags = new Set(['EMBED', 'IFRAME', 'OBJECT', 'PORTAL', 'FENCEDFRAME']);
+        const frameOwnerTags = new Set(['EMBED', 'IFRAME', 'OBJECT', 'FENCEDFRAME']);
         if (payload.contentDocument) {
             this.contentDocumentInternal = new DOMDocument(this.#domModelInternal, payload.contentDocument);
             this.contentDocumentInternal.parentNode = this;
@@ -242,9 +242,6 @@ export class DOMNode {
     }
     isIframe() {
         return this.#nodeNameInternal === 'IFRAME';
-    }
-    isPortal() {
-        return this.#nodeNameInternal === 'PORTAL';
     }
     importedDocument() {
         return this.#importedDocumentInternal || null;

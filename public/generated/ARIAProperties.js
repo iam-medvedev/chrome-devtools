@@ -56,6 +56,10 @@ export const config = {
             "type": "integer"
         },
         {
+            "name": "aria-colindextext",
+            "type": "string"
+        },
+        {
             "name": "aria-colspan",
             "type": "integer"
         },
@@ -257,6 +261,10 @@ export const config = {
         {
             "name": "aria-rowindex",
             "type": "integer"
+        },
+        {
+            "name": "aria-rowindextext",
+            "type": "string"
         },
         {
             "name": "aria-rowspan",

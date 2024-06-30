@@ -51,6 +51,9 @@
       "path": "../../core/i18n/bundle-tsconfig.json"
     },
     {
+      "path": "../../third_party/marked/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/markdown_view/bundle-tsconfig.json"
     },
     {
