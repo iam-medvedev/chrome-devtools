@@ -343,8 +343,15 @@ export function isTraceEventResourceWillSendRequest(traceEventData) {
 export function isTraceEventResourceReceivedData(traceEventData) {
     return traceEventData.name === 'ResourceReceivedData';
 }
-export function isSyntheticNetworkRequestDetailsEvent(traceEventData) {
+export function isSyntheticNetworkRequestEvent(traceEventData) {
     return traceEventData.name === 'SyntheticNetworkRequest';
+}
+export function isSyntheticWebSocketConnectionEvent(traceEventData) {
+    return traceEventData.name === 'SyntheticWebSocketConnectionEvent';
+}
+export function isNetworkTrackEntry(traceEventData) {
+    return isSyntheticNetworkRequestEvent(traceEventData) || isSyntheticWebSocketConnectionEvent(traceEventData) ||
+        isWebSocketTraceEvent(traceEventData);
 }
 export function isTraceEventPrePaint(traceEventData) {
     return traceEventData.name === 'PrePaint';

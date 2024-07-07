@@ -24,7 +24,15 @@ export class TimelineSelection {
         }
         // At this point we know the selection is a raw trace event, so we just
         // need to check it's the right type of raw event.
-        return TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestDetailsEvent(object);
+        return TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(object);
+    }
+    static isNetworkEventSelection(object) {
+        if (TimelineSelection.isFrameObject(object) || TimelineSelection.isRangeSelection(object)) {
+            return false;
+        }
+        // At this point we know the selection is a raw trace event, so we just
+        // need to check it's the right type of raw event.
+        return TraceEngine.Types.TraceEvents.isNetworkTrackEntry(object);
     }
     static isTraceEventSelection(object) {
         // Trace events are just raw objects, so now we have to confirm it is a trace event by ruling everything else out.
@@ -33,7 +41,7 @@ export class TimelineSelection {
         }
         // Although Network Requests are trace events, in TimelineSelection we
         // treat Network requests distinctly
-        if (TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestDetailsEvent(object)) {
+        if (TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(object)) {
             return false;
         }
         return true;

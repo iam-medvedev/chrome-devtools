@@ -106,7 +106,6 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             case 'LCP': {
                 const lcpEvent = {
                     value: webVitalsEvent.value,
-                    rating: webVitalsEvent.rating,
                 };
                 if (webVitalsEvent.nodeIndex !== undefined) {
                     const node = await this.#resolveDomNode(webVitalsEvent.nodeIndex, executionContextId);
@@ -120,7 +119,6 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             case 'CLS': {
                 const event = {
                     value: webVitalsEvent.value,
-                    rating: webVitalsEvent.rating,
                 };
                 this.#clsValue = event;
                 break;
@@ -128,7 +126,6 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             case 'INP': {
                 const inpEvent = {
                     value: webVitalsEvent.value,
-                    rating: webVitalsEvent.rating,
                 };
                 this.#inpValue = inpEvent;
                 break;

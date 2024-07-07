@@ -30,6 +30,22 @@ const UIStrings = {
      *@example {10ms} PH2
      */
     sAtS: '{PH1} at {PH2}',
+    /**
+     *@description Time to first byte title for the Largest Contentful Paint's phases timespan breakdown.
+     */
+    timeToFirstByte: 'Time to first byte',
+    /**
+     *@description Resource load delay title for the Largest Contentful Paint phases timespan breakdown.
+     */
+    resourceLoadDelay: 'Resource load delay',
+    /**
+     *@description Resource load time title for the Largest Contentful Paint phases timespan breakdown.
+     */
+    resourceLoadTime: 'Resource load time',
+    /**
+     *@description Element render delay title for the Largest Contentful Paint phases timespan breakdown.
+     */
+    elementRenderDelay: 'Element render delay',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineFlameChartView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -68,6 +84,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     selectedSearchResult;
     searchRegex;
     #traceEngineData;
+    #traceInsightsData = null;
     #selectedGroupName = null;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
     #gameKeyMatches = 0;
@@ -75,6 +92,9 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #overlaysContainer = document.createElement('div');
     #overlays;
     #timeRangeSelectionOverlay = null;
+    #timespanBreakdownOverlay = null;
+    #sidebarInsightToggled = false;
+    #tooltipElement = document.createElement('div');
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-flamechart');
@@ -88,6 +108,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.networkSplitWidget.show(flameChartsContainer.element);
         this.#overlaysContainer.classList.add('timeline-overlays-container');
         flameChartsContainer.element.appendChild(this.#overlaysContainer);
+        this.#tooltipElement.classList.add('timeline-entry-tooltip-element');
+        flameChartsContainer.element.appendChild(this.#tooltipElement);
         // Ensure that the network panel & resizer appears above the main thread.
         this.networkSplitWidget.sidebarElement().style.zIndex = '120';
         const mainViewGroupExpansionSetting = Common.Settings.Settings.instance().createSetting('timeline-flamechart-main-view-group-expansion', {});
@@ -98,6 +120,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             groupExpansionSetting: mainViewGroupExpansionSetting,
             // The TimelineOverlays are used for selected elements
             selectedElementOutline: false,
+            tooltipElement: this.#tooltipElement,
         });
         this.mainFlameChart.alwaysShowVerticalScroll();
         this.mainFlameChart.enableRuler(false);
@@ -114,12 +137,17 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             groupExpansionSetting: this.networkFlameChartGroupExpansionSetting,
             // The TimelineOverlays are used for selected elements
             selectedElementOutline: false,
+            tooltipElement: this.#tooltipElement,
         });
         this.networkFlameChart.alwaysShowVerticalScroll();
         this.networkFlameChart.addEventListener("LatestDrawDimensions" /* PerfUI.FlameChart.Events.LatestDrawDimensions */, dimensions => {
             this.#overlays.updateChartDimensions('network', dimensions.data.chart);
             this.#overlays.updateVisibleWindow(dimensions.data.traceWindow);
             this.#overlays.update();
+            // If the height of the network chart has changed, we need to tell the
+            // main flame chart because its tooltips are positioned based in part on
+            // the height of the network chart.
+            this.mainFlameChart.setTooltipYPixelAdjustment(this.#overlays.networkChartOffsetHeight());
         });
         this.#overlays = new Overlays({
             container: this.#overlaysContainer,
@@ -173,6 +201,21 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.groupBySetting.addChangeListener(this.refreshMainFlameChart, this);
         this.refreshMainFlameChart();
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
+    }
+    toggleSidebarInsights() {
+        this.#sidebarInsightToggled = !this.#sidebarInsightToggled;
+        if (this.#sidebarInsightToggled) {
+            this.#timespanBreakdownOverlay = this.createLCPPhaseOverlay();
+            if (this.#timespanBreakdownOverlay) {
+                this.#overlays.add(this.#timespanBreakdownOverlay);
+            }
+        }
+        else {
+            if (this.#timespanBreakdownOverlay) {
+                this.#overlays.remove(this.#timespanBreakdownOverlay);
+            }
+        }
+        this.#overlays.update();
     }
     #keydownHandler(event) {
         const keyCombo = 'fixme';
@@ -282,6 +325,60 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.updateSearchResults(false, false);
         this.refreshMainFlameChart();
         this.#updateFlameCharts();
+    }
+    setInsights(insights) {
+        if (this.#traceInsightsData !== insights) {
+            this.#traceInsightsData = insights;
+        }
+        // Disable selected insight overlay by default with new insight data.
+        this.#sidebarInsightToggled = false;
+    }
+    /**
+     * This creates and returns a new timespanBreakdownOverlay with LCP phases data.
+     */
+    createLCPPhaseOverlay() {
+        if (!this.#traceInsightsData || !this.#traceEngineData) {
+            return null;
+        }
+        // For now use the first navigation of the trace.
+        const firstNav = this.#traceInsightsData.values().next().value;
+        if (!firstNav) {
+            return null;
+        }
+        const lcpInsight = firstNav.LargestContentfulPaint;
+        if (lcpInsight instanceof Error) {
+            return null;
+        }
+        const phases = lcpInsight.phases;
+        const lcpTs = lcpInsight.lcpTs;
+        if (!phases || !lcpTs) {
+            return null;
+        }
+        const lcpMicroseconds = TraceEngine.Types.Timing.MicroSeconds(TraceEngine.Helpers.Timing.millisecondsToMicroseconds(lcpTs));
+        const sections = [];
+        // For text LCP, we should only have ttfb and renderDelay sections.
+        if (!phases?.loadDelay && !phases?.loadTime) {
+            const renderBegin = TraceEngine.Types.Timing.MicroSeconds(lcpMicroseconds - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.renderDelay));
+            const renderDelay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(renderBegin, lcpMicroseconds);
+            const mainReqStart = TraceEngine.Types.Timing.MicroSeconds(renderBegin - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.ttfb));
+            const ttfb = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, renderBegin);
+            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte) }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay) });
+        }
+        else if (phases?.loadDelay && phases?.loadTime) {
+            const renderBegin = TraceEngine.Types.Timing.MicroSeconds(lcpMicroseconds - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.renderDelay));
+            const renderDelay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(renderBegin, lcpMicroseconds);
+            const loadBegin = TraceEngine.Types.Timing.MicroSeconds(renderBegin - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.loadTime));
+            const loadTime = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(loadBegin, renderBegin);
+            const loadDelayStart = TraceEngine.Types.Timing.MicroSeconds(loadBegin - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.loadDelay));
+            const loadDelay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(loadDelayStart, loadBegin);
+            const mainReqStart = TraceEngine.Types.Timing.MicroSeconds(loadDelayStart - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.ttfb));
+            const ttfb = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, loadDelayStart);
+            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte) }, { bounds: loadDelay, label: i18nString(UIStrings.resourceLoadDelay) }, { bounds: loadTime, label: i18nString(UIStrings.resourceLoadTime) }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay) });
+        }
+        return {
+            type: 'TIMESPAN_BREAKDOWN',
+            sections,
+        };
     }
     #reset() {
         if (this.networkDataProvider.isEmpty()) {
@@ -431,9 +528,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (group && group.jslogContext) {
             VisualLogging.logClick(groupForLevel, new MouseEvent('click'));
         }
-        if (dataProvider === this.mainDataProvider) {
-            this.mainDataProvider.buildFlowForInitiator(entryIndex);
-        }
+        dataProvider.buildFlowForInitiator(entryIndex);
         this.delegate.select(dataProvider.createSelection(entryIndex));
     }
     resizeToPreferredHeights() {

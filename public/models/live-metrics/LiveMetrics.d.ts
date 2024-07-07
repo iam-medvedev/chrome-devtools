@@ -17,14 +17,13 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
 export declare const enum Events {
     Status = "status"
 }
-export type MetricValue = Pick<Spec.MetricChangeEvent, 'value' | 'rating'>;
-export type Rating = Spec.MetricChangeEvent['rating'];
+export type MetricValue = Pick<Spec.MetricChangeEvent, 'value'>;
 export interface LCPValue extends MetricValue {
     node?: SDK.DOMModel.DOMNode;
 }
 export type INPValue = MetricValue;
 export type CLSValue = MetricValue;
-export type InteractionValue = Pick<Spec.InteractionEvent, 'rating' | 'interactionType' | 'duration'> & {
+export type InteractionValue = Pick<Spec.InteractionEvent, 'interactionType' | 'duration'> & {
     node?: SDK.DOMModel.DOMNode;
 };
 export interface StatusEvent {

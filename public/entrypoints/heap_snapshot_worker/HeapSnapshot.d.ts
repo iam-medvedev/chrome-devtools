@@ -389,7 +389,7 @@ export declare class JSHeapSnapshot extends HeapSnapshot {
     };
     lazyStringCache: {};
     private flags;
-    constructor(profile: Profile, progress: HeapSnapshotProgress, options?: HeapSnapshotModel.HeapSnapshotModel.HeapSnapshotOptions);
+    constructor(profile: Profile, progress: HeapSnapshotProgress);
     createNode(nodeIndex?: number): JSHeapSnapshotNode;
     createEdge(edgeIndex: number): JSHeapSnapshotEdge;
     createRetainingEdge(retainerIndex: number): JSHeapSnapshotRetainerEdge;

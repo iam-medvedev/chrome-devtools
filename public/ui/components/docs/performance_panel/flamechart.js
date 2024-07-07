@@ -20,7 +20,7 @@ const defaultGroupStyle = {
 /**
  * Render a basic flame chart with 3 events on the same level
  **/
-function renderExample1() {
+function renderBasicExample() {
     class FakeProviderWithBasicEvents extends TraceHelpers.FakeFlameChartProvider {
         timelineData() {
             return PerfUI.FlameChart.FlameChartTimelineData.create({
@@ -47,7 +47,7 @@ function renderExample1() {
             });
         }
     }
-    const container = document.querySelector('div#container1');
+    const container = document.querySelector('div#basic');
     if (!container) {
         throw new Error('No container');
     }
@@ -62,7 +62,7 @@ function renderExample1() {
 /**
  * Render a flame chart with main thread long events to stripe and a warning triangle.
  **/
-function renderExample2() {
+function renderLongTaskExample() {
     class FakeProviderWithLongTasksForStriping extends TraceHelpers.FakeFlameChartProvider {
         timelineData() {
             return PerfUI.FlameChart.FlameChartTimelineData.create({
@@ -137,7 +137,7 @@ function renderExample2() {
             });
         }
     }
-    const container = document.querySelector('div#container2');
+    const container = document.querySelector('div#long-task');
     if (!container) {
         throw new Error('No container');
     }
@@ -152,7 +152,7 @@ function renderExample2() {
 /**
  * Render a flame chart with nested track.
  **/
-function renderExample3() {
+function renderNestedExample() {
     class FakeProviderWithNestedGroup extends TraceHelpers.FakeFlameChartProvider {
         timelineData() {
             return PerfUI.FlameChart.FlameChartTimelineData.create({
@@ -179,7 +179,7 @@ function renderExample3() {
             });
         }
     }
-    const container = document.querySelector('div#container3');
+    const container = document.querySelector('div#nested');
     if (!container) {
         throw new Error('No container');
     }
@@ -195,7 +195,7 @@ function renderExample3() {
  * Render a flame chart with nested case and buttons to hide/unhide and reorder
  * tracks
  **/
-function renderExample4() {
+function renderTrackCustomizationExample() {
     class FakeProviderWithBasicEvents extends TraceHelpers.FakeFlameChartProvider {
         timelineData() {
             return PerfUI.FlameChart.FlameChartTimelineData.create({
@@ -231,7 +231,7 @@ function renderExample4() {
             });
         }
     }
-    const container = document.querySelector('div#container4');
+    const container = document.querySelector('div#track-customization');
     if (!container) {
         throw new Error('No container');
     }
@@ -268,13 +268,13 @@ function renderExample4() {
  * Render a flame chart with event initiators of different sizes.
  * Some initiator and initiated events are hidden.
  **/
-function renderExample5() {
+function renderInitiatorsExample() {
     class FakeProviderWithVariousTasksForInitiators extends TraceHelpers.FakeFlameChartProvider {
         timelineData() {
             return PerfUI.FlameChart.FlameChartTimelineData.create({
-                entryLevels: [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2],
-                entryStartTimes: [5, 5, 5, 15, 15, 15, 40, 40, 40, 55.4, 55.4, 55.4, 80, 80, 80],
-                entryTotalTimes: [6, 6, 6, 5, 5, 5, 15, 15, 15, 2, 2, 2, 10, 10, 10],
+                entryLevels: [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 3],
+                entryStartTimes: [5, 5, 5, 15, 15, 15, 40, 40, 40, 55.4, 55.4, 55.4, 80, 80, 80, 17],
+                entryTotalTimes: [6, 6, 6, 5, 5, 20, 15, 15, 15, 2, 2, 2, 10, 10, 10, 10],
                 entryDecorations: [
                     [],
                     [],
@@ -305,6 +305,7 @@ function renderExample5() {
                     { initiatorIndex: 3, eventIndex: 8, isEntryHidden: true },
                     { initiatorIndex: 6, eventIndex: 11 },
                     { initiatorIndex: 11, eventIndex: 12, isInitiatorHidden: true, isEntryHidden: true },
+                    { initiatorIndex: 5, eventIndex: 15 },
                 ],
                 groups: [{
                         name: 'Testing initiators',
@@ -313,8 +314,11 @@ function renderExample5() {
                     }],
             });
         }
+        maxStackDepth() {
+            return 4;
+        }
     }
-    const container = document.querySelector('div#container5');
+    const container = document.querySelector('div#initiators');
     if (!container) {
         throw new Error('No container');
     }
@@ -327,9 +331,9 @@ function renderExample5() {
     flameChart.show(container);
     flameChart.update();
 }
-renderExample1();
-renderExample2();
-renderExample3();
-renderExample4();
-renderExample5();
+renderBasicExample();
+renderLongTaskExample();
+renderNestedExample();
+renderTrackCustomizationExample();
+renderInitiatorsExample();
 //# sourceMappingURL=flamechart.js.map

@@ -1942,15 +1942,8 @@
     });
 
     // Copyright 2024 The Chromium Authors. All rights reserved.
-    function valueToRating(score) {
-        if (score < INPThresholds[0]) {
-            return 'good';
-        }
-        if (score <= INPThresholds[1]) {
-            return 'needs-improvement';
-        }
-        return 'poor';
-    }
+    // Use of this source code is governed by a BSD-style license that can be
+    // found in the LICENSE file.
     function onEachInteraction$1(callback) {
         const eventObserver = new PerformanceObserver(list => {
             const entries = list.getEntries();
@@ -1976,7 +1969,6 @@
                         interactionId,
                     },
                     entries: interaction,
-                    rating: valueToRating(value),
                     value,
                 });
             }
@@ -2056,7 +2048,6 @@
             const event = {
                 name: 'LCP',
                 value: metric.value,
-                rating: metric.rating,
             };
             const element = metric.attribution.lcpEntry?.element;
             if (element) {
@@ -2068,7 +2059,6 @@
             const event = {
                 name: 'CLS',
                 value: metric.value,
-                rating: metric.rating,
             };
             sendEventToDevTools(event);
         }, { reportAllChanges: true });
@@ -2076,7 +2066,6 @@
             const event = {
                 name: 'INP',
                 value: metric.value,
-                rating: metric.rating,
                 interactionType: metric.attribution.interactionType,
             };
             const element = metric.attribution.interactionTargetElement;
@@ -2089,7 +2078,6 @@
             const event = {
                 name: 'Interaction',
                 duration: interaction.value,
-                rating: interaction.rating,
                 interactionId: interaction.attribution.interactionId,
                 interactionType: interaction.attribution.interactionType,
             };

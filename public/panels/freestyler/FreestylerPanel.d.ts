@@ -18,6 +18,7 @@ export declare class FreestylerPanel extends UI.Panel.Panel {
     } | undefined): Promise<FreestylerPanel>;
     wasShown(): void;
     doUpdate(): void;
+    showConfirmSideEffectUi(action: string): Promise<boolean>;
     handleAction(actionId: string): void;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {

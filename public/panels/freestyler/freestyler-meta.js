@@ -43,7 +43,9 @@ async function loadFreestylerModule() {
     return loadedFreestylerModule;
 }
 function isFeatureAvailable(config) {
-    return config?.devToolsFreestylerDogfood?.enabled === true;
+    const blockedByFeatureFlag = config?.devToolsAida ? config.devToolsAida.blockedByFeatureFlag === true :
+        config?.devToolsConsoleInsights?.blockedByFeatureFlag === true;
+    return config?.devToolsFreestylerDogfood?.enabled === true && !blockedByFeatureFlag;
 }
 UI.ViewManager.registerViewExtension({
     location: "drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */,

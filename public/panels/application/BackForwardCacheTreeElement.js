@@ -19,7 +19,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class BackForwardCacheTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(resourcesPanel) {
-        super(resourcesPanel, i18nString(UIStrings.backForwardCache), false);
+        super(resourcesPanel, i18nString(UIStrings.backForwardCache), false, 'bfcache');
         const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
     }

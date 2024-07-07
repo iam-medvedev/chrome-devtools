@@ -67,8 +67,8 @@ export class ReportView extends VBox {
         this.headerElement.appendChild(toolbar.element);
         return toolbar;
     }
-    appendSection(title, className) {
-        const section = new Section(title, className);
+    appendSection(title, className, jslogContext) {
+        const section = new Section(title, className, jslogContext);
         section.show(this.sectionList);
         return section;
     }
@@ -92,17 +92,23 @@ export class ReportView extends VBox {
     }
 }
 export class Section extends VBox {
+    jslogContext;
     headerElement;
     headerButtons;
     titleElement;
     fieldList;
     fieldMap;
-    constructor(title, className) {
+    constructor(title, className, jslogContext) {
         super();
+        this.jslogContext = jslogContext;
         this.element.classList.add('report-section');
         if (className) {
             this.element.classList.add(className);
         }
+        if (jslogContext) {
+            this.element.setAttribute('jslog', `${VisualLogging.section(jslogContext)}`);
+        }
+        this.jslogContext = jslogContext;
         this.headerButtons = [];
         this.headerElement = this.element.createChild('div', 'report-section-header');
         this.titleElement = this.headerElement.createChild('div', 'report-section-title');

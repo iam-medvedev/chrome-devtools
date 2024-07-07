@@ -51,7 +51,6 @@ import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import inspectorCommonStyles from '../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { CLSRect } from './CLSLinkifier.js';
 import * as TimelineComponents from './components/components.js';
 import { getCategoryStyles, getEventStyle, TimelineRecordStyle, visibleTypes, } from './EventUICategory.js';
@@ -681,53 +680,6 @@ export class TimelineUIUtils {
     }
     static isUserFrame(frame) {
         return frame.scriptId !== '0' && !(frame.url && frame.url.startsWith('native '));
-    }
-    static syntheticNetworkRequestCategory(request) {
-        switch (request.args.data.mimeType) {
-            case 'text/html':
-                return "HTML" /* NetworkCategory.HTML */;
-            case 'application/javascript':
-            case 'application/x-javascript':
-            case 'text/javascript':
-                return "Script" /* NetworkCategory.Script */;
-            case 'text/css':
-                return "Style" /* NetworkCategory.Style */;
-            case 'audio/ogg':
-            case 'image/gif':
-            case 'image/jpeg':
-            case 'image/png':
-            case 'image/svg+xml':
-            case 'image/webp':
-            case 'image/x-icon':
-            case 'font/opentype':
-            case 'font/woff2':
-            case 'font/ttf':
-            case 'application/font-woff':
-                return "Media" /* NetworkCategory.Media */;
-            default:
-                return "Other" /* NetworkCategory.Other */;
-        }
-    }
-    static networkCategoryColor(category) {
-        let cssVarName = '--app-color-system';
-        switch (category) {
-            case "HTML" /* NetworkCategory.HTML */:
-                cssVarName = '--app-color-loading';
-                break;
-            case "Script" /* NetworkCategory.Script */:
-                cssVarName = '--app-color-scripting';
-                break;
-            case "Style" /* NetworkCategory.Style */:
-                cssVarName = '--app-color-rendering';
-                break;
-            case "Media" /* NetworkCategory.Media */:
-                cssVarName = '--app-color-painting';
-                break;
-            default:
-                cssVarName = '--app-color-system';
-                break;
-        }
-        return ThemeSupport.ThemeSupport.instance().getComputedValue(cssVarName);
     }
     static async buildDetailsTextForTraceEvent(event, traceParsedData) {
         let detailsText;
@@ -1552,8 +1504,7 @@ export class TimelineUIUtils {
     static async buildSyntheticNetworkRequestDetails(traceParseData, event, linkifier) {
         const maybeTarget = targetForEvent(traceParseData, event);
         const contentHelper = new TimelineDetailsContentHelper(maybeTarget, linkifier);
-        const category = TimelineUIUtils.syntheticNetworkRequestCategory(event);
-        const color = TimelineUIUtils.networkCategoryColor(category);
+        const color = TimelineComponents.Utils.colorForNetworkRequest(event);
         contentHelper.addSection(i18nString(UIStrings.networkRequest), color);
         const options = {
             tabStop: true,
@@ -1611,12 +1562,11 @@ export class TimelineUIUtils {
         if (event.args.data.decodedBodyLength) {
             contentHelper.appendTextRow(i18nString(UIStrings.decodedBody), Platform.NumberUtilities.bytesToString(event.args.data.decodedBodyLength));
         }
-        const title = i18nString(UIStrings.initiatedBy);
         const topFrame = TraceEngine.Helpers.Trace.getZeroIndexedStackTraceForEvent(event)?.at(0) ?? null;
         if (topFrame) {
             const link = linkifier.maybeLinkifyConsoleCallFrame(maybeTarget, topFrame, { tabStop: true, inlineFrameIndex: 0, showColumnNumber: true });
             if (link) {
-                contentHelper.appendElementRow(title, link);
+                contentHelper.appendElementRow(i18nString(UIStrings.initiatedBy), link);
             }
         }
         if (!requestPreviewElements.get(event) && event.args.data.url && maybeTarget) {

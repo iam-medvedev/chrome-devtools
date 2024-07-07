@@ -7,6 +7,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     constructor();
     setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null): void;
     setVisualElementLoggingParent(parent: VisualLogging.Loggable | null): void;
+    setEvents(traceEngineData: TraceEngine.Handlers.Types.TraceParseData): void;
     isEmpty(): boolean;
     maxStackDepth(): number;
     hasTrackConfigurationMode(): boolean;
@@ -16,7 +17,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     setWindowTimes(startTime: number, endTime: number): void;
     createSelection(index: number): TimelineSelection | null;
     indexForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
-    eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | null;
+    eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | TraceEngine.Types.TraceEvents.WebSocketEvent | null;
     entryIndexForSelection(selection: TimelineSelection | null): number;
     entryColor(index: number): string;
     textColor(_index: number): string;
@@ -43,17 +44,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
         end: number;
     };
     /**
-     * Decorates the entry:
-     *   Draw a waiting time between |sendStart| and |headersEnd|
-     *     By adding a extra transparent white layer
-     *   Draw a whisk between |start| and |sendStart|
-     *   Draw a whisk between |finish| and |end|
-     *     By draw another layer of background color to "clear" the area
-     *     Then draw the whisk
-     *   Draw the URL after the |sendStart|
-     *
-     *   |----------------[ (URL text)    waiting time   |   request  ]--------|
-     *   ^start           ^sendStart                     ^headersEnd  ^Finish  ^end
+     * Decorates the entry depends on the type of the event:
      * @param index
      * @param context
      * @param barX The x pixel of the visible part request
@@ -66,6 +57,16 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
      */
     decorateEntry(index: number, context: CanvasRenderingContext2D, _text: string | null, barX: number, barY: number, barWidth: number, barHeight: number, unclippedBarX: number, timeToPixelRatio: number): boolean;
     forceDecoration(_index: number): boolean;
+    /**
+     *In the FlameChart.ts, when filtering through the events for a level, it starts
+     * from the last event of that level and stops when it hit an event that has start
+     * time greater than the filtering window.
+     * For example, in this websocket level we have A(socket event), B, C, D. If C
+     * event has start time greater than the window, the rest of the events (A and B)
+     * wont be drawn. So if this level is the force Drawable level, we wont stop at
+     * event C and will include the socket event A.
+     * */
+    forceDrawableLevel(levelIndex: number): boolean;
     prepareHighlightedEntryInfo(index: number): Element | null;
     preferredHeight(): number;
     isExpanded(): boolean;
@@ -77,4 +78,5 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
      * The map's key is the frame ID.
      **/
     mainFrameNavigationStartEvents(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
+    buildFlowForInitiator(entryIndex: number): boolean;
 }

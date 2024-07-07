@@ -19,7 +19,7 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class BounceTrackingMitigationsTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(resourcesPanel) {
-        super(resourcesPanel, i18nString(UIStrings.bounceTrackingMitigations), false);
+        super(resourcesPanel, i18nString(UIStrings.bounceTrackingMitigations), false, 'bounce-tracking-mitigations');
         const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
     }

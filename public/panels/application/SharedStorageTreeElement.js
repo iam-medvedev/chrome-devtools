@@ -7,7 +7,7 @@ import { SharedStorageItemsView } from './SharedStorageItemsView.js';
 export class SharedStorageTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(resourcesPanel, sharedStorage) {
-        super(resourcesPanel, sharedStorage.securityOrigin, false);
+        super(resourcesPanel, sharedStorage.securityOrigin, false, 'shared-storage-instance');
     }
     static async createElement(resourcesPanel, sharedStorage) {
         const treeElement = new SharedStorageTreeElement(resourcesPanel, sharedStorage);

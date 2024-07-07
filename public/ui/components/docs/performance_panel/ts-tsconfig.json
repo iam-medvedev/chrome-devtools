@@ -39,6 +39,7 @@
   "files": [
     "../../../../../../../../front_end/ui/components/docs/performance_panel/basic.ts",
     "../../../../../../../../front_end/ui/components/docs/performance_panel/flamechart.ts",
+    "../../../../../../../../front_end/ui/components/docs/performance_panel/network_request_tooltip.ts",
     "../../../../../../../../front_end/ui/components/docs/performance_panel/overview.ts",
     "../../../../../../../../front_end/ui/components/docs/performance_panel/timeline_history_manager.ts",
     "../../../../../../../../front_end/ui/components/docs/performance_panel/track_example.ts",

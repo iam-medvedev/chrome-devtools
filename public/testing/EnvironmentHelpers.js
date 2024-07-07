@@ -383,6 +383,10 @@ export function expectConsoleLogs(expectedLogs) {
 export function getGetHostConfigStub(config) {
     const settings = Common.Settings.Settings.instance();
     return sinon.stub(settings, 'getHostConfig').returns({
+        devToolsAida: {
+            enabled: false,
+            ...config.devToolsAida,
+        },
         devToolsConsoleInsights: {
             enabled: false,
             aidaModelId: '',

@@ -6464,8 +6464,17 @@
   "panels/freestyler/components/FreestylerChatUi.ts | consentTextVisibilityDisclaimer": {
     "message": "D̂át̂á m̂áŷ b́ê śêén̂ b́ŷ t́r̂áîńêd́ r̂év̂íêẃêŕŝ t́ô ím̂ṕr̂óv̂é t̂h́îś f̂éât́ûŕê."
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | dogfood": {
+    "message": "D̂óĝf́ôód̂"
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | emptyStateText": {
     "message": "Ĥóŵ ćâń Î h́êĺp̂ ýôú?"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | feedbackLink": {
+    "message": "Ŝén̂d́ F̂éêd́b̂áĉḱ"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | fixThisIssue": {
+    "message": "F̂íx̂ t́ĥíŝ íŝśûé"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | inputDisclaimer": {
     "message": "F̂ŕêéŝt́ŷĺêŕ m̂áŷ d́îśp̂ĺâý îńâćĉúr̂át̂é îńf̂ór̂ḿât́îón̂ án̂d́ m̂áŷ ńôt́ ĝét̂ ít̂ ŕîǵĥt́"
@@ -6473,17 +6482,26 @@
   "panels/freestyler/components/FreestylerChatUi.ts | inputPlaceholder": {
     "message": "Âśk̂ á q̂úêśt̂íôń âb́ôút̂ t́ĥé ŝél̂éĉt́êd́ êĺêḿêńt̂"
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | negativeSideEffectConfirmation": {
+    "message": "Ĉán̂ćêĺ"
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | notLoggedIn": {
     "message": "T̂h́îś f̂éât́ûŕê íŝ ón̂ĺŷ áv̂áîĺâb́l̂é ŵh́êń ŷóû śîǵn̂ ín̂t́ô Ćĥŕôḿê ẃît́ĥ ýôúr̂ Ǵôóĝĺê áĉćôún̂t́."
   },
   "panels/freestyler/components/FreestylerChatUi.ts | offline": {
     "message": "Ĉh́êćk̂ ýôúr̂ ín̂t́êŕn̂ét̂ ćôńn̂éĉt́îón̂ án̂d́ t̂ŕŷ áĝáîń."
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | positiveSideEffectConfirmation": {
+    "message": "Êx́êćût́ê"
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | selectAnElement": {
     "message": "Ŝél̂éĉt́ âń êĺêḿêńt̂"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | sendButtonTitle": {
     "message": "Ŝén̂d́"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | sideEffectConfirmationDescription": {
+    "message": "T̂h́ê ćôd́ê ćôńt̂áîńŝ śîd́ê éf̂f́êćt̂ś. D̂ó ŷóû ẃîśĥ t́ô ćôńt̂ín̂úê?"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | syncIsOff": {
     "message": "T̂h́îś f̂éât́ûŕê ŕêq́ûír̂éŝ ýôú t̂ó t̂úr̂ń ôń Ĉh́r̂óm̂é ŝýn̂ć."
@@ -6908,14 +6926,14 @@
   "panels/js_timeline/js_timeline-meta.ts | record": {
     "message": "R̂éĉór̂d́"
   },
+  "panels/js_timeline/js_timeline-meta.ts | recordAndReload": {
+    "message": "R̂éĉór̂d́ âńd̂ ŕêĺôád̂"
+  },
   "panels/js_timeline/js_timeline-meta.ts | showPerformance": {
     "message": "Ŝh́ôẃ P̂ér̂f́ôŕm̂án̂ćê"
   },
   "panels/js_timeline/js_timeline-meta.ts | showRecentTimelineSessions": {
     "message": "Ŝh́ôẃ r̂éĉén̂t́ t̂ím̂él̂ín̂é ŝéŝśîón̂ś"
-  },
-  "panels/js_timeline/js_timeline-meta.ts | startProfilingAndReloadPage": {
-    "message": "Ŝt́âŕt̂ ṕr̂óf̂íl̂ín̂ǵ âńd̂ ŕêĺôád̂ ṕâǵê"
   },
   "panels/js_timeline/js_timeline-meta.ts | stop": {
     "message": "Ŝt́ôṕ"
@@ -12299,6 +12317,24 @@
   "panels/timeline/components/InteractionBreakdown.ts | processingDuration": {
     "message": "P̂ŕôćêśŝín̂ǵ d̂úr̂át̂íôń"
   },
+  "panels/timeline/components/NetworkRequestTooltip.ts | contentDownloading": {
+    "message": "Ĉón̂t́êńt̂ d́ôẃn̂ĺôád̂ín̂ǵ"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | priority": {
+    "message": "P̂ŕîór̂ít̂ý"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | queuingAndConnecting": {
+    "message": "Q̂úêúîńĝ án̂d́ ĉón̂ńêćt̂ín̂ǵ"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | renderBlocking": {
+    "message": "R̂én̂d́êŕ b̂ĺôćk̂ín̂ǵ"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | requestSentAndWaiting": {
+    "message": "R̂éq̂úêśt̂ śêńt̂ án̂d́ ŵáît́îńĝ"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | waitingOnMainThread": {
+    "message": "Ŵáît́îńĝ ón̂ ḿâín̂ t́ĥŕêád̂"
+  },
   "panels/timeline/CountersGraph.ts | documents": {
     "message": "D̂óĉúm̂én̂t́ŝ"
   },
@@ -12686,6 +12722,15 @@
   "panels/timeline/NetworkTrackAppender.ts | network": {
     "message": "N̂ét̂ẃôŕk̂"
   },
+  "panels/timeline/NetworkTrackAppender.ts | wsConnectionClosed": {
+    "message": "Ŵéb̂Śôćk̂ét̂ ćl̂óŝéd̂"
+  },
+  "panels/timeline/NetworkTrackAppender.ts | wsConnectionOpened": {
+    "message": "Ŵéb̂Śôćk̂ét̂ óp̂én̂éd̂"
+  },
+  "panels/timeline/NetworkTrackAppender.ts | wsConnectionOpenedWithUrl": {
+    "message": "Ŵéb̂Śôćk̂ét̂ óp̂én̂éd̂: {PH1}"
+  },
   "panels/timeline/ThreadAppender.ts | anonymous": {
     "message": "(âńôńŷḿôúŝ)"
   },
@@ -12776,6 +12821,9 @@
   "panels/timeline/timeline-meta.ts | record": {
     "message": "R̂éĉór̂d́"
   },
+  "panels/timeline/timeline-meta.ts | recordAndReload": {
+    "message": "R̂éĉór̂d́ âńd̂ ŕêĺôád̂"
+  },
   "panels/timeline/timeline-meta.ts | saveProfile": {
     "message": "Ŝáv̂é p̂ŕôf́îĺê…"
   },
@@ -12784,9 +12832,6 @@
   },
   "panels/timeline/timeline-meta.ts | showRecentTimelineSessions": {
     "message": "Ŝh́ôẃ r̂éĉén̂t́ t̂ím̂él̂ín̂é ŝéŝśîón̂ś"
-  },
-  "panels/timeline/timeline-meta.ts | startProfilingAndReloadPage": {
-    "message": "Ŝt́âŕt̂ ṕr̂óf̂íl̂ín̂ǵ âńd̂ ŕêĺôád̂ ṕâǵê"
   },
   "panels/timeline/timeline-meta.ts | stop": {
     "message": "Ŝt́ôṕ"
@@ -12845,8 +12890,20 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "P̂ár̂t́îál̂ĺŷ Ṕr̂éŝén̂t́êd́ F̂ŕâḿê"
   },
+  "panels/timeline/TimelineFlameChartView.ts | elementRenderDelay": {
+    "message": "Êĺêḿêńt̂ ŕêńd̂ér̂ d́êĺâý"
+  },
+  "panels/timeline/TimelineFlameChartView.ts | resourceLoadDelay": {
+    "message": "R̂éŝóûŕĉé l̂óâd́ d̂él̂áŷ"
+  },
+  "panels/timeline/TimelineFlameChartView.ts | resourceLoadTime": {
+    "message": "R̂éŝóûŕĉé l̂óâd́ t̂ím̂é"
+  },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} ât́ {PH2}"
+  },
+  "panels/timeline/TimelineFlameChartView.ts | timeToFirstByte": {
+    "message": "T̂ím̂é t̂ó f̂ír̂śt̂ b́ŷt́ê"
   },
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Ĉúr̂ŕêńt̂ Śêśŝíôń: {PH1}. {PH2}"

@@ -57,7 +57,6 @@ function initialize() {
         const event = {
             name: 'LCP',
             value: metric.value,
-            rating: metric.rating,
         };
         const element = metric.attribution.lcpEntry?.element;
         if (element) {
@@ -69,7 +68,6 @@ function initialize() {
         const event = {
             name: 'CLS',
             value: metric.value,
-            rating: metric.rating,
         };
         sendEventToDevTools(event);
     }, { reportAllChanges: true });
@@ -77,7 +75,6 @@ function initialize() {
         const event = {
             name: 'INP',
             value: metric.value,
-            rating: metric.rating,
             interactionType: metric.attribution.interactionType,
         };
         const element = metric.attribution.interactionTargetElement;
@@ -90,7 +87,6 @@ function initialize() {
         const event = {
             name: 'Interaction',
             duration: interaction.value,
-            rating: interaction.rating,
             interactionId: interaction.attribution.interactionId,
             interactionType: interaction.attribution.interactionType,
         };

@@ -1041,6 +1041,11 @@ export const NativeFunctions = [
         receivers: ["IdleDetector"]
     },
     {
+        name: "start",
+        signatures: [["?track"]],
+        receivers: ["SpeechRecognition"]
+    },
+    {
         name: "close",
         signatures: [["?returnValue"]],
         receivers: ["HTMLDialogElement"]
@@ -2610,11 +2615,6 @@ export const NativeFunctions = [
         name: "load",
         signatures: [["typedArray", "index"]],
         receivers: ["Atomics"]
-    },
-    {
-        name: "load",
-        signatures: [["buffer"]],
-        receivers: ["MLModelLoader"]
     },
     {
         name: "check",
@@ -6779,6 +6779,10 @@ export const NativeFunctions = [
         signatures: [["start", "end"]]
     },
     {
+        name: "getActualBoundingBox",
+        signatures: [["start", "end"]]
+    },
+    {
         name: "CloseWatcher",
         signatures: [["?options"]]
     },
@@ -7647,13 +7651,7 @@ export const NativeFunctions = [
     },
     {
         name: "compute",
-        signatures: [["graph", "inputs", "outputs"]],
-        receivers: ["MLContext"]
-    },
-    {
-        name: "compute",
-        signatures: [["inputs"]],
-        receivers: ["MLModel"]
+        signatures: [["graph", "inputs", "outputs"]]
     },
     {
         name: "writeBuffer",
@@ -7668,10 +7666,6 @@ export const NativeFunctions = [
     {
         name: "dispatch",
         signatures: [["graph", "inputs", "outputs"]]
-    },
-    {
-        name: "MLModelLoader",
-        signatures: [["context"]]
     },
     {
         name: "createContext",
@@ -7835,7 +7829,7 @@ export const NativeFunctions = [
     },
     {
         name: "prelu",
-        signatures: [["x", "slope"]]
+        signatures: [["x", "slope", "?options"]]
     },
     {
         name: "reduceL1",
@@ -8091,6 +8085,10 @@ export const NativeFunctions = [
     },
     {
         name: "readReceivedAcks",
+        signatures: [["maxCount"]]
+    },
+    {
+        name: "readSentRtp",
         signatures: [["maxCount"]]
     },
     {

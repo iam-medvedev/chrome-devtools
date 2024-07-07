@@ -18,7 +18,7 @@ export interface MetricResponse {
         density?: number;
     }>;
     percentiles: {
-        p75: number;
+        p75: number | string;
     };
 }
 interface CollectionDate {

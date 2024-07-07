@@ -23,7 +23,7 @@ export declare function buildGroupStyle(extra?: Partial<PerfUI.FlameChart.GroupS
  * @param showStackContextMenu whether menu with options to merge/collapse entries in track is shown.
  * @returns the group that built from the give data
  */
-export declare function buildTrackHeader(jslogContext: VisualLoggingTrackName | null, startLevel: number, name: string, style: PerfUI.FlameChart.GroupStyle, selectable: boolean, expanded?: boolean, showStackContextMenu?: boolean): PerfUI.FlameChart.Group;
+export declare function buildTrackHeader(jslogContext: VisualLoggingTrackName | null, startLevel: number, name: string, style: PerfUI.FlameChart.GroupStyle, selectable: boolean, expanded?: boolean, showStackContextMenu?: boolean, legends?: PerfUI.FlameChart.Legend[]): PerfUI.FlameChart.Group;
 /**
  * Returns the time info shown when an event is hovered in the timeline.
  * @param totalTime the total time of the hovered event.

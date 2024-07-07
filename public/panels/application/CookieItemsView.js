@@ -187,11 +187,11 @@ export class CookieItemsView extends StorageItemsView {
         this.setCookiesDomain(model, cookieDomain);
     }
     setCookiesDomain(model, domain) {
-        this.model.removeEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, this.refreshItems, this);
+        this.model.removeEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, this.onCookieListUpdate, this);
         this.model = model;
         this.cookieDomain = domain;
         this.refreshItems();
-        this.model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, this.refreshItems, this);
+        this.model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, this.onCookieListUpdate, this);
     }
     showPreview(cookie) {
         if (cookie === this.selectedCookie) {
@@ -272,8 +272,11 @@ export class CookieItemsView extends StorageItemsView {
             void this.model.deleteCookie(selectedCookie);
         }
     }
-    refreshItems() {
+    onCookieListUpdate() {
         void this.model.getCookiesForDomain(this.cookieDomain).then(this.updateWithCookies.bind(this));
+    }
+    refreshItems() {
+        void this.model.getCookiesForDomain(this.cookieDomain, true).then(this.updateWithCookies.bind(this));
     }
     wasShown() {
         super.wasShown();

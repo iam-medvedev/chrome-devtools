@@ -77,16 +77,19 @@ export function generateInsight(traceParsedData, context) {
     if (!lcpEvent || !Types.TraceEvents.isTraceEventLargestContentfulPaintCandidate(lcpEvent)) {
         return { warnings: [InsightWarning.NO_LCP] };
     }
-    const lcpTiming = metricScore.timing;
-    const lcpMs = Helpers.Timing.microSecondsToMilliseconds(lcpTiming);
+    // This helps calculate the phases.
+    const lcpMs = Helpers.Timing.microSecondsToMilliseconds(metricScore.timing);
+    // This helps position things on the timeline's UI accurately for a trace.
+    const lcpTs = metricScore.event?.ts ? Helpers.Timing.microSecondsToMilliseconds(metricScore.event?.ts) : undefined;
     const lcpResource = findLCPRequest(traceParsedData, context, lcpEvent);
     const mainReq = networkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
     if (!mainReq) {
-        return { lcpMs, warnings: [InsightWarning.NO_DOCUMENT_REQUEST] };
+        return { lcpMs, lcpTs, warnings: [InsightWarning.NO_DOCUMENT_REQUEST] };
     }
     if (!lcpResource) {
         return {
-            lcpMs,
+            lcpMs: lcpMs,
+            lcpTs: lcpTs,
             phases: breakdownPhases(nav, mainReq, lcpMs, lcpResource),
         };
     }
@@ -94,7 +97,8 @@ export function generateInsight(traceParsedData, context) {
     const imagePreloaded = lcpResource?.args.data.isLinkPreload || lcpResource?.args.data.initiator?.type === 'preload';
     const imageFetchPriorityHint = lcpResource?.args.data.fetchPriorityHint;
     return {
-        lcpMs,
+        lcpMs: lcpMs,
+        lcpTs: lcpTs,
         phases: breakdownPhases(nav, mainReq, lcpMs, lcpResource),
         shouldRemoveLazyLoading: imageLoadingAttr === 'lazy',
         shouldIncreasePriorityHint: imageFetchPriorityHint !== 'high',

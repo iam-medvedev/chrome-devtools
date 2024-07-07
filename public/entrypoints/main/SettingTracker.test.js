@@ -25,7 +25,7 @@ describeWithEnvironment('SettingTracker', () => {
             syncedStorage: dummyStorage,
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
-            config: { 'devToolsConsoleInsights': { 'blockedByFeatureFlag': false, 'enabled': true, 'optIn': true } },
+            config: { devToolsConsoleInsights: { enabled: true, optIn: true } },
         });
         Common.Settings.moduleSetting('console-insights-enabled').set(true);
         const toggledSetting = Common.Settings.Settings.instance().createLocalSetting('console-insights-toggled', false);
@@ -41,7 +41,7 @@ describeWithEnvironment('SettingTracker', () => {
             syncedStorage: dummyStorage,
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
-            config: { 'devToolsConsoleInsights': { 'blockedByFeatureFlag': false, 'enabled': true, 'optIn': false } },
+            config: { devToolsConsoleInsights: { enabled: true, optIn: false } },
         });
         Common.Settings.moduleSetting('console-insights-enabled').set(false);
         const toggledSetting = Common.Settings.Settings.instance().createLocalSetting('console-insights-toggled', false);
@@ -57,7 +57,7 @@ describeWithEnvironment('SettingTracker', () => {
             syncedStorage: dummyStorage,
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
-            config: { 'devToolsConsoleInsights': { 'blockedByFeatureFlag': false, 'enabled': true, 'optIn': true } },
+            config: { devToolsConsoleInsights: { enabled: true, optIn: true } },
         });
         Common.Settings.moduleSetting('console-insights-enabled').set(true);
         Common.Settings.Settings.instance().createLocalSetting('console-insights-toggled', false).set(true);

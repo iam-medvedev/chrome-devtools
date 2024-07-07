@@ -229,6 +229,7 @@ export class DebuggerModel extends SDKModel {
     }
     registerDebugger(response) {
         if (response.getError()) {
+            this.#debuggerEnabledInternal = false;
             return;
         }
         const { debuggerId } = response;

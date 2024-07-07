@@ -34,6 +34,8 @@ import type * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
 import { type Calculator } from './TimelineGrid.js';
+export declare const ARROW_SIDE = 8;
+export declare const EDIT_ICON_WIDTH = 16;
 export declare const enum HoverType {
     TRACK_CONFIG_UP_BUTTON = "TRACK_CONFIG_UP_BUTTON",
     TRACK_CONFIG_DOWN_BUTTON = "TRACK_CONFIG_DOWN_BUTTON",
@@ -67,6 +69,10 @@ export interface OptionalFlameChartConfig {
      */
     selectedElementOutline?: boolean;
     groupExpansionSetting?: Common.Settings.Setting<GroupExpansionState>;
+    /**
+     * The element to use when populating and positioning the mouse tooltip.
+     */
+    tooltipElement?: HTMLElement;
 }
 declare const FlameChart_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
@@ -135,6 +141,15 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, optionalConfig?: OptionalFlameChartConfig);
     willHide(): void;
     canvasBoundingClientRect(): DOMRect | null;
+    /**
+     * In some cases we need to manually adjust the positioning of the tooltip
+     * vertically to account for the fact that it might be rendered not relative
+     * to just this flame chart. This is true of the main flame chart in the
+     * Performance Panel where the element is rendered in a higher-stack container
+     * and we need to manually adjust its Y position to correctly put the tooltip
+     * in the right place.
+     */
+    setTooltipYPixelAdjustment(y: number): void;
     getBarHeight(): number;
     setBarHeight(value: number): void;
     setTextBaseline(value: number): void;
@@ -336,7 +351,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     labelWidthForGroup(context: CanvasRenderingContext2D, group: Group): number;
     private drawCollapsedOverviewForGroup;
     private drawFlowEvents;
-    private drawCircleArroundCollapseArrow;
+    private drawCircleAroundCollapseArrow;
     /**
      * Draws the vertical dashed lines in the timeline marking where the "Marker" events
      * happened in time.
@@ -508,6 +523,7 @@ export interface FlameChartDataProvider {
     entryColor(entryIndex: number): string;
     decorateEntry(entryIndex: number, context: CanvasRenderingContext2D, text: string | null, barX: number, barY: number, barWidth: number, barHeight: number, unclippedBarX: number, timeToPixelRatio: number): boolean;
     forceDecoration(entryIndex: number): boolean;
+    forceDrawableLevel?(level: number): boolean;
     textColor(entryIndex: number): string;
     mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
     modifyTree?(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
@@ -583,6 +599,7 @@ export interface Group {
     style: GroupStyle;
     /** Should be turned on if the track supports user editable stacks. */
     showStackContextMenu?: boolean;
+    legends?: Legend[];
     jslogContext?: string;
 }
 export interface GroupStyle {
@@ -600,5 +617,9 @@ export interface GroupStyle {
     shareHeaderLine?: boolean;
     useFirstLineForOverview?: boolean;
     useDecoratorsForOverview?: boolean;
+}
+export interface Legend {
+    color: string;
+    category: string;
 }
 export {};

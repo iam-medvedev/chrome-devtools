@@ -10,6 +10,7 @@ export declare class TimelineSelection {
     static isFrameObject(object: PermittedObjectTypes): object is TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame;
     static fromFrame(frame: TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): TimelineSelection;
     static isSyntheticNetworkRequestDetailsEventSelection(object: PermittedObjectTypes): object is TraceEngine.Types.TraceEvents.SyntheticNetworkRequest;
+    static isNetworkEventSelection(object: PermittedObjectTypes): object is TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | TraceEngine.Types.TraceEvents.WebSocketEvent;
     static isTraceEventSelection(object: PermittedObjectTypes): object is TraceEngine.Types.TraceEvents.TraceEventData;
     static fromTraceEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): TimelineSelection;
     static isRangeSelection(object: PermittedObjectTypes): object is SelectionRange;

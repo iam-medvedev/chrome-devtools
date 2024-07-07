@@ -129,7 +129,7 @@ export declare class AppManifestTreeElement extends ApplicationPanelTreeElement 
 }
 export declare class ManifestChildTreeElement extends ApplicationPanelTreeElement {
     #private;
-    constructor(storagePanel: ResourcesPanel, element: Element, childTitle: string, fieldElement: HTMLElement);
+    constructor(storagePanel: ResourcesPanel, element: Element, childTitle: string, fieldElement: HTMLElement, jslogContext: string);
     get itemURL(): Platform.DevToolsPath.UrlString;
     onInvoke(): void;
     onInvokeElementKeydown(event: KeyboardEvent): void;

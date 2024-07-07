@@ -1,5 +1,6 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import type * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as Components from './components/components.js';
 import { type TimelineFlameChartDataProvider } from './TimelineFlameChartDataProvider.js';
 import { type TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
 /**
@@ -44,9 +45,16 @@ export interface TimeRangeLabel {
     showDuration: boolean;
 }
 /**
+ * Represents a timespan on a trace broken down into parts. Each part has a label to it.
+ */
+export interface TimespanBreakdown {
+    type: 'TIMESPAN_BREAKDOWN';
+    sections: Array<Components.TimespanBreakdownOverlay.EntryBreakdown>;
+}
+/**
  * All supported overlay types. Expected to grow in time!
  */
-export type TimelineOverlay = EntrySelected | TimeRangeLabel | EntryLabel;
+export type TimelineOverlay = EntrySelected | TimeRangeLabel | EntryLabel | TimespanBreakdown;
 /**
  * The dimensions each flame chart reports. Note that in the current UI they
  * will always have the same width, so theoretically we could only gather that
@@ -148,5 +156,14 @@ export declare class Overlays {
      * Calculate the height of the event on the timeline.
      */
     pixelHeightForEventOnChart(event: OverlayEntry): number | null;
+    /**
+     * Calculate the height of the network chart. If the network chart has
+     * height, we also allow for the size of the resize handle shown between the
+     * two charts.
+     *
+     * Note that it is possible for the chart to have 0 height if the user is
+     * looking at a trace with no network requests.
+     */
+    networkChartOffsetHeight(): number;
 }
 export {};

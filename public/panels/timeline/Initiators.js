@@ -9,22 +9,25 @@ import * as TraceEngine from '../../models/trace/trace.js';
  * entire chain: for each, we see if it had an initiator, and
  * work backwards to draw each one, as well as the events initiated directly by the entry.
  */
-export function initiatorsDataToDraw(traceEngineData, selectedEvent, hiddenEntries, expandableEntries) {
+export function initiatorsDataToDraw(traceParsedData, selectedEvent, hiddenEntries, expandableEntries) {
     const initiatorsData = [
-        ...findInitiatorDataPredecessors(traceEngineData, selectedEvent),
-        ...findInitiatorDataDirectSuccessors(traceEngineData, selectedEvent),
+        ...findInitiatorDataPredecessors(traceParsedData, selectedEvent, traceParsedData.Initiators.eventToInitiator),
+        ...findInitiatorDataDirectSuccessors(selectedEvent, traceParsedData.Initiators.initiatorToEvents),
     ];
-    // For each InitiatorData, call a function that makes sure that neither the initirator or initiated entry is hidden.
+    // For each InitiatorData, call a function that makes sure that neither the initiator or initiated entry is hidden.
     // If they are, it will reassign the event or initiator to the closest ancestor.
-    initiatorsData.forEach(initiatorData => getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEntries, hiddenEntries, traceEngineData));
+    initiatorsData.forEach(initiatorData => getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEntries, hiddenEntries, traceParsedData));
     return initiatorsData;
 }
-function findInitiatorDataPredecessors(traceEngineData, selectedEvent) {
+export function initiatorsDataToDrawForNetwork(traceParsedData, selectedEvent) {
+    return findInitiatorDataPredecessors(traceParsedData, selectedEvent, traceParsedData.NetworkRequests.eventToInitiator);
+}
+function findInitiatorDataPredecessors(traceParsedData, selectedEvent, eventToInitiator) {
     const initiatorsData = [];
     let currentEvent = selectedEvent;
     // Build event initiator data up to the selected one
     while (currentEvent) {
-        const currentInitiator = traceEngineData.Initiators.eventToInitiator.get(currentEvent);
+        const currentInitiator = eventToInitiator.get(currentEvent);
         if (currentInitiator) {
             // Store the current initiator data, and then set the initiator to
             // be the current event, so we work back through the
@@ -40,7 +43,7 @@ function findInitiatorDataPredecessors(traceEngineData, selectedEvent) {
             currentEvent = null;
             break;
         }
-        const nodeForCurrentEvent = traceEngineData.Renderer.entryToNode.get(currentEvent);
+        const nodeForCurrentEvent = traceParsedData.Renderer.entryToNode.get(currentEvent);
         if (!nodeForCurrentEvent) {
             // Should not happen - if it does something odd is going
             // on so let's give up.
@@ -52,13 +55,13 @@ function findInitiatorDataPredecessors(traceEngineData, selectedEvent) {
     }
     return initiatorsData;
 }
-function findInitiatorDataDirectSuccessors(traceEngineData, selectedEvent) {
+function findInitiatorDataDirectSuccessors(selectedEvent, initiatorToEvents) {
     const initiatorsData = [];
     // Add all of the initiated events to the initiatorsData array.
-    const eventsInitiatedByCurrent = traceEngineData.Initiators.initiatorToEvents.get(selectedEvent);
+    const eventsInitiatedByCurrent = initiatorToEvents.get(selectedEvent);
     if (eventsInitiatedByCurrent) {
         eventsInitiatedByCurrent.forEach(event => {
-            initiatorsData.push({ event: event, initiator: selectedEvent });
+            initiatorsData.push({ event, initiator: selectedEvent });
         });
     }
     return initiatorsData;
@@ -69,9 +72,9 @@ function findInitiatorDataDirectSuccessors(traceEngineData, selectedEvent) {
  * the actual initiator or initiated event might be hidden form the flame chart.
  * If neither entry is hidden, this function returns the initial initiatorData object.
  */
-function getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEntries, hiddenEntries, traceEngineData) {
+function getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEntries, hiddenEntries, traceParsedData) {
     if (hiddenEntries.includes(initiatorData.event)) {
-        let nextParent = traceEngineData.Renderer.entryToNode.get(initiatorData.event)?.parent;
+        let nextParent = traceParsedData.Renderer.entryToNode.get(initiatorData.event)?.parent;
         while (nextParent?.entry && !expandableEntries.includes(nextParent?.entry)) {
             nextParent = nextParent.parent ?? undefined;
         }
@@ -79,7 +82,7 @@ function getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEnt
         initiatorData.isEntryHidden = true;
     }
     if (hiddenEntries.includes(initiatorData.initiator)) {
-        let nextParent = traceEngineData.Renderer.entryToNode.get(initiatorData.initiator)?.parent;
+        let nextParent = traceParsedData.Renderer.entryToNode.get(initiatorData.initiator)?.parent;
         while (nextParent?.entry && !expandableEntries.includes(nextParent?.entry)) {
             nextParent = nextParent.parent ?? undefined;
         }

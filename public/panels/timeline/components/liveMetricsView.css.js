@@ -42,15 +42,14 @@ styles.replaceSync(
 }
 
 .next-steps {
-  flex: 0 0 30%;
+  flex: 0 0 300px;
   box-sizing: border-box;
   border: none;
   border-left: 1px solid var(--sys-color-divider);
-  max-width: 300px;
 }
 
 /* stylelint-disable-next-line at-rule-no-unknown */
-@container (max-width: 500px) {
+@container (max-width: 600px) {
   .live-metrics-view {
     flex-direction: column;
   }
@@ -59,7 +58,6 @@ styles.replaceSync(
     flex-basis: 40%;
     border: none;
     border-top: 1px solid var(--sys-color-divider);
-    max-width: unset;
   }
 }
 
@@ -82,8 +80,12 @@ styles.replaceSync(
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background-color: var(--color-background-elevation-1);
+  gap: 16px;
+  background-color: var(--sys-color-surface2);
+}
+
+.next-steps .card {
+  margin-bottom: 16px;
 }
 
 .card-title {
@@ -93,22 +95,28 @@ styles.replaceSync(
 }
 
 .card-section-title {
-  margin-top: 8px;
   text-wrap: nowrap;
   font-size: 12px;
   font-weight: bold;
 }
 
-.metric-card-value {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.card-metric-values {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 8px;
 }
 
-.local-metric-value {
+.metric-value {
   text-wrap: nowrap;
+}
+
+.card-metric-values .metric-value {
   font-size: 30px;
-  flex: 1;
+}
+
+.metric-value-label {
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .good {
@@ -141,6 +149,7 @@ styles.replaceSync(
 
 .interactions-list {
   padding: 0;
+  margin: 0;
   overflow: auto;
   flex-grow: 1;
   min-height: 100px;
@@ -177,10 +186,10 @@ styles.replaceSync(
   margin: 4px 0;
 }
 
-.field-data {
+.field-data-histogram {
   width: 100%;
   display: grid;
-  grid-template-columns: auto max-content;
+  grid-template-columns: 50% auto max-content;
   grid-auto-rows: 1fr;
   column-gap: 8px;
   justify-items: flex-end;
@@ -190,6 +199,34 @@ styles.replaceSync(
 
 .histogram-bar {
   height: 6px;
+}
+
+.histogram-label {
+  width: 100%;
+  font-weight: bold;
+}
+
+.histogram-range {
+  font-weight: normal;
+  color: var(--sys-color-token-subtle);
+}
+
+.record-action {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.record-action devtools-button {
+  overflow: hidden;
+}
+
+.shortcut-label {
+  width: max-content;
+  color: var(--sys-color-token-subtle);
+  flex-shrink: 0;
 }
 
 /*# sourceURL=liveMetricsView.css */

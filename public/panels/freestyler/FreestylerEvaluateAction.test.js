@@ -9,7 +9,7 @@ describe('FreestylerEvaluateAction', () => {
         function executeWithResult(mockResult) {
             const executionContextStub = sinon.createStubInstance(SDK.RuntimeModel.ExecutionContext);
             executionContextStub.evaluate.resolves(mockResult);
-            return Freestyler.FreestylerEvaluateAction.execute('', executionContextStub);
+            return Freestyler.FreestylerEvaluateAction.execute('', executionContextStub, { throwOnSideEffect: false });
         }
         function mockRemoteObject(overrides = {}) {
             return sinon.createStubInstance(SDK.RemoteObject.RemoteObject, {
@@ -53,6 +53,18 @@ describe('FreestylerEvaluateAction', () => {
                 assert.strictEqual(err.message, 'Error description');
             }
         });
+        it('should throw a SideEffectError when the resulted exception starts with possible side effect error', async () => {
+            try {
+                await executeWithResult({
+                    object: mockRemoteObject(),
+                    exceptionDetails: mockExceptionDetails({ description: 'EvalError: Possible side-effect in debug-evaluate' }),
+                });
+            }
+            catch (err) {
+                assert.instanceOf(err, Freestyler.SideEffectError);
+                assert.strictEqual(err.message, 'EvalError: Possible side-effect in debug-evaluate');
+            }
+        });
     });
     describeWithRealConnection('serialization', () => {
         async function executionContextForTest() {
@@ -62,7 +74,7 @@ describe('FreestylerEvaluateAction', () => {
             return getExecutionContext(runtimeModel);
         }
         async function executeForTest(code) {
-            return Freestyler.FreestylerEvaluateAction.execute(code, await executionContextForTest());
+            return Freestyler.FreestylerEvaluateAction.execute(code, await executionContextForTest(), { throwOnSideEffect: false });
         }
         it('should serialize primitive values correctly', async () => {
             assert.strictEqual(await executeForTest('"string"'), '\'string\'');

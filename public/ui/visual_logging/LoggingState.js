@@ -6,18 +6,18 @@ function nextVeId() {
     return result[0];
 }
 export function getOrCreateLoggingState(loggable, config, parent) {
-    if (state.has(loggable)) {
-        const currentState = state.get(loggable);
-        if (parent && !config.parent && currentState.parent !== getLoggingState(parent)) {
-            currentState.parent = getLoggingState(parent);
-        }
-        return currentState;
-    }
     if (config.parent && parentProviders.has(config.parent) && loggable instanceof Element) {
         parent = parentProviders.get(config.parent)?.(loggable);
         while (parent instanceof Element && !needsLogging(parent)) {
             parent = parent.parentElementOrShadowHost() ?? undefined;
         }
+    }
+    if (state.has(loggable)) {
+        const currentState = state.get(loggable);
+        if (parent && currentState.parent !== getLoggingState(parent)) {
+            currentState.parent = getLoggingState(parent);
+        }
+        return currentState;
     }
     const loggableState = {
         impressionLogged: false,

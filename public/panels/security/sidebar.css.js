@@ -21,6 +21,10 @@ styles.replaceSync(
 
 .tree-outline {
   padding: 0;
+
+  &:focus-visible {
+    box-shadow: none;
+  }
 }
 
 .tree-outline li {
@@ -129,8 +133,8 @@ styles.replaceSync(
   margin: var(--sys-size-6) 0 0 0;
   line-height: var(--sys-size-8);
 
-  &:hover > .selection {
-    background-color: transparent;
+  &:hover:not(:has(span[is="dt-checkbox"])) .selection {
+    background: transparent;
   }
 }
 

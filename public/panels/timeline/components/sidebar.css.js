@@ -54,7 +54,7 @@ styles.replaceSync(
 }
 
 .tabs-header input[active] {
-  color: var(--color-text-primary);
+  color: var(--sys-color-on-surface-subtle);
 }
 
 .tab-slider {
@@ -62,7 +62,7 @@ styles.replaceSync(
   /* This is same as the height of tabs-header */
   top: 40px;
   height: 1px;
-  background-color: var(--color-text-primary);
+  background-color: var(--sys-color-on-surface-subtle);
   transition: left 150ms cubic-bezier(0, 0, 0.2, 1);
 }
 

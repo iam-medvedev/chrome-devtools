@@ -22,11 +22,6 @@ export declare class SidebarUI extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     selectedCategory: InsightsCategories;
-    getLCPInsightData(): Array<{
-        phase: string;
-        timing: number | TraceEngine.Types.Timing.MilliSeconds;
-        percent: string;
-    }>;
     connectedCallback(): void;
     set expanded(expanded: boolean);
     set insights(insights: TraceEngine.Insights.Types.TraceInsightData<typeof Handlers.ModelHandlers>);

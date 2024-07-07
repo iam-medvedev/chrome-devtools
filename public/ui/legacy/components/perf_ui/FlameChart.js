@@ -36,6 +36,7 @@ import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
 import * as UI from '../../legacy.js';
 import * as ThemeSupport from '../../theme_support/theme_support.js';
+import { drawExpansionArrow, drawIcon, drawLegends, horizontalLine } from './CanvasHelper.js';
 import { ChartViewport } from './ChartViewport.js';
 import flameChartStyles from './flameChart.css.legacy.js';
 import { DEFAULT_FONT_SIZE, getFontFamilyForCanvas } from './Font.js';
@@ -115,12 +116,12 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  **/
 // Placed to the left of the track header.
 const HEADER_LEFT_PADDING = 6;
-const ARROW_SIDE = 8;
+export const ARROW_SIDE = 8;
 const EXPANSION_ARROW_INDENT = HEADER_LEFT_PADDING + ARROW_SIDE / 2;
 const HEADER_LABEL_X_PADDING = 3;
 const HEADER_LABEL_Y_PADDING = 2;
 // The width of each of the edit mode icons.
-const EDIT_ICON_WIDTH = 16;
+export const EDIT_ICON_WIDTH = 16;
 // This gap might seem quite small - but the icons themselves have some
 // whitespace either side, so we don't need a huge gap.
 const GAP_BETWEEN_EDIT_ICONS = 3;
@@ -147,6 +148,8 @@ const moveDownIconPath = 'M9.25 3V14.125L7.062 11.938L6 13L10 17L14 13L12.938 11
 const hideIconPath = 'M13.2708 11.1459L11.9792 9.85419C12.0347 9.32641 11.875 8.87155 11.5 8.4896C11.125 8.10766 10.6736 7.94446 10.1458 8.00002L8.85417 6.70835C9.03472 6.63891 9.22222 6.58683 9.41667 6.5521C9.61111 6.51738 9.80556 6.50002 10 6.50002C10.9722 6.50002 11.7986 6.8403 12.4792 7.52085C13.1597 8.20141 13.5 9.0278 13.5 10C13.5 10.1945 13.4826 10.3889 13.4479 10.5834C13.4132 10.7778 13.3542 10.9653 13.2708 11.1459ZM16.0417 13.9167L14.9583 12.8334C15.4583 12.4445 15.9132 12.0174 16.3229 11.5521C16.7326 11.0868 17.0764 10.5695 17.3542 10C16.6736 8.59724 15.6701 7.49655 14.3438 6.69794C13.0174 5.89933 11.5694 5.50002 10 5.50002C9.63889 5.50002 9.28472 5.52085 8.9375 5.56252C8.59028 5.60419 8.25 5.67363 7.91667 5.77085L6.70833 4.56252C7.23611 4.35419 7.77431 4.20835 8.32292 4.12502C8.87153 4.04169 9.43056 4.00002 10 4.00002C11.9861 4.00002 13.8021 4.53821 15.4479 5.6146C17.0938 6.69099 18.2778 8.1528 19 10C18.6944 10.7917 18.2882 11.5104 17.7813 12.1563C17.2743 12.8021 16.6944 13.3889 16.0417 13.9167ZM16 18.125L13.2917 15.4167C12.7639 15.6111 12.2257 15.757 11.6771 15.8542C11.1285 15.9514 10.5694 16 10 16C8.01389 16 6.19792 15.4618 4.55208 14.3854C2.90625 13.309 1.72222 11.8472 1 10C1.30556 9.20835 1.70833 8.48613 2.20833 7.83335C2.70833 7.18058 3.29167 6.5903 3.95833 6.06252L1.875 3.97919L2.9375 2.91669L17.0625 17.0625L16 18.125ZM5.02083 7.14585C4.53472 7.53474 4.08333 7.96183 3.66667 8.4271C3.25 8.89238 2.90972 9.41669 2.64583 10C3.32639 11.4028 4.32986 12.5035 5.65625 13.3021C6.98264 14.1007 8.43056 14.5 10 14.5C10.3611 14.5 10.7153 14.4757 11.0625 14.4271C11.4097 14.3785 11.7569 14.3125 12.1042 14.2292L11.1667 13.2917C10.9722 13.3611 10.7778 13.4132 10.5833 13.4479C10.3889 13.4827 10.1944 13.5 10 13.5C9.02778 13.5 8.20139 13.1597 7.52083 12.4792C6.84028 11.7986 6.5 10.9722 6.5 10C6.5 9.80558 6.52431 9.61113 6.57292 9.41669C6.62153 9.22224 6.66667 9.0278 6.70833 8.83335L5.02083 7.14585Z';
 // eye.svg
 const showIconPath = 'M10 13.5C10.972 13.5 11.7983 13.1597 12.479 12.479C13.1597 11.7983 13.5 10.972 13.5 10C13.5 9.028 13.1597 8.20167 12.479 7.521C11.7983 6.84033 10.972 6.5 10 6.5C9.028 6.5 8.20167 6.84033 7.521 7.521C6.84033 8.20167 6.5 9.028 6.5 10C6.5 10.972 6.84033 11.7983 7.521 12.479C8.20167 13.1597 9.028 13.5 10 13.5ZM10 12C9.44467 12 8.97233 11.8057 8.583 11.417C8.19433 11.0277 8 10.5553 8 10C8 9.44467 8.19433 8.97233 8.583 8.583C8.97233 8.19433 9.44467 8 10 8C10.5553 8 11.0277 8.19433 11.417 8.583C11.8057 8.97233 12 9.44467 12 10C12 10.5553 11.8057 11.0277 11.417 11.417C11.0277 11.8057 10.5553 12 10 12ZM10 16C8.014 16 6.20833 15.455 4.583 14.365C2.95833 13.2743 1.764 11.8193 1 10C1.764 8.18067 2.95833 6.72567 4.583 5.635C6.20833 4.545 8.014 4 10 4C11.986 4 13.7917 4.545 15.417 5.635C17.0417 6.72567 18.236 8.18067 19 10C18.236 11.8193 17.0417 13.2743 15.417 14.365C13.7917 15.455 11.986 16 10 16ZM10 14.5C11.5553 14.5 12.9927 14.0973 14.312 13.292C15.632 12.486 16.646 11.3887 17.354 10C16.646 8.61133 15.632 7.514 14.312 6.708C12.9927 5.90267 11.5553 5.5 10 5.5C8.44467 5.5 7.00733 5.90267 5.688 6.708C4.368 7.514 3.354 8.61133 2.646 10C3.354 11.3887 4.368 12.486 5.688 13.292C7.00733 14.0973 8.44467 14.5 10 14.5Z';
+// The gap between the track header and the legends
+const LEGEND_LEFT_PADDING = 16;
 export class FlameChartDelegate {
     windowChanged(_startTime, _endTime, _animate) {
     }
@@ -212,6 +215,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     entryColorsCache;
     totalTime;
     lastPopoverState;
+    #tooltipPopoverYAdjustment = 0;
     #font;
     #groupTreeRoot;
     #searchResultEntryIndex;
@@ -248,7 +252,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.canvas.addEventListener('click', this.onClick.bind(this), false);
         this.canvas.addEventListener('keydown', this.onKeyDown.bind(this), false);
         this.canvas.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
-        this.popoverElement = this.viewportElement.createChild('div', 'flame-chart-entry-info');
+        this.popoverElement =
+            optionalConfig.tooltipElement || this.viewportElement.createChild('div', 'flame-chart-entry-info');
         this.markerHighlighElement = this.viewportElement.createChild('div', 'flame-chart-marker-highlight-element');
         this.highlightElement = this.viewportElement.createChild('div', 'flame-chart-highlight-element');
         this.revealDescendantsArrowHighlightElement =
@@ -293,6 +298,24 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.#canvasBoundingClientRect = this.canvas.getBoundingClientRect();
         return this.#canvasBoundingClientRect;
+    }
+    /**
+     * In some cases we need to manually adjust the positioning of the tooltip
+     * vertically to account for the fact that it might be rendered not relative
+     * to just this flame chart. This is true of the main flame chart in the
+     * Performance Panel where the element is rendered in a higher-stack container
+     * and we need to manually adjust its Y position to correctly put the tooltip
+     * in the right place.
+     */
+    setTooltipYPixelAdjustment(y) {
+        if (y === this.#tooltipPopoverYAdjustment) {
+            return;
+        }
+        this.#tooltipPopoverYAdjustment = y;
+        // Reposition the popover if it has any children (otherwise it is not visible)
+        if (this.popoverElement.children.length) {
+            this.updatePopoverOffset();
+        }
     }
     getBarHeight() {
         return this.barHeight;
@@ -625,7 +648,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             }
         }
         this.popoverElement.style.left = x + 'px';
-        this.popoverElement.style.top = y + 'px';
+        this.popoverElement.style.top = (y || 0) + this.#tooltipPopoverYAdjustment + 'px';
     }
     /**
      * Handle mouse click event in flame chart
@@ -1969,7 +1992,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 }
                 const entryStartTime = entryStartTimes[entryIndex];
                 const entryOffsetRight = entryStartTime + duration;
-                if (entryOffsetRight <= this.chartViewport.windowLeftTime()) {
+                const levelForcedDrawable = Boolean(this.dataProvider.forceDrawableLevel?.(level));
+                if (entryOffsetRight <= this.chartViewport.windowLeftTime() && !levelForcedDrawable) {
+                    // If the event is entirely to the left of the visible window, and the level is not forced to be drawn, we can stop processing this level.
                     break;
                 }
                 const barX = this.timeToPositionClipped(entryStartTime);
@@ -2036,13 +2061,15 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // The separating line between top level groups.
         context.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-neutral-container');
         context.beginPath();
+        // Draw a separator line at the beginning of each top-level group (except the first one).
         this.forEachGroupInViewport((offset, index, group, isFirst) => {
             if (isFirst || group.style.padding < 4) {
                 return;
             }
-            hLine(offset - 2.5);
+            horizontalLine(context, width, offset - 2.5);
         });
-        hLine(lastGroupOffset + 1.5);
+        // Draw a separator line at the end of all groups.
+        horizontalLine(context, width, lastGroupOffset + 1.5);
         context.stroke();
         this.forEachGroupInViewport((offset, index, group) => {
             if (group.style.useFirstLineForOverview) {
@@ -2101,6 +2128,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 // Draw a strikethrough line for the hidden tracks.
                 context.fillRect(titleStart, offset + group.style.height / 2, UI.UIUtils.measureTextWidth(context, group.name), 1);
             }
+            if (group.legends && group.expanded) {
+                drawLegends(context, HEADER_LEFT_PADDING + this.labelWidthForGroup(context, group) + LEGEND_LEFT_PADDING, offset, group.legends);
+            }
             // The icon and track title will look like this
             // Normal mode:
             // Track title
@@ -2111,11 +2141,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                     const iconColor = group.hidden ? '--sys-color-token-subtle' : '--sys-color-on-surface';
                     // We only allow to reorder the top level groups.
                     if (group.style.nestingLevel === 0) {
-                        drawIcon(UP_ICON_LEFT, offset, moveUpIconPath, iconColor);
-                        drawIcon(DOWN_ICON_LEFT, offset, moveDownIconPath, iconColor);
+                        drawIcon(context, UP_ICON_LEFT, offset, EDIT_ICON_WIDTH, moveUpIconPath, iconColor);
+                        drawIcon(context, DOWN_ICON_LEFT, offset, EDIT_ICON_WIDTH, moveDownIconPath, iconColor);
                     }
                     // If this is the last visible top-level group, we will disable the hide action.
-                    drawIcon(HIDE_ICON_LEFT, offset, group.hidden ? showIconPath : hideIconPath, this.groupIsLastVisibleTopLevel(group) ? '--sys-color-state-disabled' : iconColor);
+                    drawIcon(context, HIDE_ICON_LEFT, offset, EDIT_ICON_WIDTH, group.hidden ? showIconPath : hideIconPath, this.groupIsLastVisibleTopLevel(group) ? '--sys-color-state-disabled' : iconColor);
                 }
             }
         });
@@ -2123,7 +2153,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-token-subtle');
         this.forEachGroupInViewport((offset, index, group) => {
             if (this.isGroupCollapsible(index)) {
-                drawExpansionArrow.call(this, iconsWidth + EXPANSION_ARROW_INDENT * (group.style.nestingLevel + 1), offset + group.style.height - this.textBaseline - ARROW_SIDE / 2, this.#inTrackConfigEditMode ? false : Boolean(group.expanded));
+                drawExpansionArrow(context, iconsWidth + EXPANSION_ARROW_INDENT * (group.style.nestingLevel + 1), offset + group.style.height - this.textBaseline - ARROW_SIDE / 2, this.#inTrackConfigEditMode ? false : Boolean(group.expanded));
             }
         });
         context.strokeStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-neutral-outline');
@@ -2152,47 +2182,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             }
         });
         context.restore();
-        function hLine(y) {
-            context.moveTo(0, y);
-            context.lineTo(width, y);
-        }
-        function drawExpansionArrow(x, y, expanded) {
-            // We will draw a equilateral triangle, so first calculate the height of the triangle.
-            const arrowHeight = ARROW_SIDE * Math.sqrt(3) / 2;
-            const arrowCenterOffset = Math.round(arrowHeight / 2);
-            context.save();
-            context.beginPath();
-            context.translate(x, y);
-            context.rotate(expanded ? Math.PI / 2 : 0);
-            // The final triangle will be this shape: (the rotation will be handled by `context.rotate`)
-            // |\
-            // | \
-            // | /
-            // |/
-            // Move to the top vertex
-            context.moveTo(-arrowCenterOffset, -ARROW_SIDE / 2);
-            // Line to the bottom vertex
-            context.lineTo(-arrowCenterOffset, ARROW_SIDE / 2);
-            // Line to the right vertex
-            context.lineTo(arrowHeight - arrowCenterOffset, 0);
-            context.fill();
-            context.restore();
-        }
-        function drawIcon(x, y, pathData, iconColor = '--sys-color-on-surface') {
-            const p = new Path2D(pathData);
-            context.save();
-            context.translate(x, y);
-            // This color is same as the background of the whole flame chart.
-            context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container');
-            context.fillRect(0, 0, EDIT_ICON_WIDTH, EDIT_ICON_WIDTH);
-            context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue(iconColor);
-            // The pathData from front_end/images folder is for a 20 pixel icon.
-            // So we add a scale to draw the icon in a correct size.
-            const scale = EDIT_ICON_WIDTH / 20;
-            context.scale(scale, scale);
-            context.fill(p);
-            context.restore();
-        }
     }
     /**
      * Draws page load events in the Timings track (LCP, FCP, DCL, etc.)
@@ -2461,24 +2450,39 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         context.strokeStyle = '#7f5050';
         for (let i = 0; i < td.initiatorsData.length; ++i) {
             const initiatorsData = td.initiatorsData[i];
-            const initiatorArrowStartTime = entryStartTimes[initiatorsData.initiatorIndex] + entryTotalTimes[initiatorsData.initiatorIndex];
-            const initiatorArrowEndTime = entryStartTimes[initiatorsData.eventIndex];
+            // Draw an arrow in an 'elbow connector' shape if the initiator ends before the initiated event starts, like this
+            // ---
+            //   |
+            //   --->
+            // Otherwise directly draw from the initiator start to initiated start, like this:
+            // |
+            // |
+            // ---->
+            const initiatorStartTime = entryStartTimes[initiatorsData.initiatorIndex];
+            const initiatorEndTime = entryStartTimes[initiatorsData.initiatorIndex] + entryTotalTimes[initiatorsData.initiatorIndex];
+            const initiatedStartTime = entryStartTimes[initiatorsData.eventIndex];
+            const initiatorEndsBeforeInitiatedStart = initiatorEndTime < initiatedStartTime;
+            const initiatorArrowStartTime = initiatorEndsBeforeInitiatedStart ?
+                initiatorEndTime :
+                // The blue indicator's width is 2, so add a little bit offset to start the arrow.
+                Math.max(initiatorStartTime, this.chartViewport.pixelToTime(5));
+            const initiatorArrowEndTime = initiatedStartTime;
             // Do not draw the initiator if it is out of the viewport
             if (initiatorArrowEndTime < this.chartViewport.windowLeftTime()) {
                 continue;
             }
             let startX = this.chartViewport.timeToPosition(initiatorArrowStartTime);
             let endX = this.chartViewport.timeToPosition(initiatorArrowEndTime);
-            // Draw a circle arround 'collapsed entries' arrow to indicate that the initiated entry is hidden
+            // Draw a circle around 'collapsed entries' arrow to indicate that the initiated entry is hidden
             if (initiatorsData.isInitiatorHidden) {
-                const { circleEndX } = this.drawCircleArroundCollapseArrow(initiatorsData.initiatorIndex, context, timelineData);
+                const { circleEndX } = this.drawCircleAroundCollapseArrow(initiatorsData.initiatorIndex, context, timelineData);
                 // If the circle exists around the initiator, start the initiator arrow from the circle end
                 if (circleEndX) {
                     startX = circleEndX;
                 }
             }
             if (initiatorsData.isEntryHidden) {
-                const { circleStartX } = this.drawCircleArroundCollapseArrow(initiatorsData.eventIndex, context, timelineData);
+                const { circleStartX } = this.drawCircleAroundCollapseArrow(initiatorsData.eventIndex, context, timelineData);
                 // If the circle exists around the initiated event, draw the initiator arrow until the circle beginning
                 if (circleStartX) {
                     endX = circleStartX;
@@ -2489,14 +2493,28 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const startY = this.levelToOffset(startLevel) + this.levelHeight(startLevel) / 2;
             const endY = this.levelToOffset(endLevel) + this.levelHeight(endLevel) / 2;
             const lineLength = endX - startX;
-            // Draw an arrow in an 'elbow connector' shape
-            context.beginPath();
-            context.moveTo(startX, startY);
-            context.lineTo(startX + lineLength / 2, startY);
-            context.lineTo(startX + lineLength / 2, endY);
-            context.lineTo(endX, endY);
-            context.stroke();
-            // Make line an arrow if the line is long enough to fit the arrow head. Othewise, draw a thinner line without the arrow head.
+            if (initiatorEndsBeforeInitiatedStart) {
+                // ---
+                //   |
+                //   --->
+                context.beginPath();
+                context.moveTo(startX, startY);
+                context.lineTo(startX + lineLength / 2, startY);
+                context.lineTo(startX + lineLength / 2, endY);
+                context.lineTo(endX, endY);
+                context.stroke();
+            }
+            else {
+                // |
+                // |
+                // ---->
+                context.beginPath();
+                context.moveTo(startX, startY);
+                context.lineTo(startX, endY);
+                context.lineTo(endX, endY);
+                context.stroke();
+            }
+            // Make line an arrow if the line is long enough to fit the arrow head. Otherwise, draw a thinner line without the arrow head.
             if (lineLength > arrowWidth) {
                 context.lineWidth = 0.5;
                 context.beginPath();
@@ -2511,7 +2529,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         context.restore();
     }
-    drawCircleArroundCollapseArrow(entryIndex, context, timelineData) {
+    drawCircleAroundCollapseArrow(entryIndex, context, timelineData) {
         const decorationsForEvent = timelineData.entryDecorations.at(entryIndex);
         // The circle is only drawn when the initiator arrow is going to/from some hidden entry. Make sure that the entry also has a decoration for hidden children.
         if (!decorationsForEvent ||
