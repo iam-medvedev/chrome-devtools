@@ -19,6 +19,13 @@ export const generatedProperties = [
         "name": "-alternative-animation-with-timeline"
     },
     {
+        "longhands": [
+            "position-try-order",
+            "position-try-fallbacks"
+        ],
+        "name": "-alternative-position-try"
+    },
+    {
         "inherited": true,
         "name": "-webkit-border-horizontal-spacing"
     },
@@ -983,6 +990,13 @@ export const generatedProperties = [
             "auto"
         ],
         "name": "bottom"
+    },
+    {
+        "keywords": [
+            "slice",
+            "clone"
+        ],
+        "name": "box-decoration-break"
     },
     {
         "keywords": [
@@ -2762,6 +2776,9 @@ export const generatedProperties = [
             "flip-inline",
             "flip-start"
         ],
+        "name": "position-try-fallbacks"
+    },
+    {
         "name": "position-try-options"
     },
     {
@@ -2929,7 +2946,7 @@ export const generatedProperties = [
             "after",
             "before"
         ],
-        "name": "scroll-markers"
+        "name": "scroll-marker-group"
     },
     {
         "longhands": [
@@ -4162,6 +4179,12 @@ export const generatedPropertyValues = {
             "auto"
         ]
     },
+    "box-decoration-break": {
+        "values": [
+            "slice",
+            "clone"
+        ]
+    },
     "box-shadow": {
         "values": [
             "none"
@@ -5213,7 +5236,7 @@ export const generatedPropertyValues = {
             "auto"
         ]
     },
-    "position-try-options": {
+    "position-try-fallbacks": {
         "values": [
             "none",
             "flip-block",
@@ -5303,7 +5326,7 @@ export const generatedPropertyValues = {
             "smooth"
         ]
     },
-    "scroll-markers": {
+    "scroll-marker-group": {
         "values": [
             "none",
             "after",

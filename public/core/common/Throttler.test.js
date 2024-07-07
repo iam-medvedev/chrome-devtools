@@ -42,7 +42,7 @@ describe('Throttler class', () => {
         void throttler.schedule(process2, "AsSoonAsPossible" /* Scheduling.AsSoonAsPossible */);
         assert.isFalse(process1.called);
         assert.isFalse(process2.called);
-        clock.tickAsync(0);
+        void clock.tickAsync(0);
         await promiseTest;
         assert.isFalse(process1.called);
         assert.isTrue(process2.calledOnce);

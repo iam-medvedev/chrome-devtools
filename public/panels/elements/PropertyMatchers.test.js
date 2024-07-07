@@ -104,6 +104,15 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             assert.isNull(match, text);
         }
     });
+    it('parses colors in logical border properties', () => {
+        for (const success of ['border-block-end', 'border-block-end-color', 'border-block-start', 'border-block-start-color',
+            'border-inline-end', 'border-inline-end-color', 'border-inline-start', 'border-inline-start-color']) {
+            const { ast, match, text } = matchSingleValue(success, 'red', new Elements.PropertyMatchers.ColorMatcher());
+            assert.exists(match, text);
+            assert.strictEqual(match.text, 'red');
+            assert.strictEqual(ast?.propertyName, success);
+        }
+    });
     it('parses linear gradients', () => {
         for (const succeed of ['linear-gradient(90deg, red, blue)', 'linear-gradient(to top left, red, blue)',
             'linear-gradient(in oklab, red, blue)']) {
@@ -404,6 +413,11 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const { match } = matchSingleValue('position-anchor', 'something-non-dashed', new Elements.PropertyMatchers.PositionAnchorMatcher());
             assert.isNull(match);
         });
+    });
+    it('matches lengths', () => {
+        const { match, text } = matchSingleValue('min-width', '100px', new Elements.PropertyMatchers.LengthMatcher());
+        assert.exists(match, text);
+        assert.strictEqual(match.text, '100px');
     });
 });
 //# sourceMappingURL=PropertyMatchers.test.js.map

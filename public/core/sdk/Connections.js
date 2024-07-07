@@ -5,7 +5,6 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import * as Root from '../root/root.js';
-import { TargetManager } from './TargetManager.js';
 export class MainConnection {
     onMessage;
     #onDisconnect;
@@ -227,16 +226,6 @@ export async function initMainConnection(createRootTarget, websocketConnectionLo
     ProtocolClient.InspectorBackend.Connection.setFactory(createMainConnection.bind(null, websocketConnectionLost));
     await createRootTarget();
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ReattachRootTarget, () => {
-        const target = TargetManager.instance().rootTarget();
-        if (target) {
-            const router = target.router();
-            if (router) {
-                void router.connection().disconnect();
-            }
-        }
-        void createRootTarget();
-    });
 }
 function createMainConnection(websocketConnectionLost) {
     const wsParam = Root.Runtime.Runtime.queryParam('ws');

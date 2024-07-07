@@ -45,12 +45,35 @@ styles.replaceSync(
 
 .overlay-type-TIME_RANGE {
   background: linear-gradient(180deg, rgb(255 125 210 / 0%) 0%, rgb(255 125 210 / 15%) 85%); /* stylelint-disable-line plugin/use_theme_colors */
-  border-color: var(--ref-palette-pink50);
+  border-color: var(--ref-palette-pink80);
   border-width: 1px;
   border-style: solid;
   pointer-events: none;
   top: 0;
   bottom: 0;
+  border-bottom-width: 5px;
+
+  &.overlap-1 {
+    bottom: 55px;
+    border-color: var(--ref-palette-pink70);
+  }
+
+  &.overlap-2 {
+    bottom: 105px;
+    border-color: var(--ref-palette-pink60);
+  }
+}
+
+.timeline-entry-tooltip-element:not(:empty) {
+  z-index: 2000;
+  position: absolute;
+  contain: content;
+  background-color: var(--sys-color-cdt-base-container);
+  pointer-events: none;
+  padding: 4px 8px;
+  white-space: nowrap;
+  max-width: 80%;
+  box-shadow: var(--drop-shadow);
 }
 
 /*# sourceURL=timelineFlameChartView.css */

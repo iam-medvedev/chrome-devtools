@@ -306,15 +306,18 @@ export class InspectorFrontendHostStub {
     }
     getHostConfig(callback) {
         callback({
-            devToolsConsoleInsights: {
-                aidaModelId: '',
-                aidaTemperature: 0,
+            devToolsAida: {
                 blocked: true,
                 blockedByAge: false,
                 blockedByEnterprisePolicy: false,
                 blockedByFeatureFlag: true,
                 blockedByGeo: false,
                 blockedByRollout: false,
+                enabled: false,
+            },
+            devToolsConsoleInsights: {
+                aidaModelId: '',
+                aidaTemperature: 0,
                 disallowLogging: false,
                 enabled: false,
                 optIn: false,

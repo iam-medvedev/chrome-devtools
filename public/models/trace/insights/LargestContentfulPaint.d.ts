@@ -1,5 +1,5 @@
 import * as Types from '../types/types.js';
-import { type InsightResult, type NavigationInsightContext, type RequiredData } from './types.js';
+import { type LCPInsightResult, type NavigationInsightContext, type RequiredData } from './types.js';
 export declare function deps(): ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint', 'Meta'];
 export interface LCPPhases {
     /**
@@ -22,10 +22,4 @@ export interface LCPPhases {
      */
     renderDelay: Types.Timing.MilliSeconds;
 }
-export declare function generateInsight(traceParsedData: RequiredData<typeof deps>, context: NavigationInsightContext): InsightResult<{
-    lcpMs?: Types.Timing.MilliSeconds;
-    phases?: LCPPhases;
-    shouldRemoveLazyLoading?: boolean;
-    shouldIncreasePriorityHint?: boolean;
-    shouldPreloadImage?: boolean;
-}>;
+export declare function generateInsight(traceParsedData: RequiredData<typeof deps>, context: NavigationInsightContext): LCPInsightResult;

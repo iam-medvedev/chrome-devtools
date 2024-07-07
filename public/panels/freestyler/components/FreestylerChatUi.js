@@ -12,6 +12,7 @@ import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { Step } from '../FreestylerAgent.js';
 import freestylerChatUiStyles from './freestylerChatUi.css.js';
+const DOGFOOD_FEEDBACK_URL = 'https://goo.gle/freestyler-feedback';
 /*
   * TODO(nvitkov): b/346933425
   * Temporary string that should not be translated
@@ -84,6 +85,30 @@ const TempUIStrings = {
      *@description Consent view data visibility text
      */
     consentTextVisibilityDisclaimer: 'Data may be seen by trained reviewers to improve this feature.',
+    /**
+     * @description Side effect confirmation text
+     */
+    sideEffectConfirmationDescription: 'The code contains side effects. Do you wish to continue?',
+    /**
+     * @description Side effect confirmation text for the button that says "Execute"
+     */
+    positiveSideEffectConfirmation: 'Execute',
+    /**
+     * @description Side effect confirmation text for the button that says "Cancel"
+     */
+    negativeSideEffectConfirmation: 'Cancel',
+    /**
+     *@description Name of the dogfood program.
+     */
+    dogfood: 'Dogfood',
+    /**
+     *@description Link text for redirecting to feedback form
+     */
+    feedbackLink: 'Send Feedback',
+    /**
+     *@description Button text for "Fix this issue" button
+     */
+    fixThisIssue: 'Fix this issue',
 };
 // const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
 // const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -101,15 +126,32 @@ function getInputPlaceholderString(aidaAvailability) {
             return i18nString(TempUIStrings.offline);
     }
 }
-export var ChatMessageEntity;
-(function (ChatMessageEntity) {
-    ChatMessageEntity["MODEL"] = "model";
-    ChatMessageEntity["USER"] = "user";
-})(ChatMessageEntity || (ChatMessageEntity = {}));
+// The model returns multiline code blocks in an erroneous way with the language being in new line.
+// This renderer takes that into account and correctly updates the parsed multiline token with the language
+// correctly identified and stripped from the content.
+// Example:
+// ```
+// css <-- This should have been on the first line.
+// * {
+//   color: red;
+// }
+// ```
+class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
+    templateForToken(token) {
+        if (token.type === 'code') {
+            const lines = token.text.split('\n');
+            if (lines[0]?.trim() === 'css') {
+                token.lang = 'css';
+                token.text = lines.slice(1).join('\n');
+            }
+        }
+        return super.templateForToken(token);
+    }
+}
 export class FreestylerChatUi extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-freestyler-chat-ui`;
     #shadow = this.attachShadow({ mode: 'open' });
-    #markdownRenderer = new MarkdownView.MarkdownView.MarkdownInsightRenderer();
+    #markdownRenderer = new MarkdownRendererWithCodeBlock();
     #props;
     constructor(props) {
         super();
@@ -219,38 +261,118 @@ export class FreestylerChatUi extends HTMLElement {
         }
         return LitHtml.html `<p>${this.#renderTextAsMarkdown(step.text)}</p>`;
     }
+    #renderSideEffectConfirmationUi(confirmSideEffectDialog) {
+        // clang-format off
+        return LitHtml.html `<div class="side-effect-confirmation">
+      <p>${i18nString(TempUIStrings.sideEffectConfirmationDescription)}</p>
+      <${MarkdownView.CodeBlock.CodeBlock.litTagName}
+        .code=${confirmSideEffectDialog.code}
+        .codeLang=${'js'}
+        .displayToolbar=${false}
+      ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
+      <div class="side-effect-buttons-container">
+        <${Buttons.Button.Button.litTagName}
+          .data=${{
+            variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
+            jslogContext: 'accept-execute-code',
+        }}
+          @click=${() => confirmSideEffectDialog.onAnswer(true)}
+          >${i18nString(TempUIStrings.positiveSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
+        <${Buttons.Button.Button.litTagName}
+          .data=${{
+            variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
+            jslogContext: 'decline-execute-code',
+        }}
+          @click=${() => confirmSideEffectDialog.onAnswer(false)}
+        >${i18nString(TempUIStrings.negativeSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
+      </div>
+    </div>`;
+        // clang-format on
+    }
     #renderChatMessage = (message, { isLast }) => {
-        if (message.entity === ChatMessageEntity.USER) {
+        if (message.entity === "user" /* ChatMessageEntity.USER */) {
             return LitHtml.html `<div class="chat-message query">${message.text}</div>`;
         }
+        // TODO: We should only show "Fix this issue" button when the answer suggests fix or fixes.
+        // We shouldn't show this when the answer is complete like a confirmation without any suggestion.
+        const shouldShowFixThisIssueButton = isLast && message.steps.at(-1)?.step === Step.ANSWER && !this.#props.lastActionIsFixThisIssue;
+        const shouldShowRating = (!this.#props.confirmSideEffectDialog && isLast) || !isLast;
+        const shouldShowLoading = !this.#props.confirmSideEffectDialog && this.#props.isLoading && isLast;
         // clang-format off
         return LitHtml.html `
       <div class="chat-message answer">
-        ${message.steps.map(step => LitHtml.html `${this.#renderStep(step)}${step.rpcId !== undefined
-            ? this.#renderRateButtons(step.rpcId)
-            : LitHtml.nothing}`)}
-        ${this.#props.isLoading && isLast
-            ? LitHtml.html `<div class='chat-loading' >Loading...</div>`
+        ${message.steps.map(step => this.#renderStep(step))}
+        ${this.#props.confirmSideEffectDialog && isLast
+            ? this.#renderSideEffectConfirmationUi(this.#props.confirmSideEffectDialog)
+            : LitHtml.nothing}
+        <div class="actions">
+          ${shouldShowRating && message.rpcId !== undefined
+            ? this.#renderRateButtons(message.rpcId)
+            : LitHtml.nothing}
+          ${shouldShowFixThisIssueButton
+            ? LitHtml.html `<${Buttons.Button.Button.litTagName}
+                  .data=${{
+                variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
+                jslogContext: 'fix-this-issue',
+            }}
+                  @click=${this.#props.onFixThisIssueClick}
+                >${i18nString(TempUIStrings.fixThisIssue)}</${Buttons.Button.Button.litTagName}>`
+            : LitHtml.nothing}
+        </div>
+        ${shouldShowLoading
+            ? LitHtml.html `<div class="chat-loading">Loading...</div>`
             : LitHtml.nothing}
       </div>
     `;
         // clang-format on
     };
     #renderSelectAnElement = () => {
-        // clang-format off
-        return LitHtml.html `
-      <${Buttons.Button.Button.litTagName} .data=${{
-            variant: "text" /* Buttons.Button.Variant.TEXT */,
+        const data = {
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
             iconName: 'select-element',
             toggledIconName: 'select-element',
             toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
             toggled: this.#props.inspectElementToggled,
-            title: i18nString(TempUIStrings.sendButtonTitle),
-        }} @click=${this.#props.onInspectElementClick}>
-        <span class="select-an-element-text">${i18nString(TempUIStrings.selectAnElement)}</span>
-      </${Buttons.Button.Button.litTagName}>
-    `;
+            title: i18nString(TempUIStrings.selectAnElement),
+            jslogContext: 'select-element',
+        };
+        // clang-format off
+        return this.#props.selectedNode
+            ? LitHtml.html `
+        <${Buttons.Button.Button.litTagName}
+          .data=${{
+                variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
+                ...data,
+            }}
+          @click=${this.#props.onInspectElementClick}
+        ></${Buttons.Button.Button.litTagName}>
+        ${LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#props.selectedNode))}`
+            : LitHtml.html `
+        <${Buttons.Button.Button.litTagName}
+          .data=${{
+                variant: "text" /* Buttons.Button.Variant.TEXT */,
+                ...data,
+            }}
+          @click=${this.#props.onInspectElementClick}
+        ><span class="select-an-element-text">${i18nString(TempUIStrings.selectAnElement)}</span></${Buttons.Button.Button.litTagName}>`;
+        // clang-format on
+    };
+    #renderFeedbackLink = () => {
+        // clang-format off
+        return LitHtml.html `
+        <${IconButton.Icon.Icon.litTagName}
+          name="dog-paw"
+          class="feedback-icon"
+        ></${IconButton.Icon.Icon.litTagName}>
+        <span>${i18nString(TempUIStrings.dogfood)}</span>
+        <span>-</span>
+        <x-link href=${DOGFOOD_FEEDBACK_URL}
+          class="link"
+          jslog=${VisualLogging.action('freestyler.feedback').track({
+            click: true,
+        })}>
+         ${i18nString(TempUIStrings.feedbackLink)}
+        </x-link>`;
         // clang-format on
     };
     #renderMessages = () => {
@@ -273,7 +395,7 @@ export class FreestylerChatUi extends HTMLElement {
     #renderChatUi = () => {
         // TODO(ergunsh): Show a better UI for the states where Aida client is not available.
         const isAidaAvailable = this.#props.aidaAvailability === Host.AidaClient.AidaAvailability.AVAILABLE;
-        const isTextInputDisabled = !Boolean(this.#props.selectedNode) || !isAidaAvailable;
+        const isInputDisabled = !Boolean(this.#props.selectedNode) || !isAidaAvailable;
         // clang-format off
         return LitHtml.html `
       <div class="chat-ui">
@@ -281,13 +403,16 @@ export class FreestylerChatUi extends HTMLElement {
             ? this.#renderMessages()
             : this.#renderEmptyState()}
         <form class="input-form" @submit=${this.#handleSubmit}>
-          <div class="dom-node-link-container">
-            ${this.#props.selectedNode
-            ? LitHtml.Directives.until(Common.Linkifier.Linkifier.linkify(this.#props.selectedNode))
-            : this.#renderSelectAnElement()}
+          <div class="input-header">
+            <div class="header-link-container">
+              ${this.#renderSelectAnElement()}
+            </div>
+            <div class="header-link-container">
+              ${this.#renderFeedbackLink()}
+            </div>
           </div>
           <div class="chat-input-container">
-            <input type="text" class="chat-input" .disabled=${isTextInputDisabled}
+            <input type="text" class="chat-input" .disabled=${isInputDisabled}
               placeholder=${getInputPlaceholderString(this.#props.aidaAvailability)}>
               ${this.#props.isLoading
             ? LitHtml.html `
@@ -318,6 +443,7 @@ export class FreestylerChatUi extends HTMLElement {
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
                 iconName: 'send',
                 title: i18nString(TempUIStrings.sendButtonTitle),
+                disabled: isInputDisabled,
             }}
                     ></${Buttons.Button.Button.litTagName}>`}
           </div>
@@ -365,5 +491,8 @@ export class FreestylerChatUi extends HTMLElement {
         }
     }
 }
+export const FOR_TEST = {
+    MarkdownRendererWithCodeBlock,
+};
 customElements.define('devtools-freestyler-chat-ui', FreestylerChatUi);
 //# sourceMappingURL=FreestylerChatUi.js.map

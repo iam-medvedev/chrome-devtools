@@ -21,7 +21,7 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class InterestGroupTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(storagePanel) {
-        super(storagePanel, i18nString(UIStrings.interestGroups), false);
+        super(storagePanel, i18nString(UIStrings.interestGroups), false, 'interest-groups');
         const interestGroupIcon = IconButton.Icon.create('database');
         this.setLeadingIcons([interestGroupIcon]);
         this.view = new InterestGroupStorageView(this);

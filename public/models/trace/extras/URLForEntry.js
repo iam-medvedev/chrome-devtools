@@ -9,7 +9,7 @@ export function get(traceParsedData, entry) {
     if (entry.args?.data?.stackTrace && entry.args.data.stackTrace.length > 0) {
         return entry.args.data.stackTrace[0].url;
     }
-    if (Types.TraceEvents.isSyntheticNetworkRequestDetailsEvent(entry)) {
+    if (Types.TraceEvents.isSyntheticNetworkRequestEvent(entry)) {
         return entry.args.data.url;
     }
     // DecodeImage events use the URL from the relevant PaintImage event.

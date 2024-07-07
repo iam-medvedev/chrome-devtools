@@ -408,6 +408,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         });
         this.#sideBar.setMainWidget(this.timelinePane);
         this.#sideBar.show(this.element);
+        this.#sideBar.contentElement.addEventListener(TimelineComponents.Sidebar.ToggleSidebarInsights.eventName, this.#sidebarInsightEnabled.bind(this));
+    }
+    #sidebarInsightEnabled() {
+        this.flameChart.toggleSidebarInsights();
     }
     static instance(opts = { forceNew: null, isNode: false }) {
         const { forceNew, isNode: isNodeMode } = opts;
@@ -1123,6 +1127,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         this.flameChart.setModel(traceParsedData, isCpuProfile);
         this.flameChart.setSelection(null);
+        const traceInsightsData = this.#traceEngineModel.traceInsights(this.#traceEngineActiveTraceIndex);
+        if (traceInsightsData) {
+            this.flameChart.setInsights(traceInsightsData);
+        }
         // Set up line level profiling with CPU profiles, if we found any.
         PerfUI.LineLevelProfile.Performance.instance().reset();
         if (traceParsedData && traceParsedData.Samples.profilesInProcess.size) {

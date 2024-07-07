@@ -13,7 +13,7 @@ export declare class CookieModel extends SDKModel<EventTypes> {
     /**
      * Returns cookies needed by current page's frames whose security origins are |domain|.
      */
-    getCookiesForDomain(domain: string): Promise<Cookie[]>;
+    getCookiesForDomain(domain: string, forceUpdate?: boolean): Promise<Cookie[]>;
     deleteCookies(cookies: Cookie[]): Promise<void>;
 }
 export interface BlockedReason {

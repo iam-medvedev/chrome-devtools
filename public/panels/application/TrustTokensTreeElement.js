@@ -20,7 +20,7 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TrustTokensTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(storagePanel) {
-        super(storagePanel, i18nString(UIStrings.trustTokens), false);
+        super(storagePanel, i18nString(UIStrings.trustTokens), false, 'private-state-tokens');
         const icon = IconButton.Icon.create('database');
         this.setLeadingIcons([icon]);
     }

@@ -5,6 +5,7 @@ import * as TraceEngine from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as TimelineComponents from '../components/components.js';
 import * as Timeline from '../timeline.js';
 describeWithEnvironment('NetworkTrackAppender', function () {
     let traceParsedData;
@@ -12,7 +13,8 @@ describeWithEnvironment('NetworkTrackAppender', function () {
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     beforeEach(async function () {
         traceParsedData = await TraceLoader.traceEngine(this, 'cls-cluster-max-timeout.json.gz');
-        networkTrackAppender = new Timeline.NetworkTrackAppender.NetworkTrackAppender(traceParsedData, flameChartData);
+        networkTrackAppender =
+            new Timeline.NetworkTrackAppender.NetworkTrackAppender(flameChartData, traceParsedData.NetworkRequests.byTime);
         networkTrackAppender.appendTrackAtLevel(0);
     });
     afterEach(() => {
@@ -50,8 +52,8 @@ describeWithEnvironment('NetworkTrackAppender', function () {
             const networkRequests = traceParsedData.NetworkRequests.byTime;
             for (const event of networkRequests) {
                 assert.strictEqual(networkTrackAppender.titleForEvent(event), event.name);
-                const category = Timeline.TimelineUIUtils.TimelineUIUtils.syntheticNetworkRequestCategory(event);
-                assert.strictEqual(networkTrackAppender.colorForEvent(event), Timeline.TimelineUIUtils.TimelineUIUtils.networkCategoryColor(category));
+                const color = TimelineComponents.Utils.colorForNetworkRequest(event);
+                assert.strictEqual(networkTrackAppender.colorForEvent(event), color);
             }
         });
     });

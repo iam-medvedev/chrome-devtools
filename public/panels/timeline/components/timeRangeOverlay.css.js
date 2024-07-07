@@ -27,10 +27,10 @@ styles.replaceSync(
   text-align: center;
   box-sizing: border-box;
   width: max-content;
-  max-width: 200px;
+  max-width: 250px;
   padding: 0 3px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  pointer-events: all;
+  user-select: none;
 
   &.labelHidden {
     /* Have to use this not display: none so it maintains its width */
@@ -46,6 +46,16 @@ styles.replaceSync(
   &.offScreenRight {
     text-align: right;
   }
+}
+
+.label-text {
+  text-overflow: ellipsis;
+  max-height: 40px;
+  overflow: hidden;
+  display: -webkit-box;
+  white-space: break-spaces;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 /*# sourceURL=timeRangeOverlay.css */

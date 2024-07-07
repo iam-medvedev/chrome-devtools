@@ -164,6 +164,3 @@ export declare class Location {
     columnNumber: number;
     constructor(scriptId: number, lineNumber: number, columnNumber: number);
 }
-export interface HeapSnapshotOptions {
-    heapSnapshotTreatBackingStoreAsContainingObject: boolean;
-}

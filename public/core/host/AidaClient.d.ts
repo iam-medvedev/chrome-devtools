@@ -44,6 +44,7 @@ export declare enum AidaAvailability {
     NO_ACTIVE_SYNC = "no-active-sync",
     NO_INTERNET = "no-internet"
 }
+export declare const CLIENT_NAME = "CHROME_DEVTOOLS";
 export declare class AidaClient {
     static buildConsoleInsightsRequest(input: string): AidaRequest;
     static getAidaClientAvailability(): Promise<AidaAvailability>;

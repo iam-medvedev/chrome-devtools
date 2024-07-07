@@ -302,6 +302,24 @@ export interface SyntheticNetworkRequest extends TraceEventComplete, SyntheticBa
     pid: ProcessID;
     tid: ThreadID;
 }
+export interface SyntheticWebSocketConnectionEvent extends TraceEventComplete, SyntheticBasedEvent<Phase.COMPLETE> {
+    rawSourceEvent: TraceEventData;
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            identifier: number;
+            priority: Protocol.Network.ResourcePriority;
+            url: string;
+        };
+    };
+    cat: string;
+    name: 'SyntheticWebSocketConnectionEvent';
+    ph: Phase.COMPLETE;
+    dur: MicroSeconds;
+    ts: MicroSeconds;
+    pid: ProcessID;
+    tid: ThreadID;
+    s: TraceEventScope;
+}
 export declare const enum AuctionWorkletType {
     BIDDER = "bidder",
     SELLER = "seller",
@@ -1406,7 +1424,9 @@ export declare function isTraceEventResourceMarkAsCached(traceEventData: TraceEv
 export declare function isTraceEventResourceFinish(traceEventData: TraceEventData): traceEventData is TraceEventResourceFinish;
 export declare function isTraceEventResourceWillSendRequest(traceEventData: TraceEventData): traceEventData is TraceEventResourceWillSendRequest;
 export declare function isTraceEventResourceReceivedData(traceEventData: TraceEventData): traceEventData is TraceEventResourceReceivedData;
-export declare function isSyntheticNetworkRequestDetailsEvent(traceEventData: TraceEventData): traceEventData is SyntheticNetworkRequest;
+export declare function isSyntheticNetworkRequestEvent(traceEventData: TraceEventData): traceEventData is SyntheticNetworkRequest;
+export declare function isSyntheticWebSocketConnectionEvent(traceEventData: TraceEventData): traceEventData is SyntheticWebSocketConnectionEvent;
+export declare function isNetworkTrackEntry(traceEventData: TraceEventData): traceEventData is SyntheticWebSocketConnectionEvent | SyntheticNetworkRequest;
 export declare function isTraceEventPrePaint(traceEventData: TraceEventData): traceEventData is TraceEventPrePaint;
 export declare function isTraceEventNavigationStartWithURL(event: TraceEventData): event is TraceEventNavigationStart;
 export declare function isTraceEventMainFrameViewport(traceEventData: TraceEventData): traceEventData is TraceEventMainFrameViewport;
@@ -1698,7 +1718,7 @@ export interface TraceEventWebSocketDestroy extends TraceEventInstant {
 }
 export declare function isTraceEventWebSocketDestroy(event: TraceEventData): event is TraceEventWebSocketDestroy;
 export declare function isWebSocketTraceEvent(event: TraceEventData): event is TraceEventWebSocketCreate | TraceEventWebSocketInfo | TraceEventWebSocketTransfer;
-export type WebSocketEvent = TraceEventWebSocketCreate | TraceEventWebSocketInfo | TraceEventWebSocketTransfer;
+export type WebSocketEvent = TraceEventWebSocketCreate | TraceEventWebSocketInfo | TraceEventWebSocketTransfer | SyntheticWebSocketConnectionEvent;
 export interface TraceEventV8Compile extends TraceEventComplete {
     name: KnownEventName.Compile;
     args: TraceEventArgs & {

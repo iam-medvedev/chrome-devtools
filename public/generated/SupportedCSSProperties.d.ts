@@ -200,6 +200,9 @@ export const generatedPropertyValues: {
     bottom: {
         values: string[];
     };
+    "box-decoration-break": {
+        values: string[];
+    };
     "box-shadow": {
         values: string[];
     };
@@ -617,7 +620,7 @@ export const generatedPropertyValues: {
     "position-anchor": {
         values: string[];
     };
-    "position-try-options": {
+    "position-try-fallbacks": {
         values: string[];
     };
     "position-try-order": {
@@ -656,7 +659,7 @@ export const generatedPropertyValues: {
     "scroll-behavior": {
         values: string[];
     };
-    "scroll-markers": {
+    "scroll-marker-group": {
         values: string[];
     };
     "scroll-padding-block-end": {

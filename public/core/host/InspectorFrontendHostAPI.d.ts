@@ -22,7 +22,6 @@ export declare enum Events {
     IndexingWorked = "indexingWorked",
     IndexingDone = "indexingDone",
     KeyEventUnhandled = "keyEventUnhandled",
-    ReattachRootTarget = "reattachMainTarget",
     ReloadInspectedPage = "reloadInspectedPage",
     RevealSourceLine = "revealSourceLine",
     SavedURL = "savedURL",
@@ -157,7 +156,6 @@ export type EventTypes = {
     [Events.IndexingWorked]: IndexingWorkedEvent;
     [Events.IndexingDone]: IndexingEvent;
     [Events.KeyEventUnhandled]: KeyEventUnhandledEvent;
-    [Events.ReattachRootTarget]: void;
     [Events.ReloadInspectedPage]: boolean;
     [Events.RevealSourceLine]: RevealSourceLineEvent;
     [Events.SavedURL]: SavedURLEvent;

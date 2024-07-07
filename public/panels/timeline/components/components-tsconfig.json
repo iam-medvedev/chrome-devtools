@@ -35,10 +35,13 @@
     "../../../../../../../front_end/panels/timeline/components/EntryLabelOverlay.ts",
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.ts",
     "../../../../../../../front_end/panels/timeline/components/LiveMetricsView.ts",
+    "../../../../../../../front_end/panels/timeline/components/NetworkRequestTooltip.ts",
     "../../../../../../../front_end/panels/timeline/components/Sidebar.ts",
     "../../../../../../../front_end/panels/timeline/components/SidebarAnnotationsTab.ts",
     "../../../../../../../front_end/panels/timeline/components/SidebarInsight.ts",
     "../../../../../../../front_end/panels/timeline/components/TimeRangeOverlay.ts",
+    "../../../../../../../front_end/panels/timeline/components/TimespanBreakdownOverlay.ts",
+    "../../../../../../../front_end/panels/timeline/components/Utils.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../../node_modules/@types/filesystem/index.d.ts"
@@ -79,6 +82,9 @@
     },
     {
       "path": "../../../ui/legacy/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/legacy/components/perf_ui/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/lit-html/bundle-tsconfig.json"

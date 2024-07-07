@@ -6464,8 +6464,17 @@
   "panels/freestyler/components/FreestylerChatUi.ts | consentTextVisibilityDisclaimer": {
     "message": "Data may be seen by trained reviewers to improve this feature."
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | dogfood": {
+    "message": "Dogfood"
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | emptyStateText": {
     "message": "How can I help you?"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | feedbackLink": {
+    "message": "Send Feedback"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | fixThisIssue": {
+    "message": "Fix this issue"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | inputDisclaimer": {
     "message": "Freestyler may display inaccurate information and may not get it right"
@@ -6473,17 +6482,26 @@
   "panels/freestyler/components/FreestylerChatUi.ts | inputPlaceholder": {
     "message": "Ask a question about the selected element"
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | negativeSideEffectConfirmation": {
+    "message": "Cancel"
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | notLoggedIn": {
     "message": "This feature is only available when you sign into Chrome with your Google account."
   },
   "panels/freestyler/components/FreestylerChatUi.ts | offline": {
     "message": "Check your internet connection and try again."
   },
+  "panels/freestyler/components/FreestylerChatUi.ts | positiveSideEffectConfirmation": {
+    "message": "Execute"
+  },
   "panels/freestyler/components/FreestylerChatUi.ts | selectAnElement": {
     "message": "Select an element"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | sendButtonTitle": {
     "message": "Send"
+  },
+  "panels/freestyler/components/FreestylerChatUi.ts | sideEffectConfirmationDescription": {
+    "message": "The code contains side effects. Do you wish to continue?"
   },
   "panels/freestyler/components/FreestylerChatUi.ts | syncIsOff": {
     "message": "This feature requires you to turn on Chrome sync."
@@ -6908,14 +6926,14 @@
   "panels/js_timeline/js_timeline-meta.ts | record": {
     "message": "Record"
   },
+  "panels/js_timeline/js_timeline-meta.ts | recordAndReload": {
+    "message": "Record and reload"
+  },
   "panels/js_timeline/js_timeline-meta.ts | showPerformance": {
     "message": "Show Performance"
   },
   "panels/js_timeline/js_timeline-meta.ts | showRecentTimelineSessions": {
     "message": "Show recent timeline sessions"
-  },
-  "panels/js_timeline/js_timeline-meta.ts | startProfilingAndReloadPage": {
-    "message": "Start profiling and reload page"
   },
   "panels/js_timeline/js_timeline-meta.ts | stop": {
     "message": "Stop"
@@ -12299,6 +12317,24 @@
   "panels/timeline/components/InteractionBreakdown.ts | processingDuration": {
     "message": "Processing duration"
   },
+  "panels/timeline/components/NetworkRequestTooltip.ts | contentDownloading": {
+    "message": "Content downloading"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | priority": {
+    "message": "Priority"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | queuingAndConnecting": {
+    "message": "Queuing and connecting"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | renderBlocking": {
+    "message": "Render blocking"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | requestSentAndWaiting": {
+    "message": "Request sent and waiting"
+  },
+  "panels/timeline/components/NetworkRequestTooltip.ts | waitingOnMainThread": {
+    "message": "Waiting on main thread"
+  },
   "panels/timeline/CountersGraph.ts | documents": {
     "message": "Documents"
   },
@@ -12686,6 +12722,15 @@
   "panels/timeline/NetworkTrackAppender.ts | network": {
     "message": "Network"
   },
+  "panels/timeline/NetworkTrackAppender.ts | wsConnectionClosed": {
+    "message": "WebSocket closed"
+  },
+  "panels/timeline/NetworkTrackAppender.ts | wsConnectionOpened": {
+    "message": "WebSocket opened"
+  },
+  "panels/timeline/NetworkTrackAppender.ts | wsConnectionOpenedWithUrl": {
+    "message": "WebSocket opened: {PH1}"
+  },
   "panels/timeline/ThreadAppender.ts | anonymous": {
     "message": "(anonymous)"
   },
@@ -12776,6 +12821,9 @@
   "panels/timeline/timeline-meta.ts | record": {
     "message": "Record"
   },
+  "panels/timeline/timeline-meta.ts | recordAndReload": {
+    "message": "Record and reload"
+  },
   "panels/timeline/timeline-meta.ts | saveProfile": {
     "message": "Save profile…"
   },
@@ -12784,9 +12832,6 @@
   },
   "panels/timeline/timeline-meta.ts | showRecentTimelineSessions": {
     "message": "Show recent timeline sessions"
-  },
-  "panels/timeline/timeline-meta.ts | startProfilingAndReloadPage": {
-    "message": "Start profiling and reload page"
   },
   "panels/timeline/timeline-meta.ts | stop": {
     "message": "Stop"
@@ -12845,8 +12890,20 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "Partially Presented Frame"
   },
+  "panels/timeline/TimelineFlameChartView.ts | elementRenderDelay": {
+    "message": "Element render delay"
+  },
+  "panels/timeline/TimelineFlameChartView.ts | resourceLoadDelay": {
+    "message": "Resource load delay"
+  },
+  "panels/timeline/TimelineFlameChartView.ts | resourceLoadTime": {
+    "message": "Resource load time"
+  },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} at {PH2}"
+  },
+  "panels/timeline/TimelineFlameChartView.ts | timeToFirstByte": {
+    "message": "Time to first byte"
   },
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Current Session: {PH1}. {PH2}"

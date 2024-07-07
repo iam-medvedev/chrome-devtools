@@ -7,9 +7,12 @@ import * as Types from '../types/types.js';
 import { data as metaHandlerData } from './MetaHandler.js';
 const MILLISECONDS_TO_MICROSECONDS = 1000;
 const SECONDS_TO_MICROSECONDS = 1000000;
+const webSocketData = new Map();
 const requestMap = new Map();
 const requestsByOrigin = new Map();
 const requestsByTime = [];
+const networkRequestEventByInitiatorUrl = new Map();
+const eventToInitiatorMap = new Map();
 function storeTraceEventWithRequestId(requestId, key, value) {
     if (!requestMap.has(requestId)) {
         requestMap.set(requestId, {});
@@ -43,6 +46,8 @@ export function reset() {
     requestsByOrigin.clear();
     requestMap.clear();
     requestsByTime.length = 0;
+    networkRequestEventByInitiatorUrl.clear();
+    eventToInitiatorMap.clear();
     handlerState = 1 /* HandlerState.UNINITIALIZED */;
 }
 export function initialize() {
@@ -79,6 +84,29 @@ export function handleEvent(event) {
     if (Types.TraceEvents.isTraceEventResourceMarkAsCached(event)) {
         storeTraceEventWithRequestId(event.args.data.requestId, 'resourceMarkAsCached', event);
         return;
+    }
+    if (Types.TraceEvents.isTraceEventWebSocketCreate(event) || Types.TraceEvents.isTraceEventWebSocketInfo(event) ||
+        Types.TraceEvents.isTraceEventWebSocketTransfer(event)) {
+        const identifier = event.args.data.identifier;
+        if (!webSocketData.has(identifier)) {
+            if (event.args.data.frame) {
+                webSocketData.set(identifier, {
+                    frame: event.args.data.frame,
+                    webSocketIdentifier: identifier,
+                    events: [],
+                    syntheticConnectionEvent: null,
+                });
+            }
+            else if (event.args.data.workerId) {
+                webSocketData.set(identifier, {
+                    workerId: event.args.data.workerId,
+                    webSocketIdentifier: identifier,
+                    events: [],
+                    syntheticConnectionEvent: null,
+                });
+            }
+        }
+        webSocketData.get(identifier)?.events.push(event);
     }
 }
 export async function finalize() {
@@ -304,7 +332,7 @@ export async function finalize() {
                     protocol: request.receiveResponse.args.data.protocol ?? 'unknown',
                     redirects,
                     // In the event the property isn't set, assume non-blocking.
-                    renderBlocking: renderBlocking ? renderBlocking : 'non_blocking',
+                    renderBlocking: renderBlocking ?? 'non_blocking',
                     requestId,
                     requestingFrameUrl,
                     requestMethod: finalSendRequest.args.data.requestMethod,
@@ -351,7 +379,23 @@ export async function finalize() {
         // the captured requests, so here we store all of them together.
         requests.all.push(networkEvent);
         requestsByTime.push(networkEvent);
+        const initiatorUrl = networkEvent.args.data.initiator?.url ||
+            Helpers.Trace.getZeroIndexedStackTraceForEvent(networkEvent)?.at(0)?.url;
+        if (initiatorUrl) {
+            const events = networkRequestEventByInitiatorUrl.get(initiatorUrl) ?? [];
+            events.push(networkEvent);
+            networkRequestEventByInitiatorUrl.set(initiatorUrl, events);
+        }
     }
+    for (const request of requestsByTime) {
+        const initiatedEvents = networkRequestEventByInitiatorUrl.get(request.args.data.url);
+        if (initiatedEvents) {
+            for (const initiatedEvent of initiatedEvents) {
+                eventToInitiatorMap.set(initiatedEvent, request);
+            }
+        }
+    }
+    finalizeWebSocketData();
     handlerState = 3 /* HandlerState.FINALIZED */;
 }
 export function data() {
@@ -361,9 +405,60 @@ export function data() {
     return {
         byOrigin: requestsByOrigin,
         byTime: requestsByTime,
+        eventToInitiator: eventToInitiatorMap,
+        webSocket: [...webSocketData.values()],
     };
 }
 export function deps() {
     return ['Meta'];
+}
+function finalizeWebSocketData() {
+    // for each WebSocketTraceData in webSocketData map, we create a synthetic event
+    // to represent the entire WebSocket connection. This is done by finding the start and end event
+    // if they exist, and if they don't, we use the first event in the list for start, and the traceBounds.max
+    // for the end. So each WebSocketTraceData will have
+    // {
+    //    events:  the list of WebSocket events
+    //    syntheticConnectionEvent:  the synthetic event representing the entire WebSocket connection
+    // }
+    webSocketData.forEach(data => {
+        let startEvent = null;
+        let endEvent = null;
+        for (const event of data.events) {
+            if (Types.TraceEvents.isTraceEventWebSocketCreate(event)) {
+                startEvent = event;
+            }
+            if (Types.TraceEvents.isTraceEventWebSocketDestroy(event)) {
+                endEvent = event;
+            }
+        }
+        data.syntheticConnectionEvent = createSyntheticWebSocketConnectionEvent(startEvent, endEvent, data.events[0]);
+    });
+}
+function createSyntheticWebSocketConnectionEvent(startEvent, endEvent, firstRecordedEvent) {
+    const { traceBounds } = metaHandlerData();
+    const startTs = startEvent ? startEvent.ts : traceBounds.min;
+    const endTs = endEvent ? endEvent.ts : traceBounds.max;
+    const duration = endTs - startTs;
+    const mainEvent = startEvent || endEvent || firstRecordedEvent;
+    return {
+        name: 'SyntheticWebSocketConnectionEvent',
+        cat: mainEvent.cat,
+        ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
+        ts: startTs,
+        dur: duration,
+        pid: mainEvent.pid,
+        tid: mainEvent.tid,
+        s: mainEvent.s,
+        rawSourceEvent: mainEvent,
+        _tag: 'SyntheticEntryTag',
+        args: {
+            data: {
+                identifier: mainEvent.args.data.identifier,
+                priority: "Low" /* Protocol.Network.ResourcePriority.Low */,
+                url: mainEvent.args.data.url || '',
+            },
+        },
+    };
 }
 //# sourceMappingURL=NetworkRequestsHandler.js.map

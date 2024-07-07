@@ -2225,8 +2225,7 @@ export class JSHeapSnapshot extends HeapSnapshot {
     lazyStringCache;
     flags;
     #statistics;
-    #options;
-    constructor(profile, progress, options) {
+    constructor(profile, progress) {
         super(profile, progress);
         this.nodeFlags = {
             // bit flags
@@ -2235,7 +2234,6 @@ export class JSHeapSnapshot extends HeapSnapshot {
             pageObject: 4, // The idea is to track separately the objects owned by the page and the objects owned by debugger.
         };
         this.lazyStringCache = {};
-        this.#options = options ?? { heapSnapshotTreatBackingStoreAsContainingObject: false };
         this.initialize();
     }
     createNode(nodeIndex) {
@@ -2263,10 +2261,22 @@ export class JSHeapSnapshot extends HeapSnapshot {
         this.markQueriableHeapObjects();
         this.markPageOwnedNodes();
     }
+    #hasUserRoots() {
+        for (let iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
+            if (this.isUserRoot(iter.edge.node())) {
+                return true;
+            }
+        }
+        return false;
+    }
     // Updates the shallow sizes for "owned" objects of types kArray or kHidden to
     // zero, and add their sizes to the "owner" object instead.
     calculateShallowSizes() {
-        if (!this.#options.heapSnapshotTreatBackingStoreAsContainingObject) {
+        // If there are no user roots, then that means the snapshot was produced with
+        // the "expose internals" option enabled. In that case, we should faithfully
+        // represent the actual memory allocations rather than attempting to make the
+        // output more understandable to web developers.
+        if (!this.#hasUserRoots()) {
             return;
         }
         const { nodeCount, nodes, nodeFieldCount, nodeSelfSizeOffset } = this;
@@ -2342,8 +2352,8 @@ export class JSHeapSnapshot extends HeapSnapshot {
                     const ownedNodeIndex = i * nodeFieldCount;
                     const ownerNodeIndex = ownerId * nodeFieldCount;
                     node.nodeIndex = ownerNodeIndex;
-                    if (node.isSynthetic()) {
-                        // Adding shallow size to synthetic nodes is not useful.
+                    if (node.isSynthetic() || node.isRoot()) {
+                        // Adding shallow size to synthetic or root nodes is not useful.
                         break;
                     }
                     const sizeToTransfer = nodes.getValue(ownedNodeIndex + nodeSelfSizeOffset);

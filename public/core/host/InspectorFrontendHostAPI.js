@@ -24,7 +24,6 @@ export var Events;
     Events["IndexingWorked"] = "indexingWorked";
     Events["IndexingDone"] = "indexingDone";
     Events["KeyEventUnhandled"] = "keyEventUnhandled";
-    Events["ReattachRootTarget"] = "reattachMainTarget";
     Events["ReloadInspectedPage"] = "reloadInspectedPage";
     Events["RevealSourceLine"] = "revealSourceLine";
     Events["SavedURL"] = "savedURL";
@@ -55,7 +54,6 @@ export const EventDescriptors = [
     [Events.IndexingWorked, 'indexingWorked', ['requestId', 'fileSystemPath', 'worked']],
     [Events.IndexingDone, 'indexingDone', ['requestId', 'fileSystemPath']],
     [Events.KeyEventUnhandled, 'keyEventUnhandled', ['event']],
-    [Events.ReattachRootTarget, 'reattachMainTarget', []],
     [Events.ReloadInspectedPage, 'reloadInspectedPage', ['hard']],
     [Events.RevealSourceLine, 'revealSourceLine', ['url', 'lineNumber', 'columnNumber']],
     [Events.SavedURL, 'savedURL', ['url', 'fileSystemPath']],

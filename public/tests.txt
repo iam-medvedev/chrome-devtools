@@ -318,6 +318,7 @@ panels/explain/components/ConsoleInsight.test.js
 panels/freestyler/FreestylerAgent.test.js
 panels/freestyler/FreestylerEvaluateAction.test.js
 panels/freestyler/FreestylerPanel.test.js
+panels/freestyler/components/FreestylerChatUi.test.js
 panels/issues/IssueAggregator.test.js
 panels/issues/IssueView.test.js
 panels/layer_viewer/layer_viewer.test.js

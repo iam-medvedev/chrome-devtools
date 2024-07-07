@@ -4,7 +4,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { type ResourcesPanel } from './ResourcesPanel.js';
 export declare class ApplicationPanelTreeElement extends UI.TreeOutline.TreeElement {
     protected readonly resourcesPanel: ResourcesPanel;
-    constructor(resourcesPanel: ResourcesPanel, title: string, expandable: boolean);
+    constructor(resourcesPanel: ResourcesPanel, title: string, expandable: boolean, jslogContext: string);
     deselect(): void;
     get itemURL(): Platform.DevToolsPath.UrlString;
     onselect(selectedByUser: boolean | undefined): boolean;

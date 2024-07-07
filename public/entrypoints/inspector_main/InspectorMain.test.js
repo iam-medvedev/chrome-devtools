@@ -104,6 +104,16 @@ describeWithMockConnection('InspectorMainImpl', () => {
         assert.isTrue(debuggerPause.calledOnce);
         Root.Runtime.Runtime.setQueryParamForTesting('panel', '');
     });
+    it('frontend correctly registers if Debugger.enable fails', async () => {
+        const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
+        assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
+        setMockConnectionResponseHandler('Debugger.enable', () => ({ getError: () => 'Debugger.enable failed' }));
+        await inspectorMain.run();
+        const target = SDK.TargetManager.TargetManager.instance().rootTarget();
+        assert.isNotNull(target);
+        const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+        assert.isFalse(debuggerModel.debuggerEnabled());
+    });
     it('calls Runtime.runIfWaitingForDebugger for Node target', async () => {
         Root.Runtime.Runtime.setQueryParamForTesting('v8only', 'true');
         const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });

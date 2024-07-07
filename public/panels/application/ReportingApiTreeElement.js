@@ -18,7 +18,7 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ReportingApiTreeElement extends ApplicationPanelTreeElement {
     view;
     constructor(storagePanel) {
-        super(storagePanel, i18nString(UIStrings.reportingApi), false);
+        super(storagePanel, i18nString(UIStrings.reportingApi), false, 'reporting-api');
         const icon = IconButton.Icon.create('document');
         this.setLeadingIcons([icon]);
     }

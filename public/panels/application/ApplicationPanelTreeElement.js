@@ -5,8 +5,8 @@ import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export class ApplicationPanelTreeElement extends UI.TreeOutline.TreeElement {
     resourcesPanel;
-    constructor(resourcesPanel, title, expandable) {
-        super(title, expandable);
+    constructor(resourcesPanel, title, expandable, jslogContext) {
+        super(title, expandable, jslogContext);
         this.resourcesPanel = resourcesPanel;
         UI.ARIAUtils.setLabel(this.listItemElement, title);
         this.listItemElement.tabIndex = -1;
@@ -42,7 +42,7 @@ export class ExpandableApplicationPanelTreeElement extends ApplicationPanelTreeE
     categoryName;
     categoryLink;
     constructor(resourcesPanel, categoryName, settingsKey, settingsDefault = false) {
-        super(resourcesPanel, categoryName, false);
+        super(resourcesPanel, categoryName, false, settingsKey);
         this.expandedSetting =
             Common.Settings.Settings.instance().createSetting('resources-' + settingsKey + '-expanded', settingsDefault);
         this.categoryName = categoryName;

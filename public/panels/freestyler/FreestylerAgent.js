@@ -5,7 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { ExecutionError, FreestylerEvaluateAction } from './FreestylerEvaluateAction.js';
+import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
 const preamble = `You are a CSS debugging assistant integrated into Chrome DevTools.
 The user selected a DOM element in the browser's DevTools and sends a CSS-related
 query about the selected DOM element. You are going to answer to the query in these steps:
@@ -55,8 +55,10 @@ export var Step;
     Step["ACTION"] = "action";
     Step["ANSWER"] = "answer";
     Step["ERROR"] = "error";
+    Step["QUERYING"] = "querying";
 })(Step || (Step = {}));
-async function executeJsCode(code) {
+export const FIX_THIS_ISSUE_PROMPT = 'Fix this issue using JavaScript code execution';
+async function executeJsCode(code, { throwOnSideEffect }) {
     const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
     if (!target) {
         throw new Error('Target is not found for executing code');
@@ -74,7 +76,7 @@ async function executeJsCode(code) {
         throw new Error('Execution context is not found for executing code');
     }
     try {
-        return await FreestylerEvaluateAction.execute(code, executionContext);
+        return await FreestylerEvaluateAction.execute(code, executionContext, { throwOnSideEffect });
     }
     catch (err) {
         if (err instanceof ExecutionError) {
@@ -87,10 +89,12 @@ const MAX_STEPS = 10;
 export class FreestylerAgent {
     #aidaClient;
     #chatHistory = new Map();
+    #confirmSideEffect;
     #execJs;
-    constructor({ aidaClient, execJs }) {
+    constructor({ aidaClient, execJs, confirmSideEffect }) {
         this.#aidaClient = aidaClient;
         this.#execJs = execJs ?? executeJsCode;
+        this.#confirmSideEffect = confirmSideEffect;
     }
     static buildRequest(input, preamble, chatHistory) {
         const config = Common.Settings.Settings.instance().getHostConfig();
@@ -99,14 +103,14 @@ export class FreestylerAgent {
             preamble,
             // eslint-disable-next-line @typescript-eslint/naming-convention
             chat_history: chatHistory,
-            client: 'CHROME_DEVTOOLS',
+            client: Host.AidaClient.CLIENT_NAME,
             options: {
                 temperature: config?.devToolsFreestylerDogfood.aidaTemperature ?? 0,
                 model_id: config?.devToolsFreestylerDogfood.aidaModelId ?? undefined,
             },
             metadata: {
-                // TODO: enable logging later.
-                disable_user_content_logging: true,
+                // TODO: disable logging based on query params.
+                disable_user_content_logging: false,
             },
             // eslint-disable-next-line @typescript-eslint/naming-convention
             functionality_type: Host.AidaClient.FunctionalityType.CHAT,
@@ -183,6 +187,21 @@ export class FreestylerAgent {
     resetHistory() {
         this.#chatHistory = new Map();
     }
+    async #generateObservation(action, { throwOnSideEffect }) {
+        try {
+            return await this.#execJs(`{${action};((typeof data !== "undefined") ? data : undefined)}`, { throwOnSideEffect });
+        }
+        catch (err) {
+            if (err instanceof SideEffectError) {
+                const shouldAllowSideEffect = await this.#confirmSideEffect(action);
+                if (!shouldAllowSideEffect) {
+                    return `Error: ${err.message}`;
+                }
+                return await this.#execJs(`{${action};((typeof data !== "undefined") ? data : undefined)}`, { throwOnSideEffect: false });
+            }
+            return `Error: ${err.message}`;
+        }
+    }
     #runId = 0;
     async *run(query, options) {
         const structuredLog = [];
@@ -192,6 +211,7 @@ export class FreestylerAgent {
             this.#chatHistory.delete(currentRunId);
         });
         for (let i = 0; i < MAX_STEPS; i++) {
+            yield { step: Step.QUERYING };
             const request = FreestylerAgent.buildRequest(query, preamble, this.#chatHistory.size ? this.#getHistoryEntry : undefined);
             let response;
             let rpcId;
@@ -228,23 +248,27 @@ export class FreestylerAgent {
                 },
             ]);
             const { thought, action, answer } = FreestylerAgent.parseResponse(response);
-            if (!thought && !action && !answer) {
-                yield { step: Step.ANSWER, text: 'Sorry, I could not help you with this query.', rpcId };
-                break;
-            }
-            if (answer) {
-                yield { step: Step.ANSWER, text: answer, rpcId };
-                break;
-            }
-            if (thought) {
-                yield { step: Step.THOUGHT, text: thought, rpcId };
-            }
+            // Sometimes the answer will follow an action and a thought. In
+            // that case, we only use the action and the thought (if present)
+            // since the answer is not based on the observation resulted from
+            // the action.
             if (action) {
+                if (thought) {
+                    yield { step: Step.THOUGHT, text: thought, rpcId };
+                }
                 debugLog(`Action to execute: ${action}`);
-                const observation = await this.#execJs(`{${action};((typeof data !== "undefined") ? data : undefined)}`);
+                const observation = await this.#generateObservation(action, { throwOnSideEffect: !query.includes(FIX_THIS_ISSUE_PROMPT) });
                 debugLog(`Action result: ${observation}`);
                 yield { step: Step.ACTION, code: action, output: observation, rpcId };
                 query = `OBSERVATION: ${observation}`;
+            }
+            else if (answer) {
+                yield { step: Step.ANSWER, text: answer, rpcId };
+                break;
+            }
+            else {
+                yield { step: Step.ANSWER, text: 'Sorry, I could not help you with this query.', rpcId };
+                break;
             }
             if (i === MAX_STEPS - 1) {
                 yield { step: Step.ERROR, text: 'Max steps reached, please try again.' };

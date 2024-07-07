@@ -435,7 +435,7 @@ export class LengthMatcher extends matcherBase(LengthMatch) {
     // clang-format on
     matches(node, matching) {
         const text = matching.ast.text(node);
-        const regexp = new RegExp(`^${InlineEditor.CSSLengthUtils.CSSLengthRegex}$`);
+        const regexp = new RegExp(`^${InlineEditor.CSSLengthUtils.CSSLengthRegex.source}$`);
         const match = regexp.exec(text);
         if (!match || match.index !== 0) {
             return null;

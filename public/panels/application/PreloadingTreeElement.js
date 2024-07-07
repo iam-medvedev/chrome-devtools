@@ -28,7 +28,7 @@ class PreloadingTreeElementBase extends ApplicationPanelTreeElement {
     #path;
     #selectedInternal;
     constructor(panel, viewConstructor, path, title) {
-        super(panel, title, false);
+        super(panel, title, false, 'speculative-loads');
         this.#viewConstructor = viewConstructor;
         this.#path = path;
         const icon = IconButton.Icon.create('arrow-up-down');

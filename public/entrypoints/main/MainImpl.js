@@ -253,7 +253,6 @@ export class MainImpl {
         Root.Runtime.experiments.register('protocol-monitor', 'Protocol Monitor', undefined, 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor');
         Root.Runtime.experiments.register('sampling-heap-profiler-timeline', 'Sampling heap profiler timeline', true);
         Root.Runtime.experiments.register('show-option-tp-expose-internals-in-heap-snapshot', 'Show option to expose internals in heap snapshots');
-        Root.Runtime.experiments.register('heap-snapshot-treat-backing-store-as-containing-object', 'In heap snapshots, treat backing store size as part of the containing object');
         // Timeline
         Root.Runtime.experiments.register('timeline-invalidation-tracking', 'Performance panel: invalidation tracking', true);
         Root.Runtime.experiments.register('timeline-show-all-events', 'Performance panel: show all events', true);

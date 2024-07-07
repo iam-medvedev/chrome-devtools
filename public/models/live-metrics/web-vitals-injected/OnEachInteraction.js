@@ -1,21 +1,6 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/**
- * @fileoverview web-vitals.js doesn't provide a log of all interactions.
- * This was largely copied from the web vitals extension:
- * https://github.com/GoogleChrome/web-vitals-extension/blob/main/src/browser_action/on-each-interaction.js
- */
-import * as WebVitals from '../../../third_party/web-vitals/web-vitals.js';
-function valueToRating(score) {
-    if (score < WebVitals.INPThresholds[0]) {
-        return 'good';
-    }
-    if (score <= WebVitals.INPThresholds[1]) {
-        return 'needs-improvement';
-    }
-    return 'poor';
-}
 export function onEachInteraction(callback) {
     const eventObserver = new PerformanceObserver(list => {
         const entries = list.getEntries();
@@ -41,7 +26,6 @@ export function onEachInteraction(callback) {
                     interactionId,
                 },
                 entries: interaction,
-                rating: valueToRating(value),
                 value,
             });
         }

@@ -21,8 +21,6 @@ export declare class TimelineUIUtils {
     static eventColor(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
     static eventTitle(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
     static isUserFrame(frame: Protocol.Runtime.CallFrame): boolean;
-    static syntheticNetworkRequestCategory(request: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest): NetworkCategory;
-    static networkCategoryColor(category: NetworkCategory): string;
     static buildDetailsTextForTraceEvent(event: TraceEngine.Types.TraceEvents.TraceEventData, traceParsedData: TraceEngine.Handlers.Types.TraceParseData): Promise<string | null>;
     static buildDetailsNodeForTraceEvent(event: TraceEngine.Types.TraceEvents.TraceEventData, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording: boolean | undefined, traceParsedData: TraceEngine.Handlers.Types.TraceParseData): Promise<Node | null>;
     static linkifyLocation(linkifyOptions: LinkifyLocationOptions): Element | null;
@@ -60,13 +58,6 @@ export declare class TimelineUIUtils {
     static markerStyleForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): TimelineMarkerStyle;
     static colorForId(id: string): string;
     static displayNameForFrame(frame: TraceEngine.Types.TraceEvents.TraceFrame, trimAt?: number): string;
-}
-export declare const enum NetworkCategory {
-    HTML = "HTML",
-    Script = "Script",
-    Style = "Style",
-    Media = "Media",
-    Other = "Other"
 }
 export declare const aggregatedStatsKey: unique symbol;
 export declare const previewElementSymbol: unique symbol;

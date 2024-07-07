@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
 import { describeWithEnvironment, getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
-import * as Freestyler from './FreestylerAgent.js';
+import * as Freestyler from './freestyler.js';
 const { FreestylerAgent } = Freestyler;
 describeWithEnvironment('FreestylerAgent', () => {
     function mockHostConfig(modelId) {
@@ -210,7 +210,7 @@ c`;
                     },
                 ],
                 metadata: {
-                    disable_user_content_logging: true,
+                    disable_user_content_logging: false,
                 },
                 options: {
                     model_id: 'test model',
@@ -232,6 +232,136 @@ c`;
                 },
             };
         }
+        describe('side effect handling', () => {
+            it('calls confirmSideEffect when the code execution contains a side effect', async () => {
+                let count = 0;
+                async function* generateActionAndAnswer() {
+                    if (count === 0) {
+                        yield {
+                            explanation: `ACTION
+              $0.style.backgroundColor = 'red'
+              STOP`,
+                            metadata: {},
+                        };
+                    }
+                    else {
+                        yield {
+                            explanation: 'ANSWER: This is the answer',
+                            metadata: {},
+                        };
+                    }
+                    count++;
+                }
+                const execJs = sinon.mock().throws(new Freestyler.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
+                const confirmSideEffect = sinon.mock().resolves(false);
+                const agent = new FreestylerAgent({
+                    aidaClient: mockAidaClient(generateActionAndAnswer),
+                    confirmSideEffect,
+                    execJs,
+                });
+                await Array.fromAsync(agent.run('test'));
+                sinon.assert.match(execJs.getCall(0).args[1], sinon.match({ throwOnSideEffect: true }));
+                sinon.assert.calledOnce(confirmSideEffect);
+            });
+            it('calls execJs with allowing side effects when confirmSideEffect resolves to true', async () => {
+                let count = 0;
+                async function* generateActionAndAnswer() {
+                    if (count === 0) {
+                        yield {
+                            explanation: `ACTION
+              $0.style.backgroundColor = 'red'
+              STOP`,
+                            metadata: {},
+                        };
+                    }
+                    else {
+                        yield {
+                            explanation: 'ANSWER: This is the answer',
+                            metadata: {},
+                        };
+                    }
+                    count++;
+                }
+                const execJs = sinon.mock().twice();
+                execJs.onCall(0).throws(new Freestyler.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
+                execJs.onCall(1).resolves('value');
+                const confirmSideEffect = sinon.mock().resolves(true);
+                const agent = new FreestylerAgent({
+                    aidaClient: mockAidaClient(generateActionAndAnswer),
+                    confirmSideEffect,
+                    execJs,
+                });
+                await Array.fromAsync(agent.run('test'));
+                sinon.assert.calledOnce(confirmSideEffect);
+                assert.strictEqual(execJs.getCalls().length, 2);
+                sinon.assert.match(execJs.getCall(1).args[1], sinon.match({ throwOnSideEffect: false }));
+            });
+            it('returns side effect error when confirmSideEffect resolves to false', async () => {
+                let count = 0;
+                async function* generateActionAndAnswer() {
+                    if (count === 0) {
+                        yield {
+                            explanation: `ACTION
+              $0.style.backgroundColor = 'red'
+              STOP`,
+                            metadata: {},
+                        };
+                    }
+                    else {
+                        yield {
+                            explanation: 'ANSWER: This is the answer',
+                            metadata: {},
+                        };
+                    }
+                    count++;
+                }
+                const execJs = sinon.mock().twice();
+                execJs.onCall(0).throws(new Freestyler.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
+                const confirmSideEffect = sinon.mock().resolves(false);
+                const agent = new FreestylerAgent({
+                    aidaClient: mockAidaClient(generateActionAndAnswer),
+                    confirmSideEffect,
+                    execJs,
+                });
+                const steps = await Array.fromAsync(agent.run('test'));
+                const actionStep = steps.find(step => step.step === Freestyler.Step.ACTION);
+                sinon.assert.calledOnce(confirmSideEffect);
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                assert.strictEqual(actionStep.output, 'Error: EvalError: Possible side-effect in debug-evaluate');
+                assert.strictEqual(execJs.getCalls().length, 1);
+            });
+            it('calls execJs with allowing side effects when the query includes "Fix this issue" prompt', async () => {
+                let count = 0;
+                async function* generateActionAndAnswer() {
+                    if (count === 0) {
+                        yield {
+                            explanation: `ACTION
+              $0.style.backgroundColor = 'red'
+              STOP`,
+                            metadata: {},
+                        };
+                    }
+                    else {
+                        yield {
+                            explanation: 'ANSWER: This is the answer',
+                            metadata: {},
+                        };
+                    }
+                    count++;
+                }
+                const execJs = sinon.mock().once();
+                const confirmSideEffect = sinon.mock();
+                const agent = new FreestylerAgent({
+                    aidaClient: mockAidaClient(generateActionAndAnswer),
+                    confirmSideEffect,
+                    execJs,
+                });
+                await Array.fromAsync(agent.run(Freestyler.FIX_THIS_ISSUE_PROMPT));
+                const optionsArg = execJs.lastCall.args[1];
+                sinon.assert.notCalled(confirmSideEffect);
+                sinon.assert.match(optionsArg, sinon.match({ throwOnSideEffect: false }));
+            });
+        });
         it('generates an answer immediately', async () => {
             async function* generateAnswer() {
                 yield {
@@ -242,14 +372,20 @@ c`;
             const execJs = sinon.spy();
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateAnswer),
+                confirmSideEffect: () => Promise.resolve(true),
                 execJs,
             });
             const steps = await Array.fromAsync(agent.run('test'));
-            assert.deepStrictEqual(steps, [{
+            assert.deepStrictEqual(steps, [
+                {
+                    step: Freestyler.Step.QUERYING,
+                },
+                {
                     step: Freestyler.Step.ANSWER,
                     text: 'this is the answer',
                     rpcId: undefined,
-                }]);
+                },
+            ]);
             sinon.assert.notCalled(execJs);
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
                 {
@@ -273,14 +409,20 @@ c`;
             }
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateAnswer),
+                confirmSideEffect: () => Promise.resolve(true),
                 execJs: sinon.spy(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
-            assert.deepStrictEqual(steps, [{
+            assert.deepStrictEqual(steps, [
+                {
+                    step: Freestyler.Step.QUERYING,
+                },
+                {
                     step: Freestyler.Step.ANSWER,
                     text: 'this is the answer',
                     rpcId: 123,
-                }]);
+                },
+            ]);
         });
         it('generates a response if nothing is returned', async () => {
             async function* generateNothing() {
@@ -292,14 +434,20 @@ c`;
             const execJs = sinon.spy();
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateNothing),
+                confirmSideEffect: () => Promise.resolve(true),
                 execJs,
             });
             const steps = await Array.fromAsync(agent.run('test'));
-            assert.deepStrictEqual(steps, [{
+            assert.deepStrictEqual(steps, [
+                {
+                    step: Freestyler.Step.QUERYING,
+                },
+                {
                     step: Freestyler.Step.ANSWER,
                     text: 'Sorry, I could not help you with this query.',
                     rpcId: undefined,
-                }]);
+                },
+            ]);
             sinon.assert.notCalled(execJs);
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
                 {
@@ -311,6 +459,62 @@ c`;
                     text: '',
                 },
             ]);
+        });
+        it('generates an action response if action and answer both present', async () => {
+            let i = 0;
+            async function* generateNothing() {
+                if (i !== 0) {
+                    yield {
+                        explanation: 'ANSWER: this is the actual answer',
+                        metadata: {},
+                    };
+                    return;
+                }
+                yield {
+                    explanation: `THOUGHT: I am thinking.
+
+ACTION
+console.log('hello');
+STOP
+
+ANSWER: this is the answer`,
+                    metadata: {},
+                };
+                i++;
+            }
+            const execJs = sinon.mock().once();
+            execJs.onCall(0).returns('hello');
+            const agent = new FreestylerAgent({
+                aidaClient: mockAidaClient(generateNothing),
+                confirmSideEffect: () => Promise.resolve(true),
+                execJs,
+            });
+            const steps = await Array.fromAsync(agent.run('test'));
+            assert.deepStrictEqual(steps, [
+                {
+                    step: Freestyler.Step.QUERYING,
+                },
+                {
+                    step: Freestyler.Step.THOUGHT,
+                    text: 'I am thinking.',
+                    rpcId: undefined,
+                },
+                {
+                    step: Freestyler.Step.ACTION,
+                    code: 'console.log(\'hello\');',
+                    output: 'hello',
+                    rpcId: undefined,
+                },
+                {
+                    step: Freestyler.Step.QUERYING,
+                },
+                {
+                    step: Freestyler.Step.ANSWER,
+                    text: 'this is the actual answer',
+                    rpcId: undefined,
+                },
+            ]);
+            sinon.assert.calledOnce(execJs);
         });
         it('generates history for multiple actions', async () => {
             let count = 0;
@@ -331,6 +535,7 @@ c`;
             const execJs = sinon.spy();
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateMultipleTimes),
+                confirmSideEffect: () => Promise.resolve(true),
                 execJs,
             });
             await Array.fromAsync(agent.run('test'));
@@ -388,6 +593,7 @@ c`;
             const execJs = sinon.spy();
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateMultipleTimes),
+                confirmSideEffect: () => Promise.resolve(true),
                 execJs,
             });
             const controller = new AbortController();

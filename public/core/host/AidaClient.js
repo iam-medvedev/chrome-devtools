@@ -36,11 +36,12 @@ export var AidaAvailability;
     AidaAvailability["NO_ACTIVE_SYNC"] = "no-active-sync";
     AidaAvailability["NO_INTERNET"] = "no-internet";
 })(AidaAvailability || (AidaAvailability = {}));
+export const CLIENT_NAME = 'CHROME_DEVTOOLS';
 export class AidaClient {
     static buildConsoleInsightsRequest(input) {
         const request = {
             input,
-            client: 'CHROME_DEVTOOLS',
+            client: CLIENT_NAME,
             functionality_type: FunctionalityType.EXPLAIN_ERROR,
             client_feature: ClientFeature.CHROME_CONSOLE_INSIGHTS,
         };

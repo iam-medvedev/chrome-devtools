@@ -515,6 +515,9 @@ export class ConsoleView extends UI.Widget.VBox {
     }
     #onIssuesCountUpdate() {
         void this.issueToolbarThrottle.schedule(async () => this.updateIssuesToolbarItem());
+        this.issuesCountUpdatedForTest();
+    }
+    issuesCountUpdatedForTest() {
     }
     modelAdded(model) {
         model.messages().forEach(this.addConsoleMessage, this);
@@ -598,6 +601,11 @@ export class ConsoleView extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
+        if (this.#isDetached) {
+            const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
+            issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */, this.#onIssuesCountUpdateBound);
+        }
+        this.#isDetached = false;
         this.updateIssuesToolbarItem();
         this.viewport.refresh();
         this.registerCSSFiles([consoleViewStyles, objectValueStyles, CodeHighlighter.Style.default]);

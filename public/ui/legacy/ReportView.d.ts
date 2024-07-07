@@ -18,18 +18,19 @@ export declare class ReportView extends VBox {
     setSubtitle(subtitle: string): void;
     setURL(link: Element | null): void;
     createToolbar(): Toolbar;
-    appendSection(title: string, className?: string): Section;
+    appendSection(title: string, className?: string, jslogContext?: string): Section;
     sortSections(comparator: (arg0: Section, arg1: Section) => number): void;
     setHeaderVisible(visible: boolean): void;
     setBodyScrollable(scrollable: boolean): void;
 }
 export declare class Section extends VBox {
+    jslogContext?: string | undefined;
     private readonly headerElement;
     private headerButtons;
     private titleElement;
     private fieldList;
     private readonly fieldMap;
-    constructor(title: string, className?: string);
+    constructor(title: string, className?: string, jslogContext?: string | undefined);
     title(): string;
     getTitleElement(): Element;
     getFieldElement(): HTMLElement;

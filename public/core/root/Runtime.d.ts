@@ -86,15 +86,24 @@ export declare const enum ExperimentName {
     TIMELINE_OBSERVATIONS = "timeline-observations",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces"
 }
-export interface HostConfigConsoleInsights {
-    aidaModelId: string;
-    aidaTemperature: number;
+export interface HostConfigAida {
     blocked: boolean;
     blockedByAge: boolean;
     blockedByEnterprisePolicy: boolean;
     blockedByFeatureFlag: boolean;
     blockedByGeo: boolean;
     blockedByRollout: boolean;
+    enabled: boolean;
+}
+export interface HostConfigConsoleInsights {
+    aidaModelId: string;
+    aidaTemperature: number;
+    blocked?: boolean;
+    blockedByAge?: boolean;
+    blockedByEnterprisePolicy?: boolean;
+    blockedByFeatureFlag?: boolean;
+    blockedByGeo?: boolean;
+    blockedByRollout?: boolean;
     disallowLogging: boolean;
     enabled: boolean;
     optIn: boolean;
@@ -105,6 +114,7 @@ export interface HostConfigFreestylerDogfood {
     enabled: boolean;
 }
 export interface HostConfig {
+    devToolsAida?: HostConfigAida;
     devToolsConsoleInsights: HostConfigConsoleInsights;
     devToolsFreestylerDogfood: HostConfigFreestylerDogfood;
 }

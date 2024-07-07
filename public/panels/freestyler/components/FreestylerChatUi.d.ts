@@ -1,17 +1,27 @@
 import * as Host from '../../../core/host/host.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
-import { type StepData } from '../FreestylerAgent.js';
-export declare enum ChatMessageEntity {
+import * as Marked from '../../../third_party/marked/marked.js';
+import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
+import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import { type ActionStepData, type CommonStepData } from '../FreestylerAgent.js';
+interface ConfirmSideEffectDialog {
+    code: string;
+    onAnswer: (result: boolean) => void;
+}
+export declare const enum ChatMessageEntity {
     MODEL = "model",
     USER = "user"
 }
-export type ChatMessage = {
+export interface UserChatMessage {
     entity: ChatMessageEntity.USER;
     text: string;
-} | {
+}
+export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
-    steps: StepData[];
-};
+    rpcId?: number;
+    steps: Array<ActionStepData | CommonStepData>;
+}
+export type ChatMessage = UserChatMessage | ModelChatMessage;
 export declare const enum State {
     CONSENT_VIEW = "consent-view",
     CHAT_VIEW = "chat-view"
@@ -20,19 +30,25 @@ export declare const enum Rating {
     POSITIVE = "positive",
     NEGATIVE = "negative"
 }
-export type Props = {
+export interface Props {
     onTextSubmit: (text: string) => void;
     onInspectElementClick: () => void;
     onRateClick: (rpcId: number, rate: Rating) => void;
     onAcceptConsentClick: () => void;
     onCancelClick: () => void;
+    onFixThisIssueClick: () => void;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAvailability;
     messages: ChatMessage[];
     selectedNode: SDK.DOMModel.DOMNode | null;
     isLoading: boolean;
-};
+    confirmSideEffectDialog?: ConfirmSideEffectDialog;
+    lastActionIsFixThisIssue: boolean;
+}
+declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
+    templateForToken(token: Marked.Marked.Token): LitHtml.TemplateResult | null;
+}
 export declare class FreestylerChatUi extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
@@ -46,3 +62,7 @@ declare global {
         'devtools-freestyler-chat-ui': FreestylerChatUi;
     }
 }
+export declare const FOR_TEST: {
+    MarkdownRendererWithCodeBlock: typeof MarkdownRendererWithCodeBlock;
+};
+export {};

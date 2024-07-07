@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 export class ExecutionError extends Error {
 }
+export class SideEffectError extends Error {
+}
 function stringifyObjectOnThePage() {
     const seenBefore = new WeakMap();
     return JSON.stringify(this, function replacer(key, value) {
@@ -54,7 +56,7 @@ async function stringifyRemoteObject(object) {
     }
 }
 export class FreestylerEvaluateAction {
-    static async execute(code, executionContext) {
+    static async execute(code, executionContext, { throwOnSideEffect }) {
         const response = await executionContext.evaluate({
             expression: code,
             replMode: true,
@@ -63,6 +65,7 @@ export class FreestylerEvaluateAction {
             silent: false,
             generatePreview: true,
             allowUnsafeEvalBlockedByCSP: false,
+            throwOnSideEffect,
         }, 
         /* userGesture */ false, /* awaitPromise */ true);
         if (!response) {
@@ -72,8 +75,11 @@ export class FreestylerEvaluateAction {
             throw new ExecutionError(response.error);
         }
         if (response.exceptionDetails) {
-            // TODO(ergunsh): We can return the exception message so that it can tweak the code to run.
-            throw new ExecutionError(response.exceptionDetails.exception?.description || 'JS exception');
+            const exceptionDescription = response.exceptionDetails.exception?.description;
+            if (exceptionDescription?.startsWith('EvalError: Possible side-effect in debug-evaluate')) {
+                throw new SideEffectError(exceptionDescription);
+            }
+            throw new ExecutionError(exceptionDescription || 'JS exception');
         }
         return stringifyRemoteObject(response.object);
     }

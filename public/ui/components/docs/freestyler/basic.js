@@ -10,11 +10,11 @@ await FrontendHelpers.initializeGlobalVars();
 const noop = () => { };
 const messages = [
     {
-        entity: Freestyler.ChatMessageEntity.USER,
+        entity: "user" /* Freestyler.ChatMessageEntity.USER */,
         text: 'Explain the line wrapping behavior of this element.',
     },
     {
-        entity: Freestyler.ChatMessageEntity.MODEL,
+        entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
         steps: [
             {
                 'step': Freestyler.Step.THOUGHT,
@@ -40,12 +40,14 @@ const component = new Freestyler.FreestylerChatUi({
     onRateClick: noop,
     onAcceptConsentClick: noop,
     onCancelClick: noop,
+    onFixThisIssueClick: noop,
     inspectElementToggled: false,
     state: "chat-view" /* Freestyler.State.CHAT_VIEW */,
     aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
     messages,
     selectedNode: {},
     isLoading: false,
+    lastActionIsFixThisIssue: false,
 });
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=basic.js.map

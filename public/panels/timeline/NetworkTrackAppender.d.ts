@@ -1,10 +1,12 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
+export type NetworkTrackEvent = TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | TraceEngine.Types.TraceEvents.WebSocketEvent;
 export declare class NetworkTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    constructor(traceParsedData: TraceEngine.Handlers.Types.TraceParseData, flameChartData: PerfUI.FlameChart.FlameChartTimelineData);
+    webSocketIdToLevel: Map<number, number>;
+    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, events: NetworkTrackEvent[]);
     group(): PerfUI.FlameChart.Group | undefined;
     font(): string;
     /**
@@ -24,7 +26,7 @@ export declare class NetworkTrackAppender implements TrackAppender {
      * invisible events to the last level, and hide them.
      * @returns the number of levels used by this track
      */
-    filterTimelineDataBetweenTimes(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): number;
+    filterTimelineDataBetweenTimes(events: NetworkTrackEvent[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): number;
     /**
      * Gets the color an event added by this appender should be rendered with.
      */
@@ -38,4 +40,8 @@ export declare class NetworkTrackAppender implements TrackAppender {
      * is hovered in the timeline.
      */
     highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventData): HighlightedEntryInfo;
+    /**
+     * Returns the title an event is shown with in the timeline.
+     */
+    titleForWebSocketEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): string;
 }

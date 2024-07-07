@@ -124,7 +124,7 @@ export class OriginalScopeBuilder {
         }
         const lineDiff = line - this.#lastLine;
         this.#lastLine = line;
-        const flags = (name !== undefined ? 0x1 : 0x0) | (variables !== undefined ? 0x2 : 0x0);
+        const flags = (name !== undefined ? 0x1 : 0x0);
         this.#encodedScope += encodeVlqList([lineDiff, column, this.#encodeKind(kind), flags]);
         if (name !== undefined) {
             this.#encodedScope += encodeVlq(name);

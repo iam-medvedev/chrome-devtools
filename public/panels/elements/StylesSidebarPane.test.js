@@ -79,6 +79,7 @@ describe('StylesSidebarPane', () => {
                                 cssProperties: [{ name: 'bottom', value: 'anchor(--anchor-name bottom)' }],
                                 shorthandEntries: [],
                             },
+                            active: false,
                         }],
                     propertyRules: [],
                     cssPropertyRegistrations: [],

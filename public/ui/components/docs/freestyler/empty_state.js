@@ -14,12 +14,14 @@ const component = new Freestyler.FreestylerChatUi({
     onRateClick: noop,
     onAcceptConsentClick: noop,
     onCancelClick: noop,
+    onFixThisIssueClick: noop,
     inspectElementToggled: false,
     state: "chat-view" /* Freestyler.State.CHAT_VIEW */,
     aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
     messages: [],
     selectedNode: {},
     isLoading: false,
+    lastActionIsFixThisIssue: false,
 });
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=empty_state.js.map
