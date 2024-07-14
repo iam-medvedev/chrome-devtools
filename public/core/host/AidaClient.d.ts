@@ -3,6 +3,10 @@ export declare enum Entity {
     USER = 1,
     SYSTEM = 2
 }
+export declare const enum Rating {
+    POSITIVE = "POSITIVE",
+    NEGATIVE = "NEGATIVE"
+}
 export interface Chunk {
     text: string;
     entity: Entity;
@@ -32,11 +36,41 @@ export interface AidaRequest {
     functionality_type?: FunctionalityType;
     client_feature?: ClientFeature;
 }
+export interface AidaDoConversationClientEvent {
+    corresponding_aida_rpc_global_id: number;
+    disable_user_content_logging?: boolean;
+    do_conversation_client_event: {
+        user_feedback: {
+            sentiment?: `${Rating}`;
+            user_input?: {
+                comment?: string;
+            };
+        };
+    };
+}
+export declare enum RecitationAction {
+    ACTION_UNSPECIFIED = "ACTION_UNSPECIFIED",
+    CITE = "CITE",
+    BLOCK = "BLOCK",
+    NO_ACTION = "NO_ACTION",
+    EXEMPT_FOUND_IN_PROMPT = "EXEMPT_FOUND_IN_PROMPT"
+}
+export interface Citation {
+    startIndex: number;
+    endIndex: number;
+    url: string;
+}
+export interface AttributionMetadata {
+    attributionAction: RecitationAction;
+    citations: Citation[];
+}
+export interface AidaResponseMetadata {
+    rpcGlobalId?: number;
+    attributionMetadata?: AttributionMetadata[];
+}
 export interface AidaResponse {
     explanation: string;
-    metadata: {
-        rpcGlobalId?: number;
-    };
+    metadata: AidaResponseMetadata;
 }
 export declare enum AidaAvailability {
     AVAILABLE = "available",
@@ -49,4 +83,5 @@ export declare class AidaClient {
     static buildConsoleInsightsRequest(input: string): AidaRequest;
     static getAidaClientAvailability(): Promise<AidaAvailability>;
     fetch(request: AidaRequest): AsyncGenerator<AidaResponse, void, void>;
+    registerClientEvent(clientEvent: AidaDoConversationClientEvent): void;
 }

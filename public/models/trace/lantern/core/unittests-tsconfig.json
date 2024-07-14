@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "allowUmdGlobalAccess": true,
     "checkJs": true,
     "composite": true,
     "declaration": true,
@@ -45,6 +46,9 @@
   "references": [
     {
       "path": "../bundle-tsconfig.json"
+    },
+    {
+      "path": "../../bundle-tsconfig.json"
     },
     {
       "path": "../testing/bundle-tsconfig.json"

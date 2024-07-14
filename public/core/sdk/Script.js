@@ -359,7 +359,7 @@ function frameIdForScript(script) {
     }
     return resourceTreeModel.mainFrame.id;
 }
-export const sourceURLRegex = /^[\040\t]*\/\/[@#] sourceURL=\s*(\S*?)\s*$/;
+export const sourceURLRegex = /^[\x20\t]*\/\/[@#] sourceURL=\s*(\S*?)\s*$/;
 async function disassembleWasm(content) {
     const worker = Common.Worker.WorkerWrapper.fromURL(new URL('../../entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js', import.meta.url));
     const promise = new Promise((resolve, reject) => {

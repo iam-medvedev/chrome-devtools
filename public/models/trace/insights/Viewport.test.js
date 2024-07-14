@@ -1,37 +1,34 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const { assert } = chai;
-import * as TraceModel from '../trace.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-async function parseAndFinalizeData(testContext, traceFile) {
-    const traceEvents = await TraceLoader.rawEvents(testContext, traceFile);
-    TraceModel.Handlers.ModelHandlers.Meta.reset();
-    TraceModel.Handlers.ModelHandlers.Meta.initialize();
-    for (const event of traceEvents) {
-        TraceModel.Handlers.ModelHandlers.Meta.handleEvent(event);
-        TraceModel.Handlers.ModelHandlers.UserInteractions.handleEvent(event);
+import * as TraceModel from '../trace.js';
+export async function processTrace(testContext, traceFile) {
+    const { traceData, insights } = await TraceLoader.traceEngine(testContext, traceFile);
+    if (!insights) {
+        throw new Error('No insights');
     }
-    await TraceModel.Handlers.ModelHandlers.Meta.finalize();
-    await TraceModel.Handlers.ModelHandlers.UserInteractions.finalize();
-    const data = {
-        Meta: TraceModel.Handlers.ModelHandlers.Meta.data(),
-        UserInteractions: TraceModel.Handlers.ModelHandlers.UserInteractions.data(),
-    };
-    return data;
+    return { data: traceData, insights };
+}
+function getInsight(insights, navigationId) {
+    const navInsights = insights.get(navigationId);
+    if (!navInsights) {
+        throw new Error('missing navInsights');
+    }
+    const insight = navInsights.Viewport;
+    if (insight instanceof Error) {
+        throw insight;
+    }
+    return insight;
 }
 describe('Viewport', function () {
     it('detects mobile optimized viewport', async () => {
-        const data = await parseAndFinalizeData(this, 'lcp-images.json.gz');
-        const context = {
-            frameId: data.Meta.mainFrameId,
-            navigationId: data.Meta.navigationsByNavigationId.keys().next().value,
-        };
-        const insight = TraceModel.Insights.InsightRunners.Viewport.generateInsight(data, context);
+        const { data, insights } = await processTrace(this, 'lcp-images.json.gz');
+        const insight = getInsight(insights, data.Meta.navigationsByNavigationId.keys().next().value);
         assert.strictEqual(insight.mobileOptimized, true);
     });
     it('detects mobile unoptimized viewport', async () => {
-        const data = await parseAndFinalizeData(this, 'lcp-images.json.gz');
+        const { data } = await processTrace(this, 'lcp-images.json.gz');
         const context = {
             frameId: data.Meta.mainFrameId,
             navigationId: data.Meta.navigationsByNavigationId.keys().next().value,

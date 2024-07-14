@@ -5,10 +5,10 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceEngine from '../trace.js';
 function invalidationDataForTestAssertion(invalidation) {
     return {
-        nodeId: invalidation.nodeId,
-        nodeName: invalidation.nodeName,
-        reason: invalidation.reason,
-        stackTrace: invalidation.stackTrace,
+        nodeId: invalidation.args.data.nodeId,
+        nodeName: invalidation.args.data.nodeName,
+        reason: invalidation.args.data.reason,
+        stackTrace: invalidation.args.data.stackTrace,
     };
 }
 describe('InvalidationsHandler', () => {

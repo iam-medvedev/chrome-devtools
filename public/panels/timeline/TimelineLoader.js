@@ -94,10 +94,17 @@ export class TimelineLoader {
             if (!success) {
                 return loader.reportErrorAndCancelLoading(errorDescription.message);
             }
-            const txt = stream.data();
-            const trace = JSON.parse(txt);
-            loader.#processParsedFile(trace);
-            await loader.close();
+            try {
+                const txt = stream.data();
+                const trace = JSON.parse(txt);
+                loader.#processParsedFile(trace);
+                await loader.close();
+            }
+            catch (e) {
+                await loader.close();
+                const message = e instanceof Error ? e.message : '';
+                return loader.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineDataS, { PH1: message }));
+            }
         }
         return loader;
     }

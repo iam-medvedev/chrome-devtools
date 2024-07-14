@@ -41,6 +41,9 @@
   ],
   "references": [
     {
+      "path": "../core/bundle-tsconfig.json"
+    },
+    {
       "path": "../graph/bundle-tsconfig.json"
     },
     {

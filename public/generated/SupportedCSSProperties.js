@@ -2058,6 +2058,14 @@ export const generatedProperties = [
         "name": "inset-inline-start"
     },
     {
+        "inherited": true,
+        "keywords": [
+            "numeric-only",
+            "allow-keywords"
+        ],
+        "name": "interpolate-size"
+    },
+    {
         "keywords": [
             "auto",
             "isolate"
@@ -4881,6 +4889,12 @@ export const generatedPropertyValues = {
             "self-start",
             "self-end",
             "all"
+        ]
+    },
+    "interpolate-size": {
+        "values": [
+            "numeric-only",
+            "allow-keywords"
         ]
     },
     "isolation": {

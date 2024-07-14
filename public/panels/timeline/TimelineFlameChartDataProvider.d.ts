@@ -93,7 +93,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     buildFlowForInitiator(entryIndex: number): boolean;
     eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
 }
-export declare const InstantEventVisibleDurationMs = 0.001;
+export declare const InstantEventVisibleDurationMs: TraceEngine.Types.Timing.MilliSeconds;
 export declare const enum Events {
     DataChanged = "DataChanged"
 }

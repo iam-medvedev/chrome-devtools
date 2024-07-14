@@ -48,6 +48,7 @@ export function reset() {
     requestsByTime.length = 0;
     networkRequestEventByInitiatorUrl.clear();
     eventToInitiatorMap.clear();
+    webSocketData.clear();
     handlerState = 1 /* HandlerState.UNINITIALIZED */;
 }
 export function initialize() {
@@ -369,7 +370,7 @@ export async function finalize() {
         });
         // For ease of rendering we sometimes want to differentiate between
         // render-blocking and non-render-blocking, so we divide the data here.
-        if (networkEvent.args.data.renderBlocking === 'non_blocking') {
+        if (!Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(networkEvent)) {
             requests.nonRenderBlocking.push(networkEvent);
         }
         else {

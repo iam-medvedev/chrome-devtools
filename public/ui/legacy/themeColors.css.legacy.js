@@ -446,6 +446,11 @@ export default {
   --app-color-performance-bad: var(--color-error-bright);
   --app-color-performance-ok: var(--color-orange-bright);
   --app-color-performance-good: var(--sys-color-green-bright);
+
+  /**
+   * Colors for performance panel annotations list in sidebar.
+   */
+  --app-color-performance-sidebar-label: var(--ref-palette-purple80);
 }
 
 :root.baseline-default {

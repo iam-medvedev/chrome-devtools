@@ -229,6 +229,24 @@ styles.replaceSync(
   flex-shrink: 0;
 }
 
+.live-metrics-option {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  text-wrap: nowrap;
+}
+
+.live-metrics-option > devtools-select-menu {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.no-data {
+  color: var(--sys-color-token-subtle);
+}
+
 /*# sourceURL=liveMetricsView.css */
 `);
 

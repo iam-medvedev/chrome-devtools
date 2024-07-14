@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Core from '../core/core.js';
 import * as Graph from '../graph/graph.js';
 import { Metric, } from './Metric.js';
 // Any CPU task of 20 ms or more will end up being a critical long task on mobile
@@ -32,7 +33,7 @@ class Interactive extends Metric {
     }
     static getEstimateFromSimulation(simulationResult, extras) {
         if (!extras.lcpResult) {
-            throw new Error('missing lcpResult');
+            throw new Core.LanternError('missing lcpResult');
         }
         const lastTaskAt = Interactive.getLastLongTaskEndTime(simulationResult.nodeTimings);
         const minimumTime = extras.optimistic ? extras.lcpResult.optimisticEstimate.timeInMs :
@@ -42,12 +43,12 @@ class Interactive extends Metric {
             nodeTimings: simulationResult.nodeTimings,
         };
     }
-    static async compute(data, extras) {
+    static compute(data, extras) {
         const lcpResult = extras?.lcpResult;
         if (!lcpResult) {
-            throw new Error('LCP is required to calculate the Interactive metric');
+            throw new Core.LanternError('LCP is required to calculate the Interactive metric');
         }
-        const metricResult = await super.compute(data, extras);
+        const metricResult = super.compute(data, extras);
         metricResult.timing = Math.max(metricResult.timing, lcpResult.timing);
         return metricResult;
     }

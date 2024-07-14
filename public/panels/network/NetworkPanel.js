@@ -679,7 +679,7 @@ export class FilmStripRecorder {
     #traceEngine;
     #collectedTraceEvents = [];
     constructor(timeCalculator, filmStripView) {
-        this.#traceEngine = new TraceEngine.TraceModel.Model({
+        this.#traceEngine = TraceEngine.TraceModel.Model.createWithSubsetOfHandlers({
             Screenshots: TraceEngine.Handlers.ModelHandlers.Screenshots,
         });
         this.tracingManager = null;

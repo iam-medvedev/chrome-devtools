@@ -48,7 +48,7 @@ export class ConnectionPool {
                 connections.push(connection);
             }
             if (!connections.length) {
-                throw new Error(`Could not find a connection for origin: ${origin}`);
+                throw new Core.LanternError(`Could not find a connection for origin: ${origin}`);
             }
             // Make sure each origin has minimum number of connections available for max throughput.
             // But only if it's not over H2 which maximizes throughput already.
@@ -82,7 +82,7 @@ export class ConnectionPool {
      */
     acquire(request) {
         if (this._connectionsByRequest.has(request)) {
-            throw new Error('Record already has a connection');
+            throw new Core.LanternError('Record already has a connection');
         }
         const origin = request.parsedURL.securityOrigin;
         const connections = this._connectionsByOrigin.get(origin) || [];
@@ -101,7 +101,7 @@ export class ConnectionPool {
     acquireActiveConnectionFromRequest(request) {
         const activeConnection = this._connectionsByRequest.get(request);
         if (!activeConnection) {
-            throw new Error('Could not find an active connection for request');
+            throw new Core.LanternError('Could not find an active connection for request');
         }
         return activeConnection;
     }

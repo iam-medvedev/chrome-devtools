@@ -16,7 +16,7 @@ describeWithEnvironment('TimelineHistoryManager', function () {
     });
     it('can select from multiple parsed data objects', async function () {
         // Add two parsed data objects to the history manager.
-        const trace1Data = await TraceLoader.traceEngine(this, 'slow-interaction-button-click.json.gz');
+        const { traceData: trace1Data } = await TraceLoader.traceEngine(this, 'slow-interaction-button-click.json.gz');
         historyManager.addRecording({
             data: {
                 traceParseDataIndex: 1,
@@ -25,7 +25,7 @@ describeWithEnvironment('TimelineHistoryManager', function () {
             traceParsedData: trace1Data,
             startTime: null,
         });
-        const trace2Data = await TraceLoader.traceEngine(this, 'slow-interaction-keydown.json.gz');
+        const { traceData: trace2Data } = await TraceLoader.traceEngine(this, 'slow-interaction-keydown.json.gz');
         historyManager.addRecording({
             data: {
                 traceParseDataIndex: 2,

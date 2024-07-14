@@ -12,6 +12,6 @@ declare class LargestContentfulPaint extends Metric {
     static getOptimisticGraph(dependencyGraph: Graph.Node, processedNavigation: Types.Simulation.ProcessedNavigation): Graph.Node;
     static getPessimisticGraph(dependencyGraph: Graph.Node, processedNavigation: Types.Simulation.ProcessedNavigation): Graph.Node;
     static getEstimateFromSimulation(simulationResult: Simulation.Result): Simulation.Result;
-    static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): Promise<MetricResult>;
+    static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): MetricResult;
 }
 export { LargestContentfulPaint };

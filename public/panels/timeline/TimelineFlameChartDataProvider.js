@@ -32,7 +32,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import * as ModificationsManager from '../../services/modifications_manager/modifications_manager.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -41,6 +40,7 @@ import { CompatibilityTracksAppender } from './CompatibilityTracksAppender.js';
 import * as Components from './components/components.js';
 import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
 import { initiatorsDataToDraw } from './Initiators.js';
+import { ModificationsManager } from './ModificationsManager.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
@@ -140,15 +140,11 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     }
     modifyTree(node, action) {
         const entry = this.entryData[node];
-        ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
-            ?.getEntriesFilter()
-            .applyFilterAction({ type: action, entry });
+        ModificationsManager.activeManager()?.getEntriesFilter().applyFilterAction({ type: action, entry });
     }
     findPossibleContextMenuActions(node) {
         const entry = this.entryData[node];
-        return ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
-            ?.getEntriesFilter()
-            .findPossibleActions(entry);
+        return ModificationsManager.activeManager()?.getEntriesFilter().findPossibleActions(entry);
     }
     buildGroupStyle(extra) {
         const defaultGroupStyle = {
@@ -575,9 +571,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             delegatesFocus: undefined,
         });
         const entry = this.entryData[entryIndex];
-        const hiddenEntriesAmount = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
-            ?.getEntriesFilter()
-            .findHiddenDescendantsAmount(entry);
+        const hiddenEntriesAmount = ModificationsManager.activeManager()?.getEntriesFilter().findHiddenDescendantsAmount(entry);
         if (!hiddenEntriesAmount) {
             return null;
         }
@@ -868,7 +862,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Try revealing the entry and getting the index again.
         if (this.entryData.indexOf(selection.object) === -1 && TimelineSelection.isTraceEventSelection(selection.object)) {
             if (this.timelineDataInternal?.selectedGroup) {
-                ModificationsManager.ModificationsManager.ModificationsManager.activeManager()?.getEntriesFilter().revealEntry(selection.object);
+                ModificationsManager.activeManager()?.getEntriesFilter().revealEntry(selection.object);
                 this.timelineData(true);
             }
         }
@@ -938,14 +932,8 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // Reset to clear any previous arrows from the last event.
         this.timelineDataInternal.resetFlowData();
         this.lastInitiatorEntry = entryIndex;
-        const hiddenEvents = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
-            ?.getEntriesFilter()
-            .invisibleEntries() ??
-            [];
-        const expandableEntries = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()
-            ?.getEntriesFilter()
-            .expandableEntries() ??
-            [];
+        const hiddenEvents = ModificationsManager.activeManager()?.getEntriesFilter().invisibleEntries() ?? [];
+        const expandableEntries = ModificationsManager.activeManager()?.getEntriesFilter().expandableEntries() ?? [];
         const initiatorsData = initiatorsDataToDraw(this.traceEngineData, event, hiddenEvents, expandableEntries);
         // This means there is no change for arrows.
         if (previousInitiatorsDataLength === 0 && initiatorsData.length === 0) {
@@ -981,5 +969,5 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         return null;
     }
 }
-export const InstantEventVisibleDurationMs = 0.001;
+export const InstantEventVisibleDurationMs = TraceEngine.Types.Timing.MilliSeconds(0.001);
 //# sourceMappingURL=TimelineFlameChartDataProvider.js.map

@@ -6,7 +6,7 @@ declare class TotalBlockingTime extends Metric {
     static getOptimisticGraph(dependencyGraph: Graph.Node): Graph.Node;
     static getPessimisticGraph(dependencyGraph: Graph.Node): Graph.Node;
     static getEstimateFromSimulation(simulation: Simulation.Result, extras: Extras): Simulation.Result;
-    static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): Promise<MetricResult>;
+    static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): MetricResult;
     static getTopLevelEvents(nodeTimings: Simulation.Result['nodeTimings'], minDurationMs: number): {
         start: number;
         end: number;

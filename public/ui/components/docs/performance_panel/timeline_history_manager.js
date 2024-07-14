@@ -19,7 +19,7 @@ UI.ActionRegistration.registerActionExtension({
         return new Timeline.TimelinePanel.ActionDelegate();
     },
 });
-const traceParsedData1 = await TraceLoader.TraceLoader.traceEngine(null, 'multiple-navigations.json.gz');
+const { traceData: traceParsedData1 } = await TraceLoader.TraceLoader.traceEngine(null, 'multiple-navigations.json.gz');
 TraceLoader.TraceLoader.initTraceBoundsManager(traceParsedData1);
 new Timeline.TimelineHistoryManager.TimelineHistoryManager().addRecording({
     data: {
@@ -29,7 +29,7 @@ new Timeline.TimelineHistoryManager.TimelineHistoryManager().addRecording({
     traceParsedData: traceParsedData1,
     startTime: null,
 });
-const traceParsedData2 = await TraceLoader.TraceLoader.traceEngine(null, 'web-dev.json.gz');
+const { traceData: traceParsedData2 } = await TraceLoader.TraceLoader.traceEngine(null, 'web-dev.json.gz');
 TraceLoader.TraceLoader.initTraceBoundsManager(traceParsedData2);
 const container = document.querySelector('.container');
 if (!container) {

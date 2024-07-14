@@ -2,15 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as i18n from '../../core/i18n/i18n.js';
+import * as Root from '../../core/root/root.js';
 import * as TraceEngine from '../../models/trace/trace.js';
-import * as ModificationsManager from '../../services/modifications_manager/modifications_manager.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as TimelineComponents from './components/components.js';
+import { ModificationsManager } from './ModificationsManager.js';
 import { TimelineEventOverviewCPUActivity, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview, } from './TimelineEventOverview.js';
 import miniMapStyles from './timelineMiniMap.css.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
+const UIStrings = {
+    /**
+     * @description label used to tell screenreaders about the floating button they can click to open the sidebar
+     */
+    openSidebarButton: 'Open the sidebar',
+};
+const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineMiniMap.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * This component wraps the generic PerfUI Overview component and configures it
  * specifically for the Performance Panel, including injecting the CSS we use
@@ -28,16 +40,36 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     #breadcrumbsUI;
     #data = null;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
+    #sidebarFloatingIcon = document.createElement('button');
     constructor() {
         super();
         this.element.classList.add('timeline-minimap');
         this.#breadcrumbsUI = new TimelineComponents.BreadcrumbsUI.BreadcrumbsUI();
+        const icon = new IconButton.Icon.Icon();
+        icon.setAttribute('name', 'left-panel-open');
+        icon.setAttribute('jslog', `${VisualLogging.action('timeline.sidebar-open').track({ click: true })}`);
+        icon.addEventListener('click', () => {
+            this.dispatchEventToListeners("OpenSidebarButtonClicked" /* PerfUI.TimelineOverviewPane.Events.OpenSidebarButtonClicked */, {});
+        });
+        this.#sidebarFloatingIcon.setAttribute('aria-label', i18nString(UIStrings.openSidebarButton));
+        this.#sidebarFloatingIcon.appendChild(icon);
+        this.#sidebarFloatingIcon.classList.add('timeline-sidebar-floating-icon');
+        if (!Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */)) {
+            this.hideSidebarFloatingIcon();
+        }
+        this.element.appendChild(this.#sidebarFloatingIcon);
         this.#overviewComponent.show(this.element);
         this.#overviewComponent.addEventListener("OverviewPaneWindowChanged" /* PerfUI.TimelineOverviewPane.Events.OverviewPaneWindowChanged */, event => {
             this.#onOverviewPanelWindowChanged(event);
         });
         this.#activateBreadcrumbs();
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
+    }
+    showSidebarFloatingIcon() {
+        this.#sidebarFloatingIcon.removeAttribute('hidden');
+    }
+    hideSidebarFloatingIcon() {
+        this.#sidebarFloatingIcon.setAttribute('hidden', 'hidden');
     }
     #onOverviewPanelWindowChanged(event) {
         const traceData = this.#data?.traceParsedData;
@@ -89,9 +121,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         };
         const newVisibleTraceWindow = TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(breadcrumbTimes.startTime, breadcrumbTimes.endTime);
         if (this.breadcrumbs === null) {
-            this.breadcrumbs =
-                ModificationsManager.ModificationsManager.ModificationsManager.activeManager()?.getTimelineBreadcrumbs() ??
-                    null;
+            this.breadcrumbs = ModificationsManager.activeManager()?.getTimelineBreadcrumbs() ?? null;
         }
         else {
             this.breadcrumbs.add(newVisibleTraceWindow);

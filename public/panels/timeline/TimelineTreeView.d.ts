@@ -127,11 +127,11 @@ export declare class BottomUpTimelineTreeView extends AggregatedTimelineTreeView
 }
 declare const TimelineStackView_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineStackView.EventTypes>;
-    addEventListener<T extends TimelineStackView.Events.SelectionChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<TimelineStackView.EventTypes, T>;
-    once<T_1 extends TimelineStackView.Events.SelectionChanged>(eventType: T_1): Promise<TimelineStackView.EventTypes[T_1]>;
-    removeEventListener<T_2 extends TimelineStackView.Events.SelectionChanged>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
+    addEventListener<T extends TimelineStackView.Events.SelectionChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineStackView.EventTypes, T>;
+    once<T extends TimelineStackView.Events.SelectionChanged>(eventType: T): Promise<TimelineStackView.EventTypes[T]>;
+    removeEventListener<T extends TimelineStackView.Events.SelectionChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T]>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: TimelineStackView.Events.SelectionChanged): boolean;
-    dispatchEventToListeners<T_3 extends TimelineStackView.Events.SelectionChanged>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineStackView.EventTypes, T_3>): void;
+    dispatchEventToListeners<T extends TimelineStackView.Events.SelectionChanged>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineStackView.EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class TimelineStackView extends TimelineStackView_base {
     private readonly treeView;

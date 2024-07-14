@@ -1,5 +1,6 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import { type LastTimestampByLevel } from './AppenderUtils.js';
 import { type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 export type NetworkTrackEvent = TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | TraceEngine.Types.TraceEvents.WebSocketEvent;
 export declare class NetworkTrackAppender implements TrackAppender {
@@ -22,11 +23,12 @@ export declare class NetworkTrackAppender implements TrackAppender {
     /**
      * Update the flame chart data.
      * When users zoom in the flamechart, we only want to show them the network
-     * requests between startTime and endTime. This function will append those
+     * requests between minTime and maxTime. This function will append those
      * invisible events to the last level, and hide them.
      * @returns the number of levels used by this track
      */
-    filterTimelineDataBetweenTimes(events: NetworkTrackEvent[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): number;
+    relayoutEntriesWithinBounds(events: NetworkTrackEvent[], minTime: TraceEngine.Types.Timing.MilliSeconds, maxTime: TraceEngine.Types.Timing.MilliSeconds): number;
+    getWebSocketLevel(event: TraceEngine.Types.TraceEvents.WebSocketEvent, lastTimestampByLevel: LastTimestampByLevel): number;
     /**
      * Gets the color an event added by this appender should be rendered with.
      */

@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { LanternError } from './LanternError.js';
 class UrlUtils {
     /**
      * There is fancy URL rewriting logic for the chrome://settings page that we need to work around.
@@ -356,7 +357,7 @@ class NetworkAnalyzer {
             }
         }
         if (!estimatesByOrigin.size) {
-            throw new Error('No timing information available');
+            throw new LanternError('No timing information available');
         }
         return NetworkAnalyzer.summarize(estimatesByOrigin);
     }

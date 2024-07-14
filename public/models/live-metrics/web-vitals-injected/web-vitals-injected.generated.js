@@ -736,6 +736,41 @@
     };
 
     /*
+     * Copyright 2024 Google LLC
+     *
+     * Licensed under the Apache License, Version 2.0 (the "License");
+     * you may not use this file except in compliance with the License.
+     * You may obtain a copy of the License at
+     *
+     *     https://www.apache.org/licenses/LICENSE-2.0
+     *
+     * Unless required by applicable law or agreed to in writing, software
+     * distributed under the License is distributed on an "AS IS" BASIS,
+     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     * See the License for the specific language governing permissions and
+     * limitations under the License.
+     */
+    /**
+     * Runs the passed callback during the next idle period, or immediately
+     * if the browser's visibility state is (or becomes) hidden.
+     */
+    const whenIdle = (cb) => {
+        const rIC = self.requestIdleCallback || self.setTimeout;
+        let handle = -1;
+        cb = runOnce(cb);
+        // If the document is hidden, run the callback immediately, otherwise
+        // race an idle callback with the next `visibilitychange` event.
+        if (document.visibilityState === 'hidden') {
+            cb();
+        }
+        else {
+            handle = rIC(cb);
+            onHidden(cb);
+        }
+        return handle;
+    };
+
+    /*
      * Copyright 2022 Google LLC
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
@@ -780,6 +815,11 @@
      * during the same page load._
      */
     const onINP$2 = (onReport, opts) => {
+        // Return if the browser doesn't support all APIs needed to measure INP.
+        if (!('PerformanceEventTiming' in self &&
+            'interactionId' in PerformanceEventTiming.prototype)) {
+            return;
+        }
         // Set defaults
         opts = opts || {};
         whenActivated(() => {
@@ -788,13 +828,21 @@
             let metric = initMetric('INP');
             let report;
             const handleEntries = (entries) => {
-                entries.forEach(processInteractionEntry);
-                const inp = estimateP98LongestInteraction();
-                if (inp && inp.latency !== metric.value) {
-                    metric.value = inp.latency;
-                    metric.entries = inp.entries;
-                    report();
-                }
+                // Queue the `handleEntries()` callback in the next idle task.
+                // This is needed to increase the chances that all event entries that
+                // occurred between the user interaction and the next paint
+                // have been dispatched. Note: there is currently an experiment
+                // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
+                // 123+ that if rolled out fully may make this no longer necessary.
+                whenIdle(() => {
+                    entries.forEach(processInteractionEntry);
+                    const inp = estimateP98LongestInteraction();
+                    if (inp && inp.latency !== metric.value) {
+                        metric.value = inp.latency;
+                        metric.entries = inp.entries;
+                        report();
+                    }
+                });
             };
             const po = observe('event', handleEntries, {
                 // Event Timing entries have their durations rounded to the nearest 8ms,
@@ -807,13 +855,9 @@
             });
             report = bindReporter(onReport, metric, INPThresholds, opts.reportAllChanges);
             if (po) {
-                // If browser supports interactionId (and so supports INP), also
-                // observe entries of type `first-input`. This is useful in cases
+                // Also observe entries of type `first-input`. This is useful in cases
                 // where the first interaction is less than the `durationThreshold`.
-                if ('PerformanceEventTiming' in self &&
-                    'interactionId' in PerformanceEventTiming.prototype) {
-                    po.observe({ type: 'first-input', buffered: true });
-                }
+                po.observe({ type: 'first-input', buffered: true });
                 onHidden(() => {
                     handleEntries(po.takeRecords());
                     report(true);
@@ -827,41 +871,6 @@
                 });
             }
         });
-    };
-
-    /*
-     * Copyright 2024 Google LLC
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *     https://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */
-    /**
-     * Runs the passed callback during the next idle period, or immediately
-     * if the browser's visibility state is (or becomes) hidden.
-     */
-    const whenIdle = (cb) => {
-        const rIC = self.requestIdleCallback || self.setTimeout;
-        let handle = -1;
-        cb = runOnce(cb);
-        // If the document is hidden, run the callback immediately, otherwise
-        // race an idle callback with the next `visibilitychange` event.
-        if (document.visibilityState === 'hidden') {
-            cb();
-        }
-        else {
-            handle = rIC(cb);
-            onHidden(cb);
-        }
-        return handle;
     };
 
     /*
@@ -1478,6 +1487,14 @@
      * See the License for the specific language governing permissions and
      * limitations under the License.
      */
+    // The maximum number of previous frames for which data is kept.
+    // Storing data about previous frames is necessary to handle cases where event
+    // and LoAF entries are dispatched out of order, and so a buffer of previous
+    // frame data is needed to determine various bits of INP attribution once all
+    // the frame-related data has come in.
+    // In most cases this out-of-order data is only off by a frame or two, so
+    // keeping the most recent 50 should be more than sufficient.
+    const MAX_PREVIOUS_FRAMES = 50;
     // A PerformanceObserver, observing new `long-animation-frame` entries.
     // If this variable is defined it means the browser supports LoAF.
     let loafObserver;
@@ -1485,20 +1502,17 @@
     // intersect with the INP candidate interaction. Note that periodically this
     // list is cleaned up and entries that are known to not match INP are removed.
     let pendingLoAFs = [];
-    // A mapping between a particular frame's render time and all of the
-    // event timing entries that occurred within that frame. Note that periodically
-    // this map is cleaned up and entries that are known to not match INP are
-    // removed.
-    const pendingEntriesGroupMap = new Map();
-    // A list of recent render times. This corresponds to the keys in
-    // `pendingEntriesGroupMap` but as an array so it can be iterated on in
-    // reverse. Note that this list is periodically clean up and old render times
-    // are removed.
-    let previousRenderTimes = [];
-    // A WeakMap so you can look up the `renderTime` of a given entry and the
-    // value returned will be the same value used by `pendingEntriesGroupMap`.
-    const entryToRenderTimeMap = new WeakMap();
-    // A mapping of interactions to the target selector
+    // An array of groups of all the event timing entries that occurred within a
+    // particular frame. Note that periodically this array is cleaned up and entries
+    // that are known to not match INP are removed.
+    let pendingEntriesGroups = [];
+    // The `processingEnd` time of most recently-processed event, chronologically.
+    let latestProcessingEnd;
+    // A WeakMap to look up the event-timing-entries group of a given entry.
+    // Note that this only maps from "important" entries: either the first input or
+    // those with an `interactionId`.
+    const entryToEntriesGroupMap = new WeakMap();
+    // A mapping of interactionIds to the target Node.
     const interactionTargetMap = new Map();
     // A reference to the idle task used to clean up entries from the above
     // variables. If the value is -1 it means no task is queue, and if it's
@@ -1508,7 +1522,8 @@
      * Adds new LoAF entries to the `pendingLoAFs` list.
      */
     const handleLoAFEntries = (entries) => {
-        entries.forEach((entry) => pendingLoAFs.push(entry));
+        pendingLoAFs = pendingLoAFs.concat(entries);
+        queueCleanup();
     };
     // Get a reference to the interaction target element in case it's removed
     // from the DOM later.
@@ -1522,45 +1537,46 @@
     /**
      * Groups entries that were presented within the same animation frame by
      * a common `renderTime`. This function works by referencing
-     * `pendingEntriesGroupMap` and using an existing render time if one is found
+     * `pendingEntriesGroups` and using an existing render time if one is found
      * (otherwise creating a new one). This function also adds all interaction
-     * entries to an `entryToRenderTimeMap` WeakMap so that the "grouped" render
-     * times can be looked up later.
+     * entries to an `entryToRenderTimeMap` WeakMap so that the "grouped" entries
+     * can be looked up later.
      */
     const groupEntriesByRenderTime = (entry) => {
-        let renderTime = entry.startTime + entry.duration;
-        let previousRenderTime;
-        // Iterate of all previous render times in reverse order to find a match.
+        const renderTime = entry.startTime + entry.duration;
+        let group;
+        latestProcessingEnd = Math.max(latestProcessingEnd, entry.processingEnd);
+        // Iterate over all previous render times in reverse order to find a match.
         // Go in reverse since the most likely match will be at the end.
-        for (let i = previousRenderTimes.length - 1; i >= 0; i--) {
-            previousRenderTime = previousRenderTimes[i];
-            // If a previous render time is within 8ms of the current render time,
-            // assume they were part of the same frame and re-use the previous time.
-            // Also break out of the loop because all subsequent times will be newer.
-            if (Math.abs(renderTime - previousRenderTime) <= 8) {
-                const group = pendingEntriesGroupMap.get(previousRenderTime);
+        for (let i = pendingEntriesGroups.length - 1; i >= 0; i--) {
+            const potentialGroup = pendingEntriesGroups[i];
+            // If a group's render time is within 8ms of the entry's render time,
+            // assume they were part of the same frame and add it to the group.
+            if (Math.abs(renderTime - potentialGroup.renderTime) <= 8) {
+                group = potentialGroup;
                 group.startTime = Math.min(entry.startTime, group.startTime);
                 group.processingStart = Math.min(entry.processingStart, group.processingStart);
                 group.processingEnd = Math.max(entry.processingEnd, group.processingEnd);
                 group.entries.push(entry);
-                renderTime = previousRenderTime;
                 break;
             }
         }
-        // If there was no matching render time, assume this is a new frame.
-        if (renderTime !== previousRenderTime) {
-            previousRenderTimes.push(renderTime);
-            pendingEntriesGroupMap.set(renderTime, {
+        // If there was no matching group, assume this is a new frame.
+        if (!group) {
+            group = {
                 startTime: entry.startTime,
                 processingStart: entry.processingStart,
                 processingEnd: entry.processingEnd,
+                renderTime,
                 entries: [entry],
-            });
+            };
+            pendingEntriesGroups.push(group);
         }
         // Store the grouped render time for this entry for reference later.
         if (entry.interactionId || entry.entryType === 'first-input') {
-            entryToRenderTimeMap.set(entry, renderTime);
+            entryToEntriesGroupMap.set(entry, group);
         }
+        queueCleanup();
     };
     const queueCleanup = () => {
         // Queue cleanup of entries that are not part of any INP candidates.
@@ -1578,31 +1594,41 @@
                 }
             });
         }
-        // The list of previous render times is used to handle cases where
-        // events are dispatched out of order. When this happens they're generally
-        // only off by a frame or two, so keeping the most recent 50 should be
-        // more than sufficient.
-        previousRenderTimes = previousRenderTimes.slice(-50);
         // Keep all render times that are part of a pending INP candidate or
-        // that occurred within the 50 most recently-dispatched animation frames.
-        const renderTimesToKeep = new Set(previousRenderTimes.concat(longestInteractionList.map((i) => entryToRenderTimeMap.get(i.entries[0]))));
-        pendingEntriesGroupMap.forEach((_, key) => {
-            if (!renderTimesToKeep.has(key))
-                pendingEntriesGroupMap.delete(key);
+        // that occurred within the 50 most recently-dispatched groups of events.
+        const longestInteractionGroups = longestInteractionList.map((i) => {
+            return entryToEntriesGroupMap.get(i.entries[0]);
         });
-        // Remove all pending LoAF entries that don't intersect with entries in
-        // the newly cleaned up `pendingEntriesGroupMap`.
+        const minIndex = pendingEntriesGroups.length - MAX_PREVIOUS_FRAMES;
+        pendingEntriesGroups = pendingEntriesGroups.filter((group, index) => {
+            if (index >= minIndex)
+                return true;
+            return longestInteractionGroups.includes(group);
+        });
+        // Keep all pending LoAF entries that either:
+        // 1) intersect with entries in the newly cleaned up `pendingEntriesGroups`
+        // 2) occur after the most recently-processed event entry.
         const loafsToKeep = new Set();
-        pendingEntriesGroupMap.forEach((group) => {
+        for (let i = 0; i < pendingEntriesGroups.length; i++) {
+            const group = pendingEntriesGroups[i];
             getIntersectingLoAFs(group.startTime, group.processingEnd).forEach((loaf) => {
                 loafsToKeep.add(loaf);
             });
-        });
+        }
+        for (let i = 0; i < MAX_PREVIOUS_FRAMES; i++) {
+            // Look at pending LoAF in reverse order so the most recent are first.
+            const loaf = pendingLoAFs[pendingLoAFs.length - 1 - i];
+            // If we reach LoAFs that overlap with event processing,
+            // we can assume all previous ones have already been handled.
+            if (!loaf || loaf.startTime < latestProcessingEnd)
+                break;
+            loafsToKeep.add(loaf);
+        }
         pendingLoAFs = Array.from(loafsToKeep);
         // Reset the idle callback handle so it can be queued again.
         idleHandle = -1;
     };
-    entryPreProcessingCallbacks.push(saveInteractionTarget, groupEntriesByRenderTime, queueCleanup);
+    entryPreProcessingCallbacks.push(saveInteractionTarget, groupEntriesByRenderTime);
     const getIntersectingLoAFs = (start, end) => {
         const intersectingLoAFs = [];
         for (let i = 0, loaf; (loaf = pendingLoAFs[i]); i++) {
@@ -1620,8 +1646,7 @@
     };
     const attributeINP = (metric) => {
         const firstEntry = metric.entries[0];
-        const renderTime = entryToRenderTimeMap.get(firstEntry);
-        const group = pendingEntriesGroupMap.get(renderTime);
+        const group = entryToEntriesGroupMap.get(firstEntry);
         const processingStart = firstEntry.processingStart;
         const processingEnd = group.processingEnd;
         // Sort the entries in processing time order.
@@ -1695,16 +1720,8 @@
             loafObserver = observe('long-animation-frame', handleLoAFEntries);
         }
         onINP$2((metric) => {
-            // Queue attribution and reporting in the next idle task.
-            // This is needed to increase the chances that all event entries that
-            // occurred between the user interaction and the next paint
-            // have been dispatched. Note: there is currently an experiment
-            // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
-            // 123+ that if rolled out fully would make this no longer necessary.
-            whenIdle(() => {
-                const metricWithAttribution = attributeINP(metric);
-                onReport(metricWithAttribution);
-            });
+            const metricWithAttribution = attributeINP(metric);
+            onReport(metricWithAttribution);
         }, opts);
     };
 

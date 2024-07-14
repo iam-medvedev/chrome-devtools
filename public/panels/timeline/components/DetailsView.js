@@ -143,46 +143,46 @@ export function generateInvalidationsList(invalidations) {
     const groupedByReason = {};
     const backendNodeIds = new Set();
     for (const invalidation of invalidations) {
-        backendNodeIds.add(invalidation.nodeId);
-        let reason = invalidation.reason || 'unknown';
+        backendNodeIds.add(invalidation.args.data.nodeId);
+        let reason = invalidation.args.data.reason || 'unknown';
         // ScheduleStyle events do not always have a reason, but if they tell us
         // via their data what changed, we can update the reason that we show to
         // the user.
         if (reason === 'unknown' &&
-            TraceEngine.Types.TraceEvents.isTraceEventScheduleStyleInvalidationTracking(invalidation.rawEvent) &&
-            invalidation.rawEvent.args.data.invalidatedSelectorId) {
-            switch (invalidation.rawEvent.args.data.invalidatedSelectorId) {
+            TraceEngine.Types.TraceEvents.isTraceEventScheduleStyleInvalidationTracking(invalidation) &&
+            invalidation.args.data.invalidatedSelectorId) {
+            switch (invalidation.args.data.invalidatedSelectorId) {
                 case 'attribute':
                     reason = 'Attribute';
-                    if (invalidation.rawEvent.args.data.changedAttribute) {
-                        reason += ` (${invalidation.rawEvent.args.data.changedAttribute})`;
+                    if (invalidation.args.data.changedAttribute) {
+                        reason += ` (${invalidation.args.data.changedAttribute})`;
                     }
                     break;
                 case 'class':
                     reason = 'Class';
-                    if (invalidation.rawEvent.args.data.changedClass) {
-                        reason += ` (${invalidation.rawEvent.args.data.changedClass})`;
+                    if (invalidation.args.data.changedClass) {
+                        reason += ` (${invalidation.args.data.changedClass})`;
                     }
                     break;
                 case 'id':
                     reason = 'Id';
-                    if (invalidation.rawEvent.args.data.changedId) {
-                        reason += ` (${invalidation.rawEvent.args.data.changedId})`;
+                    if (invalidation.args.data.changedId) {
+                        reason += ` (${invalidation.args.data.changedId})`;
                     }
                     break;
             }
         }
         if (reason === 'PseudoClass' &&
-            TraceEngine.Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(invalidation.rawEvent) &&
-            invalidation.rawEvent.args.data.extraData) {
+            TraceEngine.Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(invalidation) &&
+            invalidation.args.data.extraData) {
             // This will append the `:focus` onto the reason.
-            reason += invalidation.rawEvent.args.data.extraData;
+            reason += invalidation.args.data.extraData;
         }
         if (reason === 'Attribute' &&
-            TraceEngine.Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(invalidation.rawEvent) &&
-            invalidation.rawEvent.args.data.extraData) {
+            TraceEngine.Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(invalidation) &&
+            invalidation.args.data.extraData) {
             // Append the attribute that changed.
-            reason += ` (${invalidation.rawEvent.args.data.extraData})`;
+            reason += ` (${invalidation.args.data.extraData})`;
         }
         if (reason === 'StyleInvalidator') {
             // These events give us some extra metadata but are not in isolation that

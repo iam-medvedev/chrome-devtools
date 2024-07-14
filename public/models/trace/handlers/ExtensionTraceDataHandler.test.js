@@ -1,11 +1,43 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TraceModel from '../trace.js';
 describe('ExtensionTraceDataHandler', function () {
-    let extensionData;
-    async function getExtensionDataFromEvents(events) {
+    let extensionHandlerOutput;
+    let idCounter = 0;
+    function makeTimingEventWithExtensionData({ name, ts: tsMicro, detail, dur: durMicro }) {
+        const isMark = durMicro === undefined;
+        const currentId = idCounter++;
+        const traceEventBase = {
+            cat: 'blink.user_timing',
+            pid: TraceModel.Types.TraceEvents.ProcessID(2017),
+            tid: TraceModel.Types.TraceEvents.ThreadID(259),
+            id2: { local: `${currentId}` },
+        };
+        const stringDetail = JSON.stringify(detail);
+        const args = isMark ? { data: { detail: stringDetail } } : { detail: stringDetail };
+        const firstEvent = {
+            args,
+            name,
+            ph: isMark ? "I" /* TraceModel.Types.TraceEvents.Phase.INSTANT */ : "b" /* TraceModel.Types.TraceEvents.Phase.ASYNC_NESTABLE_START */,
+            ts: TraceModel.Types.Timing.MicroSeconds(tsMicro),
+            ...traceEventBase,
+        };
+        if (isMark) {
+            return [firstEvent];
+        }
+        return [
+            firstEvent,
+            {
+                name,
+                ...traceEventBase,
+                ts: TraceModel.Types.Timing.MicroSeconds(tsMicro + (durMicro || 0)),
+                ph: "e" /* TraceModel.Types.TraceEvents.Phase.ASYNC_NESTABLE_END */,
+            },
+        ];
+    }
+    async function createTraceExtensionDataFromTestInput(extensionData) {
+        const events = extensionData.flatMap(makeTimingEventWithExtensionData).sort((e1, e2) => e1.ts - e2.ts);
         TraceModel.Handlers.ModelHandlers.UserTimings.reset();
         for (const event of events) {
             TraceModel.Handlers.ModelHandlers.UserTimings.handleEvent(event);
@@ -17,57 +49,115 @@ describe('ExtensionTraceDataHandler', function () {
         await TraceModel.Handlers.ModelHandlers.ExtensionTraceData.finalize();
         return TraceModel.Handlers.ModelHandlers.ExtensionTraceData.data();
     }
-    before(async function () {
-        const events = await TraceLoader.rawEvents(this, 'extension-tracks-and-marks.json.gz');
-        extensionData = await getExtensionDataFromEvents(events);
-    });
+    function createTraceExtensionDataExample() {
+        const extensionData = [
+            {
+                detail: {
+                    devtools: {
+                        color: 'error',
+                        dataType: 'marker',
+                        detailsPairs: [['Description', 'This marks the start of a task']],
+                        hintText: 'A mark',
+                    },
+                },
+                name: 'A custom mark',
+                ts: 100,
+            },
+            // Marker with invalid dataType
+            {
+                detail: { devtools: { color: 'error', dataType: 'invalid-marker' } },
+                name: 'A custom mark',
+                ts: 100,
+            },
+            {
+                detail: {
+                    devtools: { dataType: 'track-entry', track: 'An Extension Track', detailsPairs: [['Description', 'Something']] },
+                },
+                name: 'An extension measurement',
+                ts: 100,
+                dur: 100,
+            },
+            // Track entry with no explicit dataType (should be accepted)
+            {
+                detail: { devtools: { track: 'An Extension Track', color: 'tertiary' } },
+                name: 'An extension measurement',
+                ts: 105,
+                dur: 50,
+            },
+            // Track entry with no explicit color (should be accepted)
+            {
+                detail: {
+                    devtools: {
+                        dataType: 'track-entry',
+                        track: 'Another Extension Track',
+                        detailsPairs: [['Description', 'Something'], ['Tip', 'A tip to improve this']],
+                        hintText: 'A hint if needed',
+                    },
+                },
+                name: 'An extension measurement',
+                ts: 100,
+                dur: 100,
+            },
+            // Track entry with invalid data type (should be ignored).
+            {
+                detail: { devtools: { dataType: 'invalid-type', track: 'Another Extension Track' } },
+                name: 'An extension measurement',
+                ts: 105,
+                dur: 50,
+            },
+            // Track entry with no track value (should be ignored).
+            {
+                detail: { devtools: { dataType: 'track-type' } },
+                name: 'An extension measurement',
+                ts: 105,
+                dur: 50,
+            },
+        ];
+        return createTraceExtensionDataFromTestInput(extensionData);
+    }
     describe('track data parsing from user timings that use the extension API', function () {
+        before(async function () {
+            extensionHandlerOutput = await createTraceExtensionDataExample();
+        });
         it('creates tracks', async () => {
-            assert.lengthOf(extensionData.extensionTrackData, 2);
+            assert.lengthOf(extensionHandlerOutput.extensionTrackData, 2);
         });
         it('parses track data correctly', async () => {
-            assert.strictEqual(extensionData.extensionTrackData[0].extensionName, 'Some Extension');
-            assert.lengthOf(extensionData.extensionTrackData[0].flameChartEntries, 25);
-            assert.strictEqual(extensionData.extensionTrackData[0].name, 'An Extension Track');
-            assert.strictEqual(extensionData.extensionTrackData[1].extensionName, 'Another Extension');
-            assert.lengthOf(extensionData.extensionTrackData[1].flameChartEntries, 1);
-            assert.strictEqual(extensionData.extensionTrackData[1].name, 'Another Extension Track');
+            assert.lengthOf(extensionHandlerOutput.extensionTrackData[0].entriesByTrack['An Extension Track'], 2);
+            assert.strictEqual(extensionHandlerOutput.extensionTrackData[0].name, 'An Extension Track');
+            assert.lengthOf(extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Another Extension Track'], 1);
+            assert.strictEqual(extensionHandlerOutput.extensionTrackData[1].name, 'Another Extension Track');
         });
         it('gets data from individual entries', async () => {
-            const { hintText, track, detailsPairs } = extensionData.extensionTrackData[0].flameChartEntries[0].args;
+            const { hintText, track, detailsPairs } = extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Another Extension Track'][0].args;
             assert.strictEqual(hintText, 'A hint if needed');
-            assert.strictEqual(track, 'An Extension Track');
-            assert.strictEqual(JSON.stringify(detailsPairs), '[["Description","This is a top level rendering task"],["Tip","A tip to improve this"]]');
+            assert.strictEqual(track, 'Another Extension Track');
+            assert.strictEqual(JSON.stringify(detailsPairs), '[["Description","Something"],["Tip","A tip to improve this"]]');
         });
         it('discards track data without a corresponding track field', async () => {
             // The test example contains a track entry without a track field.
             // Ensure it is discarded.
-            const allTrackEntries = extensionData.extensionTrackData.flatMap(track => track.flameChartEntries);
+            const allTrackEntries = extensionHandlerOutput.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
             const validTrackEntries = allTrackEntries.filter(entry => entry.args.track);
             assert.lengthOf(validTrackEntries, allTrackEntries.length);
         });
-        it('discards track data without a valid dataType metadata field', async () => {
+        it('discards track data without a valid dataType field', async () => {
             // The test example contains extension data with an invalid dataType
             // value.
             // Ensure it is discarded.
-            const allTrackEntries = extensionData.extensionTrackData.flatMap(track => track.flameChartEntries);
-            const validTrackEntries = allTrackEntries.filter(entry => entry.args.metadata.dataType === "track-entry" /* TraceModel.Types.Extensions.ExtensionEntryType.TRACK_ENTRY */);
-            assert.lengthOf(validTrackEntries, allTrackEntries.length);
-        });
-        it('discards track data without an extensionName metadata field', async () => {
-            // The test example contains extension data without an extensionName
-            // value.
-            // Ensure it is discarded.
-            const allTrackEntries = extensionData.extensionTrackData.flatMap(track => track.flameChartEntries);
-            const validTrackEntries = allTrackEntries.filter(entry => entry.args.metadata.extensionName);
+            const allTrackEntries = extensionHandlerOutput.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
+            const validTrackEntries = allTrackEntries.filter(entry => entry.args.dataType === 'track-entry' || entry.args.dataType === undefined);
             assert.lengthOf(validTrackEntries, allTrackEntries.length);
         });
     });
     describe('Timeline markers from user timings that use the extension API', function () {
+        before(async function () {
+            extensionHandlerOutput = await createTraceExtensionDataExample();
+        });
         it('parses marker data correctly', async () => {
-            assert.lengthOf(extensionData.extensionMarkers, 4);
-            assert.strictEqual(extensionData.extensionMarkers[0].name, 'Custom mark');
-            const { hintText, detailsPairs } = extensionData.extensionMarkers[0].args;
+            assert.lengthOf(extensionHandlerOutput.extensionMarkers, 1);
+            assert.strictEqual(extensionHandlerOutput.extensionMarkers[0].name, 'A custom mark');
+            const { hintText, detailsPairs } = extensionHandlerOutput.extensionMarkers[0].args;
             assert.strictEqual(hintText, 'A mark');
             assert.strictEqual(JSON.stringify(detailsPairs), '[["Description","This marks the start of a task"]]');
         });
@@ -87,21 +177,273 @@ describe('ExtensionTraceDataHandler', function () {
             };
             assert.isNull(TraceModel.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInTiming(performanceMarkEvent));
         });
-        it('discards markers without a valid dataType metadata field', async () => {
+        it('discards markers without a valid dataType field', async () => {
             // The test example contains extension data with an invalid dataType
             // value.
             // Ensure it is discarded.
-            const allMarkers = extensionData.extensionMarkers;
-            const validTrackEntries = allMarkers.filter(entry => entry.args.metadata.dataType === "marker" /* TraceModel.Types.Extensions.ExtensionEntryType.MARKER */);
+            const allMarkers = extensionHandlerOutput.extensionMarkers;
+            const validTrackEntries = allMarkers.filter(entry => entry.args.dataType === 'marker');
             assert.lengthOf(validTrackEntries, allMarkers.length);
         });
-        it('discards markers without an extensionName metadata field', async () => {
-            // The test example contains extension data without an extensionName
-            // value.
-            // Ensure it is discarded.
-            const allMarkers = extensionData.extensionMarkers;
-            const validTrackEntries = allMarkers.filter(marker => marker.args.metadata.extensionName);
-            assert.lengthOf(validTrackEntries, allMarkers.length);
+    });
+    describe('Data filtering', () => {
+        it('extracts the extension data from a timing\'s detail when present', async function () {
+            const extensionData = [
+                {
+                    detail: {
+                        devtools: {
+                            color: 'error',
+                            dataType: 'marker',
+                            detailsPairs: [['Description', 'This marks the start of a task']],
+                            hintText: 'A mark',
+                        },
+                    },
+                    name: 'A custom mark',
+                    ts: 100,
+                },
+            ];
+            const extensionHandlerOutput = await createTraceExtensionDataFromTestInput(extensionData);
+            assert.strictEqual(extensionHandlerOutput.extensionMarkers.length, 1);
+        });
+        it('ignores a timing if its detail does not contain a devtools object', async function () {
+            const extensionData = [
+                {
+                    detail: {
+                        moreDetails: 'a detail',
+                    },
+                    name: 'A custom mark',
+                    ts: 100,
+                },
+            ];
+            const extensionHandlerOutput = await createTraceExtensionDataFromTestInput(extensionData);
+            assert.strictEqual(extensionHandlerOutput.extensionMarkers.length, 0);
+        });
+        it('ignores a timing if its detail contains a devtools object w/o valid extension data', async function () {
+            const extensionData = [
+                {
+                    // Invalid data type
+                    detail: {
+                        devtools: {
+                            color: 'error',
+                            dataType: 'invalid',
+                        },
+                    },
+                    name: 'A custom mark',
+                    ts: 100,
+                },
+                {
+                    detail: {
+                        devtools: {
+                            // Defaulted to track-entry but no trackName provided
+                            color: 'error',
+                        },
+                    },
+                    name: 'A measurement',
+                    ts: 100,
+                },
+                {
+                    detail: {
+                        devtools: {
+                            // track-entry w/o trackName provided
+                            dataType: 'track-entry',
+                        },
+                    },
+                    name: 'A measurement',
+                    ts: 100,
+                },
+            ];
+            const extensionHandlerOutput = await createTraceExtensionDataFromTestInput(extensionData);
+            assert.strictEqual(extensionHandlerOutput.extensionMarkers.length, 0);
+        });
+        it('ignores a timing if its detail contains a devtools with a track group but no track name', async function () {
+            const extensionData = [
+                {
+                    // Invalid data type
+                    detail: {
+                        devtools: {
+                            trackGroup: 'Track group',
+                        },
+                    },
+                    name: 'A measurement',
+                    ts: 100,
+                    dur: 100,
+                },
+            ];
+            const extensionHandlerOutput = await createTraceExtensionDataFromTestInput(extensionData);
+            assert.strictEqual(extensionHandlerOutput.extensionMarkers.length, 0);
+        });
+    });
+    describe('Track groups', () => {
+        it('builds extension track data for grouped tracks correctly', async function () {
+            const extensionDevToolsObjects = [
+                // Track group 1
+                {
+                    dataType: 'track-entry',
+                    trackGroup: 'Group 1',
+                    track: 'Track 1',
+                },
+                {
+                    dataType: 'track-entry',
+                    trackGroup: 'Group 1',
+                    track: 'Track 1',
+                },
+                {
+                    dataType: 'track-entry',
+                    trackGroup: 'Group 1',
+                    track: 'Track 2',
+                },
+                {
+                    dataType: 'track-entry',
+                    trackGroup: 'Group 1',
+                    track: 'Track 3',
+                },
+                // Track group 2
+                {
+                    dataType: 'track-entry',
+                    trackGroup: 'Group 2',
+                    track: 'Track 1',
+                },
+                // Un grouped tracks
+                {
+                    dataType: 'track-entry',
+                    track: 'Ungrouped Track 1',
+                },
+                {
+                    dataType: 'track-entry',
+                    track: 'Ungrouped Track 2',
+                },
+                {
+                    dataType: 'track-entry',
+                    track: 'Ungrouped Track 2',
+                },
+            ];
+            const extensionHandlerOutput = await createTraceExtensionDataFromTestInput(extensionDevToolsObjects.map(devtools => ({
+                detail: { devtools },
+                name: 'A measurement',
+                ts: 100,
+                dur: 100,
+            })));
+            assert.strictEqual(extensionHandlerOutput.extensionTrackData.length, 4);
+            const firstTrackData = extensionHandlerOutput.extensionTrackData[0];
+            assert.strictEqual(firstTrackData.name, 'Group 1');
+            assert.strictEqual(firstTrackData.isTrackGroup, true);
+            assert.deepEqual(Object.keys(firstTrackData.entriesByTrack), ['Track 1', 'Track 2', 'Track 3']);
+            assert.deepEqual(Object.values(firstTrackData.entriesByTrack).map(entries => entries.length), [2, 1, 1]);
+            const secondTrackData = extensionHandlerOutput.extensionTrackData[1];
+            assert.strictEqual(secondTrackData.name, 'Group 2');
+            assert.strictEqual(secondTrackData.isTrackGroup, true);
+            assert.deepEqual(Object.keys(secondTrackData.entriesByTrack), ['Track 1']);
+            assert.deepEqual(Object.values(secondTrackData.entriesByTrack).map(entries => entries.length), [1]);
+            const thirdTrackData = extensionHandlerOutput.extensionTrackData[2];
+            assert.strictEqual(thirdTrackData.name, 'Ungrouped Track 1');
+            assert.deepEqual(Object.keys(thirdTrackData.entriesByTrack), ['Ungrouped Track 1']);
+            assert.deepEqual(Object.values(thirdTrackData.entriesByTrack).map(entries => entries.length), [1]);
+            const fourthTrackData = extensionHandlerOutput.extensionTrackData[3];
+            assert.strictEqual(fourthTrackData.name, 'Ungrouped Track 2');
+            assert.deepEqual(Object.keys(fourthTrackData.entriesByTrack), ['Ungrouped Track 2']);
+            assert.deepEqual(Object.values(fourthTrackData.entriesByTrack).map(entries => entries.length), [2]);
+        });
+        it('calculates self time sub track by sub track', async function () {
+            const extensionDevToolsObjects = [
+                // Track group 1
+                {
+                    detail: {
+                        devtools: {
+                            dataType: 'track-entry',
+                            trackGroup: 'Group 1',
+                            track: 'Track 1',
+                        },
+                    },
+                    name: 'Measurement 1',
+                    ts: 0,
+                    dur: 100,
+                },
+                {
+                    detail: {
+                        devtools: {
+                            dataType: 'track-entry',
+                            trackGroup: 'Group 1',
+                            track: 'Track 1',
+                        },
+                    },
+                    name: 'Measurement 2',
+                    ts: 0,
+                    dur: 20,
+                },
+                {
+                    detail: {
+                        devtools: {
+                            dataType: 'track-entry',
+                            trackGroup: 'Group 1',
+                            track: 'Track 1',
+                        },
+                    },
+                    name: 'Measurement 3',
+                    ts: 60,
+                    dur: 40,
+                },
+                {
+                    detail: {
+                        devtools: {
+                            dataType: 'track-entry',
+                            trackGroup: 'Group 1',
+                            track: 'Track 1',
+                        },
+                    },
+                    name: 'Measurement 4',
+                    ts: 70,
+                    dur: 10,
+                },
+                {
+                    detail: {
+                        devtools: {
+                            dataType: 'track-entry',
+                            trackGroup: 'Group 1',
+                            track: 'Track 2',
+                        },
+                    },
+                    name: 'Measurement 5',
+                    ts: 0,
+                    dur: 200,
+                },
+                // Standalone track
+                {
+                    detail: {
+                        devtools: {
+                            dataType: 'track-entry',
+                            track: 'Ungrouped Track',
+                        },
+                    },
+                    name: 'Measurement 6',
+                    ts: 0,
+                    dur: 100,
+                },
+                {
+                    detail: {
+                        devtools: {
+                            dataType: 'track-entry',
+                            track: 'Ungrouped Track',
+                        },
+                    },
+                    name: 'Measurement 7',
+                    ts: 50,
+                    dur: 50,
+                },
+            ];
+            const extensionHandlerOutput = await createTraceExtensionDataFromTestInput(extensionDevToolsObjects);
+            assert.lengthOf(extensionHandlerOutput.extensionTrackData, 2);
+            const trackGroupData = extensionHandlerOutput.extensionTrackData[0];
+            const testDataTrack1 = trackGroupData.entriesByTrack['Track 1'].map(entry => ({ name: entry.name, selfTime: entry.selfTime }));
+            assert.deepEqual(testDataTrack1, [
+                { name: 'Measurement 1', selfTime: 40 },
+                { name: 'Measurement 2', selfTime: 20 },
+                { name: 'Measurement 3', selfTime: 30 },
+                { name: 'Measurement 4', selfTime: 10 },
+            ]);
+            const testDataTrack2 = trackGroupData.entriesByTrack['Track 2'].map(entry => ({ name: entry.name, selfTime: entry.selfTime }));
+            assert.deepEqual(testDataTrack2, [{ name: 'Measurement 5', selfTime: 200 }]);
+            const ungroupedTrackData = extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Ungrouped Track'].map(entry => ({ name: entry.name, selfTime: entry.selfTime }));
+            assert.deepEqual(ungroupedTrackData, [{ name: 'Measurement 6', selfTime: 50 }, { name: 'Measurement 7', selfTime: 50 }]);
         });
     });
 });

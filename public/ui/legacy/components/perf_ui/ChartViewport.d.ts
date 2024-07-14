@@ -5,6 +5,9 @@ export interface ChartViewportDelegate {
     setSize(width: number, height: number): void;
     update(): void;
 }
+export interface Config {
+    enableCursorElement: boolean;
+}
 export declare class ChartViewport extends UI.Widget.VBox {
     #private;
     private readonly delegate;
@@ -37,7 +40,7 @@ export declare class ChartViewport extends UI.Widget.VBox {
     private totalTime;
     private isUpdateScheduled?;
     private cancelWindowTimesAnimation?;
-    constructor(delegate: ChartViewportDelegate);
+    constructor(delegate: ChartViewportDelegate, config: Config);
     alwaysShowVerticalScroll(): void;
     disableRangeSelection(): void;
     isDragging(): boolean;

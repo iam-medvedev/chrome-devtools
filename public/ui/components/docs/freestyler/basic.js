@@ -15,6 +15,7 @@ const messages = [
     },
     {
         entity: "model" /* Freestyler.ChatMessageEntity.MODEL */,
+        suggestingFix: true,
         steps: [
             {
                 'step': Freestyler.Step.THOUGHT,
@@ -38,6 +39,7 @@ const component = new Freestyler.FreestylerChatUi({
     onTextSubmit: noop,
     onInspectElementClick: noop,
     onRateClick: noop,
+    onFeedbackSubmit: noop,
     onAcceptConsentClick: noop,
     onCancelClick: noop,
     onFixThisIssueClick: noop,
@@ -47,7 +49,6 @@ const component = new Freestyler.FreestylerChatUi({
     messages,
     selectedNode: {},
     isLoading: false,
-    lastActionIsFixThisIssue: false,
 });
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=basic.js.map

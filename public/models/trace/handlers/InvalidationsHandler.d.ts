@@ -4,7 +4,7 @@ export declare function initialize(): void;
 export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;
 export declare function finalize(): Promise<void>;
 interface InvalidationsData {
-    invalidationsForEvent: Map<Types.TraceEvents.TraceEventData, Types.TraceEvents.SyntheticInvalidation[]>;
+    invalidationsForEvent: Map<Types.TraceEvents.TraceEventData, Types.TraceEvents.InvalidationTrackingEvent[]>;
 }
 export declare function data(): InvalidationsData;
 export {};

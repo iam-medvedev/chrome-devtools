@@ -6,7 +6,7 @@ declare class Interactive extends Metric {
     static getOptimisticGraph<T>(dependencyGraph: Graph.Node<T>): Graph.Node<T>;
     static getPessimisticGraph<T>(dependencyGraph: Graph.Node<T>): Graph.Node<T>;
     static getEstimateFromSimulation(simulationResult: Simulation.Result, extras: Extras): Simulation.Result;
-    static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): Promise<MetricResult>;
+    static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): MetricResult;
     static getLastLongTaskEndTime(nodeTimings: Simulation.Result['nodeTimings'], duration?: number): number;
 }
 export { Interactive };

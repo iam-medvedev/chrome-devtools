@@ -13,19 +13,22 @@ class MockViewDelegate {
     }
     element = document.createElement('div');
 }
-function getRowDataForDetailsElement(details) {
-    return Array.from(details.querySelectorAll('.timeline-details-view-row')).map(row => {
-        const title = row.querySelector('.timeline-details-view-row-title')?.innerText;
-        const value = row.querySelector('.timeline-details-view-row-value')?.innerText;
+function getRowDataForNetworkDetailsElement(details) {
+    return Array.from(details.querySelectorAll('.network-request-details-row')).map(row => {
+        const title = row.querySelector('.title')?.innerText;
+        // The innerText in here will contain a `\n` and a few space for each child <div> tag, so just remove these empty
+        // characters for easier test.
+        const regExpForLineBreakAndFollowingSpaces = /\n[\s]+/g;
+        const value = row.querySelector('.value')?.innerText.replaceAll(regExpForLineBreakAndFollowingSpaces, '');
         return { title, value };
     });
 }
 describeWithEnvironment('TimelineDetailsView', function () {
     const mockViewDelegate = new MockViewDelegate();
     it('displays the details of a network request event correctly', async function () {
-        const traceParsedData = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
+        const { traceData } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsView(mockViewDelegate);
-        const networkRequests = traceParsedData.NetworkRequests.byTime;
+        const networkRequests = traceData.NetworkRequests.byTime;
         const cssRequest = networkRequests.find(request => {
             return request.args.data.url === 'https://chromedevtools.github.io/performance-stories/lcp-web-font/app.css';
         });
@@ -33,20 +36,30 @@ describeWithEnvironment('TimelineDetailsView', function () {
             throw new Error('Could not find expected network request.');
         }
         const selection = Timeline.TimelineSelection.TimelineSelection.fromTraceEvent(cssRequest);
-        await detailsView.setModel(traceParsedData, null);
+        await detailsView.setModel(traceData, null);
         await detailsView.setSelection(selection);
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
         assert.strictEqual(detailsContentElement.childNodes.length, 1);
-        const rowData = getRowDataForDetailsElement(detailsContentElement);
+        const detailsElementShadowRoot = detailsContentElement.childNodes[0].shadowRoot;
+        if (!detailsElementShadowRoot) {
+            throw new Error('Could not find expected element to test.');
+        }
+        const rowData = getRowDataForNetworkDetailsElement(detailsElementShadowRoot);
+        const durationInnerText = '12.58 ms' +
+            'Queuing and connecting0' +
+            'Request sent and waiting0' +
+            'Content downloading8.29 ms' +
+            'Waiting on main thread4.29 ms';
         assert.deepEqual(rowData, [
             { title: 'URL', value: 'chromedevtools.github.io/performance-stories/lcp-web-font/app.css' },
-            { title: 'Duration', value: '12.58\xA0ms (8.29\xA0ms load from cache + 4.29\xA0ms resource loading)' },
             { title: 'Request Method', value: 'GET' },
             { title: 'Initial Priority', value: 'Highest' },
             { title: 'Priority', value: 'Highest' },
             { title: 'Mime Type', value: 'text/css' },
             { title: 'Encoded Data', value: ' (from cache)' },
             { title: 'Decoded Body', value: '96 B' },
+            { title: 'From cache', value: 'Yes' },
+            { title: 'Duration', value: durationInnerText },
         ]);
     });
 });

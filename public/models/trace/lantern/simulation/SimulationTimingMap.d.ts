@@ -1,10 +1,3 @@
-/**
- * @fileoverview
- *
- * This class encapsulates the type-related validation logic for moving timing information for nodes
- * through the different simulation phases. Methods here ensure that the invariants of simulation hold
- * as nodes are queued, partially simulated, and completed.
- */
 import * as Graph from '../graph/graph.js';
 interface NodeTimingComplete {
     startTime: number;

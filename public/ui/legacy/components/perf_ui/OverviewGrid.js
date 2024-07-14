@@ -32,6 +32,7 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as IconButton from '../../../components/icon_button/icon_button.js';
+import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import * as ThemeSupport from '../../theme_support/theme_support.js';
 import overviewGridStyles from './overviewGrid.css.legacy.js';
@@ -166,10 +167,9 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         this.rightResizeElement.addEventListener('click', this.onResizerClicked);
         this.leftCurtainElement = parentElement.createChild('div', 'window-curtain-left');
         this.rightCurtainElement = parentElement.createChild('div', 'window-curtain-right');
-        this.breadcrumbButtonContainerElement =
-            parentElement.createChild('div', 'create-breadcrumb-button-container');
-        this.createBreadcrumbButton =
-            this.breadcrumbButtonContainerElement.createChild('div', 'create-breadcrumb-button');
+        this.breadcrumbButtonContainerElement = parentElement.createChild('div', 'create-breadcrumb-button-container');
+        this.createBreadcrumbButton = this.breadcrumbButtonContainerElement.createChild('div', 'create-breadcrumb-button');
+        this.createBreadcrumbButton.setAttribute('jslog', `${VisualLogging.action('timeline.create-breadcrumb').track({ click: true })}`);
         this.reset();
     }
     enableCreateBreadcrumbsButton() {

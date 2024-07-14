@@ -178,7 +178,7 @@ styles.replaceSync(
 
 .timeline-details-view-row {
   padding-left: 10px;
-  line-height: 1.3;
+  min-height: 20px;
 }
 
 .timeline-details-view-block .timeline-details-stack-values {

@@ -92,7 +92,7 @@ const UIStrings = {
     /**
      * @description Description text for not restored reason HaveInnerContents.
      */
-    haveInnerContents: 'Pages that use portals are not currently eligible for back/forward cache.',
+    haveInnerContents: 'Pages that have certain kinds of embedded content (e.g. PDFs) are not currently eligible for back/forward cache.',
     /**
      * @description Description text for not restored reason TimeoutPuttingInCache.
      */
@@ -301,10 +301,6 @@ const UIStrings = {
      * @description Description text for not restored reason PictureInPicture.
      */
     pictureInPicture: 'Pages that use Picture-in-Picture are not currently eligible for back/forward cache.',
-    /**
-     * @description Description text for not restored reason Portal.
-     */
-    portal: 'Pages that use portals are not currently eligible for back/forward cache.',
     /**
      * @description Description text for not restored reason SpeechRecognizer.
      */
@@ -575,7 +571,6 @@ export const NotRestoredReasonDescription = {
     'Printing': { name: i18nLazyString(UIStrings.printing) },
     'WebDatabase': { name: i18nLazyString(UIStrings.webDatabase) },
     'PictureInPicture': { name: i18nLazyString(UIStrings.pictureInPicture) },
-    'Portal': { name: i18nLazyString(UIStrings.portal) },
     'SpeechRecognizer': { name: i18nLazyString(UIStrings.speechRecognizer) },
     'IdleManager': { name: i18nLazyString(UIStrings.idleManager) },
     'PaymentManager': { name: i18nLazyString(UIStrings.paymentManager) },

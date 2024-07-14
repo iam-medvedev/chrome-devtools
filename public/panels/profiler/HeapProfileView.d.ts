@@ -32,11 +32,11 @@ export declare class HeapProfileView extends ProfileView implements UI.Searchabl
 }
 declare const SamplingHeapProfileTypeBase_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<SamplingHeapProfileType.EventTypes>;
-    addEventListener<T extends keyof SamplingHeapProfileType.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<SamplingHeapProfileType.EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<SamplingHeapProfileType.EventTypes, T>;
-    once<T_1 extends keyof SamplingHeapProfileType.EventTypes>(eventType: T_1): Promise<SamplingHeapProfileType.EventTypes[T_1]>;
-    removeEventListener<T_2 extends keyof SamplingHeapProfileType.EventTypes>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<SamplingHeapProfileType.EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
+    addEventListener<T extends keyof SamplingHeapProfileType.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<SamplingHeapProfileType.EventTypes[T]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<SamplingHeapProfileType.EventTypes, T>;
+    once<T extends keyof SamplingHeapProfileType.EventTypes>(eventType: T): Promise<SamplingHeapProfileType.EventTypes[T]>;
+    removeEventListener<T extends keyof SamplingHeapProfileType.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<SamplingHeapProfileType.EventTypes[T]>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: keyof SamplingHeapProfileType.EventTypes): boolean;
-    dispatchEventToListeners<T_3 extends keyof SamplingHeapProfileType.EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<SamplingHeapProfileType.EventTypes, T_3>): void;
+    dispatchEventToListeners<T extends keyof SamplingHeapProfileType.EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<SamplingHeapProfileType.EventTypes, T>): void;
 }) & typeof ProfileType;
 export declare class SamplingHeapProfileTypeBase extends SamplingHeapProfileTypeBase_base {
     recording: boolean;

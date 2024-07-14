@@ -1,5 +1,5 @@
 import type * as Types from './../types/types.js';
-import * as ModelHandlers from './ModelHandlers.js';
+import type * as ModelHandlers from './ModelHandlers.js';
 export interface TraceEventHandler {
     reset(): void;
     initialize?(freshRecording?: boolean): void;
@@ -25,13 +25,6 @@ export type HandlersWithMeta<T extends {
     [K in keyof T]: T[K];
 };
 export type TraceParseData = Readonly<EnabledHandlerDataWithMeta<typeof ModelHandlers>>;
-/**
- * Because you can run the trace engine with a subset of handlers enabled,
- * there can be times when you need to confirm if the trace contains all
- * handlers or not, because some parts of the engine expect to be given all
- * the handlers.
- */
-export declare function handlerDataHasAllHandlers(data: Readonly<EnabledHandlerDataWithMeta<{}>>): data is TraceParseData;
 type DeepWriteable<T> = {
     -readonly [P in keyof T]: DeepWriteable<T[P]>;
 };

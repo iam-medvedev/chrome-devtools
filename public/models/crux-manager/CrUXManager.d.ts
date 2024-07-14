@@ -46,13 +46,18 @@ export interface CrUXResponse {
 export type PageResult = {
     [K in `${PageScope}-${DeviceScope}`]: CrUXResponse | null;
 };
+export interface ConfigSetting {
+    enabled: boolean;
+    override: string;
+}
+export declare const DEVICE_SCOPE_LIST: DeviceScope[];
 export declare class CrUXManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     private constructor();
     static instance(opts?: {
         forceNew: boolean | null;
     }): CrUXManager;
-    getAutomaticSetting(): Common.Settings.Setting<boolean>;
+    getConfigSetting(): Common.Settings.Setting<ConfigSetting>;
     getFieldDataForPage(pageUrl: string): Promise<PageResult>;
     /**
      * In general, this function should use the main document URL

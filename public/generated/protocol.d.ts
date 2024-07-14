@@ -1006,7 +1006,6 @@ export declare namespace Audits {
         request: AffectedRequest;
     }
     const enum GenericIssueErrorType {
-        CrossOriginPortalPostMessageError = "CrossOriginPortalPostMessageError",
         FormLabelForNameError = "FormLabelForNameError",
         FormDuplicateIdForInputError = "FormDuplicateIdForInputError",
         FormInputWithNoLabelError = "FormInputWithNoLabelError",
@@ -2946,6 +2945,11 @@ export declare namespace CSS {
          * A list of CSS @position-try rules matching this node, based on the position-try-fallbacks property.
          */
         cssPositionTryRules?: CSSPositionTryRule[];
+        /**
+         * Index of the active fallback in the applied position-try-fallback property,
+         * will not be set if there is no active position-try fallback.
+         */
+        activePositionFallbackIndex?: integer;
         /**
          * A list of CSS at-property rules matching this node.
          */
@@ -5961,6 +5965,51 @@ export declare namespace IO {
         uuid: string;
     }
 }
+export declare namespace FileSystem {
+    interface File {
+        name: string;
+        /**
+         * Timestamp
+         */
+        lastModified: Network.TimeSinceEpoch;
+        /**
+         * Size in bytes
+         */
+        size: number;
+        type: string;
+    }
+    interface Directory {
+        name: string;
+        nestedDirectories: string[];
+        /**
+         * Files that are directly nested under this directory.
+         */
+        nestedFiles: File[];
+    }
+    interface BucketFileSystemLocator {
+        /**
+         * Storage key
+         */
+        storageKey: Storage.SerializedStorageKey;
+        /**
+         * Bucket name. Not passing a `bucketName` will retrieve the default Bucket. (https://developer.mozilla.org/en-US/docs/Web/API/Storage_API#storage_buckets)
+         */
+        bucketName?: string;
+        /**
+         * Path to the directory using each path component as an array item.
+         */
+        pathComponents: string[];
+    }
+    interface GetDirectoryRequest {
+        bucketFileSystemLocator: BucketFileSystemLocator;
+    }
+    interface GetDirectoryResponse extends ProtocolResponseWithError {
+        /**
+         * Returns the directory object at the path.
+         */
+        directory: Directory;
+    }
+}
 export declare namespace IndexedDB {
     /**
      * Database with an array of object stores.
@@ -8555,7 +8604,8 @@ export declare namespace Network {
         RestrictProperties = "RestrictProperties",
         UnsafeNone = "UnsafeNone",
         SameOriginPlusCoep = "SameOriginPlusCoep",
-        RestrictPropertiesPlusCoep = "RestrictPropertiesPlusCoep"
+        RestrictPropertiesPlusCoep = "RestrictPropertiesPlusCoep",
+        NoopenerAllowPopups = "NoopenerAllowPopups"
     }
     interface CrossOriginOpenerPolicyStatus {
         value: CrossOriginOpenerPolicyValue;
@@ -10570,6 +10620,7 @@ export declare namespace Page {
         ComputePressure = "compute-pressure",
         CrossOriginIsolated = "cross-origin-isolated",
         DeferredFetch = "deferred-fetch",
+        DigitalCredentialsGet = "digital-credentials-get",
         DirectSockets = "direct-sockets",
         DisplayCapture = "display-capture",
         DocumentDomain = "document-domain",
@@ -11375,7 +11426,6 @@ export declare namespace Page {
         Printing = "Printing",
         WebDatabase = "WebDatabase",
         PictureInPicture = "PictureInPicture",
-        Portal = "Portal",
         SpeechRecognizer = "SpeechRecognizer",
         IdleManager = "IdleManager",
         PaymentManager = "PaymentManager",
@@ -13343,6 +13393,7 @@ export declare namespace Storage {
         aggregationKeys: AttributionReportingAggregationKeysEntry[];
         debugKey?: UnsignedInt64AsBase10;
         triggerDataMatching: AttributionReportingTriggerDataMatching;
+        destinationLimitPriority: SignedInt64AsBase10;
     }
     const enum AttributionReportingSourceRegistrationResult {
         Success = "success",
@@ -13371,6 +13422,7 @@ export declare namespace Storage {
          * int
          */
         value: number;
+        filteringId: UnsignedInt64AsBase10;
     }
     interface AttributionReportingAggregatableValueEntry {
         values: AttributionReportingAggregatableValueDictEntry[];
@@ -13398,6 +13450,7 @@ export declare namespace Storage {
         eventTriggerData: AttributionReportingEventTriggerData[];
         aggregatableTriggerData: AttributionReportingAggregatableTriggerData[];
         aggregatableValues: AttributionReportingAggregatableValueEntry[];
+        aggregatableFilteringIdMaxBytes: integer;
         debugReporting: boolean;
         aggregationCoordinatorOrigin?: string;
         sourceRegistrationTimeConfig: AttributionReportingSourceRegistrationTimeConfig;
@@ -14125,7 +14178,7 @@ export declare namespace Target {
         browserContextId?: Browser.BrowserContextID;
         /**
          * Provides additional details for specific target types. For example, for
-         * the type of "page", this may be set to "portal" or "prerender".
+         * the type of "page", this may be set to "prerender".
          */
         subtype?: string;
     }
@@ -15764,7 +15817,8 @@ export declare namespace Preload {
         ActivationUrlHasEffectiveUrl = "ActivationUrlHasEffectiveUrl",
         JavaScriptInterfaceAdded = "JavaScriptInterfaceAdded",
         JavaScriptInterfaceRemoved = "JavaScriptInterfaceRemoved",
-        AllPrerenderingCanceled = "AllPrerenderingCanceled"
+        AllPrerenderingCanceled = "AllPrerenderingCanceled",
+        WindowClosed = "WindowClosed"
     }
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This

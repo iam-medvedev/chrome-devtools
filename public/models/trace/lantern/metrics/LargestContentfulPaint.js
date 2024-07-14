@@ -55,12 +55,12 @@ class LargestContentfulPaint extends Metric {
             nodeTimings: simulationResult.nodeTimings,
         };
     }
-    static async compute(data, extras) {
+    static compute(data, extras) {
         const fcpResult = extras?.fcpResult;
         if (!fcpResult) {
-            throw new Error('FCP is required to calculate the LCP metric');
+            throw new Core.LanternError('FCP is required to calculate the LCP metric');
         }
-        const metricResult = await super.compute(data, extras);
+        const metricResult = super.compute(data, extras);
         metricResult.timing = Math.max(metricResult.timing, fcpResult.timing);
         return metricResult;
     }

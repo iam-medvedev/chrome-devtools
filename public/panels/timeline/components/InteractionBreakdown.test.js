@@ -10,7 +10,7 @@ describeWithEnvironment('InteractionBreakdown', () => {
     const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
     const { InteractionBreakdown } = TimelineComponents.InteractionBreakdown;
     it('renders the breakdowns for an InteractionBreakdown', async function () {
-        const traceData = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
+        const { traceData } = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
         const longInteraction = traceData.UserInteractions.longestInteractionEvent;
         if (!longInteraction) {
             throw new Error('Could not find longest interaction');

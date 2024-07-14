@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Core from '../core/core.js';
 /**
  * @fileoverview This class encapsulates logic for handling resources and tasks used to model the
  * execution dependency graph of the page. A node has a unique identifier and can depend on other
@@ -32,19 +33,19 @@ class BaseNode {
         return this._id;
     }
     get type() {
-        throw new Error('Unimplemented');
+        throw new Core.LanternError('Unimplemented');
     }
     /**
      * In microseconds
      */
     get startTime() {
-        throw new Error('Unimplemented');
+        throw new Core.LanternError('Unimplemented');
     }
     /**
      * In microseconds
      */
     get endTime() {
-        throw new Error('Unimplemented');
+        throw new Core.LanternError('Unimplemented');
     }
     setIsMainDocument(value) {
         this._isMainDocument = value;
@@ -77,7 +78,7 @@ class BaseNode {
     addDependency(node) {
         // @ts-expect-error - in checkJs, ts doesn't know that CPUNode and NetworkNode *are* BaseNodes.
         if (node === this) {
-            throw new Error('Cannot add dependency on itself');
+            throw new Core.LanternError('Cannot add dependency on itself');
         }
         if (this._dependencies.includes(node)) {
             return;
@@ -135,6 +136,10 @@ class BaseNode {
      * Clones the entire graph connected to this node filtered by the optional predicate. If a node is
      * included by the predicate, all nodes along the paths between the node and the root will be included. If the
      * node this was called on is not included in the resulting filtered graph, the method will throw.
+     *
+     * This does not clone NetworkNode's `record` or `rawRecord` fields. It may be reasonable to clone the former,
+     * to assist in graph construction, but the latter should never be cloned as one contraint of Lantern is that
+     * the underlying data records are accessible for plain object reference equality checks.
      */
     cloneWithRelationships(predicate) {
         const rootNode = this.getRootNode();
@@ -165,14 +170,14 @@ class BaseNode {
             for (const dependency of originalNode._dependencies) {
                 const clonedDependency = idsToIncludedClones.get(dependency.id);
                 if (!clonedDependency) {
-                    throw new Error('Dependency somehow not cloned');
+                    throw new Core.LanternError('Dependency somehow not cloned');
                 }
                 clonedNode.addDependency(clonedDependency);
             }
         });
         const clonedThisNode = idsToIncludedClones.get(this.id);
         if (!clonedThisNode) {
-            throw new Error('Cloned graph missing node');
+            throw new Core.LanternError('Cloned graph missing node');
         }
         return clonedThisNode;
     }

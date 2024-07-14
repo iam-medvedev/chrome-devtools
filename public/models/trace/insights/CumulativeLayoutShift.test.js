@@ -3,20 +3,34 @@
 // found in the LICENSE file.
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Helpers from '../helpers/helpers.js';
-import * as TraceModel from '../trace.js';
 import * as Types from '../types/types.js';
 import { InsightRunners } from './insights.js';
+export async function processTrace(testContext, traceFile) {
+    const { traceData, insights } = await TraceLoader.traceEngine(testContext, traceFile);
+    if (!insights) {
+        throw new Error('No insights');
+    }
+    return { data: traceData, insights };
+}
+function getInsight(insights, navigationId) {
+    const navInsights = insights.get(navigationId);
+    if (!navInsights) {
+        throw new Error('missing navInsights');
+    }
+    const insight = navInsights.CumulativeLayoutShift;
+    if (insight instanceof Error) {
+        throw insight;
+    }
+    return insight;
+}
 // Root cause invalidation window.
 const INVALIDATION_WINDOW = Helpers.Timing.secondsToMicroseconds(Types.Timing.Seconds(0.5));
 describe('CumulativeLayoutShift', function () {
     describe('non composited animations', function () {
         it('gets the correct non composited animations', async function () {
-            const data = await TraceLoader.traceEngine(this, 'non-composited-animation.json.gz');
-            const context = {
-                frameId: data.Meta.mainFrameId,
-                navigationId: data.Meta.navigationsByNavigationId.keys().next().value,
-            };
-            const { animationFailures } = TraceModel.Insights.InsightRunners.CumulativeLayoutShift.generateInsight(data, context);
+            const { data, insights } = await processTrace(this, 'non-composited-animation.json.gz');
+            const insight = getInsight(insights, data.Meta.navigationsByNavigationId.keys().next().value);
+            const { animationFailures } = insight;
             const expected = [
                 {
                     name: 'simple-animation',
@@ -32,35 +46,26 @@ describe('CumulativeLayoutShift', function () {
             assert.deepStrictEqual(animationFailures, expected);
         });
         it('returns no insights when there are no non-composited animations', async function () {
-            const data = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
-            const context = {
-                frameId: data.Meta.mainFrameId,
-                navigationId: data.Meta.navigationsByNavigationId.keys().next().value,
-            };
-            const { animationFailures } = TraceModel.Insights.InsightRunners.CumulativeLayoutShift.generateInsight(data, context);
+            const { data, insights } = await processTrace(this, 'lcp-images.json.gz');
+            const insight = getInsight(insights, data.Meta.navigationsByNavigationId.keys().next().value);
+            const { animationFailures } = insight;
             assert.isEmpty(animationFailures);
         });
     });
     describe('layout shifts', function () {
         it('returns correct layout shifts', async function () {
-            const data = await TraceLoader.traceEngine(this, 'cls-single-frame.json.gz');
-            const context = {
-                frameId: data.Meta.mainFrameId,
-                navigationId: data.Meta.navigationsByNavigationId.keys().next().value,
-            };
-            const { shifts } = TraceModel.Insights.InsightRunners.CumulativeLayoutShift.generateInsight(data, context);
+            const { data, insights } = await processTrace(this, 'cls-single-frame.json.gz');
+            const insight = getInsight(insights, data.Meta.navigationsByNavigationId.keys().next().value);
+            const { shifts } = insight;
             assert.exists(shifts);
             assert.strictEqual(shifts.size, 7);
         });
         describe('root causes', function () {
             it('handles potential iframe root cause correctly', async function () {
                 // Trace has a single iframe that gets created before the first layout shift and causes a layout shift.
-                const data = await TraceLoader.traceEngine(this, 'iframe-shift.json.gz');
-                const context = {
-                    frameId: data.Meta.mainFrameId,
-                    navigationId: data.Meta.navigationsByNavigationId.keys().next().value,
-                };
-                const { shifts } = TraceModel.Insights.InsightRunners.CumulativeLayoutShift.generateInsight(data, context);
+                const { data, insights } = await processTrace(this, 'iframe-shift.json.gz');
+                const insight = getInsight(insights, data.Meta.navigationsByNavigationId.keys().next().value);
+                const { shifts } = insight;
                 assert.exists(shifts);
                 assert.strictEqual(shifts.size, 3);
                 const shift1 = Array.from(shifts)[0][0];
@@ -79,12 +84,9 @@ describe('CumulativeLayoutShift', function () {
             });
             it('handles potential font root cause correctly', async function () {
                 // Trace has font load before the second layout shift.
-                const data = await TraceLoader.traceEngine(this, 'iframe-shift.json.gz');
-                const context = {
-                    frameId: data.Meta.mainFrameId,
-                    navigationId: data.Meta.navigationsByNavigationId.keys().next().value,
-                };
-                const { shifts } = TraceModel.Insights.InsightRunners.CumulativeLayoutShift.generateInsight(data, context);
+                const { data, insights } = await processTrace(this, 'iframe-shift.json.gz');
+                const insight = getInsight(insights, data.Meta.navigationsByNavigationId.keys().next().value);
+                const { shifts } = insight;
                 assert.exists(shifts);
                 assert.strictEqual(shifts.size, 3);
                 const layoutShiftEvents = Array.from(shifts.entries());

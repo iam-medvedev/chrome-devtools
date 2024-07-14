@@ -6,6 +6,7 @@ import * as SDK from '../../../../core/sdk/sdk.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
 import * as Breakpoints from '../../../../models/breakpoints/breakpoints.js';
 import * as Workspace from '../../../../models/workspace/workspace.js';
+import { findMenuItemWithLabel } from '../../../../testing/ContextMenuHelpers.js';
 import { createTarget, describeWithEnvironment, } from '../../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../../../testing/MockConnection.js';
 import { MockProtocolBackend } from '../../../../testing/MockScopeChain.js';
@@ -317,14 +318,14 @@ describeWithEnvironment('ContentProviderContextMenuProvider', () => {
             contentURL: () => 'https://www.example.com/index.html',
         };
         provider.appendApplicableItems({}, contextMenu, uiSourceCode);
-        let openInNewTabItem = contextMenu.revealSection().items.find((item) => item.buildDescriptor().label === 'Open in new tab');
+        let openInNewTabItem = findMenuItemWithLabel(contextMenu.revealSection(), 'Open in new tab');
         assert.exists(openInNewTabItem);
         contextMenu = new UI.ContextMenu.ContextMenu({});
         uiSourceCode = {
             contentURL: () => 'file://usr/local/example/index.html',
         };
         provider.appendApplicableItems({}, contextMenu, uiSourceCode);
-        openInNewTabItem = contextMenu.revealSection().items.find((item) => item.buildDescriptor().label === 'Open in new tab');
+        openInNewTabItem = findMenuItemWithLabel(contextMenu.revealSection(), 'Open in new tab');
         assert.isUndefined(openInNewTabItem);
     });
 });

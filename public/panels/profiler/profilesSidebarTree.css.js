@@ -182,6 +182,7 @@ li .titles {
 }
 
 li .titles > .title-container {
+  z-index: 1;
   text-overflow: ellipsis;
   overflow: hidden;
 }

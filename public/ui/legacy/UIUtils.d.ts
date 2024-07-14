@@ -137,7 +137,12 @@ export declare function addReferrerToURL(url: Platform.DevToolsPath.UrlString): 
  */
 export declare function addReferrerToURLIfNecessary(url: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString;
 export declare function loadImage(url: string): Promise<HTMLImageElement | null>;
-export declare function createFileSelectorElement(callback: (arg0: File) => void): HTMLInputElement;
+/**
+ * Creates a file selector element.
+ * @param callback - the function that will be called with the file the user selected
+ * @param accept - optionally used to set the [`accept`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept) parameter to limit file-types the user can pick.
+ */
+export declare function createFileSelectorElement(callback: (arg0: File) => void, accept?: string): HTMLInputElement;
 export declare const MaxLengthForDisplayedURLs = 150;
 export declare class MessageDialog {
     static show(message: string, where?: Element | Document, jslogContext?: string): Promise<void>;

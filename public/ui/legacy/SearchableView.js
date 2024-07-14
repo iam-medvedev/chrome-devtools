@@ -625,12 +625,14 @@ export class SearchConfig {
         if (global) {
             modifiers += 'g';
         }
-        const query = this.isRegex ? '/' + this.query + '/' : this.query;
+        // Check if query is surrounded by forward slashes
+        const isRegexFormatted = this.query.startsWith('/') && this.query.endsWith('/');
+        const query = this.isRegex && !isRegexFormatted ? '/' + this.query + '/' : this.query;
         let regex;
         let fromQuery = false;
         // First try creating regex if user knows the / / hint.
         try {
-            if (/^\/.+\/$/.test(query)) {
+            if (/^\/.+\/$/.test(query) && this.isRegex) {
                 regex = new RegExp(query.substring(1, query.length - 1), modifiers);
                 fromQuery = true;
             }

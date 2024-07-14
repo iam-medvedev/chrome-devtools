@@ -46,7 +46,7 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     private enabled?;
     private clickHandler?;
     private resizerParentOffsetLeft?;
-    constructor(parentElement: Element, dividersLabelBarElement?: Element, calculator?: Calculator);
+    constructor(parentElement: HTMLElement, dividersLabelBarElement?: Element, calculator?: Calculator);
     enableCreateBreadcrumbsButton(): HTMLElement;
     set showingScreenshots(isShowing: boolean);
     private onResizerClicked;

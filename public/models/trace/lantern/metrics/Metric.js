@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Core from '../core/core.js';
 import * as Graph from '../graph/graph.js';
 class Metric {
     static getScriptUrls(dependencyGraph, treatNodeAsRenderBlocking) {
@@ -19,7 +20,7 @@ class Metric {
         return scriptUrls;
     }
     static get coefficients() {
-        throw new Error('coefficients unimplemented!');
+        throw new Core.LanternError('coefficients unimplemented!');
     }
     /* eslint-disable @typescript-eslint/no-unused-vars */
     /**
@@ -32,16 +33,16 @@ class Metric {
         return this.coefficients;
     }
     static getOptimisticGraph(dependencyGraph, processedNavigation) {
-        throw new Error('Optimistic graph unimplemented!');
+        throw new Core.LanternError('Optimistic graph unimplemented!');
     }
     static getPessimisticGraph(dependencyGraph, processedNavigation) {
-        throw new Error('Pessmistic graph unimplemented!');
+        throw new Core.LanternError('Pessmistic graph unimplemented!');
     }
     static getEstimateFromSimulation(simulationResult, extras) {
         return simulationResult;
     }
     /* eslint-enable @typescript-eslint/no-unused-vars */
-    static async compute(data, extras) {
+    static compute(data, extras) {
         const { simulator, graph, processedNavigation } = data;
         const metricName = this.name.replace('Lantern', '');
         const optimisticGraph = this.getOptimisticGraph(graph, processedNavigation);

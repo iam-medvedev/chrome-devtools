@@ -50,6 +50,10 @@ styles.replaceSync(
   color: var(--sys-color-on-surface);
   text-align: center;
   position: relative;
+
+  & > input {
+    scroll-margin-left: 5px;
+  }
 }
 
 .conditions-list-text:last-child {

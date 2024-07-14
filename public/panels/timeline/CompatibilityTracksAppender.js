@@ -304,9 +304,8 @@ export class CompatibilityTracksAppender {
         this.#legacyEntryTypeByLevel[level] = "TrackAppender" /* EntryType.TrackAppender */;
         this.#flameChartData.entryLevels[index] = level;
         this.#flameChartData.entryStartTimes[index] = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts);
-        const msDuration = event.dur ||
-            TraceEngine.Helpers.Timing.millisecondsToMicroseconds(InstantEventVisibleDurationMs);
-        this.#flameChartData.entryTotalTimes[index] = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(msDuration);
+        const dur = event.dur || TraceEngine.Helpers.Timing.millisecondsToMicroseconds(InstantEventVisibleDurationMs);
+        this.#flameChartData.entryTotalTimes[index] = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(dur);
         return index;
     }
     /**
@@ -327,19 +326,19 @@ export class CompatibilityTracksAppender {
      * trace events (the first available level to append next track).
      */
     appendEventsAtLevel(events, trackStartLevel, appender, eventAppendedCallback) {
-        const lastUsedTimeByLevel = [];
+        const lastTimestampByLevel = [];
         for (let i = 0; i < events.length; ++i) {
             const event = events[i];
             if (!this.entryIsVisibleInTimeline(event)) {
                 continue;
             }
-            const level = getEventLevel(event, lastUsedTimeByLevel);
+            const level = getEventLevel(event, lastTimestampByLevel);
             const index = this.appendEventAtLevel(event, trackStartLevel + level, appender);
             eventAppendedCallback?.(event, index);
         }
-        this.#legacyEntryTypeByLevel.length = trackStartLevel + lastUsedTimeByLevel.length;
+        this.#legacyEntryTypeByLevel.length = trackStartLevel + lastTimestampByLevel.length;
         this.#legacyEntryTypeByLevel.fill("TrackAppender" /* EntryType.TrackAppender */, trackStartLevel);
-        return trackStartLevel + lastUsedTimeByLevel.length;
+        return trackStartLevel + lastTimestampByLevel.length;
     }
     entryIsVisibleInTimeline(entry) {
         if (this.#traceParsedData.Meta.traceIsGeneric) {

@@ -1,3 +1,4 @@
+import type * as Protocol from '../../../generated/protocol.js';
 import type * as CPUProfile from '../../cpu_profile/cpu_profile.js';
 import * as Types from '../types/types.js';
 type MatchedPairType<T extends Types.TraceEvents.TraceEventPairableAsync> = Types.TraceEvents.SyntheticEventPair<T>;
@@ -119,4 +120,5 @@ export interface ForEachEventConfig {
  */
 export declare function forEachEvent(events: Types.TraceEvents.TraceEventData[], config: ForEachEventConfig): void;
 export declare function eventHasCategory(event: Types.TraceEvents.TraceEventData, category: string): boolean;
+export declare function nodeIdForInvalidationEvent(event: Types.TraceEvents.InvalidationTrackingEvent): Protocol.DOM.BackendNodeId | null;
 export {};

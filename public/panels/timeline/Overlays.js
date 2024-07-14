@@ -9,7 +9,27 @@ import { LAYOUT_SHIFT_SYNTHETIC_DURATION } from './LayoutShiftsTrackAppender.js'
  * Below the network track there is a resize bar the user can click and drag.
  */
 const NETWORK_RESIZE_ELEM_HEIGHT_PX = 8;
-export class Overlays {
+export function overlayIsSingleton(overlay) {
+    return overlay.type === 'CURSOR_TIMESTAMP_MARKER' || overlay.type === 'ENTRY_SELECTED';
+}
+export class AnnotationOverlayActionEvent extends Event {
+    overlay;
+    action;
+    static eventName = 'annotationoverlayactionsevent';
+    constructor(overlay, action) {
+        super(AnnotationOverlayActionEvent.eventName);
+        this.overlay = overlay;
+        this.action = action;
+    }
+}
+/**
+ * This class manages all the overlays that get drawn onto the performance
+ * timeline. Overlays are DOM and are drawn above the network and main flame
+ * chart.
+ *
+ * For more documentation, see `timeline/README.md` which has a section on overlays.
+ */
+export class Overlays extends EventTarget {
     /**
      * The list of active overlays. Overlays can't be marked as visible or
      * hidden; every overlay in this list is rendered.
@@ -41,6 +61,7 @@ export class Overlays {
      */
     #overlaysContainer;
     constructor(init) {
+        super();
         this.#overlaysContainer = init.container;
         this.#charts = init.charts;
     }
@@ -81,14 +102,24 @@ export class Overlays {
     /**
      * Add a new overlay to the view.
      */
-    add(overlay) {
-        if (this.#overlaysToElements.has(overlay)) {
-            return overlay;
+    add(newOverlay) {
+        if (this.#overlaysToElements.has(newOverlay)) {
+            return newOverlay;
+        }
+        /**
+         * If the overlay type is a singleton, and we already have one, we update
+         * the existing one, rather than create a new one. This ensures you can only
+         * ever have one instance of the overlay type.
+         */
+        const existing = this.overlaysOfType(newOverlay.type);
+        if (overlayIsSingleton(newOverlay) && existing[0]) {
+            this.updateExisting(existing[0], newOverlay);
+            return existing[0];
         }
         // By setting the value to null, we ensure that on the next render that the
         // overlay will have a new HTML element created for it.
-        this.#overlaysToElements.set(overlay, null);
-        return overlay;
+        this.#overlaysToElements.set(newOverlay, null);
+        return newOverlay;
     }
     /**
      * Update an existing overlay without destroying and recreating its
@@ -124,6 +155,7 @@ export class Overlays {
     }
     /**
      * Removes any active overlays that match the provided type.
+     * @returns the number of overlays that were removed.
      */
     removeOverlaysOfType(type) {
         const overlaysToRemove = Array.from(this.#overlaysToElements.keys()).filter(overlay => {
@@ -132,6 +164,22 @@ export class Overlays {
         for (const overlay of overlaysToRemove) {
             this.remove(overlay);
         }
+        return overlaysToRemove.length;
+    }
+    /**
+     * @returns all overlays that match the provided type.
+     */
+    overlaysOfType(type) {
+        const matches = [];
+        function overlayIsOfType(overlay) {
+            return overlay.type === type;
+        }
+        for (const [overlay] of this.#overlaysToElements) {
+            if (overlayIsOfType(overlay)) {
+                matches.push(overlay);
+            }
+        }
+        return matches;
     }
     /**
      * Removes the provided overlay from the list of overlays and destroys any
@@ -298,10 +346,28 @@ export class Overlays {
                 }
                 break;
             }
+            case 'CURSOR_TIMESTAMP_MARKER': {
+                const { visibleWindow } = this.#dimensions.trace;
+                // Only update the position if the timestamp of this marker is within
+                // the visible bounds.
+                if (visibleWindow && TraceEngine.Helpers.Timing.timestampIsInBounds(visibleWindow, overlay.timestamp)) {
+                    element.style.visibility = 'visible';
+                    this.#positionTimestampMarker(overlay, element);
+                }
+                else {
+                    element.style.visibility = 'hidden';
+                }
+                break;
+            }
             default: {
                 Platform.TypeScriptUtilities.assertNever(overlay, `Unknown overlay: ${JSON.stringify(overlay)}`);
             }
         }
+    }
+    #positionTimestampMarker(overlay, element) {
+        // Because we are adjusting the x position, we can use either chart here.
+        const x = this.#xPixelForMicroSeconds('main', overlay.timestamp);
+        element.style.left = `${x}px`;
     }
     #positionTimespanBreakdownOverlay(overlay, element) {
         const component = element?.querySelector('devtools-timespan-breakdown-overlay');
@@ -479,7 +545,12 @@ export class Overlays {
             case 'ENTRY_LABEL': {
                 const component = new Components.EntryLabelOverlay.EntryLabelOverlay(overlay.label);
                 component.addEventListener(Components.EntryLabelOverlay.EmptyEntryLabelRemoveEvent.eventName, () => {
-                    this.remove(overlay);
+                    this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Remove'));
+                });
+                component.addEventListener(Components.EntryLabelOverlay.EntryLabelChangeEvent.eventName, event => {
+                    const newLabel = event.newLabel;
+                    overlay.label = newLabel;
+                    this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Update'));
                 });
                 div.appendChild(component);
                 return div;
@@ -535,6 +606,9 @@ export class Overlays {
                 }
                 break;
             }
+            case 'CURSOR_TIMESTAMP_MARKER':
+                // No contents within this that need updating.
+                break;
             default:
                 Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
         }
@@ -558,29 +632,11 @@ export class Overlays {
             return false;
         }
         const { startTime, endTime } = this.#timingsForOverlayEntry(entry);
-        const { min: visibleMin, max: visibleMax } = this.#dimensions.trace.visibleWindow;
-        // The event is visible if
-        // 1. Its endTime is within the visible window
-        // OR
-        // 2. Its startTime is within the visible window
-        // OR
-        // 3. Its startTime is less than the visible window, and its endTime is
-        // greater than it. This means that the event spans the entire visible
-        // window but starts and ends outside of it.
-        // If none of these cases are true, the event must be off screen.
-        // 1. End time is within the visible window.
-        if (endTime >= visibleMin && endTime <= visibleMax) {
-            return true;
-        }
-        // 2. Start time is within the visible window.
-        if (startTime >= visibleMin && startTime <= visibleMax) {
-            return true;
-        }
-        // 3. Start time is before the visible window and end time is after.
-        if (startTime <= visibleMin && endTime >= visibleMax) {
-            return true;
-        }
-        return false;
+        const entryTimeRange = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(startTime, endTime);
+        return TraceEngine.Helpers.Timing.boundsIncludeTimeRange({
+            bounds: this.#dimensions.trace.visibleWindow,
+            timeRange: entryTimeRange,
+        });
     }
     /**
      * Calculate if an entry is visible vertically on the chart. A bit fiddly as

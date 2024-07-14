@@ -37,6 +37,7 @@
     "../../../../../../front_end/panels/timeline/CompatibilityTracksAppender.ts",
     "../../../../../../front_end/panels/timeline/CountersGraph.ts",
     "../../../../../../front_end/panels/timeline/EventUICategory.ts",
+    "../../../../../../front_end/panels/timeline/EventsSerializer.ts",
     "../../../../../../front_end/panels/timeline/EventsTimelineTreeView.ts",
     "../../../../../../front_end/panels/timeline/ExtensionDataGatherer.ts",
     "../../../../../../front_end/panels/timeline/ExtensionTrackAppender.ts",
@@ -46,6 +47,7 @@
     "../../../../../../front_end/panels/timeline/InteractionsTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/IsolateSelector.ts",
     "../../../../../../front_end/panels/timeline/LayoutShiftsTrackAppender.ts",
+    "../../../../../../front_end/panels/timeline/ModificationsManager.ts",
     "../../../../../../front_end/panels/timeline/NetworkTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/Overlays.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.ts",
@@ -121,9 +123,6 @@
       "path": "../profiler/bundle-tsconfig.json"
     },
     {
-      "path": "../../services/modifications_manager/bundle-tsconfig.json"
-    },
-    {
       "path": "../../services/trace_bounds/bundle-tsconfig.json"
     },
     {
@@ -134,6 +133,9 @@
     },
     {
       "path": "../../ui/components/data_grid/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/icon_button/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/linkifier/bundle-tsconfig.json"

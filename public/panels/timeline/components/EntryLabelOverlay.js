@@ -10,6 +10,14 @@ export class EmptyEntryLabelRemoveEvent extends Event {
         super(EmptyEntryLabelRemoveEvent.eventName);
     }
 }
+export class EntryLabelChangeEvent extends Event {
+    newLabel;
+    static eventName = 'entrylabelchangeevent';
+    constructor(newLabel) {
+        super(EntryLabelChangeEvent.eventName);
+        this.newLabel = newLabel;
+    }
+}
 export class EntryLabelOverlay extends HTMLElement {
     // The label is angled on the left from the centre of the entry it belongs to.
     // `LABEL_AND_CONNECTOR_SHIFT_LENGTH` specifies how many pixels to the left it is shifted.
@@ -25,11 +33,12 @@ export class EntryLabelOverlay extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     // The label is set to editable when it is double clicked. If the user clicks away from the label box
-    // element, the lable is set to not editable until it double clicked.
+    // element, the lable is set to not editable until it double clicked.s
     #isLabelEditable = true;
     #entryDimensions = null;
     #labelPartsWrapper = null;
     #labelBox = null;
+    #label;
     /*
   The entry label overlay consists of 3 parts - the label part with the label string inside,
   the line connecting the label to the entry, and a black box around an entry to highlight the entry with a label.
@@ -53,19 +62,25 @@ export class EntryLabelOverlay extends HTMLElement {
         super();
         this.#render();
         this.#labelPartsWrapper = this.#shadow.querySelector('.label-parts-wrapper');
+        this.#label = label;
         this.#drawLabel(label);
         this.#drawConnector();
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
-        this.#labelBox?.addEventListener('keydown', this.#handleLabelInputKeyDown);
-        this.#labelBox?.addEventListener('paste', this.#handleLabelInputPaste);
     }
-    disconnectedCallback() {
-        this.#labelBox?.removeEventListener('keydown', this.#handleLabelInputKeyDown);
-        this.#labelBox?.removeEventListener('paste', this.#handleLabelInputPaste);
+    #handleLabelInputKeyUp() {
+        // If the label changed on key up, dispatch label changed event
+        const labelBoxTextContent = this.#labelBox?.textContent ?? '';
+        if (labelBoxTextContent !== this.#label) {
+            this.#label = labelBoxTextContent;
+            this.dispatchEvent(new EntryLabelChangeEvent(this.#label));
+        }
     }
     #handleLabelInputKeyDown(event) {
+        if (!this.#labelBox) {
+            return false;
+        }
         const allowedKeysAfterReachingLenLimit = [
             'Backspace',
             'Delete',
@@ -76,11 +91,12 @@ export class EntryLabelOverlay extends HTMLElement {
         // Therefore, if the new key is `Enter` key, treat it
         // as the end of the label input and blur the input field.
         if (event.key === 'Enter' || event.key === 'Escape') {
-            this.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+            this.#labelBox.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
             return false;
         }
         // If the max limit is not reached, return true
-        if (!this.textContent || this.textContent.length <= EntryLabelOverlay.MAX_LABEL_LENGTH) {
+        if (this.#labelBox.textContent !== null &&
+            this.#labelBox.textContent.length <= EntryLabelOverlay.MAX_LABEL_LENGTH) {
             return true;
         }
         if (allowedKeysAfterReachingLenLimit.includes(event.key)) {
@@ -95,17 +111,17 @@ export class EntryLabelOverlay extends HTMLElement {
     #handleLabelInputPaste(event) {
         event.preventDefault();
         const clipboardData = event.clipboardData;
-        if (!clipboardData) {
+        if (!clipboardData || !this.#labelBox) {
             return;
         }
         const pastedText = clipboardData.getData('text');
-        const newText = this.textContent + pastedText;
+        const newText = this.#labelBox.textContent + pastedText;
         const trimmedText = newText.slice(0, EntryLabelOverlay.MAX_LABEL_LENGTH + 1);
-        this.textContent = trimmedText;
+        this.#labelBox.textContent = trimmedText;
         // Reset the selection to the end
         const selection = window.getSelection();
         const range = document.createRange();
-        range.selectNodeContents(this);
+        range.selectNodeContents(this.#labelBox);
         range.collapse(false);
         selection?.removeAllRanges();
         selection?.addRange(range);
@@ -222,6 +238,9 @@ export class EntryLabelOverlay extends HTMLElement {
             class="label-box"
             @dblclick=${() => this.#setLabelEditabilityAndRemoveEmptyLabel(true)}
             @blur=${() => this.#setLabelEditabilityAndRemoveEmptyLabel(false)}
+            @keydown=${this.#handleLabelInputKeyDown}
+            @paste=${this.#handleLabelInputPaste}
+            @keyup=${this.#handleLabelInputKeyUp}
             contenteditable=${this.#isLabelEditable}>
           </span>
           <svg class="connectorContainer">

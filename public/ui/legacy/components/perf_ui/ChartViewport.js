@@ -41,9 +41,11 @@ export class ChartViewport extends UI.Widget.VBox {
     totalTime;
     isUpdateScheduled;
     cancelWindowTimesAnimation;
+    #config;
     #usingNewOverlayForTimeRange = Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */);
-    constructor(delegate) {
+    constructor(delegate, config) {
         super();
+        this.#config = config;
         this.registerRequiredCSS(chartViewPortStyles);
         this.delegate = delegate;
         this.viewportElement = this.contentElement.createChild('div', 'fill');
@@ -276,7 +278,7 @@ export class ChartViewport extends UI.Widget.VBox {
     updateCursorPosition(e) {
         const mouseEvent = e;
         this.lastMouseOffsetX = mouseEvent.offsetX;
-        const shouldShowCursor = mouseEvent.shiftKey && !mouseEvent.metaKey;
+        const shouldShowCursor = this.#config.enableCursorElement && mouseEvent.shiftKey && !mouseEvent.metaKey;
         this.showCursor(shouldShowCursor);
         if (shouldShowCursor) {
             this.cursorElement.style.left = mouseEvent.offsetX + 'px';

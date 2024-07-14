@@ -236,7 +236,16 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.groupExpansionState = optionalConfig.groupExpansionSetting?.get() || {};
         this.groupHiddenState = {};
         this.flameChartDelegate = flameChartDelegate;
-        this.chartViewport = new ChartViewport(this);
+        // The ChartViewport has its own built-in ruler for when the user holds
+        // shift and moves the mouse. We want to disable that if we are within the
+        // performance panel where we use overlays, but enable it otherwise.
+        let enableCursorElement = true;
+        if (typeof optionalConfig.useOverlaysForCursorRuler === 'boolean') {
+            enableCursorElement = !optionalConfig.useOverlaysForCursorRuler;
+        }
+        this.chartViewport = new ChartViewport(this, {
+            enableCursorElement,
+        });
         this.chartViewport.show(this.contentElement);
         this.dataProvider = dataProvider;
         this.viewportElement = this.chartViewport.viewportElement;
@@ -491,6 +500,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (this.chartViewport.isDragging()) {
             return;
         }
+        const timeMilliSeconds = TraceEngine.Types.Timing.MilliSeconds(this.chartViewport.pixelToTime(mouseEvent.offsetX));
+        this.dispatchEventToListeners("MouseMove" /* Events.MouseMove */, {
+            mouseEvent,
+            timeInMicroSeconds: TraceEngine.Helpers.Timing.millisecondsToMicroseconds(timeMilliSeconds),
+        });
         // Check if the mouse is hovering any group's header area
         const { groupIndex, hoverType } = this.coordinatesToGroupIndexAndHoverType(mouseEvent.offsetX, mouseEvent.offsetY);
         switch (hoverType) {
@@ -1693,10 +1707,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.#drawGenericEvents(context, timelineData, color, indexes);
         }
         this.dispatchEventToListeners("ChartPlayableStateChange" /* Events.ChartPlayableStateChange */, wideEntryExists);
-        const allIndexes = Array.from(colorBuckets.values()).map(x => x.indexes).flat();
-        this.#drawDecorations(context, timelineData, allIndexes);
         this.drawMarkers(context, timelineData, markerIndices);
         this.drawEventTitles(context, timelineData, titleIndices, canvasWidth);
+        // If there is a `forceDecoration` function, it will be called in `drawEventTitles`, which will overwrite the
+        // default decorations, so we need to call this function after the `drawEventTitles`.
+        const allIndexes = Array.from(colorBuckets.values()).map(x => x.indexes).flat();
+        this.#drawDecorations(context, timelineData, allIndexes);
         context.restore();
         this.drawGroupHeaders(canvasWidth, canvasHeight);
         this.drawFlowEvents(context, timelineData);
@@ -1983,7 +1999,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                     markerIndices.push(entryIndex);
                     continue;
                 }
-                if (duration >= minTextWidthDuration || (this.forceDecorationCache && this.forceDecorationCache[entryIndex])) {
+                if (duration >= minTextWidthDuration || this.forceDecorationCache?.[entryIndex]) {
                     // If the event is big enough visually to have its text rendered,
                     // or if it's in the array of event indexes that we forcibly render (as defined by the data provider)
                     // then we store its index. Later on, we'll loop through all
@@ -2633,10 +2649,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.rawTimelineData = timelineData;
         this.rawTimelineDataLength = timelineData.entryStartTimes.length;
-        this.forceDecorationCache = new Int8Array(this.rawTimelineDataLength);
+        this.forceDecorationCache = new Array(this.rawTimelineDataLength);
         this.entryColorsCache = new Array(this.rawTimelineDataLength);
         for (let i = 0; i < this.rawTimelineDataLength; ++i) {
-            this.forceDecorationCache[i] = this.dataProvider.forceDecoration(i) ? 1 : 0;
+            this.forceDecorationCache[i] = this.dataProvider.forceDecoration(i) ?? false;
             this.entryColorsCache[i] = this.dataProvider.entryColor(i);
         }
         const entryCounters = new Uint32Array(this.dataProvider.maxStackDepth() + 1);

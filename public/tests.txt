@@ -408,8 +408,10 @@ panels/sources/components/BreakpointsView.test.js
 panels/sources/components/BreakpointsViewUtils.test.js
 panels/sources/components/HeadersView.test.js
 panels/timeline/Breadcrumbs.test.js
+panels/timeline/EventsSerializer.test.js
 panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
+panels/timeline/ModificationsManager.test.js
 panels/timeline/Overlays.test.js
 panels/timeline/SaveFileFormatter.test.js
 panels/timeline/SourceMapsResolver.test.js
@@ -426,9 +428,13 @@ panels/timeline/TimelineSelection.test.js
 panels/timeline/TimelineTreeView.test.js
 panels/timeline/TimelineUIUtils.test.js
 panels/timeline/components/BreadcrumbsUI.test.js
+panels/timeline/components/CPUThrottlingSelector.test.js
+panels/timeline/components/FieldSettingsDialog.test.js
 panels/timeline/components/InteractionBreakdown.test.js
 panels/timeline/components/Invalidations.test.js
 panels/timeline/components/LiveMetricsView.test.js
+panels/timeline/components/NetworkRequestDetails.test.js
+panels/timeline/components/NetworkThrottlingSelector.test.js
 panels/timeline/components/SidebarAnnotationsTab.test.js
 panels/timeline/components/SidebarInsight.test.js
 panels/timeline/track_appenders/AnimationsTrackAppender.test.js
@@ -444,7 +450,6 @@ panels/timeline/track_appenders/TimingsTrackAppender.test.js
 panels/utils/utils.test.js
 panels/web_audio/web_audio.test.js
 panels/webauthn/WebauthnPane.test.js
-services/modifications_manager/ModificationsManager.test.js
 services/trace_bounds/TraceBounds.test.js
 third_party/chromium/client-variations/ClientVariations.test.js
 third_party/i18n/i18n.test.js
@@ -531,6 +536,7 @@ ui/legacy/components/perf_ui/PieChart.test.js
 ui/legacy/components/perf_ui/TimelineGrid.test.js
 ui/legacy/components/perf_ui/TimelineOverviewCalculator.test.js
 ui/legacy/components/quick_open/CommandMenu.test.js
+ui/legacy/components/quick_open/FilteredListWidget.test.js
 ui/legacy/components/source_frame/ResourceSourceFrame.test.js
 ui/legacy/components/source_frame/SourceFrame.test.js
 ui/legacy/components/utils/JSPresentationUtils.test.js

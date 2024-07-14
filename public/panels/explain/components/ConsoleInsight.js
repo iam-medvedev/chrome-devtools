@@ -264,6 +264,7 @@ export class ConsoleInsight extends HTMLElement {
                 type: "consent-onboarding" /* State.CONSENT_ONBOARDING */,
                 page: "private" /* ConsentOnboardingPage.PAGE1 */,
             });
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingShown);
             return;
         }
         if (!this.#state.consentReminderConfirmed) {
@@ -273,16 +274,31 @@ export class ConsoleInsight extends HTMLElement {
                 sources,
                 isPageReloadRecommended,
             });
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsentReminderShown);
             return;
         }
     }
     #onClose() {
+        if (this.#state.type === "consent-reminder" /* State.CONSENT_REMINDER */) {
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsentReminderCanceled);
+        }
+        else if (this.#state.type === "consent-onboarding" /* State.CONSENT_ONBOARDING */) {
+            if (this.#state.page === "private" /* ConsentOnboardingPage.PAGE1 */) {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingCanceledOnPage1);
+            }
+            else {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingCanceledOnPage2);
+            }
+        }
         this.dispatchEvent(new CloseEvent());
         this.classList.add('closing');
     }
     #onRating(event) {
         if (this.#state.type !== "insight" /* State.INSIGHT */) {
             throw new Error('Unexpected state');
+        }
+        if (this.#state.metadata?.rpcGlobalId === undefined) {
+            throw new Error('RPC Id not in metadata');
         }
         // If it was rated, do not record again.
         if (this.#selectedRating !== undefined) {
@@ -296,16 +312,14 @@ export class ConsoleInsight extends HTMLElement {
         else {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRatedNegative);
         }
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.registerAidaClientEvent(JSON.stringify({
-            client: Host.AidaClient.CLIENT_NAME,
-            event_time: new Date().toISOString(),
-            corresponding_aida_rpc_global_id: this.#state.metadata?.rpcGlobalId,
+        this.#aidaClient.registerClientEvent({
+            corresponding_aida_rpc_global_id: this.#state.metadata.rpcGlobalId,
             do_conversation_client_event: {
                 user_feedback: {
-                    sentiment: this.#selectedRating ? 'POSITIVE' : 'NEGATIVE',
+                    sentiment: this.#selectedRating ? "POSITIVE" /* Host.AidaClient.Rating.POSITIVE */ : "NEGATIVE" /* Host.AidaClient.Rating.NEGATIVE */,
                 },
             },
-        }));
+        });
     }
     #onReport() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(REPORT_URL);
@@ -320,6 +334,7 @@ export class ConsoleInsight extends HTMLElement {
             consentReminderConfirmed: true,
             consentOnboardingFinished: this.#getOnboardingCompletedSetting().get(),
         });
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightConsentReminderConfirmed);
         try {
             for await (const { sources, isPageReloadRecommended, explanation, metadata } of this.#getInsight()) {
                 const tokens = this.#validateMarkdown(explanation);
@@ -412,12 +427,14 @@ export class ConsoleInsight extends HTMLElement {
             this.#onClose();
             UI.InspectorView.InspectorView.instance().displayReloadRequiredWarning('Reload for the change to apply.');
         }
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingFeatureDisabled);
     }
     #goToNextPage() {
         this.#transitionTo({
             type: "consent-onboarding" /* State.CONSENT_ONBOARDING */,
             page: "legal" /* ConsentOnboardingPage.PAGE2 */,
         });
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingNextPage);
     }
     #focusHeader() {
         this.#shadow.querySelector('header h2')?.focus();
@@ -439,6 +456,7 @@ export class ConsoleInsight extends HTMLElement {
             consentReminderConfirmed: false,
             consentOnboardingFinished: this.#getOnboardingCompletedSetting().get(),
         });
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingConfirmed);
         void this.#generateInsightIfNeeded();
     }
     #goToPrevPage() {
@@ -446,6 +464,7 @@ export class ConsoleInsight extends HTMLElement {
             type: "consent-onboarding" /* State.CONSENT_ONBOARDING */,
             page: "private" /* ConsentOnboardingPage.PAGE1 */,
         });
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightsOnboardingPrevPage);
     }
     #renderCancelButton() {
         // clang-format off

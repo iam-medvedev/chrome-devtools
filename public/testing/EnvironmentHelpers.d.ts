@@ -1,5 +1,3 @@
-/// <reference types="mocha" />
-/// <reference types="sinon" />
 import * as Common from '../core/common/common.js';
 import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';

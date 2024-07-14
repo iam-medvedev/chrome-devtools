@@ -1,6 +1,5 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import * as Settings from '../components/settings/settings.js';
 export declare const createSettingCheckbox: (name: string, setting: Common.Settings.Setting<boolean>, omitParagraphElement?: boolean, tooltip?: string) => Element;
 export declare const bindCheckbox: (inputElement: Element, setting: Common.Settings.Setting<boolean>, metric?: UserMetricOptions) => void;
 export declare const createCustomSetting: (name: string, element: Element) => Element;

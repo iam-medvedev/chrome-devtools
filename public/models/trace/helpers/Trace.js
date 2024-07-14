@@ -14,9 +14,6 @@ import { eventTimingsMicroSeconds } from './Timing.js';
  * indiscriminately.
  */
 function stackTraceForEvent(event) {
-    if (Types.TraceEvents.isSyntheticInvalidation(event)) {
-        return event.stackTrace || null;
-    }
     if (event.args?.data?.stackTrace) {
         return event.args.data.stackTrace;
     }
@@ -509,5 +506,8 @@ export function eventHasCategory(event, category) {
         parsedCategoriesForEvent = new Set(event.cat.split(',') || []);
     }
     return parsedCategoriesForEvent.has(category);
+}
+export function nodeIdForInvalidationEvent(event) {
+    return event.args.data.nodeId ?? null;
 }
 //# sourceMappingURL=Trace.js.map

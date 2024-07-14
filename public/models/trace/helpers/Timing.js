@@ -100,4 +100,7 @@ export function boundsIncludeTimeRange(data) {
     const { min: rangeMin, max: rangeMax } = data.timeRange;
     return visibleMin <= rangeMax && visibleMax >= rangeMin;
 }
+export function timestampIsInBounds(bounds, timestamp) {
+    return timestamp >= bounds.min && timestamp <= bounds.max;
+}
 //# sourceMappingURL=Timing.js.map

@@ -177,7 +177,7 @@ export const NativeFunctions = [
     {
         name: "toLocaleString",
         signatures: [["?locales", "?options"]],
-        receivers: ["Date", "Number", "BigInt"]
+        receivers: ["Date", "ReadonlyArray", "Array", "Int8Array", "Uint8Array", "Uint8ClampedArray", "Int16Array", "Uint16Array", "Int32Array", "Uint32Array", "Float32Array", "Float64Array", "Number", "BigInt", "BigInt64Array", "BigUint64Array"]
     },
     {
         name: "hasOwnProperty",
@@ -516,7 +516,7 @@ export const NativeFunctions = [
     },
     {
         name: "max",
-        signatures: [["a", "b"]],
+        signatures: [["a", "b", "?options"]],
         receivers: ["MLGraphBuilder"]
     },
     {
@@ -526,7 +526,7 @@ export const NativeFunctions = [
     },
     {
         name: "min",
-        signatures: [["a", "b"]],
+        signatures: [["a", "b", "?options"]],
         receivers: ["MLGraphBuilder"]
     },
     {
@@ -536,7 +536,7 @@ export const NativeFunctions = [
     },
     {
         name: "pow",
-        signatures: [["a", "b"]],
+        signatures: [["a", "b", "?options"]],
         receivers: ["MLGraphBuilder"]
     },
     {
@@ -712,7 +712,7 @@ export const NativeFunctions = [
     {
         name: "forEach",
         signatures: [["callbackfn", "?thisArg"]],
-        receivers: ["ReadonlyArray", "Array", "Int8Array", "Uint8Array", "Uint8ClampedArray", "Int16Array", "Uint16Array", "Int32Array", "Uint32Array", "Float32Array", "Float64Array", "AudioParamMap", "CSSNumericArray", "CSSTransformValue", "CSSUnparsedValue", "DOMTokenList", "EventCounts", "FontFaceSet", "FormData", "Headers", "Highlight", "HighlightRegistry", "MIDIInputMap", "MIDIOutputMap", "MediaKeyStatusMap", "NodeList", "NodeListOf", "RTCStatsReport", "StylePropertyMapReadOnly", "URLSearchParams", "Map", "ReadonlyMap", "Set", "ReadonlySet", "BigInt64Array", "BigUint64Array"]
+        receivers: ["ReadonlyArray", "Array", "Int8Array", "Uint8Array", "Uint8ClampedArray", "Int16Array", "Uint16Array", "Int32Array", "Uint32Array", "Float32Array", "Float64Array", "AudioParamMap", "CSSNumericArray", "CSSTransformValue", "CSSUnparsedValue", "CustomStateSet", "DOMTokenList", "EventCounts", "FontFaceSet", "FormData", "Headers", "Highlight", "HighlightRegistry", "MIDIInputMap", "MIDIOutputMap", "MediaKeyStatusMap", "NodeList", "NodeListOf", "RTCStatsReport", "StylePropertyMapReadOnly", "URLSearchParams", "Map", "ReadonlyMap", "Set", "ReadonlySet", "BigInt64Array", "BigUint64Array"]
     },
     {
         name: "forEach",
@@ -1154,7 +1154,7 @@ export const NativeFunctions = [
     {
         name: "createBuffer",
         signatures: [["descriptor"]],
-        receivers: ["MLContext", "GPUDevice"]
+        receivers: ["GPUDevice"]
     },
     {
         name: "createChannelMerger",
@@ -1287,7 +1287,7 @@ export const NativeFunctions = [
     },
     {
         name: "add",
-        signatures: [["a", "b"]],
+        signatures: [["a", "b", "?options"]],
         receivers: ["MLGraphBuilder"]
     },
     {
@@ -1302,7 +1302,7 @@ export const NativeFunctions = [
     },
     {
         name: "div",
-        signatures: [["a", "b"]],
+        signatures: [["a", "b", "?options"]],
         receivers: ["MLGraphBuilder"]
     },
     {
@@ -1316,7 +1316,7 @@ export const NativeFunctions = [
     },
     {
         name: "mul",
-        signatures: [["a", "b"]],
+        signatures: [["a", "b", "?options"]],
         receivers: ["MLGraphBuilder"]
     },
     {
@@ -1331,7 +1331,7 @@ export const NativeFunctions = [
     },
     {
         name: "sub",
-        signatures: [["a", "b"]],
+        signatures: [["a", "b", "?options"]],
         receivers: ["MLGraphBuilder"]
     },
     {
@@ -1512,7 +1512,7 @@ export const NativeFunctions = [
     {
         name: "has",
         signatures: [["value"]],
-        receivers: ["Set", "ReadonlySet", "WeakSet"]
+        receivers: ["Set", "ReadonlySet", "WeakSet", "ReadonlySetLike"]
     },
     {
         name: "has",
@@ -2427,6 +2427,10 @@ export const NativeFunctions = [
     {
         name: "setAttributeNodeNS",
         signatures: [["attr"]]
+    },
+    {
+        name: "setHTMLUnsafe",
+        signatures: [["html"]]
     },
     {
         name: "setPointerCapture",
@@ -4313,13 +4317,7 @@ export const NativeFunctions = [
     },
     {
         name: "readBuffer",
-        signatures: [["src"], ["mode"]],
-        receivers: ["WebGL2RenderingContext"]
-    },
-    {
-        name: "readBuffer",
-        signatures: [["srcBuffer"]],
-        receivers: ["MLContext"]
+        signatures: [["src"], ["mode"]]
     },
     {
         name: "renderbufferStorageMultisample",
@@ -5485,6 +5483,11 @@ export const NativeFunctions = [
         receivers: ["ObjectConstructor"]
     },
     {
+        name: "values",
+        signatures: [["?options"]],
+        receivers: ["ReadableStream"]
+    },
+    {
         name: "all",
         signatures: [["values"]]
     },
@@ -5841,6 +5844,38 @@ export const NativeFunctions = [
     {
         name: "with",
         signatures: [["index", "value"]]
+    },
+    {
+        name: "fromAsync",
+        signatures: [["iterableOrArrayLike", "?mapFn", "?thisArg"]]
+    },
+    {
+        name: "union",
+        signatures: [["other"]]
+    },
+    {
+        name: "intersection",
+        signatures: [["other"]]
+    },
+    {
+        name: "difference",
+        signatures: [["other"]]
+    },
+    {
+        name: "symmetricDifference",
+        signatures: [["other"]]
+    },
+    {
+        name: "isSubsetOf",
+        signatures: [["other"]]
+    },
+    {
+        name: "isSupersetOf",
+        signatures: [["other"]]
+    },
+    {
+        name: "isDisjointFrom",
+        signatures: [["other"]]
     },
     {
         name: "openWindow",
@@ -6364,7 +6399,13 @@ export const NativeFunctions = [
     },
     {
         name: "caretPositionFromPoint",
-        signatures: [["x", "y", "?options"]]
+        signatures: [["x", "y", "?options"]],
+        receivers: ["Document"]
+    },
+    {
+        name: "caretPositionFromPoint",
+        signatures: [["x"]],
+        receivers: ["TextMetrics"]
     },
     {
         name: "hasPrivateToken",
@@ -6385,10 +6426,6 @@ export const NativeFunctions = [
     {
         name: "DOMException",
         signatures: [["?message", "?name"]]
-    },
-    {
-        name: "setHTMLUnsafe",
-        signatures: [["html"]]
     },
     {
         name: "getInnerHTML",
@@ -6533,6 +6570,10 @@ export const NativeFunctions = [
         signatures: [["type", "?eventInitDict"]]
     },
     {
+        name: "CommandEvent",
+        signatures: [["type", "?eventInitDict"]]
+    },
+    {
         name: "CompositionEvent",
         signatures: [["type", "?eventInitDict"]]
     },
@@ -6558,10 +6599,6 @@ export const NativeFunctions = [
     },
     {
         name: "InterestEvent",
-        signatures: [["type", "?eventInitDict"]]
-    },
-    {
-        name: "InvokeEvent",
         signatures: [["type", "?eventInitDict"]]
     },
     {
@@ -7107,23 +7144,11 @@ export const NativeFunctions = [
         signatures: [["feature"]]
     },
     {
-        name: "execute",
-        signatures: [["input"]]
-    },
-    {
         name: "promptStreaming",
         signatures: [["input"]]
     },
     {
-        name: "executeStreaming",
-        signatures: [["input"]]
-    },
-    {
         name: "createTextSession",
-        signatures: [["?options"]]
-    },
-    {
-        name: "createGenericSession",
         signatures: [["?options"]]
     },
     {
@@ -7316,6 +7341,10 @@ export const NativeFunctions = [
     {
         name: "ContentIndexEvent",
         signatures: [["type", "init"]]
+    },
+    {
+        name: "report",
+        signatures: [["options"]]
     },
     {
         name: "FederatedCredential",
@@ -7650,24 +7679,6 @@ export const NativeFunctions = [
         signatures: [["constraint", "?message"]]
     },
     {
-        name: "compute",
-        signatures: [["graph", "inputs", "outputs"]]
-    },
-    {
-        name: "writeBuffer",
-        signatures: [["dstBuffer", "srcData", "?srcElementOffset", "?srcElementSize"], ["dstBuffer", "srcData", "?srcByteOffset", "?srcByteSize"]],
-        receivers: ["MLContext"]
-    },
-    {
-        name: "writeBuffer",
-        signatures: [["buffer", "bufferOffset", "data", "?dataElementOffset", "?dataElementCount"], ["buffer", "bufferOffset", "data", "?dataByteOffset", "?byteSize"]],
-        receivers: ["GPUQueue"]
-    },
-    {
-        name: "dispatch",
-        signatures: [["graph", "inputs", "outputs"]]
-    },
-    {
         name: "createContext",
         signatures: [["?options"]]
     },
@@ -7709,23 +7720,23 @@ export const NativeFunctions = [
     },
     {
         name: "equal",
-        signatures: [["a", "b"]]
+        signatures: [["a", "b", "?options"]]
     },
     {
         name: "greater",
-        signatures: [["a", "b"]]
+        signatures: [["a", "b", "?options"]]
     },
     {
         name: "greaterOrEqual",
-        signatures: [["a", "b"]]
+        signatures: [["a", "b", "?options"]]
     },
     {
         name: "lesser",
-        signatures: [["a", "b"]]
+        signatures: [["a", "b", "?options"]]
     },
     {
         name: "lesserOrEqual",
-        signatures: [["a", "b"]]
+        signatures: [["a", "b", "?options"]]
     },
     {
         name: "neg",
@@ -7909,7 +7920,7 @@ export const NativeFunctions = [
     },
     {
         name: "where",
-        signatures: [["condition", "true_value", "false_value"]]
+        signatures: [["condition", "trueValue", "falseValue"]]
     },
     {
         name: "build",
@@ -8734,6 +8745,10 @@ export const NativeFunctions = [
     {
         name: "setBindGroup",
         signatures: [["index", "bindGroup", "?dynamicOffsets"], ["index", "bindGroup", "dynamicOffsetsData", "dynamicOffsetsDataStart", "dynamicOffsetsDataLength"]]
+    },
+    {
+        name: "writeBuffer",
+        signatures: [["buffer", "bufferOffset", "data", "?dataElementOffset", "?dataElementCount"], ["buffer", "bufferOffset", "data", "?dataByteOffset", "?byteSize"]]
     },
     {
         name: "writeTexture",

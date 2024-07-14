@@ -12,6 +12,7 @@ import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { Step } from '../FreestylerAgent.js';
 import freestylerChatUiStyles from './freestylerChatUi.css.js';
+import { ProvideFeedback } from './ProvideFeedback.js';
 const DOGFOOD_FEEDBACK_URL = 'https://goo.gle/freestyler-feedback';
 /*
   * TODO(nvitkov): b/346933425
@@ -190,31 +191,16 @@ export class FreestylerChatUi extends HTMLElement {
     };
     #renderRateButtons(rpcId) {
         // clang-format off
-        return LitHtml.html `
-      <div class="rate-buttons">
-        <${Buttons.Button.Button.litTagName}
-          .data=${{
-            variant: "icon" /* Buttons.Button.Variant.ICON */,
-            size: "SMALL" /* Buttons.Button.Size.SMALL */,
-            iconName: 'thumb-up',
-            active: false,
-            title: i18nString(TempUIStrings.thumbsUp),
-            jslogContext: 'thumbs-up',
+        return LitHtml.html `<${ProvideFeedback.litTagName}
+      .props=${{
+            onRateClick: rating => {
+                this.#props.onRateClick(rpcId, rating);
+            },
+            onFeedbackSubmit: feedback => {
+                this.#props.onFeedbackSubmit(rpcId, feedback);
+            },
         }}
-          @click=${() => this.#props.onRateClick(rpcId, "positive" /* Rating.POSITIVE */)}
-        ></${Buttons.Button.Button.litTagName}>
-        <${Buttons.Button.Button.litTagName}
-          .data=${{
-            variant: "icon" /* Buttons.Button.Variant.ICON */,
-            size: "SMALL" /* Buttons.Button.Size.SMALL */,
-            iconName: 'thumb-down',
-            active: false,
-            title: i18nString(TempUIStrings.thumbsDown),
-            jslogContext: 'thumbs-down',
-        }}
-          @click=${() => this.#props.onRateClick(rpcId, "negative" /* Rating.NEGATIVE */)}
-        ></${Buttons.Button.Button.litTagName}>
-      </div>`;
+      ></${ProvideFeedback.litTagName}>`;
         // clang-format on
     }
     #renderTextAsMarkdown(text) {
@@ -293,11 +279,9 @@ export class FreestylerChatUi extends HTMLElement {
         if (message.entity === "user" /* ChatMessageEntity.USER */) {
             return LitHtml.html `<div class="chat-message query">${message.text}</div>`;
         }
-        // TODO: We should only show "Fix this issue" button when the answer suggests fix or fixes.
-        // We shouldn't show this when the answer is complete like a confirmation without any suggestion.
-        const shouldShowFixThisIssueButton = isLast && message.steps.at(-1)?.step === Step.ANSWER && !this.#props.lastActionIsFixThisIssue;
-        const shouldShowRating = (!this.#props.confirmSideEffectDialog && isLast) || !isLast;
-        const shouldShowLoading = !this.#props.confirmSideEffectDialog && this.#props.isLoading && isLast;
+        const shouldShowFixThisIssueButton = !this.#props.isLoading && isLast && message.suggestingFix;
+        const shouldShowRating = !isLast || (!this.#props.confirmSideEffectDialog && isLast);
+        const shouldShowLoading = this.#props.isLoading && isLast && !this.#props.confirmSideEffectDialog;
         // clang-format off
         return LitHtml.html `
       <div class="chat-message answer">
@@ -418,32 +402,28 @@ export class FreestylerChatUi extends HTMLElement {
             ? LitHtml.html `
                     <${Buttons.Button.Button.litTagName}
                       class="step-actions"
-                      type="button"
-                      title=${i18nString(TempUIStrings.cancelButtonTitle)}
                       aria-label=${i18nString(TempUIStrings.cancelButtonTitle)}
-                      jslog=${VisualLogging.action('stop').track({ click: true })}
                       @click=${this.#handleCancel}
                       .data=${{
-                variant: "icon" /* Buttons.Button.Variant.ICON */,
+                variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
                 iconName: 'stop',
                 title: i18nString(TempUIStrings.cancelButtonTitle),
+                jslogContext: 'stop',
             }}
                     ></${Buttons.Button.Button.litTagName}>`
             : LitHtml.html `
                     <${Buttons.Button.Button.litTagName}
                       class="step-actions"
-                      type="submit"
-                      title=${i18nString(TempUIStrings.sendButtonTitle)}
                       aria-label=${i18nString(TempUIStrings.sendButtonTitle)}
-                      jslog=${VisualLogging.action('send').track({ click: true })}
-                      @click=${this.#handleSubmit}
                       .data=${{
+                type: 'submit',
                 variant: "icon" /* Buttons.Button.Variant.ICON */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
                 iconName: 'send',
                 title: i18nString(TempUIStrings.sendButtonTitle),
                 disabled: isInputDisabled,
+                jslogContext: 'send',
             }}
                     ></${Buttons.Button.Button.litTagName}>`}
           </div>
@@ -472,9 +452,8 @@ export class FreestylerChatUi extends HTMLElement {
             .data=${{
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             jslogContext: 'accept',
-        }}>
-            ${i18nString(TempUIStrings.acceptButtonTitle)}
-          </${Buttons.Button.Button.litTagName}>
+        }}
+          >${i18nString(TempUIStrings.acceptButtonTitle)}</${Buttons.Button.Button.litTagName}>
         </main>
       </div>
     `;
