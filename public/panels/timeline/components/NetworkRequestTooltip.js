@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as TraceEngine from '../../../models/trace/trace.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
@@ -19,15 +20,15 @@ const UIStrings = {
      */
     queuingAndConnecting: 'Queuing and connecting',
     /**
-     *@description Text that refers to the queueing and connecting time of a network request
+     *@description Text that refers to the request sent and waiting time of a network request
      */
     requestSentAndWaiting: 'Request sent and waiting',
     /**
-     *@description Text that refers to the queueing and connecting time of a network request
+     *@description Text that refers to the content downloading time of a network request
      */
     contentDownloading: 'Content downloading',
     /**
-     *@description Text that refers to the queueing and connecting time of a network request
+     *@description Text that refers to the waiting on main thread time of a network request
      */
     waitingOnMainThread: 'Waiting on main thread',
     /**
@@ -36,7 +37,7 @@ const UIStrings = {
     renderBlocking: 'Render blocking',
 };
 export class NetworkRequestTooltip extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-performance-network-request-info`;
+    static litTagName = LitHtml.literal `devtools-performance-network-request-tooltip`;
     #shadow = this.attachShadow({ mode: 'open' });
     #networkRequest;
     connectedCallback() {
@@ -138,8 +139,8 @@ export class NetworkRequestTooltip extends HTMLElement {
 
         <div class="divider"></div>
         ${this.#renderPriority()}
-        ${networkData.renderBlocking === 'non_blocking' ? LitHtml.nothing :
-            LitHtml.html `<div class="render-blocking"> ${UIStrings.renderBlocking} </div>`}
+        ${TraceEngine.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#networkRequest) ?
+            LitHtml.html `<div class="render-blocking"> ${UIStrings.renderBlocking} </div>` : LitHtml.nothing}
         <div class="divider"></div>
 
         ${this.#renderTimings()}
@@ -149,5 +150,5 @@ export class NetworkRequestTooltip extends HTMLElement {
         LitHtml.render(output, this.#shadow, { host: this });
     }
 }
-customElements.define('devtools-performance-network-request-info', NetworkRequestTooltip);
+customElements.define('devtools-performance-network-request-tooltip', NetworkRequestTooltip);
 //# sourceMappingURL=NetworkRequestTooltip.js.map

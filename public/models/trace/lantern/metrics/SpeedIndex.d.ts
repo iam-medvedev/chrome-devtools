@@ -7,7 +7,7 @@ declare class SpeedIndex extends Metric {
     static getOptimisticGraph(dependencyGraph: Graph.Node): Graph.Node;
     static getPessimisticGraph(dependencyGraph: Graph.Node): Graph.Node;
     static getEstimateFromSimulation(simulationResult: Simulation.Result, extras: Extras): Simulation.Result;
-    static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): Promise<MetricResult>;
+    static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): MetricResult;
     /**
      * Approximate speed index using layout events from the simulated node timings.
      * The layout-based speed index is the weighted average of the endTime of CPU nodes that contained

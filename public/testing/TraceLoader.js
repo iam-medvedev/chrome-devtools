@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TraceEngine from '../models/trace/trace.js';
-import * as ModificationsManager from '../services/modifications_manager/modifications_manager.js';
+import * as Timeline from '../panels/timeline/timeline.js';
 import * as TraceBounds from '../services/trace_bounds/trace_bounds.js';
 // We maintain two caches:
 // 1. The file contents JSON.parsed for a given trace file.
@@ -77,7 +77,7 @@ export class TraceLoader {
     static async rawEvents(context, name) {
         const contents = await TraceLoader.fixtureContents(context, name);
         const events = 'traceEvents' in contents ? contents.traceEvents : contents;
-        TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.initSyntheticEventsManagerForTrace(events);
+        TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.initAndActivate(events);
         return events;
     }
     /**
@@ -108,9 +108,7 @@ export class TraceLoader {
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
-    static async traceEngine(context, name, options = {
-        initTraceBounds: true,
-    }, config = TraceEngine.Types.Configuration.defaults()) {
+    static async traceEngine(context, name, config = TraceEngine.Types.Configuration.defaults()) {
         // Force the TraceBounds to be reset to empty. This ensures that in
         // tests where we are using the new engine data we don't accidentally
         // rely on the fact that a previous test has set the BoundsManager.
@@ -118,23 +116,31 @@ export class TraceLoader {
         const configCacheKey = TraceEngine.Types.Configuration.configToCacheKey(config);
         const fromCache = traceEngineCache.get(name)?.get(configCacheKey);
         if (fromCache) {
-            ModificationsManager.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(fromCache.model, 0);
-            if (options.initTraceBounds) {
-                TraceLoader.initTraceBoundsManager(fromCache.traceParsedData);
+            TraceLoader.initTraceBoundsManager(fromCache.traceData);
+            Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(fromCache.model, 0);
+            // This init step is usually done in model.parse(), but as we loaded from
+            // the cache here, we manually run it.
+            // The SyntheticEventsManager caches instances based on the rawEvents()
+            // array, so we can safely do this even if we have already created an
+            // instance for this trace before - the old one will be re-used, rather
+            // than creating a new one.
+            const rawEvents = fromCache.model.rawTraceEvents();
+            if (rawEvents) {
+                TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.initAndActivate(rawEvents);
             }
-            return fromCache.traceParsedData;
+            return { traceData: fromCache.traceData, insights: fromCache.insights };
         }
         const fileContents = await TraceLoader.fixtureContents(context, name);
         const traceEngineData = await TraceLoader.executeTraceEngineOnFileContents(fileContents, /* emulate fresh recording */ false, config);
-        const cacheByName = traceEngineCache.get(name) ||
-            new Map();
+        const cacheByName = traceEngineCache.get(name) || new Map();
         cacheByName.set(configCacheKey, traceEngineData);
         traceEngineCache.set(name, cacheByName);
-        ModificationsManager.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(traceEngineData.model, 0);
-        if (options.initTraceBounds) {
-            TraceLoader.initTraceBoundsManager(traceEngineData.traceParsedData);
-        }
-        return traceEngineData.traceParsedData;
+        TraceLoader.initTraceBoundsManager(traceEngineData.traceData);
+        Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(traceEngineData.model, 0);
+        return {
+            traceData: traceEngineData.traceData,
+            insights: traceEngineData.insights,
+        };
     }
     /**
      * Initialise the BoundsManager with the bounds from a trace.
@@ -160,12 +166,14 @@ export class TraceLoader {
                 // state back to waiting.
                 if (TraceEngine.TraceModel.isModelUpdateDataComplete(data)) {
                     const metadata = model.metadata(0);
-                    const traceParsedData = model.traceParsedData(0);
-                    if (metadata && traceParsedData) {
+                    const traceData = model.traceParsedData(0);
+                    const insights = model.traceInsights(0);
+                    if (metadata && traceData) {
                         resolve({
                             model,
                             metadata,
-                            traceParsedData,
+                            traceData,
+                            insights,
                         });
                     }
                     else {

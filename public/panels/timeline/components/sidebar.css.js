@@ -20,14 +20,7 @@ styles.replaceSync(
 
 .tab-bar {
   display: flex;
-  /* When the sidebar is collapsed, position the expand icon in the
-   * center of it */
-  .is-closed & {
-    justify-content: center;
-  }
 
-  /* This means the sidebar is open, so we push the icon to the far
-   * right of the tab-bar. */
   .sidebar-toggle-button[name="left-panel-close"] {
     margin-left: auto;
     margin-right: 4px;
@@ -147,6 +140,13 @@ devtools-select-menu {
 
 .dl-value {
   font-weight: bold;
+}
+
+.navigation-wrapper summary {
+  text-wrap: nowrap;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /*# sourceURL=sidebar.css */

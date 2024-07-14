@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "allowUmdGlobalAccess": true,
     "checkJs": true,
     "composite": true,
     "declaration": true,
@@ -38,6 +39,7 @@
   },
   "files": [
     "../../../../../front_end/testing/ConsoleHelpers.ts",
+    "../../../../../front_end/testing/ContextMenuHelpers.ts",
     "../../../../../front_end/testing/Cookies.ts",
     "../../../../../front_end/testing/DOMHelpers.ts",
     "../../../../../front_end/testing/DataGridHelpers.ts",
@@ -133,9 +135,6 @@
     },
     {
       "path": "../models/timeline_model/bundle-tsconfig.json"
-    },
-    {
-      "path": "../models/trace/bundle-tsconfig.json"
     },
     {
       "path": "../models/trace/bundle-tsconfig.json"

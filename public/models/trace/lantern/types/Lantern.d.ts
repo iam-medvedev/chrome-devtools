@@ -170,7 +170,7 @@ export declare namespace Simulation {
         /** The method used to throttle the network. */
         throttlingMethod: 'devtools' | 'simulate' | 'provided';
         /** The throttling config settings. */
-        throttling: Required<ThrottlingSettings>;
+        throttling?: Required<ThrottlingSettings>;
         /** Precomputed lantern estimates to use instead of observed analysis. */
         precomputedLanternData?: PrecomputedLanternData | null;
     }

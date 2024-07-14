@@ -29,6 +29,14 @@ export var ClientFeature;
     // Chrome freestyler.
     ClientFeature[ClientFeature["CHROME_FREESTYLER"] = 2] = "CHROME_FREESTYLER";
 })(ClientFeature || (ClientFeature = {}));
+export var RecitationAction;
+(function (RecitationAction) {
+    RecitationAction["ACTION_UNSPECIFIED"] = "ACTION_UNSPECIFIED";
+    RecitationAction["CITE"] = "CITE";
+    RecitationAction["BLOCK"] = "BLOCK";
+    RecitationAction["NO_ACTION"] = "NO_ACTION";
+    RecitationAction["EXEMPT_FOUND_IN_PROMPT"] = "EXEMPT_FOUND_IN_PROMPT";
+})(RecitationAction || (RecitationAction = {}));
 export var AidaAvailability;
 (function (AidaAvailability) {
     AidaAvailability["AVAILABLE"] = "available";
@@ -151,6 +159,12 @@ export class AidaClient {
             for (const result of results) {
                 if ('metadata' in result) {
                     metadata.rpcGlobalId = result.metadata.rpcGlobalId;
+                    if ('attributionMetadata' in result.metadata) {
+                        if (!metadata.attributionMetadata) {
+                            metadata.attributionMetadata = [];
+                        }
+                        metadata.attributionMetadata.push(result.metadata.attributionMetadata);
+                    }
                 }
                 if ('textChunk' in result) {
                     if (inCodeChunk) {
@@ -182,6 +196,13 @@ export class AidaClient {
                 };
             }
         }
+    }
+    registerClientEvent(clientEvent) {
+        InspectorFrontendHostInstance.registerAidaClientEvent(JSON.stringify({
+            client: CLIENT_NAME,
+            event_time: new Date().toISOString(),
+            ...clientEvent,
+        }));
     }
 }
 //# sourceMappingURL=AidaClient.js.map

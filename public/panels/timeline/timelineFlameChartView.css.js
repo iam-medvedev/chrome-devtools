@@ -64,6 +64,14 @@ styles.replaceSync(
   }
 }
 
+.overlay-type-CURSOR_TIMESTAMP_MARKER {
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--sys-color-primary);
+  pointer-events: none;
+}
+
 .timeline-entry-tooltip-element:not(:empty) {
   z-index: 2000;
   position: absolute;

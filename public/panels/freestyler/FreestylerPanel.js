@@ -27,7 +27,7 @@ const TempUIStrings = {
      */
     sendFeedback: 'Send feedback',
     /**
-     *@description Freestyelr UI text for the help button.
+     *@description Freestyler UI text for the help button.
      */
     help: 'Help',
     /**
@@ -78,6 +78,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #agent;
     #viewProps;
     #viewOutput = {};
+    #serverSideLoggingEnabled = isFreestylerServerSideLoggingEnabled();
     #consentViewAcceptedSetting = Common.Settings.Settings.instance().createLocalSetting('freestyler-dogfood-consent-onboarding-finished', false);
     constructor(view = defaultView, { aidaClient, aidaAvailability }) {
         super(FreestylerPanel.panelName);
@@ -87,8 +88,11 @@ export class FreestylerPanel extends UI.Panel.Panel {
             UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         this.#aidaClient = aidaClient;
         this.#contentContainer = this.contentElement.createChild('div', 'freestyler-chat-ui-container');
-        this.#agent =
-            new FreestylerAgent({ aidaClient: this.#aidaClient, confirmSideEffect: this.showConfirmSideEffectUi.bind(this) });
+        this.#agent = new FreestylerAgent({
+            aidaClient: this.#aidaClient,
+            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
+            confirmSideEffect: this.showConfirmSideEffectUi.bind(this),
+        });
         this.#selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         this.#viewProps = {
             state: this.#consentViewAcceptedSetting.get() ? "chat-view" /* FreestylerChatUiState.CHAT_VIEW */ :
@@ -98,10 +102,10 @@ export class FreestylerPanel extends UI.Panel.Panel {
             inspectElementToggled: this.#toggleSearchElementAction.toggled(),
             selectedNode: this.#selectedNode,
             isLoading: false,
-            lastActionIsFixThisIssue: false,
             onTextSubmit: this.#handleTextSubmit.bind(this),
             onInspectElementClick: this.#handleSelectElementClick.bind(this),
             onRateClick: this.#handleRateClick.bind(this),
+            onFeedbackSubmit: this.#handleFeedbackSubmit.bind(this),
             onAcceptConsentClick: this.#handleAcceptConsentClick.bind(this),
             onCancelClick: this.#cancel.bind(this),
             onFixThisIssueClick: () => {
@@ -153,16 +157,28 @@ export class FreestylerPanel extends UI.Panel.Panel {
         void this.#toggleSearchElementAction.execute();
     }
     #handleRateClick(rpcId, rating) {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.registerAidaClientEvent(JSON.stringify({
-            client: Host.AidaClient.CLIENT_NAME,
-            event_time: new Date().toISOString(),
+        this.#aidaClient.registerClientEvent({
             corresponding_aida_rpc_global_id: rpcId,
+            disable_user_content_logging: !this.#serverSideLoggingEnabled,
             do_conversation_client_event: {
                 user_feedback: {
-                    sentiment: rating === "positive" /* Rating.POSITIVE */ ? 'POSITIVE' : 'NEGATIVE',
+                    sentiment: rating,
                 },
             },
-        }));
+        });
+    }
+    #handleFeedbackSubmit(rpcId, feedback) {
+        this.#aidaClient.registerClientEvent({
+            corresponding_aida_rpc_global_id: rpcId,
+            disable_user_content_logging: !this.#serverSideLoggingEnabled,
+            do_conversation_client_event: {
+                user_feedback: {
+                    user_input: {
+                        comment: feedback,
+                    },
+                },
+            },
+        });
     }
     #handleAcceptConsentClick() {
         this.#consentViewAcceptedSetting.set(true);
@@ -202,10 +218,13 @@ export class FreestylerPanel extends UI.Panel.Panel {
             entity: "user" /* ChatMessageEntity.USER */,
             text,
         });
-        this.#viewProps.lastActionIsFixThisIssue = text === FIX_THIS_ISSUE_PROMPT;
         this.#viewProps.isLoading = true;
+        // TODO: We should only show "Fix this issue" button when the answer suggests fix or fixes.
+        // We shouldn't show this when the answer is complete like a confirmation without any suggestion.
+        const suggestingFix = text !== FIX_THIS_ISSUE_PROMPT;
         let systemMessage = {
             entity: "model" /* ChatMessageEntity.MODEL */,
+            suggestingFix,
             steps: [],
         };
         this.doUpdate();
@@ -219,6 +238,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             if (data.step === Step.QUERYING) {
                 systemMessage = {
                     entity: "model" /* ChatMessageEntity.MODEL */,
+                    suggestingFix,
                     steps: [],
                 };
                 this.#viewProps.messages.push(systemMessage);
@@ -253,4 +273,17 @@ export class ActionDelegate {
         return false;
     }
 }
+function setFreestylerServerSideLoggingEnabled(enabled) {
+    if (enabled) {
+        localStorage.setItem('freestyler_enableServerSideLogging', 'true');
+    }
+    else {
+        localStorage.removeItem('freestyler_enableServerSideLogging');
+    }
+}
+function isFreestylerServerSideLoggingEnabled() {
+    return localStorage.getItem('freestyler_enableServerSideLogging') === 'true';
+}
+// @ts-ignore
+globalThis.setFreestylerServerSideLoggingEnabled = setFreestylerServerSideLoggingEnabled;
 //# sourceMappingURL=FreestylerPanel.js.map

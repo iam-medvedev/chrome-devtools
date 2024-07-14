@@ -38,10 +38,6 @@ export function extractExtensionEntries(timings) {
             // Not an extension user timing.
             continue;
         }
-        const extensionName = extensionPayload.metadata.extensionName;
-        if (!extensionName) {
-            continue;
-        }
         const extensionSyntheticEntry = {
             name: timing.name,
             ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
@@ -57,7 +53,7 @@ export function extractExtensionEntries(timings) {
             extensionMarkers.push(extensionSyntheticEntry);
             continue;
         }
-        if (Types.Extensions.isExtensionPayloadFlameChartEntry(extensionPayload)) {
+        if (Types.Extensions.isExtensionPayloadTrackEntry(extensionPayload)) {
             extensionFlameChartEntries.push(extensionSyntheticEntry);
             continue;
         }
@@ -80,7 +76,7 @@ export function extensionDataInTiming(timing) {
         if (!('devtools' in detailObj)) {
             return null;
         }
-        if (!('metadata' in detailObj['devtools'])) {
+        if (!Types.Extensions.isValidExtensionPayload(detailObj.devtools)) {
             return null;
         }
         return detailObj.devtools;

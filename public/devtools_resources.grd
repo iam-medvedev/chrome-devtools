@@ -612,8 +612,6 @@
       <include file="panels/web_audio/web_audio.js" name="PANELS_WEB_AUDIO_WEB_AUDIO_JS" resource_path="panels/web_audio/web_audio.js" type="BINDATA" compress="false"/>
       <include file="panels/webauthn/webauthn-meta.js" name="PANELS_WEBAUTHN_WEBAUTHN_META_JS" resource_path="panels/webauthn/webauthn-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/webauthn/webauthn.js" name="PANELS_WEBAUTHN_WEBAUTHN_JS" resource_path="panels/webauthn/webauthn.js" type="BINDATA" compress="false"/>
-      <include file="services/events_serializer/events_serializer.js" name="SERVICES_EVENTS_SERIALIZER_EVENTS_SERIALIZER_JS" resource_path="services/events_serializer/events_serializer.js" type="BINDATA" compress="false"/>
-      <include file="services/modifications_manager/modifications_manager.js" name="SERVICES_MODIFICATIONS_MANAGER_MODIFICATIONS_MANAGER_JS" resource_path="services/modifications_manager/modifications_manager.js" type="BINDATA" compress="false"/>
       <include file="services/puppeteer/puppeteer.js" name="SERVICES_PUPPETEER_PUPPETEER_JS" resource_path="services/puppeteer/puppeteer.js" type="BINDATA" compress="false"/>
       <include file="services/trace_bounds/trace_bounds.js" name="SERVICES_TRACE_BOUNDS_TRACE_BOUNDS_JS" resource_path="services/trace_bounds/trace_bounds.js" type="BINDATA" compress="false"/>
       <include file="services/tracing/tracing.js" name="SERVICES_TRACING_TRACING_JS" resource_path="services/tracing/tracing.js" type="BINDATA" compress="false"/>
@@ -967,6 +965,7 @@
       <include file="models/persistence/editFileSystemView.css.js" name="MODELS_PERSISTENCE_EDITFILESYSTEMVIEW_CSS_JS" resource_path="models/persistence/editFileSystemView.css.js" type="BINDATA" compress="false"/>
       <include file="models/persistence/workspaceSettingsTab.css.js" name="MODELS_PERSISTENCE_WORKSPACESETTINGSTAB_CSS_JS" resource_path="models/persistence/workspaceSettingsTab.css.js" type="BINDATA" compress="false"/>
       <include file="models/source_map_scopes/NamesResolver.js" name="MODELS_SOURCE_MAP_SCOPES_NAMESRESOLVER_JS" resource_path="models/source_map_scopes/NamesResolver.js" type="BINDATA" compress="false"/>
+      <include file="models/source_map_scopes/ScopeChainModel.js" name="MODELS_SOURCE_MAP_SCOPES_SCOPECHAINMODEL_JS" resource_path="models/source_map_scopes/ScopeChainModel.js" type="BINDATA" compress="false"/>
       <include file="models/source_map_scopes/ScopeTreeCache.js" name="MODELS_SOURCE_MAP_SCOPES_SCOPETREECACHE_JS" resource_path="models/source_map_scopes/ScopeTreeCache.js" type="BINDATA" compress="false"/>
       <include file="models/text_utils/CodeMirrorUtils.js" name="MODELS_TEXT_UTILS_CODEMIRRORUTILS_JS" resource_path="models/text_utils/CodeMirrorUtils.js" type="BINDATA" compress="false"/>
       <include file="models/text_utils/ContentData.js" name="MODELS_TEXT_UTILS_CONTENTDATA_JS" resource_path="models/text_utils/ContentData.js" type="BINDATA" compress="false"/>
@@ -1022,6 +1021,7 @@
       <include file="models/trace/handlers/WorkersHandler.js" name="MODELS_TRACE_HANDLERS_WORKERSHANDLER_JS" resource_path="models/trace/handlers/WorkersHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/types.js" name="MODELS_TRACE_HANDLERS_TYPES_JS" resource_path="models/trace/handlers/types.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/Extensions.js" name="MODELS_TRACE_HELPERS_EXTENSIONS_JS" resource_path="models/trace/helpers/Extensions.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/helpers/Network.js" name="MODELS_TRACE_HELPERS_NETWORK_JS" resource_path="models/trace/helpers/Network.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/SamplesIntegrator.js" name="MODELS_TRACE_HELPERS_SAMPLESINTEGRATOR_JS" resource_path="models/trace/helpers/SamplesIntegrator.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/SyntheticEvents.js" name="MODELS_TRACE_HELPERS_SYNTHETICEVENTS_JS" resource_path="models/trace/helpers/SyntheticEvents.js" type="BINDATA" compress="false"/>
       <include file="models/trace/helpers/Timing.js" name="MODELS_TRACE_HELPERS_TIMING_JS" resource_path="models/trace/helpers/Timing.js" type="BINDATA" compress="false"/>
@@ -1346,7 +1346,9 @@
       <include file="panels/freestyler/FreestylerEvaluateAction.js" name="PANELS_FREESTYLER_FREESTYLEREVALUATEACTION_JS" resource_path="panels/freestyler/FreestylerEvaluateAction.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/FreestylerPanel.js" name="PANELS_FREESTYLER_FREESTYLERPANEL_JS" resource_path="panels/freestyler/FreestylerPanel.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/components/FreestylerChatUi.js" name="PANELS_FREESTYLER_COMPONENTS_FREESTYLERCHATUI_JS" resource_path="panels/freestyler/components/FreestylerChatUi.js" type="BINDATA" compress="false"/>
+      <include file="panels/freestyler/components/ProvideFeedback.js" name="PANELS_FREESTYLER_COMPONENTS_PROVIDEFEEDBACK_JS" resource_path="panels/freestyler/components/ProvideFeedback.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/components/freestylerChatUi.css.js" name="PANELS_FREESTYLER_COMPONENTS_FREESTYLERCHATUI_CSS_JS" resource_path="panels/freestyler/components/freestylerChatUi.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/freestyler/components/provideFeedback.css.js" name="PANELS_FREESTYLER_COMPONENTS_PROVIDEFEEDBACK_CSS_JS" resource_path="panels/freestyler/components/provideFeedback.css.js" type="BINDATA" compress="false"/>
       <include file="panels/freestyler/freestylerPanel.css.js" name="PANELS_FREESTYLER_FREESTYLERPANEL_CSS_JS" resource_path="panels/freestyler/freestylerPanel.css.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/AffectedBlockedByResponseView.js" name="PANELS_ISSUES_AFFECTEDBLOCKEDBYRESPONSEVIEW_JS" resource_path="panels/issues/AffectedBlockedByResponseView.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/AffectedCookiesView.js" name="PANELS_ISSUES_AFFECTEDCOOKIESVIEW_JS" resource_path="panels/issues/AffectedCookiesView.js" type="BINDATA" compress="false"/>
@@ -1687,6 +1689,7 @@
       <include file="panels/timeline/CountersGraph.js" name="PANELS_TIMELINE_COUNTERSGRAPH_JS" resource_path="panels/timeline/CountersGraph.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/EasterEgg.js" name="PANELS_TIMELINE_EASTEREGG_JS" resource_path="panels/timeline/EasterEgg.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/EventUICategory.js" name="PANELS_TIMELINE_EVENTUICATEGORY_JS" resource_path="panels/timeline/EventUICategory.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/EventsSerializer.js" name="PANELS_TIMELINE_EVENTSSERIALIZER_JS" resource_path="panels/timeline/EventsSerializer.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/EventsTimelineTreeView.js" name="PANELS_TIMELINE_EVENTSTIMELINETREEVIEW_JS" resource_path="panels/timeline/EventsTimelineTreeView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ExtensionDataGatherer.js" name="PANELS_TIMELINE_EXTENSIONDATAGATHERER_JS" resource_path="panels/timeline/ExtensionDataGatherer.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ExtensionTrackAppender.js" name="PANELS_TIMELINE_EXTENSIONTRACKAPPENDER_JS" resource_path="panels/timeline/ExtensionTrackAppender.js" type="BINDATA" compress="false"/>
@@ -1696,6 +1699,7 @@
       <include file="panels/timeline/InteractionsTrackAppender.js" name="PANELS_TIMELINE_INTERACTIONSTRACKAPPENDER_JS" resource_path="panels/timeline/InteractionsTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/IsolateSelector.js" name="PANELS_TIMELINE_ISOLATESELECTOR_JS" resource_path="panels/timeline/IsolateSelector.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/LayoutShiftsTrackAppender.js" name="PANELS_TIMELINE_LAYOUTSHIFTSTRACKAPPENDER_JS" resource_path="panels/timeline/LayoutShiftsTrackAppender.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/ModificationsManager.js" name="PANELS_TIMELINE_MODIFICATIONSMANAGER_JS" resource_path="panels/timeline/ModificationsManager.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/NetworkTrackAppender.js" name="PANELS_TIMELINE_NETWORKTRACKAPPENDER_JS" resource_path="panels/timeline/NetworkTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/Overlays.js" name="PANELS_TIMELINE_OVERLAYS_JS" resource_path="panels/timeline/Overlays.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/SaveFileFormatter.js" name="PANELS_TIMELINE_SAVEFILEFORMATTER_JS" resource_path="panels/timeline/SaveFileFormatter.js" type="BINDATA" compress="false"/>
@@ -1725,25 +1729,33 @@
       <include file="panels/timeline/UIDevtoolsUtils.js" name="PANELS_TIMELINE_UIDEVTOOLSUTILS_JS" resource_path="panels/timeline/UIDevtoolsUtils.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/Breadcrumbs.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBS_JS" resource_path="panels/timeline/components/Breadcrumbs.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/BreadcrumbsUI.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_JS" resource_path="panels/timeline/components/BreadcrumbsUI.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/CPUThrottlingSelector.js" name="PANELS_TIMELINE_COMPONENTS_CPUTHROTTLINGSELECTOR_JS" resource_path="panels/timeline/components/CPUThrottlingSelector.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/DetailsView.js" name="PANELS_TIMELINE_COMPONENTS_DETAILSVIEW_JS" resource_path="panels/timeline/components/DetailsView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/EntryLabelOverlay.js" name="PANELS_TIMELINE_COMPONENTS_ENTRYLABELOVERLAY_JS" resource_path="panels/timeline/components/EntryLabelOverlay.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/FieldSettingsDialog.js" name="PANELS_TIMELINE_COMPONENTS_FIELDSETTINGSDIALOG_JS" resource_path="panels/timeline/components/FieldSettingsDialog.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/InteractionBreakdown.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_JS" resource_path="panels/timeline/components/InteractionBreakdown.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/LiveMetricsView.js" name="PANELS_TIMELINE_COMPONENTS_LIVEMETRICSVIEW_JS" resource_path="panels/timeline/components/LiveMetricsView.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/NetworkRequestDetails.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTDETAILS_JS" resource_path="panels/timeline/components/NetworkRequestDetails.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/NetworkRequestTooltip.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTTOOLTIP_JS" resource_path="panels/timeline/components/NetworkRequestTooltip.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/NetworkThrottlingSelector.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKTHROTTLINGSELECTOR_JS" resource_path="panels/timeline/components/NetworkThrottlingSelector.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/Sidebar.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBAR_JS" resource_path="panels/timeline/components/Sidebar.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/SidebarAnnotationsTab.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARANNOTATIONSTAB_JS" resource_path="panels/timeline/components/SidebarAnnotationsTab.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/SidebarInsight.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARINSIGHT_JS" resource_path="panels/timeline/components/SidebarInsight.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/SidebarSingleNavigation.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARSINGLENAVIGATION_JS" resource_path="panels/timeline/components/SidebarSingleNavigation.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/TimeRangeOverlay.js" name="PANELS_TIMELINE_COMPONENTS_TIMERANGEOVERLAY_JS" resource_path="panels/timeline/components/TimeRangeOverlay.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/TimespanBreakdownOverlay.js" name="PANELS_TIMELINE_COMPONENTS_TIMESPANBREAKDOWNOVERLAY_JS" resource_path="panels/timeline/components/TimespanBreakdownOverlay.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/Utils.js" name="PANELS_TIMELINE_COMPONENTS_UTILS_JS" resource_path="panels/timeline/components/Utils.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/breadcrumbsUI.css.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_CSS_JS" resource_path="panels/timeline/components/breadcrumbsUI.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/entryLabelOverlay.css.js" name="PANELS_TIMELINE_COMPONENTS_ENTRYLABELOVERLAY_CSS_JS" resource_path="panels/timeline/components/entryLabelOverlay.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/fieldSettingsDialog.css.js" name="PANELS_TIMELINE_COMPONENTS_FIELDSETTINGSDIALOG_CSS_JS" resource_path="panels/timeline/components/fieldSettingsDialog.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/interactionBreakdown.css.js" name="PANELS_TIMELINE_COMPONENTS_INTERACTIONBREAKDOWN_CSS_JS" resource_path="panels/timeline/components/interactionBreakdown.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/liveMetricsView.css.js" name="PANELS_TIMELINE_COMPONENTS_LIVEMETRICSVIEW_CSS_JS" resource_path="panels/timeline/components/liveMetricsView.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/networkRequestDetails.css.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTDETAILS_CSS_JS" resource_path="panels/timeline/components/networkRequestDetails.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/networkRequestTooltip.css.js" name="PANELS_TIMELINE_COMPONENTS_NETWORKREQUESTTOOLTIP_CSS_JS" resource_path="panels/timeline/components/networkRequestTooltip.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebar.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBAR_CSS_JS" resource_path="panels/timeline/components/sidebar.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebarAnnotationsTab.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARANNOTATIONSTAB_CSS_JS" resource_path="panels/timeline/components/sidebarAnnotationsTab.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/sidebarInsight.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARINSIGHT_CSS_JS" resource_path="panels/timeline/components/sidebarInsight.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/sidebarSingleNavigation.css.js" name="PANELS_TIMELINE_COMPONENTS_SIDEBARSINGLENAVIGATION_CSS_JS" resource_path="panels/timeline/components/sidebarSingleNavigation.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/timeRangeOverlay.css.js" name="PANELS_TIMELINE_COMPONENTS_TIMERANGEOVERLAY_CSS_JS" resource_path="panels/timeline/components/timeRangeOverlay.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/timespanBreakdownOverlay.css.js" name="PANELS_TIMELINE_COMPONENTS_TIMESPANBREAKDOWNOVERLAY_CSS_JS" resource_path="panels/timeline/components/timespanBreakdownOverlay.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/extensions/ExtensionUI.js" name="PANELS_TIMELINE_EXTENSIONS_EXTENSIONUI_JS" resource_path="panels/timeline/extensions/ExtensionUI.js" type="BINDATA" compress="false"/>
@@ -1769,8 +1781,6 @@
       <include file="panels/web_audio/webAudio.css.js" name="PANELS_WEB_AUDIO_WEBAUDIO_CSS_JS" resource_path="panels/web_audio/webAudio.css.js" type="BINDATA" compress="false"/>
       <include file="panels/webauthn/WebauthnPane.js" name="PANELS_WEBAUTHN_WEBAUTHNPANE_JS" resource_path="panels/webauthn/WebauthnPane.js" type="BINDATA" compress="false"/>
       <include file="panels/webauthn/webauthnPane.css.js" name="PANELS_WEBAUTHN_WEBAUTHNPANE_CSS_JS" resource_path="panels/webauthn/webauthnPane.css.js" type="BINDATA" compress="false"/>
-      <include file="services/events_serializer/EventsSerializer.js" name="SERVICES_EVENTS_SERIALIZER_EVENTSSERIALIZER_JS" resource_path="services/events_serializer/EventsSerializer.js" type="BINDATA" compress="false"/>
-      <include file="services/modifications_manager/ModificationsManager.js" name="SERVICES_MODIFICATIONS_MANAGER_MODIFICATIONSMANAGER_JS" resource_path="services/modifications_manager/ModificationsManager.js" type="BINDATA" compress="false"/>
       <include file="services/puppeteer/PuppeteerConnection.js" name="SERVICES_PUPPETEER_PUPPETEERCONNECTION_JS" resource_path="services/puppeteer/PuppeteerConnection.js" type="BINDATA" compress="false"/>
       <include file="services/trace_bounds/TraceBounds.js" name="SERVICES_TRACE_BOUNDS_TRACEBOUNDS_JS" resource_path="services/trace_bounds/TraceBounds.js" type="BINDATA" compress="false"/>
       <include file="services/tracing/PerformanceTracing.js" name="SERVICES_TRACING_PERFORMANCETRACING_JS" resource_path="services/tracing/PerformanceTracing.js" type="BINDATA" compress="false"/>

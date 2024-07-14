@@ -461,6 +461,9 @@ export const generatedPropertyValues: {
     "inset-area": {
         values: string[];
     };
+    "interpolate-size": {
+        values: string[];
+    };
     isolation: {
         values: string[];
     };

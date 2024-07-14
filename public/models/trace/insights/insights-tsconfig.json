@@ -43,6 +43,9 @@
   "references": [
     {
       "path": "../handlers/bundle-tsconfig.json"
+    },
+    {
+      "path": "../lantern/bundle-tsconfig.json"
     }
   ]
 }

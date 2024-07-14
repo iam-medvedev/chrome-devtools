@@ -1,8 +1,7 @@
-/// <reference types="mocha" />
 import * as TraceModel from '../../trace.js';
 import * as Lantern from '../lantern.js';
 declare function loadTrace(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<Lantern.Types.Trace>;
-declare function runTraceEngine(trace: Lantern.Types.Trace): Promise<TraceModel.Handlers.Types.EnabledHandlerDataWithMeta<typeof TraceModel.Handlers.ModelHandlers>>;
+declare function runTraceEngine(trace: Lantern.Types.Trace): Promise<Readonly<TraceModel.Handlers.Types.EnabledHandlerDataWithMeta<typeof TraceModel.Handlers.ModelHandlers>>>;
 declare function getComputationDataFromFixture({ trace, settings, url }: {
     trace: Lantern.Types.Trace;
     settings?: Lantern.Types.Simulation.Settings;

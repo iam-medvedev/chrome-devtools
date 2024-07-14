@@ -153,8 +153,9 @@ export function isTraceEventCompositeLayers(event) {
 export function isTraceEventActivateLayerTree(event) {
     return event.name === "ActivateLayerTree" /* KnownEventName.ActivateLayerTree */;
 }
-export function isSyntheticInvalidation(event) {
-    return event.name === 'SyntheticInvalidation';
+export function isTraceEventInvalidationTracking(event) {
+    return isTraceEventScheduleStyleInvalidationTracking(event) || isTraceEventStyleRecalcInvalidationTracking(event) ||
+        isTraceEventStyleInvalidatorInvalidationTracking(event) || isTraceEventLayoutInvalidationTracking(event);
 }
 export function isTraceEventDrawLazyPixelRef(event) {
     return event.name === "Draw LazyPixelRef" /* KnownEventName.DrawLazyPixelRef */;
@@ -484,6 +485,9 @@ export function isTraceEventWebSocketDestroy(event) {
 }
 export function isWebSocketTraceEvent(event) {
     return isTraceEventWebSocketCreate(event) || isTraceEventWebSocketInfo(event) || isTraceEventWebSocketTransfer(event);
+}
+export function isWebSocketEvent(event) {
+    return isWebSocketTraceEvent(event) || isSyntheticWebSocketConnectionEvent(event);
 }
 export function isTraceEventV8Compile(event) {
     return event.name === "v8.compile" /* KnownEventName.Compile */;

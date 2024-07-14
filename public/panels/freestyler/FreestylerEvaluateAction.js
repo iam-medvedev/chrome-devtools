@@ -5,6 +5,7 @@ export class ExecutionError extends Error {
 }
 export class SideEffectError extends Error {
 }
+/* istanbul ignore next */
 function stringifyObjectOnThePage() {
     const seenBefore = new WeakMap();
     return JSON.stringify(this, function replacer(key, value) {
@@ -15,11 +16,9 @@ function stringifyObjectOnThePage() {
             seenBefore.set(value, true);
         }
         if (value instanceof HTMLElement) {
-            const attributesText = [];
-            for (const attribute of value.attributes) {
-                attributesText.push(`${attribute.name}="${attribute.value}"`);
-            }
-            return `<${value.nodeName.toLowerCase()}${attributesText.length > 0 ? ` ${attributesText.join(' ')}` : ''}>${value.hasChildNodes() ? '...' : ''}</${value.nodeName.toLowerCase()}>`;
+            const idAttribute = value.id ? ` id="${value.id}"` : '';
+            const classAttribute = value.classList.value ? ` class="${value.classList.value}"` : '';
+            return `<${value.nodeName.toLowerCase()}${idAttribute}${classAttribute}>${value.hasChildNodes() ? '...' : ''}</${value.nodeName.toLowerCase()}>`;
         }
         if (this instanceof CSSStyleDeclaration) {
             // Do not add number keys to the output.

@@ -1,9 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as i18n from '../../../core/i18n/i18n.js';
-import * as Root from '../../../core/root/root.js';
-import * as TraceEngine from '../../../models/trace/trace.js';
+import * as Common from '../../../core/common/common.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
@@ -13,10 +11,10 @@ import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import sidebarStyles from './sidebar.css.js';
 import * as SidebarAnnotationsTab from './SidebarAnnotationsTab.js';
-import * as SidebarInsight from './SidebarInsight.js';
-const COLLAPSED_WIDTH = 40;
+import { SidebarSingleNavigation } from './SidebarSingleNavigation.js';
 const DEFAULT_EXPANDED_WIDTH = 240;
-var InsightsCategories;
+export const DEFAULT_SIDEBAR_TAB = "Insights" /* SidebarTabsName.INSIGHTS */;
+export var InsightsCategories;
 (function (InsightsCategories) {
     InsightsCategories["ALL"] = "All";
     InsightsCategories["INP"] = "INP";
@@ -30,31 +28,20 @@ export class ToggleSidebarInsights extends Event {
         super(ToggleSidebarInsights.eventName, { bubbles: true, composed: true });
     }
 }
-export class SidebarWidget extends UI.SplitWidget.SplitWidget {
-    #sidebarExpanded = false;
+export class SidebarWidget extends Common.ObjectWrapper.eventMixin(UI.SplitWidget.SplitWidget) {
     #sidebarUI = new SidebarUI();
     constructor() {
-        super(true /* isVertical */, false /* secondIsSidebar */, undefined /* settingName */, COLLAPSED_WIDTH);
-        if (Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */)) {
-            this.sidebarElement().append(this.#sidebarUI);
-        }
-        else {
-            this.hideSidebar();
-        }
-        this.setResizable(this.#sidebarExpanded);
-        this.#sidebarUI.expanded = this.#sidebarExpanded;
-        this.#sidebarUI.addEventListener('togglebuttonclick', () => {
-            this.#sidebarExpanded = !this.#sidebarExpanded;
-            if (this.#sidebarExpanded) {
-                this.setResizable(true);
-                this.forceSetSidebarWidth(DEFAULT_EXPANDED_WIDTH);
-            }
-            else {
-                this.setResizable(false);
-                this.forceSetSidebarWidth(COLLAPSED_WIDTH);
-            }
-            this.#sidebarUI.expanded = this.#sidebarExpanded;
+        super(true /* isVertical */, false /* secondIsSidebar */, undefined /* settingName */, DEFAULT_EXPANDED_WIDTH);
+        this.sidebarElement().append(this.#sidebarUI);
+        this.#sidebarUI.addEventListener('closebuttonclick', () => {
+            this.dispatchEventToListeners("SidebarCollapseClick" /* WidgetEvents.SidebarCollapseClick */, {});
         });
+    }
+    updateContentsOnExpand() {
+        this.#sidebarUI.onWidgetShow();
+    }
+    setAnnotationsTabContent(updatedAnnotations) {
+        this.#sidebarUI.annotations = updatedAnnotations;
     }
     setTraceParsedData(traceParsedData) {
         this.#sidebarUI.traceParsedData = traceParsedData;
@@ -66,27 +53,31 @@ export class SidebarWidget extends UI.SplitWidget.SplitWidget {
 export class SidebarUI extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-sidebar`;
     #shadow = this.attachShadow({ mode: 'open' });
-    #activeTab = "Insights" /* SidebarTabsName.INSIGHTS */;
-    selectedCategory = InsightsCategories.ALL;
-    #expanded = false;
-    #lcpPhasesExpanded = false;
+    #activeTab = DEFAULT_SIDEBAR_TAB;
+    #selectedCategory = InsightsCategories.ALL;
     #traceParsedData;
-    #inpMetric = null;
-    #lcpMetric = null;
-    #clsMetric = null;
-    #phaseData = [];
     #insights = null;
+    #annotations = [];
     #renderBound = this.#render.bind(this);
+    /**
+     * When a trace has multiple navigations, we show an accordion with each
+     * navigation in. You can only have one of these open at any time, and we
+     * track it via this ID.
+     */
+    #activeNavigationId = null;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [sidebarStyles];
-        // Force an immediate render of the default state (not expanded).
+    }
+    onWidgetShow() {
+        // Called when the SidebarWidget is expanded in order to render. Because
+        // this happens distinctly from any data being passed in, we need to expose
+        // a method to allow the widget to let us know when to render. This also
+        // matters because this is when we can update the underline below the
+        // active tab, now that the sidebar is visible and has width.
         this.#render();
     }
-    set expanded(expanded) {
-        if (expanded === this.#expanded) {
-            return;
-        }
-        this.#expanded = expanded;
+    set annotations(annotations) {
+        this.#annotations = annotations;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     set insights(insights) {
@@ -94,9 +85,7 @@ export class SidebarUI extends HTMLElement {
             return;
         }
         this.#insights = insights;
-        this.#phaseData = SidebarInsight.getLCPInsightData(this.#insights);
         // Reset toggled insights.
-        this.#lcpPhasesExpanded = false;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     set traceParsedData(traceParsedData) {
@@ -105,37 +94,10 @@ export class SidebarUI extends HTMLElement {
             return;
         }
         this.#traceParsedData = traceParsedData;
-        // Clear all data before re-render.
-        this.#inpMetric = null;
-        this.#lcpMetric = null;
-        this.#clsMetric = null;
-        if (!traceParsedData) {
-            void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-            return;
-        }
-        // Get LCP metric for first navigation.
-        const eventsByNavigation = traceParsedData.PageLoadMetrics.metricScoresByFrameId.get(traceParsedData.Meta.mainFrameId);
-        if (eventsByNavigation) {
-            const metricsByName = eventsByNavigation.values().next().value;
-            if (metricsByName) {
-                this.#lcpMetric = metricsByName.get("LCP" /* TraceEngine.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
-            }
-        }
-        const clsScore = traceParsedData.LayoutShifts.sessionMaxScore;
-        this.#clsMetric = {
-            clsScore,
-            clsScoreClassification: TraceEngine.Handlers.ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(clsScore),
-        };
-        if (traceParsedData.UserInteractions.longestInteractionEvent) {
-            this.#inpMetric = {
-                longestINPDur: traceParsedData.UserInteractions.longestInteractionEvent.dur,
-                inpScoreClassification: TraceEngine.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(traceParsedData.UserInteractions.longestInteractionEvent.dur),
-            };
-        }
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
-    #toggleButtonClick() {
-        this.dispatchEvent(new Event('togglebuttonclick'));
+    #closeButtonClick() {
+        this.dispatchEvent(new Event('closebuttonclick'));
     }
     #onTabHeaderClicked(activeTab) {
         if (activeTab === this.#activeTab) {
@@ -163,67 +125,12 @@ export class SidebarUI extends HTMLElement {
         // clang-format on
     }
     #onTargetSelected(event) {
-        this.selectedCategory = event.itemValue;
+        this.#selectedCategory = event.itemValue;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    #renderMetricValue(label, value, classification) {
-        return LitHtml.html `
-      <div class="metric">
-        <div class="metric-value metric-value-${classification}">${value}</div>
-        <div class="metric-label">${label}</div>
-      </div>
-    `;
-    }
-    #renderINPMetric() {
-        if (!this.#inpMetric) {
-            return null;
-        }
-        const timeString = i18n.TimeUtilities.formatMicroSecondsTime(this.#inpMetric.longestINPDur);
-        return this.#renderMetricValue('INP', timeString, this.#inpMetric.inpScoreClassification);
-    }
-    #renderLCPMetric() {
-        if (!this.#lcpMetric) {
-            return null;
-        }
-        const timeString = i18n.TimeUtilities.formatMicroSecondsAsSeconds(this.#lcpMetric.timing);
-        return this.#renderMetricValue(this.#lcpMetric.metricName, timeString, this.#lcpMetric.classification);
-    }
-    #renderCLSMetric() {
-        if (!this.#clsMetric) {
-            return null;
-        }
-        return this.#renderMetricValue("CLS" /* TraceEngine.Handlers.ModelHandlers.PageLoadMetrics.MetricName.CLS */, this.#clsMetric.clsScore.toPrecision(3), this.#clsMetric.clsScoreClassification);
-    }
-    #toggleLCPPhaseClick() {
-        this.#lcpPhasesExpanded = !this.#lcpPhasesExpanded;
-        this.dispatchEvent(new ToggleSidebarInsights());
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    #renderInsightsForCategory(insightsCategory) {
-        switch (insightsCategory) {
-            case InsightsCategories.ALL:
-                return LitHtml.html `
-          <div class="metrics-row">
-            ${this.#renderINPMetric()}
-            ${this.#renderLCPMetric()}
-            ${this.#renderCLSMetric()}
-          </div>
-          <div class="insights" @click=${this.#toggleLCPPhaseClick}>${SidebarInsight.renderLCPPhases(this.#phaseData, this.#lcpPhasesExpanded)}</div>
-        `;
-            case InsightsCategories.LCP:
-                return LitHtml.html `
-          ${this.#renderLCPMetric()}
-          <div class="insights" @click=${this.#toggleLCPPhaseClick}>${SidebarInsight.renderLCPPhases(this.#phaseData, this.#lcpPhasesExpanded)}</div>
-        `;
-            case InsightsCategories.CLS:
-                return LitHtml.html `${this.#renderCLSMetric()}`;
-            case InsightsCategories.INP:
-                return LitHtml.html `${this.#renderINPMetric()}`;
-            case InsightsCategories.OTHER:
-                return LitHtml.html `<div>${insightsCategory}</div>`;
-        }
     }
     #renderInsightsTabContent() {
+        const navigations = this.#traceParsedData?.Meta.mainFrameNavigations ?? [];
+        const hasMultipleNavigations = navigations.length > 1;
         // clang-format off
         return LitHtml.html `
       <${Menus.SelectMenu.SelectMenu.litTagName}
@@ -235,8 +142,8 @@ export class SidebarUI extends HTMLElement {
             .showSelectedItem=${true}
             .showConnector=${false}
             .position=${"bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */}
-            .buttonTitle=${this.selectedCategory}
-            jslog=${VisualLogging.dropDown('performance.sidebar-insights-category-select').track({ click: true })}
+            .buttonTitle=${this.#selectedCategory}
+            jslog=${VisualLogging.dropDown('timeline.sidebar-insights-category-select').track({ click: true })}
           >
           ${Object.values(InsightsCategories).map(insightsCategory => {
             return LitHtml.html `
@@ -247,16 +154,47 @@ export class SidebarUI extends HTMLElement {
         })}
       </${Menus.SelectMenu.SelectMenu.litTagName}>
 
-      ${this.#renderInsightsForCategory(this.selectedCategory)}
+      ${navigations.map(navigation => {
+            const id = navigation.args.data?.navigationId;
+            const url = navigation.args.data?.documentLoaderURL;
+            if (!id || !url) {
+                return LitHtml.nothing;
+            }
+            const data = {
+                traceParsedData: this.#traceParsedData ?? null,
+                insights: this.#insights,
+                navigationId: id,
+                activeCategory: this.#selectedCategory,
+            };
+            const contents = LitHtml.html `
+          <${SidebarSingleNavigation.litTagName} .data=${data}>
+          </${SidebarSingleNavigation.litTagName}>
+        `;
+            if (hasMultipleNavigations) {
+                return LitHtml.html `<div class="multi-nav-container">
+            <details ?open=${id === this.#activeNavigationId} class="navigation-wrapper"><summary @click=${this.#navigationClicked(id)}>${url}</summary>${contents}</details>
+            </div>`;
+            }
+            return contents;
+        })}
     `;
         // clang-format on
+    }
+    #navigationClicked(id) {
+        return (event) => {
+            event.preventDefault();
+            this.#activeNavigationId = id;
+            void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        };
     }
     #renderContent() {
         switch (this.#activeTab) {
             case "Insights" /* SidebarTabsName.INSIGHTS */:
                 return this.#renderInsightsTabContent();
             case "Annotations" /* SidebarTabsName.ANNOTATIONS */:
-                return new SidebarAnnotationsTab.SidebarAnnotationsTab();
+                return LitHtml.html `
+        <${SidebarAnnotationsTab.SidebarAnnotationsTab.litTagName} .annotations=${this.#annotations}></${SidebarAnnotationsTab.SidebarAnnotationsTab.litTagName}>
+      `;
             default:
                 return null;
         }
@@ -281,25 +219,20 @@ export class SidebarUI extends HTMLElement {
         }
     }
     #render() {
-        const toggleIcon = this.#expanded ? 'left-panel-close' : 'left-panel-open';
         // clang-format off
-        const output = LitHtml.html `<div class=${LitHtml.Directives.classMap({
-            sidebar: true,
-            'is-expanded': this.#expanded,
-            'is-closed': !this.#expanded,
-        })}>
+        const output = LitHtml.html `<div class="sidebar">
       <div class="tab-bar">
-        ${this.#expanded ? this.#renderHeader() : LitHtml.nothing}
+        ${this.#renderHeader()}
         <${IconButton.Icon.Icon.litTagName}
-          name=${toggleIcon}
-          @click=${this.#toggleButtonClick}
+          name='left-panel-close'
+          @click=${this.#closeButtonClick}
           class="sidebar-toggle-button"
-          jslog=${VisualLogging.action('performance.sidebar-toggle').track({ click: true })}
+          jslog=${VisualLogging.action('timeline.sidebar-close').track({ click: true })}
         ></${IconButton.Icon.Icon.litTagName}>
       </div>
-      <div class="tab-slider" ?hidden=${!this.#expanded}></div>
-      <div class="tab-headers-bottom-line" ?hidden=${!this.#expanded}></div>
-      ${this.#expanded ? LitHtml.html `<div class="sidebar-body">${this.#renderContent()}</div>` : LitHtml.nothing}
+      <div class="tab-slider"></div>
+      <div class="tab-headers-bottom-line"></div>
+      <div class="sidebar-body">${this.#renderContent()}</div>
     </div>`;
         // clang-format on
         LitHtml.render(output, this.#shadow, { host: this });

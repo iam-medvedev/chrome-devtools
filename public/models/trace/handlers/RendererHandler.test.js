@@ -11,7 +11,7 @@ const SUB_FRAME_PID = 2236065;
 const SUB_FRAME_PID_2 = 2236084;
 const SUB_FRAME_PID_3 = 2236123;
 async function handleEventsFromTraceFile(context, file) {
-    const traceData = await TraceLoader.traceEngine(context, file);
+    const { traceData } = await TraceLoader.traceEngine(context, file);
     return traceData;
 }
 describeWithEnvironment('RendererHandler', function () {

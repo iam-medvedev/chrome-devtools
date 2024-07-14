@@ -1,4 +1,3 @@
-/// <reference types="sinon" />
 import type * as SDK from '../core/sdk/sdk.js';
 import type * as Protocol from '../generated/protocol.js';
 import * as Console from '../panels/console/console.js';

@@ -8,12 +8,12 @@ function createProcessedNavigation(traceEngineData) {
     const frameId = Meta.mainFrameId;
     const scoresByNav = traceEngineData.PageLoadMetrics.metricScoresByFrameId.get(frameId);
     if (!scoresByNav) {
-        throw new Error('missing metric scores for main frame');
+        throw new Lantern.Core.LanternError('missing metric scores for main frame');
     }
     const lastNavigationId = Meta.mainFrameNavigations.at(-1)?.args.data?.navigationId;
     const scores = lastNavigationId && scoresByNav.get(lastNavigationId);
     if (!scores) {
-        throw new Error('missing metric scores for specified navigation');
+        throw new Lantern.Core.LanternError('missing metric scores for specified navigation');
     }
     const getTimestampOrUndefined = (metric) => {
         const metricScore = scores.get(metric);
@@ -25,7 +25,7 @@ function createProcessedNavigation(traceEngineData) {
     const getTimestamp = (metric) => {
         const metricScore = scores.get(metric);
         if (!metricScore?.event) {
-            throw new Error(`missing metric: ${metric}`);
+            throw new Lantern.Core.LanternError(`missing metric: ${metric}`);
         }
         return metricScore.event.ts;
     };
@@ -73,7 +73,7 @@ function findWorkerThreads(trace) {
 }
 function createLanternRequest(traceEngineData, workerThreads, request) {
     if (request.args.data.connectionId === undefined || request.args.data.connectionReused === undefined) {
-        throw new Error('Trace is too old');
+        throw new Lantern.Core.LanternError('Trace is too old');
     }
     let url;
     try {

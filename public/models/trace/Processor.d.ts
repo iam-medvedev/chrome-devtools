@@ -15,16 +15,15 @@ declare global {
         [TraceParseProgressEvent.eventName]: TraceParseProgressEvent;
     }
 }
-export declare class TraceProcessor<EnabledModelHandlers extends {
-    [key: string]: Handlers.Types.TraceEventHandler;
-}> extends EventTarget {
+export declare class TraceProcessor extends EventTarget {
     #private;
-    static createWithAllHandlers(): TraceProcessor<typeof Handlers.ModelHandlers>;
-    constructor(traceHandlers: EnabledModelHandlers, modelConfiguration?: Types.Configuration.Configuration);
+    static createWithAllHandlers(): TraceProcessor;
+    static getEnabledInsightRunners(traceParsedData: Handlers.Types.TraceParseData): Partial<Insights.Types.InsightRunnersType>;
+    constructor(traceHandlers: Partial<Handlers.Types.Handlers>, modelConfiguration?: Types.Configuration.Configuration);
     reset(): void;
     parse(traceEvents: readonly Types.TraceEvents.TraceEventData[], freshRecording?: boolean): Promise<void>;
-    get traceParsedData(): Handlers.Types.EnabledHandlerDataWithMeta<EnabledModelHandlers> | null;
-    get insights(): Insights.Types.TraceInsightData<EnabledModelHandlers> | null;
+    get traceParsedData(): Handlers.Types.TraceParseData | null;
+    get insights(): Insights.Types.TraceInsightData | null;
 }
 /**
  * Some Handlers need data provided by others. Dependencies of a handler handler are

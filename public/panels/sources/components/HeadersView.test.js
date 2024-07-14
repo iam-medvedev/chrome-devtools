@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
+import { getContextMenuForElement, } from '../../../testing/ContextMenuHelpers.js';
 import { dispatchFocusEvent, dispatchFocusOutEvent, dispatchInputEvent, dispatchKeyDownEvent, dispatchPasteEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars, } from '../../../testing/EnvironmentHelpers.js';
 import { createFileSystemUISourceCode } from '../../../testing/UISourceCodeHelpers.js';
 import { recordedMetricsContain, resetRecordedMetrics, } from '../../../testing/UserMetricsHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
-import * as UI from '../../../ui/legacy/legacy.js';
 import * as SourcesComponents from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describe('HeadersView', () => {
@@ -461,9 +461,8 @@ describe('HeadersView', () => {
     it('shows context menu', async () => {
         const editor = await renderEditor();
         assert.isNotNull(editor.shadowRoot);
-        const contextMenuShow = sinon.stub(UI.ContextMenu.ContextMenu.prototype, 'show').resolves();
-        editor.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true }));
-        assert.isTrue(contextMenuShow.calledOnce);
+        const contextMenu = getContextMenuForElement(editor);
+        assert.exists(contextMenu);
     });
 });
 //# sourceMappingURL=HeadersView.test.js.map

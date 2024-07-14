@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Core from '../core/core.js';
 import * as Graph from '../graph/graph.js';
 import { ConnectionPool } from './ConnectionPool.js';
 import { Constants } from './Constants.js';
@@ -107,10 +108,10 @@ class Simulator {
         // @ts-expect-error
         this._connectionPool = null;
         if (!Number.isFinite(this._rtt)) {
-            throw new Error(`Invalid rtt ${this._rtt}`);
+            throw new Core.LanternError(`Invalid rtt ${this._rtt}`);
         }
         if (!Number.isFinite(this._throughput)) {
-            throw new Error(`Invalid rtt ${this._throughput}`);
+            throw new Core.LanternError(`Invalid rtt ${this._throughput}`);
         }
     }
     get rtt() {
@@ -192,7 +193,7 @@ class Simulator {
             return;
         }
         if (node.type !== Graph.BaseNode.types.NETWORK) {
-            throw new Error('Unsupported');
+            throw new Core.LanternError('Unsupported');
         }
         // If a network request is connectionless, we can always start it, so skip the connection checks
         if (!node.isConnectionless) {
@@ -231,7 +232,7 @@ class Simulator {
         if (node.type === Graph.BaseNode.types.NETWORK) {
             return this._estimateNetworkTimeRemaining(node);
         }
-        throw new Error('Unsupported');
+        throw new Core.LanternError('Unsupported');
     }
     _estimateCPUTimeRemaining(cpuNode) {
         const timingData = this._nodeTimings.getCpuStarted(cpuNode);
@@ -299,10 +300,10 @@ class Simulator {
             return;
         }
         if (node.type !== Graph.BaseNode.types.NETWORK) {
-            throw new Error('Unsupported');
+            throw new Core.LanternError('Unsupported');
         }
         if (!('bytesDownloaded' in timingData)) {
-            throw new Error('Invalid timing data');
+            throw new Core.LanternError('Invalid timing data');
         }
         const request = node.request;
         const connection = this._connectionPool.acquireActiveConnectionFromRequest(request);
@@ -364,7 +365,7 @@ class Simulator {
      */
     simulate(graph, options) {
         if (Graph.BaseNode.hasCycle(graph)) {
-            throw new Error('Cannot simulate graph with cycle');
+            throw new Core.LanternError('Cannot simulate graph with cycle');
         }
         options = Object.assign({
             label: undefined,
@@ -391,7 +392,7 @@ class Simulator {
             if (!nodesInProgress.size) {
                 // Interplay between fromDiskCache and connectionReused can be incorrect,
                 // have to give up.
-                throw new Error('Failed to start a node');
+                throw new Core.LanternError('Failed to start a node');
             }
             // set the available throughput for all connections based on # inflight
             this._updateNetworkCapacity();
@@ -400,7 +401,7 @@ class Simulator {
             totalElapsedTime += minimumTime;
             // While this is no longer strictly necessary, it's always better than hanging
             if (!Number.isFinite(minimumTime) || iteration > 100000) {
-                throw new Error('Simulation failed, depth exceeded');
+                throw new Core.LanternError('Simulation failed, depth exceeded');
             }
             iteration++;
             // update how far each node will progress until that point

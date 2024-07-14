@@ -88,7 +88,7 @@ export class DOMStorageItemsView extends StorageItemsView {
         }
         this.element.classList.add('storage-view', 'table');
         const columns = [
-            { id: 'key', title: i18nString(UIStrings.key), sortable: false, editable: true, longText: true, weight: 50 },
+            { id: 'key', title: i18nString(UIStrings.key), sortable: true, editable: true, longText: true, weight: 50 },
             { id: 'value', title: i18nString(UIStrings.value), sortable: false, editable: true, longText: true, weight: 50 },
         ];
         this.dataGrid = new DataGrid.DataGrid.DataGridImpl({
@@ -104,6 +104,7 @@ export class DOMStorageItemsView extends StorageItemsView {
         this.dataGrid.addEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DeselectedNode */, () => {
             void this.previewEntry(null);
         });
+        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SortingChanged */, this.refreshItems, this);
         this.dataGrid.setStriped(true);
         this.dataGrid.setName('dom-storage-items-view');
         this.splitWidget = new UI.SplitWidget.SplitWidget(
@@ -214,7 +215,10 @@ export class DOMStorageItemsView extends StorageItemsView {
         rootNode.removeChildren();
         let selectedNode = null;
         const filteredItems = (item) => `${item[0]} ${item[1]}`;
-        const filteredList = this.filter(items, filteredItems);
+        const sortDirection = this.dataGrid.isSortOrderAscending() ? 1 : -1;
+        const filteredList = this.filter(items, filteredItems).sort(function (item1, item2) {
+            return sortDirection * (item1[0] > item2[0] ? 1 : -1);
+        });
         for (const item of filteredList) {
             const key = item[0];
             const value = item[1];

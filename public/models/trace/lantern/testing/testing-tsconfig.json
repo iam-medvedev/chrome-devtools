@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "allowUmdGlobalAccess": true,
     "checkJs": true,
     "composite": true,
     "declaration": true,
@@ -25,7 +26,15 @@
     "strict": true,
     "target": "esnext",
     "tsBuildInfoFile": "testing-tsconfig.json.tsbuildinfo",
-    "typeRoots": [],
+    "typeRoots": [
+      "../../../../../../../../node_modules/@types"
+    ],
+    "types": [
+      "mocha",
+      "chai",
+      "sinon",
+      "karma-chai-sinon"
+    ],
     "useUnknownInCatchVariables": false
   },
   "files": [
@@ -37,6 +46,9 @@
   "references": [
     {
       "path": "../bundle-tsconfig.json"
+    },
+    {
+      "path": "../../bundle-tsconfig.json"
     },
     {
       "path": "../../../../testing/testing-tsconfig.json"

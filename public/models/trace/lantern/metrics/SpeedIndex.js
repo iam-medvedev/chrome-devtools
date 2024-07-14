@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Core from '../core/core.js';
 import * as Graph from '../graph/graph.js';
 import { Metric, } from './Metric.js';
 const mobileSlow4GRtt = 150;
@@ -43,10 +44,10 @@ class SpeedIndex extends Metric {
     }
     static getEstimateFromSimulation(simulationResult, extras) {
         if (!extras.fcpResult) {
-            throw new Error('missing fcpResult');
+            throw new Core.LanternError('missing fcpResult');
         }
         if (extras.observedSpeedIndex === undefined) {
-            throw new Error('missing observedSpeedIndex');
+            throw new Core.LanternError('missing observedSpeedIndex');
         }
         const fcpTimeInMs = extras.fcpResult.pessimisticEstimate.timeInMs;
         const estimate = extras.optimistic ?
@@ -57,12 +58,12 @@ class SpeedIndex extends Metric {
             nodeTimings: simulationResult.nodeTimings,
         };
     }
-    static async compute(data, extras) {
+    static compute(data, extras) {
         const fcpResult = extras?.fcpResult;
         if (!fcpResult) {
-            throw new Error('FCP is required to calculate the SpeedIndex metric');
+            throw new Core.LanternError('FCP is required to calculate the SpeedIndex metric');
         }
-        const metricResult = await super.compute(data, extras);
+        const metricResult = super.compute(data, extras);
         metricResult.timing = Math.max(metricResult.timing, fcpResult.timing);
         return metricResult;
     }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TimelineComponents from './components.js';
 describeWithEnvironment('SidebarAnnotationsTab', () => {
@@ -15,6 +16,70 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         assert.isNotNull(component.shadowRoot);
         const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
         assert.isNotNull(annotationsWrapperElement);
+    });
+    it('renders annotations list in the sidebar', async function () {
+        const component = new SidebarAnnotationsTab();
+        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+        renderElementIntoDOM(component);
+        // Create Entry Label annotationss
+        const entryLabelAnnotation = {
+            type: 'ENTRY_LABEL',
+            entry: defaultTraceEvents[0],
+            label: 'Entry Label 1',
+        };
+        const entryLabelAnnotation2 = {
+            type: 'ENTRY_LABEL',
+            entry: defaultTraceEvents[1],
+            label: 'Entry Label 2',
+        };
+        component.annotations = [entryLabelAnnotation, entryLabelAnnotation2];
+        assert.isNotNull(component.shadowRoot);
+        await coordinator.done();
+        const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
+        assert.isNotNull(annotationsWrapperElement);
+        // Ensure there are 2 labels and their entry names and labels and rendered
+        const annotationEntryNameElements = component.shadowRoot.querySelectorAll('.entry-name');
+        assert.strictEqual(annotationEntryNameElements.length, 2);
+        const annotationEntryLabelElements = component.shadowRoot.querySelectorAll('.label');
+        assert.strictEqual(annotationEntryNameElements.length, 2);
+        assert.strictEqual(annotationEntryLabelElements[0].innerText, 'Entry Label 1');
+        assert.strictEqual(annotationEntryLabelElements[1].innerText, 'Entry Label 2');
+    });
+    it('updates annotations list in the sidebar when a new list is passed in', async function () {
+        const component = new SidebarAnnotationsTab();
+        const defaultTraceEvents = await TraceLoader.rawEvents(null, 'basic.json.gz');
+        renderElementIntoDOM(component);
+        // Create Entry Label Annotation
+        const entryLabelAnnotation = {
+            type: 'ENTRY_LABEL',
+            entry: defaultTraceEvents[0],
+            label: 'Entry Label 1',
+        };
+        const entryLabelAnnotation2 = {
+            type: 'ENTRY_LABEL',
+            entry: defaultTraceEvents[1],
+            label: 'Entry Label 2',
+        };
+        component.annotations = [entryLabelAnnotation, entryLabelAnnotation2];
+        assert.isNotNull(component.shadowRoot);
+        await coordinator.done();
+        const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
+        assert.isNotNull(annotationsWrapperElement);
+        // Ensure there are 2 labels and their entry names and labels and rendered
+        const annotationEntryNameElements = component.shadowRoot.querySelectorAll('.entry-name');
+        assert.strictEqual(annotationEntryNameElements.length, 2);
+        const annotationEntryLabelElements = component.shadowRoot.querySelectorAll('.label');
+        assert.strictEqual(annotationEntryNameElements.length, 2);
+        assert.strictEqual(annotationEntryLabelElements[0].innerText, 'Entry Label 1');
+        assert.strictEqual(annotationEntryLabelElements[1].innerText, 'Entry Label 2');
+        // Update the labels and pass the list again
+        entryLabelAnnotation.label = 'New Entry Label 1';
+        entryLabelAnnotation2.label = 'New Entry Label 2';
+        component.annotations = [entryLabelAnnotation, entryLabelAnnotation2];
+        await coordinator.done();
+        // Ensure the labels changed to new ones
+        assert.strictEqual(annotationEntryLabelElements[0].innerText, 'New Entry Label 1');
+        assert.strictEqual(annotationEntryLabelElements[1].innerText, 'New Entry Label 2');
     });
 });
 //# sourceMappingURL=SidebarAnnotationsTab.test.js.map

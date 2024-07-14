@@ -11,7 +11,7 @@ export declare function rgbToHwb(rgb: Color3D): Color3D;
 export declare function rgbaToHwba([r, g, b, a]: Color4DOr3D): Color4DOr3D;
 /**
  * Calculate the luminance of this color using the WCAG algorithm.
- * See http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
+ * See https://www.w3.org/TR/WCAG21/#dfn-relative-luminance.
  */
 export declare function luminance([rSRGB, gSRGB, bSRGB]: number[]): number;
 /**

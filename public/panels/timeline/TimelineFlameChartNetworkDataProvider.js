@@ -184,15 +184,14 @@ export class TimelineFlameChartNetworkDataProvider {
      */
     getDecorationPixels(event, unclippedBarX, timeToPixelRatio) {
         const beginTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts);
-        const timeToPixel = (time) => Math.floor(unclippedBarX + (time - beginTime) * timeToPixelRatio);
-        const minBarWidthPx = 2;
+        const timeToPixel = (time) => unclippedBarX + (time - beginTime) * timeToPixelRatio;
         const startTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts);
         const endTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds((event.ts + event.dur));
         const sendStartTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.args.data.syntheticData.sendStartTime);
         const headersEndTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.args.data.syntheticData.downloadStart);
         const sendStart = Math.max(timeToPixel(sendStartTime), unclippedBarX);
         const headersEnd = Math.max(timeToPixel(headersEndTime), sendStart);
-        const finish = Math.max(timeToPixel(TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.args.data.syntheticData.finishTime)), headersEnd + minBarWidthPx);
+        const finish = Math.max(timeToPixel(TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.args.data.syntheticData.finishTime)), headersEnd);
         const start = timeToPixel(startTime);
         const end = Math.max(timeToPixel(endTime), finish);
         return { sendStart, headersEnd, finish, start, end };
@@ -234,6 +233,9 @@ export class TimelineFlameChartNetworkDataProvider {
      * */
     #decorateNetworkRequest(index, context, _text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixelRatio) {
         const event = this.#events[index];
+        if (!TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(event)) {
+            return false;
+        }
         const { sendStart, headersEnd, finish, start, end } = this.getDecorationPixels(event, unclippedBarX, timeToPixelRatio);
         // Draw waiting time.
         context.fillStyle = 'hsla(0, 100%, 100%, 0.8)';
@@ -365,7 +367,7 @@ export class TimelineFlameChartNetworkDataProvider {
         if (!this.#networkTrackAppender || !this.#timelineDataInternal) {
             return;
         }
-        this.#maxLevel = this.#networkTrackAppender.filterTimelineDataBetweenTimes(this.#events, TraceEngine.Types.Timing.MilliSeconds(startTime), TraceEngine.Types.Timing.MilliSeconds(endTime));
+        this.#maxLevel = this.#networkTrackAppender.relayoutEntriesWithinBounds(this.#events, startTime, endTime);
         // TODO(crbug.com/1459225): Remove this recreating code.
         // Force to create a new PerfUI.FlameChart.FlameChartTimelineData instance
         // to force the flamechart to re-render. This also causes crbug.com/1459225.
@@ -374,6 +376,8 @@ export class TimelineFlameChartNetworkDataProvider {
             entryTotalTimes: this.#timelineDataInternal?.entryTotalTimes,
             entryStartTimes: this.#timelineDataInternal?.entryStartTimes,
             groups: this.#timelineDataInternal?.groups,
+            initiatorsData: this.#timelineDataInternal.initiatorsData,
+            entryDecorations: this.#timelineDataInternal.entryDecorations,
         });
     }
     preferredHeight() {

@@ -5,7 +5,7 @@ export declare class CloseEvent extends Event {
     constructor();
 }
 type PublicPromptBuilder = Pick<PromptBuilder, 'buildPrompt' | 'getSearchQuery'>;
-type PublicAidaClient = Pick<Host.AidaClient.AidaClient, 'fetch'>;
+type PublicAidaClient = Pick<Host.AidaClient.AidaClient, 'fetch' | 'registerClientEvent'>;
 export declare class ConsoleInsight extends HTMLElement {
     #private;
     static create(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient): Promise<ConsoleInsight>;

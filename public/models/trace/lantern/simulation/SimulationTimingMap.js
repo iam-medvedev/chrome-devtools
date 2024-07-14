@@ -8,6 +8,7 @@
  * through the different simulation phases. Methods here ensure that the invariants of simulation hold
  * as nodes are queued, partially simulated, and completed.
  */
+import * as Core from '../core/core.js';
 import * as Graph from '../graph/graph.js';
 class SimulatorTimingMap {
     _nodeTimings;
@@ -70,62 +71,62 @@ class SimulatorTimingMap {
     getQueued(node) {
         const timing = this._nodeTimings.get(node);
         if (!timing) {
-            throw new Error(`Node ${node.id} not yet queued`);
+            throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }
         return timing;
     }
     getCpuStarted(node) {
         const timing = this._nodeTimings.get(node);
         if (!timing) {
-            throw new Error(`Node ${node.id} not yet queued`);
+            throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }
         if (!('startTime' in timing)) {
-            throw new Error(`Node ${node.id} not yet started`);
+            throw new Core.LanternError(`Node ${node.id} not yet started`);
         }
         if ('bytesDownloaded' in timing) {
-            throw new Error(`Node ${node.id} timing not valid`);
+            throw new Core.LanternError(`Node ${node.id} timing not valid`);
         }
         return timing;
     }
     getNetworkStarted(node) {
         const timing = this._nodeTimings.get(node);
         if (!timing) {
-            throw new Error(`Node ${node.id} not yet queued`);
+            throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }
         if (!('startTime' in timing)) {
-            throw new Error(`Node ${node.id} not yet started`);
+            throw new Core.LanternError(`Node ${node.id} not yet started`);
         }
         if (!('bytesDownloaded' in timing)) {
-            throw new Error(`Node ${node.id} timing not valid`);
+            throw new Core.LanternError(`Node ${node.id} timing not valid`);
         }
         return timing;
     }
     getInProgress(node) {
         const timing = this._nodeTimings.get(node);
         if (!timing) {
-            throw new Error(`Node ${node.id} not yet queued`);
+            throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }
         if (!('startTime' in timing)) {
-            throw new Error(`Node ${node.id} not yet started`);
+            throw new Core.LanternError(`Node ${node.id} not yet started`);
         }
         if (!('estimatedTimeElapsed' in timing)) {
-            throw new Error(`Node ${node.id} not yet in progress`);
+            throw new Core.LanternError(`Node ${node.id} not yet in progress`);
         }
         return timing;
     }
     getCompleted(node) {
         const timing = this._nodeTimings.get(node);
         if (!timing) {
-            throw new Error(`Node ${node.id} not yet queued`);
+            throw new Core.LanternError(`Node ${node.id} not yet queued`);
         }
         if (!('startTime' in timing)) {
-            throw new Error(`Node ${node.id} not yet started`);
+            throw new Core.LanternError(`Node ${node.id} not yet started`);
         }
         if (!('estimatedTimeElapsed' in timing)) {
-            throw new Error(`Node ${node.id} not yet in progress`);
+            throw new Core.LanternError(`Node ${node.id} not yet in progress`);
         }
         if (!('endTime' in timing)) {
-            throw new Error(`Node ${node.id} not yet completed`);
+            throw new Core.LanternError(`Node ${node.id} not yet completed`);
         }
         return timing;
     }

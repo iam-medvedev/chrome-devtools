@@ -118,7 +118,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
      * This is called with we are done loading a trace from a file, or after we
      * have recorded a fresh trace.
      **/
-    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], exclusiveFilter: TimelineModel.TimelineModelFilter.TimelineModelFilter | null | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
+    loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], exclusiveFilter: (TimelineModel.TimelineModelFilter.TimelineModelFilter | null) | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
     recordTraceLoadMetric(): void;
     loadingCompleteForTest(): void;
     private showRecordingStarted;

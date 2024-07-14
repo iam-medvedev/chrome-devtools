@@ -48,7 +48,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
     expandController;
     linkifier;
     infoElement;
-    #scopesScript = null;
+    #scopeChainModel = null;
     constructor() {
         super(true);
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.scope-chain')}`);
@@ -61,8 +61,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
         this.infoElement = document.createElement('div');
         this.infoElement.className = 'gray-info-message';
         this.infoElement.tabIndex = -1;
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebugInfoAttached, this.debugInfoAttached, this);
-        void this.update();
+        this.flavorChanged(UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame));
     }
     static instance() {
         if (!scopeChainSidebarPaneInstance) {
@@ -70,8 +69,16 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
         }
         return scopeChainSidebarPaneInstance;
     }
-    flavorChanged(_object) {
-        void this.update();
+    flavorChanged(callFrame) {
+        this.#scopeChainModel?.dispose();
+        this.#scopeChainModel = null;
+        if (callFrame) {
+            this.#scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(callFrame);
+            this.#scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.ScopeChainUpdated */, event => this.update(event.data), this);
+        }
+        else {
+            void this.update(null);
+        }
     }
     focus() {
         if (this.hasFocus()) {
@@ -81,31 +88,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
             this.treeOutline.forceSelect();
         }
     }
-    sourceMapAttached(event) {
-        if (event.data.client === this.#scopesScript) {
-            void this.update();
-        }
-    }
-    setScopeSourceMapSubscription(callFrame) {
-        const oldScript = this.#scopesScript;
-        this.#scopesScript = callFrame?.script ?? null;
-        // Shortcut for the case when we are listening to the same model.
-        if (oldScript?.debuggerModel === this.#scopesScript?.debuggerModel) {
-            return;
-        }
-        if (oldScript) {
-            oldScript.debuggerModel.sourceMapManager().removeEventListener(SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this);
-        }
-        if (this.#scopesScript) {
-            this.#scopesScript.debuggerModel.sourceMapManager().addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this);
-        }
-    }
-    debugInfoAttached(event) {
-        if (event.data === this.#scopesScript) {
-            void this.update();
-        }
-    }
-    async update() {
+    async update(eventScopeChain) {
         // The `resolveThisObject(callFrame)` and `resolveScopeChain(callFrame)` calls
         // below may take a while to complete, so indicate to the user that something
         // is happening (see https://crbug.com/1162416).
@@ -113,8 +96,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
         this.contentElement.removeChildren();
         this.contentElement.appendChild(this.infoElement);
         this.linkifier.reset();
-        const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
-        this.setScopeSourceMapSubscription(callFrame);
+        const callFrame = eventScopeChain?.callFrame ?? null;
         const [thisObject, scopeChain] = await Promise.all([
             SourceMapScopes.NamesResolver.resolveThisObject(callFrame),
             SourceMapScopes.NamesResolver.resolveScopeChain(callFrame),
@@ -154,7 +136,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
     }
     createScopeSectionTreeElement(scope, extraProperties) {
         let emptyPlaceholder = null;
-        if (scope.type() === "local" /* Protocol.Debugger.ScopeType.Local */ || "closure" /* Protocol.Debugger.ScopeType.Closure */) {
+        if (scope.type() === "local" /* Protocol.Debugger.ScopeType.Local */ || scope.type() === "closure" /* Protocol.Debugger.ScopeType.Closure */) {
             emptyPlaceholder = i18nString(UIStrings.noVariables);
         }
         let title = scope.typeName();

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "allowUmdGlobalAccess": true,
     "checkJs": true,
     "composite": true,
     "declaration": true,
@@ -38,8 +39,10 @@
   },
   "files": [
     "../../../../../../front_end/panels/timeline/Breadcrumbs.test.ts",
+    "../../../../../../front_end/panels/timeline/EventsSerializer.test.ts",
     "../../../../../../front_end/panels/timeline/FreshRecording.test.ts",
     "../../../../../../front_end/panels/timeline/Initiators.test.ts",
+    "../../../../../../front_end/panels/timeline/ModificationsManager.test.ts",
     "../../../../../../front_end/panels/timeline/Overlays.test.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.test.ts",
     "../../../../../../front_end/panels/timeline/SourceMapsResolver.test.ts",

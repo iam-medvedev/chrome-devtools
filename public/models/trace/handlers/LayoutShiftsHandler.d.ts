@@ -36,6 +36,7 @@ export interface LayoutShiftCluster {
         needsImprovement: Types.Timing.TraceWindowMicroSeconds | null;
         bad: Types.Timing.TraceWindowMicroSeconds | null;
     };
+    navigationId?: string;
 }
 export declare const enum LayoutShiftsThreshold {
     GOOD = 0,

@@ -36,8 +36,9 @@ describeWithLocale('ContextMenuProvider', () => {
         menuProvider.appendApplicableItems(event, contextMenu, contentProvider);
         await contextMenu.show();
         const saveItem = contextMenu.saveSection().items[0];
+        assert.exists(saveItem);
         const saveStub = sinon.stub(Workspace.FileManager.FileManager.instance(), 'save');
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, saveItem.id());
+        contextMenu.invokeHandler(saveItem.id());
         assert.deepEqual(await expectCall(saveStub), [
             'https://example.com/sample.webp', 'AGFzbQEAAAA=', true /* forceSaveAs */,
             true, /* isBase64 */
@@ -62,7 +63,7 @@ describeWithLocale('ContextMenuProvider', () => {
         await contextMenu.show();
         const saveItem = contextMenu.saveSection().items[0];
         const saveStub = sinon.stub(Workspace.FileManager.FileManager.instance(), 'save');
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, saveItem.id());
+        contextMenu.invokeHandler(saveItem.id());
         assert.deepEqual(await expectCall(saveStub), [
             'https://example.com/sample.wasm', 'AQIDBA==', true /* forceSaveAs */,
             true, /* isBase64 */

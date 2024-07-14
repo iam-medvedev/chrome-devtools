@@ -5,11 +5,11 @@ import { type ToolbarButton } from './Toolbar.js';
 import { HBox } from './Widget.js';
 declare const FilterBar_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<FilterBarEventTypes>;
-    addEventListener<T extends FilterBarEvents.Changed>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<FilterBarEventTypes, T>;
-    once<T_1 extends FilterBarEvents.Changed>(eventType: T_1): Promise<FilterBarEventTypes[T_1]>;
-    removeEventListener<T_2 extends FilterBarEvents.Changed>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
+    addEventListener<T extends FilterBarEvents.Changed>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<FilterBarEventTypes, T>;
+    once<T extends FilterBarEvents.Changed>(eventType: T): Promise<FilterBarEventTypes[T]>;
+    removeEventListener<T extends FilterBarEvents.Changed>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T]>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: FilterBarEvents.Changed): boolean;
-    dispatchEventToListeners<T_3 extends FilterBarEvents.Changed>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<FilterBarEventTypes, T_3>): void;
+    dispatchEventToListeners<T extends FilterBarEvents.Changed>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<FilterBarEventTypes, T>): void;
 }) & typeof HBox;
 export declare class FilterBar extends FilterBar_base {
     private enabled;
@@ -29,6 +29,7 @@ export declare class FilterBar extends FilterBar_base {
     wasShown(): void;
     private updateFilterBar;
     focus(): void;
+    hasActiveFilter(): boolean;
     private updateFilterButton;
     clear(): void;
     setting(): Common.Settings.Setting<boolean>;

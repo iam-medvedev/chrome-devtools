@@ -14,7 +14,7 @@ export declare function buildRowsForWebSocketEvent(event: TraceEngine.Types.Trac
  * so that they can be fetched via CDP.
  * It is exported only for testing purposes.
  **/
-export declare function generateInvalidationsList(invalidations: TraceEngine.Types.TraceEvents.SyntheticInvalidation[]): {
-    groupedByReason: Record<string, TraceEngine.Types.TraceEvents.SyntheticInvalidation[]>;
+export declare function generateInvalidationsList(invalidations: TraceEngine.Types.TraceEvents.InvalidationTrackingEvent[]): {
+    groupedByReason: Record<string, TraceEngine.Types.TraceEvents.InvalidationTrackingEvent[]>;
     backendNodeIds: Set<Protocol.DOM.BackendNodeId>;
 };

@@ -2748,7 +2748,7 @@
     "message": "Pages that have granted media stream access are not currently eligible for back/forward cache."
   },
   "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "Pages that use portals are not currently eligible for back/forward cache."
+    "message": "Pages that have certain kinds of embedded content (e.g. PDFs) are not currently eligible for back/forward cache."
   },
   "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
     "message": "Only pages loaded via a GET request are eligible for back/forward cache."
@@ -2839,9 +2839,6 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
     "message": "Pages that use Picture-in-Picture are not currently eligible for back/forward cache."
-  },
-  "panels/application/components/BackForwardCacheStrings.ts | portal": {
-    "message": "Pages that use portals are not currently eligible for back/forward cache."
   },
   "panels/application/components/BackForwardCacheStrings.ts | printing": {
     "message": "Pages that show Printing UI are not currently eligible for back/forward cache."
@@ -6117,10 +6114,10 @@
     "message": "Copy CSS changes"
   },
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelHundred": {
-    "message": "Increment/decrement with mousewheel or up/down keys. {PH1}: ±100, Shift: ±10, Alt: ±0.1"
+    "message": "Increment/decrement with mousewheel or up/down keys. {PH1}: ±100, Shift: ±10, {PH2}: ±0.1"
   },
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelOne": {
-    "message": "Increment/decrement with mousewheel or up/down keys. {PH1}: R ±1, Shift: G ±1, Alt: B ±1"
+    "message": "Increment/decrement with mousewheel or up/down keys. {PH1}: R ±1, Shift: G ±1, {PH2}: B ±1"
   },
   "panels/elements/StylesSidebarPane.ts | inheritedFroms": {
     "message": "Inherited from "
@@ -6511,6 +6508,27 @@
   },
   "panels/freestyler/components/FreestylerChatUi.ts | thumbsUp": {
     "message": "Thumbs up"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | close": {
+    "message": "Close"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | disclaimer": {
+    "message": "Feedback submitted will also include your conversation."
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | provideFeedbackPlaceholder": {
+    "message": "Provide additional feedback"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | submit": {
+    "message": "Submit"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | thumbsDown": {
+    "message": "Thumbs down"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | thumbsUp": {
+    "message": "Thumbs up"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | whyThisRating": {
+    "message": "Why did you choose this rating? (optional)"
   },
   "panels/freestyler/freestyler-meta.ts | askFreestyler": {
     "message": "Ask Freestyler"
@@ -8479,6 +8497,30 @@
   },
   "panels/network/NetworkLogView.ts | copyAllAsPowershell": {
     "message": "Copy all as PowerShell"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsCurl": {
+    "message": "Copy all (filtered) as cURL"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsCurlBash": {
+    "message": "Copy all (filtered) as cURL (bash)"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsCurlCmd": {
+    "message": "Copy all (filtered) as cURL (cmd)"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsFetch": {
+    "message": "Copy all (filtered) as fetch"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsHar": {
+    "message": "Copy all (filtered) as HAR"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsNodejsFetch": {
+    "message": "Copy all (filtered) as fetch (Node.js)"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsPowershell": {
+    "message": "Copy all (filtered) as PowerShell"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredURLs": {
+    "message": "Copy all (filtered) URLs"
   },
   "panels/network/NetworkLogView.ts | copyAllURLs": {
     "message": "Copy all URLs"
@@ -12278,6 +12320,12 @@
   "panels/timeline/AppenderUtils.ts | sSelfS": {
     "message": "{PH1} (self {PH2})"
   },
+  "panels/timeline/components/CPUThrottlingSelector.ts | dSlowdown": {
+    "message": "{PH1}× slowdown"
+  },
+  "panels/timeline/components/CPUThrottlingSelector.ts | noThrottling": {
+    "message": "No throttling"
+  },
   "panels/timeline/components/DetailsView.ts | forcedReflow": {
     "message": "Forced reflow"
   },
@@ -12308,6 +12356,45 @@
   "panels/timeline/components/DetailsView.ts | websocketProtocol": {
     "message": "WebSocket Protocol"
   },
+  "panels/timeline/components/FieldSettingsDialog.ts | advanced": {
+    "message": "Advanced"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | cancel": {
+    "message": "Cancel"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | configure": {
+    "message": "Configure"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | configureFieldData": {
+    "message": "Configure field data fetching"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | doesNotHaveSufficientData": {
+    "message": "The Chrome UX Report does not have sufficient real-world speed data for this page."
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | fetchAggregated": {
+    "message": "Fetch aggregated field data from the Chrome UX Report to help you contextualize local measurements with what real users experience on the site."
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | ok": {
+    "message": "Ok"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | onlyFetchFieldData": {
+    "message": "Only fetch field data for the below URL"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | optOut": {
+    "message": "Opt out"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | privacyDisclosure": {
+    "message": "Privacy disclosure"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | setUp": {
+    "message": "Set up"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | urlOverride": {
+    "message": "URL Override"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
+    "message": "When DevTools is open, the URLs you visit will be sent to Google to query field data. These requests are not tied to your Google account."
+  },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Input delay"
   },
@@ -12316,6 +12403,69 @@
   },
   "panels/timeline/components/InteractionBreakdown.ts | processingDuration": {
     "message": "Processing duration"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | contentDownloading": {
+    "message": "Content downloading"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | decodedBody": {
+    "message": "Decoded Body"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | duration": {
+    "message": "Duration"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | encodedData": {
+    "message": "Encoded Data"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | fromCache": {
+    "message": "From cache"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | FromCache": {
+    "message": " (from cache)"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | FromMemoryCache": {
+    "message": " (from memory cache)"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | FromPush": {
+    "message": " (from push)"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | FromServiceWorker": {
+    "message": " (from service worker)"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | initialPriority": {
+    "message": "Initial Priority"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | initiatedBy": {
+    "message": "Initiated by"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | mimeType": {
+    "message": "Mime Type"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | networkRequest": {
+    "message": "Network request"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | no": {
+    "message": "No"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | preview": {
+    "message": "Preview"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | priority": {
+    "message": "Priority"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | queuingAndConnecting": {
+    "message": "Queuing and connecting"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | requestMethod": {
+    "message": "Request Method"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | requestSentAndWaiting": {
+    "message": "Request sent and waiting"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | waitingOnMainThread": {
+    "message": "Waiting on main thread"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | yes": {
+    "message": "Yes"
   },
   "panels/timeline/components/NetworkRequestTooltip.ts | contentDownloading": {
     "message": "Content downloading"
@@ -12334,6 +12484,18 @@
   },
   "panels/timeline/components/NetworkRequestTooltip.ts | waitingOnMainThread": {
     "message": "Waiting on main thread"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | add": {
+    "message": "Add…"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | custom": {
+    "message": "Custom"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | disabled": {
+    "message": "Disabled"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | presets": {
+    "message": "Presets"
   },
   "panels/timeline/CountersGraph.ts | documents": {
     "message": "Documents"
@@ -12947,6 +13109,9 @@
   "panels/timeline/TimelineLoader.ts | malformedTimelineDataS": {
     "message": "Malformed timeline data: {PH1}"
   },
+  "panels/timeline/TimelineMiniMap.ts | openSidebarButton": {
+    "message": "Open the sidebar"
+  },
   "panels/timeline/TimelinePanel.ts | bufferUsage": {
     "message": "Buffer usage"
   },
@@ -13247,9 +13412,6 @@
   "panels/timeline/TimelineUIUtils.ts | currentClusterScore": {
     "message": "Current Cluster Score"
   },
-  "panels/timeline/TimelineUIUtils.ts | decodedBody": {
-    "message": "Decoded Body"
-  },
   "panels/timeline/TimelineUIUtils.ts | details": {
     "message": "Details"
   },
@@ -13267,9 +13429,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | emptyPlaceholder": {
     "message": "{PH1}"
-  },
-  "panels/timeline/TimelineUIUtils.ts | encodedData": {
-    "message": "Encoded Data"
   },
   "panels/timeline/TimelineUIUtils.ts | entryIsHidden": {
     "message": "(entry is hidden)"
@@ -13289,18 +13448,6 @@
   "panels/timeline/TimelineUIUtils.ts | frame": {
     "message": "Frame"
   },
-  "panels/timeline/TimelineUIUtils.ts | FromCache": {
-    "message": " (from cache)"
-  },
-  "panels/timeline/TimelineUIUtils.ts | FromMemoryCache": {
-    "message": " (from memory cache)"
-  },
-  "panels/timeline/TimelineUIUtils.ts | FromPush": {
-    "message": " (from push)"
-  },
-  "panels/timeline/TimelineUIUtils.ts | FromServiceWorker": {
-    "message": " (from service worker)"
-  },
   "panels/timeline/TimelineUIUtils.ts | function": {
     "message": "Function"
   },
@@ -13312,9 +13459,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | imageUrl": {
     "message": "Image URL"
-  },
-  "panels/timeline/TimelineUIUtils.ts | initialPriority": {
-    "message": "Initial Priority"
   },
   "panels/timeline/TimelineUIUtils.ts | initiatedBy": {
     "message": "Initiated by"
@@ -13352,17 +13496,11 @@
   "panels/timeline/TimelineUIUtils.ts | learnMore": {
     "message": "Learn more"
   },
-  "panels/timeline/TimelineUIUtils.ts | loadFromCache": {
-    "message": "load from cache"
-  },
   "panels/timeline/TimelineUIUtils.ts | location": {
     "message": "Location"
   },
   "panels/timeline/TimelineUIUtils.ts | message": {
     "message": "Message"
-  },
-  "panels/timeline/TimelineUIUtils.ts | mimeType": {
-    "message": "Mime Type"
   },
   "panels/timeline/TimelineUIUtils.ts | module": {
     "message": "Module"
@@ -13372,12 +13510,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | movedTo": {
     "message": "Moved to"
-  },
-  "panels/timeline/TimelineUIUtils.ts | networkRequest": {
-    "message": "Network request"
-  },
-  "panels/timeline/TimelineUIUtils.ts | networkTransfer": {
-    "message": "network transfer"
   },
   "panels/timeline/TimelineUIUtils.ts | no": {
     "message": "No"
@@ -13406,9 +13538,6 @@
   "panels/timeline/TimelineUIUtils.ts | preview": {
     "message": "Preview"
   },
-  "panels/timeline/TimelineUIUtils.ts | priority": {
-    "message": "Priority"
-  },
   "panels/timeline/TimelineUIUtils.ts | processingDuration": {
     "message": "Processing duration"
   },
@@ -13426,9 +13555,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | repeats": {
     "message": "Repeats"
-  },
-  "panels/timeline/TimelineUIUtils.ts | requestMethod": {
-    "message": "Request Method"
   },
   "panels/timeline/TimelineUIUtils.ts | sAtS": {
     "message": "{PH1} at {PH2}"
@@ -13489,9 +13615,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | sSSquareBrackets": {
     "message": "{PH1} [{PH2}…]"
-  },
-  "panels/timeline/TimelineUIUtils.ts | SSSResourceLoading": {
-    "message": " ({PH1} {PH2} + {PH3} resource loading)"
   },
   "panels/timeline/TimelineUIUtils.ts | stackTrace": {
     "message": "Stack Trace"

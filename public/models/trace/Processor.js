@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 import * as Handlers from './handlers/handlers.js';
 import * as Insights from './insights/insights.js';
+import * as Lantern from './lantern/lantern.js';
+import * as LanternComputationData from './LanternComputationData.js';
 import * as Types from './types/types.js';
 export class TraceParseProgressEvent extends Event {
     data;
@@ -22,6 +24,17 @@ export class TraceProcessor extends EventTarget {
     #insights = null;
     static createWithAllHandlers() {
         return new TraceProcessor(Handlers.ModelHandlers, Types.Configuration.defaults());
+    }
+    static getEnabledInsightRunners(traceParsedData) {
+        const enabledInsights = {};
+        for (const [name, insight] of Object.entries(Insights.InsightRunners)) {
+            const deps = insight.deps();
+            if (deps.some(dep => !traceParsedData[dep])) {
+                continue;
+            }
+            Object.assign(enabledInsights, { [name]: insight });
+        }
+        return enabledInsights;
     }
     constructor(traceHandlers, modelConfiguration) {
         super();
@@ -63,7 +76,8 @@ export class TraceProcessor extends EventTarget {
         const requiredHandlerKeys = new Set();
         for (const [handlerName, handler] of Object.entries(providedHandlers)) {
             requiredHandlerKeys.add(handlerName);
-            for (const depName of (handler.deps?.() || [])) {
+            const deps = 'deps' in handler ? handler.deps() : [];
+            for (const depName of deps) {
                 requiredHandlerKeys.add(depName);
             }
         }
@@ -96,7 +110,10 @@ export class TraceProcessor extends EventTarget {
         }
         try {
             this.#status = "PARSING" /* Status.PARSING */;
-            await this.#parse(traceEvents, freshRecording);
+            await this.#computeTraceParsedData(traceEvents, freshRecording);
+            if (this.#data) {
+                this.#computeInsights(this.#data, traceEvents);
+            }
             this.#status = "FINISHED_PARSING" /* Status.FINISHED_PARSING */;
         }
         catch (e) {
@@ -104,7 +121,10 @@ export class TraceProcessor extends EventTarget {
             throw e;
         }
     }
-    async #parse(traceEvents, freshRecording) {
+    /**
+     * Run all the handlers and set the result to `#data`.
+     */
+    async #computeTraceParsedData(traceEvents, freshRecording) {
         /**
          * We want to yield regularly to maintain responsiveness. If we yield too often, we're wasting idle time.
          * We could do this by checking `performance.now()` regularly, but it's an expensive call in such a hot loop.
@@ -147,14 +167,6 @@ export class TraceProcessor extends EventTarget {
                 await handler.finalize();
             }
         }
-    }
-    get traceParsedData() {
-        if (this.#status !== "FINISHED_PARSING" /* Status.FINISHED_PARSING */) {
-            return null;
-        }
-        if (this.#data) {
-            return this.#data;
-        }
         // Handlers that depend on other handlers do so via .data(), which used to always
         // return a shallow clone of its internal data structures. However, that pattern
         // easily results in egregious amounts of allocation. Now .data() does not do any
@@ -186,41 +198,103 @@ export class TraceProcessor extends EventTarget {
             Object.assign(traceParsedData, { [name]: data });
         }
         this.#data = traceParsedData;
-        return this.#data;
     }
-    #getEnabledInsightRunners(traceParsedData) {
-        const enabledInsights = {};
-        for (const [name, insight] of Object.entries(Insights.InsightRunners)) {
-            const deps = insight.deps();
-            if (deps.some(dep => !traceParsedData[dep])) {
-                continue;
-            }
-            Object.assign(enabledInsights, { [name]: insight.generateInsight });
-        }
-        return enabledInsights;
-    }
-    get insights() {
-        if (!this.traceParsedData) {
+    get traceParsedData() {
+        if (this.#status !== "FINISHED_PARSING" /* Status.FINISHED_PARSING */) {
             return null;
         }
-        if (this.#insights) {
-            return this.#insights;
+        return this.#data;
+    }
+    get insights() {
+        if (this.#status !== "FINISHED_PARSING" /* Status.FINISHED_PARSING */) {
+            return null;
         }
+        return this.#insights;
+    }
+    #createLanternContext(traceParsedData, traceEvents) {
+        // Check for required handlers.
+        if (!traceParsedData.NetworkRequests || !traceParsedData.Workers || !traceParsedData.PageLoadMetrics) {
+            return;
+        }
+        if (!traceParsedData.NetworkRequests.byTime.length) {
+            throw new Lantern.Core.LanternError('No network requests found in trace');
+        }
+        // Lantern.Types.TraceEvent and Types.TraceEvents.TraceEventData represent the same
+        // object - a trace event - but one is more flexible than the other. It should be safe to cast between them.
+        const trace = {
+            traceEvents: traceEvents,
+        };
+        const requests = LanternComputationData.createNetworkRequests(trace, traceParsedData);
+        const graph = LanternComputationData.createGraph(requests, trace, traceParsedData);
+        const processedNavigation = LanternComputationData.createProcessedNavigation(traceParsedData);
+        const networkAnalysis = Lantern.Core.NetworkAnalyzer.analyze(requests);
+        const simulator = Lantern.Simulation.Simulator.createSimulator({
+            networkAnalysis,
+            throttlingMethod: 'simulate',
+        });
+        const computeData = { graph, simulator, processedNavigation };
+        const fcpResult = Lantern.Metrics.FirstContentfulPaint.compute(computeData);
+        const lcpResult = Lantern.Metrics.LargestContentfulPaint.compute(computeData, { fcpResult });
+        const interactiveResult = Lantern.Metrics.Interactive.compute(computeData, { lcpResult });
+        const tbtResult = Lantern.Metrics.TotalBlockingTime.compute(computeData, { fcpResult, interactiveResult });
+        const metrics = {
+            firstContentfulPaint: fcpResult,
+            interactive: interactiveResult,
+            largestContentfulPaint: lcpResult,
+            totalBlockingTime: tbtResult,
+        };
+        return { graph, simulator, metrics };
+    }
+    /**
+     * Run all the insights and set the result to `#insights`.
+     */
+    #computeInsights(traceParsedData, traceEvents) {
         this.#insights = new Map();
-        const enabledInsightRunners = this.#getEnabledInsightRunners(this.traceParsedData);
-        for (const nav of this.traceParsedData.Meta.mainFrameNavigations) {
+        const enabledInsightRunners = TraceProcessor.getEnabledInsightRunners(traceParsedData);
+        // The lantern sub-context is optional on NavigationInsightContext, so not setting it is OK.
+        // This is also a hedge against an error inside Lantern resulting in breaking the entire performance panel.
+        // Additionally, many trace fixtures are too old to be processed by Lantern.
+        // TODO(crbug.com/313905799): should be created and scoped per-navigation.
+        let lantern;
+        try {
+            lantern = this.#createLanternContext(traceParsedData, traceEvents);
+        }
+        catch (e) {
+            // Don't allow an error in constructing the Lantern graphs to break the rest of the trace processor.
+            // Log unexpected errors, but suppress anything that occurs from a trace being too old.
+            // Otherwise tests using old fixtures become way too noisy.
+            const expectedErrors = [
+                'mainDocumentRequest not found',
+                'missing metric scores for main frame',
+                'missing metric: FCP',
+                'missing metric: LCP',
+                'No network requests found in trace',
+                'Trace is too old',
+            ];
+            if (!(e instanceof Lantern.Core.LanternError)) {
+                // If this wasn't a managed LanternError, the stack trace is likely needed for debugging.
+                console.error(e);
+            }
+            else if (!expectedErrors.some(err => e.message === err)) {
+                // To reduce noise from tests, only print errors that are not expected to occur because a trace is
+                // too old (for which there is no single check).
+                console.error(e.message);
+            }
+        }
+        for (const nav of traceParsedData.Meta.mainFrameNavigations) {
             if (!nav.args.frame || !nav.args.data?.navigationId) {
                 continue;
             }
             const context = {
                 frameId: nav.args.frame,
                 navigationId: nav.args.data.navigationId,
+                lantern,
             };
             const navInsightData = {};
-            for (const [name, generateInsight] of Object.entries(enabledInsightRunners)) {
+            for (const [name, insight] of Object.entries(enabledInsightRunners)) {
                 let insightResult;
                 try {
-                    insightResult = generateInsight(this.traceParsedData, context);
+                    insightResult = insight.generateInsight(traceParsedData, context);
                 }
                 catch (err) {
                     insightResult = err;
@@ -229,7 +303,6 @@ export class TraceProcessor extends EventTarget {
             }
             this.#insights.set(context.navigationId, navInsightData);
         }
-        return this.#insights;
     }
 }
 /**

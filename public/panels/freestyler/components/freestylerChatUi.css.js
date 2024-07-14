@@ -45,9 +45,10 @@ styles.replaceSync(
   height: var(--sys-size-11);
   border-radius: 4px;
   border: 1px solid var(--sys-color-neutral-outline);
-  padding-left: 2px;
+  padding: 0 2px;
   width: 100%;
   display: flex;
+  background-color: var(--sys-color-cdt-base-container);
 }
 
 .chat-input {
@@ -55,6 +56,8 @@ styles.replaceSync(
   height: var(--sys-size-11);
   padding: 0 6px;
   flex-grow: 1;
+  color: var(--sys-color-on-surface);
+  background-color: var(--sys-color-cdt-base-container);
 }
 
 .chat-input:focus-visible {
@@ -110,6 +113,7 @@ styles.replaceSync(
     display: flex;
     gap: var(--sys-size-8);
     justify-content: space-between;
+    align-items: flex-end;
   }
 }
 

@@ -14,15 +14,15 @@ function initTrackAppender(flameChartData, traceParsedData, entryData, entryType
     return compatibilityTracksAppender.allVisibleTrackAppenders().filter(track => track.appenderName === 'Extension');
 }
 describeWithEnvironment('ExtensionTrackAppender', function () {
-    let traceParsedData;
+    let traceData;
     let extensionTrackAppenders;
     let entryData = [];
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     let entryTypeByLevel = [];
     beforeEach(async function () {
         Root.Runtime.experiments.enableForTest('timeline-extensions');
-        traceParsedData = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
-        extensionTrackAppenders = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
+        ({ traceData } = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz'));
+        extensionTrackAppenders = initTrackAppender(flameChartData, traceData, entryData, entryTypeByLevel);
         let level = 0;
         extensionTrackAppenders.forEach(appender => {
             level = appender.appendTrackAtLevel(level);
@@ -35,20 +35,27 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
         entryTypeByLevel = [];
     });
     describe('appendTrackAtLevel', function () {
-        it('creates a flamechart group for the Extension tracks', function () {
-            assert.strictEqual(flameChartData.groups.length, 2);
-            assert.strictEqual(flameChartData.groups[0].name, 'An Extension Track');
+        it('creates flamechart groups for the Extension tracks properly', function () {
+            assert.strictEqual(flameChartData.groups.length, 3);
+            assert.strictEqual(flameChartData.groups[0].name, 'A track group');
+            assert.strictEqual(flameChartData.groups[0].startLevel, 0);
+            assert.strictEqual(flameChartData.groups[0].style.nestingLevel, 0);
             assert.strictEqual(flameChartData.groups[1].name, 'Another Extension Track');
+            assert.strictEqual(flameChartData.groups[1].startLevel, 0);
+            assert.strictEqual(flameChartData.groups[1].style.nestingLevel, 1);
+            assert.strictEqual(flameChartData.groups[2].name, 'An Extension Track');
+            assert.strictEqual(flameChartData.groups[2].startLevel, 1);
+            assert.strictEqual(flameChartData.groups[2].style.nestingLevel, 0);
         });
         it('adds start times correctly', function () {
-            const allExtensionTrackEntries = traceParsedData.ExtensionTraceData.extensionTrackData.flatMap(track => track.flameChartEntries);
+            const allExtensionTrackEntries = traceData.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
             for (let i = 0; i < allExtensionTrackEntries.length; ++i) {
                 const event = allExtensionTrackEntries[i];
                 assert.strictEqual(flameChartData.entryStartTimes[i], TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts));
             }
         });
         it('adds total times correctly', function () {
-            const allExtensionTrackEntries = traceParsedData.ExtensionTraceData.extensionTrackData.flatMap(track => track.flameChartEntries);
+            const allExtensionTrackEntries = traceData.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
             for (let i = 0; i < allExtensionTrackEntries.length; i++) {
                 const event = allExtensionTrackEntries[i];
                 if (TraceEngine.Types.TraceEvents.isTraceEventMarkerEvent(event)) {
@@ -73,8 +80,8 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             styleElement.id = 'fake-perf-panel-colors';
             styleElement.textContent = `
         :root {
-          --ref-palette-primary60: rgb(4 4 4);
-          --ref-palette-tertiary80: rgb(10 10 10);
+          --ref-palette-primary70: rgb(4 4 4);
+          --ref-palette-tertiary70: rgb(10 10 10);
         }
       `;
             document.documentElement.appendChild(styleElement);
@@ -88,17 +95,17 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             ThemeSupport.ThemeSupport.clearThemeCache();
         });
         it('returns the correct color and title for extension entries', function () {
-            const allExtensionTrackEntries = traceParsedData.ExtensionTraceData.extensionTrackData.flatMap(track => track.flameChartEntries);
+            const allExtensionTrackEntries = traceData.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
             for (const event of allExtensionTrackEntries) {
                 assert.strictEqual(extensionTrackAppenders[0].titleForEvent(event), event.name);
-                if (event.args.color === 'tertiary-light') {
-                    // "tertiary-light" color category is mapped to --ref-palette-tertiary80
+                if (event.args.color === 'tertiary') {
+                    // "tertiary" color category is mapped to --ref-palette-tertiary70
                     // which is faked out to 10, 10, 10
                     assert.strictEqual(extensionTrackAppenders[0].colorForEvent(event), 'rgb(10 10 10)');
                 }
                 else {
                     // Unknown colors are mapped to "primary" by default, and
-                    // "primary" color category is mapped to --ref-palette-primary60
+                    // "primary" color category is mapped to --ref-palette-primary70
                     // which is faked out to 4, 4, 4
                     assert.strictEqual(extensionTrackAppenders[0].colorForEvent(event), 'rgb(4 4 4)');
                 }
@@ -120,7 +127,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
                 },
                 cat: 'devtools.extension',
             };
-            // "primary" color category is mapped to --ref-palette-primary60
+            // "primary" color category is mapped to --ref-palette-primary70
             // which is faked out to 4, 4, 4
             assert.strictEqual(extensionTrackAppenders[0].colorForEvent(mockExtensionEntryNoColor), 'rgb(4 4 4)');
             assert.strictEqual(extensionTrackAppenders[0].colorForEvent(mockExtensionEntryUnknownColor), 'rgb(4 4 4)');
@@ -128,10 +135,10 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
     });
     describe('highlightedEntryInfo', function () {
         it('returns the info for an entry correctly', function () {
-            const allExtensionTrackEntries = traceParsedData.ExtensionTraceData.extensionTrackData.flatMap(track => track.flameChartEntries);
+            const allExtensionTrackEntries = traceData.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
             const highlightedEntryInfo = extensionTrackAppenders[0].highlightedEntryInfo(allExtensionTrackEntries[0]);
             // The i18n encodes spaces using the u00A0 unicode character.
-            assert.strictEqual(highlightedEntryInfo.formattedTime, '3.00\u00A0s');
+            assert.strictEqual(highlightedEntryInfo.formattedTime, '1.00\u00A0s');
             assert.strictEqual(highlightedEntryInfo.title, 'A hint if needed');
         });
     });

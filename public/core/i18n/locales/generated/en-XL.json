@@ -2748,7 +2748,7 @@
     "message": "P̂áĝéŝ t́ĥát̂ h́âv́ê ǵr̂án̂t́êd́ m̂éd̂íâ śt̂ŕêám̂ áĉćêśŝ ár̂é n̂ót̂ ćûŕr̂én̂t́l̂ý êĺîǵîb́l̂é f̂ór̂ b́âćk̂/f́ôŕŵár̂d́ ĉáĉh́ê."
   },
   "panels/application/components/BackForwardCacheStrings.ts | haveInnerContents": {
-    "message": "P̂áĝéŝ t́ĥát̂ úŝé p̂ór̂t́âĺŝ ár̂é n̂ót̂ ćûŕr̂én̂t́l̂ý êĺîǵîb́l̂é f̂ór̂ b́âćk̂/f́ôŕŵár̂d́ ĉáĉh́ê."
+    "message": "P̂áĝéŝ t́ĥát̂ h́âv́ê ćêŕt̂áîń k̂ín̂d́ŝ óf̂ ém̂b́êd́d̂éd̂ ćôńt̂én̂t́ (ê.ǵ. P̂D́F̂ś) âŕê ńôt́ ĉúr̂ŕêńt̂ĺŷ él̂íĝíb̂ĺê f́ôŕ b̂áĉḱ/f̂ór̂ẃâŕd̂ ćâćĥé."
   },
   "panels/application/components/BackForwardCacheStrings.ts | HTTPMethodNotGET": {
     "message": "Ôńl̂ý p̂áĝéŝ ĺôád̂éd̂ v́îá â ǴÊT́ r̂éq̂úêśt̂ ár̂é êĺîǵîb́l̂é f̂ór̂ b́âćk̂/f́ôŕŵár̂d́ ĉáĉh́ê."
@@ -2839,9 +2839,6 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | pictureInPicture": {
     "message": "P̂áĝéŝ t́ĥát̂ úŝé P̂íĉt́ûŕê-ín̂-Ṕîćt̂úr̂é âŕê ńôt́ ĉúr̂ŕêńt̂ĺŷ él̂íĝíb̂ĺê f́ôŕ b̂áĉḱ/f̂ór̂ẃâŕd̂ ćâćĥé."
-  },
-  "panels/application/components/BackForwardCacheStrings.ts | portal": {
-    "message": "P̂áĝéŝ t́ĥát̂ úŝé p̂ór̂t́âĺŝ ár̂é n̂ót̂ ćûŕr̂én̂t́l̂ý êĺîǵîb́l̂é f̂ór̂ b́âćk̂/f́ôŕŵár̂d́ ĉáĉh́ê."
   },
   "panels/application/components/BackForwardCacheStrings.ts | printing": {
     "message": "P̂áĝéŝ t́ĥát̂ śĥóŵ Ṕr̂ín̂t́îńĝ ÚÎ ár̂é n̂ót̂ ćûŕr̂én̂t́l̂ý êĺîǵîb́l̂é f̂ór̂ b́âćk̂/f́ôŕŵár̂d́ ĉáĉh́ê."
@@ -6117,10 +6114,10 @@
     "message": "Ĉóp̂ý ĈŚŜ ćĥán̂ǵêś"
   },
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelHundred": {
-    "message": "Îńĉŕêḿêńt̂/d́êćr̂ém̂én̂t́ ŵít̂h́ m̂óûśêẃĥéêĺ ôŕ ûṕ/d̂óŵń k̂éŷś. {PH1}: ±100, Ŝh́îf́t̂: ±10, Ál̂t́: ±0.1"
+    "message": "Îńĉŕêḿêńt̂/d́êćr̂ém̂én̂t́ ŵít̂h́ m̂óûśêẃĥéêĺ ôŕ ûṕ/d̂óŵń k̂éŷś. {PH1}: ±100, Ŝh́îf́t̂: ±10, {PH2}: ±0.1"
   },
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelOne": {
-    "message": "Îńĉŕêḿêńt̂/d́êćr̂ém̂én̂t́ ŵít̂h́ m̂óûśêẃĥéêĺ ôŕ ûṕ/d̂óŵń k̂éŷś. {PH1}: R̂ ±1, Śĥíf̂t́: Ĝ ±1, Ál̂t́: B̂ ±1"
+    "message": "Îńĉŕêḿêńt̂/d́êćr̂ém̂én̂t́ ŵít̂h́ m̂óûśêẃĥéêĺ ôŕ ûṕ/d̂óŵń k̂éŷś. {PH1}: R̂ ±1, Śĥíf̂t́: Ĝ ±1, {PH2}: B́ ±1"
   },
   "panels/elements/StylesSidebarPane.ts | inheritedFroms": {
     "message": "Îńĥér̂ít̂éd̂ f́r̂óm̂ "
@@ -6511,6 +6508,27 @@
   },
   "panels/freestyler/components/FreestylerChatUi.ts | thumbsUp": {
     "message": "T̂h́ûḿb̂ś ûṕ"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | close": {
+    "message": "Ĉĺôśê"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | disclaimer": {
+    "message": "F̂éêd́b̂áĉḱ ŝúb̂ḿît́t̂éd̂ ẃîĺl̂ ál̂śô ín̂ćl̂úd̂é ŷóûŕ ĉón̂v́êŕŝát̂íôń."
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | provideFeedbackPlaceholder": {
+    "message": "P̂ŕôv́îd́ê ád̂d́ît́îón̂ál̂ f́êéd̂b́âćk̂"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | submit": {
+    "message": "Ŝúb̂ḿît́"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | thumbsDown": {
+    "message": "T̂h́ûḿb̂ś d̂óŵń"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | thumbsUp": {
+    "message": "T̂h́ûḿb̂ś ûṕ"
+  },
+  "panels/freestyler/components/ProvideFeedback.ts | whyThisRating": {
+    "message": "Ŵh́ŷ d́îd́ ŷóû ćĥóôśê t́ĥíŝ ŕât́îńĝ? (óp̂t́îón̂ál̂)"
   },
   "panels/freestyler/freestyler-meta.ts | askFreestyler": {
     "message": "Âśk̂ F́r̂éêśt̂ýl̂ér̂"
@@ -8479,6 +8497,30 @@
   },
   "panels/network/NetworkLogView.ts | copyAllAsPowershell": {
     "message": "Ĉóp̂ý âĺl̂ áŝ PowerShell"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsCurl": {
+    "message": "Ĉóp̂ý âĺl̂ (f́îĺt̂ér̂éd̂) áŝ cURL"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsCurlBash": {
+    "message": "Ĉóp̂ý âĺl̂ (f́îĺt̂ér̂éd̂) áŝ cURL (bash)"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsCurlCmd": {
+    "message": "Ĉóp̂ý âĺl̂ (f́îĺt̂ér̂éd̂) áŝ cURL (cmd)"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsFetch": {
+    "message": "Ĉóp̂ý âĺl̂ (f́îĺt̂ér̂éd̂) áŝ fetch"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsHar": {
+    "message": "Ĉóp̂ý âĺl̂ (f́îĺt̂ér̂éd̂) áŝ HAR"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsNodejsFetch": {
+    "message": "Ĉóp̂ý âĺl̂ (f́îĺt̂ér̂éd̂) áŝ fetch (Node.js)"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredAsPowershell": {
+    "message": "Ĉóp̂ý âĺl̂ (f́îĺt̂ér̂éd̂) áŝ PowerShell"
+  },
+  "panels/network/NetworkLogView.ts | copyAllFilteredURLs": {
+    "message": "Ĉóp̂ý âĺl̂ (f́îĺt̂ér̂éd̂) ÚR̂Ĺŝ"
   },
   "panels/network/NetworkLogView.ts | copyAllURLs": {
     "message": "Ĉóp̂ý âĺl̂ ÚR̂Ĺŝ"
@@ -12278,6 +12320,12 @@
   "panels/timeline/AppenderUtils.ts | sSelfS": {
     "message": "{PH1} (ŝél̂f́ {PH2})"
   },
+  "panels/timeline/components/CPUThrottlingSelector.ts | dSlowdown": {
+    "message": "{PH1}× ŝĺôẃd̂óŵń"
+  },
+  "panels/timeline/components/CPUThrottlingSelector.ts | noThrottling": {
+    "message": "N̂ó t̂h́r̂ót̂t́l̂ín̂ǵ"
+  },
   "panels/timeline/components/DetailsView.ts | forcedReflow": {
     "message": "F̂ór̂ćêd́ r̂éf̂ĺôẃ"
   },
@@ -12308,6 +12356,45 @@
   "panels/timeline/components/DetailsView.ts | websocketProtocol": {
     "message": "Ŵéb̂Śôćk̂ét̂ Ṕr̂ót̂óĉól̂"
   },
+  "panels/timeline/components/FieldSettingsDialog.ts | advanced": {
+    "message": "Âd́v̂án̂ćêd́"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | cancel": {
+    "message": "Ĉán̂ćêĺ"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | configure": {
+    "message": "Ĉón̂f́îǵûŕê"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | configureFieldData": {
+    "message": "Ĉón̂f́îǵûŕê f́îél̂d́ d̂át̂á f̂ét̂ćĥín̂ǵ"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | doesNotHaveSufficientData": {
+    "message": "T̂h́ê Ćĥŕôḿê ÚX̂ Ŕêṕôŕt̂ d́ôéŝ ńôt́ ĥáv̂é ŝúf̂f́îćîén̂t́ r̂éâĺ-ŵór̂ĺd̂ śp̂éêd́ d̂át̂á f̂ór̂ t́ĥíŝ ṕâǵê."
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | fetchAggregated": {
+    "message": "F̂ét̂ćĥ áĝǵr̂éĝát̂éd̂ f́îél̂d́ d̂át̂á f̂ŕôḿ t̂h́ê Ćĥŕôḿê ÚX̂ Ŕêṕôŕt̂ t́ô h́êĺp̂ ýôú ĉón̂t́êx́t̂úâĺîźê ĺôćâĺ m̂éâśûŕêḿêńt̂ś ŵít̂h́ ŵh́ât́ r̂éâĺ ûśêŕŝ éx̂ṕêŕîén̂ćê ón̂ t́ĥé ŝít̂é."
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | ok": {
+    "message": "Ôḱ"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | onlyFetchFieldData": {
+    "message": "Ôńl̂ý f̂ét̂ćĥ f́îél̂d́ d̂át̂á f̂ór̂ t́ĥé b̂él̂óŵ ÚR̂Ĺ"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | optOut": {
+    "message": "Ôṕt̂ óût́"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | privacyDisclosure": {
+    "message": "P̂ŕîv́âćŷ d́îśĉĺôśûŕê"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | setUp": {
+    "message": "Ŝét̂ úp̂"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | urlOverride": {
+    "message": "ÛŔL̂ Óv̂ér̂ŕîd́ê"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
+    "message": "Ŵh́êń D̂év̂T́ôól̂ś îś ôṕêń, t̂h́ê ÚR̂Ĺŝ ýôú v̂íŝít̂ ẃîĺl̂ b́ê śêńt̂ t́ô Ǵôóĝĺê t́ô q́ûér̂ý f̂íêĺd̂ d́ât́â. T́ĥéŝé r̂éq̂úêśt̂ś âŕê ńôt́ t̂íêd́ t̂ó ŷóûŕ Ĝóôǵl̂é âćĉóûńt̂."
+  },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Îńp̂út̂ d́êĺâý"
   },
@@ -12316,6 +12403,69 @@
   },
   "panels/timeline/components/InteractionBreakdown.ts | processingDuration": {
     "message": "P̂ŕôćêśŝín̂ǵ d̂úr̂át̂íôń"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | contentDownloading": {
+    "message": "Ĉón̂t́êńt̂ d́ôẃn̂ĺôád̂ín̂ǵ"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | decodedBody": {
+    "message": "D̂éĉód̂éd̂ B́ôd́ŷ"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | duration": {
+    "message": "D̂úr̂át̂íôń"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | encodedData": {
+    "message": "Êńĉód̂éd̂ D́ât́â"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | fromCache": {
+    "message": "F̂ŕôḿ ĉáĉh́ê"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | FromCache": {
+    "message": " (f̂ŕôḿ ĉáĉh́ê)"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | FromMemoryCache": {
+    "message": " (f̂ŕôḿ m̂ém̂ór̂ý ĉáĉh́ê)"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | FromPush": {
+    "message": " (f̂ŕôḿ p̂úŝh́)"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | FromServiceWorker": {
+    "message": " (f̂ŕôḿ service worker)"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | initialPriority": {
+    "message": "Îńît́îál̂ Ṕr̂íôŕît́ŷ"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | initiatedBy": {
+    "message": "Îńît́îát̂éd̂ b́ŷ"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | mimeType": {
+    "message": "M̂ím̂é T̂ýp̂é"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | networkRequest": {
+    "message": "N̂ét̂ẃôŕk̂ ŕêq́ûéŝt́"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | no": {
+    "message": "N̂ó"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | preview": {
+    "message": "P̂ŕêv́îéŵ"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | priority": {
+    "message": "P̂ŕîór̂ít̂ý"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | queuingAndConnecting": {
+    "message": "Q̂úêúîńĝ án̂d́ ĉón̂ńêćt̂ín̂ǵ"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | requestMethod": {
+    "message": "R̂éq̂úêśt̂ Ḿêt́ĥód̂"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | requestSentAndWaiting": {
+    "message": "R̂éq̂úêśt̂ śêńt̂ án̂d́ ŵáît́îńĝ"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | waitingOnMainThread": {
+    "message": "Ŵáît́îńĝ ón̂ ḿâín̂ t́ĥŕêád̂"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | yes": {
+    "message": "Ŷéŝ"
   },
   "panels/timeline/components/NetworkRequestTooltip.ts | contentDownloading": {
     "message": "Ĉón̂t́êńt̂ d́ôẃn̂ĺôád̂ín̂ǵ"
@@ -12334,6 +12484,18 @@
   },
   "panels/timeline/components/NetworkRequestTooltip.ts | waitingOnMainThread": {
     "message": "Ŵáît́îńĝ ón̂ ḿâín̂ t́ĥŕêád̂"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | add": {
+    "message": "Âd́d̂…"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | custom": {
+    "message": "Ĉúŝt́ôḿ"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | disabled": {
+    "message": "D̂íŝáb̂ĺêd́"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | presets": {
+    "message": "P̂ŕêśêt́ŝ"
   },
   "panels/timeline/CountersGraph.ts | documents": {
     "message": "D̂óĉúm̂én̂t́ŝ"
@@ -12947,6 +13109,9 @@
   "panels/timeline/TimelineLoader.ts | malformedTimelineDataS": {
     "message": "M̂ál̂f́ôŕm̂éd̂ t́îḿêĺîńê d́ât́â: {PH1}"
   },
+  "panels/timeline/TimelineMiniMap.ts | openSidebarButton": {
+    "message": "Ôṕêń t̂h́ê śîd́êb́âŕ"
+  },
   "panels/timeline/TimelinePanel.ts | bufferUsage": {
     "message": "B̂úf̂f́êŕ ûśâǵê"
   },
@@ -13247,9 +13412,6 @@
   "panels/timeline/TimelineUIUtils.ts | currentClusterScore": {
     "message": "Ĉúr̂ŕêńt̂ Ćl̂úŝt́êŕ Ŝćôŕê"
   },
-  "panels/timeline/TimelineUIUtils.ts | decodedBody": {
-    "message": "D̂éĉód̂éd̂ B́ôd́ŷ"
-  },
   "panels/timeline/TimelineUIUtils.ts | details": {
     "message": "D̂ét̂áîĺŝ"
   },
@@ -13267,9 +13429,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | emptyPlaceholder": {
     "message": "{PH1}"
-  },
-  "panels/timeline/TimelineUIUtils.ts | encodedData": {
-    "message": "Êńĉód̂éd̂ D́ât́â"
   },
   "panels/timeline/TimelineUIUtils.ts | entryIsHidden": {
     "message": "(êńt̂ŕŷ íŝ h́îd́d̂én̂)"
@@ -13289,18 +13448,6 @@
   "panels/timeline/TimelineUIUtils.ts | frame": {
     "message": "F̂ŕâḿê"
   },
-  "panels/timeline/TimelineUIUtils.ts | FromCache": {
-    "message": " (f̂ŕôḿ ĉáĉh́ê)"
-  },
-  "panels/timeline/TimelineUIUtils.ts | FromMemoryCache": {
-    "message": " (f̂ŕôḿ m̂ém̂ór̂ý ĉáĉh́ê)"
-  },
-  "panels/timeline/TimelineUIUtils.ts | FromPush": {
-    "message": " (f̂ŕôḿ p̂úŝh́)"
-  },
-  "panels/timeline/TimelineUIUtils.ts | FromServiceWorker": {
-    "message": " (f̂ŕôḿ service worker)"
-  },
   "panels/timeline/TimelineUIUtils.ts | function": {
     "message": "F̂ún̂ćt̂íôń"
   },
@@ -13312,9 +13459,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | imageUrl": {
     "message": "Îḿâǵê ÚR̂Ĺ"
-  },
-  "panels/timeline/TimelineUIUtils.ts | initialPriority": {
-    "message": "Îńît́îál̂ Ṕr̂íôŕît́ŷ"
   },
   "panels/timeline/TimelineUIUtils.ts | initiatedBy": {
     "message": "Îńît́îát̂éd̂ b́ŷ"
@@ -13352,17 +13496,11 @@
   "panels/timeline/TimelineUIUtils.ts | learnMore": {
     "message": "L̂éâŕn̂ ḿôŕê"
   },
-  "panels/timeline/TimelineUIUtils.ts | loadFromCache": {
-    "message": "l̂óâd́ f̂ŕôḿ ĉáĉh́ê"
-  },
   "panels/timeline/TimelineUIUtils.ts | location": {
     "message": "L̂óĉát̂íôń"
   },
   "panels/timeline/TimelineUIUtils.ts | message": {
     "message": "M̂éŝśâǵê"
-  },
-  "panels/timeline/TimelineUIUtils.ts | mimeType": {
-    "message": "M̂ím̂é T̂ýp̂é"
   },
   "panels/timeline/TimelineUIUtils.ts | module": {
     "message": "M̂ód̂úl̂é"
@@ -13372,12 +13510,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | movedTo": {
     "message": "M̂óv̂éd̂ t́ô"
-  },
-  "panels/timeline/TimelineUIUtils.ts | networkRequest": {
-    "message": "N̂ét̂ẃôŕk̂ ŕêq́ûéŝt́"
-  },
-  "panels/timeline/TimelineUIUtils.ts | networkTransfer": {
-    "message": "n̂ét̂ẃôŕk̂ t́r̂án̂śf̂ér̂"
   },
   "panels/timeline/TimelineUIUtils.ts | no": {
     "message": "N̂ó"
@@ -13406,9 +13538,6 @@
   "panels/timeline/TimelineUIUtils.ts | preview": {
     "message": "P̂ŕêv́îéŵ"
   },
-  "panels/timeline/TimelineUIUtils.ts | priority": {
-    "message": "P̂ŕîór̂ít̂ý"
-  },
   "panels/timeline/TimelineUIUtils.ts | processingDuration": {
     "message": "P̂ŕôćêśŝín̂ǵ d̂úr̂át̂íôń"
   },
@@ -13426,9 +13555,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | repeats": {
     "message": "R̂ép̂éât́ŝ"
-  },
-  "panels/timeline/TimelineUIUtils.ts | requestMethod": {
-    "message": "R̂éq̂úêśt̂ Ḿêt́ĥód̂"
   },
   "panels/timeline/TimelineUIUtils.ts | sAtS": {
     "message": "{PH1} ât́ {PH2}"
@@ -13489,9 +13615,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | sSSquareBrackets": {
     "message": "{PH1} [{PH2}…]"
-  },
-  "panels/timeline/TimelineUIUtils.ts | SSSResourceLoading": {
-    "message": " ({PH1} {PH2} + {PH3} r̂éŝóûŕĉé l̂óâd́îńĝ)"
   },
   "panels/timeline/TimelineUIUtils.ts | stackTrace": {
     "message": "Ŝt́âćk̂ T́r̂áĉé"

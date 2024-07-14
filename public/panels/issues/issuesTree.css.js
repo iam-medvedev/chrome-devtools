@@ -27,6 +27,7 @@ styles.replaceSync(
 .issues li {
   white-space: normal;
   align-items: flex-start;
+  min-height: var(--sys-size-13);
 }
 
 /* Hide toggle for tree items which cannot be collapsed */
@@ -35,7 +36,7 @@ styles.replaceSync(
 }
 
 .issues li.parent::before {
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .issues .affected-resources li.parent::before {
@@ -93,7 +94,6 @@ styles.replaceSync(
 
 .unhide-all-issues-button {
   margin: 0;
-  height: 20px;
 }
 
 p {
@@ -116,6 +116,10 @@ p {
   padding: 4px 0;
   cursor: pointer;
   width: 100%;
+
+  & > :not(.unhide-all-issues-button) {
+    margin-top: var(--sys-size-2);
+  }
 }
 
 .header devtools-hide-issues-menu {

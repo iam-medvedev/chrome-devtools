@@ -61,11 +61,11 @@ export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.
 }
 declare const ProfileFlameChart_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<PerfUI.FlameChart.EventTypes>;
-    addEventListener<T extends keyof PerfUI.FlameChart.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.FlameChart.EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<PerfUI.FlameChart.EventTypes, T>;
-    once<T_1 extends keyof PerfUI.FlameChart.EventTypes>(eventType: T_1): Promise<PerfUI.FlameChart.EventTypes[T_1]>;
-    removeEventListener<T_2 extends keyof PerfUI.FlameChart.EventTypes>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.FlameChart.EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
+    addEventListener<T extends keyof PerfUI.FlameChart.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.FlameChart.EventTypes[T]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<PerfUI.FlameChart.EventTypes, T>;
+    once<T extends keyof PerfUI.FlameChart.EventTypes>(eventType: T): Promise<PerfUI.FlameChart.EventTypes[T]>;
+    removeEventListener<T extends keyof PerfUI.FlameChart.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.FlameChart.EventTypes[T]>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: keyof PerfUI.FlameChart.EventTypes): boolean;
-    dispatchEventToListeners<T_3 extends keyof PerfUI.FlameChart.EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<PerfUI.FlameChart.EventTypes, T_3>): void;
+    dispatchEventToListeners<T extends keyof PerfUI.FlameChart.EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<PerfUI.FlameChart.EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class ProfileFlameChart extends ProfileFlameChart_base implements UI.SearchableView.Searchable {
     readonly searchableView: UI.SearchableView.SearchableView;
@@ -105,11 +105,11 @@ export declare class OverviewCalculator implements PerfUI.TimelineGrid.Calculato
 }
 declare const OverviewPane_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<OverviewPaneEventTypes>;
-    addEventListener<T extends OverviewPaneEvents.WindowChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<OverviewPaneEventTypes, T>;
-    once<T_1 extends OverviewPaneEvents.WindowChanged>(eventType: T_1): Promise<OverviewPaneEventTypes[T_1]>;
-    removeEventListener<T_2 extends OverviewPaneEvents.WindowChanged>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
+    addEventListener<T extends OverviewPaneEvents.WindowChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<OverviewPaneEventTypes, T>;
+    once<T extends OverviewPaneEvents.WindowChanged>(eventType: T): Promise<OverviewPaneEventTypes[T]>;
+    removeEventListener<T extends OverviewPaneEvents.WindowChanged>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<OverviewPaneEventTypes[T]>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: OverviewPaneEvents.WindowChanged): boolean;
-    dispatchEventToListeners<T_3 extends OverviewPaneEvents.WindowChanged>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<OverviewPaneEventTypes, T_3>): void;
+    dispatchEventToListeners<T extends OverviewPaneEvents.WindowChanged>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<OverviewPaneEventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class OverviewPane extends OverviewPane_base implements PerfUI.FlameChart.FlameChartDelegate {
     overviewContainer: HTMLElement;

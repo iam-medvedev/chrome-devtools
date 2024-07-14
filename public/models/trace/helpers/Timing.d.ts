@@ -35,3 +35,4 @@ export interface BoundsIncludeTimeRange {
  *         |------------------------|
  */
 export declare function boundsIncludeTimeRange(data: BoundsIncludeTimeRange): boolean;
+export declare function timestampIsInBounds(bounds: Types.Timing.TraceWindowMicroSeconds, timestamp: Types.Timing.MicroSeconds): boolean;

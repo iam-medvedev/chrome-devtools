@@ -267,9 +267,9 @@ describeWithEnvironment('TimelineProfileTree', () => {
             assert.strictEqual(nodeB.selfTime, TraceEngine.Helpers.Timing.microSecondsToMilliseconds(nodeBSelfTime));
         });
         it('correctly keeps ProfileCall nodes and uses them to build up the tree', async function () {
-            const traceParsedData = await TraceLoader.traceEngine(this, 'mainWasm_profile.json.gz');
-            const mainThread = getMainThread(traceParsedData.Renderer);
-            const bounds = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(traceParsedData.Meta.traceBounds);
+            const { traceData } = await TraceLoader.traceEngine(this, 'mainWasm_profile.json.gz');
+            const mainThread = getMainThread(traceData.Renderer);
+            const bounds = TraceEngine.Helpers.Timing.traceWindowMilliSeconds(traceData.Meta.traceBounds);
             // Replicate the filters as they would be when renderering in the actual panel.
             const textFilter = new Timeline.TimelineFilters.TimelineRegExp();
             const modelFilters = [
@@ -292,8 +292,8 @@ describeWithEnvironment('TimelineProfileTree', () => {
     });
     describe('generateEventID', () => {
         it('generates the right ID for new engine profile call events', async function () {
-            const traceParsedData = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
-            const mainThread = getMainThread(traceParsedData.Renderer);
+            const { traceData } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
+            const mainThread = getMainThread(traceData.Renderer);
             const profileCallEntry = mainThread.entries.find(entry => {
                 return TraceEngine.Types.TraceEvents.isProfileCall(entry) &&
                     entry.callFrame.functionName === 'performConcurrentWorkOnRoot';
@@ -305,13 +305,11 @@ describeWithEnvironment('TimelineProfileTree', () => {
             assert.strictEqual(eventId, 'f:performConcurrentWorkOnRoot@7');
         });
         it('generates the right ID for new engine native profile call events', async function () {
-            const traceParsedData = await TraceLoader.traceEngine(this, 'invalid-animation-events.json.gz', {
-                initTraceBounds: false,
-            }, {
+            const { traceData } = await TraceLoader.traceEngine(this, 'invalid-animation-events.json.gz', {
                 ...TraceEngine.Types.Configuration.defaults(),
                 includeRuntimeCallStats: true,
             });
-            const mainThread = getMainThread(traceParsedData.Renderer);
+            const mainThread = getMainThread(traceData.Renderer);
             const profileCallEntry = mainThread.entries.find(entry => {
                 return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.url === 'native V8Runtime';
             });

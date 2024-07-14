@@ -257,9 +257,6 @@ export declare const NotRestoredReasonDescription: {
     PictureInPicture: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
-    Portal: {
-        name: () => import("../../../core/platform/UIString.js").LocalizedString;
-    };
     SpeechRecognizer: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };

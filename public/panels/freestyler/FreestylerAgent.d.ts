@@ -31,12 +31,13 @@ type HistoryChunk = {
 };
 export declare class FreestylerAgent {
     #private;
-    constructor({ aidaClient, execJs, confirmSideEffect }: {
+    constructor({ aidaClient, execJs, confirmSideEffect, serverSideLoggingEnabled }: {
         aidaClient: Host.AidaClient.AidaClient;
+        serverSideLoggingEnabled?: boolean;
         execJs?: typeof executeJsCode;
         confirmSideEffect: (action: string) => Promise<boolean>;
     });
-    static buildRequest(input: string, preamble?: string, chatHistory?: Host.AidaClient.Chunk[]): Host.AidaClient.AidaRequest;
+    static buildRequest(input: string, preamble?: string, chatHistory?: Host.AidaClient.Chunk[], serverSideLoggingEnabled?: boolean): Host.AidaClient.AidaRequest;
     get chatHistoryForTesting(): Array<HistoryChunk>;
     static parseResponse(response: string): {
         thought?: string;

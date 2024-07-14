@@ -106,7 +106,7 @@ describeWithMockConnection('CookieModel', () => {
         assert.isNotEmpty(await model.getCookiesForDomain(`https://${CHILD_FRAME_RESOURCE_DOMAIN}`));
     });
     it('can detect cookie value changes', async () => {
-        const cookie = PROTOCOL_COOKIE;
+        const cookie = { ...PROTOCOL_COOKIE };
         setMockConnectionResponseHandler('Network.getCookies', () => ({ cookies: [cookie] }));
         const target = createTarget();
         const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest('1'));
@@ -123,7 +123,7 @@ describeWithMockConnection('CookieModel', () => {
         await expectCalled(eventListener);
     });
     it('does not refetch cookies while listening unless requested', async () => {
-        const cookie = PROTOCOL_COOKIE;
+        const cookie = { ...PROTOCOL_COOKIE };
         setMockConnectionResponseHandler('Network.getCookies', () => ({ cookies: [cookie] }));
         const target = createTarget();
         const dispatchLoadingFinished = () => target.model(SDK.NetworkManager.NetworkManager).dispatchEventToListeners(SDK.NetworkManager.Events.LoadingFinished, createNetworkRequest('1'));

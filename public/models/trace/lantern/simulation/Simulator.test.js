@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // @ts-nocheck TODO(crbug.com/348449529)
+import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as TraceModel from '../../trace.js';
 import * as Lantern from '../lantern.js';
 import { loadTrace, runTraceEngine } from '../testing/testing.js';
@@ -312,8 +313,9 @@ describe('DependencyGraph/Simulator', () => {
             const simulator = new Simulator({ serverResponseTimeByOrigin });
             assert.throws(() => simulator.simulate(rootNode), /cycle/);
         });
-        describe('on a real trace', () => {
-            it('should compute a timeInMs', async () => {
+        describe('on a real trace', function () {
+            TraceLoader.setTestTimeout(this);
+            it('should compute a timeInMs', async function () {
                 const graph = await createGraph(trace);
                 const simulator = new Simulator({ serverResponseTimeByOrigin });
                 const result = simulator.simulate(graph);

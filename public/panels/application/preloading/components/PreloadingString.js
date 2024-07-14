@@ -615,6 +615,9 @@ export function prerenderFailureReason(attempt) {
             return i18nString(UIStrings.prerenderFinalStatusJavaScriptInterfaceRemoved);
         case "AllPrerenderingCanceled" /* Protocol.Preload.PrerenderFinalStatus.AllPrerenderingCanceled */:
             return i18nString(UIStrings.prerenderFinalStatusAllPrerenderingCanceled);
+        case "WindowClosed" /* Protocol.Preload.PrerenderFinalStatus.WindowClosed */:
+            // TODO(crbug.com/350870118): Add message for this.
+            return '';
         default:
             // Note that we use switch and exhaustiveness check to prevent to
             // forget updating these strings, but allow to handle unknown

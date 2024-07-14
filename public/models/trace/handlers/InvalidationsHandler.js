@@ -23,23 +23,7 @@ export function initialize() {
 }
 function addInvalidationToEvent(event, invalidation) {
     const existingInvalidations = invalidationsForEvent.get(event) || [];
-    const syntheticInvalidation = {
-        ...invalidation,
-        name: 'SyntheticInvalidation',
-        frame: invalidation.args.data.frame,
-        nodeId: invalidation.args.data.nodeId,
-        rawEvent: invalidation,
-    };
-    if (invalidation.args.data.nodeName) {
-        syntheticInvalidation.nodeName = invalidation.args.data.nodeName;
-    }
-    if (invalidation.args.data.reason) {
-        syntheticInvalidation.reason = invalidation.args.data.reason;
-    }
-    if (invalidation.args.data.stackTrace) {
-        syntheticInvalidation.stackTrace = invalidation.args.data.stackTrace;
-    }
-    existingInvalidations.push(syntheticInvalidation);
+    existingInvalidations.push(invalidation);
     invalidationsForEvent.set(event, existingInvalidations);
 }
 export function handleEvent(event) {
@@ -59,10 +43,7 @@ export function handleEvent(event) {
         }
         return;
     }
-    if (Types.TraceEvents.isTraceEventScheduleStyleInvalidationTracking(event) ||
-        Types.TraceEvents.isTraceEventStyleRecalcInvalidationTracking(event) ||
-        Types.TraceEvents.isTraceEventStyleInvalidatorInvalidationTracking(event) ||
-        Types.TraceEvents.isTraceEventLayoutInvalidationTracking(event)) {
+    if (Types.TraceEvents.isTraceEventInvalidationTracking(event)) {
         if (hasPainted) {
             // If we have painted, then we can clear out the list of all existing
             // invalidations, as we cannot associate them across frames.

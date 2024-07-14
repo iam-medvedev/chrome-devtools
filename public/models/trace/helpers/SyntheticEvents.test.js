@@ -16,21 +16,20 @@ describe('SyntheticEvents', function () {
             await TraceLoader.executeTraceEngineOnFileContents(events);
             assert.doesNotThrow(TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager);
         });
-        it('returns the last active SyntheticEventsManager with getActiveManager', async function () {
-            const events = await TraceLoader.fixtureContents(this, 'basic.json.gz');
-            await TraceLoader.executeTraceEngineOnFileContents(events);
-            const firstActiveManager = TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
-            await TraceLoader.executeTraceEngineOnFileContents(events);
-            const secondActiveManager = TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
-            assert.notEqual(firstActiveManager, secondActiveManager);
-        });
-        it('returns the SyntheticEventsManager for a given trace index with getManagerForTrace', async function () {
-            const events = await TraceLoader.fixtureContents(this, 'basic.json.gz');
-            await TraceLoader.executeTraceEngineOnFileContents(events);
-            const firstActiveManager = TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
-            await TraceLoader.executeTraceEngineOnFileContents(events);
-            const testActiveManager = TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.getManagerForTrace(0);
-            assert.strictEqual(testActiveManager, firstActiveManager);
+        it('always returns the manager for the most recent trace and re-uses managers for the same set of input events', async function () {
+            // Exact traces do not matter, as long as they are different
+            const trace1 = await TraceLoader.fixtureContents(this, 'basic.json.gz');
+            const trace2 = await TraceLoader.fixtureContents(this, 'basic-stack.json.gz');
+            const events1 = Array.isArray(trace1) ? trace1 : trace1.traceEvents;
+            const events2 = Array.isArray(trace2) ? trace2 : trace2.traceEvents;
+            const manager1 = TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.initAndActivate(events1);
+            const manager2 = TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.initAndActivate(events2);
+            // Manager2 is active as it was the last one to be initialized
+            assert.strictEqual(TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager(), manager2);
+            // Now re-init with events1 (should use the existing manager from the cache)
+            TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.initAndActivate(events1);
+            // Now manager1 is active
+            assert.strictEqual(TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager(), manager1);
         });
     });
     describe('SyntheticBasedEvent registration', () => {
@@ -39,11 +38,11 @@ describe('SyntheticEvents', function () {
             const rawEvents = 'traceEvents' in contents ?
                 contents.traceEvents :
                 contents;
-            const { traceParsedData } = await TraceLoader.executeTraceEngineOnFileContents(rawEvents);
+            const { traceData } = await TraceLoader.executeTraceEngineOnFileContents(rawEvents);
             const allSyntheticEvents = [
-                ...traceParsedData.Animations.animations,
-                ...traceParsedData.NetworkRequests.byTime,
-                ...traceParsedData.Screenshots,
+                ...traceData.Animations.animations,
+                ...traceData.NetworkRequests.byTime,
+                ...traceData.Screenshots,
             ];
             const syntheticEventsManager = TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager();
             for (const syntheticEvent of allSyntheticEvents) {

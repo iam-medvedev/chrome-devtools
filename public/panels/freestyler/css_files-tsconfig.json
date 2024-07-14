@@ -5,6 +5,7 @@
     },
     "files": [
         "./components/freestylerChatUi.css.js",
+        "./components/provideFeedback.css.js",
         "./freestylerPanel.css.js"
     ]
 }

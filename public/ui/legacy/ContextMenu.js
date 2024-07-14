@@ -203,6 +203,9 @@ export class SubMenu extends Item {
         ContextMenu.groupWeights.forEach(name => this.section(name));
     }
     section(name) {
+        if (!name) {
+            name = 'default';
+        }
         let section = name ? this.sections.get(name) : null;
         if (!section) {
             section = new Section(this.contextMenu);
@@ -468,6 +471,12 @@ export class ContextMenu extends SubMenu {
             this.handlers.set(id, handler);
         }
     }
+    invokeHandler(id) {
+        const handler = this.handlers.get(id);
+        if (handler) {
+            handler.call(this);
+        }
+    }
     buildMenuDescriptors() {
         return super.buildDescriptor().subItems;
     }
@@ -475,10 +484,7 @@ export class ContextMenu extends SubMenu {
         this.itemSelected(event.data);
     }
     itemSelected(id) {
-        const handler = this.handlers.get(id);
-        if (handler) {
-            handler.call(this);
-        }
+        this.invokeHandler(id);
         if (this.openHostedMenu) {
             const itemWithId = (items, id) => {
                 for (const item of items) {

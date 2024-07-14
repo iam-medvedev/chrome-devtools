@@ -1,7 +1,7 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type TimespanBreakdown } from './Overlays.js';
+import { type TimelineOverlay, type TimespanBreakdown } from './Overlays.js';
 import { TimelineFlameChartDataProvider } from './TimelineFlameChartDataProvider.js';
 import { type TimelineModeViewDelegate } from './TimelinePanel.js';
 import { TimelineSelection } from './TimelineSelection.js';
@@ -50,7 +50,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     getNetworkFlameChart(): PerfUI.FlameChart.FlameChart;
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;
     setModel(newTraceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
-    setInsights(insights: TraceEngine.Insights.Types.TraceInsightData<typeof TraceEngine.Handlers.ModelHandlers> | null): void;
+    setInsights(insights: TraceEngine.Insights.Types.TraceInsightData | null): void;
     /**
      * This creates and returns a new timespanBreakdownOverlay with LCP phases data.
      */
@@ -61,6 +61,9 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     wasShown(): void;
     updateCountersGraphToggle(showMemoryGraph: boolean): void;
     setSelection(selection: TimelineSelection | null): void;
+    addOverlay<T extends TimelineOverlay>(newOverlay: T): T;
+    removeOverlay(removedOverlay: TimelineOverlay): void;
+    updateExistingOverlay<T extends TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
     private onAnnotateEntry;
     private onEntrySelected;
     resizeToPreferredHeights(): void;

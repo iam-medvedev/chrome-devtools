@@ -17,11 +17,15 @@ export function colorIsValid(color) {
     return extensionPalette.includes(color);
 }
 export function isExtensionPayloadMarker(payload) {
-    return payload.metadata.dataType === "marker" /* ExtensionEntryType.MARKER */;
+    return payload.dataType === 'marker';
 }
-export function isExtensionPayloadFlameChartEntry(payload) {
+export function isExtensionPayloadTrackEntry(payload) {
     const hasTrack = 'track' in payload && Boolean(payload.track);
-    return payload.metadata.dataType === "track-entry" /* ExtensionEntryType.TRACK_ENTRY */ && hasTrack;
+    const validEntryType = payload.dataType === 'track-entry' || payload.dataType === undefined;
+    return validEntryType && hasTrack;
+}
+export function isValidExtensionPayload(payload) {
+    return isExtensionPayloadMarker(payload) || isExtensionPayloadTrackEntry(payload);
 }
 export function isSyntheticExtensionEntry(entry) {
     return entry.cat === 'devtools.extension';

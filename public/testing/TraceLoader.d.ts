@@ -1,4 +1,3 @@
-/// <reference types="mocha" />
 import type * as Protocol from '../generated/protocol.js';
 import * as TraceEngine from '../models/trace/trace.js';
 export interface TraceEngineLoaderOptions {
@@ -56,7 +55,10 @@ export declare class TraceLoader {
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
-    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, options?: TraceEngineLoaderOptions, config?: TraceEngine.Types.Configuration.Configuration): Promise<TraceEngine.Handlers.Types.TraceParseData>;
+    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, config?: TraceEngine.Types.Configuration.Configuration): Promise<{
+        traceData: TraceEngine.Handlers.Types.TraceParseData;
+        insights: TraceEngine.Insights.Types.TraceInsightData | null;
+    }>;
     /**
      * Initialise the BoundsManager with the bounds from a trace.
      * This isn't always required, but some of our code - particularly at the UI
@@ -67,6 +69,7 @@ export declare class TraceLoader {
     static executeTraceEngineOnFileContents(contents: TraceEngine.Types.File.Contents, emulateFreshRecording?: boolean, traceEngineConfig?: TraceEngine.Types.Configuration.Configuration): Promise<{
         model: TraceEngine.TraceModel.Model;
         metadata: TraceEngine.Types.File.MetaData;
-        traceParsedData: TraceEngine.Handlers.Types.TraceParseData;
+        traceData: TraceEngine.Handlers.Types.TraceParseData;
+        insights: TraceEngine.Insights.Types.TraceInsightData | null;
     }>;
 }

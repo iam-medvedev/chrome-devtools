@@ -6,9 +6,9 @@
 // found in the LICENSE file.
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as TraceEngine from '../trace/trace.js';
-function getMainThread(data) {
+function getMainThread(traceData) {
     let mainThread = null;
-    for (const [, process] of data.processes) {
+    for (const [, process] of traceData.processes) {
         for (const [, thread] of process.threads) {
             if (thread.name === 'CrRendererMain') {
                 mainThread = thread;
@@ -30,13 +30,13 @@ function findFirstEntry(allEntries, predicate) {
 }
 describe('EntriesFilter', function () {
     it('parses a stack and returns an empty list of invisible entries', async function () {
-        const data = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         assert.deepEqual([], stack?.invisibleEntries());
     });
     it('supports the user merging an entry into its parent', async function () {
-        const data = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -65,7 +65,7 @@ describe('EntriesFilter', function () {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -75,8 +75,8 @@ describe('EntriesFilter', function () {
         assert.strictEqual(stack.invisibleEntries().length, 1);
     });
     it('adds the parent of the merged entry into the expandableEntries array', async function () {
-        const data = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -103,7 +103,7 @@ describe('EntriesFilter', function () {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -118,8 +118,8 @@ describe('EntriesFilter', function () {
         assert.isTrue(stack.isEntryExpandable(basicStackOne));
     });
     it('adds the collapsed entry into the expandableEntries array', async function () {
-        const data = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -143,7 +143,7 @@ describe('EntriesFilter', function () {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'basicTwo' &&
                 entry.dur === 827;
         });
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -152,8 +152,8 @@ describe('EntriesFilter', function () {
         assert.isTrue(stack.isEntryExpandable(entryTwo));
     });
     it('adds the next visible parent of the merged entry into the expandableEntries array if the direct parent is hidden', async function () {
-        const data = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== onclick ============
          * =========== foo =============
@@ -195,7 +195,7 @@ describe('EntriesFilter', function () {
             const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -229,8 +229,8 @@ describe('EntriesFilter', function () {
         assert.isTrue(stack.isEntryExpandable(foo2Calls[0]));
     });
     it('supports collapsing an entry', async function () {
-        const data = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -265,7 +265,7 @@ describe('EntriesFilter', function () {
             const basicTwoCallEndTime = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(basicTwoCallEntry).endTime;
             return endTime <= basicTwoCallEndTime;
         });
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -279,8 +279,8 @@ describe('EntriesFilter', function () {
         assert.isTrue(allFibonacciInStackAreHidden, 'Some fibonacci calls are still visible');
     });
     it('supports collapsing all repeating entries among descendants', async function () {
-        const data = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== onclick ============
          * =========== foo =============
@@ -322,7 +322,7 @@ describe('EntriesFilter', function () {
             const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -344,8 +344,8 @@ describe('EntriesFilter', function () {
         assert.isTrue(allFoo2InStackAreVisible, 'Some foo2 calls are invisible');
     });
     it('supports undo all filter actions by applying context menu undo action', async function () {
-        const data = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -375,7 +375,7 @@ describe('EntriesFilter', function () {
          *
          * Applying 'undo all actions' should bring the stack to the original state.
          **/
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -429,8 +429,8 @@ describe('EntriesFilter', function () {
         assert.strictEqual(stack.invisibleEntries().length, 0);
     });
     it('supports resetting children of the closest expandable parent when a hidden entry is provided', async function () {
-        const data = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== basicStackOne ============
          * =========== basicTwo ==============
@@ -460,7 +460,7 @@ describe('EntriesFilter', function () {
          *
          * This should result in all basicTwo children being removed from the invisible array and stack being in the initial state.
          **/
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -487,8 +487,8 @@ describe('EntriesFilter', function () {
         assert.strictEqual(stack.invisibleEntries().length, 0);
     });
     it('supports resetting all hidden children of a selected entry', async function () {
-        const data = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some events omitted):
          * ======== onclick ============
          * =========== foo =============
@@ -542,7 +542,7 @@ describe('EntriesFilter', function () {
             const { endTime } = TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
             return endTime <= firstFooCallEndTime;
         });
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }
@@ -580,8 +580,8 @@ describe('EntriesFilter', function () {
         assert.isTrue(allFooExceptSecondInStackAreVisible, 'Some foo calls except the second one are invisible or the second one is visible');
     });
     it('correctly returns the amount of hidden children of a node', async function () {
-        const data = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
-        const mainThread = getMainThread(data.Renderer);
+        const { traceData } = await TraceLoader.traceEngine(this, 'two-functions-recursion.json.gz');
+        const mainThread = getMainThread(traceData.Renderer);
         /** This stack looks roughly like so (with some erlier events omitted):
          * ======== onclick ============
          * =========== foo =============
@@ -605,7 +605,7 @@ describe('EntriesFilter', function () {
             return TraceEngine.Types.TraceEvents.isProfileCall(entry) && entry.callFrame.functionName === 'foo' &&
                 entry.dur === 233;
         });
-        const stack = new TraceEngine.EntriesFilter.EntriesFilter(data.Renderer.entryToNode);
+        const stack = new TraceEngine.EntriesFilter.EntriesFilter(traceData.Renderer.entryToNode);
         if (!stack) {
             throw new Error('EntriesFilter does not exist');
         }

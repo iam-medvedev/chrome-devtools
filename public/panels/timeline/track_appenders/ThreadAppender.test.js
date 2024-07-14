@@ -20,15 +20,15 @@ async function renderThreadAppendersFromTrace(context, trace) {
     const entryTypeByLevel = [];
     const entryData = [];
     const flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
-    const traceParsedData = await TraceLoader.traceEngine(context, trace);
-    const threadAppenders = initTrackAppender(flameChartData, traceParsedData, entryData, entryTypeByLevel);
+    const { traceData } = await TraceLoader.traceEngine(context, trace);
+    const threadAppenders = initTrackAppender(flameChartData, traceData, entryData, entryTypeByLevel);
     let level = 0;
     for (const appender of threadAppenders) {
         level = appender.appendTrackAtLevel(level);
     }
     return {
         entryTypeByLevel,
-        traceParsedData,
+        traceParsedData: traceData,
         flameChartData,
         threadAppenders,
         entryData,

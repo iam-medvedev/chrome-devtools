@@ -1,3 +1,4 @@
+import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.ContextFlavorListener.ContextFlavorListener {
     #private;
@@ -7,11 +8,8 @@ export declare class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.
     private infoElement;
     private constructor();
     static instance(): ScopeChainSidebarPane;
-    flavorChanged(_object: Object | null): void;
+    flavorChanged(callFrame: SDK.DebuggerModel.CallFrame | null): void;
     focus(): void;
-    private sourceMapAttached;
-    private setScopeSourceMapSubscription;
-    private debugInfoAttached;
     private update;
     private createScopeSectionTreeElement;
     private extraPropertiesForScope;

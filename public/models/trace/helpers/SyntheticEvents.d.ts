@@ -6,15 +6,10 @@ export declare class SyntheticEventsManager {
      * called before running the trace engine handlers, since the instance
      * created here will be used by the handlers to register their
      * synthetic trace events.
+     *
+     * Can be called multiple times for the same set of raw events, in which case it will re-use the existing manager rather than recreate it again.
      */
-    static initSyntheticEventsManagerForTrace(rawEvents: readonly Types.TraceEvents.TraceEventData[]): SyntheticEventsManager;
-    /**
-     * Gets the SyntheticEventsManager instance for a trace given the index
-     * of the trace given its index used in Model#traces. If no index is
-     * passed, defaults to the last created instance.
-     * If no instance is found throws error.
-     */
-    static getManagerForTrace(traceIndex?: number): SyntheticEventsManager;
+    static initAndActivate(rawEvents: readonly Types.TraceEvents.TraceEventData[]): SyntheticEventsManager;
     static getActiveManager(): SyntheticEventsManager;
     static reset(): void;
     static registerSyntheticBasedEvent<T extends Types.TraceEvents.SyntheticBasedEvent>(syntheticEvent: Omit<T, '_tag'>): T;

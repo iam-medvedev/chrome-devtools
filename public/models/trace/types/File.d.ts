@@ -18,6 +18,22 @@ export declare const enum EventKeyType {
     SyntheticEvent = "s",
     ProfileCall = "p"
 }
+/**
+ * Represents an object that is saved in the file when a user creates a label for an entry in the timeline.
+ */
+export interface EntryLabelAnnotation {
+    type: 'ENTRY_LABEL';
+    entry: TraceEventData;
+    label: string;
+}
+/**
+ * `Annotation` are the user-created annotations that are saved into the metadata.
+ * Those annotations are rendered on the timeline by `Overlays.ts`
+ *
+ * TODO: Implement other OverlayAnnotations (annotated time ranges, links between entries).
+ * TODO: Save/load overlay annotations to/from the trace file.
+ */
+export type Annotation = EntryLabelAnnotation;
 export type RawEventKey = `${EventKeyType.RawEvent}-${number}`;
 export type SyntheticEventKey = `${EventKeyType.SyntheticEvent}-${number}`;
 export type ProfileCallKey = `${EventKeyType.ProfileCall}-${ProcessID}-${ThreadID}-${SampleIndex}-${Protocol.integer}`;

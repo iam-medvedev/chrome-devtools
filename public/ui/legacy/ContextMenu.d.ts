@@ -22,7 +22,7 @@ export declare class Item {
     setShortcut(shortcut: string): void;
 }
 export declare class Section {
-    private readonly contextMenu;
+    readonly contextMenu: ContextMenu | null;
     readonly items: Item[];
     constructor(contextMenu: ContextMenu | null);
     appendItem(label: string, handler: () => void, options?: {
@@ -44,7 +44,7 @@ export declare class Section {
     }): Item;
 }
 export declare class SubMenu extends Item {
-    private readonly sections;
+    readonly sections: Map<string, Section>;
     private readonly sectionList;
     constructor(contextMenu: ContextMenu | null, label?: string, disabled?: boolean, jslogContext?: string);
     init(): void;
@@ -103,6 +103,7 @@ export declare class ContextMenu extends SubMenu {
     setX(x: number): void;
     setY(y: number): void;
     setHandler(id: number, handler: () => void): void;
+    invokeHandler(id: number): void;
     private buildMenuDescriptors;
     private onItemSelected;
     private itemSelected;

@@ -5,6 +5,6 @@ export { type Comment, defaultOptions, getLineInfo, isNewLine, lineBreak, lineBr
 export declare const Parser: typeof acorn.Parser;
 export declare const tokenizer: (input: string, options: acorn.Options) => {
     getToken(): acorn.Token;
-    [Symbol.iterator](): Iterator<acorn.Token, any, undefined>;
+    [Symbol.iterator](): Iterator<acorn.Token>;
 };
 export declare const parse: (input: string, options: acorn.Options) => acorn.Node;

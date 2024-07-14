@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 const syntheticEventsManagerByTraceIndex = [];
+const managerByRawEvents = new Map();
+let activeManager = null;
 export class SyntheticEventsManager {
     /**
      * All synthetic entries created in a trace from a corresponding trace events.
@@ -17,41 +19,30 @@ export class SyntheticEventsManager {
      * called before running the trace engine handlers, since the instance
      * created here will be used by the handlers to register their
      * synthetic trace events.
+     *
+     * Can be called multiple times for the same set of raw events, in which case it will re-use the existing manager rather than recreate it again.
      */
-    static initSyntheticEventsManagerForTrace(rawEvents) {
-        const manager = new SyntheticEventsManager(rawEvents);
-        syntheticEventsManagerByTraceIndex.push(manager);
-        return manager;
-    }
-    /**
-     * Gets the SyntheticEventsManager instance for a trace given the index
-     * of the trace given its index used in Model#traces. If no index is
-     * passed, defaults to the last created instance.
-     * If no instance is found throws error.
-     */
-    static getManagerForTrace(traceIndex) {
-        const last = syntheticEventsManagerByTraceIndex.at(-1);
-        if (!last) {
-            throw new Error('Attempted to get a SyntheticEventsManager without initializing');
+    static initAndActivate(rawEvents) {
+        const existingManager = managerByRawEvents.get(rawEvents);
+        if (existingManager) {
+            activeManager = existingManager;
         }
-        if (traceIndex === undefined) {
-            return last;
+        else {
+            const manager = new SyntheticEventsManager(rawEvents);
+            managerByRawEvents.set(rawEvents, manager);
+            activeManager = manager;
         }
-        const manager = syntheticEventsManagerByTraceIndex.at(traceIndex);
-        if (!manager) {
-            throw new Error(`Attempted to get a SyntheticEventsManager with an invalid index ${traceIndex}`);
-        }
-        return manager;
+        return activeManager;
     }
     static getActiveManager() {
-        const last = syntheticEventsManagerByTraceIndex.at(-1);
-        if (!last) {
+        if (!activeManager) {
             throw new Error('Attempted to get a SyntheticEventsManager without initializing');
         }
-        return SyntheticEventsManager.getManagerForTrace(syntheticEventsManagerByTraceIndex.length - 1);
+        return activeManager;
     }
     static reset() {
         syntheticEventsManagerByTraceIndex.length = 0;
+        activeManager = null;
     }
     static registerSyntheticBasedEvent(syntheticEvent) {
         try {

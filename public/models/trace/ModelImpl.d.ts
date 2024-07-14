@@ -7,24 +7,25 @@ export interface ParseConfig {
     isFreshRecording?: boolean;
 }
 /**
- * The new trace engine model we are migrating to. The Model is responsible for
- * parsing arrays of raw trace events and storing the resulting data. It can
- * store multiple traces at once, and can return the data for any of them.
- * Currently as we migrate from the old engine to this, we are turning on the
- * model handlers incrementally as we need the data, to save performance costs
- * of running handlers that we do not use. Therefore, when the model is
- * constructed we pass through a set of handlers that should be used. Once we
- * have migrated all tracks in the Performance Panel to this model, we can
- * remove this ability to run a subset of handlers, as we will need all handlers
- * to be used at that point. For tests, if you want to construct a model with
- * all handlers, you can use the static `Model.createWithAllHandlers` method.
+ * The Model is responsible for parsing arrays of raw trace events and storing the
+ * resulting data. It can store multiple traces at once, and can return the data for
+ * any of them.
+ *
+ * Most uses of this class should be through `createWithAllHandlers`, but
+ * `createWithSubsetOfHandlers` can be used to run just some handlers.
  **/
-export declare class Model<EnabledModelHandlers extends {
-    [key: string]: Handlers.Types.TraceEventHandler;
-} = typeof Handlers.ModelHandlers> extends EventTarget {
+export declare class Model extends EventTarget {
     #private;
-    static createWithAllHandlers(config?: Types.Configuration.Configuration): Model<typeof Handlers.ModelHandlers>;
-    constructor(handlers: EnabledModelHandlers, config?: Types.Configuration.Configuration);
+    static createWithAllHandlers(config?: Types.Configuration.Configuration): Model;
+    /**
+     * Runs only the provided handlers.
+     *
+     * Callers must ensure they are providing all dependant handlers (although Meta is included automatically),
+     * and must know that the result of `.traceParsedData` will be limited to the handlers provided, even though
+     * the type won't reflect that.
+     */
+    static createWithSubsetOfHandlers(traceHandlers: Partial<Handlers.Types.Handlers>, config?: Types.Configuration.Configuration): Model;
+    constructor(handlers: Handlers.Types.Handlers, config?: Types.Configuration.Configuration);
     /**
      * Parses an array of trace events into a structured object containing all the
      * information parsed by the trace handlers.
@@ -53,12 +54,13 @@ export declare class Model<EnabledModelHandlers extends {
      * void this.traceModel.parse(events);
      **/
     parse(traceEvents: readonly Types.TraceEvents.TraceEventData[], config?: ParseConfig): Promise<void>;
+    lastTraceIndex(): number;
     /**
      * Returns the parsed trace data indexed by the order in which it was stored.
      * If no index is given, the last stored parsed data is returned.
      */
-    traceParsedData(index?: number): Handlers.Types.EnabledHandlerDataWithMeta<EnabledModelHandlers> | null;
-    traceInsights(index?: number): Insights.Types.TraceInsightData<EnabledModelHandlers> | null;
+    traceParsedData(index?: number): Handlers.Types.TraceParseData | null;
+    traceInsights(index?: number): Insights.Types.TraceInsightData | null;
     metadata(index?: number): Types.File.MetaData | null;
     overrideModifications(index: number, newModifications: Types.File.Modifications): void;
     rawTraceEvents(index?: number): readonly Types.TraceEvents.TraceEventData[] | null;
@@ -73,11 +75,9 @@ export declare class Model<EnabledModelHandlers extends {
  * of these so that the user can swap between them. The key is that it is
  * essentially the TraceFile plus whatever the model has parsed from it.
  */
-export type ParsedTraceFile<Handlers extends {
-    [key: string]: Handlers.Types.TraceEventHandler;
-}> = Types.File.TraceFile & {
-    traceParsedData: Handlers.Types.EnabledHandlerDataWithMeta<Handlers> | null;
-    traceInsights: Insights.Types.TraceInsightData<Handlers> | null;
+export type ParsedTraceFile = Types.File.TraceFile & {
+    traceParsedData: Handlers.Types.TraceParseData | null;
+    traceInsights: Insights.Types.TraceInsightData | null;
 };
 export declare const enum ModelUpdateType {
     COMPLETE = "COMPLETE",

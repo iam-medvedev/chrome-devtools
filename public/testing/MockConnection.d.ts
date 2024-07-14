@@ -1,4 +1,3 @@
-/// <reference types="mocha" />
 import type * as SDK from '../core/sdk/sdk.js';
 import { type ProtocolMapping } from '../generated/protocol-mapping.js';
 export type ProtocolCommand = keyof ProtocolMapping.Commands;

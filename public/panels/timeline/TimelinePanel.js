@@ -39,7 +39,6 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as ModificationsManager from '../../services/modifications_manager/modifications_manager.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -53,6 +52,7 @@ import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { Tracker } from './FreshRecording.js';
 import historyToolbarButtonStyles from './historyToolbarButton.css.js';
 import { IsolateSelector } from './IsolateSelector.js';
+import { AnnotationModifiedEvent, ModificationsManager } from './ModificationsManager.js';
 import { cpuprofileJsonGenerator, traceJsonGenerator } from './SaveFileFormatter.js';
 import { NodeNamesUpdated, SourceMapsResolver } from './SourceMapsResolver.js';
 import { TimelineController } from './TimelineController.js';
@@ -364,6 +364,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         const topPaneElement = this.timelinePane.element.createChild('div', 'hbox');
         topPaneElement.id = 'timeline-overview-panel';
         this.#minimapComponent.show(topPaneElement);
+        this.#minimapComponent.addEventListener("OpenSidebarButtonClicked" /* PerfUI.TimelineOverviewPane.Events.OpenSidebarButtonClicked */, this.#showSidebar.bind(this));
         this.statusPaneContainer = this.timelinePane.element.createChild('div', 'status-pane-container fill');
         this.createFileSelector();
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.loadEventFired, this);
@@ -379,6 +380,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.searchableViewInternal.hideWidget();
         this.#sideBar.setMainWidget(this.timelinePane);
         this.#sideBar.show(this.element);
+        this.#sideBar.hideSidebar();
+        this.#sideBar.addEventListener("SidebarCollapseClick" /* TimelineComponents.Sidebar.WidgetEvents.SidebarCollapseClick */, this.#hideSidebar.bind(this));
+        this.#sideBar.contentElement.addEventListener(TimelineComponents.Sidebar.ToggleSidebarInsights.eventName, this.#sidebarInsightEnabled.bind(this));
         this.onModeChanged();
         this.populateToolbar();
         this.showLandingPage();
@@ -406,9 +410,22 @@ export class TimelinePanel extends UI.Panel.Panel {
             },
             targetRemoved: (_) => { },
         });
-        this.#sideBar.setMainWidget(this.timelinePane);
-        this.#sideBar.show(this.element);
-        this.#sideBar.contentElement.addEventListener(TimelineComponents.Sidebar.ToggleSidebarInsights.eventName, this.#sidebarInsightEnabled.bind(this));
+    }
+    #showSidebar() {
+        if (!Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */)) {
+            return;
+        }
+        this.#sideBar.showBoth();
+        this.#sideBar.updateContentsOnExpand();
+        this.#sideBar.setResizable(false);
+        this.#minimapComponent.hideSidebarFloatingIcon();
+    }
+    #hideSidebar() {
+        if (!Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */)) {
+            return;
+        }
+        this.#minimapComponent.showSidebarFloatingIcon();
+        this.#sideBar.hideSidebar();
     }
     #sidebarInsightEnabled() {
         this.flameChart.toggleSidebarInsights();
@@ -580,7 +597,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     createSettingsPane() {
         this.showSettingsPaneSetting =
             Common.Settings.Settings.instance().createSetting('timeline-show-settings-toolbar', false);
-        this.showSettingsPaneButton = new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.captureSettings), 'gear-filled');
+        this.showSettingsPaneButton = new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.captureSettings), 'gear-filled', 'timeline-settings-toggle');
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, this.updateShowSettingsToolbarButton, this);
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RateChanged */, this.updateShowSettingsToolbarButton, this);
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("HardwareConcurrencyChanged" /* SDK.CPUThrottlingManager.Events.HardwareConcurrencyChanged */, this.updateShowSettingsToolbarButton, this);
@@ -635,7 +652,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (this.fileSelectorElement) {
             this.fileSelectorElement.remove();
         }
-        this.fileSelectorElement = UI.UIUtils.createFileSelectorElement(this.loadFromFile.bind(this));
+        // .gz is far more popular than .gzip, but both are valid.
+        this.fileSelectorElement = UI.UIUtils.createFileSelectorElement(this.loadFromFile.bind(this), '.json,.gz,.gzip');
         this.timelinePane.element.appendChild(this.fileSelectorElement);
     }
     contextMenu(event) {
@@ -656,7 +674,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         const metadata = this.#traceEngineModel.metadata(this.#traceEngineActiveTraceIndex);
         // Save modifications into the metadata if modifications experiment is on
         if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */) && metadata) {
-            metadata.modifications = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()?.toJSON();
+            metadata.modifications = ModificationsManager.activeManager()?.toJSON();
         }
         if (metadata && isEnhancedTraces) {
             metadata.enhancedTraceVersion = TraceEngine.Handlers.ModelHandlers.EnhancedTraces.EnhancedTracesVersion;
@@ -730,7 +748,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         return true;
     }
     #saveModificationsForActiveTrace() {
-        const newModifications = ModificationsManager.ModificationsManager.ModificationsManager.activeManager()?.toJSON();
+        const newModifications = ModificationsManager.activeManager()?.toJSON();
         if (newModifications) {
             this.#traceEngineModel.overrideModifications(this.#traceEngineActiveTraceIndex, newModifications);
         }
@@ -1114,7 +1132,21 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (traceParsedData) {
             TraceBounds.TraceBounds.BoundsManager.instance().resetWithNewBounds(traceParsedData.Meta.traceBounds);
             // Create an instance of the modifications manager for this trace or activate a manager for previousy loaded trace.
-            ModificationsManager.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(this.#traceEngineModel, this.#traceEngineActiveTraceIndex);
+            const currentManager = ModificationsManager.initAndActivateModificationsManager(this.#traceEngineModel, this.#traceEngineActiveTraceIndex);
+            if (!currentManager) {
+                console.error('ModificationsManager could not be created or activated.');
+            }
+            // Add ModificationsManager listeners for annotations change to update the Annotation Overlays.
+            currentManager?.addEventListener(AnnotationModifiedEvent.eventName, event => {
+                const { overlay, action } = event;
+                if (action === 'Add') {
+                    this.flameChart.addOverlay(overlay);
+                }
+                else if (action === 'Remove') {
+                    this.flameChart.removeOverlay(overlay);
+                }
+                this.#sideBar.setAnnotationsTabContent(currentManager.getAnnotations());
+            });
             this.#applyActiveFilters(traceParsedData.Meta.traceIsGeneric, exclusiveFilter);
         }
         if (traceParsedData) {
@@ -1197,7 +1229,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     showLandingPage() {
         this.updateSettingsPaneVisibility();
-        this.#sideBar.hideSidebar();
+        this.#hideSidebar();
         if (this.landingPage) {
             this.landingPage.show(this.statusPaneContainer);
             return;
@@ -1262,7 +1294,19 @@ export class TimelinePanel extends UI.Panel.Panel {
         const recordingIsFresh = this.state === "StopPending" /* State.StopPending */;
         this.setState("Idle" /* State.Idle */);
         if (collectedEvents.length === 0) {
-            this.clear();
+            // 0 collected events indicates probably an invalid file was imported.
+            // If the user does not have any already-loaded traces, then we should
+            // just reset the panel back to the landing page. However if they had a
+            // previous trace imported, we should go to that instead.
+            if (this.#traceEngineModel.size()) {
+                if (this.statusPane) {
+                    this.statusPane.remove();
+                }
+                this.setModel(this.#traceEngineModel.lastTraceIndex());
+            }
+            else {
+                this.clear();
+            }
             return;
         }
         metadata = metadata ?
@@ -1280,7 +1324,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             }
             this.statusPane = null;
             if (!isNode && Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */)) {
-                this.#sideBar.showBoth();
+                this.#minimapComponent.showSidebarFloatingIcon();
             }
             const traceData = this.#traceEngineModel.traceParsedData(this.#traceEngineActiveTraceIndex);
             if (!traceData) {

@@ -12,11 +12,11 @@ declare class HeapSnapshotGridNodeBase extends DataGrid.DataGrid.DataGridNode<He
 }
 declare const HeapSnapshotGridNode_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<HeapSnapshotGridNode.EventTypes>;
-    addEventListener<T extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotGridNode.EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<HeapSnapshotGridNode.EventTypes, T>;
-    once<T_1 extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: T_1): Promise<HeapSnapshotGridNode.EventTypes[T_1]>;
-    removeEventListener<T_2 extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotGridNode.EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
+    addEventListener<T extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotGridNode.EventTypes[T]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<HeapSnapshotGridNode.EventTypes, T>;
+    once<T extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: T): Promise<HeapSnapshotGridNode.EventTypes[T]>;
+    removeEventListener<T extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<HeapSnapshotGridNode.EventTypes[T]>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: HeapSnapshotGridNode.Events.PopulateComplete): boolean;
-    dispatchEventToListeners<T_3 extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<HeapSnapshotGridNode.EventTypes, T_3>): void;
+    dispatchEventToListeners<T extends HeapSnapshotGridNode.Events.PopulateComplete>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<HeapSnapshotGridNode.EventTypes, T>): void;
 }) & typeof HeapSnapshotGridNodeBase;
 export declare class HeapSnapshotGridNode extends HeapSnapshotGridNode_base {
     dataGridInternal: HeapSnapshotSortableDataGrid;

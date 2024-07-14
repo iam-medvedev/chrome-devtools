@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Core from '../core/core.js';
 import * as Graph from '../graph/graph.js';
 import { Metric, } from './Metric.js';
 import { BLOCKING_TIME_THRESHOLD, calculateSumOfBlockingTime } from './TBTUtils.js';
@@ -20,10 +21,10 @@ class TotalBlockingTime extends Metric {
     }
     static getEstimateFromSimulation(simulation, extras) {
         if (!extras.fcpResult) {
-            throw new Error('missing fcpResult');
+            throw new Core.LanternError('missing fcpResult');
         }
         if (!extras.interactiveResult) {
-            throw new Error('missing interactiveResult');
+            throw new Core.LanternError('missing interactiveResult');
         }
         // Intentionally use the opposite FCP estimate. A pessimistic FCP is higher than equal to an
         // optimistic FCP, which means potentially more tasks are excluded from the Total Blocking Time
@@ -44,14 +45,14 @@ class TotalBlockingTime extends Metric {
             nodeTimings: simulation.nodeTimings,
         };
     }
-    static async compute(data, extras) {
+    static compute(data, extras) {
         const fcpResult = extras?.fcpResult;
         if (!fcpResult) {
-            throw new Error('FCP is required to calculate the TBT metric');
+            throw new Core.LanternError('FCP is required to calculate the TBT metric');
         }
         const interactiveResult = extras?.fcpResult;
         if (!interactiveResult) {
-            throw new Error('Interactive is required to calculate the TBT metric');
+            throw new Core.LanternError('Interactive is required to calculate the TBT metric');
         }
         return super.compute(data, extras);
     }

@@ -35,8 +35,8 @@ export declare class TimelineUIUtils {
     static statsForTimeRange(events: TraceEngine.Types.TraceEvents.TraceEventData[], startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): {
         [x: string]: number;
     };
-    static buildSyntheticNetworkRequestDetails(traceParseData: TraceEngine.Handlers.Types.TraceParseData, event: TraceEngine.Types.TraceEvents.SyntheticNetworkRequest, linkifier: LegacyComponents.Linkifier.Linkifier): Promise<DocumentFragment>;
     private static renderEventJson;
+    private static renderObjectJson;
     static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | TraceEngine.Types.TraceEvents.TraceEventCallFrame[]): Protocol.Runtime.StackTrace;
     private static generateCauses;
     private static createEntryLink;

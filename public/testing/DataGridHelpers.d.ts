@@ -19,7 +19,7 @@ export declare const assertSelectedRowIs: (shadowRoot: ShadowRoot, row: number) 
 export declare const getDataGrid: (gridComponent: HTMLElement) => DataGrid.DataGrid.DataGrid;
 export declare const assertGridContents: (gridComponent: HTMLElement, headerExpected: string[], rowsExpected: string[][]) => DataGrid.DataGrid.DataGrid;
 export declare const focusCurrentlyFocusableCell: (shadowRoot: ShadowRoot) => void;
-export declare const emulateUserKeyboardNavigation: (shadowRoot: ShadowRoot, key: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown') => void;
+export declare const emulateUserKeyboardNavigation: (shadowRoot: ShadowRoot, key: "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown") => void;
 export declare const emulateUserFocusingCellAt: (shadowRoot: ShadowRoot, position: {
     column: number;
     row: number;

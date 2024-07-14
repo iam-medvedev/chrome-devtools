@@ -5,7 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import { buildGroupStyle, buildTrackHeader, getEventLevel, getFormattedTime } from './AppenderUtils.js';
+import { addDecorationToEvent, buildGroupStyle, buildTrackHeader, getEventLevel, getFormattedTime, } from './AppenderUtils.js';
 import { Utils } from './components/components.js';
 import { colorForNetworkCategory, colorForNetworkRequest, NetworkCategory } from './components/Utils.js';
 import { InstantEventVisibleDurationMs } from './TimelineFlameChartDataProvider.js';
@@ -82,7 +82,7 @@ export class NetworkTrackAppender {
      * appended.
      * @param expanded wether the track should be rendered expanded.
      */
-    #appendTrackHeaderAtLevel(currentLevel, expanded) {
+    #appendTrackHeaderAtLevel(_currentLevel, expanded) {
         const style = buildGroupStyle({
             shareHeaderLine: false,
             useFirstLineForOverview: false,
@@ -111,35 +111,21 @@ export class NetworkTrackAppender {
      * trace events (the first available level to append next track).
      */
     #appendEventsAtLevel(events, trackStartLevel) {
-        const lastUsedTimeByLevel = [];
-        let websocketLevel = 0;
+        // Appending everything to the same level isn't "correct", but filterTimelineDataBetweenTimes() will handle that
+        // before anything is rendered.
         for (let i = 0; i < events.length; ++i) {
             const event = events[i];
-            let level;
-            if (TraceEngine.Types.TraceEvents.isWebSocketTraceEvent(event) ||
-                TraceEngine.Types.TraceEvents.isSyntheticWebSocketConnectionEvent(event)) {
-                // process WebSocket events
-                const webSocketIdentifier = event.args.data.identifier;
-                if (this.webSocketIdToLevel.has(webSocketIdentifier)) {
-                    // get the level for the WebSocket event that has the current identifier
-                    const idLevel = this.webSocketIdToLevel.get(webSocketIdentifier) || 0;
-                    this.#appendEventAtLevel(event, trackStartLevel + idLevel);
-                }
-                else {
-                    // calculate the level for the WebSocket event that has the current identifier
-                    level = getEventLevel(event, lastUsedTimeByLevel);
-                    this.webSocketIdToLevel.set(webSocketIdentifier, level); // save the level for the current identifier
-                    this.#appendEventAtLevel(event, trackStartLevel + level);
-                    websocketLevel += 1;
-                }
-            }
-            else {
-                // process network events
-                level = getEventLevel(event, lastUsedTimeByLevel);
-                this.#appendEventAtLevel(event, trackStartLevel + websocketLevel + level);
+            this.#appendEventAtLevel(event, trackStartLevel);
+            // Decorate render blocking
+            if (TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(event) &&
+                TraceEngine.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(event)) {
+                addDecorationToEvent(this.#flameChartData, i, {
+                    type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */,
+                    customEndTime: event.args.data.syntheticData.finishTime,
+                });
             }
         }
-        return trackStartLevel + lastUsedTimeByLevel.length;
+        return this.relayoutEntriesWithinBounds(events, TraceEngine.Types.Timing.MilliSeconds(-Infinity), TraceEngine.Types.Timing.MilliSeconds(Infinity));
     }
     /**
      * Adds an event to the flame chart data at a defined level.
@@ -151,53 +137,45 @@ export class NetworkTrackAppender {
         const index = this.#flameChartData.entryLevels.length;
         this.#flameChartData.entryLevels[index] = level;
         this.#flameChartData.entryStartTimes[index] = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts);
-        const msDuration = event.dur ||
-            TraceEngine.Helpers.Timing.millisecondsToMicroseconds(InstantEventVisibleDurationMs);
-        this.#flameChartData.entryTotalTimes[index] = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(msDuration);
+        const dur = event.dur || TraceEngine.Helpers.Timing.millisecondsToMicroseconds(InstantEventVisibleDurationMs);
+        this.#flameChartData.entryTotalTimes[index] = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(dur);
         return level;
     }
     /**
      * Update the flame chart data.
      * When users zoom in the flamechart, we only want to show them the network
-     * requests between startTime and endTime. This function will append those
+     * requests between minTime and maxTime. This function will append those
      * invisible events to the last level, and hide them.
      * @returns the number of levels used by this track
      */
-    filterTimelineDataBetweenTimes(events, startTime, endTime) {
+    relayoutEntriesWithinBounds(events, minTime, maxTime) {
         if (!this.#flameChartData || events.length === 0) {
             return 0;
         }
-        const lastTimeByLevel = [];
+        const lastTimestampByLevel = [];
         this.webSocketIdToLevel = new Map();
         let maxLevel = 0;
         for (let i = 0; i < events.length; ++i) {
             const event = events[i];
             const beginTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.ts);
-            event.dur = event.dur ||
-                TraceEngine.Helpers.Timing.millisecondsToMicroseconds(InstantEventVisibleDurationMs);
-            const eventEndTime = TraceEngine.Helpers.Timing.microSecondsToMilliseconds((event.ts + event.dur));
-            const isBetweenTimes = beginTime < endTime && eventEndTime > startTime;
+            const dur = event.dur ? TraceEngine.Helpers.Timing.microSecondsToMilliseconds(event.dur) : InstantEventVisibleDurationMs;
+            const endTime = beginTime + dur;
+            const isBetweenTimes = beginTime < maxTime && endTime > minTime;
+            // Exclude events outside the the specified timebounds
             if (!isBetweenTimes) {
                 this.#flameChartData.entryLevels[i] = -1;
                 continue;
             }
+            // Layout the entries by assigning levels.
             let level;
-            if (TraceEngine.Types.TraceEvents.isWebSocketTraceEvent(event) ||
-                TraceEngine.Types.TraceEvents.isSyntheticWebSocketConnectionEvent(event)) {
-                const webSocketIdentifier = event.args.data.identifier;
-                if (this.webSocketIdToLevel.has(webSocketIdentifier)) {
-                    level = this.webSocketIdToLevel.get(webSocketIdentifier) || 0;
-                }
-                else {
-                    level = getEventLevel(event, lastTimeByLevel);
-                    this.webSocketIdToLevel.set(webSocketIdentifier, level);
-                }
+            if ('identifier' in event.args.data && TraceEngine.Types.TraceEvents.isWebSocketEvent(event)) {
+                level = this.getWebSocketLevel(event, lastTimestampByLevel);
             }
             else {
-                level = getEventLevel(event, lastTimeByLevel);
+                level = getEventLevel(event, lastTimestampByLevel);
             }
             this.#flameChartData.entryLevels[i] = level;
-            maxLevel = Math.max(maxLevel, lastTimeByLevel.length, level);
+            maxLevel = Math.max(maxLevel, lastTimestampByLevel.length, level);
         }
         for (let i = 0; i < events.length; ++i) {
             // -1 means this event is invisible.
@@ -207,6 +185,20 @@ export class NetworkTrackAppender {
             }
         }
         return maxLevel;
+    }
+    getWebSocketLevel(event, lastTimestampByLevel) {
+        const webSocketIdentifier = event.args.data.identifier;
+        let level;
+        if (this.webSocketIdToLevel.has(webSocketIdentifier)) {
+            // We're placing an instant event on top of its parent websocket
+            level = this.webSocketIdToLevel.get(webSocketIdentifier) || 0;
+        }
+        else {
+            // We're placing the parent websocket
+            level = getEventLevel(event, lastTimestampByLevel);
+            this.webSocketIdToLevel.set(webSocketIdentifier, level);
+        }
+        return level;
     }
     /*
       ------------------------------------------------------------------------------------

@@ -215,7 +215,11 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
             return;
         }
         event.preventDefault();
-        const element = this.list.elementAtIndex(this.list.selectedIndex());
+        const index = this.list.selectedIndex();
+        if (index < 0) {
+            return;
+        }
+        const element = this.list.elementAtIndex(index);
         if (element) {
             void VisualLogging.logClick(element, event);
         }

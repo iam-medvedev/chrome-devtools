@@ -7,17 +7,12 @@ import * as Helpers from './helpers/helpers.js';
 import { TraceParseProgressEvent, TraceProcessor } from './Processor.js';
 import * as Types from './types/types.js';
 /**
- * The new trace engine model we are migrating to. The Model is responsible for
- * parsing arrays of raw trace events and storing the resulting data. It can
- * store multiple traces at once, and can return the data for any of them.
- * Currently as we migrate from the old engine to this, we are turning on the
- * model handlers incrementally as we need the data, to save performance costs
- * of running handlers that we do not use. Therefore, when the model is
- * constructed we pass through a set of handlers that should be used. Once we
- * have migrated all tracks in the Performance Panel to this model, we can
- * remove this ability to run a subset of handlers, as we will need all handlers
- * to be used at that point. For tests, if you want to construct a model with
- * all handlers, you can use the static `Model.createWithAllHandlers` method.
+ * The Model is responsible for parsing arrays of raw trace events and storing the
+ * resulting data. It can store multiple traces at once, and can return the data for
+ * any of them.
+ *
+ * Most uses of this class should be through `createWithAllHandlers`, but
+ * `createWithSubsetOfHandlers` can be used to run just some handlers.
  **/
 export class Model extends EventTarget {
     #traces = [];
@@ -29,6 +24,16 @@ export class Model extends EventTarget {
     #config = Types.Configuration.defaults();
     static createWithAllHandlers(config) {
         return new Model(Handlers.ModelHandlers, config);
+    }
+    /**
+     * Runs only the provided handlers.
+     *
+     * Callers must ensure they are providing all dependant handlers (although Meta is included automatically),
+     * and must know that the result of `.traceParsedData` will be limited to the handlers provided, even though
+     * the type won't reflect that.
+     */
+    static createWithSubsetOfHandlers(traceHandlers, config) {
+        return new Model(traceHandlers, config);
     }
     constructor(handlers, config) {
         super();
@@ -84,7 +89,7 @@ export class Model extends EventTarget {
         try {
             // Wait for all outstanding promises before finishing the async execution,
             // but perform all tasks in parallel.
-            const syntheticEventsManager = Helpers.SyntheticEvents.SyntheticEventsManager.initSyntheticEventsManagerForTrace(traceEvents);
+            const syntheticEventsManager = Helpers.SyntheticEvents.SyntheticEventsManager.initAndActivate(traceEvents);
             await this.#processor.parse(traceEvents, isFreshRecording);
             this.#storeParsedFileData(file, this.#processor.traceParsedData, this.#processor.insights);
             // We only push the file onto this.#traces here once we know it's valid
@@ -117,6 +122,9 @@ export class Model extends EventTarget {
             }
         }
         this.#recordingsAvailable.push(recordingName);
+    }
+    lastTraceIndex() {
+        return this.size() - 1;
     }
     /**
      * Returns the parsed trace data indexed by the order in which it was stored.

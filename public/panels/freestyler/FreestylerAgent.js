@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
@@ -86,17 +87,27 @@ async function executeJsCode(code, { throwOnSideEffect }) {
     }
 }
 const MAX_STEPS = 10;
+const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
+/**
+ * Error response message to be return whenever a OBSERVATION
+ * fails due to some issue.
+ */
+const getErrorResponse = (message) => {
+    return `Error: ${message}`;
+};
 export class FreestylerAgent {
     #aidaClient;
     #chatHistory = new Map();
     #confirmSideEffect;
     #execJs;
-    constructor({ aidaClient, execJs, confirmSideEffect }) {
+    #serverSideLoggingEnabled;
+    constructor({ aidaClient, execJs, confirmSideEffect, serverSideLoggingEnabled }) {
         this.#aidaClient = aidaClient;
         this.#execJs = execJs ?? executeJsCode;
         this.#confirmSideEffect = confirmSideEffect;
+        this.#serverSideLoggingEnabled = serverSideLoggingEnabled ?? false;
     }
-    static buildRequest(input, preamble, chatHistory) {
+    static buildRequest(input, preamble, chatHistory, serverSideLoggingEnabled = false) {
         const config = Common.Settings.Settings.instance().getHostConfig();
         const request = {
             input,
@@ -110,7 +121,7 @@ export class FreestylerAgent {
             },
             metadata: {
                 // TODO: disable logging based on query params.
-                disable_user_content_logging: false,
+                disable_user_content_logging: !serverSideLoggingEnabled,
             },
             // eslint-disable-next-line @typescript-eslint/naming-convention
             functionality_type: Host.AidaClient.FunctionalityType.CHAT,
@@ -173,6 +184,11 @@ export class FreestylerAgent {
                 i++;
             }
         }
+        // If we could not parse the parts, consider the response to be an
+        // answer.
+        if (!answer && !thought && !action) {
+            answer = response;
+        }
         return { thought, action, answer };
     }
     async #aidaFetch(request) {
@@ -181,6 +197,9 @@ export class FreestylerAgent {
         for await (const lastResult of this.#aidaClient.fetch(request)) {
             response = lastResult.explanation;
             rpcId = lastResult.metadata.rpcGlobalId ?? rpcId;
+            if (lastResult.metadata.attributionMetadata?.some(meta => meta.attributionAction === Host.AidaClient.RecitationAction.BLOCK)) {
+                throw new Error('Attribution action does not allow providing the response');
+            }
         }
         return { response, rpcId };
     }
@@ -188,22 +207,31 @@ export class FreestylerAgent {
         this.#chatHistory = new Map();
     }
     async #generateObservation(action, { throwOnSideEffect }) {
+        const actionExpression = `{${action};((typeof data !== "undefined") ? data : undefined)}`;
         try {
-            return await this.#execJs(`{${action};((typeof data !== "undefined") ? data : undefined)}`, { throwOnSideEffect });
+            const result = await this.#execJs(actionExpression, { throwOnSideEffect });
+            const byteCount = Platform.StringUtilities.countWtf8Bytes(result);
+            if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
+                return getErrorResponse('Output exceeded the maximum allowed length.');
+            }
+            return result;
         }
-        catch (err) {
-            if (err instanceof SideEffectError) {
+        catch (error) {
+            if (throwOnSideEffect && error instanceof SideEffectError) {
                 const shouldAllowSideEffect = await this.#confirmSideEffect(action);
                 if (!shouldAllowSideEffect) {
-                    return `Error: ${err.message}`;
+                    return getErrorResponse(error.message);
                 }
-                return await this.#execJs(`{${action};((typeof data !== "undefined") ? data : undefined)}`, { throwOnSideEffect: false });
+                return await this.#generateObservation(action, {
+                    throwOnSideEffect: false,
+                });
             }
-            return `Error: ${err.message}`;
+            return getErrorResponse(error.message);
         }
     }
     #runId = 0;
     async *run(query, options) {
+        const genericErrorMessage = 'Sorry, I could not help you with this query.';
         const structuredLog = [];
         query = `QUERY: ${query}`;
         const currentRunId = ++this.#runId;
@@ -212,7 +240,7 @@ export class FreestylerAgent {
         });
         for (let i = 0; i < MAX_STEPS; i++) {
             yield { step: Step.QUERYING };
-            const request = FreestylerAgent.buildRequest(query, preamble, this.#chatHistory.size ? this.#getHistoryEntry : undefined);
+            const request = FreestylerAgent.buildRequest(query, preamble, this.#chatHistory.size ? this.#getHistoryEntry : undefined, this.#serverSideLoggingEnabled);
             let response;
             let rpcId;
             try {
@@ -221,10 +249,11 @@ export class FreestylerAgent {
                 rpcId = fetchResult.rpcId;
             }
             catch (err) {
+                debugLog('Error calling the AIDA API', err);
                 if (options?.signal.aborted) {
                     break;
                 }
-                yield { step: Step.ERROR, text: err.message, rpcId };
+                yield { step: Step.ERROR, text: genericErrorMessage, rpcId };
                 break;
             }
             if (options?.signal.aborted) {
@@ -267,7 +296,7 @@ export class FreestylerAgent {
                 break;
             }
             else {
-                yield { step: Step.ANSWER, text: 'Sorry, I could not help you with this query.', rpcId };
+                yield { step: Step.ANSWER, text: genericErrorMessage, rpcId };
                 break;
             }
             if (i === MAX_STEPS - 1) {

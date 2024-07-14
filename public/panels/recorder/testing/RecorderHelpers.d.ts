@@ -1,4 +1,3 @@
-/// <reference types="sinon" />
 import * as Models from '../models/models.js';
 export interface ClientMock {
     send(): sinon.SinonStub;

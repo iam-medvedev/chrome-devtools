@@ -2,6 +2,11 @@ export declare class EmptyEntryLabelRemoveEvent extends Event {
     static readonly eventName = "emptyentrylabelremoveevent";
     constructor();
 }
+export declare class EntryLabelChangeEvent extends Event {
+    newLabel: string;
+    static readonly eventName = "entrylabelchangeevent";
+    constructor(newLabel: string);
+}
 export declare class EntryLabelOverlay extends HTMLElement {
     #private;
     static readonly LABEL_AND_CONNECTOR_SHIFT_LENGTH = 8;
@@ -13,7 +18,6 @@ export declare class EntryLabelOverlay extends HTMLElement {
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     constructor(label: string);
     connectedCallback(): void;
-    disconnectedCallback(): void;
     set entryDimensions(entryDimensions: {
         height: number;
         width: number;

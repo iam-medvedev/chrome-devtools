@@ -297,33 +297,71 @@ const UIStrings = {
      */
     copyAllURLs: 'Copy all URLs',
     /**
+     *@description A context menu command in the Network panel, for copying the URLs of all requestes
+     (after applying the Network filter) to the clipboard.
+     */
+    copyAllFilteredURLs: 'Copy all (filtered) URLs',
+    /**
      *@description Text in Network Log View of the Network panel. An action that copies a command to
-     *the clipboard. It will copy the command in the format compatible with a PowerShell script.
+     *the clipboard. It will copy the command in the format compatible with a PowerShell script to
+     *represent all network requests.
      */
     copyAllAsPowershell: 'Copy all as `PowerShell`',
     /**
      *@description Text in Network Log View of the Network panel. An action that copies a command to
+     *the clipboard. It will copy the command in the format compatible with a PowerShell script to
+     *represent all network requests (after applying the Network filter).
+     */
+    copyAllFilteredAsPowershell: 'Copy all (filtered) as `PowerShell`',
+    /**
+     *@description Text in Network Log View of the Network panel. An action that copies a command to
      *the clipboard. It will copy the command in the format compatible with a 'fetch' command (fetch
-     *should not be translated).
+     *should not be translated) to represent all network requests.
      */
     copyAllAsFetch: 'Copy all as `fetch`',
     /**
      *@description Text in Network Log View of the Network panel. An action that copies a command to
+     *the clipboard. It will copy the command in the format compatible with a 'fetch' command (fetch
+     *should not be translated) to represent all network requests (after applying the Network filter).
+     */
+    copyAllFilteredAsFetch: 'Copy all (filtered) as `fetch`',
+    /**
+     *@description Text in Network Log View of the Network panel. An action that copies a command to
      *the clipboard. It will copy the command in the format compatible with a Node.js 'fetch' command
-     *(fetch and Node.js should not be translated).
+     *(fetch and Node.js should not be translated) to represent all network requests.
      */
     copyAllAsNodejsFetch: 'Copy all as `fetch` (`Node.js`)',
     /**
      *@description Text in Network Log View of the Network panel. An action that copies a command to
+     *the clipboard. It will copy the command in the format compatible with a Node.js 'fetch' command
+     *(fetch and Node.js should not be translated) to represent all network requests (after applying
+     *the Network filter).
+     */
+    copyAllFilteredAsNodejsFetch: 'Copy all (filtered) as `fetch` (`Node.js`)',
+    /**
+     *@description Text in Network Log View of the Network panel. An action that copies a command to
      *the clipboard. It will copy the command in the format compatible with cURL (a program, not
-     *translatable).
+     *translatable) to represent all network requests.
      */
     copyAllAsCurlCmd: 'Copy all as `cURL` (`cmd`)',
     /**
      *@description Text in Network Log View of the Network panel. An action that copies a command to
-     *the clipboard. It will copy the command in the format compatible with a Bash script.
+     *the clipboard. It will copy the command in the format compatible with cURL (a program, not
+     *translatable) to represent all network requests (after applying the Network filter).
+     */
+    copyAllFilteredAsCurlCmd: 'Copy all (filtered) as `cURL` (`cmd`)',
+    /**
+     *@description Text in Network Log View of the Network panel. An action that copies a command to
+     *the clipboard. It will copy the command in the format compatible with a Bash script to represent
+     *all network requests.
      */
     copyAllAsCurlBash: 'Copy all as `cURL` (`bash`)',
+    /**
+     *@description Text in Network Log View of the Network panel. An action that copies a command to
+     *the clipboard. It will copy the command in the format compatible with a Bash script to represent
+     *all network requests (after applying the Network filter).
+     */
+    copyAllFilteredAsCurlBash: 'Copy all (filtered) as `cURL` (`bash`)',
     /**
      *@description Text in Network Log View of the Network panel. An action that copies a command to
      *the clipboard. It will copy the command in the format compatible with cURL (a program, not
@@ -333,15 +371,27 @@ const UIStrings = {
     /**
      *@description Text in Network Log View of the Network panel. An action that copies a command to
      *the clipboard. It will copy the command in the format compatible with cURL (a program, not
-     *translatable).
+     *translatable) to represent all network requests.
      */
     copyAllAsCurl: 'Copy all as `cURL`',
+    /**
+     *@description Text in Network Log View of the Network panel. An action that copies a command to
+     *the clipboard. It will copy the command in the format compatible with cURL (a program, not
+     *translatable) to represent all network requests (after applying the Network filter).
+     */
+    copyAllFilteredAsCurl: 'Copy all (filtered) as `cURL`',
     /**
      * @description Text in Network Log View of the Network panel. An action that copies data to the
      * clipboard. It will copy the data in the HAR (not translatable) format. 'all' refers to every
      * network request that is currently shown.
      */
     copyAllAsHar: 'Copy all as `HAR`',
+    /**
+     * @description Text in Network Log View of the Network panel. An action that copies data to the
+     * clipboard. It will copy the data in the HAR (not translatable) format. 'all' refers to every
+     * network request that is currently shown (after applying the Network filter).
+     */
+    copyAllFilteredAsHar: 'Copy all (filtered) as `HAR`',
     /**
      *@description A context menu item in the Network Log View of the Network panel
      */
@@ -1241,7 +1291,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             staleNodes.add(node);
         }
         for (const node of staleNodes) {
-            const isFilteredOut = !this.applyFilter(node);
+            const request = node.request();
+            const isFilteredOut = !this.applyFilter(request);
             if (isFilteredOut) {
                 if (node === this.hoveredNodeInternal) {
                     this.setHoveredNode(null);
@@ -1251,7 +1302,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             else {
                 nodesToRefresh.push(node);
             }
-            const request = node.request();
             this.timeCalculatorInternal.updateBoundaries(request);
             this.durationCalculator.updateBoundaries(request);
             const newParent = this.parentNodeForInsert(node);
@@ -1422,10 +1472,11 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     handleContextMenuForRequest(contextMenu, request) {
         contextMenu.appendApplicableItems(request);
+        const filtered = this.filterBar.hasActiveFilter();
         const copyMenu = contextMenu.clipboardSection().appendSubMenuItem(i18nString(UIStrings.copy), false, 'copy');
         if (request) {
             copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyURL), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, request.contentURL()), { jslogContext: 'copy-url' });
-            copyMenu.footerSection().appendItem(i18nString(UIStrings.copyAllURLs), this.copyAllURLs.bind(this), { jslogContext: 'copy-all-urls' });
+            copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllFilteredURLs) : i18nString(UIStrings.copyAllURLs), this.copyAllURLs.bind(this), { jslogContext: 'copy-all-urls' });
             if (request.requestHeadersText()) {
                 copyMenu.saveSection().appendItem(i18nString(UIStrings.copyRequestHeaders), NetworkLogView.copyRequestHeaders.bind(null, request), { jslogContext: 'copy-request-headers' });
             }
@@ -1462,17 +1513,17 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyAsFetch), this.copyFetchCall.bind(this, request, 0 /* FetchStyle.Browser */), { disabled: disableIfBlob, jslogContext: 'copy-as-fetch' });
             copyMenu.defaultSection().appendItem(i18nString(UIStrings.copyAsNodejsFetch), this.copyFetchCall.bind(this, request, 1 /* FetchStyle.NodeJs */), { disabled: disableIfBlob, jslogContext: 'copy-as-nodejs-fetch' });
             if (Host.Platform.isWin()) {
-                copyMenu.footerSection().appendItem(i18nString(UIStrings.copyAllAsCurlCmd), this.copyAllCurlCommand.bind(this, 'win'), { jslogContext: 'copy-all-as-curl-cmd' });
-                copyMenu.footerSection().appendItem(i18nString(UIStrings.copyAllAsCurlBash), this.copyAllCurlCommand.bind(this, 'unix'), { jslogContext: 'copy-all-as-curl-bash' });
+                copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllFilteredAsCurlCmd) : i18nString(UIStrings.copyAllAsCurlCmd), this.copyAllCurlCommand.bind(this, 'win'), { jslogContext: 'copy-all-as-curl-cmd' });
+                copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllFilteredAsCurlBash) : i18nString(UIStrings.copyAllAsCurlBash), this.copyAllCurlCommand.bind(this, 'unix'), { jslogContext: 'copy-all-as-curl-bash' });
             }
             else {
-                copyMenu.footerSection().appendItem(i18nString(UIStrings.copyAllAsCurl), this.copyAllCurlCommand.bind(this, 'unix'), { jslogContext: 'copy-all-as-curl' });
+                copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllFilteredAsCurl) : i18nString(UIStrings.copyAllAsCurl), this.copyAllCurlCommand.bind(this, 'unix'), { jslogContext: 'copy-all-as-curl' });
             }
-            copyMenu.footerSection().appendItem(i18nString(UIStrings.copyAllAsPowershell), this.copyAllPowerShellCommand.bind(this), { jslogContext: 'copy-all-as-powershell' });
-            copyMenu.footerSection().appendItem(i18nString(UIStrings.copyAllAsFetch), this.copyAllFetchCall.bind(this, 0 /* FetchStyle.Browser */), { jslogContext: 'copy-all-as-fetch' });
-            copyMenu.footerSection().appendItem(i18nString(UIStrings.copyAllAsNodejsFetch), this.copyAllFetchCall.bind(this, 1 /* FetchStyle.NodeJs */), { jslogContext: 'copy-all-as-nodejs-fetch' });
+            copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllFilteredAsPowershell) : i18nString(UIStrings.copyAllAsPowershell), this.copyAllPowerShellCommand.bind(this), { jslogContext: 'copy-all-as-powershell' });
+            copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllFilteredAsFetch) : i18nString(UIStrings.copyAllAsFetch), this.copyAllFetchCall.bind(this, 0 /* FetchStyle.Browser */), { jslogContext: 'copy-all-as-fetch' });
+            copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllFilteredAsNodejsFetch) : i18nString(UIStrings.copyAllAsNodejsFetch), this.copyAllFetchCall.bind(this, 1 /* FetchStyle.NodeJs */), { jslogContext: 'copy-all-as-nodejs-fetch' });
         }
-        copyMenu.footerSection().appendItem(i18nString(UIStrings.copyAllAsHar), this.copyAllAsHAR.bind(this), { jslogContext: 'copy-all-as-har' });
+        copyMenu.footerSection().appendItem(filtered ? i18nString(UIStrings.copyAllFilteredAsHar) : i18nString(UIStrings.copyAllAsHar), this.copyAllAsHAR.bind(this), { jslogContext: 'copy-all-as-har' });
         contextMenu.saveSection().appendItem(i18nString(UIStrings.saveAllAsHarWithContent), this.exportAll.bind(this), { jslogContext: 'save-all-as-har-with-content' });
         contextMenu.overrideSection().appendItem(i18nString(UIStrings.overrideHeaders), this.#handleCreateResponseHeaderOverrideClick.bind(this, request), {
             disabled: Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(request.url()),
@@ -1517,10 +1568,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         }
     }
     harRequests() {
-        return Logs.NetworkLog.NetworkLog.instance()
-            .requests()
-            .filter(NetworkLogView.getHTTPRequestsFilter)
-            .filter(request => {
+        const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(request => this.applyFilter(request));
+        return requests.filter(NetworkLogView.getHTTPRequestsFilter).filter(request => {
             return request.finished ||
                 (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket && request.responseReceivedTime);
         });
@@ -1530,7 +1579,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(JSON.stringify(harArchive, null, 2));
     }
     copyAllURLs() {
-        const nonBlobRequests = this.filterOutBlobRequests(Logs.NetworkLog.NetworkLog.instance().requests());
+        const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(request => this.applyFilter(request));
+        const nonBlobRequests = this.filterOutBlobRequests(requests);
         const urls = nonBlobRequests.map(request => request.url());
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(urls.join('\n'));
     }
@@ -1539,7 +1589,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(command);
     }
     async copyAllCurlCommand(platform) {
-        const commands = await this.generateAllCurlCommand(Logs.NetworkLog.NetworkLog.instance().requests(), platform);
+        const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(request => this.applyFilter(request));
+        const commands = await this.generateAllCurlCommand(requests, platform);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
     }
     async copyFetchCall(request, style) {
@@ -1547,7 +1598,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(command);
     }
     async copyAllFetchCall(style) {
-        const commands = await this.generateAllFetchCall(Logs.NetworkLog.NetworkLog.instance().requests(), style);
+        const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(request => this.applyFilter(request));
+        const commands = await this.generateAllFetchCall(requests, style);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
     }
     async copyPowerShellCommand(request) {
@@ -1555,7 +1607,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(command);
     }
     async copyAllPowerShellCommand() {
-        const commands = await this.generateAllPowerShellCommand(Logs.NetworkLog.NetworkLog.instance().requests());
+        const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(request => this.applyFilter(request));
+        const commands = await this.generateAllPowerShellCommand(requests);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(commands);
     }
     async exportAll() {
@@ -1605,8 +1658,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     removeAllHighlights() {
         this.removeAllNodeHighlights();
     }
-    applyFilter(node) {
-        const request = node.request();
+    applyFilter(request) {
         if (this.timeFilter && !this.timeFilter(request)) {
             return false;
         }

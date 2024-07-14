@@ -22,7 +22,7 @@ dialog::backdrop {
 }
 
 dialog {
-  background: var(--override-transparent);
+  background: transparent;
   border: none;
   border-radius: 4px;
   top: var(--dialog-top);

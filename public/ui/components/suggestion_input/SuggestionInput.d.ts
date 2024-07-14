@@ -41,7 +41,8 @@ export declare class SuggestionInput extends LitElement {
     static shadowRootOptions: {
         readonly delegatesFocus: true;
         readonly mode: ShadowRootMode;
-        readonly slotAssignment?: SlotAssignmentMode | undefined;
+        readonly serializable?: boolean;
+        readonly slotAssignment?: SlotAssignmentMode;
     };
     static styles: CSSStyleSheet[];
     /**

@@ -63,5 +63,17 @@ describe('UIUtils', () => {
             assert.strictEqual(UI.UIUtils.measuredScrollbarWidth(document), width);
         });
     });
+    describe('createFileSelectorElement', () => {
+        it('by default it accepts any file types', async () => {
+            const callback = () => { };
+            const inputElement = UI.UIUtils.createFileSelectorElement(callback);
+            assert.isNull(inputElement.getAttribute('accept'));
+        });
+        it('can set the accept attribute on the input', async () => {
+            const callback = () => { };
+            const inputElement = UI.UIUtils.createFileSelectorElement(callback, '.json');
+            assert.strictEqual(inputElement.getAttribute('accept'), '.json');
+        });
+    });
 });
 //# sourceMappingURL=UIUtils.test.js.map

@@ -18,22 +18,20 @@ export interface UserChatMessage {
 }
 export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
-    rpcId?: number;
+    suggestingFix: boolean;
     steps: Array<ActionStepData | CommonStepData>;
+    rpcId?: number;
 }
 export type ChatMessage = UserChatMessage | ModelChatMessage;
 export declare const enum State {
     CONSENT_VIEW = "consent-view",
     CHAT_VIEW = "chat-view"
 }
-export declare const enum Rating {
-    POSITIVE = "positive",
-    NEGATIVE = "negative"
-}
 export interface Props {
     onTextSubmit: (text: string) => void;
     onInspectElementClick: () => void;
-    onRateClick: (rpcId: number, rate: Rating) => void;
+    onRateClick: (rpcId: number, rate: Host.AidaClient.Rating) => void;
+    onFeedbackSubmit: (rpcId: number, feedback: string) => void;
     onAcceptConsentClick: () => void;
     onCancelClick: () => void;
     onFixThisIssueClick: () => void;
@@ -44,7 +42,6 @@ export interface Props {
     selectedNode: SDK.DOMModel.DOMNode | null;
     isLoading: boolean;
     confirmSideEffectDialog?: ConfirmSideEffectDialog;
-    lastActionIsFixThisIssue: boolean;
 }
 declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
     templateForToken(token: Marked.Marked.Token): LitHtml.TemplateResult | null;

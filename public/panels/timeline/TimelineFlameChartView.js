@@ -14,7 +14,8 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { CountersGraph } from './CountersGraph.js';
 import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
-import { Overlays } from './Overlays.js';
+import { ModificationsManager } from './ModificationsManager.js';
+import { AnnotationOverlayActionEvent, Overlays, } from './Overlays.js';
 import { targetForEvent } from './TargetForEvent.js';
 import { TimelineDetailsView } from './TimelineDetailsView.js';
 import { TimelineRegExp } from './TimelineFilters.js';
@@ -121,6 +122,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             // The TimelineOverlays are used for selected elements
             selectedElementOutline: false,
             tooltipElement: this.#tooltipElement,
+            useOverlaysForCursorRuler: true,
         });
         this.mainFlameChart.alwaysShowVerticalScroll();
         this.mainFlameChart.enableRuler(false);
@@ -138,6 +140,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             // The TimelineOverlays are used for selected elements
             selectedElementOutline: false,
             tooltipElement: this.#tooltipElement,
+            useOverlaysForCursorRuler: true,
         });
         this.networkFlameChart.alwaysShowVerticalScroll();
         this.networkFlameChart.addEventListener("LatestDrawDimensions" /* PerfUI.FlameChart.Events.LatestDrawDimensions */, dimensions => {
@@ -149,6 +152,12 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             // the height of the network chart.
             this.mainFlameChart.setTooltipYPixelAdjustment(this.#overlays.networkChartOffsetHeight());
         });
+        this.mainFlameChart.addEventListener("MouseMove" /* PerfUI.FlameChart.Events.MouseMove */, event => {
+            this.#processFlameChartMouseMoveEvent(event.data);
+        });
+        this.networkFlameChart.addEventListener("MouseMove" /* PerfUI.FlameChart.Events.MouseMove */, event => {
+            this.#processFlameChartMouseMoveEvent(event.data);
+        });
         this.#overlays = new Overlays({
             container: this.#overlaysContainer,
             charts: {
@@ -157,6 +166,15 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
                 networkChart: this.networkFlameChart,
                 networkProvider: this.networkDataProvider,
             },
+        });
+        this.#overlays.addEventListener(AnnotationOverlayActionEvent.eventName, event => {
+            const { overlay, action } = event;
+            if (action === 'Remove') {
+                ModificationsManager.activeManager()?.removeAnnotationOverlay(overlay);
+            }
+            else if (action === 'Update') {
+                ModificationsManager.activeManager()?.updateAnnotationOverlay(overlay);
+            }
         });
         this.networkPane = new UI.Widget.VBox();
         this.networkPane.setMinimumSize(23, 23);
@@ -207,15 +225,34 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (this.#sidebarInsightToggled) {
             this.#timespanBreakdownOverlay = this.createLCPPhaseOverlay();
             if (this.#timespanBreakdownOverlay) {
-                this.#overlays.add(this.#timespanBreakdownOverlay);
+                this.addOverlay(this.#timespanBreakdownOverlay);
             }
         }
         else {
             if (this.#timespanBreakdownOverlay) {
-                this.#overlays.remove(this.#timespanBreakdownOverlay);
+                this.removeOverlay(this.#timespanBreakdownOverlay);
             }
         }
-        this.#overlays.update();
+    }
+    #processFlameChartMouseMoveEvent(data) {
+        const { mouseEvent, timeInMicroSeconds } = data;
+        // If the user is no longer holding shift, remove any existing marker.
+        if (!mouseEvent.shiftKey) {
+            const removedCount = this.#overlays.removeOverlaysOfType('CURSOR_TIMESTAMP_MARKER');
+            if (removedCount > 0) {
+                // Don't trigger lots of updates on a mouse move if we didn't actually
+                // remove any overlays.
+                this.#overlays.update();
+            }
+        }
+        if (!mouseEvent.metaKey && mouseEvent.shiftKey) {
+            // CURSOR_TIMESTAMP_MARKER is a singleton; if one already exists it will
+            // be updated rather than create an entirely new one.
+            this.addOverlay({
+                type: 'CURSOR_TIMESTAMP_MARKER',
+                timestamp: timeInMicroSeconds,
+            });
+        }
     }
     #keydownHandler(event) {
         const keyCombo = 'fixme';
@@ -281,19 +318,18 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */)) {
             const bounds = TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(TraceEngine.Types.Timing.MilliSeconds(startTime), TraceEngine.Types.Timing.MilliSeconds(endTime));
             if (this.#timeRangeSelectionOverlay) {
-                this.#overlays.updateExisting(this.#timeRangeSelectionOverlay, {
+                this.updateExistingOverlay(this.#timeRangeSelectionOverlay, {
                     bounds,
                 });
             }
             else {
-                this.#timeRangeSelectionOverlay = this.#overlays.add({
+                this.#timeRangeSelectionOverlay = this.addOverlay({
                     type: 'TIME_RANGE',
                     label: '',
                     showDuration: true,
                     bounds,
                 });
             }
-            this.#overlays.update();
         }
     }
     getMainFlameChart() {
@@ -495,12 +531,24 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             (TimelineSelection.isTraceEventSelection(selection.object) ||
                 TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object) ||
                 TimelineSelection.isFrameObject(selection.object))) {
-            this.#overlays.add({
+            this.addOverlay({
                 type: 'ENTRY_SELECTED',
                 entry: selection.object,
             });
-            this.#overlays.update();
         }
+    }
+    addOverlay(newOverlay) {
+        const overlay = this.#overlays.add(newOverlay);
+        this.#overlays.update();
+        return overlay;
+    }
+    removeOverlay(removedOverlay) {
+        this.#overlays.remove(removedOverlay);
+        this.#overlays.update();
+    }
+    updateExistingOverlay(existingOverlay, newData) {
+        this.#overlays.updateExisting(existingOverlay, newData);
+        this.#overlays.update();
     }
     onAnnotateEntry(dataProvider, event) {
         const selection = dataProvider.createSelection(event.data);
@@ -508,12 +556,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             (TimelineSelection.isTraceEventSelection(selection.object) ||
                 TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object))) {
             this.setSelection(selection);
-            this.#overlays.add({
+            ModificationsManager.activeManager()?.createAnnotation({
                 type: 'ENTRY_LABEL',
                 entry: selection.object,
                 label: '',
             });
-            this.#overlays.update();
         }
     }
     onEntrySelected(dataProvider, event) {

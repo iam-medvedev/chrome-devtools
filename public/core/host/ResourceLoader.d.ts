@@ -25,4 +25,4 @@ export declare const loadAsStream: (url: string, headers: {
     [x: string]: string;
 } | null, stream: Common.StringOutputStream.OutputStream, callback?: ((arg0: boolean, arg1: {
     [x: string]: string;
-}, arg2: LoadErrorDescription) => void) | undefined, allowRemoteFilePaths?: boolean) => void;
+}, arg2: LoadErrorDescription) => void), allowRemoteFilePaths?: boolean) => void;

@@ -98,10 +98,10 @@ export function evaluateInPage(code: string, callback: (arg0: any, arg1: Protoco
  * @return {!Promise<undefined|{response: (!SDK.RuntimeModel.RemoteObject|undefined),
  *   exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined)}>}
  */
-export function _evaluateInPage(code: string): Promise<{
+export function _evaluateInPage(code: string): Promise<undefined | {
     response: (SDK.RuntimeModel.RemoteObject | undefined);
     exceptionDetails: (Protocol.Runtime.ExceptionDetails | undefined);
-} | undefined>;
+}>;
 /**
  * Doesn't append sourceURL to snippets evaluated in inspected page
  * to avoid churning test expectations
@@ -442,5 +442,78 @@ export class MockSetting<V> {
 export function findLineEndingIndexes(inputString: string): Array<number>;
 import * as UI from '../../ui/legacy/legacy.js';
 import * as SDK from '../../core/sdk/sdk.js';
+declare namespace TestRunner {
+    export { StringOutputStream };
+    export { MockSetting };
+    export { formatters };
+    export { completeTest };
+    export { addResult };
+    export { addResults };
+    export { runTests };
+    export { addSniffer };
+    export { addSnifferPromise };
+    export { showPanel };
+    export { createKeyEvent };
+    export { safeWrap };
+    export { textContentWithLineBreaks };
+    export { textContentWithLineBreaksTrimmed };
+    export { textContentWithoutStyles };
+    export { evaluateInPagePromise };
+    export { callFunctionInPageAsync };
+    export { evaluateInPageWithTimeout };
+    export { evaluateFunctionInOverlay };
+    export { check };
+    export { deprecatedRunAfterPendingDispatches };
+    export { loadHTML };
+    export { addScriptTag };
+    export { addStylesheetTag };
+    export { addIframe };
+    export { markStep };
+    export { startDumpingProtocolMessages };
+    export { addScriptForFrame };
+    export { addObject };
+    export { addArray };
+    export { dumpDeepInnerHTML };
+    export { deepTextContent };
+    export { dump };
+    export { waitForEvent };
+    export { waitForTarget };
+    export { waitForTargetRemoved };
+    export { waitForExecutionContext };
+    export { waitForExecutionContextDestroyed };
+    export { assertGreaterOrEqual };
+    export { navigate };
+    export { navigatePromise };
+    export { hardReloadPage };
+    export { reloadPage };
+    export { reloadPageWithInjectedScript };
+    export { reloadPagePromise };
+    export { pageLoaded };
+    export { waitForPageLoad };
+    export { runWhenPageLoads };
+    export { runTestSuite };
+    export { assertEquals };
+    export { assertTrue };
+    export { override };
+    export { clearSpecificInfoFromStackFrames };
+    export { hideInspectorView };
+    export { mainFrame };
+    export { waitForUISourceCode };
+    export { waitForUISourceCodeRemoved };
+    export { url };
+    export { dumpSyntaxHighlight };
+    export { evaluateInPageRemoteObject };
+    export { evaluateInPage };
+    export { evaluateInPageAnonymously };
+    export { evaluateInPageAsync };
+    export { deprecatedInitAsync };
+    export { runAsyncTestSuite };
+    export { dumpInspectedPageElementText };
+    export { waitForPendingLiveLocationUpdates };
+    export { findLineEndingIndexes };
+    export { selectTextInTextNode };
+    export let isScrolledToBottom: (element: Element) => boolean;
+}
 import * as Common from '../../core/common/common.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+export {};

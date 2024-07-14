@@ -73,14 +73,18 @@ export interface OptionalFlameChartConfig {
      * The element to use when populating and positioning the mouse tooltip.
      */
     tooltipElement?: HTMLElement;
+    /**
+     * Used to disable the cursor element in ChartViewport and instead use the new overlays system.
+     */
+    useOverlaysForCursorRuler?: boolean;
 }
 declare const FlameChart_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T_1 extends keyof EventTypes>(eventType: T_1): Promise<EventTypes[T_1]>;
-    removeEventListener<T_2 extends keyof EventTypes>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
+    addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T]>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: keyof EventTypes): boolean;
-    dispatchEventToListeners<T_3 extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_3>): void;
+    dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class FlameChart extends FlameChart_base implements Calculator, ChartViewportDelegate {
     #private;
@@ -571,7 +575,8 @@ export declare const enum Events {
      */
     EntryHighlighted = "EntryHighlighted",
     ChartPlayableStateChange = "ChartPlayableStateChange",
-    LatestDrawDimensions = "LatestDrawDimensions"
+    LatestDrawDimensions = "LatestDrawDimensions",
+    MouseMove = "MouseMove"
 }
 export type EventTypes = {
     [Events.AnnotateEntry]: number;
@@ -588,6 +593,10 @@ export type EventTypes = {
             allGroupsCollapsed: boolean;
         };
         traceWindow: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+    };
+    [Events.MouseMove]: {
+        mouseEvent: MouseEvent;
+        timeInMicroSeconds: TraceEngine.Types.Timing.MicroSeconds;
     };
 };
 export interface Group {

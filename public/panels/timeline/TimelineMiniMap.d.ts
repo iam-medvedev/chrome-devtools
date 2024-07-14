@@ -14,11 +14,11 @@ export interface OverviewData {
 }
 declare const TimelineMiniMap_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<PerfUI.TimelineOverviewPane.EventTypes>;
-    addEventListener<T extends keyof PerfUI.TimelineOverviewPane.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.TimelineOverviewPane.EventTypes[T], any>) => void, thisObject?: Object | undefined): Common.EventTarget.EventDescriptor<PerfUI.TimelineOverviewPane.EventTypes, T>;
-    once<T_1 extends keyof PerfUI.TimelineOverviewPane.EventTypes>(eventType: T_1): Promise<PerfUI.TimelineOverviewPane.EventTypes[T_1]>;
-    removeEventListener<T_2 extends keyof PerfUI.TimelineOverviewPane.EventTypes>(eventType: T_2, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.TimelineOverviewPane.EventTypes[T_2], any>) => void, thisObject?: Object | undefined): void;
+    addEventListener<T extends keyof PerfUI.TimelineOverviewPane.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.TimelineOverviewPane.EventTypes[T]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<PerfUI.TimelineOverviewPane.EventTypes, T>;
+    once<T extends keyof PerfUI.TimelineOverviewPane.EventTypes>(eventType: T): Promise<PerfUI.TimelineOverviewPane.EventTypes[T]>;
+    removeEventListener<T extends keyof PerfUI.TimelineOverviewPane.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<PerfUI.TimelineOverviewPane.EventTypes[T]>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: keyof PerfUI.TimelineOverviewPane.EventTypes): boolean;
-    dispatchEventToListeners<T_3 extends keyof PerfUI.TimelineOverviewPane.EventTypes>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T_3>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<PerfUI.TimelineOverviewPane.EventTypes, T_3>): void;
+    dispatchEventToListeners<T extends keyof PerfUI.TimelineOverviewPane.EventTypes>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<PerfUI.TimelineOverviewPane.EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 /**
  * This component wraps the generic PerfUI Overview component and configures it
@@ -34,6 +34,8 @@ export declare class TimelineMiniMap extends TimelineMiniMap_base {
     breadcrumbsActivated: boolean;
     breadcrumbs: TimelineComponents.Breadcrumbs.Breadcrumbs | null;
     constructor();
+    showSidebarFloatingIcon(): void;
+    hideSidebarFloatingIcon(): void;
     addBreadcrumb({ startTime, endTime }: PerfUI.TimelineOverviewPane.OverviewPaneBreadcrumbAddedEvent): void;
     wasShown(): void;
     reset(): void;

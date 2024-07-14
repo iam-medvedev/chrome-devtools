@@ -51,10 +51,21 @@ export interface TimespanBreakdown {
     type: 'TIMESPAN_BREAKDOWN';
     sections: Array<Components.TimespanBreakdownOverlay.EntryBreakdown>;
 }
+export interface CursorTimestampMarker {
+    type: 'CURSOR_TIMESTAMP_MARKER';
+    timestamp: TraceEngine.Types.Timing.MicroSeconds;
+}
 /**
  * All supported overlay types. Expected to grow in time!
  */
-export type TimelineOverlay = EntrySelected | TimeRangeLabel | EntryLabel | TimespanBreakdown;
+export type TimelineOverlay = EntrySelected | TimeRangeLabel | EntryLabel | TimespanBreakdown | CursorTimestampMarker;
+/**
+ * Denotes overlays that are singletons; only one of these will be allowed to
+ * exist at any given time. If one exists and the add() method is called, the
+ * new overlay will replace the existing one.
+ */
+type SingletonOverlay = EntrySelected | CursorTimestampMarker;
+export declare function overlayIsSingleton(overlay: TimelineOverlay): overlay is SingletonOverlay;
 /**
  * The dimensions each flame chart reports. Note that in the current UI they
  * will always have the same width, so theoretically we could only gather that
@@ -73,7 +84,21 @@ export interface TimelineCharts {
     networkChart: PerfUI.FlameChart.FlameChart;
     networkProvider: TimelineFlameChartNetworkDataProvider;
 }
-export declare class Overlays {
+export type UpdateAction = 'Remove' | 'Update';
+export declare class AnnotationOverlayActionEvent extends Event {
+    overlay: TimelineOverlay;
+    action: UpdateAction;
+    static readonly eventName = "annotationoverlayactionsevent";
+    constructor(overlay: TimelineOverlay, action: UpdateAction);
+}
+/**
+ * This class manages all the overlays that get drawn onto the performance
+ * timeline. Overlays are DOM and are drawn above the network and main flame
+ * chart.
+ *
+ * For more documentation, see `timeline/README.md` which has a section on overlays.
+ */
+export declare class Overlays extends EventTarget {
     #private;
     constructor(init: {
         container: HTMLElement;
@@ -82,7 +107,7 @@ export declare class Overlays {
     /**
      * Add a new overlay to the view.
      */
-    add<T extends TimelineOverlay>(overlay: T): T;
+    add<T extends TimelineOverlay>(newOverlay: T): T;
     /**
      * Update an existing overlay without destroying and recreating its
      * associated DOM.
@@ -98,8 +123,13 @@ export declare class Overlays {
     overlaysForEntry(entry: OverlayEntry): TimelineOverlay[];
     /**
      * Removes any active overlays that match the provided type.
+     * @returns the number of overlays that were removed.
      */
-    removeOverlaysOfType(type: TimelineOverlay['type']): void;
+    removeOverlaysOfType(type: TimelineOverlay['type']): number;
+    /**
+     * @returns all overlays that match the provided type.
+     */
+    overlaysOfType<T extends TimelineOverlay>(type: T['type']): NoInfer<T>[];
     /**
      * Removes the provided overlay from the list of overlays and destroys any
      * DOM associated with it.

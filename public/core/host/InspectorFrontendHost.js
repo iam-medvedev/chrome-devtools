@@ -305,7 +305,7 @@ export class InspectorFrontendHostStub {
         });
     }
     getHostConfig(callback) {
-        callback({
+        const result = {
             devToolsAida: {
                 blocked: true,
                 blockedByAge: false,
@@ -327,7 +327,17 @@ export class InspectorFrontendHostStub {
                 aidaTemperature: 0,
                 enabled: false,
             },
-        });
+        };
+        if ('hostConfigForTesting' in globalThis) {
+            const { hostConfigForTesting } = globalThis;
+            for (const key of Object.keys(hostConfigForTesting)) {
+                const mergeEntry = (key) => {
+                    result[key] = { ...result[key], ...hostConfigForTesting[key] };
+                };
+                mergeEntry(key);
+            }
+        }
+        callback(result);
     }
     upgradeDraggedFileSystemPermissions(fileSystem) {
     }
@@ -384,7 +394,7 @@ export class InspectorFrontendHostStub {
     }
     doAidaConversation(request, streamId, callback) {
         callback({
-            error: 'Not implemened',
+            error: 'Not implemented',
         });
     }
     registerAidaClientEvent(request) {
@@ -449,10 +459,6 @@ class InspectorFrontendAPIImpl {
             // Instantiate stub for web-hosted mode if necessary.
             // @ts-ignore Global injected by devtools-compatibility.js
             globalThis.InspectorFrontendHost = InspectorFrontendHostInstance = new InspectorFrontendHostStub();
-            if ('getHostConfigForTesting' in globalThis) {
-                InspectorFrontendHostInstance['getHostConfig'] =
-                    globalThis.getHostConfigForTesting;
-            }
         }
         else {
             // Otherwise add stubs for missing methods that are declared in the interface.

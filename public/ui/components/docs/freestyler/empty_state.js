@@ -12,6 +12,7 @@ const component = new Freestyler.FreestylerChatUi({
     onTextSubmit: noop,
     onInspectElementClick: noop,
     onRateClick: noop,
+    onFeedbackSubmit: noop,
     onAcceptConsentClick: noop,
     onCancelClick: noop,
     onFixThisIssueClick: noop,
@@ -21,7 +22,6 @@ const component = new Freestyler.FreestylerChatUi({
     messages: [],
     selectedNode: {},
     isLoading: false,
-    lastActionIsFixThisIssue: false,
 });
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=empty_state.js.map
