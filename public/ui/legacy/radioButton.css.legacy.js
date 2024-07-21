@@ -36,5 +36,7 @@ export default {
     --gradient-end: Highlight;
   }
 }
+
+/*# sourceURL=radioButton.css */
 `
 };

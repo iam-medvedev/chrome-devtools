@@ -307,7 +307,7 @@ export default {
 
   --sys-color-primary-bright: var(--ref-palette-primary50);
   --sys-color-blue-bright: var(--ref-palette-blue50);
-  --sys-color-green-bright: var(--ref-palette-green50);
+  --sys-color-green-bright: var(--ref-palette-green60);
   --sys-color-error-bright: var(--ref-palette-error50);
   --sys-color-orange-bright: var(--ref-palette-orange60);
   --sys-color-yellow-bright: var(--ref-palette-yellow60);
@@ -887,5 +887,7 @@ export default {
   --app-color-navigation-drawer-label-selected: var(--sys-color-surface);
   --app-color-navigation-drawer-background-selected: var(--ref-palette-primary70);
 }
+
+/*# sourceURL=themeColors.css */
 `
 };

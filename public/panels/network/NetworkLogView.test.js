@@ -666,7 +666,7 @@ describeWithMockConnection('NetworkLogView', () => {
         const copyItem = clipboardSection.items[0];
         // Use the 'Copy' sub-menu, get menu items from the footer section
         const footerSection = copyItem.footerSection();
-        const copyAllURLs = findMenuItemWithLabel(footerSection, 'Copy all (filtered) URLs');
+        const copyAllURLs = findMenuItemWithLabel(footerSection, 'Copy all listed URLs');
         assert.isDefined(copyAllURLs);
         contextMenu.invokeHandler(copyAllURLs.id());
         await expectCalled(copyText);
@@ -674,7 +674,7 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.deepEqual(copyText.lastCall.args, [`url-header-overridden
 url-header-und-content-overridden`]);
         copyText.resetHistory();
-        const copyAllCurlComnmands = findMenuItemWithLabel(footerSection, Host.Platform.isWin() ? 'Copy all (filtered) as cURL (bash)' : 'Copy all (filtered) as cURL');
+        const copyAllCurlComnmands = findMenuItemWithLabel(footerSection, Host.Platform.isWin() ? 'Copy all listed as cURL (bash)' : 'Copy all listed as cURL');
         assert.isDefined(copyAllCurlComnmands);
         contextMenu.invokeHandler(copyAllCurlComnmands.id());
         await expectCalled(copyText);
@@ -682,7 +682,7 @@ url-header-und-content-overridden`]);
         assert.deepEqual(copyText.lastCall.args, [`curl 'url-header-overridden' ;
 curl 'url-header-und-content-overridden'`]);
         copyText.resetHistory();
-        const copyAllFetchCall = findMenuItemWithLabel(footerSection, 'Copy all (filtered) as fetch');
+        const copyAllFetchCall = findMenuItemWithLabel(footerSection, 'Copy all listed as fetch');
         assert.isDefined(copyAllFetchCall);
         contextMenu.invokeHandler(copyAllFetchCall.id());
         await expectCalled(copyText);
@@ -700,7 +700,7 @@ fetch("url-header-und-content-overridden", {
   "credentials": "omit"
 });`]);
         copyText.resetHistory();
-        const copyAllPowerShell = findMenuItemWithLabel(footerSection, 'Copy all (filtered) as PowerShell');
+        const copyAllPowerShell = findMenuItemWithLabel(footerSection, 'Copy all listed as PowerShell');
         assert.isDefined(copyAllPowerShell);
         contextMenu.invokeHandler(copyAllPowerShell.id());
         await expectCalled(copyText);

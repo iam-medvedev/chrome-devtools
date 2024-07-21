@@ -147,7 +147,7 @@ export declare class FontPaletteValuesRuleSection extends StylePropertiesSection
     constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number);
 }
 export declare class PositionTryRuleSection extends StylePropertiesSection {
-    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number);
+    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number, active: boolean);
 }
 export declare class KeyframePropertiesSection extends StylePropertiesSection {
     constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number);
@@ -158,10 +158,6 @@ export declare class KeyframePropertiesSection extends StylePropertiesSection {
     markSelectorHighlights(): void;
     markSelectorMatches(): void;
     highlight(): void;
-}
-export declare class TryRuleSection extends StylePropertiesSection {
-    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number, computedStyles: Map<string, string> | null, parentsComputedStyles: Map<string, string> | null);
-    headerText(): string;
 }
 export declare class HighlightPseudoStylePropertiesSection extends StylePropertiesSection {
     isPropertyInherited(_propertyName: string): boolean;

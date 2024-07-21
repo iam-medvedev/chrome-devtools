@@ -610,5 +610,7 @@ devtools-icon.leading-issue-icon {
     color: ButtonText;
   }
 }
+
+/*# sourceURL=toolbar.css */
 `
 };

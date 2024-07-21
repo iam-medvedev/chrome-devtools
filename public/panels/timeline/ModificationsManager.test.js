@@ -12,10 +12,10 @@ describe('ModificationsManager', () => {
         }
         const entriesFilter = modificationsManager.getEntriesFilter();
         assert.strictEqual(entriesFilter.expandableEntries().length, 1);
-        assert.strictEqual(entriesFilter.invisibleEntries().length, 42);
+        assert.strictEqual(entriesFilter.invisibleEntries().length, 108);
         assert.deepEqual(modificationsManager.getTimelineBreadcrumbs().initialBreadcrumb, {
-            'window': { 'min': 967569605481, 'max': 967573120579, 'range': 3515098 },
-            'child': { 'window': { 'min': 967569967927.7909, 'max': 967571964564.4985, 'range': 1996636.7076416016 }, 'child': null },
+            'window': { 'min': 1020034823047, 'max': 1020036087961, 'range': 1264914 },
+            'child': { 'window': { 'min': 1020034823047, 'max': 1020035228006.5569, 'range': 404959.5568847656 }, 'child': null },
         });
     });
     it('generates a serializable modifications json ', async function () {
@@ -28,10 +28,35 @@ describe('ModificationsManager', () => {
         const modifications = modificationsManager.toJSON();
         assert.strictEqual(entriesFilter.expandableEntries().length, 1);
         assert.strictEqual(modifications.entriesModifications.expandableEntries.length, 1);
-        assert.strictEqual(modifications.entriesModifications.hiddenEntries.length, 42);
+        assert.strictEqual(modifications.entriesModifications.hiddenEntries.length, 108);
         assert.deepEqual(modifications.initialBreadcrumb, {
-            'window': { 'min': 967569605481, 'max': 967573120579, 'range': 3515098 },
-            'child': { 'window': { 'min': 967569967927.7909, 'max': 967571964564.4985, 'range': 1996636.7076416016 }, 'child': null },
+            'window': { 'min': 1020034823047, 'max': 1020036087961, 'range': 1264914 },
+            'child': { 'window': { 'min': 1020034823047, 'max': 1020035228006.5569, 'range': 404959.5568847656 }, 'child': null },
+        });
+        assert.deepEqual(modifications.annotations, {
+            entryLabels: [{
+                    'entry': 'p-73704-775-2151-457',
+                    'label': 'Initialize App',
+                }],
+        });
+    });
+    it('creates an annotation and generates correct json for annotations', async function () {
+        const traceParsedData = (await TraceLoader.traceEngine(null, 'web-dev-with-commit.json.gz')).traceData;
+        // Get any entry to create a label with.
+        const entry = traceParsedData.Renderer.allTraceEntries[0];
+        const modificationsManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
+        assert.isOk(modificationsManager);
+        modificationsManager.createAnnotation({
+            type: 'ENTRY_LABEL',
+            entry,
+            label: 'entry label',
+        });
+        const modifications = modificationsManager.toJSON().annotations;
+        assert.deepEqual(modifications, {
+            entryLabels: [{
+                    entry: 'r-38',
+                    label: 'entry label',
+                }],
         });
     });
 });

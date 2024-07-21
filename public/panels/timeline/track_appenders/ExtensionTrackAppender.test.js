@@ -1,7 +1,6 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../../core/root/root.js';
 import * as TraceEngine from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
@@ -20,7 +19,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     let entryTypeByLevel = [];
     beforeEach(async function () {
-        Root.Runtime.experiments.enableForTest('timeline-extensions');
+        Timeline.ExtensionDataGatherer.ExtensionDataGatherer.removeInstance();
         ({ traceData } = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz'));
         extensionTrackAppenders = initTrackAppender(flameChartData, traceData, entryData, entryTypeByLevel);
         let level = 0;
@@ -29,7 +28,6 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
         });
     });
     afterEach(() => {
-        Root.Runtime.experiments.disableForTest('timeline-extensions');
         entryData = [];
         flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
         entryTypeByLevel = [];
@@ -37,13 +35,13 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
     describe('appendTrackAtLevel', function () {
         it('creates flamechart groups for the Extension tracks properly', function () {
             assert.strictEqual(flameChartData.groups.length, 3);
-            assert.strictEqual(flameChartData.groups[0].name, 'A track group');
+            assert.strictEqual(flameChartData.groups[0].name, 'A track group — Custom Track');
             assert.strictEqual(flameChartData.groups[0].startLevel, 0);
             assert.strictEqual(flameChartData.groups[0].style.nestingLevel, 0);
             assert.strictEqual(flameChartData.groups[1].name, 'Another Extension Track');
             assert.strictEqual(flameChartData.groups[1].startLevel, 0);
             assert.strictEqual(flameChartData.groups[1].style.nestingLevel, 1);
-            assert.strictEqual(flameChartData.groups[2].name, 'An Extension Track');
+            assert.strictEqual(flameChartData.groups[2].name, 'An Extension Track — Custom Track');
             assert.strictEqual(flameChartData.groups[2].startLevel, 1);
             assert.strictEqual(flameChartData.groups[2].style.nestingLevel, 0);
         });
@@ -131,6 +129,23 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             // which is faked out to 4, 4, 4
             assert.strictEqual(extensionTrackAppenders[0].colorForEvent(mockExtensionEntryNoColor), 'rgb(4 4 4)');
             assert.strictEqual(extensionTrackAppenders[0].colorForEvent(mockExtensionEntryUnknownColor), 'rgb(4 4 4)');
+        });
+    });
+    describe('toggling', function () {
+        it('Does not append extension data when the configuration is set to disabled', async function () {
+            Timeline.ExtensionDataGatherer.ExtensionDataGatherer.removeInstance();
+            entryData = [];
+            flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
+            entryTypeByLevel = [];
+            Timeline.TimelinePanel.TimelinePanel.extensionDataVisibilitySetting().set(false);
+            traceData = (await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz')).traceData;
+            extensionTrackAppenders = initTrackAppender(flameChartData, traceData, entryData, entryTypeByLevel);
+            let level = 0;
+            extensionTrackAppenders.forEach(appender => {
+                level = appender.appendTrackAtLevel(level);
+            });
+            assert.strictEqual(flameChartData.groups.length, 0);
+            Timeline.TimelinePanel.TimelinePanel.extensionDataVisibilitySetting().set(true);
         });
     });
     describe('highlightedEntryInfo', function () {

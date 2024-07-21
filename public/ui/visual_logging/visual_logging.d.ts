@@ -1,6 +1,7 @@
 import type * as LoggableModule from './Loggable.js';
 import * as LoggingConfig from './LoggingConfig.js';
 export type Loggable = LoggableModule.Loggable;
+export { setVeDebugLoggingEnabled, DebugLoggingFormat } from './Debugging.js';
 export { startLogging, stopLogging, addDocument } from './LoggingDriver.js';
 export { logImpressions } from './LoggingEvents.js';
 export declare const logClick: (l: Loggable, e: Event) => void;

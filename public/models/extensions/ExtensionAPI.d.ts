@@ -104,9 +104,9 @@ export declare namespace PrivateAPI {
     type RegisterRecorderExtensionPluginRequest = {
         command: Commands.RegisterRecorderExtensionPlugin;
         pluginName: string;
-        mediaType?: string;
         capabilities: RecordingExtensionPluginCapability[];
         port: MessagePort;
+        mediaType?: string;
     };
     type CreateRecorderViewRequest = {
         command: Commands.CreateRecorderView;
@@ -176,8 +176,8 @@ export declare namespace PrivateAPI {
     type SetSidebarContentRequest = {
         command: Commands.SetSidebarContent;
         id: string;
-        evaluateOnPage?: boolean;
         expression: string;
+        evaluateOnPage?: boolean;
         rootTitle?: string;
         evaluateOptions?: EvaluateOptions;
     };

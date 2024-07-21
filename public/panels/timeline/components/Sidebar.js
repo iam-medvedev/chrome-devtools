@@ -28,6 +28,14 @@ export class ToggleSidebarInsights extends Event {
         super(ToggleSidebarInsights.eventName, { bubbles: true, composed: true });
     }
 }
+export class RemoveAnnotation extends Event {
+    removedAnnotation;
+    static eventName = 'removeannotation';
+    constructor(removedAnnotation) {
+        super(RemoveAnnotation.eventName, { bubbles: true, composed: true });
+        this.removedAnnotation = removedAnnotation;
+    }
+}
 export class SidebarWidget extends Common.ObjectWrapper.eventMixin(UI.SplitWidget.SplitWidget) {
     #sidebarUI = new SidebarUI();
     constructor() {
@@ -46,7 +54,7 @@ export class SidebarWidget extends Common.ObjectWrapper.eventMixin(UI.SplitWidge
     setTraceParsedData(traceParsedData) {
         this.#sidebarUI.traceParsedData = traceParsedData;
     }
-    set data(insights) {
+    setInsights(insights) {
         this.#sidebarUI.insights = insights;
     }
 }

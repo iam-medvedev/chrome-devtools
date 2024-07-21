@@ -12,7 +12,6 @@ export class RuntimeModel extends SDKModel {
     agent;
     #executionContextById;
     #executionContextComparatorInternal;
-    #hasSideEffectSupportInternal;
     constructor(target) {
         super(target);
         this.agent = target.runtimeAgent();
@@ -20,7 +19,6 @@ export class RuntimeModel extends SDKModel {
         void this.agent.invoke_enable();
         this.#executionContextById = new Map();
         this.#executionContextComparatorInternal = ExecutionContext.comparator;
-        this.#hasSideEffectSupportInternal = null;
         if (Common.Settings.Settings.instance().moduleSetting('custom-formatters').get()) {
             void this.agent.invoke_setCustomObjectFormatterEnabled({ enabled: true });
         }
@@ -306,24 +304,6 @@ export class RuntimeModel extends SDKModel {
         }
         return this.executionContextIdForScriptId(currentStackTrace.callFrames[0].scriptId);
     }
-    hasSideEffectSupport() {
-        return this.#hasSideEffectSupportInternal;
-    }
-    async checkSideEffectSupport() {
-        const contexts = this.executionContexts();
-        const testContext = contexts[contexts.length - 1];
-        if (!testContext) {
-            return false;
-        }
-        // Check for a positive throwOnSideEffect response without triggering side effects.
-        const response = await this.agent.invoke_evaluate({
-            expression: sideEffectTestExpression,
-            contextId: testContext.id,
-            throwOnSideEffect: true,
-        });
-        this.#hasSideEffectSupportInternal = response.getError() ? false : RuntimeModel.isSideEffectFailure(response);
-        return this.#hasSideEffectSupportInternal;
-    }
     terminateExecution() {
         return this.agent.invoke_terminateExecution();
     }
@@ -336,13 +316,6 @@ export class RuntimeModel extends SDKModel {
         return response.exceptionDetails;
     }
 }
-/**
- * This expression:
- * - IMPORTANT: must not actually cause user-visible or JS-visible side-effects.
- * - Must throw when evaluated with `throwOnSideEffect: true`.
- * - Must be valid when run from any ExecutionContext that supports `throwOnSideEffect`.
- */
-const sideEffectTestExpression = '(async function(){ await 1; })()';
 export var Events;
 (function (Events) {
     Events["BindingCalled"] = "BindingCalled";
@@ -473,18 +446,7 @@ export class ExecutionContext {
         if (this.debuggerModel.selectedCallFrame()) {
             return this.debuggerModel.evaluateOnSelectedCallFrame(options);
         }
-        // Assume backends either support both throwOnSideEffect and timeout options or neither.
-        const needsTerminationOptions = Boolean(options.throwOnSideEffect) || options.timeout !== undefined;
-        if (!needsTerminationOptions || this.runtimeModel.hasSideEffectSupport()) {
-            return this.evaluateGlobal(options, userGesture, awaitPromise);
-        }
-        if (this.runtimeModel.hasSideEffectSupport() !== false) {
-            await this.runtimeModel.checkSideEffectSupport();
-            if (this.runtimeModel.hasSideEffectSupport()) {
-                return this.evaluateGlobal(options, userGesture, awaitPromise);
-            }
-        }
-        return { error: 'Side-effect checks not supported by backend.' };
+        return this.evaluateGlobal(options, userGesture, awaitPromise);
     }
     globalObject(objectGroup, generatePreview) {
         const evaluationOptions = {

@@ -1,12 +1,12 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
-import { type TimelineOverlay } from './Overlays.js';
+import type * as Overlays from './overlays/overlays.js';
 export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel';
 export declare class AnnotationModifiedEvent extends Event {
-    overlay: TimelineOverlay;
+    overlay: Overlays.Overlays.TimelineOverlay;
     action: UpdateAction;
     static readonly eventName = "annotationmodifiedevent";
-    constructor(overlay: TimelineOverlay, action: UpdateAction);
+    constructor(overlay: Overlays.Overlays.TimelineOverlay, action: UpdateAction);
 }
 export declare class ModificationsManager extends EventTarget {
     #private;
@@ -26,14 +26,15 @@ export declare class ModificationsManager extends EventTarget {
     getEntriesFilter(): TraceEngine.EntriesFilter.EntriesFilter;
     getTimelineBreadcrumbs(): TimelineComponents.Breadcrumbs.Breadcrumbs;
     createAnnotation(newAnnotation: TraceEngine.Types.File.Annotation): void;
-    removeAnnotationOverlay(removedOverlay: TimelineOverlay): void;
-    updateAnnotationOverlay(updatedOverlay: TimelineOverlay): void;
+    removeAnnotation(removedAnnotation: TraceEngine.Types.File.Annotation): void;
+    removeAnnotationOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
+    updateAnnotationOverlay(updatedOverlay: Overlays.Overlays.TimelineOverlay): void;
     getAnnotations(): TraceEngine.Types.File.Annotation[];
+    getOverlays(): Overlays.Overlays.TimelineOverlay[];
     /**
      * Builds all modifications into a serializable object written into
      * the 'modifications' trace file metadata field.
      */
     toJSON(): TraceEngine.Types.File.Modifications;
     applyModificationsIfPresent(): void;
-    applyEntriesFilterModifications(hiddenEntriesKeys: TraceEngine.Types.File.TraceEventSerializableKey[], expandableEntriesKeys: TraceEngine.Types.File.TraceEventSerializableKey[]): void;
 }

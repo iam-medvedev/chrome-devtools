@@ -11,7 +11,7 @@ let cruxManagerInstance;
 // TODO: Potentially support `TABLET`. Tablet field data will always be `null` until then.
 export const DEVICE_SCOPE_LIST = ['ALL', 'DESKTOP', 'PHONE'];
 const pageScopeList = ['origin', 'url'];
-const metrics = ['largest_contentful_paint', 'cumulative_layout_shift', 'interaction_to_next_paint'];
+const metrics = ['largest_contentful_paint', 'cumulative_layout_shift', 'interaction_to_next_paint', 'round_trip_time'];
 export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
     #originCache = new Map();
     #urlCache = new Map();

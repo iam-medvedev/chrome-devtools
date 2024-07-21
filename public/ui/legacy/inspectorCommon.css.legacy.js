@@ -700,5 +700,7 @@ iframe.panel.extension {
     --legacy-focus-ring-inactive-shadow-color: ButtonText;
   }
 }
+
+/*# sourceURL=inspectorCommon.css */
 `
 };

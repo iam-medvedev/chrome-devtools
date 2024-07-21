@@ -198,11 +198,13 @@ export class AidaClient {
         }
     }
     registerClientEvent(clientEvent) {
+        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
         InspectorFrontendHostInstance.registerAidaClientEvent(JSON.stringify({
             client: CLIENT_NAME,
             event_time: new Date().toISOString(),
             ...clientEvent,
-        }));
+        }), resolve);
+        return promise;
     }
 }
 //# sourceMappingURL=AidaClient.js.map

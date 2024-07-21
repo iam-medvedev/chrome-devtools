@@ -7,9 +7,14 @@ const { SourceMapScopesInfo } = SDK.SourceMapScopesInfo;
 describe('SourceMapScopesInfo', () => {
     describe('findInlinedFunctions', () => {
         it('returns the single original function name if nothing was inlined', () => {
-            const names = ['foo'];
-            const originalScopes = [new OriginalScopeBuilder().start(0, 0, 'global').start(5, 0, 'function', 0).end(10, 0).end(20, 0).build()];
-            const generatedRanges = new GeneratedRangeBuilder()
+            const names = [];
+            const originalScopes = [new OriginalScopeBuilder(names)
+                    .start(0, 0, 'global')
+                    .start(5, 0, 'function', 'foo')
+                    .end(10, 0)
+                    .end(20, 0)
+                    .build()];
+            const generatedRanges = new GeneratedRangeBuilder(names)
                 .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 0 } })
                 .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 1 }, isScope: true })
                 .end(0, 5)
@@ -20,18 +25,18 @@ describe('SourceMapScopesInfo', () => {
         });
         it('returns the names of the surrounding function plus all the inlined function names', () => {
             // 'foo' calls 'bar', 'bar' calls 'baz'. 'bar' and 'baz' are inlined into 'foo'.
-            const names = ['foo', 'bar', 'baz'];
-            const originalScopes = [new OriginalScopeBuilder()
+            const names = [];
+            const originalScopes = [new OriginalScopeBuilder(names)
                     .start(0, 0, 'global')
-                    .start(10, 0, 'function', 0)
+                    .start(10, 0, 'function', 'foo')
                     .end(20, 0)
-                    .start(30, 0, 'function', 1)
+                    .start(30, 0, 'function', 'bar')
                     .end(40, 0)
-                    .start(50, 0, 'function', 2)
+                    .start(50, 0, 'function', 'baz')
                     .end(60, 0)
                     .end(70, 0)
                     .build()];
-            const generatedRanges = new GeneratedRangeBuilder()
+            const generatedRanges = new GeneratedRangeBuilder(names)
                 .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 0 } })
                 .start(0, 0, { definition: { sourceIdx: 0, scopeIdx: 1 }, isScope: true })
                 .start(0, 5, { definition: { sourceIdx: 0, scopeIdx: 3 }, callsite: { sourceIdx: 0, line: 15, column: 0 } })

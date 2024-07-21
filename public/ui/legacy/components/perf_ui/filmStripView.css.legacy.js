@@ -68,5 +68,7 @@ export default {
 .film-strip-view .frame:focus .thumbnail img {
   box-shadow: none;
 }
+
+/*# sourceURL=filmStripView.css */
 `
 };

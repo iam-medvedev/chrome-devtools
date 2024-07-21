@@ -98,7 +98,7 @@ export declare class Spectrum extends Spectrum_base {
     private addColorToCustomPalette;
     private showPaletteColorContextMenu;
     private deletePaletteColors;
-    setColor(color: Common.Color.Color, colorFormat: Common.Color.Format): void;
+    setColor(color: Common.Color.Color): void;
     private colorSelected;
     private get color();
     private innerSetColor;

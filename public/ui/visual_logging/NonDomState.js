@@ -1,14 +1,23 @@
-const registry = new Map();
+let registry = new WeakMap();
+function getLoggables(parent) {
+    return registry.get(parent || nullParent) || [];
+}
 export function registerLoggable(loggable, config, parent) {
-    registry.set(loggable, { loggable, config, parent });
+    const values = getLoggables(parent);
+    values.push({ loggable, config, parent });
+    registry.set(parent || nullParent, values);
 }
-export function unregisterLoggable(loggable) {
-    registry.delete(loggable);
+export function hasNonDomLoggables(parent) {
+    return registry.has(parent || nullParent);
 }
-export function getNonDomState() {
-    return { loggables: [...registry.values()] };
+export function getNonDomLoggables(parent) {
+    return [...getLoggables(parent)];
+}
+export function unregisterLoggables(parent) {
+    registry.delete(parent || nullParent);
 }
 export function unregisterAllLoggables() {
-    registry.clear();
+    registry = new WeakMap();
 }
+const nullParent = {};
 //# sourceMappingURL=NonDomState.js.map

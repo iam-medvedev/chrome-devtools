@@ -284,28 +284,19 @@ export class CSSKeyframeRule extends CSSRule {
         return this.cssModelInternal.setKeyframeKey(styleSheetId, range, newKeyText);
     }
 }
-export class CSSPositionFallbackRule {
-    #name;
-    #tryRules;
-    constructor(cssModel, payload) {
-        this.#name = new CSSValue(payload.name);
-        this.#tryRules = payload.tryRules.map(tryRule => new CSSRule(cssModel, { origin: tryRule.origin, style: tryRule.style, styleSheetId: tryRule.styleSheetId }));
-    }
-    name() {
-        return this.#name;
-    }
-    tryRules() {
-        return this.#tryRules;
-    }
-}
 export class CSSPositionTryRule extends CSSRule {
     #name;
+    #active;
     constructor(cssModel, payload) {
         super(cssModel, { origin: payload.origin, style: payload.style, styleSheetId: payload.styleSheetId });
         this.#name = new CSSValue(payload.name);
+        this.#active = payload.active;
     }
     name() {
         return this.#name;
+    }
+    active() {
+        return this.#active;
     }
 }
 //# sourceMappingURL=CSSRule.js.map

@@ -135,5 +135,7 @@ export default {
 .media-inspector-label-left {
   left: 4px;
 }
+
+/*# sourceURL=mediaQueryInspector.css */
 `
 };

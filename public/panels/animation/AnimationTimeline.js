@@ -461,7 +461,9 @@ export class AnimationTimeline extends UI.Widget.VBox {
     animationGroupUpdated({ data: group }) {
         void this.#animationGroupUpdatedThrottler.schedule(async () => {
             const preview = this.#previewMap.get(group);
-            preview?.render();
+            if (preview) {
+                preview.replay();
+            }
             if (this.#selectedGroup !== group) {
                 return;
             }

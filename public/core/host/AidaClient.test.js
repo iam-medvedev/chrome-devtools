@@ -352,7 +352,7 @@ describeWithEnvironment('AidaClient', () => {
             const stub = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'registerAidaClientEvent');
             const RPC_ID = 0;
             const provider = new Host.AidaClient.AidaClient();
-            provider.registerClientEvent({
+            void provider.registerClientEvent({
                 corresponding_aida_rpc_global_id: RPC_ID,
                 do_conversation_client_event: { user_feedback: { sentiment: "POSITIVE" /* Host.AidaClient.Rating.POSITIVE */ } },
             });

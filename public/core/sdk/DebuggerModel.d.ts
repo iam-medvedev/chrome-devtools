@@ -3,7 +3,7 @@ import * as Protocol from '../../generated/protocol.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import { type PageResourceLoadInitiator } from './PageResourceLoader.js';
-import { type RemoteObject } from './RemoteObject.js';
+import { type RemoteObject, RemoteObjectProperty } from './RemoteObject.js';
 import { type EvaluationOptions, type EvaluationResult, type ExecutionContext, RuntimeModel } from './RuntimeModel.js';
 import { Script } from './Script.js';
 import { SDKModel } from './SDKModel.js';
@@ -178,9 +178,10 @@ export declare class CallFrame {
     readonly inlineFrameIndex: number;
     readonly functionName: string;
     missingDebugInfoDetails: MissingDebugInfoDetails | null;
+    readonly exception: RemoteObject | null;
     readonly canBeRestarted: boolean;
-    constructor(debuggerModel: DebuggerModel, script: Script, payload: Protocol.Debugger.CallFrame, inlineFrameIndex?: number, functionName?: string);
-    static fromPayloadArray(debuggerModel: DebuggerModel, callFrames: Protocol.Debugger.CallFrame[]): CallFrame[];
+    constructor(debuggerModel: DebuggerModel, script: Script, payload: Protocol.Debugger.CallFrame, inlineFrameIndex?: number, functionName?: string, exception?: RemoteObject | null);
+    static fromPayloadArray(debuggerModel: DebuggerModel, callFrames: Protocol.Debugger.CallFrame[], exception: RemoteObject | null): CallFrame[];
     createVirtualCallFrame(inlineFrameIndex: number, name: string): CallFrame;
     get id(): Protocol.Debugger.CallFrameId;
     scopeChain(): Scope[];
@@ -203,6 +204,11 @@ export interface ScopeChainEntry {
     object(): RemoteObject;
     description(): string;
     icon(): string | undefined;
+    /**
+     * Extra and/or synthetic properties that should be added to the `RemoteObject`
+     * returned by {@link ScopeChainEntry.object}.
+     */
+    extraProperties(): RemoteObjectProperty[];
 }
 export declare class Scope implements ScopeChainEntry {
     #private;
@@ -215,6 +221,7 @@ export declare class Scope implements ScopeChainEntry {
     object(): RemoteObject;
     description(): string;
     icon(): undefined;
+    extraProperties(): RemoteObjectProperty[];
 }
 export declare class DebuggerPausedDetails {
     debuggerModel: DebuggerModel;
@@ -229,7 +236,7 @@ export declare class DebuggerPausedDetails {
     constructor(debuggerModel: DebuggerModel, callFrames: Protocol.Debugger.CallFrame[], reason: Protocol.Debugger.PausedEventReason, auxData: {
         [x: string]: any;
     } | undefined, breakpointIds: string[], asyncStackTrace?: Protocol.Runtime.StackTrace, asyncStackTraceId?: Protocol.Runtime.StackTraceId);
-    exception(): RemoteObject | null;
+    private exception;
     private cleanRedundantFrames;
 }
 export interface FunctionDetails {

@@ -1,3 +1,4 @@
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
@@ -37,14 +38,14 @@ export declare class ColorRenderer implements MatchRenderer<ColorMatch> {
     constructor(treeElement: StylePropertyTreeElement);
     matcher(): ColorMatcher;
     render(match: ColorMatch, context: RenderingContext): Node[];
-    renderColorSwatch(text: string, valueChild?: Node): InlineEditor.ColorSwatch.ColorSwatch;
+    renderColorSwatch(color: Common.Color.Color | undefined, valueChild?: Node): InlineEditor.ColorSwatch.ColorSwatch;
 }
 export declare class LightDarkColorRenderer implements MatchRenderer<LightDarkColorMatch> {
     #private;
     constructor(treeElement: StylePropertyTreeElement);
     matcher(): LightDarkColorMatcher;
     render(match: LightDarkColorMatch, context: RenderingContext): Node[];
-    applyColorScheme(match: LightDarkColorMatch, context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: HTMLSpanElement, dark: HTMLSpanElement): Promise<void>;
+    applyColorScheme(match: LightDarkColorMatch, context: RenderingContext, colorSwatch: InlineEditor.ColorSwatch.ColorSwatch, light: HTMLSpanElement, dark: HTMLSpanElement, lightControls: SDK.CSSPropertyParser.CSSControlMap, darkControls: SDK.CSSPropertyParser.CSSControlMap): Promise<void>;
 }
 export declare class ColorMixRenderer implements MatchRenderer<ColorMixMatch> {
     #private;

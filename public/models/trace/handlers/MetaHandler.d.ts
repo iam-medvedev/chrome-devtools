@@ -10,8 +10,6 @@ export type MetaHandlerData = {
     processNames: Map<Types.TraceEvents.ProcessID, Types.TraceEvents.TraceEventProcessName>;
     browserThreadId: Types.TraceEvents.ThreadID;
     gpuProcessId: Types.TraceEvents.ProcessID;
-    gpuThreadId?: Types.TraceEvents.ThreadID;
-    viewportRect?: DOMRect;
     navigationsByFrameId: Map<string, Types.TraceEvents.TraceEventNavigationStart[]>;
     navigationsByNavigationId: Map<string, Types.TraceEvents.TraceEventNavigationStart>;
     threadsInProcess: Map<Types.TraceEvents.ProcessID, Map<Types.TraceEvents.ThreadID, Types.TraceEvents.TraceEventThreadName>>;
@@ -29,6 +27,8 @@ export type MetaHandlerData = {
     topLevelRendererIds: Set<Types.TraceEvents.ProcessID>;
     frameByProcessId: Map<Types.TraceEvents.ProcessID, Map<string, Types.TraceEvents.TraceFrame>>;
     mainFrameNavigations: Types.TraceEvents.TraceEventNavigationStart[];
+    gpuThreadId?: Types.TraceEvents.ThreadID;
+    viewportRect?: DOMRect;
 };
 export type FrameProcessData = Map<string, Map<Types.TraceEvents.ProcessID, {
     frame: Types.TraceEvents.TraceFrame;

@@ -59,5 +59,7 @@ export default {
   padding: 5px;
   margin: 0;
 }
+
+/*# sourceURL=confirmDialog.css */
 `
 };

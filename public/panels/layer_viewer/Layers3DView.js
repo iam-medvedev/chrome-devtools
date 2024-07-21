@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -76,14 +75,6 @@ const UIStrings = {
      *@description A context menu item in the DView of the Layers panel
      */
     showPaintProfiler: 'Show Paint Profiler',
-    /**
-     *@description Text for a button in the DView of the Layers panel
-     */
-    sendFeedback: 'Send feedback',
-    /**
-     *@description Text for a warning message in the DView of the Layers panel
-     */
-    deprecationWarning: 'Layers panel might be deprecated soon. Share your thoughts and concerns before we decide.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/layer_viewer/Layers3DView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -95,7 +86,6 @@ const uniformSamplerLocations = new Map();
 const imageForTexture = new Map();
 export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     failBanner;
-    deprecationBanner;
     layerViewHost;
     transformController;
     canvasElement;
@@ -134,9 +124,6 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.layerViewHost.registerView(this);
         this.transformController = new TransformController(this.contentElement);
         this.transformController.addEventListener("TransformChanged" /* TransformControllerEvents.TransformChanged */, this.update, this);
-        this.deprecationBanner = this.#createDeprecationBanner();
-        this.deprecationBanner.setParentView(this);
-        this.contentElement.appendChild(this.deprecationBanner.element);
         this.initToolbar();
         this.canvasElement = this.contentElement.createChild('canvas');
         this.canvasElement.tabIndex = 0;
@@ -157,22 +144,6 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.snapshotLayers = new Map();
         this.layerViewHost.setLayerSnapshotMap(this.snapshotLayers);
         this.layerViewHost.showInternalLayersSetting().addChangeListener(this.update, this);
-    }
-    #createDeprecationBanner() {
-        function openLink() {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab('https://crbug.com/328948996');
-        }
-        return new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.Warning */, i18nString(UIStrings.deprecationWarning), [
-            {
-                text: i18nString(UIStrings.sendFeedback),
-                highlight: false,
-                delegate: openLink,
-                dismiss: false,
-                jslogContext: 'Send feedback',
-            },
-        ], 
-        /* disableSetting? */ undefined, 
-        /* isCloseable */ true, 'panel-deprecated');
     }
     setLayerTree(layerTree) {
         this.layerTree = layerTree;

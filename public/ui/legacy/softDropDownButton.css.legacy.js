@@ -49,5 +49,7 @@ button.soft-dropdown:hover:not(:active) > .title {
     opacity: 100%;
   }
 }
+
+/*# sourceURL=softDropDownButton.css */
 `
 };

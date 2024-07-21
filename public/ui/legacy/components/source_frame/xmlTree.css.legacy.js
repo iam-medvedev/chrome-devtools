@@ -57,5 +57,7 @@ ol.tree-outline {
 .shadow-xml-view-cdata {
   color: var(--sys-color-on-surface);
 }
+
+/*# sourceURL=xmlTree.css */
 `
 };

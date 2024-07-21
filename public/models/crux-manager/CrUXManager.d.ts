@@ -1,5 +1,5 @@
 import * as Common from '../../core/common/common.js';
-export type MetricNames = 'cumulative_layout_shift' | 'first_contentful_paint' | 'first_input_delay' | 'interaction_to_next_paint' | 'largest_contentful_paint' | 'experimental_time_to_first_byte';
+export type MetricNames = 'cumulative_layout_shift' | 'first_contentful_paint' | 'first_input_delay' | 'interaction_to_next_paint' | 'largest_contentful_paint' | 'experimental_time_to_first_byte' | 'round_trip_time';
 export type FormFactor = 'DESKTOP' | 'PHONE' | 'TABLET';
 export type DeviceScope = FormFactor | 'ALL';
 export type PageScope = 'url' | 'origin';
@@ -12,12 +12,12 @@ export interface CrUXRequest {
     url?: string;
 }
 export interface MetricResponse {
-    histogram: Array<{
+    histogram?: Array<{
         start: number;
         end?: number;
         density?: number;
     }>;
-    percentiles: {
+    percentiles?: {
         p75: number | string;
     };
 }

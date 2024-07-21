@@ -312,7 +312,7 @@ export class ConsoleInsight extends HTMLElement {
         else {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRatedNegative);
         }
-        this.#aidaClient.registerClientEvent({
+        void this.#aidaClient.registerClientEvent({
             corresponding_aida_rpc_global_id: this.#state.metadata.rpcGlobalId,
             do_conversation_client_event: {
                 user_feedback: {

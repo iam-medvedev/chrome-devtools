@@ -110,7 +110,8 @@ styles.replaceSync(
   text-wrap: nowrap;
 }
 
-.card-metric-values .metric-value {
+.local-value,
+.field-value {
   font-size: 30px;
 }
 
@@ -187,9 +188,8 @@ styles.replaceSync(
 }
 
 .field-data-histogram {
-  width: 100%;
   display: grid;
-  grid-template-columns: 50% auto max-content;
+  grid-template-columns: max-content 100px max-content;
   grid-auto-rows: 1fr;
   column-gap: 8px;
   justify-items: flex-end;
@@ -245,6 +245,10 @@ styles.replaceSync(
 
 .no-data {
   color: var(--sys-color-token-subtle);
+}
+
+.tooltip-content {
+  margin: 0 6px;
 }
 
 /*# sourceURL=liveMetricsView.css */

@@ -33,7 +33,6 @@
     "../../../../../../../front_end/panels/timeline/components/BreadcrumbsUI.ts",
     "../../../../../../../front_end/panels/timeline/components/CPUThrottlingSelector.ts",
     "../../../../../../../front_end/panels/timeline/components/DetailsView.ts",
-    "../../../../../../../front_end/panels/timeline/components/EntryLabelOverlay.ts",
     "../../../../../../../front_end/panels/timeline/components/FieldSettingsDialog.ts",
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.ts",
     "../../../../../../../front_end/panels/timeline/components/LiveMetricsView.ts",
@@ -42,10 +41,7 @@
     "../../../../../../../front_end/panels/timeline/components/NetworkThrottlingSelector.ts",
     "../../../../../../../front_end/panels/timeline/components/Sidebar.ts",
     "../../../../../../../front_end/panels/timeline/components/SidebarAnnotationsTab.ts",
-    "../../../../../../../front_end/panels/timeline/components/SidebarInsight.ts",
     "../../../../../../../front_end/panels/timeline/components/SidebarSingleNavigation.ts",
-    "../../../../../../../front_end/panels/timeline/components/TimeRangeOverlay.ts",
-    "../../../../../../../front_end/panels/timeline/components/TimespanBreakdownOverlay.ts",
     "../../../../../../../front_end/panels/timeline/components/Utils.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -102,6 +98,12 @@
     },
     {
       "path": "../../mobile_throttling/bundle-tsconfig.json"
+    },
+    {
+      "path": "../utils/bundle-tsconfig.json"
+    },
+    {
+      "path": "insights/bundle-tsconfig.json"
     }
   ]
 }

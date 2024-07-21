@@ -36,5 +36,7 @@ export default {
 .tabbed-pane-left-toolbar {
   margin-right: 0 !important; /* stylelint-disable-line declaration-no-important */
 }
+
+/*# sourceURL=inspectorViewTabbedPane.css */
 `
 };

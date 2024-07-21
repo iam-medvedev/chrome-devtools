@@ -147,5 +147,7 @@ export default {
     color: ButtonText;
   }
 }
+
+/*# sourceURL=reportView.css */
 `
 };

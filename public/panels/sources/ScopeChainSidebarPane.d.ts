@@ -10,9 +10,8 @@ export declare class ScopeChainSidebarPane extends UI.Widget.VBox implements UI.
     static instance(): ScopeChainSidebarPane;
     flavorChanged(callFrame: SDK.DebuggerModel.CallFrame | null): void;
     focus(): void;
-    private update;
+    private buildScopeTreeOutline;
     private createScopeSectionTreeElement;
-    private extraPropertiesForScope;
     private sidebarPaneUpdatedForTest;
     wasShown(): void;
 }

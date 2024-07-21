@@ -30,7 +30,6 @@
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
-import type * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
 import { type Calculator } from './TimelineGrid.js';
@@ -177,13 +176,10 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private revealEntry;
     setWindowTimes(startTime: number, endTime: number, animate?: boolean): void;
     /**
-     * Handle the mouse move event.
-     *
-     * And the handle priority will be:
-     * 1. Track configuration icons -> show tooltip for the icons
-     * 2. Inside a track header -> mouse style will be a "pointer", show edit icon
-     * 3.1 Inside a track -> show edit icon, update the highlight of hovered event
-     * 3.2 Outside all tracks -> clear all highlights
+     * Handle the mouse move event. The handle priority will be:
+     *   1. Track configuration icons -> show tooltip for the icons
+     *   2. Inside a track header -> mouse style will be a "pointer", indicating track can be focused
+     *   3. Inside a track -> update the highlight of hovered event
      */
     private onMouseMove;
     private updateHighlight;
@@ -515,7 +511,6 @@ export interface FlameChartDataProvider {
     buildFlowForInitiator?(index: number): unknown;
     minimumBoundary(): number;
     totalTime(): number;
-    setVisualElementLoggingParent?(parent: VisualLogging.Loggable): void;
     formatValue(value: number, precision?: number): string;
     maxStackDepth(): number;
     timelineData(rebuild?: boolean): FlameChartTimelineData | null;
@@ -531,6 +526,7 @@ export interface FlameChartDataProvider {
     textColor(entryIndex: number): string;
     mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
     modifyTree?(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
+    customizedContextMenu?(event: MouseEvent, eventIndex: number): UI.ContextMenu.ContextMenu | undefined;
     findPossibleContextMenuActions?(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
     hasTrackConfigurationMode(): boolean;
     eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
@@ -610,6 +606,7 @@ export interface Group {
     showStackContextMenu?: boolean;
     legends?: Legend[];
     jslogContext?: string;
+    description?: string;
 }
 export interface GroupStyle {
     height: number;

@@ -85,5 +85,7 @@ export default {
     color: HighlightText;
   }
 }
+
+/*# sourceURL=viewContainers.css */
 `
 };

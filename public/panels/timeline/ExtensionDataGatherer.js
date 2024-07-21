@@ -1,3 +1,4 @@
+import { TimelinePanel } from './TimelinePanel.js';
 let extensionDataGathererInstance;
 /**
  * This class abstracts the source of extension data out by providing a
@@ -20,14 +21,15 @@ export class ExtensionDataGatherer {
      * Gets the data provided by extensions.
      */
     getExtensionData() {
-        if (!this.#traceParsedData || !this.#traceParsedData.ExtensionTraceData) {
-            return [];
+        const extensionDataEnabled = TimelinePanel.extensionDataVisibilitySetting().get();
+        if (!extensionDataEnabled || !this.#traceParsedData || !this.#traceParsedData.ExtensionTraceData) {
+            return { extensionMarkers: [], extensionTrackData: [] };
         }
         const maybeCachedData = this.#extensionDataByModel.get(this.#traceParsedData);
         if (maybeCachedData) {
             return maybeCachedData;
         }
-        return this.#traceParsedData.ExtensionTraceData.extensionTrackData;
+        return this.#traceParsedData.ExtensionTraceData;
     }
     saveCurrentModelData() {
         if (this.#traceParsedData && !this.#extensionDataByModel.has(this.#traceParsedData)) {

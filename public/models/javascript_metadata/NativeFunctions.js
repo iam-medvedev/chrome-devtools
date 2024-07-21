@@ -7016,6 +7016,26 @@ export const NativeFunctions = [
         signatures: [["callback"]]
     },
     {
+        name: "postTask",
+        signatures: [["callback", "?options"]]
+    },
+    {
+        name: "yield",
+        signatures: [["?options"]]
+    },
+    {
+        name: "TaskController",
+        signatures: [["?init"]]
+    },
+    {
+        name: "setPriority",
+        signatures: [["priority"]]
+    },
+    {
+        name: "TaskPriorityChangeEvent",
+        signatures: [["type", "eventInitDict"]]
+    },
+    {
         name: "ByteLengthQueuingStrategy",
         signatures: [["init"]]
     },
@@ -8177,26 +8197,6 @@ export const NativeFunctions = [
     {
         name: "sanitizeFor",
         signatures: [["element", "markup"]]
-    },
-    {
-        name: "postTask",
-        signatures: [["callback", "?options"]]
-    },
-    {
-        name: "yield",
-        signatures: [["?options"]]
-    },
-    {
-        name: "TaskController",
-        signatures: [["?init"]]
-    },
-    {
-        name: "setPriority",
-        signatures: [["priority"]]
-    },
-    {
-        name: "TaskPriorityChangeEvent",
-        signatures: [["type", "eventInitDict"]]
     },
     {
         name: "AbsoluteOrientationSensor",

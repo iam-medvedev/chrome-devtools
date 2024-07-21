@@ -24,11 +24,9 @@ export type EventTypes = {
     [Events.ScopeChainUpdated]: ScopeChain;
 };
 /**
- * Placeholder event payload.
- *
- * TODO(crbug.com/40277685): Send an actual scope chain.
+ * A scope chain ready to be shown in the UI with debugging info applied.
  */
 export declare class ScopeChain {
-    readonly callFrame: SDK.DebuggerModel.CallFrame;
-    constructor(callFrame: SDK.DebuggerModel.CallFrame);
+    readonly scopeChain: SDK.DebuggerModel.ScopeChainEntry[];
+    constructor(scopeChain: SDK.DebuggerModel.ScopeChainEntry[]);
 }

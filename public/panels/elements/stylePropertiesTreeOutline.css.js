@@ -95,8 +95,6 @@ styles.replaceSync(
   }
 
   &.child-editing {
-    padding-left: 8px;
-
     .text-prompt {
       white-space: pre-wrap;
     }

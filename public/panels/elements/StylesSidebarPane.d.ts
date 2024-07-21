@@ -140,7 +140,6 @@ export declare class SectionBlock {
     static createRegisteredPropertiesBlock(expandedByDefault: boolean): SectionBlock;
     static createKeyframesBlock(keyframesName: string): SectionBlock;
     static createFontPaletteValuesRuleBlock(name: string): SectionBlock;
-    static createPositionFallbackBlock(positionFallbackName: string): SectionBlock;
     static createPositionTryBlock(positionTryName: string): SectionBlock;
     static createInheritedNodeBlock(node: SDK.DOMModel.DOMNode): Promise<SectionBlock>;
     static createLayerBlock(rule: SDK.CSSRule.CSSStyleRule): SectionBlock;

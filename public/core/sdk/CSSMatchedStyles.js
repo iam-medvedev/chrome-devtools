@@ -4,7 +4,7 @@
 import * as Platform from '../platform/platform.js';
 import { cssMetadata } from './CSSMetadata.js';
 import * as PropertyParser from './CSSPropertyParser.js';
-import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionFallbackRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
+import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
     if (!query.styleSheetId || !query.range) {
@@ -200,7 +200,6 @@ export class CSSMatchedStyles {
     #inheritedStyles;
     #styleToDOMCascade;
     #parentLayoutNodeId;
-    #positionFallbackRules;
     #positionTryRules;
     #mainDOMCascade;
     #pseudoDOMCascades;
@@ -211,7 +210,7 @@ export class CSSMatchedStyles {
         await cssMatchedStyles.init(payload);
         return cssMatchedStyles;
     }
-    constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionFallbackRules, positionTryRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, }) {
+    constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionTryRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, }) {
         this.#cssModelInternal = cssModel;
         this.#nodeInternal = node;
         this.#addedStyles = new Map();
@@ -224,7 +223,6 @@ export class CSSMatchedStyles {
         if (animationsPayload) {
             this.#keyframesInternal = animationsPayload.map(rule => new CSSKeyframesRule(cssModel, rule));
         }
-        this.#positionFallbackRules = positionFallbackRules.map(rule => new CSSPositionFallbackRule(cssModel, rule));
         this.#positionTryRules = positionTryRules.map(rule => new CSSPositionTryRule(cssModel, rule));
         this.#parentLayoutNodeId = parentLayoutNodeId;
         this.#fontPaletteValuesRule =
@@ -548,9 +546,6 @@ export class CSSMatchedStyles {
     }
     keyframes() {
         return this.#keyframesInternal;
-    }
-    positionFallbackRules() {
-        return this.#positionFallbackRules;
     }
     positionTryRules() {
         return this.#positionTryRules;

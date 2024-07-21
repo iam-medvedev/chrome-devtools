@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { resolveScopeChain } from './NamesResolver.js';
 /**
  * This class is responsible for resolving / updating the scope chain for a specific {@link SDK.DebuggerModel.CallFrame}
  * instance.
@@ -30,10 +31,11 @@ export class ScopeChainModel extends Common.ObjectWrapper.ObjectWrapper {
     dispose() {
         this.#callFrame.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.DebugInfoAttached, this.#debugInfoAttached, this);
         this.#callFrame.debuggerModel.sourceMapManager().removeEventListener(SDK.SourceMapManager.Events.SourceMapAttached, this.#sourceMapAttached, this);
+        this.listeners?.clear();
     }
     async #update() {
-        // TODO(crbug.com/40277685): Actually resolve the scope info and send it along with the event.
-        this.dispatchEventToListeners("ScopeChainUpdated" /* Events.ScopeChainUpdated */, new ScopeChain(this.#callFrame));
+        const scopeChain = await resolveScopeChain(this.#callFrame);
+        this.dispatchEventToListeners("ScopeChainUpdated" /* Events.ScopeChainUpdated */, new ScopeChain(scopeChain));
     }
     #debugInfoAttached(event) {
         if (event.data === this.#callFrame.script) {
@@ -47,14 +49,12 @@ export class ScopeChainModel extends Common.ObjectWrapper.ObjectWrapper {
     }
 }
 /**
- * Placeholder event payload.
- *
- * TODO(crbug.com/40277685): Send an actual scope chain.
+ * A scope chain ready to be shown in the UI with debugging info applied.
  */
 export class ScopeChain {
-    callFrame;
-    constructor(callFrame) {
-        this.callFrame = callFrame;
+    scopeChain;
+    constructor(scopeChain) {
+        this.scopeChain = scopeChain;
     }
 }
 //# sourceMappingURL=ScopeChainModel.js.map

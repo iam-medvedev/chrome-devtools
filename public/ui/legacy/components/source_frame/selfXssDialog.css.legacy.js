@@ -43,5 +43,7 @@ export default {
   top: 9px;
   z-index: 1;
 }
+
+/*# sourceURL=selfXssDialog.css */
 `
 };

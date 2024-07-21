@@ -150,39 +150,48 @@ c`;
         });
         it('builds a request with a model id', async () => {
             mockHostConfig('test model');
-            assert.strictEqual(FreestylerAgent.buildRequest('test input').options?.model_id, 'test model');
+            assert.strictEqual(FreestylerAgent.buildRequest({ input: 'test input' }).options?.model_id, 'test model');
         });
         it('builds a request with logging', async () => {
             mockHostConfig('test model');
-            assert.strictEqual(FreestylerAgent.buildRequest('test input', undefined, undefined, true).metadata?.disable_user_content_logging, false);
+            assert.strictEqual(FreestylerAgent.buildRequest({ input: 'test input', serverSideLoggingEnabled: true })
+                .metadata?.disable_user_content_logging, false);
         });
         it('builds a request without logging', async () => {
             mockHostConfig('test model');
-            assert.strictEqual(FreestylerAgent.buildRequest('test input', undefined, undefined, false)
+            assert.strictEqual(FreestylerAgent.buildRequest({ input: 'test input', serverSideLoggingEnabled: false })
                 .metadata?.disable_user_content_logging, true);
         });
         it('builds a request with input', async () => {
             mockHostConfig();
-            const request = FreestylerAgent.buildRequest('test input');
+            const request = FreestylerAgent.buildRequest({ input: 'test input' });
             assert.strictEqual(request.input, 'test input');
             assert.strictEqual(request.preamble, undefined);
             assert.strictEqual(request.chat_history, undefined);
         });
+        it('builds a request with a sessionId', async () => {
+            mockHostConfig();
+            const request = FreestylerAgent.buildRequest({ input: 'test input', sessionId: 'sessionId' });
+            assert.strictEqual(request.metadata?.string_session_id, 'sessionId');
+        });
         it('builds a request with preamble', async () => {
             mockHostConfig();
-            const request = FreestylerAgent.buildRequest('test input', 'preamble');
+            const request = FreestylerAgent.buildRequest({ input: 'test input', preamble: 'preamble' });
             assert.strictEqual(request.input, 'test input');
             assert.strictEqual(request.preamble, 'preamble');
             assert.strictEqual(request.chat_history, undefined);
         });
         it('builds a request with chat history', async () => {
             mockHostConfig();
-            const request = FreestylerAgent.buildRequest('test input', undefined, [
-                {
-                    text: 'test',
-                    entity: Host.AidaClient.Entity.USER,
-                },
-            ]);
+            const request = FreestylerAgent.buildRequest({
+                input: 'test input',
+                chatHistory: [
+                    {
+                        text: 'test',
+                        entity: Host.AidaClient.Entity.USER,
+                    },
+                ],
+            });
             assert.strictEqual(request.input, 'test input');
             assert.strictEqual(request.preamble, undefined);
             assert.deepStrictEqual(request.chat_history, [
@@ -194,20 +203,26 @@ c`;
         });
         it('structure matches the snapshot', () => {
             mockHostConfig('test model');
-            assert.deepStrictEqual(FreestylerAgent.buildRequest('test input', 'preamble', [
-                {
-                    text: 'first',
-                    entity: Host.AidaClient.Entity.UNKNOWN,
-                },
-                {
-                    text: 'second',
-                    entity: Host.AidaClient.Entity.SYSTEM,
-                },
-                {
-                    text: 'third',
-                    entity: Host.AidaClient.Entity.USER,
-                },
-            ]), {
+            assert.deepStrictEqual(FreestylerAgent.buildRequest({
+                input: 'test input',
+                preamble: 'preamble',
+                chatHistory: [
+                    {
+                        text: 'first',
+                        entity: Host.AidaClient.Entity.UNKNOWN,
+                    },
+                    {
+                        text: 'second',
+                        entity: Host.AidaClient.Entity.SYSTEM,
+                    },
+                    {
+                        text: 'third',
+                        entity: Host.AidaClient.Entity.USER,
+                    },
+                ],
+                serverSideLoggingEnabled: true,
+                sessionId: 'sessionId',
+            }), {
                 input: 'test input',
                 client: 'CHROME_DEVTOOLS',
                 preamble: 'preamble',
@@ -226,7 +241,8 @@ c`;
                     },
                 ],
                 metadata: {
-                    disable_user_content_logging: true,
+                    disable_user_content_logging: false,
+                    string_session_id: 'sessionId',
                 },
                 options: {
                     model_id: 'test model',
@@ -244,7 +260,7 @@ c`;
         function mockAidaClient(fetch) {
             return {
                 fetch,
-                registerClientEvent() { },
+                registerClientEvent: () => Promise.resolve({}),
             };
         }
         describe('side effect handling', () => {
@@ -371,7 +387,7 @@ c`;
                     confirmSideEffect,
                     execJs,
                 });
-                await Array.fromAsync(agent.run(Freestyler.FIX_THIS_ISSUE_PROMPT));
+                await Array.fromAsync(agent.run(Freestyler.FIX_THIS_ISSUE_PROMPT, { isFixQuery: true }));
                 const optionsArg = execJs.lastCall.args[1];
                 sinon.assert.notCalled(confirmSideEffect);
                 sinon.assert.match(optionsArg, sinon.match({ throwOnSideEffect: false }));
@@ -706,7 +722,7 @@ ANSWER: this is the answer`,
             });
             const controller = new AbortController();
             controller.abort();
-            await Array.fromAsync(agent.run('test', { signal: controller.signal }));
+            await Array.fromAsync(agent.run('test', { signal: controller.signal, isFixQuery: false }));
             assert.deepStrictEqual(agent.chatHistoryForTesting, []);
         });
     });

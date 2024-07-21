@@ -399,9 +399,8 @@ export class HeapSnapshotGridNode extends Common.ObjectWrapper.eventMixin(HeapSn
                         }
                     }
                 }
-                // TODO: fix this.
                 this.instanceCount += items.length;
-                if (firstNotSerializedPosition < toPosition) {
+                if (firstNotSerializedPosition < toPosition && firstNotSerializedPosition < itemsRange.totalLength) {
                     serializeNextChunk.call(this, toPosition);
                     return;
                 }

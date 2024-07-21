@@ -50,5 +50,7 @@ span {
     forced-color-adjust: none;
   }
 }
+
+/*# sourceURL=icon.css */
 `
 };

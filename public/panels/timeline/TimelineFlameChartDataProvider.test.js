@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../core/root/root.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
@@ -53,7 +52,6 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         assert.strictEqual(dataProvider.indexForEvent(event), 100);
     });
     it('renders track in the correct order by default', async function () {
-        Root.Runtime.experiments.enableForTest('timeline-extensions');
         setupIgnoreListManagerEnvironment();
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const { traceData } = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
@@ -63,9 +61,9 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
             'Frames',
             'Timings',
             'Interactions',
-            'A track group',
+            'A track group — Custom Track',
             'Another Extension Track',
-            'An Extension Track',
+            'An Extension Track — Custom Track',
             'Main — http://localhost:3000/',
             'Thread Pool',
             'Thread Pool Worker 1',
@@ -74,7 +72,6 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
             'StackSamplingProfiler',
             'GPU',
         ]);
-        Root.Runtime.experiments.disableForTest('timeline-extensions');
     });
     it('adds candy stripe and triangle decorations to long tasks in the main thread', async function () {
         setupIgnoreListManagerEnvironment();

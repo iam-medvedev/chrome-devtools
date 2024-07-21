@@ -237,7 +237,6 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
             "animation" /* LinkableNameProperties.Animation */,
             "animation-name" /* LinkableNameProperties.AnimationName */,
             "font-palette" /* LinkableNameProperties.FontPalette */,
-            "position-fallback" /* LinkableNameProperties.PositionFallback */,
             "position-try-options" /* LinkableNameProperties.PositionTryOptions */,
             "position-try" /* LinkableNameProperties.PositionTry */,
         ];

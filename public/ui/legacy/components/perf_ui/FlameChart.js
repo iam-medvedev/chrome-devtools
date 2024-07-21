@@ -290,6 +290,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.selectedGroupIndex = -1;
         this.lastPopoverState = {
             entryIndex: -1,
+            groupIndex: -1,
             hiddenEntriesPopover: false,
         };
         // Keyboard focused group is used to navigate groups irrespective of whether they are selectable or not
@@ -377,6 +378,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.popoverElement.removeChildren();
             this.lastPopoverState = {
                 entryIndex: -1,
+                groupIndex: -1,
                 hiddenEntriesPopover: false,
             };
         }
@@ -481,13 +483,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updateHighlight();
     }
     /**
-     * Handle the mouse move event.
-     *
-     * And the handle priority will be:
-     * 1. Track configuration icons -> show tooltip for the icons
-     * 2. Inside a track header -> mouse style will be a "pointer", show edit icon
-     * 3.1 Inside a track -> show edit icon, update the highlight of hovered event
-     * 3.2 Outside all tracks -> clear all highlights
+     * Handle the mouse move event. The handle priority will be:
+     *   1. Track configuration icons -> show tooltip for the icons
+     *   2. Inside a track header -> mouse style will be a "pointer", indicating track can be focused
+     *   3. Inside a track -> update the highlight of hovered event
      */
     onMouseMove(event) {
         this.#searchResultEntryIndex = -1;
@@ -522,16 +521,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 return;
             }
             case "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */:
-                this.hideHighlight();
+                this.updateHighlight();
                 this.viewportElement.style.cursor = 'pointer';
                 return;
             case "INSIDE_TRACK" /* HoverType.INSIDE_TRACK */:
-                this.updateHighlight();
-                return;
-            case "OUTSIDE_TRACKS" /* HoverType.OUTSIDE_TRACKS */:
-                // No group is hovered.
-                // Redraw the flame chart to clear the potentially previously draw edit icon.
-                this.draw();
                 this.updateHighlight();
                 return;
         }
@@ -578,7 +571,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // No entry is hovered.
         if (entryIndex === -1) {
             this.hideHighlight();
-            const { groupIndex } = this.coordinatesToGroupIndexAndHoverType(this.lastMouseOffsetX, this.lastMouseOffsetY);
+            const { groupIndex, hoverType } = this.coordinatesToGroupIndexAndHoverType(this.lastMouseOffsetX, this.lastMouseOffsetY);
+            if (hoverType === "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */) {
+                this.#updatePopoverForGroup(groupIndex);
+            }
             if (groupIndex >= 0 && this.rawTimelineData && this.rawTimelineData.groups &&
                 this.rawTimelineData.groups[groupIndex].selectable) {
                 // This means the mouse is in a selectable group's area, and not hovering any entry.
@@ -631,7 +627,29 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.lastPopoverState = {
             entryIndex,
+            groupIndex: -1,
             hiddenEntriesPopover: isMouseOverRevealChildrenArrow,
+        };
+    }
+    #updatePopoverForGroup(groupIndex) {
+        // Just update position if cursor is hovering the group name.
+        if (groupIndex === this.lastPopoverState.groupIndex) {
+            return this.updatePopoverOffset();
+        }
+        this.popoverElement.removeChildren();
+        const data = this.timelineData();
+        if (!data) {
+            return;
+        }
+        const group = data.groups.at(groupIndex);
+        if (group?.description) {
+            this.popoverElement.innerText = (group?.description);
+            this.updatePopoverOffset();
+        }
+        this.lastPopoverState = {
+            groupIndex: groupIndex,
+            entryIndex: -1,
+            hiddenEntriesPopover: false,
         };
     }
     updatePopoverOffset() {
@@ -998,11 +1016,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (hoverType === "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */ && this.#hasTrackConfigurationMode()) {
             this.#buildEnterEditModeContextMenu(event);
         }
-        // The following context menu should only work for the flame chart that support tree modification.
-        // So if the data provider doesn't have the |modifyTree| function, simply return to show the default context menu.
-        if (!this.dataProvider.modifyTree) {
-            return;
-        }
         if (this.highlightedEntryIndex === -1) {
             // If the user has not selected an individual entry, we do not show any
             // context menu, so finish here.
@@ -1019,6 +1032,20 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.setSelectedEntry(this.highlightedEntryIndex);
         // Update the selected group as well.
         this.#selectGroup(groupIndex);
+        // If the flame chart provider can build a customized context menu for the given entry, we will use that, otherwise
+        // just do nothing and fall back to default context menu.
+        if (this.dataProvider.customizedContextMenu) {
+            this.contextMenu = this.dataProvider.customizedContextMenu(event, this.highlightedEntryIndex);
+            if (this.contextMenu) {
+                void this.contextMenu.show();
+                return;
+            }
+        }
+        // The following context menu should only work for the flame chart that support tree modification.
+        // So if the data provider doesn't have the |modifyTree| function, simply return to show the default context menu.
+        if (!this.dataProvider.modifyTree) {
+            return;
+        }
         const possibleActions = this.getPossibleActions();
         if (!possibleActions) {
             return;

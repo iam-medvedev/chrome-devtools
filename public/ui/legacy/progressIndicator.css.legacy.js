@@ -37,5 +37,7 @@ export default {
   margin: 0 2px;
   width: 100px;
 }
+
+/*# sourceURL=progressIndicator.css */
 `
 };

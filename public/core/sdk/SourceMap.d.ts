@@ -10,12 +10,12 @@ import { type CallFrame } from './DebuggerModel.js';
  */
 export type SourceMapV3Object = {
     'version': number;
+    'sources': string[];
+    'mappings': string;
     'file'?: string;
     'sourceRoot'?: string;
-    'sources': string[];
     'sourcesContent'?: (string | null)[];
     'names'?: string[];
-    'mappings': string;
     'ignoreList'?: number[];
     'originalScopes'?: string[];
     'generatedRanges'?: string;

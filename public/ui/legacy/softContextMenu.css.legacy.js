@@ -148,5 +148,7 @@ export default {
     border-bottom-color: ButtonText;
   }
 }
+
+/*# sourceURL=softContextMenu.css */
 `
 };

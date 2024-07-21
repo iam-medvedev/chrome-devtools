@@ -53,8 +53,6 @@ export declare class RuntimeModel extends SDKModel<EventTypes> {
     consoleAPICalled(type: Protocol.Runtime.ConsoleAPICalledEventType, args: Protocol.Runtime.RemoteObject[], executionContextId: number, timestamp: number, stackTrace?: Protocol.Runtime.StackTrace, context?: string): void;
     executionContextIdForScriptId(scriptId: string): number;
     executionContextForStackTrace(stackTrace: Protocol.Runtime.StackTrace): number;
-    hasSideEffectSupport(): boolean | null;
-    checkSideEffectSupport(): Promise<boolean>;
     terminateExecution(): Promise<Protocol.ProtocolResponseWithError>;
     getExceptionDetails(errorObjectId: Protocol.Runtime.RemoteObjectId): Promise<Protocol.Runtime.ExceptionDetails | undefined>;
 }

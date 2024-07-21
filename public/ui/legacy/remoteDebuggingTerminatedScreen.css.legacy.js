@@ -36,5 +36,7 @@ export default {
 :host-context(.theme-with-dark-background) .reason {
   --override-reason-color: rgb(255 116 116);
 }
+
+/*# sourceURL=remoteDebuggingTerminatedScreen.css */
 `
 };

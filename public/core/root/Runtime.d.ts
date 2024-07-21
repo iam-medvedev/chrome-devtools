@@ -81,29 +81,19 @@ export declare const enum ExperimentName {
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
     TIMELINE_ANNOTATIONS_OVERLAYS = "perf-panel-annotations",
     TIMELINE_SIDEBAR = "timeline-rpp-sidebar",
-    TIMELINE_EXTENSIONS = "timeline-extensions",
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_OBSERVATIONS = "timeline-observations",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces"
 }
-export interface HostConfigAida {
+export interface HostConfigConsoleInsights {
+    aidaModelId: string;
+    aidaTemperature: number;
     blocked: boolean;
     blockedByAge: boolean;
     blockedByEnterprisePolicy: boolean;
     blockedByFeatureFlag: boolean;
     blockedByGeo: boolean;
     blockedByRollout: boolean;
-    enabled: boolean;
-}
-export interface HostConfigConsoleInsights {
-    aidaModelId: string;
-    aidaTemperature: number;
-    blocked?: boolean;
-    blockedByAge?: boolean;
-    blockedByEnterprisePolicy?: boolean;
-    blockedByFeatureFlag?: boolean;
-    blockedByGeo?: boolean;
-    blockedByRollout?: boolean;
     disallowLogging: boolean;
     enabled: boolean;
     optIn: boolean;
@@ -113,10 +103,14 @@ export interface HostConfigFreestylerDogfood {
     aidaTemperature: number;
     enabled: boolean;
 }
+export interface HostConfigVeLogging {
+    enabled: boolean;
+    testing: boolean;
+}
 export interface HostConfig {
-    devToolsAida?: HostConfigAida;
     devToolsConsoleInsights: HostConfigConsoleInsights;
     devToolsFreestylerDogfood: HostConfigFreestylerDogfood;
+    devToolsVeLogging: HostConfigVeLogging;
 }
 /**
  * When defining conditions make sure that objects used by the function have

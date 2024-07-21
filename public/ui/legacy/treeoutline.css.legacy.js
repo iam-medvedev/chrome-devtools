@@ -241,5 +241,7 @@ ol.tree-outline:not(.hide-selection-when-blurred) li.selected:focus {
     --override-adorner-border-color: HighlightText;
   }
 }
+
+/*# sourceURL=treeoutline.css */
 `
 };

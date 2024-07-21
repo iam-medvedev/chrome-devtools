@@ -7,6 +7,7 @@ import type * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Search from '../search/search.js';
+import * as TimelineUtils from '../timeline/utils/utils.js';
 import { NetworkItemView } from './NetworkItemView.js';
 import { NetworkLogView } from './NetworkLogView.js';
 import { type NetworkTimeCalculator } from './NetworkTimeCalculator.js';
@@ -84,7 +85,7 @@ export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMe
     private clearNetworkItemView;
     private createNetworkItemView;
     private updateUI;
-    appendApplicableItems(this: NetworkPanel, event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: SDK.NetworkRequest.NetworkRequest | SDK.Resource.Resource | Workspace.UISourceCode.UISourceCode): void;
+    appendApplicableItems(this: NetworkPanel, event: Event, contextMenu: UI.ContextMenu.ContextMenu, target: SDK.NetworkRequest.NetworkRequest | SDK.Resource.Resource | Workspace.UISourceCode.UISourceCode | TimelineUtils.NetworkRequest.TimelineNetworkRequest): void;
     private onFilmFrameSelected;
     private onFilmFrameEnter;
     private onFilmFrameExit;

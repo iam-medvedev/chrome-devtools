@@ -5,7 +5,6 @@
     },
     "files": [
         "breadcrumbsUI.css.js",
-        "entryLabelOverlay.css.js",
         "fieldSettingsDialog.css.js",
         "interactionBreakdown.css.js",
         "liveMetricsView.css.js",
@@ -13,9 +12,6 @@
         "networkRequestTooltip.css.js",
         "sidebar.css.js",
         "sidebarAnnotationsTab.css.js",
-        "sidebarInsight.css.js",
-        "sidebarSingleNavigation.css.js",
-        "timeRangeOverlay.css.js",
-        "timespanBreakdownOverlay.css.js"
+        "sidebarSingleNavigation.css.js"
     ]
 }

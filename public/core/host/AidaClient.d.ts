@@ -1,3 +1,4 @@
+import { type AidaClientResult } from './InspectorFrontendHostAPI.js';
 export declare enum Entity {
     UNKNOWN = 0,
     USER = 1,
@@ -32,6 +33,7 @@ export interface AidaRequest {
     };
     metadata?: {
         disable_user_content_logging: boolean;
+        string_session_id?: string;
     };
     functionality_type?: FunctionalityType;
     client_feature?: ClientFeature;
@@ -83,5 +85,5 @@ export declare class AidaClient {
     static buildConsoleInsightsRequest(input: string): AidaRequest;
     static getAidaClientAvailability(): Promise<AidaAvailability>;
     fetch(request: AidaRequest): AsyncGenerator<AidaResponse, void, void>;
-    registerClientEvent(clientEvent: AidaDoConversationClientEvent): void;
+    registerClientEvent(clientEvent: AidaDoConversationClientEvent): Promise<AidaClientResult>;
 }

@@ -5,7 +5,8 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as TraceEngine from '../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import { InsightsCategories } from './Sidebar.js';
+import * as Insights from './insights/insights.js';
+import { InsightsCategories, ToggleSidebarInsights } from './Sidebar.js';
 import styles from './sidebarSingleNavigation.css.js';
 export class SidebarSingleNavigation extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-sidebar-single-navigation`;
@@ -24,6 +25,10 @@ export class SidebarSingleNavigation extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
         this.#render();
+    }
+    #toggleInsightClick() {
+        this.dispatchEvent(new ToggleSidebarInsights());
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     #metricIsVisible(label) {
         if (this.#data.activeCategory === InsightsCategories.ALL) {
@@ -89,6 +94,18 @@ export class SidebarSingleNavigation extends HTMLElement {
     </div>
     `;
     }
+    #renderInsights(insights, navigationId) {
+        const renderLCPInsights = this.#data.activeCategory === InsightsCategories.LCP || this.#data.activeCategory === InsightsCategories.ALL;
+        // clang-format off
+        return LitHtml.html `${renderLCPInsights ? LitHtml.html `
+        <div @click=${this.#toggleInsightClick}>
+          <${Insights.LCPPhases.LCPPhases.litTagName}
+            .insights=${insights}
+            .navigationId=${navigationId}
+          </${Insights.LCPPhases.LCPPhases}>
+        </div>` : LitHtml.nothing}`;
+        // clang-format on
+    }
     #render() {
         const { traceParsedData, insights, navigationId, } = this.#data;
         if (!traceParsedData || !insights || !navigationId) {
@@ -104,6 +121,7 @@ export class SidebarSingleNavigation extends HTMLElement {
         LitHtml.render(LitHtml.html `
       <div class="navigation">
         ${this.#renderMetrics(traceParsedData, navigationId)}
+        ${this.#renderInsights(insights, navigationId)}
         </div>
       `, this.#shadow, { host: this });
         // clang-format on

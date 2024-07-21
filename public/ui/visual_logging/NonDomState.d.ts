@@ -6,9 +6,8 @@ interface LoggableRegistration {
     parent?: Loggable;
 }
 export declare function registerLoggable(loggable: Loggable, config: LoggingConfig, parent?: Loggable): void;
-export declare function unregisterLoggable(loggable: Loggable): void;
-export declare function getNonDomState(): {
-    loggables: LoggableRegistration[];
-};
+export declare function hasNonDomLoggables(parent?: Loggable): boolean;
+export declare function getNonDomLoggables(parent?: Loggable): LoggableRegistration[];
+export declare function unregisterLoggables(parent?: Loggable): void;
 export declare function unregisterAllLoggables(): void;
 export {};

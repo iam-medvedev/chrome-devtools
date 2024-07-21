@@ -111,5 +111,7 @@ export default {
   bottom: 10px;
   right: 10px;
 }
+
+/*# sourceURL=flameChart.css */
 `
 };

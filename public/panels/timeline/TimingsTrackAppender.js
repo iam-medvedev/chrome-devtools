@@ -1,7 +1,7 @@
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import { buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
+import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
 import * as Extensions from './extensions/extensions.js';
 import { TimelineFlameChartMarker } from './TimelineFlameChartView.js';
 const UIStrings = {
@@ -32,10 +32,9 @@ export class TimingsTrackAppender {
      * appended the track's events.
      */
     appendTrackAtLevel(trackStartLevel, expanded) {
-        const extensionMarkers = this.#traceParsedData.ExtensionTraceData.extensionMarkers;
+        const extensionMarkers = ExtensionDataGatherer.instance().getExtensionData().extensionMarkers;
         const pageloadMarkers = this.#traceParsedData.PageLoadMetrics.allMarkerEvents;
-        const extensionMarkersAreEmpty = extensionMarkers.length === 0 ||
-            !Root.Runtime.experiments.isEnabled("timeline-extensions" /* Root.Runtime.ExperimentName.TIMELINE_EXTENSIONS */);
+        const extensionMarkersAreEmpty = extensionMarkers.length === 0;
         const performanceMarks = this.#traceParsedData.UserTimings.performanceMarks.filter(m => !TraceEngine.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInTiming(m));
         const performanceMeasures = this.#traceParsedData.UserTimings.performanceMeasures.filter(m => !TraceEngine.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInTiming(m));
         const timestampEvents = this.#traceParsedData.UserTimings.timestampEvents;
@@ -77,9 +76,7 @@ export class TimingsTrackAppender {
      */
     #appendMarkersAtLevel(currentLevel) {
         let markers = this.#traceParsedData.PageLoadMetrics.allMarkerEvents;
-        if (Root.Runtime.experiments.isEnabled("timeline-extensions" /* Root.Runtime.ExperimentName.TIMELINE_EXTENSIONS */)) {
-            markers = markers.concat(this.#traceParsedData.ExtensionTraceData.extensionMarkers);
-        }
+        markers = markers.concat(ExtensionDataGatherer.instance().getExtensionData().extensionMarkers);
         if (markers.length === 0) {
             return currentLevel;
         }
@@ -213,8 +210,8 @@ export class TimingsTrackAppender {
      * is hovered in the timeline.
      */
     highlightedEntryInfo(event) {
-        const title = TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event) && event.args.hintText ?
-            event.args.hintText :
+        const title = TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event) && event.args.tooltipText ?
+            event.args.tooltipText :
             this.titleForEvent(event);
         // If an event is a marker event, rather than show a duration of 0, we can instead show the time that the event happened, which is much more useful. We do this currently for:
         // Page load events: DCL, FCP and LCP

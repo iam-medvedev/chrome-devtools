@@ -6,7 +6,7 @@ import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
-import { ScopeRef } from './RemoteObject.js';
+import { RemoteObjectProperty, ScopeRef } from './RemoteObject.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel } from './ResourceTreeModel.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { Script } from './Script.js';
@@ -54,6 +54,14 @@ const UIStrings = {
      *@description Text describing the expression scope in WebAssembly
      */
     expression: 'Expression',
+    /**
+     *@description Text in Scope Chain Sidebar Pane of the Sources panel
+     */
+    exception: 'Exception',
+    /**
+     *@description Text in Scope Chain Sidebar Pane of the Sources panel
+     */
+    returnValue: 'Return value',
 };
 const str_ = i18n.i18n.registerUIStrings('core/sdk/DebuggerModel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -896,8 +904,9 @@ export class CallFrame {
     #functionLocationInternal;
     #returnValueInternal;
     missingDebugInfoDetails;
+    exception;
     canBeRestarted;
-    constructor(debuggerModel, script, payload, inlineFrameIndex, functionName) {
+    constructor(debuggerModel, script, payload, inlineFrameIndex, functionName, exception = null) {
         this.debuggerModel = debuggerModel;
         this.script = script;
         this.payload = payload;
@@ -908,6 +917,7 @@ export class CallFrame {
         this.functionName = functionName || payload.functionName;
         this.missingDebugInfoDetails = null;
         this.canBeRestarted = Boolean(payload.canBeRestarted);
+        this.exception = exception;
         for (let i = 0; i < payload.scopeChain.length; ++i) {
             const scope = new Scope(this, i);
             this.#scopeChainInternal.push(scope);
@@ -921,13 +931,14 @@ export class CallFrame {
         this.#returnValueInternal =
             payload.returnValue ? this.debuggerModel.runtimeModel().createRemoteObject(payload.returnValue) : null;
     }
-    static fromPayloadArray(debuggerModel, callFrames) {
+    static fromPayloadArray(debuggerModel, callFrames, exception) {
         const result = [];
         for (let i = 0; i < callFrames.length; ++i) {
             const callFrame = callFrames[i];
             const script = debuggerModel.scriptForId(callFrame.location.scriptId);
             if (script) {
-                result.push(new CallFrame(debuggerModel, script, callFrame));
+                const ex = i === 0 ? exception : null;
+                result.push(new CallFrame(debuggerModel, script, callFrame, undefined, undefined, ex));
             }
         }
         return result;
@@ -974,13 +985,6 @@ export class CallFrame {
     async evaluate(options) {
         const debuggerModel = this.debuggerModel;
         const runtimeModel = debuggerModel.runtimeModel();
-        // Assume backends either support both throwOnSideEffect and timeout options or neither.
-        const needsTerminationOptions = Boolean(options.throwOnSideEffect) || options.timeout !== undefined;
-        if (needsTerminationOptions &&
-            (runtimeModel.hasSideEffectSupport() === false ||
-                (runtimeModel.hasSideEffectSupport() === null && !await runtimeModel.checkSideEffectSupport()))) {
-            return { error: 'Side-effect checks not supported by backend.' };
-        }
         const evaluateOnCallFrameCallback = debuggerModel.getEvaluateOnCallFrameCallback();
         if (evaluateOnCallFrameCallback) {
             const result = await evaluateOnCallFrameCallback(this, options);
@@ -1100,6 +1104,24 @@ export class Scope {
     icon() {
         return undefined;
     }
+    extraProperties() {
+        if (this.#ordinal !== 0 || this.#typeInternal !== "local" /* Protocol.Debugger.ScopeType.Local */ ||
+            this.#callFrameInternal.script.isWasm()) {
+            return [];
+        }
+        const extraProperties = [];
+        const exception = this.#callFrameInternal.exception;
+        if (exception) {
+            extraProperties.push(new RemoteObjectProperty(i18nString(UIStrings.exception), exception, undefined, undefined, undefined, undefined, undefined, 
+            /* synthetic */ true));
+        }
+        const returnValue = this.#callFrameInternal.returnValue();
+        if (returnValue) {
+            extraProperties.push(new RemoteObjectProperty(i18nString(UIStrings.returnValue), returnValue, undefined, undefined, undefined, undefined, undefined, 
+            /* synthetic */ true, this.#callFrameInternal.setReturnValue.bind(this.#callFrameInternal)));
+        }
+        return extraProperties;
+    }
 }
 export class DebuggerPausedDetails {
     debuggerModel;
@@ -1111,7 +1133,6 @@ export class DebuggerPausedDetails {
     asyncStackTraceId;
     constructor(debuggerModel, callFrames, reason, auxData, breakpointIds, asyncStackTrace, asyncStackTraceId) {
         this.debuggerModel = debuggerModel;
-        this.callFrames = CallFrame.fromPayloadArray(debuggerModel, callFrames);
         this.reason = reason;
         this.auxData = auxData;
         this.breakpointIds = breakpointIds;
@@ -1119,6 +1140,7 @@ export class DebuggerPausedDetails {
             this.asyncStackTrace = this.cleanRedundantFrames(asyncStackTrace);
         }
         this.asyncStackTraceId = asyncStackTraceId;
+        this.callFrames = CallFrame.fromPayloadArray(debuggerModel, callFrames, this.exception());
     }
     exception() {
         if (this.reason !== "exception" /* Protocol.Debugger.PausedEventReason.Exception */ &&

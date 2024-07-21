@@ -1,10 +1,9 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import { VisualElements } from './LoggingConfig.js';
-import { pendingWorkComplete, startLogging, stopLogging } from './LoggingDriver.js';
+import { pendingWorkComplete } from './LoggingDriver.js';
 import { getLoggingState } from './LoggingState.js';
 let veDebuggingEnabled = false;
 let debugPopover = null;
@@ -262,13 +261,13 @@ function maybeLogDebugEvent(entry) {
         console.info('VE Debug:', entry);
     }
 }
-var DebugLoggingFormat;
+export var DebugLoggingFormat;
 (function (DebugLoggingFormat) {
     DebugLoggingFormat["Intuitive"] = "Intuitive";
     DebugLoggingFormat["Test"] = "Test";
     DebugLoggingFormat["AdHocAnalysis"] = "AdHocAnalysis";
 })(DebugLoggingFormat || (DebugLoggingFormat = {}));
-function setVeDebugLoggingEnabled(enabled, format = DebugLoggingFormat.Intuitive) {
+export function setVeDebugLoggingEnabled(enabled, format = DebugLoggingFormat.Intuitive) {
     if (enabled) {
         localStorage.setItem('veDebugLoggingEnabled', format);
     }
@@ -467,18 +466,6 @@ async function getVeDebugEventsLog() {
     lastImpressionLogEntry = null;
     return veDebugEventsLog;
 }
-async function startTestLogging() {
-    setVeDebugLoggingEnabled(true, DebugLoggingFormat.Test);
-    stopLogging();
-    await startLogging({
-        processingThrottler: new Common.Throttler.Throttler(10),
-        keyboardLogThrottler: new Common.Throttler.Throttler(10),
-        hoverLogThrottler: new Common.Throttler.Throttler(10),
-        dragLogThrottler: new Common.Throttler.Throttler(10),
-        clickLogThrottler: new Common.Throttler.Throttler(10),
-        resizeLogThrottler: new Common.Throttler.Throttler(10),
-    });
-}
 // @ts-ignore
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
 // @ts-ignore
@@ -491,6 +478,4 @@ globalThis.exportAdHocAnalysisLogForSql = exportAdHocAnalysisLogForSql;
 globalThis.buildStateFlow = buildStateFlow;
 // @ts-ignore
 globalThis.getVeDebugEventsLog = getVeDebugEventsLog;
-// @ts-ignore
-globalThis.startTestLogging = startTestLogging;
 //# sourceMappingURL=Debugging.js.map

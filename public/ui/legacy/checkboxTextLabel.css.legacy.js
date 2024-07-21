@@ -87,5 +87,7 @@ input.inside-datagrid {
     background: HighlightText;
   }
 }
+
+/*# sourceURL=checkboxTextLabel.css */
 `
 };

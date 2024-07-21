@@ -161,5 +161,7 @@ export default {
     background-image: unset;
   }
 }
+
+/*# sourceURL=listWidget.css */
 `
 };

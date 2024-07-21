@@ -18,11 +18,9 @@ export declare class CSSLength extends HTMLElement {
     private currentMouseClientX;
     set data(data: CSSLengthData);
     connectedCallback(): void;
-    private onUnitChange;
     private dragValue;
     private onValueMousedown;
     private onValueMouseup;
-    private onUnitMouseup;
     private render;
     private renderContent;
 }

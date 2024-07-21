@@ -17,5 +17,7 @@ export default {
   text-align: center;
   padding: 15px;
 }
+
+/*# sourceURL=fontView.css */
 `
 };

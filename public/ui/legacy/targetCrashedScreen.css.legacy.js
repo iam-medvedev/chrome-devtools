@@ -19,5 +19,7 @@ export default {
   white-space: pre;
   margin: 5px;
 }
+
+/*# sourceURL=targetCrashedScreen.css */
 `
 };

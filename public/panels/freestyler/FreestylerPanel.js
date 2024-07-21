@@ -8,16 +8,15 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
-import { FreestylerChatUi, } from './components/FreestylerChatUi.js';
+import { DOGFOOD_INFO, FreestylerChatUi, } from './components/FreestylerChatUi.js';
 import { FIX_THIS_ISSUE_PROMPT, FreestylerAgent, Step } from './FreestylerAgent.js';
 import freestylerPanelStyles from './freestylerPanel.css.js';
-const DOGFOOD_INFO = ' https://goo.gle/freestyler-dogfood';
 /*
   * TODO(nvitkov): b/346933425
   * Temporary string that should not be translated
   * as they may change often during development.
   */
-const TempUIStrings = {
+const UIStringsTemp = {
     /**
      *@description Freestyler UI text for clearing messages.
      */
@@ -26,10 +25,6 @@ const TempUIStrings = {
      *@description Freestyler UI text for sending feedback.
      */
     sendFeedback: 'Send feedback',
-    /**
-     *@description Freestyler UI text for the help button.
-     */
-    help: 'Help',
     /**
      *@description Displayed when the user stop the response
      */
@@ -45,11 +40,11 @@ function createToolbar(target, { onClearClick }) {
     const toolbarContainer = target.createChild('div', 'freestyler-toolbar-container');
     const leftToolbar = new UI.Toolbar.Toolbar('', toolbarContainer);
     const rightToolbar = new UI.Toolbar.Toolbar('freestyler-right-toolbar', toolbarContainer);
-    const clearButton = new UI.Toolbar.ToolbarButton(i18nString(TempUIStrings.clearMessages), 'clear', undefined, 'freestyler.clear');
+    const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStringsTemp.clearMessages), 'clear', undefined, 'freestyler.clear');
     clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, onClearClick);
     leftToolbar.appendToolbarItem(clearButton);
     rightToolbar.appendSeparator();
-    const helpButton = new UI.Toolbar.ToolbarButton(i18nString(TempUIStrings.sendFeedback), 'help', undefined, 'freestyler.feedback');
+    const helpButton = new UI.Toolbar.ToolbarButton(i18nString(UIStringsTemp.sendFeedback), 'help', undefined, 'freestyler.feedback');
     helpButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(DOGFOOD_INFO);
     });
@@ -88,11 +83,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
             UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         this.#aidaClient = aidaClient;
         this.#contentContainer = this.contentElement.createChild('div', 'freestyler-chat-ui-container');
-        this.#agent = new FreestylerAgent({
-            aidaClient: this.#aidaClient,
-            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-            confirmSideEffect: this.showConfirmSideEffectUi.bind(this),
-        });
         this.#selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         this.#viewProps = {
             state: this.#consentViewAcceptedSetting.get() ? "chat-view" /* FreestylerChatUiState.CHAT_VIEW */ :
@@ -102,20 +92,20 @@ export class FreestylerPanel extends UI.Panel.Panel {
             inspectElementToggled: this.#toggleSearchElementAction.toggled(),
             selectedNode: this.#selectedNode,
             isLoading: false,
-            onTextSubmit: this.#handleTextSubmit.bind(this),
+            onTextSubmit: this.#startConversation.bind(this),
             onInspectElementClick: this.#handleSelectElementClick.bind(this),
-            onRateClick: this.#handleRateClick.bind(this),
             onFeedbackSubmit: this.#handleFeedbackSubmit.bind(this),
             onAcceptConsentClick: this.#handleAcceptConsentClick.bind(this),
             onCancelClick: this.#cancel.bind(this),
             onFixThisIssueClick: () => {
-                void this.#handleTextSubmit(FIX_THIS_ISSUE_PROMPT);
+                void this.#startConversation(FIX_THIS_ISSUE_PROMPT, true);
             },
         };
         this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.Toggled */, ev => {
             this.#viewProps.inspectElementToggled = ev.data;
             this.doUpdate();
         });
+        this.#agent = this.#createAgent();
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, ev => {
             if (this.#viewProps.selectedNode === ev.data) {
                 return;
@@ -124,6 +114,13 @@ export class FreestylerPanel extends UI.Panel.Panel {
             this.doUpdate();
         });
         this.doUpdate();
+    }
+    #createAgent() {
+        return new FreestylerAgent({
+            aidaClient: this.#aidaClient,
+            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
+            confirmSideEffect: this.showConfirmSideEffectUi.bind(this),
+        });
     }
     static async instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -156,23 +153,13 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #handleSelectElementClick() {
         void this.#toggleSearchElementAction.execute();
     }
-    #handleRateClick(rpcId, rating) {
-        this.#aidaClient.registerClientEvent({
+    #handleFeedbackSubmit(rpcId, rating, feedback) {
+        void this.#aidaClient.registerClientEvent({
             corresponding_aida_rpc_global_id: rpcId,
             disable_user_content_logging: !this.#serverSideLoggingEnabled,
             do_conversation_client_event: {
                 user_feedback: {
                     sentiment: rating,
-                },
-            },
-        });
-    }
-    #handleFeedbackSubmit(rpcId, feedback) {
-        this.#aidaClient.registerClientEvent({
-            corresponding_aida_rpc_global_id: rpcId,
-            disable_user_content_logging: !this.#serverSideLoggingEnabled,
-            do_conversation_client_event: {
-                user_feedback: {
                     user_input: {
                         comment: feedback,
                     },
@@ -202,7 +189,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #clearMessages() {
         this.#viewProps.messages = [];
         this.#viewProps.isLoading = false;
-        this.#agent.resetHistory();
+        this.#agent = this.#createAgent();
         this.#cancel();
         this.doUpdate();
     }
@@ -213,7 +200,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
         this.#viewProps.isLoading = false;
         this.doUpdate();
     }
-    async #handleTextSubmit(text) {
+    async #startConversation(text, isFixQuery = false) {
         this.#viewProps.messages.push({
             entity: "user" /* ChatMessageEntity.USER */,
             text,
@@ -232,9 +219,10 @@ export class FreestylerPanel extends UI.Panel.Panel {
         const signal = this.#runAbortController.signal;
         signal.addEventListener('abort', () => {
             systemMessage.rpcId = undefined;
-            systemMessage.steps.push({ step: Step.ERROR, text: i18nString(TempUIStrings.stoppedResponse) });
+            systemMessage.suggestingFix = false;
+            systemMessage.steps.push({ step: Step.ERROR, text: i18nString(UIStringsTemp.stoppedResponse) });
         });
-        for await (const data of this.#agent.run(text, { signal })) {
+        for await (const data of this.#agent.run(text, { signal, isFixQuery })) {
             if (data.step === Step.QUERYING) {
                 systemMessage = {
                     entity: "model" /* ChatMessageEntity.MODEL */,
@@ -243,6 +231,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 };
                 this.#viewProps.messages.push(systemMessage);
                 this.doUpdate();
+                this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
                 continue;
             }
             if (data.step === Step.ANSWER || data.step === Step.ERROR) {
@@ -251,6 +240,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
             systemMessage.rpcId = data.rpcId;
             systemMessage.steps.push(data);
             this.doUpdate();
+            this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
         }
     }
 }

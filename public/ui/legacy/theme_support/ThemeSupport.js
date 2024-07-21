@@ -175,6 +175,7 @@ export class ThemeSupport extends EventTarget {
     }
     #fetchColorsAndApplyHostTheme(document) {
         if (Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
+            this.#applyThemeToDocument(document);
             return;
         }
         const oldColorsCssLink = document.querySelector('link[href*=\'//theme/colors.css\']');

@@ -27,5 +27,7 @@ export default {
   user-select: text;
   -webkit-user-drag: auto;
 }
+
+/*# sourceURL=imageView.css */
 `
 };

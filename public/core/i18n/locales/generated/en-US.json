@@ -254,6 +254,9 @@
   "core/sdk/DebuggerModel.ts | closure": {
     "message": "Closure"
   },
+  "core/sdk/DebuggerModel.ts | exception": {
+    "message": "Exception"
+  },
   "core/sdk/DebuggerModel.ts | expression": {
     "message": "Expression"
   },
@@ -265,6 +268,9 @@
   },
   "core/sdk/DebuggerModel.ts | module": {
     "message": "Module"
+  },
+  "core/sdk/DebuggerModel.ts | returnValue": {
+    "message": "Return value"
   },
   "core/sdk/DebuggerModel.ts | script": {
     "message": "Script"
@@ -923,6 +929,9 @@
   "entrypoints/main/main-meta.ts | browserLanguage": {
     "message": "Browser UI language"
   },
+  "entrypoints/main/main-meta.ts | browserPreference": {
+    "message": "Browser preference"
+  },
   "entrypoints/main/main-meta.ts | cancelSearch": {
     "message": "Cancel search"
   },
@@ -1010,17 +1019,14 @@
   "entrypoints/main/main-meta.ts | searchOnEnterCommand": {
     "message": "Disable search as you type (press Enter to search)"
   },
+  "entrypoints/main/main-meta.ts | switchToBrowserPreferredColor": {
+    "message": "Switch to browser's preferred color theme"
+  },
   "entrypoints/main/main-meta.ts | switchToDarkTheme": {
     "message": "Switch to dark theme"
   },
   "entrypoints/main/main-meta.ts | switchToLightTheme": {
     "message": "Switch to light theme"
-  },
-  "entrypoints/main/main-meta.ts | switchToSystemPreferredColor": {
-    "message": "Switch to system preferred color theme"
-  },
-  "entrypoints/main/main-meta.ts | systemPreference": {
-    "message": "System preference"
   },
   "entrypoints/main/main-meta.ts | theme": {
     "message": "Theme:"
@@ -6443,117 +6449,6 @@
   "panels/explain/explain-meta.ts | wrongLocale": {
     "message": "To use this feature, update your Language preference in DevTools Settings to English."
   },
-  "panels/freestyler/components/FreestylerChatUi.ts | acceptButtonTitle": {
-    "message": "Accept"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | cancelButtonTitle": {
-    "message": "Cancel"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | consentScreenHeading": {
-    "message": "Things to consider"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | consentTextAiDisclaimer": {
-    "message": "This feature uses AI and won't always get it right."
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | consentTextDataDisclaimer": {
-    "message": "Your inputs and the information from the page you are using this feature for are sent to Google."
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | consentTextVisibilityDisclaimer": {
-    "message": "Data may be seen by trained reviewers to improve this feature."
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | dogfood": {
-    "message": "Dogfood"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | emptyStateText": {
-    "message": "How can I help you?"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | feedbackLink": {
-    "message": "Send Feedback"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | fixThisIssue": {
-    "message": "Fix this issue"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | inputDisclaimer": {
-    "message": "Freestyler may display inaccurate information and may not get it right"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | inputPlaceholder": {
-    "message": "Ask a question about the selected element"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | negativeSideEffectConfirmation": {
-    "message": "Cancel"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | notLoggedIn": {
-    "message": "This feature is only available when you sign into Chrome with your Google account."
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | offline": {
-    "message": "Check your internet connection and try again."
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | positiveSideEffectConfirmation": {
-    "message": "Execute"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | selectAnElement": {
-    "message": "Select an element"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | sendButtonTitle": {
-    "message": "Send"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | sideEffectConfirmationDescription": {
-    "message": "The code contains side effects. Do you wish to continue?"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | syncIsOff": {
-    "message": "This feature requires you to turn on Chrome sync."
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | thumbsDown": {
-    "message": "Thumbs down"
-  },
-  "panels/freestyler/components/FreestylerChatUi.ts | thumbsUp": {
-    "message": "Thumbs up"
-  },
-  "panels/freestyler/components/ProvideFeedback.ts | close": {
-    "message": "Close"
-  },
-  "panels/freestyler/components/ProvideFeedback.ts | disclaimer": {
-    "message": "Feedback submitted will also include your conversation."
-  },
-  "panels/freestyler/components/ProvideFeedback.ts | provideFeedbackPlaceholder": {
-    "message": "Provide additional feedback"
-  },
-  "panels/freestyler/components/ProvideFeedback.ts | submit": {
-    "message": "Submit"
-  },
-  "panels/freestyler/components/ProvideFeedback.ts | thumbsDown": {
-    "message": "Thumbs down"
-  },
-  "panels/freestyler/components/ProvideFeedback.ts | thumbsUp": {
-    "message": "Thumbs up"
-  },
-  "panels/freestyler/components/ProvideFeedback.ts | whyThisRating": {
-    "message": "Why did you choose this rating? (optional)"
-  },
-  "panels/freestyler/freestyler-meta.ts | askFreestyler": {
-    "message": "Ask Freestyler"
-  },
-  "panels/freestyler/freestyler-meta.ts | enableFreestyler": {
-    "message": "Enable Freestyler"
-  },
-  "panels/freestyler/freestyler-meta.ts | freestyler": {
-    "message": "Freestyler"
-  },
-  "panels/freestyler/freestyler-meta.ts | showFreestyler": {
-    "message": "Show Freestyler"
-  },
-  "panels/freestyler/FreestylerPanel.ts | clearMessages": {
-    "message": "Clear messages"
-  },
-  "panels/freestyler/FreestylerPanel.ts | help": {
-    "message": "Help"
-  },
-  "panels/freestyler/FreestylerPanel.ts | sendFeedback": {
-    "message": "Send feedback"
-  },
-  "panels/freestyler/FreestylerPanel.ts | stoppedResponse": {
-    "message": "You stopped this response"
-  },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "Blocked Resource"
   },
@@ -7052,9 +6947,6 @@
   "panels/layer_viewer/Layers3DView.ts | checkSForPossibleReasons": {
     "message": "Check {PH1} for possible reasons."
   },
-  "panels/layer_viewer/Layers3DView.ts | deprecationWarning": {
-    "message": "Layers panel might be deprecated soon. Share your thoughts and concerns before we decide."
-  },
   "panels/layer_viewer/Layers3DView.ts | dLayersView": {
     "message": "3D Layers View"
   },
@@ -7066,9 +6958,6 @@
   },
   "panels/layer_viewer/Layers3DView.ts | resetView": {
     "message": "Reset View"
-  },
-  "panels/layer_viewer/Layers3DView.ts | sendFeedback": {
-    "message": "Send feedback"
   },
   "panels/layer_viewer/Layers3DView.ts | showPaintProfiler": {
     "message": "Show Paint Profiler"
@@ -8498,29 +8387,29 @@
   "panels/network/NetworkLogView.ts | copyAllAsPowershell": {
     "message": "Copy all as PowerShell"
   },
-  "panels/network/NetworkLogView.ts | copyAllFilteredAsCurl": {
-    "message": "Copy all (filtered) as cURL"
+  "panels/network/NetworkLogView.ts | copyAllListedAsCurl": {
+    "message": "Copy all listed as cURL"
   },
-  "panels/network/NetworkLogView.ts | copyAllFilteredAsCurlBash": {
-    "message": "Copy all (filtered) as cURL (bash)"
+  "panels/network/NetworkLogView.ts | copyAllListedAsCurlBash": {
+    "message": "Copy all listed as cURL (bash)"
   },
-  "panels/network/NetworkLogView.ts | copyAllFilteredAsCurlCmd": {
-    "message": "Copy all (filtered) as cURL (cmd)"
+  "panels/network/NetworkLogView.ts | copyAllListedAsCurlCmd": {
+    "message": "Copy all listed as cURL (cmd)"
   },
-  "panels/network/NetworkLogView.ts | copyAllFilteredAsFetch": {
-    "message": "Copy all (filtered) as fetch"
+  "panels/network/NetworkLogView.ts | copyAllListedAsFetch": {
+    "message": "Copy all listed as fetch"
   },
-  "panels/network/NetworkLogView.ts | copyAllFilteredAsHar": {
-    "message": "Copy all (filtered) as HAR"
+  "panels/network/NetworkLogView.ts | copyAllListedAsHar": {
+    "message": "Copy all listed as HAR"
   },
-  "panels/network/NetworkLogView.ts | copyAllFilteredAsNodejsFetch": {
-    "message": "Copy all (filtered) as fetch (Node.js)"
+  "panels/network/NetworkLogView.ts | copyAllListedAsNodejsFetch": {
+    "message": "Copy all listed as fetch (Node.js)"
   },
-  "panels/network/NetworkLogView.ts | copyAllFilteredAsPowershell": {
-    "message": "Copy all (filtered) as PowerShell"
+  "panels/network/NetworkLogView.ts | copyAllListedAsPowershell": {
+    "message": "Copy all listed as PowerShell"
   },
-  "panels/network/NetworkLogView.ts | copyAllFilteredURLs": {
-    "message": "Copy all (filtered) URLs"
+  "panels/network/NetworkLogView.ts | copyAllListedURLs": {
+    "message": "Copy all listed URLs"
   },
   "panels/network/NetworkLogView.ts | copyAllURLs": {
     "message": "Copy all URLs"
@@ -9508,9 +9397,6 @@
   },
   "panels/profiler/HeapSnapshotView.ts | baseSnapshot": {
     "message": "Base snapshot"
-  },
-  "panels/profiler/HeapSnapshotView.ts | captureNumericValue": {
-    "message": "Include numerical values in capture"
   },
   "panels/profiler/HeapSnapshotView.ts | code": {
     "message": "Code"
@@ -11816,9 +11702,6 @@
   "panels/sources/ScopeChainSidebarPane.ts | closureS": {
     "message": "Closure ({PH1})"
   },
-  "panels/sources/ScopeChainSidebarPane.ts | exception": {
-    "message": "Exception"
-  },
   "panels/sources/ScopeChainSidebarPane.ts | loading": {
     "message": "Loading..."
   },
@@ -11827,9 +11710,6 @@
   },
   "panels/sources/ScopeChainSidebarPane.ts | noVariables": {
     "message": "No variables"
-  },
-  "panels/sources/ScopeChainSidebarPane.ts | returnValue": {
-    "message": "Return value"
   },
   "panels/sources/SnippetsPlugin.ts | ctrlenter": {
     "message": "Ctrl+Enter"
@@ -12404,6 +12284,111 @@
   "panels/timeline/components/InteractionBreakdown.ts | processingDuration": {
     "message": "Processing duration"
   },
+  "panels/timeline/components/LiveMetricsView.ts | allDevices": {
+    "message": "All devices"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | auto": {
+    "message": "Auto ({PH1})"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | betweenRange": {
+    "message": "({PH1}-{PH2})"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | clsTitle": {
+    "message": "Cumulative Layout Shift (CLS)"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | cpuThrottling": {
+    "message": "CPU throttling:"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | desktop": {
+    "message": "Desktop"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | deviceType": {
+    "message": "Device type:"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | field75thPercentile": {
+    "message": "Field 75th Percentile"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | fieldData": {
+    "message": "Field data"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | good": {
+    "message": "Good"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | gtRange": {
+    "message": "(>{PH1})"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | inpTitle": {
+    "message": "Interaction to Next Paint (INP)"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | interactions": {
+    "message": "Interactions"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | lcpTitle": {
+    "message": "Largest Contentful Paint (LCP)"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | leqRange": {
+    "message": "(≤{PH1})"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | loadingOption": {
+    "message": "{PH1} - Loading…"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | localAndFieldMetrics": {
+    "message": "Local and Field Metrics"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | localValue": {
+    "message": "Local"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | mobile": {
+    "message": "Mobile"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | needsDataOption": {
+    "message": "{PH1} - No data"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | needsImprovement": {
+    "message": "Needs improvement"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | networkThrottling": {
+    "message": "Network throttling:"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
+    "message": "Next steps"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | originOption": {
+    "message": "Origin"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | originOptionWithKey": {
+    "message": "Origin ({PH1})"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | percentage": {
+    "message": "{PH1}%"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | poor": {
+    "message": "Poor"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | relatedNode": {
+    "message": "Related node"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | tablet": {
+    "message": "Tablet"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | throttling": {
+    "message": "Throttling"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | tryDisablingThrottling": {
+    "message": "Try disabling network throttling to approximate the network latency measured by real users."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | tryUsingThrottling": {
+    "message": "Try using {PH1} network throttling to approximate the network latency measured by real users."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | urlOption": {
+    "message": "URL"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | urlOptionWithKey": {
+    "message": "URL ({PH1})"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | urlOrOrigin": {
+    "message": "URL/Origin:"
+  },
   "panels/timeline/components/NetworkRequestDetails.ts | contentDownloading": {
     "message": "Content downloading"
   },
@@ -12866,6 +12851,12 @@
   "panels/timeline/EventUICategory.ts | xhrReadyStateChange": {
     "message": "XHR Ready State Change"
   },
+  "panels/timeline/ExtensionTrackAppender.ts | customTrackDescription": {
+    "message": "This is a custom track added by a third party."
+  },
+  "panels/timeline/ExtensionTrackAppender.ts | customTrackName": {
+    "message": "{PH1} — Custom Track"
+  },
   "panels/timeline/GPUTrackAppender.ts | gpu": {
     "message": "GPU"
   },
@@ -13199,6 +13190,9 @@
   "panels/timeline/TimelinePanel.ts | NetworkThrottlingIsEnabled": {
     "message": "- Network throttling is enabled"
   },
+  "panels/timeline/TimelinePanel.ts | performanceExtension": {
+    "message": "Extension data"
+  },
   "panels/timeline/TimelinePanel.ts | processingProfile": {
     "message": "Processing profile…"
   },
@@ -13219,6 +13213,9 @@
   },
   "panels/timeline/TimelinePanel.ts | SelectorStatsEnabled": {
     "message": "- Selector stats is enabled"
+  },
+  "panels/timeline/TimelinePanel.ts | showDataAddedByExtensions": {
+    "message": "Show data added by extensions of the Performance panel"
   },
   "panels/timeline/TimelinePanel.ts | showMemoryTimeline": {
     "message": "Show memory timeline"

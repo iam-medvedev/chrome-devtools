@@ -25,7 +25,7 @@ styles.replaceSync(
   width: 100%;
   height: 100%;
   align-items: center;
-  overflow: auto;
+  overflow: hidden;
 }
 
 /*# sourceURL=./freestylerPanel.css */

@@ -150,11 +150,17 @@ export class VariableRenderer {
                 jslogContext: 'elements.css-var',
             });
         }
-        if (!computedValue || !Common.Color.parse(computedValue)) {
+        const color = computedValue && Common.Color.parse(computedValue);
+        if (!color) {
             return [varSwatch];
         }
-        const colorSwatch = new ColorRenderer(this.#treeElement).renderColorSwatch(computedValue, varSwatch);
+        const colorSwatch = new ColorRenderer(this.#treeElement).renderColorSwatch(color, varSwatch);
         context.addControl('color', colorSwatch);
+        if (fromFallback) {
+            renderedFallback?.cssControls.get('color')?.forEach(innerSwatch => innerSwatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, ev => {
+                colorSwatch.setColor(ev.data.color);
+            }));
+        }
         return [colorSwatch];
     }
     get #pane() {
@@ -221,16 +227,23 @@ export class ColorRenderer {
     }
     render(match, context) {
         const { valueChild, cssControls } = this.#getValueChild(match, context);
-        let color = context.matchedResult.getComputedText(match.node);
-        if (match.node.name === 'CallExpression' && color.match(/^[^)]*\(\W*from\W+/) &&
-            !context.matchedResult.hasUnresolvedVars(match.node) && CSS.supports('color', color)) {
+        let colorText = context.matchedResult.getComputedText(match.node);
+        // Evaluate relative color values
+        if (match.node.name === 'CallExpression' && colorText.match(/^[^)]*\(\W*from\W+/) &&
+            !context.matchedResult.hasUnresolvedVars(match.node) && CSS.supports('color', colorText)) {
             const fakeSpan = document.body.appendChild(document.createElement('span'));
-            fakeSpan.style.backgroundColor = color;
-            color = window.getComputedStyle(fakeSpan).backgroundColor?.toString() || color;
+            fakeSpan.style.backgroundColor = colorText;
+            colorText = window.getComputedStyle(fakeSpan).backgroundColor?.toString() || colorText;
             fakeSpan.remove();
+        }
+        // Now try render a color swatch if the result is parsable.
+        const color = Common.Color.parse(colorText);
+        if (!color) {
+            return [document.createTextNode(colorText)];
         }
         const swatch = this.renderColorSwatch(color, valueChild);
         context.addControl('color', swatch);
+        // For hsl/hwb colors, hook up the angle swatch for the hue.
         if (cssControls && match.node.name === 'CallExpression' &&
             context.ast.text(match.node.getChild('Callee')).match(/^(hsla?|hwba?)/)) {
             const [angle] = cssControls.get('angle') ?? [];
@@ -254,24 +267,23 @@ export class ColorRenderer {
         }
         return [swatch];
     }
-    renderColorSwatch(text, valueChild) {
+    renderColorSwatch(color, valueChild) {
         const editable = this.treeElement.editable();
         const shiftClickMessage = i18nString(UIStrings.shiftClickToChangeColorFormat);
         const tooltip = editable ? i18nString(UIStrings.openColorPickerS, { PH1: shiftClickMessage }) : '';
-        const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
+        const swatch = new InlineEditor.ColorSwatch.ColorSwatch(tooltip);
         swatch.setReadonly(!editable);
-        swatch.renderColor(text, editable, tooltip);
+        if (color) {
+            swatch.renderColor(color);
+        }
         if (!valueChild) {
             valueChild = swatch.createChild('span');
-            const color = swatch.getColor();
-            valueChild.textContent =
-                color ? (color.getAuthoredText() ?? color.asString(swatch.getFormat() ?? undefined)) : text;
+            if (color) {
+                valueChild.textContent = color.getAuthoredText() ?? color.asString();
+            }
         }
         swatch.appendChild(valueChild);
-        const onColorChanged = (event) => {
-            const { data } = event;
-            swatch.firstElementChild && swatch.firstElementChild.remove();
-            swatch.createChild('span').textContent = data.text;
+        const onColorChanged = () => {
             void this.treeElement.applyStyleText(this.treeElement.renderedPropertyText(), false);
         };
         swatch.addEventListener(InlineEditor.ColorSwatch.ClickEvent.eventName, () => {
@@ -281,20 +293,10 @@ export class ColorRenderer {
         if (editable) {
             const swatchIcon = new ColorSwatchPopoverIcon(this.treeElement, this.treeElement.parentPane().swatchPopoverHelper(), swatch);
             swatchIcon.addEventListener("colorchanged" /* ColorSwatchPopoverIconEvents.ColorChanged */, ev => {
-                // TODO(crbug.com/1402233): Is it really okay to dispatch an event from `Swatch` here?
-                // This needs consideration as current structure feels a bit different:
-                // There are: ColorSwatch, ColorSwatchPopoverIcon, and Spectrum
-                // * Our entry into the Spectrum is `ColorSwatch` and `ColorSwatch` is able to
-                // update the color too. (its format at least, don't know the difference)
-                // * ColorSwatchPopoverIcon is a helper to show/hide the Spectrum popover
-                // * Spectrum is the color picker
-                //
-                // My idea is: merge `ColorSwatch` and `ColorSwatchPopoverIcon`
-                // and emit `ColorChanged` event whenever color is changed.
-                // Until then, this is a hack to kind of emulate the behavior described above
-                // `swatch` is dispatching its own ColorChangedEvent with the changed
-                // color text whenever the color changes.
-                swatch.dispatchEvent(new InlineEditor.ColorSwatch.ColorChangedEvent(ev.data));
+                const color = Common.Color.parse(ev.data);
+                if (color) {
+                    swatch.setColorText(color);
+                }
             });
             void this.#addColorContrastInfo(swatchIcon);
         }
@@ -325,21 +327,29 @@ export class LightDarkColorRenderer {
         content.appendChild(document.createTextNode(', '));
         const dark = content.appendChild(document.createElement('span'));
         content.appendChild(document.createTextNode(')'));
-        Renderer.renderInto(match.light, context, light);
-        Renderer.renderInto(match.dark, context, dark);
+        const { cssControls: lightControls } = Renderer.renderInto(match.light, context, light);
+        const { cssControls: darkControls } = Renderer.renderInto(match.dark, context, dark);
         if (context.matchedResult.hasUnresolvedVars(match.node)) {
             return [content];
         }
-        const colorSwatch = new ColorRenderer(this.#treeElement).renderColorSwatch(match.text, content);
+        const color = Common.Color.parse(context.matchedResult.getComputedTextRange(match.light[0], match.light[match.light.length - 1]));
+        if (!color) {
+            return [content];
+        }
+        // Pass an undefined color here to insert a placeholder swatch that will be filled in from the async
+        // applyColorScheme below.
+        const colorSwatch = new ColorRenderer(this.#treeElement).renderColorSwatch(undefined, content);
         context.addControl('color', colorSwatch);
-        void this.applyColorScheme(match, context, colorSwatch, light, dark);
+        void this.applyColorScheme(match, context, colorSwatch, light, dark, lightControls, darkControls);
         return [colorSwatch];
     }
-    async applyColorScheme(match, context, colorSwatch, light, dark) {
+    async applyColorScheme(match, context, colorSwatch, light, dark, lightControls, darkControls) {
         const activeColor = await this.#activeColor(match);
         if (!activeColor) {
             return;
         }
+        const activeColorSwatches = (activeColor === match.light ? lightControls : darkControls).get('color');
+        activeColorSwatches?.forEach(swatch => swatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, ev => colorSwatch.setColor(ev.data.color)));
         const inactiveColor = (activeColor === match.light) ? dark : light;
         const colorText = context.matchedResult.getComputedTextRange(activeColor[0], activeColor[activeColor.length - 1]);
         const color = colorText && Common.Color.parse(colorText);
@@ -384,7 +394,7 @@ export class ColorMixRenderer {
             if (node instanceof InlineEditor.ColorMixSwatch.ColorMixSwatch ||
                 node instanceof InlineEditor.ColorSwatch.ColorSwatch) {
                 if (node instanceof InlineEditor.ColorSwatch.ColorSwatch) {
-                    node.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, ev => onChange(ev.data.text));
+                    node.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, ev => onChange(ev.data.color.getAuthoredText() ?? ev.data.color.asString()));
                 }
                 else {
                     node.addEventListener("colorChanged" /* InlineEditor.ColorMixSwatch.Events.ColorChanged */, ev => onChange(ev.data.text));
@@ -518,13 +528,6 @@ export class LinkableNameRenderer {
                     metric: null,
                     ruleBlock: '@font-palette-values',
                     isDefined: this.#treeElement.matchedStyles().fontPaletteValuesRule()?.name().text === match.text,
-                };
-            case "position-fallback" /* LinkableNameProperties.PositionFallback */:
-                return {
-                    jslogContext: 'css-position-fallback',
-                    metric: 9 /* Host.UserMetrics.SwatchType.PositionFallbackLink */,
-                    ruleBlock: '@position-fallback',
-                    isDefined: Boolean(this.#treeElement.matchedStyles().positionFallbackRules().find(pf => pf.name().text === match.text)),
                 };
             case "position-try" /* LinkableNameProperties.PositionTry */:
             case "position-try-options" /* LinkableNameProperties.PositionTryOptions */:

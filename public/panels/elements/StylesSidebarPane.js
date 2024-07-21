@@ -54,7 +54,7 @@ import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import * as LayersWidget from './LayersWidget.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
-import { BlankStylePropertiesSection, FontPaletteValuesRuleSection, HighlightPseudoStylePropertiesSection, KeyframePropertiesSection, PositionTryRuleSection, RegisteredPropertiesSection, StylePropertiesSection, TryRuleSection, } from './StylePropertiesSection.js';
+import { BlankStylePropertiesSection, FontPaletteValuesRuleSection, HighlightPseudoStylePropertiesSection, KeyframePropertiesSection, PositionTryRuleSection, RegisteredPropertiesSection, StylePropertiesSection, } from './StylePropertiesSection.js';
 import { StylePropertyHighlighter } from './StylePropertyHighlighter.js';
 import { activeHints } from './StylePropertyTreeElement.js';
 import stylesSidebarPaneStyles from './stylesSidebarPane.css.js';
@@ -977,20 +977,10 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             });
             blocks.push(block);
         }
-        for (const positionFallbackRule of matchedStyles.positionFallbackRules()) {
-            const block = SectionBlock.createPositionFallbackBlock(positionFallbackRule.name().text);
-            for (const tryRule of positionFallbackRule.tryRules()) {
-                this.idleCallbackManager.schedule(() => {
-                    block.sections.push(new TryRuleSection(this, matchedStyles, tryRule.style, sectionIdx, computedStyles, parentsComputedStyles));
-                    sectionIdx++;
-                });
-            }
-            blocks.push(block);
-        }
         for (const positionTryRule of matchedStyles.positionTryRules()) {
             const block = SectionBlock.createPositionTryBlock(positionTryRule.name().text);
             this.idleCallbackManager.schedule(() => {
-                block.sections.push(new PositionTryRuleSection(this, matchedStyles, positionTryRule.style, sectionIdx));
+                block.sections.push(new PositionTryRuleSection(this, matchedStyles, positionTryRule.style, sectionIdx, positionTryRule.active()));
                 sectionIdx++;
             });
             blocks.push(block);
@@ -1414,13 +1404,6 @@ export class SectionBlock {
         const separatorElement = document.createElement('div');
         separatorElement.className = 'sidebar-separator';
         separatorElement.textContent = `@font-palette-values ${name}`;
-        return new SectionBlock(separatorElement);
-    }
-    static createPositionFallbackBlock(positionFallbackName) {
-        const separatorElement = document.createElement('div');
-        separatorElement.className = 'sidebar-separator';
-        separatorElement.setAttribute('jslog', `${VisualLogging.sectionHeader('position-fallback')}`);
-        separatorElement.textContent = `@position-fallback ${positionFallbackName}`;
         return new SectionBlock(separatorElement);
     }
     static createPositionTryBlock(positionTryName) {

@@ -65,5 +65,7 @@ export default {
   --color-grid-selected: var(--sys-color-surface-variant);
   --color-grid-hovered: var(--sys-color-state-hover-on-subtle);
 }
+
+/*# sourceURL=applicationColorTokens.css */
 `
 };

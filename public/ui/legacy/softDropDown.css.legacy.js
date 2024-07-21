@@ -42,5 +42,7 @@ export default {
     background-color: Highlight;
   }
 }
+
+/*# sourceURL=softDropDown.css */
 `
 };

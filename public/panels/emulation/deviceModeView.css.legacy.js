@@ -379,5 +379,7 @@ export default {
   top: -15px;
   transform: rotate(270deg);
 }
+
+/*# sourceURL=deviceModeView.css */
 `
 };

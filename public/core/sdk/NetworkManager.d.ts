@@ -256,6 +256,12 @@ export interface Conditions {
     packetReordering?: boolean;
     title: string | (() => string);
     i18nTitleKey?: string;
+    /**
+     * RTT values are multiplied by adjustment factors to make DevTools' emulation more accurate.
+     * This value represents the RTT value *before* the adjustment factor is applied.
+     * @see https://docs.google.com/document/d/10lfVdS1iDWCRKQXPfbxEn4Or99D64mvNlugP1AQuFlE/edit for historical context.
+     */
+    targetLatency?: number;
 }
 export interface BlockedPattern {
     url: string;

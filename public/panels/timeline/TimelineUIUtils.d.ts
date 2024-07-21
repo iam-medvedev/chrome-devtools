@@ -9,10 +9,10 @@ type LinkifyLocationOptions = {
     scriptId: Protocol.Runtime.ScriptId | null;
     url: string;
     lineNumber: number;
-    columnNumber?: number;
-    isFreshRecording?: boolean;
     target: SDK.Target.Target | null;
     linkifier: LegacyComponents.Linkifier.Linkifier;
+    isFreshRecording?: boolean;
+    columnNumber?: number;
 };
 export declare class TimelineUIUtils {
     static frameDisplayName(frame: Protocol.Runtime.CallFrame): string;

@@ -206,7 +206,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             tabStop: options?.tabStop,
             inlineFrameIndex: options?.inlineFrameIndex ?? 0,
             userMetric: options?.userMetric,
-            jslogContext: options?.jslogContext || 'script-source-url',
+            jslogContext: options?.jslogContext || 'script-location',
         };
         const { columnNumber, className = '' } = linkifyURLOptions;
         if (sourceURL) {
@@ -315,7 +315,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         console.assert(!target.isDisposed());
         // All targets that can report stack traces also have a debugger model.
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
-        const { link, linkInfo } = Linkifier.createLink('', '');
+        const { link, linkInfo } = Linkifier.createLink('', '', { jslogContext: 'script-location' });
         linkInfo.enableDecorator = this.useLinkDecorator;
         linkInfo.fallback = fallbackAnchor;
         const linkDisplayOptions = { showColumnNumber: false };
