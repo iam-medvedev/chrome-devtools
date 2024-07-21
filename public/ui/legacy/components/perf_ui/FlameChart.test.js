@@ -659,7 +659,7 @@ describeWithEnvironment('FlameChart', () => {
                 }
                 const context = chartInstance.getCanvas().getContext('2d');
                 const labelWidth = chartInstance.labelWidthForGroup(context, provider.timelineData()?.groups[0]);
-                // Start of the view (before the edit icon).
+                // Start of the view
                 assert.deepEqual(chartInstance.coordinatesToGroupIndexAndHoverType(0, 17), { groupIndex: 0, hoverType: "INSIDE_TRACK_HEADER" /* PerfUI.FlameChart.HoverType.INSIDE_TRACK_HEADER */ });
                 // End of the title label, For title label checking, the end is included.
                 const endOfTitle = /* HEADER_LEFT_PADDING */ 6 + labelWidth;

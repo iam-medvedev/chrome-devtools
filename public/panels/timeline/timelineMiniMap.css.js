@@ -24,6 +24,7 @@ styles.replaceSync(
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  box-shadow: var(--drop-shadow-depth-1);
   background: var(--sys-color-cdt-base-container);
 
   &:hover {

@@ -44,6 +44,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import * as Search from '../search/search.js';
+import * as TimelineUtils from '../timeline/utils/utils.js';
 import { NetworkItemView } from './NetworkItemView.js';
 import { NetworkLogView } from './NetworkLogView.js';
 import { NetworkOverview } from './NetworkOverview.js';
@@ -614,6 +615,12 @@ export class NetworkPanel extends UI.Panel.Panel {
             const resource = Bindings.ResourceUtils.resourceForURL(target.url());
             if (resource && resource.request) {
                 appendRevealItem(resource.request);
+            }
+            return;
+        }
+        if (target instanceof TimelineUtils.NetworkRequest.TimelineNetworkRequest) {
+            if (target.request) {
+                appendRevealItem(target.request);
             }
             return;
         }

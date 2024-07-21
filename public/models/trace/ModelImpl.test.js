@@ -107,9 +107,18 @@ describeWithEnvironment('TraceModel', function () {
             hiddenEntries: ['r-1', 'r-2', 'r-3'],
             expandableEntries: ['r-4'],
         };
+        const annotations = {
+            entryLabels: [
+                {
+                    entry: 'r-4',
+                    label: 'entry label',
+                },
+            ],
+        };
         const modifications = {
             entriesModifications,
             initialBreadcrumb,
+            annotations,
         };
         model.overrideModifications(0, modifications);
         // Make sure metadata contains overwritten modifications

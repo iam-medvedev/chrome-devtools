@@ -82,5 +82,7 @@ export default {
     opacity: 100%;
   }
 }
+
+/*# sourceURL=textPrompt.css */
 `
 };

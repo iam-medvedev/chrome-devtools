@@ -167,7 +167,10 @@ export class TimelineController {
         if (!runtimeModel) {
             return;
         }
-        await runtimeModel.checkSideEffectSupport();
+        await runtimeModel.agent.invoke_evaluate({
+            expression: '(async function(){ await 1; })()',
+            throwOnSideEffect: true,
+        });
     }
     traceEventsCollected(events) {
         this.#collectedEvents.push(...events);

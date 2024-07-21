@@ -1,5 +1,5 @@
 import type * as TraceEngine from '../../models/trace/trace.js';
-type ExtensionData = readonly TraceEngine.Types.Extensions.ExtensionTrackData[];
+type ExtensionData = TraceEngine.Handlers.ModelHandlers.ExtensionTraceData.ExtensionTraceData;
 /**
  * This class abstracts the source of extension data out by providing a
  * single access point to the performance panel for extension data.

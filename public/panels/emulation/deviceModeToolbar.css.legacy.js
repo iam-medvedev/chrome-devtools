@@ -18,5 +18,7 @@ export default {
 .device-mode-empty-toolbar-element {
   width: 0;
 }
+
+/*# sourceURL=deviceModeToolbar.css */
 `
 };

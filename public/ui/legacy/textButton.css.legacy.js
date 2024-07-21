@@ -136,5 +136,7 @@ export default {
     border-color: Highlight;
   }
 }
+
+/*# sourceURL=textButton.css */
 `
 };

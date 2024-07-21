@@ -8,25 +8,29 @@ describe('NonDomState', () => {
         const child = {};
         VisualLogging.NonDomState.registerLoggable(parent, { ve: 1, context: '1' });
         VisualLogging.NonDomState.registerLoggable(child, { ve: 1, context: '2' }, parent);
-        assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomState().loggables, [
+        assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(), [
             { loggable: parent, config: { ve: 1, context: '1' }, parent: undefined },
+        ]);
+        assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(parent), [
             { loggable: child, config: { ve: 1, context: '2' }, parent: parent },
         ]);
-        VisualLogging.NonDomState.unregisterLoggable(child);
-        assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomState().loggables, [
+        VisualLogging.NonDomState.unregisterLoggables(parent);
+        assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(parent), []);
+        assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(), [
             { loggable: parent, config: { ve: 1, context: '1' }, parent: undefined },
         ]);
-        VisualLogging.NonDomState.unregisterLoggable(parent);
+        VisualLogging.NonDomState.unregisterLoggables();
+        assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(), []);
     });
     it('prevents external changes to the registry', () => {
         const loggable = {};
         VisualLogging.NonDomState.registerLoggable(loggable, { ve: 1, context: '1' });
-        const loggables = VisualLogging.NonDomState.getNonDomState().loggables;
+        const loggables = VisualLogging.NonDomState.getNonDomLoggables();
         loggables.pop();
-        assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomState().loggables, [
+        assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(), [
             { loggable: loggable, config: { ve: 1, context: '1' }, parent: undefined },
         ]);
-        VisualLogging.NonDomState.unregisterLoggable(loggable);
+        VisualLogging.NonDomState.unregisterLoggables();
     });
 });
 //# sourceMappingURL=NonDomState.test.js.map

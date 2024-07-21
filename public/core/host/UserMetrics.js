@@ -906,7 +906,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["sources-frame-indentation-markers-temporarily-disable"] = 83] = "sources-frame-indentation-markers-temporarily-disable";
     DevtoolsExperiments[DevtoolsExperiments["css-type-component-length-deprecate"] = 85] = "css-type-component-length-deprecate";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-extensions"] = 89] = "timeline-extensions";
     DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";

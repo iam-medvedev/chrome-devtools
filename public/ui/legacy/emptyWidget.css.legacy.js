@@ -35,5 +35,7 @@ export default {
   max-width: 300px;
   flex-shrink: 0;
 }
+
+/*# sourceURL=emptyWidget.css */
 `
 };

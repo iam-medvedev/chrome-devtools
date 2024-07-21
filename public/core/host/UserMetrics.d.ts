@@ -652,7 +652,6 @@ export declare enum DevtoolsExperiments {
     'sources-frame-indentation-markers-temporarily-disable' = 83,
     'css-type-component-length-deprecate' = 85,
     'timeline-show-postmessage-events' = 86,
-    'timeline-extensions' = 89,
     'timeline-enhanced-traces' = 90,
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
@@ -1059,7 +1058,6 @@ export declare const enum SwatchType {
     Flex = 6,
     Angle = 7,
     Length = 8,
-    PositionFallbackLink = 9,
     PositionTryLink = 10,
     MaxValue = 11
 }

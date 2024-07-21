@@ -118,5 +118,7 @@ export default {
     color: HighlightText;
   }
 }
+
+/*# sourceURL=suggestBox.css */
 `
 };

@@ -18,12 +18,12 @@ describeWithEnvironment('ColorPicker aka Spectrum', () => {
     describe('sRGB overlay', () => {
         it('should show sRGB overlay when the format supports display-p3 colors', () => {
             const spectrum = new ColorPicker.Spectrum.Spectrum();
-            spectrum.setColor(displayP3Color, "display-p3" /* Common.Color.Format.DISPLAY_P3 */);
+            spectrum.setColor(displayP3Color);
             assert.isNotNull(spectrum.contentElement.querySelector('devtools-spectrum-srgb-overlay'));
         });
         it('should not show sRGB overlay when the format doesn\'t support display-p3 colors', () => {
             const spectrum = new ColorPicker.Spectrum.Spectrum();
-            spectrum.setColor(rgbColor, "rgb" /* Common.Color.Format.RGB */);
+            spectrum.setColor(rgbColor);
             assert.isNull(spectrum.contentElement.querySelector('devtools-spectrum-srgb-overlay'));
         });
     });

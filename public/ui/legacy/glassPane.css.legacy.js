@@ -75,5 +75,7 @@ export default {
 :host-context(.theme-with-dark-background) .arrow {
   filter: invert(80%);
 }
+
+/*# sourceURL=glassPane.css */
 `
 };

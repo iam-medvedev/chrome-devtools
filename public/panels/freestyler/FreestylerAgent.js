@@ -50,6 +50,7 @@ You then output:
 ANSWER: The element is centered on the page because the parent is a flex container with justify-content set to center.
 
 The example session ends here.`;
+export const FIX_THIS_ISSUE_PROMPT = 'Fix this issue using JavaScript code execution';
 export var Step;
 (function (Step) {
     Step["THOUGHT"] = "thought";
@@ -58,7 +59,6 @@ export var Step;
     Step["ERROR"] = "error";
     Step["QUERYING"] = "querying";
 })(Step || (Step = {}));
-export const FIX_THIS_ISSUE_PROMPT = 'Fix this issue using JavaScript code execution';
 async function executeJsCode(code, { throwOnSideEffect }) {
     const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
     if (!target) {
@@ -89,31 +89,17 @@ async function executeJsCode(code, { throwOnSideEffect }) {
 const MAX_STEPS = 10;
 const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
 /**
- * Error response message to be return whenever a OBSERVATION
- * fails due to some issue.
+ * One agent instance handles one conversation. Create a new agent
+ * instance for a new conversation.
  */
-const getErrorResponse = (message) => {
-    return `Error: ${message}`;
-};
 export class FreestylerAgent {
-    #aidaClient;
-    #chatHistory = new Map();
-    #confirmSideEffect;
-    #execJs;
-    #serverSideLoggingEnabled;
-    constructor({ aidaClient, execJs, confirmSideEffect, serverSideLoggingEnabled }) {
-        this.#aidaClient = aidaClient;
-        this.#execJs = execJs ?? executeJsCode;
-        this.#confirmSideEffect = confirmSideEffect;
-        this.#serverSideLoggingEnabled = serverSideLoggingEnabled ?? false;
-    }
-    static buildRequest(input, preamble, chatHistory, serverSideLoggingEnabled = false) {
+    static buildRequest(opts) {
         const config = Common.Settings.Settings.instance().getHostConfig();
         const request = {
-            input,
-            preamble,
+            input: opts.input,
+            preamble: opts.preamble,
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            chat_history: chatHistory,
+            chat_history: opts.chatHistory,
             client: Host.AidaClient.CLIENT_NAME,
             options: {
                 temperature: config?.devToolsFreestylerDogfood.aidaTemperature ?? 0,
@@ -121,7 +107,8 @@ export class FreestylerAgent {
             },
             metadata: {
                 // TODO: disable logging based on query params.
-                disable_user_content_logging: !serverSideLoggingEnabled,
+                disable_user_content_logging: !(opts.serverSideLoggingEnabled ?? false),
+                string_session_id: opts.sessionId,
             },
             // eslint-disable-next-line @typescript-eslint/naming-convention
             functionality_type: Host.AidaClient.FunctionalityType.CHAT,
@@ -129,12 +116,6 @@ export class FreestylerAgent {
             client_feature: Host.AidaClient.ClientFeature.CHROME_FREESTYLER,
         };
         return request;
-    }
-    get #getHistoryEntry() {
-        return [...this.#chatHistory.values()].flat();
-    }
-    get chatHistoryForTesting() {
-        return this.#getHistoryEntry;
     }
     static parseResponse(response) {
         const lines = response.split('\n');
@@ -191,6 +172,24 @@ export class FreestylerAgent {
         }
         return { thought, action, answer };
     }
+    #aidaClient;
+    #chatHistory = new Map();
+    #serverSideLoggingEnabled;
+    #confirmSideEffect;
+    #execJs;
+    #sessionId = crypto.randomUUID();
+    constructor(opts) {
+        this.#aidaClient = opts.aidaClient;
+        this.#execJs = opts.execJs ?? executeJsCode;
+        this.#confirmSideEffect = opts.confirmSideEffect;
+        this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
+    }
+    get #getHistoryEntry() {
+        return [...this.#chatHistory.values()].flat();
+    }
+    get chatHistoryForTesting() {
+        return this.#getHistoryEntry;
+    }
     async #aidaFetch(request) {
         let response = '';
         let rpcId;
@@ -203,44 +202,49 @@ export class FreestylerAgent {
         }
         return { response, rpcId };
     }
-    resetHistory() {
-        this.#chatHistory = new Map();
-    }
-    async #generateObservation(action, { throwOnSideEffect }) {
+    async #generateObservation(action, { throwOnSideEffect, confirmExecJs: confirm, execJsDeniedMesssage: denyErrorMessage }) {
         const actionExpression = `{${action};((typeof data !== "undefined") ? data : undefined)}`;
         try {
+            const runConfirmed = await (confirm?.call(this, action) ?? Promise.resolve(true));
+            if (!runConfirmed) {
+                throw new Error(denyErrorMessage ?? 'Code execution is not allowed');
+            }
             const result = await this.#execJs(actionExpression, { throwOnSideEffect });
             const byteCount = Platform.StringUtilities.countWtf8Bytes(result);
             if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
-                return getErrorResponse('Output exceeded the maximum allowed length.');
+                throw new Error('Output exceeded the maximum allowed length.');
             }
             return result;
         }
         catch (error) {
-            if (throwOnSideEffect && error instanceof SideEffectError) {
-                const shouldAllowSideEffect = await this.#confirmSideEffect(action);
-                if (!shouldAllowSideEffect) {
-                    return getErrorResponse(error.message);
-                }
+            if (error instanceof SideEffectError) {
                 return await this.#generateObservation(action, {
                     throwOnSideEffect: false,
+                    confirmExecJs: this.#confirmSideEffect,
+                    execJsDeniedMesssage: error.message,
                 });
             }
-            return getErrorResponse(error.message);
+            return `Error: ${error.message}`;
         }
     }
     #runId = 0;
-    async *run(query, options) {
+    async *run(query, options = { isFixQuery: false }) {
         const genericErrorMessage = 'Sorry, I could not help you with this query.';
         const structuredLog = [];
         query = `QUERY: ${query}`;
         const currentRunId = ++this.#runId;
-        options?.signal.addEventListener('abort', () => {
+        options.signal?.addEventListener('abort', () => {
             this.#chatHistory.delete(currentRunId);
         });
         for (let i = 0; i < MAX_STEPS; i++) {
             yield { step: Step.QUERYING };
-            const request = FreestylerAgent.buildRequest(query, preamble, this.#chatHistory.size ? this.#getHistoryEntry : undefined, this.#serverSideLoggingEnabled);
+            const request = FreestylerAgent.buildRequest({
+                input: query,
+                preamble,
+                chatHistory: this.#chatHistory.size ? this.#getHistoryEntry : undefined,
+                serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
+                sessionId: this.#sessionId,
+            });
             let response;
             let rpcId;
             try {
@@ -250,13 +254,13 @@ export class FreestylerAgent {
             }
             catch (err) {
                 debugLog('Error calling the AIDA API', err);
-                if (options?.signal.aborted) {
+                if (options.signal?.aborted) {
                     break;
                 }
                 yield { step: Step.ERROR, text: genericErrorMessage, rpcId };
                 break;
             }
-            if (options?.signal.aborted) {
+            if (options.signal?.aborted) {
                 break;
             }
             debugLog(`Iteration: ${i}`, 'Request', request, 'Response', response);
@@ -286,7 +290,7 @@ export class FreestylerAgent {
                     yield { step: Step.THOUGHT, text: thought, rpcId };
                 }
                 debugLog(`Action to execute: ${action}`);
-                const observation = await this.#generateObservation(action, { throwOnSideEffect: !query.includes(FIX_THIS_ISSUE_PROMPT) });
+                const observation = await this.#generateObservation(action, { throwOnSideEffect: !options.isFixQuery });
                 debugLog(`Action result: ${observation}`);
                 yield { step: Step.ACTION, code: action, output: observation, rpcId };
                 query = `OBSERVATION: ${observation}`;

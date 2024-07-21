@@ -169,5 +169,7 @@ export default {
 :host-context(#sources-panel-sources-view) .toolbar-search {
   flex-wrap: wrap;
 }
+
+/*# sourceURL=searchableView.css */
 `
 };

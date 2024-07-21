@@ -81,11 +81,17 @@ function* decodeOriginalScopeItems(encodedOriginalScope) {
     }
 }
 export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees, names) {
-    const rangeStack = [];
+    // We insert a pseudo range as there could be multiple top-level ranges and we need a root range those can be attached to.
+    const rangeStack = [{
+            start: { line: 0, column: 0 },
+            end: { line: 0, column: 0 },
+            isScope: false,
+            children: [],
+            values: [],
+        }];
     const rangeToStartItem = new Map();
     for (const item of decodeGeneratedRangeItems(encodedGeneratedRange)) {
         if (isRangeStart(item)) {
-            // TODO(crbug.com/40277685): Decode callsite and bindings.
             const range = {
                 start: { line: item.line, column: item.column },
                 end: { line: item.line, column: item.column },
@@ -125,14 +131,13 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
             }
             range.end = { line: item.line, column: item.column };
             resolveBindings(range, names, rangeToStartItem.get(range)?.bindings);
-            if (rangeStack.length === 0) {
-                // We are done. There might be more top-level scopes but we only allow one.
-                return range;
-            }
             rangeStack[rangeStack.length - 1].children.push(range);
         }
     }
-    throw new Error('Malformed generated range encoding');
+    if (rangeStack.length !== 1) {
+        throw new Error('Malformed generated range encoding');
+    }
+    return rangeStack[0].children;
 }
 function resolveBindings(range, names, bindingsForAllVars) {
     if (bindingsForAllVars === undefined) {

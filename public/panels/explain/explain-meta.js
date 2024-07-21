@@ -86,25 +86,22 @@ function isLocaleRestricted() {
     return !devtoolsLocale.locale.startsWith('en-');
 }
 function isAgeRestricted(config) {
-    return config?.devToolsAida?.blockedByAge === true || config?.devToolsConsoleInsights?.blockedByAge === true;
+    return config?.devToolsConsoleInsights?.blockedByAge === true;
 }
 function isRolloutRestricted(config) {
-    return config?.devToolsAida?.blockedByRollout === true || config?.devToolsConsoleInsights?.blockedByRollout === true;
+    return config?.devToolsConsoleInsights?.blockedByRollout === true;
 }
 function isGeoRestricted(config) {
-    return config?.devToolsAida?.blockedByGeo === true || config?.devToolsConsoleInsights?.blockedByGeo === true;
+    return config?.devToolsConsoleInsights?.blockedByGeo === true;
 }
 function isPolicyRestricted(config) {
-    return config?.devToolsAida?.blockedByEnterprisePolicy === true ||
-        config?.devToolsConsoleInsights?.blockedByEnterprisePolicy === true;
+    return config?.devToolsConsoleInsights?.blockedByEnterprisePolicy === true;
 }
 function isOptIn(config) {
     return config?.devToolsConsoleInsights?.optIn === true;
 }
 function isFeatureEnabled(config) {
-    return (config?.devToolsAida?.blockedByFeatureFlag === false ||
-        config?.devToolsConsoleInsights?.blockedByFeatureFlag === false) &&
-        config?.devToolsConsoleInsights?.enabled;
+    return config?.devToolsConsoleInsights?.blockedByFeatureFlag === false;
 }
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,

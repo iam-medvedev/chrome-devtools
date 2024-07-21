@@ -143,12 +143,11 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         const color = this.swatch.getColor();
-        const format = this.swatch.getFormat();
-        if (!color || !format) {
+        if (!color) {
             return;
         }
         this.spectrum = new ColorPicker.Spectrum.Spectrum(this.contrastInfo);
-        this.spectrum.setColor(color, format);
+        this.spectrum.setColor(color);
         this.spectrum.addPalette(this.generateCSSVariablesPalette());
         this.spectrum.addEventListener("SizeChanged" /* ColorPicker.Spectrum.Events.SizeChanged */, this.spectrumResized, this);
         this.spectrum.addEventListener("ColorChanged" /* ColorPicker.Spectrum.Events.ColorChanged */, this.boundSpectrumChanged);

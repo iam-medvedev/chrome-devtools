@@ -57,5 +57,7 @@ div.warning {
 div.error {
   background-color: var(--sys-color-error-bright);
 }
+
+/*# sourceURL=smallBubble.css */
 `
 };

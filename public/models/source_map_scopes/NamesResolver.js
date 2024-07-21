@@ -313,15 +313,16 @@ const resolveScope = async (script, scopeChain) => {
     }
 };
 export const resolveScopeChain = async function (callFrame) {
-    if (!callFrame) {
-        return null;
-    }
     const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
     const scopeChain = await pluginManager.resolveScopeChain(callFrame);
     if (scopeChain) {
         return scopeChain;
     }
-    return callFrame.scopeChain();
+    if (callFrame.script.isWasm()) {
+        return callFrame.scopeChain();
+    }
+    const thisObject = await resolveThisObject(callFrame);
+    return callFrame.scopeChain().map(scope => new ScopeWithSourceMappedVariables(scope, thisObject));
 };
 /**
  * @returns A mapping from original name -> compiled name. If the orignal name is unavailable (e.g. because the compiled name was
@@ -457,9 +458,6 @@ export const resolveExpression = async (callFrame, originalText, uiSourceCode, l
     return await Formatter.FormatterWorkerPool.formatterWorkerPool().evaluatableJavaScriptSubstring(subjectText);
 };
 export const resolveThisObject = async (callFrame) => {
-    if (!callFrame) {
-        return null;
-    }
     const scopeChain = callFrame.scopeChain();
     if (scopeChain.length === 0) {
         return callFrame.thisObject();
@@ -468,14 +466,14 @@ export const resolveThisObject = async (callFrame) => {
     if (!thisMapping) {
         return callFrame.thisObject();
     }
-    const result = await callFrame.evaluate({
+    const result = await callFrame.evaluate(({
         expression: thisMapping,
         objectGroup: 'backtrace',
         includeCommandLineAPI: false,
         silent: true,
         returnByValue: false,
         generatePreview: true,
-    });
+    }));
     if ('exceptionDetails' in result) {
         return !result.exceptionDetails && result.object ? result.object : callFrame.thisObject();
     }
@@ -490,6 +488,53 @@ export const resolveScopeInObject = function (scope) {
     }
     return new RemoteObject(scope);
 };
+/**
+ * Wraps a debugger `Scope` but returns a scope object where variable names are
+ * mapped to their authored name.
+ *
+ * This implementation does not utilize source map "Scopes" information but obtains
+ * original variable names via parsing + mappings + names.
+ */
+class ScopeWithSourceMappedVariables {
+    #debuggerScope;
+    /** The resolved `this` of the current call frame */
+    #thisObject;
+    constructor(scope, thisObject) {
+        this.#debuggerScope = scope;
+        this.#thisObject = thisObject;
+    }
+    callFrame() {
+        return this.#debuggerScope.callFrame();
+    }
+    type() {
+        return this.#debuggerScope.type();
+    }
+    typeName() {
+        return this.#debuggerScope.typeName();
+    }
+    name() {
+        return this.#debuggerScope.name();
+    }
+    range() {
+        return this.#debuggerScope.range();
+    }
+    object() {
+        return resolveScopeInObject(this.#debuggerScope);
+    }
+    description() {
+        return this.#debuggerScope.description();
+    }
+    icon() {
+        return this.#debuggerScope.icon();
+    }
+    extraProperties() {
+        const extraProperties = this.#debuggerScope.extraProperties();
+        if (this.#thisObject && this.type() === "local" /* Protocol.Debugger.ScopeType.Local */) {
+            extraProperties.unshift(new SDK.RemoteObject.RemoteObjectProperty('this', this.#thisObject, undefined, undefined, undefined, undefined, undefined, /* synthetic */ true));
+        }
+        return extraProperties;
+    }
+}
 export class RemoteObject extends SDK.RemoteObject.RemoteObject {
     scope;
     object;

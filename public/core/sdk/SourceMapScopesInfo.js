@@ -52,13 +52,13 @@ export class SourceMapScopesInfo {
      */
     #findGeneratedRangeChain(line, column) {
         const result = [];
-        (function walkRange(range) {
-            if (!contains(range, line, column)) {
-                return;
-            }
-            result.push(range);
-            for (const childRange of range.children) {
-                walkRange(childRange);
+        (function walkRanges(ranges) {
+            for (const range of ranges) {
+                if (!contains(range, line, column)) {
+                    continue;
+                }
+                result.push(range);
+                walkRanges(range.children);
             }
         })(this.#generatedRanges);
         return result;

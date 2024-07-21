@@ -14,12 +14,13 @@ import { Step } from '../FreestylerAgent.js';
 import freestylerChatUiStyles from './freestylerChatUi.css.js';
 import { ProvideFeedback } from './ProvideFeedback.js';
 const DOGFOOD_FEEDBACK_URL = 'https://goo.gle/freestyler-feedback';
+export const DOGFOOD_INFO = 'https://goo.gle/freestyler-dogfood';
 /*
   * TODO(nvitkov): b/346933425
   * Temporary string that should not be translated
   * as they may change often during development.
   */
-const TempUIStrings = {
+const UIStringsTemp = {
     /**
      *@description Placeholder text for the chat UI input.
      */
@@ -27,7 +28,7 @@ const TempUIStrings = {
     /**
      *@description Disclaimer text right after the chat input.
      */
-    inputDisclaimer: 'Freestyler may display inaccurate information and may not get it right',
+    inputDisclaimer: 'Chat messages and data from this page will be sent to Google, reviewed by humans, and used to improve the feature. Do not use on pages with personal or sensitive information. Freestyler may display inaccurate information.',
     /**
      *@description Title for the send icon button.
      */
@@ -77,15 +78,19 @@ const TempUIStrings = {
     /**
      *@description Consent view main text
      */
-    consentTextAiDisclaimer: 'This feature uses AI and won\'t always get it right.',
+    consentTextAiDisclaimer: 'This feature uses AI and might produce inaccurate information.',
     /**
      *@description Consent view data collection text
      */
     consentTextDataDisclaimer: 'Your inputs and the information from the page you are using this feature for are sent to Google.',
     /**
+     *@description Consent view data collection text
+     */
+    consentTextDoNotUseDisclaimer: 'Do not use on pages with personal or sensitive information.',
+    /**
      *@description Consent view data visibility text
      */
-    consentTextVisibilityDisclaimer: 'Data may be seen by trained reviewers to improve this feature.',
+    consentTextVisibilityDisclaimer: 'Data may be seen by human reviewers and can be used to improve this feature.',
     /**
      * @description Side effect confirmation text
      */
@@ -118,13 +123,13 @@ const i18nString = i18n.i18n.lockedString;
 function getInputPlaceholderString(aidaAvailability) {
     switch (aidaAvailability) {
         case Host.AidaClient.AidaAvailability.AVAILABLE:
-            return i18nString(TempUIStrings.inputPlaceholder);
+            return i18nString(UIStringsTemp.inputPlaceholder);
         case Host.AidaClient.AidaAvailability.NO_ACCOUNT_EMAIL:
-            return i18nString(TempUIStrings.notLoggedIn);
+            return i18nString(UIStringsTemp.notLoggedIn);
         case Host.AidaClient.AidaAvailability.NO_ACTIVE_SYNC:
-            return i18nString(TempUIStrings.syncIsOff);
+            return i18nString(UIStringsTemp.syncIsOff);
         case Host.AidaClient.AidaAvailability.NO_INTERNET:
-            return i18nString(TempUIStrings.offline);
+            return i18nString(UIStringsTemp.offline);
     }
 }
 // The model returns multiline code blocks in an erroneous way with the language being in new line.
@@ -173,6 +178,13 @@ export class FreestylerChatUi extends HTMLElement {
         }
         input.focus();
     }
+    scrollToLastMessage() {
+        const message = this.#shadow.querySelector('.chat-message:last-child');
+        if (!message) {
+            return;
+        }
+        message.scrollIntoViewIfNeeded();
+    }
     #handleSubmit = (ev) => {
         ev.preventDefault();
         const input = this.#shadow.querySelector('.chat-input');
@@ -193,11 +205,8 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format off
         return LitHtml.html `<${ProvideFeedback.litTagName}
       .props=${{
-            onRateClick: rating => {
-                this.#props.onRateClick(rpcId, rating);
-            },
-            onFeedbackSubmit: feedback => {
-                this.#props.onFeedbackSubmit(rpcId, feedback);
+            onFeedbackSubmit: (rating, feedback) => {
+                this.#props.onFeedbackSubmit(rpcId, rating, feedback);
             },
         }}
       ></${ProvideFeedback.litTagName}>`;
@@ -236,6 +245,7 @@ export class FreestylerChatUi extends HTMLElement {
             .code=${step.code.trim()}
             .codeLang=${'js'}
             .displayToolbar=${false}
+            .displayNotice=${true}
           ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
           <div class="js-code-output">${step.output}</div>
         </div>
@@ -250,7 +260,7 @@ export class FreestylerChatUi extends HTMLElement {
     #renderSideEffectConfirmationUi(confirmSideEffectDialog) {
         // clang-format off
         return LitHtml.html `<div class="side-effect-confirmation">
-      <p>${i18nString(TempUIStrings.sideEffectConfirmationDescription)}</p>
+      <p>${i18nString(UIStringsTemp.sideEffectConfirmationDescription)}</p>
       <${MarkdownView.CodeBlock.CodeBlock.litTagName}
         .code=${confirmSideEffectDialog.code}
         .codeLang=${'js'}
@@ -263,14 +273,14 @@ export class FreestylerChatUi extends HTMLElement {
             jslogContext: 'accept-execute-code',
         }}
           @click=${() => confirmSideEffectDialog.onAnswer(true)}
-          >${i18nString(TempUIStrings.positiveSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
+          >${i18nString(UIStringsTemp.positiveSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
         <${Buttons.Button.Button.litTagName}
           .data=${{
             variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             jslogContext: 'decline-execute-code',
         }}
           @click=${() => confirmSideEffectDialog.onAnswer(false)}
-        >${i18nString(TempUIStrings.negativeSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
+        >${i18nString(UIStringsTemp.negativeSideEffectConfirmation)}</${Buttons.Button.Button.litTagName}>
       </div>
     </div>`;
         // clang-format on
@@ -300,7 +310,7 @@ export class FreestylerChatUi extends HTMLElement {
                 jslogContext: 'fix-this-issue',
             }}
                   @click=${this.#props.onFixThisIssueClick}
-                >${i18nString(TempUIStrings.fixThisIssue)}</${Buttons.Button.Button.litTagName}>`
+                >${i18nString(UIStringsTemp.fixThisIssue)}</${Buttons.Button.Button.litTagName}>`
             : LitHtml.nothing}
         </div>
         ${shouldShowLoading
@@ -317,7 +327,7 @@ export class FreestylerChatUi extends HTMLElement {
             toggledIconName: 'select-element',
             toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
             toggled: this.#props.inspectElementToggled,
-            title: i18nString(TempUIStrings.selectAnElement),
+            title: i18nString(UIStringsTemp.selectAnElement),
             jslogContext: 'select-element',
         };
         // clang-format off
@@ -338,7 +348,7 @@ export class FreestylerChatUi extends HTMLElement {
                 ...data,
             }}
           @click=${this.#props.onInspectElementClick}
-        ><span class="select-an-element-text">${i18nString(TempUIStrings.selectAnElement)}</span></${Buttons.Button.Button.litTagName}>`;
+        ><span class="select-an-element-text">${i18nString(UIStringsTemp.selectAnElement)}</span></${Buttons.Button.Button.litTagName}>`;
         // clang-format on
     };
     #renderFeedbackLink = () => {
@@ -348,22 +358,24 @@ export class FreestylerChatUi extends HTMLElement {
           name="dog-paw"
           class="feedback-icon"
         ></${IconButton.Icon.Icon.litTagName}>
-        <span>${i18nString(TempUIStrings.dogfood)}</span>
+        <span>${i18nString(UIStringsTemp.dogfood)}</span>
         <span>-</span>
         <x-link href=${DOGFOOD_FEEDBACK_URL}
           class="link"
           jslog=${VisualLogging.action('freestyler.feedback').track({
             click: true,
         })}>
-         ${i18nString(TempUIStrings.feedbackLink)}
+         ${i18nString(UIStringsTemp.feedbackLink)}
         </x-link>`;
         // clang-format on
     };
     #renderMessages = () => {
         // clang-format off
         return LitHtml.html `
-      <div class="messages-container">
-        ${this.#props.messages.map((message, _, array) => this.#renderChatMessage(message, { isLast: array.at(-1) === message }))}
+      <div class="messages-scroll-container">
+        <div class="messages-container">
+          ${this.#props.messages.map((message, _, array) => this.#renderChatMessage(message, { isLast: array.at(-1) === message }))}
+        </div>
       </div>
     `;
         // clang-format on
@@ -372,7 +384,7 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format off
         return LitHtml.html `<div class="empty-state-container">
       <${IconButton.Icon.Icon.litTagName} name="spark" style="width: 36px; height: 36px;"></${IconButton.Icon.Icon.litTagName}>
-      ${i18nString(TempUIStrings.emptyStateText)}
+      ${i18nString(UIStringsTemp.emptyStateText)}
     </div>`;
         // clang-format on
     };
@@ -402,32 +414,32 @@ export class FreestylerChatUi extends HTMLElement {
             ? LitHtml.html `
                     <${Buttons.Button.Button.litTagName}
                       class="step-actions"
-                      aria-label=${i18nString(TempUIStrings.cancelButtonTitle)}
+                      aria-label=${i18nString(UIStringsTemp.cancelButtonTitle)}
                       @click=${this.#handleCancel}
                       .data=${{
                 variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
                 iconName: 'stop',
-                title: i18nString(TempUIStrings.cancelButtonTitle),
+                title: i18nString(UIStringsTemp.cancelButtonTitle),
                 jslogContext: 'stop',
             }}
                     ></${Buttons.Button.Button.litTagName}>`
             : LitHtml.html `
                     <${Buttons.Button.Button.litTagName}
                       class="step-actions"
-                      aria-label=${i18nString(TempUIStrings.sendButtonTitle)}
+                      aria-label=${i18nString(UIStringsTemp.sendButtonTitle)}
                       .data=${{
                 type: 'submit',
                 variant: "icon" /* Buttons.Button.Variant.ICON */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
                 iconName: 'send',
-                title: i18nString(TempUIStrings.sendButtonTitle),
+                title: i18nString(UIStringsTemp.sendButtonTitle),
                 disabled: isInputDisabled,
                 jslogContext: 'send',
             }}
                     ></${Buttons.Button.Button.litTagName}>`}
           </div>
-          <span class="chat-input-disclaimer">${i18nString(TempUIStrings.inputDisclaimer)}</span>
+          <span class="chat-input-disclaimer">${i18nString(UIStringsTemp.inputDisclaimer)} See <x-link class="link" href=${DOGFOOD_INFO}>dogfood terms</x-link>.</span>
         </form>
       </div>
     `;
@@ -438,13 +450,15 @@ export class FreestylerChatUi extends HTMLElement {
         return LitHtml.html `
       <div class="consent-view">
         <h2 tabindex="-1">
-          ${i18nString(TempUIStrings.consentScreenHeading)}
+          ${i18nString(UIStringsTemp.consentScreenHeading)}
         </h2>
         <main>
-          ${i18nString(TempUIStrings.consentTextAiDisclaimer)}
+          ${i18nString(UIStringsTemp.consentTextAiDisclaimer)}
           <ul>
-            <li>${i18nString(TempUIStrings.consentTextDataDisclaimer)}</li>
-            <li>${i18nString(TempUIStrings.consentTextVisibilityDisclaimer)}</li>
+            <li>${i18nString(UIStringsTemp.consentTextDataDisclaimer)}</li>
+            <li>${i18nString(UIStringsTemp.consentTextVisibilityDisclaimer)}</li>
+            <li>${i18nString(UIStringsTemp.consentTextDoNotUseDisclaimer)}</li>
+            <li>See <x-link class="link" href=${DOGFOOD_INFO}>dogfood terms</x-link>.</li>
           </ul>
           <${Buttons.Button.Button.litTagName}
             class="accept-button"
@@ -453,7 +467,7 @@ export class FreestylerChatUi extends HTMLElement {
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             jslogContext: 'accept',
         }}
-          >${i18nString(TempUIStrings.acceptButtonTitle)}</${Buttons.Button.Button.litTagName}>
+          >${i18nString(UIStringsTemp.acceptButtonTitle)}</${Buttons.Button.Button.litTagName}>
         </main>
       </div>
     `;

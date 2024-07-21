@@ -18,5 +18,7 @@ export default {
   background-color: var(--sys-color-cdt-base-container);
   border-top: 1px solid var(--sys-color-divider);
 }
+
+/*# sourceURL=resourceSourceFrame.css */
 `
 };

@@ -924,8 +924,8 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.customPaletteSetting.set(palette);
         this.showPalette(palette, false);
     }
-    setColor(color, colorFormat) {
-        this.innerSetColor(color, '', undefined /* colorName */, colorFormat, ChangeSource.Model);
+    setColor(color) {
+        this.innerSetColor(color, '', undefined /* colorName */, color.format(), ChangeSource.Model);
         const colorValues = color.as("hsl" /* Common.Color.Format.HSL */).canonicalHSLA();
         UI.ARIAUtils.setValueNow(this.hueElement, colorValues[0]);
         UI.ARIAUtils.setValueText(this.alphaElement, colorValues[3]);

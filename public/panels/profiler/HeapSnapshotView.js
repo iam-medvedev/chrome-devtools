@@ -180,11 +180,6 @@ const UIStrings = {
      */
     exposeInternals: 'Expose internals (includes additional implementation-specific details)',
     /**
-     *@description Text in Heap Snapshot View of a profiler tool
-     * This option turns on inclusion of numerical values in the heap snapshot.
-     */
-    captureNumericValue: 'Include numerical values in capture',
-    /**
      *@description Progress update that the profiler is capturing a snapshot of the heap
      */
     snapshotting: 'Snapshotting…',
@@ -1078,7 +1073,6 @@ export class StatisticsPerspective extends Perspective {
 }
 export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(ProfileType) {
     exposeInternals;
-    captureNumericValue;
     customContentInternal;
     constructor(id, title) {
         super(id || HeapSnapshotProfileType.TypeId, title || i18nString(UIStrings.heapSnapshot));
@@ -1087,7 +1081,6 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.HeapProfilerModel.HeapProfilerModel, "AddHeapSnapshotChunk" /* SDK.HeapProfilerModel.Events.AddHeapSnapshotChunk */, this.addHeapSnapshotChunk, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.HeapProfilerModel.HeapProfilerModel, "ReportHeapSnapshotProgress" /* SDK.HeapProfilerModel.Events.ReportHeapSnapshotProgress */, this.reportHeapSnapshotProgress, this);
         this.exposeInternals = Common.Settings.Settings.instance().createSetting('expose-internals', false);
-        this.captureNumericValue = Common.Settings.Settings.instance().createSetting('capture-numeric-value', false);
         this.customContentInternal = null;
     }
     modelAdded(heapProfilerModel) {
@@ -1119,23 +1112,15 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
         return i18nString(UIStrings.heapSnapshotProfilesShowMemory);
     }
     customContent() {
-        const optionsContainer = document.createElement('div');
         const showOptionToExposeInternalsInHeapSnapshot = Root.Runtime.experiments.isEnabled('show-option-tp-expose-internals-in-heap-snapshot');
-        const omitParagraphElement = !showOptionToExposeInternalsInHeapSnapshot;
-        if (showOptionToExposeInternalsInHeapSnapshot) {
-            const exposeInternalsInHeapSnapshotCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.exposeInternals), this.exposeInternals, omitParagraphElement);
-            optionsContainer.appendChild(exposeInternalsInHeapSnapshotCheckbox);
-        }
-        const captureNumericValueCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.captureNumericValue), this.captureNumericValue, omitParagraphElement);
-        optionsContainer.appendChild(captureNumericValueCheckbox);
-        this.customContentInternal = optionsContainer;
-        return optionsContainer;
+        const omitParagraphElement = true;
+        const exposeInternalsInHeapSnapshotCheckbox = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.exposeInternals), this.exposeInternals, omitParagraphElement);
+        this.customContentInternal = exposeInternalsInHeapSnapshotCheckbox;
+        return showOptionToExposeInternalsInHeapSnapshot ? exposeInternalsInHeapSnapshotCheckbox : null;
     }
     setCustomContentEnabled(enable) {
         if (this.customContentInternal) {
-            this.customContentInternal.querySelectorAll('[is=dt-checkbox]').forEach(label => {
-                label.checkboxElement.disabled = !enable;
-            });
+            this.customContentInternal.checkboxElement.disabled = !enable;
         }
     }
     createProfileLoadedFromFile(title) {
@@ -1155,7 +1140,7 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
         profile.updateStatus(i18nString(UIStrings.snapshotting));
         await heapProfilerModel.takeHeapSnapshot({
             reportProgress: true,
-            captureNumericValue: this.captureNumericValue.get(),
+            captureNumericValue: true,
             exposeInternals: this.exposeInternals.get(),
         });
         profile = this.profileBeingRecorded();

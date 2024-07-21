@@ -1491,9 +1491,10 @@ export class FontPaletteValuesRuleSection extends StylePropertiesSection {
     }
 }
 export class PositionTryRuleSection extends StylePropertiesSection {
-    constructor(stylesPane, matchedStyles, style, sectionIdx) {
+    constructor(stylesPane, matchedStyles, style, sectionIdx, active) {
         super(stylesPane, matchedStyles, style, sectionIdx, null, null);
         this.selectorElement.className = 'position-try-values-key';
+        this.propertiesTreeOutline.element.classList.toggle('no-affect', !active);
     }
 }
 export class KeyframePropertiesSection extends StylePropertiesSection {
@@ -1537,17 +1538,6 @@ export class KeyframePropertiesSection extends StylePropertiesSection {
         }
     }
     highlight() {
-    }
-}
-export class TryRuleSection extends StylePropertiesSection {
-    constructor(stylesPane, matchedStyles, style, sectionIdx, computedStyles, parentsComputedStyles) {
-        super(stylesPane, matchedStyles, style, sectionIdx, computedStyles, parentsComputedStyles);
-        this.selectorElement.className = 'try-rule-selector-element';
-        // Disables clicking on the selector element for `@try` rules.
-        this.selectorElement.addEventListener('click', ev => ev.stopPropagation(), true);
-    }
-    headerText() {
-        return '@try';
     }
 }
 export class HighlightPseudoStylePropertiesSection extends StylePropertiesSection {

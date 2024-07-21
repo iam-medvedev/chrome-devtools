@@ -57,7 +57,7 @@ interface OriginalScopeTree {
     readonly scopeForItemIndex: Map<number, OriginalScope>;
 }
 export declare function decodeOriginalScopes(encodedOriginalScopes: string[], names: string[]): OriginalScopeTree[];
-export declare function decodeGeneratedRanges(encodedGeneratedRange: string, originalScopeTrees: OriginalScopeTree[], names: string[]): GeneratedRange;
+export declare function decodeGeneratedRanges(encodedGeneratedRange: string, originalScopeTrees: OriginalScopeTree[], names: string[]): GeneratedRange[];
 export declare const enum EncodedGeneratedRangeFlag {
     HasDefinition = 1,
     HasCallsite = 2,

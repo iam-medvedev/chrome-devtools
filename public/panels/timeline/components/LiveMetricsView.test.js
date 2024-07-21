@@ -13,9 +13,40 @@ import * as Coordinator from '../../../ui/components/render_coordinator/render_c
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Components from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
-const LOCAL_METRIC_SELECTOR = '.local-value .metric-value';
-const FIELD_METRIC_SELECTOR = '.field-value .metric-value';
-const INTERACTION_SELECTOR = '.interaction';
+function getLocalMetricValue(view, metric) {
+    const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
+    return card.querySelector('[slot="local-value"] .metric-value');
+}
+function getFieldMetricValue(view, metric) {
+    const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
+    return card.querySelector('[slot="field-value"] .metric-value');
+}
+function getFieldHistogramPercents(view, metric) {
+    const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
+    const histogram = card.querySelector('.field-data-histogram');
+    const percents = Array.from(histogram.querySelectorAll('.histogram-percent'));
+    return percents.map(p => p.textContent || '');
+}
+function getThrottlingRecommendation(view) {
+    return view.shadowRoot.querySelector('.throttling-recommendation');
+}
+function getInteractions(view) {
+    const interactionsListEl = view.shadowRoot?.querySelector('.interactions-list');
+    return Array.from(interactionsListEl.querySelectorAll('.interaction'));
+}
+function selectDeviceOption(view, deviceOption) {
+    const deviceScopeSelector = view.shadowRoot.querySelector('#device-scope-select devtools-select-menu');
+    const deviceScopeOptions = Array.from(deviceScopeSelector.querySelectorAll('#device-scope-select devtools-menu-item'));
+    deviceScopeSelector.click();
+    deviceScopeOptions.find(o => o.value === deviceOption).click();
+}
+function selectPageScope(view, pageScope) {
+    const pageScopeSelector = view.shadowRoot.querySelector('#page-scope-select devtools-select-menu');
+    pageScopeSelector.click();
+    const pageScopeOptions = Array.from(pageScopeSelector.querySelectorAll('#page-scope-select devtools-menu-item'));
+    const originOption = pageScopeOptions.find(o => o.value === pageScope);
+    originOption.click();
+}
 function createMockFieldData() {
     return {
         record: {
@@ -36,11 +67,14 @@ function createMockFieldData() {
                 },
                 'cumulative_layout_shift': {
                     histogram: [
-                        { start: 0, end: 0.1, density: 0.1 },
-                        { start: 0.1, end: 0.25, density: 0.1 },
+                        { start: 0, end: 0.1 },
+                        { start: 0.1, end: 0.25, density: 0.2 },
                         { start: 0.25, density: 0.8 },
                     ],
                     percentiles: { p75: 0.25 },
+                },
+                'round_trip_time': {
+                    percentiles: { p75: 150 },
                 },
             },
             collectionPeriod: {
@@ -97,8 +131,7 @@ describeWithMockConnection('LiveMetricsView', () => {
             interactions: [],
         });
         await coordinator.done();
-        const metricEl = view.shadowRoot?.querySelector('#lcp');
-        const metricValueEl = metricEl.querySelector(LOCAL_METRIC_SELECTOR);
+        const metricValueEl = getLocalMetricValue(view, 'lcp');
         assert.strictEqual(metricValueEl.className, 'metric-value good');
         assert.strictEqual(metricValueEl.innerText, '100 ms');
     });
@@ -110,8 +143,7 @@ describeWithMockConnection('LiveMetricsView', () => {
             interactions: [],
         });
         await coordinator.done();
-        const metricEl = view.shadowRoot?.querySelector('#cls');
-        const metricValueEl = metricEl.querySelector(LOCAL_METRIC_SELECTOR);
+        const metricValueEl = getLocalMetricValue(view, 'cls');
         assert.strictEqual(metricValueEl.className, 'metric-value needs-improvement');
         assert.strictEqual(metricValueEl.innerText, '0.14');
     });
@@ -120,8 +152,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         renderElementIntoDOM(view);
         LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, { inp: { value: 2000 }, interactions: [] });
         await coordinator.done();
-        const metricEl = view.shadowRoot?.querySelector('#inp');
-        const metricValueEl = metricEl.querySelector(LOCAL_METRIC_SELECTOR);
+        const metricValueEl = getLocalMetricValue(view, 'inp');
         assert.strictEqual(metricValueEl.className, 'metric-value poor');
         assert.strictEqual(metricValueEl.innerText, '2.00 s');
     });
@@ -129,8 +160,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         const view = new Components.LiveMetricsView.LiveMetricsView();
         renderElementIntoDOM(view);
         await coordinator.done();
-        const metricEl = view.shadowRoot?.querySelector('#inp');
-        const metricValueEl = metricEl.querySelector(LOCAL_METRIC_SELECTOR);
+        const metricValueEl = getLocalMetricValue(view, 'inp');
         assert.strictEqual(metricValueEl.className.trim(), 'metric-value waiting');
         assert.strictEqual(metricValueEl.innerText, '-');
     });
@@ -144,8 +174,7 @@ describeWithMockConnection('LiveMetricsView', () => {
             ],
         });
         await coordinator.done();
-        const interactionsListEl = view.shadowRoot?.querySelector('.interactions-list');
-        const interactionsEls = interactionsListEl.querySelectorAll(INTERACTION_SELECTOR);
+        const interactionsEls = getInteractions(view);
         assert.lengthOf(interactionsEls, 2);
         const typeEl1 = interactionsEls[0].querySelector('.interaction-type');
         assert.strictEqual(typeEl1.textContent, 'pointer');
@@ -197,50 +226,24 @@ describeWithMockConnection('LiveMetricsView', () => {
         });
         it('should not show when crux is disabled', async () => {
             CrUXManager.CrUXManager.instance().getConfigSetting().set({ enabled: false, override: '' });
-            mockFieldData['url-ALL'] = {
-                record: {
-                    key: {
-                        url: 'https://example.com',
-                    },
-                    metrics: {
-                        'largest_contentful_paint': {
-                            histogram: [
-                                { start: 0, end: 2500, density: 0.5 },
-                                { start: 2500, end: 4000, density: 0.3 },
-                                { start: 4000, density: 0.2 },
-                            ],
-                            percentiles: { p75: 1000 },
-                        },
-                        'cumulative_layout_shift': {
-                            histogram: [
-                                { start: 0, end: 0.1, density: 0.1 },
-                                { start: 0.1, end: 0.25, density: 0.1 },
-                                { start: 0.25, density: 0.8 },
-                            ],
-                            percentiles: { p75: 0.25 },
-                        },
-                    },
-                    collectionPeriod: {
-                        firstDate: { year: 2024, month: 1, day: 1 },
-                        lastDate: { year: 2024, month: 1, day: 29 },
-                    },
-                },
-            };
+            mockFieldData['url-ALL'] = createMockFieldData();
             const view = new Components.LiveMetricsView.LiveMetricsView();
             renderElementIntoDOM(view);
             await coordinator.done();
-            const lcpHistogramEl = view.shadowRoot?.querySelector('#lcp .field-data-histogram');
-            assert.isNull(lcpHistogramEl);
-            const clsHistogramEl = view.shadowRoot?.querySelector('#cls .field-data-histogram');
-            assert.isNull(clsHistogramEl);
-            const inpHistogramEl = view.shadowRoot?.querySelector('#inp .field-data-histogram');
-            assert.isNull(inpHistogramEl);
-            const lcpFieldEl = view.shadowRoot?.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            const lcpPercents = getFieldHistogramPercents(view, 'lcp');
+            assert.deepStrictEqual(lcpPercents, ['-', '-', '-']);
+            const clsPercents = getFieldHistogramPercents(view, 'cls');
+            assert.deepStrictEqual(clsPercents, ['-', '-', '-']);
+            const inpPercents = getFieldHistogramPercents(view, 'inp');
+            assert.deepStrictEqual(inpPercents, ['-', '-', '-']);
+            const lcpFieldEl = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl.textContent, '-');
-            const clsFieldEl = view.shadowRoot?.querySelector(`#cls ${FIELD_METRIC_SELECTOR}`);
+            const clsFieldEl = getFieldMetricValue(view, 'cls');
             assert.strictEqual(clsFieldEl.textContent, '-');
-            const inpFieldEl = view.shadowRoot?.querySelector(`#inp ${FIELD_METRIC_SELECTOR}`);
+            const inpFieldEl = getFieldMetricValue(view, 'inp');
             assert.strictEqual(inpFieldEl.textContent, '-');
+            const throttlingRec = getThrottlingRecommendation(view);
+            assert.isNull(throttlingRec);
         });
         it('should show when crux is enabled', async () => {
             const view = new Components.LiveMetricsView.LiveMetricsView();
@@ -253,37 +256,39 @@ describeWithMockConnection('LiveMetricsView', () => {
                 isPrimaryFrame: () => true,
             });
             await coordinator.done();
-            const lcpHistogramEl = view.shadowRoot?.querySelector('#lcp .field-data-histogram');
-            assert.strictEqual(lcpHistogramEl.innerText, 'Good (≤2.50 s)\n50%\nNeeds improvement (2.50 s-4.00 s)\n30%\nPoor (>4.00 s)\n20%');
-            const clsHistogramEl = view.shadowRoot?.querySelector('#cls .field-data-histogram');
-            assert.strictEqual(clsHistogramEl.innerText, 'Good (≤0.10)\n10%\nNeeds improvement (0.10-0.25)\n10%\nPoor (>0.25)\n80%');
-            const inpHistogramEl = view.shadowRoot?.querySelector('#inp .field-data-histogram');
-            assert.isNull(inpHistogramEl);
-            const lcpFieldEl = view.shadowRoot?.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            const lcpPercents = getFieldHistogramPercents(view, 'lcp');
+            assert.deepStrictEqual(lcpPercents, ['50%', '30%', '20%']);
+            const clsPercents = getFieldHistogramPercents(view, 'cls');
+            assert.deepStrictEqual(clsPercents, ['0%', '20%', '80%']);
+            const inpPercents = getFieldHistogramPercents(view, 'inp');
+            assert.deepStrictEqual(inpPercents, ['-', '-', '-']);
+            const lcpFieldEl = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl.textContent, '1.00 s');
-            const clsFieldEl = view.shadowRoot?.querySelector(`#cls ${FIELD_METRIC_SELECTOR}`);
+            const clsFieldEl = getFieldMetricValue(view, 'cls');
             assert.strictEqual(clsFieldEl.textContent, '0.25');
-            const inpFieldEl = view.shadowRoot?.querySelector(`#inp ${FIELD_METRIC_SELECTOR}`);
+            const inpFieldEl = getFieldMetricValue(view, 'inp');
             assert.strictEqual(inpFieldEl.textContent, '-');
+            const throttlingRec = getThrottlingRecommendation(view);
+            assert.match(throttlingRec.innerText, /Slow 4G/);
         });
         it('should make initial request on render when crux is enabled', async () => {
             mockFieldData['url-ALL'] = createMockFieldData();
             const view = new Components.LiveMetricsView.LiveMetricsView();
             renderElementIntoDOM(view);
             await coordinator.done();
-            const lcpFieldEl1 = view.shadowRoot?.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
-            assert.strictEqual(lcpFieldEl1.textContent, '1.00 s');
+            const lcpFieldEl = getFieldMetricValue(view, 'lcp');
+            assert.strictEqual(lcpFieldEl.textContent, '1.00 s');
         });
         it('should be removed once crux is disabled', async () => {
             mockFieldData['url-ALL'] = createMockFieldData();
             const view = new Components.LiveMetricsView.LiveMetricsView();
             renderElementIntoDOM(view);
             await coordinator.done();
-            const lcpFieldEl1 = view.shadowRoot?.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            const lcpFieldEl1 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl1.textContent, '1.00 s');
             CrUXManager.CrUXManager.instance().getConfigSetting().set({ enabled: false, override: '' });
             await coordinator.done();
-            const lcpFieldEl2 = view.shadowRoot?.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            const lcpFieldEl2 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl2.textContent, '-');
         });
         it('should take from selected page scope', async () => {
@@ -293,15 +298,11 @@ describeWithMockConnection('LiveMetricsView', () => {
             const view = new Components.LiveMetricsView.LiveMetricsView();
             renderElementIntoDOM(view);
             await coordinator.done();
-            const lcpFieldEl1 = view.shadowRoot.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            const lcpFieldEl1 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl1.textContent, '1.00 s');
-            const pageScopeSelector = view.shadowRoot.querySelector('#page-scope-select devtools-select-menu');
-            pageScopeSelector.click();
-            const pageScopeOptions = Array.from(pageScopeSelector.querySelectorAll('#page-scope-select devtools-menu-item'));
-            const originOption = pageScopeOptions.find(o => o.value === 'origin');
-            originOption.click();
+            selectPageScope(view, 'origin');
             await coordinator.done();
-            const lcpFieldEl2 = view.shadowRoot.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            const lcpFieldEl2 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl2.textContent, '2.00 s');
         });
         it('should take from selected device scope', async () => {
@@ -311,16 +312,12 @@ describeWithMockConnection('LiveMetricsView', () => {
             const view = new Components.LiveMetricsView.LiveMetricsView();
             renderElementIntoDOM(view);
             await coordinator.done();
-            const deviceScopeSelector = view.shadowRoot.querySelector('#device-scope-select devtools-select-menu');
-            const deviceScopeOptions = Array.from(deviceScopeSelector.querySelectorAll('#device-scope-select devtools-menu-item'));
-            deviceScopeSelector.click();
-            deviceScopeOptions.find(o => o.value === 'ALL').click();
-            const lcpFieldEl1 = view.shadowRoot.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            selectDeviceOption(view, 'ALL');
+            const lcpFieldEl1 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl1.textContent, '1.00 s');
-            deviceScopeSelector.click();
-            deviceScopeOptions.find(o => o.value === 'PHONE').click();
+            selectDeviceOption(view, 'PHONE');
             await coordinator.done();
-            const lcpFieldEl2 = view.shadowRoot.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            const lcpFieldEl2 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl2.textContent, '2.00 s');
         });
         it('auto device option should chose based on emulation', async () => {
@@ -330,11 +327,8 @@ describeWithMockConnection('LiveMetricsView', () => {
             const view = new Components.LiveMetricsView.LiveMetricsView();
             renderElementIntoDOM(view);
             await coordinator.done();
-            const deviceScopeSelector = view.shadowRoot.querySelector('#device-scope-select devtools-select-menu');
-            const deviceScopeOptions = Array.from(deviceScopeSelector.querySelectorAll('#device-scope-select devtools-menu-item'));
-            deviceScopeSelector.click();
-            deviceScopeOptions.find(o => o.value === 'AUTO').click();
-            const lcpFieldEl1 = view.shadowRoot.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            selectDeviceOption(view, 'AUTO');
+            const lcpFieldEl1 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl1.textContent, '1.00 s');
             for (const device of EmulationModel.EmulatedDevices.EmulatedDevicesList.instance().standard()) {
                 if (device.title === 'Moto G Power') {
@@ -342,7 +336,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 }
             }
             await coordinator.done();
-            const lcpFieldEl2 = view.shadowRoot.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            const lcpFieldEl2 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl2.textContent, '2.00 s');
         });
         it('auto device option should fall back to all devices', async () => {
@@ -352,11 +346,8 @@ describeWithMockConnection('LiveMetricsView', () => {
             const view = new Components.LiveMetricsView.LiveMetricsView();
             renderElementIntoDOM(view);
             await coordinator.done();
-            const deviceScopeSelector = view.shadowRoot.querySelector('#device-scope-select devtools-select-menu');
-            const deviceScopeOptions = Array.from(deviceScopeSelector.querySelectorAll('#device-scope-select devtools-menu-item'));
-            deviceScopeSelector.click();
-            deviceScopeOptions.find(o => o.value === 'AUTO').click();
-            const lcpFieldEl1 = view.shadowRoot.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            selectDeviceOption(view, 'AUTO');
+            const lcpFieldEl1 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl1.textContent, '1.00 s');
             for (const device of EmulationModel.EmulatedDevices.EmulatedDevicesList.instance().standard()) {
                 if (device.title === 'Moto G Power') {
@@ -364,8 +355,53 @@ describeWithMockConnection('LiveMetricsView', () => {
                 }
             }
             await coordinator.done();
-            const lcpFieldEl2 = view.shadowRoot.querySelector(`#lcp ${FIELD_METRIC_SELECTOR}`);
+            const lcpFieldEl2 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl2.textContent, '2.00 s');
+        });
+        describe('throttling recommendation', () => {
+            it('should show for closest target RTT', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                // 165ms is the adjusted latency of "Fast 4G" but 165ms is actually closer to the target RTT
+                // of "Slow 4G" than the target RTT of "Fast 4G".
+                // So we should expect the recommended preset to be "Slow 4G".
+                mockFieldData['url-ALL'].record.metrics.round_trip_time.percentiles.p75 = 165;
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                await coordinator.done();
+                const throttlingRec = getThrottlingRecommendation(view);
+                assert.match(throttlingRec.innerText, /Slow 4G/);
+            });
+            it('should hide if no RTT data', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                mockFieldData['url-ALL'].record.metrics.round_trip_time = undefined;
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                await coordinator.done();
+                const throttlingRec = getThrottlingRecommendation(view);
+                assert.isNull(throttlingRec);
+            });
+            it('should suggest no throttling for very low latency', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                // In theory this is closest to the "offline" preset latency of 0,
+                // but that preset should be ignored.
+                mockFieldData['url-ALL'].record.metrics.round_trip_time.percentiles.p75 = 1;
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                await coordinator.done();
+                const throttlingRec = getThrottlingRecommendation(view);
+                assert.match(throttlingRec.innerText, /Try disabling/);
+            });
+            it('should ignore presets that are generally too far off', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                // This is closest to the "3G" preset compared to other presets, but it's
+                // still too far away in general.
+                mockFieldData['url-ALL'].record.metrics.round_trip_time.percentiles.p75 = 10_000;
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                await coordinator.done();
+                const throttlingRec = getThrottlingRecommendation(view);
+                assert.isNull(throttlingRec);
+            });
         });
     });
 });

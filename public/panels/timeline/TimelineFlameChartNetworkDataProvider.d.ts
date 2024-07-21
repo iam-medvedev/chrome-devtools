@@ -1,12 +1,11 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import { TimelineSelection } from './TimelineSelection.js';
 export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     constructor();
     setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null): void;
-    setVisualElementLoggingParent(parent: VisualLogging.Loggable | null): void;
     setEvents(traceEngineData: TraceEngine.Handlers.Types.TraceParseData): void;
     isEmpty(): boolean;
     maxStackDepth(): number;
@@ -16,6 +15,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     totalTime(): number;
     setWindowTimes(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds): void;
     createSelection(index: number): TimelineSelection | null;
+    customizedContextMenu(event: MouseEvent, eventIndex: number): UI.ContextMenu.ContextMenu | undefined;
     indexForEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
     eventByIndex(entryIndex: number): TraceEngine.Types.TraceEvents.SyntheticNetworkRequest | TraceEngine.Types.TraceEvents.WebSocketEvent | null;
     entryIndexForSelection(selection: TimelineSelection | null): number;

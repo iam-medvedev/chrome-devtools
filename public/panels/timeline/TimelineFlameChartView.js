@@ -15,7 +15,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { CountersGraph } from './CountersGraph.js';
 import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { ModificationsManager } from './ModificationsManager.js';
-import { AnnotationOverlayActionEvent, Overlays, } from './Overlays.js';
+import * as Overlays from './overlays/overlays.js';
 import { targetForEvent } from './TargetForEvent.js';
 import { TimelineDetailsView } from './TimelineDetailsView.js';
 import { TimelineRegExp } from './TimelineFilters.js';
@@ -96,6 +96,12 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #timespanBreakdownOverlay = null;
     #sidebarInsightToggled = false;
     #tooltipElement = document.createElement('div');
+    // We use an symbol as the loggable for each group. This is because
+    // groups can get re-built at times and we need a common reference to act as
+    // the reference for each group that we log. By storing these symbols in
+    // a map keyed off the context of the group, we ensure we persist the
+    // loggable even if the group gets rebuilt at some point in time.
+    #loggableForGroupByLogContext = new Map();
     constructor(delegate) {
         super();
         this.element.classList.add('timeline-flamechart');
@@ -115,7 +121,6 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.networkSplitWidget.sidebarElement().style.zIndex = '120';
         const mainViewGroupExpansionSetting = Common.Settings.Settings.instance().createSetting('timeline-flamechart-main-view-group-expansion', {});
         this.mainDataProvider = new TimelineFlameChartDataProvider();
-        this.mainDataProvider.setVisualElementLoggingParent(this.delegate.element);
         this.mainDataProvider.addEventListener("DataChanged" /* TimelineFlameChartDataProviderEvents.DataChanged */, () => this.mainFlameChart.scheduleUpdate());
         this.mainFlameChart = new PerfUI.FlameChart.FlameChart(this.mainDataProvider, this, {
             groupExpansionSetting: mainViewGroupExpansionSetting,
@@ -134,7 +139,6 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.networkFlameChartGroupExpansionSetting =
             Common.Settings.Settings.instance().createSetting('timeline-flamechart-network-view-group-expansion', {});
         this.networkDataProvider = new TimelineFlameChartNetworkDataProvider();
-        this.networkDataProvider.setVisualElementLoggingParent(this.delegate.element);
         this.networkFlameChart = new PerfUI.FlameChart.FlameChart(this.networkDataProvider, this, {
             groupExpansionSetting: this.networkFlameChartGroupExpansionSetting,
             // The TimelineOverlays are used for selected elements
@@ -158,7 +162,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.networkFlameChart.addEventListener("MouseMove" /* PerfUI.FlameChart.Events.MouseMove */, event => {
             this.#processFlameChartMouseMoveEvent(event.data);
         });
-        this.#overlays = new Overlays({
+        this.#overlays = new Overlays.Overlays.Overlays({
             container: this.#overlaysContainer,
             charts: {
                 mainChart: this.mainFlameChart,
@@ -167,7 +171,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
                 networkProvider: this.networkDataProvider,
             },
         });
-        this.#overlays.addEventListener(AnnotationOverlayActionEvent.eventName, event => {
+        this.#overlays.addEventListener(Overlays.Overlays.AnnotationOverlayActionEvent.eventName, event => {
             const { overlay, action } = event;
             if (action === 'Remove') {
                 ModificationsManager.activeManager()?.removeAnnotationOverlay(overlay);
@@ -304,6 +308,12 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     refreshMainFlameChart() {
         this.mainFlameChart.update();
+    }
+    extensionDataVisibilityChanged() {
+        this.#reset();
+        this.mainDataProvider.reset(true);
+        this.mainDataProvider.timelineData(true);
+        this.refreshMainFlameChart();
     }
     windowChanged(windowStartTime, windowEndTime, animate) {
         TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(TraceEngine.Helpers.Timing.traceWindowFromMilliSeconds(TraceEngine.Types.Timing.MilliSeconds(windowStartTime), TraceEngine.Types.Timing.MilliSeconds(windowEndTime)), { shouldAnimate: animate });
@@ -452,6 +462,24 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #updateFlameCharts() {
         this.mainFlameChart.scheduleUpdate();
         this.networkFlameChart.scheduleUpdate();
+        this.#registerLoggableGroups();
+    }
+    #registerLoggableGroups() {
+        const groups = [
+            ...this.mainFlameChart.timelineData()?.groups ?? [],
+            ...this.networkFlameChart.timelineData()?.groups ?? [],
+        ];
+        for (const group of groups) {
+            if (!group.jslogContext) {
+                continue;
+            }
+            const loggable = this.#loggableForGroupByLogContext.get(group.jslogContext) ?? Symbol(group.jslogContext);
+            if (!this.#loggableForGroupByLogContext.has(group.jslogContext)) {
+                // This is the first time this group has been created, so register its loggable.
+                this.#loggableForGroupByLogContext.set(group.jslogContext, loggable);
+                VisualLogging.registerLoggable(loggable, `${VisualLogging.section().context(`timeline.${group.jslogContext}`)}`, this.delegate.element);
+            }
+        }
     }
     onEntryHighlighted(commonEvent) {
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
@@ -573,7 +601,10 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         // Find the group that contains this level and log a click for it.
         const group = groupForLevel(data.groups, entryLevel);
         if (group && group.jslogContext) {
-            VisualLogging.logClick(groupForLevel, new MouseEvent('click'));
+            const loggable = this.#loggableForGroupByLogContext.get(group.jslogContext) ?? null;
+            if (loggable) {
+                VisualLogging.logClick(loggable, new MouseEvent('click'));
+            }
         }
         dataProvider.buildFlowForInitiator(entryIndex);
         this.delegate.select(dataProvider.createSelection(entryIndex));

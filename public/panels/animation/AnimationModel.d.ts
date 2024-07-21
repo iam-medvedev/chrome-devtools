@@ -11,11 +11,9 @@ export declare class AnimationModel extends SDK.SDKModel.SDKModel<EventTypes> {
     constructor(target: SDK.Target.Target);
     private reset;
     devicePixelRatio(): Promise<number>;
-    animationCreated(id: string): void;
     animationCanceled(id: string): void;
     animationUpdated(payload: Protocol.Animation.Animation): Promise<void>;
     animationStarted(payload: Protocol.Animation.Animation): Promise<void>;
-    private flushPendingAnimationsIfNeeded;
     private matchExistingGroups;
     private createGroupFromPendingAnimations;
     setPlaybackRate(playbackRate: number): void;
@@ -114,13 +112,15 @@ export declare class AnimationGroup {
     togglePause(paused: boolean): void;
     currentTimePromise(): Promise<number>;
     matches(group: AnimationGroup): boolean;
-    update(group: AnimationGroup): void;
+    shouldInclude(group: AnimationGroup): boolean;
+    appendAnimations(animations: AnimationImpl[]): void;
+    rebaseTo(group: AnimationGroup): void;
     screenshots(): HTMLImageElement[];
 }
 export declare class AnimationDispatcher implements ProtocolProxyApi.AnimationDispatcher {
     #private;
     constructor(animationModel: AnimationModel);
-    animationCreated({ id }: Protocol.Animation.AnimationCreatedEvent): void;
+    animationCreated(_event: Protocol.Animation.AnimationCreatedEvent): void;
     animationCanceled({ id }: Protocol.Animation.AnimationCanceledEvent): void;
     animationStarted({ animation }: Protocol.Animation.AnimationStartedEvent): void;
     animationUpdated({ animation }: Protocol.Animation.AnimationUpdatedEvent): void;

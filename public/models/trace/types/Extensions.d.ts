@@ -3,21 +3,19 @@ export type ExtensionEntryType = 'track-entry' | 'marker';
 declare const extensionPalette: readonly ["primary", "primary-light", "primary-dark", "secondary", "secondary-light", "secondary-dark", "tertiary", "tertiary-light", "tertiary-dark", "error"];
 export type ExtensionColorFromPalette = typeof extensionPalette[number];
 export declare function colorIsValid(color: string): boolean;
-export interface ExtensionDataPayload {
-    dataType?: 'track-entry' | 'marker';
+export interface ExtensionDataPayloadBase {
     color?: ExtensionColorFromPalette;
-    track?: string;
-    detailsPairs?: [string, string][];
-    hintText?: string;
+    properties?: [string, string][];
+    tooltipText?: string;
 }
-export interface ExtensionTrackEntryPayload extends ExtensionDataPayload {
+export type ExtensionDataPayload = ExtensionTrackEntryPayload | ExtensionMarkerPayload;
+export interface ExtensionTrackEntryPayload extends ExtensionDataPayloadBase {
     dataType?: 'track-entry';
     track: string;
     trackGroup?: string;
 }
-export interface ExtensionMarkerPayload extends ExtensionDataPayload {
+export interface ExtensionMarkerPayload extends ExtensionDataPayloadBase {
     dataType: 'marker';
-    track: undefined;
 }
 /**
  * Synthetic events created for extension tracks.

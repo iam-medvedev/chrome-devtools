@@ -25,18 +25,6 @@ styles.replaceSync(
   cursor: ew-resize;
 }
 
-.unit-dropdown {
-  display: none;
-}
-
-.unit-dropdown select {
-  all: unset;
-  cursor: pointer;
-  opacity: 0%;
-  width: 0.8em;
-  background-color: var(--sys-color-cdt-base-container);
-}
-
 .icon {
   position: absolute;
   display: inline-block;
@@ -53,18 +41,6 @@ styles.replaceSync(
 
 :host(:not(:last-child)) {
   margin-right: 0.1em;
-}
-
-:host(:not(:last-child)) .unit-dropdown {
-  position: absolute;
-}
-
-.css-length:hover .unit-dropdown {
-  display: inline-block;
-}
-
-:host(:last-child) .unit-dropdown select {
-  width: 0.6em;
 }
 
 /*# sourceURL=cssLength.css */

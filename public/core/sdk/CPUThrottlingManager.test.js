@@ -1,38 +1,38 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithRealConnection } from '../../testing/RealConnection.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import * as SDK from './sdk.js';
-describeWithRealConnection('CPUThrottlingManager', () => {
+describeWithMockConnection('CPUThrottlingManager', () => {
+    let target;
+    beforeEach(() => {
+        // We need one target since CPUThrottlingManager gets it from TargetManager.
+        target = createTarget();
+    });
     it('can get the current hardwareConcurrency.', async () => {
+        setMockConnectionResponseHandler('Runtime.evaluate', ({ expression }) => {
+            assert.strictEqual(expression, 'navigator.hardwareConcurrency');
+            return ({ getError: () => undefined, result: { value: 42 } });
+        });
         const manager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
         const concurrency = await manager.getHardwareConcurrency();
-        assert.deepEqual(concurrency, navigator.hardwareConcurrency);
+        assert.strictEqual(concurrency, 42);
     });
-    it('can set the current hardwareConcurrency.', async () => {
+    it('can set the current hardwareConcurrency', async () => {
+        const cdpStub = sinon.stub(target.emulationAgent(), 'invoke_setHardwareConcurrencyOverride').resolves();
         const manager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
-        const nativeConcurrency = navigator.hardwareConcurrency;
         manager.setHardwareConcurrency(5);
-        {
-            const concurrency = await manager.getHardwareConcurrency();
-            assert.deepEqual(concurrency, 5);
-            assert.notDeepEqual(concurrency, nativeConcurrency);
-        }
-        {
-            manager.setHardwareConcurrency(0);
-            const concurrency = await manager.getHardwareConcurrency();
-            assert.deepEqual(concurrency, 5);
-        }
-        {
-            manager.setHardwareConcurrency(-1);
-            const concurrency = await manager.getHardwareConcurrency();
-            assert.deepEqual(concurrency, 5);
-        }
-        {
-            manager.setHardwareConcurrency(2 * nativeConcurrency);
-            const concurrency = await manager.getHardwareConcurrency();
-            assert.deepEqual(concurrency, 2 * nativeConcurrency);
-        }
+        assert.isTrue(cdpStub.calledOnce);
+        assert.isTrue(cdpStub.calledWithExactly({ hardwareConcurrency: 5 }));
+    });
+    it('does not set concurrency to 0 or negative numbers', async () => {
+        const cdpStub = sinon.stub(target.emulationAgent(), 'invoke_setHardwareConcurrencyOverride').resolves();
+        const manager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
+        manager.setHardwareConcurrency(0);
+        assert.isFalse(cdpStub.called);
+        manager.setHardwareConcurrency(-1);
+        assert.isFalse(cdpStub.called);
     });
 });
 //# sourceMappingURL=CPUThrottlingManager.test.js.map

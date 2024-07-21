@@ -147,6 +147,7 @@ models/persistence/PersistenceAction.test.js
 models/persistence/PersistenceImpl.test.js
 models/persistence/PlatformFileSystem.test.js
 models/source_map_scopes/NamesResolver.test.js
+models/source_map_scopes/ScopeChainModel.test.js
 models/source_map_scopes/ScopeTreeCache.test.js
 models/text_utils/ContentData.test.js
 models/text_utils/StaticContentProvider.test.js
@@ -200,6 +201,7 @@ models/trace/helpers/Timing.test.js
 models/trace/helpers/Trace.test.js
 models/trace/helpers/TreeHelpers.test.js
 models/trace/insights/CumulativeLayoutShift.test.js
+models/trace/insights/DocumentLatency.test.js
 models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LargestContentfulPaint.test.js
 models/trace/insights/RenderBlocking.test.js
@@ -412,7 +414,6 @@ panels/timeline/EventsSerializer.test.js
 panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
 panels/timeline/ModificationsManager.test.js
-panels/timeline/Overlays.test.js
 panels/timeline/SaveFileFormatter.test.js
 panels/timeline/SourceMapsResolver.test.js
 panels/timeline/TimelineController.test.js
@@ -436,7 +437,8 @@ panels/timeline/components/LiveMetricsView.test.js
 panels/timeline/components/NetworkRequestDetails.test.js
 panels/timeline/components/NetworkThrottlingSelector.test.js
 panels/timeline/components/SidebarAnnotationsTab.test.js
-panels/timeline/components/SidebarInsight.test.js
+panels/timeline/components/insights/SidebarInsight.test.js
+panels/timeline/overlays/OverlaysImpl.test.js
 panels/timeline/track_appenders/AnimationsTrackAppender.test.js
 panels/timeline/track_appenders/AppenderUtils.test.js
 panels/timeline/track_appenders/CompatibilityTracksAppender.test.js

@@ -15,5 +15,7 @@ export default {
   overflow: auto;
   padding: 2px 4px;
 }
+
+/*# sourceURL=xmlView.css */
 `
 };

@@ -126,5 +126,7 @@ export default {
   background-color: transparent;
   box-shadow: none;
 }
+
+/*# sourceURL=infobar.css */
 `
 };

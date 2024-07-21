@@ -249,6 +249,9 @@ export class SourceScope {
     icon() {
         return this.#iconInternal;
     }
+    extraProperties() {
+        return [];
+    }
 }
 export class ExtensionRemoteObject extends SDK.RemoteObject.RemoteObject {
     extensionObject;

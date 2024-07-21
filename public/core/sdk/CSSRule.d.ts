@@ -86,15 +86,10 @@ export declare class CSSKeyframeRule extends CSSRule {
     isKeyframeRule(): boolean;
     setKeyText(newKeyText: string): Promise<boolean>;
 }
-export declare class CSSPositionFallbackRule {
-    #private;
-    constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSPositionFallbackRule);
-    name(): CSSValue;
-    tryRules(): CSSRule[];
-}
 export declare class CSSPositionTryRule extends CSSRule {
     #private;
     constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSPositionTryRule);
     name(): CSSValue;
+    active(): boolean;
 }
 export {};

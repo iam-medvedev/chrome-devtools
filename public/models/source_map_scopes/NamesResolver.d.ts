@@ -19,7 +19,7 @@ export declare const scopeIdentifiers: (script: SDK.Script.Script, scope: Format
     freeVariables: IdentifierPositions[];
     boundVariables: IdentifierPositions[];
 } | null>;
-export declare const resolveScopeChain: (callFrame: SDK.DebuggerModel.CallFrame | null) => Promise<SDK.DebuggerModel.ScopeChainEntry[] | null>;
+export declare const resolveScopeChain: (callFrame: SDK.DebuggerModel.CallFrame) => Promise<SDK.DebuggerModel.ScopeChainEntry[]>;
 /**
  * @returns A mapping from original name -> compiled name. If the orignal name is unavailable (e.g. because the compiled name was
  * shadowed) we set it to `null`.
@@ -31,7 +31,7 @@ export declare const allVariablesInCallFrame: (callFrame: SDK.DebuggerModel.Call
  */
 export declare const allVariablesAtPosition: (location: SDK.DebuggerModel.Location) => Promise<Map<string, string | null>>;
 export declare const resolveExpression: (callFrame: SDK.DebuggerModel.CallFrame, originalText: string, uiSourceCode: Workspace.UISourceCode.UISourceCode, lineNumber: number, startColumnNumber: number, endColumnNumber: number) => Promise<string>;
-export declare const resolveThisObject: (callFrame: SDK.DebuggerModel.CallFrame | null) => Promise<SDK.RemoteObject.RemoteObject | null>;
+export declare const resolveThisObject: (callFrame: SDK.DebuggerModel.CallFrame) => Promise<SDK.RemoteObject.RemoteObject | null>;
 export declare const resolveScopeInObject: (scope: SDK.DebuggerModel.ScopeChainEntry) => SDK.RemoteObject.RemoteObject;
 export declare class RemoteObject extends SDK.RemoteObject.RemoteObject {
     private readonly scope;

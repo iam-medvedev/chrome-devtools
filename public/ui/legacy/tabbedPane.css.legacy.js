@@ -448,5 +448,7 @@ export default {
     --tabbed-pane-close-icon-color: HighlightText;
   }
 }
+
+/*# sourceURL=tabbedPane.css */
 `
 };

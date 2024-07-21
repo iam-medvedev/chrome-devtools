@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "."
+    },
+    "files": [
+        "entryLabelOverlay.css.js",
+        "timeRangeOverlay.css.js",
+        "timespanBreakdownOverlay.css.js"
+    ]
+}

@@ -31,14 +31,6 @@ const UIStrings = {
      *@description Text that refers to closure as a programming term
      */
     closure: 'Closure',
-    /**
-     *@description Text in Scope Chain Sidebar Pane of the Sources panel
-     */
-    exception: 'Exception',
-    /**
-     *@description Text in Scope Chain Sidebar Pane of the Sources panel
-     */
-    returnValue: 'Return value',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/ScopeChainSidebarPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -72,12 +64,18 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
     flavorChanged(callFrame) {
         this.#scopeChainModel?.dispose();
         this.#scopeChainModel = null;
+        this.linkifier.reset();
+        this.contentElement.removeChildren();
+        this.contentElement.appendChild(this.infoElement);
         if (callFrame) {
+            // Resolving the scope may take a while to complete, so indicate to the user that something
+            // is happening (see https://crbug.com/1162416).
+            this.infoElement.textContent = i18nString(UIStrings.loading);
             this.#scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(callFrame);
-            this.#scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.ScopeChainUpdated */, event => this.update(event.data), this);
+            this.#scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.ScopeChainUpdated */, event => this.buildScopeTreeOutline(event.data), this);
         }
         else {
-            void this.update(null);
+            this.infoElement.textContent = i18nString(UIStrings.notPaused);
         }
     }
     focus() {
@@ -88,53 +86,31 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
             this.treeOutline.forceSelect();
         }
     }
-    async update(eventScopeChain) {
-        // The `resolveThisObject(callFrame)` and `resolveScopeChain(callFrame)` calls
-        // below may take a while to complete, so indicate to the user that something
-        // is happening (see https://crbug.com/1162416).
-        this.infoElement.textContent = i18nString(UIStrings.loading);
+    buildScopeTreeOutline(eventScopeChain) {
+        const { scopeChain } = eventScopeChain;
+        this.treeOutline.removeChildren();
         this.contentElement.removeChildren();
-        this.contentElement.appendChild(this.infoElement);
-        this.linkifier.reset();
-        const callFrame = eventScopeChain?.callFrame ?? null;
-        const [thisObject, scopeChain] = await Promise.all([
-            SourceMapScopes.NamesResolver.resolveThisObject(callFrame),
-            SourceMapScopes.NamesResolver.resolveScopeChain(callFrame),
-        ]);
-        // By now the developer might have moved on, and we don't want to show stale
-        // scope information, so check again that we're still on the same CallFrame.
-        if (callFrame === UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame)) {
-            const details = UI.Context.Context.instance().flavor(SDK.DebuggerModel.DebuggerPausedDetails);
-            this.treeOutline.removeChildren();
-            if (!details || !callFrame || !scopeChain) {
-                this.infoElement.textContent = i18nString(UIStrings.notPaused);
-                return;
+        this.contentElement.appendChild(this.treeOutline.element);
+        let foundLocalScope = false;
+        for (const [i, scope] of scopeChain.entries()) {
+            if (scope.type() === "local" /* Protocol.Debugger.ScopeType.Local */) {
+                foundLocalScope = true;
             }
-            this.contentElement.removeChildren();
-            this.contentElement.appendChild(this.treeOutline.element);
-            let foundLocalScope = false;
-            for (let i = 0; i < scopeChain.length; ++i) {
-                const scope = scopeChain[i];
-                const extraProperties = this.extraPropertiesForScope(scope, details, callFrame, thisObject, i === 0);
-                if (scope.type() === "local" /* Protocol.Debugger.ScopeType.Local */) {
-                    foundLocalScope = true;
-                }
-                const section = this.createScopeSectionTreeElement(scope, extraProperties);
-                if (scope.type() === "global" /* Protocol.Debugger.ScopeType.Global */) {
-                    section.collapse();
-                }
-                else if (!foundLocalScope || scope.type() === "local" /* Protocol.Debugger.ScopeType.Local */) {
-                    section.expand();
-                }
-                this.treeOutline.appendChild(section);
-                if (i === 0) {
-                    section.select(/* omitFocus */ true);
-                }
+            const section = this.createScopeSectionTreeElement(scope);
+            if (scope.type() === "global" /* Protocol.Debugger.ScopeType.Global */) {
+                section.collapse();
             }
-            this.sidebarPaneUpdatedForTest();
+            else if (!foundLocalScope || scope.type() === "local" /* Protocol.Debugger.ScopeType.Local */) {
+                section.expand();
+            }
+            this.treeOutline.appendChild(section);
+            if (i === 0) {
+                section.select(/* omitFocus */ true);
+            }
         }
+        this.sidebarPaneUpdatedForTest();
     }
-    createScopeSectionTreeElement(scope, extraProperties) {
+    createScopeSectionTreeElement(scope) {
         let emptyPlaceholder = null;
         if (scope.type() === "local" /* Protocol.Debugger.ScopeType.Local */ || scope.type() === "closure" /* Protocol.Debugger.ScopeType.Closure */) {
             emptyPlaceholder = i18nString(UIStrings.noVariables);
@@ -165,34 +141,12 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
         }
         titleElement.createChild('div', 'scope-chain-sidebar-pane-section-subtitle').textContent = subtitle;
         titleElement.createChild('div', 'scope-chain-sidebar-pane-section-title').textContent = title;
-        const section = new ObjectUI.ObjectPropertiesSection.RootElement(SourceMapScopes.NamesResolver.resolveScopeInObject(scope), this.linkifier, emptyPlaceholder, 0 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.All */, extraProperties);
+        const section = new ObjectUI.ObjectPropertiesSection.RootElement(scope.object(), this.linkifier, emptyPlaceholder, 0 /* ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.All */, scope.extraProperties());
         section.title = titleElement;
         section.listItemElement.classList.add('scope-chain-sidebar-pane-section');
         section.listItemElement.setAttribute('aria-label', title);
         this.expandController.watchSection(title + (subtitle ? ':' + subtitle : ''), section);
         return section;
-    }
-    extraPropertiesForScope(scope, details, callFrame, thisObject, isFirstScope) {
-        if (scope.type() !== "local" /* Protocol.Debugger.ScopeType.Local */ || callFrame.script.isWasm()) {
-            return [];
-        }
-        const extraProperties = [];
-        if (thisObject) {
-            extraProperties.push(new SDK.RemoteObject.RemoteObjectProperty('this', thisObject, undefined, undefined, undefined, undefined, undefined, /* synthetic */ true));
-        }
-        if (isFirstScope) {
-            const exception = details.exception();
-            if (exception) {
-                extraProperties.push(new SDK.RemoteObject.RemoteObjectProperty(i18nString(UIStrings.exception), exception, undefined, undefined, undefined, undefined, undefined, 
-                /* synthetic */ true));
-            }
-            const returnValue = callFrame.returnValue();
-            if (returnValue) {
-                extraProperties.push(new SDK.RemoteObject.RemoteObjectProperty(i18nString(UIStrings.returnValue), returnValue, undefined, undefined, undefined, undefined, undefined, 
-                /* synthetic */ true, callFrame.setReturnValue.bind(callFrame)));
-            }
-        }
-        return extraProperties;
     }
     sidebarPaneUpdatedForTest() {
     }

@@ -70,5 +70,7 @@ export default {
   height: 20px;
   pointer-events: none;
 }
+
+/*# sourceURL=timelineGrid.css */
 `
 };

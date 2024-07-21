@@ -13,5 +13,7 @@ export default {
 :host {
   background-color: var(--sys-color-cdt-base-container);
 }
+
+/*# sourceURL=inspectedPagePlaceholder.css */
 `
 };

@@ -23,23 +23,18 @@ function assertSwatch(swatch, expected) {
         assert.strictEqual(swatchEl.getAttribute('title'), expected.tooltip, 'The tooltip is correct');
     }
 }
-function createSwatch(color, formatOrUseUserSetting, tooltip) {
-    const swatch = new InlineEditor.ColorSwatch.ColorSwatch();
+function createSwatch(color, tooltip) {
+    const parsedColor = typeof color === 'string' ? Common.Color.parse(color) : color;
+    assert.isOk(parsedColor);
+    const swatch = new InlineEditor.ColorSwatch.ColorSwatch(tooltip);
     renderElementIntoDOM(swatch);
-    swatch.renderColor(color, formatOrUseUserSetting, tooltip);
+    swatch.renderColor(parsedColor);
     return swatch;
 }
 function getClickTarget(swatch) {
     return swatch.shadowRoot.querySelector('.color-swatch-inner');
 }
 describeWithLocale('ColorSwatch', () => {
-    it('accepts colors as text', () => {
-        const swatch = createSwatch('red');
-        assertSwatch(swatch, {
-            backgroundColor: 'red',
-            colorTextInSlot: 'red',
-        });
-    });
     it('accepts colors as color objects', () => {
         const swatch = createSwatch(Common.Color.parse('red'));
         assertSwatch(swatch, {
@@ -52,23 +47,12 @@ describeWithLocale('ColorSwatch', () => {
             colorTextInSlot: 'rgb(255 128 51 / 50%)',
         });
     });
-    it('renders text only for invalid colors provided as text', () => {
-        const swatch = createSwatch('invalid');
-        assert.strictEqual(swatch.shadowRoot.querySelectorAll('.color-swatch').length, 0, 'There is no swatch in the component');
-        assert.strictEqual(swatch.shadowRoot.textContent, 'invalid', 'The correct value is displayed');
-    });
-    it('accepts a custom color format', () => {
-        const swatch = createSwatch('red', "rgb" /* Common.Color.Format.RGB */);
-        assertSwatch(swatch, { colorTextInSlot: 'red' });
-        swatch.renderColor(new Common.Color.Legacy([1, .5, .2, .5], "rgba" /* Common.Color.Format.RGBA */).as("hsl" /* Common.Color.Format.HSL */), "rgba" /* Common.Color.Format.RGBA */);
-        assertSwatch(swatch, { colorTextInSlot: 'rgb(255 128 51 / 50%)' });
-    });
     it('displays a default tooltip', () => {
         const swatch = createSwatch('red');
         assertSwatch(swatch, { tooltip: 'Shift-click to change color format' });
     });
     it('can display a custom tooltip', () => {
-        const swatch = createSwatch('red', false, 'This is a custom tooltip');
+        const swatch = createSwatch('red', 'This is a custom tooltip');
         assertSwatch(swatch, { tooltip: 'This is a custom tooltip' });
     });
     it('dispatches an event on clicks', () => {
@@ -161,7 +145,7 @@ describeWithLocale('ColorSwatch', () => {
             'color(xyz-d65 0.41 0.21 0.02)',
         ]);
         // With alpha:
-        swatch.renderColor('#ff000080');
+        swatch.renderColor(Common.Color.parse('#ff000080'));
         menu = getMenuForShiftClick(target);
         assert.deepEqual(getMenuItemLabels(menu.section('legacy')), [
             // HEXA is skipped because it's the input
@@ -190,7 +174,7 @@ describeWithLocale('ColorSwatch', () => {
             'color(xyz-d65 0.41 0.21 0.02 / 0.5)',
         ]);
         // With alpha:
-        swatch.renderColor('lab(54.29 80.82 69.9 / 0.5)');
+        swatch.renderColor(Common.Color.parse('lab(54.29 80.82 69.9 / 0.5)'));
         menu = getMenuForShiftClick(target);
         assert.deepEqual(getMenuItemLabels(menu.section('legacy')), [
             '#ff000080',

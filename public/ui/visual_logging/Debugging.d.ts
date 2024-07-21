@@ -16,5 +16,11 @@ export type EventAttributes = {
 };
 export declare function processImpressionsForDebugging(states: LoggingState[]): void;
 export declare function debugString(config: LoggingConfig): string;
+export declare enum DebugLoggingFormat {
+    Intuitive = "Intuitive",
+    Test = "Test",
+    AdHocAnalysis = "AdHocAnalysis"
+}
+export declare function setVeDebugLoggingEnabled(enabled: boolean, format?: DebugLoggingFormat): void;
 export declare function processStartLoggingForDebugging(): void;
 export {};

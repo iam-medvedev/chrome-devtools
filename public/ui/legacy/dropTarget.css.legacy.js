@@ -32,5 +32,7 @@ export default {
   border: 4px dashed var(--sys-color-neutral-outline);
   pointer-events: none;
 }
+
+/*# sourceURL=dropTarget.css */
 `
 };

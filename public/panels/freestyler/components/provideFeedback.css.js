@@ -36,6 +36,16 @@ styles.replaceSync(
   padding: 0 var(--sys-size-4);
 }
 
+.vertical-separator {
+  height: 20px;
+  width: 1px;
+  vertical-align: top;
+  margin: 0 var(--sys-size-2);
+  background: var(--color-background-inverted);
+  opacity: 10%;
+  display: inline-block;
+}
+
 /*# sourceURL=./components/provideFeedback.css */
 `);
 

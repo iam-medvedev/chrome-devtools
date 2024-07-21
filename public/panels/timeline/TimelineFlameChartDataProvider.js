@@ -35,7 +35,6 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { CompatibilityTracksAppender } from './CompatibilityTracksAppender.js';
 import * as Components from './components/components.js';
 import { ExtensionDataGatherer } from './ExtensionDataGatherer.js';
@@ -97,7 +96,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     lastSelection;
     #font;
     #eventIndexByEvent = new WeakMap();
-    #visualElementsParent = null;
     constructor() {
         super();
         this.reset();
@@ -131,9 +129,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                     ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container');
             }
         });
-    }
-    setVisualElementLoggingParent(parent) {
-        this.#visualElementsParent = parent;
     }
     hasTrackConfigurationMode() {
         return true;
@@ -298,23 +293,12 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 this.#processInspectorTrace();
             }
         }
-        this.#registerGroupsForLogging();
         return this.timelineDataInternal;
     }
     /**
      * Register the groups (aka tracks) with the VisualElements framework so
      * later on we can log when an entry inside this group is selected.
      */
-    #registerGroupsForLogging() {
-        if (!this.timelineDataInternal) {
-            return;
-        }
-        for (const group of this.timelineDataInternal.groups) {
-            if (group.jslogContext) {
-                VisualLogging.registerLoggable(group, `${VisualLogging.section().context(group.jslogContext)}`, this.#visualElementsParent);
-            }
-        }
-    }
     #processGenericTrace() {
         if (!this.compatibilityTracksAppender) {
             return;
@@ -402,6 +386,10 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             }
             if (!TimelineFlameChartDataProvider.timelineEntryIsTraceEvent(entry)) {
                 // We only search for events, not for frames, hence this early exit.
+                continue;
+            }
+            if (TraceEngine.Types.TraceEvents.isTraceEventScreenshot(entry)) {
+                // Screenshots are represented as trace events, but you can't search for them, so skip.
                 continue;
             }
             const entryStartTime = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(entry).startTime;

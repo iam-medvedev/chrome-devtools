@@ -9,7 +9,6 @@ import * as Workspace from '../../../models/workspace/workspace.js';
 import { assertElements, dispatchClickEvent, dispatchKeyDownEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
-import { describeWithRealConnection } from '../../../testing/RealConnection.js';
 import { createContentProviderUISourceCode, createFakeScriptMapping, setupMockedUISourceCode, } from '../../../testing/UISourceCodeHelpers.js';
 import * as Coordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
@@ -598,7 +597,18 @@ describeWithEnvironment('BreakpointsSidebarController', () => {
         });
     });
 });
-describeWithRealConnection('BreakpointsSidebarController', () => {
+describeWithMockConnection('BreakpointsSidebarController', () => {
+    beforeEach(() => {
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping,
+            targetManager,
+        });
+        Breakpoints.BreakpointManager.BreakpointManager.instance({ forceNew: true, targetManager, workspace, debuggerWorkspaceBinding });
+    });
     const DEFAULT_BREAKPOINT = [
         Breakpoints.BreakpointManager.EMPTY_BREAKPOINT_CONDITION,
         true, // enabled
@@ -665,6 +675,7 @@ describeWithRealConnection('BreakpointsSidebarController', () => {
         Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
     });
     it('auto-expands if a breakpoint was hit', async () => {
+        sinon.stub(Common.Revealer.RevealerRegistry.instance(), 'reveal'); // Prevent pending reveal promises after tests are done.
         const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance();
         // Set up sdk and ui location, and a mapping between them, such that we can identify that
         // the hit breakpoint is the one we are adding.

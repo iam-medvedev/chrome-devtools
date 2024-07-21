@@ -54,6 +54,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
         forceNew: boolean | null;
         isNode: boolean;
     } | undefined): TimelinePanel;
+    static extensionDataVisibilitySetting(): Common.Settings.Setting<boolean>;
     searchableView(): UI.SearchableView.SearchableView | null;
     wasShown(): void;
     willHide(): void;
@@ -89,7 +90,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     selectFileToLoad(): void;
     loadFromFile(file: File): Promise<void>;
     loadFromURL(url: Platform.DevToolsPath.UrlString): Promise<void>;
-    private updateOverviewControls;
+    private updateMiniMap;
     private onModeChanged;
     private updateSettingsPaneVisibility;
     private updateShowSettingsToolbarButton;
@@ -106,6 +107,15 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private onFixMe;
     private clear;
     private reset;
+    /**
+     * Called when we update the active trace that is being shown to the user.
+     * This is called from {@see loadingComplete} when a trace is
+     * imported/recorded, but it can also be called when the user uses the history
+     * dropdown.
+     *
+     * If you need code to execute whenever the active trace changes, this is the method to use.
+     * If you need code to execute ONLY ON NEW TRACES, then use {@see loadingComplete}
+     */
     setModel(traceEngineIndex: number, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null): void;
     private recordingStarted;
     recordingProgress(usage: number): void;
@@ -117,6 +127,11 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     /**
      * This is called with we are done loading a trace from a file, or after we
      * have recorded a fresh trace.
+     *
+     * IMPORTANT: All the code in here should be code that is only required when we have
+     * recorded or loaded a brand new trace. If you need the code to run when the
+     * user switches to an existing trace, please {@see setModel} and put your
+     * code in there.
      **/
     loadingComplete(collectedEvents: TraceEngine.Types.TraceEvents.TraceEventData[], exclusiveFilter: (TimelineModel.TimelineModelFilter.TimelineModelFilter | null) | undefined, isCpuProfile: boolean, recordingStartTime: number | null, metadata: TraceEngine.Types.File.MetaData | null): Promise<void>;
     recordTraceLoadMetric(): void;

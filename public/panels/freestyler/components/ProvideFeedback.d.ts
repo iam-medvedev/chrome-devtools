@@ -1,7 +1,6 @@
 import * as Host from '../../../core/host/host.js';
 export interface ProvideFeedbackProps {
-    onRateClick: (rate: Host.AidaClient.Rating) => void;
-    onFeedbackSubmit: (feedback: string) => void;
+    onFeedbackSubmit: (rate: Host.AidaClient.Rating, feedback?: string) => void;
 }
 export declare class ProvideFeedback extends HTMLElement {
     #private;

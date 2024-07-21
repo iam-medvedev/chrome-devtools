@@ -24,6 +24,7 @@ export declare class SourceScope implements SDK.DebuggerModel.ScopeChainEntry {
     object(): SourceScopeRemoteObject;
     description(): string;
     icon(): string | undefined;
+    extraProperties(): SDK.RemoteObject.RemoteObjectProperty[];
 }
 export declare class ExtensionRemoteObject extends SDK.RemoteObject.RemoteObject {
     private readonly extensionObject;

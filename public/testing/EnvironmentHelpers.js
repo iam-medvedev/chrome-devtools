@@ -105,7 +105,6 @@ const REGISTERED_EXPERIMENTS = [
     "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
     "perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */,
     "timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */,
-    "timeline-extensions" /* Root.Runtime.ExperimentName.TIMELINE_EXTENSIONS */,
     "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
     "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
     "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
@@ -383,10 +382,6 @@ export function expectConsoleLogs(expectedLogs) {
 export function getGetHostConfigStub(config) {
     const settings = Common.Settings.Settings.instance();
     return sinon.stub(settings, 'getHostConfig').returns({
-        devToolsAida: {
-            enabled: false,
-            ...config.devToolsAida,
-        },
         devToolsConsoleInsights: {
             enabled: false,
             aidaModelId: '',
@@ -398,6 +393,10 @@ export function getGetHostConfigStub(config) {
             aidaTemperature: 0,
             enabled: false,
             ...config.devToolsFreestylerDogfood,
+        },
+        devToolsVeLogging: {
+            enabled: true,
+            testing: false,
         },
     });
 }

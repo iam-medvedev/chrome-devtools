@@ -28,5 +28,7 @@ export default {
 .widget.has-padding {
   padding: 6px;
 }
+
+/*# sourceURL=popover.css */
 `
 };

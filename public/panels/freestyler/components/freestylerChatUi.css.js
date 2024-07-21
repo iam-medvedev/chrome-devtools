@@ -11,8 +11,13 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 :host {
-  max-width: 720px;
   width: 100%;
   height: 100%;
   user-select: text;
@@ -22,30 +27,27 @@ styles.replaceSync(
 }
 
 .chat-ui {
-  box-sizing: border-box;
   width: 100%;
-  margin-top: var(--sys-size-6);
-  padding: 0 var(--sys-size-8);
+  height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
 }
 
 .input-form {
-  margin-top: auto;
   display: flex;
   flex-direction: column;
-  padding-top: var(--sys-size-8);
-  margin-bottom: var(--sys-size-4);
-  max-width: 100%;
+  padding: var(--sys-size-8) var(--sys-size-4) 0 var(--sys-size-4);
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .chat-input-container {
-  margin-bottom: var(--sys-size-3);
-  height: var(--sys-size-11);
+  margin: var(--sys-size-3) 0;
+  padding: 0 2px;
   border-radius: 4px;
   border: 1px solid var(--sys-color-neutral-outline);
-  padding: 0 2px;
   width: 100%;
   display: flex;
   background-color: var(--sys-color-cdt-base-container);
@@ -75,7 +77,18 @@ styles.replaceSync(
 .chat-input-disclaimer {
   text-align: center;
   color: var(--sys-color-on-surface-subtle);
-  margin-bottom: 2px;
+  margin-bottom: var(--sys-size-4);
+}
+
+.messages-container {
+  margin: var(--sys-size-6) auto 0 auto;
+  max-width: 720px;
+  padding: 0 var(--sys-size-4);
+}
+
+.messages-scroll-container {
+  overflow: overlay;
+  flex-grow: 1;
 }
 
 .chat-message {
@@ -134,11 +147,11 @@ styles.replaceSync(
     align-items: center;
     gap: var(--sys-size-2);
   }
+}
 
-  & .link {
-    color: var(--text-link);
-    text-decoration: underline;
-  }
+.link {
+  color: var(--text-link);
+  text-decoration: underline;
 }
 
 .select-an-element-text {

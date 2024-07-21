@@ -14,5 +14,7 @@ export default {
   padding: 2px 6px;
   overflow: auto;
 }
+
+/*# sourceURL=jsonView.css */
 `
 };

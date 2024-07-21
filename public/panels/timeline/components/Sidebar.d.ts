@@ -17,6 +17,11 @@ export declare class ToggleSidebarInsights extends Event {
     static readonly eventName = "toggleinsightclick";
     constructor();
 }
+export declare class RemoveAnnotation extends Event {
+    removedAnnotation: TraceEngine.Types.File.Annotation;
+    static readonly eventName = "removeannotation";
+    constructor(removedAnnotation: TraceEngine.Types.File.Annotation);
+}
 export declare const enum WidgetEvents {
     SidebarCollapseClick = "SidebarCollapseClick"
 }
@@ -37,7 +42,7 @@ export declare class SidebarWidget extends SidebarWidget_base {
     updateContentsOnExpand(): void;
     setAnnotationsTabContent(updatedAnnotations: TraceEngine.Types.File.Annotation[]): void;
     setTraceParsedData(traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null): void;
-    set data(insights: TraceEngine.Insights.Types.TraceInsightData);
+    setInsights(insights: TraceEngine.Insights.Types.TraceInsightData): void;
 }
 export declare class SidebarUI extends HTMLElement {
     #private;

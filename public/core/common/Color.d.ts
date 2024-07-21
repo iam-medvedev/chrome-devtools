@@ -334,25 +334,14 @@ export declare const IsolationModeHighlight: {
     ResizerHandle: Legacy;
     Mask: Legacy;
 };
+type Space = number | {
+    min: number;
+    max: number;
+    count: (number | undefined);
+};
 export declare class Generator {
     #private;
-    constructor(hueSpace?: number | {
-        min: number;
-        max: number;
-        count: (number | undefined);
-    }, satSpace?: number | {
-        min: number;
-        max: number;
-        count: (number | undefined);
-    }, lightnessSpace?: number | {
-        min: number;
-        max: number;
-        count: (number | undefined);
-    }, alphaSpace?: number | {
-        min: number;
-        max: number;
-        count: (number | undefined);
-    });
+    constructor(hueSpace?: Space, satSpace?: Space, lightnessSpace?: Space, alphaSpace?: Space);
     setColorForID(id: string, color: string): void;
     colorForID(id: string): string;
     private generateColorForID;

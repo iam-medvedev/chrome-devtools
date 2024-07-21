@@ -200,7 +200,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 assert.isOk(colorSwatch);
                 const newColor = colorSwatch.getColor()?.as("hex" /* Common.Color.Format.HEX */);
                 assert.isOk(newColor);
-                colorSwatch.updateColor(newColor);
+                colorSwatch.setColor(newColor);
                 assert.strictEqual(outerColorMix.getText(), 'color-mix(in srgb, color-mix(in oklch, #ff0000, green), blue)');
                 assert.deepStrictEqual(handler.args[1][0].data, { text: 'color-mix(in srgb, color-mix(in oklch, #ff0000, green), blue)' });
             });
@@ -237,7 +237,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         assert.match(expectedColorString, /lab\([-.0-9]* [-.0-9]* [-.0-9]*\)/);
         const newColor = swatch.getColor()?.as("lab" /* Common.Color.Format.LAB */);
         assert.isOk(newColor);
-        swatch.updateColor(newColor);
+        swatch.setColorText(newColor);
         assert.deepEqual(stylePropertyTreeElement.renderedPropertyText(), `color: ${expectedColorString}`);
         assert.isTrue(applyStyleTextStub.alwaysCalledWith(`color: ${expectedColorString}`, false));
     });
@@ -432,6 +432,36 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.strictEqual(cssVarSwatch.textContent, 'var( --test    )');
             assert.strictEqual(stylePropertyTreeElement.valueElement.textContent, 'var( --test    )');
         });
+        it('connects nested color swatches', () => {
+            const stylePropertyTreeElement = getTreeElement('color', 'var(--void, red)');
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            const cssVarSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-css-var-swatch');
+            assert.exists(cssVarSwatch);
+            const outerColorSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-swatch');
+            assert.exists(outerColorSwatch);
+            const innerColorSwatch = cssVarSwatch.querySelector('devtools-color-swatch');
+            assert.exists(innerColorSwatch);
+            assert.notStrictEqual(outerColorSwatch, innerColorSwatch);
+            const color = new Common.Color.Lab(1, 0, 0, null, undefined);
+            innerColorSwatch.setColor(color);
+            assert.strictEqual(outerColorSwatch.getColor(), color);
+        });
+        it('only connects nested color swatches if the fallback is actually taken', () => {
+            const stylePropertyTreeElement = getTreeElement('color', 'var(--blue, red)');
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            const cssVarSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-css-var-swatch');
+            assert.exists(cssVarSwatch);
+            const outerColorSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-swatch');
+            assert.exists(outerColorSwatch);
+            const innerColorSwatch = cssVarSwatch.querySelector('devtools-color-swatch');
+            assert.exists(innerColorSwatch);
+            assert.notStrictEqual(outerColorSwatch, innerColorSwatch);
+            const color = new Common.Color.Lab(1, 0, 0, null, undefined);
+            innerColorSwatch.setColor(color);
+            assert.strictEqual(outerColorSwatch.getColor()?.asString(), 'blue');
+        });
     });
     function setUpStyles(cssModel, cssProperties, styleSheetId = '0', origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */, selector = 'div') {
         const matchedPayload = [{
@@ -474,7 +504,6 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             inheritedPseudoPayload: [],
             animationsPayload: [],
             parentLayoutNodeId: undefined,
-            positionFallbackRules: [],
             positionTryRules: [],
             propertyRules: [],
             cssPropertyRegistrations: [],
@@ -559,8 +588,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             const stylePropertyTreeElement = getTreeElement('color', invalidColor);
             stylePropertyTreeElement.updateTitle();
             const colorSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-swatch');
-            assert.isOk(colorSwatch);
-            assert.isNull(colorSwatch.getColor());
+            assert.isNull(colorSwatch);
         });
     });
     describe('BezierRenderer', () => {
@@ -1102,6 +1130,31 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.lengthOf(swatches, 1);
             assert.strictEqual(swatches[0].textContent, 'red');
             assert.strictEqual(swatches[0].parentElement?.style.textDecoration, '');
+        });
+        it('connects inner and outer swatches', async () => {
+            const colorSchemeSpy = sinon.spy(Elements.StylePropertyTreeElement.LightDarkColorRenderer.prototype, 'applyColorScheme');
+            for (const colorScheme of ["light" /* SDK.CSSModel.ColorScheme.Light */, "dark" /* SDK.CSSModel.ColorScheme.Dark */]) {
+                const lightDark = 'light-dark(red, blue)';
+                const stylePropertyTreeElement = getTreeElement('color', lightDark);
+                stylePropertyTreeElement.setComputedStyles(new Map([['color-scheme', colorScheme]]));
+                stylePropertyTreeElement.updateTitle();
+                await Promise.all(colorSchemeSpy.returnValues);
+                const outerSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-swatch');
+                assert.exists(outerSwatch);
+                const innerSwatches = outerSwatch.querySelectorAll('devtools-color-swatch');
+                assert.lengthOf(innerSwatches, 2);
+                const [lightSwatch, darkSwatch] = innerSwatches;
+                const newLightColor = Common.Color.parse('white');
+                const newDarkColor = Common.Color.parse('black');
+                lightSwatch.setColor(newLightColor);
+                darkSwatch.setColor(newDarkColor);
+                if (colorScheme === "dark" /* SDK.CSSModel.ColorScheme.Dark */) {
+                    assert.strictEqual(outerSwatch.getColor(), newDarkColor);
+                }
+                else {
+                    assert.strictEqual(outerSwatch.getColor(), newLightColor);
+                }
+            }
         });
     });
     describe('LinearGradientRenderer', () => {

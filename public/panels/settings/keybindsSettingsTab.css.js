@@ -15,7 +15,7 @@ header {
   padding: 0 0 6px;
   border-bottom: 1px solid var(--sys-color-divider);
   flex: none;
-  margin-bottom: 25px;
+  margin-bottom: 16px;
 }
 
 h1 {
@@ -173,7 +173,7 @@ h1 {
 
 .keybinds-set-select {
   text-align: right;
-  margin-bottom: 25px;
+  margin-bottom: 16px;
 }
 
 .keybinds-set-select label p {
@@ -183,6 +183,7 @@ h1 {
 
 .keybinds-set-select select {
   margin-left: 6px;
+  margin-top: 6px;
 }
 
 button.text-button {

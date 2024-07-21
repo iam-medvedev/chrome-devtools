@@ -176,5 +176,7 @@ button.toolbar-item:focus-visible {
     color: HighlightText;
   }
 }
+
+/*# sourceURL=filter.css */
 `
 };

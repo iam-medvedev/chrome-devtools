@@ -1,7 +1,7 @@
 import * as Protocol from '../../generated/protocol.js';
 import { type CSSModel } from './CSSModel.js';
 import { type CSSProperty } from './CSSProperty.js';
-import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionFallbackRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule } from './CSSRule.js';
+import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule } from './CSSRule.js';
 import { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
 import { type DOMNode } from './DOMModel.js';
 export interface CSSMatchedStylesPayload {
@@ -15,7 +15,6 @@ export interface CSSMatchedStylesPayload {
     inheritedPseudoPayload: Protocol.CSS.InheritedPseudoElementMatches[];
     animationsPayload: Protocol.CSS.CSSKeyframesRule[];
     parentLayoutNodeId: Protocol.DOM.NodeId | undefined;
-    positionFallbackRules: Protocol.CSS.CSSPositionFallbackRule[];
     positionTryRules: Protocol.CSS.CSSPositionTryRule[];
     propertyRules: Protocol.CSS.CSSPropertyRule[];
     cssPropertyRegistrations: Protocol.CSS.CSSPropertyRegistration[];
@@ -62,7 +61,6 @@ export declare class CSSMatchedStyles {
     getRegisteredProperty(name: string): CSSRegisteredProperty | undefined;
     fontPaletteValuesRule(): CSSFontPaletteValuesRule | undefined;
     keyframes(): CSSKeyframesRule[];
-    positionFallbackRules(): CSSPositionFallbackRule[];
     positionTryRules(): CSSPositionTryRule[];
     pseudoStyles(pseudoType: Protocol.DOM.PseudoType): CSSStyleDeclaration[];
     pseudoTypes(): Set<Protocol.DOM.PseudoType>;

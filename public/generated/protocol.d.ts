@@ -5537,6 +5537,18 @@ export declare namespace Emulation {
         xyz?: SensorReadingXYZ;
         quaternion?: SensorReadingQuaternion;
     }
+    const enum PressureSource {
+        Cpu = "cpu"
+    }
+    const enum PressureState {
+        Nominal = "nominal",
+        Fair = "fair",
+        Serious = "serious",
+        Critical = "critical"
+    }
+    interface PressureMetadata {
+        available?: boolean;
+    }
     /**
      * Enum of image types that can be disabled.
      */
@@ -5722,6 +5734,15 @@ export declare namespace Emulation {
     interface SetSensorOverrideReadingsRequest {
         type: SensorType;
         reading: SensorReading;
+    }
+    interface SetPressureSourceOverrideEnabledRequest {
+        enabled: boolean;
+        source: PressureSource;
+        metadata?: PressureMetadata;
+    }
+    interface SetPressureStateOverrideRequest {
+        source: PressureSource;
+        state: PressureState;
     }
     interface SetIdleOverrideRequest {
         /**
@@ -13372,6 +13393,25 @@ export declare namespace Storage {
         Exact = "exact",
         Modulus = "modulus"
     }
+    interface AttributionReportingAggregatableDebugReportingData {
+        keyPiece: UnsignedInt128AsBase16;
+        /**
+         * number instead of integer because not all uint32 can be represented by
+         * int
+         */
+        value: number;
+        types: string[];
+    }
+    interface AttributionReportingAggregatableDebugReportingConfig {
+        /**
+         * number instead of integer because not all uint32 can be represented by
+         * int, only present for source registrations
+         */
+        budget?: number;
+        keyPiece: UnsignedInt128AsBase16;
+        debugData: AttributionReportingAggregatableDebugReportingData[];
+        aggregationCoordinatorOrigin?: string;
+    }
     interface AttributionReportingSourceRegistration {
         time: Network.TimeSinceEpoch;
         /**
@@ -13394,6 +13434,7 @@ export declare namespace Storage {
         debugKey?: UnsignedInt64AsBase10;
         triggerDataMatching: AttributionReportingTriggerDataMatching;
         destinationLimitPriority: SignedInt64AsBase10;
+        aggregatableDebugReportingConfig: AttributionReportingAggregatableDebugReportingConfig;
     }
     const enum AttributionReportingSourceRegistrationResult {
         Success = "success",
@@ -13455,6 +13496,7 @@ export declare namespace Storage {
         aggregationCoordinatorOrigin?: string;
         sourceRegistrationTimeConfig: AttributionReportingSourceRegistrationTimeConfig;
         triggerContextId?: string;
+        aggregatableDebugReportingConfig: AttributionReportingAggregatableDebugReportingConfig;
     }
     const enum AttributionReportingEventLevelResult {
         Success = "success",

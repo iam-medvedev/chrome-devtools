@@ -13,6 +13,25 @@ styles.replaceSync(
 
 .annotations {
   display: block;
+  padding: 0;
+}
+
+.bin-icon {
+  visibility: hidden;
+}
+
+.annotation-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &:hover {
+    background-color: var(--sys-color-neutral-container);
+
+    .bin-icon {
+      visibility: visible;
+    }
+  }
 }
 
 .annotation {

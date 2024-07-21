@@ -306,18 +306,15 @@ export class InspectorFrontendHostStub {
     }
     getHostConfig(callback) {
         const result = {
-            devToolsAida: {
+            devToolsConsoleInsights: {
+                aidaModelId: '',
+                aidaTemperature: 0,
                 blocked: true,
                 blockedByAge: false,
                 blockedByEnterprisePolicy: false,
                 blockedByFeatureFlag: true,
                 blockedByGeo: false,
                 blockedByRollout: false,
-                enabled: false,
-            },
-            devToolsConsoleInsights: {
-                aidaModelId: '',
-                aidaTemperature: 0,
                 disallowLogging: false,
                 enabled: false,
                 optIn: false,
@@ -326,6 +323,10 @@ export class InspectorFrontendHostStub {
                 aidaModelId: '',
                 aidaTemperature: 0,
                 enabled: false,
+            },
+            devToolsVeLogging: {
+                enabled: true,
+                testing: false,
             },
         };
         if ('hostConfigForTesting' in globalThis) {
@@ -397,7 +398,7 @@ export class InspectorFrontendHostStub {
             error: 'Not implemented',
         });
     }
-    registerAidaClientEvent(request) {
+    registerAidaClientEvent(request, callback) {
     }
     recordImpression(event) {
     }

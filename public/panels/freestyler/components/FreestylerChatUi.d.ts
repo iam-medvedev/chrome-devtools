@@ -1,9 +1,11 @@
 import * as Host from '../../../core/host/host.js';
+import type * as Platform from '../../../core/platform/platform.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import { type ActionStepData, type CommonStepData } from '../FreestylerAgent.js';
+export declare const DOGFOOD_INFO: Platform.DevToolsPath.UrlString;
 interface ConfirmSideEffectDialog {
     code: string;
     onAnswer: (result: boolean) => void;
@@ -30,8 +32,7 @@ export declare const enum State {
 export interface Props {
     onTextSubmit: (text: string) => void;
     onInspectElementClick: () => void;
-    onRateClick: (rpcId: number, rate: Host.AidaClient.Rating) => void;
-    onFeedbackSubmit: (rpcId: number, feedback: string) => void;
+    onFeedbackSubmit: (rpcId: number, rate: Host.AidaClient.Rating, feedback?: string) => void;
     onAcceptConsentClick: () => void;
     onCancelClick: () => void;
     onFixThisIssueClick: () => void;
@@ -53,6 +54,7 @@ export declare class FreestylerChatUi extends HTMLElement {
     set props(props: Props);
     connectedCallback(): void;
     focusTextInput(): void;
+    scrollToLastMessage(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

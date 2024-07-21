@@ -135,5 +135,7 @@ export default {
     }
   }
 }
+
+/*# sourceURL=inspectorSyntaxHighlight.css */
 `
 };

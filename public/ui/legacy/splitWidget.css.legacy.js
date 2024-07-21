@@ -96,5 +96,7 @@ export default {
 :host-context(.disable-resizer-for-elements-hack) .shadow-split-widget-resizer {
   pointer-events: none;
 }
+
+/*# sourceURL=splitWidget.css */
 `
 };

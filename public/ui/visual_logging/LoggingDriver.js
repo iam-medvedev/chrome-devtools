@@ -9,7 +9,7 @@ import { getDomState, visibleOverlap } from './DomState.js';
 import { getLoggingConfig } from './LoggingConfig.js';
 import { logChange, logClick, logDrag, logHover, logImpressions, logKeyDown, logResize } from './LoggingEvents.js';
 import { getLoggingState, getOrCreateLoggingState } from './LoggingState.js';
-import { getNonDomState, unregisterAllLoggables, unregisterLoggable } from './NonDomState.js';
+import { getNonDomLoggables, hasNonDomLoggables, unregisterAllLoggables, unregisterLoggables } from './NonDomState.js';
 const PROCESS_DOM_INTERVAL = 500;
 const KEYBOARD_LOG_INTERVAL = 3000;
 const HOVER_LOG_INTERVAL = 1000;
@@ -129,6 +129,7 @@ async function process() {
     const { loggables, shadowRoots } = getDomState(documents);
     const visibleLoggables = [];
     observeMutations(shadowRoots);
+    const nonDomRoots = [undefined];
     for (const { element, parent } of loggables) {
         const loggingState = getOrCreateLoggingState(element, getLoggingConfig(element), parent);
         if (!loggingState.impressionLogged) {
@@ -141,6 +142,9 @@ async function process() {
                 visibleLoggables.push(element);
                 loggingState.impressionLogged = true;
             }
+        }
+        if (loggingState.impressionLogged && hasNonDomLoggables(element)) {
+            nonDomRoots.push(element);
         }
         if (!loggingState.processed) {
             const clickLikeHandler = (doubleClick) => (e) => {
@@ -228,18 +232,20 @@ async function process() {
         }
         processForDebugging(element);
     }
-    for (const { loggable, config, parent } of getNonDomState().loggables) {
-        const loggingState = getOrCreateLoggingState(loggable, config, parent);
-        const visible = !parent || loggingState.parent?.impressionLogged;
-        if (!visible) {
-            continue;
+    for (let i = 0; i < nonDomRoots.length; ++i) {
+        const root = nonDomRoots[i];
+        for (const { loggable, config, parent } of getNonDomLoggables(root)) {
+            const loggingState = getOrCreateLoggingState(loggable, config, parent);
+            processForDebugging(loggable);
+            visibleLoggables.push(loggable);
+            loggingState.impressionLogged = true;
+            if (hasNonDomLoggables(loggable)) {
+                nonDomRoots.push(loggable);
+            }
         }
-        processForDebugging(loggable);
-        visibleLoggables.push(loggable);
-        loggingState.impressionLogged = true;
         // No need to track loggable as soon as we've logged the impression
         // We can still log interaction events with a handle to a loggable
-        unregisterLoggable(loggable);
+        unregisterLoggables(root);
     }
     if (visibleLoggables.length) {
         await yieldToInteractions();

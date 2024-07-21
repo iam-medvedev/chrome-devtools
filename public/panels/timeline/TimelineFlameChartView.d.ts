@@ -1,7 +1,7 @@
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type TimelineOverlay, type TimespanBreakdown } from './Overlays.js';
+import * as Overlays from './overlays/overlays.js';
 import { TimelineFlameChartDataProvider } from './TimelineFlameChartDataProvider.js';
 import { type TimelineModeViewDelegate } from './TimelinePanel.js';
 import { TimelineSelection } from './TimelineSelection.js';
@@ -39,6 +39,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     isNetworkTrackShownForTests(): boolean;
     getMainDataProvider(): TimelineFlameChartDataProvider;
     refreshMainFlameChart(): void;
+    extensionDataVisibilityChanged(): void;
     windowChanged(windowStartTime: TraceEngine.Types.Timing.MilliSeconds, windowEndTime: TraceEngine.Types.Timing.MilliSeconds, animate: boolean): void;
     /**
      * @param startTime - the start time of the selection in MilliSeconds
@@ -54,16 +55,16 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     /**
      * This creates and returns a new timespanBreakdownOverlay with LCP phases data.
      */
-    createLCPPhaseOverlay(): TimespanBreakdown | null;
+    createLCPPhaseOverlay(): Overlays.Overlays.TimespanBreakdown | null;
     private onEntryHighlighted;
     highlightEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
     willHide(): void;
     wasShown(): void;
     updateCountersGraphToggle(showMemoryGraph: boolean): void;
     setSelection(selection: TimelineSelection | null): void;
-    addOverlay<T extends TimelineOverlay>(newOverlay: T): T;
-    removeOverlay(removedOverlay: TimelineOverlay): void;
-    updateExistingOverlay<T extends TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
+    addOverlay<T extends Overlays.Overlays.TimelineOverlay>(newOverlay: T): T;
+    removeOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
+    updateExistingOverlay<T extends Overlays.Overlays.TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
     private onAnnotateEntry;
     private onEntrySelected;
     resizeToPreferredHeights(): void;

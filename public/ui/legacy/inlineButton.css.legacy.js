@@ -26,5 +26,7 @@ export default {
   border: none;
   background-color: var(--sys-color-state-hover-on-subtle);
 }
+
+/*# sourceURL=inlineButton.css */
 `
 };

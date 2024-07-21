@@ -55,5 +55,7 @@ export default {
     forced-color-adjust: none;
   }
 }
+
+/*# sourceURL=slider.css */
 `
 };

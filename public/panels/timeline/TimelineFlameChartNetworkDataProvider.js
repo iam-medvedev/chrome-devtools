@@ -8,13 +8,13 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as TimelineComponents from './components/components.js';
 import { initiatorsDataToDrawForNetwork } from './Initiators.js';
 import { NetworkTrackAppender } from './NetworkTrackAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
 import { TimelineSelection } from './TimelineSelection.js';
+import * as TimelineUtils from './utils/utils.js';
 export class TimelineFlameChartNetworkDataProvider {
     #minimumBoundaryInternal;
     #timeSpan;
@@ -25,7 +25,6 @@ export class TimelineFlameChartNetworkDataProvider {
     #lastSelection;
     #traceParseData;
     #eventIndexByEvent = new Map();
-    #visualElementsParent = null;
     // -1 means no entry is selected.
     #lastInitiatorEntry = -1;
     #lastInitiatorsData = [];
@@ -46,9 +45,6 @@ export class TimelineFlameChartNetworkDataProvider {
             this.setEvents(this.#traceParseData);
             this.#setTimingBoundsData(this.#traceParseData);
         }
-    }
-    setVisualElementLoggingParent(parent) {
-        this.#visualElementsParent = parent;
     }
     setEvents(traceEngineData) {
         if (traceEngineData.NetworkRequests.webSocket) {
@@ -87,11 +83,6 @@ export class TimelineFlameChartNetworkDataProvider {
         }
         this.#networkTrackAppender = new NetworkTrackAppender(this.#timelineDataInternal, this.#events);
         this.#maxLevel = this.#networkTrackAppender.appendTrackAtLevel(0);
-        for (const group of this.#timelineDataInternal.groups) {
-            if (group.jslogContext) {
-                VisualLogging.registerLoggable(group, `${VisualLogging.section().context(group.jslogContext)}`, this.#visualElementsParent);
-            }
-        }
         return this.#timelineDataInternal;
     }
     minimumBoundary() {
@@ -110,6 +101,16 @@ export class TimelineFlameChartNetworkDataProvider {
         const event = this.#events[index];
         this.#lastSelection = new Selection(TimelineSelection.fromTraceEvent(event), index);
         return this.#lastSelection.timelineSelection;
+    }
+    customizedContextMenu(event, eventIndex) {
+        const networkRequest = this.eventByIndex(eventIndex);
+        if (!networkRequest || !TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(networkRequest)) {
+            return;
+        }
+        const request = new TimelineUtils.NetworkRequest.TimelineNetworkRequest(networkRequest);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+        contextMenu.appendApplicableItems(request);
+        return contextMenu;
     }
     indexForEvent(event) {
         // In the NetworkDataProvider we will never be dealing with frames, but we need to satisfy the interface for a DataProvider.

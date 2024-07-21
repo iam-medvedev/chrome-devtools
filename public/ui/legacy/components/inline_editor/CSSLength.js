@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 import * as Host from '../../../../core/host/host.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
-import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import cssLengthStyles from './cssLength.css.js';
-import { LENGTH_UNITS, parseText } from './CSSLengthUtils.js';
+import { parseText } from './CSSLengthUtils.js';
 import { ValueChangedEvent } from './InlineEditorUtils.js';
 const { render, html, Directives: { classMap } } = LitHtml;
 export class DraggingFinishedEvent extends Event {
@@ -40,12 +39,6 @@ export class CSSLength extends HTMLElement {
     connectedCallback() {
         this.shadow.adoptedStyleSheets = [cssLengthStyles];
     }
-    onUnitChange(event) {
-        this.length.unit = event.target.value;
-        this.dispatchEvent(new ValueChangedEvent(`${this.length.value}${this.length.unit}`));
-        this.dispatchEvent(new DraggingFinishedEvent());
-        this.render();
-    }
     dragValue(event) {
         event.preventDefault();
         event.stopPropagation();
@@ -64,6 +57,7 @@ export class CSSLength extends HTMLElement {
         }
         this.length.value = this.length.value + displacement;
         this.dispatchEvent(new ValueChangedEvent(`${this.length.value}${this.length.unit}`));
+        Host.userMetrics.swatchActivated(8 /* Host.UserMetrics.SwatchType.Length */);
         this.render();
     }
     onValueMousedown(event) {
@@ -93,11 +87,6 @@ export class CSSLength extends HTMLElement {
             this.render();
         }
     }
-    onUnitMouseup(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        Host.userMetrics.swatchActivated(8 /* Host.UserMetrics.SwatchType.Length */);
-    }
     render() {
         const classes = {
             'css-length': true,
@@ -118,27 +107,13 @@ export class CSSLength extends HTMLElement {
         if (this.isEditingSlot) {
             return html `<slot></slot>`;
         }
-        const options = LENGTH_UNITS.map(unit => {
-            return html `
-          <option value=${unit} .selected=${this.length.unit === unit}>${unit}</option>
-        `;
-        });
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
         <span class="value"
           @mousedown=${this.onValueMousedown}
           @mouseup=${this.onValueMouseup}
-        >${this.length.value}</span><span class="unit">${this.length.unit}</span>
-        <div class="unit-dropdown">
-          <span class="icon"></span>
-          <select
-            jslog=${VisualLogging.dropDown('unit').track({ change: true })}
-            @mouseup=${this.onUnitMouseup}
-            @change=${this.onUnitChange}>
-            ${options}
-          </select>
-        </div>
+        >${this.length.value}</span>${this.length.unit}
       `;
         // clang-format on
     }

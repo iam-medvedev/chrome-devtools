@@ -92,11 +92,20 @@ export class ModificationsManager extends EventTarget {
         const newOverlay = {
             type: 'ENTRY_LABEL',
             entry: newAnnotation.entry,
-            label: '',
+            label: newAnnotation.label,
         };
         this.#overlayForAnnotation.set(newAnnotation, newOverlay);
         // TODO: When we have more annotations, check the annotation type and create the appropriate one
         this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add'));
+    }
+    removeAnnotation(removedAnnotation) {
+        const overlayToRemove = this.#overlayForAnnotation.get(removedAnnotation);
+        if (!overlayToRemove) {
+            console.warn('Overlay for deleted Annotation does not exist');
+            return;
+        }
+        this.#overlayForAnnotation.delete(removedAnnotation);
+        this.dispatchEvent(new AnnotationModifiedEvent(overlayToRemove, 'Remove'));
     }
     removeAnnotationOverlay(removedOverlay) {
         const annotationForRemovedOverlay = this.#getAnnotationByOverlay(removedOverlay);
@@ -129,6 +138,9 @@ export class ModificationsManager extends EventTarget {
     getAnnotations() {
         return [...this.#overlayForAnnotation.keys()];
     }
+    getOverlays() {
+        return [...this.#overlayForAnnotation.values()];
+    }
     /**
      * Builds all modifications into a serializable object written into
      * the 'modifications' trace file metadata field.
@@ -146,20 +158,47 @@ export class ModificationsManager extends EventTarget {
                 expandableEntries: expandableEntries,
             },
             initialBreadcrumb: this.#timelineBreadcrumbs.initialBreadcrumb,
+            annotations: this.#annotationsJSON(),
         };
         return this.#modifications;
     }
+    #annotationsJSON() {
+        const annotations = this.getAnnotations();
+        const entryLabelsSerialized = [];
+        for (let i = 0; i < annotations.length; i++) {
+            if (annotations[i].type === 'ENTRY_LABEL') {
+                const serializedEvent = this.#eventsSerializer.keyForEvent(annotations[i].entry);
+                if (serializedEvent) {
+                    entryLabelsSerialized.push({
+                        entry: serializedEvent,
+                        label: annotations[i].label,
+                    });
+                }
+            }
+        }
+        return {
+            entryLabels: entryLabelsSerialized,
+        };
+    }
     applyModificationsIfPresent() {
         const modifications = this.#modifications;
-        if (!modifications) {
+        if (!modifications || !modifications.annotations) {
             return;
         }
         const hiddenEntries = modifications.entriesModifications.hiddenEntries;
         const expandableEntries = modifications.entriesModifications.expandableEntries;
-        this.applyEntriesFilterModifications(hiddenEntries, expandableEntries);
+        this.#applyEntriesFilterModifications(hiddenEntries, expandableEntries);
         this.#timelineBreadcrumbs.setInitialBreadcrumbFromLoadedModifications(modifications.initialBreadcrumb);
+        const entryLabels = modifications.annotations.entryLabels;
+        entryLabels.forEach(entryLabel => {
+            this.createAnnotation({
+                type: 'ENTRY_LABEL',
+                entry: this.#eventsSerializer.eventForKey(entryLabel.entry, this.#traceParsedData),
+                label: entryLabel.label,
+            });
+        });
     }
-    applyEntriesFilterModifications(hiddenEntriesKeys, expandableEntriesKeys) {
+    #applyEntriesFilterModifications(hiddenEntriesKeys, expandableEntriesKeys) {
         const hiddenEntries = hiddenEntriesKeys.map(key => this.#eventsSerializer.eventForKey(key, this.#traceParsedData));
         const expandableEntries = expandableEntriesKeys.map(key => this.#eventsSerializer.eventForKey(key, this.#traceParsedData));
         this.#entriesFilter.setHiddenAndExpandableEntries(hiddenEntries, expandableEntries);

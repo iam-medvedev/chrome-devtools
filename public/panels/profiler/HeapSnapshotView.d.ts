@@ -147,8 +147,7 @@ declare const HeapSnapshotProfileType_base: (new (...args: any[]) => {
 }) & typeof ProfileType;
 export declare class HeapSnapshotProfileType extends HeapSnapshotProfileType_base implements SDK.TargetManager.SDKModelObserver<SDK.HeapProfilerModel.HeapProfilerModel> {
     readonly exposeInternals: Common.Settings.Setting<boolean>;
-    readonly captureNumericValue: Common.Settings.Setting<boolean>;
-    customContentInternal: HTMLElement | null;
+    customContentInternal: UI.UIUtils.CheckboxLabel | null;
     constructor(id?: string, title?: string);
     modelAdded(heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel): void;
     modelRemoved(_heapProfilerModel: SDK.HeapProfilerModel.HeapProfilerModel): void;

@@ -15,8 +15,8 @@ type OpeningTagContext = {
     adorners: Adorners.Adorner.Adorner[];
     styleAdorners: Adorners.Adorner.Adorner[];
     readonly adornersThrottler: Common.Throttler.Throttler;
-    slot?: Adorners.Adorner.Adorner;
     canAddAttributes: boolean;
+    slot?: Adorners.Adorner.Adorner;
 };
 type ClosingTagContext = {
     tagType: TagType.CLOSING;
