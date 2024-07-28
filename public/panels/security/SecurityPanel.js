@@ -465,13 +465,9 @@ const SignatureSchemeStrings = new Map([
 const LOCK_ICON_NAME = 'lock';
 const WARNING_ICON_NAME = 'warning';
 const INFO_ICON_NAME = 'info';
-const INDETERMINATE_ICON_NAME = 'indeterminate-question-box';
 function getSecurityStateIconForDetailedView(securityState, className) {
     let iconName;
     switch (securityState) {
-        case "unknown" /* Protocol.Security.SecurityState.Unknown */:
-            iconName = INDETERMINATE_ICON_NAME;
-            break;
         case "neutral" /* Protocol.Security.SecurityState.Neutral */: // fallthrough
         case "insecure" /* Protocol.Security.SecurityState.Insecure */: // fallthrough
         case "insecure-broken" /* Protocol.Security.SecurityState.InsecureBroken */:
@@ -480,7 +476,8 @@ function getSecurityStateIconForDetailedView(securityState, className) {
         case "secure" /* Protocol.Security.SecurityState.Secure */:
             iconName = LOCK_ICON_NAME;
             break;
-        case "info" /* Protocol.Security.SecurityState.Info */:
+        case "info" /* Protocol.Security.SecurityState.Info */: // fallthrough
+        case "unknown" /* Protocol.Security.SecurityState.Unknown */:
             iconName = INFO_ICON_NAME;
             break;
     }
@@ -491,7 +488,7 @@ function getSecurityStateIconForOverview(securityState, className) {
     switch (securityState) {
         case "unknown" /* Protocol.Security.SecurityState.Unknown */: // fallthrough
         case "neutral" /* Protocol.Security.SecurityState.Neutral */:
-            iconName = INDETERMINATE_ICON_NAME;
+            iconName = INFO_ICON_NAME;
             break;
         case "insecure" /* Protocol.Security.SecurityState.Insecure */: // fallthrough
         case "insecure-broken" /* Protocol.Security.SecurityState.InsecureBroken */:

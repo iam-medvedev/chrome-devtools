@@ -105,7 +105,6 @@ export declare class ArrayGroupingTreeElement extends UI.TreeOutline.TreeElement
     private readonly fromIndex;
     private readonly toIndex;
     private readonly object;
-    private readonly readOnly;
     private readonly propertyCount;
     private readonly linkifier;
     constructor(object: SDK.RemoteObject.RemoteObject, fromIndex: number, toIndex: number, propertyCount: number, linkifier?: Components.Linkifier.Linkifier);
@@ -122,14 +121,10 @@ export declare class ObjectPropertyPrompt extends UI.TextPrompt.TextPrompt {
     constructor();
 }
 export declare class ObjectPropertiesSectionsTreeExpandController {
-    private readonly expandedProperties;
+    #private;
     constructor(treeOutline: UI.TreeOutline.TreeOutline);
     watchSection(id: string, section: RootElement): void;
     stopWatchSectionsWithId(id: string): void;
-    private elementAttached;
-    private elementExpanded;
-    private elementCollapsed;
-    private propertyPath;
 }
 export declare class Renderer implements UI.UIUtils.Renderer {
     static instance(opts?: {

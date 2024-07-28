@@ -1052,37 +1052,37 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
         const hideEntryOption = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideFunction), () => {
-            this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */, this.selectedEntryIndex);
+            this.modifyTree("MERGE_FUNCTION" /* FilterAction.MERGE_FUNCTION */, this.selectedEntryIndex);
         }, {
-            disabled: !possibleActions?.["MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */],
+            disabled: !possibleActions?.["MERGE_FUNCTION" /* FilterAction.MERGE_FUNCTION */],
             jslogContext: 'hide-function',
         });
         hideEntryOption.setShortcut('H');
         const hideChildrenOption = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideChildren), () => {
-            this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */, this.selectedEntryIndex);
+            this.modifyTree("COLLAPSE_FUNCTION" /* FilterAction.COLLAPSE_FUNCTION */, this.selectedEntryIndex);
         }, {
-            disabled: !possibleActions?.["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */],
+            disabled: !possibleActions?.["COLLAPSE_FUNCTION" /* FilterAction.COLLAPSE_FUNCTION */],
             jslogContext: 'hide-children',
         });
         hideChildrenOption.setShortcut('C');
         const hideRepeatingChildrenOption = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideRepeatingChildren), () => {
-            this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */, this.selectedEntryIndex);
+            this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* FilterAction.COLLAPSE_REPEATING_DESCENDANTS */, this.selectedEntryIndex);
         }, {
-            disabled: !possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */],
+            disabled: !possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* FilterAction.COLLAPSE_REPEATING_DESCENDANTS */],
             jslogContext: 'hide-repeating-children',
         });
         hideRepeatingChildrenOption.setShortcut('R');
         const resetChildrenOption = this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetChildren), () => {
-            this.modifyTree("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */, this.selectedEntryIndex);
+            this.modifyTree("RESET_CHILDREN" /* FilterAction.RESET_CHILDREN */, this.selectedEntryIndex);
         }, {
-            disabled: !possibleActions?.["RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */],
+            disabled: !possibleActions?.["RESET_CHILDREN" /* FilterAction.RESET_CHILDREN */],
             jslogContext: 'reset-children',
         });
         resetChildrenOption.setShortcut('U');
         this.contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetTrace), () => {
-            this.modifyTree("UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterAction.UNDO_ALL_ACTIONS */, this.selectedEntryIndex);
+            this.modifyTree("UNDO_ALL_ACTIONS" /* FilterAction.UNDO_ALL_ACTIONS */, this.selectedEntryIndex);
         }, {
-            disabled: !possibleActions?.["UNDO_ALL_ACTIONS" /* TraceEngine.EntriesFilter.FilterAction.UNDO_ALL_ACTIONS */],
+            disabled: !possibleActions?.["UNDO_ALL_ACTIONS" /* FilterAction.UNDO_ALL_ACTIONS */],
             jslogContext: 'reset-trace',
         });
         const entry = this.dataProvider.eventByIndex?.(this.selectedEntryIndex);
@@ -1120,21 +1120,20 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         const keyboardEvent = event;
         let handled = false;
-        if (keyboardEvent.code === 'KeyH' && possibleActions["MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */]) {
-            this.modifyTree("MERGE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.MERGE_FUNCTION */, this.selectedEntryIndex);
+        if (keyboardEvent.code === 'KeyH' && possibleActions["MERGE_FUNCTION" /* FilterAction.MERGE_FUNCTION */]) {
+            this.modifyTree("MERGE_FUNCTION" /* FilterAction.MERGE_FUNCTION */, this.selectedEntryIndex);
             handled = true;
         }
-        else if (keyboardEvent.code === 'KeyC' && possibleActions["COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */]) {
-            this.modifyTree("COLLAPSE_FUNCTION" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_FUNCTION */, this.selectedEntryIndex);
+        else if (keyboardEvent.code === 'KeyC' && possibleActions["COLLAPSE_FUNCTION" /* FilterAction.COLLAPSE_FUNCTION */]) {
+            this.modifyTree("COLLAPSE_FUNCTION" /* FilterAction.COLLAPSE_FUNCTION */, this.selectedEntryIndex);
             handled = true;
         }
-        else if (keyboardEvent.code === 'KeyR' &&
-            possibleActions["COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */]) {
-            this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* TraceEngine.EntriesFilter.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */, this.selectedEntryIndex);
+        else if (keyboardEvent.code === 'KeyR' && possibleActions["COLLAPSE_REPEATING_DESCENDANTS" /* FilterAction.COLLAPSE_REPEATING_DESCENDANTS */]) {
+            this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* FilterAction.COLLAPSE_REPEATING_DESCENDANTS */, this.selectedEntryIndex);
             handled = true;
         }
         else if (keyboardEvent.code === 'KeyU') {
-            this.modifyTree("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */, this.selectedEntryIndex);
+            this.modifyTree("RESET_CHILDREN" /* FilterAction.RESET_CHILDREN */, this.selectedEntryIndex);
             handled = true;
         }
         if (handled) {
@@ -3023,7 +3022,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // Check if the button that resets children of the entry is clicked. We need to check it even if the entry
         // clicked is not selected to avoid needing to double click
         if (this.isMouseOverRevealChildrenArrow(this.lastMouseOffsetX, entryIndex)) {
-            this.modifyTree("RESET_CHILDREN" /* TraceEngine.EntriesFilter.FilterAction.RESET_CHILDREN */, entryIndex);
+            this.modifyTree("RESET_CHILDREN" /* FilterAction.RESET_CHILDREN */, entryIndex);
         }
         if (this.selectedEntryIndex === entryIndex) {
             return;

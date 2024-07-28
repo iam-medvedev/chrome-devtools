@@ -504,12 +504,10 @@ export class ScopeRemoteObject extends RemoteObjectImpl {
             return { properties: this.#savedScopeProperties.slice(), internalProperties: null };
         }
         const allProperties = await super.doGetProperties(ownProperties, accessorPropertiesOnly, false /* nonIndexedPropertiesOnly */, true /* generatePreview */);
-        if (this.#scopeRef && Array.isArray(allProperties.properties)) {
+        if (Array.isArray(allProperties.properties)) {
             this.#savedScopeProperties = allProperties.properties.slice();
-            if (!this.#scopeRef.callFrameId) {
-                for (const property of this.#savedScopeProperties) {
-                    property.writable = false;
-                }
+            for (const property of this.#savedScopeProperties) {
+                property.writable = false;
             }
         }
         return allProperties;
@@ -845,46 +843,28 @@ export class RemoteArray {
     }
 }
 export class RemoteFunction {
-    #objectInternal;
+    #object;
     constructor(object) {
-        this.#objectInternal = object;
+        this.#object = object;
     }
     static objectAsFunction(object) {
-        if (!object || object.type !== 'function') {
+        if (object.type !== 'function') {
             throw new Error('Object is empty or not a function');
         }
         return new RemoteFunction(object);
     }
-    targetFunction() {
-        return this.#objectInternal.getOwnProperties(false /* generatePreview */).then(targetFunction.bind(this));
-        function targetFunction(ownProperties) {
-            if (!ownProperties.internalProperties) {
-                return this.#objectInternal;
-            }
-            const internalProperties = ownProperties.internalProperties;
-            for (const property of internalProperties) {
-                if (property.name === '[[TargetFunction]]') {
-                    return property.value;
-                }
-            }
-            return this.#objectInternal;
-        }
+    async targetFunction() {
+        const ownProperties = await this.#object.getOwnProperties(false /* generatePreview */);
+        const targetFunction = ownProperties.internalProperties?.find(({ name }) => name === '[[TargetFunction]]');
+        return targetFunction?.value ?? this.#object;
     }
-    targetFunctionDetails() {
-        return this.targetFunction().then(functionDetails.bind(this));
-        function functionDetails(targetFunction) {
-            const boundReleaseFunctionDetails = releaseTargetFunction.bind(null, this.#objectInternal !== targetFunction ? targetFunction : null);
-            return targetFunction.debuggerModel().functionDetailsPromise(targetFunction).then(boundReleaseFunctionDetails);
+    async targetFunctionDetails() {
+        const targetFunction = await this.targetFunction();
+        const functionDetails = await targetFunction.debuggerModel().functionDetailsPromise(targetFunction);
+        if (this.#object !== targetFunction) {
+            targetFunction.release();
         }
-        function releaseTargetFunction(targetFunction, functionDetails) {
-            if (targetFunction) {
-                targetFunction.release();
-            }
-            return functionDetails;
-        }
-    }
-    object() {
-        return this.#objectInternal;
+        return functionDetails;
     }
 }
 export class RemoteError {

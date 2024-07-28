@@ -613,12 +613,14 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
                 const suggestedIdSpan = document.createElement('code');
                 suggestedIdSpan.textContent = recommendedId;
                 const copyButton = new Buttons.Button.Button();
+                copyButton.data = {
+                    variant: "icon" /* Buttons.Button.Variant.ICON */,
+                    iconName: 'copy',
+                    size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                    jslogContext: 'manifest.copy-id',
+                    title: i18nString(UIStrings.copyToClipboard),
+                };
                 copyButton.className = 'inline-button';
-                copyButton.variant = "icon" /* Buttons.Button.Variant.ICON */;
-                copyButton.size = "SMALL" /* Buttons.Button.Size.SMALL */;
-                copyButton.iconName = 'copy';
-                copyButton.jslogContext = 'manifest.copy-id';
-                copyButton.title = i18nString(UIStrings.copyToClipboard);
                 copyButton.addEventListener('click', () => {
                     UI.ARIAUtils.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
                     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);

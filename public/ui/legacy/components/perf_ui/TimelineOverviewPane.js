@@ -29,6 +29,7 @@
  */
 import * as Common from '../../../../core/common/common.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
+import * as VisualLoggging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import { OverviewGrid } from './OverviewGrid.js';
 import { TimelineOverviewCalculator } from './TimelineOverviewCalculator.js';
@@ -53,6 +54,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.element.id = prefix + '-overview-pane';
         this.overviewCalculator = new TimelineOverviewCalculator();
         this.overviewGrid = new OverviewGrid(prefix, this.overviewCalculator);
+        this.overviewGrid.element.setAttribute('jslog', `${VisualLoggging.timeline(`${prefix}-overview`).track({ click: true, drag: true, hover: true })}`);
         this.element.appendChild(this.overviewGrid.element);
         this.cursorArea = this.overviewGrid.element.createChild('div', 'overview-grid-cursor-area');
         this.cursorElement = this.overviewGrid.element.createChild('div', 'overview-grid-cursor-position');

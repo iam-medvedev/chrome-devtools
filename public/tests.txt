@@ -38,7 +38,6 @@ core/platform/KeyboardUtilities.test.js
 core/platform/MapUtilities.test.js
 core/platform/MimeType.test.js
 core/platform/NumberUtilities.test.js
-core/platform/SetUtilities.test.js
 core/platform/StringUtilities.test.js
 core/platform/TypedArrayUtilities.test.js
 core/protocol_client/NodeURL.test.js
@@ -159,7 +158,6 @@ models/text_utils/TextUtils.test.js
 models/text_utils/WasmDisassembly.test.js
 models/timeline_model/TimelineModelFilter.test.js
 models/timeline_model/TimelineProfileTree.test.js
-models/trace/EntriesFilter.test.js
 models/trace/ModelImpl.test.js
 models/trace/Processor.test.js
 models/trace/TracingManager.test.js
@@ -321,6 +319,7 @@ panels/freestyler/FreestylerAgent.test.js
 panels/freestyler/FreestylerEvaluateAction.test.js
 panels/freestyler/FreestylerPanel.test.js
 panels/freestyler/components/FreestylerChatUi.test.js
+panels/freestyler/components/ProvideFeedback.test.js
 panels/issues/IssueAggregator.test.js
 panels/issues/IssueView.test.js
 panels/layer_viewer/layer_viewer.test.js
@@ -410,6 +409,7 @@ panels/sources/components/BreakpointsView.test.js
 panels/sources/components/BreakpointsViewUtils.test.js
 panels/sources/components/HeadersView.test.js
 panels/timeline/Breadcrumbs.test.js
+panels/timeline/EntriesFilter.test.js
 panels/timeline/EventsSerializer.test.js
 panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
@@ -508,6 +508,7 @@ ui/legacy/KeyboardShortcut.test.js
 ui/legacy/ListModel.test.js
 ui/legacy/ListWidget.test.js
 ui/legacy/ShortcutRegistry.test.js
+ui/legacy/SplitWidget.test.js
 ui/legacy/SuggestBox.test.js
 ui/legacy/Toolbar.test.js
 ui/legacy/Treeoutline.test.js

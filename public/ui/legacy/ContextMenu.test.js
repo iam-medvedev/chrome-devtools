@@ -101,7 +101,7 @@ describeWithEnvironment('ContextMenu', () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, 1);
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isTrue(recordClick.calledOnce);
-        VisualLogging.stopLogging();
+        await VisualLogging.stopLogging();
     });
 });
 //# sourceMappingURL=ContextMenu.test.js.map

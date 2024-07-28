@@ -59,7 +59,7 @@ export class ProvideFeedback extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-provide-feedback`;
     #shadow = this.attachShadow({ mode: 'open' });
     #props;
-    #showFeedbackForm = false;
+    #isShowingFeedbackForm = false;
     #currentRating;
     constructor(props) {
         super();
@@ -78,12 +78,12 @@ export class ProvideFeedback extends HTMLElement {
             return;
         }
         this.#currentRating = rating;
-        this.#showFeedbackForm = true;
+        this.#isShowingFeedbackForm = this.#props.canShowFeedbackForm;
         this.#props.onFeedbackSubmit(this.#currentRating);
         this.#render();
     }
     #handleClose = () => {
-        this.#showFeedbackForm = false;
+        this.#isShowingFeedbackForm = false;
         this.#render();
     };
     #handleSubmit = (ev) => {
@@ -93,7 +93,7 @@ export class ProvideFeedback extends HTMLElement {
             return;
         }
         this.#props.onFeedbackSubmit(this.#currentRating, input.value);
-        this.#showFeedbackForm = false;
+        this.#isShowingFeedbackForm = false;
         this.#render();
     };
     #handleReportClick = () => {
@@ -181,7 +181,7 @@ export class ProvideFeedback extends HTMLElement {
         LitHtml.render(LitHtml.html `
         <div class="rate-buttons">
           ${this.#renderButtons()}
-          ${this.#showFeedbackForm
+          ${this.#isShowingFeedbackForm
             ? this.#renderFeedbackForm()
             : LitHtml.nothing}
         </div>`, this.#shadow, { host: this });

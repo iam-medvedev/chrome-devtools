@@ -159,10 +159,10 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         this.contentElement.classList.add('protocol-monitor');
         const recordButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.record), 'record-start', 'record-stop', 'protocol-monitor.toggle-recording');
         recordButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
-            recordButton.setToggled(!recordButton.toggled());
-            this.setRecording(recordButton.toggled());
+            recordButton.setToggled(!recordButton.isToggled());
+            this.setRecording(recordButton.isToggled());
         });
-        recordButton.setToggleWithRedColor(true);
+        recordButton.enableToggleWithRedColor();
         topToolbar.appendToolbarItem(recordButton);
         recordButton.setToggled(true);
         const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearAll), 'clear', undefined, 'protocol-monitor.clear-all');
@@ -320,7 +320,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         const keys = ['method', 'request', 'response', 'type', 'target', 'session'];
         this.filterParser = new TextUtils.TextUtils.FilterParser(keys);
         this.suggestionBuilder = new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(keys);
-        this.textFilterUI = new UI.Toolbar.ToolbarFilter(undefined, 1, .2, '', this.suggestionBuilder.completions.bind(this.suggestionBuilder), true, 'filter');
+        this.textFilterUI = new UI.Toolbar.ToolbarFilter(undefined, 1, .2, '', this.suggestionBuilder.completions.bind(this.suggestionBuilder), true);
         this.textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TextChanged */, event => {
             const query = event.data;
             const filters = this.filterParser.parse(query);

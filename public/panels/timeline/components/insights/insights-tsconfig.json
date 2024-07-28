@@ -29,15 +29,20 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../../front_end/panels/timeline/components/insights/LCPDiscovery.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPPhases.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/SidebarInsight.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/types.ts",
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [
     {
-      "path": "../css_files-tsconfig.json"
+      "path": "../../../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../core/platform/bundle-tsconfig.json"
     },
     {
       "path": "../../../../models/trace/bundle-tsconfig.json"
@@ -53,6 +58,9 @@
     },
     {
       "path": "../../../../ui/lit-html/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../overlays/bundle-tsconfig.json"
     }
   ]
 }

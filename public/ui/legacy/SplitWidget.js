@@ -727,7 +727,7 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         this.hideSidebarButtonTitle = hideTitle;
         this.shownSidebarString = shownString;
         this.hiddenSidebarString = hiddenString;
-        this.showHideSidebarButton = new ToolbarButton('', '');
+        this.showHideSidebarButton = new ToolbarButton('', 'right-panel-open');
         this.showHideSidebarButton.addEventListener("Click" /* ToolbarButton.Events.Click */, buttonClicked, this);
         if (jslogContext) {
             this.showHideSidebarButton.element.setAttribute('jslog', `${VisualLogging.toggleSubpane().track({ click: true }).context(jslogContext)}`);
@@ -738,15 +738,18 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         }
         return this.showHideSidebarButton;
     }
+    /**
+     * @returns true if this call makes the sidebar visible, and false otherwise.
+     */
     toggleSidebar() {
         if (this.showModeInternal !== "Both" /* ShowMode.Both */) {
             this.showBoth(true);
             ARIAUtils.alert(this.shownSidebarString);
+            return true;
         }
-        else {
-            this.hideSidebar(true);
-            ARIAUtils.alert(this.hiddenSidebarString);
-        }
+        this.hideSidebar(true);
+        ARIAUtils.alert(this.hiddenSidebarString);
+        return false;
     }
     updateShowHideSidebarButton() {
         if (!this.showHideSidebarButton) {

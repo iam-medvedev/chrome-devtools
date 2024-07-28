@@ -62,6 +62,7 @@ UI.ActionRegistration.registerActionExtension({
 UI.ActionRegistration.registerActionExtension({
     actionId: 'components.collect-garbage',
     category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
+    iconClass: "mop" /* UI.ActionRegistration.IconClass.MOP */,
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'timeline.toggle-recording',

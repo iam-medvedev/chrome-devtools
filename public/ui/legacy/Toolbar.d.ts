@@ -2,6 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Adorners from '../components/adorners/adorners.js';
 import { type Action } from './ActionRegistration.js';
 import { ContextMenu } from './ContextMenu.js';
@@ -24,11 +25,12 @@ export declare class Toolbar {
     makeWrappable(growVertically?: boolean): void;
     makeVertical(): void;
     makeBlueOnHover(): void;
-    makeToggledGray(): void;
     renderAsLinks(): void;
     empty(): boolean;
     setEnabled(enabled: boolean): void;
     appendToolbarItem(item: ToolbarItem): void;
+    hasItem(item: ToolbarItem): boolean;
+    prependToolbarItem(item: ToolbarItem): void;
     appendSeparator(): void;
     appendSpacer(): void;
     appendText(text: string): void;
@@ -75,16 +77,23 @@ export declare class ToolbarText extends ToolbarItem<void> {
     setText(text: string): void;
 }
 export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes> {
-    private readonly glyphElement;
-    private textElement;
+    private button;
     private text?;
-    private glyph?;
     private adorner?;
     constructor(title: string, glyphOrAdorner?: string | Adorners.Adorner.Adorner, text?: string, jslogContext?: string);
     focus(): void;
+    pressed(pressed: boolean): void;
+    checked(checked: boolean): void;
+    toggleOnClick(toggleOnClick: boolean): void;
+    isToggled(): boolean;
+    toggled(toggled: boolean): void;
+    setToggleType(type: Buttons.Button.ToggleType): void;
+    setLongClickable(longClickable: boolean): void;
+    setSize(size: Buttons.Button.Size): void;
     setText(text: string): void;
-    setGlyphOrAdorner(glyphOrAdorner: string | Adorners.Adorner.Adorner): void;
-    setGlyph(glyph: string): void;
+    setAdorner(adorner: Adorners.Adorner.Adorner): void;
+    setGlyph(iconName: string): void;
+    setToggledIcon(toggledIconName: string): void;
     setBackgroundImage(iconURL: string): void;
     setSecondary(): void;
     setDarkText(): void;
@@ -97,9 +106,11 @@ export declare class ToolbarCombobox extends ToolbarItem<ToolbarButton.EventType
     private textElement;
     private text?;
     private glyph?;
+    private adorner?;
     constructor(title: string, isIconDropdown?: boolean, jslogContext?: string);
     setText(text: string): void;
     setGlyph(glyph: string): void;
+    setAdorner(adorner: Adorners.Adorner.Adorner): void;
     setDarkText(): void;
     turnShrinkable(): void;
     clicked(event: Event): void;
@@ -143,15 +154,15 @@ export declare namespace ToolbarInput {
     }
 }
 export declare class ToolbarToggle extends ToolbarButton {
-    private toggledInternal;
     private readonly untoggledGlyph;
     private readonly toggledGlyph;
-    constructor(title: string, glyph?: string, toggledGlyph?: string, jslogContext?: string);
-    toggled(): boolean;
+    constructor(title: string, glyph?: string, toggledGlyph?: string, jslogContext?: string, toggleOnClick?: boolean);
+    setPressed(pressed: boolean): void;
+    setToggleOnClick(toggleOnClick: boolean): void;
     setToggled(toggled: boolean): void;
+    setChecked(checked: boolean): void;
     setDefaultWithRedColor(withRedColor: boolean): void;
-    setToggleWithRedColor(toggleWithRedColor: boolean): void;
-    setToggleWithDot(toggleWithDot: boolean): void;
+    enableToggleWithRedColor(): void;
 }
 export declare class ToolbarMenuButton extends ToolbarCombobox {
     private readonly contextMenuHandler;

@@ -118,6 +118,7 @@ export function encodeSourceMap(textMap, sourceRoot) {
 export class OriginalScopeBuilder {
     #encodedScope = '';
     #lastLine = 0;
+    #lastKind = 0;
     #names;
     /** The 'names' field of the SourceMap. The builder will modify it. */
     constructor(names) {
@@ -155,16 +156,10 @@ export class OriginalScopeBuilder {
         return result;
     }
     #encodeKind(kind) {
-        switch (kind) {
-            case 'global':
-                return 0x01;
-            case 'function':
-                return 0x02;
-            case 'class':
-                return 0x03;
-            case 'block':
-                return 0x04;
-        }
+        const kindIdx = this.#nameIdx(kind);
+        const encodedIdx = kindIdx - this.#lastKind;
+        this.#lastKind = kindIdx;
+        return encodedIdx;
     }
     #nameIdx(name) {
         let idx = this.#names.indexOf(name);

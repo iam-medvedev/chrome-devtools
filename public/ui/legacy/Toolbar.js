@@ -101,7 +101,6 @@ export class Toolbar {
         const mainButtonClone = Toolbar.createActionButton(action);
         let longClickController = null;
         let longClickButtons = null;
-        let longClickGlyph = null;
         action.addEventListener("Toggled" /* ActionEvents.Toggled */, updateOptions);
         updateOptions();
         return button;
@@ -110,8 +109,7 @@ export class Toolbar {
             if (buttons && buttons.length) {
                 if (!longClickController) {
                     longClickController = new LongClickController(button.element, showOptions);
-                    longClickGlyph = IconButton.Icon.create('triangle-bottom-right', 'long-click-glyph');
-                    button.element.appendChild(longClickGlyph);
+                    button.setLongClickable(true);
                     longClickButtons = buttons;
                 }
             }
@@ -119,10 +117,7 @@ export class Toolbar {
                 if (longClickController) {
                     longClickController.dispose();
                     longClickController = null;
-                    if (longClickGlyph) {
-                        longClickGlyph.remove();
-                    }
-                    longClickGlyph = null;
+                    button.setLongClickable(false);
                     longClickButtons = null;
                 }
             }
@@ -220,7 +215,9 @@ export class Toolbar {
         }
         function makeToggle() {
             const toggleButton = new ToolbarToggle(action.title(), action.icon(), action.toggledIcon(), action.id());
-            toggleButton.setToggleWithRedColor(action.toggleWithRedColor());
+            if (action.toggleWithRedColor()) {
+                toggleButton.enableToggleWithRedColor();
+            }
             action.addEventListener("Toggled" /* ActionEvents.Toggled */, toggled);
             toggled();
             return toggleButton;
@@ -255,9 +252,6 @@ export class Toolbar {
     makeBlueOnHover() {
         this.contentElement.classList.add('toolbar-blue-on-hover');
     }
-    makeToggledGray() {
-        this.contentElement.classList.add('toolbar-toggled-gray');
-    }
     renderAsLinks() {
         this.contentElement.classList.add('toolbar-render-as-links');
     }
@@ -278,6 +272,19 @@ export class Toolbar {
             item.applyEnabledState(false);
         }
         this.contentElement.appendChild(item.element);
+        this.hideSeparatorDupes();
+    }
+    hasItem(item) {
+        return this.items.includes(item);
+    }
+    prependToolbarItem(item) {
+        this.items.unshift(item);
+        item.toolbar = this;
+        item.setCompactLayout(this.hasCompactLayout());
+        if (!this.enabled) {
+            item.applyEnabledState(false);
+        }
+        this.contentElement.prepend(item.element);
         this.hideSeparatorDupes();
     }
     appendSeparator() {
@@ -465,64 +472,86 @@ export class ToolbarText extends ToolbarItem {
     }
 }
 export class ToolbarButton extends ToolbarItem {
-    glyphElement;
-    textElement;
+    button;
     text;
-    glyph;
     adorner;
     constructor(title, glyphOrAdorner, text, jslogContext) {
-        const element = document.createElement('button');
-        element.classList.add('toolbar-button');
-        super(element);
+        const button = new Buttons.Button.Button();
+        super(button);
+        this.button = button;
+        if (glyphOrAdorner instanceof Adorners.Adorner.Adorner) {
+            this.button.variant = "adorner_icon" /* Buttons.Button.Variant.ADORNER_ICON */;
+            this.setAdorner(glyphOrAdorner);
+            this.button.prepend(glyphOrAdorner);
+        }
+        else if (typeof glyphOrAdorner === 'string' && !text) {
+            this.button.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: glyphOrAdorner };
+        }
+        else {
+            this.button.variant = "text" /* Buttons.Button.Variant.TEXT */;
+            if (glyphOrAdorner) {
+                this.button.iconName = glyphOrAdorner;
+            }
+        }
+        button.classList.add('toolbar-button');
         this.element.addEventListener('click', this.clicked.bind(this), false);
         this.element.addEventListener('mousedown', this.mouseDown.bind(this), false);
-        this.glyphElement = new IconButton.Icon.Icon();
-        this.glyphElement.className = 'toolbar-glyph hidden';
-        this.element.appendChild(this.glyphElement);
-        this.textElement = this.element.createChild('div', 'toolbar-text hidden');
+        button.textContent = text || '';
         this.setTitle(title);
-        if (glyphOrAdorner) {
-            this.setGlyphOrAdorner(glyphOrAdorner);
-        }
-        this.setText(text || '');
         if (jslogContext) {
-            this.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context(jslogContext)}`);
+            button.jslogContext = jslogContext;
         }
-        this.title = '';
     }
     focus() {
         this.element.focus();
+    }
+    pressed(pressed) {
+        this.button.pressed = pressed;
+    }
+    checked(checked) {
+        this.button.checked = checked;
+    }
+    toggleOnClick(toggleOnClick) {
+        this.button.toggleOnClick = toggleOnClick;
+    }
+    isToggled() {
+        return this.button.toggled;
+    }
+    toggled(toggled) {
+        this.button.toggled = toggled;
+    }
+    setToggleType(type) {
+        this.button.toggleType = type;
+    }
+    setLongClickable(longClickable) {
+        this.button.longClickable = longClickable;
+    }
+    setSize(size) {
+        this.button.size = size;
     }
     setText(text) {
         if (this.text === text) {
             return;
         }
-        this.textElement.textContent = text;
-        this.textElement.classList.toggle('hidden', !text);
+        this.button.textContent = text;
+        this.button.variant = "text" /* Buttons.Button.Variant.TEXT */;
         this.text = text;
     }
-    setGlyphOrAdorner(glyphOrAdorner) {
-        if (glyphOrAdorner instanceof Adorners.Adorner.Adorner) {
-            if (this.adorner) {
-                this.adorner.replaceWith(glyphOrAdorner);
-            }
-            else {
-                this.element.prepend(glyphOrAdorner);
-            }
-            this.adorner = glyphOrAdorner;
+    setAdorner(adorner) {
+        if (this.adorner) {
+            this.adorner.replaceWith(adorner);
         }
         else {
-            this.setGlyph(glyphOrAdorner);
+            this.element.prepend(adorner);
         }
+        this.adorner = adorner;
     }
-    setGlyph(glyph) {
-        if (this.glyph === glyph) {
-            return;
-        }
-        this.glyphElement.name = !glyph ? null : glyph;
-        this.glyphElement.classList.toggle('hidden', !glyph);
-        this.element.classList.toggle('toolbar-has-glyph', Boolean(glyph));
-        this.glyph = glyph;
+    setGlyph(iconName) {
+        this.button.iconName = iconName;
+    }
+    setToggledIcon(toggledIconName) {
+        this.button.variant = "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */;
+        this.button.toggledIconName = toggledIconName;
     }
     setBackgroundImage(iconURL) {
         this.element.style.backgroundImage = 'url(' + iconURL + ')';
@@ -560,6 +589,7 @@ export class ToolbarCombobox extends ToolbarItem {
     textElement;
     text;
     glyph;
+    adorner;
     constructor(title, isIconDropdown, jslogContext) {
         const element = document.createElement('button');
         element.classList.add('toolbar-button');
@@ -597,6 +627,18 @@ export class ToolbarCombobox extends ToolbarItem {
         this.glyphElement.classList.toggle('hidden', !glyph);
         this.element.classList.toggle('toolbar-has-glyph', Boolean(glyph));
         this.glyph = glyph;
+    }
+    setAdorner(adorner) {
+        if (!this.adorner) {
+            this.adorner = adorner;
+        }
+        else {
+            adorner.replaceWith(adorner);
+            if (this.element.firstChild) {
+                this.element.removeChild(this.element.firstChild);
+            }
+        }
+        this.element.prepend(adorner);
     }
     setDarkText() {
         this.element.classList.add('dark-text');
@@ -648,6 +690,12 @@ export class ToolbarInput extends ToolbarItem {
         }
         const clearButtonText = i18nString(UIStrings.clearInput);
         const clearButton = new Buttons.Button.Button();
+        clearButton.data = {
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
+            iconName: 'cross-circle-filled',
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+            title: clearButtonText,
+        };
         clearButton.className = 'toolbar-input-clear-button';
         clearButton.setAttribute('jslog', `${VisualLogging.action('clear').track({ click: true }).parent('mapped')}`);
         VisualLogging.setMappedParent(clearButton, internalPromptElement);
@@ -713,49 +761,52 @@ export class ToolbarInput extends ToolbarItem {
 export class ToolbarFilter extends ToolbarInput {
     constructor(filterBy, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext) {
         const filterPlaceholder = filterBy ? filterBy : i18nString(UIStrings.filter);
-        super(filterPlaceholder, filterPlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext);
+        super(filterPlaceholder, filterPlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext || 'filter');
         const filterIcon = IconButton.Icon.create('filter');
         this.element.prepend(filterIcon);
     }
 }
 export class ToolbarToggle extends ToolbarButton {
-    toggledInternal;
     untoggledGlyph;
     toggledGlyph;
-    constructor(title, glyph, toggledGlyph, jslogContext) {
+    constructor(title, glyph, toggledGlyph, jslogContext, toggleOnClick) {
         super(title, glyph, '');
-        this.toggledInternal = false;
         this.untoggledGlyph = glyph;
-        this.toggledGlyph = toggledGlyph;
-        this.element.classList.add('toolbar-state-off');
-        ARIAUtils.setPressed(this.element, false);
+        this.toggledGlyph = toggledGlyph ? toggledGlyph : glyph;
+        this.setToggledIcon(this.toggledGlyph || '');
+        this.setToggleType("primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */);
+        this.toggled(false);
+        this.setPressed(false);
         if (jslogContext) {
             this.element.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true }).context(jslogContext)}`);
         }
+        if (toggleOnClick !== undefined) {
+            this.setToggleOnClick(toggleOnClick);
+        }
     }
-    toggled() {
-        return this.toggledInternal;
+    setPressed(pressed) {
+        this.pressed(pressed);
+    }
+    setToggleOnClick(toggleOnClick) {
+        this.toggleOnClick(toggleOnClick);
     }
     setToggled(toggled) {
-        if (this.toggledInternal === toggled) {
-            return;
-        }
-        this.toggledInternal = toggled;
-        this.element.classList.toggle('toolbar-state-on', toggled);
-        this.element.classList.toggle('toolbar-state-off', !toggled);
-        ARIAUtils.setPressed(this.element, toggled);
-        if (this.toggledGlyph && this.untoggledGlyph) {
-            this.setGlyph(toggled ? this.toggledGlyph : this.untoggledGlyph);
-        }
+        this.toggled(toggled);
+        this.setPressed(toggled);
+    }
+    setChecked(checked) {
+        this.checked(checked);
     }
     setDefaultWithRedColor(withRedColor) {
-        this.element.classList.toggle('toolbar-default-with-red-color', withRedColor);
+        if (withRedColor) {
+            this.setToggleType("red-toggle" /* Buttons.Button.ToggleType.RED */);
+            this.setGlyph(this.toggledGlyph || '');
+            this.setToggledIcon(this.untoggledGlyph || '');
+            this.toggled(true);
+        }
     }
-    setToggleWithRedColor(toggleWithRedColor) {
-        this.element.classList.toggle('toolbar-toggle-with-red-color', toggleWithRedColor);
-    }
-    setToggleWithDot(toggleWithDot) {
-        this.element.classList.toggle('toolbar-toggle-with-dot', toggleWithDot);
+    enableToggleWithRedColor() {
+        this.setToggleType("red-toggle" /* Buttons.Button.ToggleType.RED */);
     }
 }
 export class ToolbarMenuButton extends ToolbarCombobox {
@@ -826,7 +877,7 @@ export class ToolbarSettingToggle extends ToolbarToggle {
     }
     clicked(event) {
         this.willAnnounceState = true;
-        this.setting.set(!this.toggled());
+        this.setting.set(this.isToggled());
         super.clicked(event);
     }
 }

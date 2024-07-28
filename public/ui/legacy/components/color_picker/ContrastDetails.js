@@ -366,14 +366,14 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         return this.expandedInternal;
     }
     backgroundColorPickerEnabled() {
-        return this.bgColorPickerButton.toggled();
+        return this.bgColorPickerButton.isToggled();
     }
     toggleBackgroundColorPicker(enabled) {
         this.toggleBackgroundColorPickerInternal(enabled, false);
     }
     toggleBackgroundColorPickerInternal(enabled, shouldTriggerEvent = true) {
         if (enabled === undefined) {
-            enabled = !this.bgColorPickerButton.toggled();
+            enabled = !this.bgColorPickerButton.isToggled();
         }
         this.bgColorPickerButton.setToggled(enabled);
         if (shouldTriggerEvent) {

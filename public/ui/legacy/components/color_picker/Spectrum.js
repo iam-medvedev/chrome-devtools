@@ -1198,7 +1198,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     }
     async toggleColorPicker(enabled) {
         if (enabled === undefined) {
-            enabled = !this.colorPickerButton.toggled();
+            enabled = !this.colorPickerButton.isToggled();
         }
         this.colorPickerButton.setToggled(enabled);
         // This is to make sure that only one picker is open at a time

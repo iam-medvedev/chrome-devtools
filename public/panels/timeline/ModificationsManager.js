@@ -1,8 +1,8 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TraceEngine from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
+import { EntriesFilter } from './EntriesFilter.js';
 import { EventsSerializer } from './EventsSerializer.js';
 const modificationsManagerByTraceIndex = [];
 let activeManager;
@@ -74,7 +74,7 @@ export class ModificationsManager extends EventTarget {
     constructor({ traceParsedData, traceBounds, modifications }) {
         super();
         const entryToNodeMap = new Map([...traceParsedData.Samples.entryToNode, ...traceParsedData.Renderer.entryToNode]);
-        this.#entriesFilter = new TraceEngine.EntriesFilter.EntriesFilter(entryToNodeMap);
+        this.#entriesFilter = new EntriesFilter(entryToNodeMap);
         this.#timelineBreadcrumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(traceBounds);
         this.#modifications = modifications || null;
         this.#traceParsedData = traceParsedData;

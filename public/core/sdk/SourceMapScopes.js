@@ -18,11 +18,16 @@ function decodeOriginalScope(encodedOriginalScope, names) {
     const scopeForItemIndex = new Map();
     const scopeStack = [];
     let line = 0;
+    let kindIdx = 0;
     for (const [index, item] of decodeOriginalScopeItems(encodedOriginalScope)) {
         line += item.line;
         const { column } = item;
         if (isStart(item)) {
-            const kind = decodeKind(item.kind);
+            kindIdx += item.kind;
+            const kind = resolveName(kindIdx, names);
+            if (kind === undefined) {
+                throw new Error(`Scope does not have a valid kind '${kind}'`);
+            }
             const name = resolveName(item.name, names);
             const variables = item.variables.map(idx => names[idx]);
             const scope = { start: { line, column }, end: { line, column }, kind, name, variables, children: [] };
@@ -255,19 +260,5 @@ function resolveName(idx, names) {
         return undefined;
     }
     return names[idx];
-}
-function decodeKind(kind) {
-    switch (kind) {
-        case 0x1:
-            return 'global';
-        case 0x2:
-            return 'function';
-        case 0x3:
-            return 'class';
-        case 0x4:
-            return 'block';
-        default:
-            throw new Error(`Unknown scope kind ${kind}`);
-    }
 }
 //# sourceMappingURL=SourceMapScopes.js.map

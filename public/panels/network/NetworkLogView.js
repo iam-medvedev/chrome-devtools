@@ -2226,11 +2226,10 @@ export class DropDownTypesUI extends Common.ObjectWrapper.ObjectWrapper {
             content: this.selectedTypesCount,
         };
         this.typesCountAdorner.classList.add('active-filters-count');
-        this.dropDownButton =
-            new UI.Toolbar.ToolbarButton(i18nString(UIStrings.requestTypesTooltip), this.typesCountAdorner);
+        this.dropDownButton = new UI.Toolbar.ToolbarCombobox(i18nString(UIStrings.requestTypesTooltip));
+        this.dropDownButton.setAdorner(this.typesCountAdorner);
         this.dropDownButton.setText(i18nString(UIStrings.requestTypes));
         this.filterElement.appendChild(this.dropDownButton.element);
-        this.dropDownButton.turnIntoSelect();
         this.dropDownButton.element.classList.add('dropdown-filterbar');
         this.dropDownButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.showContextMenu.bind(this));
         UI.ARIAUtils.markAsMenuButton(this.dropDownButton.element);
@@ -2417,9 +2416,10 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
         };
         this.activeFiltersCountAdorner.classList.add('active-filters-count');
         this.updateActiveFiltersCount();
-        this.dropDownButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.showOnlyHideRequests), this.activeFiltersCountAdorner, i18nString(UIStrings.moreFilters));
+        this.dropDownButton = new UI.Toolbar.ToolbarCombobox(i18nString(UIStrings.showOnlyHideRequests));
+        this.dropDownButton.setText(i18nString(UIStrings.moreFilters));
+        this.dropDownButton.setAdorner(this.activeFiltersCountAdorner);
         this.filterElement.appendChild(this.dropDownButton.element);
-        this.dropDownButton.turnIntoSelect();
         this.dropDownButton.element.classList.add('dropdown-filterbar');
         this.dropDownButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.showMoreFiltersContextMenu.bind(this));
         UI.ARIAUtils.markAsMenuButton(this.dropDownButton.element);

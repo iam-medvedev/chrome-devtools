@@ -6,7 +6,7 @@ import * as TraceEngine from '../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Insights from './insights/insights.js';
-import { InsightsCategories, ToggleSidebarInsights } from './Sidebar.js';
+import { InsightsCategories } from './Sidebar.js';
 import styles from './sidebarSingleNavigation.css.js';
 export class SidebarSingleNavigation extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-performance-sidebar-single-navigation`;
@@ -17,6 +17,7 @@ export class SidebarSingleNavigation extends HTMLElement {
         insights: null,
         navigationId: null,
         activeCategory: InsightsCategories.ALL,
+        activeInsight: null,
     };
     set data(data) {
         this.#data = data;
@@ -25,10 +26,6 @@ export class SidebarSingleNavigation extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
         this.#render();
-    }
-    #toggleInsightClick() {
-        this.dispatchEvent(new ToggleSidebarInsights());
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     #metricIsVisible(label) {
         if (this.#data.activeCategory === InsightsCategories.ALL) {
@@ -95,15 +92,24 @@ export class SidebarSingleNavigation extends HTMLElement {
     `;
     }
     #renderInsights(insights, navigationId) {
-        const renderLCPInsights = this.#data.activeCategory === InsightsCategories.LCP || this.#data.activeCategory === InsightsCategories.ALL;
         // clang-format off
-        return LitHtml.html `${renderLCPInsights ? LitHtml.html `
-        <div @click=${this.#toggleInsightClick}>
-          <${Insights.LCPPhases.LCPPhases.litTagName}
-            .insights=${insights}
-            .navigationId=${navigationId}
-          </${Insights.LCPPhases.LCPPhases}>
-        </div>` : LitHtml.nothing}`;
+        return LitHtml.html `
+    <div>
+      <${Insights.LCPPhases.LCPPhases.litTagName}
+        .insights=${insights}
+        .navigationId=${navigationId}
+        .activeInsight=${this.#data.activeInsight}
+        .activeCategory=${this.#data.activeCategory}
+      </${Insights.LCPPhases.LCPPhases}>
+    </div>
+    <div>
+      <${Insights.LCPDiscovery.LCPDiscovery.litTagName}
+        .insights=${insights}
+        .navigationId=${navigationId}
+        .activeInsight=${this.#data.activeInsight}
+        .activeCategory=${this.#data.activeCategory}
+      </${Insights.LCPDiscovery.LCPDiscovery}>
+    </div>`;
         // clang-format on
     }
     #render() {

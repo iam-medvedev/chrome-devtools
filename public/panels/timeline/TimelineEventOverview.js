@@ -33,6 +33,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { EventCategory, getCategoryStyles, getEventStyle, getTimelineMainEventCategories, } from './EventUICategory.js';
 const UIStrings = {
     /**
@@ -367,6 +368,7 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
     #filmStrip = null;
     constructor(filmStrip) {
         super('filmstrip', null);
+        this.element.setAttribute('jslog', `${VisualLogging.section('film-strip')}`);
         this.frameToImagePromise = new Map();
         this.#filmStrip = filmStrip;
         this.lastFrame = null;

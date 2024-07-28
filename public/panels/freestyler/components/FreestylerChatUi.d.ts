@@ -42,6 +42,7 @@ export interface Props {
     messages: ChatMessage[];
     selectedNode: SDK.DOMModel.DOMNode | null;
     isLoading: boolean;
+    canShowFeedbackForm: boolean;
     confirmSideEffectDialog?: ConfirmSideEffectDialog;
 }
 declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {

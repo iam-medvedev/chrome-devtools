@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
@@ -15,14 +13,6 @@ import { ModificationsManager } from './ModificationsManager.js';
 import { TimelineEventOverviewCPUActivity, TimelineEventOverviewMemory, TimelineEventOverviewNetwork, TimelineEventOverviewResponsiveness, TimelineFilmStripOverview, } from './TimelineEventOverview.js';
 import miniMapStyles from './timelineMiniMap.css.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
-const UIStrings = {
-    /**
-     * @description label used to tell screenreaders about the floating button they can click to open the sidebar
-     */
-    openSidebarButton: 'Open the sidebar',
-};
-const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineMiniMap.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * This component wraps the generic PerfUI Overview component and configures it
  * specifically for the Performance Panel, including injecting the CSS we use
@@ -40,7 +30,6 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     #breadcrumbsUI;
     #data = null;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
-    #sidebarFloatingIcon = document.createElement('button');
     constructor() {
         super();
         this.element.classList.add('timeline-minimap');
@@ -51,25 +40,12 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         icon.addEventListener('click', () => {
             this.dispatchEventToListeners("OpenSidebarButtonClicked" /* PerfUI.TimelineOverviewPane.Events.OpenSidebarButtonClicked */, {});
         });
-        this.#sidebarFloatingIcon.setAttribute('aria-label', i18nString(UIStrings.openSidebarButton));
-        this.#sidebarFloatingIcon.appendChild(icon);
-        this.#sidebarFloatingIcon.classList.add('timeline-sidebar-floating-icon');
-        if (!Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */)) {
-            this.hideSidebarFloatingIcon();
-        }
-        this.element.appendChild(this.#sidebarFloatingIcon);
         this.#overviewComponent.show(this.element);
         this.#overviewComponent.addEventListener("OverviewPaneWindowChanged" /* PerfUI.TimelineOverviewPane.Events.OverviewPaneWindowChanged */, event => {
             this.#onOverviewPanelWindowChanged(event);
         });
         this.#activateBreadcrumbs();
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
-    }
-    showSidebarFloatingIcon() {
-        this.#sidebarFloatingIcon.removeAttribute('hidden');
-    }
-    hideSidebarFloatingIcon() {
-        this.#sidebarFloatingIcon.setAttribute('hidden', 'hidden');
     }
     #onOverviewPanelWindowChanged(event) {
         const traceData = this.#data?.traceParsedData;

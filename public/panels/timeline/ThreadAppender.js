@@ -10,6 +10,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { addDecorationToEvent, buildGroupStyle, buildTrackHeader, getFormattedTime, } from './AppenderUtils.js';
+import { entryIsVisibleInTimeline, } from './CompatibilityTracksAppender.js';
 import { getCategoryStyles, getEventStyle } from './EventUICategory.js';
 import * as ModificationsManager from './ModificationsManager.js';
 const UIStrings = {
@@ -432,7 +433,7 @@ export class ThreadAppender {
             // large). To avoid the extra cost we  add the check in the
             // traversal we already need to append events.
             const entryIsVisible = !invisibleEntries.includes(entry) &&
-                (this.#compatibilityBuilder.entryIsVisibleInTimeline(entry) || this.#showAllEventsEnabled);
+                (entryIsVisibleInTimeline(entry, this.#traceParsedData) || this.#showAllEventsEnabled);
             // For ignore listing support, these two conditions need to be met
             // to not append a profile call to the flame chart:
             // 1. It is ignore listed

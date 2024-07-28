@@ -6045,7 +6045,7 @@
     "message": "injected stylesheet"
   },
   "panels/elements/StylePropertiesSection.ts | insertStyleRuleBelow": {
-    "message": "Insert Style Rule Below"
+    "message": "Insert style rule below"
   },
   "panels/elements/StylePropertiesSection.ts | sattributesStyle": {
     "message": "{PH1}[Attributes Style]"
@@ -12275,6 +12275,18 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "When DevTools is open, the URLs you visit will be sent to Google to query field data. These requests are not tied to your Google account."
   },
+  "panels/timeline/components/insights/LCPPhases.ts | elementRenderDelay": {
+    "message": "Element render delay"
+  },
+  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadDelay": {
+    "message": "Resource load delay"
+  },
+  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadTime": {
+    "message": "Resource load time"
+  },
+  "panels/timeline/components/insights/LCPPhases.ts | timeToFirstByte": {
+    "message": "Time to first byte"
+  },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Input delay"
   },
@@ -13043,20 +13055,8 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "Partially Presented Frame"
   },
-  "panels/timeline/TimelineFlameChartView.ts | elementRenderDelay": {
-    "message": "Element render delay"
-  },
-  "panels/timeline/TimelineFlameChartView.ts | resourceLoadDelay": {
-    "message": "Resource load delay"
-  },
-  "panels/timeline/TimelineFlameChartView.ts | resourceLoadTime": {
-    "message": "Resource load time"
-  },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} at {PH2}"
-  },
-  "panels/timeline/TimelineFlameChartView.ts | timeToFirstByte": {
-    "message": "Time to first byte"
   },
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Current Session: {PH1}. {PH2}"
@@ -13099,9 +13099,6 @@
   },
   "panels/timeline/TimelineLoader.ts | malformedTimelineDataS": {
     "message": "Malformed timeline data: {PH1}"
-  },
-  "panels/timeline/TimelineMiniMap.ts | openSidebarButton": {
-    "message": "Open the sidebar"
   },
   "panels/timeline/TimelinePanel.ts | bufferUsage": {
     "message": "Buffer usage"
@@ -13166,6 +13163,9 @@
   "panels/timeline/TimelinePanel.ts | HardwareConcurrencyIsEnabled": {
     "message": "- Hardware concurrency override is enabled"
   },
+  "panels/timeline/TimelinePanel.ts | hideSidebar": {
+    "message": "Hide sole sidebar"
+  },
   "panels/timeline/TimelinePanel.ts | initializingProfiler": {
     "message": "Initializing profiler…"
   },
@@ -13219,6 +13219,15 @@
   },
   "panels/timeline/TimelinePanel.ts | showMemoryTimeline": {
     "message": "Show memory timeline"
+  },
+  "panels/timeline/TimelinePanel.ts | showSidebar": {
+    "message": "Show sidebar"
+  },
+  "panels/timeline/TimelinePanel.ts | sidebarHidden": {
+    "message": "Performance sidebar hidden"
+  },
+  "panels/timeline/TimelinePanel.ts | sidebarShown": {
+    "message": "Performance sidebar shown"
   },
   "panels/timeline/TimelinePanel.ts | SignificantOverheadDueToPaint": {
     "message": "- Significant overhead due to paint instrumentation"

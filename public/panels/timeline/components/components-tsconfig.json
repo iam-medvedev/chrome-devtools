@@ -100,6 +100,9 @@
       "path": "../../mobile_throttling/bundle-tsconfig.json"
     },
     {
+      "path": "../overlays/bundle-tsconfig.json"
+    },
+    {
       "path": "../utils/bundle-tsconfig.json"
     },
     {

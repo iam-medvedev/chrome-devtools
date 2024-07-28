@@ -37,6 +37,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { FontEditorSectionManager } from './ColorSwatchPopoverIcon.js';
@@ -50,7 +51,7 @@ const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over the largeicon add button in the Styles Sidebar Pane of the Elements panel
      */
-    insertStyleRuleBelow: 'Insert Style Rule Below',
+    insertStyleRuleBelow: 'Insert style rule below',
     /**
      *@description Text in Styles Sidebar Pane of the Elements panel
      */
@@ -214,6 +215,7 @@ export class StylePropertiesSection {
         if (rule) {
             const newRuleButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.insertStyleRuleBelow), 'plus', undefined, 'elements.new-style-rule');
             newRuleButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.onNewRuleClick, this);
+            newRuleButton.setSize("SMALL" /* Buttons.Button.Size.SMALL */);
             newRuleButton.element.tabIndex = -1;
             if (!this.newStyleRuleToolbar) {
                 this.newStyleRuleToolbar =
@@ -225,7 +227,8 @@ export class StylePropertiesSection {
         if (Root.Runtime.experiments.isEnabled('font-editor') && this.editable) {
             this.fontEditorToolbar = new UI.Toolbar.Toolbar('sidebar-pane-section-toolbar', this.#styleRuleElement);
             this.fontEditorSectionManager = new FontEditorSectionManager(this.parentPane.swatchPopoverHelper(), this);
-            this.fontEditorButton = new UI.Toolbar.ToolbarButton('Font Editor', 'custom-typography');
+            this.fontEditorButton =
+                new UI.Toolbar.ToolbarButton('Font Editor', 'custom-typography', undefined, 'font-editor');
             this.fontEditorButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
                 this.onFontEditorButtonClicked();
             }, this);

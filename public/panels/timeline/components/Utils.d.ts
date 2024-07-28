@@ -1,9 +1,12 @@
 import type * as TraceEngine from '../../../models/trace/trace.js';
 export declare enum NetworkCategory {
-    HTML = "HTML",
-    Script = "Script",
-    Style = "Style",
+    Doc = "Doc",
+    CSS = "CSS",
+    JS = "JS",
+    Font = "Font",
+    Img = "Img",
     Media = "Media",
+    Wasm = "Wasm",
     Other = "Other"
 }
 export declare function colorForNetworkCategory(category: NetworkCategory): string;

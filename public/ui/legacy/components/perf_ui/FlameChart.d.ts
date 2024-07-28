@@ -77,6 +77,24 @@ export interface OptionalFlameChartConfig {
      */
     useOverlaysForCursorRuler?: boolean;
 }
+export declare const enum FilterAction {
+    MERGE_FUNCTION = "MERGE_FUNCTION",
+    COLLAPSE_FUNCTION = "COLLAPSE_FUNCTION",
+    COLLAPSE_REPEATING_DESCENDANTS = "COLLAPSE_REPEATING_DESCENDANTS",
+    RESET_CHILDREN = "RESET_CHILDREN",
+    UNDO_ALL_ACTIONS = "UNDO_ALL_ACTIONS"
+}
+export interface UserFilterAction {
+    type: FilterAction;
+    entry: TraceEngine.Types.TraceEvents.SyntheticTraceEntry;
+}
+export interface PossibleFilterActions {
+    [FilterAction.MERGE_FUNCTION]: boolean;
+    [FilterAction.COLLAPSE_FUNCTION]: boolean;
+    [FilterAction.COLLAPSE_REPEATING_DESCENDANTS]: boolean;
+    [FilterAction.RESET_CHILDREN]: boolean;
+    [FilterAction.UNDO_ALL_ACTIONS]: boolean;
+}
 declare const FlameChart_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -208,8 +226,8 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     moveGroupDown(groupIndex: number): void;
     hideGroup(groupIndex: number): void;
     showGroup(groupIndex: number): void;
-    modifyTree(treeAction: TraceEngine.EntriesFilter.FilterAction, index: number): void;
-    getPossibleActions(): TraceEngine.EntriesFilter.PossibleFilterActions | void;
+    modifyTree(treeAction: FilterAction, index: number): void;
+    getPossibleActions(): PossibleFilterActions | void;
     onContextMenu(event: MouseEvent): void;
     private handleFlameChartTransformEvent;
     private onKeyDown;
@@ -525,9 +543,9 @@ export interface FlameChartDataProvider {
     forceDrawableLevel?(level: number): boolean;
     textColor(entryIndex: number): string;
     mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
-    modifyTree?(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
+    modifyTree?(node: number, action: FilterAction): void;
     customizedContextMenu?(event: MouseEvent, eventIndex: number): UI.ContextMenu.ContextMenu | undefined;
-    findPossibleContextMenuActions?(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
+    findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;
     hasTrackConfigurationMode(): boolean;
     eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
     indexForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;

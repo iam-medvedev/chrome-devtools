@@ -604,8 +604,8 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
           .variant=${"icon" /* Buttons.Button.Variant.ICON */}
           .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
           @click=${() => { window.location.href = 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only'; }}
-          jslog=${VisualLogging.link('learn-more.csp-report-only').track({ click: true })}>
-        </${Buttons.Button.Button.litTagName}>`}
+          jslog=${VisualLogging.link('learn-more.csp-report-only').track({ click: true })}
+          ></${Buttons.Button.Button.litTagName}>`}
       </${ReportView.ReportView.ReportKey.litTagName}>
       <${ReportView.ReportView.ReportValue.litTagName}>
         ${cspInfo.source === "HTTP" /* Protocol.Network.ContentSecurityPolicySource.HTTP */ ? i18n.i18n.lockedString('HTTP header') : i18n.i18n.lockedString('Meta tag')}

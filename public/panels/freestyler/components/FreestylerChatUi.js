@@ -208,6 +208,7 @@ export class FreestylerChatUi extends HTMLElement {
             onFeedbackSubmit: (rating, feedback) => {
                 this.#props.onFeedbackSubmit(rpcId, rating, feedback);
             },
+            canShowFeedbackForm: this.#props.canShowFeedbackForm,
         }}
       ></${ProvideFeedback.litTagName}>`;
         // clang-format on
@@ -259,7 +260,10 @@ export class FreestylerChatUi extends HTMLElement {
     }
     #renderSideEffectConfirmationUi(confirmSideEffectDialog) {
         // clang-format off
-        return LitHtml.html `<div class="side-effect-confirmation">
+        return LitHtml.html `<div
+      class="side-effect-confirmation"
+      jslog=${VisualLogging.section('side-effect-confirmation')}
+    >
       <p>${i18nString(UIStringsTemp.sideEffectConfirmationDescription)}</p>
       <${MarkdownView.CodeBlock.CodeBlock.litTagName}
         .code=${confirmSideEffectDialog.code}
@@ -287,14 +291,14 @@ export class FreestylerChatUi extends HTMLElement {
     }
     #renderChatMessage = (message, { isLast }) => {
         if (message.entity === "user" /* ChatMessageEntity.USER */) {
-            return LitHtml.html `<div class="chat-message query">${message.text}</div>`;
+            return LitHtml.html `<div class="chat-message query" jslog=${VisualLogging.section('question')}>${message.text}</div>`;
         }
         const shouldShowFixThisIssueButton = !this.#props.isLoading && isLast && message.suggestingFix;
         const shouldShowRating = !isLast || (!this.#props.confirmSideEffectDialog && isLast);
         const shouldShowLoading = this.#props.isLoading && isLast && !this.#props.confirmSideEffectDialog;
         // clang-format off
         return LitHtml.html `
-      <div class="chat-message answer">
+      <div class="chat-message answer" jslog=${VisualLogging.section('answer')}>
         ${message.steps.map(step => this.#renderStep(step))}
         ${this.#props.confirmSideEffectDialog && isLast
             ? this.#renderSideEffectConfirmationUi(this.#props.confirmSideEffectDialog)
@@ -391,7 +395,7 @@ export class FreestylerChatUi extends HTMLElement {
     #renderChatUi = () => {
         // TODO(ergunsh): Show a better UI for the states where Aida client is not available.
         const isAidaAvailable = this.#props.aidaAvailability === Host.AidaClient.AidaAvailability.AVAILABLE;
-        const isInputDisabled = !Boolean(this.#props.selectedNode) || !isAidaAvailable;
+        const isInputDisabled = !Boolean(this.#props.selectedNode) || !isAidaAvailable || Boolean(this.#props.confirmSideEffectDialog);
         // clang-format off
         return LitHtml.html `
       <div class="chat-ui">
@@ -409,8 +413,9 @@ export class FreestylerChatUi extends HTMLElement {
           </div>
           <div class="chat-input-container">
             <input type="text" class="chat-input" .disabled=${isInputDisabled}
-              placeholder=${getInputPlaceholderString(this.#props.aidaAvailability)}>
-              ${this.#props.isLoading
+              placeholder=${getInputPlaceholderString(this.#props.aidaAvailability)}
+              jslog=${VisualLogging.textField('query').track({ change: true })}
+            >${this.#props.isLoading
             ? LitHtml.html `
                     <${Buttons.Button.Button.litTagName}
                       class="step-actions"
@@ -419,6 +424,7 @@ export class FreestylerChatUi extends HTMLElement {
                       .data=${{
                 variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                disabled: isInputDisabled,
                 iconName: 'stop',
                 title: i18nString(UIStringsTemp.cancelButtonTitle),
                 jslogContext: 'stop',
@@ -432,9 +438,9 @@ export class FreestylerChatUi extends HTMLElement {
                 type: 'submit',
                 variant: "icon" /* Buttons.Button.Variant.ICON */,
                 size: "SMALL" /* Buttons.Button.Size.SMALL */,
+                disabled: isInputDisabled,
                 iconName: 'send',
                 title: i18nString(UIStringsTemp.sendButtonTitle),
-                disabled: isInputDisabled,
                 jslogContext: 'send',
             }}
                     ></${Buttons.Button.Button.litTagName}>`}

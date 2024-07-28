@@ -31,22 +31,6 @@ const UIStrings = {
      *@example {10ms} PH2
      */
     sAtS: '{PH1} at {PH2}',
-    /**
-     *@description Time to first byte title for the Largest Contentful Paint's phases timespan breakdown.
-     */
-    timeToFirstByte: 'Time to first byte',
-    /**
-     *@description Resource load delay title for the Largest Contentful Paint phases timespan breakdown.
-     */
-    resourceLoadDelay: 'Resource load delay',
-    /**
-     *@description Resource load time title for the Largest Contentful Paint phases timespan breakdown.
-     */
-    resourceLoadTime: 'Resource load time',
-    /**
-     *@description Element render delay title for the Largest Contentful Paint phases timespan breakdown.
-     */
-    elementRenderDelay: 'Element render delay',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineFlameChartView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -93,8 +77,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #overlaysContainer = document.createElement('div');
     #overlays;
     #timeRangeSelectionOverlay = null;
-    #timespanBreakdownOverlay = null;
-    #sidebarInsightToggled = false;
+    #currentInsightOverlays = [];
+    #activeInsight = null;
     #tooltipElement = document.createElement('div');
     // We use an symbol as the loggable for each group. This is because
     // groups can get re-built at times and we need a common reference to act as
@@ -224,17 +208,19 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.refreshMainFlameChart();
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
     }
-    toggleSidebarInsights() {
-        this.#sidebarInsightToggled = !this.#sidebarInsightToggled;
-        if (this.#sidebarInsightToggled) {
-            this.#timespanBreakdownOverlay = this.createLCPPhaseOverlay();
-            if (this.#timespanBreakdownOverlay) {
-                this.addOverlay(this.#timespanBreakdownOverlay);
-            }
+    setActiveInsight(insight) {
+        this.#activeInsight = insight;
+        for (const overlay of this.#currentInsightOverlays) {
+            this.removeOverlay(overlay);
         }
-        else {
-            if (this.#timespanBreakdownOverlay) {
-                this.removeOverlay(this.#timespanBreakdownOverlay);
+        if (!this.#activeInsight) {
+            return;
+        }
+        if (insight) {
+            const newInsightOverlays = insight.createOverlayFn();
+            this.#currentInsightOverlays = newInsightOverlays;
+            for (const overlay of this.#currentInsightOverlays) {
+                this.addOverlay(overlay);
             }
         }
     }
@@ -376,55 +362,6 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (this.#traceInsightsData !== insights) {
             this.#traceInsightsData = insights;
         }
-        // Disable selected insight overlay by default with new insight data.
-        this.#sidebarInsightToggled = false;
-    }
-    /**
-     * This creates and returns a new timespanBreakdownOverlay with LCP phases data.
-     */
-    createLCPPhaseOverlay() {
-        if (!this.#traceInsightsData || !this.#traceEngineData) {
-            return null;
-        }
-        // For now use the first navigation of the trace.
-        const firstNav = this.#traceInsightsData.values().next().value;
-        if (!firstNav) {
-            return null;
-        }
-        const lcpInsight = firstNav.LargestContentfulPaint;
-        if (lcpInsight instanceof Error) {
-            return null;
-        }
-        const phases = lcpInsight.phases;
-        const lcpTs = lcpInsight.lcpTs;
-        if (!phases || !lcpTs) {
-            return null;
-        }
-        const lcpMicroseconds = TraceEngine.Types.Timing.MicroSeconds(TraceEngine.Helpers.Timing.millisecondsToMicroseconds(lcpTs));
-        const sections = [];
-        // For text LCP, we should only have ttfb and renderDelay sections.
-        if (!phases?.loadDelay && !phases?.loadTime) {
-            const renderBegin = TraceEngine.Types.Timing.MicroSeconds(lcpMicroseconds - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.renderDelay));
-            const renderDelay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(renderBegin, lcpMicroseconds);
-            const mainReqStart = TraceEngine.Types.Timing.MicroSeconds(renderBegin - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.ttfb));
-            const ttfb = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, renderBegin);
-            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte) }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay) });
-        }
-        else if (phases?.loadDelay && phases?.loadTime) {
-            const renderBegin = TraceEngine.Types.Timing.MicroSeconds(lcpMicroseconds - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.renderDelay));
-            const renderDelay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(renderBegin, lcpMicroseconds);
-            const loadBegin = TraceEngine.Types.Timing.MicroSeconds(renderBegin - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.loadTime));
-            const loadTime = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(loadBegin, renderBegin);
-            const loadDelayStart = TraceEngine.Types.Timing.MicroSeconds(loadBegin - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.loadDelay));
-            const loadDelay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(loadDelayStart, loadBegin);
-            const mainReqStart = TraceEngine.Types.Timing.MicroSeconds(loadDelayStart - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.ttfb));
-            const ttfb = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, loadDelayStart);
-            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte) }, { bounds: loadDelay, label: i18nString(UIStrings.resourceLoadDelay) }, { bounds: loadTime, label: i18nString(UIStrings.resourceLoadTime) }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay) });
-        }
-        return {
-            type: 'TIMESPAN_BREAKDOWN',
-            sections,
-        };
     }
     #reset() {
         if (this.networkDataProvider.isEmpty()) {

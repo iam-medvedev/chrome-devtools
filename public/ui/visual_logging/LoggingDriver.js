@@ -62,7 +62,8 @@ export async function addDocument(document) {
     document.addEventListener('scroll', scheduleProcessing);
     observeMutations([document.body]);
 }
-export function stopLogging() {
+export async function stopLogging() {
+    await keyboardLogThrottler.process?.();
     logging = false;
     unregisterAllLoggables();
     for (const document of documents) {
@@ -93,6 +94,11 @@ export function pendingWorkComplete() {
         }
     }))
         .then(() => { });
+}
+async function yieldToResize() {
+    while (resizeLogThrottler.process) {
+        await resizeLogThrottler.processCompleted;
+    }
 }
 async function yieldToInteractions() {
     while (clickLogThrottler.process) {
@@ -135,7 +141,8 @@ async function process() {
         if (!loggingState.impressionLogged) {
             const overlap = visibleOverlap(element, viewportRectFor(element));
             const visibleSelectOption = element.tagName === 'OPTION' && loggingState.parent?.selectOpen;
-            if (overlap || visibleSelectOption) {
+            const visible = overlap && (!parent || loggingState.parent?.impressionLogged);
+            if (visible || visibleSelectOption) {
                 if (overlap) {
                     loggingState.size = overlap;
                 }
@@ -149,6 +156,7 @@ async function process() {
         if (!loggingState.processed) {
             const clickLikeHandler = (doubleClick) => (e) => {
                 const loggable = e.currentTarget;
+                maybeCancelDrag(e);
                 logClick(clickLogThrottler)(loggable, e, { doubleClick });
             };
             if (loggingState.config.track?.click) {
@@ -249,6 +257,7 @@ async function process() {
     }
     if (visibleLoggables.length) {
         await yieldToInteractions();
+        await yieldToResize();
         flushPendingChangeEvents();
         await logImpressions(visibleLoggables);
     }
