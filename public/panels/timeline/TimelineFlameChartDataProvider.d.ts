@@ -30,8 +30,8 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private lastSelection?;
     constructor();
     hasTrackConfigurationMode(): boolean;
-    modifyTree(node: number, action: TraceEngine.EntriesFilter.FilterAction): void;
-    findPossibleContextMenuActions(node: number): TraceEngine.EntriesFilter.PossibleFilterActions | void;
+    modifyTree(node: number, action: PerfUI.FlameChart.FilterAction): void;
+    findPossibleContextMenuActions(node: number): PerfUI.FlameChart.PossibleFilterActions | void;
     private buildGroupStyle;
     setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
     /**

@@ -221,6 +221,9 @@ export class ShortcutRegistry {
             }
             for (const action of actions) {
                 let handled;
+                if (event) {
+                    void VisualLogging.logKeyDown(null, event, action.id());
+                }
                 if (handlers && handlers[action.id()]) {
                     handled = await handlers[action.id()]();
                 }
@@ -229,9 +232,6 @@ export class ShortcutRegistry {
                 }
                 if (handled) {
                     Host.userMetrics.keyboardShortcutFired(action.id());
-                    if (event) {
-                        void VisualLogging.logKeyDown(null, event, action.id());
-                    }
                     return true;
                 }
             }

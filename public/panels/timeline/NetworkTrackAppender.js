@@ -215,7 +215,7 @@ export class NetworkTrackAppender {
             return '';
         }
         if (TraceEngine.Types.TraceEvents.isWebSocketTraceEvent(event)) {
-            return colorForNetworkCategory(NetworkCategory.Script);
+            return colorForNetworkCategory(NetworkCategory.JS);
         }
         if (!TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(event)) {
             throw new Error(`Unexpected Network Request: The event's type is '${event.name}'`);

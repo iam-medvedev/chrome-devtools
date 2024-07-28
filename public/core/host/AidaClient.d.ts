@@ -40,10 +40,10 @@ export interface AidaRequest {
 }
 export interface AidaDoConversationClientEvent {
     corresponding_aida_rpc_global_id: number;
-    disable_user_content_logging?: boolean;
+    disable_user_content_logging: boolean;
     do_conversation_client_event: {
         user_feedback: {
-            sentiment?: `${Rating}`;
+            sentiment?: Rating;
             user_input?: {
                 comment?: string;
             };

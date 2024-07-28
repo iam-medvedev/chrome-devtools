@@ -179,7 +179,7 @@ export declare class DOMModel extends SDKModel<EventTypes> {
     pushNodesByBackendIdsToFrontend(backendNodeIds: Set<Protocol.DOM.BackendNodeId>): Promise<Map<Protocol.DOM.BackendNodeId, DOMNode | null> | null>;
     attributeModified(nodeId: Protocol.DOM.NodeId, name: string, value: string): void;
     attributeRemoved(nodeId: Protocol.DOM.NodeId, name: string): void;
-    inlineStyleInvalidated(nodeIds: number[]): void;
+    inlineStyleInvalidated(nodeIds: Protocol.DOM.NodeId[]): void;
     private loadNodeAttributes;
     characterDataModified(nodeId: Protocol.DOM.NodeId, newValue: string): void;
     nodeForId(nodeId: Protocol.DOM.NodeId | null): DOMNode | null;

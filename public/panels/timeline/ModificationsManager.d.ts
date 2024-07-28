@@ -1,5 +1,6 @@
-import * as TraceEngine from '../../models/trace/trace.js';
+import type * as TraceEngine from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
+import { EntriesFilter } from './EntriesFilter.js';
 import type * as Overlays from './overlays/overlays.js';
 export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel';
 export declare class AnnotationModifiedEvent extends Event {
@@ -23,7 +24,7 @@ export declare class ModificationsManager extends EventTarget {
      */
     static initAndActivateModificationsManager(traceModel: TraceEngine.TraceModel.Model, traceIndex: number): ModificationsManager | null;
     private constructor();
-    getEntriesFilter(): TraceEngine.EntriesFilter.EntriesFilter;
+    getEntriesFilter(): EntriesFilter;
     getTimelineBreadcrumbs(): TimelineComponents.Breadcrumbs.Breadcrumbs;
     createAnnotation(newAnnotation: TraceEngine.Types.File.Annotation): void;
     removeAnnotation(removedAnnotation: TraceEngine.Types.File.Annotation): void;

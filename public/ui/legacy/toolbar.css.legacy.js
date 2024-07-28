@@ -301,10 +301,6 @@ it. */
   background-color: var(--sys-color-state-hover-on-subtle);
 }
 
-.toolbar-toggled-gray:not(.toolbar-render-as-links) .toolbar-button:not(.toolbar-has-glyph):not(.toolbar-has-dropdown):not(.largeicon-menu):hover {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
 :not(.toolbar-render-as-links) .toolbar-button:enabled:hover:not(:active) .toolbar-glyph {
   color: var(--sys-color-on-surface);
 }
@@ -323,10 +319,6 @@ it. */
 
 .toolbar-button.toolbar-state-on:enabled:hover:not(:active) .toolbar-text {
   color: var(--sys-color-primary);
-}
-
-.toolbar-toggled-gray .toolbar-button.toolbar-state-on {
-  background-color: var(--sys-color-neutral-container) !important; /* stylelint-disable-line declaration-no-important */
 }
 
 /* Checkbox */
@@ -445,13 +437,6 @@ select.toolbar-item:not(.toolbar-has-dropdown):disabled {
 .toolbar-spacer {
   flex: auto;
 }
-/* Long click */
-
-.long-click-glyph {
-  position: absolute;
-  top: 2px;
-  left: 3px;
-}
 
 .toolbar-button.emulate-active {
   background-color: var(--sys-color-surface-variant);
@@ -566,13 +551,6 @@ devtools-icon.leading-issue-icon {
   .toolbar-button:enabled.hover:not(:active) .toolbar-glyph {
     forced-color-adjust: none;
     color: Highlight;
-  }
-
-  .toolbar-button:focus,
-  .toolbar-button:hover:enabled,
-  .toolbar-toggled-gray:not(.toolbar-render-as-links) .toolbar-button:not(.toolbar-has-glyph):not(.toolbar-has-dropdown):not(.largeicon-menu):hover {
-    forced-color-adjust: none;
-    background-color: Highlight;
   }
 
   :not(.toolbar-render-as-links) .toolbar-button:enabled:hover .toolbar-glyph,

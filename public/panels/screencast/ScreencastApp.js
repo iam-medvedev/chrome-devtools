@@ -75,7 +75,7 @@ export class ScreencastApp {
         this.onScreencastEnabledChanged();
     }
     toggleButtonClicked() {
-        const enabled = !this.toggleButton.toggled();
+        const enabled = !this.toggleButton.isToggled();
         this.enabledSetting.set(enabled);
         this.onScreencastEnabledChanged();
     }

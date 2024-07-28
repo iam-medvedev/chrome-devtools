@@ -34,8 +34,6 @@ export declare class TimelineMiniMap extends TimelineMiniMap_base {
     breadcrumbsActivated: boolean;
     breadcrumbs: TimelineComponents.Breadcrumbs.Breadcrumbs | null;
     constructor();
-    showSidebarFloatingIcon(): void;
-    hideSidebarFloatingIcon(): void;
     addBreadcrumb({ startTime, endTime }: PerfUI.TimelineOverviewPane.OverviewPaneBreadcrumbAddedEvent): void;
     wasShown(): void;
     reset(): void;

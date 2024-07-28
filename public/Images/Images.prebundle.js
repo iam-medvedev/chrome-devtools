@@ -74,6 +74,7 @@ style.setProperty('--image-file-chevron-left-dot', 'url(\"' + new URL('./src/che
 style.setProperty('--image-file-chevron-left', 'url(\"' + new URL('./src/chevron-left.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-chevron-right', 'url(\"' + new URL('./src/chevron-right.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-chevron-up', 'url(\"' + new URL('./src/chevron-up.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-class', 'url(\"' + new URL('./src/class.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-clear-list', 'url(\"' + new URL('./src/clear-list.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-clear', 'url(\"' + new URL('./src/clear.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-cloud', 'url(\"' + new URL('./src/cloud.svg', import.meta.url).toString() + '\")');
@@ -145,6 +146,7 @@ style.setProperty('--image-file-goto-filled', 'url(\"' + new URL('./src/goto-fil
 style.setProperty('--image-file-heap-snapshot', 'url(\"' + new URL('./src/heap-snapshot.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshots', 'url(\"' + new URL('./src/heap-snapshots.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-help', 'url(\"' + new URL('./src/help.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-hover', 'url(\"' + new URL('./src/hover.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-iframe-crossed', 'url(\"' + new URL('./src/iframe-crossed.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-iframe', 'url(\"' + new URL('./src/iframe.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-import', 'url(\"' + new URL('./src/import.svg', import.meta.url).toString() + '\")');

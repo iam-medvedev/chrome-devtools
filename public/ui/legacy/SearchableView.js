@@ -321,7 +321,7 @@ export class SearchableView extends VBox {
         this.performSearch(false, true);
     }
     toggleReplace() {
-        const replaceEnabled = !this.replaceToggleButton.toggled();
+        const replaceEnabled = !this.replaceToggleButton.isToggled();
         this.replaceToggleButton.setToggled(replaceEnabled);
         const label = replaceEnabled ? i18nString(UIStrings.disableFindAndReplace) : i18nString(UIStrings.enableFindAndReplace);
         ARIAUtils.setLabel(this.replaceToggleButton.element, label);
@@ -565,7 +565,7 @@ export class SearchableView extends VBox {
         return new SearchConfig(query, caseSensitive, isRegex);
     }
     updateSecondRowVisibility() {
-        const secondRowVisible = this.replaceToggleButton.toggled();
+        const secondRowVisible = this.replaceToggleButton.isToggled();
         this.footerElementContainer.classList.toggle('replaceable', secondRowVisible);
         if (secondRowVisible) {
             this.replaceInputElement.focus();

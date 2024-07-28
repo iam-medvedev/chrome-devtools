@@ -354,6 +354,7 @@ describeWithEnvironment('AidaClient', () => {
             const provider = new Host.AidaClient.AidaClient();
             void provider.registerClientEvent({
                 corresponding_aida_rpc_global_id: RPC_ID,
+                disable_user_content_logging: false,
                 do_conversation_client_event: { user_feedback: { sentiment: "POSITIVE" /* Host.AidaClient.Rating.POSITIVE */ } },
             });
             const arg = JSON.parse(stub.getCalls()[0].args[0]);

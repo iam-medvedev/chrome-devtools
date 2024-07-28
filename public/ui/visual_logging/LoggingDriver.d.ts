@@ -12,6 +12,6 @@ export declare function startLogging(options?: {
     resizeLogThrottler?: Common.Throttler.Throttler;
 }): Promise<void>;
 export declare function addDocument(document: Document): Promise<void>;
-export declare function stopLogging(): void;
+export declare function stopLogging(): Promise<void>;
 export declare function pendingWorkComplete(): Promise<void>;
 export declare function scheduleProcessing(): Promise<void>;

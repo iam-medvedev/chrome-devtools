@@ -4,7 +4,12 @@
 export interface OriginalScope {
     start: Position;
     end: Position;
-    kind: ScopeKind;
+    /**
+     * JavaScript-like languages are encouraged to use 'global', 'class', 'function' and 'block'.
+     * Other languages might require language-specific scope kinds, in which case we'll print the
+     * kind as-is.
+     */
+    kind: string;
     name?: string;
     variables: string[];
     children: OriginalScope[];
@@ -39,7 +44,6 @@ export interface GeneratedRange {
     values: (string | undefined | BindingRange[])[];
     children: GeneratedRange[];
 }
-export type ScopeKind = 'global' | 'class' | 'function' | 'block';
 export interface BindingRange {
     value?: string;
     from: Position;

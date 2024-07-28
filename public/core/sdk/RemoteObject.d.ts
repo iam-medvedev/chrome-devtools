@@ -82,9 +82,9 @@ export declare class ScopeRemoteObject extends RemoteObjectImpl {
     doSetObjectPropertyValue(result: Protocol.Runtime.RemoteObject, argumentName: Protocol.Runtime.CallArgument): Promise<string | undefined>;
 }
 export declare class ScopeRef {
-    number: number;
-    callFrameId: Protocol.Debugger.CallFrameId | undefined;
-    constructor(number: number, callFrameId?: Protocol.Debugger.CallFrameId);
+    readonly number: number;
+    readonly callFrameId: Protocol.Debugger.CallFrameId;
+    constructor(number: number, callFrameId: Protocol.Debugger.CallFrameId);
 }
 export declare class RemoteObjectProperty {
     name: string;
@@ -149,10 +149,9 @@ export declare class RemoteArray {
 export declare class RemoteFunction {
     #private;
     constructor(object: RemoteObject);
-    static objectAsFunction(object: RemoteObject | null): RemoteFunction;
+    static objectAsFunction(object: RemoteObject): RemoteFunction;
     targetFunction(): Promise<RemoteObject>;
     targetFunctionDetails(): Promise<FunctionDetails | null>;
-    object(): RemoteObject;
 }
 export declare class RemoteError {
     #private;

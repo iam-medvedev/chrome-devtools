@@ -248,7 +248,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
      * Called when the `Toggle Record` button is clicked.
      */
     toggleRecording() {
-        this.model.setRecording(!this.recordButton.toggled(), this.serviceName);
+        this.model.setRecording(!this.recordButton.isToggled(), this.serviceName);
     }
     /**
      * Called when the `Clear` button is clicked.
@@ -261,7 +261,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         if (state.serviceName !== this.serviceName) {
             return;
         }
-        if (state.isRecording === this.recordButton.toggled()) {
+        if (state.isRecording === this.recordButton.isToggled()) {
             return;
         }
         this.recordButton.setToggled(state.isRecording);
@@ -269,7 +269,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         this.showPreview(this.selectedEventNode);
     }
     updateRecordButtonTooltip() {
-        const buttonTooltip = this.recordButton.toggled() ? i18nString(UIStrings.stopRecordingEvents) :
+        const buttonTooltip = this.recordButton.isToggled() ? i18nString(UIStrings.stopRecordingEvents) :
             i18nString(UIStrings.startRecordingEvents);
         this.recordButton.setTitle(buttonTooltip, 'background-service.toggle-recording');
     }
@@ -400,7 +400,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
             // Inform users that grid entries are clickable.
             centered.createChild('p').textContent = i18nString(UIStrings.selectAnEntryToViewMetadata);
         }
-        else if (this.recordButton.toggled()) {
+        else if (this.recordButton.isToggled()) {
             // Inform users that we are recording/waiting for events.
             const featureName = BackgroundServiceView.getUIString(this.serviceName).toLowerCase();
             centered.createChild('p').textContent = i18nString(UIStrings.recordingSActivity, { PH1: featureName });

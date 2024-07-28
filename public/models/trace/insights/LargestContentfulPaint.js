@@ -103,6 +103,7 @@ export function generateInsight(traceParsedData, context) {
         shouldRemoveLazyLoading: imageLoadingAttr === 'lazy',
         shouldIncreasePriorityHint: imageFetchPriorityHint !== 'high',
         shouldPreloadImage: !imagePreloaded,
+        lcpResource,
     };
 }
 //# sourceMappingURL=LargestContentfulPaint.js.map

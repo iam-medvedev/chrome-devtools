@@ -39,6 +39,7 @@
   },
   "files": [
     "../../../../../../front_end/panels/timeline/Breadcrumbs.test.ts",
+    "../../../../../../front_end/panels/timeline/EntriesFilter.test.ts",
     "../../../../../../front_end/panels/timeline/EventsSerializer.test.ts",
     "../../../../../../front_end/panels/timeline/FreshRecording.test.ts",
     "../../../../../../front_end/panels/timeline/Initiators.test.ts",

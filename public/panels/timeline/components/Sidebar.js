@@ -1,14 +1,13 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../../core/common/common.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import * as Insights from './insights/insights.js';
 import sidebarStyles from './sidebar.css.js';
 import * as SidebarAnnotationsTab from './SidebarAnnotationsTab.js';
 import { SidebarSingleNavigation } from './SidebarSingleNavigation.js';
@@ -22,12 +21,6 @@ export var InsightsCategories;
     InsightsCategories["CLS"] = "CLS";
     InsightsCategories["OTHER"] = "Other";
 })(InsightsCategories || (InsightsCategories = {}));
-export class ToggleSidebarInsights extends Event {
-    static eventName = 'toggleinsightclick';
-    constructor() {
-        super(ToggleSidebarInsights.eventName, { bubbles: true, composed: true });
-    }
-}
 export class RemoveAnnotation extends Event {
     removedAnnotation;
     static eventName = 'removeannotation';
@@ -36,14 +29,11 @@ export class RemoveAnnotation extends Event {
         this.removedAnnotation = removedAnnotation;
     }
 }
-export class SidebarWidget extends Common.ObjectWrapper.eventMixin(UI.SplitWidget.SplitWidget) {
+export class SidebarWidget extends UI.SplitWidget.SplitWidget {
     #sidebarUI = new SidebarUI();
     constructor() {
         super(true /* isVertical */, false /* secondIsSidebar */, undefined /* settingName */, DEFAULT_EXPANDED_WIDTH);
         this.sidebarElement().append(this.#sidebarUI);
-        this.#sidebarUI.addEventListener('closebuttonclick', () => {
-            this.dispatchEventToListeners("SidebarCollapseClick" /* WidgetEvents.SidebarCollapseClick */, {});
-        });
     }
     updateContentsOnExpand() {
         this.#sidebarUI.onWidgetShow();
@@ -56,6 +46,9 @@ export class SidebarWidget extends Common.ObjectWrapper.eventMixin(UI.SplitWidge
     }
     setInsights(insights) {
         this.#sidebarUI.insights = insights;
+    }
+    setActiveInsight(activeInsight) {
+        this.#sidebarUI.activeInsight = activeInsight;
     }
 }
 export class SidebarUI extends HTMLElement {
@@ -73,6 +66,7 @@ export class SidebarUI extends HTMLElement {
      * track it via this ID.
      */
     #activeNavigationId = null;
+    #activeInsight = null;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [sidebarStyles];
     }
@@ -93,7 +87,11 @@ export class SidebarUI extends HTMLElement {
             return;
         }
         this.#insights = insights;
-        // Reset toggled insights.
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+    }
+    set activeInsight(activeInsight) {
+        this.#activeInsight = activeInsight;
+        // Reset toggled insights when we have new insights.
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     set traceParsedData(traceParsedData) {
@@ -103,9 +101,6 @@ export class SidebarUI extends HTMLElement {
         }
         this.#traceParsedData = traceParsedData;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    #closeButtonClick() {
-        this.dispatchEvent(new Event('closebuttonclick'));
     }
     #onTabHeaderClicked(activeTab) {
         if (activeTab === this.#activeTab) {
@@ -173,14 +168,16 @@ export class SidebarUI extends HTMLElement {
                 insights: this.#insights,
                 navigationId: id,
                 activeCategory: this.#selectedCategory,
+                activeInsight: this.#activeInsight,
             };
             const contents = LitHtml.html `
-          <${SidebarSingleNavigation.litTagName} .data=${data}>
+          <${SidebarSingleNavigation.litTagName}
+            .data=${data}>
           </${SidebarSingleNavigation.litTagName}>
         `;
             if (hasMultipleNavigations) {
                 return LitHtml.html `<div class="multi-nav-container">
-            <details ?open=${id === this.#activeNavigationId} class="navigation-wrapper"><summary @click=${this.#navigationClicked(id)}>${url}</summary>${contents}</details>
+            <details ?open=${id === this.#activeNavigationId} class="navigation-wrapper"><summary @click=${() => this.#navigationClicked(id)}>${url}</summary>${contents}</details>
             </div>`;
             }
             return contents;
@@ -189,9 +186,13 @@ export class SidebarUI extends HTMLElement {
         // clang-format on
     }
     #navigationClicked(id) {
+        // New navigation clicked. Update the active insight.
+        if (id !== this.#activeInsight?.navigationId) {
+            this.dispatchEvent(new Insights.SidebarInsight.InsightDeactivated());
+        }
+        this.#activeNavigationId = id;
         return (event) => {
             event.preventDefault();
-            this.#activeNavigationId = id;
             void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
         };
     }
@@ -231,12 +232,6 @@ export class SidebarUI extends HTMLElement {
         const output = LitHtml.html `<div class="sidebar">
       <div class="tab-bar">
         ${this.#renderHeader()}
-        <${IconButton.Icon.Icon.litTagName}
-          name='left-panel-close'
-          @click=${this.#closeButtonClick}
-          class="sidebar-toggle-button"
-          jslog=${VisualLogging.action('timeline.sidebar-close').track({ click: true })}
-        ></${IconButton.Icon.Icon.litTagName}>
       </div>
       <div class="tab-slider"></div>
       <div class="tab-headers-bottom-line"></div>

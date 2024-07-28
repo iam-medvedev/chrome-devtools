@@ -14,10 +14,12 @@ export class Button extends HTMLElement {
     #boundOnClick = this.#onClick.bind(this);
     #props = {
         size: "REGULAR" /* Size.REGULAR */,
+        toggleOnClick: true,
         disabled: false,
         active: false,
         spinner: false,
         type: 'button',
+        longClickable: false,
     };
     #isEmpty = true;
     #internals = this.attachInternals();
@@ -35,6 +37,7 @@ export class Button extends HTMLElement {
         this.#props.iconUrl = data.iconUrl;
         this.#props.iconName = data.iconName;
         this.#props.toggledIconName = data.toggledIconName;
+        this.#props.toggleOnClick = data.toggleOnClick !== undefined ? data.toggleOnClick : true;
         this.#props.size = "REGULAR" /* Size.REGULAR */;
         if ('size' in data && data.size) {
             this.#props.size = data.size;
@@ -47,9 +50,11 @@ export class Button extends HTMLElement {
         }
         this.#props.toggled = data.toggled;
         this.#props.toggleType = data.toggleType;
+        this.#props.checked = data.checked;
         this.#setDisabledProperty(data.disabled || false);
         this.#props.title = data.title;
         this.#props.jslogContext = data.jslogContext;
+        this.#props.longClickable = data.longClickable;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set iconUrl(iconUrl) {
@@ -86,12 +91,24 @@ export class Button extends HTMLElement {
         this.#setDisabledProperty(disabled);
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
+    set toggleOnClick(toggleOnClick) {
+        this.#props.toggleOnClick = toggleOnClick;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
     set toggled(toggled) {
         this.#props.toggled = toggled;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     get toggled() {
         return Boolean(this.#props.toggled);
+    }
+    set checked(checked) {
+        this.#props.checked = checked;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    set pressed(pressed) {
+        this.#props.pressed = pressed;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     set active(active) {
         this.#props.active = active;
@@ -111,9 +128,13 @@ export class Button extends HTMLElement {
         this.#props.jslogContext = jslogContext;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
+    set longClickable(longClickable) {
+        this.#props.longClickable = longClickable;
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
     #setDisabledProperty(disabled) {
         this.#props.disabled = disabled;
-        this.toggleAttribute('disabled', disabled);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     focus() {
         this.#shadow.querySelector('button')?.focus();
@@ -138,7 +159,7 @@ export class Button extends HTMLElement {
             event.preventDefault();
             this.form.reset();
         }
-        if (this.#props.variant === "icon_toggle" /* Variant.ICON_TOGGLE */ && this.#props.iconName) {
+        if (this.#props.toggleOnClick && this.#props.variant === "icon_toggle" /* Variant.ICON_TOGGLE */ && this.#props.iconName) {
             this.toggled = !this.#props.toggled;
         }
     }
@@ -186,6 +207,7 @@ export class Button extends HTMLElement {
             'primary-toggle': this.#props.toggleType === "primary-toggle" /* ToggleType.PRIMARY */,
             'red-toggle': this.#props.toggleType === "red-toggle" /* ToggleType.RED */,
             toggled: Boolean(this.#props.toggled),
+            checked: Boolean(this.#props.checked),
             'text-with-icon': hasIcon && !this.#isEmpty,
             'only-icon': hasIcon && this.#isEmpty,
             'only-text': !hasIcon && !this.#isEmpty,
@@ -202,11 +224,14 @@ export class Button extends HTMLElement {
         const jslog = this.#props.jslogContext && VisualLogging.action().track({ click: true }).context(this.#props.jslogContext);
         // clang-format off
         LitHtml.render(LitHtml.html `
-        <button title=${LitHtml.Directives.ifDefined(this.#props.title)} .disabled=${this.#props.disabled} class=${LitHtml.Directives.classMap(classes)} jslog=${LitHtml.Directives.ifDefined(jslog)}>
+        <button title=${LitHtml.Directives.ifDefined(this.#props.title)} .disabled=${this.#props.disabled} class=${LitHtml.Directives.classMap(classes)} aria-pressed=${LitHtml.Directives.ifDefined(this.#props.pressed)} jslog=${LitHtml.Directives.ifDefined(jslog)}>
           ${hasIcon
             ? LitHtml.html `
                 <${IconButton.Icon.Icon.litTagName} name=${this.#props.toggled ? this.#props.toggledIconName : this.#props.iconName || this.#props.iconUrl}>
                 </${IconButton.Icon.Icon.litTagName}>`
+            : ''}
+          ${this.#props.longClickable ? LitHtml.html `<${IconButton.Icon.Icon.litTagName} name=${'triangle-bottom-right'} class="long-click">
+          </${IconButton.Icon.Icon.litTagName}>`
             : ''}
           ${this.#props.spinner ? LitHtml.html `<span class=${LitHtml.Directives.classMap(spinnerClasses)}></span>` : ''}
           <slot @slotchange=${this.#onSlotChange}></slot>

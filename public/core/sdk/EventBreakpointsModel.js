@@ -74,9 +74,9 @@ export class EventBreakpointsManager {
         this.createInstrumentationBreakpoints("timer" /* Category.Timer */, [
             "setTimeout" /* InstrumentationNames.SetTimeout */,
             "clearTimeout" /* InstrumentationNames.ClearTimeout */,
+            "setTimeout.callback" /* InstrumentationNames.SetTimeoutCallback */,
             "setInterval" /* InstrumentationNames.SetInterval */,
             "clearInterval" /* InstrumentationNames.ClearInterval */,
-            "setTimeout.callback" /* InstrumentationNames.SetTimeoutCallback */,
             "setInterval.callback" /* InstrumentationNames.SetIntervalCallback */,
         ]);
         this.createInstrumentationBreakpoints("window" /* Category.Window */, [

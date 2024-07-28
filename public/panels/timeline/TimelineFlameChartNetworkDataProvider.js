@@ -262,11 +262,6 @@ export class TimelineFlameChartNetworkDataProvider {
         drawTick(leftTick, sendStart, lineY);
         drawTick(rightTick, finish, lineY);
         context.stroke();
-        const color = this.#colorForPriority(event.args.data.priority);
-        if (color) {
-            context.fillStyle = color;
-            context.fillRect(sendStart + 0.5, barY + 0.5, 3.5, 3.5);
-        }
         // Draw request URL as text
         const textStart = Math.max(sendStart, 0);
         const textWidth = finish - textStart;
@@ -341,10 +336,6 @@ export class TimelineFlameChartNetworkDataProvider {
             return element;
         }
         return null;
-    }
-    #colorForPriority(priority) {
-        const value = PerfUI.NetworkPriorities.networkPriorityWeight(priority);
-        return value ? `hsla(214, 80%, 50%, ${value / 5})` : null;
     }
     /**
      * Sets the minimum time and total time span of a trace using the

@@ -6045,7 +6045,7 @@
     "message": "îńĵéĉt́êd́ ŝt́ŷĺêśĥéêt́"
   },
   "panels/elements/StylePropertiesSection.ts | insertStyleRuleBelow": {
-    "message": "Îńŝér̂t́ Ŝt́ŷĺê Ŕûĺê B́êĺôẃ"
+    "message": "Îńŝér̂t́ ŝt́ŷĺê ŕûĺê b́êĺôẃ"
   },
   "panels/elements/StylePropertiesSection.ts | sattributesStyle": {
     "message": "{PH1}[Ât́t̂ŕîb́ût́êś Ŝt́ŷĺê]"
@@ -12275,6 +12275,18 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "Ŵh́êń D̂év̂T́ôól̂ś îś ôṕêń, t̂h́ê ÚR̂Ĺŝ ýôú v̂íŝít̂ ẃîĺl̂ b́ê śêńt̂ t́ô Ǵôóĝĺê t́ô q́ûér̂ý f̂íêĺd̂ d́ât́â. T́ĥéŝé r̂éq̂úêśt̂ś âŕê ńôt́ t̂íêd́ t̂ó ŷóûŕ Ĝóôǵl̂é âćĉóûńt̂."
   },
+  "panels/timeline/components/insights/LCPPhases.ts | elementRenderDelay": {
+    "message": "Êĺêḿêńt̂ ŕêńd̂ér̂ d́êĺâý"
+  },
+  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadDelay": {
+    "message": "R̂éŝóûŕĉé l̂óâd́ d̂él̂áŷ"
+  },
+  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadTime": {
+    "message": "R̂éŝóûŕĉé l̂óâd́ t̂ím̂é"
+  },
+  "panels/timeline/components/insights/LCPPhases.ts | timeToFirstByte": {
+    "message": "T̂ím̂é t̂ó f̂ír̂śt̂ b́ŷt́ê"
+  },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Îńp̂út̂ d́êĺâý"
   },
@@ -13043,20 +13055,8 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "P̂ár̂t́îál̂ĺŷ Ṕr̂éŝén̂t́êd́ F̂ŕâḿê"
   },
-  "panels/timeline/TimelineFlameChartView.ts | elementRenderDelay": {
-    "message": "Êĺêḿêńt̂ ŕêńd̂ér̂ d́êĺâý"
-  },
-  "panels/timeline/TimelineFlameChartView.ts | resourceLoadDelay": {
-    "message": "R̂éŝóûŕĉé l̂óâd́ d̂él̂áŷ"
-  },
-  "panels/timeline/TimelineFlameChartView.ts | resourceLoadTime": {
-    "message": "R̂éŝóûŕĉé l̂óâd́ t̂ím̂é"
-  },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} ât́ {PH2}"
-  },
-  "panels/timeline/TimelineFlameChartView.ts | timeToFirstByte": {
-    "message": "T̂ím̂é t̂ó f̂ír̂śt̂ b́ŷt́ê"
   },
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Ĉúr̂ŕêńt̂ Śêśŝíôń: {PH1}. {PH2}"
@@ -13099,9 +13099,6 @@
   },
   "panels/timeline/TimelineLoader.ts | malformedTimelineDataS": {
     "message": "M̂ál̂f́ôŕm̂éd̂ t́îḿêĺîńê d́ât́â: {PH1}"
-  },
-  "panels/timeline/TimelineMiniMap.ts | openSidebarButton": {
-    "message": "Ôṕêń t̂h́ê śîd́êb́âŕ"
   },
   "panels/timeline/TimelinePanel.ts | bufferUsage": {
     "message": "B̂úf̂f́êŕ ûśâǵê"
@@ -13166,6 +13163,9 @@
   "panels/timeline/TimelinePanel.ts | HardwareConcurrencyIsEnabled": {
     "message": "- Ĥár̂d́ŵár̂é ĉón̂ćûŕr̂én̂ćŷ óv̂ér̂ŕîd́ê íŝ én̂áb̂ĺêd́"
   },
+  "panels/timeline/TimelinePanel.ts | hideSidebar": {
+    "message": "Ĥíd̂é ŝól̂é ŝíd̂éb̂ár̂"
+  },
   "panels/timeline/TimelinePanel.ts | initializingProfiler": {
     "message": "Îńît́îál̂íẑín̂ǵ p̂ŕôf́îĺêŕ…"
   },
@@ -13219,6 +13219,15 @@
   },
   "panels/timeline/TimelinePanel.ts | showMemoryTimeline": {
     "message": "Ŝh́ôẃ m̂ém̂ór̂ý t̂ím̂él̂ín̂é"
+  },
+  "panels/timeline/TimelinePanel.ts | showSidebar": {
+    "message": "Ŝh́ôẃ ŝíd̂éb̂ár̂"
+  },
+  "panels/timeline/TimelinePanel.ts | sidebarHidden": {
+    "message": "P̂ér̂f́ôŕm̂án̂ćê śîd́êb́âŕ ĥíd̂d́êń"
+  },
+  "panels/timeline/TimelinePanel.ts | sidebarShown": {
+    "message": "P̂ér̂f́ôŕm̂án̂ćê śîd́êb́âŕ ŝh́ôẃn̂"
   },
   "panels/timeline/TimelinePanel.ts | SignificantOverheadDueToPaint": {
     "message": "- Ŝíĝńîf́îćâńt̂ óv̂ér̂h́êád̂ d́ûé t̂ó p̂áîńt̂ ín̂śt̂ŕûḿêńt̂át̂íôń"

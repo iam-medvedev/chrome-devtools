@@ -36,6 +36,7 @@
     "../../../../../../front_end/panels/timeline/CLSLinkifier.ts",
     "../../../../../../front_end/panels/timeline/CompatibilityTracksAppender.ts",
     "../../../../../../front_end/panels/timeline/CountersGraph.ts",
+    "../../../../../../front_end/panels/timeline/EntriesFilter.ts",
     "../../../../../../front_end/panels/timeline/EventUICategory.ts",
     "../../../../../../front_end/panels/timeline/EventsSerializer.ts",
     "../../../../../../front_end/panels/timeline/EventsTimelineTreeView.ts",

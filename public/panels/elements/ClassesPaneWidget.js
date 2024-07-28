@@ -188,6 +188,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     toggleClass(node, className, enabled) {
         const classes = this.nodeClasses(node);
         classes.set(className, enabled);
+        ButtonProvider.instance().item().setChecked([...classes.values()].includes(true));
     }
     installNodeClasses(node) {
         const classes = this.nodeClasses(node);
@@ -226,9 +227,9 @@ export class ButtonProvider {
     button;
     view;
     constructor() {
-        this.button = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.elementClasses), '');
-        this.button.setText('.cls');
-        this.button.element.classList.add('monospace');
+        this.button = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.elementClasses), 'class');
+        this.button.element.style.setProperty('--dot-toggle-top', '12px');
+        this.button.element.style.setProperty('--dot-toggle-left', '18px');
         this.button.element.setAttribute('jslog', `${VisualLogging.toggleSubpane('elements-classes').track({ click: true })}`);
         this.button.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.clicked, this);
         this.view = new ClassesPaneWidget();

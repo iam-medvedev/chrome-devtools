@@ -162,7 +162,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.prettyToggle =
             new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.prettyPrint), 'brackets', undefined, 'pretty-print');
         this.prettyToggle.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
-            void this.setPretty(!this.prettyToggle.toggled());
+            void this.setPretty(this.prettyToggle.isToggled());
         });
         this.shouldAutoPrettyPrint = false;
         this.prettyToggle.setVisible(false);

@@ -11,7 +11,8 @@ export declare const enum Variant {
     TOOLBAR = "toolbar",
     PRIMARY_TOOLBAR = "primary_toolbar",
     ICON = "icon",
-    ICON_TOGGLE = "icon_toggle"
+    ICON_TOGGLE = "icon_toggle",
+    ADORNER_ICON = "adorner_icon"
 }
 export declare const enum Size {
     MICRO = "MICRO",
@@ -29,15 +30,18 @@ interface CommonButtonData {
     iconName?: string;
     toggledIconName?: string;
     toggleType?: ToggleType;
+    toggleOnClick?: boolean;
     size?: Size;
     disabled?: boolean;
     toggled?: boolean;
+    checked?: boolean;
     active?: boolean;
     spinner?: boolean;
     type?: ButtonType;
     value?: string;
     title?: string;
     jslogContext?: string;
+    longClickable?: boolean;
 }
 export type ButtonData = CommonButtonData & ({
     variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ICON;
@@ -46,7 +50,7 @@ export type ButtonData = CommonButtonData & ({
     variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ICON;
     iconName: string;
 } | {
-    variant: Variant.PRIMARY | Variant.OUTLINED | Variant.TONAL | Variant.TEXT;
+    variant: Variant.PRIMARY | Variant.OUTLINED | Variant.TONAL | Variant.TEXT | Variant.ADORNER_ICON;
 } | {
     variant: Variant.ICON_TOGGLE;
     iconName: string;
@@ -73,13 +77,17 @@ export declare class Button extends HTMLElement {
     set type(type: ButtonType);
     set title(title: string);
     set disabled(disabled: boolean);
+    set toggleOnClick(toggleOnClick: boolean);
     set toggled(toggled: boolean);
     get toggled(): boolean;
+    set checked(checked: boolean);
+    set pressed(pressed: boolean);
     set active(active: boolean);
     get active(): boolean;
     set spinner(spinner: boolean);
     get jslogContext(): string | undefined;
     set jslogContext(jslogContext: string | undefined);
+    set longClickable(longClickable: boolean);
     focus(): void;
     connectedCallback(): void;
     get value(): string;

@@ -248,21 +248,19 @@ export class TimelineTreeView extends UI.Widget.VBox {
         return false;
     }
     populateToolbar(toolbar) {
-        this.caseSensitiveButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchCase));
-        this.caseSensitiveButton.setText('Aa');
+        this.caseSensitiveButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchCase), 'match-case');
         this.caseSensitiveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
-            this.#toggleFilterButton(this.caseSensitiveButton);
+            this.#filterChanged();
         }, this);
         toolbar.appendToolbarItem(this.caseSensitiveButton);
-        this.regexButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.useRegularExpression));
-        this.regexButton.setText('.*');
+        this.regexButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.useRegularExpression), 'regular-expression');
         this.regexButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
-            this.#toggleFilterButton(this.regexButton);
+            this.#filterChanged();
         }, this);
         toolbar.appendToolbarItem(this.regexButton);
         this.matchWholeWord = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchWholeWord), 'match-whole-word');
         this.matchWholeWord.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
-            this.#toggleFilterButton(this.matchWholeWord);
+            this.#filterChanged();
         }, this);
         toolbar.appendToolbarItem(this.matchWholeWord);
         const textFilterUI = new UI.Toolbar.ToolbarFilter();
@@ -410,18 +408,12 @@ export class TimelineTreeView extends UI.Widget.VBox {
     }
     #filterChanged() {
         const searchQuery = this.textFilterUI && this.textFilterUI.value();
-        const caseSensitive = this.caseSensitiveButton !== undefined && this.caseSensitiveButton.toggled();
-        const isRegex = this.regexButton !== undefined && this.regexButton.toggled();
-        const matchWholeWord = this.matchWholeWord !== undefined && this.matchWholeWord.toggled();
+        const caseSensitive = this.caseSensitiveButton !== undefined && this.caseSensitiveButton.isToggled();
+        const isRegex = this.regexButton !== undefined && this.regexButton.isToggled();
+        const matchWholeWord = this.matchWholeWord !== undefined && this.matchWholeWord.isToggled();
         this.textFilterInternal.setRegExp(searchQuery ? Platform.StringUtilities.createSearchRegex(searchQuery, caseSensitive, isRegex, matchWholeWord) :
             null);
         this.refreshTree();
-    }
-    #toggleFilterButton(toggleButton) {
-        if (toggleButton) {
-            toggleButton.setToggled(!toggleButton.toggled());
-        }
-        this.#filterChanged();
     }
     onShowModeChanged() {
         if (this.splitWidget.showMode() === "OnlyMain" /* UI.SplitWidget.ShowMode.OnlyMain */) {

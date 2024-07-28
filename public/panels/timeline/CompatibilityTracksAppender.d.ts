@@ -12,6 +12,7 @@ export type HighlightedEntryInfo = {
     formattedTime: string;
     warningElements?: HTMLSpanElement[];
 };
+export declare function entryIsVisibleInTimeline(entry: TraceEngine.Types.TraceEvents.TraceEventData, traceParsedData?: TraceEngine.Handlers.Types.TraceParseData): boolean;
 /**
  * Track appenders add the data of each track into the timeline flame
  * chart. Each track appender also implements functions tha allow the
@@ -175,7 +176,6 @@ export declare class CompatibilityTracksAppender {
      * trace events (the first available level to append next track).
      */
     appendEventsAtLevel<T extends TraceEngine.Types.TraceEvents.TraceEventData>(events: readonly T[], trackStartLevel: number, appender: TrackAppender, eventAppendedCallback?: (event: T, index: number) => void): number;
-    entryIsVisibleInTimeline(entry: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
     /**
      * Gets the all track appenders that have been set to be visible.
      */

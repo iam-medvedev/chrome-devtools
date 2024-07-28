@@ -6,7 +6,7 @@ export declare class OriginalScopeBuilder {
     #private;
     /** The 'names' field of the SourceMap. The builder will modify it. */
     constructor(names: string[]);
-    start(line: number, column: number, kind: SDK.SourceMapScopes.ScopeKind, name?: string, variables?: string[]): this;
+    start(line: number, column: number, kind: string, name?: string, variables?: string[]): this;
     end(line: number, column: number): this;
     build(): string;
 }

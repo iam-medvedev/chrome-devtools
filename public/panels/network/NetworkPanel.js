@@ -218,7 +218,6 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.overviewPane = new PerfUI.TimelineOverviewPane.TimelineOverviewPane('network');
         this.overviewPane.addEventListener("OverviewPaneWindowChanged" /* PerfUI.TimelineOverviewPane.Events.OverviewPaneWindowChanged */, this.onWindowChanged.bind(this));
         this.overviewPane.element.id = 'network-overview-panel';
-        this.overviewPane.element.setAttribute('jslog', `${VisualLogging.pane('network-overview').track({ click: true, drag: true })}`);
         this.networkOverview = new NetworkOverview();
         this.overviewPane.setOverviewControls([this.networkOverview]);
         this.overviewPlaceholderElement = panel.contentElement.createChild('div');
@@ -468,7 +467,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         if (toggled && !this.filmStripRecorder) {
             this.filmStripView = new PerfUI.FilmStripView.FilmStripView();
             this.filmStripView.element.classList.add('network-film-strip');
-            this.filmStripView.element.setAttribute('jslog', `${VisualLogging.pane('network-film-strip')}`);
+            this.filmStripView.element.setAttribute('jslog', `${VisualLogging.section('film-strip')}`);
             this.filmStripRecorder = new FilmStripRecorder(this.networkLogView.timeCalculator(), this.filmStripView);
             this.filmStripView.show(this.filmStripPlaceholderElement);
             this.filmStripView.addEventListener("FrameSelected" /* PerfUI.FilmStripView.Events.FrameSelected */, this.onFilmFrameSelected, this);
