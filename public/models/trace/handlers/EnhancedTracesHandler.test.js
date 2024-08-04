@@ -20,14 +20,14 @@ describe('EnhancedTracesHandler', () => {
         const data = TraceEngine.Handlers.ModelHandlers.EnhancedTraces.data();
         assert.deepEqual(data.targets, [
             {
-                id: '21D58E83A5C17916277166140F6A464B',
+                targetId: '21D58E83A5C17916277166140F6A464B',
                 type: 'page',
                 isolate: '12345',
                 pid: 8050,
                 url: 'http://localhost:8080/index.html',
             },
             {
-                id: '3E1717BE677B75D0536E292E00D6A34A',
+                targetId: '3E1717BE677B75D0536E292E00D6A34A',
                 type: 'page',
                 isolate: '6789',
                 pid: 8051,
@@ -47,6 +47,7 @@ describe('EnhancedTracesHandler', () => {
                     isDefault: true,
                     type: 'type',
                 },
+                isolate: '12345',
             },
             {
                 id: 2,
@@ -57,6 +58,7 @@ describe('EnhancedTracesHandler', () => {
                     isDefault: true,
                     type: 'type',
                 },
+                isolate: '12345',
             },
             {
                 id: 1,
@@ -67,6 +69,7 @@ describe('EnhancedTracesHandler', () => {
                     isDefault: true,
                     type: 'type',
                 },
+                isolate: '6789',
             },
         ]);
     });
@@ -86,8 +89,13 @@ describe('EnhancedTracesHandler', () => {
                 url: 'http://localhost:8080/index.html',
                 hasSourceUrl: false,
                 sourceMapUrl: 'http://localhost:8080/source',
-                length: 5,
+                length: 13,
                 sourceText: 'source text 1',
+                auxData: {
+                    frameId: '21D58E83A5C17916277166140F6A464B',
+                    isDefault: true,
+                    type: 'type',
+                },
             },
             {
                 scriptId: 2,
@@ -102,8 +110,13 @@ describe('EnhancedTracesHandler', () => {
                 url: 'http://localhost:8080/index.html',
                 hasSourceUrl: false,
                 sourceMapUrl: undefined,
-                length: 10,
+                length: 13,
                 sourceText: 'source text 2',
+                auxData: {
+                    frameId: '21D58E83A5C17916277166140F6A464B',
+                    isDefault: true,
+                    type: 'type',
+                },
             },
             {
                 scriptId: 1,
@@ -118,8 +131,13 @@ describe('EnhancedTracesHandler', () => {
                 url: 'http://localhost:8080/index.html',
                 hasSourceUrl: false,
                 sourceMapUrl: undefined,
-                length: 5,
+                length: 13,
                 sourceText: 'source text 3',
+                auxData: {
+                    frameId: '3E1717BE677B75D0536E292E00D6A34A',
+                    isDefault: true,
+                    type: 'type',
+                },
             },
         ]);
     });

@@ -5,6 +5,7 @@ import * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Breakpoints from '../../../models/breakpoints/breakpoints.js';
+import * as TextUtils from '../../../models/text_utils/text_utils.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { assertElements, dispatchClickEvent, dispatchKeyDownEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget, describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
@@ -35,8 +36,8 @@ const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 function createBreakpointLocations(testData) {
     const breakpointLocations = testData.map(data => {
         const mocked = setupMockedUISourceCode(data.url);
-        const mockedContent = Promise.resolve({ content: data.content, isEncoded: true });
-        sinon.stub(mocked.sut, 'requestContent').returns(mockedContent);
+        const mockedContent = Promise.resolve(new TextUtils.ContentData.ContentData(data.content, /* isBase64 */ false, 'text/plain'));
+        sinon.stub(mocked.sut, 'requestContentData').returns(mockedContent);
         const uiLocation = new Workspace.UISourceCode.UILocation(mocked.sut, data.lineNumber, data.columnNumber);
         const breakpoint = sinon.createStubInstance(Breakpoints.BreakpointManager.Breakpoint);
         breakpoint.enabled.returns(data.enabled);

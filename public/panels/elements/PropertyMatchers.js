@@ -237,7 +237,7 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
             "animation" /* LinkableNameProperties.Animation */,
             "animation-name" /* LinkableNameProperties.AnimationName */,
             "font-palette" /* LinkableNameProperties.FontPalette */,
-            "position-try-options" /* LinkableNameProperties.PositionTryOptions */,
+            "position-try-fallbacks" /* LinkableNameProperties.PositionTryFallbacks */,
             "position-try" /* LinkableNameProperties.PositionTry */,
         ];
         return names.includes(propertyName);
@@ -313,9 +313,9 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
         const isInsideVarCall = parentNode.name === 'ArgList' && parentNode.prevSibling?.name === 'Callee' &&
             matching.ast.text(parentNode.prevSibling) === 'var';
         const isAParentDeclarationOrVarCall = isParentADeclaration || isInsideVarCall;
-        // `position-try-options` and `position-try` only accepts names with dashed ident.
+        // `position-try-fallbacks` and `position-try` only accept names with dashed ident.
         const shouldMatchOnlyVariableName = propertyName === "position-try" /* LinkableNameProperties.PositionTry */ ||
-            propertyName === "position-try-options" /* LinkableNameProperties.PositionTryOptions */;
+            propertyName === "position-try-fallbacks" /* LinkableNameProperties.PositionTryFallbacks */;
         // We only mark top level nodes or nodes that are inside `var()` expressions as linkable names.
         if (!propertyName || (node.name !== 'ValueName' && node.name !== 'VariableName') ||
             !isAParentDeclarationOrVarCall || (node.name === 'ValueName' && shouldMatchOnlyVariableName)) {
@@ -434,7 +434,7 @@ export class LengthMatcher extends matcherBase(LengthMatch) {
     // clang-format on
     matches(node, matching) {
         const text = matching.ast.text(node);
-        const regexp = new RegExp(`^${InlineEditor.CSSLengthUtils.CSSLengthRegex.source}$`);
+        const regexp = new RegExp(`^${InlineEditor.CSSLength.CSS_LENGTH_REGEX.source}$`);
         const match = regexp.exec(text);
         if (!match || match.index !== 0) {
             return null;

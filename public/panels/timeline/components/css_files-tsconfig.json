@@ -10,8 +10,8 @@
         "liveMetricsView.css.js",
         "networkRequestDetails.css.js",
         "networkRequestTooltip.css.js",
-        "sidebar.css.js",
         "sidebarAnnotationsTab.css.js",
+        "sidebarInsightsTab.css.js",
         "sidebarSingleNavigation.css.js"
     ]
 }

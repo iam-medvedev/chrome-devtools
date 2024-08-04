@@ -61,6 +61,7 @@ export class AdvancedApp {
     deviceModeEmulationFrameLoaded(toolboxDocument) {
         ThemeSupport.ThemeSupport.instance().addDocumentToTheme(toolboxDocument);
         UI.UIUtils.initializeUIUtils(toolboxDocument);
+        UI.UIUtils.addPlatformClass(toolboxDocument.documentElement);
         UI.UIUtils.installComponentRootStyles(toolboxDocument.body);
         UI.ContextMenu.ContextMenu.installHandler(toolboxDocument);
         this.toolboxRootView = new UI.RootView.RootView();

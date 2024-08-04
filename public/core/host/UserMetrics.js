@@ -738,7 +738,9 @@ export var MediaTypes;
     MediaTypes[MediaTypes["text/javascript+sourcemapped"] = 33] = "text/javascript+sourcemapped";
     MediaTypes[MediaTypes["text/x.angular"] = 34] = "text/x.angular";
     MediaTypes[MediaTypes["text/x.vue"] = 35] = "text/x.vue";
-    MediaTypes[MediaTypes["MaxValue"] = 36] = "MaxValue";
+    MediaTypes[MediaTypes["text/javascript+snippet"] = 36] = "text/javascript+snippet";
+    MediaTypes[MediaTypes["text/javascript+eval"] = 37] = "text/javascript+eval";
+    MediaTypes[MediaTypes["MaxValue"] = 38] = "MaxValue";
 })(MediaTypes || (MediaTypes = {}));
 /* eslint-enable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -912,8 +914,9 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["perf-panel-annotations"] = 94] = "perf-panel-annotations";
     DevtoolsExperiments[DevtoolsExperiments["timeline-rpp-sidebar"] = 95] = "timeline-rpp-sidebar";
     DevtoolsExperiments[DevtoolsExperiments["timeline-observations"] = 96] = "timeline-observations";
+    DevtoolsExperiments[DevtoolsExperiments["gen-ai-settings-panel"] = 97] = "gen-ai-settings-panel";
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 97] = "MaxValue";
+    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 98] = "MaxValue";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

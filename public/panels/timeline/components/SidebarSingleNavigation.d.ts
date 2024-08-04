@@ -1,5 +1,6 @@
 import * as TraceEngine from '../../../models/trace/trace.js';
-import { type ActiveInsight, InsightsCategories } from './Sidebar.js';
+import { type ActiveInsight } from './Sidebar.js';
+import { InsightsCategories } from './SidebarInsightsTab.js';
 export interface SidebarSingleNavigationData {
     traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null;
     insights: TraceEngine.Insights.Types.TraceInsightData | null;

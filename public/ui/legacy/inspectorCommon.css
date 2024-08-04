@@ -50,6 +50,11 @@
   --sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
   --sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
   --sys-motion-easing-emphasized-accelerate: cubic-bezier(0.2, 0, 0, 1);
+
+  /* This will be overridden by the platform-X classes that get
+   * added to the html tag on load, but is here as a safe
+   * fallback */
+  --default-font-family: ".SFNSDisplay-Regular", "Helvetica Neue", "Lucida Grande", sans-serif;
 }
 
 .theme-with-dark-background {
@@ -81,8 +86,6 @@
 }
 
 body {
-  --default-font-family: ".SFNSDisplay-Regular", "Helvetica Neue", "Lucida Grande", sans-serif;
-
   height: 100%;
   width: 100%;
   position: relative;
@@ -292,6 +295,9 @@ input {
 
     &:not(:disabled):focus-visible {
       outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
       &::before {
         content: "";
@@ -299,18 +305,17 @@ input {
         width: 15px;
         border-radius: 5px;
         position: absolute;
-        top: -3px;
-        left: -3px;
         border: 2px solid var(--sys-color-state-focus-ring);
       }
     }
 
     &.small:hover::after,
     &.small:active::before {
-      height: 18px;
-      width: 18px;
-      top: -3px;
-      left: -3px;
+      height: 12px;
+      width: 12px;
+      top: 0;
+      left: 0;
+      border-radius: 2px;
     }
   }
 }

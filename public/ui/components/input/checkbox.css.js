@@ -39,6 +39,9 @@ input[type="checkbox"] {
 
   &:not(:disabled):focus-visible {
     outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &::before {
       content: "";
@@ -46,18 +49,17 @@ input[type="checkbox"] {
       width: 15px;
       border-radius: 5px;
       position: absolute;
-      top: -3px;
-      left: -3px;
       border: 2px solid var(--sys-color-state-focus-ring);
     }
   }
 
   &.small:hover::after,
   &.small:active::before {
-    height: 18px;
-    width: 18px;
-    top: -3px;
-    left: -3px;
+    height: 12px;
+    width: 12px;
+    top: 0;
+    left: 0;
+    border-radius: 2px;
   }
 }
 

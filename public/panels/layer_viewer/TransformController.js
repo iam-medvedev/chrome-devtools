@@ -59,11 +59,11 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
         this.controlPanelToolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         this.modeButtons = {};
         if (!disableRotate) {
-            const panModeButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.panModeX), '3d-pan', undefined, 'layers.3d-pan');
+            const panModeButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.panModeX), '3d-pan', undefined, 'layers.3d-pan', /* toggleOnClick */ false);
             panModeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.setMode.bind(this, "Pan" /* Modes.Pan */));
             this.modeButtons["Pan" /* Modes.Pan */] = panModeButton;
             this.controlPanelToolbar.appendToolbarItem(panModeButton);
-            const rotateModeButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.rotateModeV), '3d-rotate', undefined, 'layers.3d-rotate');
+            const rotateModeButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.rotateModeV), '3d-rotate', undefined, 'layers.3d-rotate', /* toggleOnClick */ false);
             rotateModeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, this.setMode.bind(this, "Rotate" /* Modes.Rotate */));
             this.modeButtons["Rotate" /* Modes.Rotate */] = rotateModeButton;
             this.controlPanelToolbar.appendToolbarItem(rotateModeButton);

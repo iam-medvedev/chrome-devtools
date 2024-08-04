@@ -2,21 +2,47 @@ export declare class DraggingFinishedEvent extends Event {
     static readonly eventName = "draggingfinished";
     constructor();
 }
-export interface CSSLengthData {
-    lengthText: string;
-    overloaded: boolean;
+export declare enum CSSLengthUnit {
+    PIXEL = "px",
+    CENTIMETER = "cm",
+    MILLIMETER = "mm",
+    QUARTERMILLIMETER = "Q",
+    INCH = "in",
+    PICA = "pc",
+    POINT = "pt",
+    CAP = "cap",
+    CH = "ch",
+    EM = "em",
+    EX = "ex",
+    IC = "ic",
+    LH = "lh",
+    RCAP = "rcap",
+    RCH = "rch",
+    REM = "rem",
+    REX = "rex",
+    RIC = "ric",
+    RLH = "rlh",
+    VB = "vb",
+    VH = "vh",
+    VI = "vi",
+    VW = "vw",
+    VMIN = "vmin",
+    VMAX = "vmax"
 }
+export declare const CSS_LENGTH_REGEX: RegExp;
+type CSSLengthData = {
+    lengthText: string;
+};
 export declare class CSSLength extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../lit-html/static.js").Static;
     private readonly shadow;
     private readonly onDraggingValue;
-    private length;
-    private overloaded;
+    private value;
+    private unit;
     private isEditingSlot;
     private isDraggingValue;
-    private currentMouseClientX;
-    set data(data: CSSLengthData);
+    set data({ lengthText }: CSSLengthData);
     connectedCallback(): void;
     private dragValue;
     private onValueMousedown;
@@ -29,3 +55,4 @@ declare global {
         'devtools-css-length': CSSLength;
     }
 }
+export {};

@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/settings/AISettingsTab.ts",
     "../../../../../../front_end/panels/settings/FrameworkIgnoreListSettingsTab.ts",
     "../../../../../../front_end/panels/settings/KeybindsSettingsTab.ts",
     "../../../../../../front_end/panels/settings/SettingsScreen.ts",
@@ -51,6 +52,9 @@
     },
     {
       "path": "../../ui/components/icon_button/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/legacy_wrapper/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

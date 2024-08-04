@@ -312,6 +312,7 @@ export class MainImpl {
         Root.Runtime.experiments.register("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */, 'Performance panel: enable annotations', true);
         Root.Runtime.experiments.register("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */, 'Performance panel: enable sidebar', true);
         Root.Runtime.experiments.register("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */, 'Performance panel: enable live metrics landing page');
+        Root.Runtime.experiments.register("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */, 'Dedicated panel for generative AI settings');
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
             "outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
@@ -351,6 +352,7 @@ export class MainImpl {
         if (!ThemeSupport.ThemeSupport.hasInstance()) {
             ThemeSupport.ThemeSupport.instance({ forceNew: true, setting: themeSetting });
         }
+        UI.UIUtils.addPlatformClass(document.documentElement);
         UI.UIUtils.installComponentRootStyles(document.body);
         this.#addMainEventListeners(document);
         const canDock = Boolean(Root.Runtime.Runtime.queryParam('can_dock'));
@@ -648,7 +650,6 @@ export class MainMenuItem {
             dockItemElement.appendChild(titleElement);
             const dockItemToolbar = new UI.Toolbar.Toolbar('', dockItemElement);
             dockItemElement.setAttribute('jslog', `${VisualLogging.item('dock-side').track({ keydown: 'ArrowDown|ArrowLeft|ArrowRight' })}`);
-            dockItemToolbar.makeBlueOnHover();
             const undock = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.undockIntoSeparateWindow), 'dock-window', undefined, 'current-dock-state-undock');
             const bottom = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToBottom), 'dock-bottom', undefined, 'current-dock-state-bottom');
             const right = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.dockToRight), 'dock-right', undefined, 'current-dock-state-right');

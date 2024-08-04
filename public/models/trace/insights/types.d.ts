@@ -40,6 +40,7 @@ export type LCPInsightResult = InsightResult<{
     shouldIncreasePriorityHint?: boolean;
     shouldPreloadImage?: boolean;
     lcpResource?: Types.TraceEvents.SyntheticNetworkRequest;
+    earliestDiscoveryTimeTs?: Types.Timing.MicroSeconds;
 }>;
 /**
  * Contains insights for a specific navigation.

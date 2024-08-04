@@ -38,7 +38,6 @@
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSAngleSwatch.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSAngleUtils.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLength.ts",
-    "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLengthUtils.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/CSSShadowEditor.ts",
     "../../../../../../../../front_end/ui/legacy/components/inline_editor/ColorMixSwatch.ts",

@@ -961,7 +961,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
             if (this.#responseCookiesPartitionKey) {
                 for (const cookie of this.#responseCookiesInternal) {
                     if (cookie.partitioned()) {
-                        cookie.setPartitionKey(this.#responseCookiesPartitionKey, cookie.hasCrossSiteAncestor());
+                        cookie.setPartitionKey(this.#responseCookiesPartitionKey.topLevelSite, this.#responseCookiesPartitionKey.hasCrossSiteAncestor);
                     }
                 }
             }
@@ -1180,7 +1180,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         if (TextUtils.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
             return [];
         }
-        return TextUtils.TextUtils.performSearchInContent(contentData.text, query, caseSensitive, isRegex);
+        return TextUtils.TextUtils.performSearchInContentData(contentData, query, caseSensitive, isRegex);
     }
     isHttpFamily() {
         return Boolean(this.url().match(/^https?:/i));
@@ -1323,7 +1323,8 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         if (extraResponseInfo.exemptedResponseCookies) {
             this.#exemptedResponseCookiesInternal = extraResponseInfo.exemptedResponseCookies;
         }
-        this.#responseCookiesPartitionKey = extraResponseInfo.cookiePartitionKey?.topLevelSite || null;
+        this.#responseCookiesPartitionKey =
+            extraResponseInfo.cookiePartitionKey ? extraResponseInfo.cookiePartitionKey : null;
         this.#responseCookiesPartitionKeyOpaque = extraResponseInfo.cookiePartitionKeyOpaque || null;
         this.responseHeaders = extraResponseInfo.responseHeaders;
         // We store a copy of the headers we initially received, so that after

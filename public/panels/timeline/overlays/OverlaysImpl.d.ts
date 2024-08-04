@@ -26,6 +26,14 @@ export interface EntrySelected {
     entry: OverlayEntry;
 }
 /**
+ * Drawn around an entry when we want to highlight it to the user.
+ */
+export interface EntryOutline {
+    type: 'ENTRY_OUTLINE';
+    entry: OverlayEntry;
+    outlineReason: 'ERROR';
+}
+/**
  * Represents an object created when a user creates a label for an entry in the timeline.
  */
 export interface EntryLabel {
@@ -44,6 +52,16 @@ export interface TimeRangeLabel {
     showDuration: boolean;
 }
 /**
+ * Used to highlight with a red-candy stripe a time range. It takes an entry
+ * because this entry is the row that will be used to place the candy stripe,
+ * and its height will be set to the height of that row.
+ */
+export interface CandyStripedTimeRange {
+    type: 'CANDY_STRIPED_TIME_RANGE';
+    bounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+    entry: TraceEngine.Types.TraceEvents.TraceEventData;
+}
+/**
  * Represents a timespan on a trace broken down into parts. Each part has a label to it.
  */
 export interface TimespanBreakdown {
@@ -57,7 +75,7 @@ export interface CursorTimestampMarker {
 /**
  * All supported overlay types. Expected to grow in time!
  */
-export type TimelineOverlay = EntrySelected | TimeRangeLabel | EntryLabel | TimespanBreakdown | CursorTimestampMarker;
+export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | TimespanBreakdown | CursorTimestampMarker | CandyStripedTimeRange;
 /**
  * Denotes overlays that are singletons; only one of these will be allowed to
  * exist at any given time. If one exists and the add() method is called, the

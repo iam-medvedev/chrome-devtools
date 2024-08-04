@@ -80,7 +80,7 @@ export class RequestResponseView extends UI.Widget.VBox {
         const isMinified = contentData.mimeType === 'application/wasm' ?
             false :
             TextUtils.TextUtils.isMinified(contentData.content().text);
-        const mediaType = Common.ResourceType.ResourceType.mediaTypeForMetrics(mimeType, request.resourceType().isFromSourceMap(), isMinified);
+        const mediaType = Common.ResourceType.ResourceType.mediaTypeForMetrics(mimeType, request.resourceType().isFromSourceMap(), isMinified, false, false);
         Host.userMetrics.networkPanelResponsePreviewOpened(mediaType);
         sourceView = SourceFrame.ResourceSourceFrame.ResourceSourceFrame.createSearchableView(request, mimeType);
         requestToSourceView.set(request, sourceView);

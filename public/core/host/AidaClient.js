@@ -37,13 +37,6 @@ export var RecitationAction;
     RecitationAction["NO_ACTION"] = "NO_ACTION";
     RecitationAction["EXEMPT_FOUND_IN_PROMPT"] = "EXEMPT_FOUND_IN_PROMPT";
 })(RecitationAction || (RecitationAction = {}));
-export var AidaAvailability;
-(function (AidaAvailability) {
-    AidaAvailability["AVAILABLE"] = "available";
-    AidaAvailability["NO_ACCOUNT_EMAIL"] = "no-account-email";
-    AidaAvailability["NO_ACTIVE_SYNC"] = "no-active-sync";
-    AidaAvailability["NO_INTERNET"] = "no-internet";
-})(AidaAvailability || (AidaAvailability = {}));
 export const CLIENT_NAME = 'CHROME_DEVTOOLS';
 export class AidaClient {
     static buildConsoleInsightsRequest(input) {
@@ -77,18 +70,18 @@ export class AidaClient {
         }
         return request;
     }
-    static async getAidaClientAvailability() {
+    static async checkAccessPreconditions() {
         if (!navigator.onLine) {
-            return AidaAvailability.NO_INTERNET;
+            return "no-internet" /* AidaAccessPreconditions.NO_INTERNET */;
         }
         const syncInfo = await new Promise(resolve => InspectorFrontendHostInstance.getSyncInformation(syncInfo => resolve(syncInfo)));
         if (!syncInfo.accountEmail) {
-            return AidaAvailability.NO_ACCOUNT_EMAIL;
+            return "no-account-email" /* AidaAccessPreconditions.NO_ACCOUNT_EMAIL */;
         }
         if (!syncInfo.isSyncActive) {
-            return AidaAvailability.NO_ACTIVE_SYNC;
+            return "no-active-sync" /* AidaAccessPreconditions.NO_ACTIVE_SYNC */;
         }
-        return AidaAvailability.AVAILABLE;
+        return "available" /* AidaAccessPreconditions.AVAILABLE */;
     }
     async *fetch(request) {
         if (!InspectorFrontendHostInstance.doAidaConversation) {

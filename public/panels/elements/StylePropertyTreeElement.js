@@ -256,10 +256,10 @@ export class ColorRenderer {
                         return;
                     }
                     if (color.is("hsl" /* Common.Color.Format.HSL */) || color.is("hsla" /* Common.Color.Format.HSLA */)) {
-                        swatch.renderColor(new Common.Color.HSL(hue, color.s, color.l, color.alpha));
+                        swatch.setColor(new Common.Color.HSL(hue, color.s, color.l, color.alpha));
                     }
                     else if (color.is("hwb" /* Common.Color.Format.HWB */) || color.is("hwba" /* Common.Color.Format.HWBA */)) {
-                        swatch.renderColor(new Common.Color.HWB(hue, color.w, color.b, color.alpha));
+                        swatch.setColor(new Common.Color.HWB(hue, color.w, color.b, color.alpha));
                     }
                     angle.updateProperty(swatch.getColor()?.asString() ?? '');
                 });
@@ -530,7 +530,7 @@ export class LinkableNameRenderer {
                     isDefined: this.#treeElement.matchedStyles().fontPaletteValuesRule()?.name().text === match.text,
                 };
             case "position-try" /* LinkableNameProperties.PositionTry */:
-            case "position-try-options" /* LinkableNameProperties.PositionTryOptions */:
+            case "position-try-fallbacks" /* LinkableNameProperties.PositionTryFallbacks */:
                 return {
                     jslogContext: 'css-position-try',
                     metric: 10 /* Host.UserMetrics.SwatchType.PositionTryLink */,
@@ -873,10 +873,7 @@ export class LengthRenderer {
         const cssLength = new InlineEditor.CSSLength.CSSLength();
         const valueElement = document.createElement('span');
         valueElement.textContent = lengthText;
-        cssLength.data = {
-            lengthText,
-            overloaded: this.#treeElement.overloaded(),
-        };
+        cssLength.data = { lengthText };
         cssLength.append(valueElement);
         const onValueChanged = (event) => {
             const { data } = event;

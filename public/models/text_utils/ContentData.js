@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
 import { contentAsDataURL } from './ContentProvider.js';
+import { Text } from './Text.js';
 /**
  * This class is a small wrapper around either raw binary or text data.
  * As the binary data can actually contain textual data, we also store the
@@ -24,6 +25,7 @@ export class ContentData {
     charset;
     #contentAsBase64;
     #contentAsText;
+    #contentAsTextObj;
     constructor(data, isBase64, mimeType, charset) {
         this.charset = charset || 'utf-8';
         if (isBase64) {
@@ -54,7 +56,7 @@ export class ContentData {
      * Returns the content as text. If this `ContentData` was constructed with base64
      * encoded bytes, it will use the provided charset to attempt to decode the bytes.
      *
-     * @throws if `resourceType` is not a text type.
+     * @throws if `mimeType` is not a text type.
      */
     get text() {
         if (this.#contentAsText !== undefined) {
@@ -77,6 +79,18 @@ export class ContentData {
     }
     get createdFromBase64() {
         return this.#contentAsBase64 !== undefined;
+    }
+    /**
+     * Returns the text content as a `Text` object. The returned object is always the same to
+     * minimize the number of times we have to calculate the line endings array.
+     *
+     * @throws if `mimeType` is not a text type.
+     */
+    get textObj() {
+        if (this.#contentAsTextObj === undefined) {
+            this.#contentAsTextObj = new Text(this.text);
+        }
+        return this.#contentAsTextObj;
     }
     /**
      * @returns True, iff the contents (base64 or text) are equal.
@@ -131,6 +145,13 @@ export class ContentData {
         }
         return contentDataOrError.text;
     }
+    /** @returns an empty 'text/plain' content data if the passed `ContentDataOrError` is an error, or the content data itself otherwise */
+    static contentDataOrEmpty(contentDataOrError) {
+        if (ContentData.isError(contentDataOrError)) {
+            return EMPTY_TEXT_CONTENT_DATA;
+        }
+        return contentDataOrError;
+    }
     /**
      * @deprecated Used during migration from `DeferredContent` to `ContentData`.
      */
@@ -141,4 +162,5 @@ export class ContentData {
         return contentDataOrError.asDeferedContent();
     }
 }
+export const EMPTY_TEXT_CONTENT_DATA = new ContentData('', /* isBase64 */ false, 'text/palin');
 //# sourceMappingURL=ContentData.js.map

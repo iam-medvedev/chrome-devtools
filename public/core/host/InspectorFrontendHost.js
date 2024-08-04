@@ -322,18 +322,30 @@ export class InspectorFrontendHostStub {
             devToolsFreestylerDogfood: {
                 aidaModelId: '',
                 aidaTemperature: 0,
+                blockedByAge: false,
+                blockedByEnterprisePolicy: false,
+                blockedByGeo: false,
                 enabled: false,
             },
             devToolsVeLogging: {
                 enabled: true,
                 testing: false,
             },
+            isOffTheRecord: false,
         };
         if ('hostConfigForTesting' in globalThis) {
             const { hostConfigForTesting } = globalThis;
             for (const key of Object.keys(hostConfigForTesting)) {
                 const mergeEntry = (key) => {
-                    result[key] = { ...result[key], ...hostConfigForTesting[key] };
+                    if (typeof result[key] === 'object' && typeof hostConfigForTesting[key] === 'object') {
+                        // If the config is an object, merge the settings, but preferring
+                        // the hostConfigForTesting values over the result values.
+                        result[key] = { ...result[key], ...hostConfigForTesting[key] };
+                    }
+                    else {
+                        // Override with the testing config if the value is present + not null/undefined.
+                        result[key] = hostConfigForTesting[key] ?? result[key];
+                    }
                 };
                 mergeEntry(key);
             }
@@ -399,6 +411,9 @@ export class InspectorFrontendHostStub {
         });
     }
     registerAidaClientEvent(request, callback) {
+        callback({
+            error: 'Not implemented',
+        });
     }
     recordImpression(event) {
     }

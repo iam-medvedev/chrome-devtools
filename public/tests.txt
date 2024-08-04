@@ -488,6 +488,7 @@ ui/components/settings/SettingCheckbox.test.js
 ui/components/settings/SettingDeprecationWarning.test.js
 ui/components/split_view/SplitView.test.js
 ui/components/survey_link/SurveyLink.test.js
+ui/components/switch/SwitchImpl.test.js
 ui/components/text_editor/AutocompleteHistory.test.js
 ui/components/text_editor/ExecutionPositionHighlighter.test.js
 ui/components/text_editor/TextEditor.test.js

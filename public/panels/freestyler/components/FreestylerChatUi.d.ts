@@ -38,7 +38,7 @@ export interface Props {
     onFixThisIssueClick: () => void;
     inspectElementToggled: boolean;
     state: State;
-    aidaAvailability: Host.AidaClient.AidaAvailability;
+    aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
     messages: ChatMessage[];
     selectedNode: SDK.DOMModel.DOMNode | null;
     isLoading: boolean;

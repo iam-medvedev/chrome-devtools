@@ -11,6 +11,10 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+:host {
+  display: block;
+}
+
 .annotations {
   display: block;
   padding: 0;
@@ -24,6 +28,7 @@ styles.replaceSync(
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 10px;
 
   &:hover {
     background-color: var(--sys-color-neutral-container);

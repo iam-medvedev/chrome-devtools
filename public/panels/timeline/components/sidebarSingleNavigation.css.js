@@ -13,7 +13,7 @@ styles.replaceSync(
 
 :host {
   display: block;
-  padding: 5px 0;
+  padding: 5px 10px;
 }
 
 .metrics-row {

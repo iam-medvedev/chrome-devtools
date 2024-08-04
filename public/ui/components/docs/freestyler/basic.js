@@ -44,7 +44,7 @@ const component = new Freestyler.FreestylerChatUi({
     onFixThisIssueClick: noop,
     inspectElementToggled: false,
     state: "chat-view" /* Freestyler.State.CHAT_VIEW */,
-    aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+    aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
     messages,
     selectedNode: {},
     isLoading: false,

@@ -388,11 +388,10 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return (this.contentInternal && 'error' in this.contentInternal && this.contentInternal.error) || null;
     }
     searchInContent(query, caseSensitive, isRegex) {
-        const content = this.content();
-        if (!content) {
+        if (!this.contentInternal || 'error' in this.contentInternal) {
             return this.projectInternal.searchInFileContent(this, query, caseSensitive, isRegex);
         }
-        return Promise.resolve(TextUtils.TextUtils.performSearchInContent(content, query, caseSensitive, isRegex));
+        return Promise.resolve(TextUtils.TextUtils.performSearchInContentData(this.contentInternal, query, caseSensitive, isRegex));
     }
     contentLoaded() {
         return Boolean(this.contentInternal);

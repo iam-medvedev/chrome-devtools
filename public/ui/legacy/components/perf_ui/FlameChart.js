@@ -2535,6 +2535,18 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const startY = this.levelToOffset(startLevel) + this.levelHeight(startLevel) / 2;
             const endY = this.levelToOffset(endLevel) + this.levelHeight(endLevel) / 2;
             const lineLength = endX - startX;
+            // Make line an arrow if the line is long enough to fit the arrow head. Otherwise, draw a thinner line without the arrow head.
+            if (lineLength > arrowWidth) {
+                context.lineWidth = 0.5;
+                context.beginPath();
+                context.moveTo(endX, endY);
+                context.lineTo(endX - arrowLineWidth, endY - 3);
+                context.lineTo(endX - arrowLineWidth, endY + 3);
+                context.fill();
+            }
+            else {
+                context.lineWidth = 0.2;
+            }
             if (initiatorEndsBeforeInitiatedStart) {
                 // ---
                 //   |
@@ -2555,18 +2567,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 context.lineTo(startX, endY);
                 context.lineTo(endX, endY);
                 context.stroke();
-            }
-            // Make line an arrow if the line is long enough to fit the arrow head. Otherwise, draw a thinner line without the arrow head.
-            if (lineLength > arrowWidth) {
-                context.lineWidth = 0.5;
-                context.beginPath();
-                context.moveTo(endX, endY);
-                context.lineTo(endX - arrowLineWidth, endY - 3);
-                context.lineTo(endX - arrowLineWidth, endY + 3);
-                context.fill();
-            }
-            else {
-                context.lineWidth = 0.2;
             }
         }
         context.restore();

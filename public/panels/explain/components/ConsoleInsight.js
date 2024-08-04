@@ -174,7 +174,7 @@ const REPORT_URL = 'https://support.google.com/legal/troubleshooter/1114905?hl=e
 const CHROME_SETTINGS_URL = 'chrome://settings';
 export class ConsoleInsight extends HTMLElement {
     static async create(promptBuilder, aidaClient) {
-        const aidaAvailability = await Host.AidaClient.AidaClient.getAidaClientAvailability();
+        const aidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
         return new ConsoleInsight(promptBuilder, aidaClient, aidaAvailability);
     }
     static litTagName = LitHtml.literal `devtools-console-insight`;
@@ -191,24 +191,24 @@ export class ConsoleInsight extends HTMLElement {
         this.#promptBuilder = promptBuilder;
         this.#aidaClient = aidaClient;
         switch (aidaAvailability) {
-            case Host.AidaClient.AidaAvailability.AVAILABLE:
+            case "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */:
                 this.#state = {
                     type: "loading" /* State.LOADING */,
                     consentReminderConfirmed: false,
                     consentOnboardingFinished: this.#getOnboardingCompletedSetting().get(),
                 };
                 break;
-            case Host.AidaClient.AidaAvailability.NO_ACCOUNT_EMAIL:
+            case "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */:
                 this.#state = {
                     type: "not-logged-in" /* State.NOT_LOGGED_IN */,
                 };
                 break;
-            case Host.AidaClient.AidaAvailability.NO_ACTIVE_SYNC:
+            case "no-active-sync" /* Host.AidaClient.AidaAccessPreconditions.NO_ACTIVE_SYNC */:
                 this.#state = {
                     type: "sync-is-off" /* State.SYNC_IS_OFF */,
                 };
                 break;
-            case Host.AidaClient.AidaAvailability.NO_INTERNET:
+            case "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */:
                 this.#state = {
                     type: "offline" /* State.OFFLINE */,
                 };

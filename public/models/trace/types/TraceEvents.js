@@ -102,7 +102,7 @@ export function isTraceEventScriptRundownSource(traceEventData) {
     if (!data) {
         return false;
     }
-    return 'isolate' in data && 'scriptId' in data && 'length' in data && 'sourceText' in data;
+    return 'isolate' in data && 'scriptId' in data && 'sourceText' in data;
 }
 export function isTraceEventPipelineReporter(event) {
     return event.name === "PipelineReporter" /* KnownEventName.PipelineReporter */;

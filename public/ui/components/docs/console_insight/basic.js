@@ -89,6 +89,6 @@ document.querySelector('test').style = 'black';
         };
     },
     registerClientEvent: () => Promise.resolve({}),
-}, Host.AidaClient.AidaAvailability.AVAILABLE);
+}, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=basic.js.map

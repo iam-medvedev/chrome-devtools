@@ -249,9 +249,6 @@ export class Toolbar {
     makeVertical() {
         this.contentElement.classList.add('vertical');
     }
-    makeBlueOnHover() {
-        this.contentElement.classList.add('toolbar-blue-on-hover');
-    }
     renderAsLinks() {
         this.contentElement.classList.add('toolbar-render-as-links');
     }

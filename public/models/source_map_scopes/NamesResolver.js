@@ -10,20 +10,12 @@ import * as TextUtils from '../text_utils/text_utils.js';
 import { scopeTreeForScript } from './ScopeTreeCache.js';
 const scopeToCachedIdentifiersMap = new WeakMap();
 const cachedMapByCallFrame = new WeakMap();
-const cachedTextByDeferredContent = new WeakMap();
-async function getTextFor(contentProvider) {
-    // We intentionally cache based on the DeferredContent object rather
-    // than the ContentProvider object, which may appear as a more sensible
-    // choice, since the content of both Script and UISourceCode objects
-    // can change over time.
-    const deferredContent = await contentProvider.requestContent();
-    let text = cachedTextByDeferredContent.get(deferredContent);
-    if (text === undefined) {
-        const { content } = deferredContent;
-        text = content ? new TextUtils.Text.Text(content) : null;
-        cachedTextByDeferredContent.set(deferredContent, text);
+export async function getTextFor(contentProvider) {
+    const contentData = await contentProvider.requestContentData();
+    if (TextUtils.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
+        return null;
     }
-    return text;
+    return contentData.textObj;
 }
 export class IdentifierPositions {
     name;

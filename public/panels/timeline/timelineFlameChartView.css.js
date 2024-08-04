@@ -29,7 +29,8 @@ styles.replaceSync(
   left: 0;
 }
 
-.overlay-type-ENTRY_SELECTED {
+.overlay-type-ENTRY_SELECTED,
+.overlay-type-ENTRY_OUTLINE {
   pointer-events: none;
   border: 2px solid var(--sys-color-primary);
   background-color: var(--sys-color-state-ripple-primary);
@@ -41,6 +42,30 @@ styles.replaceSync(
   &.cut-off-bottom {
     border-bottom: none;
   }
+}
+
+.overlay-type-ENTRY_OUTLINE {
+  background-color: transparent;
+
+  &.outline-reason-ERROR {
+    border-color: var(--sys-color-error-bright);
+    border-radius: var(--sys-shape-corner-small);
+  }
+}
+
+.overlay-type-CANDY_STRIPED_TIME_RANGE {
+  --red-stripe-width: 2px;
+  --white-stripe-width: 10px;
+
+  background-image:
+    repeating-linear-gradient(
+      315deg,
+      var(--sys-color-error-bright),
+      var(--sys-color-error-bright) var(--red-stripe-width),
+      transparent var(--red-stripe-width),
+      transparent var(--white-stripe-width)
+    );
+  border: 2px solid var(--sys-color-error-bright);
 }
 
 .overlay-type-TIME_RANGE {
@@ -82,6 +107,12 @@ styles.replaceSync(
   white-space: nowrap;
   max-width: 80%;
   box-shadow: var(--drop-shadow);
+}
+
+.overlay-type-TIMESPAN_BREAKDOWN {
+  /* This overlay is shown at the bottom of the UI, not the top */
+  top: unset;
+  bottom: 0;
 }
 
 /*# sourceURL=timelineFlameChartView.css */

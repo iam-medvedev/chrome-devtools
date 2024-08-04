@@ -845,6 +845,9 @@ export const generatedPropertyValues: {
     "view-transition-class": {
         values: string[];
     };
+    "view-transition-group": {
+        values: string[];
+    };
     "view-transition-name": {
         values: string[];
     };
