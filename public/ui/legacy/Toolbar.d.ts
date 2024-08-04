@@ -24,7 +24,6 @@ export declare class Toolbar {
     gripElementForResize(): Element;
     makeWrappable(growVertically?: boolean): void;
     makeVertical(): void;
-    makeBlueOnHover(): void;
     renderAsLinks(): void;
     empty(): boolean;
     setEnabled(enabled: boolean): void;

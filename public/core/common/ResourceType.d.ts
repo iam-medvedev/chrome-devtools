@@ -13,7 +13,7 @@ export declare class ResourceType {
      * Adds suffixes iff the mimeType is 'text/javascript' to denote whether the JS is minified or from
      * a source map.
      */
-    static mediaTypeForMetrics(mimeType: string, isFromSourceMap: boolean, isMinified: boolean): string;
+    static mediaTypeForMetrics(mimeType: string, isFromSourceMap: boolean, isMinified: boolean, isSnippet: boolean, isDebugger: boolean): string;
     name(): string;
     title(): string;
     category(): ResourceCategory;

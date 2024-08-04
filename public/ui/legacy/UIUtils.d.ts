@@ -25,7 +25,8 @@ export declare function anotherProfilerActiveLabel(): string;
 export declare function asyncStackTraceLabel(description: string | undefined, previousCallFrames: {
     functionName: string;
 }[]): string;
-export declare function installComponentRootStyles(element: Element): void;
+export declare function addPlatformClass(element: HTMLElement): void;
+export declare function installComponentRootStyles(element: HTMLElement): void;
 export declare class ElementFocusRestorer {
     private element;
     private previous;

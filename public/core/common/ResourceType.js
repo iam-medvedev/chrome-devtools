@@ -209,6 +209,9 @@ export class ResourceType {
         return null;
     }
     static mimeFromURL(url) {
+        if (url.startsWith('snippet://') || url.startsWith('debugger://')) {
+            return 'text/javascript';
+        }
         const name = ParsedURL.extractName(url);
         if (mimeTypeByName.has(name)) {
             return mimeTypeByName.get(name);
@@ -230,7 +233,7 @@ export class ResourceType {
      * Adds suffixes iff the mimeType is 'text/javascript' to denote whether the JS is minified or from
      * a source map.
      */
-    static mediaTypeForMetrics(mimeType, isFromSourceMap, isMinified) {
+    static mediaTypeForMetrics(mimeType, isFromSourceMap, isMinified, isSnippet, isDebugger) {
         if (mimeType !== 'text/javascript') {
             return mimeType;
         }
@@ -241,6 +244,12 @@ export class ResourceType {
         }
         if (isMinified) {
             return 'text/javascript+minified';
+        }
+        if (isSnippet) {
+            return 'text/javascript+snippet';
+        }
+        if (isDebugger) {
+            return 'text/javascript+eval';
         }
         return 'text/javascript+plain';
     }

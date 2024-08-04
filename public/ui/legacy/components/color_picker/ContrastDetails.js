@@ -373,9 +373,8 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
     }
     toggleBackgroundColorPickerInternal(enabled, shouldTriggerEvent = true) {
         if (enabled === undefined) {
-            enabled = !this.bgColorPickerButton.isToggled();
+            enabled = this.bgColorPickerButton.isToggled();
         }
-        this.bgColorPickerButton.setToggled(enabled);
         if (shouldTriggerEvent) {
             this.dispatchEventToListeners("BackgroundColorPickerWillBeToggled" /* Events.BackgroundColorPickerWillBeToggled */, enabled);
         }

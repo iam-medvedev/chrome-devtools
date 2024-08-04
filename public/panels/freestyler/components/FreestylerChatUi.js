@@ -122,13 +122,13 @@ const UIStringsTemp = {
 const i18nString = i18n.i18n.lockedString;
 function getInputPlaceholderString(aidaAvailability) {
     switch (aidaAvailability) {
-        case Host.AidaClient.AidaAvailability.AVAILABLE:
+        case "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */:
             return i18nString(UIStringsTemp.inputPlaceholder);
-        case Host.AidaClient.AidaAvailability.NO_ACCOUNT_EMAIL:
+        case "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */:
             return i18nString(UIStringsTemp.notLoggedIn);
-        case Host.AidaClient.AidaAvailability.NO_ACTIVE_SYNC:
+        case "no-active-sync" /* Host.AidaClient.AidaAccessPreconditions.NO_ACTIVE_SYNC */:
             return i18nString(UIStringsTemp.syncIsOff);
-        case Host.AidaClient.AidaAvailability.NO_INTERNET:
+        case "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */:
             return i18nString(UIStringsTemp.offline);
     }
 }
@@ -394,7 +394,7 @@ export class FreestylerChatUi extends HTMLElement {
     };
     #renderChatUi = () => {
         // TODO(ergunsh): Show a better UI for the states where Aida client is not available.
-        const isAidaAvailable = this.#props.aidaAvailability === Host.AidaClient.AidaAvailability.AVAILABLE;
+        const isAidaAvailable = this.#props.aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
         const isInputDisabled = !Boolean(this.#props.selectedNode) || !isAidaAvailable || Boolean(this.#props.confirmSideEffectDialog);
         // clang-format off
         return LitHtml.html `

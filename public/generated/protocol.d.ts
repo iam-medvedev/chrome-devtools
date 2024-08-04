@@ -1333,11 +1333,18 @@ export declare namespace Audits {
     }
 }
 /**
- * Defines commands and events for browser extensions. Available if the client
- * is connected using the --remote-debugging-pipe flag and
- * the --enable-unsafe-extension-debugging flag is set.
+ * Defines commands and events for browser extensions.
  */
 export declare namespace Extensions {
+    /**
+     * Storage areas.
+     */
+    const enum StorageArea {
+        Session = "session",
+        Local = "local",
+        Sync = "sync",
+        Managed = "managed"
+    }
     interface LoadUnpackedRequest {
         /**
          * Absolute file path.
@@ -1349,6 +1356,23 @@ export declare namespace Extensions {
          * Extension id.
          */
         id: string;
+    }
+    interface GetStorageItemsRequest {
+        /**
+         * ID of extension.
+         */
+        id: string;
+        /**
+         * StorageArea to retrieve data from.
+         */
+        storageArea: StorageArea;
+        /**
+         * Keys to retrieve.
+         */
+        keys?: string[];
+    }
+    interface GetStorageItemsResponse extends ProtocolResponseWithError {
+        data: any;
     }
 }
 /**
@@ -2664,16 +2688,6 @@ export declare namespace CSS {
         style: CSSStyle;
     }
     /**
-     * CSS position-fallback rule representation.
-     */
-    interface CSSPositionFallbackRule {
-        name: Value;
-        /**
-         * List of keyframes.
-         */
-        tryRules: CSSTryRule[];
-    }
-    /**
      * CSS @position-try rule representation.
      */
     interface CSSPositionTryRule {
@@ -2937,10 +2951,6 @@ export declare namespace CSS {
          * A list of CSS keyframed animations matching this node.
          */
         cssKeyframesRules?: CSSKeyframesRule[];
-        /**
-         * A list of CSS position fallbacks matching this node.
-         */
-        cssPositionFallbackRules?: CSSPositionFallbackRule[];
         /**
          * A list of CSS @position-try rules matching this node, based on the position-try-fallbacks property.
          */
@@ -10606,6 +10616,7 @@ export declare namespace Page {
      */
     const enum PermissionsPolicyFeature {
         Accelerometer = "accelerometer",
+        AllScreensCapture = "all-screens-capture",
         AmbientLightSensor = "ambient-light-sensor",
         AttributionReporting = "attribution-reporting",
         Autoplay = "autoplay",
@@ -10662,6 +10673,7 @@ export declare namespace Page {
         KeyboardMap = "keyboard-map",
         LocalFonts = "local-fonts",
         Magnetometer = "magnetometer",
+        MediaPlaybackWhileNotVisible = "media-playback-while-not-visible",
         Microphone = "microphone",
         Midi = "midi",
         OtpCredentials = "otp-credentials",
@@ -15860,7 +15872,9 @@ export declare namespace Preload {
         JavaScriptInterfaceAdded = "JavaScriptInterfaceAdded",
         JavaScriptInterfaceRemoved = "JavaScriptInterfaceRemoved",
         AllPrerenderingCanceled = "AllPrerenderingCanceled",
-        WindowClosed = "WindowClosed"
+        WindowClosed = "WindowClosed",
+        SlowNetwork = "SlowNetwork",
+        OtherPrerenderedPageActivated = "OtherPrerenderedPageActivated"
     }
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This

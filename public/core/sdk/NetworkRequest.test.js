@@ -13,7 +13,7 @@ describe('NetworkRequest', () => {
         assert.strictEqual(SDK.NetworkRequest.NetworkRequest.parseStatusTextFromResponseHeadersText('HTTP/1.1 200 OK'), 'OK');
         assert.strictEqual(SDK.NetworkRequest.NetworkRequest.parseStatusTextFromResponseHeadersText('HTTP/1.1 200 OK\r\n\r\nfoo: bar\r\n'), 'OK');
     });
-    it('parses reponse cookies from headers', () => {
+    it('parses response cookies from headers', () => {
         const request = SDK.NetworkRequest.NetworkRequest.createWithoutBackendRequest('requestId', 'url', 'documentURL', null);
         request.addExtraResponseInfo({
             blockedResponseCookies: [],

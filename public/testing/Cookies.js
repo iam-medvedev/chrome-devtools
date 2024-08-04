@@ -43,7 +43,7 @@ export function expectCookie(cookie, cookieExpectation) {
     assert.strictEqual(cookie.priority(), expectation.priority, 'priority');
     assert.strictEqual(cookie.partitioned(), Boolean(expectation.partitionKey), 'partitioned');
     if (cookie.partitioned()) {
-        assert.strictEqual(cookie.hasCrossSiteAncestor(), expectation.partitionKey?.hasCrossSiteAncestor, 'partitionKey');
+        assert.strictEqual(cookie.hasCrossSiteAncestor(), expectation.partitionKey?.hasCrossSiteAncestor, 'hasCrossSiteAncestor');
         assert.strictEqual(cookie.topLevelSite(), expectation.partitionKey?.topLevelSite, 'topLevelSite');
     }
     assert.strictEqual(cookie.partitionKeyOpaque(), expectation.partitionKeyOpaque, 'partitionKeyOpaque');

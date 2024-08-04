@@ -891,7 +891,7 @@
     "message": "L̂áŷér̂ b́ôŕd̂ér̂ś"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | layoutShiftRegions": {
-    "message": "L̂áŷóût́ Ŝh́îf́t̂ Ŕêǵîón̂ś"
+    "message": "L̂áŷóût́ ŝh́îf́t̂ ŕêǵîón̂ś"
   },
   "entrypoints/inspector_main/RenderingOptions.ts | paintFlashing": {
     "message": "P̂áîńt̂ f́l̂áŝh́îńĝ"
@@ -4537,6 +4537,9 @@
   },
   "panels/autofill/AutofillView.ts | sendFeedback": {
     "message": "Ŝén̂d́ f̂éêd́b̂áĉḱ"
+  },
+  "panels/autofill/AutofillView.ts | showTestAddressesInAutofillMenu": {
+    "message": "Ŝh́ôẃ t̂éŝt́ âd́d̂ŕêśŝéŝ ín̂ áût́ôf́îĺl̂ ḿêńû"
   },
   "panels/autofill/AutofillView.ts | toStartDebugging": {
     "message": "T̂ó ŝt́âŕt̂ d́êb́ûǵĝín̂ǵ âút̂óf̂íl̂ĺ, ûśê Ćĥŕôḿê'ś âút̂óf̂íl̂ĺ m̂én̂ú t̂ó f̂íl̂ĺ âń âd́d̂ŕêśŝ f́ôŕm̂."
@@ -10871,6 +10874,36 @@
   "panels/sensors/SensorsView.ts | timezoneId": {
     "message": "T̂ím̂éẑón̂é ÎD́"
   },
+  "panels/settings/AISettingsTab.ts | adminSettings": {
+    "message": "F̂éât́ûŕêś âv́âíl̂áb̂ĺê t́ô ḿâńâǵêd́ ûśêŕŝ ḿâý v̂ár̂ý d̂ép̂én̂d́îńĝ úp̂ón̂ t́ĥéîŕ âd́m̂ín̂íŝt́r̂át̂ór̂’ś ŝét̂t́îńĝś"
+  },
+  "panels/settings/AISettingsTab.ts | boostYourProductivity": {
+    "message": "B̂óôśt̂ ýôúr̂ ṕr̂ód̂úĉt́îv́ît́ŷ ẃît́ĥ Ćĥŕôḿê ÁÎ"
+  },
+  "panels/settings/AISettingsTab.ts | chromeAi": {
+    "message": "Ĉh́r̂óm̂é ÂÍ"
+  },
+  "panels/settings/AISettingsTab.ts | collectData": {
+    "message": "Ĝóôǵl̂é ĉól̂ĺêćt̂ś t̂h́îś d̂át̂á âńd̂ f́êéd̂b́âćk̂ t́ô ím̂ṕr̂óv̂é ît́ŝ ṕr̂ód̂úĉt́ŝ án̂d́ ŝér̂v́îćêś ŵít̂h́ t̂h́ê h́êĺp̂ óf̂ h́ûḿâń r̂év̂íêẃêŕŝ. Áv̂óîd́ ŝh́âŕîńĝ śêńŝít̂ív̂é ôŕ p̂ér̂śôńâĺ îńf̂ór̂ḿât́îón̂."
+  },
+  "panels/settings/AISettingsTab.ts | experimentalFeatures": {
+    "message": "T̂h́êśê f́êát̂úr̂éŝ ár̂é êx́p̂ér̂ím̂én̂t́âĺ âńd̂ ḿâý ĉh́âńĝé"
+  },
+  "panels/settings/AISettingsTab.ts | managedAccount": {
+    "message": "Ĝóôǵl̂é m̂áŷ ŕêf́r̂áîń f̂ŕôḿ d̂át̂á ĉól̂ĺêćt̂íôń d̂ép̂én̂d́îńĝ ón̂ ýôúr̂ Ǵôóĝĺê áĉćôún̂t́ m̂án̂áĝém̂én̂t́ âńd̂/ór̂ ŕêǵîón̂"
+  },
+  "panels/settings/AISettingsTab.ts | maybeInaccurate": {
+    "message": "T̂h́êśê f́êát̂úr̂éŝ úŝé ĝén̂ér̂át̂ív̂é ÂÍ âńd̂ ḿâý p̂ŕôv́îd́ê ín̂áĉćûŕât́ê ór̂ óf̂f́êńŝív̂é îńf̂ór̂ḿât́îón̂ t́ĥát̂ d́ô ńôt́ r̂ép̂ŕêśêńt̂ Ǵôóĝĺê’ś v̂íêẃŝ"
+  },
+  "panels/settings/AISettingsTab.ts | retainData": {
+    "message": "Ûśâǵê d́ât́â ẃîĺl̂ b́ê śt̂ór̂éd̂ ín̂ á ŵáŷ ẃĥér̂é Ĝóôǵl̂é ĉán̂ńôt́ t̂él̂ĺ ŵh́ô ṕr̂óv̂íd̂éd̂ ít̂ án̂d́ ĉán̂ ńô ĺôńĝér̂ f́ûĺf̂íl̂ĺ âńŷ d́êĺêt́îón̂ ŕêq́ûéŝt́ŝ án̂d́ ŵíl̂ĺ b̂é r̂ét̂áîńêd́ f̂ór̂ úp̂ t́ô 18 ḿôńt̂h́ŝ"
+  },
+  "panels/settings/AISettingsTab.ts | sendsDataToGoogle": {
+    "message": "Ûśîńĝ t́ĥéŝé f̂éât́ûŕêś ŝén̂d́ŝ d́ât́â ŕêĺêv́âńt̂ f́ôŕ t̂h́ê f́êát̂úr̂é t̂ó Ĝóôǵl̂é. P̂ĺêáŝé f̂ín̂d́ m̂ór̂é f̂éât́ûŕê-śp̂éĉíf̂íĉ ín̂f́ôŕm̂át̂íôń b̂él̂óŵ."
+  },
+  "panels/settings/AISettingsTab.ts | thingsToConsider": {
+    "message": "T̂h́îńĝś t̂ó ĉón̂śîd́êŕ"
+  },
   "panels/settings/components/SyncSection.ts | preferencesSyncDisabled": {
     "message": "T̂ó t̂úr̂ń t̂h́îś ŝét̂t́îńĝ ón̂, ýôú m̂úŝt́ f̂ír̂śt̂ én̂áb̂ĺê śêt́t̂ín̂ǵŝ śŷńĉ ín̂ Ćĥŕôḿê."
   },
@@ -11117,6 +11150,9 @@
   "panels/settings/KeybindsSettingsTab.ts | thisShortcutIsInUseByS": {
     "message": "T̂h́îś ŝh́ôŕt̂ćût́ îś îń ûśê b́ŷ {PH1}: {PH2}."
   },
+  "panels/settings/settings-meta.ts | chromeAI": {
+    "message": "Ĉh́r̂óm̂é ÂÍ"
+  },
   "panels/settings/settings-meta.ts | documentation": {
     "message": "D̂óĉúm̂én̂t́ât́îón̂"
   },
@@ -11134,6 +11170,9 @@
   },
   "panels/settings/settings-meta.ts | shortcuts": {
     "message": "Ŝh́ôŕt̂ćût́ŝ"
+  },
+  "panels/settings/settings-meta.ts | showChromeAI": {
+    "message": "Ŝh́ôẃ Ĉh́r̂óm̂é ÂÍ"
   },
   "panels/settings/settings-meta.ts | showExperiments": {
     "message": "Ŝh́ôẃ Êx́p̂ér̂ím̂én̂t́ŝ"
@@ -12275,6 +12314,9 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "Ŵh́êń D̂év̂T́ôól̂ś îś ôṕêń, t̂h́ê ÚR̂Ĺŝ ýôú v̂íŝít̂ ẃîĺl̂ b́ê śêńt̂ t́ô Ǵôóĝĺê t́ô q́ûér̂ý f̂íêĺd̂ d́ât́â. T́ĥéŝé r̂éq̂úêśt̂ś âŕê ńôt́ t̂íêd́ t̂ó ŷóûŕ Ĝóôǵl̂é âćĉóûńt̂."
   },
+  "panels/timeline/components/insights/LCPDiscovery.ts | lcpLoadDelay": {
+    "message": "L̂ĆP̂ ím̂áĝé l̂óâd́êd́ {PH1} âf́t̂ér̂ éâŕl̂íêśt̂ śt̂ár̂t́ p̂óîńt̂."
+  },
   "panels/timeline/components/insights/LCPPhases.ts | elementRenderDelay": {
     "message": "Êĺêḿêńt̂ ŕêńd̂ér̂ d́êĺâý"
   },
@@ -12335,6 +12377,9 @@
   "panels/timeline/components/LiveMetricsView.ts | interactions": {
     "message": "Îńt̂ér̂áĉt́îón̂ś"
   },
+  "panels/timeline/components/LiveMetricsView.ts | lcpElement": {
+    "message": "L̂ĆP̂ Él̂ém̂én̂t́"
+  },
   "panels/timeline/components/LiveMetricsView.ts | lcpTitle": {
     "message": "L̂ár̂ǵêśt̂ Ćôńt̂én̂t́f̂úl̂ Ṕâín̂t́ (L̂ĆP̂)"
   },
@@ -12376,9 +12421,6 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | poor": {
     "message": "P̂óôŕ"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | relatedNode": {
-    "message": "R̂él̂át̂éd̂ ńôd́ê"
   },
   "panels/timeline/components/LiveMetricsView.ts | tablet": {
     "message": "T̂áb̂ĺêt́"
@@ -12693,7 +12735,7 @@
     "message": "L̂áŷóût́"
   },
   "panels/timeline/EventUICategory.ts | layoutShift": {
-    "message": "L̂áŷóût́ Ŝh́îf́t̂"
+    "message": "L̂áŷóût́ ŝh́îf́t̂"
   },
   "panels/timeline/EventUICategory.ts | loading": {
     "message": "L̂óâd́îńĝ"
@@ -12882,7 +12924,7 @@
     "message": "Ŝél̂éĉt́ Ĵáv̂áŜćr̂íp̂t́ V̂Ḿ îńŝt́âńĉé"
   },
   "panels/timeline/LayoutShiftsTrackAppender.ts | layoutShifts": {
-    "message": "L̂áŷóût́ Ŝh́îf́t̂ś"
+    "message": "L̂áŷóût́ ŝh́îf́t̂ś"
   },
   "panels/timeline/NetworkTrackAppender.ts | network": {
     "message": "N̂ét̂ẃôŕk̂"

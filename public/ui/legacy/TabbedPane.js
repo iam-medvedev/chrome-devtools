@@ -424,6 +424,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         if (effectiveTab && this.autoSelectFirstItemOnShow) {
             this.selectTab(effectiveTab.id);
         }
+        this.updateTabElements();
     }
     makeTabSlider() {
         if (this.verticalTabLayout) {

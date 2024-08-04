@@ -1,4 +1,5 @@
 import { type DeferredContent } from './ContentProvider.js';
+import { Text } from './Text.js';
 /**
  * This class is a small wrapper around either raw binary or text data.
  * As the binary data can actually contain textual data, we also store the
@@ -30,12 +31,19 @@ export declare class ContentData {
      * Returns the content as text. If this `ContentData` was constructed with base64
      * encoded bytes, it will use the provided charset to attempt to decode the bytes.
      *
-     * @throws if `resourceType` is not a text type.
+     * @throws if `mimeType` is not a text type.
      */
     get text(): string;
     get isTextContent(): boolean;
     get isEmpty(): boolean;
     get createdFromBase64(): boolean;
+    /**
+     * Returns the text content as a `Text` object. The returned object is always the same to
+     * minimize the number of times we have to calculate the line endings array.
+     *
+     * @throws if `mimeType` is not a text type.
+     */
+    get textObj(): Text;
     /**
      * @returns True, iff the contents (base64 or text) are equal.
      * Does not compare mime type and charset, but will decode base64 data if both
@@ -52,11 +60,14 @@ export declare class ContentData {
     };
     /** @returns `value` if the passed `ContentDataOrError` is an error, or the text content otherwise */
     static textOr<T>(contentDataOrError: ContentDataOrError, value: T): string | T;
+    /** @returns an empty 'text/plain' content data if the passed `ContentDataOrError` is an error, or the content data itself otherwise */
+    static contentDataOrEmpty(contentDataOrError: ContentDataOrError): ContentData;
     /**
      * @deprecated Used during migration from `DeferredContent` to `ContentData`.
      */
     static asDeferredContent(contentDataOrError: ContentDataOrError): DeferredContent;
 }
+export declare const EMPTY_TEXT_CONTENT_DATA: ContentData;
 export type ContentDataOrError = ContentData | {
     error: string;
 };

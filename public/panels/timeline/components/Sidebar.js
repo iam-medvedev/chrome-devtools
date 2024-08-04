@@ -1,26 +1,9 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
-import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-import * as Menus from '../../../ui/components/menus/menus.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import * as Insights from './insights/insights.js';
-import sidebarStyles from './sidebar.css.js';
-import * as SidebarAnnotationsTab from './SidebarAnnotationsTab.js';
-import { SidebarSingleNavigation } from './SidebarSingleNavigation.js';
-const DEFAULT_EXPANDED_WIDTH = 240;
-export const DEFAULT_SIDEBAR_TAB = "Insights" /* SidebarTabsName.INSIGHTS */;
-export var InsightsCategories;
-(function (InsightsCategories) {
-    InsightsCategories["ALL"] = "All";
-    InsightsCategories["INP"] = "INP";
-    InsightsCategories["LCP"] = "LCP";
-    InsightsCategories["CLS"] = "CLS";
-    InsightsCategories["OTHER"] = "Other";
-})(InsightsCategories || (InsightsCategories = {}));
+import { SidebarAnnotationsTab } from './SidebarAnnotationsTab.js';
+import { SidebarInsightsTab } from './SidebarInsightsTab.js';
 export class RemoveAnnotation extends Event {
     removedAnnotation;
     static eventName = 'removeannotation';
@@ -29,218 +12,61 @@ export class RemoveAnnotation extends Event {
         this.removedAnnotation = removedAnnotation;
     }
 }
-export class SidebarWidget extends UI.SplitWidget.SplitWidget {
-    #sidebarUI = new SidebarUI();
-    constructor() {
-        super(true /* isVertical */, false /* secondIsSidebar */, undefined /* settingName */, DEFAULT_EXPANDED_WIDTH);
-        this.sidebarElement().append(this.#sidebarUI);
+export const DEFAULT_SIDEBAR_TAB = "insights" /* SidebarTabs.INSIGHTS */;
+export class SidebarWidget extends UI.Widget.VBox {
+    #tabbedPane = new UI.TabbedPane.TabbedPane();
+    #insightsView = new InsightsView();
+    #annotationsView = new AnnotationsView();
+    wasShown() {
+        this.#tabbedPane.show(this.element);
+        if (!this.#tabbedPane.hasTab("insights" /* SidebarTabs.INSIGHTS */)) {
+            this.#tabbedPane.appendTab("insights" /* SidebarTabs.INSIGHTS */, 'Insights', this.#insightsView);
+        }
+        if (!this.#tabbedPane.hasTab("annotations" /* SidebarTabs.ANNOTATIONS */)) {
+            this.#tabbedPane.appendTab('annotations', 'Annotations', this.#annotationsView);
+        }
+        // TODO: automatically select the right tab depending on what content is
+        // available to us.
     }
-    updateContentsOnExpand() {
-        this.#sidebarUI.onWidgetShow();
-    }
-    setAnnotationsTabContent(updatedAnnotations) {
-        this.#sidebarUI.annotations = updatedAnnotations;
+    setAnnotations(updatedAnnotations) {
+        this.#annotationsView.setAnnotations(updatedAnnotations);
     }
     setTraceParsedData(traceParsedData) {
-        this.#sidebarUI.traceParsedData = traceParsedData;
+        this.#insightsView.setTraceParsedData(traceParsedData);
     }
     setInsights(insights) {
-        this.#sidebarUI.insights = insights;
+        this.#insightsView.setInsights(insights);
     }
     setActiveInsight(activeInsight) {
-        this.#sidebarUI.activeInsight = activeInsight;
+        this.#insightsView.setActiveInsight(activeInsight);
     }
 }
-export class SidebarUI extends HTMLElement {
-    static litTagName = LitHtml.literal `devtools-performance-sidebar`;
-    #shadow = this.attachShadow({ mode: 'open' });
-    #activeTab = DEFAULT_SIDEBAR_TAB;
-    #selectedCategory = InsightsCategories.ALL;
-    #traceParsedData;
-    #insights = null;
-    #annotations = [];
-    #renderBound = this.#render.bind(this);
-    /**
-     * When a trace has multiple navigations, we show an accordion with each
-     * navigation in. You can only have one of these open at any time, and we
-     * track it via this ID.
-     */
-    #activeNavigationId = null;
-    #activeInsight = null;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [sidebarStyles];
+class InsightsView extends UI.Widget.VBox {
+    #component = new SidebarInsightsTab();
+    constructor() {
+        super();
+        this.element.classList.add('sidebar-insights');
+        this.element.appendChild(this.#component);
     }
-    onWidgetShow() {
-        // Called when the SidebarWidget is expanded in order to render. Because
-        // this happens distinctly from any data being passed in, we need to expose
-        // a method to allow the widget to let us know when to render. This also
-        // matters because this is when we can update the underline below the
-        // active tab, now that the sidebar is visible and has width.
-        this.#render();
+    setTraceParsedData(data) {
+        this.#component.traceParsedData = data;
     }
-    set annotations(annotations) {
-        this.#annotations = annotations;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+    setInsights(data) {
+        this.#component.insights = data;
     }
-    set insights(insights) {
-        if (insights === this.#insights) {
-            return;
-        }
-        this.#insights = insights;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    set activeInsight(activeInsight) {
-        this.#activeInsight = activeInsight;
-        // Reset toggled insights when we have new insights.
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    set traceParsedData(traceParsedData) {
-        if (this.#traceParsedData === traceParsedData) {
-            // If this is the same trace, do not re-render.
-            return;
-        }
-        this.#traceParsedData = traceParsedData;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    #onTabHeaderClicked(activeTab) {
-        if (activeTab === this.#activeTab) {
-            return;
-        }
-        this.#activeTab = activeTab;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    #renderHeader() {
-        // clang-format off
-        return LitHtml.html `
-      <div class="tabs-header">
-        <input
-          type="button"
-          value=${"Insights" /* SidebarTabsName.INSIGHTS */}
-          ?active=${this.#activeTab === "Insights" /* SidebarTabsName.INSIGHTS */}
-          @click=${() => this.#onTabHeaderClicked("Insights" /* SidebarTabsName.INSIGHTS */)}>
-        <input
-          type="button"
-          value=${"Annotations" /* SidebarTabsName.ANNOTATIONS */}
-          ?active=${this.#activeTab === "Annotations" /* SidebarTabsName.ANNOTATIONS */}
-          @click=${() => this.#onTabHeaderClicked("Annotations" /* SidebarTabsName.ANNOTATIONS */)}>
-      </div>
-    `;
-        // clang-format on
-    }
-    #onTargetSelected(event) {
-        this.#selectedCategory = event.itemValue;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-    }
-    #renderInsightsTabContent() {
-        const navigations = this.#traceParsedData?.Meta.mainFrameNavigations ?? [];
-        const hasMultipleNavigations = navigations.length > 1;
-        // clang-format off
-        return LitHtml.html `
-      <${Menus.SelectMenu.SelectMenu.litTagName}
-            class="target-select-menu"
-            @selectmenuselected=${this.#onTargetSelected}
-            .showDivider=${true}
-            .showArrow=${true}
-            .sideButton=${false}
-            .showSelectedItem=${true}
-            .showConnector=${false}
-            .position=${"bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */}
-            .buttonTitle=${this.#selectedCategory}
-            jslog=${VisualLogging.dropDown('timeline.sidebar-insights-category-select').track({ click: true })}
-          >
-          ${Object.values(InsightsCategories).map(insightsCategory => {
-            return LitHtml.html `
-              <${Menus.Menu.MenuItem.litTagName} .value=${insightsCategory}>
-                ${insightsCategory}
-              </${Menus.Menu.MenuItem.litTagName}>
-            `;
-        })}
-      </${Menus.SelectMenu.SelectMenu.litTagName}>
-
-      ${navigations.map(navigation => {
-            const id = navigation.args.data?.navigationId;
-            const url = navigation.args.data?.documentLoaderURL;
-            if (!id || !url) {
-                return LitHtml.nothing;
-            }
-            const data = {
-                traceParsedData: this.#traceParsedData ?? null,
-                insights: this.#insights,
-                navigationId: id,
-                activeCategory: this.#selectedCategory,
-                activeInsight: this.#activeInsight,
-            };
-            const contents = LitHtml.html `
-          <${SidebarSingleNavigation.litTagName}
-            .data=${data}>
-          </${SidebarSingleNavigation.litTagName}>
-        `;
-            if (hasMultipleNavigations) {
-                return LitHtml.html `<div class="multi-nav-container">
-            <details ?open=${id === this.#activeNavigationId} class="navigation-wrapper"><summary @click=${() => this.#navigationClicked(id)}>${url}</summary>${contents}</details>
-            </div>`;
-            }
-            return contents;
-        })}
-    `;
-        // clang-format on
-    }
-    #navigationClicked(id) {
-        // New navigation clicked. Update the active insight.
-        if (id !== this.#activeInsight?.navigationId) {
-            this.dispatchEvent(new Insights.SidebarInsight.InsightDeactivated());
-        }
-        this.#activeNavigationId = id;
-        return (event) => {
-            event.preventDefault();
-            void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
-        };
-    }
-    #renderContent() {
-        switch (this.#activeTab) {
-            case "Insights" /* SidebarTabsName.INSIGHTS */:
-                return this.#renderInsightsTabContent();
-            case "Annotations" /* SidebarTabsName.ANNOTATIONS */:
-                return LitHtml.html `
-        <${SidebarAnnotationsTab.SidebarAnnotationsTab.litTagName} .annotations=${this.#annotations}></${SidebarAnnotationsTab.SidebarAnnotationsTab.litTagName}>
-      `;
-            default:
-                return null;
-        }
-    }
-    #updateActiveIndicatorPosition() {
-        const insightsTabHeaderElement = this.#shadow.querySelector('.tabs-header input:nth-child(1)');
-        const annotationTabHeaderElement = this.#shadow.querySelector('.tabs-header input:nth-child(2)');
-        const tabSliderElement = this.#shadow.querySelector('.tab-slider');
-        if (insightsTabHeaderElement && annotationTabHeaderElement && tabSliderElement) {
-            const insightsTabHeaderWidth = insightsTabHeaderElement.getBoundingClientRect().width;
-            const annotationTabHeaderWidth = annotationTabHeaderElement.getBoundingClientRect().width;
-            switch (this.#activeTab) {
-                case "Insights" /* SidebarTabsName.INSIGHTS */:
-                    tabSliderElement.style.left = '0';
-                    tabSliderElement.style.width = `${insightsTabHeaderWidth}px`;
-                    return;
-                case "Annotations" /* SidebarTabsName.ANNOTATIONS */:
-                    tabSliderElement.style.left = `${insightsTabHeaderWidth}px`;
-                    tabSliderElement.style.width = `${annotationTabHeaderWidth}px`;
-                    return;
-            }
-        }
-    }
-    #render() {
-        // clang-format off
-        const output = LitHtml.html `<div class="sidebar">
-      <div class="tab-bar">
-        ${this.#renderHeader()}
-      </div>
-      <div class="tab-slider"></div>
-      <div class="tab-headers-bottom-line"></div>
-      <div class="sidebar-body">${this.#renderContent()}</div>
-    </div>`;
-        // clang-format on
-        LitHtml.render(output, this.#shadow, { host: this });
-        this.#updateActiveIndicatorPosition();
+    setActiveInsight(active) {
+        this.#component.activeInsight = active;
     }
 }
-customElements.define('devtools-performance-sidebar', SidebarUI);
+class AnnotationsView extends UI.Widget.VBox {
+    #component = new SidebarAnnotationsTab();
+    constructor() {
+        super();
+        this.element.classList.add('sidebar-annotations');
+        this.element.appendChild(this.#component);
+    }
+    setAnnotations(annotations) {
+        this.#component.annotations = annotations;
+    }
+}
 //# sourceMappingURL=Sidebar.js.map

@@ -16,20 +16,31 @@ styles.replaceSync(
   width: auto;
   height: auto;
   margin: 10px 0;
-  padding: 10px;
-  border-radius: 3px;
+  border-radius: var(--sys-shape-corner-extra-small);
   overflow: hidden;
-  border: 1px solid var(--sys-color-outline);
+  border: 1px solid var(--sys-color-divider);
   background-color: var(--sys-color-base);
 
   &.closed {
-    background-color: var(--sys-color-neutral-container);
+    background-color: var(--sys-color-surface3);
     border: none;
   }
 
   &.closed:hover {
     background-color: var(--sys-color-state-disabled-container);
   }
+
+  header {
+    padding: 10px;
+
+    h3 {
+      font: var(--sys-typescale-body4-medium);
+    }
+  }
+}
+
+.insight-body {
+  padding: 0 10px;
 }
 
 .insight-title {
@@ -53,7 +64,7 @@ styles.replaceSync(
 }
 
 .insight-description {
-  border-bottom: 1px solid var(--sys-color-outline);
+  border-bottom: 1px solid var(--sys-color-divider);
   padding-bottom: 10px;
 }
 
@@ -78,7 +89,7 @@ styles.replaceSync(
 }
 
 .insight-entry {
-  font-weight: bold;
+  font: var(--sys-typescale-body4-medium);
   padding-block: 2px;
   display: flex;
   align-items: center;
@@ -96,11 +107,15 @@ styles.replaceSync(
 }
 
 .element-img-details {
-  font-weight: bold;
+  font: var(--sys-typescale-body4-regular);
 
   .element-img-details-size {
     color: var(--color-text-secondary);
   }
+}
+
+::slotted(*) {
+  font: var(--sys-typescale-body4-regular);
 }
 
 /*# sourceURL=sidebarInsight.css */

@@ -30,7 +30,6 @@
 import * as Platform from '../../core/platform/platform.js';
 import { ContentData } from './ContentData.js';
 import { SearchMatch } from './ContentProvider.js';
-import { Text } from './Text.js';
 const KEY_VALUE_FILTER_REGEXP = /(?:^|\s)(\-)?([\w\-]+):([^\s]+)/;
 const REGEXP_FILTER_REGEXP = /(?:^|\s)(\-)?\/([^\/\\]+(\\.[^\/]*)*)\//;
 const TEXT_FILTER_REGEXP = /(?:^|\s)(\-)?([^\s]+)/;
@@ -323,15 +322,14 @@ export const performSearchInContentData = function (contentData, query, caseSens
     if (ContentData.isError(contentData) || !contentData.isTextContent) {
         return [];
     }
-    return performSearchInContent(contentData.text, query, caseSensitive, isRegex);
+    return performSearchInContent(contentData.textObj, query, caseSensitive, isRegex);
 };
 /**
  * @returns One {@link SearchMatch} per match. Multiple matches on the same line each
  * result in their own `SearchMatchExact` instance.
  */
-export const performSearchInContent = function (content, query, caseSensitive, isRegex) {
+export const performSearchInContent = function (text, query, caseSensitive, isRegex) {
     const regex = Platform.StringUtilities.createSearchRegex(query, caseSensitive, isRegex);
-    const text = new Text(content);
     const result = [];
     for (let i = 0; i < text.lineCount(); ++i) {
         const lineContent = text.lineAt(i);

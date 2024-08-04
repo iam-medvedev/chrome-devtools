@@ -570,10 +570,14 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             const colorSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-color-swatch');
             assert.exists(colorSwatch);
             assert.strictEqual(colorSwatch.getColor()?.asString("hsl" /* Common.Color.Format.HSL */), 'hsl(120deg 50% 25%)');
+            const eventHandler = sinon.stub();
+            colorSwatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, eventHandler);
             const angleSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-css-angle');
             assert.exists(angleSwatch);
             angleSwatch.updateAngle({ value: 130, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.Deg */ });
             assert.strictEqual(colorSwatch.getColor()?.asString("hsl" /* Common.Color.Format.HSL */), 'hsl(130deg 50% 25%)');
+            assert.isTrue(eventHandler.calledOnce);
+            assert.strictEqual(eventHandler.args[0][0].data.color, colorSwatch.getColor());
         });
         it('renders relative colors', () => {
             const stylePropertyTreeElement = getTreeElement('color', 'hsl(    from var(--blue) h calc(s/2) l / alpha)');

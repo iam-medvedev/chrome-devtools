@@ -24,7 +24,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             Common.Settings.settingForTest('freestyler-dogfood-consent-onboarding-finished').set(false);
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
-                aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             sinon.assert.calledWith(mockView, sinon.match({ state: "consent-view" /* Freestyler.State.CONSENT_VIEW */ }));
         });
@@ -33,7 +33,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             setting.set(false);
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
-                aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();
@@ -45,7 +45,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             Common.Settings.settingForTest('freestyler-dogfood-consent-onboarding-finished').set(true);
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
-                aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             sinon.assert.calledWith(mockView, sinon.match({ state: "chat-view" /* Freestyler.State.CHAT_VIEW */ }));
         });
@@ -57,7 +57,7 @@ describeWithEnvironment('FreestylerPanel', () => {
         it('should render the view with confirmSideEffectDialog prop', async () => {
             const panel = new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
-                aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             void panel.showConfirmSideEffectUi('code');
             const lastArg = mockView.lastCall.args[0];
@@ -67,7 +67,7 @@ describeWithEnvironment('FreestylerPanel', () => {
         it('should resolve with the result of the onAnswer call', done => {
             const panel = new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
-                aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             void panel.showConfirmSideEffectUi('code').then(result => {
                 assert.isTrue(result);
@@ -92,7 +92,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             const aidaClient = getTestAidaClient();
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient,
-                aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();
@@ -106,7 +106,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             const aidaClient = getTestAidaClient();
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient,
-                aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();
@@ -126,7 +126,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             const aidaClient = getTestAidaClient();
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient,
-                aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();
@@ -147,7 +147,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             const aidaClient = getTestAidaClient();
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient,
-                aidaAvailability: Host.AidaClient.AidaAvailability.AVAILABLE,
+                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();

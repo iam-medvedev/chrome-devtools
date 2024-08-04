@@ -3,9 +3,9 @@ import * as Platform from '../../../../core/platform/platform.js';
 import { DataGridImpl, DataGridNode, type DataGridData, type Parameters } from './DataGrid.js';
 declare const ViewportDataGrid_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T_1 extends Events.ViewportCalculated>(eventType: T_1, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_1]>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T_1>;
+    addEventListener<T_1 extends Events.ViewportCalculated>(eventType: T_1, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_1], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T_1>;
     once<T_1 extends Events.ViewportCalculated>(eventType: T_1): Promise<EventTypes[T_1]>;
-    removeEventListener<T_1 extends Events.ViewportCalculated>(eventType: T_1, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_1]>) => void, thisObject?: Object): void;
+    removeEventListener<T_1 extends Events.ViewportCalculated>(eventType: T_1, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T_1], any>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: Events.ViewportCalculated): boolean;
     dispatchEventToListeners<T_1 extends Events.ViewportCalculated>(eventType: Platform.TypeScriptUtilities.NoUnion<T_1>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T_1>): void;
 }) & typeof DataGridImpl;

@@ -11,7 +11,7 @@ export declare class FreestylerPanel extends UI.Panel.Panel {
     static panelName: string;
     constructor(view: View, { aidaClient, aidaAvailability }: {
         aidaClient: Host.AidaClient.AidaClient;
-        aidaAvailability: Host.AidaClient.AidaAvailability;
+        aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
     });
     static instance(opts?: {
         forceNew: boolean | null;

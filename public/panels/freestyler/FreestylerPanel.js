@@ -126,7 +126,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
     static async instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
         if (!freestylerPanelInstance || forceNew) {
-            const aidaAvailability = await Host.AidaClient.AidaClient.getAidaClientAvailability();
+            const aidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
             const aidaClient = new Host.AidaClient.AidaClient();
             freestylerPanelInstance = new FreestylerPanel(defaultView, { aidaClient, aidaAvailability });
         }

@@ -100,6 +100,7 @@ export default {
   --sys-typescale-body3-size: 13px;
   --sys-typescale-body4-size: 12px;
   --sys-typescale-body5-size: 11px;
+  --sys-typescale-monospace-size: 11px;
   --sys-typescale-headline1-line-height: 32px;
   --sys-typescale-headline2-line-height: 24px;
   --sys-typescale-headline3-line-height: 24px;
@@ -110,6 +111,7 @@ export default {
   --sys-typescale-body3-line-height: 20px;
   --sys-typescale-body4-line-height: 16px;
   --sys-typescale-body5-line-height: 16px;
+  --sys-typescale-monospace-line-height: 1.2;
 }
 
 /*# sourceURL=designTokens.css */

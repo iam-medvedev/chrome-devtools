@@ -22,6 +22,6 @@ const component = new ConsoleInsight({
         throw new Error('Could not connect to the server');
     },
     registerClientEvent: () => Promise.resolve({}),
-}, Host.AidaClient.AidaAvailability.AVAILABLE);
+}, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=error.js.map

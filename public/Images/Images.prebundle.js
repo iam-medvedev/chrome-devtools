@@ -27,6 +27,7 @@ style.setProperty('--image-file-3d-pan', 'url(\"' + new URL('./src/3d-pan.svg', 
 style.setProperty('--image-file-3d-rotate', 'url(\"' + new URL('./src/3d-rotate.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-accelerometer-back', 'url(\"' + new URL('./src/accelerometer-back.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-accelerometer-front', 'url(\"' + new URL('./src/accelerometer-front.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-account-box', 'url(\"' + new URL('./src/account-box.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-align-content-center', 'url(\"' + new URL('./src/align-content-center.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-align-content-end', 'url(\"' + new URL('./src/align-content-end.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-align-content-space-around', 'url(\"' + new URL('./src/align-content-space-around.svg', import.meta.url).toString() + '\")');
@@ -64,6 +65,7 @@ style.setProperty('--image-file-brush-filled', 'url(\"' + new URL('./src/brush-f
 style.setProperty('--image-file-brush', 'url(\"' + new URL('./src/brush.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bug', 'url(\"' + new URL('./src/bug.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bundle', 'url(\"' + new URL('./src/bundle.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-calendar-today', 'url(\"' + new URL('./src/calendar-today.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-check-circle', 'url(\"' + new URL('./src/check-circle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-check-double', 'url(\"' + new URL('./src/check-double.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-checker', 'url(\"' + new URL('./src/checker.svg', import.meta.url).toString() + '\")');
@@ -87,6 +89,7 @@ style.setProperty('--image-file-console-conditional-breakpoint', 'url(\"' + new 
 style.setProperty('--image-file-console-logpoint', 'url(\"' + new URL('./src/console-logpoint.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-cookie', 'url(\"' + new URL('./src/cookie.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-copy', 'url(\"' + new URL('./src/copy.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-corporate-fare', 'url(\"' + new URL('./src/corporate-fare.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-credit-card', 'url(\"' + new URL('./src/credit-card.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-cross-circle-filled', 'url(\"' + new URL('./src/cross-circle-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-cross-circle', 'url(\"' + new URL('./src/cross-circle.svg', import.meta.url).toString() + '\")');
@@ -142,6 +145,8 @@ style.setProperty('--image-file-frame', 'url(\"' + new URL('./src/frame.svg', im
 style.setProperty('--image-file-gear-filled', 'url(\"' + new URL('./src/gear-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-gear', 'url(\"' + new URL('./src/gear.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-gears', 'url(\"' + new URL('./src/gears.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-globe', 'url(\"' + new URL('./src/globe.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-google', 'url(\"' + new URL('./src/google.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-goto-filled', 'url(\"' + new URL('./src/goto-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshot', 'url(\"' + new URL('./src/heap-snapshot.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshots', 'url(\"' + new URL('./src/heap-snapshots.svg', import.meta.url).toString() + '\")');
@@ -196,6 +201,7 @@ style.setProperty('--image-file-plus', 'url(\"' + new URL('./src/plus.svg', impo
 style.setProperty('--image-file-popup', 'url(\"' + new URL('./src/popup.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-preview_feature_video_thumbnail', 'url(\"' + new URL('./src/preview_feature_video_thumbnail.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-profile', 'url(\"' + new URL('./src/profile.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-psychiatry', 'url(\"' + new URL('./src/psychiatry.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-record-start', 'url(\"' + new URL('./src/record-start.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-record-stop', 'url(\"' + new URL('./src/record-stop.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-redo', 'url(\"' + new URL('./src/redo.svg', import.meta.url).toString() + '\")');

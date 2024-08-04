@@ -37,20 +37,29 @@ export class SidebarInsight extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [sidebarInsightStyles];
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
+    #dispatchInsightToggle() {
+        this.dispatchEvent(new CustomEvent('insighttoggleclick'));
+    }
     #render() {
         let output;
         if (!this.#expanded) {
             output = LitHtml.html `
         <div class="insight closed">
+          <header @click=${this.#dispatchInsightToggle}>
             <h3 class="insight-title">${this.#insightTitle}</h3>
+          </header>
         </div>`;
         }
         else {
             output = LitHtml.html `
         <div class="insight">
+          <header @click=${this.#dispatchInsightToggle}>
             <h3 class="insight-title">${this.#insightTitle}</h3>
+          </header>
+          <div class="insight-body">
             <slot name="insight-description"></slot>
             <slot name="insight-content"></slot>
+          </div>
         </div>`;
         }
         LitHtml.render(output, this.#shadow, { host: this });

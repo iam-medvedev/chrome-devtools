@@ -1,5 +1,6 @@
 import { type ContentDataOrError } from './ContentData.js';
 import { SearchMatch } from './ContentProvider.js';
+import { type Text } from './Text.js';
 export declare const Utils: {
     isSpaceChar: (char: string) => boolean;
     lineIndent: (line: string) => string;
@@ -68,7 +69,7 @@ export declare const performSearchInContentData: (contentData: ContentDataOrErro
  * @returns One {@link SearchMatch} per match. Multiple matches on the same line each
  * result in their own `SearchMatchExact` instance.
  */
-export declare const performSearchInContent: (content: string, query: string, caseSensitive: boolean, isRegex: boolean) => SearchMatch[];
+export declare const performSearchInContent: (text: Text, query: string, caseSensitive: boolean, isRegex: boolean) => SearchMatch[];
 /**
  * Similar to {@link performSearchInContent} but doesn't search in a whole text but rather
  * finds the exact matches on a prelminiary search result (i.e. lines with known matches).

@@ -7,6 +7,7 @@ export declare class AutofillManager extends Common.ObjectWrapper.ObjectWrapper<
     static instance(opts?: {
         forceNew: boolean | null;
     }): AutofillManager;
+    onShowAutofillTestAddressesSettingsChanged(): void;
     getLastFilledAddressForm(): AddressFormFilledEvent | null;
 }
 export interface Match {

@@ -398,6 +398,7 @@ export function getGetHostConfigStub(config) {
             enabled: true,
             testing: false,
         },
+        isOffTheRecord: false,
     });
 }
 //# sourceMappingURL=EnvironmentHelpers.js.map

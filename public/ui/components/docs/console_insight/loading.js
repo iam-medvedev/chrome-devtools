@@ -33,6 +33,6 @@ Images: ![https://example.com](https://example.com)
         };
     },
     registerClientEvent: () => Promise.resolve({}),
-}, Host.AidaClient.AidaAvailability.AVAILABLE);
+}, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=loading.js.map

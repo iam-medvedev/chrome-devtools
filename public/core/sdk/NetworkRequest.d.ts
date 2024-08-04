@@ -231,7 +231,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     blockedResponseCookies(): BlockedSetCookieWithReason[];
     exemptedResponseCookies(): ExemptedSetCookieWithReason[];
     nonBlockedResponseCookies(): Cookie[];
-    responseCookiesPartitionKey(): string | null;
+    responseCookiesPartitionKey(): Protocol.Network.CookiePartitionKey | null;
     responseCookiesPartitionKeyOpaque(): boolean | null;
     redirectSourceSignedExchangeInfoHasNoErrors(): boolean;
     clientSecurityState(): Protocol.Network.ClientSecurityState | undefined;

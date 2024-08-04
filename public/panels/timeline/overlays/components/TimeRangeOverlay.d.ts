@@ -3,9 +3,9 @@ export declare class TimeRangeOverlay extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
     connectedCallback(): void;
+    constructor(initialLabel: string);
     set canvasRect(rect: DOMRect | null);
     set duration(duration: TraceEngine.Types.Timing.MicroSeconds | null);
-    set label(label: string);
     /**
      * We use this method after the overlay has been positioned in order to move
      * the label as required to keep it on screen.

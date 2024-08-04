@@ -11,13 +11,13 @@ import * as UI from '../../ui/legacy/legacy.js';
   */
 const UIStringsTemp = {
     /**
-     * @description The title of the action for showing Freestyler panel.
+     * @description The title of the action for showing Ai Assistant panel.
      */
-    showFreestyler: 'Show Freestyler',
+    showAiAssistant: 'Show  AI Assistant',
     /**
-     * @description The title of the Freestyler panel.
+     * @description The title of the AI Assistant panel.
      */
-    freestyler: 'Freestyler',
+    aiAssistant: 'AI Assistant',
     /**
      * @description The setting title to enable the freestyler via
      * the settings tab.
@@ -27,14 +27,47 @@ const UIStringsTemp = {
      *@description Text of a tooltip to redirect to the AI assistant panel with
      *the current element as context
      */
-    askFreestyler: 'Ask Freestyler',
+    askAiAssistant: 'Ask AI Assistant',
+    /**
+     * @description Message shown to the user if the DevTools locale is not
+     * supported.
+     */
+    wrongLocale: 'To use this feature, update your Language preference in DevTools Settings to English.',
+    /**
+     * @description Message shown to the user if the age check is not successful.
+     */
+    ageRestricted: 'This feature is only available to users who are 18 years of age or older.',
+    /**
+     * @description Message shown to the user if the user's region is not
+     * supported.
+     */
+    geoRestricted: 'This feature is unavailable in your region.',
+    /**
+     * @description Message shown to the user if the enterprise policy does
+     * not allow this feature.
+     */
+    policyRestricted: 'Your organization turned off this feature. Contact your administrators for more information.',
 };
 // TODO(nvitkov): b/346933425
 // const str_ = i18n.i18n.registerUIStrings('panels/freestyler/freestyler-meta.ts', UIStrings);
 // const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 /* eslint-disable  rulesdir/l10n_i18nString_call_only_with_uistrings */
 const i18nLazyString = i18n.i18n.lockedLazyString;
+const i18nString = i18n.i18n.lockedString;
 const setting = 'freestyler-enabled';
+function isLocaleRestricted() {
+    const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
+    return !devtoolsLocale.locale.startsWith('en-');
+}
+function isAgeRestricted(config) {
+    return config?.devToolsFreestylerDogfood?.blockedByAge === true;
+}
+function isGeoRestricted(config) {
+    return config?.devToolsFreestylerDogfood?.blockedByGeo === true;
+}
+function isPolicyRestricted(config) {
+    return config?.devToolsFreestylerDogfood?.blockedByEnterprisePolicy === true;
+}
 let loadedFreestylerModule;
 async function loadFreestylerModule() {
     if (!loadedFreestylerModule) {
@@ -48,12 +81,12 @@ function isFeatureAvailable(config) {
 UI.ViewManager.registerViewExtension({
     location: "drawer-view" /* UI.ViewManager.ViewLocationValues.DRAWER_VIEW */,
     id: 'freestyler',
-    commandPrompt: i18nLazyString(UIStringsTemp.showFreestyler),
-    title: i18nLazyString(UIStringsTemp.freestyler),
+    commandPrompt: i18nLazyString(UIStringsTemp.showAiAssistant),
+    title: i18nLazyString(UIStringsTemp.aiAssistant),
     order: 10,
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
     hasToolbar: false,
-    condition: isFeatureAvailable,
+    condition: config => isFeatureAvailable(config) && Common.Settings.Settings.instance().moduleSetting(setting).get(),
     async loadView() {
         const Freestyler = await loadFreestylerModule();
         return Freestyler.FreestylerPanel.instance();
@@ -67,6 +100,21 @@ Common.Settings.registerSettingExtension({
     defaultValue: isFeatureAvailable,
     reloadRequired: true,
     condition: isFeatureAvailable,
+    disabledCondition: config => {
+        if (isLocaleRestricted()) {
+            return { disabled: true, reason: i18nString(UIStringsTemp.wrongLocale) };
+        }
+        if (isAgeRestricted(config)) {
+            return { disabled: true, reason: i18nString(UIStringsTemp.ageRestricted) };
+        }
+        if (isGeoRestricted(config)) {
+            return { disabled: true, reason: i18nString(UIStringsTemp.geoRestricted) };
+        }
+        if (isPolicyRestricted(config)) {
+            return { disabled: true, reason: i18nString(UIStringsTemp.policyRestricted) };
+        }
+        return { disabled: false };
+    },
 });
 UI.ActionRegistration.registerActionExtension({
     actionId: 'freestyler.element-panel-context',
@@ -75,7 +123,7 @@ UI.ActionRegistration.registerActionExtension({
     },
     setting,
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-    title: i18nLazyString(UIStringsTemp.askFreestyler),
+    title: i18nLazyString(UIStringsTemp.askAiAssistant),
     async loadActionDelegate() {
         const Freestyler = await loadFreestylerModule();
         return new Freestyler.ActionDelegate();
@@ -89,7 +137,7 @@ UI.ActionRegistration.registerActionExtension({
     },
     setting,
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-    title: i18nLazyString(UIStringsTemp.askFreestyler),
+    title: i18nLazyString(UIStringsTemp.askAiAssistant),
     iconClass: "spark" /* UI.ActionRegistration.IconClass.SPARK */,
     async loadActionDelegate() {
         const Freestyler = await loadFreestylerModule();

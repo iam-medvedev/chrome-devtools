@@ -185,11 +185,11 @@ export class SourcesSearchScope {
         }
         function searchInNextFile(uiSourceCode) {
             if (uiSourceCode.isDirty()) {
-                contentLoaded.call(this, uiSourceCode, uiSourceCode.workingCopy());
+                contentLoaded.call(this, uiSourceCode, new TextUtils.Text.Text(uiSourceCode.workingCopy()));
             }
             else {
-                void uiSourceCode.requestContent().then(deferredContent => {
-                    contentLoaded.call(this, uiSourceCode, deferredContent.content || '');
+                void uiSourceCode.requestContentData().then(contentData => {
+                    contentLoaded.call(this, uiSourceCode, TextUtils.ContentData.ContentData.contentDataOrEmpty(contentData).textObj);
                 });
             }
         }
@@ -217,7 +217,7 @@ export class SourcesSearchScope {
                     matches = Platform.ArrayUtilities.mergeOrdered(matches, nextMatches, TextUtils.ContentProvider.SearchMatch.comparator);
                 }
                 if (!searchConfig.queries().length) {
-                    matches = [new TextUtils.ContentProvider.SearchMatch(0, (new TextUtils.Text.Text(content)).lineAt(0), 0, 0)];
+                    matches = [new TextUtils.ContentProvider.SearchMatch(0, content.lineAt(0), 0, 0)];
                 }
             }
             if (matches && this.searchResultCallback) {

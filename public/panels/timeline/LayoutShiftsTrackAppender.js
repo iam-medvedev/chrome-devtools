@@ -9,7 +9,7 @@ const UIStrings = {
     /**
      *@description Text in Timeline Flame Chart Data Provider of the Performance panel
      */
-    layoutShifts: 'Layout Shifts',
+    layoutShifts: 'Layout shifts',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/LayoutShiftsTrackAppender.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);

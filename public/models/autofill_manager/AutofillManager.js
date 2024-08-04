@@ -27,6 +27,11 @@ export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         return autofillManagerInstance;
     }
+    onShowAutofillTestAddressesSettingsChanged() {
+        for (const autofillModel of SDK.TargetManager.TargetManager.instance().models(SDK.AutofillModel.AutofillModel)) {
+            autofillModel.setTestAddresses();
+        }
+    }
     async #addressFormFilled({ data }) {
         if (Root.Runtime.experiments.isEnabled("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */) &&
             this.#autoOpenViewSetting.get()) {

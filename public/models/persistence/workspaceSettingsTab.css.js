@@ -107,6 +107,7 @@ styles.replaceSync(
 .workspace-settings-tab .settings-tab.settings-content.settings-container {
   column-width: initial;
   overflow: hidden;
+  padding-bottom: 1px;
   padding-right: 10px;
 
   > devtools-button {

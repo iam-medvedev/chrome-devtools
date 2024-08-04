@@ -6,6 +6,7 @@ export declare class AutofillModel extends SDKModel<EventTypes> implements Proto
     #private;
     readonly agent: ProtocolProxyApi.AutofillApi;
     constructor(target: Target);
+    setTestAddresses(): void;
     enable(): void;
     disable(): void;
     addressFormFilled(addressFormFilledEvent: Protocol.Autofill.AddressFormFilledEvent): void;

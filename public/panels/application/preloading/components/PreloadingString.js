@@ -616,6 +616,8 @@ export function prerenderFailureReason(attempt) {
         case "AllPrerenderingCanceled" /* Protocol.Preload.PrerenderFinalStatus.AllPrerenderingCanceled */:
             return i18nString(UIStrings.prerenderFinalStatusAllPrerenderingCanceled);
         case "WindowClosed" /* Protocol.Preload.PrerenderFinalStatus.WindowClosed */:
+        case "SlowNetwork" /* Protocol.Preload.PrerenderFinalStatus.SlowNetwork */:
+        case "OtherPrerenderedPageActivated" /* Protocol.Preload.PrerenderFinalStatus.OtherPrerenderedPageActivated */:
             // TODO(crbug.com/350870118): Add message for this.
             return '';
         default:

@@ -7,6 +7,7 @@ let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 const scriptRundownEvents = [];
 const scriptToV8Context = new Map();
 const scriptToScriptSource = new Map();
+const largeScriptToScriptSource = new Map();
 const scriptToSourceLength = new Map();
 const targets = [];
 const executionContexts = [];
@@ -24,6 +25,7 @@ export function reset() {
     scriptRundownEvents.length = 0;
     scriptToV8Context.clear();
     scriptToScriptSource.clear();
+    largeScriptToScriptSource.clear();
     scriptToSourceLength.clear();
     targets.length = 0;
     executionContexts.length = 0;
@@ -39,9 +41,9 @@ export function handleEvent(event) {
         const data = event.args?.data;
         scriptToV8Context.set(getScriptIsolateId(data.isolate, data.scriptId), data.v8context);
         // Add target
-        if (!targets.find(target => target.id === data.frame)) {
+        if (!targets.find(target => target.targetId === data.frame)) {
             targets.push({
-                id: data.frame,
+                targetId: data.frame,
                 type: data.frameType,
                 isolate: data.isolate,
                 pid: event.pid,
@@ -59,6 +61,7 @@ export function handleEvent(event) {
                     isDefault: data.isDefault,
                     type: data.contextType,
                 },
+                isolate: data.isolate,
             });
         }
     }
@@ -87,11 +90,22 @@ export function handleEvent(event) {
         // Set up script to source text and length mapping
         const data = event.args.data;
         const scriptIsolateId = getScriptIsolateId(data.isolate, data.scriptId);
-        if (data.sourceText) {
-            scriptToScriptSource.set(scriptIsolateId, data.sourceText);
+        if ('splitIndex' in data && 'splitCount' in data) {
+            if (!largeScriptToScriptSource.has(scriptIsolateId)) {
+                largeScriptToScriptSource.set(scriptIsolateId, new Array(data.splitCount).fill(''));
+            }
+            const splittedSource = largeScriptToScriptSource.get(scriptIsolateId);
+            if (splittedSource && data.sourceText) {
+                splittedSource[data.splitIndex] = data.sourceText;
+            }
         }
-        if (data.length) {
-            scriptToSourceLength.set(scriptIsolateId, data.length);
+        else {
+            if (data.sourceText) {
+                scriptToScriptSource.set(scriptIsolateId, data.sourceText);
+            }
+            if (data.length) {
+                scriptToSourceLength.set(scriptIsolateId, data.length);
+            }
         }
     }
 }
@@ -119,8 +133,22 @@ export async function finalize() {
     // Put back script source text and length
     scripts.forEach(script => {
         const scriptIsolateId = getScriptIsolateId(script.isolate, script.scriptId);
-        script.sourceText = scriptToScriptSource.get(scriptIsolateId);
-        script.length = scriptToSourceLength.get(scriptIsolateId);
+        if (scriptToScriptSource.has(scriptIsolateId)) {
+            script.sourceText = scriptToScriptSource.get(scriptIsolateId);
+            script.length = scriptToSourceLength.get(scriptIsolateId);
+        }
+        else if (largeScriptToScriptSource.has(scriptIsolateId)) {
+            const splittedSources = largeScriptToScriptSource.get(scriptIsolateId);
+            if (splittedSources) {
+                script.sourceText = splittedSources.join('');
+                script.length = script.sourceText.length;
+            }
+        }
+        // put in the aux data
+        script.auxData =
+            executionContexts
+                .find(context => context.id === script.executionContextId && context.isolate === script.isolate)
+                ?.auxData;
     });
     handlerState = 3 /* HandlerState.FINALIZED */;
 }

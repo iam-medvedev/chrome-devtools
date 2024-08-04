@@ -10,7 +10,7 @@ export declare class ConsoleInsight extends HTMLElement {
     #private;
     static create(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient): Promise<ConsoleInsight>;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
-    constructor(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient, aidaAvailability: Host.AidaClient.AidaAvailability);
+    constructor(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient, aidaAvailability: Host.AidaClient.AidaAccessPreconditions);
     connectedCallback(): void;
 }
 declare class ConsoleInsightSourcesList extends HTMLElement {

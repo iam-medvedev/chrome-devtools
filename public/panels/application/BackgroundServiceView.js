@@ -208,6 +208,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
     async setupToolbar() {
         this.toolbar.makeWrappable(true);
         this.recordButton = UI.Toolbar.Toolbar.createActionButton(this.recordAction);
+        this.recordButton.toggleOnClick(false);
         this.toolbar.appendToolbarItem(this.recordButton);
         const clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear', undefined, 'background-service.clear');
         clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.clearEvents());

@@ -276,6 +276,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIS
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let timelinePanelInstance;
 let isNode;
+const DEFAULT_SIDEBAR_WIDTH_PX = 240;
 export class TimelinePanel extends UI.Panel.Panel {
     dropTarget;
     recordingOptionUIControls;
@@ -295,7 +296,14 @@ export class TimelinePanel extends UI.Panel.Panel {
     panelRightToolbar;
     timelinePane;
     #minimapComponent = new TimelineMiniMap();
-    #sideBar = new TimelineComponents.Sidebar.SidebarWidget();
+    /**
+     * This widget holds the timeline sidebar which shows Insights & Annotations,
+     * and the main UI which shows the timeline
+     */
+    #splitWidget = new UI.SplitWidget.SplitWidget(true, // isVertical
+    false, // secondIsSidebar
+    undefined, // settingName (we don't want to persist this state to a setting)
+    DEFAULT_SIDEBAR_WIDTH_PX);
     statusPaneContainer;
     flameChart;
     searchableViewInternal;
@@ -330,9 +338,10 @@ export class TimelinePanel extends UI.Panel.Panel {
     #sourceMapsResolver = null;
     #onSourceMapsNodeNamesResolvedBound = this.#onSourceMapsNodeNamesResolved.bind(this);
     #onChartPlayableStateChangeBound;
-    #sidebarToggleButton = this.#sideBar.createShowHideSidebarButton(i18nString(UIStrings.showSidebar), i18nString(UIStrings.hideSidebar), 
+    #sidebarToggleButton = this.#splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showSidebar), i18nString(UIStrings.hideSidebar), 
     // These are used to announce to screen-readers and not shown visibly.
     i18nString(UIStrings.sidebarShown), i18nString(UIStrings.sidebarHidden), 'timeline.sidebar');
+    #sideBar = new TimelineComponents.Sidebar.SidebarWidget();
     constructor() {
         super('timeline');
         const adornerContent = document.createElement('span');
@@ -409,16 +418,17 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.flameChart.show(this.searchableViewInternal.element);
         this.flameChart.setSearchableView(this.searchableViewInternal);
         this.searchableViewInternal.hideWidget();
-        this.#sideBar.setMainWidget(this.timelinePane);
-        this.#sideBar.show(this.element);
-        this.#sideBar.contentElement.addEventListener(TimelineInsights.SidebarInsight.InsightDeactivated.eventName, () => {
+        this.#splitWidget.setMainWidget(this.timelinePane);
+        this.#splitWidget.show(this.element);
+        this.#splitWidget.setSidebarWidget(this.#sideBar);
+        this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightDeactivated.eventName, () => {
             this.#setActiveInsight(null);
         });
-        this.#sideBar.contentElement.addEventListener(TimelineInsights.SidebarInsight.InsightActivated.eventName, event => {
+        this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightActivated.eventName, event => {
             const { name, navigationId, createOverlayFn } = event;
             this.#setActiveInsight({ name, navigationId, createOverlayFn });
         });
-        this.#sideBar.contentElement.addEventListener(TimelineComponents.Sidebar.RemoveAnnotation.eventName, event => {
+        this.#sideBar.element.addEventListener(TimelineComponents.Sidebar.RemoveAnnotation.eventName, event => {
             const { removedAnnotation } = event;
             ModificationsManager.activeManager()?.removeAnnotation(removedAnnotation);
         });
@@ -479,7 +489,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         // The sidebar state is by-default persisted across reloads; we do not want
         // that as if you come back to the panel you see the landing page, and the
         // sidebar is empty in that state.
-        this.#sideBar.hideSidebar();
+        this.#splitWidget.hideSidebar();
     }
     willHide() {
         UI.Context.Context.instance().setFlavor(TimelinePanel, null);
@@ -1234,7 +1244,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 else if (action === 'Remove') {
                     this.flameChart.removeOverlay(overlay);
                 }
-                this.#sideBar.setAnnotationsTabContent(currentManager.getAnnotations());
+                this.#sideBar.setAnnotations(currentManager.getAnnotations());
             });
             // Create breadcrumbs.
             if (this.#minimapComponent.breadcrumbsActivated) {
@@ -1258,7 +1268,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             currModificationManager.getOverlays().forEach(overlay => {
                 this.flameChart.addOverlay(overlay);
             });
-            this.#sideBar.setAnnotationsTabContent(currModificationManager.getAnnotations());
+            this.#sideBar.setAnnotations(currModificationManager.getAnnotations());
         }
         // Set up line level profiling with CPU profiles, if we found any.
         PerfUI.LineLevelProfile.Performance.instance().reset();
@@ -1280,6 +1290,18 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.flameChart.setInsights(traceInsightsData);
             this.#sideBar.setInsights(traceInsightsData);
             this.#setActiveInsight(null);
+        }
+        // Automatically show the sidebar when a trace is loaded if we have data.
+        // Or hide it when we do not have data (which likely means we are back on the landing page)
+        const hasInsights = traceInsightsData !== null && traceInsightsData.size > 0;
+        const hasAnnotations = (currModificationManager?.getAnnotations().length ?? 0) > 0;
+        const shouldOpenSidebar = Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */) &&
+            (hasInsights || hasAnnotations);
+        if (shouldOpenSidebar) {
+            this.#splitWidget.showBoth();
+        }
+        else {
+            this.#splitWidget.hideSidebar();
         }
     }
     recordingStarted(config) {

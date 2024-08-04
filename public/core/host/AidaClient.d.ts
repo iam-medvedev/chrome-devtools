@@ -74,7 +74,7 @@ export interface AidaResponse {
     explanation: string;
     metadata: AidaResponseMetadata;
 }
-export declare enum AidaAvailability {
+export declare const enum AidaAccessPreconditions {
     AVAILABLE = "available",
     NO_ACCOUNT_EMAIL = "no-account-email",
     NO_ACTIVE_SYNC = "no-active-sync",
@@ -83,7 +83,7 @@ export declare enum AidaAvailability {
 export declare const CLIENT_NAME = "CHROME_DEVTOOLS";
 export declare class AidaClient {
     static buildConsoleInsightsRequest(input: string): AidaRequest;
-    static getAidaClientAvailability(): Promise<AidaAvailability>;
+    static checkAccessPreconditions(): Promise<AidaAccessPreconditions>;
     fetch(request: AidaRequest): AsyncGenerator<AidaResponse, void, void>;
     registerClientEvent(clientEvent: AidaDoConversationClientEvent): Promise<AidaClientResult>;
 }

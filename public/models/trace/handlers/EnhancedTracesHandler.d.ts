@@ -15,6 +15,7 @@ export interface Script {
     sourceMapUrl?: string;
     length?: number;
     sourceText?: string;
+    auxData?: ExecutionContextAuxData;
 }
 export interface ExecutionContextAuxData {
     frameId?: string;
@@ -26,9 +27,10 @@ export interface ExecutionContext {
     origin: string;
     v8Context?: string;
     auxData?: ExecutionContextAuxData;
+    isolate?: string;
 }
 export interface Target {
-    id: string;
+    targetId: string;
     type: string;
     url: string;
     pid?: number;

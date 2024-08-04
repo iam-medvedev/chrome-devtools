@@ -482,7 +482,9 @@ export declare enum MediaTypes {
     'text/javascript+sourcemapped' = 33,
     'text/x.angular' = 34,
     'text/x.vue' = 35,
-    MaxValue = 36
+    'text/javascript+snippet' = 36,
+    'text/javascript+eval' = 37,// Scripts resulting from console inputs or page "eval"s with no sourceUrl comment.
+    MaxValue = 38
 }
 export declare enum KeybindSetSettings {
     'devToolsDefault' = 0,
@@ -658,7 +660,8 @@ export declare enum DevtoolsExperiments {
     'perf-panel-annotations' = 94,
     'timeline-rpp-sidebar' = 95,
     'timeline-observations' = 96,
-    'MaxValue' = 97
+    'gen-ai-settings-panel' = 97,
+    'MaxValue' = 98
 }
 export declare const enum ColorConvertedFrom {
     ColorSwatch = 0,
