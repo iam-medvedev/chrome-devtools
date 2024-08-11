@@ -21,6 +21,6 @@ export declare class SidebarWidget extends UI.Widget.VBox {
     wasShown(): void;
     setAnnotations(updatedAnnotations: TraceEngine.Types.File.Annotation[]): void;
     setTraceParsedData(traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null): void;
-    setInsights(insights: TraceEngine.Insights.Types.TraceInsightData): void;
+    setInsights(insights: TraceEngine.Insights.Types.TraceInsightData | null): void;
     setActiveInsight(activeInsight: ActiveInsight | null): void;
 }

@@ -7,6 +7,7 @@ import { data as userTimingsData } from './UserTimingsHandler.js';
 const extensionFlameChartEntries = [];
 const extensionTrackData = [];
 const extensionMarkers = [];
+const entryToNode = new Map();
 let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 export function handleEvent(_event) {
     // Implementation not needed because data is sourced from UserTimingsHandler
@@ -16,6 +17,7 @@ export function reset() {
     extensionFlameChartEntries.length = 0;
     extensionTrackData.length = 0;
     extensionMarkers.length = 0;
+    entryToNode.clear();
 }
 export async function finalize() {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
@@ -29,7 +31,7 @@ function createExtensionFlameChartEntries() {
     const marks = userTimingsData().performanceMarks;
     const mergedRawExtensionEvents = Helpers.Trace.mergeEventsInOrder(pairedMeasures, marks);
     extractExtensionEntries(mergedRawExtensionEvents);
-    Helpers.Extensions.buildTrackDataFromExtensionEntries(extensionFlameChartEntries, extensionTrackData);
+    Helpers.Extensions.buildTrackDataFromExtensionEntries(extensionFlameChartEntries, extensionTrackData, entryToNode);
 }
 export function extractExtensionEntries(timings) {
     for (const timing of timings) {
@@ -44,17 +46,21 @@ export function extractExtensionEntries(timings) {
             pid: Types.TraceEvents.ProcessID(0),
             tid: Types.TraceEvents.ThreadID(0),
             ts: timing.ts,
-            selfTime: Types.Timing.MicroSeconds(0),
             dur: timing.dur,
             cat: 'devtools.extension',
             args: extensionPayload,
+            rawSourceEvent: Types.TraceEvents.isSyntheticUserTiming(timing) ? timing.rawSourceEvent : timing,
         };
         if (Types.Extensions.isExtensionPayloadMarker(extensionPayload)) {
-            extensionMarkers.push(extensionSyntheticEntry);
+            const extensionMarker = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
+                .registerSyntheticBasedEvent(extensionSyntheticEntry);
+            extensionMarkers.push(extensionMarker);
             continue;
         }
-        if (Types.Extensions.isExtensionPayloadTrackEntry(extensionPayload)) {
-            extensionFlameChartEntries.push(extensionSyntheticEntry);
+        if (Types.Extensions.isExtensionPayloadTrackEntry(extensionSyntheticEntry.args)) {
+            const extensionTrackEntry = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
+                .registerSyntheticBasedEvent(extensionSyntheticEntry);
+            extensionFlameChartEntries.push(extensionTrackEntry);
             continue;
         }
     }
@@ -92,6 +98,7 @@ export function data() {
         throw new Error('ExtensionTraceData handler is not finalized');
     }
     return {
+        entryToNode,
         extensionTrackData: [...extensionTrackData],
         extensionMarkers: [...extensionMarkers],
     };

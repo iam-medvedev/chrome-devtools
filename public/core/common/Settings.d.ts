@@ -22,7 +22,7 @@ export declare class Settings {
         config?: Root.Runtime.HostConfig;
     }): Settings;
     static removeInstance(): void;
-    getHostConfig(): Root.Runtime.HostConfig | undefined;
+    getHostConfig(): Root.Runtime.HostConfig;
     private registerModuleSetting;
     static normalizeSettingName(name: string): string;
     moduleSetting<T = any>(settingName: string): Setting<T>;

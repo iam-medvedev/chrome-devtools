@@ -612,13 +612,21 @@ export class Section {
         }
         if (waiting) {
             const waitingEntry = this.addVersion(versionsStack, 'service-worker-waiting-circle', i18nString(UIStrings.sWaitingToActivate, { PH1: waiting.id }));
-            this.createLink(waitingEntry, i18n.i18n.lockedString('skipWaiting'), this.skipButtonClicked.bind(this));
+            const skipWaitingButton = UI.UIUtils.createTextButton(i18n.i18n.lockedString('skipWaiting'), this.skipButtonClicked.bind(this), {
+                title: i18n.i18n.lockedString('skipWaiting'),
+                jslogContext: 'skip-waiting',
+            });
+            waitingEntry.appendChild(skipWaitingButton);
             if (waiting.scriptResponseTime !== undefined) {
                 waitingEntry.createChild('div', 'service-worker-subtitle').textContent =
                     i18nString(UIStrings.receivedS, { PH1: new Date(waiting.scriptResponseTime * 1000).toLocaleString() });
             }
             if (!this.targetForVersionId(waiting.id) && (waiting.isRunning() || waiting.isStarting())) {
-                this.createLink(waitingEntry, i18nString(UIStrings.inspect), this.inspectButtonClicked.bind(this, waiting.id));
+                const inspectButton = UI.UIUtils.createTextButton(i18nString(UIStrings.inspect), this.inspectButtonClicked.bind(this, waiting.id), {
+                    title: i18nString(UIStrings.inspect),
+                    jslogContext: 'waiting-entry-inspect',
+                });
+                waitingEntry.appendChild(inspectButton);
             }
         }
         if (installing) {
@@ -629,23 +637,15 @@ export class Section {
                 });
             }
             if (!this.targetForVersionId(installing.id) && (installing.isRunning() || installing.isStarting())) {
-                this.createLink(installingEntry, i18nString(UIStrings.inspect), this.inspectButtonClicked.bind(this, installing.id));
+                const inspectButton = UI.UIUtils.createTextButton(i18nString(UIStrings.inspect), this.inspectButtonClicked.bind(this, installing.id), {
+                    title: i18nString(UIStrings.inspect),
+                    jslogContext: 'installing-entry-inspect',
+                });
+                installingEntry.appendChild(inspectButton);
             }
         }
         this.updateCycleView.refresh();
         return Promise.resolve();
-    }
-    createLink(parent, title, listener, className, useCapture) {
-        const button = document.createElement('button');
-        if (className) {
-            button.className = className;
-        }
-        button.classList.add('link', 'devtools-link');
-        button.textContent = title;
-        button.tabIndex = 0;
-        button.addEventListener('click', listener, useCapture);
-        parent.appendChild(button);
-        return button;
     }
     unregisterButtonClicked() {
         this.manager.deleteRegistration(this.registration.id);

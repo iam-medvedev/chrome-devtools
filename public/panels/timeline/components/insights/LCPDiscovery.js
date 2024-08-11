@@ -5,14 +5,12 @@ import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
-import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as IconButton from '../../../../ui/components/icon_button/icon_button.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
+import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
 import discoveryStyles from './lcpDiscovery.css.js';
-import sidebarInsightStyles from './sidebarInsight.css.js';
 import * as SidebarInsight from './SidebarInsight.js';
 import { InsightsCategories } from './types.js';
-export const InsightName = 'lcp-discovery';
 const UIStrings = {
     /**
      * @description Text to tell the user how long after the earliest discovery time their LCP element loaded.
@@ -65,44 +63,14 @@ function getImageData(insights, navigationId) {
     }
     return data;
 }
-export class LCPDiscovery extends HTMLElement {
+export class LCPDiscovery extends BaseInsight {
     static litTagName = LitHtml.literal `devtools-performance-lcp-discovery`;
-    #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
-    #insightTitle = 'LCP request discovery';
-    #insights = null;
-    #navigationId = null;
-    #activeInsight = null;
-    #activeCategory = InsightsCategories.ALL;
-    set insights(insights) {
-        this.#insights = insights;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    set navigationId(navigationId) {
-        this.#navigationId = navigationId;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    set activeInsight(activeInsight) {
-        this.#activeInsight = activeInsight;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    set activeCategory(activeCategory) {
-        this.#activeCategory = activeCategory;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    #sidebarClicked() {
-        // deactivate current insight if already selected.
-        if (this.#isActive()) {
-            this.dispatchEvent(new SidebarInsight.InsightDeactivated());
-            return;
-        }
-        if (!this.#navigationId) {
-            // Shouldn't happen, but needed to satisfy TS.
-            return;
-        }
-        this.dispatchEvent(new SidebarInsight.InsightActivated(InsightName, this.#navigationId, 
-        // TODO: create the overlay for this insight.
-        () => []));
+    insightCategory = InsightsCategories.LCP;
+    internalName = 'lcp-discovery';
+    userVisibleTitle = 'LCP request discovery';
+    connectedCallback() {
+        super.connectedCallback();
+        this.shadow.adoptedStyleSheets.push(discoveryStyles);
     }
     #adviceIcon(didFail) {
         const icon = didFail ? 'clear' : 'check-circle';
@@ -119,15 +87,19 @@ export class LCPDiscovery extends HTMLElement {
         timeWrapper.innerText = i18n.TimeUtilities.formatMicroSecondsTime(delay);
         return i18n.i18n.getFormatLocalizedString(str_, UIStrings.lcpLoadDelay, { PH1: timeWrapper });
     }
+    createOverlays() {
+        // TODO: create overlays
+        return [];
+    }
     #renderDiscovery(imageData) {
         // clang-format off
         return LitHtml.html `
         <div class="insights">
           <${SidebarInsight.SidebarInsight.litTagName} .data=${{
-            title: this.#insightTitle,
-            expanded: this.#isActive(),
+            title: this.userVisibleTitle,
+            expanded: this.isActive(),
         }}
-          @insighttoggleclick=${this.#sidebarClicked}
+          @insighttoggleclick=${this.onSidebarClick}
         >
           <div slot="insight-description" class="insight-description">
           ${imageData.discoveryDelay ? LitHtml.html `<p class="discovery-delay">${this.#renderDiscoveryDelay(imageData.discoveryDelay)}</p>` : LitHtml.nothing}
@@ -157,24 +129,14 @@ export class LCPDiscovery extends HTMLElement {
       </div>`;
         // clang-format on
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [sidebarInsightStyles, discoveryStyles];
-    }
-    #shouldRenderForCateogory() {
-        if (this.#activeCategory === InsightsCategories.ALL) {
-            return true;
-        }
-        return this.#activeCategory === InsightsCategories.LCP;
-    }
-    #isActive() {
-        const isActive = this.#activeInsight && this.#activeInsight.name === InsightName &&
-            this.#activeInsight.navigationId === this.#navigationId;
-        return Boolean(isActive);
-    }
-    #render() {
-        const imageResults = getImageData(this.#insights, this.#navigationId);
-        const output = imageResults && this.#shouldRenderForCateogory() ? this.#renderDiscovery(imageResults) : LitHtml.nothing;
-        LitHtml.render(output, this.#shadow, { host: this });
+    render() {
+        const imageResults = getImageData(this.data.insights, this.data.navigationId);
+        const matchesCategory = shouldRenderForCategory({
+            activeCategory: this.data.activeCategory,
+            insightCategory: this.insightCategory,
+        });
+        const output = imageResults && matchesCategory ? this.#renderDiscovery(imageResults) : LitHtml.nothing;
+        LitHtml.render(output, this.shadow, { host: this });
     }
 }
 customElements.define('devtools-performance-lcp-discovery', LCPDiscovery);

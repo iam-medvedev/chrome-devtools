@@ -1,4 +1,4 @@
-import { type SyntheticTraceEntry, type TraceEventArgs, type TraceEventData } from './TraceEvents.js';
+import { type Phase, type SyntheticBasedEvent, type TraceEventArgs, type TraceEventData } from './TraceEvents.js';
 export type ExtensionEntryType = 'track-entry' | 'marker';
 declare const extensionPalette: readonly ["primary", "primary-light", "primary-dark", "secondary", "secondary-light", "secondary-dark", "tertiary", "tertiary-light", "tertiary-dark", "error"];
 export type ExtensionColorFromPalette = typeof extensionPalette[number];
@@ -20,18 +20,16 @@ export interface ExtensionMarkerPayload extends ExtensionDataPayloadBase {
 /**
  * Synthetic events created for extension tracks.
  */
-export interface SyntheticExtensionTrackChartEntry extends SyntheticTraceEntry {
+export interface SyntheticExtensionTrackEntry extends SyntheticBasedEvent<Phase.COMPLETE> {
     args: TraceEventArgs & ExtensionTrackEntryPayload;
-    cat: 'devtools.extension';
 }
 /**
  * Synthetic events created for extension marks.
  */
-export interface SyntheticExtensionMarker extends SyntheticTraceEntry {
+export interface SyntheticExtensionMarker extends SyntheticBasedEvent<Phase.COMPLETE> {
     args: TraceEventArgs & ExtensionMarkerPayload;
-    cat: 'devtools.extension';
 }
-export type SyntheticExtensionEntry = SyntheticExtensionTrackChartEntry | SyntheticExtensionMarker;
+export type SyntheticExtensionEntry = SyntheticExtensionTrackEntry | SyntheticExtensionMarker;
 export declare function isExtensionPayloadMarker(payload: {
     dataType?: string;
 }): payload is ExtensionMarkerPayload;
@@ -48,7 +46,7 @@ export interface ExtensionTrackData {
     name: string;
     isTrackGroup: boolean;
     entriesByTrack: {
-        [x: string]: SyntheticExtensionTrackChartEntry[];
+        [x: string]: SyntheticExtensionTrackEntry[];
     };
 }
 export {};

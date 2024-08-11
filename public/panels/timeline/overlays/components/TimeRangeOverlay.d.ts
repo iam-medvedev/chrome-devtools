@@ -1,4 +1,13 @@
 import type * as TraceEngine from '../../../../models/trace/trace.js';
+export declare class TimeRangeLabelChangeEvent extends Event {
+    newLabel: string;
+    static readonly eventName = "timerangelabelchange";
+    constructor(newLabel: string);
+}
+export declare class TimeRangeRemoveEvent extends Event {
+    static readonly eventName = "timerangeremoveevent";
+    constructor();
+}
 export declare class TimeRangeOverlay extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;

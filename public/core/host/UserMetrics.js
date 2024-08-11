@@ -234,9 +234,6 @@ export class UserMetrics {
     lighthouseCategoryUsed(type) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseCategoryUsed" /* EnumeratedHistogram.LighthouseCategoryUsed */, type, 6 /* LighthouseCategoryUsed.MaxValue */);
     }
-    colorConvertedFrom(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ColorConvertedFrom" /* EnumeratedHistogram.ColorConvertedFrom */, type, 2 /* ColorConvertedFrom.MaxValue */);
-    }
     colorPickerOpenedFrom(type) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ColorPickerOpenedFrom" /* EnumeratedHistogram.ColorPickerOpenedFrom */, type, 2 /* ColorPickerOpenedFrom.MaxValue */);
     }

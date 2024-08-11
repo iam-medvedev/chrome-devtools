@@ -162,6 +162,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private parentsComputedStyles;
     private contextForTest;
     constructor({ stylesPane, section, matchedStyles, property, isShorthand, inherited, overloaded, newProperty }: StylePropertyTreeElementParams);
+    gridNames(): Promise<Set<string>>;
     matchedStyles(): SDK.CSSMatchedStyles.CSSMatchedStyles;
     editable(): boolean;
     inherited(): boolean;
@@ -187,7 +188,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     oncollapse(): void;
     private updateExpandElement;
     getVariablePopoverContents(variableName: string, computedValue: string | null): HTMLElement | undefined;
-    updateTitleIfComputedValueChanged(): void;
+    refreshIfComputedValueChanged(): void;
     updateTitle(): void;
     private innerUpdateTitle;
     updateAuthoringHint(): void;

@@ -199,6 +199,7 @@ const networkConditionPresets = [
 function converterIdToFlowMetric(converterId) {
     switch (converterId) {
         case "puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */:
+        case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */:
             return 1 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithPuppeteer */;
         case "json" /* Models.ConverterIds.ConverterIds.JSON */:
             return 2 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithJSON */;
@@ -211,6 +212,7 @@ function converterIdToFlowMetric(converterId) {
 function converterIdToStepMetric(converterId) {
     switch (converterId) {
         case "puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */:
+        case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */:
             return 5 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithPuppeteer */;
         case "json" /* Models.ConverterIds.ConverterIds.JSON */:
             return 6 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithJSON */;

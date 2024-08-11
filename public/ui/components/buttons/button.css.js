@@ -237,15 +237,11 @@ button {
   &:focus-visible {
     outline: 2px solid var(--sys-color-state-focus-ring);
     outline-offset: 2px;
-    z-index: 999;
+    z-index: 1;
 
     &.toolbar,
     &.icon {
-      outline-offset: -1px;
-
-      &.small {
-        outline-offset: -2px;
-      }
+      outline-offset: -2px;
     }
   }
 

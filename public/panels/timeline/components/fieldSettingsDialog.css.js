@@ -11,6 +11,10 @@ styles.replaceSync(
  * found in the LICENSE file.
  */
 
+:host {
+  display: block;
+}
+
 :host * {
   box-sizing: border-box;
 }
@@ -23,12 +27,22 @@ devtools-dialog {
   font-size: var(--sys-typescale-headline4-size);
   line-height: var(--sys-typescale-headline4-line-height);
   font-weight: var(--ref-typeface-weight-medium);
+  margin: 0;
 }
 
 .section-title {
   font-size: var(--sys-typescale-headline5-size);
   line-height: var(--sys-typescale-headline5-line-height);
   font-weight: var(--ref-typeface-weight-medium);
+  margin: 0;
+}
+
+.privacy-disclosure {
+  margin: 8px 0;
+}
+
+.url-override {
+  margin: 8px 0;
 }
 
 details > summary {
@@ -38,14 +52,24 @@ details > summary {
 }
 
 .content {
-  max-width: 500px;
-  padding: 16px;
+  max-width: 360px;
+  padding: 16px 20px 18px;
+  box-sizing: border-box;
+}
+
+.open-button-section {
+  display: flex;
+  flex-direction: row;
+}
+
+.config-button {
+  margin-left: auto;
 }
 
 .buttons-section {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: 14px;
   gap: 8px;
 }
 
@@ -69,7 +93,13 @@ label {
 }
 
 .warning {
+  margin: 2px 8px;
   color: var(--color-error-text);
+}
+
+x-link { /* stylelint-disable-line selector-type-no-unknown */
+  color: var(--sys-color-primary);
+  text-decoration-line: underline;
 }
 
 /*# sourceURL=fieldSettingsDialog.css */

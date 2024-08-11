@@ -1,7 +1,6 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as ColorPicker from '../../../legacy/components/color_picker/color_picker.js';
 import * as LitHtml from '../../../lit-html/lit-html.js';
@@ -125,7 +124,6 @@ export class ColorSwatch extends HTMLElement {
         const contextMenu = new ColorPicker.FormatPickerContextMenu.FormatPickerContextMenu(this.color);
         void contextMenu.show(e, color => {
             this.setColorText(color);
-            Host.userMetrics.colorConvertedFrom(0 /* Host.UserMetrics.ColorConvertedFrom.ColorSwatch */);
         });
     }
 }

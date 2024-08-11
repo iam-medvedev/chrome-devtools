@@ -1,8 +1,10 @@
+import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { type TraceEventHandlerName } from './types.js';
 export interface ExtensionTraceData {
     extensionTrackData: readonly Types.Extensions.ExtensionTrackData[];
     extensionMarkers: readonly Types.Extensions.SyntheticExtensionMarker[];
+    entryToNode: Map<Types.TraceEvents.TraceEventData, Helpers.TreeHelpers.TraceEntryNode>;
 }
 export declare function handleEvent(_event: Types.TraceEvents.TraceEventData): void;
 export declare function reset(): void;

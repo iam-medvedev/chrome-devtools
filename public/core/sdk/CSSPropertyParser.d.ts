@@ -135,4 +135,11 @@ export declare class TextMatch implements Match {
 }
 export declare function tokenizeDeclaration(propertyName: string, propertyValue: string): SyntaxTree | null;
 export declare function tokenizePropertyName(name: string): string | null;
+export declare class TreeSearch extends TreeWalker {
+    #private;
+    constructor(ast: SyntaxTree, predicate: (node: CodeMirror.SyntaxNode) => boolean);
+    protected enter({ node }: SyntaxNodeRef): boolean;
+    static find(ast: SyntaxTree, predicate: (node: CodeMirror.SyntaxNode) => boolean): CodeMirror.SyntaxNode | null;
+    static findAll(ast: SyntaxTree, predicate: (node: CodeMirror.SyntaxNode) => boolean): CodeMirror.SyntaxNode[];
+}
 export {};

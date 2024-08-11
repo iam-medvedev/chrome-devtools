@@ -350,6 +350,89 @@ describeWithEnvironment('Overlays', () => {
             // Ensure the label content is not editable
             assert.isFalse(label.isContentEditable);
         });
+        it('Inputting `Enter` into time range label field when the label is empty removes the overlay', async function () {
+            const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(traceData);
+            const event = charts.mainProvider.eventByIndex?.(50);
+            assert.isOk(event);
+            assert.notInstanceOf(event, TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame);
+            // Create a time range overlay with an empty label
+            overlays.add({
+                type: 'TIME_RANGE',
+                label: '',
+                showDuration: true,
+                // Make this overlay the entire span of the trace
+                bounds: traceData.Meta.traceBounds,
+            });
+            overlays.update();
+            // Ensure that the overlay was created.
+            const overlayDOM = container.querySelector('.overlay-type-TIME_RANGE');
+            assert.isOk(overlayDOM);
+            const component = overlayDOM?.querySelector('devtools-time-range-overlay');
+            assert.isOk(component?.shadowRoot);
+            component.connectedCallback();
+            const label = component.shadowRoot.querySelector('.label');
+            assert.isOk(label);
+            const labelBox = label.querySelector('.label-text');
+            assert.isOk(labelBox);
+            // Double click on the label box to make it editable and focus on it
+            labelBox.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
+            // Press `Enter` on the label field
+            labelBox.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }));
+            // Ensure that the entry overlay has been removed because it was saved empty
+            assert.strictEqual(overlays.overlaysOfType('TIME_RANGE').length, 0);
+        });
+        it('Inputting `Enter` into time range label field when the label is not empty does not remove the overlay', async function () {
+            const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(traceData);
+            const event = charts.mainProvider.eventByIndex?.(50);
+            assert.isOk(event);
+            assert.notInstanceOf(event, TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame);
+            // Create a time range overlay with a label
+            overlays.add({
+                type: 'TIME_RANGE',
+                label: 'label',
+                showDuration: true,
+                // Make this overlay the entire span of the trace
+                bounds: traceData.Meta.traceBounds,
+            });
+            overlays.update();
+            // Ensure that the overlay was created.
+            const overlayDOM = container.querySelector('.overlay-type-TIME_RANGE');
+            assert.isOk(overlayDOM);
+            const component = overlayDOM?.querySelector('devtools-time-range-overlay');
+            assert.isOk(component?.shadowRoot);
+            component.connectedCallback();
+            const label = component.shadowRoot.querySelector('.label');
+            assert.isOk(label);
+            const labelBox = label.querySelector('.label-text');
+            assert.isOk(labelBox);
+            // Double click on the label box to make it editable and focus on it
+            labelBox.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
+            // Press `Enter` on the label field
+            labelBox.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', cancelable: true, bubbles: true }));
+            // Ensure that the entry overlay has not been because it was has a non-empty label
+            assert.strictEqual(overlays.overlaysOfType('TIME_RANGE').length, 1);
+        });
+        it('Can create multiple Time Range Overlays for Time Range annotations', async function () {
+            const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const { overlays, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(traceData);
+            const event = charts.mainProvider.eventByIndex?.(50);
+            assert.isOk(event);
+            assert.notInstanceOf(event, TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame);
+            Timeline.ModificationsManager.ModificationsManager.activeManager()?.createAnnotation({
+                type: 'TIME_RANGE',
+                label: 'label',
+                bounds: traceData.Meta.traceBounds,
+            });
+            Timeline.ModificationsManager.ModificationsManager.activeManager()?.createAnnotation({
+                type: 'TIME_RANGE',
+                label: 'label2',
+                bounds: traceData.Meta.traceBounds,
+            });
+            overlays.update();
+            assert.strictEqual(overlays.overlaysOfType('TIME_RANGE').length, 2);
+        });
         it('Removes empty label if it is empty when navigated away from (removed focused from)', async function () {
             const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const { overlays, container, charts } = setupChartWithDimensionsAndAnnotationOverlayListeners(traceData);
@@ -405,6 +488,20 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(updatedOverlay);
             // Make sure the label was updated in the Overlay Object
             assert.strictEqual(updatedOverlay.label, 'new label');
+        });
+        it('creates an overlay for a time range when an time range annotation is created', async function () {
+            const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const { overlays, container } = setupChartWithDimensionsAndAnnotationOverlayListeners(traceData);
+            // Since TIME_RANGE is AnnotationOverlay, create it through ModificationsManager
+            Timeline.ModificationsManager.ModificationsManager.activeManager()?.createAnnotation({
+                type: 'TIME_RANGE',
+                label: '',
+                // Make this overlay the entire span of the trace
+                bounds: traceData.Meta.traceBounds,
+            });
+            overlays.update();
+            const overlayDOM = container.querySelector('.overlay-type-TIME_RANGE');
+            assert.isOk(overlayDOM);
         });
         it('can render an overlay for a time range', async function () {
             const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');

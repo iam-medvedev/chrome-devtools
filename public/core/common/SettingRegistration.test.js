@@ -92,7 +92,7 @@ describe('SettingRegistration', () => {
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             defaultValue: false,
             condition: config => {
-                return config?.devToolsConsoleInsights.enabled === true;
+                return config?.devToolsConsoleInsights?.enabled === true;
             },
         });
         assert.throws(() => Common.Settings.Settings.instance().moduleSetting(configSettingName));

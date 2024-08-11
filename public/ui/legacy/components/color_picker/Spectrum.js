@@ -1120,7 +1120,6 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.isFormatPickerShown = true;
         await contextMenu.show(event, newColor => {
             this.innerSetColor(newColor, undefined, undefined, newColor.format(), ChangeSource.Other);
-            Host.userMetrics.colorConvertedFrom(1 /* Host.UserMetrics.ColorConvertedFrom.ColorPicker */);
         });
         this.isFormatPickerShown = false;
     }

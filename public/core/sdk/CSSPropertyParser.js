@@ -553,4 +553,35 @@ export function tokenizePropertyName(name) {
     }
     return nodeText(propertyName, rule);
 }
+export class TreeSearch extends TreeWalker {
+    #found = null;
+    #predicate;
+    constructor(ast, predicate) {
+        super(ast);
+        this.#predicate = predicate;
+    }
+    enter({ node }) {
+        if (this.#found) {
+            return false;
+        }
+        if (this.#predicate(node)) {
+            this.#found = this.#found ?? node;
+            return false;
+        }
+        return true;
+    }
+    static find(ast, predicate) {
+        return TreeSearch.walk(ast, predicate).#found;
+    }
+    static findAll(ast, predicate) {
+        const foundNodes = [];
+        TreeSearch.walk(ast, (node) => {
+            if (predicate(node)) {
+                foundNodes.push(node);
+            }
+            return false;
+        });
+        return foundNodes;
+    }
+}
 //# sourceMappingURL=CSSPropertyParser.js.map

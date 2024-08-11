@@ -160,23 +160,9 @@ export function makeProfileCall(node, profileId, sampleIndex, ts, pid, tid) {
         tid,
         ts,
         dur: Types.Timing.MicroSeconds(0),
-        selfTime: Types.Timing.MicroSeconds(0),
         callFrame: node.callFrame,
         sampleIndex,
         profileId,
-    };
-}
-export function makeSyntheticTraceEntry(name, ts, pid, tid) {
-    return {
-        cat: '',
-        name,
-        args: {},
-        ph: "X" /* Types.TraceEvents.Phase.COMPLETE */,
-        pid,
-        tid,
-        ts,
-        dur: Types.Timing.MicroSeconds(0),
-        selfTime: Types.Timing.MicroSeconds(0),
     };
 }
 /**

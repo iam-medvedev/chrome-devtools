@@ -113,9 +113,6 @@ export function isSyntheticBasedEvent(event) {
 export function isSyntheticInteractionEvent(event) {
     return Boolean('interactionId' in event && event.args?.data && 'beginEvent' in event.args.data && 'endEvent' in event.args.data);
 }
-export function isSyntheticTraceEntry(event) {
-    return isTraceEventRendererEvent(event) || isProfileCall(event);
-}
 export function isTraceEventDrawFrame(event) {
     // The extra check for INSTANT here is because in the past DrawFrame events had an ASYNC_NESTABLE_START and ASYNC_NESTABLE_END pair. We don't want to support those old events, so we have to check we are dealing with an instant event.
     return event.name === "DrawFrame" /* KnownEventName.DrawFrame */ && event.ph === "I" /* Phase.INSTANT */;

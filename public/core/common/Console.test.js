@@ -4,50 +4,74 @@
 import * as Common from './common.js';
 const Console = Common.Console.Console;
 describe('Console', () => {
-    let consoleImpl;
-    beforeEach(() => {
-        consoleImpl = Console.instance({ forceNew: true });
+    describe('addMessage', () => {
+        it('adds messages', () => {
+            const console = Console.instance({ forceNew: true });
+            console.addMessage('Foo', "info" /* Common.Console.MessageLevel.Info */, true);
+            const messages = console.messages();
+            assert.lengthOf(messages, 1);
+            assert.strictEqual(messages[0].text, 'Foo');
+            assert.strictEqual(messages[0].level, "info" /* Common.Console.MessageLevel.Info */);
+            assert.strictEqual(messages[0].show, true);
+        });
+        it('stores messages', () => {
+            const console = Console.instance({ forceNew: true });
+            console.addMessage('Foo', "info" /* Common.Console.MessageLevel.Info */, true);
+            console.addMessage('Baz', "warning" /* Common.Console.MessageLevel.Warning */, true);
+            console.addMessage('Bar', "error" /* Common.Console.MessageLevel.Error */, true);
+            console.addMessage('Donkey', "info" /* Common.Console.MessageLevel.Info */, true);
+            const messages = console.messages();
+            assert.strictEqual(messages.length, 4);
+        });
+        it('dispatches events to listeners', done => {
+            const console = Console.instance({ forceNew: true });
+            const callback = ({ data }) => {
+                console.removeEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, callback);
+                assert.strictEqual(data.text, 'Foo');
+                done();
+            };
+            console.addEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, callback);
+            console.addMessage('Foo', "info" /* Common.Console.MessageLevel.Info */, true);
+        });
     });
-    it('adds messages', () => {
-        consoleImpl.addMessage('Foo', "info" /* Common.Console.MessageLevel.Info */, true);
-        const messages = consoleImpl.messages();
-        assert.strictEqual(messages.length, 1);
-        assert.strictEqual(messages[0].text, 'Foo');
+    describe('log', () => {
+        it('adds messages with level Info', () => {
+            const console = Console.instance({ forceNew: true });
+            console.log('Lorem Ipsum');
+            const messages = console.messages();
+            assert.lengthOf(messages, 1);
+            assert.strictEqual(messages[0].show, false); // Infos don't popup the Console panel by default
+            assert.strictEqual(messages[0].level, "info" /* Common.Console.MessageLevel.Info */);
+        });
     });
-    it('adds handles messages of all types', () => {
-        const messageTypes = new Map([
-            ["info" /* Common.Console.MessageLevel.Info */, 'log'],
-            ["warning" /* Common.Console.MessageLevel.Warning */, 'warn'],
-            ["error" /* Common.Console.MessageLevel.Error */, 'error'],
-        ]);
-        for (const [type, method] of messageTypes) {
-            consoleImpl = Console.instance({ forceNew: true });
-            // Dispatch the message of the appropriate type.
-            // @ts-ignore
-            consoleImpl[method](type);
-            // Now read the message back and check it.
-            const messages = consoleImpl.messages();
-            assert.strictEqual(messages.length, 1);
-            assert.strictEqual(messages[0].text, type);
-            assert.strictEqual(messages[0].level, type);
-        }
+    describe('warn', () => {
+        it('adds messages with level Warning', () => {
+            const console = Console.instance({ forceNew: true });
+            console.warn('Lorem Ipsum');
+            const messages = console.messages();
+            assert.lengthOf(messages, 1);
+            assert.strictEqual(messages[0].show, false); // Warnings don't popup the Console panel by default
+            assert.strictEqual(messages[0].level, "warning" /* Common.Console.MessageLevel.Warning */);
+        });
     });
-    it('stores messages', () => {
-        consoleImpl.addMessage('Foo', "info" /* Common.Console.MessageLevel.Info */, true);
-        consoleImpl.addMessage('Baz', "warning" /* Common.Console.MessageLevel.Warning */, true);
-        consoleImpl.addMessage('Bar', "error" /* Common.Console.MessageLevel.Error */, true);
-        consoleImpl.addMessage('Donkey', "info" /* Common.Console.MessageLevel.Info */, true);
-        const messages = consoleImpl.messages();
-        assert.strictEqual(messages.length, 4);
-    });
-    it('dispatches events to listeners', done => {
-        const callback = ({ data }) => {
-            consoleImpl.removeEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, callback);
-            assert.strictEqual(data.text, 'Foo');
-            done();
-        };
-        consoleImpl.addEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, callback);
-        consoleImpl.addMessage('Foo', "info" /* Common.Console.MessageLevel.Info */, true);
+    describe('error', () => {
+        it('adds messages with level Error', () => {
+            const console = Console.instance({ forceNew: true });
+            console.error('Lorem Ipsum');
+            const messages = console.messages();
+            assert.lengthOf(messages, 1);
+            assert.strictEqual(messages[0].show, true); // Errors popup the Console panel by default
+            assert.strictEqual(messages[0].level, "error" /* Common.Console.MessageLevel.Error */);
+        });
+        it('can control whether to pop up the Console panel', () => {
+            const console = Console.instance({ forceNew: true });
+            console.error('Bar', false);
+            console.error('Baz', true);
+            const messages = console.messages();
+            assert.lengthOf(messages, 2);
+            assert.strictEqual(messages[0].show, false);
+            assert.strictEqual(messages[1].show, true);
+        });
     });
 });
 //# sourceMappingURL=Console.test.js.map

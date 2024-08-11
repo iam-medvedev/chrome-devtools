@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -332,15 +333,11 @@ export class ShortcutListItem {
         }
     }
     setupEditor() {
-        this.addShortcutLinkContainer = this.element.createChild('div', 'keybinds-shortcut devtools-link');
-        const addShortcutLink = this.addShortcutLinkContainer.createChild('span', 'devtools-link');
-        addShortcutLink.setAttribute('jslog', `${VisualLogging.action('add-shortcut').track({ click: true })}`);
-        addShortcutLink.textContent = i18nString(UIStrings.addAShortcut);
-        addShortcutLink.tabIndex = 0;
-        UI.ARIAUtils.markAsLink(addShortcutLink);
-        self.onInvokeElement(addShortcutLink, this.addShortcut.bind(this));
+        this.addShortcutLinkContainer = this.element.createChild('div', 'keybinds-shortcut');
+        const addShortcutButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addAShortcut), this.addShortcut.bind(this), { jslogContext: 'add-shortcut' });
+        this.addShortcutLinkContainer.appendChild(addShortcutButton);
         if (!this.elementToFocus) {
-            this.elementToFocus = addShortcutLink;
+            this.elementToFocus = addShortcutButton;
         }
         this.errorMessageElement = this.element.createChild('div', 'keybinds-info keybinds-error hidden');
         UI.ARIAUtils.markAsAlert(this.errorMessageElement);
@@ -428,10 +425,8 @@ export class ShortcutListItem {
         return this.createIconButton(i18nString(UIStrings.editShortcut), 'edit', 'keybinds-edit-button', 'edit', () => this.settingsTab.startEditing(this.item));
     }
     createIconButton(label, iconName, className, jslogContext, listener) {
-        const button = document.createElement('button');
-        button.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context(jslogContext)}`);
-        button.setAttribute('title', label);
-        button.appendChild(IconButton.Icon.create(iconName));
+        const button = new Buttons.Button.Button();
+        button.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName, jslogContext, title: label };
         button.addEventListener('click', listener);
         UI.ARIAUtils.setLabel(button, label);
         if (className) {

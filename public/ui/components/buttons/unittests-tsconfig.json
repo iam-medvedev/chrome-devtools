@@ -49,9 +49,6 @@
     },
     {
       "path": "../../../testing/testing-tsconfig.json"
-    },
-    {
-      "path": "../render_coordinator/bundle-tsconfig.json"
     }
   ]
 }

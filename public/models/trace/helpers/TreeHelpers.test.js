@@ -194,35 +194,35 @@ describe('TreeHelpers', () => {
                 return;
             }
             assert.strictEqual(taskCTotalTime, TraceModel.Types.Timing.MicroSeconds(1));
-            assert.strictEqual(taskC.selfTime, taskCTotalTime);
+            assert.strictEqual(nodeC.selfTime, taskCTotalTime);
             const taskBTotalTime = taskB.dur;
             if (taskBTotalTime === undefined) {
                 assert.fail('Total time for task was not found');
                 return;
             }
             assert.strictEqual(taskBTotalTime, TraceModel.Types.Timing.MicroSeconds(3));
-            assert.strictEqual(taskB.selfTime, TraceModel.Types.Timing.MicroSeconds(taskBTotalTime - taskCTotalTime));
+            assert.strictEqual(nodeB.selfTime, TraceModel.Types.Timing.MicroSeconds(taskBTotalTime - taskCTotalTime));
             const taskDTotalTime = taskD.dur;
             if (taskDTotalTime === undefined) {
                 assert.fail('Total time for task was not found');
                 return;
             }
             assert.strictEqual(taskDTotalTime, TraceModel.Types.Timing.MicroSeconds(3));
-            assert.strictEqual(taskD.selfTime, taskDTotalTime);
+            assert.strictEqual(nodeD.selfTime, taskDTotalTime);
             const taskATotalTime = taskA.dur;
             if (taskATotalTime === undefined) {
                 assert.fail('Total time for task was not found');
                 return;
             }
             assert.strictEqual(taskATotalTime, TraceModel.Types.Timing.MicroSeconds(10));
-            assert.strictEqual(taskA.selfTime, TraceModel.Types.Timing.MicroSeconds(taskATotalTime - taskBTotalTime - taskDTotalTime));
+            assert.strictEqual(nodeA.selfTime, TraceModel.Types.Timing.MicroSeconds(taskATotalTime - taskBTotalTime - taskDTotalTime));
             const taskETotalTime = taskE.dur;
             if (taskETotalTime === undefined) {
                 assert.fail('Total time for task was not found');
                 return;
             }
             assert.strictEqual(taskETotalTime, TraceModel.Types.Timing.MicroSeconds(3));
-            assert.strictEqual(taskD.selfTime, taskETotalTime);
+            assert.strictEqual(nodeD.selfTime, taskETotalTime);
         });
         describe('building hierarchies trace events and profile calls', () => {
             it('builds a hierarchy from trace events and profile calls', async () => {

@@ -29,6 +29,10 @@ styles.replaceSync(
   cursor: ew-resize;
 }
 
+::selection {
+  background-color: var(--sys-color-tonal-container);
+}
+
 /*# sourceURL=cssLength.css */
 `);
 

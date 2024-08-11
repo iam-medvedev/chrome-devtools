@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
@@ -58,6 +59,44 @@ describeWithMockConnection('CrUXManager', () => {
         mockConsoleError.restore();
         cruxManager.getConfigSetting().set({ enabled: false, override: '' });
     });
+    describe('storing the user consent', () => {
+        it('uses global storage if the user is not in an OffTheRecord profile', async () => {
+            const dummyStorage = new Common.Settings.SettingsStorage({});
+            const globalStorage = new Common.Settings.SettingsStorage({});
+            Common.Settings.Settings.instance({
+                forceNew: true,
+                syncedStorage: dummyStorage,
+                globalStorage: globalStorage,
+                localStorage: dummyStorage,
+                config: {
+                    isOffTheRecord: false,
+                },
+            });
+            const manager = CrUXManager.CrUXManager.instance({ forceNew: true });
+            manager.getConfigSetting().set({ enabled: true, override: '' });
+            assert.isTrue(globalStorage.has(manager.getConfigSetting().name));
+        });
+        it('uses session storage if the user is in an OffTheRecord profile', async () => {
+            const dummyStorage = new Common.Settings.SettingsStorage({});
+            Common.Settings.Settings.instance({
+                forceNew: true,
+                syncedStorage: dummyStorage,
+                globalStorage: dummyStorage,
+                localStorage: dummyStorage,
+                config: {
+                    isOffTheRecord: true,
+                },
+            });
+            const manager = CrUXManager.CrUXManager.instance({ forceNew: true });
+            manager.getConfigSetting().set({ enabled: true, override: '' });
+            // SessionStorage is created and managed internally to the Settings
+            // class, and is a private instance variable, so we cannot actually
+            // assert that it contains the value. Best we can do here is to assert
+            // that it did not use the dummy storage, which means that it must have
+            // used session storage as those are the 4 available storage types.
+            assert.isFalse(dummyStorage.has(manager.getConfigSetting().name));
+        });
+    });
     describe('getFieldDataForPage', () => {
         it('should request data for all scopes', async () => {
             mockFetch.callsFake(async () => new Response(JSON.stringify(mockResponse()), {
@@ -86,6 +125,7 @@ describeWithMockConnection('CrUXManager', () => {
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
                         'round_trip_time',
+                        'form_factors',
                     ],
                     origin: 'https://example.com',
                 },
@@ -96,6 +136,7 @@ describeWithMockConnection('CrUXManager', () => {
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
                         'round_trip_time',
+                        'form_factors',
                     ],
                     origin: 'https://example.com',
                 },
@@ -105,6 +146,7 @@ describeWithMockConnection('CrUXManager', () => {
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
                         'round_trip_time',
+                        'form_factors',
                     ],
                     origin: 'https://example.com',
                 },
@@ -115,6 +157,7 @@ describeWithMockConnection('CrUXManager', () => {
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
                         'round_trip_time',
+                        'form_factors',
                     ],
                     url: 'https://example.com/',
                 },
@@ -125,6 +168,7 @@ describeWithMockConnection('CrUXManager', () => {
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
                         'round_trip_time',
+                        'form_factors',
                     ],
                     url: 'https://example.com/',
                 },
@@ -134,6 +178,7 @@ describeWithMockConnection('CrUXManager', () => {
                         'cumulative_layout_shift',
                         'interaction_to_next_paint',
                         'round_trip_time',
+                        'form_factors',
                     ],
                     url: 'https://example.com/',
                 },

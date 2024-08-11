@@ -57,12 +57,18 @@ describeWithMockConnection('BounceTrackingMitigationsView', () => {
     it('hides deleted sites table and shows explanation message when there are no deleted tracking sites', async () => {
         createTarget();
         setMockConnectionResponseHandler('SystemInfo.getFeatureState', () => ({ featureEnabled: true }));
-        setMockConnectionResponseHandler('Storage.runBounceTrackingMitigations', () => ({ deletedSites: [] }));
+        const runBounceTrackingMitigationsPromise = new Promise(resolve => {
+            setMockConnectionResponseHandler('Storage.runBounceTrackingMitigations', () => {
+                resolve(undefined);
+                return { deletedSites: [] };
+            });
+        });
         const component = await renderBounceTrackingMitigationsView();
         await coordinator.done();
         const forceRunButton = component.shadowRoot.querySelector('[aria-label="Force run"]');
         assert.instanceOf(forceRunButton, HTMLElement);
         dispatchClickEvent(forceRunButton);
+        await runBounceTrackingMitigationsPromise;
         await coordinator.done();
         const nullGridElement = component.shadowRoot.querySelector('devtools-data-grid-controller');
         assert.isNull(nullGridElement);

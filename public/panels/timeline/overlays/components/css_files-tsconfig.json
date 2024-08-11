@@ -4,6 +4,7 @@
         "outDir": "."
     },
     "files": [
+        "entriesLinkOverlay.css.js",
         "entryLabelOverlay.css.js",
         "timeRangeOverlay.css.js",
         "timespanBreakdownOverlay.css.js"

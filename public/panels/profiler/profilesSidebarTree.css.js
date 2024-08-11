@@ -47,7 +47,15 @@ li.wait .icon {
   content: none;
 }
 
+li devtools-button {
+  min-width: var(--sys-size-12);
+  visibility: hidden;
+}
+
 /* Tree outline overrides */
+.heap-snapshot-sidebar-tree-item:not(:hover) devtools-button {
+  visibility: hidden;
+}
 
 .heap-snapshot-sidebar-tree-item.wait .icon {
   mask-image: unset;
@@ -205,11 +213,6 @@ li .subtitle {
 
 li.small .subtitle {
   display: none;
-}
-
-li devtools-button {
-  min-width: var(--sys-size-12);
-  visibility: hidden;
 }
 
 li.selected:hover devtools-button {

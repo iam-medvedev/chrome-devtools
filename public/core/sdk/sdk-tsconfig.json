@@ -104,6 +104,7 @@
     "../../../../../../front_end/core/sdk/StorageKeyManager.ts",
     "../../../../../../front_end/core/sdk/Target.ts",
     "../../../../../../front_end/core/sdk/TargetManager.ts",
+    "../../../../../../front_end/core/sdk/TraceObject.ts",
     "../../../../../../front_end/core/sdk/WebAuthnModel.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

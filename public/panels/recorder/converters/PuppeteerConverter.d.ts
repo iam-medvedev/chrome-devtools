@@ -5,6 +5,7 @@ export declare class PuppeteerConverter implements Converter {
     #private;
     constructor(indent: string);
     getId(): string;
+    createExtension(): PuppeteerReplay.PuppeteerStringifyExtension;
     getFormatName(): string;
     getFilename(flow: Models.Schema.UserFlow): string;
     stringify(flow: Models.Schema.UserFlow): Promise<[string, PuppeteerReplay.SourceMap | undefined]>;

@@ -357,7 +357,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.highlightedEntryIndex = entryIndex;
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
-        this.dispatchEventToListeners("EntryHighlighted" /* Events.EntryHighlighted */, entryIndex);
+        this.dispatchEventToListeners("EntryHovered" /* Events.EntryHovered */, entryIndex);
     }
     highlightAllEntries(entries) {
         for (const entry of entries) {
@@ -387,7 +387,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.highlightedEntryIndex = -1;
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
-        this.dispatchEventToListeners("EntryHighlighted" /* Events.EntryHighlighted */, -1);
+        this.dispatchEventToListeners("EntryHovered" /* Events.EntryHovered */, -1);
     }
     createCandyStripePattern() {
         // Set the candy stripe pattern to 17px so it repeats well.

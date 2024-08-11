@@ -44,10 +44,6 @@ export declare const UIStrings: {
      */
     CSSSelectorInternalMediaControlsOverlayCastButton: string;
     /**
-     * @description Warning displayed to developers to let them know the CSS appearance property values they used are deprecated and will be removed.
-     */
-    CSSValueAppearanceNonStandard: string;
-    /**
      * @description Warning displayed to developers to let them know the CSS appearance property value they used is not standard and will be removed.
      */
     CSSValueAppearanceSliderVertical: string;

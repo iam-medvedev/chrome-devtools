@@ -103,8 +103,8 @@ const REGISTERED_EXPERIMENTS = [
     "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
     "sources-frame-indentation-markers-temporarily-disable" /* Root.Runtime.ExperimentName.INDENTATION_MARKERS_TEMP_DISABLE */,
     "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
-    "perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */,
-    "timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */,
+    "perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */,
+    "timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */,
     "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
     "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
     "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
@@ -202,6 +202,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'flamechart-mouse-wheel-action', false, "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-css-property-documentation-on-hover', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'freestyler-dogfood-consent-onboarding-finished', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'freestyler-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.
@@ -386,6 +387,7 @@ export function getGetHostConfigStub(config) {
             enabled: false,
             aidaModelId: '',
             aidaTemperature: 0.2,
+            disallowLogging: false,
             ...config.devToolsConsoleInsights,
         },
         devToolsFreestylerDogfood: {

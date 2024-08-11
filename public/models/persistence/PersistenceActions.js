@@ -66,7 +66,7 @@ export class ContextMenuProvider {
                 }
                 catch (e) {
                     console.error(`Unable to convert WASM byte code for ${url} to base64. Not saving to disk`, e.stack);
-                    Common.Console.Console.instance().addMessage(i18nString(UIStrings.saveWasmFailed), "error" /* Common.Console.MessageLevel.Error */);
+                    Common.Console.Console.instance().error(i18nString(UIStrings.saveWasmFailed), /* show=*/ false);
                     return;
                 }
             }

@@ -75,9 +75,6 @@
       "path": "../emulation/bundle-tsconfig.json"
     },
     {
-      "path": "../timeline/bundle-tsconfig.json"
-    },
-    {
       "path": "../../third_party/lighthouse/report/report-tsconfig.json"
     },
     {

@@ -280,7 +280,6 @@ export function makeProfileCall(functionName, tsMs, durMs, pid = TraceEngine.Typ
         tid,
         ts: TraceEngine.Types.Timing.MicroSeconds(tsMs),
         dur: TraceEngine.Types.Timing.MicroSeconds(durMs),
-        selfTime: TraceEngine.Types.Timing.MicroSeconds(0),
         callFrame: {
             functionName,
             scriptId: '',

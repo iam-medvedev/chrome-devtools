@@ -230,7 +230,7 @@ export class EntriesFilter {
                     if (TraceEngine.Helpers.SamplesIntegrator.SamplesIntegrator.framesAreEqual(rootNodeEntry.callFrame, childNodeEntry.callFrame)) {
                         repeatingNodes.push(childNode.entry);
                     }
-                } /* Handle SyntheticRendererEvents */
+                } /* Handle Renderer events */
                 else if (!rootIsProfileCall && !childIsProfileCall) {
                     if (root.entry.name === childNode.entry.name) {
                         repeatingNodes.push(childNode.entry);

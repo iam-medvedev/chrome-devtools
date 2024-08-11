@@ -181,6 +181,7 @@ style.setProperty('--image-file-layers', 'url(\"' + new URL('./src/layers.svg', 
 style.setProperty('--image-file-left-panel-close', 'url(\"' + new URL('./src/left-panel-close.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-left-panel-open', 'url(\"' + new URL('./src/left-panel-open.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-lightbulb-spark', 'url(\"' + new URL('./src/lightbulb-spark.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-lightbulb', 'url(\"' + new URL('./src/lightbulb.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-lighthouse_logo', 'url(\"' + new URL('./src/lighthouse_logo.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-list', 'url(\"' + new URL('./src/list.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-location-on', 'url(\"' + new URL('./src/location-on.svg', import.meta.url).toString() + '\")');
@@ -194,10 +195,12 @@ style.setProperty('--image-file-mouse', 'url(\"' + new URL('./src/mouse.svg', im
 style.setProperty('--image-file-network-settings', 'url(\"' + new URL('./src/network-settings.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-open-externally', 'url(\"' + new URL('./src/open-externally.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-pause', 'url(\"' + new URL('./src/pause.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-pen-spark', 'url(\"' + new URL('./src/pen-spark.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-performance', 'url(\"' + new URL('./src/performance.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-person', 'url(\"' + new URL('./src/person.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-play', 'url(\"' + new URL('./src/play.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-plus', 'url(\"' + new URL('./src/plus.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-policy', 'url(\"' + new URL('./src/policy.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-popup', 'url(\"' + new URL('./src/popup.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-preview_feature_video_thumbnail', 'url(\"' + new URL('./src/preview_feature_video_thumbnail.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-profile', 'url(\"' + new URL('./src/profile.svg', import.meta.url).toString() + '\")');

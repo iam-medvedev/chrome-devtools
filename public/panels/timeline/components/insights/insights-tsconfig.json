@@ -29,6 +29,8 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../../front_end/panels/timeline/components/insights/CLSCulprits.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/Helpers.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPDiscovery.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPPhases.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/SidebarInsight.ts",
@@ -49,6 +51,9 @@
     },
     {
       "path": "../../../../services/trace_bounds/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
       "path": "../../../../ui/components/helpers/bundle-tsconfig.json"

@@ -38,6 +38,7 @@ describe('ExtensionTraceDataHandler', function () {
     }
     async function createTraceExtensionDataFromTestInput(extensionData) {
         const events = extensionData.flatMap(makeTimingEventWithExtensionData).sort((e1, e2) => e1.ts - e2.ts);
+        TraceModel.Helpers.SyntheticEvents.SyntheticEventsManager.initAndActivate(events);
         TraceModel.Handlers.ModelHandlers.UserTimings.reset();
         for (const event of events) {
             TraceModel.Handlers.ModelHandlers.UserTimings.handleEvent(event);
@@ -436,16 +437,25 @@ describe('ExtensionTraceDataHandler', function () {
             const extensionHandlerOutput = await createTraceExtensionDataFromTestInput(extensionDevToolsObjects);
             assert.lengthOf(extensionHandlerOutput.extensionTrackData, 2);
             const trackGroupData = extensionHandlerOutput.extensionTrackData[0];
-            const testDataTrack1 = trackGroupData.entriesByTrack['Track 1'].map(entry => ({ name: entry.name, selfTime: entry.selfTime }));
+            const testDataTrack1 = trackGroupData.entriesByTrack['Track 1'].map(entry => {
+                const selfTime = extensionHandlerOutput.entryToNode.get(entry)?.selfTime;
+                return { name: entry.name, selfTime: selfTime };
+            });
             assert.deepEqual(testDataTrack1, [
                 { name: 'Measurement 1', selfTime: 40 },
                 { name: 'Measurement 2', selfTime: 20 },
                 { name: 'Measurement 3', selfTime: 30 },
                 { name: 'Measurement 4', selfTime: 10 },
             ]);
-            const testDataTrack2 = trackGroupData.entriesByTrack['Track 2'].map(entry => ({ name: entry.name, selfTime: entry.selfTime }));
+            const testDataTrack2 = trackGroupData.entriesByTrack['Track 2'].map(entry => {
+                const selfTime = extensionHandlerOutput.entryToNode.get(entry)?.selfTime;
+                return { name: entry.name, selfTime };
+            });
             assert.deepEqual(testDataTrack2, [{ name: 'Measurement 5', selfTime: 200 }]);
-            const ungroupedTrackData = extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Ungrouped Track'].map(entry => ({ name: entry.name, selfTime: entry.selfTime }));
+            const ungroupedTrackData = extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Ungrouped Track'].map(entry => {
+                const selfTime = extensionHandlerOutput.entryToNode.get(entry)?.selfTime;
+                return { name: entry.name, selfTime };
+            });
             assert.deepEqual(ungroupedTrackData, [{ name: 'Measurement 6', selfTime: 50 }, { name: 'Measurement 7', selfTime: 50 }]);
         });
     });

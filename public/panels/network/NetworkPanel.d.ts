@@ -3,7 +3,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import type * as Extensions from '../../models/extensions/extensions.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import type * as NetworkForward from '../../panels/network/forward/forward.js';
+import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Search from '../search/search.js';

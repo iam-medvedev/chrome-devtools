@@ -1084,13 +1084,11 @@ export interface TraceEventPipelineReporter extends TraceEventData {
     };
 }
 export declare function isTraceEventPipelineReporter(event: TraceEventData): event is TraceEventPipelineReporter;
-export interface SyntheticBasedEvent<Ph extends Phase = Phase> extends SyntheticEntry {
+export interface SyntheticBasedEvent<Ph extends Phase = Phase> extends TraceEventData {
     ph: Ph;
     rawSourceEvent: TraceEventData;
-}
-export type SyntheticEntry = TraceEventData & {
     _tag: 'SyntheticEntryTag';
-};
+}
 export declare function isSyntheticBasedEvent(event: TraceEventData): event is SyntheticBasedEvent;
 export interface SyntheticEventPair<T extends TraceEventPairableAsync = TraceEventPairableAsync> extends SyntheticBasedEvent {
     rawSourceEvent: TraceEventData;
@@ -1126,13 +1124,6 @@ export interface SyntheticInteractionPair extends SyntheticEventPair<TraceEventE
     presentationDelay: MicroSeconds;
 }
 /**
- * An event created synthetically in the frontend that has a self time
- * (the time spent running the task itself).
- */
-export interface SyntheticTraceEntry extends TraceEventData {
-    selfTime?: MicroSeconds;
-}
-/**
  * A profile call created in the frontend from samples disguised as a
  * trace event.
  *
@@ -1144,17 +1135,16 @@ export interface SyntheticTraceEntry extends TraceEventData {
  * point in time that the sample was created, we also have to store the ID of
  * the Node that points to the function call that this profile call represents.
  */
-export interface SyntheticProfileCall extends SyntheticTraceEntry {
+export interface SyntheticProfileCall extends TraceEventData {
     callFrame: Protocol.Runtime.CallFrame;
     nodeId: Protocol.integer;
     sampleIndex: number;
     profileId: ProfileID;
-    selfTime: MicroSeconds;
 }
 /**
  * A JS Sample reflects a single sample from the V8 CPU Profile
  */
-export interface SyntheticJSSample extends SyntheticTraceEntry {
+export interface SyntheticJSSample extends TraceEventData {
     name: KnownEventName.JSSample;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
@@ -1163,13 +1153,7 @@ export interface SyntheticJSSample extends SyntheticTraceEntry {
     };
     ph: Phase.INSTANT;
 }
-/**
- * A trace event augmented synthetically in the frontend to contain
- * its self time.
- */
-export type SyntheticRendererEvent = TraceEventRendererEvent & SyntheticTraceEntry;
 export declare function isSyntheticInteractionEvent(event: TraceEventData): event is SyntheticInteractionPair;
-export declare function isSyntheticTraceEntry(event: TraceEventData): event is SyntheticTraceEntry;
 export interface TraceEventDrawFrame extends TraceEventInstant {
     name: KnownEventName.DrawFrame;
     args: TraceEventArgs & {

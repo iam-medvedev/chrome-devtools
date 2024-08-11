@@ -18,6 +18,9 @@ describe('Substitute', () => {
     it('Preserves unrelated variable', () => {
         assert.strictEqual(substitute('x'), 'x');
     });
+    it('Preserves `import.meta`', () => {
+        assert.strictEqual(substitute('import.meta'), 'import.meta');
+    });
     it('Substitutes single variable', () => {
         assert.strictEqual(substitute('varY'), 'y');
     });

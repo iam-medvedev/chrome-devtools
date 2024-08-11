@@ -1512,7 +1512,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
     treeElement;
     isEditingName;
     cssVariables;
-    constructor(treeElement, isEditingName) {
+    constructor(treeElement, isEditingName, completions = []) {
         // Use the same callback both for applyItemCallback and acceptItemCallback.
         super();
         this.initialize(this.buildPropertyCompletions.bind(this), UI.UIUtils.StyleValueDelimiters);
@@ -1527,7 +1527,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
             }
         }
         else {
-            this.cssCompletions = cssMetadata.getPropertyValues(treeElement.property.name);
+            this.cssCompletions = [...completions, ...cssMetadata.getPropertyValues(treeElement.property.name)];
             if (node && cssMetadata.isFontFamilyProperty(treeElement.property.name)) {
                 const fontFamilies = node.domModel().cssModel().fontFaces().map(font => quoteFamilyName(font.getFontFamily()));
                 this.cssCompletions.unshift(...fontFamilies);

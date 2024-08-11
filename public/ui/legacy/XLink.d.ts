@@ -7,7 +7,7 @@ export declare class XLink extends XElement {
     private clickable;
     private readonly onClick;
     private readonly onKeyDown;
-    static create(url: string, linkText?: string, className?: string, preventClick?: boolean, jsLogContext?: string): HTMLElement;
+    static create(url: string, linkText?: string, className?: string, preventClick?: boolean, jsLogContext?: string, tabindex?: string): HTMLElement;
     constructor();
     static get observedAttributes(): string[];
     get href(): Platform.DevToolsPath.UrlString | null;

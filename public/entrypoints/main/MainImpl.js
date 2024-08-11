@@ -48,9 +48,7 @@ import * as Logs from '../../models/logs/logs.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Snippets from '../../panels/snippets/snippets.js';
-import * as Timeline from '../../panels/timeline/timeline.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
-import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -309,8 +307,8 @@ export class MainImpl {
         Root.Runtime.experiments.register("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
         Root.Runtime.experiments.register("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Autofill panel', false, 'https://goo.gle/devtools-autofill-panel', 'https://crbug.com/329106326');
         Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Performance panel: show postMessage dispatch and handling flows');
-        Root.Runtime.experiments.register("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */, 'Performance panel: enable annotations', true);
-        Root.Runtime.experiments.register("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_SIDEBAR */, 'Performance panel: enable sidebar', true);
+        Root.Runtime.experiments.register("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */, 'Performance panel: enable annotations', true);
+        Root.Runtime.experiments.register("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */, 'Performance panel: enable performance insights', true);
         Root.Runtime.experiments.register("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */, 'Performance panel: enable live metrics landing page');
         Root.Runtime.experiments.register("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */, 'Dedicated panel for generative AI settings');
         Root.Runtime.experiments.enableExperimentsByDefault([
@@ -451,6 +449,9 @@ export class MainImpl {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
         const value = Root.Runtime.Runtime.queryParam('loadTimelineFromURL');
         if (value !== null) {
+            // Only import Timeline if neeeded. If this was a static import, every load of devtools
+            // would request and evaluate the Timeline panel dep tree, slowing down the UI's load.
+            const Timeline = await import('../../panels/timeline/timeline.js');
             Timeline.TimelinePanel.LoadTimelineHandler.instance().handleQueryParam(value);
         }
         // Initialize ARIAUtils.alert Element
@@ -475,7 +476,7 @@ export class MainImpl {
         window.setTimeout(this.#lateInitialization.bind(this), 100);
         MainImpl.timeEnd('Main._initializeTarget');
     }
-    #lateInitialization() {
+    async #lateInitialization() {
         MainImpl.time('Main._lateInitialization');
         Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
         const promises = Common.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
@@ -483,6 +484,7 @@ export class MainImpl {
             return runnable.run();
         });
         if (Root.Runtime.experiments.isEnabled('live-heap-profile')) {
+            const PerfUI = await import('../../ui/legacy/components/perf_ui/perf_ui.js');
             const setting = 'memory-live-heap-profile';
             if (Common.Settings.Settings.instance().moduleSetting(setting).get()) {
                 promises.push(PerfUI.LiveHeapProfile.LiveHeapProfile.instance().run());
@@ -620,8 +622,7 @@ let mainMenuItemInstance;
 export class MainMenuItem {
     #itemInternal;
     constructor() {
-        this.#itemInternal = new UI.Toolbar.ToolbarMenuButton(this.#handleContextMenu.bind(this), /* isIconDropdown */ true, /* useSoftMenu */ true, 'main-menu');
-        this.#itemInternal.setGlyph('dots-vertical');
+        this.#itemInternal = new UI.Toolbar.ToolbarMenuButton(this.#handleContextMenu.bind(this), /* isIconDropdown */ true, /* useSoftMenu */ true, 'main-menu', 'dots-vertical');
         this.#itemInternal.element.classList.add('main-menu');
         this.#itemInternal.setTitle(i18nString(UIStrings.customizeAndControlDevtools));
     }

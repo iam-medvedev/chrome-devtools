@@ -23,6 +23,8 @@ Please answer only if you are sure about the answer. Otherwise, explain why you'
 When answering, remember to consider CSS concepts such as the CSS cascade, explicit and implicit stacking contexts and various CSS layout types.
 When answering, always consider MULTIPLE possible solutions.
 
+If you need to set inline styles on an HTML element, always call the \`async setInlineStyles(el: Element, styles: object)\` function.
+
 Example:
 ACTION
 const data = {
@@ -86,6 +88,11 @@ async function executeJsCode(code, { throwOnSideEffect }) {
         throw err;
     }
 }
+const functions = `async function setInlineStyles(el, styles) {
+  for (const key of Object.keys(styles)) {
+    el.style[key] = styles[key];
+  }
+}`;
 const MAX_STEPS = 10;
 const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
 /**
@@ -102,8 +109,8 @@ export class FreestylerAgent {
             chat_history: opts.chatHistory,
             client: Host.AidaClient.CLIENT_NAME,
             options: {
-                temperature: config?.devToolsFreestylerDogfood.aidaTemperature ?? 0,
-                model_id: config?.devToolsFreestylerDogfood.aidaModelId ?? undefined,
+                temperature: config.devToolsFreestylerDogfood?.aidaTemperature ?? 0,
+                model_id: config.devToolsFreestylerDogfood?.aidaModelId ?? undefined,
             },
             metadata: {
                 // TODO: disable logging based on query params.
@@ -177,12 +184,17 @@ export class FreestylerAgent {
     #serverSideLoggingEnabled;
     #confirmSideEffect;
     #execJs;
+    #internalExecJs;
     #sessionId = crypto.randomUUID();
     constructor(opts) {
         this.#aidaClient = opts.aidaClient;
         this.#execJs = opts.execJs ?? executeJsCode;
+        this.#internalExecJs = opts.internalExecJs ?? executeJsCode;
         this.#confirmSideEffect = opts.confirmSideEffect;
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
+    }
+    async #setupContext() {
+        await this.#internalExecJs?.(functions, { throwOnSideEffect: false });
     }
     get #getHistoryEntry() {
         return [...this.#chatHistory.values()].flat();
@@ -229,6 +241,7 @@ export class FreestylerAgent {
     }
     #runId = 0;
     async *run(query, options = { isFixQuery: false }) {
+        await this.#setupContext();
         const genericErrorMessage = 'Sorry, I could not help you with this query.';
         const structuredLog = [];
         query = `QUERY: ${query}`;
@@ -300,7 +313,7 @@ export class FreestylerAgent {
                 break;
             }
             else {
-                yield { step: Step.ANSWER, text: genericErrorMessage, rpcId };
+                yield { step: Step.ERROR, text: genericErrorMessage, rpcId };
                 break;
             }
             if (i === MAX_STEPS - 1) {

@@ -14,7 +14,13 @@ export function substituteExpression(expression, nameMap) {
 // if the substitution target is 'this' within a function, it would become bound there).
 function computeSubstitution(expression, nameMap) {
     // Parse the expression and find variables and scopes.
-    const root = Acorn.parse(expression, { ecmaVersion: ECMA_VERSION, allowAwaitOutsideFunction: true, ranges: false, checkPrivateFields: false });
+    const root = Acorn.parse(expression, {
+        ecmaVersion: ECMA_VERSION,
+        allowAwaitOutsideFunction: true,
+        allowImportExportEverywhere: true,
+        checkPrivateFields: false,
+        ranges: false,
+    });
     const scopeVariables = new ScopeVariableAnalysis(root);
     scopeVariables.run();
     const freeVariables = scopeVariables.getFreeVariables();

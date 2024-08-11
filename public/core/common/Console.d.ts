@@ -9,10 +9,24 @@ export declare class Console extends ObjectWrapper<EventTypes> {
         forceNew: boolean;
     }): Console;
     static removeInstance(): void;
-    addMessage(text: string, level: MessageLevel, show?: boolean, source?: FrontendMessageSource): void;
+    /**
+     * Add a message to the Console panel.
+     *
+     * @param text the message text.
+     * @param level the message level.
+     * @param show whether to show the Console panel (if it's not already shown).
+     * @param source the message source.
+     */
+    addMessage(text: string, level?: MessageLevel, show?: boolean, source?: FrontendMessageSource): void;
     log(text: string): void;
     warn(text: string, source?: FrontendMessageSource): void;
-    error(text: string): void;
+    /**
+     * Adds an error message to the Console panel.
+     *
+     * @param text the message text.
+     * @param show whether to show the Console panel (if it's not already shown).
+     */
+    error(text: string, show?: boolean): void;
     messages(): Message[];
     show(): void;
     showPromise(): Promise<void>;

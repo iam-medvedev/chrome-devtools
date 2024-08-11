@@ -13,6 +13,10 @@ export declare class CSSMetadata {
     isFontFamilyProperty(propertyName: string): boolean;
     isAngleAwareProperty(propertyName: string): boolean;
     isGridAreaDefiningProperty(propertyName: string): boolean;
+    isGridColumnNameAwareProperty(propertyName: string): boolean;
+    isGridRowNameAwareProperty(propertyName: string): boolean;
+    isGridAreaNameAwareProperty(propertyName: string): boolean;
+    isGridNameAwareProperty(propertyName: string): boolean;
     isLengthProperty(propertyName: string): boolean;
     isBezierAwareProperty(propertyName: string): boolean;
     isFontAwareProperty(propertyName: string): boolean;

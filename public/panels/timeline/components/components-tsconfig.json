@@ -36,6 +36,7 @@
     "../../../../../../../front_end/panels/timeline/components/FieldSettingsDialog.ts",
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.ts",
     "../../../../../../../front_end/panels/timeline/components/LiveMetricsView.ts",
+    "../../../../../../../front_end/panels/timeline/components/MetricCompareStrings.ts",
     "../../../../../../../front_end/panels/timeline/components/NetworkRequestDetails.ts",
     "../../../../../../../front_end/panels/timeline/components/NetworkRequestTooltip.ts",
     "../../../../../../../front_end/panels/timeline/components/NetworkThrottlingSelector.ts",
