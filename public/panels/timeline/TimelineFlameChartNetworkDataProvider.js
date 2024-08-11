@@ -107,9 +107,9 @@ export class TimelineFlameChartNetworkDataProvider {
         if (!networkRequest || !TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(networkRequest)) {
             return;
         }
-        const request = new TimelineUtils.NetworkRequest.TimelineNetworkRequest(networkRequest);
+        const timelineNetworkRequest = TimelineUtils.NetworkRequest.createTimelineNetworkRequest(networkRequest);
         const contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
-        contextMenu.appendApplicableItems(request);
+        contextMenu.appendApplicableItems(timelineNetworkRequest);
         return contextMenu;
     }
     indexForEvent(event) {
@@ -391,6 +391,31 @@ export class TimelineFlameChartNetworkDataProvider {
     }
     canJumpToEntry(_entryIndex) {
         return false;
+    }
+    /**
+     * searches entries within the specified time and returns a list of entry
+     * indexes
+     */
+    search(startTime, endTime, filter) {
+        const results = [];
+        for (let i = 0; i < this.#events.length; i++) {
+            const entry = this.#events.at(i);
+            if (!entry) {
+                continue;
+            }
+            const entryStartTime = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(entry).startTime;
+            const entryEndTime = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(entry).endTime;
+            if (entryStartTime > endTime) {
+                continue;
+            }
+            if (entryEndTime < startTime) {
+                continue;
+            }
+            if (filter.accept(entry, this.#traceParseData ?? undefined)) {
+                results.push({ startTimeMilli: entryStartTime, index: i, provider: 'network' });
+            }
+        }
+        return results;
     }
     /**
      * Returns a map of navigations that happened in the main frame, ignoring any

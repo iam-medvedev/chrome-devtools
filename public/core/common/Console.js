@@ -22,8 +22,16 @@ export class Console extends ObjectWrapper {
     static removeInstance() {
         consoleInstance = undefined;
     }
-    addMessage(text, level, show, source) {
-        const message = new Message(text, level || "info" /* MessageLevel.Info */, Date.now(), show || false, source);
+    /**
+     * Add a message to the Console panel.
+     *
+     * @param text the message text.
+     * @param level the message level.
+     * @param show whether to show the Console panel (if it's not already shown).
+     * @param source the message source.
+     */
+    addMessage(text, level = "info" /* MessageLevel.Info */, show = false, source) {
+        const message = new Message(text, level, Date.now(), show, source);
         this.#messagesInternal.push(message);
         this.dispatchEventToListeners("messageAdded" /* Events.MessageAdded */, message);
     }
@@ -33,8 +41,14 @@ export class Console extends ObjectWrapper {
     warn(text, source) {
         this.addMessage(text, "warning" /* MessageLevel.Warning */, undefined, source);
     }
-    error(text) {
-        this.addMessage(text, "error" /* MessageLevel.Error */, true);
+    /**
+     * Adds an error message to the Console panel.
+     *
+     * @param text the message text.
+     * @param show whether to show the Console panel (if it's not already shown).
+     */
+    error(text, show = true) {
+        this.addMessage(text, "error" /* MessageLevel.Error */, show);
     }
     messages() {
         return this.#messagesInternal;

@@ -13,6 +13,7 @@ styles.replaceSync(
 
 .insight {
   display: block;
+  position: relative;
   width: auto;
   height: auto;
   margin: 10px 0;
@@ -26,16 +27,38 @@ styles.replaceSync(
     border: none;
   }
 
-  &.closed:hover {
-    background-color: var(--sys-color-state-disabled-container);
-  }
-
   header {
     padding: 10px;
 
     h3 {
       font: var(--sys-typescale-body4-medium);
     }
+  }
+}
+
+.insight-hover-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  width: var(--sys-size-9);
+  height: var(--sys-size-9);
+  box-shadow: var(--sys-elevation-level1);
+  border-radius: var(--sys-shape-corner-full);
+  background: var(--sys-color-cdt-base-container);
+  opacity: 0%;
+  transition: opacity 0.2s ease;
+
+  .insight:hover & {
+    opacity: 100%;
+  }
+
+  devtools-button {
+    transition: transform 0.2s ease;
+  }
+
+  &.active devtools-button {
+    transform: rotate(180deg);
   }
 }
 

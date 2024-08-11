@@ -1,3 +1,9 @@
+export function isTimeRangeAnnotation(annotation) {
+    return annotation.type === 'TIME_RANGE';
+}
+export function isEntryLabelAnnotation(annotation) {
+    return annotation.type === 'ENTRY_LABEL';
+}
 export function traceEventKeyToValues(key) {
     const parts = key.split('-');
     const type = parts[0];

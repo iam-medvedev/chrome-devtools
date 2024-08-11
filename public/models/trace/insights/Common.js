@@ -2,6 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Helpers from '../helpers/helpers.js';
+/**
+ * Finds a network request given a navigation context and URL.
+ * Considers redirects.
+ */
+export function findRequest(traceData, context, url) {
+    const request = traceData.NetworkRequests.byTime.find(req => {
+        const urlMatch = req.args.data.url === url || req.args.data.redirects.some(r => r.url === url);
+        if (!urlMatch) {
+            return false;
+        }
+        const nav = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, traceData.Meta.navigationsByFrameId);
+        return nav?.args.data?.navigationId === context.navigationId;
+    });
+    return request ?? null;
+}
 export function findLCPRequest(traceData, context, lcpEvent) {
     const lcpNodeId = lcpEvent.args.data?.nodeId;
     if (!lcpNodeId) {
@@ -15,11 +30,7 @@ export function findLCPRequest(traceData, context, lcpEvent) {
     if (!lcpUrl) {
         throw new Error('no lcp url');
     }
-    // Look for the LCP request.
-    const lcpRequest = traceData.NetworkRequests.byTime.find(req => {
-        const nav = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, traceData.Meta.navigationsByFrameId);
-        return (nav?.args.data?.navigationId === context.navigationId) && (req.args.data.url === lcpUrl);
-    });
+    const lcpRequest = findRequest(traceData, context, lcpUrl);
     if (!lcpRequest) {
         throw new Error('no lcp request found');
     }

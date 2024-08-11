@@ -350,6 +350,8 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                             return LitHtml.html `${elapsedTimeInMs.toFixed(3)}`;
                         },
                     },
+                    { columnId: "match_attempts" /* SelectorTimingsKey.MatchAttempts */, value: x["match_attempts" /* SelectorTimingsKey.MatchAttempts */] },
+                    { columnId: "match_count" /* SelectorTimingsKey.MatchCount */, value: x["match_count" /* SelectorTimingsKey.MatchCount */] },
                     {
                         columnId: "reject_percentage" /* SelectorTimingsKey.RejectPercentage */,
                         value: rejectPercentage,
@@ -357,8 +359,6 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
                             return LitHtml.html `${rejectPercentage.toFixed(1)}`;
                         },
                     },
-                    { columnId: "match_attempts" /* SelectorTimingsKey.MatchAttempts */, value: x["match_attempts" /* SelectorTimingsKey.MatchAttempts */] },
-                    { columnId: "match_count" /* SelectorTimingsKey.MatchCount */, value: x["match_count" /* SelectorTimingsKey.MatchCount */] },
                     {
                         columnId: "selector" /* SelectorTimingsKey.Selector */,
                         title: x["selector" /* SelectorTimingsKey.Selector */],

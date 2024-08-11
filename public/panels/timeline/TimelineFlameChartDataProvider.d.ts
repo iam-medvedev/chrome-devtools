@@ -65,7 +65,7 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     minimumBoundary(): number;
     totalTime(): number;
     static timelineEntryIsTraceEvent(entry: TimelineFlameChartEntry): entry is TraceEngine.Types.TraceEvents.TraceEventData;
-    search(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): number[];
+    search(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     isIgnoreListedEvent(event: TraceEngine.Types.TraceEvents.TraceEventData): boolean;
     private isIgnoreListedURL;
     getEntryTypeForLevel(level: number): EntryType;

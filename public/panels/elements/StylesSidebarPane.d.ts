@@ -165,7 +165,7 @@ export declare class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
     private treeElement;
     private isEditingName;
     private readonly cssVariables;
-    constructor(treeElement: StylePropertyTreeElement, isEditingName: boolean);
+    constructor(treeElement: StylePropertyTreeElement, isEditingName: boolean, completions?: string[]);
     onKeyDown(event: Event): void;
     onMouseWheel(event: Event): void;
     tabKeyPressed(): boolean;

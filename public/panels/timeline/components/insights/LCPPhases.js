@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
-import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
-import sidebarInsightStyles from './sidebarInsight.css.js';
+import { BaseInsight, shouldRenderForCategory } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
 import { InsightsCategories } from './types.js';
-export const InsightName = 'lcp-phases';
 const UIStrings = {
     /**
      *@description Time to first byte title for the Largest Contentful Paint's phases timespan breakdown.
@@ -29,31 +27,11 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/LCPPhases.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class LCPPhases extends HTMLElement {
+export class LCPPhases extends BaseInsight {
     static litTagName = LitHtml.literal `devtools-performance-lcp-by-phases`;
-    #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
-    #insightTitle = 'LCP by Phase';
-    #insights = null;
-    #navigationId = null;
-    #activeInsight = null;
-    #activeCategory = InsightsCategories.ALL;
-    set insights(insights) {
-        this.#insights = insights;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    set navigationId(navigationId) {
-        this.#navigationId = navigationId;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    set activeInsight(activeInsight) {
-        this.#activeInsight = activeInsight;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
-    set activeCategory(activeCategory) {
-        this.#activeCategory = activeCategory;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-    }
+    insightCategory = InsightsCategories.LCP;
+    internalName = 'lcp-by-phase';
+    userVisibleTitle = 'LCP by phase';
     #getPhaseData(insights, navigationId) {
         if (!insights || !navigationId) {
             return [];
@@ -88,11 +66,12 @@ export class LCPPhases extends HTMLElement {
         ];
         return phaseData;
     }
-    #createLCPPhasesOverlay() {
-        if (!this.#insights || !this.#navigationId) {
+    createOverlays() {
+        if (!this.data.insights || !this.data.navigationId) {
             return [];
         }
-        const insightsByNavigation = this.#insights.get(this.#navigationId);
+        const { navigationId, insights } = this.data;
+        const insightsByNavigation = insights.get(navigationId);
         if (!insightsByNavigation) {
             return [];
         }
@@ -131,27 +110,15 @@ export class LCPPhases extends HTMLElement {
                 sections,
             }];
     }
-    #sidebarClicked() {
-        // deactivate current insight if already selected.
-        if (this.#isActive()) {
-            this.dispatchEvent(new SidebarInsight.InsightDeactivated());
-            return;
-        }
-        if (!this.#navigationId) {
-            // Shouldn't happen, but needed to satisfy TS.
-            return;
-        }
-        this.dispatchEvent(new SidebarInsight.InsightActivated(InsightName, this.#navigationId, this.#createLCPPhasesOverlay.bind(this)));
-    }
     #renderLCPPhases(phaseData) {
         // clang-format off
         return LitHtml.html `
     <div class="insights">
       <${SidebarInsight.SidebarInsight.litTagName} .data=${{
-            title: this.#insightTitle,
-            expanded: this.#isActive(),
+            title: this.userVisibleTitle,
+            expanded: this.isActive(),
         }}
-        @insighttoggleclick=${this.#sidebarClicked}
+        @insighttoggleclick=${this.onSidebarClick}
       >
         <div slot="insight-description" class="insight-description">
           Each
@@ -172,28 +139,18 @@ export class LCPPhases extends HTMLElement {
     </div>`;
         // clang-format on
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [sidebarInsightStyles];
-    }
-    #shouldRenderForCateogory() {
-        if (this.#activeCategory === InsightsCategories.ALL) {
-            return true;
-        }
-        return this.#activeCategory === InsightsCategories.LCP;
-    }
-    #isActive() {
-        const isActive = this.#activeInsight && this.#activeInsight.name === InsightName &&
-            this.#activeInsight.navigationId === this.#navigationId;
-        return Boolean(isActive);
-    }
     #hasDataToRender(phaseData) {
         return phaseData ? phaseData.length > 0 : false;
     }
-    #render() {
-        const phaseData = this.#getPhaseData(this.#insights, this.#navigationId);
-        const shouldRender = this.#shouldRenderForCateogory() && this.#hasDataToRender(phaseData);
+    render() {
+        const phaseData = this.#getPhaseData(this.data.insights, this.data.navigationId);
+        const matchesCategory = shouldRenderForCategory({
+            activeCategory: this.data.activeCategory,
+            insightCategory: this.insightCategory,
+        });
+        const shouldRender = matchesCategory && this.#hasDataToRender(phaseData);
         const output = shouldRender ? this.#renderLCPPhases(phaseData) : LitHtml.nothing;
-        LitHtml.render(output, this.#shadow, { host: this });
+        LitHtml.render(output, this.shadow, { host: this });
     }
 }
 customElements.define('devtools-performance-lcp-by-phases', LCPPhases);

@@ -1655,9 +1655,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             SDK.NetworkManager.MultitargetNetworkManager.instance().clearBrowserCookies();
         }
     }
-    removeAllHighlights() {
-        this.removeAllNodeHighlights();
-    }
     applyFilter(request) {
         if (this.timeFilter && !this.timeFilter(request)) {
             return false;
@@ -1819,7 +1816,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         return NetworkLogView.requestSizeLargerThanFilter.bind(null, quantity * multiplier);
     }
     filterRequests() {
-        this.removeAllHighlights();
+        this.removeAllNodeHighlights();
         this.invalidateAllItems();
     }
     reveal(request) {

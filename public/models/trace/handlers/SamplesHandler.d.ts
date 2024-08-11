@@ -2,7 +2,7 @@ import * as CPUProfile from '../../cpu_profile/cpu_profile.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 declare const profilesInProcess: Map<Types.TraceEvents.ProcessID, Map<Types.TraceEvents.ThreadID, ProfileData>>;
-declare const entryToNode: Map<Types.TraceEvents.SyntheticTraceEntry, Helpers.TreeHelpers.TraceEntryNode>;
+declare const entryToNode: Map<Types.TraceEvents.TraceEventData, Helpers.TreeHelpers.TraceEntryNode>;
 export declare function reset(): void;
 export declare function initialize(): void;
 export declare function handleEvent(event: Types.TraceEvents.TraceEventData): void;

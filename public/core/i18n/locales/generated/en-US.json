@@ -107,6 +107,9 @@
   "core/common/Revealer.ts | stylesSidebar": {
     "message": "styles sidebar"
   },
+  "core/common/Revealer.ts | timelinePanel": {
+    "message": "Performance panel"
+  },
   "core/common/SettingRegistration.ts | adorner": {
     "message": "Adorner"
   },
@@ -1168,9 +1171,6 @@
   },
   "generated/Deprecation.ts | CSSSelectorInternalMediaControlsOverlayCastButton": {
     "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
-  },
-  "generated/Deprecation.ts | CSSValueAppearanceNonStandard": {
-    "message": "CSS appearance values  inner-spin-button, media-slider, media-sliderthumb, media-volume-slider, media-volume-sliderthumb, push-button, searchfield-cancel-button, slider-horizontal, sliderthumb-horizontal, sliderthumb-vertical, square-button are not standardized and will be removed."
   },
   "generated/Deprecation.ts | CSSValueAppearanceSliderVertical": {
     "message": "CSS appearance value slider-vertical is not standardized and will be removed."
@@ -10883,11 +10883,41 @@
   "panels/settings/AISettingsTab.ts | chromeAi": {
     "message": "Chrome AI"
   },
+  "panels/settings/AISettingsTab.ts | collapse": {
+    "message": "collapse"
+  },
   "panels/settings/AISettingsTab.ts | collectData": {
     "message": "Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information."
   },
+  "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
+    "message": "The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
+  },
+  "panels/settings/AISettingsTab.ts | expand": {
+    "message": "expand"
+  },
   "panels/settings/AISettingsTab.ts | experimentalFeatures": {
     "message": "These features are experimental and may change"
+  },
+  "panels/settings/AISettingsTab.ts | explainConsole": {
+    "message": "Get explanations for console warnings and errors"
+  },
+  "panels/settings/AISettingsTab.ts | explainStyling": {
+    "message": "Get explanations and additional context for styling behaviors"
+  },
+  "panels/settings/AISettingsTab.ts | freestylerSendsData": {
+    "message": "Any DOM or CSS content on the inspected page may be sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
+  },
+  "panels/settings/AISettingsTab.ts | generatedSnippets": {
+    "message": "Use generated code snippets with caution"
+  },
+  "panels/settings/AISettingsTab.ts | helpUnderstandConsole": {
+    "message": "Helps you understand and fix console warnings and errors"
+  },
+  "panels/settings/AISettingsTab.ts | helpUnderstandStyling": {
+    "message": "Helps you understand and fix styling issues"
+  },
+  "panels/settings/AISettingsTab.ts | learnMore": {
+    "message": "Learn more"
   },
   "panels/settings/AISettingsTab.ts | managedAccount": {
     "message": "Google may refrain from data collection depending on your Google account management and/or region"
@@ -10895,14 +10925,35 @@
   "panels/settings/AISettingsTab.ts | maybeInaccurate": {
     "message": "These features use generative AI and may provide inaccurate or offensive information that do not represent Google’s views"
   },
+  "panels/settings/AISettingsTab.ts | oneOrMoreSettingsHaveChanged": {
+    "message": "One or more settings have changed which requires a reload to take effect."
+  },
+  "panels/settings/AISettingsTab.ts | privacyNotice": {
+    "message": "Privacy Notice"
+  },
+  "panels/settings/AISettingsTab.ts | receiveStylingSuggestions": {
+    "message": "Receive suggestions and code samples for fixing styling issues"
+  },
+  "panels/settings/AISettingsTab.ts | receiveSuggestions": {
+    "message": "Receive suggestions and code samples to address these issues"
+  },
   "panels/settings/AISettingsTab.ts | retainData": {
     "message": "Usage data will be stored in a way where Google cannot tell who provided it and can no longer fulfill any deletion requests and will be retained for up to 18 months"
   },
   "panels/settings/AISettingsTab.ts | sendsDataToGoogle": {
     "message": "Using these features sends data relevant for the feature to Google. Please find more feature-specific information below."
   },
+  "panels/settings/AISettingsTab.ts | termsOfService": {
+    "message": "Google Terms of Service"
+  },
+  "panels/settings/AISettingsTab.ts | termsOfServicePrivacyNotice": {
+    "message": "Use of this feature is subject to the {PH1} and {PH2}"
+  },
   "panels/settings/AISettingsTab.ts | thingsToConsider": {
     "message": "Things to consider"
+  },
+  "panels/settings/AISettingsTab.ts | whenOn": {
+    "message": "When on"
   },
   "panels/settings/components/SyncSection.ts | preferencesSyncDisabled": {
     "message": "To turn this setting on, you must first enable settings sync in Chrome."
@@ -12239,6 +12290,12 @@
   "panels/timeline/AppenderUtils.ts | sSelfS": {
     "message": "{PH1} (self {PH2})"
   },
+  "panels/timeline/components/CPUThrottlingSelector.ts | cpu": {
+    "message": "CPU: {PH1}"
+  },
+  "panels/timeline/components/CPUThrottlingSelector.ts | cpuThrottling": {
+    "message": "CPU throttling: {PH1}"
+  },
   "panels/timeline/components/CPUThrottlingSelector.ts | dSlowdown": {
     "message": "{PH1}× slowdown"
   },
@@ -12291,7 +12348,7 @@
     "message": "The Chrome UX Report does not have sufficient real-world speed data for this page."
   },
   "panels/timeline/components/FieldSettingsDialog.ts | fetchAggregated": {
-    "message": "Fetch aggregated field data from the Chrome UX Report to help you contextualize local measurements with what real users experience on the site."
+    "message": "Fetch aggregated field data from the {PH1} to help you contextualize local measurements with what real users experience on the site."
   },
   "panels/timeline/components/FieldSettingsDialog.ts | ok": {
     "message": "Ok"
@@ -12308,8 +12365,8 @@
   "panels/timeline/components/FieldSettingsDialog.ts | setUp": {
     "message": "Set up"
   },
-  "panels/timeline/components/FieldSettingsDialog.ts | urlOverride": {
-    "message": "URL Override"
+  "panels/timeline/components/FieldSettingsDialog.ts | url": {
+    "message": "URL"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "When DevTools is open, the URLs you visit will be sent to Google to query field data. These requests are not tied to your Google account."
@@ -12350,20 +12407,26 @@
   "panels/timeline/components/LiveMetricsView.ts | clsTitle": {
     "message": "Cumulative Layout Shift (CLS)"
   },
-  "panels/timeline/components/LiveMetricsView.ts | cpuThrottling": {
-    "message": "CPU throttling:"
+  "panels/timeline/components/LiveMetricsView.ts | collectionPeriod": {
+    "message": "Collection period:"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | dateRange": {
+    "message": "{PH1} - {PH2}"
   },
   "panels/timeline/components/LiveMetricsView.ts | desktop": {
     "message": "Desktop"
   },
-  "panels/timeline/components/LiveMetricsView.ts | deviceType": {
-    "message": "Device type:"
+  "panels/timeline/components/LiveMetricsView.ts | device": {
+    "message": "Device: {PH1}"
   },
   "panels/timeline/components/LiveMetricsView.ts | field75thPercentile": {
     "message": "Field 75th Percentile"
   },
   "panels/timeline/components/LiveMetricsView.ts | fieldData": {
     "message": "Field data"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | fieldDataLink": {
+    "message": "field data"
   },
   "panels/timeline/components/LiveMetricsView.ts | good": {
     "message": "Good"
@@ -12376,6 +12439,9 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | interactions": {
     "message": "Interactions"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | interactToMeasure": {
+    "message": "Interact with the page to measure INP."
   },
   "panels/timeline/components/LiveMetricsView.ts | lcpElement": {
     "message": "LCP Element"
@@ -12390,7 +12456,13 @@
     "message": "{PH1} - Loading…"
   },
   "panels/timeline/components/LiveMetricsView.ts | localAndFieldMetrics": {
-    "message": "Local and Field Metrics"
+    "message": "Local and field metrics"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | localMetrics": {
+    "message": "Local metrics"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | localMetricsLink": {
+    "message": "local metrics"
   },
   "panels/timeline/components/LiveMetricsView.ts | localValue": {
     "message": "Local"
@@ -12398,14 +12470,17 @@
   "panels/timeline/components/LiveMetricsView.ts | mobile": {
     "message": "Mobile"
   },
+  "panels/timeline/components/LiveMetricsView.ts | mostUsersDesktop": {
+    "message": "A majority of users are on desktop. Try emulating a desktop window size that matches real users."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | mostUsersMobile": {
+    "message": "A majority of users are on mobile. Try emulating a mobile device that matches real users."
+  },
   "panels/timeline/components/LiveMetricsView.ts | needsDataOption": {
     "message": "{PH1} - No data"
   },
   "panels/timeline/components/LiveMetricsView.ts | needsImprovement": {
     "message": "Needs improvement"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | networkThrottling": {
-    "message": "Network throttling:"
   },
   "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
     "message": "Next steps"
@@ -12414,7 +12489,7 @@
     "message": "Origin"
   },
   "panels/timeline/components/LiveMetricsView.ts | originOptionWithKey": {
-    "message": "Origin ({PH1})"
+    "message": "Origin: {PH1}"
   },
   "panels/timeline/components/LiveMetricsView.ts | percentage": {
     "message": "{PH1}%"
@@ -12422,11 +12497,26 @@
   "panels/timeline/components/LiveMetricsView.ts | poor": {
     "message": "Poor"
   },
+  "panels/timeline/components/LiveMetricsView.ts | recordingSettings": {
+    "message": "Recording settings"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | seeHowYourLocalMetricsCompare": {
+    "message": "See how your local metrics compare to real user data in the {PH1}."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | showFieldDataForDevice": {
+    "message": "Show field data for device type: {PH1}"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | showFieldDataForPage": {
+    "message": "Show field data for {PH1}"
+  },
   "panels/timeline/components/LiveMetricsView.ts | tablet": {
     "message": "Tablet"
   },
-  "panels/timeline/components/LiveMetricsView.ts | throttling": {
-    "message": "Throttling"
+  "panels/timeline/components/LiveMetricsView.ts | theFieldMetricsAre": {
+    "message": "The {PH1} is measured by real users using many different network connections and devices."
+  },
+  "panels/timeline/components/LiveMetricsView.ts | theLocalMetricsAre": {
+    "message": "The {PH1} are captured from the current page using your network connection and device."
   },
   "panels/timeline/components/LiveMetricsView.ts | tryDisablingThrottling": {
     "message": "Try disabling network throttling to approximate the network latency measured by real users."
@@ -12438,10 +12528,73 @@
     "message": "URL"
   },
   "panels/timeline/components/LiveMetricsView.ts | urlOptionWithKey": {
-    "message": "URL ({PH1})"
+    "message": "URL: {PH1}"
   },
-  "panels/timeline/components/LiveMetricsView.ts | urlOrOrigin": {
-    "message": "URL/Origin:"
+  "panels/timeline/components/LiveMetricsView.ts | viewCardDetails": {
+    "message": "View card details"
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | goodBetterCompare": {
+    "message": "Your local {PH1} {PH2} is good, and is significantly better than your users’ experience."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | goodGoodDetailedCompare": {
+    "message": "Your local {PH1} {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} {PH3} is good."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | goodNeedsImprovementDetailedCompare": {
+    "message": "Your local {PH1} {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} needs improvement."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | goodPoorDetailedCompare": {
+    "message": "Your local {PH1} {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is poor."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | goodSimilarCompare": {
+    "message": "Your local {PH1} {PH2} is good, and is similar to your users’ experience."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | goodSummarized": {
+    "message": "Your local {PH1} {PH2} is good."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | goodWorseCompare": {
+    "message": "Your local {PH1} {PH2} is good, and is significantly worse than your users’ experience."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | needsImprovementBetterCompare": {
+    "message": "Your local {PH1} {PH2} needs improvement, and is significantly better than your users’ experience."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | needsImprovementGoodDetailedCompare": {
+    "message": "Your local {PH1} {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is good."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | needsImprovementNeedsImprovementDetailedCompare": {
+    "message": "Your local {PH1} {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} {PH3} needs improvement."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | needsImprovementPoorDetailedCompare": {
+    "message": "Your local {PH1} {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is poor."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | needsImprovementSimilarCompare": {
+    "message": "Your local {PH1} {PH2} needs improvement, and is similar to your users’ experience."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | needsImprovementSummarized": {
+    "message": "Your local {PH1} {PH2} needs improvement."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | needsImprovementWorseCompare": {
+    "message": "Your local {PH1} {PH2} needs improvement, and is significantly worse than your users’ experience."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | poorBetterCompare": {
+    "message": "Your local {PH1} {PH2} is poor, and is significantly better than your users’ experience."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | poorGoodDetailedCompare": {
+    "message": "Your local {PH1} {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is good."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | poorNeedsImprovementDetailedCompare": {
+    "message": "Your local {PH1} {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} needs improvement."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | poorPoorDetailedCompare": {
+    "message": "Your local {PH1} {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} {PH3} is poor."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | poorSimilarCompare": {
+    "message": "Your local {PH1} {PH2} is poor, and is similar to your users’ experience."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | poorSummarized": {
+    "message": "Your local {PH1} {PH2} is poor."
+  },
+  "panels/timeline/components/MetricCompareStrings.ts | poorWorseCompare": {
+    "message": "Your local {PH1} {PH2} is poor, and is significantly worse than your users’ experience."
   },
   "panels/timeline/components/NetworkRequestDetails.ts | contentDownloading": {
     "message": "Content downloading"
@@ -12533,6 +12686,12 @@
   "panels/timeline/components/NetworkThrottlingSelector.ts | disabled": {
     "message": "Disabled"
   },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | network": {
+    "message": "Network: {PH1}"
+  },
+  "panels/timeline/components/NetworkThrottlingSelector.ts | networkThrottling": {
+    "message": "Network throttling: {PH1}"
+  },
   "panels/timeline/components/NetworkThrottlingSelector.ts | presets": {
     "message": "Presets"
   },
@@ -12550,6 +12709,9 @@
   },
   "panels/timeline/CountersGraph.ts | nodes": {
     "message": "Nodes"
+  },
+  "panels/timeline/CountersGraph.ts | noEventsFound": {
+    "message": "No memory usage data found within selected events."
   },
   "panels/timeline/CountersGraph.ts | ss": {
     "message": "[{PH1} – {PH2}]"
@@ -13524,7 +13686,7 @@
     "message": "ID"
   },
   "panels/timeline/TimelineUIUtils.ts | invalidations": {
-    "message": "Invalidations"
+    "message": "Invalidations ({PH1} total)"
   },
   "panels/timeline/TimelineUIUtils.ts | invalidationWithCallFrame": {
     "message": "{PH1} at {PH2}"

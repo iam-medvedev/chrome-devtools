@@ -14,6 +14,9 @@ export const LAYOUT_SHIFT_SYNTHETIC_DURATION = TraceEngine.Types.Timing.MicroSec
  * Below the network track there is a resize bar the user can click and drag.
  */
 const NETWORK_RESIZE_ELEM_HEIGHT_PX = 8;
+export function isTimeRangeLabel(annotation) {
+    return annotation.type === 'TIME_RANGE';
+}
 export function overlayIsSingleton(overlay) {
     return overlay.type === 'CURSOR_TIMESTAMP_MARKER' || overlay.type === 'ENTRY_SELECTED';
 }
@@ -75,13 +78,12 @@ export class Overlays extends EventTarget {
      * helper exists to return a consistent set of timings regardless of the type
      * of entry.
      */
-    #timingsForOverlayEntry(entry) {
+    timingsForOverlayEntry(entry) {
         if (entry instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame) {
             return {
                 startTime: entry.startTime,
                 endTime: entry.endTime,
                 duration: entry.duration,
-                selfTime: TraceEngine.Types.Timing.MicroSeconds(0),
             };
         }
         if (TraceEngine.Types.TraceEvents.isSyntheticLayoutShift(entry)) {
@@ -90,7 +92,6 @@ export class Overlays extends EventTarget {
                 endTime,
                 duration: LAYOUT_SHIFT_SYNTHETIC_DURATION,
                 startTime: entry.ts,
-                selfTime: TraceEngine.Types.Timing.MicroSeconds(0),
             };
         }
         return TraceEngine.Helpers.Timing.eventTimingsMicroSeconds(entry);
@@ -357,6 +358,10 @@ export class Overlays extends EventTarget {
                 }
                 break;
             }
+            case 'ENTRIES_LINK': {
+                this.#positionEntriesLinkOverlay(overlay, element);
+                break;
+            }
             case 'TIMESPAN_BREAKDOWN': {
                 this.#positionTimespanBreakdownOverlay(overlay, element);
                 const component = element.querySelector('devtools-timespan-breakdown-overlay');
@@ -436,6 +441,13 @@ export class Overlays extends EventTarget {
             }
         }
     }
+    #positionEntriesLinkOverlay(overlay, element) {
+        const fromEntryX = this.xPixelForEventOnChart(overlay.entryFrom);
+        const romEntryY = this.yPixelForEventOnChart(overlay.entryFrom);
+        // TODO: Position the entries link correctly
+        element.style.top = `${fromEntryX}px`;
+        element.style.left = `${romEntryY}px`;
+    }
     #positionTimeRangeOverlay(overlay, element) {
         // Time ranges span both charts, it doesn't matter which one we pass here.
         // It's used to get the width of the container, and both charts have the
@@ -458,7 +470,7 @@ export class Overlays extends EventTarget {
         const chartName = this.#chartForOverlayEntry(overlay.entry);
         const x = this.xPixelForEventOnChart(overlay.entry);
         const y = this.yPixelForEventOnChart(overlay.entry);
-        const { endTime } = this.#timingsForOverlayEntry(overlay.entry);
+        const { endTime } = this.timingsForOverlayEntry(overlay.entry);
         const endX = this.#xPixelForMicroSeconds(chartName, endTime);
         const entryHeight = this.pixelHeightForEventOnChart(overlay.entry) ?? 0;
         if (x === null || y === null || endX === null) {
@@ -566,7 +578,7 @@ export class Overlays extends EventTarget {
         if (x === null || y === null) {
             return;
         }
-        const { endTime, duration } = this.#timingsForOverlayEntry(overlay.entry);
+        const { endTime, duration } = this.timingsForOverlayEntry(overlay.entry);
         const endX = this.#xPixelForMicroSeconds(chartName, endTime);
         if (endX === null) {
             return;
@@ -660,6 +672,11 @@ export class Overlays extends EventTarget {
                 div.appendChild(component);
                 return div;
             }
+            case 'ENTRIES_LINK': {
+                const component = new Components.EntriesLinkOverlay.EntriesLinkOverlay();
+                div.appendChild(component);
+                return div;
+            }
             case 'ENTRY_OUTLINE': {
                 div.classList.add(`outline-reason-${overlay.outlineReason}`);
                 return div;
@@ -668,6 +685,14 @@ export class Overlays extends EventTarget {
                 const component = new Components.TimeRangeOverlay.TimeRangeOverlay(overlay.label);
                 component.duration = overlay.showDuration ? overlay.bounds.range : null;
                 component.canvasRect = this.#charts.mainChart.canvasBoundingClientRect();
+                component.addEventListener(Components.TimeRangeOverlay.TimeRangeLabelChangeEvent.eventName, event => {
+                    const newLabel = event.newLabel;
+                    overlay.label = newLabel;
+                    this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Update'));
+                });
+                component.addEventListener(Components.TimeRangeOverlay.TimeRangeRemoveEvent.eventName, () => {
+                    this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Remove'));
+                });
                 div.appendChild(component);
                 return div;
             }
@@ -701,6 +726,8 @@ export class Overlays extends EventTarget {
                 break;
             }
             case 'ENTRY_OUTLINE':
+                break;
+            case 'ENTRIES_LINK':
                 break;
             case 'ENTRY_LABEL': {
                 // TODO: update if the label changes
@@ -742,7 +769,7 @@ export class Overlays extends EventTarget {
         if (this.#dimensions.trace.visibleWindow === null) {
             return false;
         }
-        const { startTime, endTime } = this.#timingsForOverlayEntry(entry);
+        const { startTime, endTime } = this.timingsForOverlayEntry(entry);
         const entryTimeRange = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(startTime, endTime);
         return TraceEngine.Helpers.Timing.boundsIncludeTimeRange({
             bounds: this.#dimensions.trace.visibleWindow,
@@ -816,7 +843,7 @@ export class Overlays extends EventTarget {
      */
     xPixelForEventOnChart(event) {
         const chartName = this.#chartForOverlayEntry(event);
-        const { startTime } = this.#timingsForOverlayEntry(event);
+        const { startTime } = this.timingsForOverlayEntry(event);
         return this.#xPixelForMicroSeconds(chartName, startTime);
     }
     /**

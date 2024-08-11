@@ -14,6 +14,11 @@ export type EventAttributes = {
     mouseButton?: number;
     doubleClick?: boolean;
 };
+type TestLogEntry = {
+    impressions: string[];
+} | {
+    interaction: string;
+};
 export declare function processImpressionsForDebugging(states: LoggingState[]): void;
 export declare function debugString(config: LoggingConfig): string;
 export declare enum DebugLoggingFormat {
@@ -23,4 +28,5 @@ export declare enum DebugLoggingFormat {
 }
 export declare function setVeDebugLoggingEnabled(enabled: boolean, format?: DebugLoggingFormat): void;
 export declare function processStartLoggingForDebugging(): void;
+export declare function expectVeEvents(expectedEvents: TestLogEntry[]): Promise<void>;
 export {};

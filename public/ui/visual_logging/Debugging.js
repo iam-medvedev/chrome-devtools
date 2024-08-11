@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import { VisualElements } from './LoggingConfig.js';
 import { pendingWorkComplete } from './LoggingDriver.js';
@@ -101,6 +102,7 @@ export function processEventForIntuitiveDebugging(event, state, extraInfo) {
 export function processEventForTestDebugging(event, state, _extraInfo) {
     lastImpressionLogEntry = null;
     maybeLogDebugEvent({ interaction: `${event}: ${veTestKeys.get(state?.veid || 0) || ''}` });
+    checkPendingEventExpectation();
 }
 export function processEventForAdHocAnalysisDebugging(event, state, extraInfo) {
     const ve = state ? adHocAnalysisEntries.get(state.veid) : null;
@@ -183,6 +185,7 @@ function processImpressionsForTestDebugLog(states) {
         veTestKeys.set(state.veid, key);
         lastImpressionLogEntry.impressions.push(key);
     }
+    checkPendingEventExpectation();
 }
 const adHocAnalysisEntries = new Map();
 function processImpressionsForAdHocAnalysisDebugLog(states) {
@@ -466,6 +469,81 @@ async function getVeDebugEventsLog() {
     lastImpressionLogEntry = null;
     return veDebugEventsLog;
 }
+// Compares the 'actual' log entry against the 'expected'.
+// For impressions events to match, all expected impressions need to be present
+// in the actual event. Unexected impressions in the actual event are ignored.
+// Interaction events need to match exactly.
+function compareVeEvents(actual, expected) {
+    if ('interaction' in expected && 'interaction' in actual) {
+        return expected.interaction === actual.interaction;
+    }
+    if ('impressions' in expected && 'impressions' in actual) {
+        const actualSet = new Set(actual.impressions);
+        const expectedSet = new Set(expected.impressions);
+        const missing = [...expectedSet].filter(k => !actualSet.has(k));
+        return !Boolean(missing.length);
+    }
+    return false;
+}
+let pendingEventExpectation = null;
+function formatImpressions(impressions) {
+    const result = [];
+    let lastImpression = '';
+    for (const impression of impressions.sort()) {
+        if (impression === lastImpression) {
+            continue;
+        }
+        while (!impression.startsWith(lastImpression)) {
+            lastImpression = lastImpression.substr(0, lastImpression.lastIndexOf(' > '));
+        }
+        result.push(' '.repeat(lastImpression.length) + impression.substr(lastImpression.length));
+        lastImpression = impression;
+    }
+    return result.join('\n');
+}
+const EVENT_EXPECTATION_TIMEOUT = 5000;
+// Verifies that VE events contains all the expected events in given order.
+// Unexpected VE events are ignored.
+export async function expectVeEvents(expectedEvents) {
+    if (pendingEventExpectation) {
+        throw new Error('VE events expectation already set. Cannot set another one until the previous is resolved');
+    }
+    const { promise, resolve: success, reject: fail } = Platform.PromiseUtilities.promiseWithResolvers();
+    pendingEventExpectation = { expectedEvents, success, fail };
+    checkPendingEventExpectation();
+    setTimeout(() => {
+        if (pendingEventExpectation?.missingEvents) {
+            pendingEventExpectation.fail(new Error('Missing VE Events: ' +
+                pendingEventExpectation.missingEvents
+                    .map(e => 'interaction' in e ? e.interaction : formatImpressions(e.impressions))
+                    .join('\n')));
+        }
+    }, EVENT_EXPECTATION_TIMEOUT);
+    return promise;
+}
+function checkPendingEventExpectation() {
+    if (!pendingEventExpectation) {
+        return;
+    }
+    const actualEvents = [...veDebugEventsLog];
+    for (let i = 0; i < pendingEventExpectation.expectedEvents.length; ++i) {
+        const expectedEvent = pendingEventExpectation.expectedEvents[i];
+        while (true) {
+            if (actualEvents.length <= i) {
+                pendingEventExpectation.missingEvents = pendingEventExpectation.expectedEvents.slice(i);
+                return;
+            }
+            if (!compareVeEvents(actualEvents[i], expectedEvent)) {
+                actualEvents.splice(i, 1);
+            }
+            else {
+                break;
+            }
+        }
+    }
+    pendingEventExpectation.success();
+    pendingEventExpectation = null;
+}
 // @ts-ignore
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
 // @ts-ignore
@@ -478,4 +556,6 @@ globalThis.exportAdHocAnalysisLogForSql = exportAdHocAnalysisLogForSql;
 globalThis.buildStateFlow = buildStateFlow;
 // @ts-ignore
 globalThis.getVeDebugEventsLog = getVeDebugEventsLog;
+// @ts-ignore
+globalThis.expectVeEvents = expectVeEvents;
 //# sourceMappingURL=Debugging.js.map

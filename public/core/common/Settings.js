@@ -54,7 +54,7 @@ export class Settings {
         this.#eventSupport = new ObjectWrapper();
         this.#registry = new Map();
         this.moduleSettings = new Map();
-        this.#config = config;
+        this.#config = config || {};
         for (const registration of this.getRegisteredSettings()) {
             const { settingName, defaultValue, storageType } = registration;
             const isRegex = registration.settingType === "regex" /* SettingType.REGEX */;

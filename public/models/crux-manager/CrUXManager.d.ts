@@ -1,5 +1,6 @@
 import * as Common from '../../core/common/common.js';
-export type MetricNames = 'cumulative_layout_shift' | 'first_contentful_paint' | 'first_input_delay' | 'interaction_to_next_paint' | 'largest_contentful_paint' | 'experimental_time_to_first_byte' | 'round_trip_time';
+export type StandardMetricNames = 'cumulative_layout_shift' | 'first_contentful_paint' | 'first_input_delay' | 'interaction_to_next_paint' | 'largest_contentful_paint' | 'experimental_time_to_first_byte' | 'round_trip_time';
+export type MetricNames = StandardMetricNames | 'form_factors';
 export type FormFactor = 'DESKTOP' | 'PHONE' | 'TABLET';
 export type DeviceScope = FormFactor | 'ALL';
 export type PageScope = 'url' | 'origin';
@@ -21,15 +22,24 @@ export interface MetricResponse {
         p75: number | string;
     };
 }
+export interface FormFactorsResponse {
+    fractions?: {
+        desktop: number;
+        phone: number;
+        tablet: number;
+    };
+}
 interface CollectionDate {
     year: number;
     month: number;
     day: number;
 }
-interface Record {
+interface CrUXRecord {
     key: Omit<CrUXRequest, 'metrics'>;
     metrics: {
-        [K in MetricNames]?: MetricResponse;
+        [K in StandardMetricNames]?: MetricResponse;
+    } & {
+        form_factors?: FormFactorsResponse;
     };
     collectionPeriod: {
         firstDate: CollectionDate;
@@ -37,7 +47,7 @@ interface Record {
     };
 }
 export interface CrUXResponse {
-    record: Record;
+    record: CrUXRecord;
     urlNormalizationDetails?: {
         originalUrl: string;
         normalizedUrl: string;

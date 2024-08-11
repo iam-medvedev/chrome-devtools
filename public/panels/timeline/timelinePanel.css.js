@@ -93,6 +93,12 @@ styles.replaceSync(
   pointer-events: auto;
 }
 
+.timeline-landing-page.legacy > div > p {
+  flex: none;
+  white-space: pre-line;
+  line-height: 18px;
+}
+
 .popover ul {
   margin: 0;
   padding: 0;
@@ -103,6 +109,17 @@ styles.replaceSync(
   overflow: hidden;
   flex: auto;
   position: relative;
+
+  .no-events-found {
+    position: absolute;
+    font: var(--sys-typescale-body4-regular);
+    left: var(--sys-size-5);
+    bottom: var(--sys-size-5);
+
+    p {
+      margin: 0;
+    }
+  }
 }
 
 #memory-counters-graph {
@@ -568,12 +585,6 @@ styles.replaceSync(
 
 .timeline.panel .status-pane-container > div {
   pointer-events: auto;
-}
-
-.timeline-landing-page.legacy > div > p {
-  flex: none;
-  white-space: pre-line;
-  line-height: 18px;
 }
 
 .timeline-tree-view .data-grid .name-container div {

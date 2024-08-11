@@ -289,6 +289,7 @@ c`;
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     confirmSideEffect,
                     execJs,
+                    internalExecJs: sinon.mock(),
                 });
                 await Array.fromAsync(agent.run('test'));
                 sinon.assert.match(execJs.getCall(0).args[1], sinon.match({ throwOnSideEffect: true }));
@@ -321,6 +322,7 @@ c`;
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     confirmSideEffect,
                     execJs,
+                    internalExecJs: sinon.mock(),
                 });
                 await Array.fromAsync(agent.run('test'));
                 sinon.assert.calledOnce(confirmSideEffect);
@@ -353,6 +355,7 @@ c`;
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     confirmSideEffect,
                     execJs,
+                    internalExecJs: sinon.mock(),
                 });
                 const steps = await Array.fromAsync(agent.run('test'));
                 const actionStep = steps.find(step => step.step === Freestyler.Step.ACTION);
@@ -386,6 +389,7 @@ c`;
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     confirmSideEffect,
                     execJs,
+                    internalExecJs: sinon.mock(),
                 });
                 await Array.fromAsync(agent.run(Freestyler.FIX_THIS_ISSUE_PROMPT, { isFixQuery: true }));
                 const optionsArg = execJs.lastCall.args[1];
@@ -419,6 +423,7 @@ c`;
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     confirmSideEffect,
                     execJs,
+                    internalExecJs: sinon.mock(),
                 });
                 const result = await Array.fromAsync(agent.run('test'));
                 const lastStepData = result.at(-3);
@@ -438,6 +443,7 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 confirmSideEffect: () => Promise.resolve(true),
                 execJs,
+                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
@@ -475,6 +481,7 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 confirmSideEffect: () => Promise.resolve(true),
                 execJs: sinon.spy(),
+                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
@@ -505,6 +512,7 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 confirmSideEffect: () => Promise.resolve(true),
                 execJs: sinon.spy(),
+                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
@@ -535,6 +543,7 @@ c`;
                 aidaClient: mockAidaClient(generateAnswer),
                 confirmSideEffect: () => Promise.resolve(true),
                 execJs: sinon.spy(),
+                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
@@ -560,6 +569,7 @@ c`;
                 aidaClient: mockAidaClient(generateNothing),
                 confirmSideEffect: () => Promise.resolve(true),
                 execJs,
+                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
@@ -567,7 +577,7 @@ c`;
                     step: Freestyler.Step.QUERYING,
                 },
                 {
-                    step: Freestyler.Step.ANSWER,
+                    step: Freestyler.Step.ERROR,
                     text: 'Sorry, I could not help you with this query.',
                     rpcId: undefined,
                 },
@@ -612,6 +622,7 @@ ANSWER: this is the answer`,
                 aidaClient: mockAidaClient(generateNothing),
                 confirmSideEffect: () => Promise.resolve(true),
                 execJs,
+                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
@@ -661,6 +672,7 @@ ANSWER: this is the answer`,
                 aidaClient: mockAidaClient(generateMultipleTimes),
                 confirmSideEffect: () => Promise.resolve(true),
                 execJs,
+                internalExecJs: sinon.mock(),
             });
             await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
@@ -719,6 +731,7 @@ ANSWER: this is the answer`,
                 aidaClient: mockAidaClient(generateMultipleTimes),
                 confirmSideEffect: () => Promise.resolve(true),
                 execJs,
+                internalExecJs: sinon.mock(),
             });
             const controller = new AbortController();
             controller.abort();

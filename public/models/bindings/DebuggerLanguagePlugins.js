@@ -451,7 +451,7 @@ export class DebuggerLanguagePluginManager {
             const scripts = rawModuleHandle.scripts.filter(script => script.debuggerModel !== debuggerModel);
             if (scripts.length === 0) {
                 rawModuleHandle.plugin.removeRawModule(rawModuleId).catch(error => {
-                    Common.Console.Console.instance().error(i18nString(UIStrings.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+                    Common.Console.Console.instance().error(i18nString(UIStrings.errorInDebuggerLanguagePlugin, { PH1: error.message }), /* show=*/ false);
                 });
                 this.#rawModuleHandles.delete(rawModuleId);
             }
@@ -557,7 +557,7 @@ export class DebuggerLanguagePluginManager {
             }
         }
         catch (error) {
-            Common.Console.Console.instance().error(i18nString(UIStrings.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+            Common.Console.Console.instance().error(i18nString(UIStrings.errorInDebuggerLanguagePlugin, { PH1: error.message }), /* show=*/ false);
         }
         return null;
     }
@@ -576,7 +576,7 @@ export class DebuggerLanguagePluginManager {
             return Promise.resolve(null);
         }
         return Promise.all(locationPromises).then(locations => locations.flat()).catch(error => {
-            Common.Console.Console.instance().error(i18nString(UIStrings.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+            Common.Console.Console.instance().error(i18nString(UIStrings.errorInDebuggerLanguagePlugin, { PH1: error.message }), /* show=*/ false);
             return null;
         });
         async function getLocations(rawModuleId, plugin, script) {
@@ -693,7 +693,8 @@ export class DebuggerLanguagePluginManager {
                         return sourceFileURLs;
                     }
                     catch (error) {
-                        console.error(i18nString(UIStrings.failedToLoadDebugSymbolsFor, { PH1: plugin.name, PH2: url, PH3: error.message }));
+                        console.error(i18nString(UIStrings.failedToLoadDebugSymbolsFor, { PH1: plugin.name, PH2: url, PH3: error.message }), 
+                        /* show=*/ false);
                         this.#rawModuleHandles.delete(rawModuleId);
                         return [];
                     }
@@ -771,7 +772,7 @@ export class DebuggerLanguagePluginManager {
             return Array.from(scopes.values());
         }
         catch (error) {
-            Common.Console.Console.instance().error(i18nString(UIStrings.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+            Common.Console.Console.instance().error(i18nString(UIStrings.errorInDebuggerLanguagePlugin, { PH1: error.message }), /* show=*/ false);
             return null;
         }
     }

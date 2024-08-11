@@ -4,44 +4,13 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { Printer } from '../../testing/PropertyParser.js';
 import * as Elements from './elements.js';
-class TreeSearch extends SDK.CSSPropertyParser.TreeWalker {
-    #found = null;
-    #predicate;
-    constructor(ast, predicate) {
-        super(ast);
-        this.#predicate = predicate;
-    }
-    enter({ node }) {
-        if (this.#found) {
-            return false;
-        }
-        if (this.#predicate(node)) {
-            this.#found = this.#found ?? node;
-            return false;
-        }
-        return true;
-    }
-    static find(ast, predicate) {
-        return TreeSearch.walk(ast, predicate).#found;
-    }
-    static findAll(ast, predicate) {
-        const foundNodes = [];
-        TreeSearch.walk(ast, (node) => {
-            if (predicate(node)) {
-                foundNodes.push(node);
-            }
-            return false;
-        });
-        return foundNodes;
-    }
-}
 function matchSingleValue(name, value, matcher) {
     const ast = SDK.CSSPropertyParser.tokenizeDeclaration(name, value);
     if (!ast) {
         return { ast, match: null, text: value };
     }
     const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [matcher]);
-    const matchedNode = TreeSearch.find(ast, n => matchedResult.getMatch(n) instanceof matcher.matchType);
+    const matchedNode = SDK.CSSPropertyParser.TreeSearch.find(ast, n => matchedResult.getMatch(n) instanceof matcher.matchType);
     const match = matchedNode && matchedResult.getMatch(matchedNode);
     return {
         ast,
@@ -131,7 +100,7 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const ast = SDK.CSSPropertyParser.tokenizeDeclaration(succeed, 'linear-gradient(to top, red, var(--other))');
             assert.exists(ast, succeed);
             const matching = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyMatchers.ColorMatcher()]);
-            const colorNode = TreeSearch.find(ast, node => ast.text(node) === 'red');
+            const colorNode = SDK.CSSPropertyParser.TreeSearch.find(ast, node => ast.text(node) === 'red');
             assert.exists(colorNode);
             const match = matching.getMatch(colorNode);
             assert.exists(match);
@@ -231,7 +200,7 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [
                 new Elements.PropertyMatchers.LinkableNameMatcher(),
             ]);
-            const matches = TreeSearch.findAll(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyMatchers.LinkableNameMatch);
+            const matches = SDK.CSSPropertyParser.TreeSearch.findAll(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyMatchers.LinkableNameMatch);
             return matches.map(m => matchedResult.getMatch(m)?.text);
         }
         assert.deepStrictEqual(match('animation-name', 'first, second, -moz-third'), ['first', 'second', '-moz-third']);
@@ -278,7 +247,7 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             assert.exists(ast);
             const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyMatchers.StringMatcher()]);
             assert.exists(matchedResult);
-            const match = TreeSearch.find(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyMatchers.StringMatch);
+            const match = SDK.CSSPropertyParser.TreeSearch.find(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyMatchers.StringMatch);
             assert.exists(match);
         }
         match('quotes', '"\'" "\'"');
@@ -302,7 +271,7 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             assert.exists(ast);
             const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new Elements.PropertyMatchers.FontMatcher()]);
             assert.exists(matchedResult);
-            const matches = TreeSearch.findAll(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyMatchers.FontMatch);
+            const matches = SDK.CSSPropertyParser.TreeSearch.findAll(ast, node => matchedResult.getMatch(node) instanceof Elements.PropertyMatchers.FontMatch);
             assert.deepStrictEqual(matches.map(m => matchedResult.getMatch(m)?.text), ['"Gill Sans"', 'sans-serif']);
         }
     });

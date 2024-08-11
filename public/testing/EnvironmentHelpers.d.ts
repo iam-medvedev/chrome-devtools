@@ -39,8 +39,4 @@ export declare function expectConsoleLogs(expectedLogs: {
     log?: string[];
     error?: string[];
 }): void;
-export declare function getGetHostConfigStub(config: RecursivePartial<Root.Runtime.HostConfig>): sinon.SinonStub;
-type RecursivePartial<T> = {
-    [P in keyof T]?: RecursivePartial<T[P]>;
-};
-export {};
+export declare function getGetHostConfigStub(config: Root.Runtime.HostConfig): sinon.SinonStub;

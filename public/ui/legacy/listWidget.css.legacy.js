@@ -57,10 +57,14 @@ export default {
 
 .controls-gradient {
   flex: 0 1 50px;
-}
 
-.list-item:focus-within:not(:active) .controls-gradient {
-  background-image: linear-gradient(90deg, transparent, var(--override-background-list-item-color));
+  .list-item:hover & {
+    background-image: linear-gradient(90deg, transparent, var(--sys-color-cdt-base-container));
+  }
+
+  .list-item:focus-within:not(:active) & {
+    background-image: linear-gradient(90deg, transparent, var(--override-background-list-item-color));
+  }
 }
 
 .controls-buttons {
@@ -75,11 +79,11 @@ export default {
   .list-item:hover & {
     visibility: visible;
   }
-}
 
-.list-item:focus-within:not(:active) .controls-buttons {
-  background-color: var(--override-background-list-item-color);
-  visibility: visible;
+  .list-item:focus-within:not(:active) & {
+    background-color: var(--override-background-list-item-color);
+    visibility: visible;
+  }
 }
 
 .editor-container {

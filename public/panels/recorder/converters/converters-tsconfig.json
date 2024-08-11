@@ -34,6 +34,7 @@
     "../../../../../../../front_end/panels/recorder/converters/JSONConverter.ts",
     "../../../../../../../front_end/panels/recorder/converters/LighthouseConverter.ts",
     "../../../../../../../front_end/panels/recorder/converters/PuppeteerConverter.ts",
+    "../../../../../../../front_end/panels/recorder/converters/PuppeteerFirefoxConverter.ts",
     "../../../../../../../front_end/panels/recorder/converters/PuppeteerReplayConverter.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",

@@ -582,21 +582,24 @@ export class ToolbarButton extends ToolbarItem {
     }
 }
 export class ToolbarCombobox extends ToolbarItem {
-    glyphElement;
     textElement;
     text;
-    glyph;
+    iconName;
     adorner;
-    constructor(title, isIconDropdown, jslogContext) {
-        const element = document.createElement('button');
+    constructor(title, isIconDropdown, jslogContext, iconName) {
+        let element;
+        if (iconName) {
+            element = new Buttons.Button.Button();
+            element.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName };
+        }
+        else {
+            element = document.createElement('button');
+        }
         element.classList.add('toolbar-button');
         super(element);
         this.element.addEventListener('click', this.clicked.bind(this), false);
         this.element.addEventListener('mousedown', this.mouseDown.bind(this), false);
-        this.glyphElement = new IconButton.Icon.Icon();
-        this.glyphElement.className = 'toolbar-glyph hidden';
-        this.element.appendChild(this.glyphElement);
-        this.textElement = this.element.createChild('div', 'toolbar-text hidden');
+        this.iconName = iconName;
         this.setTitle(title);
         if (jslogContext) {
             this.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context(jslogContext)}`);
@@ -609,23 +612,20 @@ export class ToolbarCombobox extends ToolbarItem {
         }
     }
     setText(text) {
-        if (this.text === text) {
+        if (this.text === text || this.iconName) {
             return;
+        }
+        if (!this.textElement) {
+            this.textElement = this.element.createChild('div', 'toolbar-text hidden');
         }
         this.textElement.textContent = text;
         this.textElement.classList.toggle('hidden', !text);
         this.text = text;
     }
-    setGlyph(glyph) {
-        if (this.glyph === glyph) {
+    setAdorner(adorner) {
+        if (this.iconName) {
             return;
         }
-        this.glyphElement.name = !glyph ? null : glyph;
-        this.glyphElement.classList.toggle('hidden', !glyph);
-        this.element.classList.toggle('toolbar-has-glyph', Boolean(glyph));
-        this.glyph = glyph;
-    }
-    setAdorner(adorner) {
         if (!this.adorner) {
             this.adorner = adorner;
         }
@@ -810,8 +810,8 @@ export class ToolbarMenuButton extends ToolbarCombobox {
     contextMenuHandler;
     useSoftMenu;
     triggerTimeout;
-    constructor(contextMenuHandler, isIconDropdown, useSoftMenu, jslogContext) {
-        super('', isIconDropdown, jslogContext);
+    constructor(contextMenuHandler, isIconDropdown, useSoftMenu, jslogContext, iconName) {
+        super('', isIconDropdown, jslogContext, iconName);
         if (jslogContext) {
             this.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context(jslogContext)}`);
         }

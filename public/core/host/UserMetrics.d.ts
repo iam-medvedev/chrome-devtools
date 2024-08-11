@@ -39,7 +39,6 @@ export declare class UserMetrics {
     cssHintShown(type: CSSHintType): void;
     lighthouseModeRun(type: LighthouseModeRun): void;
     lighthouseCategoryUsed(type: LighthouseCategoryUsed): void;
-    colorConvertedFrom(type: ColorConvertedFrom): void;
     colorPickerOpenedFrom(type: ColorPickerOpenedFrom): void;
     cssPropertyDocumentation(type: CSSPropertyDocumentation): void;
     swatchActivated(swatch: SwatchType): void;
@@ -662,11 +661,6 @@ export declare enum DevtoolsExperiments {
     'timeline-observations' = 96,
     'gen-ai-settings-panel' = 97,
     'MaxValue' = 98
-}
-export declare const enum ColorConvertedFrom {
-    ColorSwatch = 0,
-    ColorPicker = 1,
-    MaxValue = 2
 }
 export declare const enum ColorPickerOpenedFrom {
     SourcesPanel = 0,

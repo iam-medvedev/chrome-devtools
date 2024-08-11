@@ -34,6 +34,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import objectPropertiesSectionStyles from '../../ui/legacy/components/object_ui/objectPropertiesSection.css.js';
@@ -235,10 +236,10 @@ export class RequestPayloadView extends UI.Widget.VBox {
         if (!trim) {
             return;
         }
-        const showMoreButton = document.createElement('button');
+        const showMoreButton = new Buttons.Button.Button();
+        showMoreButton.data = { variant: "outlined" /* Buttons.Button.Variant.OUTLINED */, jslogContext: 'show-more' };
+        showMoreButton.innerText = i18nString(UIStrings.showMore);
         showMoreButton.classList.add('request-payload-show-more-button');
-        showMoreButton.textContent = i18nString(UIStrings.showMore);
-        showMoreButton.setAttribute('jslog', `${VisualLogging.action('show-more').track({ click: true })}`);
         function showMore() {
             showMoreButton.remove();
             sourceTextElement.textContent = text;

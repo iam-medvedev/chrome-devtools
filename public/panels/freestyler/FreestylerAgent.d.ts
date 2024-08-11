@@ -33,6 +33,7 @@ interface AgentOptions {
     aidaClient: Host.AidaClient.AidaClient;
     serverSideLoggingEnabled?: boolean;
     execJs?: typeof executeJsCode;
+    internalExecJs?: typeof executeJsCode;
     confirmSideEffect: (action: string) => Promise<boolean>;
 }
 interface AidaRequestOptions {

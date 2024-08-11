@@ -45,7 +45,6 @@ export declare function activeURLForFrameAtTime(frameId: string, time: Types.Tim
  * See `panels/timeline/docs/profile_calls.md` for more context on how these events are created.
  */
 export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.ProfileNode, profileId: Types.TraceEvents.ProfileID, sampleIndex: number, ts: Types.Timing.MicroSeconds, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID): Types.TraceEvents.SyntheticProfileCall;
-export declare function makeSyntheticTraceEntry(name: string, ts: Types.Timing.MicroSeconds, pid: Types.TraceEvents.ProcessID, tid: Types.TraceEvents.ThreadID): Types.TraceEvents.SyntheticTraceEntry;
 /**
  * Matches beginning events with TraceEventPairableAsyncEnd and TraceEventPairableAsyncInstant (ASYNC_NESTABLE_INSTANT)
  * if provided, though currently only coming from Animations. Traces may contain multiple instant events so we need to

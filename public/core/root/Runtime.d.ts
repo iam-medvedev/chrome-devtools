@@ -79,8 +79,8 @@ export declare const enum ExperimentName {
     AUTOFILL_VIEW = "autofill-view",
     INDENTATION_MARKERS_TEMP_DISABLE = "sources-frame-indentation-markers-temporarily-disable",
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
-    TIMELINE_ANNOTATIONS_OVERLAYS = "perf-panel-annotations",
-    TIMELINE_SIDEBAR = "timeline-rpp-sidebar",
+    TIMELINE_ANNOTATIONS = "perf-panel-annotations",
+    TIMELINE_INSIGHTS = "timeline-rpp-sidebar",
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_OBSERVATIONS = "timeline-observations",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
@@ -111,7 +111,7 @@ export interface HostConfigVeLogging {
     enabled: boolean;
     testing: boolean;
 }
-export interface HostConfig {
+export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsConsoleInsights: HostConfigConsoleInsights;
     devToolsFreestylerDogfood: HostConfigFreestylerDogfood;
     devToolsVeLogging: HostConfigVeLogging;
@@ -120,7 +120,7 @@ export interface HostConfig {
      * or guest mode, rather than a "normal" profile.
      */
     isOffTheRecord: boolean;
-}
+}>;
 /**
  * When defining conditions make sure that objects used by the function have
  * been instantiated.

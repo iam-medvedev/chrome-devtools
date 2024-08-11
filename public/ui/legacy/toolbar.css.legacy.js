@@ -91,6 +91,10 @@ devtools-issue-counter.main-toolbar {
   top: 1px;
 }
 
+.toolbar-select-container .toolbar-dropdown-arrow {
+  left: -5px;
+}
+
 .toolbar-button.dark-text .toolbar-dropdown-arrow {
   color: var(--sys-color-on-surface);
 }

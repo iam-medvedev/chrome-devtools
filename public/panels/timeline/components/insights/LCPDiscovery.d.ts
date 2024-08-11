@@ -1,16 +1,18 @@
 import { type LCPInsightResult } from '../../../../models/trace/insights/types.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
-import { type ActiveInsight, InsightsCategories } from './types.js';
-export declare const InsightName = "lcp-discovery";
+import type * as Overlays from '../../overlays/overlays.js';
+import { BaseInsight } from './Helpers.js';
+import { InsightsCategories } from './types.js';
 export declare function getLCPInsightData(insights: TraceEngine.Insights.Types.TraceInsightData | null, navigationId: string | null): LCPInsightResult | null;
-export declare class LCPDiscovery extends HTMLElement {
+export declare class LCPDiscovery extends BaseInsight {
     #private;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
-    set insights(insights: TraceEngine.Insights.Types.TraceInsightData | null);
-    set navigationId(navigationId: string | null);
-    set activeInsight(activeInsight: ActiveInsight);
-    set activeCategory(activeCategory: InsightsCategories);
+    insightCategory: InsightsCategories;
+    internalName: string;
+    userVisibleTitle: string;
     connectedCallback(): void;
+    createOverlays(): Overlays.Overlays.TimelineOverlay[];
+    render(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

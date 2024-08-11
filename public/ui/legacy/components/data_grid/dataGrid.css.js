@@ -298,6 +298,11 @@ styles.replaceSync(
 
 .data-grid td.show-more {
   white-space: normal;
+  gap: 4px;
+
+  devtools-button {
+    margin-right: var(--sys-size-6);
+  }
 }
 
 .data-grid td.show-more::before {

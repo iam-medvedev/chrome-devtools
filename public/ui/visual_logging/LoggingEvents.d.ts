@@ -1,4 +1,4 @@
-import type * as Common from '../../core/common/common.js';
+import * as Common from '../../core/common/common.js';
 import { type Loggable } from './Loggable.js';
 export declare function logImpressions(loggables: Loggable[]): Promise<void>;
 export declare const logResize: (loggable: Loggable, size: DOMRect) => void;

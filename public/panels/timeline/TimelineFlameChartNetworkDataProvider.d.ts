@@ -1,3 +1,4 @@
+import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -72,6 +73,11 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
     isExpanded(): boolean;
     formatValue(value: number, precision?: number): string;
     canJumpToEntry(_entryIndex: number): boolean;
+    /**
+     * searches entries within the specified time and returns a list of entry
+     * indexes
+     */
+    search(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): PerfUI.FlameChart.DataProviderSearchResult[];
     /**
      * Returns a map of navigations that happened in the main frame, ignoring any
      * that happened in other frames.

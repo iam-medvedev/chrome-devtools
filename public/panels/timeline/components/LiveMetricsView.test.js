@@ -15,37 +15,58 @@ import * as Components from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 function getLocalMetricValue(view, metric) {
     const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
-    return card.querySelector('[slot="local-value"] .metric-value');
+    return card.shadowRoot.querySelector('.local-value .metric-value');
 }
 function getFieldMetricValue(view, metric) {
     const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
-    return card.querySelector('[slot="field-value"] .metric-value');
+    return card.shadowRoot.querySelector('.field-value .metric-value');
 }
 function getFieldHistogramPercents(view, metric) {
     const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
-    const histogram = card.querySelector('.field-data-histogram');
+    const histogram = card.shadowRoot.querySelector('.field-data-histogram');
     const percents = Array.from(histogram.querySelectorAll('.histogram-percent'));
     return percents.map(p => p.textContent || '');
 }
+function getCompareText(view, metric) {
+    const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
+    return card.shadowRoot.querySelector('.compare-text');
+}
+function getDetailedCompareText(view, metric) {
+    const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
+    return card.shadowRoot.querySelector('.detailed-compare-text');
+}
 function getThrottlingRecommendation(view) {
-    return view.shadowRoot.querySelector('.throttling-recommendation');
+    return view.shadowRoot.querySelector('#network-recommendation');
+}
+function getDeviceRecommendation(view) {
+    return view.shadowRoot.querySelector('#device-recommendation');
 }
 function getInteractions(view) {
     const interactionsListEl = view.shadowRoot?.querySelector('.interactions-list');
     return Array.from(interactionsListEl.querySelectorAll('.interaction'));
 }
 function selectDeviceOption(view, deviceOption) {
-    const deviceScopeSelector = view.shadowRoot.querySelector('#device-scope-select devtools-select-menu');
-    const deviceScopeOptions = Array.from(deviceScopeSelector.querySelectorAll('#device-scope-select devtools-menu-item'));
+    const deviceScopeSelector = view.shadowRoot.querySelector('devtools-select-menu#device-scope-select');
+    const deviceScopeOptions = Array.from(deviceScopeSelector.querySelectorAll('devtools-menu-item'));
     deviceScopeSelector.click();
     deviceScopeOptions.find(o => o.value === deviceOption).click();
 }
 function selectPageScope(view, pageScope) {
-    const pageScopeSelector = view.shadowRoot.querySelector('#page-scope-select devtools-select-menu');
+    const pageScopeSelector = view.shadowRoot.querySelector('devtools-select-menu#page-scope-select');
     pageScopeSelector.click();
-    const pageScopeOptions = Array.from(pageScopeSelector.querySelectorAll('#page-scope-select devtools-menu-item'));
+    const pageScopeOptions = Array.from(pageScopeSelector.querySelectorAll('devtools-menu-item'));
     const originOption = pageScopeOptions.find(o => o.value === pageScope);
     originOption.click();
+}
+function getFieldMessage(view) {
+    return view.shadowRoot.querySelector('#field-setup .field-data-message');
+}
+function getDataDescriptions(view) {
+    return view.shadowRoot.querySelector('.data-descriptions');
+}
+function getLiveMetricsTitle(view) {
+    // There may be multiple, but this should always be the first one.
+    return view.shadowRoot.querySelector('.live-metrics > .section-title');
 }
 function createMockFieldData() {
     return {
@@ -75,6 +96,13 @@ function createMockFieldData() {
                 },
                 'round_trip_time': {
                     percentiles: { p75: 150 },
+                },
+                'form_factors': {
+                    fractions: {
+                        desktop: 0.6,
+                        phone: 0.3,
+                        tablet: 0.1,
+                    },
                 },
             },
             collectionPeriod: {
@@ -180,12 +208,12 @@ describeWithMockConnection('LiveMetricsView', () => {
         assert.strictEqual(typeEl1.textContent, 'pointer');
         const durationEl1 = interactionsEls[0].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl1.textContent, '500 ms');
-        assert.strictEqual(durationEl1.className, 'metric-value needs-improvement');
+        assert.strictEqual(durationEl1.className, 'metric-value needs-improvement dim');
         const typeEl2 = interactionsEls[1].querySelector('.interaction-type');
         assert.strictEqual(typeEl2.textContent, 'keyboard');
         const durationEl2 = interactionsEls[1].querySelector('.interaction-duration .metric-value');
         assert.strictEqual(durationEl2.textContent, '30 ms');
-        assert.strictEqual(durationEl2.className, 'metric-value good');
+        assert.strictEqual(durationEl2.className, 'metric-value good dim');
     });
     it('record action button should work', async () => {
         const view = new Components.LiveMetricsView.LiveMetricsView();
@@ -237,13 +265,22 @@ describeWithMockConnection('LiveMetricsView', () => {
             const inpPercents = getFieldHistogramPercents(view, 'inp');
             assert.deepStrictEqual(inpPercents, ['-', '-', '-']);
             const lcpFieldEl = getFieldMetricValue(view, 'lcp');
-            assert.strictEqual(lcpFieldEl.textContent, '-');
+            assert.isNull(lcpFieldEl);
             const clsFieldEl = getFieldMetricValue(view, 'cls');
-            assert.strictEqual(clsFieldEl.textContent, '-');
+            assert.isNull(clsFieldEl);
             const inpFieldEl = getFieldMetricValue(view, 'inp');
-            assert.strictEqual(inpFieldEl.textContent, '-');
+            assert.isNull(inpFieldEl);
             const throttlingRec = getThrottlingRecommendation(view);
             assert.isNull(throttlingRec);
+            const deviceRec = getDeviceRecommendation(view);
+            assert.isNull(deviceRec);
+            const fieldMessage = getFieldMessage(view);
+            assert.match(fieldMessage.innerText, /See how your local metrics compare/);
+            const dataDescriptions = getDataDescriptions(view);
+            assert.match(dataDescriptions.innerText, /local metrics/);
+            assert.notMatch(dataDescriptions.innerText, /field data/);
+            const title = getLiveMetricsTitle(view);
+            assert.strictEqual(title.innerText, 'Local metrics');
         });
         it('should show when crux is enabled', async () => {
             const view = new Components.LiveMetricsView.LiveMetricsView();
@@ -270,6 +307,15 @@ describeWithMockConnection('LiveMetricsView', () => {
             assert.strictEqual(inpFieldEl.textContent, '-');
             const throttlingRec = getThrottlingRecommendation(view);
             assert.match(throttlingRec.innerText, /Slow 4G/);
+            const deviceRec = getDeviceRecommendation(view);
+            assert.match(deviceRec.innerText, /desktop/);
+            const fieldMessage = getFieldMessage(view);
+            assert.strictEqual(fieldMessage.innerText, 'Collection period: Jan 1, 2024 - Jan 29, 2024');
+            const dataDescriptions = getDataDescriptions(view);
+            assert.match(dataDescriptions.innerText, /local metrics/);
+            assert.match(dataDescriptions.innerText, /field data/);
+            const title = getLiveMetricsTitle(view);
+            assert.strictEqual(title.innerText, 'Local and field metrics');
         });
         it('should make initial request on render when crux is enabled', async () => {
             mockFieldData['url-ALL'] = createMockFieldData();
@@ -289,7 +335,7 @@ describeWithMockConnection('LiveMetricsView', () => {
             CrUXManager.CrUXManager.instance().getConfigSetting().set({ enabled: false, override: '' });
             await coordinator.done();
             const lcpFieldEl2 = getFieldMetricValue(view, 'lcp');
-            assert.strictEqual(lcpFieldEl2.textContent, '-');
+            assert.isNull(lcpFieldEl2);
         });
         it('should take from selected page scope', async () => {
             mockFieldData['url-ALL'] = createMockFieldData();
@@ -358,7 +404,111 @@ describeWithMockConnection('LiveMetricsView', () => {
             const lcpFieldEl2 = getFieldMetricValue(view, 'lcp');
             assert.strictEqual(lcpFieldEl2.textContent, '2.00 s');
         });
-        describe('throttling recommendation', () => {
+        describe('local/field comparison', () => {
+            it('should show message when values are similar', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, {
+                    lcp: { value: 100 },
+                    interactions: [],
+                });
+                await coordinator.done();
+                const compareText = getCompareText(view, 'lcp');
+                assert.strictEqual(compareText.innerText, 'Your local LCP 100 ms is good, and is similar to your users’ experience.');
+            });
+            it('should show message when local is better', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                mockFieldData['url-ALL'].record.metrics.largest_contentful_paint.percentiles.p75 = 5000;
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, {
+                    lcp: { value: 100 },
+                    interactions: [],
+                });
+                await coordinator.done();
+                const compareText = getCompareText(view, 'lcp');
+                assert.strictEqual(compareText.innerText, 'Your local LCP 100 ms is good, and is significantly better than your users’ experience.');
+            });
+            it('should show message when local is worse', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, {
+                    lcp: { value: 5000 },
+                    interactions: [],
+                });
+                await coordinator.done();
+                const compareText = getCompareText(view, 'lcp');
+                assert.strictEqual(compareText.innerText, 'Your local LCP 5.00 s is poor, and is significantly worse than your users’ experience.');
+            });
+            it('should show generic summary if field is missing', async () => {
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, {
+                    lcp: { value: 3000 },
+                    interactions: [],
+                });
+                await coordinator.done();
+                const compareText = getCompareText(view, 'lcp');
+                assert.strictEqual(compareText.innerText, 'Your local LCP 3.00 s needs improvement.');
+            });
+            it('should suggest interaction if local INP is missing', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                await coordinator.done();
+                const compareText = getCompareText(view, 'inp');
+                assert.strictEqual(compareText.innerText, 'Interact with the page to measure INP.');
+            });
+        });
+        describe('detailed local/field comparison', () => {
+            it('should show message when values are rated the same', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, {
+                    lcp: { value: 100 },
+                    interactions: [],
+                });
+                await coordinator.done();
+                const compareText = getDetailedCompareText(view, 'lcp');
+                assert.strictEqual(compareText.innerText, 'Your local LCP 100 ms is good and is rated the same as 50% of real-user LCP experiences. Additionally, the field data 75th percentile LCP 1.00 s is good.');
+            });
+            it('should show message when values are rated differently', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                mockFieldData['url-ALL'].record.metrics.largest_contentful_paint.percentiles.p75 = 5000;
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, {
+                    lcp: { value: 100 },
+                    interactions: [],
+                });
+                await coordinator.done();
+                const compareText = getDetailedCompareText(view, 'lcp');
+                assert.strictEqual(compareText.innerText, 'Your local LCP 100 ms is good and is rated the same as 50% of real-user LCP experiences. However, the field data 75th percentile LCP 5.00 s is poor.');
+            });
+            it('should show generic summary if field is missing', async () => {
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                LiveMetrics.LiveMetrics.instance().dispatchEventToListeners("status" /* LiveMetrics.Events.Status */, {
+                    lcp: { value: 3000 },
+                    interactions: [],
+                });
+                await coordinator.done();
+                const compareText = getDetailedCompareText(view, 'lcp');
+                assert.strictEqual(compareText.innerText, 'Your local LCP 3.00 s needs improvement.');
+            });
+            it('should suggest interaction if local INP is missing', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                await coordinator.done();
+                const compareText = getDetailedCompareText(view, 'inp');
+                assert.strictEqual(compareText.innerText, 'Interact with the page to measure INP.');
+            });
+        });
+        describe('network throttling recommendation', () => {
             it('should show for closest target RTT', async () => {
                 mockFieldData['url-ALL'] = createMockFieldData();
                 // 165ms is the adjusted latency of "Fast 4G" but 165ms is actually closer to the target RTT
@@ -401,6 +551,42 @@ describeWithMockConnection('LiveMetricsView', () => {
                 await coordinator.done();
                 const throttlingRec = getThrottlingRecommendation(view);
                 assert.isNull(throttlingRec);
+            });
+        });
+        describe('form factor recommendation', () => {
+            it('should recommend desktop if it is the majority', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                await coordinator.done();
+                const deviceRec = getDeviceRecommendation(view);
+                assert.match(deviceRec.innerText, /desktop/);
+            });
+            it('should recommend mobile if it is the majority', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                mockFieldData['url-ALL'].record.metrics.form_factors.fractions = {
+                    desktop: 0.1,
+                    phone: 0.8,
+                    tablet: 0.1,
+                };
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                await coordinator.done();
+                const deviceRec = getDeviceRecommendation(view);
+                assert.match(deviceRec.innerText, /mobile/);
+            });
+            it('should recommend nothing if there is no majority', async () => {
+                mockFieldData['url-ALL'] = createMockFieldData();
+                mockFieldData['url-ALL'].record.metrics.form_factors.fractions = {
+                    desktop: 0.49,
+                    phone: 0.49,
+                    tablet: 0.02,
+                };
+                const view = new Components.LiveMetricsView.LiveMetricsView();
+                renderElementIntoDOM(view);
+                await coordinator.done();
+                const deviceRec = getDeviceRecommendation(view);
+                assert.isNull(deviceRec);
             });
         });
     });

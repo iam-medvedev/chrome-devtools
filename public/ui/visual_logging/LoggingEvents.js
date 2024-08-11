@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import { processEventForDebugging, processImpressionsForDebugging } from './Debugging.js';
@@ -55,21 +56,19 @@ export const logHover = (throttler) => async (event) => {
     const loggingState = getLoggingState(event.currentTarget);
     assertNotNullOrUndefined(loggingState);
     const hoverEvent = { veid: loggingState.veid };
-    await throttler.schedule(async () => { }); // Ensure the logging won't get scheduled immediately
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordHover(hoverEvent);
         processEventForDebugging('Hover', loggingState);
-    });
+    }, "Delayed" /* Common.Throttler.Scheduling.Delayed */);
 };
 export const logDrag = (throttler) => async (event) => {
     const loggingState = getLoggingState(event.currentTarget);
     assertNotNullOrUndefined(loggingState);
     const dragEvent = { veid: loggingState.veid };
-    await throttler.schedule(async () => { }); // Ensure the logging won't get scheduled immediately
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordDrag(dragEvent);
         processEventForDebugging('Drag', loggingState);
-    });
+    }, "Delayed" /* Common.Throttler.Scheduling.Delayed */);
 };
 export async function logChange(loggable) {
     const loggingState = getLoggingState(loggable);

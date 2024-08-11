@@ -11,8 +11,7 @@ export class TimelineVisibleEventsFilter extends TimelineModelFilter {
         this.visibleTypes = new Set(visibleTypes);
     }
     accept(event) {
-        if (TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event) ||
-            TraceEngine.Types.TraceEvents.isSyntheticTraceEntry(event)) {
+        if (TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event)) {
             return true;
         }
         return this.visibleTypes.has(TimelineVisibleEventsFilter.eventType(event));

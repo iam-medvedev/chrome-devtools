@@ -10,6 +10,10 @@ import { type TimelineMarkerStyle } from './TimelineUIUtils.js';
 export declare class TimelineFlameChartView extends UI.Widget.VBox implements PerfUI.FlameChart.FlameChartDelegate, UI.SearchableView.Searchable {
     #private;
     private readonly delegate;
+    /**
+     * Tracks the indexes of matched entries when the user searches the panel.
+     * Defaults to undefined which indicates the user has not searched.
+     */
     private searchResults;
     private eventListeners;
     private readonly networkSplitWidget;
@@ -36,7 +40,8 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
-    fixMe(): void;
+    calculateZoom(overlays: Overlays.Overlays.TimelineOverlay[]): TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+    runBrickBreakerGame(): void;
     isNetworkTrackShownForTests(): boolean;
     getMainDataProvider(): TimelineFlameChartDataProvider;
     refreshMainFlameChart(): void;
@@ -53,7 +58,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;
     setModel(newTraceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
     setInsights(insights: TraceEngine.Insights.Types.TraceInsightData | null): void;
-    private onEntryHighlighted;
+    private onEntryHovered;
     highlightEvent(event: TraceEngine.Types.TraceEvents.TraceEventData | null): void;
     willHide(): void;
     wasShown(): void;
@@ -66,11 +71,11 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private onEntrySelected;
     resizeToPreferredHeights(): void;
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
+    searchResultIndexForEntryIndex(index: number): number;
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
     supportsRegexSearch(): boolean;
-    private selectSearchResult;
     private updateSearchResults;
     /**
      * Returns the indexes of the elements that matched the most recent
@@ -78,7 +83,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
      * to their position in the data provider entry data array.
      * Public only for tests.
      */
-    getSearchResults(): number[] | undefined;
+    getSearchResults(): PerfUI.FlameChart.DataProviderSearchResult[] | undefined;
     onSearchCanceled(): void;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;
 }

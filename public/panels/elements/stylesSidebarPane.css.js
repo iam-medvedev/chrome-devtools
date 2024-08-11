@@ -245,6 +245,7 @@ styles.replaceSync(
 }
 
 .styles-show-all {
+  padding: 4px;
   margin-left: 16px;
   text-overflow: ellipsis;
   overflow: hidden;

@@ -38,5 +38,5 @@ export declare class ThreadAppender implements TrackAppender {
      * Returns the info shown when an event added by this appender
      * is hovered in the timeline.
      */
-    highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.SyntheticTraceEntry): HighlightedEntryInfo;
+    highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventData): HighlightedEntryInfo;
 }

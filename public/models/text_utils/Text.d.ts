@@ -1,7 +1,6 @@
 import { SourceRange, TextRange } from './TextRange.js';
 export declare class Text {
-    private valueInternal;
-    private lineEndingsInternal?;
+    #private;
     constructor(value: string);
     lineEndings(): number[];
     value(): string;

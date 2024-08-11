@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../../front_end/panels/timeline/overlays/components/EntriesLinkOverlay.ts",
     "../../../../../../../../front_end/panels/timeline/overlays/components/EntryLabelOverlay.ts",
     "../../../../../../../../front_end/panels/timeline/overlays/components/TimeRangeOverlay.ts",
     "../../../../../../../../front_end/panels/timeline/overlays/components/TimespanBreakdownOverlay.ts",

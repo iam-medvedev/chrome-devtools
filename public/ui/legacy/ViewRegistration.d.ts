@@ -109,7 +109,7 @@ export interface ViewRegistration {
     iconName?: string;
 }
 export declare function registerViewExtension(registration: ViewRegistration): void;
-export declare function getRegisteredViewExtensions(config?: Root.Runtime.HostConfig): Array<PreRegisteredView>;
+export declare function getRegisteredViewExtensions(config: Root.Runtime.HostConfig): Array<PreRegisteredView>;
 export declare function maybeRemoveViewExtension(viewId: string): boolean;
 export declare function registerLocationResolver(registration: LocationResolverRegistration): void;
 export declare function getRegisteredLocationResolvers(): Array<LocationResolverRegistration>;

@@ -4,6 +4,7 @@
 import * as Types from '../types/types.js';
 let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 const invalidationsForEvent = new Map();
+const invalidationCountForEvent = new Map();
 let lastRecalcStyleEvent = null;
 // Used to track paints so we track invalidations correctly per paint.
 let hasPainted = false;
@@ -14,6 +15,11 @@ export function reset() {
     lastRecalcStyleEvent = null;
     allInvalidationTrackingEvents.length = 0;
     hasPainted = false;
+    maxInvalidationsPerEvent = null;
+}
+let maxInvalidationsPerEvent = null;
+export function handleUserConfig(userConfig) {
+    maxInvalidationsPerEvent = userConfig.maxInvalidationEventsPerEvent;
 }
 export function initialize() {
     if (handlerState !== 1 /* HandlerState.UNINITIALIZED */) {
@@ -24,9 +30,20 @@ export function initialize() {
 function addInvalidationToEvent(event, invalidation) {
     const existingInvalidations = invalidationsForEvent.get(event) || [];
     existingInvalidations.push(invalidation);
+    if (maxInvalidationsPerEvent !== null && existingInvalidations.length > maxInvalidationsPerEvent) {
+        existingInvalidations.shift();
+    }
     invalidationsForEvent.set(event, existingInvalidations);
+    const count = invalidationCountForEvent.get(event) ?? 0;
+    invalidationCountForEvent.set(event, count + 1);
 }
 export function handleEvent(event) {
+    // Special case: if we have been configured to not store any invalidations,
+    // we take that as a sign that we don't even want to gather any invalidations
+    // data at all and early exit.
+    if (maxInvalidationsPerEvent === 0) {
+        return;
+    }
     if (Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
         lastRecalcStyleEvent = event;
         // Associate any prior invalidations with this recalc event.
@@ -96,6 +113,7 @@ export async function finalize() {
 export function data() {
     return {
         invalidationsForEvent,
+        invalidationCountForEvent,
     };
 }
 //# sourceMappingURL=InvalidationsHandler.js.map

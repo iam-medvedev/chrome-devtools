@@ -881,10 +881,13 @@ export class StylePropertiesSection {
         this.parentPane.refreshUpdate(this, editedTreeElement);
     }
     updateVarFunctions(editedTreeElement) {
+        if (!editedTreeElement.property.name.startsWith('--')) {
+            return;
+        }
         let child = this.propertiesTreeOutline.firstChild();
         while (child) {
             if (child !== editedTreeElement && child instanceof StylePropertyTreeElement) {
-                child.updateTitleIfComputedValueChanged();
+                child.refreshIfComputedValueChanged();
             }
             child = child.traverseNextTreeElement(false /* skipUnrevealed */, null /* stayWithin */, true /* dontPopulate */);
         }

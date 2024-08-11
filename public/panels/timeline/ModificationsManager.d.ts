@@ -1,8 +1,8 @@
-import type * as TraceEngine from '../../models/trace/trace.js';
+import * as TraceEngine from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
 import { EntriesFilter } from './EntriesFilter.js';
-import type * as Overlays from './overlays/overlays.js';
-export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel';
+import * as Overlays from './overlays/overlays.js';
+export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel' | 'UpdateTimeRange';
 export declare class AnnotationModifiedEvent extends Event {
     overlay: Overlays.Overlays.TimelineOverlay;
     action: UpdateAction;
@@ -29,7 +29,9 @@ export declare class ModificationsManager extends EventTarget {
     createAnnotation(newAnnotation: TraceEngine.Types.File.Annotation): void;
     removeAnnotation(removedAnnotation: TraceEngine.Types.File.Annotation): void;
     removeAnnotationOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
+    updateAnnotation(updatedAnnotation: TraceEngine.Types.File.Annotation): void;
     updateAnnotationOverlay(updatedOverlay: Overlays.Overlays.TimelineOverlay): void;
+    getAnnotationByOverlay(overlay: Overlays.Overlays.TimelineOverlay): TraceEngine.Types.File.Annotation | null;
     getAnnotations(): TraceEngine.Types.File.Annotation[];
     getOverlays(): Overlays.Overlays.TimelineOverlay[];
     /**

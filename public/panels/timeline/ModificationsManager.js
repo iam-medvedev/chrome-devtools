@@ -1,9 +1,12 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
+import * as TraceEngine from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
 import { EntriesFilter } from './EntriesFilter.js';
 import { EventsSerializer } from './EventsSerializer.js';
+import * as Overlays from './overlays/overlays.js';
 const modificationsManagerByTraceIndex = [];
 let activeManager;
 // Event dispatched after an annotation was added, removed or updated.
@@ -89,14 +92,28 @@ export class ModificationsManager extends EventTarget {
         return this.#timelineBreadcrumbs;
     }
     createAnnotation(newAnnotation) {
-        const newOverlay = {
-            type: 'ENTRY_LABEL',
-            entry: newAnnotation.entry,
-            label: newAnnotation.label,
-        };
+        const newOverlay = this.#createOverlayFromAnnotation(newAnnotation);
         this.#overlayForAnnotation.set(newAnnotation, newOverlay);
-        // TODO: When we have more annotations, check the annotation type and create the appropriate one
         this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add'));
+    }
+    #createOverlayFromAnnotation(annotation) {
+        switch (annotation.type) {
+            case 'ENTRY_LABEL':
+                return {
+                    type: 'ENTRY_LABEL',
+                    entry: annotation.entry,
+                    label: annotation.label,
+                };
+            case 'TIME_RANGE':
+                return {
+                    type: 'TIME_RANGE',
+                    label: annotation.label,
+                    showDuration: true,
+                    bounds: annotation.bounds,
+                };
+            default:
+                Platform.assertNever(annotation, 'Overlay for provided annotation cannot be created');
+        }
     }
     removeAnnotation(removedAnnotation) {
         const overlayToRemove = this.#overlayForAnnotation.get(removedAnnotation);
@@ -108,7 +125,7 @@ export class ModificationsManager extends EventTarget {
         this.dispatchEvent(new AnnotationModifiedEvent(overlayToRemove, 'Remove'));
     }
     removeAnnotationOverlay(removedOverlay) {
-        const annotationForRemovedOverlay = this.#getAnnotationByOverlay(removedOverlay);
+        const annotationForRemovedOverlay = this.getAnnotationByOverlay(removedOverlay);
         if (!annotationForRemovedOverlay) {
             console.warn('Annotation for deleted Overlay does not exist');
             return;
@@ -116,18 +133,30 @@ export class ModificationsManager extends EventTarget {
         this.#overlayForAnnotation.delete(annotationForRemovedOverlay);
         this.dispatchEvent(new AnnotationModifiedEvent(removedOverlay, 'Remove'));
     }
+    updateAnnotation(updatedAnnotation) {
+        const overlay = this.#overlayForAnnotation.get(updatedAnnotation);
+        if (overlay && Overlays.Overlays.isTimeRangeLabel(overlay) &&
+            TraceEngine.Types.File.isTimeRangeAnnotation(updatedAnnotation)) {
+            overlay.label = updatedAnnotation.label;
+            overlay.bounds = updatedAnnotation.bounds;
+            this.dispatchEvent(new AnnotationModifiedEvent(overlay, 'UpdateTimeRange'));
+        }
+        else {
+            console.error('Annotation could not be updated');
+        }
+    }
     updateAnnotationOverlay(updatedOverlay) {
-        const annotationForUpdatedOverlay = this.#getAnnotationByOverlay(updatedOverlay);
+        const annotationForUpdatedOverlay = this.getAnnotationByOverlay(updatedOverlay);
         if (!annotationForUpdatedOverlay) {
             console.warn('Annotation for updated Overlay does not exist');
             return;
         }
-        if (updatedOverlay.type === 'ENTRY_LABEL') {
+        if (updatedOverlay.type === 'ENTRY_LABEL' || updatedOverlay.type === 'TIME_RANGE') {
             annotationForUpdatedOverlay.label = updatedOverlay.label;
         }
         this.dispatchEvent(new AnnotationModifiedEvent(updatedOverlay, 'UpdateLabel'));
     }
-    #getAnnotationByOverlay(overlay) {
+    getAnnotationByOverlay(overlay) {
         for (const [annotation, currOverlay] of this.#overlayForAnnotation.entries()) {
             if (currOverlay === overlay) {
                 return annotation;
@@ -165,19 +194,28 @@ export class ModificationsManager extends EventTarget {
     #annotationsJSON() {
         const annotations = this.getAnnotations();
         const entryLabelsSerialized = [];
+        const labelledTimeRangesSerialized = [];
         for (let i = 0; i < annotations.length; i++) {
-            if (annotations[i].type === 'ENTRY_LABEL') {
-                const serializedEvent = this.#eventsSerializer.keyForEvent(annotations[i].entry);
+            const currAnnotation = annotations[i];
+            if (TraceEngine.Types.File.isEntryLabelAnnotation(currAnnotation)) {
+                const serializedEvent = this.#eventsSerializer.keyForEvent(currAnnotation.entry);
                 if (serializedEvent) {
                     entryLabelsSerialized.push({
                         entry: serializedEvent,
-                        label: annotations[i].label,
+                        label: currAnnotation.label,
                     });
                 }
+            }
+            else if (TraceEngine.Types.File.isTimeRangeAnnotation(currAnnotation)) {
+                labelledTimeRangesSerialized.push({
+                    bounds: currAnnotation.bounds,
+                    label: currAnnotation.label,
+                });
             }
         }
         return {
             entryLabels: entryLabelsSerialized,
+            labelledTimeRanges: labelledTimeRangesSerialized,
         };
     }
     applyModificationsIfPresent() {
@@ -189,12 +227,22 @@ export class ModificationsManager extends EventTarget {
         const expandableEntries = modifications.entriesModifications.expandableEntries;
         this.#applyEntriesFilterModifications(hiddenEntries, expandableEntries);
         this.#timelineBreadcrumbs.setInitialBreadcrumbFromLoadedModifications(modifications.initialBreadcrumb);
-        const entryLabels = modifications.annotations.entryLabels;
+        // Assign annotations to an empty array if they don't exist to not
+        // break the traces that were saved before those annotations were implemented
+        const entryLabels = modifications.annotations.entryLabels ?? [];
         entryLabels.forEach(entryLabel => {
             this.createAnnotation({
                 type: 'ENTRY_LABEL',
                 entry: this.#eventsSerializer.eventForKey(entryLabel.entry, this.#traceParsedData),
                 label: entryLabel.label,
+            });
+        });
+        const timeRanges = modifications.annotations.labelledTimeRanges ?? [];
+        timeRanges.forEach(timeRange => {
+            this.createAnnotation({
+                type: 'TIME_RANGE',
+                bounds: timeRange.bounds,
+                label: timeRange.label,
             });
         });
     }

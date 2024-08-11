@@ -563,7 +563,8 @@ export class ThreadAppender {
             const range = (endLine !== -1 || endLine === startLine) ? `${startLine}...${endLine}` : startLine;
             title += ` - ${url} [${range}]`;
         }
-        return { title, formattedTime: getFormattedTime(event.dur, event.selfTime) };
+        const selfTime = this.#traceParsedData.Renderer.entryToNode.get(event)?.selfTime;
+        return { title, formattedTime: getFormattedTime(event.dur, selfTime) };
     }
 }
 //# sourceMappingURL=ThreadAppender.js.map

@@ -29,6 +29,7 @@
  */
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
+import type * as TimelineModel from '../../../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
@@ -86,7 +87,7 @@ export declare const enum FilterAction {
 }
 export interface UserFilterAction {
     type: FilterAction;
-    entry: TraceEngine.Types.TraceEvents.SyntheticTraceEntry;
+    entry: TraceEngine.Types.TraceEvents.TraceEventData;
 }
 export interface PossibleFilterActions {
     [FilterAction.MERGE_FUNCTION]: boolean;
@@ -525,6 +526,11 @@ export declare class FlameChartTimelineData {
     static createEmpty(): FlameChartTimelineData;
     resetFlowData(): void;
 }
+export interface DataProviderSearchResult {
+    index: number;
+    startTimeMilli: TraceEngine.Types.Timing.MilliSeconds;
+    provider: 'main' | 'network' | 'other';
+}
 export interface FlameChartDataProvider {
     buildFlowForInitiator?(index: number): unknown;
     minimumBoundary(): number;
@@ -549,6 +555,7 @@ export interface FlameChartDataProvider {
     hasTrackConfigurationMode(): boolean;
     eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
     indexForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
+    search?(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
 }
 export interface FlameChartMarker {
     startTime(): number;
@@ -587,7 +594,7 @@ export declare const enum Events {
      * been hovered on, or -1 if no entry is selected (the user has moved their
      * mouse off the event)
      */
-    EntryHighlighted = "EntryHighlighted",
+    EntryHovered = "EntryHovered",
     ChartPlayableStateChange = "ChartPlayableStateChange",
     LatestDrawDimensions = "LatestDrawDimensions",
     MouseMove = "MouseMove"
@@ -597,7 +604,7 @@ export type EventTypes = {
     [Events.CanvasFocused]: number | void;
     [Events.EntryInvoked]: number;
     [Events.EntrySelected]: number;
-    [Events.EntryHighlighted]: number;
+    [Events.EntryHovered]: number;
     [Events.ChartPlayableStateChange]: boolean;
     [Events.LatestDrawDimensions]: {
         chart: {

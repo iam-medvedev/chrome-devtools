@@ -42,6 +42,14 @@ export interface EntryLabel {
     label: string;
 }
 /**
+ * Represents an object created when a user creates a link between two entries.
+ */
+export interface EntriesLink {
+    type: 'ENTRIES_LINK';
+    entryFrom: OverlayEntry;
+    entryTo: OverlayEntry;
+}
+/**
  * Represents a time range on the trace. Also used when the user shift+clicks
  * and drags to create a time range.
  */
@@ -51,6 +59,7 @@ export interface TimeRangeLabel {
     label: string;
     showDuration: boolean;
 }
+export declare function isTimeRangeLabel(annotation: TimelineOverlay): annotation is TimeRangeLabel;
 /**
  * Used to highlight with a red-candy stripe a time range. It takes an entry
  * because this entry is the row that will be used to place the candy stripe,
@@ -75,7 +84,7 @@ export interface CursorTimestampMarker {
 /**
  * All supported overlay types. Expected to grow in time!
  */
-export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | TimespanBreakdown | CursorTimestampMarker | CandyStripedTimeRange;
+export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | EntriesLink | TimespanBreakdown | CursorTimestampMarker | CandyStripedTimeRange;
 /**
  * Denotes overlays that are singletons; only one of these will be allowed to
  * exist at any given time. If one exists and the add() method is called, the
@@ -121,6 +130,12 @@ export declare class Overlays extends EventTarget {
         container: HTMLElement;
         charts: TimelineCharts;
     });
+    /**
+     * Because entries can be a TimelineFrame, which is not a trace event, this
+     * helper exists to return a consistent set of timings regardless of the type
+     * of entry.
+     */
+    timingsForOverlayEntry(entry: OverlayEntry): TraceEngine.Helpers.Timing.EventTimingsData<TraceEngine.Types.Timing.MicroSeconds>;
     /**
      * Add a new overlay to the view.
      */

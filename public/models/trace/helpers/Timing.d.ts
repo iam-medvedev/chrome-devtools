@@ -9,7 +9,6 @@ export interface EventTimingsData<ValueType extends Types.Timing.MicroSeconds | 
     startTime: ValueType;
     endTime: ValueType;
     duration: ValueType;
-    selfTime: ValueType;
 }
 export declare function eventTimingsMicroSeconds(event: Types.TraceEvents.TraceEventData): EventTimingsData<Types.Timing.MicroSeconds>;
 export declare function eventTimingsMilliSeconds(event: Types.TraceEvents.TraceEventData): EventTimingsData<Types.Timing.MilliSeconds>;

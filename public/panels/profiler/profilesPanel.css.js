@@ -158,10 +158,6 @@ styles.replaceSync(
   padding: 50px;
 }
 
-button {
-  cursor: pointer;
-}
-
 @media (forced-colors: active) {
   .profile-view .data-grid tr:hover td:not(.bottom-filler-td) {
     background: Highlight;

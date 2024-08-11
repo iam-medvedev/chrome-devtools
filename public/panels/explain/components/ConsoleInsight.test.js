@@ -141,6 +141,7 @@ describeWithEnvironment('ConsoleInsight', () => {
             return component;
         };
         const reportsRating = (positive) => async () => {
+            const stub = getGetHostConfigStub({});
             const actionTaken = sinon.stub(Host.userMetrics, 'actionTaken');
             const aidaClient = getTestAidaClient();
             const component = await renderInsight(aidaClient);
@@ -162,6 +163,7 @@ describeWithEnvironment('ConsoleInsight', () => {
             });
             // Can only rate once.
             assert(aidaClient.registerClientEvent.calledOnce);
+            stub.restore();
         };
         it('reports positive rating', reportsRating(true));
         it('reports negative rating', reportsRating(false));

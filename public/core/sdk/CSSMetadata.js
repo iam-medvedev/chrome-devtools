@@ -144,6 +144,22 @@ export class CSSMetadata {
         propertyName = propertyName.toLowerCase();
         return propertyName === 'grid' || propertyName === 'grid-template' || propertyName === 'grid-template-areas';
     }
+    isGridColumnNameAwareProperty(propertyName) {
+        propertyName = propertyName.toLowerCase();
+        return ['grid-column', 'grid-column-start', 'grid-column-end'].includes(propertyName);
+    }
+    isGridRowNameAwareProperty(propertyName) {
+        propertyName = propertyName.toLowerCase();
+        return ['grid-row', 'grid-row-start', 'grid-row-end'].includes(propertyName);
+    }
+    isGridAreaNameAwareProperty(propertyName) {
+        propertyName = propertyName.toLowerCase();
+        return propertyName === 'grid-area';
+    }
+    isGridNameAwareProperty(propertyName) {
+        return this.isGridAreaNameAwareProperty(propertyName) || this.isGridColumnNameAwareProperty(propertyName) ||
+            this.isGridRowNameAwareProperty(propertyName);
+    }
     isLengthProperty(propertyName) {
         propertyName = propertyName.toLowerCase();
         if (propertyName === 'line-height') {

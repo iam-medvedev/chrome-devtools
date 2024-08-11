@@ -72,7 +72,7 @@ function buildProfileCalls() {
                 const dur = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(durMs));
                 const selfTime = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(selfTimeMs));
                 profileCall.dur = dur;
-                profileCall.selfTime = selfTime;
+                traceEntryNode.selfTime = selfTime;
                 const parentIndex = indexStack.at(-1);
                 const parent = parentIndex !== undefined && finalizedData.profileCalls.at(parentIndex);
                 const parentNode = parent && entryToNode.get(parent);

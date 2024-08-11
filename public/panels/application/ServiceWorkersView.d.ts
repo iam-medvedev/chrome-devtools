@@ -53,7 +53,6 @@ export declare class Section {
     private updateClientsField;
     private updateSourceField;
     private update;
-    private createLink;
     private unregisterButtonClicked;
     private createUpdateCycleField;
     private maybeCreateRouterField;

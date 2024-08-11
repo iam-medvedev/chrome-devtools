@@ -1,14 +1,14 @@
-import * as TraceEngine from '../../../../models/trace/trace.js';
-import { type ActiveInsight, InsightsCategories } from './types.js';
-export declare const InsightName = "lcp-phases";
-export declare class LCPPhases extends HTMLElement {
+import type * as Overlays from '../../overlays/overlays.js';
+import { BaseInsight } from './Helpers.js';
+import { InsightsCategories } from './types.js';
+export declare class LCPPhases extends BaseInsight {
     #private;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
-    set insights(insights: TraceEngine.Insights.Types.TraceInsightData | null);
-    set navigationId(navigationId: string | null);
-    set activeInsight(activeInsight: ActiveInsight);
-    set activeCategory(activeCategory: InsightsCategories);
-    connectedCallback(): void;
+    insightCategory: InsightsCategories;
+    internalName: string;
+    userVisibleTitle: string;
+    createOverlays(): Overlays.Overlays.TimelineOverlay[];
+    render(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

@@ -1,2 +1,6 @@
 import type * as Types from '../types/types.js';
-export declare function buildTrackDataFromExtensionEntries(extensionEntries: Types.Extensions.SyntheticExtensionTrackChartEntry[], extensionTrackData: Types.Extensions.ExtensionTrackData[]): Types.Extensions.ExtensionTrackData[];
+import { type TraceEntryNode } from './TreeHelpers.js';
+export declare function buildTrackDataFromExtensionEntries(extensionEntries: Types.Extensions.SyntheticExtensionTrackEntry[], extensionTrackData: Types.Extensions.ExtensionTrackData[], entryToNode: Map<Types.TraceEvents.TraceEventData, TraceEntryNode>): {
+    extensionTrackData: Types.Extensions.ExtensionTrackData[];
+    entryToNode?: Map<Types.TraceEvents.TraceEventData, TraceEntryNode>;
+};

@@ -10,6 +10,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as PublicExtensions from '../../models/extensions/extensions.js';
@@ -110,6 +111,7 @@ const CONVERTER_ID_TO_METRIC = {
     ["json" /* Models.ConverterIds.ConverterIds.JSON */]: 2 /* Host.UserMetrics.RecordingExported.ToJSON */,
     ["@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */]: 3 /* Host.UserMetrics.RecordingExported.ToPuppeteerReplay */,
     ["puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */]: 1 /* Host.UserMetrics.RecordingExported.ToPuppeteer */,
+    ["puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */]: 1 /* Host.UserMetrics.RecordingExported.ToPuppeteer */,
     ["lighthouse" /* Models.ConverterIds.ConverterIds.Lighthouse */]: 5 /* Host.UserMetrics.RecordingExported.ToLighthouse */,
 };
 let RecorderController = class RecorderController extends LitElement {
@@ -140,6 +142,7 @@ let RecorderController = class RecorderController extends LitElement {
             new Converters.JSONConverter.JSONConverter(textEditorIndent),
             new Converters.PuppeteerReplayConverter.PuppeteerReplayConverter(textEditorIndent),
             new Converters.PuppeteerConverter.PuppeteerConverter(textEditorIndent),
+            new Converters.PuppeteerFirefoxConverter.PuppeteerFirefoxConverter(textEditorIndent),
             new Converters.LighthouseConverter.LighthouseConverter(textEditorIndent),
         ]);
         const extensionManager = Extensions.ExtensionManager.ExtensionManager.instance();
@@ -1063,7 +1066,7 @@ let RecorderController = class RecorderController extends LitElement {
                 ${LitHtml.Directives.repeat(this.#builtInConverters, converter => {
             return html `
                     <${Menus.Menu.MenuItem.litTagName} .value=${converter.getId()}
-                      jslog=${VisualLogging.item(`converter-${converter.getFormatName()}`).track({ click: true })}>
+                      jslog=${VisualLogging.item(`converter-${Platform.StringUtilities.toKebabCase(converter.getId())}`).track({ click: true })}>
                       ${converter.getFormatName()}
                     </${Menus.Menu.MenuItem.litTagName}>
                   `;
@@ -1073,7 +1076,7 @@ let RecorderController = class RecorderController extends LitElement {
                 ${LitHtml.Directives.repeat(this.extensionConverters, converter => {
             return html `
                     <${Menus.Menu.MenuItem.litTagName} .value=${converter.getId()}
-                      jslog=${VisualLogging.item(`converter-${converter.getFormatName()}`).track({ click: true })}>
+                      jslog=${VisualLogging.item('converter-extension').track({ click: true })}>
                     ${converter.getFormatName()}
                     </${Menus.Menu.MenuItem.litTagName}>
                   `;

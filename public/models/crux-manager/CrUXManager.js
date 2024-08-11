@@ -11,15 +11,36 @@ let cruxManagerInstance;
 // TODO: Potentially support `TABLET`. Tablet field data will always be `null` until then.
 export const DEVICE_SCOPE_LIST = ['ALL', 'DESKTOP', 'PHONE'];
 const pageScopeList = ['origin', 'url'];
-const metrics = ['largest_contentful_paint', 'cumulative_layout_shift', 'interaction_to_next_paint', 'round_trip_time'];
+const metrics = [
+    'largest_contentful_paint',
+    'cumulative_layout_shift',
+    'interaction_to_next_paint',
+    'round_trip_time',
+    'form_factors',
+];
 export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
     #originCache = new Map();
     #urlCache = new Map();
     #mainDocumentUrl;
-    #configSetting = Common.Settings.Settings.instance().createSetting('field-data', { enabled: false, override: '' });
+    #configSetting;
     #endpoint = DEFAULT_ENDPOINT;
     constructor() {
         super();
+        /**
+         * In an incognito or guest window - which is called an "OffTheRecord"
+         * profile in Chromium -, we do not want to persist the user consent and
+         * should ask for it every time. This is why we see what window type the
+         * user is in before choosing where to look/create this setting. If the
+         * user is in OTR, we store it in the session, which uses sessionStorage
+         * and is short-lived. If the user is not in OTR, we use global, which is
+         * the default behaviour and persists the value to the Chrome profile.
+         * This behaviour has been approved by Chrome Privacy as part of the launch
+         * review.
+         */
+        const hostConfig = Common.Settings.Settings.instance().getHostConfig();
+        const useSessionStorage = !hostConfig || hostConfig.isOffTheRecord === true;
+        const storageTypeForConsent = useSessionStorage ? "Session" /* Common.Settings.SettingStorageType.Session */ : "Global" /* Common.Settings.SettingStorageType.Global */;
+        this.#configSetting = Common.Settings.Settings.instance().createSetting('field-data', { enabled: false, override: '' }, storageTypeForConsent);
         this.#configSetting.addChangeListener(() => {
             void this.#automaticRefresh();
         });

@@ -1,5 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -33,8 +34,8 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private controller;
     private cpuProfiler;
     private clearButton;
-    private fixMeButton;
-    private fixMeButtonAdded;
+    private brickBreakerToolbarButton;
+    private brickBreakerToolbarButtonAdded;
     private loadButton;
     private saveButton;
     private statusPane;
@@ -104,23 +105,8 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     toggleRecording(): Promise<void>;
     recordReload(): void;
     private onClearButton;
-    private onFixMe;
-    private clear;
-    private reset;
-    /**
-     * Called when we update the active trace that is being shown to the user.
-     * This is called from {@see loadingComplete} when a trace is
-     * imported/recorded, but it can also be called when the user uses the history
-     * dropdown.
-     *
-     * If you need code to execute whenever the active trace changes, this is the method to use.
-     * If you need code to execute ONLY ON NEW TRACES, then use {@see loadingComplete}
-     */
-    setModel(traceEngineIndex: number, exclusiveFilter?: TimelineModel.TimelineModelFilter.TimelineModelFilter | null): void;
     private recordingStarted;
     recordingProgress(usage: number): void;
-    private showLandingPage;
-    private hideLandingPage;
     loadingStarted(): Promise<void>;
     loadingProgress(progress?: number): Promise<void>;
     processingStarted(): Promise<void>;
@@ -198,6 +184,9 @@ export declare class LoadTimelineHandler implements Common.QueryParamHandler.Que
         forceNew: boolean | null;
     }): LoadTimelineHandler;
     handleQueryParam(value: string): void;
+}
+export declare class TraceRevealer implements Common.Revealer.Revealer<SDK.TraceObject.TraceObject> {
+    reveal(trace: SDK.TraceObject.TraceObject): Promise<void>;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;

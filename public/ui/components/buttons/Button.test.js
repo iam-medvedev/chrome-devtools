@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { dispatchKeyDownEvent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
-import * as Coordinator from '../render_coordinator/render_coordinator.js';
 import * as Buttons from './buttons.js';
-const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 describe('Button', () => {
     const iconUrl = new URL('../../../Images/file-image.svg', import.meta.url).toString();
-    async function renderButton(data = {
+    function renderButton(data = {
         variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
     }, text = 'Button') {
         const button = new Buttons.Button.Button();
@@ -17,14 +15,13 @@ describe('Button', () => {
             button.innerText = text;
         }
         renderElementIntoDOM(button);
-        await coordinator.done();
         return button;
     }
-    async function testClick(data = {
+    function testClick(data = {
         variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
         disabled: false,
     }, expectedClickCount = 1) {
-        const button = await renderButton(data);
+        const button = renderButton(data);
         let clicks = 0;
         button.onclick = () => clicks++;
         const innerButton = button.shadowRoot?.querySelector('button');
@@ -35,60 +32,59 @@ describe('Button', () => {
         });
         assert.strictEqual(clicks, expectedClickCount);
     }
-    it('primary button can be clicked', async () => {
-        await testClick({
+    it('primary button can be clicked', () => {
+        testClick({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
         });
     });
-    it('disabled primary button cannot be clicked', async () => {
-        await testClick({
+    it('disabled primary button cannot be clicked', () => {
+        testClick({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             disabled: true,
         }, 0);
     });
-    it('secondary button can be clicked', async () => {
-        await testClick({
+    it('secondary button can be clicked', () => {
+        testClick({
             variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
         });
     });
-    it('disabled secondary button cannot be clicked', async () => {
-        await testClick({
+    it('disabled secondary button cannot be clicked', () => {
+        testClick({
             variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             disabled: true,
         }, 0);
     });
-    it('toolbar button can be clicked', async () => {
-        await testClick({
+    it('toolbar button can be clicked', () => {
+        testClick({
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
             iconUrl,
         });
     });
-    it('disabled toolbar button cannot be clicked', async () => {
-        await testClick({
+    it('disabled toolbar button cannot be clicked', () => {
+        testClick({
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
             iconUrl,
             disabled: true,
         }, 0);
     });
-    it('gets the no additional classes set for the inner button if only text is provided', async () => {
-        const button = await renderButton();
+    it('gets the no additional classes set for the inner button if only text is provided', () => {
+        const button = renderButton();
         const innerButton = button.shadowRoot?.querySelector('button');
         assert.isTrue(!innerButton.classList.contains('text-with-icon'));
         assert.isTrue(!innerButton.classList.contains('only-icon'));
     });
-    it('gets title set', async () => {
-        const button = await renderButton({
+    it('gets title set', () => {
+        const button = renderButton({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             title: 'Custom',
         });
         const innerButton = button.shadowRoot?.querySelector('button');
         assert.strictEqual(innerButton.title, 'Custom');
         button.title = 'Custom2';
-        await coordinator.done();
         assert.strictEqual(innerButton.title, 'Custom2');
     });
-    it('gets the text-with-icon class set for the inner button if text and icon is provided', async () => {
-        const button = await renderButton({
+    it('gets the text-with-icon class set for the inner button if text and icon is provided', () => {
+        const button = renderButton({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             iconUrl,
         }, 'text');
@@ -96,8 +92,8 @@ describe('Button', () => {
         assert.isTrue(innerButton.classList.contains('text-with-icon'));
         assert.isTrue(!innerButton.classList.contains('only-icon'));
     });
-    it('gets the only-icon class set for the inner button if only icon is provided', async () => {
-        const button = await renderButton({
+    it('gets the only-icon class set for the inner button if only icon is provided', () => {
+        const button = renderButton({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             iconUrl,
         }, '');
@@ -105,16 +101,16 @@ describe('Button', () => {
         assert.isTrue(!innerButton.classList.contains('text-with-icon'));
         assert.isTrue(innerButton.classList.contains('only-icon'));
     });
-    it('gets the `small` class set for the inner button if size === SMALL', async () => {
-        const button = await renderButton({
+    it('gets the `small` class set for the inner button if size === SMALL', () => {
+        const button = renderButton({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             size: "SMALL" /* Buttons.Button.Size.SMALL */,
         }, '');
         const innerButton = button.shadowRoot?.querySelector('button');
         assert.isTrue(innerButton.classList.contains('small'));
     });
-    it('does not get the `small` class set for the inner button if size === MEDIUM', async () => {
-        const button = await renderButton({
+    it('does not get the `small` class set for the inner button if size === MEDIUM', () => {
+        const button = renderButton({
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
             iconUrl,
         }, '');
@@ -122,7 +118,7 @@ describe('Button', () => {
         assert.isFalse(innerButton.classList.contains('small'));
     });
     describe('in forms', () => {
-        async function renderForm(data = {
+        function renderForm(data = {
             variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
         }) {
             const form = document.createElement('form');
@@ -143,27 +139,26 @@ describe('Button', () => {
             form.append(input);
             form.append(button);
             renderElementIntoDOM(form);
-            await coordinator.done();
             return reference;
         }
-        it('submits a form with button[type=submit]', async () => {
-            const state = await renderForm({
+        it('submits a form with button[type=submit]', () => {
+            const state = renderForm({
                 variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                 type: 'submit',
             });
             state.button.click();
             assert.strictEqual(state.submitCount, 1);
         });
-        it('does not submit a form with button[type=button]', async () => {
-            const state = await renderForm({
+        it('does not submit a form with button[type=button]', () => {
+            const state = renderForm({
                 variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                 type: 'button',
             });
             state.button.click();
             assert.strictEqual(state.submitCount, 0);
         });
-        it('resets a form with button[type=reset]', async () => {
-            const state = await renderForm({
+        it('resets a form with button[type=reset]', () => {
+            const state = renderForm({
                 variant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                 type: 'reset',
             });

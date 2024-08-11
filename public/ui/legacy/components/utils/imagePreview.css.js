@@ -39,6 +39,10 @@ styles.replaceSync(
   cursor: pointer;
 }
 
+.image-container > div.start {
+  justify-content: start;
+}
+
 .image-preview-container .row {
   line-height: 1.2;
   vertical-align: baseline;
@@ -46,9 +50,16 @@ styles.replaceSync(
 
 .image-preview-container .title {
   padding-right: 0.5em;
-  text-align: right;
   color: var(--sys-color-token-subtle);
   white-space: nowrap;
+
+  &.start {
+    text-align: start;
+  }
+
+  &.center {
+    text-align: end;
+  }
 }
 
 .image-preview-container .description {

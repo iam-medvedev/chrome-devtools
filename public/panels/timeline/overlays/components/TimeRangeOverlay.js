@@ -5,12 +5,27 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import styles from './timeRangeOverlay.css.js';
+export class TimeRangeLabelChangeEvent extends Event {
+    newLabel;
+    static eventName = 'timerangelabelchange';
+    constructor(newLabel) {
+        super(TimeRangeLabelChangeEvent.eventName);
+        this.newLabel = newLabel;
+    }
+}
+export class TimeRangeRemoveEvent extends Event {
+    static eventName = 'timerangeremoveevent';
+    constructor() {
+        super(TimeRangeRemoveEvent.eventName);
+    }
+}
 export class TimeRangeOverlay extends HTMLElement {
     static litTagName = LitHtml.literal `devtools-time-range-overlay`;
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);
     #duration = null;
     #canvasRect = null;
+    #label;
     // The label is set to editable and in focus anytime the label is empty and when the label it is double clicked.
     // If the user clicks away from the selected range element and the label is not empty, the lable is set to not editable until it is double clicked.
     #isLabelEditable = true;
@@ -24,6 +39,7 @@ export class TimeRangeOverlay extends HTMLElement {
         this.#render();
         this.#rangeContainer = this.#shadow.querySelector('.label');
         this.#labelBox = this.#rangeContainer?.querySelector('.label-text') ?? null;
+        this.#label = initialLabel;
         if (!this.#labelBox) {
             console.error('`labelBox` element is missing.');
             return;
@@ -148,6 +164,28 @@ export class TimeRangeOverlay extends HTMLElement {
             this.#focusInputBox();
         }
     }
+    #handleLabelInputKeyUp() {
+        // If the label changed on key up, dispatch label changed event
+        const labelBoxTextContent = this.#labelBox?.textContent ?? '';
+        if (labelBoxTextContent !== this.#label) {
+            this.#label = labelBoxTextContent;
+            this.dispatchEvent(new TimeRangeLabelChangeEvent(this.#label));
+        }
+    }
+    #handleLabelInputKeyDown(event) {
+        // If the new key is `Enter` or `Escape` key, treat it
+        // as the end of the label input and blur the input field.
+        // If the text field is empty when `Enter` or `Escape` are pressed,
+        // dispatch an event to remove the time range.
+        if (event.key === 'Enter' || event.key === 'Escape') {
+            if (this.#label === '') {
+                this.dispatchEvent(new TimeRangeRemoveEvent());
+            }
+            this.#labelBox?.blur();
+            return false;
+        }
+        return true;
+    }
     #render() {
         const durationText = this.#duration ? i18n.TimeUtilities.formatMicroSecondsTime(this.#duration) : '';
         // clang-format off
@@ -158,6 +196,8 @@ export class TimeRangeOverlay extends HTMLElement {
              class="label-text"
              @focusout=${() => this.#setLabelEditability(false)}
              @dblclick=${() => this.#setLabelEditability(true)}
+             @keydown=${this.#handleLabelInputKeyDown}
+             @keyup=${this.#handleLabelInputKeyUp}
              contenteditable=${this.#isLabelEditable}>
             </span>
             <span

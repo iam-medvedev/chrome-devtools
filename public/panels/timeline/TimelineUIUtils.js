@@ -420,8 +420,9 @@ const UIStrings = {
     stackTrace: 'Stack Trace',
     /**
      *@description Text used to show any invalidations for a particular event that caused the browser to have to do more work to update the page.
+     * @example {2} PH1
      */
-    invalidations: 'Invalidations',
+    invalidations: 'Invalidations ({PH1} total)',
     /**
      * @description Text in Timeline UIUtils of the Performance panel. Phrase is followed by a number of milliseconds.
      * Some events or tasks might have been only started, but have not ended yet. Such events or tasks are considered
@@ -975,7 +976,8 @@ export class TimelineUIUtils {
     }
     static async buildTraceEventDetails(traceParseData, event, linkifier, detailed) {
         const maybeTarget = targetForEvent(traceParseData, event);
-        const { duration, selfTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(event);
+        const { duration } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(event);
+        const selfTime = getEventSelfTime(event, traceParseData);
         const relatedNodesMap = await TraceEngine.Extras.FetchNodes.extractRelatedDOMNodesFromEvent(traceParseData, event);
         if (maybeTarget) {
             // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
@@ -986,6 +988,7 @@ export class TimelineUIUtils {
                     previewElement = await LegacyComponents.ImagePreview.ImagePreview.build(maybeTarget, url, false, {
                         imageAltText: LegacyComponents.ImagePreview.ImagePreview.defaultAltTextForImageURL(url),
                         precomputedFeatures: undefined,
+                        align: "start" /* LegacyComponents.ImagePreview.Align.START */,
                     });
                 }
                 else if (TraceEngine.Types.TraceEvents.isTraceEventPaint(event)) {
@@ -1544,7 +1547,9 @@ export class TimelineUIUtils {
             contentHelper.appendElementRow(UIStrings.initiatorFor, links);
         }
         if (invalidations && invalidations.length) {
-            contentHelper.addSection(i18nString(UIStrings.invalidations));
+            const totalInvalidations = traceParseData.Invalidations.invalidationCountForEvent.get(event) ??
+                0; // Won't be 0, but saves us dealing with undefined.
+            contentHelper.addSection(i18nString(UIStrings.invalidations, { PH1: totalInvalidations }));
             await TimelineUIUtils.generateInvalidationsList(invalidations, contentHelper);
         }
     }
@@ -1659,11 +1664,12 @@ export class TimelineUIUtils {
         if (endTime) {
             for (let i = index; i < events.length; i++) {
                 const nextEvent = events[i];
-                const { startTime: nextEventStartTime, selfTime: nextEventSelfTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(nextEvent);
+                const { startTime: nextEventStartTime } = TraceEngine.Helpers.Timing.eventTimingsMilliSeconds(nextEvent);
                 if (nextEventStartTime >= endTime) {
                     break;
                 }
-                if (!nextEvent.selfTime) {
+                const nextEventSelfTime = getEventSelfTime(nextEvent, traceParseData);
+                if (!nextEventSelfTime) {
                     continue;
                 }
                 if (nextEvent.tid !== event.tid) {
@@ -2092,5 +2098,13 @@ export function isMarkerEvent(traceParseData, event) {
         return Boolean(isMainFrame);
     }
     return false;
+}
+function getEventSelfTime(event, traceParseData) {
+    const mapToUse = TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event) ?
+        traceParseData.ExtensionTraceData.entryToNode :
+        traceParseData.Renderer.entryToNode;
+    const selfTime = mapToUse.get(event)?.selfTime;
+    return selfTime ? TraceEngine.Helpers.Timing.microSecondsToMilliseconds(selfTime) :
+        TraceEngine.Types.Timing.MilliSeconds(0);
 }
 //# sourceMappingURL=TimelineUIUtils.js.map

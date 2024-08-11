@@ -42,9 +42,6 @@
       "path": "../../visual_logging/bundle-tsconfig.json"
     },
     {
-      "path": "../helpers/bundle-tsconfig.json"
-    },
-    {
       "path": "../icon_button/bundle-tsconfig.json"
     }
   ]

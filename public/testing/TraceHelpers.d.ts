@@ -64,7 +64,7 @@ export declare function getEventsIn(nodes: IterableIterator<TraceEngine.Helpers.
 /**
  * Pretty-prints a tree.
  */
-export declare function prettyPrint(tree: TraceEngine.Helpers.TreeHelpers.TraceEntryTree, predicate?: (node: TraceEngine.Helpers.TreeHelpers.TraceEntryNode, event: TraceEngine.Types.TraceEvents.SyntheticTraceEntry) => boolean, indentation?: number, delimiter?: string, prefix?: string, newline?: string, out?: string): string;
+export declare function prettyPrint(tree: TraceEngine.Helpers.TreeHelpers.TraceEntryTree, predicate?: (node: TraceEngine.Helpers.TreeHelpers.TraceEntryNode, event: TraceEngine.Types.TraceEvents.TraceEventData) => boolean, indentation?: number, delimiter?: string, prefix?: string, newline?: string, out?: string): string;
 /**
  * Builds a mock TraceEventComplete.
  */
@@ -90,7 +90,7 @@ export declare const DevToolsTimelineCategory = "disabled-by-default-devtools.ti
  * Mocks an object compatible with the return type of the
  * RendererHandler using only an array of ordered entries.
  */
-export declare function makeMockRendererHandlerData(entries: TraceEngine.Types.TraceEvents.SyntheticTraceEntry[]): TraceEngine.Handlers.ModelHandlers.Renderer.RendererHandlerData;
+export declare function makeMockRendererHandlerData(entries: TraceEngine.Types.TraceEvents.TraceEventData[]): TraceEngine.Handlers.ModelHandlers.Renderer.RendererHandlerData;
 /**
  * Mocks an object compatible with the return type of the
  * SamplesHandler using only an array of ordered profile calls.

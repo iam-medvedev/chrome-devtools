@@ -55,6 +55,7 @@ function describeBody(fn) {
     });
 }
 const realConnectionSuites = [];
+/** @deprecated Migrate to `describeWithMockConnection`, e2e tests or web test if needed */
 export function describeWithRealConnection(title, fn) {
     realConnectionSuites.push({ title, fn, only: false });
 }

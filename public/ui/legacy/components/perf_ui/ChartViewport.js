@@ -42,7 +42,7 @@ export class ChartViewport extends UI.Widget.VBox {
     isUpdateScheduled;
     cancelWindowTimesAnimation;
     #config;
-    #usingNewOverlayForTimeRange = Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS_OVERLAYS */);
+    #usingNewOverlayForTimeRange = Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */);
     constructor(delegate, config) {
         super();
         this.#config = config;

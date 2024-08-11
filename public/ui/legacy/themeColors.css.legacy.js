@@ -368,14 +368,19 @@ export default {
   /**
    * Colors for performance panel metric ratings.
    */
-  --app-color-performance-bad: var(--color-error-bright);
-  --app-color-performance-ok: var(--color-orange-bright);
+  --app-color-performance-bad: var(--sys-color-error-bright);
+  --app-color-performance-ok: var(--sys-color-orange-bright);
   --app-color-performance-good: var(--sys-color-green-bright);
+  --app-color-performance-bad-dim: var(--sys-color-error);
+  --app-color-performance-ok-dim: var(--sys-color-orange);
+  --app-color-performance-good-dim: var(--sys-color-green);
 
   /**
    * Colors for performance panel annotations list in sidebar.
    */
-  --app-color-performance-sidebar-label: var(--ref-palette-purple80);
+  --app-color-performance-sidebar-entry-label: var(--ref-palette-purple80);
+  --app-color-performance-sidebar-time-range: var(--ref-palette-pink60);
+  --app-color-performance-sidebar-time-range-text: rgb(255 255 255);
 }
 
 :root.baseline-default {

@@ -174,7 +174,6 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     exportAll(): Promise<void>;
     private clearBrowserCache;
     private clearBrowserCookies;
-    private removeAllHighlights;
     private applyFilter;
     private isValidUrl;
     private parseFilterQuery;
