@@ -43,7 +43,7 @@ export declare class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper<
     appliedDeviceScaleFactor(): number;
     appliedUserAgentType(): UA;
     isFullHeight(): boolean;
-    private isMobile;
+    isMobile(): boolean;
     enabledSetting(): Common.Settings.Setting<boolean>;
     scaleSetting(): Common.Settings.Setting<number>;
     uaSetting(): Common.Settings.Setting<UA>;

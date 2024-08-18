@@ -7,7 +7,7 @@ let activeManager = null;
 export class SyntheticEventsManager {
     /**
      * All synthetic entries created in a trace from a corresponding trace events.
-     * (ProfileCalls are excluded because)
+     * (ProfileCalls are excluded because they are not based on a real trace event)
      */
     #syntheticTraceEvents = [];
     /**
@@ -55,6 +55,10 @@ export class SyntheticEventsManager {
             // modifications serialization.
             return syntheticEvent;
         }
+    }
+    static registerServerTiming(syntheticEvent) {
+        // TODO(crbug.com/340811171): Implement
+        return syntheticEvent;
     }
     constructor(rawEvents) {
         this.#rawTraceEvents = rawEvents;

@@ -78,9 +78,6 @@ export class ExtensionTrackAppender {
         return Extensions.ExtensionUI.extensionEntryColor(event);
     }
     titleForEvent(event) {
-        if (!TraceEngine.Types.Extensions.isSyntheticExtensionEntry(event)) {
-            return ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-rendering');
-        }
         return event.name;
     }
     /**

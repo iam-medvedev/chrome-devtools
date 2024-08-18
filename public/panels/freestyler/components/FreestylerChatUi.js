@@ -28,7 +28,7 @@ const UIStringsTemp = {
     /**
      *@description Disclaimer text right after the chat input.
      */
-    inputDisclaimer: 'Chat messages and data from this page will be sent to Google, reviewed by humans, and used to improve the feature. Do not use on pages with personal or sensitive information. Freestyler may display inaccurate information.',
+    inputDisclaimer: 'Chat messages and data from this page will be sent to Google, reviewed by humans, and used to improve the feature. Do not use on pages with personal or sensitive information. AI assistant may display inaccurate information.',
     /**
      *@description Title for the send icon button.
      */
@@ -58,15 +58,15 @@ const UIStringsTemp = {
     /**
      * @description The error message when the user is not logged in into Chrome.
      */
-    notLoggedIn: 'This feature is only available when you sign into Chrome with your Google account.',
+    notLoggedIn: 'This feature is only available when you sign into Chrome with your Google account',
     /**
      * @description The error message when the user is not logged in into Chrome.
      */
-    syncIsOff: 'This feature requires you to turn on Chrome sync.',
+    syncIsOff: 'This feature requires you to turn on Chrome sync',
     /**
      * @description Message shown when the user is offline.
      */
-    offline: 'Check your internet connection and try again.',
+    offline: 'Check your internet connection and try again',
     /**
      *@description Heading for the consent view.
      */
@@ -110,7 +110,7 @@ const UIStringsTemp = {
     /**
      *@description Link text for redirecting to feedback form
      */
-    feedbackLink: 'Send Feedback',
+    feedbackLink: 'Send feedback',
     /**
      *@description Button text for "Fix this issue" button
      */
@@ -366,11 +366,9 @@ export class FreestylerChatUi extends HTMLElement {
         <span>-</span>
         <x-link href=${DOGFOOD_FEEDBACK_URL}
           class="link"
-          jslog=${VisualLogging.action('freestyler.feedback').track({
+          jslog=${VisualLogging.link('freestyler.feedback').track({
             click: true,
-        })}>
-         ${i18nString(UIStringsTemp.feedbackLink)}
-        </x-link>`;
+        })}>${i18nString(UIStringsTemp.feedbackLink)}</x-link>`;
         // clang-format on
     };
     #renderMessages = () => {
@@ -414,7 +412,7 @@ export class FreestylerChatUi extends HTMLElement {
           <div class="chat-input-container">
             <input type="text" class="chat-input" .disabled=${isInputDisabled}
               placeholder=${getInputPlaceholderString(this.#props.aidaAvailability)}
-              jslog=${VisualLogging.textField('query').track({ change: true })}
+              jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}
             >${this.#props.isLoading
             ? LitHtml.html `
                     <${Buttons.Button.Button.litTagName}
@@ -445,7 +443,13 @@ export class FreestylerChatUi extends HTMLElement {
             }}
                     ></${Buttons.Button.Button.litTagName}>`}
           </div>
-          <span class="chat-input-disclaimer">${i18nString(UIStringsTemp.inputDisclaimer)} See <x-link class="link" href=${DOGFOOD_INFO}>dogfood terms</x-link>.</span>
+          <span class="chat-input-disclaimer">${i18nString(UIStringsTemp.inputDisclaimer)} See <x-link
+              class="link"
+              href=${DOGFOOD_INFO}
+              jslog=${VisualLogging.link('freestyler.dogfood-info').track({
+            click: true,
+        })}
+            >dogfood terms</x-link>.</span>
         </form>
       </div>
     `;
@@ -464,7 +468,13 @@ export class FreestylerChatUi extends HTMLElement {
             <li>${i18nString(UIStringsTemp.consentTextDataDisclaimer)}</li>
             <li>${i18nString(UIStringsTemp.consentTextVisibilityDisclaimer)}</li>
             <li>${i18nString(UIStringsTemp.consentTextDoNotUseDisclaimer)}</li>
-            <li>See <x-link class="link" href=${DOGFOOD_INFO}>dogfood terms</x-link>.</li>
+            <li>See <x-link
+              class="link"
+              href=${DOGFOOD_INFO}
+              jslog=${VisualLogging.link('freestyler.dogfood-info').track({
+            click: true,
+        })}
+            >dogfood terms</x-link>.</li>
           </ul>
           <${Buttons.Button.Button.litTagName}
             class="accept-button"

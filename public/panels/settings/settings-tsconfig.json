@@ -57,6 +57,9 @@
       "path": "../../ui/components/legacy_wrapper/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/switch/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {

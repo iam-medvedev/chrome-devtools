@@ -17,8 +17,21 @@ const UIStrings = {
      * @example {401ms} PH1
      */
     lcpLoadDelay: 'LCP image loaded {PH1} after earliest start point.',
+    /**
+     * @description Text to tell the user that a fetchpriority property value of "high" is applied to the LCP request.
+     */
+    fetchPriorityApplied: 'fetchpriority=high applied',
+    /**
+     * @description Text to tell the user that the LCP request is discoverable in the initial document.
+     */
+    requestDiscoverable: 'Request is discoverable in initial document',
+    /**
+     * @description Text to tell the user that the LCP request does not have the lazy load property applied.
+     */
+    lazyLoadNotApplied: 'lazy load not applied',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/LCPDiscovery.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function getLCPInsightData(insights, navigationId) {
     if (!insights || !navigationId) {
         return null;
@@ -88,8 +101,32 @@ export class LCPDiscovery extends BaseInsight {
         return i18n.i18n.getFormatLocalizedString(str_, UIStrings.lcpLoadDelay, { PH1: timeWrapper });
     }
     createOverlays() {
-        // TODO: create overlays
-        return [];
+        const imageResults = getImageData(this.data.insights, this.data.navigationId);
+        if (!imageResults || !imageResults.discoveryDelay) {
+            return [];
+        }
+        const delay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(TraceEngine.Types.Timing.MicroSeconds(imageResults.resource.ts - imageResults.discoveryDelay), imageResults.resource.ts);
+        const delayMs = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(delay.range);
+        return [
+            {
+                type: 'ENTRY_OUTLINE',
+                entry: imageResults.resource,
+                outlineReason: 'ERROR',
+            },
+            {
+                type: 'CANDY_STRIPED_TIME_RANGE',
+                bounds: delay,
+                entry: imageResults.resource,
+            },
+            {
+                type: 'TIMESPAN_BREAKDOWN',
+                sections: [{
+                        bounds: delay,
+                        label: i18nString(UIStrings.lcpLoadDelay, { PH1: i18n.TimeUtilities.preciseMillisToString(delayMs, 2) }),
+                    }],
+                entry: imageResults.resource,
+            },
+        ];
     }
     #renderDiscovery(imageData) {
         // clang-format off
@@ -106,15 +143,15 @@ export class LCPDiscovery extends BaseInsight {
             <ul class="insight-results discovery-icon-results">
               <li class="insight-entry">
                 ${this.#adviceIcon(imageData.shouldIncreasePriorityHint)}
-                <span>fetchpriority=high applied</span>
+                <span>${i18nString(UIStrings.fetchPriorityApplied)}</span>
               </li>
               <li class="insight-entry">
                 ${this.#adviceIcon(imageData.shouldPreloadImage)}
-                <span>Request is discoverable in initial document</span>
+                <span>${i18nString(UIStrings.requestDiscoverable)}</span>
               </li>
               <li class="insight-entry">
                 ${this.#adviceIcon(imageData.shouldRemoveLazyLoading)}
-                <span>lazyload not applied</span>
+                <span>${i18nString(UIStrings.lazyLoadNotApplied)}</span>
               </li>
             </ul>
           </div>

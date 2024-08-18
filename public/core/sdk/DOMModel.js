@@ -454,16 +454,32 @@ export class DOMNode {
         return outerHTML;
     }
     path() {
-        function canPush(node) {
-            return (node.index !== undefined || (node.isShadowRoot() && node.parentNode)) && node.#nodeNameInternal.length;
+        function getNodeKey(node) {
+            if (!node.#nodeNameInternal.length) {
+                return null;
+            }
+            if (node.index !== undefined) {
+                return node.index;
+            }
+            if (!node.parentNode) {
+                return null;
+            }
+            if (node.isShadowRoot()) {
+                return node.shadowRootType() === DOMNode.ShadowRootTypes.UserAgent ? 'u' : 'a';
+            }
+            if (node.nodeType() === Node.DOCUMENT_NODE) {
+                return 'd';
+            }
+            return null;
         }
         const path = [];
         let node = this;
-        while (node && canPush(node)) {
-            const index = typeof node.index === 'number' ?
-                node.index :
-                (node.shadowRootType() === DOMNode.ShadowRootTypes.UserAgent ? 'u' : 'a');
-            path.push([index, node.#nodeNameInternal]);
+        while (node) {
+            const key = getNodeKey(node);
+            if (key === null) {
+                break;
+            }
+            path.push([key, node.#nodeNameInternal]);
             node = node.parentNode;
         }
         path.reverse();

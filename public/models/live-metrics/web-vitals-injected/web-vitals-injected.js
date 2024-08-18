@@ -28,21 +28,7 @@ function establishNodeIndex(node) {
 window.getNodeForIndex = (index) => {
     return nodeList[index];
 };
-function inIframe() {
-    try {
-        return window.self !== window.top;
-    }
-    catch {
-        return true;
-    }
-}
 function initialize() {
-    // `Page.addScriptToEvaluateOnNewDocument` will create a script that runs
-    // in all frames. We only want metrics from the main frame so the filter
-    // has to be here.
-    if (inIframe()) {
-        return;
-    }
     sendEventToDevTools({ name: 'reset' });
     // We want to treat bfcache navigations like a standard navigations, so emit
     // a reset event when bfcache is restored.

@@ -75,6 +75,10 @@ export declare function getZeroIndexedLineAndColumnForEvent(event: Types.TraceEv
  * them. The UI expects 0 indexed line numbers, so that is what we return.
  */
 export declare function getZeroIndexedStackTraceForEvent(event: Types.TraceEvents.TraceEventData): Types.TraceEvents.TraceEventCallFrame[] | null;
+/**
+ * Given a 1-based call frame creates a 0-based one.
+ */
+export declare function makeZeroBasedCallFrame(callFrame: Types.TraceEvents.TraceEventCallFrame): Types.TraceEvents.TraceEventCallFrame;
 export declare function frameIDForEvent(event: Types.TraceEvents.TraceEventData): string | null;
 export declare function isTopLevelEvent(event: Types.TraceEvents.TraceEventData): boolean;
 export declare function findUpdateLayoutTreeEvents(events: Types.TraceEvents.TraceEventData[], startTime: Types.Timing.MicroSeconds, endTime?: Types.Timing.MicroSeconds): Types.TraceEvents.TraceEventUpdateLayoutTree[];

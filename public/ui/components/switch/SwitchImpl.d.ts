@@ -11,6 +11,8 @@ export declare class Switch extends HTMLElement {
     get checked(): boolean;
     set disabled(isDisabled: boolean);
     get disabled(): boolean;
+    get jslogContext(): string;
+    set jslogContext(jslogContext: string);
 }
 declare global {
     interface HTMLElementTagNameMap {

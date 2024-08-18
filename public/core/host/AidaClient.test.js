@@ -20,7 +20,7 @@ describeWithEnvironment('AidaClient', () => {
         const stub = getGetHostConfigStub({
             devToolsConsoleInsights: {
                 enabled: true,
-                aidaTemperature: 0.5,
+                temperature: 0.5,
             },
         });
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
@@ -39,7 +39,7 @@ describeWithEnvironment('AidaClient', () => {
         const stub = getGetHostConfigStub({
             devToolsConsoleInsights: {
                 enabled: true,
-                aidaTemperature: 0,
+                temperature: 0,
             },
         });
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
@@ -58,8 +58,8 @@ describeWithEnvironment('AidaClient', () => {
         const stub = getGetHostConfigStub({
             devToolsConsoleInsights: {
                 enabled: true,
-                aidaModelId: TEST_MODEL_ID,
-                aidaTemperature: 0.5,
+                modelId: TEST_MODEL_ID,
+                temperature: 0.5,
             },
         });
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
@@ -77,10 +77,12 @@ describeWithEnvironment('AidaClient', () => {
     });
     it('adds metadata to disallow logging', () => {
         const stub = getGetHostConfigStub({
+            aidaAvailability: {
+                disallowLogging: true,
+            },
             devToolsConsoleInsights: {
                 enabled: true,
-                aidaTemperature: 0.5,
-                disallowLogging: true,
+                temperature: 0.5,
             },
         });
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');

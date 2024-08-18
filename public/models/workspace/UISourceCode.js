@@ -297,17 +297,20 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return this.workingCopyContent().content || '';
     }
     workingCopyContent() {
+        return this.workingCopyContentData().asDeferedContent();
+    }
+    workingCopyContentData() {
         if (this.workingCopyGetter) {
             this.workingCopyInternal = this.workingCopyGetter();
             this.workingCopyGetter = null;
         }
-        if (this.isDirty()) {
-            return { content: this.workingCopyInternal, isEncoded: false };
+        const contentData = this.contentInternal ?
+            TextUtils.ContentData.ContentData.contentDataOrEmpty(this.contentInternal) :
+            TextUtils.ContentData.EMPTY_TEXT_CONTENT_DATA;
+        if (this.workingCopyInternal !== null) {
+            return new TextUtils.ContentData.ContentData(this.workingCopyInternal, /* isBase64 */ false, contentData.mimeType);
         }
-        if (this.contentInternal) {
-            return TextUtils.ContentData.ContentData.asDeferredContent(this.contentInternal);
-        }
-        return { content: '', isEncoded: false };
+        return contentData;
     }
     resetWorkingCopy() {
         this.innerResetWorkingCopy();

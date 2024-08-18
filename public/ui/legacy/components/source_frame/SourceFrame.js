@@ -445,34 +445,30 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
     async ensureContentLoaded() {
         if (!this.contentRequested) {
             this.contentRequested = true;
-            await this.setDeferredContent(this.lazyContent());
+            await this.setContentDataOrError(this.lazyContent());
             this.contentSet = true;
         }
     }
-    async setDeferredContent(deferredContentPromise) {
+    async setContentDataOrError(contentDataPromise) {
         const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
         progressIndicator.setTitle(i18nString(UIStrings.loading));
         progressIndicator.setTotalWork(100);
         this.progressToolbarItem.element.appendChild(progressIndicator.element);
         progressIndicator.setWorked(1);
-        const deferredContent = await deferredContentPromise;
+        const contentData = await contentDataPromise;
         let error, content;
-        if (deferredContent.content === null) {
-            error = deferredContent.error;
-            content = deferredContent.error;
+        let isMinified = false;
+        if (TextUtils.ContentData.ContentData.isError(contentData)) {
+            error = contentData.error;
+            content = contentData.error;
         }
-        else if (deferredContent.isEncoded) {
-            const view = new DataView(Common.Base64.decode(deferredContent.content));
-            const decoder = new TextDecoder();
-            content = decoder.decode(view, { stream: true });
-        }
-        else if ('wasmDisassemblyInfo' in deferredContent && deferredContent.wasmDisassemblyInfo) {
-            const { wasmDisassemblyInfo } = deferredContent;
-            content = CodeMirror.Text.of(wasmDisassemblyInfo.lines);
-            this.wasmDisassemblyInternal = wasmDisassemblyInfo;
+        else if (contentData instanceof TextUtils.WasmDisassembly.WasmDisassembly) {
+            content = CodeMirror.Text.of(contentData.lines);
+            this.wasmDisassemblyInternal = contentData;
         }
         else {
-            content = deferredContent.content;
+            content = contentData.text;
+            isMinified = TextUtils.TextUtils.isMinified(contentData.text);
             this.wasmDisassemblyInternal = null;
         }
         progressIndicator.setWorked(100);
@@ -488,13 +484,11 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
             this.textEditor.state = this.placeholderEditorState(error);
             this.prettyToggle.setEnabled(false);
         }
+        else if (this.shouldAutoPrettyPrint && isMinified) {
+            await this.setPretty(true);
+        }
         else {
-            if (this.shouldAutoPrettyPrint && TextUtils.TextUtils.isMinified(deferredContent.content || '')) {
-                await this.setPretty(true);
-            }
-            else {
-                await this.setContent(this.rawContent || '');
-            }
+            await this.setContent(this.rawContent || '');
         }
     }
     revealPosition(position, shouldHighlight) {

@@ -61,7 +61,7 @@ export class BreadcrumbsUI extends HTMLElement {
         // clang-format off
         return html `
           <div class="breadcrumb" @click=${() => this.#removeBreadcrumb(breadcrumb)}
-          jslog=${VisualLogging.action('timeline.breadcrumb-select').track({ click: true })}>
+          jslog=${VisualLogging.item('timeline.breadcrumb-select').track({ click: true })}>
            <span class="${(index !== 0 && breadcrumb.child === null) ? 'last-breadcrumb' : ''} range">
             ${(index === 0) ?
             `Full range (${i18n.TimeUtilities.preciseMillisToString(breadcrumbRange, 2)})` :
@@ -83,7 +83,7 @@ export class BreadcrumbsUI extends HTMLElement {
     #render() {
         // clang-format off
         const output = html `
-      ${this.#breadcrumb === null ? html `` : html `<div class="breadcrumbs">
+      ${this.#breadcrumb === null ? html `` : html `<div class="breadcrumbs" jslog=${VisualLogging.section('breadcrumbs')}>
         ${flattenBreadcrumbs(this.#breadcrumb).map((breadcrumb, index) => this.#renderElement(breadcrumb, index))}
       </div>`}
     `;

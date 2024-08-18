@@ -41,6 +41,11 @@ export declare const UIStrings: {
      */
     buildingDominatedNodes: string;
     /**
+     *@description Text to indicate the status of a heap snapshot in the Performance Pane.
+     * During this step, names are assigned to objects in the heap snapshot.
+     */
+    calculatingObjectNames: string;
+    /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
     calculatingStatistics: string;

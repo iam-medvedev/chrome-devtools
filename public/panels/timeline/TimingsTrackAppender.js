@@ -12,11 +12,37 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimingsTrackAppender.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+/**
+ * This defines the order these markers will be rendered if they are at the
+ * same timestamp. The smaller number will be shown first - e.g. so if MarkFCP,
+ * MarkDOMContent and MarkLCPCandidate have the same timestamp, visually we
+ * will render [FCP][DCL][LCP] everytime.
+ */
+export const SORT_ORDER_PAGE_LOAD_MARKERS = {
+    ["navigationStart" /* TraceEngine.Types.TraceEvents.KnownEventName.NavigationStart */]: 0,
+    ["MarkLoad" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkLoad */]: 1,
+    ["firstContentfulPaint" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkFCP */]: 2,
+    ["firstPaint" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkFirstPaint */]: 2,
+    ["MarkDOMContent" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkDOMContent */]: 3,
+    ["largestContentfulPaint::Candidate" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkLCPCandidate */]: 4,
+};
 export class TimingsTrackAppender {
     appenderName = 'Timings';
     #colorGenerator;
     #compatibilityBuilder;
     #traceParsedData;
+    /**
+     * Before rendering the markers we group them by timestamp. This is because
+     * if we have multiple markers (e.g. FCP and LCP) at the same time, we want
+     * to ensure that we visually render FCP before LCP - else it's confusing
+     * to the user to see LCP appear before FCP, even though they are at the
+     * same timestamp.
+     * We only do this for PageLoadMarkers - any extension based markers are
+     * not sorted. If an extension marker happens to be at the same time as
+     * LCP, the native LCP event is preferred and shown first.
+     * Because we create an instance of an Appender per trace, we can cache this rather than calculate on each run.
+     */
+    #cachedMarkersByTimestamp = null;
     constructor(compatibilityBuilder, traceParsedData, colorGenerator) {
         this.#compatibilityBuilder = compatibilityBuilder;
         this.#colorGenerator = colorGenerator;
@@ -65,6 +91,34 @@ export class TimingsTrackAppender {
         const group = buildTrackHeader("timings" /* VisualLoggingTrackName.TIMINGS */, currentLevel, i18nString(UIStrings.timings), style, /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }
+    #sortMarkersForPreferredVisualOrder(markers) {
+        markers.sort((m1, m2) => {
+            const m1Index = SORT_ORDER_PAGE_LOAD_MARKERS[m1.name] ?? Infinity;
+            const m2Index = SORT_ORDER_PAGE_LOAD_MARKERS[m2.name] ?? Infinity;
+            return m1Index - m2Index;
+        });
+    }
+    /**
+     * Group markers into a map, where keys are timestamps and the values are markers that have the same timestamp.
+     */
+    #groupMarkersByTimestamp(markers) {
+        if (this.#cachedMarkersByTimestamp) {
+            return this.#cachedMarkersByTimestamp;
+        }
+        const markersByTimestamp = new Map();
+        markers.forEach(marker => {
+            const forTime = markersByTimestamp.get(marker.ts) || [];
+            forTime.push(marker);
+            markersByTimestamp.set(marker.ts, forTime);
+        });
+        for (const markersAtTime of markersByTimestamp.values()) {
+            if (markersAtTime.length > 1) {
+                this.#sortMarkersForPreferredVisualOrder(markersAtTime);
+            }
+        }
+        this.#cachedMarkersByTimestamp = markersByTimestamp;
+        return this.#cachedMarkersByTimestamp;
+    }
     /**
      * Adds into the flame chart data the trace events corresponding
      * to page load markers (LCP, FCP, L, etc.). These are taken straight
@@ -81,10 +135,13 @@ export class TimingsTrackAppender {
         if (markers.length === 0) {
             return currentLevel;
         }
-        markers.forEach(marker => {
-            const index = this.#compatibilityBuilder.appendEventAtLevel(marker, currentLevel, this);
-            this.#compatibilityBuilder.getFlameChartTimelineData().entryTotalTimes[index] = Number.NaN;
-        });
+        const markersByTimestamp = this.#groupMarkersByTimestamp(markers);
+        for (const markersAtTime of markersByTimestamp.values()) {
+            for (const marker of markersAtTime) {
+                const index = this.#compatibilityBuilder.appendEventAtLevel(marker, currentLevel, this);
+                this.#compatibilityBuilder.getFlameChartTimelineData().entryTotalTimes[index] = Number.NaN;
+            }
+        }
         const minTimeMs = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(this.#traceParsedData.Meta.traceBounds.min);
         const flameChartMarkers = markers.map(marker => {
             // The timestamp for user timing trace events is set to the

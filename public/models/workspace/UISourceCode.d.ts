@@ -56,6 +56,7 @@ export declare class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<Eve
     hasCommits(): boolean;
     workingCopy(): string;
     workingCopyContent(): TextUtils.ContentProvider.DeferredContent;
+    workingCopyContentData(): TextUtils.ContentData.ContentData;
     resetWorkingCopy(): void;
     private innerResetWorkingCopy;
     setWorkingCopy(newWorkingCopy: string): void;

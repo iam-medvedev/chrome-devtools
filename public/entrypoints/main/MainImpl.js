@@ -311,11 +311,13 @@ export class MainImpl {
         Root.Runtime.experiments.register("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */, 'Performance panel: enable performance insights', true);
         Root.Runtime.experiments.register("timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */, 'Performance panel: enable live metrics landing page');
         Root.Runtime.experiments.register("gen-ai-settings-panel" /* Root.Runtime.ExperimentName.GEN_AI_SETTINGS_PANEL */, 'Dedicated panel for generative AI settings');
+        Root.Runtime.experiments.register("timeline-server-timings" /* Root.Runtime.ExperimentName.TIMELINE_SERVER_TIMINGS */, 'Performance panel: enable server timings in the timeline');
         Root.Runtime.experiments.enableExperimentsByDefault([
             'css-type-component-length-deprecate',
             "outermost-target-selector" /* Root.Runtime.ExperimentName.OUTERMOST_TARGET_SELECTOR */,
             "preloading-status-panel" /* Root.Runtime.ExperimentName.PRELOADING_STATUS_PANEL */,
             "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
+            "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();

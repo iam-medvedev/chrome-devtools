@@ -32,7 +32,7 @@ styles.replaceSync(
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
-  background-image: linear-gradient(360deg, var(--sys-color-on-primary), transparent);
+  background-image: linear-gradient(180deg, var(--sys-color-on-primary), transparent);
   height: 90px;
 
   &:nth-child(odd) {

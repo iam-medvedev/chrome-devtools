@@ -48,6 +48,7 @@ export interface TraceEventData {
 }
 export interface TraceEventArgs {
     data?: TraceEventArgsData;
+    stackTrace?: TraceEventCallFrame[];
 }
 export interface TraceEventArgsData {
     stackTrace?: TraceEventCallFrame[];
@@ -249,7 +250,7 @@ interface SyntheticArgsData {
     waiting: MicroSeconds;
 }
 export interface SyntheticNetworkRequest extends TraceEventComplete, SyntheticBasedEvent<Phase.COMPLETE> {
-    rawSourceEvent: TraceEventData;
+    rawSourceEvent: TraceEventResourceSendRequest;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             syntheticData: SyntheticArgsData;
@@ -290,6 +291,7 @@ export interface SyntheticNetworkRequest extends TraceEventComplete, SyntheticBa
             initiator?: Initiator;
             requestMethod?: string;
             timing?: TraceEventResourceReceiveResponseTimingData;
+            syntheticServerTimings?: SyntheticServerTiming[];
         };
     };
     cat: 'loading';
@@ -866,6 +868,17 @@ export interface TraceEventBeginCommitCompositorFrame extends TraceEventInstant 
     };
 }
 export declare function isTraceEventBeginCommitCompositorFrame(event: TraceEventData): event is TraceEventBeginCommitCompositorFrame;
+export interface TraceEventParseMetaViewport extends TraceEventInstant {
+    name: KnownEventName.ParseMetaViewport;
+    args: TraceEventArgs & {
+        data: {
+            frame: string;
+            node_id: number;
+            content: string;
+        };
+    };
+}
+export declare function isTraceEventParseMetaViewport(event: TraceEventData): event is TraceEventParseMetaViewport;
 export interface TraceEventScheduleStyleRecalculation extends TraceEventInstant {
     name: KnownEventName.ScheduleStyleRecalculation;
     args: TraceEventArgs & {
@@ -915,6 +928,7 @@ export type TraceEventPairableUserTiming = TraceEventUserTiming & TraceEventPair
 export interface TraceEventPerformanceMeasureBegin extends TraceEventPairableUserTiming {
     args: TraceEventArgs & {
         detail?: string;
+        stackTrace?: TraceEventCallFrame[];
     };
     ph: Phase.ASYNC_NESTABLE_START;
 }
@@ -924,6 +938,7 @@ export interface TraceEventPerformanceMark extends TraceEventUserTiming {
     args: TraceEventArgs & {
         data?: TraceEventArgsData & {
             detail?: string;
+            stackTrace?: TraceEventCallFrame[];
         };
     };
     ph: Phase.INSTANT | Phase.MARK | Phase.ASYNC_NESTABLE_INSTANT;
@@ -1140,6 +1155,25 @@ export interface SyntheticProfileCall extends TraceEventData {
     nodeId: Protocol.integer;
     sampleIndex: number;
     profileId: ProfileID;
+}
+/**
+ * A synthetic event created from the Server-Timing header of network
+ * request. In order to create these synthetic events, the corresponding
+ * metric (timing) in the header must contain a "start" param, which
+ * corresponds to the timestamp of the metric in the server. The
+ * ServerTimingsHandler implements a heuristic to estimate the offset
+ * between the client clock and the server clock so that the server
+ * timestamp can be translated to the tracing clock.
+ */
+export interface SyntheticServerTiming<T extends Phase = Phase.COMPLETE> extends SyntheticBasedEvent<T> {
+    rawSourceEvent: TraceEventResourceSendRequest;
+    cat: 'devtools.server-timing';
+    args: TraceEventArgs & {
+        data: TraceEventArgsData & {
+            desc?: string;
+            origin: string;
+        };
+    };
 }
 /**
  * A JS Sample reflects a single sample from the V8 CPU Profile
@@ -1412,6 +1446,7 @@ export declare function isTraceEventNavigationStartWithURL(event: TraceEventData
 export declare function isTraceEventMainFrameViewport(traceEventData: TraceEventData): traceEventData is TraceEventMainFrameViewport;
 export declare function isSyntheticUserTiming(traceEventData: TraceEventData): traceEventData is SyntheticUserTimingPair;
 export declare function isSyntheticConsoleTiming(traceEventData: TraceEventData): traceEventData is SyntheticConsoleTimingPair;
+export declare function isTraceEventUserTiming(traceEventData: TraceEventData): traceEventData is TraceEventUserTiming;
 export declare function isTraceEventPerformanceMeasure(traceEventData: TraceEventData): traceEventData is TraceEventPerformanceMeasure;
 export declare function isTraceEventPerformanceMark(traceEventData: TraceEventData): traceEventData is TraceEventPerformanceMark;
 export declare function isTraceEventConsoleTime(traceEventData: TraceEventData): traceEventData is TraceEventConsoleTime;
@@ -1733,6 +1768,7 @@ export interface TraceEventFunctionCall extends TraceEventComplete {
     };
 }
 export declare function isTraceEventFunctionCall(event: TraceEventData): event is TraceEventFunctionCall;
+export declare function isSyntheticServerTiming(event: TraceEventData): event is SyntheticServerTiming;
 /**
  * Generally, before JS is executed, a trace event is dispatched that
  * parents the JS calls. These we call "invocation" events. This
@@ -1819,6 +1855,7 @@ export declare const enum KnownEventName {
     StyleInvalidatorInvalidationTracking = "StyleInvalidatorInvalidationTracking",
     SelectorStats = "SelectorStats",
     BeginCommitCompositorFrame = "BeginCommitCompositorFrame",
+    ParseMetaViewport = "ParseMetaViewport",
     ScrollLayer = "ScrollLayer",
     UpdateLayer = "UpdateLayer",
     PaintSetup = "PaintSetup",

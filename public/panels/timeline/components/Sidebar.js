@@ -13,6 +13,14 @@ export class RemoveAnnotation extends Event {
         this.removedAnnotation = removedAnnotation;
     }
 }
+export class EventReferenceClick extends Event {
+    metricEvent;
+    static eventName = 'sidebarmetricclick';
+    constructor(metricEvent) {
+        super(EventReferenceClick.eventName, { bubbles: true, composed: true });
+        this.metricEvent = metricEvent;
+    }
+}
 export const DEFAULT_SIDEBAR_TAB = "insights" /* SidebarTabs.INSIGHTS */;
 export class SidebarWidget extends UI.Widget.VBox {
     #tabbedPane = new UI.TabbedPane.TabbedPane();

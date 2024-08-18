@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Spec from './web-vitals-injected/spec/spec.js';
-const LIVE_METRICS_WORLD_NAME = 'live_metrics_world';
+const LIVE_METRICS_WORLD_NAME = 'DevTools Performance Metrics';
 let liveMetricsInstance;
 class InjectedScript {
     static #injectedScript;
@@ -156,9 +157,36 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             interactions: this.#interactions,
         });
     }
+    #getFrameForExecutionContextId(executionContextId) {
+        if (!this.#target) {
+            return null;
+        }
+        const runtimeModel = this.#target.model(SDK.RuntimeModel.RuntimeModel);
+        const resourceTreeModel = this.#target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        if (!runtimeModel || !resourceTreeModel) {
+            return null;
+        }
+        const executionContext = runtimeModel.executionContext(executionContextId);
+        if (!executionContext) {
+            return null;
+        }
+        const frameId = executionContext.frameId;
+        if (!frameId) {
+            return null;
+        }
+        const frame = resourceTreeModel.frameForId(frameId);
+        if (!frame) {
+            return null;
+        }
+        return frame;
+    }
     async #onBindingCalled(event) {
         const { data } = event;
         if (data.name !== Spec.EVENT_BINDING_NAME) {
+            return;
+        }
+        const frame = this.#getFrameForExecutionContextId(data.executionContextId);
+        if (!frame?.isMainFrame()) {
             return;
         }
         const webVitalsEvent = JSON.parse(data.payload);
@@ -190,6 +218,12 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
         void this.#disable();
     }
     async #enable(target) {
+        if (Host.InspectorFrontendHost.isUnderTest()) {
+            // Enabling this impacts a lot of layout tests; we will work on fixing
+            // them but for now it is easier to not run this page in layout tests.
+            // b/360064852
+            return;
+        }
         if (this.#target) {
             return;
         }
@@ -208,13 +242,13 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             executionContextName: LIVE_METRICS_WORLD_NAME,
         });
         const source = await InjectedScript.get();
+        this.#target = target;
         const { identifier } = await target.pageAgent().invoke_addScriptToEvaluateOnNewDocument({
             source,
             worldName: LIVE_METRICS_WORLD_NAME,
             runImmediately: true,
         });
         this.#scriptIdentifier = identifier;
-        this.#target = target;
     }
     async #disable() {
         if (!this.#target) {

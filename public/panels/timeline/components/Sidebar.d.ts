@@ -11,6 +11,16 @@ export declare class RemoveAnnotation extends Event {
     static readonly eventName = "removeannotation";
     constructor(removedAnnotation: TraceEngine.Types.File.Annotation);
 }
+export declare class EventReferenceClick extends Event {
+    metricEvent: TraceEngine.Types.TraceEvents.TraceEventData;
+    static readonly eventName = "sidebarmetricclick";
+    constructor(metricEvent: TraceEngine.Types.TraceEvents.TraceEventData);
+}
+declare global {
+    interface GlobalEventHandlersEventMap {
+        [EventReferenceClick.eventName]: EventReferenceClick;
+    }
+}
 export declare const enum SidebarTabs {
     INSIGHTS = "insights",
     ANNOTATIONS = "annotations"

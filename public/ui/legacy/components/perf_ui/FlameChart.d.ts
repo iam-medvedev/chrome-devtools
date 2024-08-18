@@ -578,7 +578,8 @@ export declare const enum Events {
      * away from any events)
      */
     EntryInvoked = "EntryInvoked",
-    AnnotateEntry = "AnnotateEntry",
+    EntryLabelAnnotationAdded = "EntryLabelAnnotationAdded",
+    EntriesLinkAnnotationChanged = "EntriesLinkAnnotationChanged",
     /**
      * Emitted when an event is selected via keyboard navigation using the arrow
      * keys.
@@ -600,7 +601,11 @@ export declare const enum Events {
     MouseMove = "MouseMove"
 }
 export type EventTypes = {
-    [Events.AnnotateEntry]: number;
+    [Events.EntryLabelAnnotationAdded]: number;
+    [Events.EntriesLinkAnnotationChanged]: {
+        entryFromIndex: number;
+        entryToIndex?: number;
+    };
     [Events.CanvasFocused]: number | void;
     [Events.EntryInvoked]: number;
     [Events.EntrySelected]: number;

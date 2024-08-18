@@ -88,6 +88,7 @@ export declare class HeapSnapshotRetainerEdgeIterator implements HeapSnapshotIte
     next(): void;
 }
 export declare class HeapSnapshotNode implements HeapSnapshotItem {
+    #private;
     snapshot: HeapSnapshot;
     nodeIndex: number;
     constructor(snapshot: HeapSnapshot, nodeIndex?: number);
@@ -95,6 +96,7 @@ export declare class HeapSnapshotNode implements HeapSnapshotItem {
     distanceForRetainersView(): number;
     className(): string;
     classIndex(): number;
+    setClassIndex(index: number): void;
     dominatorIndex(): number;
     edges(): HeapSnapshotEdgeIterator;
     edgesCount(): number;
@@ -122,6 +124,8 @@ export declare class HeapSnapshotNode implements HeapSnapshotItem {
     nextNodeIndex(): number;
     rawType(): number;
     isFlatConsString(): boolean;
+    detachedness(): DOMLinkState;
+    setDetachedness(detachedness: DOMLinkState): void;
 }
 export declare class HeapSnapshotNodeIterator implements HeapSnapshotItemIterator {
     #private;
@@ -178,6 +182,14 @@ export interface LiveObjects {
         ids: number[];
     };
 }
+/**
+ * DOM node link state.
+ */
+declare const enum DOMLinkState {
+    Unknown = 0,
+    Attached = 1,
+    Detached = 2
+}
 export declare abstract class HeapSnapshot {
     #private;
     nodes: Platform.TypedArrayUtilities.BigUint32Array;
@@ -200,6 +212,8 @@ export declare abstract class HeapSnapshot {
     nodeSlicedStringType: number;
     nodeCodeType: number;
     nodeSyntheticType: number;
+    nodeClosureType: number;
+    nodeRegExpType: number;
     edgeFieldsCount: number;
     edgeTypeOffset: number;
     edgeNameOffset: number;
@@ -221,9 +235,11 @@ export declare abstract class HeapSnapshot {
     firstDominatedNodeIndex: Uint32Array;
     dominatedNodes: Uint32Array;
     dominatorsTree: Uint32Array;
+    nodeDetachednessAndClassIndexOffset: number;
     lazyStringCache: {
         [x: string]: string;
     };
+    detachednessAndClassIndexArray?: Uint32Array;
     constructor(profile: Profile, progress: HeapSnapshotProgress);
     initialize(): void;
     private buildEdgeIndexes;
@@ -274,6 +290,7 @@ export declare abstract class HeapSnapshot {
     private buildDominatorTree;
     private calculateRetainedSizes;
     private buildDominatedNodes;
+    private calculateObjectNames;
     /**
      * Iterates children of a node.
      */
@@ -332,7 +349,6 @@ export declare abstract class HeapSnapshot {
     getDistanceForRetainersView(nodeIndex: number): number;
     isNodeIgnoredInRetainersView(nodeIndex: number): boolean;
     isEdgeIgnoredInRetainersView(edgeIndex: number): boolean;
-    getIndexForSyntheticClassName(className: string): number;
 }
 declare class HeapSnapshotMetainfo {
     location_fields: string[];
@@ -417,8 +433,6 @@ export declare class JSHeapSnapshotNode extends HeapSnapshotNode {
     rawName(): string;
     name(): string;
     private consStringName;
-    className(): string;
-    classIndex(): number;
     id(): number;
     isHidden(): boolean;
     isArray(): boolean;

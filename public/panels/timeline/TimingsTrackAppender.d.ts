@@ -2,6 +2,13 @@ import type * as Common from '../../core/common/common.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import { type CompatibilityTracksAppender, type HighlightedEntryInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 import { type TimelineMarkerStyle } from './TimelineUIUtils.js';
+/**
+ * This defines the order these markers will be rendered if they are at the
+ * same timestamp. The smaller number will be shown first - e.g. so if MarkFCP,
+ * MarkDOMContent and MarkLCPCandidate have the same timestamp, visually we
+ * will render [FCP][DCL][LCP] everytime.
+ */
+export declare const SORT_ORDER_PAGE_LOAD_MARKERS: Readonly<Record<string, number>>;
 export declare class TimingsTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;

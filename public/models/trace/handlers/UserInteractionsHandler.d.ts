@@ -7,6 +7,8 @@ export interface UserInteractionsData {
     allEvents: readonly Types.TraceEvents.TraceEventEventTiming[];
     /** All the BeginCommitCompositorFrame events we found in the trace */
     beginCommitCompositorFrameEvents: readonly Types.TraceEvents.TraceEventBeginCommitCompositorFrame[];
+    /** All the ParseMetaViewport events we found in the trace */
+    parseMetaViewportEvents: readonly Types.TraceEvents.TraceEventParseMetaViewport[];
     /** All the interaction events we found in the trace that had an
      * interactionId and a duration > 0
      **/

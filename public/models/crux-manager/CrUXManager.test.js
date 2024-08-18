@@ -97,6 +97,13 @@ describeWithMockConnection('CrUXManager', () => {
             assert.isFalse(dummyStorage.has(manager.getConfigSetting().name));
         });
     });
+    it('isEnabled() returns if the user has consented)', async () => {
+        const manager = CrUXManager.CrUXManager.instance({ forceNew: true });
+        manager.getConfigSetting().set({ enabled: true, override: '' });
+        assert.isTrue(manager.isEnabled());
+        manager.getConfigSetting().set({ enabled: false, override: '' });
+        assert.isFalse(manager.isEnabled());
+    });
     describe('getFieldDataForPage', () => {
         it('should request data for all scopes', async () => {
             mockFetch.callsFake(async () => new Response(JSON.stringify(mockResponse()), {
@@ -238,6 +245,13 @@ describeWithMockConnection('CrUXManager', () => {
             await cruxManager.getFieldDataForPage('https://example.com?search');
             assert.strictEqual(mockFetch.callCount, 6);
         });
+        it('should exit early for localhost', async () => {
+            mockFetch.callsFake(async () => new Response(JSON.stringify(mockResponse()), {
+                status: 200,
+            }));
+            await cruxManager.getFieldDataForPage('https://localhost:8080/');
+            assert.strictEqual(mockFetch.callCount, 0);
+        });
     });
     describe('getFieldDataForCurrentPage', () => {
         let getFieldDataMock;
@@ -266,6 +280,34 @@ describeWithMockConnection('CrUXManager', () => {
             await cruxManager.getFieldDataForCurrentPage();
             assert.strictEqual(getFieldDataMock.callCount, 1);
             assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/override');
+        });
+        it('should use origin map if set', async () => {
+            target.setInspectedURL('http://localhost:8080/inspected?param');
+            cruxManager.getConfigSetting().set({
+                enabled: false,
+                override: '',
+                originMappings: [{
+                        developmentOrigin: 'http://localhost:8080',
+                        productionOrigin: 'https://example.com',
+                    }],
+            });
+            await cruxManager.getFieldDataForCurrentPage();
+            assert.strictEqual(getFieldDataMock.callCount, 1);
+            assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://example.com/inspected');
+        });
+        it('should not use origin map if URL override is set', async () => {
+            target.setInspectedURL('http://localhost:8080/inspected?param');
+            cruxManager.getConfigSetting().set({
+                enabled: false,
+                override: 'https://google.com',
+                originMappings: [{
+                        developmentOrigin: 'http://localhost:8080',
+                        productionOrigin: 'https://example.com',
+                    }],
+            });
+            await cruxManager.getFieldDataForCurrentPage();
+            assert.strictEqual(getFieldDataMock.callCount, 1);
+            assert.strictEqual(getFieldDataMock.firstCall.args[0], 'https://google.com');
         });
         it('should use inspected URL if main document is unavailable', async () => {
             target.setInspectedURL('https://example.com/inspected');

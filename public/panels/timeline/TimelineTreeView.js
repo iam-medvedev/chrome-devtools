@@ -10,6 +10,7 @@ import * as TraceEngine from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import { getCategoryStyles, stringIsEventCategory } from './EventUICategory.js';
 import * as Extensions from './extensions/extensions.js';
@@ -200,6 +201,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
         this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'timeline-tree-view-details-split-widget');
         const mainView = new UI.Widget.VBox();
         const toolbar = new UI.Toolbar.Toolbar('', mainView.element);
+        toolbar.element.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         toolbar.makeWrappable(true);
         this.populateToolbar(toolbar);
         this.dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
@@ -248,17 +250,18 @@ export class TimelineTreeView extends UI.Widget.VBox {
         return false;
     }
     populateToolbar(toolbar) {
-        this.caseSensitiveButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchCase), 'match-case');
+        this.caseSensitiveButton =
+            new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchCase), 'match-case', undefined, 'match-case');
         this.caseSensitiveButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             this.#filterChanged();
         }, this);
         toolbar.appendToolbarItem(this.caseSensitiveButton);
-        this.regexButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.useRegularExpression), 'regular-expression');
+        this.regexButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.useRegularExpression), 'regular-expression', undefined, 'regular-expression');
         this.regexButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             this.#filterChanged();
         }, this);
         toolbar.appendToolbarItem(this.regexButton);
-        this.matchWholeWord = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchWholeWord), 'match-whole-word');
+        this.matchWholeWord = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.matchWholeWord), 'match-whole-word', undefined, 'match-whole-word');
         this.matchWholeWord.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => {
             this.#filterChanged();
         }, this);
@@ -847,6 +850,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
 export class CallTreeTimelineTreeView extends AggregatedTimelineTreeView {
     constructor() {
         super();
+        this.element.setAttribute('jslog', `${VisualLogging.pane('call-tree').track({ resize: true })}`);
         this.dataGrid.markColumnAsSortedBy('total', DataGrid.DataGrid.Order.Descending);
     }
     buildTree() {
@@ -857,6 +861,7 @@ export class CallTreeTimelineTreeView extends AggregatedTimelineTreeView {
 export class BottomUpTimelineTreeView extends AggregatedTimelineTreeView {
     constructor() {
         super();
+        this.element.setAttribute('jslog', `${VisualLogging.pane('bottom-up').track({ resize: true })}`);
         this.dataGrid.markColumnAsSortedBy('self', DataGrid.DataGrid.Order.Descending);
     }
     buildTree() {

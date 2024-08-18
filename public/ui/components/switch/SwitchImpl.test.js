@@ -28,5 +28,20 @@ describe('Switch', () => {
         const event = await eventPromise;
         assert.isTrue(event.checked);
     });
+    it('emits only 1 click event when clicked', async () => {
+        const component = new Switch.Switch.Switch();
+        let clickEventCount = 0;
+        const eventPromise = new Promise(resolve => {
+            component.addEventListener('click', ev => {
+                clickEventCount++;
+                resolve(ev);
+            });
+        });
+        renderElementIntoDOM(component);
+        const slider = component.shadowRoot?.querySelector('span.slider');
+        slider.click();
+        await eventPromise;
+        assert.strictEqual(clickEventCount, 1);
+    });
 });
 //# sourceMappingURL=SwitchImpl.test.js.map

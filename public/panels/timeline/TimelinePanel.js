@@ -435,6 +435,10 @@ export class TimelinePanel extends UI.Panel.Panel {
             const { name, navigationId, createOverlayFn } = event;
             this.#setActiveInsight({ name, navigationId, createOverlayFn });
         });
+        this.#sideBar.contentElement.addEventListener(TimelineComponents.Sidebar.EventReferenceClick.eventName, event => {
+            const { metricEvent } = event;
+            this.flameChart.setSelection(TimelineSelection.fromTraceEvent(metricEvent));
+        });
         this.#sideBar.element.addEventListener(TimelineComponents.Sidebar.RemoveAnnotation.eventName, event => {
             const { removedAnnotation } = event;
             ModificationsManager.activeManager()?.removeAnnotation(removedAnnotation);
@@ -561,6 +565,9 @@ export class TimelinePanel extends UI.Panel.Panel {
             // we also uninstall any source maps resolver for the trace that was active.
             // If the user swaps back to this trace via the history dropdown, this will be reinstated.
             this.#uninstallSourceMapsResolver();
+            // Store any modifications (e.g. annotations) that the user has created
+            // on the current trace before we move away to a new view.
+            this.#saveModificationsForActiveTrace();
         }
         this.#viewMode = newMode;
         /**
@@ -717,7 +724,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         // Record
         this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
         this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.recordReloadAction));
-        this.clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear');
+        this.clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear', undefined, 'timeline.clear');
         this.clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, () => this.onClearButton());
         this.panelToolbar.appendToolbarItem(this.clearButton);
         // Load / Save
@@ -931,20 +938,25 @@ export class TimelinePanel extends UI.Panel.Panel {
             Common.Console.Console.instance().error(i18nString(UIStrings.failedToSaveTimelineSS, { PH1: error.message, PH2: error.name }));
         }
     }
-    async showHistory() {
+    async showHistoryDropdown() {
         const recordingData = await this.#historyManager.showHistoryDropDown();
-        this.#saveModificationsForActiveTrace();
         if (recordingData) {
-            this.#changeView({
-                mode: 'VIEWING_TRACE',
-                traceIndex: recordingData.traceParseDataIndex,
-            });
+            if (recordingData.type === 'LANDING_PAGE') {
+                this.#changeView({ mode: 'LANDING_PAGE' });
+            }
+            else {
+                this.#changeView({
+                    mode: 'VIEWING_TRACE',
+                    traceIndex: recordingData.traceParseDataIndex,
+                });
+            }
         }
     }
     navigateHistory(direction) {
-        this.#saveModificationsForActiveTrace();
         const recordingData = this.#historyManager.navigate(direction);
-        if (recordingData) {
+        // When navigating programatically, you cannot navigate to the landing page
+        // view, so we can discount that possibility here.
+        if (recordingData && recordingData.type === 'TRACE_INDEX') {
             this.#changeView({
                 mode: 'VIEWING_TRACE',
                 traceIndex: recordingData.traceParseDataIndex,
@@ -1191,7 +1203,6 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async startRecording() {
-        this.#saveModificationsForActiveTrace();
         console.assert(!this.statusPane, 'Status pane is already opened.');
         this.setState("StartPending" /* State.StartPending */);
         this.showRecordingStarted();
@@ -1348,8 +1359,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.#changeView({ mode: 'LANDING_PAGE' });
             return;
         }
-        // Before loading a new trace, update modifications of the previous one.
-        this.#saveModificationsForActiveTrace();
         // Clear the line level profile that could exist from the previous trace.
         PerfUI.LineLevelProfile.Performance.instance().reset();
         this.#minimapComponent.reset();
@@ -1382,6 +1391,11 @@ export class TimelinePanel extends UI.Panel.Panel {
             else if (action === 'UpdateTimeRange' && Overlays.Overlays.isTimeRangeLabel(overlay)) {
                 this.flameChart.updateExistingOverlay(overlay, {
                     bounds: overlay.bounds,
+                });
+            }
+            else if (action === 'UpdateLinkToEntry' && Overlays.Overlays.isEntriesLink(overlay)) {
+                this.flameChart.updateExistingOverlay(overlay, {
+                    entryTo: overlay.entryTo,
                 });
             }
             this.#sideBar.setAnnotations(currentManager.getAnnotations());
@@ -1584,6 +1598,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.#historyManager.addRecording({
                 data: {
                     traceParseDataIndex: traceIndex,
+                    type: 'TRACE_INDEX',
                 },
                 filmStripForPreview: TraceEngine.Extras.FilmStrip.fromTraceData(traceData),
                 traceParsedData: traceData,
@@ -1795,6 +1810,7 @@ export class StatusPane extends UI.Widget.VBox {
     constructor(options, buttonCallback) {
         super(true);
         this.contentElement.classList.add('timeline-status-dialog');
+        this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('timeline-status').track({ resize: true })}`);
         const statusLine = this.contentElement.createChild('div', 'status-dialog-line status');
         statusLine.createChild('div', 'label').textContent = i18nString(UIStrings.status);
         this.status = statusLine.createChild('div', 'content');
@@ -1955,7 +1971,7 @@ export class ActionDelegate {
                 panel.jumpToFrame(1);
                 return true;
             case 'timeline.show-history':
-                void panel.showHistory();
+                void panel.showHistoryDropdown();
                 return true;
             case 'timeline.previous-recording':
                 panel.navigateHistory(1);

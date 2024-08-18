@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
 import * as Root from '../../../../core/root/root.js';
+import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import { dispatchInputEvent, dispatchPasteEvent, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
@@ -15,8 +16,7 @@ describeWithEnvironment('SourceFrame', () => {
         setting.set(false);
     });
     async function createSourceFrame(content) {
-        const deferredContentStub = { content: '', isEncoded: true };
-        const sourceFrame = new SourceFrame.SourceFrame.SourceFrameImpl(async () => deferredContentStub);
+        const sourceFrame = new SourceFrame.SourceFrame.SourceFrameImpl(async () => TextUtils.ContentData.EMPTY_TEXT_CONTENT_DATA);
         await sourceFrame.setContent(content);
         return sourceFrame;
     }

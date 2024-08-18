@@ -135,24 +135,14 @@ describeWithLocale('PieChart', () => {
             const total = chart.shadowRoot.querySelector('.pie-chart-total');
             assert.isFalse(total.classList.contains('selected'));
         });
-        it('does not show a focus ring for click selection', () => {
-            const chart = new PerfUI.PieChart.PieChart();
-            renderElementIntoDOM(chart);
-            chart.data = testChartData;
-            assert.isNotNull(chart.shadowRoot);
-            const legendName = chart.shadowRoot.querySelector('.pie-chart-name');
-            legendName.click();
-            const legendRow = chart.shadowRoot.querySelector('.pie-chart-legend-row:focus-visible');
-            assert.isNull(legendRow);
-        });
-        it('shows a focus ring for keyboard selection', () => {
+        it('can focus legend with keyboard ', () => {
             const chart = new PerfUI.PieChart.PieChart();
             renderElementIntoDOM(chart);
             chart.data = testChartData;
             assert.isNotNull(chart.shadowRoot);
             const root = chart.shadowRoot.querySelector('.root');
             root.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
-            const legendRow = chart.shadowRoot.querySelector('.pie-chart-legend-row:focus-visible');
+            const legendRow = chart.shadowRoot.querySelector('.pie-chart-legend-row:focus');
             assert.isNotNull(legendRow);
         });
     });

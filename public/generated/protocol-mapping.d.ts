@@ -959,12 +959,26 @@ export namespace ProtocolMapping {
       returnType: Protocol.Extensions.LoadUnpackedResponse;
     };
     /**
-     * Gets data from extension storage in the given `area`. If `keys` is
+     * Gets data from extension storage in the given `storageArea`. If `keys` is
      * specified, these are used to filter the result.
      */
     'Extensions.getStorageItems': {
       paramsType: [Protocol.Extensions.GetStorageItemsRequest];
       returnType: Protocol.Extensions.GetStorageItemsResponse;
+    };
+    /**
+     * Removes `keys` from extension storage in the given `storageArea`.
+     */
+    'Extensions.removeStorageItems': {
+      paramsType: [Protocol.Extensions.RemoveStorageItemsRequest];
+      returnType: void;
+    };
+    /**
+     * Clears extension storage in the given `storageArea`.
+     */
+    'Extensions.clearStorageItems': {
+      paramsType: [Protocol.Extensions.ClearStorageItemsRequest];
+      returnType: void;
     };
     /**
      * Trigger autofill on a form identified by the fieldId.
@@ -1777,6 +1791,13 @@ export namespace ProtocolMapping {
     'DOM.getFileInfo': {
       paramsType: [Protocol.DOM.GetFileInfoRequest];
       returnType: Protocol.DOM.GetFileInfoResponse;
+    };
+    /**
+     * Returns list of detached nodes
+     */
+    'DOM.getDetachedDomNodes': {
+      paramsType: [];
+      returnType: Protocol.DOM.GetDetachedDomNodesResponse;
     };
     /**
      * Enables console to refer to the node with given id via $x (see Command Line API for more details
@@ -4518,6 +4539,36 @@ export namespace ProtocolMapping {
      */
     'PWA.changeAppUserSettings': {
       paramsType: [Protocol.PWA.ChangeAppUserSettingsRequest];
+      returnType: void;
+    };
+    /**
+     * Enable the BluetoothEmulation domain.
+     */
+    'BluetoothEmulation.enable': {
+      paramsType: [Protocol.BluetoothEmulation.EnableRequest];
+      returnType: void;
+    };
+    /**
+     * Disable the BluetoothEmulation domain.
+     */
+    'BluetoothEmulation.disable': {
+      paramsType: [];
+      returnType: void;
+    };
+    /**
+     * Simulates a peripheral with |address|, |name| and |knownServiceUuids|
+     * that has already been connected to the system.
+     */
+    'BluetoothEmulation.simulatePreconnectedPeripheral': {
+      paramsType: [Protocol.BluetoothEmulation.SimulatePreconnectedPeripheralRequest];
+      returnType: void;
+    };
+    /**
+     * Simulates an advertisement packet described in |entry| being received by
+     * the central.
+     */
+    'BluetoothEmulation.simulateAdvertisement': {
+      paramsType: [Protocol.BluetoothEmulation.SimulateAdvertisementRequest];
       returnType: void;
     };
     /**

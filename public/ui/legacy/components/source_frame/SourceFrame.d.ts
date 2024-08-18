@@ -58,7 +58,7 @@ export declare class SourceFrameImpl extends SourceFrameImpl_base implements UI.
     private wasmDisassemblyInternal;
     contentSet: boolean;
     private selfXssWarningDisabledSetting;
-    constructor(lazyContent: () => Promise<TextUtils.ContentProvider.DeferredContent>, options?: SourceFrameOptions);
+    constructor(lazyContent: () => Promise<TextUtils.ContentData.ContentDataOrError>, options?: SourceFrameOptions);
     disposeView(): void;
     private placeholderEditorState;
     protected editorConfiguration(doc: string | CodeMirror.Text): CodeMirror.Extension;
@@ -97,7 +97,7 @@ export declare class SourceFrameImpl extends SourceFrameImpl_base implements UI.
     get contentType(): string;
     protected getContentType(): string;
     private ensureContentLoaded;
-    protected setDeferredContent(deferredContentPromise: Promise<TextUtils.ContentProvider.DeferredContent>): Promise<void>;
+    protected setContentDataOrError(contentDataPromise: Promise<TextUtils.ContentData.ContentDataOrError>): Promise<void>;
     revealPosition(position: RevealPosition, shouldHighlight?: boolean): void;
     private innerRevealPositionIfNeeded;
     private clearPositionToReveal;

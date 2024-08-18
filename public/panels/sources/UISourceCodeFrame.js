@@ -89,9 +89,9 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
     }
     async workingCopy() {
         if (this.uiSourceCodeInternal.isDirty()) {
-            return { content: this.uiSourceCodeInternal.workingCopy(), isEncoded: false };
+            return this.uiSourceCodeInternal.workingCopyContentData();
         }
-        return this.uiSourceCodeInternal.requestContent();
+        return this.uiSourceCodeInternal.requestContentData();
     }
     editorConfiguration(doc) {
         return [
@@ -142,7 +142,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
             this.unloadUISourceCode();
             this.uiSourceCodeInternal = uiSourceCode;
             if (uiSourceCode.workingCopy() !== this.textEditor.state.doc.toString()) {
-                await this.setDeferredContent(Promise.resolve(uiSourceCode.workingCopyContent()));
+                await this.setContentDataOrError(Promise.resolve(uiSourceCode.workingCopyContentData()));
             }
             else {
                 this.reloadPlugins();
@@ -270,11 +270,11 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         if (this.muteSourceCodeEvents) {
             return;
         }
-        this.maybeSetContent(this.uiSourceCodeInternal.workingCopyContent());
+        this.maybeSetContent(this.uiSourceCodeInternal.workingCopyContentData());
     }
     onWorkingCopyCommitted() {
         if (!this.muteSourceCodeEvents) {
-            this.maybeSetContent(this.uiSourceCode().workingCopyContent());
+            this.maybeSetContent(this.uiSourceCode().workingCopyContentData());
         }
         this.contentCommitted();
         this.updateStyle();
@@ -327,8 +327,8 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         this.setEditable(this.canEditSourceInternal());
     }
     maybeSetContent(content) {
-        if (this.textEditor.state.doc.toString() !== content.content) {
-            void this.setDeferredContent(Promise.resolve(content));
+        if (this.textEditor.state.doc.toString() !== content.text) {
+            void this.setContentDataOrError(Promise.resolve(content));
         }
     }
     populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber) {

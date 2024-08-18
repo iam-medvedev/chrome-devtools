@@ -107,6 +107,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */,
     "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
     "timeline-observations" /* Root.Runtime.ExperimentName.TIMELINE_OBSERVATIONS */,
+    "timeline-server-timings" /* Root.Runtime.ExperimentName.TIMELINE_SERVER_TIMINGS */,
     "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
@@ -203,6 +204,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-css-property-documentation-on-hover', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'freestyler-dogfood-consent-onboarding-finished', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'freestyler-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.
@@ -383,16 +385,19 @@ export function expectConsoleLogs(expectedLogs) {
 export function getGetHostConfigStub(config) {
     const settings = Common.Settings.Settings.instance();
     return sinon.stub(settings, 'getHostConfig').returns({
+        aidaAvailability: {
+            disallowLogging: false,
+            ...config.aidaAvailability,
+        },
         devToolsConsoleInsights: {
             enabled: false,
-            aidaModelId: '',
-            aidaTemperature: 0.2,
-            disallowLogging: false,
+            modelId: '',
+            temperature: 0.2,
             ...config.devToolsConsoleInsights,
         },
         devToolsFreestylerDogfood: {
-            aidaModelId: '',
-            aidaTemperature: 0,
+            modelId: '',
+            temperature: 0,
             enabled: false,
             ...config.devToolsFreestylerDogfood,
         },

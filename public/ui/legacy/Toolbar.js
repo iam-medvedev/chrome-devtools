@@ -188,7 +188,7 @@ export class Toolbar {
         }
     }
     static createActionButton(action, options = TOOLBAR_BUTTON_DEFAULT_OPTIONS) {
-        const button = action.toggleable() ? makeToggle() : makeButton();
+        const button = (action.toggleable() && !options?.ignoreToggleable) ? makeToggle() : makeButton();
         if (options.showLabel) {
             button.setText(options.label?.() || action.title());
         }
@@ -965,7 +965,7 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
     setting;
     muteSettingListener;
     constructor(options, setting, accessibleName) {
-        super(null, accessibleName);
+        super(null, accessibleName, undefined, setting.name);
         this.optionsInternal = options;
         this.setting = setting;
         this.selectElementInternal.addEventListener('change', this.valueChanged.bind(this), false);

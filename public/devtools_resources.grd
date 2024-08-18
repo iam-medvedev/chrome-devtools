@@ -255,6 +255,7 @@
       <include file="Images/triangle-left.svg" name="IMAGES_TRIANGLE_LEFT_SVG" resource_path="Images/triangle-left.svg" type="BINDATA" compress="false"/>
       <include file="Images/triangle-right.svg" name="IMAGES_TRIANGLE_RIGHT_SVG" resource_path="Images/triangle-right.svg" type="BINDATA" compress="false"/>
       <include file="Images/triangle-up.svg" name="IMAGES_TRIANGLE_UP_SVG" resource_path="Images/triangle-up.svg" type="BINDATA" compress="false"/>
+      <include file="Images/tune.svg" name="IMAGES_TUNE_SVG" resource_path="Images/tune.svg" type="BINDATA" compress="false"/>
       <include file="Images/undo.svg" name="IMAGES_UNDO_SVG" resource_path="Images/undo.svg" type="BINDATA" compress="false"/>
       <include file="Images/warning-filled.svg" name="IMAGES_WARNING_FILLED_SVG" resource_path="Images/warning-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/warning.svg" name="IMAGES_WARNING_SVG" resource_path="Images/warning.svg" type="BINDATA" compress="false"/>
@@ -690,6 +691,7 @@
       <include file="ui/components/srgb_overlay/srgb_overlay.js" name="UI_COMPONENTS_SRGB_OVERLAY_SRGB_OVERLAY_JS" resource_path="ui/components/srgb_overlay/srgb_overlay.js" type="BINDATA" compress="false"/>
       <include file="ui/components/suggestion_input/suggestion_input.js" name="UI_COMPONENTS_SUGGESTION_INPUT_SUGGESTION_INPUT_JS" resource_path="ui/components/suggestion_input/suggestion_input.js" type="BINDATA" compress="false"/>
       <include file="ui/components/survey_link/survey_link.js" name="UI_COMPONENTS_SURVEY_LINK_SURVEY_LINK_JS" resource_path="ui/components/survey_link/survey_link.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/switch/switch.js" name="UI_COMPONENTS_SWITCH_SWITCH_JS" resource_path="ui/components/switch/switch.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_editor/text_editor.js" name="UI_COMPONENTS_TEXT_EDITOR_TEXT_EDITOR_JS" resource_path="ui/components/text_editor/text_editor.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_prompt/text_prompt.js" name="UI_COMPONENTS_TEXT_PROMPT_TEXT_PROMPT_JS" resource_path="ui/components/text_prompt/text_prompt.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/tree_outline.js" name="UI_COMPONENTS_TREE_OUTLINE_TREE_OUTLINE_JS" resource_path="ui/components/tree_outline/tree_outline.js" type="BINDATA" compress="false"/>
@@ -766,6 +768,7 @@
       <include file="core/platform/MimeType.js" name="CORE_PLATFORM_MIMETYPE_JS" resource_path="core/platform/MimeType.js" type="BINDATA" compress="false"/>
       <include file="core/platform/NumberUtilities.js" name="CORE_PLATFORM_NUMBERUTILITIES_JS" resource_path="core/platform/NumberUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/PromiseUtilities.js" name="CORE_PLATFORM_PROMISEUTILITIES_JS" resource_path="core/platform/PromiseUtilities.js" type="BINDATA" compress="false"/>
+      <include file="core/platform/ServerTiming.js" name="CORE_PLATFORM_SERVERTIMING_JS" resource_path="core/platform/ServerTiming.js" type="BINDATA" compress="false"/>
       <include file="core/platform/StringUtilities.js" name="CORE_PLATFORM_STRINGUTILITIES_JS" resource_path="core/platform/StringUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/Timing.js" name="CORE_PLATFORM_TIMING_JS" resource_path="core/platform/Timing.js" type="BINDATA" compress="false"/>
       <include file="core/platform/TypedArrayUtilities.js" name="CORE_PLATFORM_TYPEDARRAYUTILITIES_JS" resource_path="core/platform/TypedArrayUtilities.js" type="BINDATA" compress="false"/>
@@ -1030,6 +1033,7 @@
       <include file="models/trace/handlers/SamplesHandler.js" name="MODELS_TRACE_HANDLERS_SAMPLESHANDLER_JS" resource_path="models/trace/handlers/SamplesHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/ScreenshotsHandler.js" name="MODELS_TRACE_HANDLERS_SCREENSHOTSHANDLER_JS" resource_path="models/trace/handlers/ScreenshotsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/SelectorStatsHandler.js" name="MODELS_TRACE_HANDLERS_SELECTORSTATSHANDLER_JS" resource_path="models/trace/handlers/SelectorStatsHandler.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/handlers/ServerTimingsHandler.js" name="MODELS_TRACE_HANDLERS_SERVERTIMINGSHANDLER_JS" resource_path="models/trace/handlers/ServerTimingsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/Threads.js" name="MODELS_TRACE_HANDLERS_THREADS_JS" resource_path="models/trace/handlers/Threads.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/UserInteractionsHandler.js" name="MODELS_TRACE_HANDLERS_USERINTERACTIONSHANDLER_JS" resource_path="models/trace/handlers/UserInteractionsHandler.js" type="BINDATA" compress="false"/>
       <include file="models/trace/handlers/UserTimingsHandler.js" name="MODELS_TRACE_HANDLERS_USERTIMINGSHANDLER_JS" resource_path="models/trace/handlers/UserTimingsHandler.js" type="BINDATA" compress="false"/>
@@ -1724,6 +1728,7 @@
       <include file="panels/timeline/ModificationsManager.js" name="PANELS_TIMELINE_MODIFICATIONSMANAGER_JS" resource_path="panels/timeline/ModificationsManager.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/NetworkTrackAppender.js" name="PANELS_TIMELINE_NETWORKTRACKAPPENDER_JS" resource_path="panels/timeline/NetworkTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/SaveFileFormatter.js" name="PANELS_TIMELINE_SAVEFILEFORMATTER_JS" resource_path="panels/timeline/SaveFileFormatter.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/ServerTimingsTrackAppender.js" name="PANELS_TIMELINE_SERVERTIMINGSTRACKAPPENDER_JS" resource_path="panels/timeline/ServerTimingsTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/SourceMapsResolver.js" name="PANELS_TIMELINE_SOURCEMAPSRESOLVER_JS" resource_path="panels/timeline/SourceMapsResolver.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TargetForEvent.js" name="PANELS_TIMELINE_TARGETFOREVENT_JS" resource_path="panels/timeline/TargetForEvent.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ThreadAppender.js" name="PANELS_TIMELINE_THREADAPPENDER_JS" resource_path="panels/timeline/ThreadAppender.js" type="BINDATA" compress="false"/>
@@ -2067,7 +2072,7 @@
       <include file="ui/components/adorners/Adorner.js" name="UI_COMPONENTS_ADORNERS_ADORNER_JS" resource_path="ui/components/adorners/Adorner.js" type="BINDATA" compress="false"/>
       <include file="ui/components/adorners/adorner.css.js" name="UI_COMPONENTS_ADORNERS_ADORNER_CSS_JS" resource_path="ui/components/adorners/adorner.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/Button.js" name="UI_COMPONENTS_BUTTONS_BUTTON_JS" resource_path="ui/components/buttons/Button.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/buttons/button.css.js" name="UI_COMPONENTS_BUTTONS_BUTTON_CSS_JS" resource_path="ui/components/buttons/button.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/buttons/button.css.legacy.js" name="UI_COMPONENTS_BUTTONS_BUTTON_CSS_LEGACY_JS" resource_path="ui/components/buttons/button.css.legacy.js" type="BINDATA" compress="false"/>
       <include file="ui/components/chrome_link/ChromeLink.js" name="UI_COMPONENTS_CHROME_LINK_CHROMELINK_JS" resource_path="ui/components/chrome_link/ChromeLink.js" type="BINDATA" compress="false"/>
       <include file="ui/components/chrome_link/chromeLink.css.js" name="UI_COMPONENTS_CHROME_LINK_CHROMELINK_CSS_JS" resource_path="ui/components/chrome_link/chromeLink.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/CodeHighlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODEHIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/CodeHighlighter.js" type="BINDATA" compress="false"/>
@@ -2158,6 +2163,8 @@
       <include file="ui/components/suggestion_input/suggestionInput.css.js" name="UI_COMPONENTS_SUGGESTION_INPUT_SUGGESTIONINPUT_CSS_JS" resource_path="ui/components/suggestion_input/suggestionInput.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/survey_link/SurveyLink.js" name="UI_COMPONENTS_SURVEY_LINK_SURVEYLINK_JS" resource_path="ui/components/survey_link/SurveyLink.js" type="BINDATA" compress="false"/>
       <include file="ui/components/survey_link/surveyLink.css.js" name="UI_COMPONENTS_SURVEY_LINK_SURVEYLINK_CSS_JS" resource_path="ui/components/survey_link/surveyLink.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/switch/SwitchImpl.js" name="UI_COMPONENTS_SWITCH_SWITCHIMPL_JS" resource_path="ui/components/switch/SwitchImpl.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/switch/switch.css.js" name="UI_COMPONENTS_SWITCH_SWITCH_CSS_JS" resource_path="ui/components/switch/switch.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_editor/AutocompleteHistory.js" name="UI_COMPONENTS_TEXT_EDITOR_AUTOCOMPLETEHISTORY_JS" resource_path="ui/components/text_editor/AutocompleteHistory.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_editor/ExecutionPositionHighlighter.js" name="UI_COMPONENTS_TEXT_EDITOR_EXECUTIONPOSITIONHIGHLIGHTER_JS" resource_path="ui/components/text_editor/ExecutionPositionHighlighter.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_editor/TextEditor.js" name="UI_COMPONENTS_TEXT_EDITOR_TEXTEDITOR_JS" resource_path="ui/components/text_editor/TextEditor.js" type="BINDATA" compress="false"/>

@@ -101,7 +101,7 @@ export function processEventForIntuitiveDebugging(event, state, extraInfo) {
 }
 export function processEventForTestDebugging(event, state, _extraInfo) {
     lastImpressionLogEntry = null;
-    maybeLogDebugEvent({ interaction: `${event}: ${veTestKeys.get(state?.veid || 0) || ''}` });
+    maybeLogDebugEvent({ interaction: `${event}: ${veTestKeys.get(state?.veid || 0) || (state?.veid ? '<UNKNOWN>' : '')}` });
     checkPendingEventExpectation();
 }
 export function processEventForAdHocAnalysisDebugging(event, state, extraInfo) {

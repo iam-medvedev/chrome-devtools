@@ -67,10 +67,10 @@ export class StreamingContentData extends Common.ObjectWrapper.ObjectWrapper {
 export const isError = function (contentDataOrError) {
     return 'error' in contentDataOrError;
 };
-export const asDeferredContent = function (contentDataOrError) {
+export const asContentDataOrError = function (contentDataOrError) {
     if (isError(contentDataOrError)) {
-        return { error: contentDataOrError.error, content: null, isEncoded: false };
+        return contentDataOrError;
     }
-    return contentDataOrError.content().asDeferedContent();
+    return contentDataOrError.content();
 };
 //# sourceMappingURL=StreamingContentData.js.map
