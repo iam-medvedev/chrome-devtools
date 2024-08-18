@@ -3,15 +3,12 @@
 // found in the LICENSE file.
 import * as Handlers from './handlers/handlers.js';
 import * as Lantern from './lantern/lantern.js';
-function createProcessedNavigation(traceEngineData) {
-    const Meta = traceEngineData.Meta;
-    const frameId = Meta.mainFrameId;
+function createProcessedNavigation(traceEngineData, frameId, navigationId) {
     const scoresByNav = traceEngineData.PageLoadMetrics.metricScoresByFrameId.get(frameId);
     if (!scoresByNav) {
-        throw new Lantern.Core.LanternError('missing metric scores for main frame');
+        throw new Lantern.Core.LanternError('missing metric scores for frame');
     }
-    const lastNavigationId = Meta.mainFrameNavigations.at(-1)?.args.data?.navigationId;
-    const scores = lastNavigationId && scoresByNav.get(lastNavigationId);
+    const scores = scoresByNav.get(navigationId);
     if (!scores) {
         throw new Lantern.Core.LanternError('missing metric scores for specified navigation');
     }
@@ -238,13 +235,15 @@ function linkInitiators(lanternRequests) {
         }
     }
 }
-function createNetworkRequests(trace, traceEngineData) {
+function createNetworkRequests(trace, traceEngineData, startTime = 0, endTime = Number.POSITIVE_INFINITY) {
     const workerThreads = findWorkerThreads(trace);
     const lanternRequests = [];
     for (const request of traceEngineData.NetworkRequests.byTime) {
-        const lanternRequest = createLanternRequest(traceEngineData, workerThreads, request);
-        if (lanternRequest) {
-            lanternRequests.push(lanternRequest);
+        if (request.ts >= startTime && request.ts < endTime) {
+            const lanternRequest = createLanternRequest(traceEngineData, workerThreads, request);
+            if (lanternRequest) {
+                lanternRequests.push(lanternRequest);
+            }
         }
     }
     // TraceEngine consolidates all redirects into a single request object, but lantern needs

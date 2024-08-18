@@ -60,15 +60,15 @@ const navTimingNames = [
     'loadEventStart',
     'loadEventEnd',
 ];
+// These are events dispatched under the blink.user_timing category
+// but that the user didn't add. Filter them out so that they do not
+// Appear in the timings track (they still appear in the main thread
+// flame chart).
+const ignoredNames = [...resourceTimingNames, ...navTimingNames];
 export function handleEvent(event) {
     if (handlerState !== 2 /* HandlerState.INITIALIZED */) {
         throw new Error('UserTimings handler is not initialized');
     }
-    // These are events dispatched under the blink.user_timing category
-    // but that the user didn't add. Filter them out so that they do not
-    // Appear in the timings track (they still appear in the main thread
-    // flame chart).
-    const ignoredNames = [...resourceTimingNames, ...navTimingNames];
     if (ignoredNames.includes(event.name)) {
         return;
     }

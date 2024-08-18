@@ -6,6 +6,7 @@ import * as TraceEngine from '../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as Insights from './insights/insights.js';
+import { EventReferenceClick } from './Sidebar.js';
 import { InsightsCategories } from './SidebarInsightsTab.js';
 import styles from './sidebarSingleNavigation.css.js';
 export class SidebarSingleNavigation extends HTMLElement {
@@ -33,10 +34,15 @@ export class SidebarSingleNavigation extends HTMLElement {
         }
         return label === this.#data.activeCategory;
     }
-    #renderMetricValue(label, value, classification) {
+    #referenceEvent(event) {
+        return () => {
+            this.dispatchEvent(new EventReferenceClick(event));
+        };
+    }
+    #renderMetricValue(label, value, classification, event) {
         // clang-format off
         return this.#metricIsVisible(label) ? LitHtml.html `
-      <div class="metric">
+      <div class="metric" @click=${event ? this.#referenceEvent(event) : null}>
         <div class="metric-value metric-value-${classification}">${value}</div>
         <div class="metric-label">${label}</div>
       </div>
@@ -68,25 +74,26 @@ export class SidebarSingleNavigation extends HTMLElement {
         // Find all clusers associated with this navigation
         const clustersForNavigation = traceParsedData.LayoutShifts.clusters.filter(c => c.navigationId === navigationId);
         let maxScore = 0;
+        let worstCluster;
         for (const cluster of clustersForNavigation) {
             if (cluster.clusterCumulativeScore > maxScore) {
                 maxScore = cluster.clusterCumulativeScore;
+                worstCluster = cluster;
             }
         }
-        return maxScore;
+        return { maxScore, worstShfitEvent: worstCluster?.worstShiftEvent ?? null };
     }
     #renderMetrics(traceParsedData, navigationId) {
         const forNavigation = traceParsedData.PageLoadMetrics.metricScoresByFrameId.get(traceParsedData.Meta.mainFrameId)?.get(navigationId);
         const lcpMetric = forNavigation?.get("LCP" /* TraceEngine.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
-        const clsScore = this.#calculateCLSScore(traceParsedData, navigationId);
+        const { maxScore: clsScore, worstShfitEvent } = this.#calculateCLSScore(traceParsedData, navigationId);
         const inpScore = this.#calculateINPScore(traceParsedData, navigationId);
         return LitHtml.html `
     <div class="metrics-row">
-    ${lcpMetric ?
-            this.#renderMetricValue('LCP', i18n.TimeUtilities.formatMicroSecondsAsSeconds(lcpMetric.timing), lcpMetric.classification) :
+    ${lcpMetric ? this.#renderMetricValue('LCP', i18n.TimeUtilities.formatMicroSecondsAsSeconds(lcpMetric.timing), lcpMetric.classification, lcpMetric.event ?? null) :
             LitHtml.nothing}
-    ${this.#renderMetricValue('CLS', clsScore.toFixed(2), TraceEngine.Handlers.ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(clsScore))}
-    ${inpScore ? this.#renderMetricValue('INP', i18n.TimeUtilities.formatMicroSecondsTime(inpScore), TraceEngine.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inpScore)) :
+    ${this.#renderMetricValue('CLS', clsScore.toFixed(2), TraceEngine.Handlers.ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(clsScore), worstShfitEvent)}
+    ${inpScore ? this.#renderMetricValue('INP', i18n.TimeUtilities.formatMicroSecondsTime(inpScore), TraceEngine.Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inpScore), null) :
             LitHtml.nothing}
     </div>
     `;

@@ -189,6 +189,7 @@ models/trace/handlers/RendererHandler.test.js
 models/trace/handlers/SamplesHandler.test.js
 models/trace/handlers/ScreenshotsHandler.test.js
 models/trace/handlers/SelectorStatsHandler.test.js
+models/trace/handlers/ServerTimingsHandler.test.js
 models/trace/handlers/Threads.test.js
 models/trace/handlers/UserInteractionsHandler.test.js
 models/trace/handlers/UserTimingsHandler.test.js
@@ -298,6 +299,7 @@ panels/elements/AccessibilityTreeView.test.js
 panels/elements/CSSRuleValidator.test.js
 panels/elements/ClassesPaneWidget.test.js
 panels/elements/DOMLinkifier.test.js
+panels/elements/ElementStatePaneWidget.test.js
 panels/elements/ElementsPanel.test.js
 panels/elements/ElementsTreeElementHighlighter.test.js
 panels/elements/InspectElementModeController.test.js
@@ -449,6 +451,7 @@ panels/timeline/track_appenders/GPUTrackAppender.test.js
 panels/timeline/track_appenders/InteractionsTrackAppender.test.js
 panels/timeline/track_appenders/LayoutShiftsTrackAppender.test.js
 panels/timeline/track_appenders/NetworkTrackAppender.test.js
+panels/timeline/track_appenders/ServerTimingsTrackAppender.test.js
 panels/timeline/track_appenders/ThreadAppender.test.js
 panels/timeline/track_appenders/TimingsTrackAppender.test.js
 panels/utils/utils.test.js
@@ -543,6 +546,7 @@ ui/legacy/components/perf_ui/TimelineGrid.test.js
 ui/legacy/components/perf_ui/TimelineOverviewCalculator.test.js
 ui/legacy/components/quick_open/CommandMenu.test.js
 ui/legacy/components/quick_open/FilteredListWidget.test.js
+ui/legacy/components/source_frame/BinaryResourceViewFactory.test.js
 ui/legacy/components/source_frame/ResourceSourceFrame.test.js
 ui/legacy/components/source_frame/SourceFrame.test.js
 ui/legacy/components/utils/JSPresentationUtils.test.js

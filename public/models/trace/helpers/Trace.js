@@ -17,8 +17,17 @@ function stackTraceForEvent(event) {
     if (event.args?.data?.stackTrace) {
         return event.args.data.stackTrace;
     }
+    if (event.args?.stackTrace) {
+        return event.args.stackTrace;
+    }
     if (Types.TraceEvents.isTraceEventUpdateLayoutTree(event)) {
         return event.args.beginData?.stackTrace || null;
+    }
+    if (Types.Extensions.isSyntheticExtensionEntry(event)) {
+        return stackTraceForEvent(event.rawSourceEvent);
+    }
+    if (Types.TraceEvents.isSyntheticUserTiming(event)) {
+        return stackTraceForEvent(event.rawSourceEvent);
     }
     return null;
 }
@@ -311,17 +320,29 @@ export function getZeroIndexedStackTraceForEvent(event) {
         return null;
     }
     return stack.map(callFrame => {
-        const normalizedCallFrame = { ...callFrame };
         switch (event.name) {
             case "ScheduleStyleRecalculation" /* Types.TraceEvents.KnownEventName.ScheduleStyleRecalculation */:
             case "InvalidateLayout" /* Types.TraceEvents.KnownEventName.InvalidateLayout */:
             case "UpdateLayoutTree" /* Types.TraceEvents.KnownEventName.UpdateLayoutTree */: {
-                normalizedCallFrame.lineNumber = callFrame.lineNumber && callFrame.lineNumber - 1;
-                normalizedCallFrame.columnNumber = callFrame.columnNumber && callFrame.columnNumber - 1;
+                return makeZeroBasedCallFrame(callFrame);
+            }
+            default: {
+                if (Types.TraceEvents.isTraceEventUserTiming(event) || Types.Extensions.isSyntheticExtensionEntry(event)) {
+                    return makeZeroBasedCallFrame(callFrame);
+                }
             }
         }
-        return normalizedCallFrame;
+        return callFrame;
     });
+}
+/**
+ * Given a 1-based call frame creates a 0-based one.
+ */
+export function makeZeroBasedCallFrame(callFrame) {
+    const normalizedCallFrame = { ...callFrame };
+    normalizedCallFrame.lineNumber = callFrame.lineNumber && callFrame.lineNumber - 1;
+    normalizedCallFrame.columnNumber = callFrame.columnNumber && callFrame.columnNumber - 1;
+    return normalizedCallFrame;
 }
 /**
  * NOTE: you probably do not want this function! (Which is why it is not exported).

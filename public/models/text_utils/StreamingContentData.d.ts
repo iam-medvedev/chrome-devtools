@@ -1,6 +1,5 @@
 import * as Common from '../../core/common/common.js';
-import { ContentData } from './ContentData.js';
-import { type DeferredContent } from './ContentProvider.js';
+import { ContentData, type ContentDataOrError } from './ContentData.js';
 /**
  * Usage of this class is mostly intended for content that is never "complete".
  * E.g. streaming XHR/fetch requests.
@@ -37,7 +36,7 @@ export type StreamingContentDataOrError = StreamingContentData | {
 export declare const isError: (contentDataOrError: StreamingContentDataOrError) => contentDataOrError is {
     error: string;
 };
-export declare const asDeferredContent: (contentDataOrError: StreamingContentDataOrError) => DeferredContent;
+export declare const asContentDataOrError: (contentDataOrError: StreamingContentDataOrError) => ContentDataOrError;
 export declare const enum Events {
     ChunkAdded = "ChunkAdded"
 }

@@ -42,6 +42,7 @@
     "../../../../../../front_end/panels/elements/CSSRuleValidator.test.ts",
     "../../../../../../front_end/panels/elements/ClassesPaneWidget.test.ts",
     "../../../../../../front_end/panels/elements/DOMLinkifier.test.ts",
+    "../../../../../../front_end/panels/elements/ElementStatePaneWidget.test.ts",
     "../../../../../../front_end/panels/elements/ElementsPanel.test.ts",
     "../../../../../../front_end/panels/elements/ElementsTreeElementHighlighter.test.ts",
     "../../../../../../front_end/panels/elements/InspectElementModeController.test.ts",

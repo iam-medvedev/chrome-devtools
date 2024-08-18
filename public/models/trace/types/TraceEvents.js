@@ -65,6 +65,9 @@ export function isTraceEventStyleInvalidatorInvalidationTracking(event) {
 export function isTraceEventBeginCommitCompositorFrame(event) {
     return event.name === "BeginCommitCompositorFrame" /* KnownEventName.BeginCommitCompositorFrame */;
 }
+export function isTraceEventParseMetaViewport(event) {
+    return event.name === "ParseMetaViewport" /* KnownEventName.ParseMetaViewport */;
+}
 export function isTraceEventScheduleStyleRecalculation(event) {
     return event.name === "ScheduleStyleRecalculation" /* KnownEventName.ScheduleStyleRecalculation */;
 }
@@ -380,11 +383,14 @@ export function isSyntheticConsoleTiming(traceEventData) {
     }
     return 'beginEvent' in data && 'endEvent' in data;
 }
+export function isTraceEventUserTiming(traceEventData) {
+    return traceEventData.cat === 'blink.user_timing';
+}
 export function isTraceEventPerformanceMeasure(traceEventData) {
-    return traceEventData.cat === 'blink.user_timing' && isTraceEventAsyncPhase(traceEventData);
+    return isTraceEventUserTiming(traceEventData) && isTraceEventAsyncPhase(traceEventData);
 }
 export function isTraceEventPerformanceMark(traceEventData) {
-    return traceEventData.cat === 'blink.user_timing' &&
+    return isTraceEventUserTiming(traceEventData) &&
         (traceEventData.ph === "R" /* Phase.MARK */ || traceEventData.ph === "I" /* Phase.INSTANT */);
 }
 export function isTraceEventConsoleTime(traceEventData) {
@@ -491,6 +497,9 @@ export function isTraceEventV8Compile(event) {
 }
 export function isTraceEventFunctionCall(event) {
     return event.name === "FunctionCall" /* KnownEventName.FunctionCall */;
+}
+export function isSyntheticServerTiming(event) {
+    return event.cat === 'devtools.server-timing';
 }
 /**
  * Generally, before JS is executed, a trace event is dispatched that

@@ -1169,6 +1169,9 @@
   "generated/Deprecation.ts | CSSCustomStateDeprecatedSyntax": {
     "message": ":--customstatename is deprecated. Please use the :state(customstatename) syntax instead."
   },
+  "generated/Deprecation.ts | CSSInsetAreaProperty": {
+    "message": "The inset-area property is deprecated. Please use the position-area property instead."
+  },
   "generated/Deprecation.ts | CSSSelectorInternalMediaControlsOverlayCastButton": {
     "message": "The disableRemotePlayback attribute should be used in order to disable the default Cast integration instead of using -internal-media-controls-overlay-cast-button selector."
   },
@@ -5822,6 +5825,9 @@
   "panels/elements/ElementStatePaneWidget.ts | emulatesAFocusedPage": {
     "message": "Keep page focused. Commonly used for debugging disappearing elements."
   },
+  "panels/elements/ElementStatePaneWidget.ts | forceElementSpecificStates": {
+    "message": "Force specific element state"
+  },
   "panels/elements/ElementStatePaneWidget.ts | forceElementState": {
     "message": "Force element state"
   },
@@ -6426,7 +6432,7 @@
     "message": "Update Settings"
   },
   "panels/explain/explain-meta.ts | ageRestricted": {
-    "message": "This feature is only available to users who are 18 years of age or older."
+    "message": "This feature is only available to users who are 18 years of age or older"
   },
   "panels/explain/explain-meta.ts | enableConsoleInsights": {
     "message": "Understand console messages with AI"
@@ -6441,16 +6447,13 @@
     "message": "Understand this warning"
   },
   "panels/explain/explain-meta.ts | geoRestricted": {
-    "message": "This feature is unavailable in your region."
+    "message": "This feature is unavailable in your region"
   },
   "panels/explain/explain-meta.ts | policyRestricted": {
     "message": "Your organization turned off this feature. Contact your administrators for more information."
   },
-  "panels/explain/explain-meta.ts | rolloutRestricted": {
-    "message": "This feature is currently being rolled out. Stay tuned."
-  },
   "panels/explain/explain-meta.ts | wrongLocale": {
-    "message": "To use this feature, update your Language preference in DevTools Settings to English."
+    "message": "To use this feature, update your Language preference in DevTools Settings to English"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "Blocked Resource"
@@ -9599,6 +9602,9 @@
   "panels/profiler/ModuleUIStrings.ts | calculatingNodeFlags": {
     "message": "Calculating node flags…"
   },
+  "panels/profiler/ModuleUIStrings.ts | calculatingObjectNames": {
+    "message": "Calculating object names…"
+  },
   "panels/profiler/ModuleUIStrings.ts | calculatingRetainedSizes": {
     "message": "Calculating retained sizes…"
   },
@@ -12332,8 +12338,14 @@
   "panels/timeline/components/DetailsView.ts | websocketProtocol": {
     "message": "WebSocket Protocol"
   },
+  "panels/timeline/components/FieldSettingsDialog.ts | add": {
+    "message": "Add"
+  },
   "panels/timeline/components/FieldSettingsDialog.ts | advanced": {
     "message": "Advanced"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | alreadyMapped": {
+    "message": "\"{PH1}\" is already mapped to a production origin."
   },
   "panels/timeline/components/FieldSettingsDialog.ts | cancel": {
     "message": "Cancel"
@@ -12344,23 +12356,47 @@
   "panels/timeline/components/FieldSettingsDialog.ts | configureFieldData": {
     "message": "Configure field data fetching"
   },
+  "panels/timeline/components/FieldSettingsDialog.ts | delete": {
+    "message": "Delete"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | developmentOrigin": {
+    "message": "Development origin"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | developmentOriginValue": {
+    "message": "Development origin: {PH1}"
+  },
   "panels/timeline/components/FieldSettingsDialog.ts | doesNotHaveSufficientData": {
     "message": "The Chrome UX Report does not have sufficient real-world speed data for this page."
   },
   "panels/timeline/components/FieldSettingsDialog.ts | fetchAggregated": {
     "message": "Fetch aggregated field data from the {PH1} to help you contextualize local measurements with what real users experience on the site."
   },
+  "panels/timeline/components/FieldSettingsDialog.ts | invalidOrigin": {
+    "message": "\"{PH1}\" is not a valid origin or URL."
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | mapDevelopmentOrigins": {
+    "message": "Set a development origin to automatically get relevant field data for its production origin."
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | new": {
+    "message": "New"
+  },
   "panels/timeline/components/FieldSettingsDialog.ts | ok": {
     "message": "Ok"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | onlyFetchFieldData": {
-    "message": "Only fetch field data for the below URL"
+    "message": "Always show field data for the below URL"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | optOut": {
     "message": "Opt out"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | privacyDisclosure": {
     "message": "Privacy disclosure"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | productionOrigin": {
+    "message": "Production origin"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | productionOriginValue": {
+    "message": "Production origin: {PH1}"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | setUp": {
     "message": "Set up"
@@ -12371,8 +12407,17 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "When DevTools is open, the URLs you visit will be sent to Google to query field data. These requests are not tied to your Google account."
   },
+  "panels/timeline/components/insights/LCPDiscovery.ts | fetchPriorityApplied": {
+    "message": "fetchpriority=high applied"
+  },
+  "panels/timeline/components/insights/LCPDiscovery.ts | lazyLoadNotApplied": {
+    "message": "lazy load not applied"
+  },
   "panels/timeline/components/insights/LCPDiscovery.ts | lcpLoadDelay": {
     "message": "LCP image loaded {PH1} after earliest start point."
+  },
+  "panels/timeline/components/insights/LCPDiscovery.ts | requestDiscoverable": {
+    "message": "Request is discoverable in initial document"
   },
   "panels/timeline/components/insights/LCPPhases.ts | elementRenderDelay": {
     "message": "Element render delay"
@@ -12380,8 +12425,8 @@
   "panels/timeline/components/insights/LCPPhases.ts | resourceLoadDelay": {
     "message": "Resource load delay"
   },
-  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadTime": {
-    "message": "Resource load time"
+  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadDuration": {
+    "message": "Resource load duration"
   },
   "panels/timeline/components/insights/LCPPhases.ts | timeToFirstByte": {
     "message": "Time to first byte"
@@ -13100,6 +13145,12 @@
   "panels/timeline/NetworkTrackAppender.ts | wsConnectionOpenedWithUrl": {
     "message": "WebSocket opened: {PH1}"
   },
+  "panels/timeline/ServerTimingsTrackAppender.ts | serverSideTrack": {
+    "message": "Server Timings — {PH1}"
+  },
+  "panels/timeline/ServerTimingsTrackAppender.ts | serverTimingTrack": {
+    "message": "This track contains timings taken from Server-Timing network response headers. Their respective start times are only estimated and may not be accurate."
+  },
   "panels/timeline/ThreadAppender.ts | anonymous": {
     "message": "(anonymous)"
   },
@@ -13264,6 +13315,12 @@
   },
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Current Session: {PH1}. {PH2}"
+  },
+  "panels/timeline/TimelineHistoryManager.ts | landingPageTitleLocalAndFieldMetrics": {
+    "message": "Local and field metrics"
+  },
+  "panels/timeline/TimelineHistoryManager.ts | landingPageTitleLocalMetrics": {
+    "message": "Local metrics"
   },
   "panels/timeline/TimelineHistoryManager.ts | moments": {
     "message": "moments"
@@ -14623,6 +14680,12 @@
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | hideRepeatingChildren": {
     "message": "Hide repeating children"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | labelEntry": {
+    "message": "Label entry"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | linkEntries": {
+    "message": "Link entries"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | removeScriptFromIgnoreList": {
     "message": "Remove script from ignore list"

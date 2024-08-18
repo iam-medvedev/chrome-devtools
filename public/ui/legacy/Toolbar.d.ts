@@ -44,6 +44,7 @@ export interface ToolbarButtonOptions {
     label?: () => Platform.UIString.LocalizedString;
     showLabel: boolean;
     userActionCode?: Host.UserMetrics.Action;
+    ignoreToggleable?: boolean;
 }
 export declare class ToolbarItem<T = any> extends Common.ObjectWrapper.ObjectWrapper<T> {
     element: HTMLElement;

@@ -1992,12 +1992,18 @@
         });
         eventObserver.observe({
             type: 'first-input',
-            buffered: true,
+            buffered: false,
         });
         eventObserver.observe({
             type: 'event',
             durationThreshold: 0,
-            buffered: true,
+            // Interaction events can only be stored to the buffer if their duration is >=104ms.
+            // https://www.w3.org/TR/event-timing/#sec-events-exposed
+            //
+            // This means we can only collect a subset of interactions that happen before this observer is started.
+            // To avoid confusion, we only collect interactions that after this observer has started.
+            // Note: This DOES NOT affect the collection for the INP metric and so INP will still be restored from the buffer.
+            buffered: false,
         });
     }
 
@@ -2036,21 +2042,7 @@
     window.getNodeForIndex = (index) => {
         return nodeList[index];
     };
-    function inIframe() {
-        try {
-            return window.self !== window.top;
-        }
-        catch {
-            return true;
-        }
-    }
     function initialize() {
-        // `Page.addScriptToEvaluateOnNewDocument` will create a script that runs
-        // in all frames. We only want metrics from the main frame so the filter
-        // has to be here.
-        if (inIframe()) {
-            return;
-        }
         sendEventToDevTools({ name: 'reset' });
         // We want to treat bfcache navigations like a standard navigations, so emit
         // a reset event when bfcache is restored.

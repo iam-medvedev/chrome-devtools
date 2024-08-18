@@ -39,7 +39,7 @@
       "path": "./button-tsconfig.json"
     },
     {
-      "path": "./css_files-tsconfig.json"
+      "path": "./legacy_css_files-tsconfig.json"
     }
   ]
 }

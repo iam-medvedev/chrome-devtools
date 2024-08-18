@@ -69,6 +69,9 @@
       "path": "../../../services/trace_bounds/bundle-tsconfig.json"
     },
     {
+      "path": "../../../ui/components/data_grid/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../ui/components/dialogs/bundle-tsconfig.json"
     },
     {
@@ -78,10 +81,16 @@
       "path": "../../../ui/components/icon_button/bundle-tsconfig.json"
     },
     {
+      "path": "../../../ui/components/legacy_wrapper/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../ui/components/menus/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/components/render_coordinator/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../ui/components/request_link_icon/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/legacy/bundle-tsconfig.json"

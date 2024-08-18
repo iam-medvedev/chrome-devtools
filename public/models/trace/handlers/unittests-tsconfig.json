@@ -60,6 +60,7 @@
     "../../../../../../../front_end/models/trace/handlers/SamplesHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/ScreenshotsHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/SelectorStatsHandler.test.ts",
+    "../../../../../../../front_end/models/trace/handlers/ServerTimingsHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/Threads.test.ts",
     "../../../../../../../front_end/models/trace/handlers/UserInteractionsHandler.test.ts",
     "../../../../../../../front_end/models/trace/handlers/UserTimingsHandler.test.ts",

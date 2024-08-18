@@ -144,6 +144,7 @@ const createAccessibilityTreeToggleButton = (isActive) => {
         variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
         iconUrl: new URL('../../Images/person.svg', import.meta.url).toString(),
         title,
+        jslogContext: 'toggle-accessibility-tree',
     };
     button.tabIndex = 0;
     button.classList.add('axtree-button');

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
+import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as PanelFeedback from '../../ui/components/panel_feedback/panel_feedback.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Components from './components/components.js';
@@ -50,9 +51,8 @@ export class TimelineLandingPage extends UI.Widget.VBox {
         }
     }
     renderLandingPage() {
-        const mainWidget = new UI.Widget.Widget();
-        mainWidget.contentElement.append(new Components.LiveMetricsView.LiveMetricsView());
-        mainWidget.show(this.contentElement);
+        const liveMetricsWidget = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, new Components.LiveMetricsView.LiveMetricsView());
+        liveMetricsWidget.show(this.contentElement);
     }
     renderLegacyLandingPage(options) {
         function encloseWithTag(tagName, contents) {
@@ -66,7 +66,7 @@ export class TimelineLandingPage extends UI.Widget.VBox {
         const navigateNode = encloseWithTag('b', i18nString(UIStrings.wasd));
         this.contentElement.classList.add('legacy');
         const centered = this.contentElement.createChild('div');
-        const recordButton = UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
+        const recordButton = UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction, { showLabel: false, ignoreToggleable: true }));
         const reloadButton = UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButtonForId('timeline.record-reload'));
         centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheRecordButtonSOrHitSTo, { PH1: recordButton, PH2: recordKey }));
         centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheReloadButtonSOrHitSTo, { PH1: reloadButton, PH2: reloadKey }));

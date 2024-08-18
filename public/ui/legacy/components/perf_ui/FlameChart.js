@@ -31,6 +31,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
+import * as Root from '../../../../core/root/root.js';
 import * as Bindings from '../../../../models/bindings/bindings.js';
 import * as TraceEngine from '../../../../models/trace/trace.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
@@ -94,6 +95,14 @@ const UIStrings = {
      *@description Text for an action that shows all of the hidden entries of the Flame Chart
      */
     resetTrace: 'Reset trace',
+    /**
+     *@description Text for an action that adds a label annotation to an entry in the Flame Chart
+     */
+    labelEntry: 'Label entry',
+    /**
+     *@description Text for an action that adds link annotation between entries in the Flame Chart
+     */
+    linkEntries: 'Link entries',
     /**
      *@description Shown in the context menu when right clicking on a track header to enable the user to enter the track configuration mode.
      */
@@ -221,6 +230,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #searchResultEntryIndex;
     #searchResultHighlightElements = [];
     #inTrackConfigEditMode = false;
+    // The index of an entry that a link annotation is being created form.
+    #currEntriesLinkFromSelectionIndex = null;
     // Stored because we cache this value to save extra lookups and layoffs.
     #canvasBoundingClientRect = null;
     #selectedElementOutlineEnabled = true;
@@ -358,6 +369,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.highlightedEntryIndex = entryIndex;
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
         this.dispatchEventToListeners("EntryHovered" /* Events.EntryHovered */, entryIndex);
+        if (this.#currEntriesLinkFromSelectionIndex) {
+            this.dispatchEventToListeners("EntriesLinkAnnotationChanged" /* Events.EntriesLinkAnnotationChanged */, { entryFromIndex: this.#currEntriesLinkFromSelectionIndex, entryToIndex: this.highlightedEntryIndex });
+        }
     }
     highlightAllEntries(entries) {
         for (const entry of entries) {
@@ -388,6 +402,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.highlightedEntryIndex = -1;
         this.updateElementPosition(this.highlightElement, this.highlightedEntryIndex);
         this.dispatchEventToListeners("EntryHovered" /* Events.EntryHovered */, -1);
+        if (this.#currEntriesLinkFromSelectionIndex) {
+            this.dispatchEventToListeners("EntriesLinkAnnotationChanged" /* Events.EntriesLinkAnnotationChanged */, { entryFromIndex: this.#currEntriesLinkFromSelectionIndex });
+        }
     }
     createCandyStripePattern() {
         // Set the candy stripe pattern to 17px so it repeats well.
@@ -737,7 +754,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         this.chartViewport.setRangeSelection(start, end);
                     }
                     else if (isMetaOrControl && this.highlightedEntryIndex !== -1 && timelineData) {
-                        this.dispatchEventToListeners("AnnotateEntry" /* Events.AnnotateEntry */, this.highlightedEntryIndex);
+                        this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.EntryLabelAnnotationAdded */, this.highlightedEntryIndex);
                     }
                     else {
                         this.chartViewport.onClick(mouseEvent);
@@ -1085,6 +1102,21 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             disabled: !possibleActions?.["UNDO_ALL_ACTIONS" /* FilterAction.UNDO_ALL_ACTIONS */],
             jslogContext: 'reset-trace',
         });
+        if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
+            const annotationSection = this.contextMenu.section('annotations');
+            const labelEntryAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
+                this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.EntryLabelAnnotationAdded */, this.selectedEntryIndex);
+            });
+            // TODO: Change the 'add label to entry' shortcut depending on the OS
+            labelEntryAnnotationOption.setShortcut('Cmd + Click');
+            const linkEntriesAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
+                // Set the entry that the current link selection starts from. Remove this value when selection is finished.
+                this.#currEntriesLinkFromSelectionIndex = this.selectedEntryIndex;
+                this.dispatchEventToListeners("EntriesLinkAnnotationChanged" /* Events.EntriesLinkAnnotationChanged */, { entryFromIndex: this.selectedEntryIndex });
+            });
+            // TODO: Change the 'add link between entries' shortcut depending on the OS
+            linkEntriesAnnotationOption.setShortcut('Cmd + Click');
+        }
         const entry = this.dataProvider.eventByIndex?.(this.selectedEntryIndex);
         if (entry && entry instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame === false) {
             const url = (TraceEngine.Types.TraceEvents.isProfileCall(entry)) ?

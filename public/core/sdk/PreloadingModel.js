@@ -178,9 +178,15 @@ export class PreloadingModel extends SDKModel {
         }
         document.sources.update(event.preloadingAttemptSources);
         document.preloadingAttempts.maybeRegisterNotTriggered(document.sources);
+        document.preloadingAttempts.cleanUpRemovedAttempts(document.sources);
         this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
     }
     onPrefetchStatusUpdated(event) {
+        // We ignore this event to avoid reinserting an attempt after it was removed by
+        // onPreloadingAttemptSourcesUpdated.
+        if (event.prefetchStatus === "PrefetchEvictedAfterCandidateRemoved" /* Protocol.Preload.PrefetchStatus.PrefetchEvictedAfterCandidateRemoved */) {
+            return;
+        }
         const loaderId = event.key.loaderId;
         this.ensureDocumentPreloadingData(loaderId);
         const attempt = {
@@ -390,6 +396,14 @@ class PreloadingAttemptRegistry {
                     break;
             }
             this.map.set(id, attempt);
+        }
+    }
+    // Removes keys in `this.map` that are not in `sources`. This is used to
+    // remove attempts that no longer have a matching speculation rule.
+    cleanUpRemovedAttempts(sources) {
+        const keysToRemove = Array.from(this.map.keys()).filter(key => !sources.getById(key));
+        for (const key of keysToRemove) {
+            this.map.delete(key);
         }
     }
     mergePrevious(prev) {

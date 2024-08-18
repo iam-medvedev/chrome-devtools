@@ -39,6 +39,7 @@
     "../../../../../../front_end/core/platform/MimeType.ts",
     "../../../../../../front_end/core/platform/NumberUtilities.ts",
     "../../../../../../front_end/core/platform/PromiseUtilities.ts",
+    "../../../../../../front_end/core/platform/ServerTiming.ts",
     "../../../../../../front_end/core/platform/StringUtilities.ts",
     "../../../../../../front_end/core/platform/Timing.ts",
     "../../../../../../front_end/core/platform/TypedArrayUtilities.ts",

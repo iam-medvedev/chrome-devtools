@@ -15,15 +15,15 @@ import * as Components from './components.js';
 const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 function getLocalMetricValue(view, metric) {
     const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
-    return card.shadowRoot.querySelector('.local-value .metric-value');
+    return card.shadowRoot.querySelector('#local-value .metric-value');
 }
 function getFieldMetricValue(view, metric) {
     const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
-    return card.shadowRoot.querySelector('.field-value .metric-value');
+    return card.shadowRoot.querySelector('#field-value .metric-value');
 }
 function getFieldHistogramPercents(view, metric) {
     const card = view.shadowRoot.querySelector(`#${metric} devtools-metric-card`);
-    const histogram = card.shadowRoot.querySelector('.field-data-histogram');
+    const histogram = card.shadowRoot.querySelector('.bucket-summaries');
     const percents = Array.from(histogram.querySelectorAll('.histogram-percent'));
     return percents.map(p => p.textContent || '');
 }
@@ -127,12 +127,6 @@ describeWithMockConnection('LiveMetricsView', () => {
             loadActionDelegate: async () => ({ handleAction: mockHandleAction }),
         });
         const dummyStorage = new Common.Settings.SettingsStorage({});
-        Common.Settings.registerSettingExtension({
-            category: "MOBILE" /* Common.Settings.SettingCategory.MOBILE */,
-            settingName: 'emulation.show-device-outline',
-            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-            defaultValue: false,
-        });
         Common.Settings.Settings.instance({
             forceNew: true,
             syncedStorage: dummyStorage,
@@ -259,11 +253,11 @@ describeWithMockConnection('LiveMetricsView', () => {
             renderElementIntoDOM(view);
             await coordinator.done();
             const lcpPercents = getFieldHistogramPercents(view, 'lcp');
-            assert.deepStrictEqual(lcpPercents, ['-', '-', '-']);
+            assert.lengthOf(lcpPercents, 0);
             const clsPercents = getFieldHistogramPercents(view, 'cls');
-            assert.deepStrictEqual(clsPercents, ['-', '-', '-']);
+            assert.lengthOf(clsPercents, 0);
             const inpPercents = getFieldHistogramPercents(view, 'inp');
-            assert.deepStrictEqual(inpPercents, ['-', '-', '-']);
+            assert.lengthOf(inpPercents, 0);
             const lcpFieldEl = getFieldMetricValue(view, 'lcp');
             assert.isNull(lcpFieldEl);
             const clsFieldEl = getFieldMetricValue(view, 'cls');
@@ -310,7 +304,45 @@ describeWithMockConnection('LiveMetricsView', () => {
             const deviceRec = getDeviceRecommendation(view);
             assert.match(deviceRec.innerText, /desktop/);
             const fieldMessage = getFieldMessage(view);
-            assert.strictEqual(fieldMessage.innerText, 'Collection period: Jan 1, 2024 - Jan 29, 2024');
+            // We can't match the exact string because we format the dates based on
+            // locale, so the exact format depends based on where the SWE or bots who
+            // run these tests are!
+            // We expect it to say something like Jan 1 - Jan 29 2024.
+            assert.match(fieldMessage.innerText, /Jan.+2024/);
+            const dataDescriptions = getDataDescriptions(view);
+            assert.match(dataDescriptions.innerText, /local metrics/);
+            assert.match(dataDescriptions.innerText, /field data/);
+            const title = getLiveMetricsTitle(view);
+            assert.strictEqual(title.innerText, 'Local and field metrics');
+        });
+        it('should show empty values when crux is enabled but there is no field data', async () => {
+            const view = new Components.LiveMetricsView.LiveMetricsView();
+            renderElementIntoDOM(view);
+            await coordinator.done();
+            target.model(SDK.ResourceTreeModel.ResourceTreeModel)
+                ?.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, {
+                url: 'https://example.com',
+                isPrimaryFrame: () => true,
+            });
+            await coordinator.done();
+            const lcpPercents = getFieldHistogramPercents(view, 'lcp');
+            assert.deepStrictEqual(lcpPercents, ['-', '-', '-']);
+            const clsPercents = getFieldHistogramPercents(view, 'cls');
+            assert.deepStrictEqual(clsPercents, ['-', '-', '-']);
+            const inpPercents = getFieldHistogramPercents(view, 'inp');
+            assert.deepStrictEqual(inpPercents, ['-', '-', '-']);
+            const lcpFieldEl = getFieldMetricValue(view, 'lcp');
+            assert.strictEqual(lcpFieldEl.textContent, '-');
+            const clsFieldEl = getFieldMetricValue(view, 'cls');
+            assert.strictEqual(clsFieldEl.textContent, '-');
+            const inpFieldEl = getFieldMetricValue(view, 'inp');
+            assert.strictEqual(inpFieldEl.textContent, '-');
+            const throttlingRec = getThrottlingRecommendation(view);
+            assert.isNull(throttlingRec);
+            const deviceRec = getDeviceRecommendation(view);
+            assert.isNull(deviceRec);
+            const fieldMessage = getFieldMessage(view);
+            assert.isNull(fieldMessage);
             const dataDescriptions = getDataDescriptions(view);
             assert.match(dataDescriptions.innerText, /local metrics/);
             assert.match(dataDescriptions.innerText, /field data/);

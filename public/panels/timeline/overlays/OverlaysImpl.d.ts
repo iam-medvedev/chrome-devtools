@@ -47,7 +47,7 @@ export interface EntryLabel {
 export interface EntriesLink {
     type: 'ENTRIES_LINK';
     entryFrom: OverlayEntry;
-    entryTo: OverlayEntry;
+    entryTo?: OverlayEntry;
 }
 /**
  * Represents a time range on the trace. Also used when the user shift+clicks
@@ -60,6 +60,7 @@ export interface TimeRangeLabel {
     showDuration: boolean;
 }
 export declare function isTimeRangeLabel(annotation: TimelineOverlay): annotation is TimeRangeLabel;
+export declare function isEntriesLink(annotation: TimelineOverlay): annotation is EntriesLink;
 /**
  * Used to highlight with a red-candy stripe a time range. It takes an entry
  * because this entry is the row that will be used to place the candy stripe,
@@ -72,10 +73,12 @@ export interface CandyStripedTimeRange {
 }
 /**
  * Represents a timespan on a trace broken down into parts. Each part has a label to it.
+ * If an entry is defined, the breakdown will be vertically positioned based on it.
  */
 export interface TimespanBreakdown {
     type: 'TIMESPAN_BREAKDOWN';
     sections: Array<Components.TimespanBreakdownOverlay.EntryBreakdown>;
+    entry?: TraceEngine.Types.TraceEvents.TraceEventData;
 }
 export interface CursorTimestampMarker {
     type: 'CURSOR_TIMESTAMP_MARKER';
@@ -128,6 +131,7 @@ export declare class Overlays extends EventTarget {
     #private;
     constructor(init: {
         container: HTMLElement;
+        flameChartsContainer: HTMLElement;
         charts: TimelineCharts;
     });
     /**
@@ -195,14 +199,23 @@ export declare class Overlays extends EventTarget {
      */
     entryIsVisibleOnChart(entry: OverlayEntry): boolean;
     /**
-     * Calculate the X pixel position for an event on the timeline.
+     * Calculate the X pixel position for an event start on the timeline.
      * @param chartName - the chart that the event is on. It is expected that both
      * charts have the same width so this doesn't make a difference - but it might
      * in the future if the UI changes, hence asking for it.
      *
      * @param event - the trace event you want to get the pixel position of
      */
-    xPixelForEventOnChart(event: OverlayEntry): number | null;
+    xPixelForEventStartOnChart(event: OverlayEntry): number | null;
+    /**
+     * Calculate the X pixel position for an event end on the timeline.
+     * @param chartName - the chart that the event is on. It is expected that both
+     * charts have the same width so this doesn't make a difference - but it might
+     * in the future if the UI changes, hence asking for it.
+     *
+     * @param event - the trace event you want to get the pixel position of
+     */
+    xPixelForEventEndOnChart(event: OverlayEntry): number | null;
     /**
      * Calculate the Y pixel position for the event on the timeline relative to
      * the entire window.

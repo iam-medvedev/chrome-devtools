@@ -248,6 +248,7 @@ style.setProperty('--image-file-triangle-down', 'url(\"' + new URL(new URL('tria
 style.setProperty('--image-file-triangle-left', 'url(\"' + new URL(new URL('triangle-left.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-triangle-right', 'url(\"' + new URL(new URL('triangle-right.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-triangle-up', 'url(\"' + new URL(new URL('triangle-up.svg', import.meta.url).href, import.meta.url).toString() + '\")');
+style.setProperty('--image-file-tune', 'url(\"' + new URL(new URL('tune.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-undo', 'url(\"' + new URL(new URL('undo.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-warning-filled', 'url(\"' + new URL(new URL('warning-filled.svg', import.meta.url).href, import.meta.url).toString() + '\")');
 style.setProperty('--image-file-warning', 'url(\"' + new URL(new URL('warning.svg', import.meta.url).href, import.meta.url).toString() + '\")');

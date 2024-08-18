@@ -79,6 +79,7 @@ export class NetworkThrottlingSelector extends HTMLElement {
                 name: i18nString(UIStrings.custom),
                 items: this.#customNetworkConditionsSetting.get(),
                 showCustomAddOption: true,
+                jslogContext: 'custom-network-throttling-item',
             },
         ];
     }
@@ -115,19 +116,21 @@ export class NetworkThrottlingSelector extends HTMLElement {
         .showConnector=${false}
         .jslogContext=${'network-conditions'}
         .buttonTitle=${i18nString(UIStrings.network, { PH1: selectionTitle })}
-        aria-label=${i18nString(UIStrings.networkThrottling, { PH1: selectionTitle })}
+        title=${i18nString(UIStrings.networkThrottling, { PH1: selectionTitle })}
       >
         ${this.#groups.map(group => {
             return html `
             <${Menus.Menu.MenuGroup.litTagName} .name=${group.name}>
               ${group.items.map(conditions => {
+                const title = this.#getConditionsTitle(conditions);
+                const jslogContext = group.jslogContext || Platform.StringUtilities.toKebabCase(conditions.i18nTitleKey || title);
                 return html `
                   <${Menus.Menu.MenuItem.litTagName}
                     .value=${conditions.i18nTitleKey}
                     .selected=${this.#currentConditions.i18nTitleKey === conditions.i18nTitleKey}
-                    jslog=${VisualLogging.item(Platform.StringUtilities.toKebabCase(conditions.i18nTitleKey || ''))}
+                    jslog=${VisualLogging.item(jslogContext).track({ click: true })}
                   >
-                    ${this.#getConditionsTitle(conditions)}
+                    ${title}
                   </${Menus.Menu.MenuItem.litTagName}>
                 `;
             })}

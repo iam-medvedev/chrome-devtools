@@ -1374,6 +1374,30 @@ export declare namespace Extensions {
     interface GetStorageItemsResponse extends ProtocolResponseWithError {
         data: any;
     }
+    interface RemoveStorageItemsRequest {
+        /**
+         * ID of extension.
+         */
+        id: string;
+        /**
+         * StorageArea to remove data from.
+         */
+        storageArea: StorageArea;
+        /**
+         * Keys to remove.
+         */
+        keys: string[];
+    }
+    interface ClearStorageItemsRequest {
+        /**
+         * ID of extension.
+         */
+        id: string;
+        /**
+         * StorageArea to remove data from.
+         */
+        storageArea: StorageArea;
+    }
 }
 /**
  * Defines commands and events for Autofill.
@@ -3455,6 +3479,8 @@ export declare namespace DOM {
         FirstLineInherited = "first-line-inherited",
         ScrollMarker = "scroll-marker",
         ScrollMarkerGroup = "scroll-marker-group",
+        ScrollNextButton = "scroll-next-button",
+        ScrollPrevButton = "scroll-prev-button",
         Scrollbar = "scrollbar",
         ScrollbarThumb = "scrollbar-thumb",
         ScrollbarButton = "scrollbar-button",
@@ -3636,6 +3662,13 @@ export declare namespace DOM {
         isSVG?: boolean;
         compatibilityMode?: CompatibilityMode;
         assignedSlot?: BackendNode;
+    }
+    /**
+     * A structure to hold the top-level node of a detached tree and an array of its retained descendants.
+     */
+    interface DetachedElementInfo {
+        treeNode: Node;
+        retainedNodeIds: NodeId[];
     }
     /**
      * A structure holding an RGBA color.
@@ -4312,6 +4345,12 @@ export declare namespace DOM {
     }
     interface GetFileInfoResponse extends ProtocolResponseWithError {
         path: string;
+    }
+    interface GetDetachedDomNodesResponse extends ProtocolResponseWithError {
+        /**
+         * The list of detached nodes
+         */
+        detachedNodes: DetachedElementInfo[];
     }
     interface SetInspectedNodeRequest {
         /**
@@ -11164,14 +11203,16 @@ export declare namespace Page {
         fixed?: integer;
     }
     const enum ClientNavigationReason {
+        AnchorClick = "anchorClick",
         FormSubmissionGet = "formSubmissionGet",
         FormSubmissionPost = "formSubmissionPost",
         HttpHeaderRefresh = "httpHeaderRefresh",
-        ScriptInitiated = "scriptInitiated",
+        InitialFrameNavigation = "initialFrameNavigation",
         MetaTagRefresh = "metaTagRefresh",
+        Other = "other",
         PageBlockInterstitial = "pageBlockInterstitial",
         Reload = "reload",
-        AnchorClick = "anchorClick"
+        ScriptInitiated = "scriptInitiated"
     }
     const enum ClientNavigationDisposition {
         CurrentTab = "currentTab",
@@ -12515,6 +12556,11 @@ export declare namespace Page {
     interface LoadEventFiredEvent {
         timestamp: Network.MonotonicTime;
     }
+    const enum NavigatedWithinDocumentEventNavigationType {
+        Fragment = "fragment",
+        HistoryAPI = "historyApi",
+        Other = "other"
+    }
     /**
      * Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
      */
@@ -12527,6 +12573,10 @@ export declare namespace Page {
          * Frame's new url.
          */
         url: string;
+        /**
+         * Navigation type
+         */
+        navigationType: NavigatedWithinDocumentEventNavigationType;
     }
     /**
      * Compressed image data requested by the `startScreencast`.
@@ -16177,6 +16227,78 @@ export declare namespace PWA {
          */
         linkCapturing?: boolean;
         displayMode?: DisplayMode;
+    }
+}
+/**
+ * This domain allows configuring virtual Bluetooth devices to test
+ * the web-bluetooth API.
+ */
+export declare namespace BluetoothEmulation {
+    /**
+     * Indicates the various states of Central.
+     */
+    const enum CentralState {
+        Absent = "absent",
+        PoweredOff = "powered-off",
+        PoweredOn = "powered-on"
+    }
+    /**
+     * Stores the manufacturer data
+     */
+    interface ManufacturerData {
+        /**
+         * Company identifier
+         * https://bitbucket.org/bluetooth-SIG/public/src/main/assigned_numbers/company_identifiers/company_identifiers.yaml
+         * https://usb.org/developers
+         */
+        key: integer;
+        /**
+         * Manufacturer-specific data
+         */
+        data: binary;
+    }
+    /**
+     * Stores the byte data of the advertisement packet sent by a Bluetooth device.
+     */
+    interface ScanRecord {
+        name?: string;
+        uuids?: string[];
+        /**
+         * Stores the external appearance description of the device.
+         */
+        appearance?: integer;
+        /**
+         * Stores the transmission power of a broadcasting device.
+         */
+        txPower?: integer;
+        /**
+         * Key is the company identifier and the value is an array of bytes of
+         * manufacturer specific data.
+         */
+        manufacturerData?: ManufacturerData[];
+    }
+    /**
+     * Stores the advertisement packet information that is sent by a Bluetooth device.
+     */
+    interface ScanEntry {
+        deviceAddress: string;
+        rssi: integer;
+        scanRecord: ScanRecord;
+    }
+    interface EnableRequest {
+        /**
+         * State of the simulated central.
+         */
+        state: CentralState;
+    }
+    interface SimulatePreconnectedPeripheralRequest {
+        address: string;
+        name: string;
+        manufacturerData: ManufacturerData[];
+        knownServiceUuids: string[];
+    }
+    interface SimulateAdvertisementRequest {
+        entry: ScanEntry;
     }
 }
 /**

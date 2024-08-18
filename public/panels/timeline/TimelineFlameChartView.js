@@ -59,8 +59,10 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     countersView;
     detailsSplitWidget;
     detailsView;
-    onMainAnnotateEntry;
-    onNetworkAnnotateEntry;
+    onMainAddEntryLabelAnnotation;
+    onNetworkAddEntryLabelAnnotation;
+    onMainEntriesLinkAnnotationChange;
+    onNetworkEntriesLinkAnnotationChange;
     onMainEntrySelected;
     onNetworkEntrySelected;
     #boundRefreshAfterIgnoreList;
@@ -81,6 +83,10 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     #overlaysContainer = document.createElement('div');
     #overlays;
     #timeRangeSelectionAnnotation = null;
+    // Keep track of the link annotation that hasn't been fully selected yet.
+    // We only store it here when only 'entryFrom' has been selected and
+    // 'EntryTo' selection still needs to be updated.
+    #linkSelectionAnnotation = null;
     #currentInsightOverlays = [];
     #activeInsight = null;
     #tooltipElement = document.createElement('div');
@@ -152,6 +158,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         });
         this.#overlays = new Overlays.Overlays.Overlays({
             container: this.#overlaysContainer,
+            flameChartsContainer: flameChartsContainer.element,
             charts: {
                 mainChart: this.mainFlameChart,
                 mainProvider: this.mainDataProvider,
@@ -198,11 +205,15 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.detailsSplitWidget.setMainWidget(this.chartSplitWidget);
         this.detailsSplitWidget.setSidebarWidget(this.detailsView);
         this.detailsSplitWidget.show(this.element);
-        this.onMainAnnotateEntry = this.onAnnotateEntry.bind(this, this.mainDataProvider);
-        this.onNetworkAnnotateEntry = this.onAnnotateEntry.bind(this, this.networkDataProvider);
+        this.onMainAddEntryLabelAnnotation = this.onAddEntryLabelAnnotation.bind(this, this.mainDataProvider);
+        this.onNetworkAddEntryLabelAnnotation = this.onAddEntryLabelAnnotation.bind(this, this.networkDataProvider);
+        this.onMainEntriesLinkAnnotationChange = this.onEntriesLinkAnnotationChange.bind(this, this.mainDataProvider);
+        this.onNetworkEntriesLinkAnnotationChange = this.onEntriesLinkAnnotationChange.bind(this, this.networkDataProvider);
         if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
-            this.mainFlameChart.addEventListener("AnnotateEntry" /* PerfUI.FlameChart.Events.AnnotateEntry */, this.onMainAnnotateEntry, this);
-            this.networkFlameChart.addEventListener("AnnotateEntry" /* PerfUI.FlameChart.Events.AnnotateEntry */, this.onNetworkAnnotateEntry, this);
+            this.mainFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.EntryLabelAnnotationAdded */, this.onMainAddEntryLabelAnnotation, this);
+            this.networkFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.EntryLabelAnnotationAdded */, this.onNetworkAddEntryLabelAnnotation, this);
+            this.mainFlameChart.addEventListener("EntriesLinkAnnotationChanged" /* PerfUI.FlameChart.Events.EntriesLinkAnnotationChanged */, this.onMainEntriesLinkAnnotationChange, this);
+            this.networkFlameChart.addEventListener("EntriesLinkAnnotationChanged" /* PerfUI.FlameChart.Events.EntriesLinkAnnotationChanged */, this.onNetworkEntriesLinkAnnotationChange, this);
         }
         this.onMainEntrySelected = this.onEntrySelected.bind(this, this.mainDataProvider);
         this.onNetworkEntrySelected = this.onEntrySelected.bind(this, this.networkDataProvider);
@@ -562,7 +573,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.#overlays.updateExisting(existingOverlay, newData);
         this.#overlays.update();
     }
-    onAnnotateEntry(dataProvider, event) {
+    onAddEntryLabelAnnotation(dataProvider, event) {
         const selection = dataProvider.createSelection(event.data);
         if (selection &&
             (TimelineSelection.isTraceEventSelection(selection.object) ||
@@ -574,6 +585,40 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
                 label: '',
             });
         }
+    }
+    onEntriesLinkAnnotationChange(dataProvider, event) {
+        const fromSelectionObject = this.#selectionIfTraceEvent(event.data.entryFromIndex, dataProvider);
+        const toSelectionObject = (event.data.entryToIndex) ? this.#selectionIfTraceEvent(event.data.entryToIndex, dataProvider) : null;
+        if (fromSelectionObject) {
+            this.setSelection(dataProvider.createSelection(event.data.entryFromIndex));
+            if (this.#linkSelectionAnnotation) {
+                // Only the entry that the link points to can be updated.
+                if (toSelectionObject) {
+                    this.#linkSelectionAnnotation.entryTo = toSelectionObject;
+                }
+                else {
+                    delete this.#linkSelectionAnnotation['entryTo'];
+                }
+                ModificationsManager.activeManager()?.updateAnnotation(this.#linkSelectionAnnotation);
+            }
+            else {
+                this.#linkSelectionAnnotation = {
+                    type: 'ENTRIES_LINK',
+                    entryFrom: fromSelectionObject,
+                    ...(toSelectionObject !== null && { entryTo: toSelectionObject }),
+                };
+                ModificationsManager.activeManager()?.createAnnotation(this.#linkSelectionAnnotation);
+            }
+        }
+    }
+    #selectionIfTraceEvent(index, dataProvider) {
+        const selection = dataProvider.createSelection(index);
+        if (selection &&
+            (TimelineSelection.isTraceEventSelection(selection.object) ||
+                TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object))) {
+            return selection.object;
+        }
+        return null;
     }
     onEntrySelected(dataProvider, event) {
         const data = dataProvider.timelineData();

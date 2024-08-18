@@ -4,6 +4,7 @@ import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
 import { InteractionsTrackAppender } from './InteractionsTrackAppender.js';
 import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
+import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { EntryType, type TimelineFlameChartEntry } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
@@ -60,7 +61,7 @@ export interface TrackAppender {
      */
     highlightedEntryInfo(event: TraceEngine.Types.TraceEvents.TraceEventData): HighlightedEntryInfo;
 }
-export declare const TrackNames: readonly ["Animations", "Timings", "Interactions", "GPU", "LayoutShifts", "Thread", "Thread_AuctionWorklet", "Extension"];
+export declare const TrackNames: readonly ["Animations", "Timings", "Interactions", "GPU", "LayoutShifts", "Thread", "Thread_AuctionWorklet", "Extension", "ServerTimings"];
 export type TrackAppenderName = typeof TrackNames[number] | 'Network';
 /**
  * Used as the context when a track (aka group) is selected and we log
@@ -79,6 +80,7 @@ export declare const enum VisualLoggingTrackName {
     INTERACTIONS = "interactions",
     GPU = "gpu",
     LAYOUT_SHIFTS = "layout-shifts",
+    SERVER_TIMINGS = "server.timings",
     THREAD_CPU_PROFILE = "thread.cpu-profile",
     THREAD_MAIN = "thread.main",
     THREAD_FRAME = "thread.frame",
@@ -114,6 +116,7 @@ export declare class CompatibilityTracksAppender {
     gpuTrackAppender(): GPUTrackAppender;
     layoutShiftsTrackAppender(): LayoutShiftsTrackAppender;
     threadAppenders(): ThreadAppender[];
+    serverTimingsTrackAppender(): ServerTimingsTrackAppender;
     eventsInTrack(trackAppender: TrackAppender): TraceEngine.Types.TraceEvents.TraceEventData[];
     /**
      * Gets the events to be shown in the tree views of the details pane

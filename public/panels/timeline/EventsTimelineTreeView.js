@@ -6,6 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { getCategoryStyles } from './EventUICategory.js';
 import { Category, IsLong } from './TimelineFilters.js';
 import { TimelineSelection } from './TimelineSelection.js';
@@ -38,6 +39,7 @@ export class EventsTimelineTreeView extends TimelineTreeView {
     currentTree;
     constructor(delegate) {
         super();
+        this.element.setAttribute('jslog', `${VisualLogging.pane('event-log').track({ resize: true })}`);
         this.filtersControl = new Filters();
         this.filtersControl.addEventListener("FilterChanged" /* Events.FilterChanged */, this.onFilterChanged, this);
         this.init();
@@ -147,7 +149,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
         return this.filtersInternal;
     }
     populateToolbar(toolbar) {
-        const durationFilterUI = new UI.Toolbar.ToolbarComboBox(durationFilterChanged.bind(this), i18nString(UIStrings.durationFilter));
+        const durationFilterUI = new UI.Toolbar.ToolbarComboBox(durationFilterChanged.bind(this), i18nString(UIStrings.durationFilter), undefined, 'duration');
         for (const durationMs of Filters.durationFilterPresetsMs) {
             durationFilterUI.addOption(durationFilterUI.createOption(durationMs ? `≥ ${i18nString(UIStrings.Dms, { PH1: durationMs })}` : i18nString(UIStrings.all), String(durationMs)));
         }
@@ -159,7 +161,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
             if (!category.visible) {
                 continue;
             }
-            const checkbox = new UI.Toolbar.ToolbarCheckbox(category.title, undefined, categoriesFilterChanged.bind(this, categoryName));
+            const checkbox = new UI.Toolbar.ToolbarCheckbox(category.title, undefined, categoriesFilterChanged.bind(this, categoryName), categoryName);
             checkbox.setChecked(true);
             checkbox.inputElement.style.backgroundColor = category.color;
             categoryFiltersUI.set(category.name, checkbox);

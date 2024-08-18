@@ -46,6 +46,7 @@
     "../../../../../../../front_end/panels/timeline/track_appenders/InteractionsTrackAppender.test.ts",
     "../../../../../../../front_end/panels/timeline/track_appenders/LayoutShiftsTrackAppender.test.ts",
     "../../../../../../../front_end/panels/timeline/track_appenders/NetworkTrackAppender.test.ts",
+    "../../../../../../../front_end/panels/timeline/track_appenders/ServerTimingsTrackAppender.test.ts",
     "../../../../../../../front_end/panels/timeline/track_appenders/ThreadAppender.test.ts",
     "../../../../../../../front_end/panels/timeline/track_appenders/TimingsTrackAppender.test.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",

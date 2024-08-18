@@ -4,6 +4,9 @@ export function isTimeRangeAnnotation(annotation) {
 export function isEntryLabelAnnotation(annotation) {
     return annotation.type === 'ENTRY_LABEL';
 }
+export function isEntriesLinkAnnotation(annotation) {
+    return annotation.type === 'ENTRIES_LINK';
+}
 export function traceEventKeyToValues(key) {
     const parts = key.split('-');
     const type = parts[0];

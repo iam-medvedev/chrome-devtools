@@ -29,8 +29,10 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private readonly countersView;
     private readonly detailsSplitWidget;
     private readonly detailsView;
-    private readonly onMainAnnotateEntry;
-    private readonly onNetworkAnnotateEntry;
+    private readonly onMainAddEntryLabelAnnotation;
+    private readonly onNetworkAddEntryLabelAnnotation;
+    private readonly onMainEntriesLinkAnnotationChange;
+    private readonly onNetworkEntriesLinkAnnotationChange;
     private readonly onMainEntrySelected;
     private readonly onNetworkEntrySelected;
     private readonly groupBySetting;
@@ -67,7 +69,8 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     addOverlay<T extends Overlays.Overlays.TimelineOverlay>(newOverlay: T): T;
     removeOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
     updateExistingOverlay<T extends Overlays.Overlays.TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
-    private onAnnotateEntry;
+    private onAddEntryLabelAnnotation;
+    private onEntriesLinkAnnotationChange;
     private onEntrySelected;
     resizeToPreferredHeights(): void;
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;

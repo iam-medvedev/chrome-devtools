@@ -6,7 +6,7 @@ import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockCo
 import { getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as SDK from './sdk.js';
 describeWithMockConnection('PreloadingModel', () => {
-    it('adds and deletes rule sets and preloeading attempts', async () => {
+    it('adds and deletes rule sets and preloading attempts', async () => {
         const target = createTarget();
         const model = target.model(SDK.PreloadingModel.PreloadingModel);
         assert.exists(model);
@@ -230,6 +230,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 url: 'https://example.com/subresource.js',
             },
             status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */,
+            prefetchStatus: "PrefetchEvictedAfterCandidateRemoved" /* Protocol.Preload.PrefetchStatus.PrefetchEvictedAfterCandidateRemoved */,
             requestId: 'requestId:1',
         });
         assert.deepEqual(model.getAllRuleSets(), [
@@ -253,29 +254,6 @@ describeWithMockConnection('PreloadingModel', () => {
         ]);
         assert.deepEqual(model.getPreloadingAttempts(null), [
             {
-                id: `${loaderId}:Prefetch:https://example.com/subresource.js:undefined`,
-                value: {
-                    action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                    key: {
-                        loaderId,
-                        action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                        url: 'https://example.com/subresource.js',
-                    },
-                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */,
-                    prefetchStatus: null,
-                    requestId: 'requestId:1',
-                    // Note that current implementation doesn't show associated
-                    // rule sets when preloading is cancelled by rule sets
-                    // deletion. One can treat this case special, i.e. associated
-                    // rule sets decreasing one to zero, and show the last rule
-                    // set.
-                    //
-                    // TODO(https://crbug.com/1410709): Consider the above case.
-                    ruleSetIds: [],
-                    nodeIds: [],
-                },
-            },
-            {
                 id: `${loaderId}:Prerender:https://example.com/page.html:undefined`,
                 value: {
                     action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
@@ -294,7 +272,7 @@ describeWithMockConnection('PreloadingModel', () => {
             },
         ]);
     });
-    it('registers preloeading attempt with status NotTriggered', async () => {
+    it('registers preloading attempt with status NotTriggered', async () => {
         const target = createTarget();
         const model = target.model(SDK.PreloadingModel.PreloadingModel);
         assert.exists(model);

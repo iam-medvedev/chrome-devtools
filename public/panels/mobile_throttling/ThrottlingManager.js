@@ -135,7 +135,10 @@ export class ThrottlingManager {
                     const title = typeof conditions.title === 'function' ? conditions.title() : conditions.title;
                     const option = new Option(title, title);
                     UI.ARIAUtils.setLabel(option, i18nString(UIStrings.sS, { PH1: group.title, PH2: title }));
-                    option.setAttribute('jslog', `${VisualLogging.item(Platform.StringUtilities.toKebabCase(conditions.i18nTitleKey || title)).track({
+                    const jslogContext = i === groups.length - 1 ?
+                        'custom-network-throttling-item' :
+                        Platform.StringUtilities.toKebabCase(conditions.i18nTitleKey || title);
+                    option.setAttribute('jslog', `${VisualLogging.item(jslogContext).track({
                         click: true,
                     })}`);
                     groupElement.appendChild(option);
@@ -251,7 +254,7 @@ export class ThrottlingManager {
         this.updatePanelIcon();
     }
     createCPUThrottlingSelector() {
-        const control = new UI.Toolbar.ToolbarComboBox(event => this.setCPUThrottlingRate(this.cpuThrottlingRates[event.target.selectedIndex]), i18nString(UIStrings.cpuThrottling), '', 'cpu-throttling-selector');
+        const control = new UI.Toolbar.ToolbarComboBox(event => this.setCPUThrottlingRate(this.cpuThrottlingRates[event.target.selectedIndex]), i18nString(UIStrings.cpuThrottling), '', 'cpu-throttling');
         this.cpuThrottlingControls.add(control);
         const currentRate = this.cpuThrottlingManager.cpuThrottlingRate();
         for (let i = 0; i < this.cpuThrottlingRates.length; ++i) {
@@ -267,12 +270,12 @@ export class ThrottlingManager {
         return control;
     }
     createHardwareConcurrencySelector() {
-        const input = new UI.Toolbar.ToolbarItem(UI.UIUtils.createInput('devtools-text-input', 'number', 'hardware-concurrency-selector'));
+        const input = new UI.Toolbar.ToolbarItem(UI.UIUtils.createInput('devtools-text-input', 'number', 'hardware-concurrency'));
         input.setTitle(i18nString(UIStrings.hardwareConcurrencySettingTooltip));
         const inputElement = input.element;
         inputElement.min = '1';
         input.setEnabled(false);
-        const toggle = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.hardwareConcurrency), i18nString(UIStrings.hardwareConcurrencySettingTooltip), undefined, 'hardware-concurrency-toggle');
+        const toggle = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.hardwareConcurrency), i18nString(UIStrings.hardwareConcurrencySettingTooltip), undefined, 'hardware-concurrency');
         const reset = new UI.Toolbar.ToolbarButton('Reset concurrency', 'undo', undefined, 'hardware-concurrency-reset');
         reset.setTitle(i18nString(UIStrings.resetConcurrency));
         const icon = new IconButton.Icon.Icon();

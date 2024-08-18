@@ -12,6 +12,7 @@ import { data as metaHandlerData } from './MetaHandler.js';
 // because they are effectively global, so we just track all that we find.
 const allEvents = [];
 const beginCommitCompositorFrameEvents = [];
+const parseMetaViewportEvents = [];
 export const LONG_INTERACTION_THRESHOLD = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(200));
 const INP_GOOD_TIMING = LONG_INTERACTION_THRESHOLD;
 const INP_MEDIUM_TIMING = Helpers.Timing.millisecondsToMicroseconds(Types.Timing.MilliSeconds(500));
@@ -24,6 +25,7 @@ let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 export function reset() {
     allEvents.length = 0;
     beginCommitCompositorFrameEvents.length = 0;
+    parseMetaViewportEvents.length = 0;
     interactionEvents.length = 0;
     eventTimingStartEventsForInteractions.length = 0;
     eventTimingEndEventsById.clear();
@@ -37,6 +39,10 @@ export function handleEvent(event) {
     }
     if (Types.TraceEvents.isTraceEventBeginCommitCompositorFrame(event)) {
         beginCommitCompositorFrameEvents.push(event);
+        return;
+    }
+    if (Types.TraceEvents.isTraceEventParseMetaViewport(event)) {
+        parseMetaViewportEvents.push(event);
         return;
     }
     if (!Types.TraceEvents.isTraceEventEventTiming(event)) {
@@ -274,6 +280,7 @@ export function data() {
     return {
         allEvents,
         beginCommitCompositorFrameEvents,
+        parseMetaViewportEvents,
         interactionEvents,
         interactionEventsWithNoNesting,
         longestInteractionEvent,

@@ -27,7 +27,7 @@ styles.replaceSync(
   gap: 2px;
 }
 
-.styles-element-state-pane > .section-header {
+.styles-element-state-pane .section-header {
   margin: 8px 4px 6px;
   color: var(--color-text-secondary);
 }
@@ -39,6 +39,18 @@ styles.replaceSync(
 
 .styles-element-state-pane td {
   padding: 0;
+}
+
+.pseudo-states-container {
+  display: grid;
+  column-gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-flow: row;
+}
+
+.pseudo-states-container.specific-pseudo-states {
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: 4px;
 }
 
 /*# sourceURL=elementStatePaneWidget.css */

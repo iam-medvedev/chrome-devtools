@@ -1169,6 +1169,9 @@
   "generated/Deprecation.ts | CSSCustomStateDeprecatedSyntax": {
     "message": ":--customstatename îś d̂ép̂ŕêćât́êd́. P̂ĺêáŝé ûśê t́ĥé :state(customstatename) ŝýn̂t́âx́ îńŝt́êád̂."
   },
+  "generated/Deprecation.ts | CSSInsetAreaProperty": {
+    "message": "T̂h́ê inset-area ṕr̂óp̂ér̂t́ŷ íŝ d́êṕr̂éĉát̂éd̂. Ṕl̂éâśê úŝé t̂h́ê position-area ṕr̂óp̂ér̂t́ŷ ín̂śt̂éâd́."
+  },
   "generated/Deprecation.ts | CSSSelectorInternalMediaControlsOverlayCastButton": {
     "message": "T̂h́ê disableRemotePlayback át̂t́r̂íb̂út̂é ŝh́ôúl̂d́ b̂é ûśêd́ îń ôŕd̂ér̂ t́ô d́îśâb́l̂é t̂h́ê d́êf́âúl̂t́ Ĉáŝt́ îńt̂éĝŕât́îón̂ ín̂śt̂éâd́ ôf́ ûśîńĝ -internal-media-controls-overlay-cast-button śêĺêćt̂ór̂."
   },
@@ -5822,6 +5825,9 @@
   "panels/elements/ElementStatePaneWidget.ts | emulatesAFocusedPage": {
     "message": "K̂éêṕ p̂áĝé f̂óĉúŝéd̂. Ćôḿm̂ón̂ĺŷ úŝéd̂ f́ôŕ d̂éb̂úĝǵîńĝ d́îśâṕp̂éâŕîńĝ él̂ém̂én̂t́ŝ."
   },
+  "panels/elements/ElementStatePaneWidget.ts | forceElementSpecificStates": {
+    "message": "F̂ór̂ćê śp̂éĉíf̂íĉ él̂ém̂én̂t́ ŝt́ât́ê"
+  },
   "panels/elements/ElementStatePaneWidget.ts | forceElementState": {
     "message": "F̂ór̂ćê él̂ém̂én̂t́ ŝt́ât́ê"
   },
@@ -6426,7 +6432,7 @@
     "message": "Ûṕd̂át̂é Ŝét̂t́îńĝś"
   },
   "panels/explain/explain-meta.ts | ageRestricted": {
-    "message": "T̂h́îś f̂éât́ûŕê íŝ ón̂ĺŷ áv̂áîĺâb́l̂é t̂ó ûśêŕŝ ẃĥó âŕê 18 ýêár̂ś ôf́ âǵê ór̂ ól̂d́êŕ."
+    "message": "T̂h́îś f̂éât́ûŕê íŝ ón̂ĺŷ áv̂áîĺâb́l̂é t̂ó ûśêŕŝ ẃĥó âŕê 18 ýêár̂ś ôf́ âǵê ór̂ ól̂d́êŕ"
   },
   "panels/explain/explain-meta.ts | enableConsoleInsights": {
     "message": "Ûńd̂ér̂śt̂án̂d́ ĉón̂śôĺê ḿêśŝáĝéŝ ẃît́ĥ ÁÎ"
@@ -6441,16 +6447,13 @@
     "message": "Ûńd̂ér̂śt̂án̂d́ t̂h́îś ŵár̂ńîńĝ"
   },
   "panels/explain/explain-meta.ts | geoRestricted": {
-    "message": "T̂h́îś f̂éât́ûŕê íŝ ún̂áv̂áîĺâb́l̂é îń ŷóûŕ r̂éĝíôń."
+    "message": "T̂h́îś f̂éât́ûŕê íŝ ún̂áv̂áîĺâb́l̂é îń ŷóûŕ r̂éĝíôń"
   },
   "panels/explain/explain-meta.ts | policyRestricted": {
     "message": "Ŷóûŕ ôŕĝán̂íẑát̂íôń t̂úr̂ńêd́ ôf́f̂ t́ĥíŝ f́êát̂úr̂é. Ĉón̂t́âćt̂ ýôúr̂ ád̂ḿîńîśt̂ŕât́ôŕŝ f́ôŕ m̂ór̂é îńf̂ór̂ḿât́îón̂."
   },
-  "panels/explain/explain-meta.ts | rolloutRestricted": {
-    "message": "T̂h́îś f̂éât́ûŕê íŝ ćûŕr̂én̂t́l̂ý b̂éîńĝ ŕôĺl̂éd̂ óût́. Ŝt́âý t̂ún̂éd̂."
-  },
   "panels/explain/explain-meta.ts | wrongLocale": {
-    "message": "T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ûṕd̂át̂é ŷóûŕ L̂án̂ǵûáĝé p̂ŕêf́êŕêńĉé îń D̂év̂T́ôól̂ś Ŝét̂t́îńĝś t̂ó Êńĝĺîśĥ."
+    "message": "T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ûṕd̂át̂é ŷóûŕ L̂án̂ǵûáĝé p̂ŕêf́êŕêńĉé îń D̂év̂T́ôól̂ś Ŝét̂t́îńĝś t̂ó Êńĝĺîśĥ"
   },
   "panels/issues/AffectedBlockedByResponseView.ts | blockedResource": {
     "message": "B̂ĺôćk̂éd̂ Ŕêśôúr̂ćê"
@@ -9599,6 +9602,9 @@
   "panels/profiler/ModuleUIStrings.ts | calculatingNodeFlags": {
     "message": "Ĉál̂ćûĺât́îńĝ ńôd́ê f́l̂áĝś…"
   },
+  "panels/profiler/ModuleUIStrings.ts | calculatingObjectNames": {
+    "message": "Ĉál̂ćûĺât́îńĝ ób̂j́êćt̂ ńâḿêś…"
+  },
   "panels/profiler/ModuleUIStrings.ts | calculatingRetainedSizes": {
     "message": "Ĉál̂ćûĺât́îńĝ ŕêt́âín̂éd̂ śîźêś…"
   },
@@ -12332,8 +12338,14 @@
   "panels/timeline/components/DetailsView.ts | websocketProtocol": {
     "message": "Ŵéb̂Śôćk̂ét̂ Ṕr̂ót̂óĉól̂"
   },
+  "panels/timeline/components/FieldSettingsDialog.ts | add": {
+    "message": "Âd́d̂"
+  },
   "panels/timeline/components/FieldSettingsDialog.ts | advanced": {
     "message": "Âd́v̂án̂ćêd́"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | alreadyMapped": {
+    "message": "\"{PH1}\" îś âĺr̂éâd́ŷ ḿâṕp̂éd̂ t́ô á p̂ŕôd́ûćt̂íôń ôŕîǵîń."
   },
   "panels/timeline/components/FieldSettingsDialog.ts | cancel": {
     "message": "Ĉán̂ćêĺ"
@@ -12344,23 +12356,47 @@
   "panels/timeline/components/FieldSettingsDialog.ts | configureFieldData": {
     "message": "Ĉón̂f́îǵûŕê f́îél̂d́ d̂át̂á f̂ét̂ćĥín̂ǵ"
   },
+  "panels/timeline/components/FieldSettingsDialog.ts | delete": {
+    "message": "D̂él̂ét̂é"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | developmentOrigin": {
+    "message": "D̂év̂él̂óp̂ḿêńt̂ ór̂íĝín̂"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | developmentOriginValue": {
+    "message": "D̂év̂él̂óp̂ḿêńt̂ ór̂íĝín̂: {PH1}"
+  },
   "panels/timeline/components/FieldSettingsDialog.ts | doesNotHaveSufficientData": {
     "message": "T̂h́ê Ćĥŕôḿê ÚX̂ Ŕêṕôŕt̂ d́ôéŝ ńôt́ ĥáv̂é ŝúf̂f́îćîén̂t́ r̂éâĺ-ŵór̂ĺd̂ śp̂éêd́ d̂át̂á f̂ór̂ t́ĥíŝ ṕâǵê."
   },
   "panels/timeline/components/FieldSettingsDialog.ts | fetchAggregated": {
     "message": "F̂ét̂ćĥ áĝǵr̂éĝát̂éd̂ f́îél̂d́ d̂át̂á f̂ŕôḿ t̂h́ê {PH1} t́ô h́êĺp̂ ýôú ĉón̂t́êx́t̂úâĺîźê ĺôćâĺ m̂éâśûŕêḿêńt̂ś ŵít̂h́ ŵh́ât́ r̂éâĺ ûśêŕŝ éx̂ṕêŕîén̂ćê ón̂ t́ĥé ŝít̂é."
   },
+  "panels/timeline/components/FieldSettingsDialog.ts | invalidOrigin": {
+    "message": "\"{PH1}\" îś n̂ót̂ á v̂ál̂íd̂ ór̂íĝín̂ ór̂ ÚR̂Ĺ."
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | mapDevelopmentOrigins": {
+    "message": "Ŝét̂ á d̂év̂él̂óp̂ḿêńt̂ ór̂íĝín̂ t́ô áût́ôḿât́îćâĺl̂ý ĝét̂ ŕêĺêv́âńt̂ f́îél̂d́ d̂át̂á f̂ór̂ ít̂ś p̂ŕôd́ûćt̂íôń ôŕîǵîń."
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | new": {
+    "message": "N̂éŵ"
+  },
   "panels/timeline/components/FieldSettingsDialog.ts | ok": {
     "message": "Ôḱ"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | onlyFetchFieldData": {
-    "message": "Ôńl̂ý f̂ét̂ćĥ f́îél̂d́ d̂át̂á f̂ór̂ t́ĥé b̂él̂óŵ ÚR̂Ĺ"
+    "message": "Âĺŵáŷś ŝh́ôẃ f̂íêĺd̂ d́ât́â f́ôŕ t̂h́ê b́êĺôẃ ÛŔL̂"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | optOut": {
     "message": "Ôṕt̂ óût́"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | privacyDisclosure": {
     "message": "P̂ŕîv́âćŷ d́îśĉĺôśûŕê"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | productionOrigin": {
+    "message": "P̂ŕôd́ûćt̂íôń ôŕîǵîń"
+  },
+  "panels/timeline/components/FieldSettingsDialog.ts | productionOriginValue": {
+    "message": "P̂ŕôd́ûćt̂íôń ôŕîǵîń: {PH1}"
   },
   "panels/timeline/components/FieldSettingsDialog.ts | setUp": {
     "message": "Ŝét̂ úp̂"
@@ -12371,8 +12407,17 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "Ŵh́êń D̂év̂T́ôól̂ś îś ôṕêń, t̂h́ê ÚR̂Ĺŝ ýôú v̂íŝít̂ ẃîĺl̂ b́ê śêńt̂ t́ô Ǵôóĝĺê t́ô q́ûér̂ý f̂íêĺd̂ d́ât́â. T́ĥéŝé r̂éq̂úêśt̂ś âŕê ńôt́ t̂íêd́ t̂ó ŷóûŕ Ĝóôǵl̂é âćĉóûńt̂."
   },
+  "panels/timeline/components/insights/LCPDiscovery.ts | fetchPriorityApplied": {
+    "message": "f̂ét̂ćĥṕr̂íôŕît́ŷ=h́îǵĥ áp̂ṕl̂íêd́"
+  },
+  "panels/timeline/components/insights/LCPDiscovery.ts | lazyLoadNotApplied": {
+    "message": "l̂áẑý l̂óâd́ n̂ót̂ áp̂ṕl̂íêd́"
+  },
   "panels/timeline/components/insights/LCPDiscovery.ts | lcpLoadDelay": {
     "message": "L̂ĆP̂ ím̂áĝé l̂óâd́êd́ {PH1} âf́t̂ér̂ éâŕl̂íêśt̂ śt̂ár̂t́ p̂óîńt̂."
+  },
+  "panels/timeline/components/insights/LCPDiscovery.ts | requestDiscoverable": {
+    "message": "R̂éq̂úêśt̂ íŝ d́îśĉóv̂ér̂áb̂ĺê ín̂ ín̂ít̂íâĺ d̂óĉúm̂én̂t́"
   },
   "panels/timeline/components/insights/LCPPhases.ts | elementRenderDelay": {
     "message": "Êĺêḿêńt̂ ŕêńd̂ér̂ d́êĺâý"
@@ -12380,8 +12425,8 @@
   "panels/timeline/components/insights/LCPPhases.ts | resourceLoadDelay": {
     "message": "R̂éŝóûŕĉé l̂óâd́ d̂él̂áŷ"
   },
-  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadTime": {
-    "message": "R̂éŝóûŕĉé l̂óâd́ t̂ím̂é"
+  "panels/timeline/components/insights/LCPPhases.ts | resourceLoadDuration": {
+    "message": "R̂éŝóûŕĉé l̂óâd́ d̂úr̂át̂íôń"
   },
   "panels/timeline/components/insights/LCPPhases.ts | timeToFirstByte": {
     "message": "T̂ím̂é t̂ó f̂ír̂śt̂ b́ŷt́ê"
@@ -13100,6 +13145,12 @@
   "panels/timeline/NetworkTrackAppender.ts | wsConnectionOpenedWithUrl": {
     "message": "Ŵéb̂Śôćk̂ét̂ óp̂én̂éd̂: {PH1}"
   },
+  "panels/timeline/ServerTimingsTrackAppender.ts | serverSideTrack": {
+    "message": "Ŝér̂v́êŕ T̂ím̂ín̂ǵŝ — {PH1}"
+  },
+  "panels/timeline/ServerTimingsTrackAppender.ts | serverTimingTrack": {
+    "message": "T̂h́îś t̂ŕâćk̂ ćôńt̂áîńŝ t́îḿîńĝś t̂ák̂én̂ f́r̂óm̂ Śêŕv̂ér̂-T́îḿîńĝ ńêt́ŵór̂ḱ r̂éŝṕôńŝé ĥéâd́êŕŝ. T́ĥéîŕ r̂éŝṕêćt̂ív̂é ŝt́âŕt̂ t́îḿêś âŕê ón̂ĺŷ éŝt́îḿât́êd́ âńd̂ ḿâý n̂ót̂ b́ê áĉćûŕât́ê."
+  },
   "panels/timeline/ThreadAppender.ts | anonymous": {
     "message": "(âńôńŷḿôúŝ)"
   },
@@ -13264,6 +13315,12 @@
   },
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Ĉúr̂ŕêńt̂ Śêśŝíôń: {PH1}. {PH2}"
+  },
+  "panels/timeline/TimelineHistoryManager.ts | landingPageTitleLocalAndFieldMetrics": {
+    "message": "L̂óĉál̂ án̂d́ f̂íêĺd̂ ḿêt́r̂íĉś"
+  },
+  "panels/timeline/TimelineHistoryManager.ts | landingPageTitleLocalMetrics": {
+    "message": "L̂óĉál̂ ḿêt́r̂íĉś"
   },
   "panels/timeline/TimelineHistoryManager.ts | moments": {
     "message": "m̂óm̂én̂t́ŝ"
@@ -14623,6 +14680,12 @@
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | hideRepeatingChildren": {
     "message": "Ĥíd̂é r̂ép̂éât́îńĝ ćĥíl̂d́r̂én̂"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | labelEntry": {
+    "message": "L̂áb̂él̂ én̂t́r̂ý"
+  },
+  "ui/legacy/components/perf_ui/FlameChart.ts | linkEntries": {
+    "message": "L̂ín̂ḱ êńt̂ŕîéŝ"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | removeScriptFromIgnoreList": {
     "message": "R̂ém̂óv̂é ŝćr̂íp̂t́ f̂ŕôḿ îǵn̂ór̂é l̂íŝt́"

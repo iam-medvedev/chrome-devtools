@@ -66,6 +66,19 @@ styles.replaceSync(
       transparent var(--white-stripe-width)
     );
   border: 2px solid var(--sys-color-error-bright);
+
+  &.cut-off-bottom {
+    border-bottom: none;
+  }
+
+  &.cut-off-top {
+    border-top: none;
+  }
+}
+
+.overlay-type-ENTRIES_LINK {
+  height: 100%;
+  width: 100%;
 }
 
 .overlay-type-TIME_RANGE {

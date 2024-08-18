@@ -660,7 +660,8 @@ export declare enum DevtoolsExperiments {
     'timeline-rpp-sidebar' = 95,
     'timeline-observations' = 96,
     'gen-ai-settings-panel' = 97,
-    'MaxValue' = 98
+    'timeline-server-timings' = 98,
+    'MaxValue' = 99
 }
 export declare const enum ColorPickerOpenedFrom {
     SourcesPanel = 0,

@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
-export function createTimelineNetworkRequest(syntheticNetworkRequest) {
+export function getNetworkRequest(syntheticNetworkRequest) {
     const url = syntheticNetworkRequest.args.data.url;
     const urlWithoutHash = Common.ParsedURL.ParsedURL.urlWithoutHash(url);
     const resource = Bindings.ResourceUtils.resourceForURL(url) || Bindings.ResourceUtils.resourceForURL(urlWithoutHash);
-    if (!resource?.request) {
-        return null;
-    }
-    return new TimelineNetworkRequest(resource.request);
+    return resource?.request;
+}
+export function createTimelineNetworkRequest(syntheticNetworkRequest) {
+    const request = getNetworkRequest(syntheticNetworkRequest);
+    return request ? new TimelineNetworkRequest(request) : null;
 }
 // Add a wrapper class here.
 // The reason is the `Reveal in Network panel` option is handled by the context menu provider, which will add this

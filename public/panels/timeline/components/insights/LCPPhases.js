@@ -17,9 +17,9 @@ const UIStrings = {
      */
     resourceLoadDelay: 'Resource load delay',
     /**
-     *@description Resource load time title for the Largest Contentful Paint phases timespan breakdown.
+     *@description Resource load duration title for the Largest Contentful Paint phases timespan breakdown.
      */
-    resourceLoadTime: 'Resource load time',
+    resourceLoadDuration: 'Resource load duration',
     /**
      *@description Element render delay title for the Largest Contentful Paint phases timespan breakdown.
      */
@@ -52,17 +52,33 @@ export class LCPPhases extends BaseInsight {
         const { ttfb, loadDelay, loadTime, renderDelay } = phases;
         if (loadDelay && loadTime) {
             const phaseData = [
-                { phase: 'Time to first byte', timing: ttfb, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
-                { phase: 'Resource load delay', timing: loadDelay, percent: `${(100 * loadDelay / timing).toFixed(0)}%` },
-                { phase: 'Resource load duration', timing: loadTime, percent: `${(100 * loadTime / timing).toFixed(0)}%` },
-                { phase: 'Resource render delay', timing: renderDelay, percent: `${(100 * renderDelay / timing).toFixed(0)}%` },
+                { phase: i18nString(UIStrings.timeToFirstByte), timing: ttfb, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
+                {
+                    phase: i18nString(UIStrings.resourceLoadDelay),
+                    timing: loadDelay,
+                    percent: `${(100 * loadDelay / timing).toFixed(0)}%`,
+                },
+                {
+                    phase: i18nString(UIStrings.resourceLoadDuration),
+                    timing: loadTime,
+                    percent: `${(100 * loadTime / timing).toFixed(0)}%`,
+                },
+                {
+                    phase: i18nString(UIStrings.elementRenderDelay),
+                    timing: renderDelay,
+                    percent: `${(100 * renderDelay / timing).toFixed(0)}%`,
+                },
             ];
             return phaseData;
         }
         // If the lcp is text, we only have ttfb and render delay.
         const phaseData = [
-            { phase: 'Time to first byte', timing: ttfb, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
-            { phase: 'Resource render delay', timing: renderDelay, percent: `${(100 * renderDelay / timing).toFixed(0)}%` },
+            { phase: i18nString(UIStrings.timeToFirstByte), timing: ttfb, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
+            {
+                phase: i18nString(UIStrings.elementRenderDelay),
+                timing: renderDelay,
+                percent: `${(100 * renderDelay / timing).toFixed(0)}%`,
+            },
         ];
         return phaseData;
     }
@@ -103,7 +119,7 @@ export class LCPPhases extends BaseInsight {
             const loadDelay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(loadDelayStart, loadBegin);
             const mainReqStart = TraceEngine.Types.Timing.MicroSeconds(loadDelayStart - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.ttfb));
             const ttfb = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, loadDelayStart);
-            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte) }, { bounds: loadDelay, label: i18nString(UIStrings.resourceLoadDelay) }, { bounds: loadTime, label: i18nString(UIStrings.resourceLoadTime) }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay) });
+            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte) }, { bounds: loadDelay, label: i18nString(UIStrings.resourceLoadDelay) }, { bounds: loadTime, label: i18nString(UIStrings.resourceLoadDuration) }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay) });
         }
         return [{
                 type: 'TIMESPAN_BREAKDOWN',

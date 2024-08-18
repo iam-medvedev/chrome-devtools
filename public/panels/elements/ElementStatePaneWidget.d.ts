@@ -3,10 +3,15 @@ export declare class ElementStatePaneWidget extends UI.Widget.Widget {
     private readonly inputs;
     private readonly inputStates;
     private cssModel?;
+    private specificPseudoStateDivs;
+    private specificHeader;
+    private readonly throttler;
     constructor();
     private updateModel;
     wasShown(): void;
     private update;
+    private updateElementSpecificStatesTable;
+    updateElementSpecificStatesTableForTest(): void;
 }
 export declare class ButtonProvider implements UI.Toolbar.Provider {
     private readonly button;

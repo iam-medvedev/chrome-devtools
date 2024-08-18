@@ -42,9 +42,11 @@ describeWithEnvironment('Overlays', () => {
         setupIgnoreListManagerEnvironment();
     });
     it('can calculate the x position of an event based on the dimensions and its timestamp', async () => {
-        const container = document.createElement('div');
+        const flameChartsContainer = document.createElement('div');
+        const container = flameChartsContainer.createChild('div');
         const overlays = new Overlays.Overlays.Overlays({
             container,
+            flameChartsContainer,
             charts: createCharts(),
         });
         // Set up the dimensions so it is 100px wide
@@ -66,15 +68,17 @@ describeWithEnvironment('Overlays', () => {
         overlays.updateVisibleWindow(TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(windowMin, windowMax));
         // Now set an event to be at 50 microseconds.
         const event = makeInstantEvent('test-event', 50);
-        const xPosition = overlays.xPixelForEventOnChart(event);
+        const xPosition = overlays.xPixelForEventStartOnChart(event);
         assert.strictEqual(xPosition, 50);
     });
     it('can calculate the y position of a main chart event', async function () {
         const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
         const charts = createCharts(traceData);
-        const container = document.createElement('div');
+        const flameChartsContainer = document.createElement('div');
+        const container = flameChartsContainer.createChild('div');
         const overlays = new Overlays.Overlays.Overlays({
             container,
+            flameChartsContainer,
             charts,
         });
         overlays.updateChartDimensions('main', {
@@ -104,9 +108,11 @@ describeWithEnvironment('Overlays', () => {
     it('can adjust the y position of a main chart event when the network track is collapsed', async function () {
         const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
         const charts = createCharts(traceData);
-        const container = document.createElement('div');
+        const flameChartsContainer = document.createElement('div');
+        const container = flameChartsContainer.createChild('div');
         const overlays = new Overlays.Overlays.Overlays({
             container,
+            flameChartsContainer,
             charts,
         });
         overlays.updateChartDimensions('main', {
@@ -137,9 +143,11 @@ describeWithEnvironment('Overlays', () => {
     it('can calculate the y position of a network chart event', async function () {
         const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
         const charts = createCharts(traceData);
-        const container = document.createElement('div');
+        const flameChartsContainer = document.createElement('div');
+        const container = flameChartsContainer.createChild('div');
         const overlays = new Overlays.Overlays.Overlays({
             container,
+            flameChartsContainer,
             charts,
         });
         overlays.updateChartDimensions('main', {
@@ -171,9 +179,11 @@ describeWithEnvironment('Overlays', () => {
     describe('rendering overlays', () => {
         function setupChartWithDimensionsAndAnnotationOverlayListeners(traceData) {
             const charts = createCharts(traceData);
-            const container = document.createElement('div');
+            const flameChartsContainer = document.createElement('div');
+            const container = flameChartsContainer.createChild('div');
             const overlays = new Overlays.Overlays.Overlays({
                 container,
+                flameChartsContainer,
                 charts,
             });
             const currManager = Timeline.ModificationsManager.ModificationsManager.activeManager();

@@ -84,27 +84,29 @@ export declare const enum ExperimentName {
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_OBSERVATIONS = "timeline-observations",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
-    GEN_AI_SETTINGS_PANEL = "gen-ai-settings-panel"
+    GEN_AI_SETTINGS_PANEL = "gen-ai-settings-panel",
+    TIMELINE_SERVER_TIMINGS = "timeline-server-timings"
+}
+export interface AidaAvailability {
+    enabled: boolean;
+    blockedByAge: boolean;
+    blockedByEnterprisePolicy: boolean;
+    blockedByGeo: boolean;
+    disallowLogging: boolean;
 }
 export interface HostConfigConsoleInsights {
-    aidaModelId: string;
-    aidaTemperature: number;
-    blocked: boolean;
-    blockedByAge: boolean;
-    blockedByEnterprisePolicy: boolean;
-    blockedByFeatureFlag: boolean;
-    blockedByGeo: boolean;
-    blockedByRollout: boolean;
-    disallowLogging: boolean;
+    modelId: string;
+    temperature: number;
     enabled: boolean;
-    optIn: boolean;
 }
 export interface HostConfigFreestylerDogfood {
-    aidaModelId: string;
-    aidaTemperature: number;
-    blockedByAge: boolean;
-    blockedByEnterprisePolicy: boolean;
-    blockedByGeo: boolean;
+    modelId: string;
+    temperature: number;
+    enabled: boolean;
+}
+export interface HostConfigExplainThisResourceDogfood {
+    modelId: string;
+    temperature: number;
     enabled: boolean;
 }
 export interface HostConfigVeLogging {
@@ -112,8 +114,10 @@ export interface HostConfigVeLogging {
     testing: boolean;
 }
 export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
+    aidaAvailability: AidaAvailability;
     devToolsConsoleInsights: HostConfigConsoleInsights;
     devToolsFreestylerDogfood: HostConfigFreestylerDogfood;
+    devToolsExplainThisResourceDogfood: HostConfigExplainThisResourceDogfood;
     devToolsVeLogging: HostConfigVeLogging;
     /**
      * OffTheRecord here indicates that the user's profile is either incognito,

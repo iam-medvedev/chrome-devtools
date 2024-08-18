@@ -14,6 +14,7 @@ import { ExtensionTrackAppender } from './ExtensionTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
 import { InteractionsTrackAppender } from './InteractionsTrackAppender.js';
 import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
+import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { InstantEventVisibleDurationMs, } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
@@ -36,7 +37,8 @@ export function entryIsVisibleInTimeline(entry, traceParsedData) {
         TraceEngine.Types.TraceEvents.isTraceEventHandlePostMessage(entry)) {
         return Root.Runtime.experiments.isEnabled("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */);
     }
-    if (TraceEngine.Types.Extensions.isSyntheticExtensionEntry(entry)) {
+    if (TraceEngine.Types.Extensions.isSyntheticExtensionEntry(entry) ||
+        TraceEngine.Types.TraceEvents.isSyntheticServerTiming(entry)) {
         return true;
     }
     // Default styles are globally defined for each event name. Some
@@ -47,7 +49,17 @@ export function entryIsVisibleInTimeline(entry, traceParsedData) {
         TraceEngine.Types.TraceEvents.isTraceEventPerformanceMark(entry);
     return (eventStyle && !eventStyle.hidden) || eventIsTiming;
 }
-export const TrackNames = ['Animations', 'Timings', 'Interactions', 'GPU', 'LayoutShifts', 'Thread', 'Thread_AuctionWorklet', 'Extension'];
+export const TrackNames = [
+    'Animations',
+    'Timings',
+    'Interactions',
+    'GPU',
+    'LayoutShifts',
+    'Thread',
+    'Thread_AuctionWorklet',
+    'Extension',
+    'ServerTimings',
+];
 export class CompatibilityTracksAppender {
     #trackForLevel = new Map();
     #trackForGroup = new Map();
@@ -66,6 +78,7 @@ export class CompatibilityTracksAppender {
     #gpuTrackAppender;
     #layoutShiftsTrackAppender;
     #threadAppenders = [];
+    #serverTimingsTrackAppender;
     /**
      * @param flameChartData the data used by the flame chart renderer on
      * which the track data will be appended.
@@ -99,6 +112,8 @@ export class CompatibilityTracksAppender {
         this.#allTrackAppenders.push(this.#gpuTrackAppender);
         this.#layoutShiftsTrackAppender = new LayoutShiftsTrackAppender(this, this.#traceParsedData);
         this.#allTrackAppenders.push(this.#layoutShiftsTrackAppender);
+        this.#serverTimingsTrackAppender = new ServerTimingsTrackAppender(this, this.#traceParsedData);
+        this.#allTrackAppenders.push(this.#serverTimingsTrackAppender);
         this.#addThreadAppenders();
         this.#addExtensionAppenders();
         ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
@@ -207,6 +222,9 @@ export class CompatibilityTracksAppender {
     }
     threadAppenders() {
         return this.#threadAppenders;
+    }
+    serverTimingsTrackAppender() {
+        return this.#serverTimingsTrackAppender;
     }
     eventsInTrack(trackAppender) {
         const cachedData = this.#eventsForTrack.get(trackAppender);

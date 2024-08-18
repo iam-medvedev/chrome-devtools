@@ -13,6 +13,7 @@ export declare class SyntheticEventsManager {
     static getActiveManager(): SyntheticEventsManager;
     static reset(): void;
     static registerSyntheticBasedEvent<T extends Types.TraceEvents.SyntheticBasedEvent>(syntheticEvent: Omit<T, '_tag'>): T;
+    static registerServerTiming(syntheticEvent: Omit<Types.TraceEvents.SyntheticServerTiming, '_tag'>): Types.TraceEvents.SyntheticServerTiming;
     private constructor();
     /**
      * Registers and returns a branded synthetic event. Synthetic events need to

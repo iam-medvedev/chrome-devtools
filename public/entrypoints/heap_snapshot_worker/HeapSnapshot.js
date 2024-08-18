@@ -275,10 +275,19 @@ export class HeapSnapshotNode {
         return this.snapshot.getDistanceForRetainersView(this.nodeIndex);
     }
     className() {
-        throw new Error('Not implemented');
+        return this.snapshot.strings[this.classIndex()];
     }
     classIndex() {
-        throw new Error('Not implemented');
+        return this.#detachednessAndClassIndex() >>> SHIFT_FOR_CLASS_INDEX;
+    }
+    setClassIndex(index) {
+        let value = this.#detachednessAndClassIndex();
+        value &= BITMASK_FOR_DOM_LINK_STATE; // Clear previous class index.
+        value |= (index << SHIFT_FOR_CLASS_INDEX); // Set new class index.
+        this.#setDetachednessAndClassIndex(value);
+        if (this.classIndex() !== index) {
+            throw new Error('String index overflow');
+        }
     }
     dominatorIndex() {
         const nodeFieldCount = this.snapshot.nodeFieldCount;
@@ -380,6 +389,32 @@ export class HeapSnapshotNode {
             }
         }
         return false;
+    }
+    #detachednessAndClassIndex() {
+        const { snapshot, nodeIndex } = this;
+        const nodeDetachednessAndClassIndexOffset = snapshot.nodeDetachednessAndClassIndexOffset;
+        return nodeDetachednessAndClassIndexOffset !== -1 ?
+            snapshot.nodes.getValue(nodeIndex + nodeDetachednessAndClassIndexOffset) :
+            snapshot.detachednessAndClassIndexArray[nodeIndex / snapshot.nodeFieldCount];
+    }
+    #setDetachednessAndClassIndex(value) {
+        const { snapshot, nodeIndex } = this;
+        const nodeDetachednessAndClassIndexOffset = snapshot.nodeDetachednessAndClassIndexOffset;
+        if (nodeDetachednessAndClassIndexOffset !== -1) {
+            snapshot.nodes.setValue(nodeIndex + nodeDetachednessAndClassIndexOffset, value);
+        }
+        else {
+            snapshot.detachednessAndClassIndexArray[nodeIndex / snapshot.nodeFieldCount] = value;
+        }
+    }
+    detachedness() {
+        return this.#detachednessAndClassIndex() & BITMASK_FOR_DOM_LINK_STATE;
+    }
+    setDetachedness(detachedness) {
+        let value = this.#detachednessAndClassIndex();
+        value &= ~BITMASK_FOR_DOM_LINK_STATE; // Clear the old bits.
+        value |= detachedness; // Set the new bits.
+        this.#setDetachednessAndClassIndex(value);
     }
 }
 export class HeapSnapshotNodeIterator {
@@ -483,6 +518,9 @@ export class HeapSnapshotProblemReport {
         return this.#errors.join('\n  ');
     }
 }
+const BITMASK_FOR_DOM_LINK_STATE = 3;
+// The class index is stored in the upper 30 bits of the detachedness field.
+const SHIFT_FOR_CLASS_INDEX = 2;
 export class HeapSnapshot {
     nodes;
     containmentEdges;
@@ -516,6 +554,8 @@ export class HeapSnapshot {
     nodeSlicedStringType;
     nodeCodeType;
     nodeSyntheticType;
+    nodeClosureType;
+    nodeRegExpType;
     edgeFieldsCount;
     edgeTypeOffset;
     edgeNameOffset;
@@ -544,14 +584,14 @@ export class HeapSnapshot {
     dominatedNodes;
     dominatorsTree;
     #allocationProfile;
-    #nodeDetachednessOffset;
+    nodeDetachednessAndClassIndexOffset;
     #locationMap;
     lazyStringCache;
     #ignoredNodesInRetainersView;
     #ignoredEdgesInRetainersView;
     #nodeDistancesForRetainersView;
     #edgeNamesThatAreNotWeakMaps;
-    #syntheticClassNames;
+    detachednessAndClassIndexArray;
     constructor(profile, progress) {
         this.nodes = profile.nodes;
         this.containmentEdges = profile.edges;
@@ -573,7 +613,6 @@ export class HeapSnapshot {
         this.#ignoredNodesInRetainersView = new Set();
         this.#ignoredEdgesInRetainersView = new Set();
         this.#edgeNamesThatAreNotWeakMaps = Platform.TypedArrayUtilities.createBitVector(this.strings.length);
-        this.#syntheticClassNames = new Map();
     }
     initialize() {
         const meta = this.#metaNode;
@@ -583,7 +622,7 @@ export class HeapSnapshot {
         this.nodeSelfSizeOffset = meta.node_fields.indexOf('self_size');
         this.#nodeEdgeCountOffset = meta.node_fields.indexOf('edge_count');
         this.nodeTraceNodeIdOffset = meta.node_fields.indexOf('trace_node_id');
-        this.#nodeDetachednessOffset = meta.node_fields.indexOf('detachedness');
+        this.nodeDetachednessAndClassIndexOffset = meta.node_fields.indexOf('detachedness');
         this.nodeFieldCount = meta.node_fields.length;
         this.nodeTypes = meta.node_types[this.nodeTypeOffset];
         this.nodeArrayType = this.nodeTypes.indexOf('array');
@@ -595,6 +634,8 @@ export class HeapSnapshot {
         this.nodeSlicedStringType = this.nodeTypes.indexOf('sliced string');
         this.nodeCodeType = this.nodeTypes.indexOf('code');
         this.nodeSyntheticType = this.nodeTypes.indexOf('synthetic');
+        this.nodeClosureType = this.nodeTypes.indexOf('closure');
+        this.nodeRegExpType = this.nodeTypes.indexOf('regexp');
         this.edgeFieldsCount = meta.edge_fields.length;
         this.edgeTypeOffset = meta.edge_fields.indexOf('type');
         this.edgeNameOffset = meta.edge_fields.indexOf('name_or_index');
@@ -644,6 +685,8 @@ export class HeapSnapshot {
         this.calculateRetainedSizes(result.postOrderIndex2NodeOrdinal);
         this.#progress.updateStatus('Building dominated nodes…');
         this.buildDominatedNodes();
+        this.#progress.updateStatus('Calculating object names…');
+        this.calculateObjectNames();
         this.#progress.updateStatus('Calculating statistics…');
         this.calculateStatistics();
         this.#progress.updateStatus('Calculating samples…');
@@ -876,7 +919,7 @@ export class HeapSnapshot {
             case 'objectsRetainedByDetachedDomNodes':
                 // Traverse the graph, avoiding detached nodes.
                 traverse((node, edge) => {
-                    return this.nodes.getValue(edge.nodeIndex() + this.#nodeDetachednessOffset) !== 2 /* DOMLinkState.Detached */;
+                    return edge.node().detachedness() !== 2 /* DOMLinkState.Detached */;
                 });
                 markUnreachableNodes();
                 return (node) => !getBit(node);
@@ -1509,6 +1552,75 @@ export class HeapSnapshot {
             dominatedNodes[dominatedRefIndex] = nodeOrdinal * nodeFieldCount;
         }
     }
+    calculateObjectNames() {
+        const { nodes, nodeCount, nodeNameOffset, nodeNativeType, nodeHiddenType, nodeObjectType, nodeCodeType, nodeClosureType, nodeRegExpType, } = this;
+        // If the snapshot doesn't contain a detachedness field in each node, then
+        // allocate a separate array so there is somewhere to store the class index.
+        if (this.nodeDetachednessAndClassIndexOffset === -1) {
+            this.detachednessAndClassIndexArray = new Uint32Array(nodeCount);
+        }
+        // We'll add some new values to the `strings` array during the processing below.
+        // This map lets us easily find the index for each added string.
+        const stringTable = new Map();
+        const getIndexForString = (s) => {
+            let index = stringTable.get(s);
+            if (index === undefined) {
+                index = this.addString(s);
+                stringTable.set(s, index);
+            }
+            return index;
+        };
+        const hiddenClassIndex = getIndexForString('(system)');
+        const codeClassIndex = getIndexForString('(compiled code)');
+        const functionClassIndex = getIndexForString('Function');
+        const regExpClassIndex = getIndexForString('RegExp');
+        function getNodeClassIndex(node) {
+            switch (node.rawType()) {
+                case nodeHiddenType:
+                    return hiddenClassIndex;
+                case nodeObjectType:
+                case nodeNativeType: {
+                    let name = node.rawName();
+                    // If the node name is (for example) '<div id="a">', then the class
+                    // name should be just '<div>'. If the node name is already short
+                    // enough, like '<div>', we must still call getIndexForString on that
+                    // name, because the names added by getIndexForString are not
+                    // deduplicated with preexisting strings, and we want all objects with
+                    // class name '<div>' to refer to that class name via the same index.
+                    // Otherwise, object categorization doesn't work.
+                    if (name.startsWith('<')) {
+                        const firstSpace = name.indexOf(' ');
+                        if (firstSpace !== -1) {
+                            name = name.substring(0, firstSpace) + '>';
+                        }
+                        return getIndexForString(name);
+                    }
+                    if (name.startsWith('Detached <')) {
+                        const firstSpace = name.indexOf(' ', 10);
+                        if (firstSpace !== -1) {
+                            name = name.substring(0, firstSpace) + '>';
+                        }
+                        return getIndexForString(name);
+                    }
+                    // Avoid getIndexForString here; the class name index should match the name index.
+                    return nodes.getValue(node.nodeIndex + nodeNameOffset);
+                }
+                case nodeCodeType:
+                    return codeClassIndex;
+                case nodeClosureType:
+                    return functionClassIndex;
+                case nodeRegExpType:
+                    return regExpClassIndex;
+                default:
+                    return getIndexForString('(' + node.type() + ')');
+            }
+        }
+        const node = this.createNode(0);
+        for (let i = 0; i < nodeCount; ++i) {
+            node.setClassIndex(getNodeClassIndex(node));
+            node.nodeIndex = node.nextNodeIndex();
+        }
+    }
     /**
      * Iterates children of a node.
      */
@@ -1546,7 +1658,7 @@ export class HeapSnapshot {
      *   "Detached <Name>".
      */
     propagateDOMState() {
-        if (this.#nodeDetachednessOffset === -1) {
+        if (this.nodeDetachednessAndClassIndexOffset === -1) {
             return;
         }
         console.time('propagateDOMState');
@@ -1554,6 +1666,7 @@ export class HeapSnapshot {
         const attached = [];
         const detached = [];
         const stringIndexCache = new Map();
+        const node = this.createNode(0);
         /**
          * Adds a 'Detached ' prefix to the name of a node.
          */
@@ -1583,7 +1696,8 @@ export class HeapSnapshot {
                 visited[nodeOrdinal] = 1;
                 return;
             }
-            snapshot.nodes.setValue(nodeIndex + snapshot.#nodeDetachednessOffset, newState);
+            node.nodeIndex = nodeIndex;
+            node.setDetachedness(newState);
             if (newState === 1 /* DOMLinkState.Attached */) {
                 attached.push(nodeOrdinal);
             }
@@ -1602,7 +1716,8 @@ export class HeapSnapshot {
         //    through processing to have their name adjusted and them enqueued in
         //    the respective queues.
         for (let nodeOrdinal = 0; nodeOrdinal < this.nodeCount; ++nodeOrdinal) {
-            const state = this.nodes.getValue(nodeOrdinal * this.nodeFieldCount + this.#nodeDetachednessOffset);
+            node.nodeIndex = nodeOrdinal * this.nodeFieldCount;
+            const state = node.detachedness();
             // Bail out for objects that have no known state. For all other objects set that state.
             if (state === 0 /* DOMLinkState.Unknown */) {
                 continue;
@@ -1617,7 +1732,8 @@ export class HeapSnapshot {
         // 3. If the parent is not attached, then the child inherits the parent's state.
         while (detached.length !== 0) {
             const nodeOrdinal = detached.pop();
-            const nodeState = this.nodes.getValue(nodeOrdinal * this.nodeFieldCount + this.#nodeDetachednessOffset);
+            node.nodeIndex = nodeOrdinal * this.nodeFieldCount;
+            const nodeState = node.detachedness();
             // Ignore if the node has been found through propagating forward attached state.
             if (nodeState === 1 /* DOMLinkState.Attached */) {
                 continue;
@@ -1933,14 +2049,6 @@ export class HeapSnapshot {
     }
     isEdgeIgnoredInRetainersView(edgeIndex) {
         return this.#ignoredEdgesInRetainersView.has(edgeIndex);
-    }
-    getIndexForSyntheticClassName(className) {
-        let index = this.#syntheticClassNames.get(className);
-        if (index === undefined) {
-            index = this.addString(className);
-            this.#syntheticClassNames.set(className, index);
-        }
-        return index;
     }
 }
 class HeapSnapshotMetainfo {
@@ -2685,50 +2793,6 @@ export class JSHeapSnapshotNode extends HeapSnapshotNode {
             nodesStack.push(firstNodeIndex);
         }
         return name;
-    }
-    className() {
-        const type = this.type();
-        switch (type) {
-            case 'hidden':
-                return '(system)';
-            case 'object':
-            case 'native': {
-                let name = this.name();
-                if (name.startsWith('<')) {
-                    const firstSpace = name.indexOf(' ');
-                    if (firstSpace !== -1) {
-                        name = name.substring(0, firstSpace) + '>';
-                    }
-                }
-                else if (name.startsWith('Detached <')) {
-                    const firstSpace = name.indexOf(' ', 10);
-                    if (firstSpace !== -1) {
-                        name = name.substring(0, firstSpace) + '>';
-                    }
-                }
-                return name;
-            }
-            case 'code':
-                return '(compiled code)';
-            case 'closure':
-                return 'Function';
-            case 'regexp':
-                return 'RegExp';
-            default:
-                return '(' + type + ')';
-        }
-    }
-    classIndex() {
-        const snapshot = this.snapshot;
-        const nodes = snapshot.nodes;
-        const type = nodes.getValue(this.nodeIndex + snapshot.nodeTypeOffset);
-        if (type === snapshot.nodeObjectType || type === snapshot.nodeNativeType) {
-            const name = this.name();
-            const useSyntheticClassName = name.startsWith('<') || name.startsWith('Detached <');
-            return useSyntheticClassName ? snapshot.getIndexForSyntheticClassName(this.className()) :
-                nodes.getValue(this.nodeIndex + snapshot.nodeNameOffset);
-        }
-        return -1 - type;
     }
     id() {
         const snapshot = this.snapshot;

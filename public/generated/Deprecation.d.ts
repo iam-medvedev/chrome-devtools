@@ -40,6 +40,10 @@ export declare const UIStrings: {
      */
     CSSCustomStateDeprecatedSyntax: string;
     /**
+     * @description Warning displayed to developers when their website uses `inset-area` in CSS. They can simply switch their CSS to `position-area` and it will function in the same way.
+     */
+    CSSInsetAreaProperty: string;
+    /**
      * @description Warning displayed to developers when they hide the Cast button on a video element using the deprecated CSS selector instead of using the disableRemotePlayback attribute on the element.
      */
     CSSSelectorInternalMediaControlsOverlayCastButton: string;

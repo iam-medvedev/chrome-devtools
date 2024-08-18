@@ -40,7 +40,7 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
         const hostConfig = Common.Settings.Settings.instance().getHostConfig();
         const useSessionStorage = !hostConfig || hostConfig.isOffTheRecord === true;
         const storageTypeForConsent = useSessionStorage ? "Session" /* Common.Settings.SettingStorageType.Session */ : "Global" /* Common.Settings.SettingStorageType.Global */;
-        this.#configSetting = Common.Settings.Settings.instance().createSetting('field-data', { enabled: false, override: '' }, storageTypeForConsent);
+        this.#configSetting = Common.Settings.Settings.instance().createSetting('field-data', { enabled: false, override: '', originMappings: [] }, storageTypeForConsent);
         this.#configSetting.addChangeListener(() => {
             void this.#automaticRefresh();
         });
@@ -55,6 +55,9 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     getConfigSetting() {
         return this.#configSetting;
+    }
+    isEnabled() {
+        return this.#configSetting.get().enabled;
     }
     async getFieldDataForPage(pageUrl) {
         const pageResult = {
@@ -87,6 +90,22 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
             return pageResult;
         }
     }
+    #getMappedUrl(unmappedUrl) {
+        try {
+            const unmapped = new URL(unmappedUrl);
+            const mappings = this.#configSetting.get().originMappings || [];
+            const mapping = mappings.find(m => m.developmentOrigin === unmapped.origin);
+            if (!mapping) {
+                return unmappedUrl;
+            }
+            const mapped = new URL(mapping.productionOrigin);
+            mapped.pathname = unmapped.pathname;
+            return mapped.href;
+        }
+        catch {
+            return unmappedUrl;
+        }
+    }
     /**
      * In general, this function should use the main document URL
      * (i.e. the URL after all redirects but before SPA navigations)
@@ -97,7 +116,8 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
      * the main document URL cannot be found.
      */
     async getFieldDataForCurrentPage() {
-        const pageUrl = this.#configSetting.get().override || this.#mainDocumentUrl || await this.#getInspectedURL();
+        const pageUrl = this.#configSetting.get().override ||
+            this.#getMappedUrl(this.#mainDocumentUrl || await this.#getInspectedURL());
         return this.getFieldDataForPage(pageUrl);
     }
     async #getInspectedURL() {
@@ -142,7 +162,10 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
         return normalizedUrl;
     }
     async #getScopedData(normalizedUrl, pageScope, deviceScope) {
-        const { origin, href: url } = normalizedUrl;
+        const { origin, href: url, hostname } = normalizedUrl;
+        if (hostname === 'localhost') {
+            return null;
+        }
         const cache = pageScope === 'origin' ? this.#originCache : this.#urlCache;
         const cacheKey = pageScope === 'origin' ? `${origin}-${deviceScope}` : `${url}-${deviceScope}`;
         const cachedResponse = cache.get(cacheKey);

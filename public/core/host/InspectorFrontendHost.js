@@ -306,25 +306,21 @@ export class InspectorFrontendHostStub {
     }
     getHostConfig(callback) {
         const result = {
-            devToolsConsoleInsights: {
-                aidaModelId: '',
-                aidaTemperature: 0,
-                blocked: true,
+            aidaAvailability: {
+                enabled: true,
                 blockedByAge: false,
                 blockedByEnterprisePolicy: false,
-                blockedByFeatureFlag: true,
                 blockedByGeo: false,
-                blockedByRollout: false,
                 disallowLogging: false,
+            },
+            devToolsConsoleInsights: {
+                modelId: '',
+                temperature: 0,
                 enabled: false,
-                optIn: false,
             },
             devToolsFreestylerDogfood: {
-                aidaModelId: '',
-                aidaTemperature: 0,
-                blockedByAge: false,
-                blockedByEnterprisePolicy: false,
-                blockedByGeo: false,
+                modelId: '',
+                temperature: 0,
                 enabled: false,
             },
             devToolsVeLogging: {

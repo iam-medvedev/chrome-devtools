@@ -20,7 +20,7 @@ styles.replaceSync(
 }
 
 devtools-dialog {
-  --override-transparent: rgb(0 0 0 / 50%);
+  --override-transparent: color-mix(in sRGB, var(--color-background) 80%, transparent);
 }
 
 .title {
@@ -43,6 +43,11 @@ devtools-dialog {
 
 .url-override {
   margin: 8px 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: max-content;
 }
 
 details > summary {
@@ -62,14 +67,30 @@ details > summary {
   flex-direction: row;
 }
 
+.origin-mapping-grid {
+  border: 1px solid var(--sys-color-divider);
+  margin-top: 8px;
+}
+
+.origin-mapping-button-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 6px;
+}
+
 .config-button {
   margin-left: auto;
+}
+
+.advanced-section-contents {
+  margin: 4px 0 14px;
 }
 
 .buttons-section {
   display: flex;
   justify-content: flex-end;
-  margin-top: 14px;
+  margin-top: 6px;
   gap: 8px;
 }
 
@@ -85,13 +106,6 @@ input[type="text"][disabled] {
   color: var(--sys-color-state-disabled);
 }
 
-label {
-  display: inline-flex;
-  align-items: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .warning {
   margin: 2px 8px;
   color: var(--color-error-text);
@@ -100,6 +114,12 @@ label {
 x-link { /* stylelint-disable-line selector-type-no-unknown */
   color: var(--sys-color-primary);
   text-decoration-line: underline;
+}
+
+.divider {
+  margin: 10px 0;
+  border: none;
+  border-top: 1px solid var(--sys-color-divider);
 }
 
 /*# sourceURL=fieldSettingsDialog.css */

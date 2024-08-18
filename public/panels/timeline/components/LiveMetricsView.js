@@ -3,16 +3,18 @@
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as EmulationModel from '../../../models/emulation/emulation.js';
 import * as LiveMetrics from '../../../models/live-metrics/live-metrics.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
+import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
 import { CPUThrottlingSelector } from './CPUThrottlingSelector.js';
 import { FieldSettingsDialog } from './FieldSettingsDialog.js';
@@ -244,7 +246,7 @@ function rateMetric(value, thresholds) {
     }
     return 'poor';
 }
-function renderMetricValue(value, thresholds, format, options) {
+function renderMetricValue(jslogContext, value, thresholds, format, options) {
     const metricValueEl = document.createElement('span');
     metricValueEl.classList.add('metric-value');
     if (value === undefined) {
@@ -255,6 +257,10 @@ function renderMetricValue(value, thresholds, format, options) {
     metricValueEl.textContent = format(value);
     const rating = rateMetric(value, thresholds);
     metricValueEl.classList.add(rating);
+    // Ensure we log impressions of each section. We purposefully add this here
+    // because if we don't have field data (dealt with in the undefined branch
+    // above), we do not want to log an impression on it.
+    metricValueEl.setAttribute('jslog', `${VisualLogging.section(jslogContext)}`);
     if (options?.dim) {
         metricValueEl.classList.add('dim');
     }
@@ -267,8 +273,7 @@ export class MetricCard extends HTMLElement {
         super();
         this.#render();
     }
-    #metricValuesEl;
-    #dialog;
+    #tooltipEl;
     #data = {
         metric: 'LCP',
     };
@@ -280,28 +285,67 @@ export class MetricCard extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [liveMetricsViewStyles];
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
-    #showDialog() {
-        if (!this.#dialog) {
+    #hideTooltipOnEsc = (event) => {
+        if (Platform.KeyboardUtilities.isEscKey(event)) {
+            event.stopPropagation();
+            this.#hideTooltip();
+        }
+    };
+    #hideTooltipOnMouseLeave(event) {
+        const target = event.target;
+        if (target?.hasFocus()) {
             return;
         }
-        void this.#dialog.setDialogVisible(true);
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+        this.#hideTooltip();
     }
-    #closeDialog(event) {
-        if (!this.#dialog || !this.#metricValuesEl) {
+    #hideTooltipOnFocusOut(event) {
+        const target = event.target;
+        if (target?.hasFocus()) {
             return;
         }
-        if (event) {
-            const path = event.composedPath();
-            if (path.includes(this.#metricValuesEl)) {
-                return;
-            }
-            if (path.includes(this.#dialog)) {
-                return;
-            }
+        const relatedTarget = event.relatedTarget;
+        if (relatedTarget instanceof Node && target.contains(relatedTarget)) {
+            // `focusout` bubbles so we should get another event once focus leaves `relatedTarget`
+            return;
         }
-        void this.#dialog.setDialogVisible(false);
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+        this.#hideTooltip();
+    }
+    #hideTooltip() {
+        const tooltipEl = this.#tooltipEl;
+        if (!tooltipEl) {
+            return;
+        }
+        document.body.removeEventListener('keydown', this.#hideTooltipOnEsc);
+        tooltipEl.style.left = '';
+        tooltipEl.style.maxWidth = '';
+        tooltipEl.style.display = 'none';
+    }
+    #showTooltip() {
+        const tooltipEl = this.#tooltipEl;
+        if (!tooltipEl || tooltipEl.style.display === 'block') {
+            return;
+        }
+        document.body.addEventListener('keydown', this.#hideTooltipOnEsc);
+        tooltipEl.style.display = 'block';
+        const container = this.#data.tooltipContainer;
+        if (!container) {
+            return;
+        }
+        const containerBox = container.getBoundingClientRect();
+        tooltipEl.style.setProperty('--tooltip-container-width', `${Math.round(containerBox.width)}px`);
+        requestAnimationFrame(() => {
+            let offset = 0;
+            const tooltipBox = tooltipEl.getBoundingClientRect();
+            const rightDiff = tooltipBox.right - containerBox.right;
+            const leftDiff = tooltipBox.left - containerBox.left;
+            if (leftDiff < 0) {
+                offset = Math.round(leftDiff);
+            }
+            else if (rightDiff > 0) {
+                offset = Math.round(rightDiff);
+            }
+            tooltipEl.style.left = `calc(50% - ${offset}px)`;
+        });
     }
     #getTitle() {
         switch (this.#data.metric) {
@@ -380,7 +424,7 @@ export class MetricCard extends HTMLElement {
         }
         const compare = this.#getCompareRating();
         const rating = rateMetric(localValue, this.#getThresholds());
-        const valueEl = renderMetricValue(localValue, this.#getThresholds(), this.#getFormatFn(), { dim: true });
+        const valueEl = renderMetricValue(this.#getMetricValueLogContext(true), localValue, this.#getThresholds(), this.#getFormatFn(), { dim: true });
         // clang-format off
         return html `
       <div class="compare-text">
@@ -391,6 +435,9 @@ export class MetricCard extends HTMLElement {
       </div>
     `;
         // clang-format on
+    }
+    #getMetricValueLogContext(isLocal) {
+        return `timeline.landing.${isLocal ? 'local' : 'field'}-${this.#data.metric.toLowerCase()}`;
     }
     #renderDetailedCompareString() {
         const localValue = this.#getLocalValue();
@@ -405,76 +452,90 @@ export class MetricCard extends HTMLElement {
         const localRating = rateMetric(localValue, this.#getThresholds());
         const fieldValue = this.#getFieldValue();
         const fieldRating = fieldValue !== undefined ? rateMetric(fieldValue, this.#getThresholds()) : undefined;
-        const localValueEl = renderMetricValue(localValue, this.#getThresholds(), this.#getFormatFn(), { dim: true });
-        const fieldValueEl = renderMetricValue(fieldValue, this.#getThresholds(), this.#getFormatFn(), { dim: true });
+        const localValueEl = renderMetricValue(this.#getMetricValueLogContext(true), localValue, this.#getThresholds(), this.#getFormatFn(), { dim: true });
+        const fieldValueEl = renderMetricValue(this.#getMetricValueLogContext(false), fieldValue, this.#getThresholds(), this.#getFormatFn(), { dim: true });
         // clang-format off
         return html `
       <div class="detailed-compare-text">${renderDetailedCompareText(localRating, fieldRating, {
             PH1: this.#data.metric,
             PH2: localValueEl,
             PH3: fieldValueEl,
-            PH4: this.#getBucketLabel(localRating),
+            PH4: this.#getPercentLabelForRating(localRating),
         })}</div>
     `;
         // clang-format on
     }
-    #densityToCSSPercent(density) {
-        if (density === undefined) {
-            density = 0;
+    #bucketIndexForRating(rating) {
+        switch (rating) {
+            case 'good':
+                return 0;
+            case 'needs-improvement':
+                return 1;
+            case 'poor':
+                return 2;
         }
+    }
+    #getBarWidthForRating(rating) {
+        const histogram = this.#data.histogram;
+        const density = histogram?.[this.#bucketIndexForRating(rating)].density || 0;
         const percent = Math.round(density * 100);
         return `${percent}%`;
     }
-    #getBucketLabel(rating) {
+    #getPercentLabelForRating(rating) {
         const histogram = this.#data.histogram;
         if (histogram === undefined) {
             return '-';
         }
-        let bucket;
-        switch (rating) {
-            case 'good':
-                bucket = 0;
-                break;
-            case 'needs-improvement':
-                bucket = 1;
-                break;
-            case 'poor':
-                bucket = 2;
-                break;
-        }
         // A missing density value should be interpreted as 0%
-        const density = histogram[bucket].density || 0;
+        const density = histogram[this.#bucketIndexForRating(rating)].density || 0;
         const percent = Math.round(density * 100);
         return i18nString(UIStrings.percentage, { PH1: percent });
     }
     #renderFieldHistogram() {
-        const histogram = this.#data.histogram;
-        const goodPercent = this.#densityToCSSPercent(histogram?.[0].density);
-        const needsImprovementPercent = this.#densityToCSSPercent(histogram?.[1].density);
-        const poorPercent = this.#densityToCSSPercent(histogram?.[2].density);
+        const fieldEnabled = CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled;
         const format = this.#getFormatFn();
         const thresholds = this.#getThresholds();
         // clang-format off
+        const goodLabel = html `
+      <div class="bucket-label">
+        <span>${i18nString(UIStrings.good)}</span>
+        <span class="bucket-range">${i18nString(UIStrings.leqRange, { PH1: format(thresholds[0]) })}</span>
+      </div>
+    `;
+        const needsImprovementLabel = html `
+      <div class="bucket-label">
+        <span>${i18nString(UIStrings.needsImprovement)}</span>
+        <span class="bucket-range">${i18nString(UIStrings.betweenRange, { PH1: format(thresholds[0]), PH2: format(thresholds[1]) })}</span>
+      </div>
+    `;
+        const poorLabel = html `
+      <div class="bucket-label">
+        <span>${i18nString(UIStrings.poor)}</span>
+        <span class="bucket-range">${i18nString(UIStrings.gtRange, { PH1: format(thresholds[1]) })}</span>
+      </div>
+    `;
+        // clang-format on
+        if (!fieldEnabled) {
+            return html `
+        <div class="bucket-summaries">
+          ${goodLabel}
+          ${needsImprovementLabel}
+          ${poorLabel}
+        </div>
+      `;
+        }
+        // clang-format off
         return html `
-      <div class="field-data-histogram">
-        <span class="histogram-label">
-          ${i18nString(UIStrings.good)}
-          <span class="histogram-range">${i18nString(UIStrings.leqRange, { PH1: format(thresholds[0]) })}</span>
-        </span>
-        <span class="histogram-bar good-bg" style="width: ${goodPercent}"></span>
-        <span class="histogram-percent">${this.#getBucketLabel('good')}</span>
-        <span class="histogram-label">
-          ${i18nString(UIStrings.needsImprovement)}
-          <span class="histogram-range">${i18nString(UIStrings.betweenRange, { PH1: format(thresholds[0]), PH2: format(thresholds[1]) })}</span>
-        </span>
-        <span class="histogram-bar needs-improvement-bg" style="width: ${needsImprovementPercent}"></span>
-        <span class="histogram-percent">${this.#getBucketLabel('needs-improvement')}</span>
-        <span class="histogram-label">
-          ${i18nString(UIStrings.poor)}
-          <span class="histogram-range">${i18nString(UIStrings.gtRange, { PH1: format(thresholds[1]) })}</span>
-        </span>
-        <span class="histogram-bar poor-bg" style="width: ${poorPercent}"></span>
-        <span class="histogram-percent">${this.#getBucketLabel('poor')}</span>
+      <div class="bucket-summaries histogram">
+        ${goodLabel}
+        <div class="histogram-bar good-bg" style="width: ${this.#getBarWidthForRating('good')}"></div>
+        <div class="histogram-percent">${this.#getPercentLabelForRating('good')}</div>
+        ${needsImprovementLabel}
+        <div class="histogram-bar needs-improvement-bg" style="width: ${this.#getBarWidthForRating('needs-improvement')}"></div>
+        <div class="histogram-percent">${this.#getPercentLabelForRating('needs-improvement')}</div>
+        ${poorLabel}
+        <div class="histogram-bar poor-bg" style="width: ${this.#getBarWidthForRating('poor')}"></div>
+        <div class="histogram-percent">${this.#getPercentLabelForRating('poor')}</div>
       </div>
     `;
         // clang-format on
@@ -487,46 +548,37 @@ export class MetricCard extends HTMLElement {
         <h3 class="card-title">
           ${this.#getTitle()}
         </h3>
-        <div class="card-metric-values"
-          @mouseenter=${this.#showDialog}
-          @mouseleave=${this.#closeDialog}
-          on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
-            this.#metricValuesEl = node;
-        })}
-          aria-describedby="tooltip-content"
+        <div tabindex="0" class="card-values"
+          @mouseenter=${this.#showTooltip}
+          @mouseleave=${this.#hideTooltipOnMouseLeave}
+          @focusin=${this.#showTooltip}
+          @focusout=${this.#hideTooltipOnFocusOut}
+          aria-describedby="tooltip"
         >
-          <span class="local-value">
-            ${renderMetricValue(this.#getLocalValue(), this.#getThresholds(), this.#getFormatFn())}
-          </span>
+          <div class="card-value-block">
+            <div class="card-value" id="local-value">${renderMetricValue(this.#getMetricValueLogContext(true), this.#getLocalValue(), this.#getThresholds(), this.#getFormatFn())}</div>
+            ${fieldEnabled ? html `<div class="card-metric-label">${i18nString(UIStrings.localValue)}</div>` : nothing}
+          </div>
           ${fieldEnabled ? html `
-            <span class="field-value">
-              ${renderMetricValue(this.#getFieldValue(), this.#getThresholds(), this.#getFormatFn())}
-            </span>
-            <span class="card-metric-label">${i18nString(UIStrings.localValue)}</span>
-            <span class="card-metric-label">${i18nString(UIStrings.field75thPercentile)}</span>
+            <div class="card-value-block">
+              <div class="card-value" id="field-value">${renderMetricValue(this.#getMetricValueLogContext(false), this.#getFieldValue(), this.#getThresholds(), this.#getFormatFn())}</div>
+              <div class="card-value-label">${i18nString(UIStrings.field75thPercentile)}</div>
+            </div>
           ` : nothing}
-        </div>
-        <${Dialogs.Dialog.Dialog.litTagName}
-          @pointerleftdialog=${() => this.#closeDialog()}
-          .showConnector=${false}
-          .centered=${true}
-          .closeOnScroll=${false}
-          .origin=${() => {
-            if (!this.#metricValuesEl) {
-                throw new Error('No metric values element');
-            }
-            return this.#metricValuesEl;
-        }}
-          on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
-            this.#dialog = node;
+          <div
+            id="tooltip"
+            class="tooltip"
+            role="tooltip"
+            aria-label=${i18nString(UIStrings.viewCardDetails)}
+            on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
+            this.#tooltipEl = node;
         })}
-        >
-          <div id="tooltip-content" class="tooltip-content" role="tooltip" aria-label=${i18nString(UIStrings.viewCardDetails)}>
+          >
             ${this.#renderDetailedCompareString()}
             <hr class="divider">
             ${this.#renderFieldHistogram()}
           </div>
-        </${Dialogs.Dialog.Dialog.litTagName}>
+        </div>
         ${fieldEnabled ? html `<hr class="divider">` : nothing}
         ${this.#renderCompareString()}
         <slot name="extra-info"><slot>
@@ -535,7 +587,7 @@ export class MetricCard extends HTMLElement {
         LitHtml.render(output, this.#shadow, { host: this });
     };
 }
-export class LiveMetricsView extends HTMLElement {
+export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     static litTagName = LitHtml.literal `devtools-live-metrics-view`;
     #shadow = this.attachShadow({ mode: 'open' });
     #lcpValue;
@@ -547,6 +599,9 @@ export class LiveMetricsView extends HTMLElement {
     #fieldPageScope = 'url';
     #toggleRecordAction;
     #recordReloadAction;
+    #tooltipContainerEl;
+    #interactionsListEl;
+    #interactionsListScrolling = false;
     constructor() {
         super();
         this.#toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
@@ -557,8 +612,30 @@ export class LiveMetricsView extends HTMLElement {
         this.#lcpValue = event.data.lcp;
         this.#clsValue = event.data.cls;
         this.#inpValue = event.data.inp;
-        this.#interactions = event.data.interactions;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+        const hasNewInteraction = this.#interactions.length < event.data.interactions.length;
+        this.#interactions = [...event.data.interactions];
+        const renderPromise = ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+        const listEl = this.#interactionsListEl;
+        if (!hasNewInteraction || !listEl) {
+            return;
+        }
+        const isAtBottom = Math.abs(listEl.scrollHeight - listEl.clientHeight - listEl.scrollTop) <= 1;
+        // We shouldn't scroll to the bottom if the list wasn't already at the bottom.
+        // However, if a new item appears while the animation for a previous item is still going,
+        // then we should "finish" the scroll by sending another scroll command even if the scroll position
+        // the element hasn't scrolled all the way to the bottom yet.
+        if (!isAtBottom && !this.#interactionsListScrolling) {
+            return;
+        }
+        void renderPromise.then(() => {
+            requestAnimationFrame(() => {
+                this.#interactionsListScrolling = true;
+                listEl.addEventListener('scrollend', () => {
+                    this.#interactionsListScrolling = false;
+                }, { once: true });
+                listEl.scrollTo({ top: listEl.scrollHeight, behavior: 'smooth' });
+            });
+        });
     }
     #onFieldDataChanged(event) {
         this.#cruxPageResult = event.data;
@@ -612,6 +689,7 @@ export class LiveMetricsView extends HTMLElement {
             localValue: this.#lcpValue?.value,
             fieldValue: fieldData?.percentiles?.p75,
             histogram: fieldData?.histogram,
+            tooltipContainer: this.#tooltipContainerEl,
         }}>
         ${node ? html `
             <div class="related-element-info" slot="extra-info">
@@ -633,6 +711,7 @@ export class LiveMetricsView extends HTMLElement {
             localValue: this.#clsValue?.value,
             fieldValue: fieldData?.percentiles?.p75,
             histogram: fieldData?.histogram,
+            tooltipContainer: this.#tooltipContainerEl,
         }}>
       </${MetricCard.litTagName}>
     `;
@@ -647,6 +726,7 @@ export class LiveMetricsView extends HTMLElement {
             localValue: this.#inpValue?.value,
             fieldValue: fieldData?.percentiles?.p75,
             histogram: fieldData?.histogram,
+            tooltipContainer: this.#tooltipContainerEl,
         }}>
       </${MetricCard.litTagName}>
     `;
@@ -770,6 +850,8 @@ export class LiveMetricsView extends HTMLElement {
         const originLabel = this.#getPageScopeLabel('origin');
         const buttonTitle = this.#fieldPageScope === 'url' ? urlLabel : originLabel;
         const accessibleTitle = i18nString(UIStrings.showFieldDataForPage, { PH1: buttonTitle });
+        // If there is no data at all we should force users to switch pages or reconfigure CrUX.
+        const shouldDisable = !this.#cruxPageResult?.['url-ALL'] && !this.#cruxPageResult?.['origin-ALL'];
         return html `
       <${Menus.SelectMenu.SelectMenu.litTagName}
         id="page-scope-select"
@@ -781,6 +863,7 @@ export class LiveMetricsView extends HTMLElement {
         .showSelectedItem=${true}
         .showConnector=${false}
         .buttonTitle=${buttonTitle}
+        .disabled=${shouldDisable}
         title=${accessibleTitle}
       >
         <${Menus.Menu.MenuItem.litTagName}
@@ -812,7 +895,7 @@ export class LiveMetricsView extends HTMLElement {
     }
     #getAutoDeviceScope() {
         const emulationModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
-        if (emulationModel.device()?.mobile()) {
+        if (emulationModel.isMobile()) {
             if (this.#cruxPageResult?.[`${this.#fieldPageScope}-PHONE`]) {
                 return 'PHONE';
             }
@@ -938,9 +1021,14 @@ export class LiveMetricsView extends HTMLElement {
         const output = html `
       <div class="container">
         <div class="live-metrics-view">
-          <main class="live-metrics">
+          <main class="live-metrics"
+          >
             <h2 class="section-title">${liveMetricsTitle}</h2>
-            <div class="metric-cards">
+            <div class="metric-cards"
+              on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
+            this.#tooltipContainerEl = node;
+        })}
+            >
               <div id="lcp">
                 ${this.#renderLcpCard()}
               </div>
@@ -955,13 +1043,17 @@ export class LiveMetricsView extends HTMLElement {
             ${this.#interactions.length > 0 ? html `
               <section class="interactions-section" aria-labelledby="interactions-section-title">
                 <h2 id="interactions-section-title" class="section-title">${i18nString(UIStrings.interactions)}</h2>
-                <ol class="interactions-list">
+                <ol class="interactions-list"
+                  on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
+            this.#interactionsListEl = node;
+        })}
+                >
                   ${this.#interactions.map(interaction => html `
                     <li class="interaction">
                       <span class="interaction-type">${interaction.interactionType}</span>
                       <span class="interaction-node">${interaction.node && until(Common.Linkifier.Linkifier.linkify(interaction.node))}</span>
                       <span class="interaction-duration">
-                        ${renderMetricValue(interaction.duration, INP_THRESHOLDS, v => i18n.TimeUtilities.millisToString(v), { dim: true })}
+                        ${renderMetricValue('timeline.landing.interaction-event-timing', interaction.duration, INP_THRESHOLDS, v => i18n.TimeUtilities.millisToString(v), { dim: true })}
                       </span>
                     </li>
                   `)}
