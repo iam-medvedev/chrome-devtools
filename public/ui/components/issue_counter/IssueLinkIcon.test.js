@@ -62,7 +62,7 @@ describeWithLocale('IssueLinkIcon', () => {
     const issueId = 'issue1';
     const mockIssue = {
         getKind() {
-            return "PageError" /* IssuesManager.Issue.IssueKind.PageError */;
+            return "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */;
         },
         getIssueId() {
             return issueId;
@@ -125,7 +125,7 @@ describeWithLocale('IssueLinkIcon', () => {
             });
             const mockIssue2 = {
                 getKind() {
-                    return "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */;
+                    return "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */;
                 },
             };
             component.data = {

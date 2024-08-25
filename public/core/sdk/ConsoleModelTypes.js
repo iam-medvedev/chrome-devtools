@@ -5,9 +5,11 @@
 // are typed as string, and hence provide for weaker type-checking.
 export var FrontendMessageType;
 (function (FrontendMessageType) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     FrontendMessageType["Result"] = "result";
     FrontendMessageType["Command"] = "command";
     FrontendMessageType["System"] = "system";
     FrontendMessageType["QueryObjectResult"] = "queryObjectResult";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(FrontendMessageType || (FrontendMessageType = {}));
 //# sourceMappingURL=ConsoleModelTypes.js.map

@@ -65,6 +65,34 @@ const UIStrings = {
      *@description Text for a rendering frame
      */
     frame: 'Frame',
+    /**
+     *@description Text for Hiding a function from the Flame Chart
+     */
+    hideFunction: 'Hide function',
+    /**
+     *@description Text for Hiding all children of a function from the Flame Chart
+     */
+    hideChildren: 'Hide children',
+    /**
+     *@description Text for Hiding all child entries that are identical to the selected entry from the Flame Chart
+     */
+    hideRepeatingChildren: 'Hide repeating children',
+    /**
+     *@description Text for remove script from ignore list from the Flame Chart
+     */
+    removeScriptFromIgnoreList: 'Remove script from ignore list',
+    /**
+     *@description Text for add script to ignore list from the Flame Chart
+     */
+    addScriptToIgnoreList: 'Add script to ignore list',
+    /**
+     *@description Text for an action that shows all of the hidden children of an entry
+     */
+    resetChildren: 'Reset children',
+    /**
+     *@description Text for an action that shows all of the hidden entries of the Flame Chart
+     */
+    resetTrace: 'Reset trace',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineFlameChartDataProvider.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -133,13 +161,126 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     hasTrackConfigurationMode() {
         return true;
     }
-    modifyTree(node, action) {
-        const entry = this.entryData[node];
-        ModificationsManager.activeManager()?.getEntriesFilter().applyFilterAction({ type: action, entry });
+    getPossibleActions(entryIndex, groupIndex) {
+        const data = this.timelineData();
+        if (!data) {
+            return;
+        }
+        const group = data.groups.at(groupIndex);
+        // Early exit here if there is no group or:
+        // 1. The group is not expanded: it needs to be expanded to allow the
+        //    context menu actions to occur.
+        // 2. The group does not have the showStackContextMenu flag which indicates
+        //    that it does not show entries that support the stack actions.
+        if (!group || !group.expanded || !group.showStackContextMenu) {
+            return;
+        }
+        // Check which actions are possible on an entry.
+        // If an action would not change the entries (for example it has no children to collapse), we do not need to show it.
+        return this.findPossibleContextMenuActions(entryIndex);
     }
-    findPossibleContextMenuActions(node) {
-        const entry = this.entryData[node];
+    customizedContextMenu(event, entryIndex, groupIndex) {
+        const possibleActions = this.getPossibleActions(entryIndex, groupIndex);
+        if (!possibleActions) {
+            return;
+        }
+        const contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+        const hideEntryOption = contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideFunction), () => {
+            this.modifyTree("MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */, entryIndex);
+        }, {
+            disabled: !possibleActions?.["MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */],
+            jslogContext: 'hide-function',
+        });
+        hideEntryOption.setShortcut('H');
+        const hideChildrenOption = contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideChildren), () => {
+            this.modifyTree("COLLAPSE_FUNCTION" /* PerfUI.FlameChart.FilterAction.COLLAPSE_FUNCTION */, entryIndex);
+        }, {
+            disabled: !possibleActions?.["COLLAPSE_FUNCTION" /* PerfUI.FlameChart.FilterAction.COLLAPSE_FUNCTION */],
+            jslogContext: 'hide-children',
+        });
+        hideChildrenOption.setShortcut('C');
+        const hideRepeatingChildrenOption = contextMenu.defaultSection().appendItem(i18nString(UIStrings.hideRepeatingChildren), () => {
+            this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* PerfUI.FlameChart.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */, entryIndex);
+        }, {
+            disabled: !possibleActions?.["COLLAPSE_REPEATING_DESCENDANTS" /* PerfUI.FlameChart.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */],
+            jslogContext: 'hide-repeating-children',
+        });
+        hideRepeatingChildrenOption.setShortcut('R');
+        const resetChildrenOption = contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetChildren), () => {
+            this.modifyTree("RESET_CHILDREN" /* PerfUI.FlameChart.FilterAction.RESET_CHILDREN */, entryIndex);
+        }, {
+            disabled: !possibleActions?.["RESET_CHILDREN" /* PerfUI.FlameChart.FilterAction.RESET_CHILDREN */],
+            jslogContext: 'reset-children',
+        });
+        resetChildrenOption.setShortcut('U');
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.resetTrace), () => {
+            this.modifyTree("UNDO_ALL_ACTIONS" /* PerfUI.FlameChart.FilterAction.UNDO_ALL_ACTIONS */, entryIndex);
+        }, {
+            disabled: !possibleActions?.["UNDO_ALL_ACTIONS" /* PerfUI.FlameChart.FilterAction.UNDO_ALL_ACTIONS */],
+            jslogContext: 'reset-trace',
+        });
+        const entry = this.eventByIndex(entryIndex);
+        if (entry && entry instanceof TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame === false) {
+            const url = (TraceEngine.Types.TraceEvents.isProfileCall(entry)) ?
+                entry.callFrame.url :
+                undefined;
+            if (url) {
+                if (Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
+                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeScriptFromIgnoreList), () => {
+                        Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
+                        this.dispatchEventToListeners("DataChanged" /* Events.DataChanged */);
+                    }, {
+                        jslogContext: 'remove-from-ignore-list',
+                    });
+                }
+                else {
+                    contextMenu.defaultSection().appendItem(i18nString(UIStrings.addScriptToIgnoreList), () => {
+                        Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
+                        this.dispatchEventToListeners("DataChanged" /* Events.DataChanged */);
+                    }, {
+                        jslogContext: 'add-to-ignore-list',
+                    });
+                }
+            }
+        }
+        return contextMenu;
+    }
+    modifyTree(action, entryIndex) {
+        const entry = this.entryData[entryIndex];
+        ModificationsManager.activeManager()?.getEntriesFilter().applyFilterAction({ type: action, entry });
+        this.timelineData(true);
+        this.buildFlowForInitiator(entryIndex);
+        this.dispatchEventToListeners("DataChanged" /* Events.DataChanged */);
+    }
+    findPossibleContextMenuActions(entryIndex) {
+        const entry = this.entryData[entryIndex];
         return ModificationsManager.activeManager()?.getEntriesFilter().findPossibleActions(entry);
+    }
+    handleFlameChartTransformKeyboardEvent(event, entryIndex, groupIndex) {
+        const possibleActions = this.getPossibleActions(entryIndex, groupIndex);
+        if (!possibleActions) {
+            return;
+        }
+        let handled = false;
+        if (event.code === 'KeyH' && possibleActions["MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */]) {
+            this.modifyTree("MERGE_FUNCTION" /* PerfUI.FlameChart.FilterAction.MERGE_FUNCTION */, entryIndex);
+            handled = true;
+        }
+        else if (event.code === 'KeyC' && possibleActions["COLLAPSE_FUNCTION" /* PerfUI.FlameChart.FilterAction.COLLAPSE_FUNCTION */]) {
+            this.modifyTree("COLLAPSE_FUNCTION" /* PerfUI.FlameChart.FilterAction.COLLAPSE_FUNCTION */, entryIndex);
+            handled = true;
+        }
+        else if (event.code === 'KeyR' && possibleActions["COLLAPSE_REPEATING_DESCENDANTS" /* PerfUI.FlameChart.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */]) {
+            this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS" /* PerfUI.FlameChart.FilterAction.COLLAPSE_REPEATING_DESCENDANTS */, entryIndex);
+            handled = true;
+        }
+        else if (event.code === 'KeyU') {
+            this.modifyTree("RESET_CHILDREN" /* PerfUI.FlameChart.FilterAction.RESET_CHILDREN */, entryIndex);
+            handled = true;
+        }
+        if (handled) {
+            event.consume(true);
+        }
     }
     buildGroupStyle(extra) {
         const defaultGroupStyle = {
@@ -914,17 +1055,17 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (previousInitiatorsDataLength === 0 && initiatorsData.length === 0) {
             return false;
         }
-        for (const intiatorData of initiatorsData) {
-            const eventIndex = this.indexForEvent(intiatorData.event);
-            const initiatorIndex = this.indexForEvent(intiatorData.initiator);
+        for (const initiatorData of initiatorsData) {
+            const eventIndex = this.indexForEvent(initiatorData.event);
+            const initiatorIndex = this.indexForEvent(initiatorData.initiator);
             if (eventIndex === null || initiatorIndex === null) {
                 continue;
             }
             this.timelineDataInternal.initiatorsData.push({
                 initiatorIndex,
                 eventIndex,
-                isInitiatorHidden: intiatorData.isInitiatorHidden,
-                isEntryHidden: intiatorData.isEntryHidden,
+                isInitiatorHidden: initiatorData.isInitiatorHidden,
+                isEntryHidden: initiatorData.isEntryHidden,
             });
         }
         this.lastInitiatorsData = this.timelineDataInternal.initiatorsData;

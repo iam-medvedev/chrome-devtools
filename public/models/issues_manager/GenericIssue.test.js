@@ -34,9 +34,9 @@ describeWithLocale('GenericIssue', () => {
         const genericIssues = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, issue);
         assert.strictEqual(genericIssues.length, 1);
         const genericIssue = genericIssues[0];
-        assert.strictEqual(genericIssue.getCategory(), "Generic" /* IssuesManager.Issue.IssueCategory.Generic */);
+        assert.strictEqual(genericIssue.getCategory(), "Generic" /* IssuesManager.Issue.IssueCategory.GENERIC */);
         assert.strictEqual(genericIssue.primaryKey(), `GenericIssue::FormLabelForNameError-(${'main'})-(1)-(attribute)-(no-request)`);
-        assert.strictEqual(genericIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PageError */);
+        assert.strictEqual(genericIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */);
         assert.isNotNull(genericIssue.getDescription());
     });
     it('adds an incorrect form label use issue without details', () => {
@@ -53,9 +53,9 @@ describeWithLocale('GenericIssue', () => {
         const genericIssues = IssuesManager.GenericIssue.GenericIssue.fromInspectorIssue(mockModel, issue);
         assert.strictEqual(genericIssues.length, 1);
         const genericIssue = genericIssues[0];
-        assert.strictEqual(genericIssue.getCategory(), "Generic" /* IssuesManager.Issue.IssueCategory.Generic */);
+        assert.strictEqual(genericIssue.getCategory(), "Generic" /* IssuesManager.Issue.IssueCategory.GENERIC */);
         assert.strictEqual(genericIssue.primaryKey(), 'GenericIssue::ResponseWasBlockedByORB-(undefined)-(undefined)-(undefined)-(blabla)');
-        assert.strictEqual(genericIssue.getKind(), "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */);
+        assert.strictEqual(genericIssue.getKind(), "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */);
         assert.isNotNull(genericIssue.getDescription());
     });
 });

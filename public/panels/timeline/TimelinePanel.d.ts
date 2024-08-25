@@ -105,6 +105,8 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     toggleRecording(): Promise<void>;
     recordReload(): void;
     private onClearButton;
+    private buildColorsAnnotationsMap;
+    private getEntryColorByEntry;
     private recordingStarted;
     recordingProgress(usage: number): void;
     loadingStarted(): Promise<void>;

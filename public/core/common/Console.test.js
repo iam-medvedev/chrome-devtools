@@ -7,31 +7,31 @@ describe('Console', () => {
     describe('addMessage', () => {
         it('adds messages', () => {
             const console = Console.instance({ forceNew: true });
-            console.addMessage('Foo', "info" /* Common.Console.MessageLevel.Info */, true);
+            console.addMessage('Foo', "info" /* Common.Console.MessageLevel.INFO */, true);
             const messages = console.messages();
             assert.lengthOf(messages, 1);
             assert.strictEqual(messages[0].text, 'Foo');
-            assert.strictEqual(messages[0].level, "info" /* Common.Console.MessageLevel.Info */);
+            assert.strictEqual(messages[0].level, "info" /* Common.Console.MessageLevel.INFO */);
             assert.strictEqual(messages[0].show, true);
         });
         it('stores messages', () => {
             const console = Console.instance({ forceNew: true });
-            console.addMessage('Foo', "info" /* Common.Console.MessageLevel.Info */, true);
-            console.addMessage('Baz', "warning" /* Common.Console.MessageLevel.Warning */, true);
-            console.addMessage('Bar', "error" /* Common.Console.MessageLevel.Error */, true);
-            console.addMessage('Donkey', "info" /* Common.Console.MessageLevel.Info */, true);
+            console.addMessage('Foo', "info" /* Common.Console.MessageLevel.INFO */, true);
+            console.addMessage('Baz', "warning" /* Common.Console.MessageLevel.WARNING */, true);
+            console.addMessage('Bar', "error" /* Common.Console.MessageLevel.ERROR */, true);
+            console.addMessage('Donkey', "info" /* Common.Console.MessageLevel.INFO */, true);
             const messages = console.messages();
             assert.strictEqual(messages.length, 4);
         });
         it('dispatches events to listeners', done => {
             const console = Console.instance({ forceNew: true });
             const callback = ({ data }) => {
-                console.removeEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, callback);
+                console.removeEventListener("messageAdded" /* Common.Console.Events.MESSAGE_ADDED */, callback);
                 assert.strictEqual(data.text, 'Foo');
                 done();
             };
-            console.addEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, callback);
-            console.addMessage('Foo', "info" /* Common.Console.MessageLevel.Info */, true);
+            console.addEventListener("messageAdded" /* Common.Console.Events.MESSAGE_ADDED */, callback);
+            console.addMessage('Foo', "info" /* Common.Console.MessageLevel.INFO */, true);
         });
     });
     describe('log', () => {
@@ -41,7 +41,7 @@ describe('Console', () => {
             const messages = console.messages();
             assert.lengthOf(messages, 1);
             assert.strictEqual(messages[0].show, false); // Infos don't popup the Console panel by default
-            assert.strictEqual(messages[0].level, "info" /* Common.Console.MessageLevel.Info */);
+            assert.strictEqual(messages[0].level, "info" /* Common.Console.MessageLevel.INFO */);
         });
     });
     describe('warn', () => {
@@ -51,7 +51,7 @@ describe('Console', () => {
             const messages = console.messages();
             assert.lengthOf(messages, 1);
             assert.strictEqual(messages[0].show, false); // Warnings don't popup the Console panel by default
-            assert.strictEqual(messages[0].level, "warning" /* Common.Console.MessageLevel.Warning */);
+            assert.strictEqual(messages[0].level, "warning" /* Common.Console.MessageLevel.WARNING */);
         });
     });
     describe('error', () => {
@@ -61,7 +61,7 @@ describe('Console', () => {
             const messages = console.messages();
             assert.lengthOf(messages, 1);
             assert.strictEqual(messages[0].show, true); // Errors popup the Console panel by default
-            assert.strictEqual(messages[0].level, "error" /* Common.Console.MessageLevel.Error */);
+            assert.strictEqual(messages[0].level, "error" /* Common.Console.MessageLevel.ERROR */);
         });
         it('can control whether to pop up the Console panel', () => {
             const console = Console.instance({ forceNew: true });

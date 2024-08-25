@@ -75,7 +75,7 @@ export class FileManager extends Common.ObjectWrapper.ObjectWrapper {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.close(url);
     }
     appendedToURL({ data: url }) {
-        this.dispatchEventToListeners("AppendedToURL" /* Events.AppendedToURL */, url);
+        this.dispatchEventToListeners("AppendedToURL" /* Events.APPENDED_TO_URL */, url);
     }
 }
 //# sourceMappingURL=FileManager.js.map

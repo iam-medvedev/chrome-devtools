@@ -91,7 +91,7 @@ export class DeviceModeView extends UI.Widget.VBox {
         this.element.classList.add('device-mode-view');
         this.registerRequiredCSS(deviceModeViewStyles);
         this.model = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
-        this.model.addEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.Updated */, this.updateUI, this);
+        this.model.addEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.updateUI, this);
         this.mediaInspector = new MediaQueryInspector(() => this.model.appliedDeviceSize().width, this.model.setWidth.bind(this.model), new Common.Throttler.Throttler(0));
         this.showMediaInspectorSetting = Common.Settings.Settings.instance().moduleSetting('show-media-query-inspector');
         this.showMediaInspectorSetting.addChangeListener(this.updateUI, this);

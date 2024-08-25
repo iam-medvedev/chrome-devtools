@@ -17,12 +17,12 @@ export declare class IssuesModel extends SDKModel<EventTypes> implements Protoco
     getTargetIfNotDisposed(): Target | null;
 }
 export declare const enum Events {
-    IssueAdded = "IssueAdded"
+    ISSUE_ADDED = "IssueAdded"
 }
 export interface IssueAddedEvent {
     issuesModel: IssuesModel;
     inspectorIssue: Protocol.Audits.InspectorIssue;
 }
 export type EventTypes = {
-    [Events.IssueAdded]: IssueAddedEvent;
+    [Events.ISSUE_ADDED]: IssueAddedEvent;
 };

@@ -69,6 +69,6 @@ Common.Settings.registerSettingExtension({
     settingName: 'network-log.record-log',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     defaultValue: true,
-    storageType: "Session" /* Common.Settings.SettingStorageType.Session */,
+    storageType: "Session" /* Common.Settings.SettingStorageType.SESSION */,
 });
 //# sourceMappingURL=logs-meta.js.map

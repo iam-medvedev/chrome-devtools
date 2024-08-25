@@ -29,9 +29,9 @@ describeWithLocale('PropertyRuleIssue', () => {
         const propertyRuleIssues = IssuesManager.PropertyRuleIssue.PropertyRuleIssue.fromInspectorIssue(mockModel, issue);
         assert.lengthOf(propertyRuleIssues, 1);
         const propertyRuleIssue = propertyRuleIssues[0];
-        assert.strictEqual(propertyRuleIssue.getCategory(), "Other" /* IssuesManager.Issue.IssueCategory.Other */);
+        assert.strictEqual(propertyRuleIssue.getCategory(), "Other" /* IssuesManager.Issue.IssueCategory.OTHER */);
         assert.deepStrictEqual(propertyRuleIssue.sources(), [issueDetails.sourceCodeLocation]);
-        assert.strictEqual(propertyRuleIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PageError */);
+        assert.strictEqual(propertyRuleIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */);
         assert.isNotNull(propertyRuleIssue.getDescription());
         assert.strictEqual(propertyRuleIssue.getPropertyName(), 'initial-value');
     });
@@ -80,7 +80,7 @@ describeWithLocale('PropertyRuleIssue', () => {
         assert.lengthOf(issues, 4);
         const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
         for (const issue of issues) {
-            mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: mockModel, issue });
+            mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
         }
         const aggregatedIssues = Array.from(aggregator.aggregatedIssues());
         assert.lengthOf(aggregatedIssues, 3);

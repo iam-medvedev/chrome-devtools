@@ -51,7 +51,7 @@ export class EmulatedDevice {
         this.vertical = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
         this.horizontal = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
         this.deviceScaleFactor = 1;
-        this.capabilities = ["touch" /* Capability.Touch */, "mobile" /* Capability.Mobile */];
+        this.capabilities = ["touch" /* Capability.TOUCH */, "mobile" /* Capability.MOBILE */];
         this.userAgent = '';
         this.userAgentMetadata = null;
         this.modes = [];
@@ -397,10 +397,10 @@ export class EmulatedDevice {
         this.#showInternal = other.#showInternal;
     }
     touch() {
-        return this.capabilities.indexOf("touch" /* Capability.Touch */) !== -1;
+        return this.capabilities.indexOf("touch" /* Capability.TOUCH */) !== -1;
     }
     mobile() {
-        return this.capabilities.indexOf("mobile" /* Capability.Mobile */) !== -1;
+        return this.capabilities.indexOf("mobile" /* Capability.MOBILE */) !== -1;
     }
 }
 export const Horizontal = 'horizontal';
@@ -409,17 +409,21 @@ export const HorizontalSpanned = 'horizontal-spanned';
 export const VerticalSpanned = 'vertical-spanned';
 var Type;
 (function (Type) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Indexed access. */
     Type["Phone"] = "phone";
     Type["Tablet"] = "tablet";
     Type["Notebook"] = "notebook";
     Type["Desktop"] = "desktop";
     Type["Unknown"] = "unknown";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Type || (Type = {}));
 var Show;
 (function (Show) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Indexed access. */
     Show["Always"] = "Always";
     Show["Default"] = "Default";
     Show["Never"] = "Never";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Show || (Show = {}));
 let emulatedDevicesListInstance;
 export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
@@ -498,13 +502,13 @@ export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
         const json = [];
         this.#customInternal.forEach(device => json.push(device.toJSON()));
         this.#customSetting.set(json);
-        this.dispatchEventToListeners("CustomDevicesUpdated" /* Events.CustomDevicesUpdated */);
+        this.dispatchEventToListeners("CustomDevicesUpdated" /* Events.CUSTOM_DEVICES_UPDATED */);
     }
     saveStandardDevices() {
         const json = [];
         this.#standardInternal.forEach(device => json.push(device.toJSON()));
         this.#standardSetting.set(json);
-        this.dispatchEventToListeners("StandardDevicesUpdated" /* Events.StandardDevicesUpdated */);
+        this.dispatchEventToListeners("StandardDevicesUpdated" /* Events.STANDARD_DEVICES_UPDATED */);
     }
     copyShowValues(from, to) {
         const fromDeviceById = new Map();

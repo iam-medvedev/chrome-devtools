@@ -29,6 +29,8 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/freestyler/ChangeManager.ts",
+    "../../../../../../front_end/panels/freestyler/ExtensionScope.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerAgent.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerEvaluateAction.ts",
     "../../../../../../front_end/panels/freestyler/FreestylerPanel.ts",

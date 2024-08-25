@@ -16,7 +16,7 @@ describe('WarningsHandler', function () {
         // We expect one long task.
         assert.strictEqual(data.perEvent.size, 1);
         const event = Array.from(data.perEvent.keys()).at(0);
-        assert.strictEqual(event?.name, "RunTask" /* TraceEngine.Types.TraceEvents.KnownEventName.RunTask */);
+        assert.strictEqual(event?.name, "RunTask" /* TraceEngine.Types.TraceEvents.KnownEventName.RUN_TASK */);
     });
     it('identifies idle callbacks that ran over the allotted time', async function () {
         const events = await TraceLoader.rawEvents(this, 'idle-callback.json.gz');
@@ -41,8 +41,8 @@ describe('WarningsHandler', function () {
         const layout = forcedReflow[1];
         assert.deepEqual(data.perEvent.get(stylesRecalc), ['FORCED_REFLOW']);
         assert.deepEqual(data.perEvent.get(layout), ['FORCED_REFLOW']);
-        assert.strictEqual(stylesRecalc.name, "UpdateLayoutTree" /* TraceEngine.Types.TraceEvents.KnownEventName.UpdateLayoutTree */);
-        assert.strictEqual(layout.name, "Layout" /* TraceEngine.Types.TraceEvents.KnownEventName.Layout */);
+        assert.strictEqual(stylesRecalc.name, "UpdateLayoutTree" /* TraceEngine.Types.TraceEvents.KnownEventName.UPDATE_LAYOUT_TREE */);
+        assert.strictEqual(layout.name, "Layout" /* TraceEngine.Types.TraceEvents.KnownEventName.LAYOUT */);
     });
     it('ignores reflows that are not forced by JS', async function () {
         const events = await TraceLoader.rawEvents(this, 'large-recalc-style.json.gz');

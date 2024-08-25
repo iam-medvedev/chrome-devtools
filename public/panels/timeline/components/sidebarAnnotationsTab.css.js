@@ -48,19 +48,22 @@ styles.replaceSync(
   gap: 6px;
 }
 
-.entry-name {
+.annotation-identifier {
   padding: 4px 8px;
   border-radius: 10px;
   font-weight: bold;
-
-  &.entry-label {
-    background-color: var(--app-color-performance-sidebar-entry-label);
-  }
 
   &.time-range {
     background-color: var(--app-color-performance-sidebar-time-range);
     color: var(--app-color-performance-sidebar-time-range-text);
   }
+}
+
+.entries-link {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 2px;
+  align-items: center;
 }
 
 .label {

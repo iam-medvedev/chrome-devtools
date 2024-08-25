@@ -12,7 +12,7 @@ import * as SourceFrame from './source_frame.js';
 describeWithEnvironment('SourceFrame', () => {
     let setting;
     beforeEach(() => {
-        setting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
+        setting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         setting.set(false);
     });
     async function createSourceFrame(content) {

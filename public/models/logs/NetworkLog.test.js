@@ -30,7 +30,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request, existingInfo);
             assert.deepEqual(info, {
-                type: "other" /* SDK.NetworkRequest.InitiatorType.Other */,
+                type: "other" /* SDK.NetworkRequest.InitiatorType.OTHER */,
                 url: Platform.DevToolsPath.EmptyUrlString,
                 lineNumber: undefined,
                 columnNumber: undefined,
@@ -51,7 +51,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request);
             assert.deepEqual(info, {
-                type: "other" /* SDK.NetworkRequest.InitiatorType.Other */,
+                type: "other" /* SDK.NetworkRequest.InitiatorType.OTHER */,
                 url: Platform.DevToolsPath.EmptyUrlString,
                 lineNumber: undefined,
                 columnNumber: undefined,
@@ -75,7 +75,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request);
             assert.deepEqual(info, {
-                type: "redirect" /* SDK.NetworkRequest.InitiatorType.Redirect */,
+                type: "redirect" /* SDK.NetworkRequest.InitiatorType.REDIRECT */,
                 url: url('http://localhost:3000/example.js'),
                 lineNumber: undefined,
                 columnNumber: undefined,
@@ -100,7 +100,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request);
             assert.deepEqual(info, {
-                type: "parser" /* SDK.NetworkRequest.InitiatorType.Parser */,
+                type: "parser" /* SDK.NetworkRequest.InitiatorType.PARSER */,
                 url: url('http://localhost:3000/example.js'),
                 lineNumber: 5,
                 columnNumber: 6,
@@ -132,7 +132,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request);
             assert.deepEqual(info, {
-                type: "script" /* SDK.NetworkRequest.InitiatorType.Script */,
+                type: "script" /* SDK.NetworkRequest.InitiatorType.SCRIPT */,
                 url: url('http://localhost:3000/example.js'),
                 lineNumber: 5,
                 columnNumber: 6,
@@ -175,7 +175,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request);
             assert.deepEqual(info, {
-                type: "script" /* SDK.NetworkRequest.InitiatorType.Script */,
+                type: "script" /* SDK.NetworkRequest.InitiatorType.SCRIPT */,
                 url: url('http://localhost:3000/example.js'),
                 lineNumber: 5,
                 columnNumber: 6,
@@ -198,7 +198,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request);
             assert.deepEqual(info, {
-                type: "script" /* SDK.NetworkRequest.InitiatorType.Script */,
+                type: "script" /* SDK.NetworkRequest.InitiatorType.SCRIPT */,
                 url: url('http://localhost:3000/example.js'),
                 lineNumber: undefined,
                 columnNumber: undefined,
@@ -220,7 +220,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request);
             assert.deepEqual(info, {
-                type: "preload" /* SDK.NetworkRequest.InitiatorType.Preload */,
+                type: "preload" /* SDK.NetworkRequest.InitiatorType.PRELOAD */,
                 url: Platform.DevToolsPath.EmptyUrlString,
                 lineNumber: undefined,
                 columnNumber: undefined,
@@ -246,7 +246,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request);
             assert.deepEqual(info, {
-                type: "preflight" /* SDK.NetworkRequest.InitiatorType.Preflight */,
+                type: "preflight" /* SDK.NetworkRequest.InitiatorType.PREFLIGHT */,
                 url: Platform.DevToolsPath.EmptyUrlString,
                 lineNumber: undefined,
                 columnNumber: undefined,
@@ -269,7 +269,7 @@ describe('NetworkLog', () => {
             };
             const info = initiatorInfoForRequest(request);
             assert.deepEqual(info, {
-                type: "signedExchange" /* SDK.NetworkRequest.InitiatorType.SignedExchange */,
+                type: "signedExchange" /* SDK.NetworkRequest.InitiatorType.SIGNED_EXCHANGE */,
                 url: url('http://localhost:3000/example.js'),
                 lineNumber: undefined,
                 columnNumber: undefined,
@@ -283,7 +283,7 @@ describe('NetworkLog', () => {
 describeWithMockConnection('NetworkLog', () => {
     it('clears on main frame navigation', () => {
         const networkLog = Logs.NetworkLog.NetworkLog.instance();
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         const mainFrameTarget = createTarget({ parentTarget: tabTarget });
         const mainFrame = getMainFrame(mainFrameTarget);
         const subframe = getMainFrame(createTarget({ parentTarget: mainFrameTarget }));

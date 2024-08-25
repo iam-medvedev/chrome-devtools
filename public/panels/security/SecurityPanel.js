@@ -515,17 +515,20 @@ export class SecurityPanel extends UI.Panel.PanelWithSidebar {
     constructor() {
         super('security');
         this.mainView = new SecurityMainView(this);
-        const title = document.createElement('span');
-        title.classList.add('title');
-        title.textContent = i18nString(UIStrings.overview);
         const getIconForSecurityState = (securityState) => getSecurityStateIconForOverview(securityState, `lock-icon lock-icon-${securityState}`);
+        const getTitleForSecurityState = (_securityState) => {
+            const title = document.createElement('span');
+            title.classList.add('title');
+            title.textContent = i18nString(UIStrings.overview);
+            return title;
+        };
         this.sidebarMainViewElement = new SecurityPanelSidebarTreeElement({
-            title,
             onSelect: this.setVisibleView.bind(this, this.mainView),
             getIconForSecurityState,
+            getTitleForSecurityState,
             className: 'security-main-view-sidebar-tree-item',
         });
-        this.sidebarMainViewElement.tooltip = title.textContent;
+        this.sidebarMainViewElement.tooltip = i18nString(UIStrings.overview);
         this.sidebarTree = new SecurityPanelSidebarTree(this.sidebarMainViewElement, this.showOrigin.bind(this));
         this.panelSidebarElement().appendChild(this.sidebarTree.element);
         this.lastResponseReceivedForLoaderId = new Map();
@@ -815,10 +818,11 @@ export class SecurityPanelSidebarTree extends UI.TreeOutline.TreeOutlineInShadow
     addOrigin(origin, securityState) {
         this.mainViewReloadMessage.hidden = true;
         const getIconForSecurityState = (securityState) => getSecurityStateIconForDetailedView(securityState, `security-property security-property-${securityState}`);
+        const getTitleForSecurityState = (securityState) => SecurityPanel.createHighlightedUrl(origin, securityState);
         const originElement = new SecurityPanelSidebarTreeElement({
-            title: SecurityPanel.createHighlightedUrl(origin, securityState),
             onSelect: this.showOriginInPanel.bind(this, origin),
             getIconForSecurityState,
+            getTitleForSecurityState,
             className: 'security-sidebar-tree-item',
         });
         originElement.tooltip = origin;
@@ -897,25 +901,24 @@ export var OriginGroup;
     OriginGroup["Secure"] = "Secure";
     OriginGroup["Unknown"] = "Unknown";
 })(OriginGroup || (OriginGroup = {}));
-class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
+export class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
     selectCallback;
     securityStateInternal;
     #getIconForSecurityState;
+    #getTitleForSecurityState;
     constructor(options) {
         super('', false);
         this.selectCallback = options.onSelect;
-        this.listItemElement.appendChild(options.title);
         this.listItemElement.classList.add(options.className);
         this.#getIconForSecurityState = options.getIconForSecurityState;
+        this.#getTitleForSecurityState = options.getTitleForSecurityState;
         this.securityStateInternal = null;
         this.setSecurityState("unknown" /* Protocol.Security.SecurityState.Unknown */);
     }
     setSecurityState(newSecurityState) {
         this.securityStateInternal = newSecurityState;
-        const icon = this.#getIconForSecurityState(newSecurityState);
-        if (icon) {
-            this.setLeadingIcons([icon]);
-        }
+        this.setLeadingIcons([this.#getIconForSecurityState(newSecurityState)]);
+        this.listItemElement.replaceChildren(this.#getTitleForSecurityState(newSecurityState));
     }
     securityState() {
         return this.securityStateInternal;

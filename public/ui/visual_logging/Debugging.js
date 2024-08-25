@@ -4,7 +4,6 @@
 import * as Platform from '../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import { VisualElements } from './LoggingConfig.js';
-import { pendingWorkComplete } from './LoggingDriver.js';
 import { getLoggingState } from './LoggingState.js';
 let veDebuggingEnabled = false;
 let debugPopover = null;
@@ -464,11 +463,6 @@ export function processStartLoggingForDebugging() {
         maybeLogDebugEvent({ event: 'SessionStart' });
     }
 }
-async function getVeDebugEventsLog() {
-    await pendingWorkComplete();
-    lastImpressionLogEntry = null;
-    return veDebugEventsLog;
-}
 // Compares the 'actual' log entry against the 'expected'.
 // For impressions events to match, all expected impressions need to be present
 // in the actual event. Unexected impressions in the actual event are ignored.
@@ -521,6 +515,7 @@ export async function expectVeEvents(expectedEvents) {
     }, EVENT_EXPECTATION_TIMEOUT);
     return promise;
 }
+let numMatchedEvents = 0;
 function checkPendingEventExpectation() {
     if (!pendingEventExpectation) {
         return;
@@ -541,11 +536,20 @@ function checkPendingEventExpectation() {
             }
         }
     }
+    numMatchedEvents = veDebugEventsLog.length - actualEvents.length + pendingEventExpectation.expectedEvents.length;
     pendingEventExpectation.success();
     pendingEventExpectation = null;
 }
+function getUnmatchedVeEvents() {
+    console.error(numMatchedEvents);
+    return veDebugEventsLog.slice(numMatchedEvents)
+        .map(e => 'interaction' in e ? e.interaction : formatImpressions(e.impressions))
+        .join('\n');
+}
 // @ts-ignore
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
+// @ts-ignore
+globalThis.getUnmatchedVeEvents = getUnmatchedVeEvents;
 // @ts-ignore
 globalThis.veDebugEventsLog = veDebugEventsLog;
 // @ts-ignore
@@ -554,8 +558,6 @@ globalThis.findVeDebugImpression = findVeDebugImpression;
 globalThis.exportAdHocAnalysisLogForSql = exportAdHocAnalysisLogForSql;
 // @ts-ignore
 globalThis.buildStateFlow = buildStateFlow;
-// @ts-ignore
-globalThis.getVeDebugEventsLog = getVeDebugEventsLog;
 // @ts-ignore
 globalThis.expectVeEvents = expectVeEvents;
 //# sourceMappingURL=Debugging.js.map

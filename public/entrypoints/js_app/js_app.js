@@ -47,7 +47,7 @@ export class JsMainImpl {
     async run() {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.ConnectToNodeJSDirectly);
         void SDK.Connections.initMainConnection(async () => {
-            const target = SDK.TargetManager.TargetManager.instance().createTarget('main', i18nString(UIStrings.main), SDK.Target.Type.Node, null);
+            const target = SDK.TargetManager.TargetManager.instance().createTarget('main', i18nString(UIStrings.main), SDK.Target.Type.NODE, null);
             void target.runtimeAgent().invoke_runIfWaitingForDebugger();
         }, Components.TargetDetachedDialog.TargetDetachedDialog.webSocketConnectionLost);
     }

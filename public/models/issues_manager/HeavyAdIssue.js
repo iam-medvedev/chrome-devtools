@@ -36,14 +36,14 @@ export class HeavyAdIssue extends Issue {
         };
     }
     getCategory() {
-        return "HeavyAd" /* IssueCategory.HeavyAd */;
+        return "HeavyAd" /* IssueCategory.HEAVY_AD */;
     }
     getKind() {
         switch (this.#issueDetails.resolution) {
             case "HeavyAdBlocked" /* Protocol.Audits.HeavyAdResolutionStatus.HeavyAdBlocked */:
-                return "PageError" /* IssueKind.PageError */;
+                return "PageError" /* IssueKind.PAGE_ERROR */;
             case "HeavyAdWarning" /* Protocol.Audits.HeavyAdResolutionStatus.HeavyAdWarning */:
-                return "BreakingChange" /* IssueKind.BreakingChange */;
+                return "BreakingChange" /* IssueKind.BREAKING_CHANGE */;
         }
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {

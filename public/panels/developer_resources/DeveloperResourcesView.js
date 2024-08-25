@@ -77,7 +77,7 @@ export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {
         this.statusToolbarElement = this.contentElement.createChild('div', 'developer-resource-view-toolbar-summary');
         this.statusMessageElement = this.statusToolbarElement.createChild('div', 'developer-resource-view-message');
         this.loader = SDK.PageResourceLoader.PageResourceLoader.instance();
-        this.loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.Update */, this.update, this);
+        this.loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.UPDATE */, this.update, this);
         this.update();
     }
     async doUpdate() {

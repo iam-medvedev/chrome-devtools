@@ -70,6 +70,12 @@
       "path": "../../../../models/text_utils/bundle-tsconfig.json"
     },
     {
+      "path": "../../../../third_party/acorn/acorn-tsconfig.json"
+    },
+    {
+      "path": "../../../../third_party/acorn/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../components/icon_button/bundle-tsconfig.json"
     },
     {

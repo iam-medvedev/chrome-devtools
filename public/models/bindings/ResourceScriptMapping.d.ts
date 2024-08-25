@@ -49,11 +49,11 @@ export declare class ResourceScriptFile extends Common.ObjectWrapper.ObjectWrapp
 }
 export declare namespace ResourceScriptFile {
     const enum Events {
-        DidMergeToVM = "DidMergeToVM",
-        DidDivergeFromVM = "DidDivergeFromVM"
+        DID_MERGE_TO_VM = "DidMergeToVM",
+        DID_DIVERGE_FROM_VM = "DidDivergeFromVM"
     }
     type EventTypes = {
-        [Events.DidMergeToVM]: void;
-        [Events.DidDivergeFromVM]: void;
+        [Events.DID_MERGE_TO_VM]: void;
+        [Events.DID_DIVERGE_FROM_VM]: void;
     };
 }

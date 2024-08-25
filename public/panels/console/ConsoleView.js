@@ -384,7 +384,7 @@ export class ConsoleView extends UI.Widget.VBox {
         const issuesToolbarItem = new UI.Toolbar.ToolbarItem(this.issueCounter);
         this.issueCounter.data = {
             clickHandler: () => {
-                Host.userMetrics.issuesPanelOpenedFrom(2 /* Host.UserMetrics.IssueOpener.StatusBarIssuesCounter */);
+                Host.userMetrics.issuesPanelOpenedFrom(2 /* Host.UserMetrics.IssueOpener.STATUS_BAR_ISSUES_COUNTER */);
                 void UI.ViewManager.ViewManager.instance().showView('issues-pane');
             },
             issuesManager: IssuesManager.IssuesManager.IssuesManager.instance(),
@@ -399,7 +399,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.timestampsSetting = Common.Settings.Settings.instance().moduleSetting('console-timestamps-enabled');
         this.consoleHistoryAutocompleteSetting =
             Common.Settings.Settings.instance().moduleSetting('console-history-autocomplete');
-        this.selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
+        this.selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         const settingsPane = new UI.Widget.HBox();
         settingsPane.show(this.contentsElement);
         settingsPane.element.classList.add('console-settings-pane');
@@ -490,7 +490,7 @@ export class ConsoleView extends UI.Widget.VBox {
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.ConsoleModel.ConsoleModel, this, { scoped: true });
         const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         this.issueToolbarThrottle = new Common.Throttler.Throttler(100);
-        issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */, this.#onIssuesCountUpdateBound);
+        issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */, this.#onIssuesCountUpdateBound);
     }
     static appendSettingsCheckboxToToolbar(toolbar, settingOrSetingName, title, alternateTitle) {
         let setting;
@@ -567,20 +567,20 @@ export class ConsoleView extends UI.Widget.VBox {
     }
     registerWithMessageSink() {
         Common.Console.Console.instance().messages().forEach(this.addSinkMessage, this);
-        Common.Console.Console.instance().addEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, ({ data: message }) => {
+        Common.Console.Console.instance().addEventListener("messageAdded" /* Common.Console.Events.MESSAGE_ADDED */, ({ data: message }) => {
             this.addSinkMessage(message);
         }, this);
     }
     addSinkMessage(message) {
         let level = "verbose" /* Protocol.Log.LogEntryLevel.Verbose */;
         switch (message.level) {
-            case "info" /* Common.Console.MessageLevel.Info */:
+            case "info" /* Common.Console.MessageLevel.INFO */:
                 level = "info" /* Protocol.Log.LogEntryLevel.Info */;
                 break;
-            case "error" /* Common.Console.MessageLevel.Error */:
+            case "error" /* Common.Console.MessageLevel.ERROR */:
                 level = "error" /* Protocol.Log.LogEntryLevel.Error */;
                 break;
-            case "warning" /* Common.Console.MessageLevel.Warning */:
+            case "warning" /* Common.Console.MessageLevel.WARNING */:
                 level = "warning" /* Protocol.Log.LogEntryLevel.Warning */;
                 break;
         }
@@ -603,7 +603,7 @@ export class ConsoleView extends UI.Widget.VBox {
         super.wasShown();
         if (this.#isDetached) {
             const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
-            issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */, this.#onIssuesCountUpdateBound);
+            issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */, this.#onIssuesCountUpdateBound);
         }
         this.#isDetached = false;
         this.updateIssuesToolbarItem();
@@ -666,7 +666,7 @@ export class ConsoleView extends UI.Widget.VBox {
     onDetach() {
         this.#isDetached = true;
         const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
-        issuesManager.removeEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */, this.#onIssuesCountUpdateBound);
+        issuesManager.removeEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */, this.#onIssuesCountUpdateBound);
     }
     updateIssuesToolbarItem() {
         if (this.#isDetached) {

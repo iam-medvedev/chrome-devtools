@@ -62,9 +62,9 @@ let handlerState = 1 /* HandlerState.UNINITIALIZED */;
 // These are all events which indicate this is a Chrome browser trace.
 let traceIsGeneric = true;
 const CHROME_WEB_TRACE_EVENTS = new Set([
-    "TracingStartedInPage" /* Types.TraceEvents.KnownEventName.TracingStartedInPage */,
-    "TracingSessionIdForWorker" /* Types.TraceEvents.KnownEventName.TracingSessionIdForWorker */,
-    "TracingStartedInBrowser" /* Types.TraceEvents.KnownEventName.TracingStartedInBrowser */,
+    "TracingStartedInPage" /* Types.TraceEvents.KnownEventName.TRACING_STARTED_IN_PAGE */,
+    "TracingSessionIdForWorker" /* Types.TraceEvents.KnownEventName.TRACING_SESSION_ID_FOR_WORKER */,
+    "TracingStartedInBrowser" /* Types.TraceEvents.KnownEventName.TRACING_STARTED_IN_BROWSER */,
 ]);
 export function reset() {
     navigationsByFrameId.clear();

@@ -223,7 +223,7 @@ export const NativeFunctions = [
     {
         name: "create",
         signatures: [["?options"]],
-        receivers: ["CredentialsContainer"]
+        receivers: ["CredentialsContainer", "AIAssistantFactory", "AIRewriterFactory", "AIWriterFactory"]
     },
     {
         name: "defineProperty",
@@ -1984,6 +1984,11 @@ export const NativeFunctions = [
     },
     {
         name: "write",
+        signatures: [["input", "?options"]],
+        receivers: ["AIWriter"]
+    },
+    {
+        name: "write",
         signatures: [["message", "?options"]],
         receivers: ["NDEFReader"]
     },
@@ -2157,7 +2162,7 @@ export const NativeFunctions = [
     },
     {
         name: "parseFromString",
-        signatures: [["string", "type"], ["str", "type", "?options"]]
+        signatures: [["string", "type"], ["str", "type"]]
     },
     {
         name: "matrixTransform",
@@ -3028,11 +3033,6 @@ export const NativeFunctions = [
         signatures: [["bitmap"]]
     },
     {
-        name: "getCapabilities",
-        signatures: [["kind"]],
-        receivers: ["RTCRtpReceiver", "RTCRtpSender"]
-    },
-    {
         name: "observe",
         signatures: [["target"]],
         receivers: ["IntersectionObserver"]
@@ -3589,7 +3589,7 @@ export const NativeFunctions = [
     },
     {
         name: "setParameters",
-        signatures: [["parameters", "?setParameterOptions"], ["parameters", "?options"]]
+        signatures: [["parameters", "?setParameterOptions"]]
     },
     {
         name: "setStreams",
@@ -4027,7 +4027,7 @@ export const NativeFunctions = [
     },
     {
         name: "deriveBits",
-        signatures: [["algorithm", "baseKey", "length"]]
+        signatures: [["algorithm", "baseKey", "?length"]]
     },
     {
         name: "deriveKey",
@@ -7225,6 +7225,14 @@ export const NativeFunctions = [
         signatures: [["feature"]]
     },
     {
+        name: "rewrite",
+        signatures: [["input", "?options"]]
+    },
+    {
+        name: "rewriteStreaming",
+        signatures: [["input", "?options"]]
+    },
+    {
         name: "summarize",
         signatures: [["input"]]
     },
@@ -7235,6 +7243,10 @@ export const NativeFunctions = [
     {
         name: "promptStreaming",
         signatures: [["input"]]
+    },
+    {
+        name: "writeStreaming",
+        signatures: [["input", "?options"]]
     },
     {
         name: "registerAnimator",
@@ -7382,14 +7394,6 @@ export const NativeFunctions = [
     {
         name: "beginLayer",
         signatures: [["?options"]]
-    },
-    {
-        name: "scrollPathIntoView",
-        signatures: [["?path"]]
-    },
-    {
-        name: "drawFormattedText",
-        signatures: [["formattedText", "x", "y"]]
     },
     {
         name: "placeElement",
@@ -7588,10 +7592,6 @@ export const NativeFunctions = [
     {
         name: "queryLocalFonts",
         signatures: [["?options"]]
-    },
-    {
-        name: "format",
-        signatures: [["text_runs", "?style", "?inline_constraint", "?block_constraint"]]
     },
     {
         name: "runFuzzer",
@@ -8198,6 +8198,10 @@ export const NativeFunctions = [
         signatures: [["extensions"]]
     },
     {
+        name: "createProcessor",
+        signatures: [["worker", "?options", "?transfer"]]
+    },
+    {
         name: "readReceivedAcks",
         signatures: [["maxCount"]]
     },
@@ -8264,22 +8268,6 @@ export const NativeFunctions = [
     {
         name: "DOMError",
         signatures: [["name", "?message"]]
-    },
-    {
-        name: "setHTML",
-        signatures: [["markup", "?options"]]
-    },
-    {
-        name: "Sanitizer",
-        signatures: [["?config"]]
-    },
-    {
-        name: "sanitize",
-        signatures: [["input"]]
-    },
-    {
-        name: "sanitizeFor",
-        signatures: [["element", "markup"]]
     },
     {
         name: "AbsoluteOrientationSensor",
@@ -8410,6 +8398,10 @@ export const NativeFunctions = [
         signatures: [["lang"]]
     },
     {
+        name: "installOnDeviceSpeechRecognition",
+        signatures: [["lang"]]
+    },
+    {
         name: "SpeechSynthesisErrorEvent",
         signatures: [["type", "eventInitDict"]]
     },
@@ -8432,6 +8424,10 @@ export const NativeFunctions = [
     {
         name: "VirtualKeyboardGeometryChangeEvent",
         signatures: [["type"]]
+    },
+    {
+        name: "install",
+        signatures: [["manifest_id", "?install_url"]]
     },
     {
         name: "AnalyserNode",
@@ -9028,6 +9024,18 @@ export const NativeFunctions = [
     {
         name: "WindowControlsOverlayGeometryChangeEvent",
         signatures: [["type", "eventInitDict"]]
+    },
+    {
+        name: "XRGPUBinding",
+        signatures: [["session", "device"]]
+    },
+    {
+        name: "createProjectionLayer",
+        signatures: [["init"]]
+    },
+    {
+        name: "getViewSubImage",
+        signatures: [["layer", "view"]]
     },
     {
         name: "getPose",

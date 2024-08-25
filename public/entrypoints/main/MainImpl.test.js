@@ -14,7 +14,7 @@ describeWithMockConnection('MainMenuItem', () => {
             shortcutTitleForAction: () => { },
             shortcutsForAction: () => [],
         });
-        const tabTaget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTaget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTaget, subtype: 'prerender' });
         createTarget({ parentTarget: tabTaget });
         sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'hasAction')

@@ -158,7 +158,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         new SourceFrameIssuesManager(this);
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.IssuesModel.IssuesModel, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
-        SDK.FrameManager.FrameManager.instance().addEventListener("FrameAddedToTarget" /* SDK.FrameManager.Events.FrameAddedToTarget */, this.#onFrameAddedToTarget, this);
+        SDK.FrameManager.FrameManager.instance().addEventListener("FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, this.#onFrameAddedToTarget, this);
         // issueFilter uses the 'show-third-party-issues' setting. Clients of IssuesManager need
         // a full update when the setting changes to get an up-to-date issues list.
         this.showThirdPartyIssuesSetting?.addChangeListener(() => this.#updateFilteredIssues());
@@ -204,7 +204,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
                 keptIssues.set(key, issue);
                 // Keep issues for prerendered target alive in case of prerender-activation.
             }
-            else if ((type === "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Activation */) &&
+            else if ((type === "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.ACTIVATION */) &&
                 (frame.resourceTreeModel().target() === issue.model()?.target())) {
                 keptIssues.set(key, issue);
                 // Keep BounceTrackingIssues alive for non-user-initiated navigations.
@@ -233,7 +233,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     modelAdded(issuesModel) {
-        const listener = issuesModel.addEventListener("IssueAdded" /* SDK.IssuesModel.Events.IssueAdded */, this.#onIssueAddedEvent, this);
+        const listener = issuesModel.addEventListener("IssueAdded" /* SDK.IssuesModel.Events.ISSUE_ADDED */, this.#onIssueAddedEvent, this);
         this.#eventListeners.set(issuesModel, listener);
     }
     modelRemoved(issuesModel) {
@@ -284,11 +284,11 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
             if (issue.isHidden()) {
                 this.#hiddenIssueCount.set(issue.getKind(), 1 + (this.#hiddenIssueCount.get(issue.getKind()) || 0));
             }
-            this.dispatchEventToListeners("IssueAdded" /* Events.IssueAdded */, { issuesModel, issue });
+            this.dispatchEventToListeners("IssueAdded" /* Events.ISSUE_ADDED */, { issuesModel, issue });
         }
         // Always fire the "count" event even if the issue was filtered out.
         // The result of `hasOnlyThirdPartyIssues` could still change.
-        this.dispatchEventToListeners("IssuesCountUpdated" /* Events.IssuesCountUpdated */);
+        this.dispatchEventToListeners("IssuesCountUpdated" /* Events.ISSUES_COUNT_UPDATED */);
     }
     issues() {
         return this.#filteredIssues.values();
@@ -331,7 +331,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         // In case a user wants to hide a specific issue, the issue code is added to "code" section
         // of our setting and its value is set to IssueStatus.Hidden. Then issue then gets hidden.
         if (values && values[code]) {
-            if (values[code] === "Hidden" /* IssueStatus.Hidden */) {
+            if (values[code] === "Hidden" /* IssueStatus.HIDDEN */) {
                 issue.setHidden(true);
                 return;
             }
@@ -359,8 +359,8 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
                 }
             }
         }
-        this.dispatchEventToListeners("FullUpdateRequired" /* Events.FullUpdateRequired */);
-        this.dispatchEventToListeners("IssuesCountUpdated" /* Events.IssuesCountUpdated */);
+        this.dispatchEventToListeners("FullUpdateRequired" /* Events.FULL_UPDATE_REQUIRED */);
+        this.dispatchEventToListeners("IssuesCountUpdated" /* Events.ISSUES_COUNT_UPDATED */);
     }
     unhideAllIssues() {
         for (const issue of this.#allIssues.values()) {

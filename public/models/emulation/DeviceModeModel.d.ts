@@ -100,10 +100,10 @@ export declare class Rect {
     rebaseTo(origin: Rect): Rect;
 }
 export declare const enum Events {
-    Updated = "Updated"
+    UPDATED = "Updated"
 }
 export type EventTypes = {
-    [Events.Updated]: void;
+    [Events.UPDATED]: void;
 };
 export declare enum Type {
     None = "None",
@@ -111,10 +111,10 @@ export declare enum Type {
     Device = "Device"
 }
 export declare const enum UA {
-    Mobile = "Mobile",
-    MobileNoTouch = "Mobile (no touch)",
-    Desktop = "Desktop",
-    DesktopTouch = "Desktop (touch)"
+    MOBILE = "Mobile",
+    MOBILE_NO_TOUCH = "Mobile (no touch)",
+    DESKTOP = "Desktop",
+    DESKTOP_TOUCH = "Desktop (touch)"
 }
 export declare const MinDeviceSize = 50;
 export declare const MaxDeviceSize = 9999;

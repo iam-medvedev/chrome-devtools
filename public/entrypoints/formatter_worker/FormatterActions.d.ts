@@ -23,10 +23,10 @@ export interface FormatResult {
     mapping: FormatMapping;
 }
 export declare const enum DefinitionKind {
-    None = 0,
-    Let = 1,
-    Var = 2,
-    Fixed = 3
+    NONE = 0,
+    LET = 1,
+    VAR = 2,
+    FIXED = 3
 }
 export interface ScopeTreeNode {
     variables: {

@@ -8,6 +8,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
+import { ChangeManager } from './ChangeManager.js';
 import { DOGFOOD_INFO, FreestylerChatUi, } from './components/FreestylerChatUi.js';
 import { FIX_THIS_ISSUE_PROMPT, FreestylerAgent, Step } from './FreestylerAgent.js';
 import freestylerPanelStyles from './freestylerPanel.css.js';
@@ -75,7 +76,8 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #viewOutput = {};
     #serverSideLoggingEnabled = isFreestylerServerSideLoggingEnabled();
     #consentViewAcceptedSetting = Common.Settings.Settings.instance().createLocalSetting('freestyler-dogfood-consent-onboarding-finished', false);
-    constructor(view = defaultView, { aidaClient, aidaAvailability }) {
+    #changeManager = new ChangeManager();
+    constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
         super(FreestylerPanel.panelName);
         this.view = view;
         createToolbar(this.contentElement, { onClearClick: this.#clearMessages.bind(this) });
@@ -101,6 +103,9 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 void this.#startConversation(FIX_THIS_ISSUE_PROMPT, true);
             },
             canShowFeedbackForm: this.#serverSideLoggingEnabled,
+            userInfo: {
+                accountImage: syncInfo.accountImage,
+            },
         };
         this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.Toggled */, ev => {
             this.#viewProps.inspectElementToggled = ev.data;
@@ -119,6 +124,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #createAgent() {
         return new FreestylerAgent({
             aidaClient: this.#aidaClient,
+            changeManager: this.#changeManager,
             serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
             confirmSideEffect: this.showConfirmSideEffectUi.bind(this),
         });
@@ -128,7 +134,8 @@ export class FreestylerPanel extends UI.Panel.Panel {
         if (!freestylerPanelInstance || forceNew) {
             const aidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
             const aidaClient = new Host.AidaClient.AidaClient();
-            freestylerPanelInstance = new FreestylerPanel(defaultView, { aidaClient, aidaAvailability });
+            const syncInfo = await new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => resolve(syncInfo)));
+            freestylerPanelInstance = new FreestylerPanel(defaultView, { aidaClient, aidaAvailability, syncInfo });
         }
         return freestylerPanelInstance;
     }
@@ -211,27 +218,28 @@ export class FreestylerPanel extends UI.Panel.Panel {
         // TODO: We should only show "Fix this issue" button when the answer suggests fix or fixes.
         // We shouldn't show this when the answer is complete like a confirmation without any suggestion.
         const suggestingFix = !isFixQuery;
-        let systemMessage = {
+        const systemMessage = {
             entity: "model" /* ChatMessageEntity.MODEL */,
             suggestingFix,
-            steps: [],
+            steps: new Map(),
         };
+        this.#viewProps.messages.push(systemMessage);
         this.doUpdate();
         this.#runAbortController = new AbortController();
         const signal = this.#runAbortController.signal;
         signal.addEventListener('abort', () => {
             systemMessage.rpcId = undefined;
             systemMessage.suggestingFix = false;
-            systemMessage.steps.push({ step: Step.ERROR, text: i18nString(UIStringsTemp.stoppedResponse) });
+            systemMessage.steps.set('aborted', {
+                step: Step.ERROR,
+                id: 'aborted',
+                text: i18nString(UIStringsTemp.stoppedResponse),
+            });
         });
         for await (const data of this.#agent.run(text, { signal, isFixQuery })) {
             if (data.step === Step.QUERYING) {
-                systemMessage = {
-                    entity: "model" /* ChatMessageEntity.MODEL */,
-                    suggestingFix,
-                    steps: [],
-                };
-                this.#viewProps.messages.push(systemMessage);
+                systemMessage.steps.set(data.id, data);
+                this.#viewProps.isLoading = true;
                 this.doUpdate();
                 this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
                 continue;
@@ -243,7 +251,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
                 systemMessage.suggestingFix = false;
             }
             systemMessage.rpcId = data.rpcId;
-            systemMessage.steps.push(data);
+            systemMessage.steps.set(data.id, data);
             this.doUpdate();
             this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
         }

@@ -15,17 +15,17 @@ describeWithMockConnection('InspectElementModeController', () => {
     let modeController;
     function onModeToggle(target) {
         const model = target.model(SDK.OverlayModel.OverlayModel);
-        return model.once("InspectModeWillBeToggled" /* SDK.OverlayModel.Events.InspectModeWillBeToggled */);
+        return model.once("InspectModeWillBeToggled" /* SDK.OverlayModel.Events.INSPECT_MODE_WILL_BE_TOGGLED */);
     }
     function failOnModeToggle(target) {
         const model = target.model(SDK.OverlayModel.OverlayModel);
-        model.addEventListener("InspectModeWillBeToggled" /* SDK.OverlayModel.Events.InspectModeWillBeToggled */, () => assert.fail('Unexected mode toggle on out of scope target'));
+        model.addEventListener("InspectModeWillBeToggled" /* SDK.OverlayModel.Events.INSPECT_MODE_WILL_BE_TOGGLED */, () => assert.fail('Unexected mode toggle on out of scope target'));
     }
     beforeEach(() => {
         setMockResourceTree(false);
         stubNoopSettings();
         registerNoopActions(['elements.toggle-element-search']);
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         inScopeTarget = createTarget({ parentTarget: tabTarget });
         inScopeSubTarget = createTarget({ parentTarget: inScopeTarget });
         outOfScopeTarget = createTarget({ parentTarget: tabTarget });
@@ -51,11 +51,11 @@ describeWithMockConnection('InspectElementModeController', () => {
             assert.isTrue(expectToggle);
         })));
         outOfScopeTarget.model(SDK.OverlayModel.OverlayModel)
-            ?.dispatchEventToListeners("InspectModeExited" /* SDK.OverlayModel.Events.ExitedInspectMode */);
+            ?.dispatchEventToListeners("InspectModeExited" /* SDK.OverlayModel.Events.EXITED_INSPECT_MODE */);
         await new Promise(resolve => queueMicrotask(resolve));
         expectToggle = true;
         inScopeTarget.model(SDK.OverlayModel.OverlayModel)
-            ?.dispatchEventToListeners("InspectModeExited" /* SDK.OverlayModel.Events.ExitedInspectMode */);
+            ?.dispatchEventToListeners("InspectModeExited" /* SDK.OverlayModel.Events.EXITED_INSPECT_MODE */);
         await modeToggles;
     });
 });

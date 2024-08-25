@@ -102,7 +102,7 @@ export class TimelineFlameChartNetworkDataProvider {
         this.#lastSelection = new Selection(TimelineSelection.fromTraceEvent(event), index);
         return this.#lastSelection.timelineSelection;
     }
-    customizedContextMenu(event, eventIndex) {
+    customizedContextMenu(event, eventIndex, _groupIndex) {
         const networkRequest = this.eventByIndex(eventIndex);
         if (!networkRequest || !TraceEngine.Types.TraceEvents.isSyntheticNetworkRequestEvent(networkRequest)) {
             return;

@@ -1,4 +1,5 @@
 import type * as TraceEngine from '../../../../models/trace/trace.js';
+import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { type ActiveInsight, InsightsCategories } from './types.js';
 export declare function shouldRenderForCategory(options: {
@@ -34,3 +35,9 @@ export declare abstract class BaseInsight extends HTMLElement {
     abstract render(): void;
     protected isActive(): boolean;
 }
+/**
+ * Returns a rendered MarkdownView component.
+ *
+ * This should not be used for markdown that is not guaranteed to be valid.
+ */
+export declare function md(markdown: string): LitHtml.TemplateResult;

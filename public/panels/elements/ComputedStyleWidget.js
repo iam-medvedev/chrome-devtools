@@ -375,7 +375,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
             const data = node.treeNodeData;
             if (data.tag === 'property') {
                 const trace = propertyTraces.get(data.propertyName);
-                const activeProperty = trace?.find(property => matchedStyles.propertyState(property) === "Active" /* SDK.CSSMatchedStyles.PropertyState.Active */);
+                const activeProperty = trace?.find(property => matchedStyles.propertyState(property) === "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
                 const propertyElement = createPropertyElement(domNode, data.propertyName, data.propertyValue, propertyTraces.has(data.propertyName), data.inherited, activeProperty, event => {
                     if (activeProperty) {
                         this.handleContextMenuEvent(matchedStyles, activeProperty, event);
@@ -384,7 +384,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
                 return propertyElement;
             }
             if (data.tag === 'traceElement') {
-                const isPropertyOverloaded = matchedStyles.propertyState(data.property) === "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.Overloaded */;
+                const isPropertyOverloaded = matchedStyles.propertyState(data.property) === "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */;
                 const traceElement = createTraceElement(domNode, data.property, isPropertyOverloaded, matchedStyles, this.linkifier);
                 traceElement.addEventListener('contextmenu', this.handleContextMenuEvent.bind(this, matchedStyles, data.property));
                 return LitHtml.html `${traceElement}`;

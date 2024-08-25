@@ -23,7 +23,7 @@ export class QuirksModeIssue extends Issue {
         return `${this.code()}-(${this.#issueDetails.documentNodeId})-(${this.#issueDetails.url})`;
     }
     getCategory() {
-        return "QuirksMode" /* IssueCategory.QuirksMode */;
+        return "QuirksMode" /* IssueCategory.QUIRKS_MODE */;
     }
     details() {
         return this.#issueDetails;
@@ -40,7 +40,7 @@ export class QuirksModeIssue extends Issue {
         };
     }
     getKind() {
-        return "Improvement" /* IssueKind.Improvement */;
+        return "Improvement" /* IssueKind.IMPROVEMENT */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const quirksModeIssueDetails = inspectorIssue.details.quirksModeIssueDetails;

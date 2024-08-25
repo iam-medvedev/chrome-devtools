@@ -25,7 +25,7 @@ describeWithMockConnection('AccessibilityTreeView', () => {
         sinon.stub(SDK.FrameManager.FrameManager.instance(), 'getOutermostFrame').returns({
             id: MAIN_FRAME_ID,
         });
-        model.dispatchEventToListeners("TreeUpdated" /* SDK.AccessibilityModel.Events.TreeUpdated */, {
+        model.dispatchEventToListeners("TreeUpdated" /* SDK.AccessibilityModel.Events.TREE_UPDATED */, {
             root: { numChildren: () => 0, role: () => null, getFrameId: () => MAIN_FRAME_ID, id: () => 'id' },
         });
         await new Promise(resolve => queueMicrotask(resolve));

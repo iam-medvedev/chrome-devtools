@@ -6,14 +6,17 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { ChangeManager } from './ChangeManager.js';
+import { ExtensionScope, FREESTYLER_WORLD_NAME } from './ExtensionScope.js';
 import { ExecutionError, FreestylerEvaluateAction, SideEffectError } from './FreestylerEvaluateAction.js';
 const preamble = `You are a CSS debugging assistant integrated into Chrome DevTools.
 The user selected a DOM element in the browser's DevTools and sends a CSS-related
 query about the selected DOM element. You are going to answer to the query in these steps:
 * THOUGHT
+* TITLE
 * ACTION
 * ANSWER
-Use THOUGHT to explain why you take the ACTION.
+Use THOUGHT to explain why you take the ACTION. Use TITLE to provide a short summary of the thought.
 Use ACTION to evaluate JavaScript code on the page to gather all the data needed to answer the query and put it inside the data variable - then return STOP.
 You have access to a special $0 variable referencing the current element in the scope of the JavaScript code.
 OBSERVATION will be the result of running the JS code on the page.
@@ -23,7 +26,7 @@ Please answer only if you are sure about the answer. Otherwise, explain why you'
 When answering, remember to consider CSS concepts such as the CSS cascade, explicit and implicit stacking contexts and various CSS layout types.
 When answering, always consider MULTIPLE possible solutions.
 
-If you need to set inline styles on an HTML element, always call the \`async setInlineStyles(el: Element, styles: object)\` function.
+If you need to set styles on an HTML element, always call the \`async setElementStyles(el: Element, styles: object)\` function.
 
 Example:
 ACTION
@@ -37,6 +40,7 @@ Example session:
 
 QUERY: Why is this element centered in its container?
 THOUGHT: Let's check the layout properties of the container.
+TITLE: Checking layout properties
 ACTION
 /* COLLECT_INFORMATION_HERE */
 const data = {
@@ -61,6 +65,8 @@ export var Step;
     Step["ERROR"] = "error";
     Step["QUERYING"] = "querying";
 })(Step || (Step = {}));
+// TODO: this should use the current execution context pased on the
+// node.
 async function executeJsCode(code, { throwOnSideEffect }) {
     const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
     if (!target) {
@@ -73,7 +79,7 @@ async function executeJsCode(code, { throwOnSideEffect }) {
         throw new Error('Main frame is not found for executing code');
     }
     // This returns previously created world if it exists for the frame.
-    const { executionContextId } = await pageAgent.invoke_createIsolatedWorld({ frameId: resourceTreeModel.mainFrame.id, worldName: 'devtools_freestyler' });
+    const { executionContextId } = await pageAgent.invoke_createIsolatedWorld({ frameId: resourceTreeModel.mainFrame.id, worldName: FREESTYLER_WORLD_NAME });
     const executionContext = runtimeModel?.executionContext(executionContextId);
     if (!executionContext) {
         throw new Error('Execution context is not found for executing code');
@@ -88,11 +94,6 @@ async function executeJsCode(code, { throwOnSideEffect }) {
         throw err;
     }
 }
-const functions = `async function setInlineStyles(el, styles) {
-  for (const key of Object.keys(styles)) {
-    el.style[key] = styles[key];
-  }
-}`;
 const MAX_STEPS = 10;
 const MAX_OBSERVATION_BYTE_LENGTH = 25_000;
 /**
@@ -127,6 +128,7 @@ export class FreestylerAgent {
     static parseResponse(response) {
         const lines = response.split('\n');
         let thought;
+        let title;
         let action;
         let answer;
         let i = 0;
@@ -135,6 +137,10 @@ export class FreestylerAgent {
             if (trimmed.startsWith('THOUGHT:') && !thought) {
                 // TODO: multiline thoughts.
                 thought = trimmed.substring('THOUGHT:'.length).trim();
+                i++;
+            }
+            else if (trimmed.startsWith('TITLE:')) {
+                title = trimmed.substring('TITLE:'.length).trim();
                 i++;
             }
             else if (trimmed.startsWith('ACTION') && !action) {
@@ -177,24 +183,25 @@ export class FreestylerAgent {
         if (!answer && !thought && !action) {
             answer = response;
         }
-        return { thought, action, answer };
+        return { thought, title, action, answer };
     }
     #aidaClient;
     #chatHistory = new Map();
     #serverSideLoggingEnabled;
     #confirmSideEffect;
     #execJs;
-    #internalExecJs;
     #sessionId = crypto.randomUUID();
+    #changes;
+    #createExtensionScope;
     constructor(opts) {
         this.#aidaClient = opts.aidaClient;
+        this.#changes = opts.changeManager || new ChangeManager();
         this.#execJs = opts.execJs ?? executeJsCode;
-        this.#internalExecJs = opts.internalExecJs ?? executeJsCode;
+        this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
+            return new ExtensionScope(changes);
+        });
         this.#confirmSideEffect = opts.confirmSideEffect;
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
-    }
-    async #setupContext() {
-        await this.#internalExecJs?.(functions, { throwOnSideEffect: false });
     }
     get #getHistoryEntry() {
         return [...this.#chatHistory.values()].flat();
@@ -241,7 +248,6 @@ export class FreestylerAgent {
     }
     #runId = 0;
     async *run(query, options = { isFixQuery: false }) {
-        await this.#setupContext();
         const genericErrorMessage = 'Sorry, I could not help you with this query.';
         const structuredLog = [];
         query = `QUERY: ${query}`;
@@ -249,8 +255,15 @@ export class FreestylerAgent {
         options.signal?.addEventListener('abort', () => {
             this.#chatHistory.delete(currentRunId);
         });
+        // We need the first id for queueing to match
+        // the one of the first response
+        let id = `${currentRunId}-${0}`;
+        yield {
+            step: Step.QUERYING,
+            id,
+        };
         for (let i = 0; i < MAX_STEPS; i++) {
-            yield { step: Step.QUERYING };
+            id = `${currentRunId}-${i}`;
             const request = FreestylerAgent.buildRequest({
                 input: query,
                 preamble,
@@ -270,7 +283,7 @@ export class FreestylerAgent {
                 if (options.signal?.aborted) {
                     break;
                 }
-                yield { step: Step.ERROR, text: genericErrorMessage, rpcId };
+                yield { step: Step.ERROR, id, text: genericErrorMessage, rpcId };
                 break;
             }
             if (options.signal?.aborted) {
@@ -293,31 +306,52 @@ export class FreestylerAgent {
                     entity: Host.AidaClient.Entity.SYSTEM,
                 },
             ]);
-            const { thought, action, answer } = FreestylerAgent.parseResponse(response);
+            const { thought, title, action, answer } = FreestylerAgent.parseResponse(response);
             // Sometimes the answer will follow an action and a thought. In
             // that case, we only use the action and the thought (if present)
             // since the answer is not based on the observation resulted from
             // the action.
             if (action) {
                 if (thought) {
-                    yield { step: Step.THOUGHT, text: thought, rpcId };
+                    yield {
+                        step: Step.THOUGHT,
+                        id,
+                        text: thought,
+                        title,
+                        rpcId,
+                    };
+                    id = `${currentRunId}-${i}-action`;
                 }
                 debugLog(`Action to execute: ${action}`);
-                const observation = await this.#generateObservation(action, { throwOnSideEffect: !options.isFixQuery });
-                debugLog(`Action result: ${observation}`);
-                yield { step: Step.ACTION, code: action, output: observation, rpcId };
-                query = `OBSERVATION: ${observation}`;
+                const scope = this.#createExtensionScope(this.#changes);
+                await scope.install();
+                try {
+                    const observation = await this.#generateObservation(action, { throwOnSideEffect: !options.isFixQuery });
+                    debugLog(`Action result: ${observation}`);
+                    yield {
+                        step: Step.ACTION,
+                        code: action,
+                        id,
+                        output: observation,
+                        rpcId,
+                    };
+                    query = `OBSERVATION: ${observation}`;
+                }
+                finally {
+                    await scope.uninstall();
+                }
             }
             else if (answer) {
-                yield { step: Step.ANSWER, text: answer, rpcId };
+                yield { step: Step.ANSWER, id, text: answer, rpcId };
                 break;
             }
             else {
-                yield { step: Step.ERROR, text: genericErrorMessage, rpcId };
+                yield { step: Step.ERROR, id, text: genericErrorMessage, rpcId };
                 break;
             }
             if (i === MAX_STEPS - 1) {
-                yield { step: Step.ERROR, text: 'Max steps reached, please try again.' };
+                yield { step: Step.ERROR, id, text: 'Max steps reached, please try again.' };
+                break;
             }
         }
         if (isDebugMode()) {

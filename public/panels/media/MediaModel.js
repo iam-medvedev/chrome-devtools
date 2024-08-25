@@ -37,5 +37,5 @@ export class MediaModel extends SDK.SDKModel.SDKModel {
         this.dispatchEventToListeners("PlayersCreated" /* Events.PlayersCreated */, players);
     }
 }
-SDK.SDKModel.SDKModel.register(MediaModel, { capabilities: 262144 /* SDK.Target.Capability.Media */, autostart: false });
+SDK.SDKModel.SDKModel.register(MediaModel, { capabilities: 262144 /* SDK.Target.Capability.MEDIA */, autostart: false });
 //# sourceMappingURL=MediaModel.js.map

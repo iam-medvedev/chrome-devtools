@@ -32,21 +32,21 @@ export declare class Console extends ObjectWrapper<EventTypes> {
     showPromise(): Promise<void>;
 }
 export declare const enum Events {
-    MessageAdded = "messageAdded"
+    MESSAGE_ADDED = "messageAdded"
 }
 export type EventTypes = {
-    [Events.MessageAdded]: Message;
+    [Events.MESSAGE_ADDED]: Message;
 };
 export declare const enum MessageLevel {
-    Info = "info",
-    Warning = "warning",
-    Error = "error"
+    INFO = "info",
+    WARNING = "warning",
+    ERROR = "error"
 }
 export declare enum FrontendMessageSource {
     CSS = "css",
     ConsoleAPI = "console-api",
-    IssuePanel = "issue-panel",
-    SelfXss = "self-xss"
+    ISSUE_PANEL = "issue-panel",
+    SELF_XSS = "self-xss"
 }
 export declare class Message {
     text: string;

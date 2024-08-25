@@ -11,7 +11,7 @@ describe('TimelineModelFilter', () => {
             const userTimingEvent = (traceData.UserTimings.performanceMeasures).at(0);
             assert.isOk(userTimingEvent);
             const visibleFilter = new TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter([
-                "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.UserTiming */,
+                "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.USER_TIMING */,
             ]);
             assert.isTrue(visibleFilter.accept(userTimingEvent));
         });
@@ -20,19 +20,19 @@ describe('TimelineModelFilter', () => {
                 const { traceData } = await TraceLoader.traceEngine(this, 'timings-track.json.gz');
                 const consoleTimingEvent = (traceData.UserTimings.consoleTimings).at(0);
                 assert.isOk(consoleTimingEvent);
-                assert.strictEqual(TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter.eventType(consoleTimingEvent), "ConsoleTime" /* TraceEngine.Types.TraceEvents.KnownEventName.ConsoleTime */);
+                assert.strictEqual(TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter.eventType(consoleTimingEvent), "ConsoleTime" /* TraceEngine.Types.TraceEvents.KnownEventName.CONSOLE_TIME */);
             });
             it('returns UserTiming if the event has the blink.user_timing category', async function () {
                 const { traceData } = await TraceLoader.traceEngine(this, 'timings-track.json.gz');
                 const userTimingEvent = (traceData.UserTimings.performanceMeasures).at(0);
                 assert.isOk(userTimingEvent);
-                assert.strictEqual(TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter.eventType(userTimingEvent), "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.UserTiming */);
+                assert.strictEqual(TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter.eventType(userTimingEvent), "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.USER_TIMING */);
             });
             it('returns the event name if the event is any other category', async function () {
                 const { traceData } = await TraceLoader.traceEngine(this, 'cls-single-frame.json.gz');
                 const layoutShiftEvent = traceData.LayoutShifts.clusters.at(0)?.events.at(0);
                 assert.isOk(layoutShiftEvent);
-                assert.strictEqual(TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter.eventType(layoutShiftEvent), "LayoutShift" /* TraceEngine.Types.TraceEvents.KnownEventName.LayoutShift */);
+                assert.strictEqual(TimelineModel.TimelineModelFilter.TimelineVisibleEventsFilter.eventType(layoutShiftEvent), "LayoutShift" /* TraceEngine.Types.TraceEvents.KnownEventName.LAYOUT_SHIFT */);
             });
         });
     });
@@ -42,7 +42,7 @@ describe('TimelineModelFilter', () => {
             const userTimingEvent = (traceData.UserTimings.performanceMeasures).at(0);
             assert.isOk(userTimingEvent);
             const invisibleFilter = new TimelineModel.TimelineModelFilter.TimelineInvisibleEventsFilter([
-                "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.UserTiming */,
+                "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.USER_TIMING */,
             ]);
             assert.isFalse(invisibleFilter.accept(userTimingEvent));
         });
@@ -51,7 +51,7 @@ describe('TimelineModelFilter', () => {
             const layoutShiftEvent = traceData.LayoutShifts.clusters.at(0)?.events.at(0);
             assert.isOk(layoutShiftEvent);
             const invisibleFilter = new TimelineModel.TimelineModelFilter.TimelineInvisibleEventsFilter([
-                "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.UserTiming */,
+                "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.USER_TIMING */,
             ]);
             assert.isTrue(invisibleFilter.accept(layoutShiftEvent));
         });
@@ -62,7 +62,7 @@ describe('TimelineModelFilter', () => {
             const userTimingEvent = (traceData.UserTimings.performanceMeasures).at(0);
             assert.isOk(userTimingEvent);
             const filter = new TimelineModel.TimelineModelFilter.ExclusiveNameFilter([
-                "LayoutShift" /* TraceEngine.Types.TraceEvents.KnownEventName.LayoutShift */,
+                "LayoutShift" /* TraceEngine.Types.TraceEvents.KnownEventName.LAYOUT_SHIFT */,
             ]);
             assert.isTrue(filter.accept(userTimingEvent));
         });
@@ -71,7 +71,7 @@ describe('TimelineModelFilter', () => {
             const layoutShiftEvent = traceData.LayoutShifts.clusters.at(0)?.events.at(0);
             assert.isOk(layoutShiftEvent);
             const filter = new TimelineModel.TimelineModelFilter.ExclusiveNameFilter([
-                "LayoutShift" /* TraceEngine.Types.TraceEvents.KnownEventName.LayoutShift */,
+                "LayoutShift" /* TraceEngine.Types.TraceEvents.KnownEventName.LAYOUT_SHIFT */,
             ]);
             assert.isFalse(filter.accept(layoutShiftEvent));
         });

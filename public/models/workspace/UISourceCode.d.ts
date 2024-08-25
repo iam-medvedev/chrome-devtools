@@ -161,9 +161,9 @@ export declare class Message {
 }
 export declare namespace Message {
     const enum Level {
-        Error = "Error",
-        Issue = "Issue",
-        Warning = "Warning"
+        ERROR = "Error",
+        ISSUE = "Issue",
+        WARNING = "Warning"
     }
 }
 export declare class LineMarker {

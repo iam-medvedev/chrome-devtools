@@ -61,7 +61,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         assert.isTrue(evaluateOnTarget.called);
     });
     it('allows user to enable pasting by typing \'allow pasting\'', async () => {
-        const setting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
+        const setting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         assert.isFalse(setting.get());
         const enterBinding = keyBinding.find(b => b.key === 'Enter');
         sinon.stub(target.runtimeAgent(), 'invoke_compileScript').resolves(compileScriptResponse());

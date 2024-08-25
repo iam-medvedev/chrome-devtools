@@ -120,13 +120,13 @@ export class PreloadingModel extends SDKModel {
     onPrimaryPageChanged(event) {
         const { frame, type } = event.data;
         // Model of prerendered page's target will hands over. Do nothing for the initiator page.
-        if (this.lastPrimaryPageModel === null && type === "Activation" /* PrimaryPageChangeType.Activation */) {
+        if (this.lastPrimaryPageModel === null && type === "Activation" /* PrimaryPageChangeType.ACTIVATION */) {
             return;
         }
-        if (this.lastPrimaryPageModel !== null && type !== "Activation" /* PrimaryPageChangeType.Activation */) {
+        if (this.lastPrimaryPageModel !== null && type !== "Activation" /* PrimaryPageChangeType.ACTIVATION */) {
             return;
         }
-        if (this.lastPrimaryPageModel !== null && type === "Activation" /* PrimaryPageChangeType.Activation */) {
+        if (this.lastPrimaryPageModel !== null && type === "Activation" /* PrimaryPageChangeType.ACTIVATION */) {
             // Hand over from the model of the last primary page.
             this.loaderIds = this.lastPrimaryPageModel.loaderIds;
             for (const [loaderId, prev] of this.lastPrimaryPageModel.documents.entries()) {
@@ -148,7 +148,7 @@ export class PreloadingModel extends SDKModel {
                 this.documents.delete(loaderId);
             }
         }
-        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.MODEL_UPDATED */);
     }
     onRuleSetUpdated(event) {
         const ruleSet = event.ruleSet;
@@ -160,14 +160,14 @@ export class PreloadingModel extends SDKModel {
         }
         this.ensureDocumentPreloadingData(loaderId);
         this.documents.get(loaderId)?.ruleSets.upsert(ruleSet);
-        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.MODEL_UPDATED */);
     }
     onRuleSetRemoved(event) {
         const id = event.id;
         for (const document of this.documents.values()) {
             document.ruleSets.delete(id);
         }
-        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.MODEL_UPDATED */);
     }
     onPreloadingAttemptSourcesUpdated(event) {
         const loaderId = event.loaderId;
@@ -179,7 +179,7 @@ export class PreloadingModel extends SDKModel {
         document.sources.update(event.preloadingAttemptSources);
         document.preloadingAttempts.maybeRegisterNotTriggered(document.sources);
         document.preloadingAttempts.cleanUpRemovedAttempts(document.sources);
-        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.MODEL_UPDATED */);
     }
     onPrefetchStatusUpdated(event) {
         // We ignore this event to avoid reinserting an attempt after it was removed by
@@ -197,7 +197,7 @@ export class PreloadingModel extends SDKModel {
             requestId: event.requestId,
         };
         this.documents.get(loaderId)?.preloadingAttempts.upsert(attempt);
-        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.MODEL_UPDATED */);
     }
     onPrerenderStatusUpdated(event) {
         const loaderId = event.key.loaderId;
@@ -211,10 +211,10 @@ export class PreloadingModel extends SDKModel {
             mismatchedHeaders: event.mismatchedHeaders || null,
         };
         this.documents.get(loaderId)?.preloadingAttempts.upsert(attempt);
-        this.dispatchEventToListeners("ModelUpdated" /* Events.ModelUpdated */);
+        this.dispatchEventToListeners("ModelUpdated" /* Events.MODEL_UPDATED */);
     }
     onPreloadEnabledStateUpdated(event) {
-        this.dispatchEventToListeners("WarningsUpdated" /* Events.WarningsUpdated */, event);
+        this.dispatchEventToListeners("WarningsUpdated" /* Events.WARNINGS_UPDATED */, event);
     }
 }
 SDKModel.register(PreloadingModel, { capabilities: 2 /* Capability.DOM */, autostart: false });
@@ -285,17 +285,17 @@ class RuleSetRegistry {
 function convertPreloadingStatus(status) {
     switch (status) {
         case "Pending" /* Protocol.Preload.PreloadingStatus.Pending */:
-            return "Pending" /* PreloadingStatus.Pending */;
+            return "Pending" /* PreloadingStatus.PENDING */;
         case "Running" /* Protocol.Preload.PreloadingStatus.Running */:
-            return "Running" /* PreloadingStatus.Running */;
+            return "Running" /* PreloadingStatus.RUNNING */;
         case "Ready" /* Protocol.Preload.PreloadingStatus.Ready */:
-            return "Ready" /* PreloadingStatus.Ready */;
+            return "Ready" /* PreloadingStatus.READY */;
         case "Success" /* Protocol.Preload.PreloadingStatus.Success */:
-            return "Success" /* PreloadingStatus.Success */;
+            return "Success" /* PreloadingStatus.SUCCESS */;
         case "Failure" /* Protocol.Preload.PreloadingStatus.Failure */:
-            return "Failure" /* PreloadingStatus.Failure */;
+            return "Failure" /* PreloadingStatus.FAILURE */;
         case "NotSupported" /* Protocol.Preload.PreloadingStatus.NotSupported */:
-            return "NotSupported" /* PreloadingStatus.NotSupported */;
+            return "NotSupported" /* PreloadingStatus.NOT_SUPPORTED */;
     }
     throw new Error('unreachable');
 }
@@ -378,7 +378,7 @@ class PreloadingAttemptRegistry {
                     attempt = {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         key,
-                        status: "NotTriggered" /* PreloadingStatus.NotTriggered */,
+                        status: "NotTriggered" /* PreloadingStatus.NOT_TRIGGERED */,
                         prefetchStatus: null,
                         // Fill invalid request id.
                         requestId: '',
@@ -388,7 +388,7 @@ class PreloadingAttemptRegistry {
                     attempt = {
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
                         key,
-                        status: "NotTriggered" /* PreloadingStatus.NotTriggered */,
+                        status: "NotTriggered" /* PreloadingStatus.NOT_TRIGGERED */,
                         prerenderStatus: null,
                         disallowedMojoInterface: null,
                         mismatchedHeaders: null,

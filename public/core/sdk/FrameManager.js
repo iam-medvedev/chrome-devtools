@@ -83,7 +83,7 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper {
         if (frameSet) {
             frameSet.add(frame.id);
         }
-        this.dispatchEventToListeners("FrameAddedToTarget" /* Events.FrameAddedToTarget */, { frame });
+        this.dispatchEventToListeners("FrameAddedToTarget" /* Events.FRAME_ADDED_TO_TARGET */, { frame });
         this.resolveAwaitedFrame(frame);
     }
     frameDetached(event) {
@@ -109,13 +109,13 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     frameNavigated(event) {
         const frame = event.data;
-        this.dispatchEventToListeners("FrameNavigated" /* Events.FrameNavigated */, { frame });
+        this.dispatchEventToListeners("FrameNavigated" /* Events.FRAME_NAVIGATED */, { frame });
         if (frame.isOutermostFrame()) {
-            this.dispatchEventToListeners("OutermostFrameNavigated" /* Events.OutermostFrameNavigated */, { frame });
+            this.dispatchEventToListeners("OutermostFrameNavigated" /* Events.OUTERMOST_FRAME_NAVIGATED */, { frame });
         }
     }
     resourceAdded(event) {
-        this.dispatchEventToListeners("ResourceAdded" /* Events.ResourceAdded */, { resource: event.data });
+        this.dispatchEventToListeners("ResourceAdded" /* Events.RESOURCE_ADDED */, { resource: event.data });
     }
     decreaseOrRemoveFrame(frameId) {
         const frameData = this.#frames.get(frameId);
@@ -123,7 +123,7 @@ export class FrameManager extends Common.ObjectWrapper.ObjectWrapper {
             if (frameData.count === 1) {
                 this.#frames.delete(frameId);
                 this.resetOutermostFrame();
-                this.dispatchEventToListeners("FrameRemoved" /* Events.FrameRemoved */, { frameId });
+                this.dispatchEventToListeners("FrameRemoved" /* Events.FRAME_REMOVED */, { frameId });
             }
             else {
                 frameData.count--;

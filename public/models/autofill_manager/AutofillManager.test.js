@@ -25,8 +25,8 @@ describeWithMockConnection('AutofillManager', () => {
     describe('emits AddressFormFilled events', () => {
         const assertAutofillManagerEvent = async (inEvent, outEvent) => {
             const dispatchedAutofillEvents = [];
-            autofillManager.addEventListener("AddressFormFilled" /* AutofillManager.AutofillManager.Events.AddressFormFilled */, event => dispatchedAutofillEvents.push(event.data));
-            model.dispatchEventToListeners("AddressFormFilled" /* SDK.AutofillModel.Events.AddressFormFilled */, { autofillModel: model, event: inEvent });
+            autofillManager.addEventListener("AddressFormFilled" /* AutofillManager.AutofillManager.Events.ADDRESS_FORM_FILLED */, event => dispatchedAutofillEvents.push(event.data));
+            model.dispatchEventToListeners("AddressFormFilled" /* SDK.AutofillModel.Events.ADDRESS_FORM_FILLED */, { autofillModel: model, event: inEvent });
             await new Promise(resolve => setTimeout(resolve, 0));
             assert.isTrue(showViewStub.calledOnceWithExactly('autofill-view'));
             assert.deepStrictEqual(dispatchedAutofillEvents, [outEvent]);

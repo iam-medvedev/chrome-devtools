@@ -29,7 +29,7 @@ export declare const DEFAULT_SIDEBAR_TAB = SidebarTabs.INSIGHTS;
 export declare class SidebarWidget extends UI.Widget.VBox {
     #private;
     wasShown(): void;
-    setAnnotations(updatedAnnotations: TraceEngine.Types.File.Annotation[]): void;
+    setAnnotations(updatedAnnotations: TraceEngine.Types.File.Annotation[], annotationEntryToColorMap: Map<TraceEngine.Types.TraceEvents.TraceEventData, string>): void;
     setTraceParsedData(traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null): void;
     setInsights(insights: TraceEngine.Insights.Types.TraceInsightData | null): void;
     setActiveInsight(activeInsight: ActiveInsight | null): void;

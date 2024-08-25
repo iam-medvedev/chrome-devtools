@@ -229,7 +229,7 @@ export class DebuggerPlugin extends Plugin {
         this.uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
         this.scriptFileForDebuggerModel = new Map();
         this.loader = SDK.PageResourceLoader.PageResourceLoader.instance();
-        this.loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.Update */, this.showSourceMapInfobarIfNeeded.bind(this), this);
+        this.loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.UPDATE */, this.showSourceMapInfobarIfNeeded.bind(this), this);
         this.ignoreListCallback = this.showIgnoreListInfobarIfNeeded.bind(this);
         Bindings.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListCallback);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.callFrameChanged, this);
@@ -1237,8 +1237,8 @@ export class DebuggerPlugin extends Plugin {
         const newScriptFile = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(this.uiSourceCode, debuggerModel);
         this.scriptFileForDebuggerModel.delete(debuggerModel);
         if (oldScriptFile) {
-            oldScriptFile.removeEventListener("DidMergeToVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DidMergeToVM */, this.didMergeToVM, this);
-            oldScriptFile.removeEventListener("DidDivergeFromVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DidDivergeFromVM */, this.didDivergeFromVM, this);
+            oldScriptFile.removeEventListener("DidMergeToVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DID_MERGE_TO_VM */, this.didMergeToVM, this);
+            oldScriptFile.removeEventListener("DidDivergeFromVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DID_DIVERGE_FROM_VM */, this.didDivergeFromVM, this);
             if (this.muted && !this.uiSourceCode.isDirty() && this.consistentScripts()) {
                 this.setMuted(false);
             }
@@ -1247,8 +1247,8 @@ export class DebuggerPlugin extends Plugin {
             return;
         }
         this.scriptFileForDebuggerModel.set(debuggerModel, newScriptFile);
-        newScriptFile.addEventListener("DidMergeToVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DidMergeToVM */, this.didMergeToVM, this);
-        newScriptFile.addEventListener("DidDivergeFromVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DidDivergeFromVM */, this.didDivergeFromVM, this);
+        newScriptFile.addEventListener("DidMergeToVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DID_MERGE_TO_VM */, this.didMergeToVM, this);
+        newScriptFile.addEventListener("DidDivergeFromVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DID_DIVERGE_FROM_VM */, this.didDivergeFromVM, this);
         newScriptFile.checkMapping();
         void newScriptFile.missingSymbolFiles().then(resources => {
             if (resources) {
@@ -1497,8 +1497,8 @@ export class DebuggerPlugin extends Plugin {
             this.sourceMapInfobar.dispose();
         }
         for (const script of this.scriptFileForDebuggerModel.values()) {
-            script.removeEventListener("DidMergeToVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DidMergeToVM */, this.didMergeToVM, this);
-            script.removeEventListener("DidDivergeFromVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DidDivergeFromVM */, this.didDivergeFromVM, this);
+            script.removeEventListener("DidMergeToVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DID_MERGE_TO_VM */, this.didMergeToVM, this);
+            script.removeEventListener("DidDivergeFromVM" /* Bindings.ResourceScriptMapping.ResourceScriptFile.Events.DID_DIVERGE_FROM_VM */, this.didDivergeFromVM, this);
         }
         this.scriptFileForDebuggerModel.clear();
         this.popoverHelper?.hidePopover();

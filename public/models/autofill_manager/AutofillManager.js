@@ -16,7 +16,7 @@ export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
     #autofillModel = null;
     constructor() {
         super();
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.AutofillModel.AutofillModel, "AddressFormFilled" /* SDK.AutofillModel.Events.AddressFormFilled */, this.#addressFormFilled, this, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.AutofillModel.AutofillModel, "AddressFormFilled" /* SDK.AutofillModel.Events.ADDRESS_FORM_FILLED */, this.#addressFormFilled, this, { scoped: true });
         this.#autoOpenViewSetting =
             Common.Settings.Settings.instance().createSetting('auto-open-autofill-view-on-event', true);
     }
@@ -44,7 +44,7 @@ export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#autofillModel = data.autofillModel;
         this.#processAddressFormFilledData(data.event);
         if (this.#address) {
-            this.dispatchEventToListeners("AddressFormFilled" /* Events.AddressFormFilled */, {
+            this.dispatchEventToListeners("AddressFormFilled" /* Events.ADDRESS_FORM_FILLED */, {
                 address: this.#address,
                 filledFields: this.#filledFields,
                 matches: this.#matches,

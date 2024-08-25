@@ -24,15 +24,15 @@ export interface StorageKey {
     components: Map<StorageKeyComponent, string>;
 }
 export declare const enum Events {
-    StorageKeyAdded = "StorageKeyAdded",
-    StorageKeyRemoved = "StorageKeyRemoved",
-    MainStorageKeyChanged = "MainStorageKeyChanged"
+    STORAGE_KEY_ADDED = "StorageKeyAdded",
+    STORAGE_KEY_REMOVED = "StorageKeyRemoved",
+    MAIN_STORAGE_KEY_CHANGED = "MainStorageKeyChanged"
 }
 export interface MainStorageKeyChangedEvent {
     mainStorageKey: string;
 }
 export type EventTypes = {
-    [Events.StorageKeyAdded]: string;
-    [Events.StorageKeyRemoved]: string;
-    [Events.MainStorageKeyChanged]: MainStorageKeyChangedEvent;
+    [Events.STORAGE_KEY_ADDED]: string;
+    [Events.STORAGE_KEY_REMOVED]: string;
+    [Events.MAIN_STORAGE_KEY_CHANGED]: MainStorageKeyChangedEvent;
 };

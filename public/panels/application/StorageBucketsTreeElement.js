@@ -29,9 +29,9 @@ export class StorageBucketsTreeParentElement extends ExpandableApplicationPanelT
         this.setLink('https://github.com/WICG/storage-buckets/blob/gh-pages/explainer.md');
     }
     initialize() {
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.StorageBucketsModel.StorageBucketsModel, "BucketAdded" /* SDK.StorageBucketsModel.Events.BucketAdded */, this.bucketAdded, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.StorageBucketsModel.StorageBucketsModel, "BucketRemoved" /* SDK.StorageBucketsModel.Events.BucketRemoved */, this.bucketRemoved, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.StorageBucketsModel.StorageBucketsModel, "BucketChanged" /* SDK.StorageBucketsModel.Events.BucketChanged */, this.bucketChanged, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.StorageBucketsModel.StorageBucketsModel, "BucketAdded" /* SDK.StorageBucketsModel.Events.BUCKET_ADDED */, this.bucketAdded, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.StorageBucketsModel.StorageBucketsModel, "BucketRemoved" /* SDK.StorageBucketsModel.Events.BUCKET_REMOVED */, this.bucketRemoved, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.StorageBucketsModel.StorageBucketsModel, "BucketChanged" /* SDK.StorageBucketsModel.Events.BUCKET_CHANGED */, this.bucketChanged, this);
         for (const bucketsModel of SDK.TargetManager.TargetManager.instance().models(SDK.StorageBucketsModel.StorageBucketsModel)) {
             const buckets = bucketsModel.getBuckets();
             for (const bucket of buckets) {

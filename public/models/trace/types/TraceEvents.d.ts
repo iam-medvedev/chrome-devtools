@@ -123,11 +123,11 @@ export interface TraceEventComplete extends TraceEventData {
     dur: MicroSeconds;
 }
 export interface TraceEventRunTask extends TraceEventComplete {
-    name: KnownEventName.RunTask;
+    name: KnownEventName.RUN_TASK;
 }
 export declare function isTraceEventRunTask(event: TraceEventData): event is TraceEventRunTask;
 export interface TraceEventFireIdleCallback extends TraceEventComplete {
-    name: KnownEventName.FireIdleCallback;
+    name: KnownEventName.FIRE_IDLE_CALLBACK;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             allottedMilliseconds: MilliSeconds;
@@ -138,7 +138,7 @@ export interface TraceEventFireIdleCallback extends TraceEventComplete {
     };
 }
 export interface TraceEventSchedulePostMessage extends TraceEventInstant {
-    name: KnownEventName.SchedulePostMessage;
+    name: KnownEventName.SCHEDULE_POST_MESSAGE;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             traceId: string;
@@ -146,7 +146,7 @@ export interface TraceEventSchedulePostMessage extends TraceEventInstant {
     };
 }
 export interface TraceEventHandlePostMessage extends TraceEventComplete {
-    name: KnownEventName.HandlePostMessage;
+    name: KnownEventName.HANDLE_POST_MESSAGE;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             traceId: string;
@@ -190,7 +190,7 @@ export interface TraceEventEnd extends TraceEventData {
 export type SyntheticCompleteEvent = TraceEventComplete;
 export interface TraceEventEventTiming extends TraceEventData {
     ph: Phase.ASYNC_NESTABLE_START | Phase.ASYNC_NESTABLE_END;
-    name: KnownEventName.EventTiming;
+    name: KnownEventName.EVENT_TIMING;
     id: string;
     args: TraceEventArgs & {
         frame: string;
@@ -386,7 +386,7 @@ export interface TraceEventScreenshot extends TraceEventData {
     args: TraceEventArgs & {
         snapshot: string;
     };
-    name: KnownEventName.Screenshot;
+    name: KnownEventName.SCREENSHOT;
     cat: 'disabled-by-default-devtools.screenshot';
     ph: Phase.OBJECT_SNAPSHOT;
 }
@@ -398,7 +398,7 @@ export interface SyntheticScreenshot extends TraceEventData, SyntheticBasedEvent
     args: TraceEventArgs & {
         dataUri: string;
     };
-    name: KnownEventName.Screenshot;
+    name: KnownEventName.SCREENSHOT;
     cat: 'disabled-by-default-devtools.screenshot';
     ph: Phase.OBJECT_SNAPSHOT;
 }
@@ -429,7 +429,7 @@ export interface TraceEventMetadata extends TraceEventData {
     };
 }
 export interface TraceEventThreadName extends TraceEventMetadata {
-    name: KnownEventName.ThreadName;
+    name: KnownEventName.THREAD_NAME;
     args: TraceEventArgs & {
         name?: string;
     };
@@ -457,7 +457,7 @@ export interface TraceEventNavigationStart extends TraceEventMark {
     };
 }
 export interface TraceEventFirstContentfulPaint extends TraceEventMark {
-    name: KnownEventName.MarkFCP;
+    name: KnownEventName.MARK_FCP;
     args: TraceEventArgs & {
         frame: string;
         data?: TraceEventArgsData & {
@@ -482,7 +482,7 @@ export interface MarkerEvent extends TraceEventData {
 export declare function isTraceEventMarkerEvent(event: TraceEventData): event is MarkerEvent;
 export declare function eventIsPageLoadEvent(event: TraceEventData): event is PageLoadEvent;
 export interface TraceEventLargestContentfulPaintCandidate extends TraceEventMark {
-    name: KnownEventName.MarkLCPCandidate;
+    name: KnownEventName.MARK_LCP_CANDIDATE;
     args: TraceEventArgs & {
         frame: string;
         data?: TraceEventArgsData & {
@@ -544,7 +544,7 @@ export interface TraceEventUpdateCounters extends TraceEventInstant {
 }
 export type TraceEventRendererEvent = TraceEventInstant | TraceEventComplete;
 export interface TraceEventTracingStartedInBrowser extends TraceEventInstant {
-    name: KnownEventName.TracingStartedInBrowser;
+    name: KnownEventName.TRACING_STARTED_IN_BROWSER;
     args: TraceEventArgs & {
         data?: TraceEventArgsData & {
             frameTreeNodeId: number;
@@ -768,7 +768,7 @@ export interface TraceEventResourceReceiveResponse extends TraceEventInstant {
             requestId: string;
             responseTime: MilliSeconds;
             statusCode: number;
-            timing: TraceEventResourceReceiveResponseTimingData;
+            timing?: TraceEventResourceReceiveResponseTimingData;
             connectionId: number;
             connectionReused: boolean;
             headers?: Array<{
@@ -797,7 +797,7 @@ export declare const enum LayoutInvalidationReason {
     UNKNOWN = "Unknown"
 }
 export interface TraceEventLayoutInvalidationTracking extends TraceEventInstant {
-    name: KnownEventName.LayoutInvalidationTracking;
+    name: KnownEventName.LAYOUT_INVALIDATION_TRACKING;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             frame: string;
@@ -808,7 +808,7 @@ export interface TraceEventLayoutInvalidationTracking extends TraceEventInstant 
     };
 }
 export interface TraceEventScheduleStyleInvalidationTracking extends TraceEventInstant {
-    name: KnownEventName.ScheduleStyleInvalidationTracking;
+    name: KnownEventName.SCHEDULE_STYLE_INVALIDATION_TRACKING;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             frame: string;
@@ -829,7 +829,7 @@ export declare const enum StyleRecalcInvalidationReason {
     ANIMATION = "Animation"
 }
 export interface TraceEventStyleRecalcInvalidationTracking extends TraceEventInstant {
-    name: KnownEventName.StyleRecalcInvalidationTracking;
+    name: KnownEventName.STYLE_RECALC_INVALIDATION_TRACKING;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             frame: string;
@@ -843,7 +843,7 @@ export interface TraceEventStyleRecalcInvalidationTracking extends TraceEventIns
 }
 export declare function isTraceEventStyleRecalcInvalidationTracking(event: TraceEventData): event is TraceEventStyleRecalcInvalidationTracking;
 export interface TraceEventStyleInvalidatorInvalidationTracking extends TraceEventInstant {
-    name: KnownEventName.StyleInvalidatorInvalidationTracking;
+    name: KnownEventName.STYLE_INVALIDATOR_INVALIDATION_TRACKING;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             frame: string;
@@ -861,7 +861,7 @@ export interface TraceEventStyleInvalidatorInvalidationTracking extends TraceEve
 }
 export declare function isTraceEventStyleInvalidatorInvalidationTracking(event: TraceEventData): event is TraceEventStyleInvalidatorInvalidationTracking;
 export interface TraceEventBeginCommitCompositorFrame extends TraceEventInstant {
-    name: KnownEventName.BeginCommitCompositorFrame;
+    name: KnownEventName.BEGIN_COMMIT_COMPOSITOR_FRAME;
     args: TraceEventArgs & {
         frame: string;
         is_mobile_optimized: boolean;
@@ -869,18 +869,18 @@ export interface TraceEventBeginCommitCompositorFrame extends TraceEventInstant 
 }
 export declare function isTraceEventBeginCommitCompositorFrame(event: TraceEventData): event is TraceEventBeginCommitCompositorFrame;
 export interface TraceEventParseMetaViewport extends TraceEventInstant {
-    name: KnownEventName.ParseMetaViewport;
+    name: KnownEventName.PARSE_META_VIEWPORT;
     args: TraceEventArgs & {
         data: {
             frame: string;
-            node_id: number;
+            node_id: Protocol.DOM.BackendNodeId;
             content: string;
         };
     };
 }
 export declare function isTraceEventParseMetaViewport(event: TraceEventData): event is TraceEventParseMetaViewport;
 export interface TraceEventScheduleStyleRecalculation extends TraceEventInstant {
-    name: KnownEventName.ScheduleStyleRecalculation;
+    name: KnownEventName.SCHEDULE_STYLE_RECALCULATION;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -889,7 +889,7 @@ export interface TraceEventScheduleStyleRecalculation extends TraceEventInstant 
 }
 export declare function isTraceEventScheduleStyleRecalculation(event: TraceEventData): event is TraceEventScheduleStyleRecalculation;
 export interface TraceEventRenderFrameImplCreateChildFrame extends TraceEventData {
-    name: KnownEventName.RenderFrameImplCreateChildFrame;
+    name: KnownEventName.RENDER_FRAME_IMPL_CREATE_CHILD_FRAME;
     args: TraceEventArgs & {
         child_frame_token: string;
         frame_token: string;
@@ -1179,7 +1179,7 @@ export interface SyntheticServerTiming<T extends Phase = Phase.COMPLETE> extends
  * A JS Sample reflects a single sample from the V8 CPU Profile
  */
 export interface SyntheticJSSample extends TraceEventData {
-    name: KnownEventName.JSSample;
+    name: KnownEventName.JS_SAMPLE;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             stackTrace: Protocol.Runtime.CallFrame[];
@@ -1189,7 +1189,7 @@ export interface SyntheticJSSample extends TraceEventData {
 }
 export declare function isSyntheticInteractionEvent(event: TraceEventData): event is SyntheticInteractionPair;
 export interface TraceEventDrawFrame extends TraceEventInstant {
-    name: KnownEventName.DrawFrame;
+    name: KnownEventName.DRAW_FRAME;
     args: TraceEventArgs & {
         layerTreeId: number;
         frameSeqId: number;
@@ -1197,7 +1197,7 @@ export interface TraceEventDrawFrame extends TraceEventInstant {
 }
 export declare function isTraceEventDrawFrame(event: TraceEventData): event is TraceEventDrawFrame;
 export interface TraceEventLegacyDrawFrameBegin extends TraceEventAsync {
-    name: KnownEventName.DrawFrame;
+    name: KnownEventName.DRAW_FRAME;
     ph: Phase.ASYNC_NESTABLE_START;
     args: TraceEventArgs & {
         layerTreeId: number;
@@ -1206,7 +1206,7 @@ export interface TraceEventLegacyDrawFrameBegin extends TraceEventAsync {
 }
 export declare function isLegacyTraceEventDrawFrameBegin(event: TraceEventData): event is TraceEventLegacyDrawFrameBegin;
 export interface TraceEventBeginFrame extends TraceEventInstant {
-    name: KnownEventName.BeginFrame;
+    name: KnownEventName.BEGIN_FRAME;
     args: TraceEventArgs & {
         layerTreeId: number;
         frameSeqId: number;
@@ -1214,7 +1214,7 @@ export interface TraceEventBeginFrame extends TraceEventInstant {
 }
 export declare function isTraceEventBeginFrame(event: TraceEventData): event is TraceEventBeginFrame;
 export interface TraceEventDroppedFrame extends TraceEventInstant {
-    name: KnownEventName.DroppedFrame;
+    name: KnownEventName.DROPPED_FRAME;
     args: TraceEventArgs & {
         layerTreeId: number;
         frameSeqId: number;
@@ -1223,14 +1223,14 @@ export interface TraceEventDroppedFrame extends TraceEventInstant {
 }
 export declare function isTraceEventDroppedFrame(event: TraceEventData): event is TraceEventDroppedFrame;
 export interface TraceEventRequestMainThreadFrame extends TraceEventInstant {
-    name: KnownEventName.RequestMainThreadFrame;
+    name: KnownEventName.REQUEST_MAIN_THREAD_FRAME;
     args: TraceEventArgs & {
         layerTreeId: number;
     };
 }
 export declare function isTraceEventRequestMainThreadFrame(event: TraceEventData): event is TraceEventRequestMainThreadFrame;
 export interface TraceEventBeginMainThreadFrame extends TraceEventInstant {
-    name: KnownEventName.BeginMainThreadFrame;
+    name: KnownEventName.BEGIN_MAIN_THREAD_FRAME;
     args: TraceEventArgs & {
         layerTreeId: number;
         data: TraceEventArgsData & {
@@ -1240,7 +1240,7 @@ export interface TraceEventBeginMainThreadFrame extends TraceEventInstant {
 }
 export declare function isTraceEventBeginMainThreadFrame(event: TraceEventData): event is TraceEventBeginMainThreadFrame;
 export interface TraceEventNeedsBeginFrameChanged extends TraceEventInstant {
-    name: KnownEventName.NeedsBeginFrameChanged;
+    name: KnownEventName.NEEDS_BEGIN_FRAME_CHANGED;
     args: TraceEventArgs & {
         layerTreeId: number;
         data: TraceEventArgsData & {
@@ -1250,7 +1250,7 @@ export interface TraceEventNeedsBeginFrameChanged extends TraceEventInstant {
 }
 export declare function isTraceEventNeedsBeginFrameChanged(event: TraceEventData): event is TraceEventNeedsBeginFrameChanged;
 export interface TraceEventCommit extends TraceEventInstant {
-    name: KnownEventName.Commit;
+    name: KnownEventName.COMMIT;
     args: TraceEventArgs & {
         layerTreeId: number;
         frameSeqId: number;
@@ -1258,7 +1258,7 @@ export interface TraceEventCommit extends TraceEventInstant {
 }
 export declare function isTraceEventCommit(event: TraceEventData): event is TraceEventCommit;
 export interface TraceEventRasterTask extends TraceEventComplete {
-    name: KnownEventName.RasterTask;
+    name: KnownEventName.RASTER_TASK;
     args: TraceEventArgs & {
         tileData?: {
             layerId: number;
@@ -1272,14 +1272,14 @@ export interface TraceEventRasterTask extends TraceEventComplete {
 }
 export declare function isTraceEventRasterTask(event: TraceEventData): event is TraceEventRasterTask;
 export interface TraceEventCompositeLayers extends TraceEventInstant {
-    name: KnownEventName.CompositeLayers;
+    name: KnownEventName.COMPOSITE_LAYERS;
     args: TraceEventArgs & {
         layerTreeId: number;
     };
 }
 export declare function isTraceEventCompositeLayers(event: TraceEventData): event is TraceEventCompositeLayers;
 export interface TraceEventActivateLayerTree extends TraceEventInstant {
-    name: KnownEventName.ActivateLayerTree;
+    name: KnownEventName.ACTIVATE_LAYER_TREE;
     args: TraceEventArgs & {
         layerTreeId: number;
         frameId: number;
@@ -1289,21 +1289,21 @@ export declare function isTraceEventActivateLayerTree(event: TraceEventData): ev
 export type InvalidationTrackingEvent = TraceEventScheduleStyleInvalidationTracking | TraceEventStyleRecalcInvalidationTracking | TraceEventStyleInvalidatorInvalidationTracking | TraceEventLayoutInvalidationTracking;
 export declare function isTraceEventInvalidationTracking(event: TraceEventData): event is InvalidationTrackingEvent;
 export interface TraceEventDrawLazyPixelRef extends TraceEventInstant {
-    name: KnownEventName.DrawLazyPixelRef;
+    name: KnownEventName.DRAW_LAZY_PIXEL_REF;
     args?: TraceEventArgs & {
         LazyPixelRef: number;
     };
 }
 export declare function isTraceEventDrawLazyPixelRef(event: TraceEventData): event is TraceEventDrawLazyPixelRef;
 export interface TraceEventDecodeLazyPixelRef extends TraceEventInstant {
-    name: KnownEventName.DecodeLazyPixelRef;
+    name: KnownEventName.DECODE_LAZY_PIXEL_REF;
     args?: TraceEventArgs & {
         LazyPixelRef: number;
     };
 }
 export declare function isTraceEventDecodeLazyPixelRef(event: TraceEventData): event is TraceEventDecodeLazyPixelRef;
 export interface TraceEventDecodeImage extends TraceEventComplete {
-    name: KnownEventName.DecodeImage;
+    name: KnownEventName.DECODE_IMAGE;
     args: TraceEventArgs & {
         imageType: string;
     };
@@ -1321,14 +1321,14 @@ export interface SelectorStats {
     selector_timings: SelectorTiming[];
 }
 export interface TraceEventSelectorStats extends TraceEventComplete {
-    name: KnownEventName.SelectorStats;
+    name: KnownEventName.SELECTOR_STATS;
     args: TraceEventArgs & {
         selector_stats?: SelectorStats;
     };
 }
 export declare function isTraceEventSelectorStats(event: TraceEventData): event is TraceEventSelectorStats;
 export interface TraceEventUpdateLayoutTree extends TraceEventComplete {
-    name: KnownEventName.UpdateLayoutTree;
+    name: KnownEventName.UPDATE_LAYOUT_TREE;
     args: TraceEventArgs & {
         elementCount: number;
         beginData?: {
@@ -1339,7 +1339,7 @@ export interface TraceEventUpdateLayoutTree extends TraceEventComplete {
 }
 export declare function isTraceEventUpdateLayoutTree(event: TraceEventData): event is TraceEventUpdateLayoutTree;
 export interface TraceEventLayout extends TraceEventComplete {
-    name: KnownEventName.Layout;
+    name: KnownEventName.LAYOUT;
     args: TraceEventArgs & {
         beginData: {
             frame: string;
@@ -1358,7 +1358,7 @@ export interface TraceEventLayout extends TraceEventComplete {
 }
 export declare function isTraceEventLayout(event: TraceEventData): event is TraceEventLayout;
 export interface TraceEventInvalidateLayout extends TraceEventInstant {
-    name: KnownEventName.InvalidateLayout;
+    name: KnownEventName.INVALIDATE_LAYOUT;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -1459,7 +1459,7 @@ export declare function isTraceEventAsyncPhase(traceEventData: TraceEventData): 
 export declare function isSyntheticLayoutShift(traceEventData: TraceEventData): traceEventData is SyntheticLayoutShift;
 export declare function isProfileCall(event: TraceEventData): event is SyntheticProfileCall;
 export interface TraceEventPaint extends TraceEventComplete {
-    name: KnownEventName.Paint;
+    name: KnownEventName.PAINT;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             clip: number[];
@@ -1471,7 +1471,7 @@ export interface TraceEventPaint extends TraceEventComplete {
 }
 export declare function isTraceEventPaint(event: TraceEventData): event is TraceEventPaint;
 export interface TraceEventPaintImage extends TraceEventComplete {
-    name: KnownEventName.PaintImage;
+    name: KnownEventName.PAINT_IMAGE;
     args: TraceEventArgs & {
         data: TraceEventData & {
             height: number;
@@ -1487,7 +1487,7 @@ export interface TraceEventPaintImage extends TraceEventComplete {
 }
 export declare function isTraceEventPaintImage(event: TraceEventData): event is TraceEventPaintImage;
 export interface TraceEventScrollLayer extends TraceEventComplete {
-    name: KnownEventName.ScrollLayer;
+    name: KnownEventName.SCROLL_LAYER;
     args: TraceEventArgs & {
         data: TraceEventData & {
             frame: string;
@@ -1497,7 +1497,7 @@ export interface TraceEventScrollLayer extends TraceEventComplete {
 }
 export declare function isTraceEventScrollLayer(event: TraceEventData): event is TraceEventScrollLayer;
 export interface TraceEventSetLayerTreeId extends TraceEventInstant {
-    name: KnownEventName.SetLayerTreeId;
+    name: KnownEventName.SET_LAYER_TREE_ID;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             frame: string;
@@ -1507,7 +1507,7 @@ export interface TraceEventSetLayerTreeId extends TraceEventInstant {
 }
 export declare function isTraceEventSetLayerId(event: TraceEventData): event is TraceEventSetLayerTreeId;
 export interface TraceEventUpdateLayer extends TraceEventComplete {
-    name: KnownEventName.UpdateLayer;
+    name: KnownEventName.UPDATE_LAYER;
     args: TraceEventArgs & {
         layerId: number;
         layerTreeId: number;
@@ -1515,7 +1515,7 @@ export interface TraceEventUpdateLayer extends TraceEventComplete {
 }
 export declare function isTraceEventUpdateLayer(event: TraceEventData): event is TraceEventUpdateLayer;
 export interface TraceEventDisplayItemListSnapshot extends TraceEventData {
-    name: KnownEventName.DisplayItemListSnapshot;
+    name: KnownEventName.DISPLAY_ITEM_LIST_SNAPSHOT;
     ph: Phase.OBJECT_SNAPSHOT;
     id2: {
         local?: string;
@@ -1531,7 +1531,7 @@ export interface TraceEventDisplayItemListSnapshot extends TraceEventData {
 }
 export declare function isTraceEventDisplayListItemListSnapshot(event: TraceEventData): event is TraceEventDisplayItemListSnapshot;
 export interface TraceEventLayerTreeHostImplSnapshot extends TraceEventData {
-    name: KnownEventName.LayerTreeHostImplSnapshot;
+    name: KnownEventName.LAYER_TREE_HOST_IMPL_SNAPSHOT;
     ph: Phase.OBJECT_SNAPSHOT;
     id: string;
     args: TraceEventArgs & {
@@ -1582,7 +1582,7 @@ export interface TracingLayerTile {
     content_rect: number[];
 }
 export interface TraceEventFireAnimationFrame extends TraceEventComplete {
-    name: KnownEventName.FireAnimationFrame;
+    name: KnownEventName.FIRE_ANIMATION_FRAME;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -1592,7 +1592,7 @@ export interface TraceEventFireAnimationFrame extends TraceEventComplete {
 }
 export declare function isTraceEventFireAnimationFrame(event: TraceEventData): event is TraceEventFireAnimationFrame;
 export interface TraceEventRequestAnimationFrame extends TraceEventInstant {
-    name: KnownEventName.RequestAnimationFrame;
+    name: KnownEventName.REQUEST_ANIMATION_FRAME;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -1603,7 +1603,7 @@ export interface TraceEventRequestAnimationFrame extends TraceEventInstant {
 }
 export declare function isTraceEventRequestAnimationFrame(event: TraceEventData): event is TraceEventRequestAnimationFrame;
 export interface TraceEventTimerInstall extends TraceEventInstant {
-    name: KnownEventName.TimerInstall;
+    name: KnownEventName.TIMER_INSTALL;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -1616,7 +1616,7 @@ export interface TraceEventTimerInstall extends TraceEventInstant {
 }
 export declare function isTraceEventTimerInstall(event: TraceEventData): event is TraceEventTimerInstall;
 export interface TraceEventTimerFire extends TraceEventComplete {
-    name: KnownEventName.TimerFire;
+    name: KnownEventName.TIMER_FIRE;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -1626,7 +1626,7 @@ export interface TraceEventTimerFire extends TraceEventComplete {
 }
 export declare function isTraceEventTimerFire(event: TraceEventData): event is TraceEventTimerFire;
 export interface TraceEventRequestIdleCallback extends TraceEventInstant {
-    name: KnownEventName.RequestIdleCallback;
+    name: KnownEventName.REQUEST_IDLE_CALLBACK;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -1638,7 +1638,7 @@ export interface TraceEventRequestIdleCallback extends TraceEventInstant {
 }
 export declare function isTraceEventRequestIdleCallback(event: TraceEventData): event is TraceEventRequestIdleCallback;
 export interface TraceEventWebSocketCreate extends TraceEventInstant {
-    name: KnownEventName.WebSocketCreate;
+    name: KnownEventName.WEB_SOCKET_CREATE;
     args: TraceEventArgs & {
         data: {
             identifier: number;
@@ -1652,7 +1652,7 @@ export interface TraceEventWebSocketCreate extends TraceEventInstant {
 }
 export declare function isTraceEventWebSocketCreate(event: TraceEventData): event is TraceEventWebSocketCreate;
 export interface TraceEventWebSocketInfo extends TraceEventInstant {
-    name: KnownEventName.WebSocketDestroy | KnownEventName.WebSocketReceiveHandshake | KnownEventName.WebSocketReceiveHandshakeResponse;
+    name: KnownEventName.WEB_SOCKET_DESTROY | KnownEventName.WEB_SOCKET_RECEIVE_HANDSHAKE | KnownEventName.WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             identifier: number;
@@ -1663,7 +1663,7 @@ export interface TraceEventWebSocketInfo extends TraceEventInstant {
     };
 }
 export interface TraceEventWebSocketTransfer extends TraceEventInstant {
-    name: KnownEventName.WebSocketSend | KnownEventName.WebSocketReceive;
+    name: KnownEventName.WEB_SOCKET_SEND | KnownEventName.WEB_SOCKET_RECEIVE;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             identifier: number;
@@ -1677,7 +1677,7 @@ export interface TraceEventWebSocketTransfer extends TraceEventInstant {
 export declare function isTraceEventWebSocketInfo(traceEventData: TraceEventData): traceEventData is TraceEventWebSocketInfo;
 export declare function isTraceEventWebSocketTransfer(traceEventData: TraceEventData): traceEventData is TraceEventWebSocketTransfer;
 export interface TraceEventWebSocketSend extends TraceEventInstant {
-    name: KnownEventName.WebSocketSend;
+    name: KnownEventName.WEB_SOCKET_SEND;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             identifier: number;
@@ -1690,7 +1690,7 @@ export interface TraceEventWebSocketSend extends TraceEventInstant {
 }
 export declare function isTraceEventWebSocketSend(event: TraceEventData): event is TraceEventWebSocketSend;
 export interface TraceEventWebSocketReceive extends TraceEventInstant {
-    name: KnownEventName.WebSocketReceive;
+    name: KnownEventName.WEB_SOCKET_RECEIVE;
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             identifier: number;
@@ -1703,7 +1703,7 @@ export interface TraceEventWebSocketReceive extends TraceEventInstant {
 }
 export declare function isTraceEventWebSocketReceive(event: TraceEventData): event is TraceEventWebSocketReceive;
 export interface TraceEventWebSocketSendHandshakeRequest extends TraceEventInstant {
-    name: KnownEventName.WebSocketSendHandshakeRequest;
+    name: KnownEventName.WEB_SOCKET_SEND_HANDSHAKE_REQUEST;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -1713,7 +1713,7 @@ export interface TraceEventWebSocketSendHandshakeRequest extends TraceEventInsta
 }
 export declare function isTraceEventWebSocketSendHandshakeRequest(event: TraceEventData): event is TraceEventWebSocketSendHandshakeRequest;
 export interface TraceEventWebSocketReceiveHandshakeResponse extends TraceEventInstant {
-    name: KnownEventName.WebSocketReceiveHandshakeResponse;
+    name: KnownEventName.WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -1723,7 +1723,7 @@ export interface TraceEventWebSocketReceiveHandshakeResponse extends TraceEventI
 }
 export declare function isTraceEventWebSocketReceiveHandshakeResponse(event: TraceEventData): event is TraceEventWebSocketReceiveHandshakeResponse;
 export interface TraceEventWebSocketDestroy extends TraceEventInstant {
-    name: KnownEventName.WebSocketDestroy;
+    name: KnownEventName.WEB_SOCKET_DESTROY;
     args: TraceEventArgs & {
         data: {
             frame: string;
@@ -1737,7 +1737,7 @@ export declare function isWebSocketTraceEvent(event: TraceEventData): event is W
 export type WebSocketEvent = WebSocketTraceEvent | SyntheticWebSocketConnectionEvent;
 export declare function isWebSocketEvent(event: TraceEventData): event is WebSocketTraceEvent | SyntheticWebSocketConnectionEvent;
 export interface TraceEventV8Compile extends TraceEventComplete {
-    name: KnownEventName.Compile;
+    name: KnownEventName.COMPILE;
     args: TraceEventArgs & {
         data?: {
             url?: string;
@@ -1755,7 +1755,7 @@ export interface TraceEventV8Compile extends TraceEventComplete {
 }
 export declare function isTraceEventV8Compile(event: TraceEventData): event is TraceEventV8Compile;
 export interface TraceEventFunctionCall extends TraceEventComplete {
-    name: KnownEventName.FunctionCall;
+    name: KnownEventName.FUNCTION_CALL;
     args: TraceEventArgs & {
         data?: {
             frame?: string;
@@ -1782,158 +1782,158 @@ export declare function isJSInvocationEvent(event: TraceEventData): boolean;
  * TODO(crbug.com/1428024): Complete this enum.
  */
 export declare const enum KnownEventName {
-    ThreadName = "thread_name",
-    Program = "Program",
-    RunTask = "RunTask",
-    AsyncTask = "AsyncTask",
-    RunMicrotasks = "RunMicrotasks",
-    XHRLoad = "XHRLoad",
-    XHRReadyStateChange = "XHRReadyStateChange",
-    ParseHTML = "ParseHTML",
-    ParseCSS = "ParseAuthorStyleSheet",
-    CompileCode = "V8.CompileCode",
-    CompileModule = "V8.CompileModule",
-    Compile = "v8.compile",
-    CompileScript = "V8.CompileScript",
-    Optimize = "V8.OptimizeCode",
-    WasmStreamFromResponseCallback = "v8.wasm.streamFromResponseCallback",
-    WasmCompiledModule = "v8.wasm.compiledModule",
-    WasmCachedModule = "v8.wasm.cachedModule",
-    WasmModuleCacheHit = "v8.wasm.moduleCacheHit",
-    WasmModuleCacheInvalid = "v8.wasm.moduleCacheInvalid",
-    ProfileCall = "ProfileCall",
-    EvaluateScript = "EvaluateScript",
-    FunctionCall = "FunctionCall",
-    EventDispatch = "EventDispatch",
-    EvaluateModule = "v8.evaluateModule",
-    RequestMainThreadFrame = "RequestMainThreadFrame",
-    RequestAnimationFrame = "RequestAnimationFrame",
-    CancelAnimationFrame = "CancelAnimationFrame",
-    FireAnimationFrame = "FireAnimationFrame",
-    RequestIdleCallback = "RequestIdleCallback",
-    CancelIdleCallback = "CancelIdleCallback",
-    FireIdleCallback = "FireIdleCallback",
-    TimerInstall = "TimerInstall",
-    TimerRemove = "TimerRemove",
-    TimerFire = "TimerFire",
-    WebSocketCreate = "WebSocketCreate",
-    WebSocketSendHandshake = "WebSocketSendHandshakeRequest",
-    WebSocketReceiveHandshake = "WebSocketReceiveHandshakeResponse",
-    WebSocketDestroy = "WebSocketDestroy",
-    WebSocketSend = "WebSocketSend",
-    WebSocketReceive = "WebSocketReceive",
-    CryptoDoEncrypt = "DoEncrypt",
-    CryptoDoEncryptReply = "DoEncryptReply",
-    CryptoDoDecrypt = "DoDecrypt",
-    CryptoDoDecryptReply = "DoDecryptReply",
-    CryptoDoDigest = "DoDigest",
-    CryptoDoDigestReply = "DoDigestReply",
-    CryptoDoSign = "DoSign",
-    CryptoDoSignReply = "DoSignReply",
-    CryptoDoVerify = "DoVerify",
-    CryptoDoVerifyReply = "DoVerifyReply",
-    V8Execute = "V8.Execute",
+    THREAD_NAME = "thread_name",
+    PROGRAM = "Program",
+    RUN_TASK = "RunTask",
+    ASYNC_TASK = "AsyncTask",
+    RUN_MICROTASKS = "RunMicrotasks",
+    XHR_LOAD = "XHRLoad",
+    XHR_READY_STATE_CHANGED = "XHRReadyStateChange",
+    PARSE_HTML = "ParseHTML",
+    PARSE_CSS = "ParseAuthorStyleSheet",
+    COMPILE_CODE = "V8.CompileCode",
+    COMPILE_MODULE = "V8.CompileModule",
+    COMPILE = "v8.compile",
+    COMPILE_SCRIPT = "V8.CompileScript",
+    OPTIMIZE = "V8.OptimizeCode",
+    WASM_STREAM_FROM_RESPONSE_CALLBACK = "v8.wasm.streamFromResponseCallback",
+    WASM_COMPILED_MODULE = "v8.wasm.compiledModule",
+    WASM_CACHED_MODULE = "v8.wasm.cachedModule",
+    WASM_MODULE_CACHE_HIT = "v8.wasm.moduleCacheHit",
+    WASM_MODULE_CACHE_INVALID = "v8.wasm.moduleCacheInvalid",
+    PROFILE_CALL = "ProfileCall",
+    EVALUATE_SCRIPT = "EvaluateScript",
+    FUNCTION_CALL = "FunctionCall",
+    EVENT_DISPATCH = "EventDispatch",
+    EVALUATE_MODULE = "v8.evaluateModule",
+    REQUEST_MAIN_THREAD_FRAME = "RequestMainThreadFrame",
+    REQUEST_ANIMATION_FRAME = "RequestAnimationFrame",
+    CANCEL_ANIMATION_FRAME = "CancelAnimationFrame",
+    FIRE_ANIMATION_FRAME = "FireAnimationFrame",
+    REQUEST_IDLE_CALLBACK = "RequestIdleCallback",
+    CANCEL_IDLE_CALLBACK = "CancelIdleCallback",
+    FIRE_IDLE_CALLBACK = "FireIdleCallback",
+    TIMER_INSTALL = "TimerInstall",
+    TIMER_REMOVE = "TimerRemove",
+    TIMER_FIRE = "TimerFire",
+    WEB_SOCKET_CREATE = "WebSocketCreate",
+    WEB_SOCKET_SEND_HANDSHAKE = "WebSocketSendHandshakeRequest",
+    WEB_SOCKET_RECEIVE_HANDSHAKE = "WebSocketReceiveHandshakeResponse",
+    WEB_SOCKET_DESTROY = "WebSocketDestroy",
+    WEB_SOCKET_SEND = "WebSocketSend",
+    WEB_SOCKET_RECEIVE = "WebSocketReceive",
+    CRYPTO_DO_ENCRYPT = "DoEncrypt",
+    CRYPTO_DO_ENCRYPT_REPLY = "DoEncryptReply",
+    CRYPTO_DO_DECRYPT = "DoDecrypt",
+    CRYPTO_DO_DECRYPT_REPLY = "DoDecryptReply",
+    CRYPTO_DO_DIGEST = "DoDigest",
+    CRYPTO_DO_DIGEST_REPLY = "DoDigestReply",
+    CRYPTO_DO_SIGN = "DoSign",
+    CRYPTO_DO_SIGN_REPLY = "DoSignReply",
+    CRYPTO_DO_VERIFY = "DoVerify",
+    CRYPTO_DO_VERIFY_REPLY = "DoVerifyReply",
+    V8_EXECUTE = "V8.Execute",
     GC = "GCEvent",
     DOMGC = "BlinkGC.AtomicPhase",
-    MajorGC = "MajorGC",
-    MinorGC = "MinorGC",
-    GCCollectGarbage = "BlinkGC.AtomicPhase",
-    CPPGCSweep = "CppGC.IncrementalSweep",
-    ScheduleStyleRecalculation = "ScheduleStyleRecalculation",
-    Layout = "Layout",
-    UpdateLayoutTree = "UpdateLayoutTree",
-    InvalidateLayout = "InvalidateLayout",
-    LayoutInvalidationTracking = "LayoutInvalidationTracking",
-    ComputeIntersections = "ComputeIntersections",
-    HitTest = "HitTest",
-    PrePaint = "PrePaint",
-    Layerize = "Layerize",
-    LayoutShift = "LayoutShift",
-    UpdateLayerTree = "UpdateLayerTree",
-    ScheduleStyleInvalidationTracking = "ScheduleStyleInvalidationTracking",
-    StyleRecalcInvalidationTracking = "StyleRecalcInvalidationTracking",
-    StyleInvalidatorInvalidationTracking = "StyleInvalidatorInvalidationTracking",
-    SelectorStats = "SelectorStats",
-    BeginCommitCompositorFrame = "BeginCommitCompositorFrame",
-    ParseMetaViewport = "ParseMetaViewport",
-    ScrollLayer = "ScrollLayer",
-    UpdateLayer = "UpdateLayer",
-    PaintSetup = "PaintSetup",
-    Paint = "Paint",
-    PaintImage = "PaintImage",
-    Commit = "Commit",
-    CompositeLayers = "CompositeLayers",
-    RasterTask = "RasterTask",
-    ImageDecodeTask = "ImageDecodeTask",
-    ImageUploadTask = "ImageUploadTask",
-    DecodeImage = "Decode Image",
-    DrawLazyPixelRef = "Draw LazyPixelRef",
-    DecodeLazyPixelRef = "Decode LazyPixelRef",
-    GPUTask = "GPUTask",
-    Rasterize = "Rasterize",
-    EventTiming = "EventTiming",
-    OptimizeCode = "V8.OptimizeCode",
-    CacheScript = "v8.produceCache",
-    CacheModule = "v8.produceModuleCache",
-    V8Sample = "V8Sample",
-    JitCodeAdded = "JitCodeAdded",
-    JitCodeMoved = "JitCodeMoved",
-    StreamingCompileScript = "v8.parseOnBackground",
-    StreamingCompileScriptWaiting = "v8.parseOnBackgroundWaiting",
-    StreamingCompileScriptParsing = "v8.parseOnBackgroundParsing",
-    BackgroundDeserialize = "v8.deserializeOnBackground",
-    FinalizeDeserialization = "V8.FinalizeDeserialization",
-    CommitLoad = "CommitLoad",
-    MarkLoad = "MarkLoad",
-    MarkDOMContent = "MarkDOMContent",
-    MarkFirstPaint = "firstPaint",
-    MarkFCP = "firstContentfulPaint",
-    MarkLCPCandidate = "largestContentfulPaint::Candidate",
-    MarkLCPInvalidate = "largestContentfulPaint::Invalidate",
-    NavigationStart = "navigationStart",
-    TimeStamp = "TimeStamp",
-    ConsoleTime = "ConsoleTime",
-    UserTiming = "UserTiming",
-    InteractiveTime = "InteractiveTime",
-    BeginFrame = "BeginFrame",
-    NeedsBeginFrameChanged = "NeedsBeginFrameChanged",
-    BeginMainThreadFrame = "BeginMainThreadFrame",
-    ActivateLayerTree = "ActivateLayerTree",
-    DrawFrame = "DrawFrame",
-    DroppedFrame = "DroppedFrame",
-    FrameStartedLoading = "FrameStartedLoading",
-    PipelineReporter = "PipelineReporter",
-    Screenshot = "Screenshot",
-    ResourceWillSendRequest = "ResourceWillSendRequest",
-    ResourceSendRequest = "ResourceSendRequest",
-    ResourceReceiveResponse = "ResourceReceiveResponse",
-    ResourceReceivedData = "ResourceReceivedData",
-    ResourceFinish = "ResourceFinish",
-    ResourceMarkAsCached = "ResourceMarkAsCached",
-    WebSocketSendHandshakeRequest = "WebSocketSendHandshakeRequest",
-    WebSocketReceiveHandshakeResponse = "WebSocketReceiveHandshakeResponse",
-    Profile = "Profile",
-    StartProfiling = "CpuProfiler::StartProfiling",
-    ProfileChunk = "ProfileChunk",
-    UpdateCounters = "UpdateCounters",
-    JSSample = "JSSample",
-    Animation = "Animation",
-    ParseAuthorStyleSheet = "ParseAuthorStyleSheet",
-    EmbedderCallback = "EmbedderCallback",
-    SetLayerTreeId = "SetLayerTreeId",
-    TracingStartedInPage = "TracingStartedInPage",
-    TracingStartedInBrowser = "TracingStartedInBrowser",
-    TracingSessionIdForWorker = "TracingSessionIdForWorker",
-    LazyPixelRef = "LazyPixelRef",
-    LayerTreeHostImplSnapshot = "cc::LayerTreeHostImpl",
-    PictureSnapshot = "cc::Picture",
-    DisplayItemListSnapshot = "cc::DisplayItemList",
-    InputLatencyMouseMove = "InputLatency::MouseMove",
-    InputLatencyMouseWheel = "InputLatency::MouseWheel",
-    ImplSideFling = "InputHandlerProxy::HandleGestureFling::started",
-    SchedulePostMessage = "SchedulePostMessage",
-    HandlePostMessage = "HandlePostMessage",
-    RenderFrameImplCreateChildFrame = "RenderFrameImpl::createChildFrame"
+    MAJOR_GC = "MajorGC",
+    MINOR_GC = "MinorGC",
+    GC_COLLECT_GARBARGE = "BlinkGC.AtomicPhase",
+    CPPGC_SWEEP = "CppGC.IncrementalSweep",
+    SCHEDULE_STYLE_RECALCULATION = "ScheduleStyleRecalculation",
+    LAYOUT = "Layout",
+    UPDATE_LAYOUT_TREE = "UpdateLayoutTree",
+    INVALIDATE_LAYOUT = "InvalidateLayout",
+    LAYOUT_INVALIDATION_TRACKING = "LayoutInvalidationTracking",
+    COMPUTE_INTERSECTION = "ComputeIntersections",
+    HIT_TEST = "HitTest",
+    PRE_PAINT = "PrePaint",
+    LAYERIZE = "Layerize",
+    LAYOUT_SHIFT = "LayoutShift",
+    UPDATE_LAYER_TREE = "UpdateLayerTree",
+    SCHEDULE_STYLE_INVALIDATION_TRACKING = "ScheduleStyleInvalidationTracking",
+    STYLE_RECALC_INVALIDATION_TRACKING = "StyleRecalcInvalidationTracking",
+    STYLE_INVALIDATOR_INVALIDATION_TRACKING = "StyleInvalidatorInvalidationTracking",
+    SELECTOR_STATS = "SelectorStats",
+    BEGIN_COMMIT_COMPOSITOR_FRAME = "BeginCommitCompositorFrame",
+    PARSE_META_VIEWPORT = "ParseMetaViewport",
+    SCROLL_LAYER = "ScrollLayer",
+    UPDATE_LAYER = "UpdateLayer",
+    PAINT_SETUP = "PaintSetup",
+    PAINT = "Paint",
+    PAINT_IMAGE = "PaintImage",
+    COMMIT = "Commit",
+    COMPOSITE_LAYERS = "CompositeLayers",
+    RASTER_TASK = "RasterTask",
+    IMAGE_DECODE_TASK = "ImageDecodeTask",
+    IMAGE_UPLOAD_TASK = "ImageUploadTask",
+    DECODE_IMAGE = "Decode Image",
+    DRAW_LAZY_PIXEL_REF = "Draw LazyPixelRef",
+    DECODE_LAZY_PIXEL_REF = "Decode LazyPixelRef",
+    GPU_TASK = "GPUTask",
+    RASTERIZE = "Rasterize",
+    EVENT_TIMING = "EventTiming",
+    OPTIMIZE_CODE = "V8.OptimizeCode",
+    CACHE_SCRIPT = "v8.produceCache",
+    CACHE_MODULE = "v8.produceModuleCache",
+    V8_SAMPLE = "V8Sample",
+    JIT_CODE_ADDED = "JitCodeAdded",
+    JIT_CODE_MOVED = "JitCodeMoved",
+    STREAMING_COMPILE_SCRIPT = "v8.parseOnBackground",
+    STREAMING_COMPILE_SCRIPT_WAITING = "v8.parseOnBackgroundWaiting",
+    STREAMING_COMPILE_SCRIPT_PARSING = "v8.parseOnBackgroundParsing",
+    BACKGROUND_DESERIALIZE = "v8.deserializeOnBackground",
+    FINALIZE_DESERIALIZATION = "V8.FinalizeDeserialization",
+    COMMIT_LOAD = "CommitLoad",
+    MARK_LOAD = "MarkLoad",
+    MARK_DOM_CONTENT = "MarkDOMContent",
+    MARK_FIRST_PAINT = "firstPaint",
+    MARK_FCP = "firstContentfulPaint",
+    MARK_LCP_CANDIDATE = "largestContentfulPaint::Candidate",
+    MARK_LCP_INVALIDATE = "largestContentfulPaint::Invalidate",
+    NAVIGATION_START = "navigationStart",
+    TIME_STAMP = "TimeStamp",
+    CONSOLE_TIME = "ConsoleTime",
+    USER_TIMING = "UserTiming",
+    INTERACTIVE_TIME = "InteractiveTime",
+    BEGIN_FRAME = "BeginFrame",
+    NEEDS_BEGIN_FRAME_CHANGED = "NeedsBeginFrameChanged",
+    BEGIN_MAIN_THREAD_FRAME = "BeginMainThreadFrame",
+    ACTIVATE_LAYER_TREE = "ActivateLayerTree",
+    DRAW_FRAME = "DrawFrame",
+    DROPPED_FRAME = "DroppedFrame",
+    FRAME_STARTED_LOADING = "FrameStartedLoading",
+    PIPELINE_REPORTER = "PipelineReporter",
+    SCREENSHOT = "Screenshot",
+    RESOURCE_WILL_SEND_REQUEST = "ResourceWillSendRequest",
+    RESOURCE_SEND_REQUEST = "ResourceSendRequest",
+    RESOURCE_RECEIVE_RESPONSE = "ResourceReceiveResponse",
+    RESOURCE_RECEIVE_DATA = "ResourceReceivedData",
+    RESOURCE_FINISH = "ResourceFinish",
+    RESOURCE_MARK_AS_CACHED = "ResourceMarkAsCached",
+    WEB_SOCKET_SEND_HANDSHAKE_REQUEST = "WebSocketSendHandshakeRequest",
+    WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST = "WebSocketReceiveHandshakeResponse",
+    PROFILE = "Profile",
+    START_PROFILING = "CpuProfiler::StartProfiling",
+    PROFILE_CHUNK = "ProfileChunk",
+    UPDATE_COUNTERS = "UpdateCounters",
+    JS_SAMPLE = "JSSample",
+    ANIMATION = "Animation",
+    PARSE_AUTHOR_STYLE_SHEET = "ParseAuthorStyleSheet",
+    EMBEDDER_CALLBACK = "EmbedderCallback",
+    SET_LAYER_TREE_ID = "SetLayerTreeId",
+    TRACING_STARTED_IN_PAGE = "TracingStartedInPage",
+    TRACING_STARTED_IN_BROWSER = "TracingStartedInBrowser",
+    TRACING_SESSION_ID_FOR_WORKER = "TracingSessionIdForWorker",
+    LAZY_PIXEL_REF = "LazyPixelRef",
+    LAYER_TREE_HOST_IMPL_SNAPSHOT = "cc::LayerTreeHostImpl",
+    PICTURE_SNAPSHOT = "cc::Picture",
+    DISPLAY_ITEM_LIST_SNAPSHOT = "cc::DisplayItemList",
+    INPUT_LATENCY_MOUSE_MOVE = "InputLatency::MouseMove",
+    INPUT_LATENCY_MOUSE_WHEEL = "InputLatency::MouseWheel",
+    IMPL_SIDE_FLING = "InputHandlerProxy::HandleGestureFling::started",
+    SCHEDULE_POST_MESSAGE = "SchedulePostMessage",
+    HANDLE_POST_MESSAGE = "HandlePostMessage",
+    RENDER_FRAME_IMPL_CREATE_CHILD_FRAME = "RenderFrameImpl::createChildFrame"
 }
 export declare const Categories: {
     readonly Console: "blink.console";

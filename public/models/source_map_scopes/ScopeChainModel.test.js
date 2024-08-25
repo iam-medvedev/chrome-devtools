@@ -38,7 +38,7 @@ describeWithMockConnection('ScopeChainModel', () => {
         fakeFrame.scopeChain.returns([]);
         const scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame);
         const listenerStub = sinon.stub();
-        scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.ScopeChainUpdated */, listenerStub);
+        scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
         await clock.tickAsync(10);
         assert.isTrue(listenerStub.calledOnce);
     });
@@ -55,7 +55,7 @@ describeWithMockConnection('ScopeChainModel', () => {
         fakeFrame.scopeChain.returns([]);
         const scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(fakeFrame);
         const listenerStub = sinon.stub();
-        scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.ScopeChainUpdated */, listenerStub);
+        scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
         await clock.tickAsync(10);
         assert.isTrue(stubPluginManager.resolveScopeChain.calledOnce);
         assert.isFalse(listenerStub.calledOnce);

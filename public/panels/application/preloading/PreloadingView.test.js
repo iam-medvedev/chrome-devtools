@@ -26,7 +26,7 @@ class NavigationEmulator {
     prerenderTarget = null;
     prerenderStatusUpdatedEvent = null;
     constructor() {
-        this.tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        this.tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         // Fill fake ones here and fill real ones in async part.
         this.primaryTarget = createTarget();
         this.frameId = 'fakeFrameId';
@@ -104,7 +104,7 @@ class NavigationEmulator {
         // It's not so important and omitted.
         dispatchEvent(this.primaryTarget, 'Preload.prerenderStatusUpdated', {
             ...this.prerenderStatusUpdatedEvent,
-            status: "Success" /* SDK.PreloadingModel.PreloadingStatus.Success */,
+            status: "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
         });
     }
     async addSpecRules(specrules) {
@@ -148,7 +148,7 @@ class NavigationEmulator {
                 },
                 initiatingFrameId: this.frameId,
                 prefetchUrl: url,
-                status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
             });
         }
         if (json['prerender'] === undefined) {
@@ -761,7 +761,7 @@ async function testWarnings(event, headerExpected, sectionsExpected) {
     const warningsUpdatedPromise = new Promise(resolve => {
         const model = target.model(SDK.PreloadingModel.PreloadingModel);
         assert.exists(model);
-        model.addEventListener("WarningsUpdated" /* SDK.PreloadingModel.Events.WarningsUpdated */, _ => resolve());
+        model.addEventListener("WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, _ => resolve());
     });
     const view = createRuleSetView(target);
     view.wasShown();

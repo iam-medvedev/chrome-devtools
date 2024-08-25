@@ -90,6 +90,7 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes>
     setToggleType(type: Buttons.Button.ToggleType): void;
     setLongClickable(longClickable: boolean): void;
     setSize(size: Buttons.Button.Size): void;
+    setReducedFocusRing(): void;
     setText(text: string): void;
     setAdorner(adorner: Adorners.Adorner.Adorner): void;
     setGlyph(iconName: string): void;

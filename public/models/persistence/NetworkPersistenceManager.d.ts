@@ -74,14 +74,14 @@ export declare class NetworkPersistenceManager extends Common.ObjectWrapper.Obje
 }
 export declare const HEADERS_FILENAME = ".headers";
 export declare const enum Events {
-    ProjectChanged = "ProjectChanged",
-    RequestsForHeaderOverridesFileChanged = "RequestsForHeaderOverridesFileChanged",
-    LocalOverridesProjectUpdated = "LocalOverridesProjectUpdated"
+    PROJECT_CHANGED = "ProjectChanged",
+    REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED = "RequestsForHeaderOverridesFileChanged",
+    LOCAL_OVERRIDES_PROJECT_UPDATED = "LocalOverridesProjectUpdated"
 }
 export type EventTypes = {
-    [Events.ProjectChanged]: Workspace.Workspace.Project | null;
-    [Events.RequestsForHeaderOverridesFileChanged]: Workspace.UISourceCode.UISourceCode;
-    [Events.LocalOverridesProjectUpdated]: boolean;
+    [Events.PROJECT_CHANGED]: Workspace.Workspace.Project | null;
+    [Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED]: Workspace.UISourceCode.UISourceCode;
+    [Events.LOCAL_OVERRIDES_PROJECT_UPDATED]: boolean;
 };
 export interface HeaderOverride {
     applyTo: string;

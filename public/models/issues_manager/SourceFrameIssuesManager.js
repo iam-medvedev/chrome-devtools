@@ -14,8 +14,8 @@ export class SourceFrameIssuesManager {
     #sourceFrameMessageManager = new Bindings.PresentationConsoleMessageHelper.PresentationSourceFrameMessageManager();
     constructor(issuesManager) {
         this.issuesManager = issuesManager;
-        this.issuesManager.addEventListener("IssueAdded" /* Events.IssueAdded */, this.#onIssueAdded, this);
-        this.issuesManager.addEventListener("FullUpdateRequired" /* Events.FullUpdateRequired */, this.#onFullUpdateRequired, this);
+        this.issuesManager.addEventListener("IssueAdded" /* Events.ISSUE_ADDED */, this.#onIssueAdded, this);
+        this.issuesManager.addEventListener("FullUpdateRequired" /* Events.FULL_UPDATE_REQUIRED */, this.#onFullUpdateRequired, this);
     }
     #onIssueAdded(event) {
         const { issue } = event.data;
@@ -72,7 +72,7 @@ export class SourceFrameIssuesManager {
 export class IssueMessage extends Workspace.UISourceCode.Message {
     #kind;
     constructor(title, kind, clickHandler) {
-        super("Issue" /* Workspace.UISourceCode.Message.Level.Issue */, title, clickHandler);
+        super("Issue" /* Workspace.UISourceCode.Message.Level.ISSUE */, title, clickHandler);
         this.#kind = kind;
     }
     getIssueKind() {

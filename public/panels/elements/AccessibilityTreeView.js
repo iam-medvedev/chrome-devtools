@@ -137,10 +137,10 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
         void this.refreshAccessibilityTree();
     }
     modelAdded(model) {
-        model.addEventListener("TreeUpdated" /* SDK.AccessibilityModel.Events.TreeUpdated */, this.treeUpdated, this);
+        model.addEventListener("TreeUpdated" /* SDK.AccessibilityModel.Events.TREE_UPDATED */, this.treeUpdated, this);
     }
     modelRemoved(model) {
-        model.removeEventListener("TreeUpdated" /* SDK.AccessibilityModel.Events.TreeUpdated */, this.treeUpdated, this);
+        model.removeEventListener("TreeUpdated" /* SDK.AccessibilityModel.Events.TREE_UPDATED */, this.treeUpdated, this);
     }
 }
 //# sourceMappingURL=AccessibilityTreeView.js.map

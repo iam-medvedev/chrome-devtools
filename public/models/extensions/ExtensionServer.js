@@ -39,6 +39,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as HAR from '../har/har.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { ExtensionButton, ExtensionPanel, ExtensionSidebarPane } from './ExtensionPanel.js';
 import { HostUrlPattern } from './HostUrlPattern.js';
@@ -211,7 +212,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     dispose() {
         ThemeSupport.ThemeSupport.instance().removeEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
         // Set up by this.initExtensions in the constructor.
-        SDK.TargetManager.TargetManager.instance().removeEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.inspectedURLChanged, this);
+        SDK.TargetManager.TargetManager.instance().removeEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, this.inspectedURLChanged, this);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(Host.InspectorFrontendHostAPI.Events.SetInspectedTabId, this.setInspectedTabId, this);
         window.removeEventListener('message', this.onWindowMessage, false);
     }
@@ -811,8 +812,14 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             this.dispatchCallback(message.requestId, port, this.status.E_FAILED('Permission denied'));
             return undefined;
         }
-        const { content, isEncoded } = await contentProvider.requestContent();
-        this.dispatchCallback(message.requestId, port, { encoding: isEncoded ? 'base64' : '', content: content });
+        const contentData = await contentProvider.requestContentData();
+        if (TextUtils.ContentData.ContentData.isError(contentData)) {
+            this.dispatchCallback(message.requestId, port, { encoding: '', content: null });
+            return;
+        }
+        const encoding = !contentData.isTextContent ? 'base64' : '';
+        const content = contentData.isTextContent ? contentData.text : contentData.base64;
+        this.dispatchCallback(message.requestId, port, { encoding, content });
     }
     onGetRequestContent(message, port) {
         if (message.command !== "getRequestContent" /* PrivateAPI.Commands.GetRequestContent */) {
@@ -928,7 +935,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.registerSubscriptionHandler("panel-objectSelected-" /* PrivateAPI.Events.PanelObjectSelected */ + 'elements', onElementsSubscriptionStarted.bind(this), onElementsSubscriptionStopped.bind(this));
         this.registerResourceContentCommittedHandler(this.notifyUISourceCodeContentCommitted);
-        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.inspectedURLChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, this.inspectedURLChanged, this);
     }
     notifyResourceAdded(event) {
         const uiSourceCode = event.data;

@@ -22,7 +22,7 @@ export class ClientHintIssue extends Issue {
         this.issueDetails = issueDetails;
     }
     getCategory() {
-        return "Other" /* IssueCategory.Other */;
+        return "Other" /* IssueCategory.OTHER */;
     }
     details() {
         return this.issueDetails;
@@ -41,7 +41,7 @@ export class ClientHintIssue extends Issue {
         return JSON.stringify(this.issueDetails);
     }
     getKind() {
-        return "BreakingChange" /* IssueKind.BreakingChange */;
+        return "BreakingChange" /* IssueKind.BREAKING_CHANGE */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const details = inspectorIssue.details.clientHintIssueDetails;

@@ -108,11 +108,11 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const GET_EXTENSIONS_MENU_ITEM = 'get-extensions-link';
 const GET_EXTENSIONS_URL = 'https://goo.gle/recorder-extension-list';
 const CONVERTER_ID_TO_METRIC = {
-    ["json" /* Models.ConverterIds.ConverterIds.JSON */]: 2 /* Host.UserMetrics.RecordingExported.ToJSON */,
-    ["@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */]: 3 /* Host.UserMetrics.RecordingExported.ToPuppeteerReplay */,
-    ["puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */]: 1 /* Host.UserMetrics.RecordingExported.ToPuppeteer */,
-    ["puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */]: 1 /* Host.UserMetrics.RecordingExported.ToPuppeteer */,
-    ["lighthouse" /* Models.ConverterIds.ConverterIds.Lighthouse */]: 5 /* Host.UserMetrics.RecordingExported.ToLighthouse */,
+    ["json" /* Models.ConverterIds.ConverterIds.JSON */]: 2 /* Host.UserMetrics.RecordingExported.TO_JSON */,
+    ["@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */]: 3 /* Host.UserMetrics.RecordingExported.TO_PUPPETEER_REPLAY */,
+    ["puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */]: 1 /* Host.UserMetrics.RecordingExported.TO_PUPPETEER */,
+    ["puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */]: 1 /* Host.UserMetrics.RecordingExported.TO_PUPPETEER */,
+    ["lighthouse" /* Models.ConverterIds.ConverterIds.Lighthouse */]: 5 /* Host.UserMetrics.RecordingExported.TO_LIGHTHOUSE */,
 };
 let RecorderController = class RecorderController extends LitElement {
     static styles = [recorderControllerStyles];
@@ -311,11 +311,11 @@ let RecorderController = class RecorderController extends LitElement {
             return;
         }
         const pluginManager = PublicExtensions.RecorderPluginManager.RecorderPluginManager.instance();
-        const promise = pluginManager.once("showViewRequested" /* PublicExtensions.RecorderPluginManager.Events.ShowViewRequested */);
+        const promise = pluginManager.once("showViewRequested" /* PublicExtensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED */);
         extension.replay(this.currentRecording.flow);
         const descriptor = await promise;
         this.viewDescriptor = descriptor;
-        Host.userMetrics.recordingReplayStarted(3 /* Host.UserMetrics.RecordingReplayStarted.ReplayViaExtension */);
+        Host.userMetrics.recordingReplayStarted(3 /* Host.UserMetrics.RecordingReplayStarted.REPLAY_VIA_EXTENSION */);
     }
     async #onPlayRecording(event) {
         if (!this.currentRecording || !this.#replayAllowed) {
@@ -328,8 +328,8 @@ let RecorderController = class RecorderController extends LitElement {
             return this.#onPlayViaExtension(event.data.extension);
         }
         Host.userMetrics.recordingReplayStarted(event.data.targetPanel !== "chrome-recorder" /* Components.RecordingView.TargetPanel.Default */ ?
-            2 /* Host.UserMetrics.RecordingReplayStarted.ReplayWithPerformanceTracing */ :
-            1 /* Host.UserMetrics.RecordingReplayStarted.ReplayOnly */);
+            2 /* Host.UserMetrics.RecordingReplayStarted.REPLAY_WITH_PERFORMANCE_TRACING */ :
+            1 /* Host.UserMetrics.RecordingReplayStarted.REPLAY_ONLY */);
         this.#replayState.isPlaying = true;
         this.currentStep = undefined;
         this.recordingError = undefined;
@@ -369,13 +369,13 @@ let RecorderController = class RecorderController extends LitElement {
             this.lastReplayResult = "Failure" /* Models.RecordingPlayer.ReplayResult.Failure */;
             const errorMessage = error.message.toLowerCase();
             if (errorMessage.startsWith('could not find element')) {
-                Host.userMetrics.recordingReplayFinished(2 /* Host.UserMetrics.RecordingReplayFinished.TimeoutErrorSelectors */);
+                Host.userMetrics.recordingReplayFinished(2 /* Host.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_SELECTORS */);
             }
             else if (errorMessage.startsWith('waiting for target failed')) {
-                Host.userMetrics.recordingReplayFinished(3 /* Host.UserMetrics.RecordingReplayFinished.TimeoutErrorTarget */);
+                Host.userMetrics.recordingReplayFinished(3 /* Host.UserMetrics.RecordingReplayFinished.TIMEOUT_ERROR_TARGET */);
             }
             else {
-                Host.userMetrics.recordingReplayFinished(4 /* Host.UserMetrics.RecordingReplayFinished.OtherError */);
+                Host.userMetrics.recordingReplayFinished(4 /* Host.UserMetrics.RecordingReplayFinished.OTHER_ERROR */);
             }
         });
         this.recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.Done */, () => {
@@ -386,7 +386,7 @@ let RecorderController = class RecorderController extends LitElement {
             this.lastReplayResult = "Success" /* Models.RecordingPlayer.ReplayResult.Success */;
             // Dispatch an event for e2e testing.
             this.dispatchEvent(new Events.ReplayFinishedEvent());
-            Host.userMetrics.recordingReplayFinished(1 /* Host.UserMetrics.RecordingReplayFinished.Success */);
+            Host.userMetrics.recordingReplayFinished(1 /* Host.UserMetrics.RecordingReplayFinished.SUCCESS */);
         });
         this.recordingPlayer.addEventListener("Abort" /* Models.RecordingPlayer.Events.Abort */, () => {
             this.currentStep = undefined;
@@ -514,7 +514,7 @@ let RecorderController = class RecorderController extends LitElement {
         const indexToInsertAt = currentIndex + (position === "before" /* Components.StepView.AddStepPosition.BEFORE */ ? 0 : 1);
         steps.splice(indexToInsertAt, 0, { type: Models.Schema.StepType.WaitForElement, selectors: ['body'] });
         const recording = { ...this.currentRecording, flow: { ...this.currentRecording.flow, steps } };
-        Host.userMetrics.recordingEdited(2 /* Host.UserMetrics.RecordingEdited.StepAdded */);
+        Host.userMetrics.recordingEdited(2 /* Host.UserMetrics.RecordingEdited.STEP_ADDED */);
         this.#stepBreakpointIndexes = new Set([...this.#stepBreakpointIndexes.values()].map(breakpointIndex => {
             if (indexToInsertAt > breakpointIndex) {
                 return breakpointIndex;
@@ -538,7 +538,7 @@ let RecorderController = class RecorderController extends LitElement {
         const currentIndex = steps.indexOf(event.step);
         steps.splice(currentIndex, 1);
         const flow = { ...this.currentRecording.flow, steps };
-        Host.userMetrics.recordingEdited(3 /* Host.UserMetrics.RecordingEdited.StepRemoved */);
+        Host.userMetrics.recordingEdited(3 /* Host.UserMetrics.RecordingEdited.STEP_REMOVED */);
         this.#stepBreakpointIndexes = new Set([...this.#stepBreakpointIndexes.values()]
             .map(breakpointIndex => {
             if (currentIndex > breakpointIndex) {
@@ -627,7 +627,7 @@ let RecorderController = class RecorderController extends LitElement {
         this.isToggling = true;
         this.#clearError();
         // -- Recording logic starts here --
-        Host.userMetrics.recordingToggled(1 /* Host.UserMetrics.RecordingToggled.RecordingStarted */);
+        Host.userMetrics.recordingToggled(1 /* Host.UserMetrics.RecordingToggled.RECORDING_STARTED */);
         this.currentRecordingSession = new Models.RecordingSession.RecordingSession(this.#getMainTarget(), {
             title: event.name,
             selectorAttribute: event.selectorAttribute,
@@ -688,7 +688,7 @@ let RecorderController = class RecorderController extends LitElement {
         this.isToggling = true;
         this.#clearError();
         // -- Recording logic starts here --
-        Host.userMetrics.recordingToggled(2 /* Host.UserMetrics.RecordingToggled.RecordingFinished */);
+        Host.userMetrics.recordingToggled(2 /* Host.UserMetrics.RecordingToggled.RECORDING_FINISHED */);
         await this.currentRecordingSession.stop();
         this.currentRecordingSession = undefined;
         // -- Recording logic ends here --
@@ -743,7 +743,7 @@ let RecorderController = class RecorderController extends LitElement {
             Host.userMetrics.recordingExported(builtInMetric);
         }
         else if (converter.getId().startsWith(Converters.ExtensionConverter.EXTENSION_PREFIX)) {
-            Host.userMetrics.recordingExported(4 /* Host.UserMetrics.RecordingExported.ToExtension */);
+            Host.userMetrics.recordingExported(4 /* Host.UserMetrics.RecordingExported.TO_EXTENSION */);
         }
         else {
             throw new Error('Could not find a metric for the export option with id = ' + id);
@@ -771,7 +771,7 @@ let RecorderController = class RecorderController extends LitElement {
         const flow = this.currentRecordingSession.cloneUserFlow();
         flow.steps.push({ type: 'waitForElement', selectors: [['.cls']] });
         this.#setCurrentRecording(await this.#storage.updateRecording(this.currentRecording.storageName, flow), { keepBreakpoints: true, updateSession: true });
-        Host.userMetrics.recordingAssertion(1 /* Host.UserMetrics.RecordingAssertion.AssertionAdded */);
+        Host.userMetrics.recordingAssertion(1 /* Host.UserMetrics.RecordingAssertion.ASSERTION_ADDED */);
         await this.updateComplete;
         this.renderRoot.querySelector('devtools-recording-view')
             ?.shadowRoot?.querySelector('.section:last-child devtools-step-view:last-of-type')

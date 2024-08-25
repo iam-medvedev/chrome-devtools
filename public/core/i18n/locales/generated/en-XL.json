@@ -360,10 +360,10 @@
     "message": "T̂h́îś ĉóôḱîé îś âĺl̂óŵéd̂ b́ŷ t́ĥé t̂óp̂-ĺêv́êĺ Ŝt́ôŕâǵê Áĉćêśŝ ÁP̂Í. L̂éâŕn̂ ḿôŕê: ǵôó.ĝĺê/śâá-t̂óp̂"
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonTPCDDeprecationTrial": {
-    "message": "T̂h́îś ĉóôḱîé îś âĺl̂óŵéd̂ b́ŷ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íê ṕĥáŝéôút̂ d́êṕr̂éĉát̂íôń t̂ŕîál̂. Ĺêár̂ń m̂ór̂é: ĝóô.ǵl̂é/p̂ś-d̂t́."
+    "message": "T̂h́îś ĉóôḱîé îś âĺl̂óŵéd̂ b́ŷ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íê d́êṕr̂éĉát̂íôń t̂ŕîál̂. Ĺêár̂ń m̂ór̂é: ĝóô.ǵl̂é/p̂ś-d̂t́."
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonTPCDHeuristics": {
-    "message": "T̂h́îś ĉóôḱîé îś âĺl̂óŵéd̂ b́ŷ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íê ṕĥáŝéôút̂ h́êúr̂íŝt́îćŝ. Ĺêár̂ń m̂ór̂é: ĝóô.ǵl̂é/ĥb́ê"
+    "message": "T̂h́îś ĉóôḱîé îś âĺl̂óŵéd̂ b́ŷ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íê h́êúr̂íŝt́îćŝ. Ĺêár̂ń m̂ór̂é: ĝóô.ǵl̂é/ĥb́ê"
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonTPCDMetadata": {
     "message": "T̂h́îś ĉóôḱîé îś âĺl̂óŵéd̂ b́ŷ á t̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîé d̂ép̂ŕêćât́îón̂ t́r̂íâĺ ĝŕâćê ṕêŕîód̂. Ĺêár̂ń m̂ór̂é: ĝóô.ǵl̂é/d̂t́-ĝŕâćê."
@@ -411,7 +411,7 @@
     "message": "T̂h́ê śĉh́êḿê óf̂ t́ĥíŝ ćôńn̂éĉt́îón̂ íŝ ńôt́ âĺl̂óŵéd̂ t́ô śt̂ór̂é ĉóôḱîéŝ."
   },
   "core/sdk/NetworkRequest.ts | thirdPartyPhaseout": {
-    "message": "T̂h́îś ĉóôḱîé ŵáŝ b́l̂óĉḱêd́ d̂úê t́ô t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íê ṕĥáŝéôút̂. Ĺêár̂ń m̂ór̂é îń t̂h́ê Íŝśûéŝ t́âb́."
+    "message": "T̂h́îś ĉóôḱîé ŵáŝ b́l̂óĉḱêd́ êít̂h́êŕ b̂éĉáûśê óf̂ Ćĥŕôḿê f́l̂áĝś ôŕ b̂ŕôẃŝér̂ ćôńf̂íĝúr̂át̂íôń. L̂éâŕn̂ ḿôŕê ín̂ t́ĥé Îśŝúêś p̂án̂él̂."
   },
   "core/sdk/NetworkRequest.ts | thisSetcookieDidntSpecifyASamesite": {
     "message": "T̂h́îś Set-Cookie ĥéâd́êŕ d̂íd̂ń't̂ śp̂éĉíf̂ý â \"SameSite\" át̂t́r̂íb̂út̂é, ŵáŝ d́êf́âúl̂t́êd́ t̂ó \"SameSite=Lax\", âńd̂ ẃâś b̂ĺôćk̂éd̂ b́êćâúŝé ît́ ĉám̂é f̂ŕôḿ â ćr̂óŝś-ŝít̂é r̂éŝṕôńŝé ŵh́îćĥ ẃâś n̂ót̂ t́ĥé r̂éŝṕôńŝé t̂ó â t́ôṕ-l̂év̂él̂ ńâv́îǵât́îón̂. T́ĥíŝ ŕêśp̂ón̂śê íŝ ćôńŝíd̂ér̂éd̂ ćr̂óŝś-ŝít̂é b̂éĉáûśê t́ĥé ÛŔL̂ h́âś â d́îf́f̂ér̂én̂t́ ŝćĥém̂é t̂h́âń t̂h́ê ćûŕr̂én̂t́ ŝít̂é."
@@ -435,7 +435,7 @@
     "message": "T̂h́îś ât́t̂ém̂ṕt̂ t́ô śêt́ â ćôók̂íê v́îá â Set-Cookie h́êád̂ér̂ ẃâś b̂ĺôćk̂éd̂ b́êćâúŝé t̂h́ê ćôók̂íê ẃâś t̂óô ĺâŕĝé. T̂h́ê ćôḿb̂ín̂éd̂ śîźê óf̂ t́ĥé n̂ám̂é âńd̂ v́âĺûé m̂úŝt́ b̂é l̂éŝś t̂h́âń ôŕ êq́ûál̂ t́ô 4096 ćĥár̂áĉt́êŕŝ."
   },
   "core/sdk/NetworkRequest.ts | thisSetcookieWasBlockedDueThirdPartyPhaseout": {
-    "message": "Ŝét̂t́îńĝ t́ĥíŝ ćôók̂íê ẃâś b̂ĺôćk̂éd̂ d́ûé t̂ó t̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîé p̂h́âśêóût́. L̂éâŕn̂ ḿôŕê ín̂ t́ĥé Îśŝúêś t̂áb̂."
+    "message": "Ŝét̂t́îńĝ t́ĥíŝ ćôók̂íê ẃâś b̂ĺôćk̂éd̂ éît́ĥér̂ b́êćâúŝé ôf́ Ĉh́r̂óm̂é f̂ĺâǵŝ ór̂ b́r̂óŵśêŕ ĉón̂f́îǵûŕât́îón̂. Ĺêár̂ń m̂ór̂é îń t̂h́ê Íŝśûéŝ ṕâńêĺ."
   },
   "core/sdk/NetworkRequest.ts | thisSetcookieWasBlockedDueToUser": {
     "message": "T̂h́îś ât́t̂ém̂ṕt̂ t́ô śêt́ â ćôók̂íê v́îá â Set-Cookie h́êád̂ér̂ ẃâś b̂ĺôćk̂éd̂ d́ûé t̂ó ûśêŕ p̂ŕêf́êŕêńĉéŝ."
@@ -1440,7 +1440,7 @@
     "message": "T̂ŕûśt̂éd̂ T́ŷṕêś - P̂ól̂íĉý v̂íôĺât́îón̂"
   },
   "models/issues_manager/CookieDeprecationMetadataIssue.ts | thirdPartyPhaseoutExplained": {
-    "message": "P̂ŕêṕâŕê f́ôŕ p̂h́âśîńĝ óût́ t̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîéŝ"
+    "message": "Ĉh́âńĝéŝ t́ô Ćĥŕôḿê'ś t̂ŕêát̂ḿêńt̂ óf̂ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íêś"
   },
   "models/issues_manager/CookieIssue.ts | anInsecure": {
     "message": "âń îńŝéĉúr̂é"
@@ -1449,10 +1449,10 @@
     "message": "â śêćûŕê"
   },
   "models/issues_manager/CookieIssue.ts | consoleTpcdErrorMessage": {
-    "message": "T̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîé îś b̂ĺôćk̂éd̂ ín̂ Ćĥŕôḿê áŝ ṕâŕt̂ óf̂ Ṕr̂ív̂áĉý Ŝán̂d́b̂óx̂."
+    "message": "T̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîé îś b̂ĺôćk̂éd̂ ín̂ Ćĥŕôḿê éît́ĥér̂ b́êćâúŝé ôf́ Ĉh́r̂óm̂é f̂ĺâǵŝ ór̂ b́r̂óŵśêŕ ĉón̂f́îǵûŕât́îón̂."
   },
   "models/issues_manager/CookieIssue.ts | consoleTpcdWarningMessage": {
-    "message": "T̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîé ŵíl̂ĺ b̂é b̂ĺôćk̂éd̂ ín̂ f́ût́ûŕê Ćĥŕôḿê v́êŕŝíôńŝ áŝ ṕâŕt̂ óf̂ Ṕr̂ív̂áĉý Ŝán̂d́b̂óx̂."
+    "message": "Ĉh́r̂óm̂é îś m̂óv̂ín̂ǵ t̂óŵár̂d́ŝ á n̂éŵ éx̂ṕêŕîén̂ćê t́ĥát̂ ĺêt́ŝ ṕêóp̂ĺê ḿâḱê án̂ ín̂f́ôŕm̂éd̂ ćĥóîćê ẃît́ĥ ŕêśp̂éĉt́ t̂ó t̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîéŝ."
   },
   "models/issues_manager/CookieIssue.ts | fileCrosSiteRedirectBug": {
     "message": "F̂íl̂é â b́ûǵ"
@@ -1467,7 +1467,7 @@
     "message": "Ŝám̂éŜít̂é ĉóôḱîéŝ éx̂ṕl̂áîńêd́"
   },
   "models/issues_manager/CookieIssue.ts | thirdPartyPhaseoutExplained": {
-    "message": "P̂ŕêṕâŕê f́ôŕ p̂h́âśîńĝ óût́ t̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîéŝ"
+    "message": "Ĉh́âńĝéŝ t́ô Ćĥŕôḿê'ś t̂ŕêát̂ḿêńt̂ óf̂ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íêś"
   },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Ĉŕôśŝ-Ór̂íĝín̂ Ŕêśôúr̂ćê Śĥár̂ín̂ǵ (CORS)"
@@ -2650,6 +2650,9 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
     "message": "P̂áĝéŝ ćôńt̂áîńîńĝ ṕl̂úĝín̂ś âŕê ńôt́ ĉúr̂ŕêńt̂ĺŷ él̂íĝíb̂ĺê f́ôŕ b̂áĉḱ/f̂ór̂ẃâŕd̂ ćâćĥé."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentDiscarded": {
+    "message": "Ûńd̂éf̂ín̂éd̂"
   },
   "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
     "message": "P̂áĝéŝ t́ĥát̂ úŝé F̂íl̂éĈh́ôóŝér̂ ÁP̂Í âŕê ńôt́ êĺîǵîb́l̂é f̂ór̂ b́âćk̂/f́ôŕŵár̂d́ ĉáĉh́ê."
@@ -8259,7 +8262,7 @@
     "message": "{PH1} + P̂ŕêf́l̂íĝh́t̂"
   },
   "panels/network/NetworkDataGridNode.ts | thirdPartyPhaseout": {
-    "message": "Ĉóôḱîéŝ f́ôŕ t̂h́îś r̂éq̂úêśt̂ ár̂é b̂ĺôćk̂éd̂ d́ûé t̂ó t̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîé p̂h́âśêóût́. L̂éâŕn̂ ḿôŕê ín̂ t́ĥé Îśŝúêś t̂áb̂."
+    "message": "Ĉóôḱîéŝ f́ôŕ t̂h́îś r̂éq̂úêśt̂ ár̂é b̂ĺôćk̂éd̂ éît́ĥér̂ b́êćâúŝé ôf́ Ĉh́r̂óm̂é f̂ĺâǵŝ ór̂ b́r̂óŵśêŕ ĉón̂f́îǵûŕât́îón̂. Ĺêár̂ń m̂ór̂é îń t̂h́ê Íŝśûéŝ ṕâńêĺ."
   },
   "panels/network/NetworkDataGridNode.ts | timeSubtitleTooltipText": {
     "message": "L̂át̂én̂ćŷ (ŕêśp̂ón̂śê ŕêćêív̂éd̂ t́îḿê - śt̂ár̂t́ t̂ím̂é)"
@@ -9175,6 +9178,27 @@
   },
   "panels/performance_monitor/PerformanceMonitor.ts | styleRecalcsSec": {
     "message": "Ŝt́ŷĺê ŕêćâĺĉś / ŝéĉ"
+  },
+  "panels/profiler/HeapDetachedElementsDataGrid.ts | detachedElementsList": {
+    "message": "D̂ét̂áĉh́êd́ êĺêḿêńt̂ś l̂íŝt́"
+  },
+  "panels/profiler/HeapDetachedElementsDataGrid.ts | detachedNodes": {
+    "message": "D̂ét̂áĉh́êd́ n̂ód̂éŝ"
+  },
+  "panels/profiler/HeapDetachedElementsDataGrid.ts | nodeSize": {
+    "message": "N̂ód̂é ĉóûńt̂"
+  },
+  "panels/profiler/HeapDetachedElementsView.ts | detachedElementProfile": {
+    "message": "D̂ét̂áĉh́êd́ êĺêḿêńt̂ś {PH1}"
+  },
+  "panels/profiler/HeapDetachedElementsView.ts | detachedElementsDescription": {
+    "message": "D̂ét̂áĉh́êd́ êĺêḿêńt̂ś ŝh́ôẃŝ ób̂j́êćt̂ś t̂h́ât́ âŕê ŕêt́âín̂éd̂ b́ŷ á ĴŚ r̂éf̂ér̂én̂ćê."
+  },
+  "panels/profiler/HeapDetachedElementsView.ts | detachedElementsTitle": {
+    "message": "D̂ét̂áĉh́êd́ êĺêḿêńt̂ś"
+  },
+  "panels/profiler/HeapDetachedElementsView.ts | startDetachedElements": {
+    "message": "Ôb́t̂áîń d̂ét̂áĉh́êd́ êĺêḿêńt̂ś"
   },
   "panels/profiler/HeapProfilerPanel.ts | revealInSummaryView": {
     "message": "R̂év̂éâĺ îń Ŝúm̂ḿâŕŷ v́îéŵ"
@@ -10911,7 +10935,7 @@
     "message": "Ĝét̂ éx̂ṕl̂án̂át̂íôńŝ án̂d́ âd́d̂ít̂íôńâĺ ĉón̂t́êx́t̂ f́ôŕ ŝt́ŷĺîńĝ b́êh́âv́îór̂ś"
   },
   "panels/settings/AISettingsTab.ts | freestylerSendsData": {
-    "message": "Âńŷ D́ÔḾ ôŕ ĈŚŜ ćôńt̂én̂t́ ôń t̂h́ê ín̂śp̂éĉt́êd́ p̂áĝé m̂áŷ b́ê śêńt̂ t́ô Ǵôóĝĺê t́ô ǵêńêŕât́ê éx̂ṕl̂án̂át̂íôńŝ. T́ĥíŝ d́ât́â ḿâý b̂é ŝéêń b̂ý ĥúm̂án̂ ŕêv́îéŵér̂ś t̂ó îḿp̂ŕôv́ê t́ĥíŝ f́êát̂úr̂é."
+    "message": "Âńŷ d́ât́â t́ĥé îńŝṕêćt̂éd̂ ṕâǵê ćâń âćĉéŝś v̂íâ Ẃêb́ ÂṔÎś m̂áŷ b́ê śêńt̂ t́ô Ǵôóĝĺê t́ô ǵêńêŕât́ê éx̂ṕl̂án̂át̂íôńŝ. T́ĥíŝ d́ât́â ḿâý b̂é ŝéêń b̂ý ĥúm̂án̂ ŕêv́îéŵér̂ś t̂ó îḿp̂ŕôv́ê t́ĥíŝ f́êát̂úr̂é."
   },
   "panels/settings/AISettingsTab.ts | generatedSnippets": {
     "message": "Ûśê ǵêńêŕât́êd́ ĉód̂é ŝńîṕp̂ét̂ś ŵít̂h́ ĉáût́îón̂"
@@ -12431,6 +12455,12 @@
   "panels/timeline/components/insights/LCPPhases.ts | timeToFirstByte": {
     "message": "T̂ím̂é t̂ó f̂ír̂śt̂ b́ŷt́ê"
   },
+  "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavings": {
+    "message": "Êśt̂ śâv́îńĝś: {PH1}"
+  },
+  "panels/timeline/components/insights/Viewport.ts | description": {
+    "message": "Â v́îéŵṕôŕt̂ ḿêt́â él̂ém̂én̂t́ n̂ót̂ ón̂ĺŷ óp̂t́îḿîźêś ŷóûŕ âṕp̂ f́ôŕ m̂ób̂íl̂é ŝćr̂éêń ŝíẑéŝ, b́ût́ âĺŝó [p̂ŕêv́êńt̂ś â 300 ḿîĺl̂íŝéĉón̂d́ d̂él̂áŷ t́ô úŝér̂ ín̂ṕût́](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/)."
+  },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Îńp̂út̂ d́êĺâý"
   },
@@ -12446,12 +12476,6 @@
   "panels/timeline/components/LiveMetricsView.ts | auto": {
     "message": "Âút̂ó ({PH1})"
   },
-  "panels/timeline/components/LiveMetricsView.ts | betweenRange": {
-    "message": "({PH1}-{PH2})"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | clsTitle": {
-    "message": "Ĉúm̂úl̂át̂ív̂é L̂áŷóût́ Ŝh́îf́t̂ (ĆL̂Ś)"
-  },
   "panels/timeline/components/LiveMetricsView.ts | collectionPeriod": {
     "message": "Ĉól̂ĺêćt̂íôń p̂ér̂íôd́:"
   },
@@ -12464,8 +12488,8 @@
   "panels/timeline/components/LiveMetricsView.ts | device": {
     "message": "D̂év̂íĉé: {PH1}"
   },
-  "panels/timeline/components/LiveMetricsView.ts | field75thPercentile": {
-    "message": "F̂íêĺd̂ 75t́ĥ Ṕêŕĉén̂t́îĺê"
+  "panels/timeline/components/LiveMetricsView.ts | disableNetworkCache": {
+    "message": "D̂íŝáb̂ĺê ńêt́ŵór̂ḱ ĉáĉh́ê"
   },
   "panels/timeline/components/LiveMetricsView.ts | fieldData": {
     "message": "F̂íêĺd̂ d́ât́â"
@@ -12473,29 +12497,14 @@
   "panels/timeline/components/LiveMetricsView.ts | fieldDataLink": {
     "message": "f̂íêĺd̂ d́ât́â"
   },
-  "panels/timeline/components/LiveMetricsView.ts | good": {
-    "message": "Ĝóôd́"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | gtRange": {
-    "message": "(>{PH1})"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | inpTitle": {
-    "message": "Îńt̂ér̂áĉt́îón̂ t́ô Ńêx́t̂ Ṕâín̂t́ (ÎŃP̂)"
-  },
   "panels/timeline/components/LiveMetricsView.ts | interactions": {
     "message": "Îńt̂ér̂áĉt́îón̂ś"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | interactToMeasure": {
-    "message": "Îńt̂ér̂áĉt́ ŵít̂h́ t̂h́ê ṕâǵê t́ô ḿêáŝúr̂é ÎŃP̂."
   },
   "panels/timeline/components/LiveMetricsView.ts | lcpElement": {
     "message": "L̂ĆP̂ Él̂ém̂én̂t́"
   },
-  "panels/timeline/components/LiveMetricsView.ts | lcpTitle": {
-    "message": "L̂ár̂ǵêśt̂ Ćôńt̂én̂t́f̂úl̂ Ṕâín̂t́ (L̂ĆP̂)"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | leqRange": {
-    "message": "(≤{PH1})"
+  "panels/timeline/components/LiveMetricsView.ts | learnMoreDevices": {
+    "message": "L̂éâŕn̂ ḿôŕê áb̂óût́ ŝím̂úl̂át̂ín̂ǵ d̂íf̂f́êŕêńt̂ d́êv́îćêś."
   },
   "panels/timeline/components/LiveMetricsView.ts | loadingOption": {
     "message": "{PH1} - L̂óâd́îńĝ…"
@@ -12509,23 +12518,17 @@
   "panels/timeline/components/LiveMetricsView.ts | localMetricsLink": {
     "message": "l̂óĉál̂ ḿêt́r̂íĉś"
   },
-  "panels/timeline/components/LiveMetricsView.ts | localValue": {
-    "message": "L̂óĉál̂"
-  },
   "panels/timeline/components/LiveMetricsView.ts | mobile": {
     "message": "M̂ób̂íl̂é"
   },
   "panels/timeline/components/LiveMetricsView.ts | mostUsersDesktop": {
-    "message": "Â ḿâj́ôŕît́ŷ óf̂ úŝér̂ś âŕê ón̂ d́êśk̂t́ôṕ. T̂ŕŷ ém̂úl̂át̂ín̂ǵ â d́êśk̂t́ôṕ ŵín̂d́ôẃ ŝíẑé t̂h́ât́ m̂át̂ćĥéŝ ŕêál̂ úŝér̂ś."
+    "message": "Â ḿâj́ôŕît́ŷ óf̂ úŝér̂ś âŕê ón̂ d́êśk̂t́ôṕ. T̂ŕŷ śîḿûĺât́îńĝ á d̂éŝḱt̂óp̂ ẃîńd̂óŵ śîźê t́ĥát̂ ḿât́ĉh́êś r̂éâĺ ûśêŕŝ."
   },
   "panels/timeline/components/LiveMetricsView.ts | mostUsersMobile": {
-    "message": "Â ḿâj́ôŕît́ŷ óf̂ úŝér̂ś âŕê ón̂ ḿôb́îĺê. T́r̂ý êḿûĺât́îńĝ á m̂ób̂íl̂é d̂év̂íĉé t̂h́ât́ m̂át̂ćĥéŝ ŕêál̂ úŝér̂ś."
+    "message": "Â ḿâj́ôŕît́ŷ óf̂ úŝér̂ś âŕê ón̂ ḿôb́îĺê. T́r̂ý ŝím̂úl̂át̂ín̂ǵ â ḿôb́îĺê d́êv́îćê t́ĥát̂ ḿât́ĉh́êś r̂éâĺ ûśêŕŝ."
   },
   "panels/timeline/components/LiveMetricsView.ts | needsDataOption": {
     "message": "{PH1} - N̂ó d̂át̂á"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | needsImprovement": {
-    "message": "N̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́"
   },
   "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
     "message": "N̂éx̂t́ ŝt́êṕŝ"
@@ -12535,12 +12538,6 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | originOptionWithKey": {
     "message": "Ôŕîǵîń: {PH1}"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | percentage": {
-    "message": "{PH1}%"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | poor": {
-    "message": "P̂óôŕ"
   },
   "panels/timeline/components/LiveMetricsView.ts | recordingSettings": {
     "message": "R̂éĉór̂d́îńĝ śêt́t̂ín̂ǵŝ"
@@ -12567,7 +12564,7 @@
     "message": "T̂ŕŷ d́îśâb́l̂ín̂ǵ n̂ét̂ẃôŕk̂ t́ĥŕôt́t̂ĺîńĝ t́ô áp̂ṕr̂óx̂ím̂át̂é t̂h́ê ńêt́ŵór̂ḱ l̂át̂én̂ćŷ ḿêáŝúr̂éd̂ b́ŷ ŕêál̂ úŝér̂ś."
   },
   "panels/timeline/components/LiveMetricsView.ts | tryUsingThrottling": {
-    "message": "T̂ŕŷ úŝín̂ǵ {PH1} n̂ét̂ẃôŕk̂ t́ĥŕôt́t̂ĺîńĝ t́ô áp̂ṕr̂óx̂ím̂át̂é t̂h́ê ńêt́ŵór̂ḱ l̂át̂én̂ćŷ ḿêáŝúr̂éd̂ b́ŷ ŕêál̂ úŝér̂ś."
+    "message": "T̂ŕŷ úŝín̂ǵ {PH1} n̂ét̂ẃôŕk̂ t́ĥŕôt́t̂ĺîńĝ t́ô áp̂ṕr̂óx̂ím̂át̂é r̂éâĺ-ûśêŕ n̂ét̂ẃôŕk̂ ĺât́êńĉíêś m̂éâśûŕêd́ ôń t̂h́îś p̂áĝé b̂ý t̂h́ê Ćĥŕôḿê ÚX̂ Ŕêṕôŕt̂."
   },
   "panels/timeline/components/LiveMetricsView.ts | urlOption": {
     "message": "ÛŔL̂"
@@ -12575,11 +12572,50 @@
   "panels/timeline/components/LiveMetricsView.ts | urlOptionWithKey": {
     "message": "ÛŔL̂: {PH1}"
   },
-  "panels/timeline/components/LiveMetricsView.ts | viewCardDetails": {
+  "panels/timeline/components/MetricCard.ts | betweenRange": {
+    "message": "({PH1}-{PH2})"
+  },
+  "panels/timeline/components/MetricCard.ts | clsTitle": {
+    "message": "Ĉúm̂úl̂át̂ív̂é L̂áŷóût́ Ŝh́îf́t̂ (ĆL̂Ś)"
+  },
+  "panels/timeline/components/MetricCard.ts | field75thPercentile": {
+    "message": "F̂íêĺd̂ 75t́ĥ Ṕêŕĉén̂t́îĺê"
+  },
+  "panels/timeline/components/MetricCard.ts | good": {
+    "message": "Ĝóôd́"
+  },
+  "panels/timeline/components/MetricCard.ts | gtRange": {
+    "message": "(>{PH1})"
+  },
+  "panels/timeline/components/MetricCard.ts | inpTitle": {
+    "message": "Îńt̂ér̂áĉt́îón̂ t́ô Ńêx́t̂ Ṕâín̂t́ (ÎŃP̂)"
+  },
+  "panels/timeline/components/MetricCard.ts | interactToMeasure": {
+    "message": "Îńt̂ér̂áĉt́ ŵít̂h́ t̂h́ê ṕâǵê t́ô ḿêáŝúr̂é ÎŃP̂."
+  },
+  "panels/timeline/components/MetricCard.ts | lcpTitle": {
+    "message": "L̂ár̂ǵêśt̂ Ćôńt̂én̂t́f̂úl̂ Ṕâín̂t́ (L̂ĆP̂)"
+  },
+  "panels/timeline/components/MetricCard.ts | leqRange": {
+    "message": "(≤{PH1})"
+  },
+  "panels/timeline/components/MetricCard.ts | localValue": {
+    "message": "L̂óĉál̂"
+  },
+  "panels/timeline/components/MetricCard.ts | needsImprovement": {
+    "message": "N̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́"
+  },
+  "panels/timeline/components/MetricCard.ts | percentage": {
+    "message": "{PH1}%"
+  },
+  "panels/timeline/components/MetricCard.ts | poor": {
+    "message": "P̂óôŕ"
+  },
+  "panels/timeline/components/MetricCard.ts | viewCardDetails": {
     "message": "V̂íêẃ ĉár̂d́ d̂ét̂áîĺŝ"
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodBetterCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂, án̂d́ îś ŝíĝńîf́îćâńt̂ĺŷ b́êt́t̂ér̂ t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ b́êt́t̂ér̂ t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodGoodDetailedCompare": {
     "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. Ád̂d́ît́îón̂ál̂ĺŷ, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} {PH3} íŝ ǵôód̂."
@@ -12597,10 +12633,10 @@
     "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodWorseCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂, án̂d́ îś ŝíĝńîf́îćâńt̂ĺŷ ẃôŕŝé t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ ẃôŕŝé t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementBetterCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂, án̂d́ îś ŝíĝńîf́îćâńt̂ĺŷ b́êt́t̂ér̂ t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ b́êt́t̂ér̂ t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementGoodDetailedCompare": {
     "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. H́ôẃêv́êŕ, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} {PH3} îś ĝóôd́."
@@ -12618,10 +12654,10 @@
     "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementWorseCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂, án̂d́ îś ŝíĝńîf́îćâńt̂ĺŷ ẃôŕŝé t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ ẃôŕŝé t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorBetterCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂, án̂d́ îś ŝíĝńîf́îćâńt̂ĺŷ b́êt́t̂ér̂ t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ b́êt́t̂ér̂ t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorGoodDetailedCompare": {
     "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. H́ôẃêv́êŕ, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} {PH3} îś ĝóôd́."
@@ -12639,7 +12675,7 @@
     "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorWorseCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂, án̂d́ îś ŝíĝńîf́îćâńt̂ĺŷ ẃôŕŝé t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ ẃôŕŝé t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
   },
   "panels/timeline/components/NetworkRequestDetails.ts | contentDownloading": {
     "message": "Ĉón̂t́êńt̂ d́ôẃn̂ĺôád̂ín̂ǵ"
@@ -13295,6 +13331,9 @@
   "panels/timeline/TimelineEventOverview.ts | sSDash": {
     "message": "{PH1} – {PH2}"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | addScriptToIgnoreList": {
+    "message": "Âd́d̂ śĉŕîṕt̂ t́ô íĝńôŕê ĺîśt̂"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | droppedFrame": {
     "message": "D̂ŕôṕp̂éd̂ F́r̂ám̂é"
   },
@@ -13304,11 +13343,29 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | frames": {
     "message": "F̂ŕâḿêś"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | hideChildren": {
+    "message": "Ĥíd̂é ĉh́îĺd̂ŕêń"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | hideFunction": {
+    "message": "Ĥíd̂é f̂ún̂ćt̂íôń"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | hideRepeatingChildren": {
+    "message": "Ĥíd̂é r̂ép̂éât́îńĝ ćĥíl̂d́r̂én̂"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Îd́l̂é F̂ŕâḿê"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "P̂ár̂t́îál̂ĺŷ Ṕr̂éŝén̂t́êd́ F̂ŕâḿê"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | removeScriptFromIgnoreList": {
+    "message": "R̂ém̂óv̂é ŝćr̂íp̂t́ f̂ŕôḿ îǵn̂ór̂é l̂íŝt́"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | resetChildren": {
+    "message": "R̂éŝét̂ ćĥíl̂d́r̂én̂"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | resetTrace": {
+    "message": "R̂éŝét̂ t́r̂áĉé"
   },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} ât́ {PH2}"
@@ -13678,6 +13735,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | currentClusterScore": {
     "message": "Ĉúr̂ŕêńt̂ Ćl̂úŝt́êŕ Ŝćôŕê"
+  },
+  "panels/timeline/TimelineUIUtils.ts | description": {
+    "message": "D̂éŝćr̂íp̂t́îón̂"
   },
   "panels/timeline/TimelineUIUtils.ts | details": {
     "message": "D̂ét̂áîĺŝ"
@@ -14660,9 +14720,6 @@
   "ui/legacy/components/perf_ui/FilmStripView.ts | screenshotForSSelectToView": {
     "message": "Ŝćr̂éêńŝh́ôt́ f̂ór̂ {PH1} - śêĺêćt̂ t́ô v́îéŵ ṕr̂éĉéd̂ín̂ǵ r̂éq̂úêśt̂ś."
   },
-  "ui/legacy/components/perf_ui/FlameChart.ts | addScriptToIgnoreList": {
-    "message": "Âd́d̂ śĉŕîṕt̂ t́ô íĝńôŕê ĺîśt̂"
-  },
   "ui/legacy/components/perf_ui/FlameChart.ts | enterTrackConfigurationMode": {
     "message": "Ĉón̂f́îǵûŕê t́r̂áĉḱŝ…"
   },
@@ -14672,29 +14729,11 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | flameChart": {
     "message": "F̂ĺâḿê Ćĥár̂t́"
   },
-  "ui/legacy/components/perf_ui/FlameChart.ts | hideChildren": {
-    "message": "Ĥíd̂é ĉh́îĺd̂ŕêń"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | hideFunction": {
-    "message": "Ĥíd̂é f̂ún̂ćt̂íôń"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | hideRepeatingChildren": {
-    "message": "Ĥíd̂é r̂ép̂éât́îńĝ ćĥíl̂d́r̂én̂"
-  },
   "ui/legacy/components/perf_ui/FlameChart.ts | labelEntry": {
     "message": "L̂áb̂él̂ én̂t́r̂ý"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | linkEntries": {
     "message": "L̂ín̂ḱ êńt̂ŕîéŝ"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | removeScriptFromIgnoreList": {
-    "message": "R̂ém̂óv̂é ŝćr̂íp̂t́ f̂ŕôḿ îǵn̂ór̂é l̂íŝt́"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | resetChildren": {
-    "message": "R̂éŝét̂ ćĥíl̂d́r̂én̂"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | resetTrace": {
-    "message": "R̂éŝét̂ t́r̂áĉé"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | sCollapsed": {
     "message": "{PH1} ĉól̂ĺâṕŝéd̂"

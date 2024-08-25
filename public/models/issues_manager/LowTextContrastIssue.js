@@ -23,7 +23,7 @@ export class LowTextContrastIssue extends Issue {
         return `${this.code()}-(${this.#issueDetails.violatingNodeId})`;
     }
     getCategory() {
-        return "LowTextContrast" /* IssueCategory.LowTextContrast */;
+        return "LowTextContrast" /* IssueCategory.LOW_TEXT_CONTRAST */;
     }
     details() {
         return this.#issueDetails;
@@ -40,7 +40,7 @@ export class LowTextContrastIssue extends Issue {
         };
     }
     getKind() {
-        return "Improvement" /* IssueKind.Improvement */;
+        return "Improvement" /* IssueKind.IMPROVEMENT */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const lowTextContrastIssueDetails = inspectorIssue.details.lowTextContrastIssueDetails;

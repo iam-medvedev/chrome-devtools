@@ -137,8 +137,8 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
         }
         void this.indexedDBAgent.invoke_enable();
         if (this.storageBucketModel) {
-            this.storageBucketModel.addEventListener("BucketAdded" /* SDK.StorageBucketsModel.Events.BucketAdded */, this.storageBucketAdded, this);
-            this.storageBucketModel.addEventListener("BucketRemoved" /* SDK.StorageBucketsModel.Events.BucketRemoved */, this.storageBucketRemoved, this);
+            this.storageBucketModel.addEventListener("BucketAdded" /* SDK.StorageBucketsModel.Events.BUCKET_ADDED */, this.storageBucketAdded, this);
+            this.storageBucketModel.addEventListener("BucketRemoved" /* SDK.StorageBucketsModel.Events.BUCKET_REMOVED */, this.storageBucketRemoved, this);
             for (const { bucket } of this.storageBucketModel.getBuckets()) {
                 this.addStorageBucket(bucket);
             }
@@ -398,7 +398,7 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
     attributionReportingSourceRegistered(_event) {
     }
 }
-SDK.SDKModel.SDKModel.register(IndexedDBModel, { capabilities: 8192 /* SDK.Target.Capability.Storage */, autostart: false });
+SDK.SDKModel.SDKModel.register(IndexedDBModel, { capabilities: 8192 /* SDK.Target.Capability.STORAGE */, autostart: false });
 export var Events;
 (function (Events) {
     Events["DatabaseAdded"] = "DatabaseAdded";

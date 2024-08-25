@@ -39,8 +39,8 @@ export class SidebarWidget extends UI.Widget.VBox {
         // TODO: automatically select the right tab depending on what content is
         // available to us.
     }
-    setAnnotations(updatedAnnotations) {
-        this.#annotationsView.setAnnotations(updatedAnnotations);
+    setAnnotations(updatedAnnotations, annotationEntryToColorMap) {
+        this.#annotationsView.setAnnotations(updatedAnnotations, annotationEntryToColorMap);
     }
     setTraceParsedData(traceParsedData) {
         this.#insightsView.setTraceParsedData(traceParsedData);
@@ -76,7 +76,8 @@ class AnnotationsView extends UI.Widget.VBox {
         this.element.classList.add('sidebar-annotations');
         this.element.appendChild(this.#component);
     }
-    setAnnotations(annotations) {
+    setAnnotations(annotations, annotationEntryToColorMap) {
+        this.#component.annotationEntryToColorMap = annotationEntryToColorMap;
         this.#component.annotations = annotations;
     }
 }

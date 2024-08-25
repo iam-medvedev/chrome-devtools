@@ -78,12 +78,12 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         // already been preloaded. In such cases, we therefore don't just discard all pageResources, but
         // instead make sure to keep the pageResources for the prerendered target.
         for (const [key, pageResource] of this.#pageResources.entries()) {
-            if ((type === "Activation" /* PrimaryPageChangeType.Activation */) && mainFrameTarget === pageResource.initiator.target) {
+            if ((type === "Activation" /* PrimaryPageChangeType.ACTIVATION */) && mainFrameTarget === pageResource.initiator.target) {
                 keptResources.set(key, pageResource);
             }
         }
         this.#pageResources = keptResources;
-        this.dispatchEventToListeners("Update" /* Events.Update */);
+        this.dispatchEventToListeners("Update" /* Events.UPDATE */);
     }
     getResourcesLoaded() {
         return this.#pageResources;
@@ -158,7 +158,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     resourceLoadedThroughExtension(pageResource) {
         const key = PageResourceLoader.makeExtensionKey(pageResource.url, pageResource.initiator);
         this.#pageResources.set(key, pageResource);
-        this.dispatchEventToListeners("Update" /* Events.Update */);
+        this.dispatchEventToListeners("Update" /* Events.UPDATE */);
     }
     async loadResource(url, initiator) {
         if (isExtensionInitiator(initiator)) {
@@ -167,7 +167,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         const key = PageResourceLoader.makeKey(url, initiator);
         const pageResource = { success: null, size: null, errorMessage: undefined, url, initiator };
         this.#pageResources.set(key, pageResource);
-        this.dispatchEventToListeners("Update" /* Events.Update */);
+        this.dispatchEventToListeners("Update" /* Events.UPDATE */);
         try {
             await this.acquireLoadSlot(initiator.target);
             const resultPromise = this.dispatchLoad(url, initiator);
@@ -191,7 +191,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         }
         finally {
             this.releaseLoadSlot(initiator.target);
-            this.dispatchEventToListeners("Update" /* Events.Update */);
+            this.dispatchEventToListeners("Update" /* Events.UPDATE */);
         }
     }
     async dispatchLoad(url, initiator) {
@@ -209,33 +209,34 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         if (eligibleForLoadFromTarget) {
             try {
                 if (initiator.target) {
-                    Host.userMetrics.developerResourceLoaded(0 /* Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaTarget */);
+                    Host.userMetrics.developerResourceLoaded(0 /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_VIA_TARGET */);
                     const result = await this.loadFromTarget(initiator.target, initiator.frameId, url);
                     return result;
                 }
                 const frame = FrameManager.instance().getFrame(initiator.frameId);
                 if (frame) {
-                    Host.userMetrics.developerResourceLoaded(1 /* Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageViaFrame */);
+                    Host.userMetrics.developerResourceLoaded(1 /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_VIA_FRAME */);
                     const result = await this.loadFromTarget(frame.resourceTreeModel().target(), initiator.frameId, url);
                     return result;
                 }
             }
             catch (e) {
                 if (e instanceof Error) {
-                    Host.userMetrics.developerResourceLoaded(2 /* Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageFailure */);
+                    Host.userMetrics.developerResourceLoaded(2 /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_FAILURE */);
                     failureReason = e.message;
                 }
             }
-            Host.userMetrics.developerResourceLoaded(3 /* Host.UserMetrics.DeveloperResourceLoaded.LoadThroughPageFallback */);
+            Host.userMetrics.developerResourceLoaded(3 /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_FALLBACK */);
         }
         else {
-            const code = getLoadThroughTargetSetting().get() ? 6 /* Host.UserMetrics.DeveloperResourceLoaded.FallbackPerProtocol */ :
-                5 /* Host.UserMetrics.DeveloperResourceLoaded.FallbackPerOverride */;
+            const code = getLoadThroughTargetSetting().get() ?
+                6 /* Host.UserMetrics.DeveloperResourceLoaded.FALLBACK_PER_PROTOCOL */ :
+                5 /* Host.UserMetrics.DeveloperResourceLoaded.FALLBACK_PER_OVERRIDE */;
             Host.userMetrics.developerResourceLoaded(code);
         }
         const result = await MultitargetNetworkManager.instance().loadResource(url);
         if (eligibleForLoadFromTarget && !result.success) {
-            Host.userMetrics.developerResourceLoaded(7 /* Host.UserMetrics.DeveloperResourceLoaded.FallbackFailure */);
+            Host.userMetrics.developerResourceLoaded(7 /* Host.UserMetrics.DeveloperResourceLoaded.FALLBACK_FAILURE */);
         }
         if (failureReason) {
             // In case we have a success, add a note about why the load through the target failed.
@@ -246,24 +247,24 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
     }
     getDeveloperResourceScheme(parsedURL) {
         if (!parsedURL || parsedURL.scheme === '') {
-            return 1 /* Host.UserMetrics.DeveloperResourceScheme.SchemeUnknown */;
+            return 1 /* Host.UserMetrics.DeveloperResourceScheme.UKNOWN */;
         }
         const isLocalhost = parsedURL.host === 'localhost' || parsedURL.host.endsWith('.localhost');
         switch (parsedURL.scheme) {
             case 'file':
-                return 7 /* Host.UserMetrics.DeveloperResourceScheme.SchemeFile */;
+                return 7 /* Host.UserMetrics.DeveloperResourceScheme.FILE */;
             case 'data':
-                return 6 /* Host.UserMetrics.DeveloperResourceScheme.SchemeData */;
+                return 6 /* Host.UserMetrics.DeveloperResourceScheme.DATA */;
             case 'blob':
-                return 8 /* Host.UserMetrics.DeveloperResourceScheme.SchemeBlob */;
+                return 8 /* Host.UserMetrics.DeveloperResourceScheme.BLOB */;
             case 'http':
-                return isLocalhost ? 4 /* Host.UserMetrics.DeveloperResourceScheme.SchemeHttpLocalhost */ :
-                    2 /* Host.UserMetrics.DeveloperResourceScheme.SchemeHttp */;
+                return isLocalhost ? 4 /* Host.UserMetrics.DeveloperResourceScheme.HTTP_LOCALHOST */ :
+                    2 /* Host.UserMetrics.DeveloperResourceScheme.HTTP */;
             case 'https':
-                return isLocalhost ? 5 /* Host.UserMetrics.DeveloperResourceScheme.SchemeHttpsLocalhost */ :
-                    3 /* Host.UserMetrics.DeveloperResourceScheme.SchemeHttps */;
+                return isLocalhost ? 5 /* Host.UserMetrics.DeveloperResourceScheme.HTTPS_LOCALHOST */ :
+                    3 /* Host.UserMetrics.DeveloperResourceScheme.HTTPS */;
         }
-        return 0 /* Host.UserMetrics.DeveloperResourceScheme.SchemeOther */;
+        return 0 /* Host.UserMetrics.DeveloperResourceScheme.OTHER */;
     }
     async loadFromTarget(target, frameId, url) {
         const networkManager = target.model(NetworkManager);

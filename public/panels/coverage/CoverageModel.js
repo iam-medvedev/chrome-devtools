@@ -544,7 +544,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel {
         void fos.close();
     }
 }
-SDK.SDKModel.SDKModel.register(CoverageModel, { capabilities: 0 /* SDK.Target.Capability.None */, autostart: false });
+SDK.SDKModel.SDKModel.register(CoverageModel, { capabilities: 0 /* SDK.Target.Capability.NONE */, autostart: false });
 function locationCompare(a, b) {
     const [aLine, aPos] = a.split(':');
     const [bLine, bPos] = b.split(':');

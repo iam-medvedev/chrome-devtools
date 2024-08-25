@@ -53,24 +53,24 @@ class PreloadingUIUtils {
     static status(status) {
         // See content/public/browser/preloading.h PreloadingAttemptOutcome.
         switch (status) {
-            case "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NotTriggered */:
+            case "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */:
                 return i18nString(UIStrings.statusNotTriggered);
-            case "Pending" /* SDK.PreloadingModel.PreloadingStatus.Pending */:
+            case "Pending" /* SDK.PreloadingModel.PreloadingStatus.PENDING */:
                 return i18nString(UIStrings.statusPending);
-            case "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */:
+            case "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */:
                 return i18nString(UIStrings.statusRunning);
-            case "Ready" /* SDK.PreloadingModel.PreloadingStatus.Ready */:
+            case "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */:
                 return i18nString(UIStrings.statusReady);
-            case "Success" /* SDK.PreloadingModel.PreloadingStatus.Success */:
+            case "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */:
                 return i18nString(UIStrings.statusSuccess);
-            case "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */:
+            case "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */:
                 return i18nString(UIStrings.statusFailure);
             // NotSupported is used to handle unreachable case. For example,
             // there is no code path for
             // PreloadingTriggeringOutcome::kTriggeredButPending in prefetch,
             // which is mapped to NotSupported. So, we regard it as an
             // internal error.
-            case "NotSupported" /* SDK.PreloadingModel.PreloadingStatus.NotSupported */:
+            case "NotSupported" /* SDK.PreloadingModel.PreloadingStatus.NOT_SUPPORTED */:
                 return i18n.i18n.lockedString('Internal error');
         }
     }

@@ -147,7 +147,7 @@ export class BreakpointsSidebarController {
         breakpointsViewControllerInstance = null;
     }
     static targetSupportsIndependentPauseOnExceptionToggles() {
-        const hasNodeTargets = SDK.TargetManager.TargetManager.instance().targets().some(target => target.type() === SDK.Target.Type.Node);
+        const hasNodeTargets = SDK.TargetManager.TargetManager.instance().targets().some(target => target.type() === SDK.Target.Type.NODE);
         return !hasNodeTargets;
     }
     flavorChanged(_object) {

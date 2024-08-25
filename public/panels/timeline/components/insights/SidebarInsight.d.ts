@@ -2,6 +2,7 @@ import type * as Overlays from '../../overlays/overlays.js';
 export interface InsightDetails {
     title: string;
     expanded: boolean;
+    estimatedSavings?: number | undefined;
 }
 export declare class InsightActivated extends Event {
     name: string;

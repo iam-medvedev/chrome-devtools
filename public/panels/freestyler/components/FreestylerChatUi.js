@@ -10,7 +10,7 @@ import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { Step } from '../FreestylerAgent.js';
+import { Step, } from '../FreestylerAgent.js';
 import freestylerChatUiStyles from './freestylerChatUi.css.js';
 import { ProvideFeedback } from './ProvideFeedback.js';
 const DOGFOOD_FEEDBACK_URL = 'https://goo.gle/freestyler-feedback';
@@ -115,6 +115,14 @@ const UIStringsTemp = {
      *@description Button text for "Fix this issue" button
      */
     fixThisIssue: 'Fix this issue',
+    /**
+     *@description The name of the CSS assistant that helps you debug CSS issues
+     */
+    cssAssistant: 'CSS assistant',
+    /**
+     *@description The fallback text when we can't find the user full name
+     */
+    you: 'You',
 };
 // const str_ = i18n.i18n.registerUIStrings('panels/freestyler/components/FreestylerChatUi.ts', UIStrings);
 // const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -237,26 +245,57 @@ export class FreestylerChatUi extends HTMLElement {
     </${MarkdownView.MarkdownView.MarkdownView.litTagName}>`;
         // clang-format on
     }
-    #renderStep(step) {
-        if (step.step === Step.ACTION) {
-            // clang-format off
-            return LitHtml.html `
-        <div class="action-result">
-          <${MarkdownView.CodeBlock.CodeBlock.litTagName}
-            .code=${step.code.trim()}
-            .codeLang=${'js'}
-            .displayToolbar=${false}
-            .displayNotice=${true}
-          ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
-          <div class="js-code-output">${step.output}</div>
-        </div>
-      `;
+    #renderStepDetails(step) {
+        switch (step.step) {
+            case Step.THOUGHT: {
+                const maybeTextWithTitle = step.title ? `**${step.title}**\n\n${step.text}` : step.text;
+                return LitHtml.html `<p>${this.#renderTextAsMarkdown(maybeTextWithTitle)}</p>`;
+            }
+            case Step.ACTION:
+                // clang-format off
+                return LitHtml.html `<div class="action-result">
+              <${MarkdownView.CodeBlock.CodeBlock.litTagName}
+                .code=${step.code.trim()}
+                .codeLang=${'js'}
+                .displayToolbar=${false}
+                .displayNotice=${true}
+              ></${MarkdownView.CodeBlock.CodeBlock.litTagName}>
+              <div class="js-code-output">${step.output}</div>
+            </div>`;
             // clang-format on
         }
-        if (step.step === Step.ERROR) {
-            return LitHtml.html `<p class="error-step">${this.#renderTextAsMarkdown(step.text)}</p>`;
+        // TODO: remove this when adding types
+        return LitHtml.nothing;
+    }
+    #renderStep(step, options) {
+        // TODO: Use correct loading image
+        const iconName = options.showLoading ? 'dots-horizontal' : 'checkmark';
+        const iconClasses = LitHtml.Directives.classMap({
+            'loading': options.showLoading,
+        });
+        switch (step.step) {
+            case Step.ERROR:
+                return LitHtml.html `<p class="error-step">${this.#renderTextAsMarkdown(step.text)}</p>`;
+            case Step.QUERYING:
+            case Step.THOUGHT:
+            case Step.ACTION:
+                // clang-format off
+                return LitHtml.html `
+          <details class="thought" open>
+            <summary>
+              <${IconButton.Icon.Icon.litTagName}
+                class=${iconClasses}
+                .name=${iconName}
+              ></${IconButton.Icon.Icon.litTagName}>
+              ${step.step.toUpperCase()}
+            </summary>
+            ${this.#renderStepDetails(step)}
+          </details>
+        `;
+            // clang-format on
+            case Step.ANSWER:
+                return LitHtml.html `<p class="answer-step">${this.#renderTextAsMarkdown(step.text)}</p>`;
         }
-        return LitHtml.html `<p>${this.#renderTextAsMarkdown(step.text)}</p>`;
     }
     #renderSideEffectConfirmationUi(confirmSideEffectDialog) {
         // clang-format off
@@ -291,7 +330,22 @@ export class FreestylerChatUi extends HTMLElement {
     }
     #renderChatMessage = (message, { isLast }) => {
         if (message.entity === "user" /* ChatMessageEntity.USER */) {
-            return LitHtml.html `<div class="chat-message query" jslog=${VisualLogging.section('question')}>${message.text}</div>`;
+            // TODO(b/359768313):
+            const name = i18nString(UIStringsTemp.you);
+            // clang-format off
+            return LitHtml.html `<div
+        class="chat-message query"
+        jslog=${VisualLogging.section('question')}
+      >
+        <div class="message-info">
+          <img src="data:image/png;base64, ${this.#props.userInfo.accountImage}" alt="Account avatar" />
+          <div class="message-name">
+            <span>${name}</span>
+          </div>
+        </div>
+        <div>${message.text}</div>
+      </div>`;
+            // clang-format on
         }
         const shouldShowFixThisIssueButton = !this.#props.isLoading && isLast && message.suggestingFix;
         const shouldShowRating = !isLast || (!this.#props.confirmSideEffectDialog && isLast);
@@ -299,7 +353,21 @@ export class FreestylerChatUi extends HTMLElement {
         // clang-format off
         return LitHtml.html `
       <div class="chat-message answer" jslog=${VisualLogging.section('answer')}>
-        ${message.steps.map(step => this.#renderStep(step))}
+        <div class="message-info">
+          <${IconButton.Icon.Icon.litTagName}
+            name="pen-spark"
+          ></${IconButton.Icon.Icon.litTagName}>
+          <div class="message-name">
+            <span>${i18nString(UIStringsTemp.cssAssistant)}</span>
+          </div>
+        </div>
+        <div>
+          ${LitHtml.Directives.repeat(message.steps.values(), step => step.id, step => {
+            return this.#renderStep(step, {
+                showLoading: [...message.steps.values()].at(-1) === step && shouldShowLoading,
+            });
+        })}
+        </div>
         ${this.#props.confirmSideEffectDialog && isLast
             ? this.#renderSideEffectConfirmationUi(this.#props.confirmSideEffectDialog)
             : LitHtml.nothing}
@@ -317,9 +385,6 @@ export class FreestylerChatUi extends HTMLElement {
                 >${i18nString(UIStringsTemp.fixThisIssue)}</${Buttons.Button.Button.litTagName}>`
             : LitHtml.nothing}
         </div>
-        ${shouldShowLoading
-            ? LitHtml.html `<div class="chat-loading">Loading...</div>`
-            : LitHtml.nothing}
       </div>
     `;
         // clang-format on
@@ -376,7 +441,9 @@ export class FreestylerChatUi extends HTMLElement {
         return LitHtml.html `
       <div class="messages-scroll-container">
         <div class="messages-container">
-          ${this.#props.messages.map((message, _, array) => this.#renderChatMessage(message, { isLast: array.at(-1) === message }))}
+          ${this.#props.messages.map((message, _, array) => this.#renderChatMessage(message, {
+            isLast: array.at(-1) === message,
+        }))}
         </div>
       </div>
     `;

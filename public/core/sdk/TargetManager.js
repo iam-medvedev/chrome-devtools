@@ -49,17 +49,17 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectedURLChanged(target.inspectedURL() || Platform.DevToolsPath.EmptyUrlString);
-        this.dispatchEventToListeners("InspectedURLChanged" /* Events.InspectedURLChanged */, target);
+        this.dispatchEventToListeners("InspectedURLChanged" /* Events.INSPECTED_URL_CHANGED */, target);
     }
     onNameChange(target) {
-        this.dispatchEventToListeners("NameChanged" /* Events.NameChanged */, target);
+        this.dispatchEventToListeners("NameChanged" /* Events.NAME_CHANGED */, target);
     }
     async suspendAllTargets(reason) {
         if (this.#isSuspended) {
             return;
         }
         this.#isSuspended = true;
-        this.dispatchEventToListeners("SuspendStateChanged" /* Events.SuspendStateChanged */);
+        this.dispatchEventToListeners("SuspendStateChanged" /* Events.SUSPEND_STATE_CHANGED */);
         const suspendPromises = Array.from(this.#targetsInternal.values(), target => target.suspend(reason));
         await Promise.all(suspendPromises);
     }
@@ -68,7 +68,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.#isSuspended = false;
-        this.dispatchEventToListeners("SuspendStateChanged" /* Events.SuspendStateChanged */);
+        this.dispatchEventToListeners("SuspendStateChanged" /* Events.SUSPEND_STATE_CHANGED */);
         const resumePromises = Array.from(this.#targetsInternal.values(), target => target.resume());
         await Promise.all(resumePromises);
     }
@@ -193,7 +193,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         if ((target === target.outermostTarget() &&
-            (target.type() !== TargetType.Frame || target === this.primaryPageTarget())) &&
+            (target.type() !== TargetType.FRAME || target === this.primaryPageTarget())) &&
             !this.#defaultScopeSet) {
             this.setScopeTarget(target);
         }
@@ -237,9 +237,9 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     primaryPageTarget() {
         let target = this.rootTarget();
-        if (target?.type() === TargetType.Tab) {
+        if (target?.type() === TargetType.TAB) {
             target =
-                this.targets().find(t => t.parentTarget() === target && t.type() === TargetType.Frame && !t.targetInfo()?.subtype?.length) ||
+                this.targets().find(t => t.parentTarget() === target && t.type() === TargetType.FRAME && !t.targetInfo()?.subtype?.length) ||
                     null;
         }
         return target;
@@ -252,7 +252,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
             return false;
         }
         if (!this.#browserTargetInternal) {
-            this.#browserTargetInternal = new Target(this, /* #id*/ 'main', /* #name*/ 'browser', TargetType.Browser, /* #parentTarget*/ null, 
+            this.#browserTargetInternal = new Target(this, /* #id*/ 'main', /* #name*/ 'browser', TargetType.BROWSER, /* #parentTarget*/ null, 
             /* #sessionId */ '', /* suspended*/ false, /* #connection*/ null, /* targetInfo*/ undefined);
             this.#browserTargetInternal.createModels(new Set(this.#modelObservers.keysArray()));
         }

@@ -274,8 +274,8 @@ export class DeviceModeToolbar {
         optionsToolbar.makeWrappable();
         this.fillOptionsToolbar(optionsToolbar);
         this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
-        this.emulatedDevicesList.addEventListener("CustomDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.CustomDevicesUpdated */, this.deviceListChanged, this);
-        this.emulatedDevicesList.addEventListener("StandardDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.StandardDevicesUpdated */, this.deviceListChanged, this);
+        this.emulatedDevicesList.addEventListener("CustomDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.CUSTOM_DEVICES_UPDATED */, this.deviceListChanged, this);
+        this.emulatedDevicesList.addEventListener("StandardDevicesUpdated" /* EmulationModel.EmulatedDevices.Events.STANDARD_DEVICES_UPDATED */, this.deviceListChanged, this);
         this.persistenceSetting = Common.Settings.Settings.instance().createSetting('emulation.device-mode-value', { device: '', orientation: '', mode: '' });
         this.model.toolbarControlsEnabledSetting().addChangeListener(updateToolbarsEnabled);
         updateToolbarsEnabled();
@@ -409,8 +409,8 @@ export class DeviceModeToolbar {
     }
     appendDeviceScaleMenuItems(contextMenu) {
         const deviceScaleFactorSetting = this.model.deviceScaleFactorSetting();
-        const defaultValue = this.model.uaSetting().get() === "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */ ||
-            this.model.uaSetting().get() === "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */ ?
+        const defaultValue = this.model.uaSetting().get() === "Mobile" /* EmulationModel.DeviceModeModel.UA.MOBILE */ ||
+            this.model.uaSetting().get() === "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MOBILE_NO_TOUCH */ ?
             EmulationModel.DeviceModeModel.defaultMobileScaleFactor :
             window.devicePixelRatio;
         appendDeviceScaleFactorItem(contextMenu.headerSection(), i18nString(UIStrings.defaultF, { PH1: defaultValue }), 0, 'dpr-default');
@@ -423,10 +423,10 @@ export class DeviceModeToolbar {
     }
     appendUserAgentMenuItems(contextMenu) {
         const uaSetting = this.model.uaSetting();
-        appendUAItem("Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */, "Mobile" /* EmulationModel.DeviceModeModel.UA.Mobile */);
-        appendUAItem("Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */, "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MobileNoTouch */);
-        appendUAItem("Desktop" /* EmulationModel.DeviceModeModel.UA.Desktop */, "Desktop" /* EmulationModel.DeviceModeModel.UA.Desktop */);
-        appendUAItem("Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */, "Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DesktopTouch */);
+        appendUAItem("Mobile" /* EmulationModel.DeviceModeModel.UA.MOBILE */, "Mobile" /* EmulationModel.DeviceModeModel.UA.MOBILE */);
+        appendUAItem("Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MOBILE_NO_TOUCH */, "Mobile (no touch)" /* EmulationModel.DeviceModeModel.UA.MOBILE_NO_TOUCH */);
+        appendUAItem("Desktop" /* EmulationModel.DeviceModeModel.UA.DESKTOP */, "Desktop" /* EmulationModel.DeviceModeModel.UA.DESKTOP */);
+        appendUAItem("Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DESKTOP_TOUCH */, "Desktop (touch)" /* EmulationModel.DeviceModeModel.UA.DESKTOP_TOUCH */);
         function appendUAItem(title, value) {
             contextMenu.defaultSection().appendCheckboxItem(title, uaSetting.set.bind(uaSetting, value), { checked: uaSetting.get() === value, jslogContext: Platform.StringUtilities.toKebabCase(value) });
         }

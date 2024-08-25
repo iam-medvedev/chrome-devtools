@@ -39,7 +39,7 @@ export class UserMetrics {
     }
     panelShown(panelName, isLaunching) {
         const code = PanelCodes[panelName] || 0;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShown" /* EnumeratedHistogram.PanelShown */, code, PanelCodes.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShown" /* EnumeratedHistogram.PanelShown */, code, PanelCodes.MAX_VALUE);
         InspectorFrontendHostInstance.recordUserMetricsAction('DevTools_PanelShown_' + panelName);
         // Store that the user has changed the panel so we know launch histograms should not be fired.
         if (!isLaunching) {
@@ -49,29 +49,29 @@ export class UserMetrics {
     panelShownInLocation(panelName, location) {
         const panelWithLocationName = `${panelName}-${location}`;
         const panelWithLocation = PanelWithLocation[panelWithLocationName] || 0;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShownInLocation" /* EnumeratedHistogram.PanelShownInLocation */, panelWithLocation, PanelWithLocation.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShownInLocation" /* EnumeratedHistogram.PanelShownInLocation */, panelWithLocation, PanelWithLocation.MAX_VALUE);
     }
     sourcesSidebarTabShown(sidebarPaneName) {
         const code = SourcesSidebarTabCodes[sidebarPaneName] || 0;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.Sources.SidebarTabShown" /* EnumeratedHistogram.SourcesSidebarTabShown */, code, SourcesSidebarTabCodes.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.Sources.SidebarTabShown" /* EnumeratedHistogram.SourcesSidebarTabShown */, code, SourcesSidebarTabCodes.MAX_VALUE);
     }
     settingsPanelShown(settingsViewId) {
         this.panelShown('settings-' + settingsViewId);
     }
     sourcesPanelFileDebugged(mediaType) {
         const code = (mediaType && MediaTypes[mediaType]) || MediaTypes.Unknown;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SourcesPanelFileDebugged" /* EnumeratedHistogram.SourcesPanelFileDebugged */, code, MediaTypes.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SourcesPanelFileDebugged" /* EnumeratedHistogram.SourcesPanelFileDebugged */, code, MediaTypes.MAX_VALUE);
     }
     sourcesPanelFileOpened(mediaType) {
         const code = (mediaType && MediaTypes[mediaType]) || MediaTypes.Unknown;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SourcesPanelFileOpened" /* EnumeratedHistogram.SourcesPanelFileOpened */, code, MediaTypes.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SourcesPanelFileOpened" /* EnumeratedHistogram.SourcesPanelFileOpened */, code, MediaTypes.MAX_VALUE);
     }
     networkPanelResponsePreviewOpened(mediaType) {
         const code = (mediaType && MediaTypes[mediaType]) || MediaTypes.Unknown;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.NetworkPanelResponsePreviewOpened" /* EnumeratedHistogram.NetworkPanelResponsePreviewOpened */, code, MediaTypes.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.NetworkPanelResponsePreviewOpened" /* EnumeratedHistogram.NetworkPanelResponsePreviewOpened */, code, MediaTypes.MAX_VALUE);
     }
     actionTaken(action) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ActionTaken" /* EnumeratedHistogram.ActionTaken */, action, Action.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ActionTaken" /* EnumeratedHistogram.ActionTaken */, action, Action.MAX_VALUE);
     }
     panelLoaded(panelName, histogramName) {
         if (this.#firedLaunchHistogram || panelName !== this.#launchPanelName) {
@@ -103,14 +103,14 @@ export class UserMetrics {
     }
     keybindSetSettingChanged(keybindSet) {
         const value = KeybindSetSettings[keybindSet] || 0;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.KeybindSetSettingChanged" /* EnumeratedHistogram.KeybindSetSettingChanged */, value, KeybindSetSettings.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.KeybindSetSettingChanged" /* EnumeratedHistogram.KeybindSetSettingChanged */, value, KeybindSetSettings.MAX_VALUE);
     }
     keyboardShortcutFired(actionId) {
         const action = KeyboardShortcutAction[actionId] || KeyboardShortcutAction.OtherShortcut;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.KeyboardShortcutFired" /* EnumeratedHistogram.KeyboardShortcutFired */, action, KeyboardShortcutAction.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.KeyboardShortcutFired" /* EnumeratedHistogram.KeyboardShortcutFired */, action, KeyboardShortcutAction.MAX_VALUE);
     }
     issuesPanelOpenedFrom(issueOpener) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.IssuesPanelOpenedFrom" /* EnumeratedHistogram.IssuesPanelOpenedFrom */, issueOpener, 6 /* IssueOpener.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.IssuesPanelOpenedFrom" /* EnumeratedHistogram.IssuesPanelOpenedFrom */, issueOpener, 6 /* IssueOpener.MAX_VALUE */);
     }
     issuesPanelIssueExpanded(issueExpandedCategory) {
         if (issueExpandedCategory === undefined) {
@@ -120,7 +120,7 @@ export class UserMetrics {
         if (issueExpanded === undefined) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.IssuesPanelIssueExpanded" /* EnumeratedHistogram.IssuesPanelIssueExpanded */, issueExpanded, IssueExpanded.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.IssuesPanelIssueExpanded" /* EnumeratedHistogram.IssuesPanelIssueExpanded */, issueExpanded, IssueExpanded.MAX_VALUE);
     }
     issuesPanelResourceOpened(issueCategory, type) {
         const key = issueCategory + type;
@@ -128,28 +128,28 @@ export class UserMetrics {
         if (value === undefined) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.IssuesPanelResourceOpened" /* EnumeratedHistogram.IssuesPanelResourceOpened */, value, IssueResourceOpened.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.IssuesPanelResourceOpened" /* EnumeratedHistogram.IssuesPanelResourceOpened */, value, IssueResourceOpened.MAX_VALUE);
     }
     issueCreated(code) {
         const issueCreated = IssueCreated[code];
         if (issueCreated === undefined) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.IssueCreated" /* EnumeratedHistogram.IssueCreated */, issueCreated, IssueCreated.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.IssueCreated" /* EnumeratedHistogram.IssueCreated */, issueCreated, IssueCreated.MAX_VALUE);
     }
     experimentEnabledAtLaunch(experimentId) {
         const experiment = DevtoolsExperiments[experimentId];
         if (experiment === undefined) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ExperimentEnabledAtLaunch" /* EnumeratedHistogram.ExperimentEnabledAtLaunch */, experiment, DevtoolsExperiments.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ExperimentEnabledAtLaunch" /* EnumeratedHistogram.ExperimentEnabledAtLaunch */, experiment, DevtoolsExperiments.MAX_VALUE);
     }
     experimentDisabledAtLaunch(experimentId) {
         const experiment = DevtoolsExperiments[experimentId];
         if (experiment === undefined) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ExperimentDisabledAtLaunch" /* EnumeratedHistogram.ExperimentDisabledAtLaunch */, experiment, DevtoolsExperiments.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ExperimentDisabledAtLaunch" /* EnumeratedHistogram.ExperimentDisabledAtLaunch */, experiment, DevtoolsExperiments.MAX_VALUE);
     }
     experimentChanged(experimentId, isEnabled) {
         const experiment = DevtoolsExperiments[experimentId];
@@ -157,97 +157,97 @@ export class UserMetrics {
             return;
         }
         const actionName = isEnabled ? "DevTools.ExperimentEnabled" /* EnumeratedHistogram.ExperimentEnabled */ : "DevTools.ExperimentDisabled" /* EnumeratedHistogram.ExperimentDisabled */;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram(actionName, experiment, DevtoolsExperiments.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram(actionName, experiment, DevtoolsExperiments.MAX_VALUE);
     }
     developerResourceLoaded(developerResourceLoaded) {
-        if (developerResourceLoaded >= 8 /* DeveloperResourceLoaded.MaxValue */) {
+        if (developerResourceLoaded >= 8 /* DeveloperResourceLoaded.MAX_VALUE */) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.DeveloperResourceLoaded" /* EnumeratedHistogram.DeveloperResourceLoaded */, developerResourceLoaded, 8 /* DeveloperResourceLoaded.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.DeveloperResourceLoaded" /* EnumeratedHistogram.DeveloperResourceLoaded */, developerResourceLoaded, 8 /* DeveloperResourceLoaded.MAX_VALUE */);
     }
     developerResourceScheme(developerResourceScheme) {
-        if (developerResourceScheme >= 9 /* DeveloperResourceScheme.MaxValue */) {
+        if (developerResourceScheme >= 9 /* DeveloperResourceScheme.MAX_VALUE */) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.DeveloperResourceScheme" /* EnumeratedHistogram.DeveloperResourceScheme */, developerResourceScheme, 9 /* DeveloperResourceScheme.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.DeveloperResourceScheme" /* EnumeratedHistogram.DeveloperResourceScheme */, developerResourceScheme, 9 /* DeveloperResourceScheme.MAX_VALUE */);
     }
     language(language) {
         const languageCode = Language[language];
         if (languageCode === undefined) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.Language" /* EnumeratedHistogram.Language */, languageCode, Language.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.Language" /* EnumeratedHistogram.Language */, languageCode, Language.MAX_VALUE);
     }
     syncSetting(devtoolsSyncSettingEnabled) {
         InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
-            let settingValue = 1 /* SyncSetting.ChromeSyncDisabled */;
+            let settingValue = 1 /* SyncSetting.CHROME_SYNC_DISABLED */;
             if (syncInfo.isSyncActive && !syncInfo.arePreferencesSynced) {
-                settingValue = 2 /* SyncSetting.ChromeSyncSettingsDisabled */;
+                settingValue = 2 /* SyncSetting.CHROME_SYNC_SETTINGS_DISABLED */;
             }
             else if (syncInfo.isSyncActive && syncInfo.arePreferencesSynced) {
-                settingValue = devtoolsSyncSettingEnabled ? 4 /* SyncSetting.DevToolsSyncSettingEnabled */ :
-                    3 /* SyncSetting.DevToolsSyncSettingDisabled */;
+                settingValue = devtoolsSyncSettingEnabled ? 4 /* SyncSetting.DEVTOOLS_SYNC_SETTING_ENABLED */ :
+                    3 /* SyncSetting.DEVTOOLS_SYNC_SETTING_DISABLED */;
             }
-            InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SyncSetting" /* EnumeratedHistogram.SyncSetting */, settingValue, 5 /* SyncSetting.MaxValue */);
+            InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SyncSetting" /* EnumeratedHistogram.SyncSetting */, settingValue, 5 /* SyncSetting.MAX_VALUE */);
         });
     }
     recordingAssertion(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingAssertion" /* EnumeratedHistogram.RecordingAssertion */, value, 4 /* RecordingAssertion.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingAssertion" /* EnumeratedHistogram.RecordingAssertion */, value, 4 /* RecordingAssertion.MAX_VALUE */);
     }
     recordingToggled(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingToggled" /* EnumeratedHistogram.RecordingToggled */, value, 3 /* RecordingToggled.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingToggled" /* EnumeratedHistogram.RecordingToggled */, value, 3 /* RecordingToggled.MAX_VALUE */);
     }
     recordingReplayFinished(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingReplayFinished" /* EnumeratedHistogram.RecordingReplayFinished */, value, 5 /* RecordingReplayFinished.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingReplayFinished" /* EnumeratedHistogram.RecordingReplayFinished */, value, 5 /* RecordingReplayFinished.MAX_VALUE */);
     }
     recordingReplaySpeed(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingReplaySpeed" /* EnumeratedHistogram.RecordingReplaySpeed */, value, 5 /* RecordingReplaySpeed.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingReplaySpeed" /* EnumeratedHistogram.RecordingReplaySpeed */, value, 5 /* RecordingReplaySpeed.MAX_VALUE */);
     }
     recordingReplayStarted(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingReplayStarted" /* EnumeratedHistogram.RecordingReplayStarted */, value, 4 /* RecordingReplayStarted.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingReplayStarted" /* EnumeratedHistogram.RecordingReplayStarted */, value, 4 /* RecordingReplayStarted.MAX_VALUE */);
     }
     recordingEdited(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingEdited" /* EnumeratedHistogram.RecordingEdited */, value, 11 /* RecordingEdited.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingEdited" /* EnumeratedHistogram.RecordingEdited */, value, 11 /* RecordingEdited.MAX_VALUE */);
     }
     recordingExported(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingExported" /* EnumeratedHistogram.RecordingExported */, value, 6 /* RecordingExported.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingExported" /* EnumeratedHistogram.RecordingExported */, value, 6 /* RecordingExported.MAX_VALUE */);
     }
     recordingCodeToggled(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingCodeToggled" /* EnumeratedHistogram.RecordingCodeToggled */, value, 3 /* RecordingCodeToggled.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingCodeToggled" /* EnumeratedHistogram.RecordingCodeToggled */, value, 3 /* RecordingCodeToggled.MAX_VALUE */);
     }
     recordingCopiedToClipboard(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingCopiedToClipboard" /* EnumeratedHistogram.RecordingCopiedToClipboard */, value, 9 /* RecordingCopiedToClipboard.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingCopiedToClipboard" /* EnumeratedHistogram.RecordingCopiedToClipboard */, value, 9 /* RecordingCopiedToClipboard.MAX_VALUE */);
     }
     styleTextCopied(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.StyleTextCopied" /* EnumeratedHistogram.StyleTextCopied */, value, 11 /* StyleTextCopied.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.StyleTextCopied" /* EnumeratedHistogram.StyleTextCopied */, value, 11 /* StyleTextCopied.MAX_VALUE */);
     }
     manifestSectionSelected(sectionTitle) {
         const code = ManifestSectionCodes[sectionTitle] || ManifestSectionCodes.OtherSection;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ManifestSectionSelected" /* EnumeratedHistogram.ManifestSectionSelected */, code, ManifestSectionCodes.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ManifestSectionSelected" /* EnumeratedHistogram.ManifestSectionSelected */, code, ManifestSectionCodes.MAX_VALUE);
     }
     cssHintShown(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSHintShown" /* EnumeratedHistogram.CSSHintShown */, type, 14 /* CSSHintType.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSHintShown" /* EnumeratedHistogram.CSSHintShown */, type, 14 /* CSSHintType.MAX_VALUE */);
     }
     lighthouseModeRun(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseModeRun" /* EnumeratedHistogram.LighthouseModeRun */, type, 4 /* LighthouseModeRun.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseModeRun" /* EnumeratedHistogram.LighthouseModeRun */, type, 4 /* LighthouseModeRun.MAX_VALUE */);
     }
     lighthouseCategoryUsed(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseCategoryUsed" /* EnumeratedHistogram.LighthouseCategoryUsed */, type, 6 /* LighthouseCategoryUsed.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseCategoryUsed" /* EnumeratedHistogram.LighthouseCategoryUsed */, type, 6 /* LighthouseCategoryUsed.MAX_VALUE */);
     }
     colorPickerOpenedFrom(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ColorPickerOpenedFrom" /* EnumeratedHistogram.ColorPickerOpenedFrom */, type, 2 /* ColorPickerOpenedFrom.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ColorPickerOpenedFrom" /* EnumeratedHistogram.ColorPickerOpenedFrom */, type, 2 /* ColorPickerOpenedFrom.MAX_VALUE */);
     }
     cssPropertyDocumentation(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSPropertyDocumentation" /* EnumeratedHistogram.CSSPropertyDocumentation */, type, 3 /* CSSPropertyDocumentation.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSPropertyDocumentation" /* EnumeratedHistogram.CSSPropertyDocumentation */, type, 3 /* CSSPropertyDocumentation.MAX_VALUE */);
     }
     swatchActivated(swatch) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 11 /* SwatchType.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 11 /* SwatchType.MAX_VALUE */);
     }
     animationPlaybackRateChanged(playbackRate) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.AnimationPlaybackRateChanged" /* EnumeratedHistogram.AnimationPlaybackRateChanged */, playbackRate, 4 /* AnimationsPlaybackRate.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.AnimationPlaybackRateChanged" /* EnumeratedHistogram.AnimationPlaybackRateChanged */, playbackRate, 4 /* AnimationsPlaybackRate.MAX_VALUE */);
     }
     animationPointDragged(dragType) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.AnimationPointDragged" /* EnumeratedHistogram.AnimationPointDragged */, dragType, 5 /* AnimationPointDragType.MaxValue */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.AnimationPointDragged" /* EnumeratedHistogram.AnimationPointDragged */, dragType, 5 /* AnimationPointDragType.MAX_VALUE */);
     }
     workspacesPopulated(wallClockTimeInMilliseconds) {
         InspectorFrontendHostInstance.recordPerformanceHistogram('DevTools.Workspaces.PopulateWallClocktime', wallClockTimeInMilliseconds);
@@ -256,55 +256,56 @@ export class UserMetrics {
         InspectorFrontendHostInstance.recordPerformanceHistogram('DevTools.VisualLogging.ProcessingTime', timeInMilliseconds);
     }
     legacyResourceTypeFilterNumberOfSelectedChanged(itemCount) {
-        const boundItemCount = Math.max(Math.min(itemCount, ResourceType.MaxValue - 1), 1);
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LegacyResourceTypeFilterNumberOfSelectedChanged" /* EnumeratedHistogram.LegacyResourceTypeFilterNumberOfSelectedChanged */, boundItemCount, ResourceType.MaxValue);
+        const boundItemCount = Math.max(Math.min(itemCount, ResourceType.MAX_VALUE - 1), 1);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LegacyResourceTypeFilterNumberOfSelectedChanged" /* EnumeratedHistogram.LegacyResourceTypeFilterNumberOfSelectedChanged */, boundItemCount, ResourceType.MAX_VALUE);
     }
     legacyResourceTypeFilterItemSelected(resourceTypeName) {
         const resourceType = ResourceType[resourceTypeName];
         if (resourceType === undefined) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LegacyResourceTypeFilterItemSelected" /* EnumeratedHistogram.LegacyResourceTypeFilterItemSelected */, resourceType, ResourceType.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LegacyResourceTypeFilterItemSelected" /* EnumeratedHistogram.LegacyResourceTypeFilterItemSelected */, resourceType, ResourceType.MAX_VALUE);
     }
     resourceTypeFilterNumberOfSelectedChanged(itemCount) {
-        const boundItemCount = Math.max(Math.min(itemCount, ResourceType.MaxValue - 1), 1);
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ResourceTypeFilterNumberOfSelectedChanged" /* EnumeratedHistogram.ResourceTypeFilterNumberOfSelectedChanged */, boundItemCount, ResourceType.MaxValue);
+        const boundItemCount = Math.max(Math.min(itemCount, ResourceType.MAX_VALUE - 1), 1);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ResourceTypeFilterNumberOfSelectedChanged" /* EnumeratedHistogram.ResourceTypeFilterNumberOfSelectedChanged */, boundItemCount, ResourceType.MAX_VALUE);
     }
     resourceTypeFilterItemSelected(resourceTypeName) {
         const resourceType = ResourceType[resourceTypeName];
         if (resourceType === undefined) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ResourceTypeFilterItemSelected" /* EnumeratedHistogram.ResourceTypeFilterItemSelected */, resourceType, ResourceType.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.ResourceTypeFilterItemSelected" /* EnumeratedHistogram.ResourceTypeFilterItemSelected */, resourceType, ResourceType.MAX_VALUE);
     }
     networkPanelMoreFiltersNumberOfSelectedChanged(itemCount) {
-        const boundItemCount = Math.max(Math.min(itemCount, NetworkPanelMoreFilters.MaxValue), 0);
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.NetworkPanelMoreFiltersNumberOfSelectedChanged" /* EnumeratedHistogram.NetworkPanelMoreFiltersNumberOfSelectedChanged */, boundItemCount, NetworkPanelMoreFilters.MaxValue);
+        const boundItemCount = Math.max(Math.min(itemCount, NetworkPanelMoreFilters.MAX_VALUE), 0);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.NetworkPanelMoreFiltersNumberOfSelectedChanged" /* EnumeratedHistogram.NetworkPanelMoreFiltersNumberOfSelectedChanged */, boundItemCount, NetworkPanelMoreFilters.MAX_VALUE);
     }
     networkPanelMoreFiltersItemSelected(filterName) {
         const filter = NetworkPanelMoreFilters[filterName];
         if (filter === undefined) {
             return;
         }
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.NetworkPanelMoreFiltersItemSelected" /* EnumeratedHistogram.NetworkPanelMoreFiltersItemSelected */, filter, NetworkPanelMoreFilters.MaxValue);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.NetworkPanelMoreFiltersItemSelected" /* EnumeratedHistogram.NetworkPanelMoreFiltersItemSelected */, filter, NetworkPanelMoreFilters.MAX_VALUE);
     }
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that
  * values have been removed, which results in gaps in the sequence of values.
  * When adding a new value:
- * 1. Add an entry to the bottom of the enum before 'MaxValue'.
- * 2. Set the value of the new entry to the current value of 'MaxValue'.
- * 2. Increment the value of 'MaxValue' by 1.
+ * 1. Add an entry to the bottom of the enum before 'MAX_VALUE'.
+ * 2. Set the value of the new entry to the current value of 'MAX_VALUE'.
+ * 2. Increment the value of 'MAX_VALUE' by 1.
  * When removing a value which is no longer needed:
  * 1. Delete the line with the unneeded value
- * 2. Do not update any 'MaxValue' or any other value.
+ * 2. Do not update any 'MAX_VALUE' or any other value.
  */
 // Codes below are used to collect UMA histograms in the Chromium port.
 // Do not change the values below, additional actions are needed on the Chromium side
 // in order to add more codes.
 export var Action;
 (function (Action) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     Action[Action["WindowDocked"] = 1] = "WindowDocked";
     Action[Action["WindowUndocked"] = 2] = "WindowUndocked";
     Action[Action["ScriptsBreakpointSet"] = 3] = "ScriptsBreakpointSet";
@@ -461,11 +462,12 @@ export var Action;
     Action[Action["InsightsOnboardingNextPage"] = 157] = "InsightsOnboardingNextPage";
     Action[Action["InsightsOnboardingPrevPage"] = 158] = "InsightsOnboardingPrevPage";
     Action[Action["InsightsOnboardingFeatureDisabled"] = 159] = "InsightsOnboardingFeatureDisabled";
-    Action[Action["MaxValue"] = 160] = "MaxValue";
+    Action[Action["MAX_VALUE"] = 160] = "MAX_VALUE";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
-/* eslint-disable @typescript-eslint/naming-convention */
 export var PanelCodes;
 (function (PanelCodes) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     PanelCodes[PanelCodes["elements"] = 1] = "elements";
     PanelCodes[PanelCodes["resources"] = 2] = "resources";
     PanelCodes[PanelCodes["network"] = 3] = "network";
@@ -532,12 +534,12 @@ export var PanelCodes;
     PanelCodes[PanelCodes["bounce-tracking-mitigations"] = 65] = "bounce-tracking-mitigations";
     PanelCodes[PanelCodes["developer-resources"] = 66] = "developer-resources";
     PanelCodes[PanelCodes["autofill-view"] = 67] = "autofill-view";
-    PanelCodes[PanelCodes["MaxValue"] = 68] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    PanelCodes[PanelCodes["MAX_VALUE"] = 68] = "MAX_VALUE";
 })(PanelCodes || (PanelCodes = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/naming-convention */
 export var PanelWithLocation;
 (function (PanelWithLocation) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     PanelWithLocation[PanelWithLocation["elements-main"] = 1] = "elements-main";
     PanelWithLocation[PanelWithLocation["elements-drawer"] = 2] = "elements-drawer";
     PanelWithLocation[PanelWithLocation["resources-main"] = 3] = "resources-main";
@@ -668,12 +670,12 @@ export var PanelWithLocation;
     PanelWithLocation[PanelWithLocation["developer-resources-drawer"] = 130] = "developer-resources-drawer";
     PanelWithLocation[PanelWithLocation["autofill-view-main"] = 131] = "autofill-view-main";
     PanelWithLocation[PanelWithLocation["autofill-view-drawer"] = 132] = "autofill-view-drawer";
-    PanelWithLocation[PanelWithLocation["MaxValue"] = 133] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    PanelWithLocation[PanelWithLocation["MAX_VALUE"] = 133] = "MAX_VALUE";
 })(PanelWithLocation || (PanelWithLocation = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/naming-convention */
 export var ElementsSidebarTabCodes;
 (function (ElementsSidebarTabCodes) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     ElementsSidebarTabCodes[ElementsSidebarTabCodes["OtherSidebarPane"] = 0] = "OtherSidebarPane";
     ElementsSidebarTabCodes[ElementsSidebarTabCodes["styles"] = 1] = "styles";
     ElementsSidebarTabCodes[ElementsSidebarTabCodes["computed"] = 2] = "computed";
@@ -682,24 +684,24 @@ export var ElementsSidebarTabCodes;
     ElementsSidebarTabCodes[ElementsSidebarTabCodes["elements.dom-breakpoints"] = 5] = "elements.dom-breakpoints";
     ElementsSidebarTabCodes[ElementsSidebarTabCodes["elements.dom-properties"] = 6] = "elements.dom-properties";
     ElementsSidebarTabCodes[ElementsSidebarTabCodes["accessibility.view"] = 7] = "accessibility.view";
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["MaxValue"] = 8] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    ElementsSidebarTabCodes[ElementsSidebarTabCodes["MAX_VALUE"] = 8] = "MAX_VALUE";
 })(ElementsSidebarTabCodes || (ElementsSidebarTabCodes = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/naming-convention */
 export var SourcesSidebarTabCodes;
 (function (SourcesSidebarTabCodes) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     SourcesSidebarTabCodes[SourcesSidebarTabCodes["OtherSidebarPane"] = 0] = "OtherSidebarPane";
     SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-network"] = 1] = "navigator-network";
     SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-files"] = 2] = "navigator-files";
     SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-overrides"] = 3] = "navigator-overrides";
     SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-content-scripts"] = 4] = "navigator-content-scripts";
     SourcesSidebarTabCodes[SourcesSidebarTabCodes["navigator-snippets"] = 5] = "navigator-snippets";
-    SourcesSidebarTabCodes[SourcesSidebarTabCodes["MaxValue"] = 6] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    SourcesSidebarTabCodes[SourcesSidebarTabCodes["MAX_VALUE"] = 6] = "MAX_VALUE";
 })(SourcesSidebarTabCodes || (SourcesSidebarTabCodes = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/naming-convention */
 export var MediaTypes;
 (function (MediaTypes) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     MediaTypes[MediaTypes["Unknown"] = 0] = "Unknown";
     MediaTypes[MediaTypes["text/css"] = 2] = "text/css";
     MediaTypes[MediaTypes["text/html"] = 3] = "text/html";
@@ -737,19 +739,20 @@ export var MediaTypes;
     MediaTypes[MediaTypes["text/x.vue"] = 35] = "text/x.vue";
     MediaTypes[MediaTypes["text/javascript+snippet"] = 36] = "text/javascript+snippet";
     MediaTypes[MediaTypes["text/javascript+eval"] = 37] = "text/javascript+eval";
-    MediaTypes[MediaTypes["MaxValue"] = 38] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    MediaTypes[MediaTypes["MAX_VALUE"] = 38] = "MAX_VALUE";
 })(MediaTypes || (MediaTypes = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/naming-convention */
 export var KeybindSetSettings;
 (function (KeybindSetSettings) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     KeybindSetSettings[KeybindSetSettings["devToolsDefault"] = 0] = "devToolsDefault";
     KeybindSetSettings[KeybindSetSettings["vsCode"] = 1] = "vsCode";
-    KeybindSetSettings[KeybindSetSettings["MaxValue"] = 2] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    KeybindSetSettings[KeybindSetSettings["MAX_VALUE"] = 2] = "MAX_VALUE";
 })(KeybindSetSettings || (KeybindSetSettings = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
 export var KeyboardShortcutAction;
 (function (KeyboardShortcutAction) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     KeyboardShortcutAction[KeyboardShortcutAction["OtherShortcut"] = 0] = "OtherShortcut";
     KeyboardShortcutAction[KeyboardShortcutAction["quick-open.show-command-menu"] = 1] = "quick-open.show-command-menu";
     KeyboardShortcutAction[KeyboardShortcutAction["console.clear"] = 2] = "console.clear";
@@ -868,15 +871,16 @@ export var KeyboardShortcutAction;
     KeyboardShortcutAction[KeyboardShortcutAction["elements.refresh-event-listeners"] = 115] = "elements.refresh-event-listeners";
     KeyboardShortcutAction[KeyboardShortcutAction["coverage.clear"] = 116] = "coverage.clear";
     KeyboardShortcutAction[KeyboardShortcutAction["coverage.export"] = 117] = "coverage.export";
-    KeyboardShortcutAction[KeyboardShortcutAction["MaxValue"] = 118] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    KeyboardShortcutAction[KeyboardShortcutAction["MAX_VALUE"] = 118] = "MAX_VALUE";
 })(KeyboardShortcutAction || (KeyboardShortcutAction = {}));
 /**
  * This list should contain the currently active Devtools Experiments,
  * gaps are expected.
  */
-/* eslint-disable @typescript-eslint/naming-convention */
 export var DevtoolsExperiments;
 (function (DevtoolsExperiments) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     DevtoolsExperiments[DevtoolsExperiments["apply-custom-stylesheet"] = 0] = "apply-custom-stylesheet";
     DevtoolsExperiments[DevtoolsExperiments["capture-node-creation-stacks"] = 1] = "capture-node-creation-stacks";
     DevtoolsExperiments[DevtoolsExperiments["live-heap-profile"] = 11] = "live-heap-profile";
@@ -913,12 +917,14 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-observations"] = 96] = "timeline-observations";
     DevtoolsExperiments[DevtoolsExperiments["gen-ai-settings-panel"] = 97] = "gen-ai-settings-panel";
     DevtoolsExperiments[DevtoolsExperiments["timeline-server-timings"] = 98] = "timeline-server-timings";
+    /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MaxValue"] = 99] = "MaxValue";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 99] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;
 (function (IssueExpanded) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     IssueExpanded[IssueExpanded["CrossOriginEmbedderPolicy"] = 0] = "CrossOriginEmbedderPolicy";
     IssueExpanded[IssueExpanded["MixedContent"] = 1] = "MixedContent";
     IssueExpanded[IssueExpanded["SameSiteCookie"] = 2] = "SameSiteCookie";
@@ -928,10 +934,12 @@ export var IssueExpanded;
     IssueExpanded[IssueExpanded["Generic"] = 6] = "Generic";
     IssueExpanded[IssueExpanded["ThirdPartyPhaseoutCookie"] = 7] = "ThirdPartyPhaseoutCookie";
     IssueExpanded[IssueExpanded["GenericCookie"] = 8] = "GenericCookie";
-    IssueExpanded[IssueExpanded["MaxValue"] = 9] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    IssueExpanded[IssueExpanded["MAX_VALUE"] = 9] = "MAX_VALUE";
 })(IssueExpanded || (IssueExpanded = {}));
 export var IssueResourceOpened;
 (function (IssueResourceOpened) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     IssueResourceOpened[IssueResourceOpened["CrossOriginEmbedderPolicyRequest"] = 0] = "CrossOriginEmbedderPolicyRequest";
     IssueResourceOpened[IssueResourceOpened["CrossOriginEmbedderPolicyElement"] = 1] = "CrossOriginEmbedderPolicyElement";
     IssueResourceOpened[IssueResourceOpened["MixedContentRequest"] = 2] = "MixedContentRequest";
@@ -940,7 +948,8 @@ export var IssueResourceOpened;
     IssueResourceOpened[IssueResourceOpened["HeavyAdElement"] = 5] = "HeavyAdElement";
     IssueResourceOpened[IssueResourceOpened["ContentSecurityPolicyDirective"] = 6] = "ContentSecurityPolicyDirective";
     IssueResourceOpened[IssueResourceOpened["ContentSecurityPolicyElement"] = 7] = "ContentSecurityPolicyElement";
-    IssueResourceOpened[IssueResourceOpened["MaxValue"] = 13] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    IssueResourceOpened[IssueResourceOpened["MAX_VALUE"] = 13] = "MAX_VALUE";
 })(IssueResourceOpened || (IssueResourceOpened = {}));
 /**
  * This list should contain the currently active issue types,
@@ -948,6 +957,7 @@ export var IssueResourceOpened;
  */
 export var IssueCreated;
 (function (IssueCreated) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     IssueCreated[IssueCreated["MixedContentIssue"] = 0] = "MixedContentIssue";
     IssueCreated[IssueCreated["ContentSecurityPolicyIssue::kInlineViolation"] = 1] = "ContentSecurityPolicyIssue::kInlineViolation";
     IssueCreated[IssueCreated["ContentSecurityPolicyIssue::kEvalViolation"] = 2] = "ContentSecurityPolicyIssue::kEvalViolation";
@@ -1029,13 +1039,13 @@ export var IssueCreated;
     IssueCreated[IssueCreated["CookieIssue::WarnThirdPartyPhaseout::SetCookie"] = 83] = "CookieIssue::WarnThirdPartyPhaseout::SetCookie";
     IssueCreated[IssueCreated["CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie"] = 84] = "CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie";
     IssueCreated[IssueCreated["CookieIssue::ExcludeThirdPartyPhaseout::SetCookie"] = 85] = "CookieIssue::ExcludeThirdPartyPhaseout::SetCookie";
-    IssueCreated[IssueCreated["MaxValue"] = 86] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    IssueCreated[IssueCreated["MAX_VALUE"] = 86] = "MAX_VALUE";
 })(IssueCreated || (IssueCreated = {}));
 export var ResourceType;
 (function (ResourceType) {
-    /* eslint-disable @typescript-eslint/naming-convention */
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     ResourceType[ResourceType["all"] = 0] = "all";
-    /* eslint-enable @typescript-eslint/naming-convention */
     ResourceType[ResourceType["Document"] = 1] = "Document";
     ResourceType[ResourceType["JavaScript"] = 2] = "JavaScript";
     ResourceType[ResourceType["Fetch and XHR"] = 3] = "Fetch and XHR";
@@ -1047,22 +1057,23 @@ export var ResourceType;
     ResourceType[ResourceType["WebSocket"] = 9] = "WebSocket";
     ResourceType[ResourceType["WebAssembly"] = 10] = "WebAssembly";
     ResourceType[ResourceType["Other"] = 11] = "Other";
-    ResourceType[ResourceType["MaxValue"] = 12] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    ResourceType[ResourceType["MAX_VALUE"] = 12] = "MAX_VALUE";
 })(ResourceType || (ResourceType = {}));
-/* eslint-disable @typescript-eslint/naming-convention */
 export var NetworkPanelMoreFilters;
 (function (NetworkPanelMoreFilters) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     NetworkPanelMoreFilters[NetworkPanelMoreFilters["Hide data URLs"] = 0] = "Hide data URLs";
     NetworkPanelMoreFilters[NetworkPanelMoreFilters["Hide extension URLs"] = 1] = "Hide extension URLs";
     NetworkPanelMoreFilters[NetworkPanelMoreFilters["Blocked response cookies"] = 2] = "Blocked response cookies";
     NetworkPanelMoreFilters[NetworkPanelMoreFilters["Blocked requests"] = 3] = "Blocked requests";
     NetworkPanelMoreFilters[NetworkPanelMoreFilters["3rd-party requests"] = 4] = "3rd-party requests";
-    NetworkPanelMoreFilters[NetworkPanelMoreFilters["MaxValue"] = 5] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    NetworkPanelMoreFilters[NetworkPanelMoreFilters["MAX_VALUE"] = 5] = "MAX_VALUE";
 })(NetworkPanelMoreFilters || (NetworkPanelMoreFilters = {}));
-/* eslint-enable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/naming-convention */
 export var Language;
 (function (Language) {
+    /* eslint-disable @typescript-eslint/naming-convention */
     Language[Language["af"] = 1] = "af";
     Language[Language["am"] = 2] = "am";
     Language[Language["ar"] = 3] = "ar";
@@ -1145,16 +1156,19 @@ export var Language;
     Language[Language["zh-HK"] = 80] = "zh-HK";
     Language[Language["zh-TW"] = 81] = "zh-TW";
     Language[Language["zu"] = 82] = "zu";
-    Language[Language["MaxValue"] = 83] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    Language[Language["MAX_VALUE"] = 83] = "MAX_VALUE";
 })(Language || (Language = {}));
 export var ManifestSectionCodes;
 (function (ManifestSectionCodes) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Indexed access. */
     ManifestSectionCodes[ManifestSectionCodes["OtherSection"] = 0] = "OtherSection";
     ManifestSectionCodes[ManifestSectionCodes["Identity"] = 1] = "Identity";
     ManifestSectionCodes[ManifestSectionCodes["Presentation"] = 2] = "Presentation";
     ManifestSectionCodes[ManifestSectionCodes["Protocol Handlers"] = 3] = "Protocol Handlers";
     ManifestSectionCodes[ManifestSectionCodes["Icons"] = 4] = "Icons";
     ManifestSectionCodes[ManifestSectionCodes["Window Controls Overlay"] = 5] = "Window Controls Overlay";
-    ManifestSectionCodes[ManifestSectionCodes["MaxValue"] = 6] = "MaxValue";
+    /* eslint-enable @typescript-eslint/naming-convention */
+    ManifestSectionCodes[ManifestSectionCodes["MAX_VALUE"] = 6] = "MAX_VALUE";
 })(ManifestSectionCodes || (ManifestSectionCodes = {}));
 //# sourceMappingURL=UserMetrics.js.map

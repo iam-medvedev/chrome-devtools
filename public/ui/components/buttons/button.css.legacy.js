@@ -239,7 +239,8 @@ button {
     z-index: 1;
 
     &.toolbar,
-    &.icon {
+    &.icon,
+    &.reduced-focus-ring {
       outline-offset: -2px;
     }
   }

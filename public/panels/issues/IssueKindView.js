@@ -32,22 +32,22 @@ export function issueKindViewSortPriority(a, b) {
     if (a.getKind() === b.getKind()) {
         return 0;
     }
-    if (a.getKind() === "PageError" /* IssuesManager.Issue.IssueKind.PageError */) {
+    if (a.getKind() === "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */) {
         return -1;
     }
-    if (a.getKind() === "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */ &&
-        b.getKind() === "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */) {
+    if (a.getKind() === "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */ &&
+        b.getKind() === "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */) {
         return -1;
     }
     return 1;
 }
 export function getClassNameFromKind(kind) {
     switch (kind) {
-        case "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */:
+        case "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */:
             return 'breaking-changes';
-        case "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */:
+        case "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */:
             return 'improvements';
-        case "PageError" /* IssuesManager.Issue.IssueKind.PageError */:
+        case "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */:
             return 'page-errors';
     }
 }
@@ -68,11 +68,11 @@ export class IssueKindView extends UI.TreeOutline.TreeElement {
     }
     getHideAllCurrentKindString() {
         switch (this.#kind) {
-            case "PageError" /* IssuesManager.Issue.IssueKind.PageError */:
+            case "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */:
                 return i18nString(UIStrings.hideAllCurrentPageErrors);
-            case "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */:
+            case "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */:
                 return i18nString(UIStrings.hideAllCurrentImprovements);
-            case "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */:
+            case "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */:
                 return i18nString(UIStrings.hideAllCurrentBreakingChanges);
         }
     }
@@ -101,7 +101,7 @@ export class IssueKindView extends UI.TreeOutline.TreeElement {
                 const values = setting.get();
                 for (const issue of IssuesManager.IssuesManager.IssuesManager.instance().issues()) {
                     if (issue.getKind() === this.#kind) {
-                        values[issue.code()] = "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */;
+                        values[issue.code()] = "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */;
                     }
                 }
                 setting.set(values);

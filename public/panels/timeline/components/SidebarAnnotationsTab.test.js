@@ -42,21 +42,28 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
             },
             label: 'Labelled Time Range',
         };
+        const colorsMap = new Map([
+            [entryLabelAnnotation.entry, 'rgb(82, 252, 3)'],
+            [entryLabelAnnotation2.entry, '#fc039d'],
+        ]);
         component.annotations = [entryLabelAnnotation, entryLabelAnnotation2, labelledTimeRangeAnnotation];
+        component.annotationEntryToColorMap = colorsMap;
         assert.isNotNull(component.shadowRoot);
         await coordinator.done();
         const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
         assert.isNotNull(annotationsWrapperElement);
         const deleteButton = component.shadowRoot.querySelector('.bin-icon');
         assert.isNotNull(deleteButton);
-        // Ensure annotations names and labels are rendered for all 3 annotations -
+        // Ensure annotations identifiers and labels are rendered for all 3 annotations -
         // 2 entry labels and 1 labelled time range
-        const annotationEntryNameElements = component.shadowRoot.querySelectorAll('.entry-name');
-        assert.strictEqual(annotationEntryNameElements.length, 3);
+        const annotationEntryIdentifierElements = component.shadowRoot.querySelectorAll('.annotation-identifier');
+        assert.strictEqual(annotationEntryIdentifierElements.length, 3);
         const annotationEntryLabelElements = component.shadowRoot.querySelectorAll('.label');
-        assert.strictEqual(annotationEntryNameElements.length, 3);
+        assert.strictEqual(annotationEntryIdentifierElements.length, 3);
         assert.strictEqual(annotationEntryLabelElements[0].innerText, 'Entry Label 1');
+        assert.strictEqual(annotationEntryIdentifierElements[0].style['backgroundColor'], 'rgb(82, 252, 3)');
         assert.strictEqual(annotationEntryLabelElements[1].innerText, 'Entry Label 2');
+        assert.strictEqual(annotationEntryIdentifierElements[1].style['backgroundColor'], 'rgb(252, 3, 157)');
         assert.strictEqual(annotationEntryLabelElements[2].innerText, 'Labelled Time Range');
     });
     it('dispatches RemoveAnnotation Events when delete annotation button is clicked', async function () {
@@ -103,11 +110,11 @@ describeWithEnvironment('SidebarAnnotationsTab', () => {
         await coordinator.done();
         const annotationsWrapperElement = component.shadowRoot.querySelector('.annotations');
         assert.isNotNull(annotationsWrapperElement);
-        // Ensure there are 2 labels and their entry names and labels and rendered
-        const annotationNameElements = component.shadowRoot.querySelectorAll('.entry-name');
-        assert.strictEqual(annotationNameElements.length, 2);
+        // Ensure there are 2 labels and their entry identifiers and labels and rendered
+        const annotationIdentifierElements = component.shadowRoot.querySelectorAll('.annotation-identifier');
+        assert.strictEqual(annotationIdentifierElements.length, 2);
         let annotationLabelElements = component.shadowRoot.querySelectorAll('.label');
-        assert.strictEqual(annotationNameElements.length, 2);
+        assert.strictEqual(annotationIdentifierElements.length, 2);
         assert.strictEqual(annotationLabelElements[0].innerText, 'Entry Label 1');
         assert.strictEqual(annotationLabelElements[1].innerText, 'Entry Label 2');
         // Update the labels and add a range annotation

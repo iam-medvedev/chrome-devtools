@@ -28,11 +28,11 @@ export declare class HeapProfilerModel extends SDKModel<EventTypes> {
     resetProfiles(): void;
 }
 export declare const enum Events {
-    HeapStatsUpdate = "HeapStatsUpdate",
-    LastSeenObjectId = "LastSeenObjectId",
-    AddHeapSnapshotChunk = "AddHeapSnapshotChunk",
-    ReportHeapSnapshotProgress = "ReportHeapSnapshotProgress",
-    ResetProfiles = "ResetProfiles"
+    HEAP_STATS_UPDATED = "HeapStatsUpdate",
+    LAST_SEEN_OBJECT_ID = "LastSeenObjectId",
+    ADD_HEAP_SNAPSHOT_CHUNK = "AddHeapSnapshotChunk",
+    REPORT_HEAP_SNAPSHOT_PROGRESS = "ReportHeapSnapshotProgress",
+    RESET_PROFILES = "ResetProfiles"
 }
 /**
  * An array of triplets. Each triplet describes a fragment. The first number is the fragment
@@ -50,11 +50,11 @@ export interface HeapSnapshotProgress {
     finished?: boolean;
 }
 export type EventTypes = {
-    [Events.HeapStatsUpdate]: HeapStatsUpdateSamples;
-    [Events.LastSeenObjectId]: LastSeenObjectId;
-    [Events.AddHeapSnapshotChunk]: string;
-    [Events.ReportHeapSnapshotProgress]: HeapSnapshotProgress;
-    [Events.ResetProfiles]: HeapProfilerModel;
+    [Events.HEAP_STATS_UPDATED]: HeapStatsUpdateSamples;
+    [Events.LAST_SEEN_OBJECT_ID]: LastSeenObjectId;
+    [Events.ADD_HEAP_SNAPSHOT_CHUNK]: string;
+    [Events.REPORT_HEAP_SNAPSHOT_PROGRESS]: HeapSnapshotProgress;
+    [Events.RESET_PROFILES]: HeapProfilerModel;
 };
 export interface NativeProfilerCallFrame {
     functionName: string;

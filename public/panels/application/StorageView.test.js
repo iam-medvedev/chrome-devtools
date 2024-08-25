@@ -15,7 +15,7 @@ describeWithMockConnection('StorageView', () => {
     let domStorageModel;
     let storageKeyManager;
     beforeEach(() => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
         domStorageModel = target.model(Resources.DOMStorageModel.DOMStorageModel);
@@ -27,7 +27,7 @@ describeWithMockConnection('StorageView', () => {
         assert.exists(domStorageModel);
         assert.isEmpty(domStorageModel.storages());
         assert.exists(storageKeyManager);
-        storageKeyManager.dispatchEventToListeners("StorageKeyAdded" /* SDK.StorageKeyManager.Events.StorageKeyAdded */, testKey);
+        storageKeyManager.dispatchEventToListeners("StorageKeyAdded" /* SDK.StorageKeyManager.Events.STORAGE_KEY_ADDED */, testKey);
         assert.exists(domStorageModel.storageForId(testId));
         const dispatcherSpy = sinon.spy(domStorageModel, 'dispatchEventToListeners');
         const spyClearDataForStorageKey = sinon.stub(target.storageAgent(), 'invoke_clearDataForStorageKey');
@@ -42,7 +42,7 @@ describeWithMockConnection('StorageView', () => {
         assert.exists(domStorageModel);
         assert.exists(storageKeyManager);
         const view = new Resources.StorageView.StorageView();
-        storageKeyManager.dispatchEventToListeners("MainStorageKeyChanged" /* SDK.StorageKeyManager.Events.MainStorageKeyChanged */, { mainStorageKey: testKey });
+        storageKeyManager.dispatchEventToListeners("MainStorageKeyChanged" /* SDK.StorageKeyManager.Events.MAIN_STORAGE_KEY_CHANGED */, { mainStorageKey: testKey });
         const subtitle = view.element.shadowRoot?.querySelector('div.flex-auto')?.shadowRoot?.querySelector('div.report-subtitle');
         assert.strictEqual(subtitle?.textContent, testKey);
     });
@@ -112,7 +112,7 @@ describeWithMockConnection('StorageView', () => {
         sinon.stub(target.cacheStorageAgent(), 'invoke_requestCacheNames').resolves({ caches, getError: () => undefined });
         cacheStorageModel.enable();
         const cacheAddedPromise = new Promise(resolve => {
-            cacheStorageModel.addEventListener("CacheAdded" /* SDK.ServiceWorkerCacheModel.Events.CacheAdded */, () => {
+            cacheStorageModel.addEventListener("CacheAdded" /* SDK.ServiceWorkerCacheModel.Events.CACHE_ADDED */, () => {
                 resolve();
             });
         });

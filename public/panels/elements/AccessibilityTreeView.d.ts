@@ -15,7 +15,7 @@ export declare class AccessibilityTreeView extends UI.Widget.VBox implements SDK
     loadSubTreeIntoAccessibilityModel(selectedNode: SDK.DOMModel.DOMNode): Promise<void>;
     revealAndSelectNode(inspectedNode: SDK.DOMModel.DOMNode): Promise<void>;
     selectedNodeChanged(inspectedNode: SDK.DOMModel.DOMNode): Promise<void>;
-    treeUpdated({ data }: Common.EventTarget.EventTargetEvent<SDK.AccessibilityModel.EventTypes[SDK.AccessibilityModel.Events.TreeUpdated]>): void;
+    treeUpdated({ data }: Common.EventTarget.EventTargetEvent<SDK.AccessibilityModel.EventTypes[SDK.AccessibilityModel.Events.TREE_UPDATED]>): void;
     modelAdded(model: SDK.AccessibilityModel.AccessibilityModel): void;
     modelRemoved(model: SDK.AccessibilityModel.AccessibilityModel): void;
 }

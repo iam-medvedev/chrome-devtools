@@ -10,7 +10,7 @@ export class StubIssue extends Issue {
     locations = [];
     mockIssueId;
     mockIssueCategory;
-    constructor(code, requestIds, cookieNames, issueKind = "Improvement" /* IssueKind.Improvement */) {
+    constructor(code, requestIds, cookieNames, issueKind = "Improvement" /* IssueKind.IMPROVEMENT */) {
         super(code);
         this.requestIds = requestIds;
         this.cookieNames = cookieNames;
@@ -31,7 +31,7 @@ export class StubIssue extends Issue {
         });
     }
     getCategory() {
-        return this.mockIssueCategory ? this.mockIssueCategory : "Other" /* IssueCategory.Other */;
+        return this.mockIssueCategory ? this.mockIssueCategory : "Other" /* IssueCategory.OTHER */;
     }
     sources() {
         return this.locations;
@@ -68,7 +68,7 @@ export class StubIssue extends Issue {
     }
     static createCookieIssue(code) {
         const issue = new StubIssue(code, [], []);
-        issue.mockIssueCategory = "Cookie" /* IssueCategory.Cookie */;
+        issue.mockIssueCategory = "Cookie" /* IssueCategory.COOKIE */;
         return issue;
     }
 }

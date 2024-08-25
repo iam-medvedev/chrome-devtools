@@ -53,10 +53,10 @@ export class RemoteObject {
         if (typeof object === 'number') {
             const description = String(object);
             if (object === 0 && 1 / object < 0) {
-                return "-0" /* UnserializableNumber.Negative0 */;
+                return "-0" /* UnserializableNumber.NEGATIVE_ZERO */;
             }
-            if (description === "NaN" /* UnserializableNumber.NaN */ || description === "Infinity" /* UnserializableNumber.Infinity */ ||
-                description === "-Infinity" /* UnserializableNumber.NegativeInfinity */) {
+            if (description === "NaN" /* UnserializableNumber.NAN */ || description === "Infinity" /* UnserializableNumber.INFINITY */ ||
+                description === "-Infinity" /* UnserializableNumber.NEGATIVE_INFINITY */) {
                 return description;
             }
         }
@@ -261,10 +261,10 @@ export class RemoteObjectImpl extends RemoteObject {
             this.hasChildrenInternal = false;
             if (typeof unserializableValue === 'string') {
                 this.#unserializableValueInternal = unserializableValue;
-                if (unserializableValue === "Infinity" /* UnserializableNumber.Infinity */ ||
-                    unserializableValue === "-Infinity" /* UnserializableNumber.NegativeInfinity */ ||
-                    unserializableValue === "-0" /* UnserializableNumber.Negative0 */ ||
-                    unserializableValue === "NaN" /* UnserializableNumber.NaN */) {
+                if (unserializableValue === "Infinity" /* UnserializableNumber.INFINITY */ ||
+                    unserializableValue === "-Infinity" /* UnserializableNumber.NEGATIVE_INFINITY */ ||
+                    unserializableValue === "-0" /* UnserializableNumber.NEGATIVE_ZERO */ ||
+                    unserializableValue === "NaN" /* UnserializableNumber.NAN */) {
                     this.#valueInternal = Number(unserializableValue);
                 }
                 else if (type === 'bigint' && unserializableValue.endsWith('n')) {

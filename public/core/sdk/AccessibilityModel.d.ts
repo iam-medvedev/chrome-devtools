@@ -4,10 +4,10 @@ import { DeferredDOMNode, type DOMNode } from './DOMModel.js';
 import { type Target } from './Target.js';
 import { SDKModel } from './SDKModel.js';
 export declare const enum CoreAxPropertyName {
-    Name = "name",
-    Description = "description",
-    Value = "value",
-    Role = "role"
+    NAME = "name",
+    DESCRIPTION = "description",
+    VALUE = "value",
+    ROLE = "role"
 }
 export interface CoreOrProtocolAxProperty {
     name: CoreAxPropertyName | Protocol.Accessibility.AXPropertyName;
@@ -38,10 +38,10 @@ export declare class AccessibilityNode {
     getFrameId(): Protocol.Page.FrameId | null;
 }
 export declare const enum Events {
-    TreeUpdated = "TreeUpdated"
+    TREE_UPDATED = "TreeUpdated"
 }
 export type EventTypes = {
-    [Events.TreeUpdated]: {
+    [Events.TREE_UPDATED]: {
         root?: AccessibilityNode;
     };
 };

@@ -50,7 +50,7 @@ export class StreamingContentData extends Common.ObjectWrapper.ObjectWrapper {
             throw new Error('Cannot add base64 data to a text-only ContentData.');
         }
         this.#chunks.push(chunk);
-        this.dispatchEventToListeners("ChunkAdded" /* Events.ChunkAdded */, { content: this, chunk });
+        this.dispatchEventToListeners("ChunkAdded" /* Events.CHUNK_ADDED */, { content: this, chunk });
     }
     /** @returns An immutable ContentData with all the bytes received so far */
     content() {

@@ -32,10 +32,10 @@ export class NetworkPanelIndicator {
             return;
         }
         const manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
-        manager.addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, updateVisibility);
-        manager.addEventListener("BlockedPatternsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.BlockedPatternsChanged */, updateVisibility);
-        manager.addEventListener("InterceptorsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.InterceptorsChanged */, updateVisibility);
-        manager.addEventListener("AcceptedEncodingsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.AcceptedEncodingsChanged */, updateVisibility);
+        manager.addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, updateVisibility);
+        manager.addEventListener("BlockedPatternsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */, updateVisibility);
+        manager.addEventListener("InterceptorsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.INTERCEPTORS_CHANGED */, updateVisibility);
+        manager.addEventListener("AcceptedEncodingsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ACCEPTED_ENCODINGS_CHANGED */, updateVisibility);
         Common.Settings.Settings.instance().moduleSetting('cache-disabled').addChangeListener(updateVisibility, this);
         updateVisibility();
         function updateVisibility() {

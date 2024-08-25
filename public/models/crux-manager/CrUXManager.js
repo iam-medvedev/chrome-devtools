@@ -39,7 +39,7 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
          */
         const hostConfig = Common.Settings.Settings.instance().getHostConfig();
         const useSessionStorage = !hostConfig || hostConfig.isOffTheRecord === true;
-        const storageTypeForConsent = useSessionStorage ? "Session" /* Common.Settings.SettingStorageType.Session */ : "Global" /* Common.Settings.SettingStorageType.Global */;
+        const storageTypeForConsent = useSessionStorage ? "Session" /* Common.Settings.SettingStorageType.SESSION */ : "Global" /* Common.Settings.SettingStorageType.GLOBAL */;
         this.#configSetting = Common.Settings.Settings.instance().createSetting('field-data', { enabled: false, override: '', originMappings: [] }, storageTypeForConsent);
         this.#configSetting.addChangeListener(() => {
             void this.#automaticRefresh();
@@ -129,10 +129,10 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
                     const newInspectedURL = event.data.inspectedURL();
                     if (newInspectedURL) {
                         resolve(newInspectedURL);
-                        targetManager.removeEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, handler);
+                        targetManager.removeEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, handler);
                     }
                 }
-                targetManager.addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, handler);
+                targetManager.addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, handler);
             });
         }
         return inspectedURL;
@@ -148,12 +148,12 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
         // This does 2 things:
         // - Tells listeners to clear old data so it isn't shown during a URL transition
         // - Tells listeners to clear old data when field data is disabled.
-        this.dispatchEventToListeners("field-data-changed" /* Events.FieldDataChanged */, undefined);
+        this.dispatchEventToListeners("field-data-changed" /* Events.FIELD_DATA_CHANGED */, undefined);
         if (!this.#configSetting.get().enabled) {
             return;
         }
         const pageResult = await this.getFieldDataForCurrentPage();
-        this.dispatchEventToListeners("field-data-changed" /* Events.FieldDataChanged */, pageResult);
+        this.dispatchEventToListeners("field-data-changed" /* Events.FIELD_DATA_CHANGED */, pageResult);
     }
     #normalizeUrl(inputUrl) {
         const normalizedUrl = new URL(inputUrl);

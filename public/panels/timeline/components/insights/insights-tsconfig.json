@@ -33,7 +33,10 @@
     "../../../../../../../../front_end/panels/timeline/components/insights/Helpers.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPDiscovery.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPPhases.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/NodeLink.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/RenderBlocking.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/SidebarInsight.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/Viewport.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/types.ts",
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -53,6 +56,9 @@
       "path": "../../../../services/trace_bounds/bundle-tsconfig.json"
     },
     {
+      "path": "../../../../third_party/marked/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
@@ -60,6 +66,9 @@
     },
     {
       "path": "../../../../ui/components/icon_button/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../../ui/components/markdown_view/bundle-tsconfig.json"
     },
     {
       "path": "../../../../ui/lit-html/bundle-tsconfig.json"

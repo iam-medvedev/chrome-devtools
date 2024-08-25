@@ -43,6 +43,7 @@ import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
 import { ActiveFilters } from './ActiveFilters.js';
@@ -385,9 +386,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.disableCaptureJSProfileSetting =
             Common.Settings.Settings.instance().createSetting('timeline-disable-js-sampling', false);
         this.disableCaptureJSProfileSetting.setTitle(i18nString(UIStrings.disableJavascriptSamples));
-        this.captureLayersAndPicturesSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-layers-and-pictures', false, "Session" /* Common.Settings.SettingStorageType.Session */);
+        this.captureLayersAndPicturesSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-layers-and-pictures', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.captureLayersAndPicturesSetting.setTitle(i18nString(UIStrings.enableAdvancedPaint));
-        this.captureSelectorStatsSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false, "Session" /* Common.Settings.SettingStorageType.Session */);
+        this.captureSelectorStatsSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.captureSelectorStatsSetting.setTitle(i18nString(UIStrings.enableSelectorStats));
         this.showScreenshotsSetting =
             Common.Settings.Settings.instance().createSetting('timeline-show-screenshots', isNode ? false : true);
@@ -437,7 +438,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         });
         this.#sideBar.contentElement.addEventListener(TimelineComponents.Sidebar.EventReferenceClick.eventName, event => {
             const { metricEvent } = event;
-            this.flameChart.setSelection(TimelineSelection.fromTraceEvent(metricEvent));
+            this.flameChart.setSelectionAndReveal(TimelineSelection.fromTraceEvent(metricEvent));
         });
         this.#sideBar.element.addEventListener(TimelineComponents.Sidebar.RemoveAnnotation.eventName, event => {
             const { removedAnnotation } = event;
@@ -449,7 +450,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         // `#changeView` here and can instead directly call showLandingPage();
         this.#showLandingPage();
         this.updateTimelineControls();
-        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SuspendStateChanged */, this.onSuspendStateChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChanged, this);
         const profilerModels = SDK.TargetManager.TargetManager.instance().models(SDK.CPUProfilerModel.CPUProfilerModel);
         for (const model of profilerModels) {
             for (const message of model.registeredConsoleProfileMessages) {
@@ -458,7 +459,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.CPUProfilerModel.CPUProfilerModel, {
             modelAdded: (model) => {
-                model.addEventListener("ConsoleProfileFinished" /* SDK.CPUProfilerModel.Events.ConsoleProfileFinished */, event => this.consoleProfileFinished(event.data));
+                model.addEventListener("ConsoleProfileFinished" /* SDK.CPUProfilerModel.Events.CONSOLE_PROFILE_FINISHED */, event => this.consoleProfileFinished(event.data));
             },
             modelRemoved: (_model) => {
             },
@@ -795,9 +796,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.showSettingsPaneSetting =
             Common.Settings.Settings.instance().createSetting('timeline-show-settings-toolbar', false);
         this.showSettingsPaneButton = new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.captureSettings), 'gear-filled', 'timeline-settings-toggle');
-        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, this.updateShowSettingsToolbarButton, this);
-        SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RateChanged */, this.updateShowSettingsToolbarButton, this);
-        SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("HardwareConcurrencyChanged" /* SDK.CPUThrottlingManager.Events.HardwareConcurrencyChanged */, this.updateShowSettingsToolbarButton, this);
+        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, this.updateShowSettingsToolbarButton, this);
+        SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.updateShowSettingsToolbarButton, this);
+        SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("HardwareConcurrencyChanged" /* SDK.CPUThrottlingManager.Events.HARDWARE_CONCURRENCY_CHANGED */, this.updateShowSettingsToolbarButton, this);
         this.disableCaptureJSProfileSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureLayersAndPicturesSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureSelectorStatsSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
@@ -890,7 +891,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         const traceStart = Platform.DateUtilities.toISO8601Compact(new Date());
         let fileName;
-        if (metadata?.dataOrigin === "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPUProfile */) {
+        if (metadata?.dataOrigin === "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPU_PROFILE */) {
             fileName = `CPU-${traceStart}.cpuprofile`;
         }
         else if (metadata && metadata.enhancedTraceVersion) {
@@ -902,7 +903,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         try {
             // TODO(crbug.com/1456818): Extract this logic and add more tests.
             let traceAsString;
-            if (metadata?.dataOrigin === "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPUProfile */) {
+            if (metadata?.dataOrigin === "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPU_PROFILE */) {
                 const profileEvent = traceEvents.find(e => e.name === 'CpuProfile');
                 if (!profileEvent || !profileEvent.args?.data) {
                     return;
@@ -999,7 +1000,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         const traceParsedData = this.#traceEngineModel.traceParsedData(this.#viewMode.traceIndex);
         const isCpuProfile = this.#traceEngineModel.metadata(this.#viewMode.traceIndex)?.dataOrigin ===
-            "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPUProfile */;
+            "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPU_PROFILE */;
         if (!traceParsedData) {
             return;
         }
@@ -1127,7 +1128,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 // because the profiles will be concated and sorted together, so the total time will be amplified.
                 // Multiple targets problem might happen when you inspect multiple node servers on different port at same time,
                 // or when you let DevTools listen to both locolhost:9229 & 127.0.0.1:9229.
-                const firstNodeTarget = SDK.TargetManager.TargetManager.instance().targets().find(target => target.type() === SDK.Target.Type.Node);
+                const firstNodeTarget = SDK.TargetManager.TargetManager.instance().targets().find(target => target.type() === SDK.Target.Type.NODE);
                 if (!firstNodeTarget) {
                     throw new Error('Could not load any Node target.');
                 }
@@ -1365,11 +1366,11 @@ export class TimelinePanel extends UI.Panel.Panel {
         // Order is important: the bounds must be set before we initiate any UI
         // rendering.
         TraceBounds.TraceBounds.BoundsManager.instance().resetWithNewBounds(traceParsedData.Meta.traceBounds);
-        const isCpuProfile = this.#traceEngineModel.metadata(traceIndex)?.dataOrigin === "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPUProfile */;
+        const isCpuProfile = this.#traceEngineModel.metadata(traceIndex)?.dataOrigin === "CPUProfile" /* TraceEngine.Types.File.DataOrigin.CPU_PROFILE */;
         this.flameChart.setModel(traceParsedData, isCpuProfile);
         this.flameChart.resizeToPreferredHeights();
         // Reset the visual selection as we've just swapped to a new trace.
-        this.flameChart.setSelection(null);
+        this.flameChart.setSelectionAndReveal(null);
         this.#sideBar.setTraceParsedData(traceParsedData);
         this.searchableViewInternal.showWidget();
         const exclusiveFilter = this.#exclusiveFilterPerTrace.get(traceIndex) ?? null;
@@ -1398,7 +1399,9 @@ export class TimelinePanel extends UI.Panel.Panel {
                     entryTo: overlay.entryTo,
                 });
             }
-            this.#sideBar.setAnnotations(currentManager.getAnnotations());
+            const annotations = currentManager.getAnnotations();
+            const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
+            this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
         });
         // Create breadcrumbs.
         if (this.#minimapComponent.breadcrumbsActivated) {
@@ -1416,7 +1419,9 @@ export class TimelinePanel extends UI.Panel.Panel {
             currModificationManager.getOverlays().forEach(overlay => {
                 this.flameChart.addOverlay(overlay);
             });
-            this.#sideBar.setAnnotations(currModificationManager.getAnnotations());
+            const annotations = currModificationManager.getAnnotations();
+            const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
+            this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
         }
         // Set up line level profiling with CPU profiles, if we found any.
         PerfUI.LineLevelProfile.Performance.instance().reset();
@@ -1455,6 +1460,37 @@ export class TimelinePanel extends UI.Panel.Panel {
         else {
             this.#splitWidget.hideSidebar();
         }
+    }
+    // Build a map mapping annotated entries to the colours that are used to display them in the FlameChart.
+    // We need this map to display the entries in the sidebar with the same colours.
+    buildColorsAnnotationsMap(annotations) {
+        const annotationEntryToColorMap = new Map();
+        for (const annotation of annotations) {
+            if (TraceEngine.Types.File.isEntryLabelAnnotation(annotation)) {
+                annotationEntryToColorMap.set(annotation.entry, this.getEntryColorByEntry(annotation.entry));
+            }
+            else if (TraceEngine.Types.File.isEntriesLinkAnnotation(annotation)) {
+                annotationEntryToColorMap.set(annotation.entryFrom, this.getEntryColorByEntry(annotation.entryFrom));
+                if (annotation.entryTo) {
+                    annotationEntryToColorMap.set(annotation.entryTo, this.getEntryColorByEntry(annotation.entryTo));
+                }
+            }
+        }
+        return annotationEntryToColorMap;
+    }
+    getEntryColorByEntry(entry) {
+        const mainIndex = this.flameChart.getMainDataProvider().indexForEvent(entry);
+        const networkIndex = this.flameChart.getNetworkDataProvider().indexForEvent(entry);
+        if (mainIndex) {
+            const color = this.flameChart.getMainDataProvider().entryColor(mainIndex);
+            return color;
+        }
+        if (networkIndex) {
+            const color = this.flameChart.getNetworkDataProvider().entryColor(networkIndex);
+            return color;
+        }
+        console.warn('Could not get entry color for ', entry);
+        return ThemeSupport.ThemeSupport.instance().getComputedValue('--app-color-system');
     }
     recordingStarted(config) {
         if (config && this.recordingPageReload && this.controller) {
@@ -1727,7 +1763,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     select(selection) {
         this.selection = selection;
-        this.flameChart.setSelection(selection);
+        this.flameChart.setSelectionAndReveal(selection);
     }
     selectEntryAtTime(events, time) {
         if (!events) {

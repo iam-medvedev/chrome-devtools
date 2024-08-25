@@ -88,6 +88,6 @@ export function activate(target) {
     const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     const frame = getMainFrame(target);
     sinon.stub(frame, 'isPrimaryFrame').returns(true);
-    resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame, type: "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Activation */ });
+    resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.PrimaryPageChanged, { frame, type: "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.ACTIVATION */ });
 }
 //# sourceMappingURL=ResourceTreeHelpers.js.map

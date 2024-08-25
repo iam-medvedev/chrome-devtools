@@ -159,7 +159,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         // ASAP to avoid inconsistency between a fresh viewport and stale preview.
         if (this.eagerEvalSetting.get()) {
             const asSoonAsPossible = !TextEditor.Config.contentIncludingHint(this.editor.editor);
-            this.previewRequestForTest = this.textChangeThrottler.schedule(this.requestPreviewBound, asSoonAsPossible ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */ : "Default" /* Common.Throttler.Scheduling.Default */);
+            this.previewRequestForTest = this.textChangeThrottler.schedule(this.requestPreviewBound, asSoonAsPossible ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */ : "Default" /* Common.Throttler.Scheduling.DEFAULT */);
         }
         this.updatePromptIcon();
         this.dispatchEventToListeners("TextChanged" /* Events.TextChanged */);
@@ -269,7 +269,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         return isExpressionComplete;
     }
     showSelfXssWarning() {
-        Common.Console.Console.instance().warn(i18nString(UIStrings.selfXssWarning, { PH1: i18nString(UIStrings.allowPasting) }), Common.Console.FrontendMessageSource.SelfXss);
+        Common.Console.Console.instance().warn(i18nString(UIStrings.selfXssWarning, { PH1: i18nString(UIStrings.allowPasting) }), Common.Console.FrontendMessageSource.SELF_XSS);
         this.#selfXssWarningShown = true;
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssWarningConsoleMessageShown);
         this.#updateJavaScriptCompletionCompartment();
@@ -282,7 +282,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
                 scrollIntoView: true,
             });
             Common.Settings.Settings.instance()
-                .createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */)
+                .createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */)
                 .set(true);
             this.#selfXssWarningShown = false;
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssAllowPastingInConsole);

@@ -12,7 +12,7 @@ describeWithMockConnection('OutermostTargetSelector', () => {
     let prerenderTarget;
     let selector;
     beforeEach(() => {
-        tabTarget = createTarget({ type: SDK.Target.Type.Tab, url: 'http://example.com/', name: 'tab' });
+        tabTarget = createTarget({ type: SDK.Target.Type.TAB, url: 'http://example.com/', name: 'tab' });
         primaryTarget = createTarget({ parentTarget: tabTarget, url: 'http://example.com/', name: 'primary' });
         prerenderTarget = createTarget({ parentTarget: tabTarget, subtype: 'prerender', url: 'http://example.com/prerender1', name: 'prerender1' });
         selector = InspectorMain.OutermostTargetSelector.OutermostTargetSelector.instance({ forceNew: true });

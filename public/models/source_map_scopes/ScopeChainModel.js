@@ -35,7 +35,7 @@ export class ScopeChainModel extends Common.ObjectWrapper.ObjectWrapper {
     }
     async #update() {
         const scopeChain = await resolveScopeChain(this.#callFrame);
-        this.dispatchEventToListeners("ScopeChainUpdated" /* Events.ScopeChainUpdated */, new ScopeChain(scopeChain));
+        this.dispatchEventToListeners("ScopeChainUpdated" /* Events.SCOPE_CHAIN_UPDATED */, new ScopeChain(scopeChain));
     }
     #debugInfoAttached(event) {
         if (event.data === this.#callFrame.script) {

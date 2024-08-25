@@ -25,7 +25,7 @@ export class FederatedAuthRequestIssue extends Issue {
         this.#issueDetails = issueDetails;
     }
     getCategory() {
-        return "Other" /* IssueCategory.Other */;
+        return "Other" /* IssueCategory.OTHER */;
     }
     details() {
         return this.#issueDetails;
@@ -41,7 +41,7 @@ export class FederatedAuthRequestIssue extends Issue {
         return JSON.stringify(this.#issueDetails);
     }
     getKind() {
-        return "PageError" /* IssueKind.PageError */;
+        return "PageError" /* IssueKind.PAGE_ERROR */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const details = inspectorIssue.details.federatedAuthRequestIssueDetails;

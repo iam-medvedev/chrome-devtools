@@ -42,10 +42,10 @@ export class CPUThrottlingSelector extends HTMLElement {
         this.#render();
     }
     connectedCallback() {
-        SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RateChanged */, this.#onRateChange, this);
+        SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.#onRateChange, this);
     }
     disconnectedCallback() {
-        SDK.CPUThrottlingManager.CPUThrottlingManager.instance().removeEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RateChanged */, this.#onRateChange, this);
+        SDK.CPUThrottlingManager.CPUThrottlingManager.instance().removeEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.#onRateChange, this);
     }
     #onRateChange(event) {
         this.#currentRate = event.data;

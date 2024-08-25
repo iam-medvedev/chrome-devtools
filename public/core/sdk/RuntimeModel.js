@@ -318,6 +318,7 @@ export class RuntimeModel extends SDKModel {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["BindingCalled"] = "BindingCalled";
     Events["ExecutionContextCreated"] = "ExecutionContextCreated";
     Events["ExecutionContextDestroyed"] = "ExecutionContextDestroyed";
@@ -327,6 +328,7 @@ export var Events;
     Events["ExceptionRevoked"] = "ExceptionRevoked";
     Events["ConsoleAPICalled"] = "ConsoleAPICalled";
     Events["QueryObjectRequested"] = "QueryObjectRequested";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 class RuntimeDispatcher {
     #runtimeModel;
@@ -385,16 +387,16 @@ export class ExecutionContext {
     }
     static comparator(a, b) {
         function targetWeight(target) {
-            if (target.parentTarget()?.type() !== Type.Frame) {
+            if (target.parentTarget()?.type() !== Type.FRAME) {
                 return 5;
             }
-            if (target.type() === Type.Frame) {
+            if (target.type() === Type.FRAME) {
                 return 4;
             }
             if (target.type() === Type.ServiceWorker) {
                 return 3;
             }
-            if (target.type() === Type.Worker || target.type() === Type.SharedWorker) {
+            if (target.type() === Type.Worker || target.type() === Type.SHARED_WORKER) {
                 return 2;
             }
             return 1;

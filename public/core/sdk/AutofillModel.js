@@ -146,7 +146,7 @@ export class AutofillModel extends SDKModel {
         void this.agent.invoke_disable();
     }
     addressFormFilled(addressFormFilledEvent) {
-        this.dispatchEventToListeners("AddressFormFilled" /* Events.AddressFormFilled */, { autofillModel: this, event: addressFormFilledEvent });
+        this.dispatchEventToListeners("AddressFormFilled" /* Events.ADDRESS_FORM_FILLED */, { autofillModel: this, event: addressFormFilledEvent });
     }
 }
 SDKModel.register(AutofillModel, { capabilities: 2 /* Capability.DOM */, autostart: true });

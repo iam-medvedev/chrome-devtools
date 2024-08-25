@@ -1176,7 +1176,7 @@ export class ConsoleViewMessage {
             // Do not show insights for direct calls to Console APIs from within DevTools Console.
             return false;
         }
-        if (this.message.messageText === '' || this.message.source === Common.Console.FrontendMessageSource.SelfXss) {
+        if (this.message.messageText === '' || this.message.source === Common.Console.FrontendMessageSource.SELF_XSS) {
             return false;
         }
         return this.message.level === "error" /* Protocol.Log.LogEntryLevel.Error */ ||

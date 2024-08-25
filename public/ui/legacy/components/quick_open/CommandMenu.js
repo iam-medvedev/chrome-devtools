@@ -134,7 +134,7 @@ export class CommandMenu {
         }
         const executeHandler = () => {
             if (id === 'issues-pane') {
-                Host.userMetrics.issuesPanelOpenedFrom(5 /* Host.UserMetrics.IssueOpener.CommandMenu */);
+                Host.userMetrics.issuesPanelOpenedFrom(5 /* Host.UserMetrics.IssueOpener.COMMAND_MENU */);
             }
             return UI.ViewManager.ViewManager.instance().showView(id, /* userGesture */ true);
         };

@@ -46,14 +46,14 @@ export declare class DOMDebuggerModel extends SDKModel<EventTypes> {
     private saveDOMBreakpoints;
 }
 export declare const enum Events {
-    DOMBreakpointAdded = "DOMBreakpointAdded",
-    DOMBreakpointToggled = "DOMBreakpointToggled",
-    DOMBreakpointsRemoved = "DOMBreakpointsRemoved"
+    DOM_BREAKPOINT_ADDED = "DOMBreakpointAdded",
+    DOM_BREAKPOINT_TOGGLED = "DOMBreakpointToggled",
+    DOM_BREAKPOINTS_REMOVED = "DOMBreakpointsRemoved"
 }
 export type EventTypes = {
-    [Events.DOMBreakpointAdded]: DOMBreakpoint;
-    [Events.DOMBreakpointToggled]: DOMBreakpoint;
-    [Events.DOMBreakpointsRemoved]: DOMBreakpoint[];
+    [Events.DOM_BREAKPOINT_ADDED]: DOMBreakpoint;
+    [Events.DOM_BREAKPOINT_TOGGLED]: DOMBreakpoint;
+    [Events.DOM_BREAKPOINTS_REMOVED]: DOMBreakpoint[];
 };
 export declare class DOMBreakpoint {
     domDebuggerModel: DOMDebuggerModel;
@@ -84,9 +84,9 @@ export declare class EventListener {
 }
 export declare namespace EventListener {
     const enum Origin {
-        Raw = "Raw",
-        Framework = "Framework",
-        FrameworkUser = "FrameworkUser"
+        RAW = "Raw",
+        FRAMEWORK = "Framework",
+        FRAMEWORK_USER = "FrameworkUser"
     }
 }
 export declare class CSPViolationBreakpoint extends CategorizedBreakpoint {

@@ -108,7 +108,7 @@ export class LCPPhases extends BaseInsight {
             const renderDelay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(renderBegin, lcpMicroseconds);
             const mainReqStart = TraceEngine.Types.Timing.MicroSeconds(renderBegin - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.ttfb));
             const ttfb = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, renderBegin);
-            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte) }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay) });
+            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte), showDuration: true }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay), showDuration: true });
         }
         else if (phases?.loadDelay && phases?.loadTime) {
             const renderBegin = TraceEngine.Types.Timing.MicroSeconds(lcpMicroseconds - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.renderDelay));
@@ -119,7 +119,7 @@ export class LCPPhases extends BaseInsight {
             const loadDelay = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(loadDelayStart, loadBegin);
             const mainReqStart = TraceEngine.Types.Timing.MicroSeconds(loadDelayStart - TraceEngine.Helpers.Timing.millisecondsToMicroseconds(phases.ttfb));
             const ttfb = TraceEngine.Helpers.Timing.traceWindowFromMicroSeconds(mainReqStart, loadDelayStart);
-            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte) }, { bounds: loadDelay, label: i18nString(UIStrings.resourceLoadDelay) }, { bounds: loadTime, label: i18nString(UIStrings.resourceLoadDuration) }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay) });
+            sections.push({ bounds: ttfb, label: i18nString(UIStrings.timeToFirstByte), showDuration: true }, { bounds: loadDelay, label: i18nString(UIStrings.resourceLoadDelay), showDuration: true }, { bounds: loadTime, label: i18nString(UIStrings.resourceLoadDuration), showDuration: true }, { bounds: renderDelay, label: i18nString(UIStrings.elementRenderDelay), showDuration: true });
         }
         return [{
                 type: 'TIMESPAN_BREAKDOWN',

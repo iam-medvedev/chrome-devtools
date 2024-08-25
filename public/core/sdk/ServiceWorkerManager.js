@@ -156,7 +156,7 @@ export class ServiceWorkerManager extends SDKModel {
         }
         if (registration.isRedundant()) {
             this.#registrationsInternal.delete(registrationId);
-            this.dispatchEventToListeners("RegistrationDeleted" /* Events.RegistrationDeleted */, registration);
+            this.dispatchEventToListeners("RegistrationDeleted" /* Events.REGISTRATION_DELETED */, registration);
             return;
         }
         registration.deleting = true;
@@ -217,16 +217,16 @@ export class ServiceWorkerManager extends SDKModel {
             if (!registration) {
                 registration = new ServiceWorkerRegistration(payload);
                 this.#registrationsInternal.set(payload.registrationId, registration);
-                this.dispatchEventToListeners("RegistrationUpdated" /* Events.RegistrationUpdated */, registration);
+                this.dispatchEventToListeners("RegistrationUpdated" /* Events.REGISTRATION_UPDATED */, registration);
                 continue;
             }
             registration.update(payload);
             if (registration.shouldBeRemoved()) {
                 this.#registrationsInternal.delete(registration.id);
-                this.dispatchEventToListeners("RegistrationDeleted" /* Events.RegistrationDeleted */, registration);
+                this.dispatchEventToListeners("RegistrationDeleted" /* Events.REGISTRATION_DELETED */, registration);
             }
             else {
-                this.dispatchEventToListeners("RegistrationUpdated" /* Events.RegistrationUpdated */, registration);
+                this.dispatchEventToListeners("RegistrationUpdated" /* Events.REGISTRATION_UPDATED */, registration);
             }
         }
     }
@@ -243,10 +243,10 @@ export class ServiceWorkerManager extends SDKModel {
         for (const registration of registrations) {
             if (registration.shouldBeRemoved()) {
                 this.#registrationsInternal.delete(registration.id);
-                this.dispatchEventToListeners("RegistrationDeleted" /* Events.RegistrationDeleted */, registration);
+                this.dispatchEventToListeners("RegistrationDeleted" /* Events.REGISTRATION_DELETED */, registration);
             }
             else {
-                this.dispatchEventToListeners("RegistrationUpdated" /* Events.RegistrationUpdated */, registration);
+                this.dispatchEventToListeners("RegistrationUpdated" /* Events.REGISTRATION_UPDATED */, registration);
             }
         }
     }
@@ -256,7 +256,7 @@ export class ServiceWorkerManager extends SDKModel {
             return;
         }
         registration.errors.push(payload);
-        this.dispatchEventToListeners("RegistrationErrorAdded" /* Events.RegistrationErrorAdded */, { registration: registration, error: payload });
+        this.dispatchEventToListeners("RegistrationErrorAdded" /* Events.REGISTRATION_ERROR_ADDED */, { registration: registration, error: payload });
     }
     forceUpdateOnReloadSetting() {
         return this.#forceUpdateSetting;
@@ -391,15 +391,15 @@ export class ServiceWorkerVersion {
     }
     mode() {
         if (this.isNew() || this.isInstalling()) {
-            return "installing" /* ServiceWorkerVersion.Modes.Installing */;
+            return "installing" /* ServiceWorkerVersion.Modes.INSTALLING */;
         }
         if (this.isInstalled()) {
-            return "waiting" /* ServiceWorkerVersion.Modes.Waiting */;
+            return "waiting" /* ServiceWorkerVersion.Modes.WAITING */;
         }
         if (this.isActivating() || this.isActivated()) {
-            return "active" /* ServiceWorkerVersion.Modes.Active */;
+            return "active" /* ServiceWorkerVersion.Modes.ACTIVE */;
         }
-        return "redundant" /* ServiceWorkerVersion.Modes.Redundant */;
+        return "redundant" /* ServiceWorkerVersion.Modes.REDUNDANT */;
     }
     parseJSONRules(input) {
         try {
@@ -512,8 +512,8 @@ class ServiceWorkerContextNamer {
         this.#target = target;
         this.#serviceWorkerManager = serviceWorkerManager;
         this.#versionByTargetId = new Map();
-        serviceWorkerManager.addEventListener("RegistrationUpdated" /* Events.RegistrationUpdated */, this.registrationsUpdated, this);
-        serviceWorkerManager.addEventListener("RegistrationDeleted" /* Events.RegistrationDeleted */, this.registrationsUpdated, this);
+        serviceWorkerManager.addEventListener("RegistrationUpdated" /* Events.REGISTRATION_UPDATED */, this.registrationsUpdated, this);
+        serviceWorkerManager.addEventListener("RegistrationDeleted" /* Events.REGISTRATION_DELETED */, this.registrationsUpdated, this);
         TargetManager.instance().addModelListener(RuntimeModel, RuntimeModelEvents.ExecutionContextCreated, this.executionContextCreated, this);
     }
     registrationsUpdated() {
@@ -567,5 +567,5 @@ class ServiceWorkerContextNamer {
         context.setLabel(i18nString(UIStrings.sSS, { PH1: label, PH2: version.id, PH3: localizedStatus() }));
     }
 }
-SDKModel.register(ServiceWorkerManager, { capabilities: 16384 /* Capability.ServiceWorker */, autostart: true });
+SDKModel.register(ServiceWorkerManager, { capabilities: 16384 /* Capability.SERVICE_WORKER */, autostart: true });
 //# sourceMappingURL=ServiceWorkerManager.js.map

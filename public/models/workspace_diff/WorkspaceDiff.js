@@ -28,10 +28,10 @@ export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
         return this.uiSourceCodeDiff(uiSourceCode).requestDiff(diffRequestOptions);
     }
     subscribeToDiffChange(uiSourceCode, callback, thisObj) {
-        this.uiSourceCodeDiff(uiSourceCode).addEventListener("DiffChanged" /* UISourceCodeDiffEvents.DiffChanged */, callback, thisObj);
+        this.uiSourceCodeDiff(uiSourceCode).addEventListener("DiffChanged" /* UISourceCodeDiffEvents.DIFF_CHANGED */, callback, thisObj);
     }
     unsubscribeFromDiffChange(uiSourceCode, callback, thisObj) {
-        this.uiSourceCodeDiff(uiSourceCode).removeEventListener("DiffChanged" /* UISourceCodeDiffEvents.DiffChanged */, callback, thisObj);
+        this.uiSourceCodeDiff(uiSourceCode).removeEventListener("DiffChanged" /* UISourceCodeDiffEvents.DIFF_CHANGED */, callback, thisObj);
     }
     modifiedUISourceCodes() {
         return Array.from(this.modifiedUISourceCodesInternal);
@@ -76,7 +76,7 @@ export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
     markAsUnmodified(uiSourceCode) {
         this.uiSourceCodeProcessedForTest();
         if (this.modifiedUISourceCodesInternal.delete(uiSourceCode)) {
-            this.dispatchEventToListeners("ModifiedStatusChanged" /* Events.ModifiedStatusChanged */, { uiSourceCode, isModified: false });
+            this.dispatchEventToListeners("ModifiedStatusChanged" /* Events.MODIFIED_STATUS_CHANGED */, { uiSourceCode, isModified: false });
         }
     }
     markAsModified(uiSourceCode) {
@@ -85,7 +85,7 @@ export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.modifiedUISourceCodesInternal.add(uiSourceCode);
-        this.dispatchEventToListeners("ModifiedStatusChanged" /* Events.ModifiedStatusChanged */, { uiSourceCode, isModified: true });
+        this.dispatchEventToListeners("ModifiedStatusChanged" /* Events.MODIFIED_STATUS_CHANGED */, { uiSourceCode, isModified: true });
     }
     uiSourceCodeProcessedForTest() {
     }
@@ -161,7 +161,7 @@ export class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper {
             if (this.dispose) {
                 return;
             }
-            this.dispatchEventToListeners("DiffChanged" /* UISourceCodeDiffEvents.DiffChanged */);
+            this.dispatchEventToListeners("DiffChanged" /* UISourceCodeDiffEvents.DIFF_CHANGED */);
             this.pendingChanges = null;
         }
     }

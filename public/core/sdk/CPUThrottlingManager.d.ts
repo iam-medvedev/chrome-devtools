@@ -16,17 +16,17 @@ export declare class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWra
     modelRemoved(_emulationModel: EmulationModel): void;
 }
 export declare const enum Events {
-    RateChanged = "RateChanged",
-    HardwareConcurrencyChanged = "HardwareConcurrencyChanged"
+    RATE_CHANGED = "RateChanged",
+    HARDWARE_CONCURRENCY_CHANGED = "HardwareConcurrencyChanged"
 }
 export type EventTypes = {
-    [Events.RateChanged]: number;
-    [Events.HardwareConcurrencyChanged]: number;
+    [Events.RATE_CHANGED]: number;
+    [Events.HARDWARE_CONCURRENCY_CHANGED]: number;
 };
 export declare function throttlingManager(): CPUThrottlingManager;
 export declare enum CPUThrottlingRates {
-    NoThrottling = 1,
+    NO_THROTTLING = 1,
     MidTierMobile = 4,
     LowEndMobile = 6,
-    ExtraSlow = 20
+    EXTRA_SLOW = 20
 }

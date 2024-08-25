@@ -53,7 +53,10 @@ export const markdownLinks = new Map([
     ['gracePeriodStagedControlExplainer', 'https://developers.google.com/privacy-sandbox/blog/grace-period-opt-out'],
 ]);
 export const getMarkdownLink = (key) => {
-    if (/^https:\/\/www.chromestatus.com\/feature\/\d+$/.test(key)) {
+    if (/^https:\/\/www\.chromestatus\.com\/feature\/\d+$/.test(key)) {
+        return key;
+    }
+    if (/^https:\/\/developer\.chrome\.com\/blog\//.test(key)) {
         return key;
     }
     const link = markdownLinks.get(key);

@@ -207,9 +207,9 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     }
     wasShown() {
         super.wasShown();
-        this.requestInternal.addEventListener(SDK.NetworkRequest.Events.RequestHeadersChanged, this.requestHeadersChanged, this);
-        this.requestInternal.addEventListener(SDK.NetworkRequest.Events.ResponseHeadersChanged, this.maybeAppendCookiesPanel, this);
-        this.requestInternal.addEventListener(SDK.NetworkRequest.Events.TrustTokenResultAdded, this.maybeShowErrorIconInTrustTokenTabHeader, this);
+        this.requestInternal.addEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
+        this.requestInternal.addEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
+        this.requestInternal.addEventListener(SDK.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
         this.maybeAppendCookiesPanel();
         this.maybeShowErrorIconInTrustTokenTabHeader();
         // Only select the initial tab the first time the view is shown after construction.
@@ -222,9 +222,9 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         }
     }
     willHide() {
-        this.requestInternal.removeEventListener(SDK.NetworkRequest.Events.RequestHeadersChanged, this.requestHeadersChanged, this);
-        this.requestInternal.removeEventListener(SDK.NetworkRequest.Events.ResponseHeadersChanged, this.maybeAppendCookiesPanel, this);
-        this.requestInternal.removeEventListener(SDK.NetworkRequest.Events.TrustTokenResultAdded, this.maybeShowErrorIconInTrustTokenTabHeader, this);
+        this.requestInternal.removeEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
+        this.requestInternal.removeEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
+        this.requestInternal.removeEventListener(SDK.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
     }
     async requestHeadersChanged() {
         this.maybeAppendCookiesPanel();

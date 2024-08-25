@@ -44,14 +44,14 @@ export class ChildTargetManager extends SDKModel {
         else {
             void this.#targetAgent.invoke_setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
         }
-        if (parentTarget.parentTarget()?.type() !== Type.Frame && !Host.InspectorFrontendHost.isUnderTest()) {
+        if (parentTarget.parentTarget()?.type() !== Type.FRAME && !Host.InspectorFrontendHost.isUnderTest()) {
             void this.#targetAgent.invoke_setDiscoverTargets({ discover: true });
             void this.#targetAgent.invoke_setRemoteLocations({ locations: [{ host: 'localhost', port: 9229 }] });
         }
     }
     static install(attachCallback) {
         ChildTargetManager.attachCallback = attachCallback;
-        SDKModel.register(ChildTargetManager, { capabilities: 32 /* Capability.Target */, autostart: true });
+        SDKModel.register(ChildTargetManager, { capabilities: 32 /* Capability.TARGET */, autostart: true });
     }
     childTargets() {
         return Array.from(this.#childTargetsBySessionId.values());
@@ -70,7 +70,7 @@ export class ChildTargetManager extends SDKModel {
     targetCreated({ targetInfo }) {
         this.#targetInfosInternal.set(targetInfo.targetId, targetInfo);
         this.fireAvailableTargetsChanged();
-        this.dispatchEventToListeners("TargetCreated" /* Events.TargetCreated */, targetInfo);
+        this.dispatchEventToListeners("TargetCreated" /* Events.TARGET_CREATED */, targetInfo);
     }
     targetInfoChanged({ targetInfo }) {
         this.#targetInfosInternal.set(targetInfo.targetId, targetInfo);
@@ -80,7 +80,7 @@ export class ChildTargetManager extends SDKModel {
                 const resourceTreeModel = target.model(ResourceTreeModel);
                 target.updateTargetInfo(targetInfo);
                 if (resourceTreeModel && resourceTreeModel.mainFrame) {
-                    resourceTreeModel.primaryPageChanged(resourceTreeModel.mainFrame, "Activation" /* PrimaryPageChangeType.Activation */);
+                    resourceTreeModel.primaryPageChanged(resourceTreeModel.mainFrame, "Activation" /* PrimaryPageChangeType.ACTIVATION */);
                 }
                 target.setName(i18nString(UIStrings.main));
             }
@@ -89,12 +89,12 @@ export class ChildTargetManager extends SDKModel {
             }
         }
         this.fireAvailableTargetsChanged();
-        this.dispatchEventToListeners("TargetInfoChanged" /* Events.TargetInfoChanged */, targetInfo);
+        this.dispatchEventToListeners("TargetInfoChanged" /* Events.TARGET_INFO_CHANGED */, targetInfo);
     }
     targetDestroyed({ targetId }) {
         this.#targetInfosInternal.delete(targetId);
         this.fireAvailableTargetsChanged();
-        this.dispatchEventToListeners("TargetDestroyed" /* Events.TargetDestroyed */, targetId);
+        this.dispatchEventToListeners("TargetDestroyed" /* Events.TARGET_DESTROYED */, targetId);
     }
     targetCrashed({ targetId }) {
         this.#targetInfosInternal.delete(targetId);
@@ -103,10 +103,10 @@ export class ChildTargetManager extends SDKModel {
             target.dispose('targetCrashed event from CDP');
         }
         this.fireAvailableTargetsChanged();
-        this.dispatchEventToListeners("TargetDestroyed" /* Events.TargetDestroyed */, targetId);
+        this.dispatchEventToListeners("TargetDestroyed" /* Events.TARGET_DESTROYED */, targetId);
     }
     fireAvailableTargetsChanged() {
-        TargetManager.instance().dispatchEventToListeners("AvailableTargetsChanged" /* TargetManagerEvents.AvailableTargetsChanged */, [...this.#targetInfosInternal.values()]);
+        TargetManager.instance().dispatchEventToListeners("AvailableTargetsChanged" /* TargetManagerEvents.AVAILABLE_TARGETS_CHANGED */, [...this.#targetInfosInternal.values()]);
     }
     async getParentTargetId() {
         if (!this.#parentTargetId) {
@@ -121,7 +121,7 @@ export class ChildTargetManager extends SDKModel {
         if (this.#parentTargetId === targetInfo.targetId) {
             return;
         }
-        let type = Type.Browser;
+        let type = Type.BROWSER;
         let targetName = '';
         if (targetInfo.type === 'worker' && targetInfo.title && targetInfo.title !== targetInfo.url) {
             targetName = targetInfo.title;
@@ -136,7 +136,7 @@ export class ChildTargetManager extends SDKModel {
                 '^devtools://',
             ];
             if (KNOWN_FRAME_PATTERNS.some(p => targetInfo.url.match(p))) {
-                type = Type.Frame;
+                type = Type.FRAME;
             }
             else {
                 const parsedURL = Common.ParsedURL.ParsedURL.fromString(targetInfo.url);
@@ -145,31 +145,31 @@ export class ChildTargetManager extends SDKModel {
             }
         }
         if (targetInfo.type === 'iframe' || targetInfo.type === 'webview') {
-            type = Type.Frame;
+            type = Type.FRAME;
         }
         else if (targetInfo.type === 'background_page' || targetInfo.type === 'app' || targetInfo.type === 'popup_page') {
-            type = Type.Frame;
+            type = Type.FRAME;
         }
         else if (targetInfo.type === 'page') {
-            type = Type.Frame;
+            type = Type.FRAME;
         }
         else if (targetInfo.type === 'worker') {
             type = Type.Worker;
         }
         else if (targetInfo.type === 'worklet') {
-            type = Type.Worklet;
+            type = Type.WORKLET;
         }
         else if (targetInfo.type === 'shared_worker') {
-            type = Type.SharedWorker;
+            type = Type.SHARED_WORKER;
         }
         else if (targetInfo.type === 'shared_storage_worklet') {
-            type = Type.SharedStorageWorklet;
+            type = Type.SHARED_STORAGE_WORKLET;
         }
         else if (targetInfo.type === 'service_worker') {
             type = Type.ServiceWorker;
         }
         else if (targetInfo.type === 'auction_worklet') {
-            type = Type.AuctionWorklet;
+            type = Type.AUCTION_WORKLET;
         }
         const target = this.#targetManager.createTarget(targetInfo.targetId, targetName, type, this.#parentTarget, sessionId, undefined, undefined, targetInfo);
         this.#childTargetsBySessionId.set(sessionId, target);

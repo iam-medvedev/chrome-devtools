@@ -192,7 +192,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private dragging;
     private endDragging;
     timelineData(rebuid?: boolean): FlameChartTimelineData | null;
-    private revealEntry;
+    revealEntry(entryIndex: number): void;
     setWindowTimes(startTime: number, endTime: number, animate?: boolean): void;
     /**
      * Handle the mouse move event. The handle priority will be:
@@ -214,7 +214,8 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      * 2. Inside a track header -> Select and Expand/Collapse a track
      * 3. Inside a track -> Select a track
      * 3.1 shift + click -> Select the time range of clicked event
-     * 3.2 click -> update highlight (handle in other functions)
+     * 3.2 cmd or ctrl + click -> Create entry label annotation on the clicked entry
+     * 3.3 click -> update highlight (handle in other functions)
      */
     private onClick;
     private deselectAllGroups;
@@ -228,9 +229,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     hideGroup(groupIndex: number): void;
     showGroup(groupIndex: number): void;
     modifyTree(treeAction: FilterAction, index: number): void;
-    getPossibleActions(): PossibleFilterActions | void;
     onContextMenu(event: MouseEvent): void;
-    private handleFlameChartTransformEvent;
     private onKeyDown;
     bindCanvasEvent(eventName: string, onEvent: (arg0: Event) => void): void;
     drawTrackOnCanvas(trackName: string, context: CanvasRenderingContext2D, minWidth: number): {
@@ -531,8 +530,12 @@ export interface DataProviderSearchResult {
     startTimeMilli: TraceEngine.Types.Timing.MilliSeconds;
     provider: 'main' | 'network' | 'other';
 }
+export interface DataProviderSearchResult {
+    index: number;
+    startTimeMilli: TraceEngine.Types.Timing.MilliSeconds;
+    provider: 'main' | 'network' | 'other';
+}
 export interface FlameChartDataProvider {
-    buildFlowForInitiator?(index: number): unknown;
     minimumBoundary(): number;
     totalTime(): number;
     formatValue(value: number, precision?: number): string;
@@ -549,13 +552,15 @@ export interface FlameChartDataProvider {
     forceDrawableLevel?(level: number): boolean;
     textColor(entryIndex: number): string;
     mainFrameNavigationStartEvents?(): readonly TraceEngine.Types.TraceEvents.TraceEventNavigationStart[];
-    modifyTree?(node: number, action: FilterAction): void;
-    customizedContextMenu?(event: MouseEvent, eventIndex: number): UI.ContextMenu.ContextMenu | undefined;
-    findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;
     hasTrackConfigurationMode(): boolean;
     eventByIndex?(entryIndex: number): TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | null;
     indexForEvent?(event: TraceEngine.Types.TraceEvents.TraceEventData | TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame): number | null;
+    buildFlowForInitiator?(index: number): unknown;
+    customizedContextMenu?(event: MouseEvent, eventIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
     search?(startTime: TraceEngine.Types.Timing.MilliSeconds, endTime: TraceEngine.Types.Timing.MilliSeconds, filter: TimelineModel.TimelineModelFilter.TimelineModelFilter): DataProviderSearchResult[];
+    modifyTree?(action: FilterAction, entryIndex: number): void;
+    findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;
+    handleFlameChartTransformKeyboardEvent?(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
 }
 export interface FlameChartMarker {
     startTime(): number;
@@ -579,7 +584,7 @@ export declare const enum Events {
      */
     EntryInvoked = "EntryInvoked",
     EntryLabelAnnotationAdded = "EntryLabelAnnotationAdded",
-    EntriesLinkAnnotationChanged = "EntriesLinkAnnotationChanged",
+    EntriesLinkAnnotationCreated = "EntriesLinkAnnotationCreated",
     /**
      * Emitted when an event is selected via keyboard navigation using the arrow
      * keys.
@@ -602,9 +607,8 @@ export declare const enum Events {
 }
 export type EventTypes = {
     [Events.EntryLabelAnnotationAdded]: number;
-    [Events.EntriesLinkAnnotationChanged]: {
+    [Events.EntriesLinkAnnotationCreated]: {
         entryFromIndex: number;
-        entryToIndex?: number;
     };
     [Events.CanvasFocused]: number | void;
     [Events.EntryInvoked]: number;

@@ -8,7 +8,7 @@ export async function forNewRecording(isCpuProfile, recordStartTime) {
         if (isCpuProfile) {
             // For CPU profile, only specify data origin
             return {
-                dataOrigin: "CPUProfile" /* Types.File.DataOrigin.CPUProfile */,
+                dataOrigin: "CPUProfile" /* Types.File.DataOrigin.CPU_PROFILE */,
             };
         }
         const cpuThrottlingManager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
@@ -39,7 +39,7 @@ export async function forNewRecording(isCpuProfile, recordStartTime) {
             cpuThrottling,
             networkThrottling: networkTitle,
             hardwareConcurrency,
-            dataOrigin: "TraceEvents" /* Types.File.DataOrigin.TraceEvents */,
+            dataOrigin: "TraceEvents" /* Types.File.DataOrigin.TRACE_EVENTS */,
         };
     }
     catch {

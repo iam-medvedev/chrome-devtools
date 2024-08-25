@@ -53,10 +53,10 @@ export class CSSContainerQueryContainer {
         const queryAxis = getQueryAxis(`${containerType} ${contain}`);
         const physicalAxis = getPhysicalAxisFromQueryAxis(queryAxis, writingMode);
         let width, height;
-        if (physicalAxis === "Both" /* PhysicalAxis.Both */ || physicalAxis === "Horizontal" /* PhysicalAxis.Horizontal */) {
+        if (physicalAxis === "Both" /* PhysicalAxis.BOTH */ || physicalAxis === "Horizontal" /* PhysicalAxis.HORIZONTAL */) {
             width = styles.get('width');
         }
-        if (physicalAxis === "Both" /* PhysicalAxis.Both */ || physicalAxis === "Vertical" /* PhysicalAxis.Vertical */) {
+        if (physicalAxis === "Both" /* PhysicalAxis.BOTH */ || physicalAxis === "Vertical" /* PhysicalAxis.VERTICAL */) {
             height = styles.get('height');
         }
         return {
@@ -73,33 +73,33 @@ export const getQueryAxis = (propertyValue) => {
     let isBlock = false;
     for (const segment of segments) {
         if (segment === 'size') {
-            return "size" /* QueryAxis.Both */;
+            return "size" /* QueryAxis.BOTH */;
         }
         isInline = isInline || segment === 'inline-size';
         isBlock = isBlock || segment === 'block-size';
     }
     if (isInline && isBlock) {
-        return "size" /* QueryAxis.Both */;
+        return "size" /* QueryAxis.BOTH */;
     }
     if (isInline) {
-        return "inline-size" /* QueryAxis.Inline */;
+        return "inline-size" /* QueryAxis.INLINE */;
     }
     if (isBlock) {
-        return "block-size" /* QueryAxis.Block */;
+        return "block-size" /* QueryAxis.BLOCK */;
     }
-    return "" /* QueryAxis.None */;
+    return "" /* QueryAxis.NONE */;
 };
 export const getPhysicalAxisFromQueryAxis = (queryAxis, writingMode) => {
     const isVerticalWritingMode = writingMode.startsWith('vertical');
     switch (queryAxis) {
-        case "" /* QueryAxis.None */:
-            return "" /* PhysicalAxis.None */;
-        case "size" /* QueryAxis.Both */:
-            return "Both" /* PhysicalAxis.Both */;
-        case "inline-size" /* QueryAxis.Inline */:
-            return isVerticalWritingMode ? "Vertical" /* PhysicalAxis.Vertical */ : "Horizontal" /* PhysicalAxis.Horizontal */;
-        case "block-size" /* QueryAxis.Block */:
-            return isVerticalWritingMode ? "Horizontal" /* PhysicalAxis.Horizontal */ : "Vertical" /* PhysicalAxis.Vertical */;
+        case "" /* QueryAxis.NONE */:
+            return "" /* PhysicalAxis.NONE */;
+        case "size" /* QueryAxis.BOTH */:
+            return "Both" /* PhysicalAxis.BOTH */;
+        case "inline-size" /* QueryAxis.INLINE */:
+            return isVerticalWritingMode ? "Vertical" /* PhysicalAxis.VERTICAL */ : "Horizontal" /* PhysicalAxis.HORIZONTAL */;
+        case "block-size" /* QueryAxis.BLOCK */:
+            return isVerticalWritingMode ? "Horizontal" /* PhysicalAxis.HORIZONTAL */ : "Vertical" /* PhysicalAxis.VERTICAL */;
     }
 };
 //# sourceMappingURL=CSSContainerQuery.js.map

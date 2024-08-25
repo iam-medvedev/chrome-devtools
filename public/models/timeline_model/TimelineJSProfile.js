@@ -19,10 +19,10 @@ export class TimelineJSProfileProcessor {
     }
     static nativeGroup(nativeName) {
         if (nativeName.startsWith('Parse')) {
-            return "Parse" /* TimelineJSProfileProcessor.NativeGroups.Parse */;
+            return "Parse" /* TimelineJSProfileProcessor.NativeGroups.PARSE */;
         }
         if (nativeName.startsWith('Compile') || nativeName.startsWith('Recompile')) {
-            return "Compile" /* TimelineJSProfileProcessor.NativeGroups.Compile */;
+            return "Compile" /* TimelineJSProfileProcessor.NativeGroups.COMPILE */;
         }
         return null;
     }
@@ -30,7 +30,7 @@ export class TimelineJSProfileProcessor {
         const events = [];
         const threadName = i18nString(UIStrings.threadS, { PH1: tid });
         appendEvent('TracingStartedInPage', { data: { 'sessionId': '1' } }, 0, 0, "M" /* TraceEngine.Types.TraceEvents.Phase.METADATA */);
-        appendEvent("thread_name" /* TraceEngine.Types.TraceEvents.KnownEventName.ThreadName */, { name: threadName }, 0, 0, "M" /* TraceEngine.Types.TraceEvents.Phase.METADATA */, '__metadata');
+        appendEvent("thread_name" /* TraceEngine.Types.TraceEvents.KnownEventName.THREAD_NAME */, { name: threadName }, 0, 0, "M" /* TraceEngine.Types.TraceEvents.Phase.METADATA */, '__metadata');
         if (!profile) {
             return events;
         }

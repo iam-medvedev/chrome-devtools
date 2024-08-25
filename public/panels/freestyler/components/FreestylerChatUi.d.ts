@@ -4,7 +4,7 @@ import type * as SDK from '../../../core/sdk/sdk.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import { type ActionStepData, type CommonStepData } from '../FreestylerAgent.js';
+import { type ActionStepData, type CommonStepData, type QueryStepData, type ThoughtStepData } from '../FreestylerAgent.js';
 export declare const DOGFOOD_INFO: Platform.DevToolsPath.UrlString;
 interface ConfirmSideEffectDialog {
     code: string;
@@ -21,7 +21,7 @@ export interface UserChatMessage {
 export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
     suggestingFix: boolean;
-    steps: Array<ActionStepData | CommonStepData>;
+    steps: Map<string, ActionStepData | CommonStepData | ThoughtStepData | QueryStepData>;
     rpcId?: number;
 }
 export type ChatMessage = UserChatMessage | ModelChatMessage;
@@ -44,6 +44,7 @@ export interface Props {
     isLoading: boolean;
     canShowFeedbackForm: boolean;
     confirmSideEffectDialog?: ConfirmSideEffectDialog;
+    userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage'>;
 }
 declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
     templateForToken(token: Marked.Marked.Token): LitHtml.TemplateResult | null;

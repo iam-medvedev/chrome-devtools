@@ -552,7 +552,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.theme),
     settingName: 'ui-theme',
     settingType: "enum" /* Common.Settings.SettingType.ENUM */,
@@ -582,7 +582,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.panelLayout),
     settingName: 'sidebar-position',
     settingType: "enum" /* Common.Settings.SettingType.ENUM */,
@@ -607,7 +607,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     settingName: 'language',
     settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     title: i18nLazyString(UIStrings.language),
@@ -624,7 +624,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: Host.Platform.platform() === 'mac' ? i18nLazyString(UIStrings.enableShortcutToSwitchPanels) :
         i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels),
     settingName: 'shortcut-panel-switch',
@@ -660,7 +660,7 @@ Common.Settings.registerSettingExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     settingName: 'active-keybind-set',
     settingType: "enum" /* Common.Settings.SettingType.ENUM */,
     defaultValue: 'devToolsDefault',
@@ -697,14 +697,14 @@ Common.Settings.registerSettingExtension({
     reloadRequired: true,
 });
 Common.Settings.registerSettingExtension({
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     settingName: 'user-shortcuts',
     settingType: "array" /* Common.Settings.SettingType.ARRAY */,
     defaultValue: [],
 });
 Common.Settings.registerSettingExtension({
     category: "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
-    storageType: "Local" /* Common.Settings.SettingStorageType.Local */,
+    storageType: "Local" /* Common.Settings.SettingStorageType.LOCAL */,
     title: i18nLazyString(UIStrings.searchAsYouTypeSetting),
     settingName: 'search-as-you-type',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,

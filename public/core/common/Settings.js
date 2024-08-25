@@ -151,7 +151,7 @@ export class Settings {
         return setting;
     }
     createLocalSetting(key, defaultValue) {
-        return this.createSetting(key, defaultValue, "Local" /* SettingStorageType.Local */);
+        return this.createSetting(key, defaultValue, "Local" /* SettingStorageType.LOCAL */);
     }
     createRegExpSetting(key, defaultValue, regexFlags, storageType) {
         if (!this.#registry.get(key)) {
@@ -167,13 +167,13 @@ export class Settings {
     }
     storageFromType(storageType) {
         switch (storageType) {
-            case "Local" /* SettingStorageType.Local */:
+            case "Local" /* SettingStorageType.LOCAL */:
                 return this.localStorage;
-            case "Session" /* SettingStorageType.Session */:
+            case "Session" /* SettingStorageType.SESSION */:
                 return this.#sessionStorage;
-            case "Global" /* SettingStorageType.Global */:
+            case "Global" /* SettingStorageType.GLOBAL */:
                 return this.globalStorage;
-            case "Synced" /* SettingStorageType.Synced */:
+            case "Synced" /* SettingStorageType.SYNCED */:
                 return this.syncedStorage;
         }
         return this.globalStorage;
@@ -534,9 +534,9 @@ export class VersionController {
     #localVersionSetting;
     constructor() {
         // If no version setting is found, we initialize with the current version and don't do anything.
-        this.#globalVersionSetting = Settings.instance().createSetting(VersionController.GLOBAL_VERSION_SETTING_NAME, VersionController.CURRENT_VERSION, "Global" /* SettingStorageType.Global */);
-        this.#syncedVersionSetting = Settings.instance().createSetting(VersionController.SYNCED_VERSION_SETTING_NAME, VersionController.CURRENT_VERSION, "Synced" /* SettingStorageType.Synced */);
-        this.#localVersionSetting = Settings.instance().createSetting(VersionController.LOCAL_VERSION_SETTING_NAME, VersionController.CURRENT_VERSION, "Local" /* SettingStorageType.Local */);
+        this.#globalVersionSetting = Settings.instance().createSetting(VersionController.GLOBAL_VERSION_SETTING_NAME, VersionController.CURRENT_VERSION, "Global" /* SettingStorageType.GLOBAL */);
+        this.#syncedVersionSetting = Settings.instance().createSetting(VersionController.SYNCED_VERSION_SETTING_NAME, VersionController.CURRENT_VERSION, "Synced" /* SettingStorageType.SYNCED */);
+        this.#localVersionSetting = Settings.instance().createSetting(VersionController.LOCAL_VERSION_SETTING_NAME, VersionController.CURRENT_VERSION, "Local" /* SettingStorageType.LOCAL */);
     }
     /**
      * Force re-sets all version number settings to the current version without

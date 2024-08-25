@@ -18,10 +18,10 @@ export declare class ScopeChainModel extends Common.ObjectWrapper.ObjectWrapper<
     dispose(): void;
 }
 export declare const enum Events {
-    ScopeChainUpdated = "ScopeChainUpdated"
+    SCOPE_CHAIN_UPDATED = "ScopeChainUpdated"
 }
 export type EventTypes = {
-    [Events.ScopeChainUpdated]: ScopeChain;
+    [Events.SCOPE_CHAIN_UPDATED]: ScopeChain;
 };
 /**
  * A scope chain ready to be shown in the UI with debugging info applied.

@@ -90,6 +90,16 @@ export var VisualElements;
 function resolveVe(ve) {
     return VisualElements[ve] ?? 0;
 }
+const reportedUnknownVeContext = new Set();
+function checkContextValue(context) {
+    if (typeof context !== 'string' || !context.length || knownContextValues.has(context) ||
+        reportedUnknownVeContext.has(context)) {
+        return;
+    }
+    const stack = (new Error().stack || '').split('\n').slice(3).join('\n');
+    console.error(`Unknown VE context: ${context}${stack}`);
+    reportedUnknownVeContext.add(context);
+}
 export function parseJsLog(jslog) {
     const components = jslog.replace(/ /g, '').split(';');
     const getComponent = (name) => components.find(c => c.startsWith(name))?.substr(name.length);
@@ -100,9 +110,7 @@ export function parseJsLog(jslog) {
     const config = { ve };
     const context = getComponent('context:');
     if (context && context.trim().length) {
-        if (!knownContextValues.has(context)) {
-            console.error('Unknown VE context:', context);
-        }
+        checkContextValue(context);
         config.context = context;
     }
     const parent = getComponent('parent:');
@@ -127,18 +135,14 @@ export function makeConfigStringBuilder(veName, context) {
     const components = [veName];
     if (typeof context === 'string' && context.trim().length) {
         components.push(`context: ${context}`);
-        if (!knownContextValues.has(context)) {
-            console.error('Unknown VE context:', context);
-        }
+        checkContextValue(context);
     }
     return {
         context: function (value) {
             if (typeof value === 'number' || typeof value === 'string' && value.length) {
                 components.push(`context: ${value}`);
             }
-            if (typeof value === 'string' && value.length && !knownContextValues.has(value)) {
-                console.error('Unknown VE context:', value);
-            }
+            checkContextValue(context);
             return this;
         },
         parent: function (value) {

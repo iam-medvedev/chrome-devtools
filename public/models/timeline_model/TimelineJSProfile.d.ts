@@ -7,7 +7,7 @@ export declare class TimelineJSProfileProcessor {
 }
 export declare namespace TimelineJSProfileProcessor {
     const enum NativeGroups {
-        Compile = "Compile",
-        Parse = "Parse"
+        COMPILE = "Compile",
+        PARSE = "Parse"
     }
 }

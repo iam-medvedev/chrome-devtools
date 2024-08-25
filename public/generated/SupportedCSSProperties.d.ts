@@ -530,6 +530,12 @@ export const generatedPropertyValues: {
     "mask-type": {
         values: string[];
     };
+    "masonry-track-end": {
+        values: string[];
+    };
+    "masonry-track-start": {
+        values: string[];
+    };
     "math-shift": {
         values: string[];
     };

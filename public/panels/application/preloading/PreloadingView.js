@@ -69,35 +69,35 @@ class PreloadingUIUtils {
     static status(status) {
         // See content/public/browser/preloading.h PreloadingAttemptOutcome.
         switch (status) {
-            case "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NotTriggered */:
+            case "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */:
                 return i18nString(UIStrings.statusNotTriggered);
-            case "Pending" /* SDK.PreloadingModel.PreloadingStatus.Pending */:
+            case "Pending" /* SDK.PreloadingModel.PreloadingStatus.PENDING */:
                 return i18nString(UIStrings.statusPending);
-            case "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */:
+            case "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */:
                 return i18nString(UIStrings.statusRunning);
-            case "Ready" /* SDK.PreloadingModel.PreloadingStatus.Ready */:
+            case "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */:
                 return i18nString(UIStrings.statusReady);
-            case "Success" /* SDK.PreloadingModel.PreloadingStatus.Success */:
+            case "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */:
                 return i18nString(UIStrings.statusSuccess);
-            case "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */:
+            case "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */:
                 return i18nString(UIStrings.statusFailure);
             // NotSupported is used to handle unreachable case. For example,
             // there is no code path for
             // PreloadingTriggeringOutcome::kTriggeredButPending in prefetch,
             // which is mapped to NotSupported. So, we regard it as an
             // internal error.
-            case "NotSupported" /* SDK.PreloadingModel.PreloadingStatus.NotSupported */:
+            case "NotSupported" /* SDK.PreloadingModel.PreloadingStatus.NOT_SUPPORTED */:
                 return i18n.i18n.lockedString('Internal error');
         }
     }
     static preloadsStatusSummary(countsByStatus) {
         const LIST = [
-            "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NotTriggered */,
-            "Pending" /* SDK.PreloadingModel.PreloadingStatus.Pending */,
-            "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
-            "Ready" /* SDK.PreloadingModel.PreloadingStatus.Ready */,
-            "Success" /* SDK.PreloadingModel.PreloadingStatus.Success */,
-            "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */,
+            "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */,
+            "Pending" /* SDK.PreloadingModel.PreloadingStatus.PENDING */,
+            "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+            "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
+            "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */,
+            "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
         ];
         return LIST.filter(status => (countsByStatus?.get(status) || 0) > 0)
             .map(status => (countsByStatus?.get(status) || 0) + ' ' + this.status(status))
@@ -157,8 +157,8 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
         super(/* isWebComponent */ true, /* delegatesFocus */ false);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.ModelUpdated */, this.render, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WarningsUpdated */, this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.MODEL_UPDATED */, this.render, this, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
         // this (VBox)
         //   +- warningsContainer
         //        +- PreloadingWarningsView
@@ -256,8 +256,8 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
         this.element.setAttribute('jslog', `${VisualLogging.pane('preloading-speculations')}`);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.ModelUpdated */, this.render, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WarningsUpdated */, this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.MODEL_UPDATED */, this.render, this, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
         // this (VBox)
         //   +- warningsContainer
         //        +- PreloadingWarningsView
@@ -372,8 +372,8 @@ export class PreloadingSummaryView extends UI.Widget.VBox {
         this.element.setAttribute('jslog', `${VisualLogging.pane('speculative-loads')}`);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.ModelUpdated */, this.render, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WarningsUpdated */, this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.MODEL_UPDATED */, this.render, this, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "WarningsUpdated" /* SDK.PreloadingModel.Events.WARNINGS_UPDATED */, this.warningsView.onWarningsUpdated, this.warningsView, { scoped: true });
         this.warningsContainer = document.createElement('div');
         this.warningsContainer.classList.add('flex-none');
         this.contentElement.insertBefore(this.warningsContainer, this.contentElement.firstChild);
@@ -417,7 +417,7 @@ class PreloadingRuleSetSelector {
         assertNotNullOrUndefined(model);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.ModelUpdated */, this.onModelUpdated, this, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.PreloadingModel.PreloadingModel, "ModelUpdated" /* SDK.PreloadingModel.Events.MODEL_UPDATED */, this.onModelUpdated, this, { scoped: true });
         this.listModel = new UI.ListModel.ListModel();
         this.dropDown = new UI.SoftDropDown.SoftDropDown(this.listModel, this);
         this.dropDown.setRowHeight(36);

@@ -117,7 +117,7 @@ export const scopeIdentifiers = async function (script, scope, ancestorScopes) {
     for (const variable of scope.variables) {
         // Skip the fixed-kind variable (i.e., 'this' or 'arguments') if we only found their "definition"
         // without any uses.
-        if (variable.kind === 3 /* Formatter.FormatterWorkerPool.DefinitionKind.Fixed */ && variable.offsets.length <= 1) {
+        if (variable.kind === 3 /* Formatter.FormatterWorkerPool.DefinitionKind.FIXED */ && variable.offsets.length <= 1) {
             continue;
         }
         const identifier = new IdentifierPositions(variable.name);
@@ -269,7 +269,7 @@ const resolveScope = async (script, scopeChain) => {
             return sourceName;
         }
         // Let us also allow semicolons into commas since that it is a common transformation.
-        if (compiledPunctuation === "comma" /* Punctuation.Comma */ && sourcePunctuation === "semicolon" /* Punctuation.Semicolon */) {
+        if (compiledPunctuation === "comma" /* Punctuation.COMMA */ && sourcePunctuation === "semicolon" /* Punctuation.SEMICOLON */) {
             return sourceName;
         }
         return null;
@@ -282,19 +282,19 @@ const resolveScope = async (script, scopeChain) => {
             let punctuation = null;
             switch (match[2]) {
                 case '.':
-                    punctuation = "dot" /* Punctuation.Dot */;
+                    punctuation = "dot" /* Punctuation.DOT */;
                     break;
                 case ',':
-                    punctuation = "comma" /* Punctuation.Comma */;
+                    punctuation = "comma" /* Punctuation.COMMA */;
                     break;
                 case ';':
-                    punctuation = "semicolon" /* Punctuation.Semicolon */;
+                    punctuation = "semicolon" /* Punctuation.SEMICOLON */;
                     break;
                 case '=':
-                    punctuation = "equals" /* Punctuation.Equals */;
+                    punctuation = "equals" /* Punctuation.EQUALS */;
                     break;
                 case '':
-                    punctuation = "none" /* Punctuation.None */;
+                    punctuation = "none" /* Punctuation.NONE */;
                     break;
                 default:
                     console.error(`Name token parsing error: unexpected token "${match[2]}"`);

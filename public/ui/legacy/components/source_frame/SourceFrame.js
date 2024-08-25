@@ -193,7 +193,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.contentRequested = false;
         this.wasmDisassemblyInternal = null;
         this.contentSet = false;
-        this.selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
+        this.selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         Common.Settings.Settings.instance()
             .moduleSetting('text-editor-indent')
             .addChangeListener(this.#textEditorIndentChanged, this);

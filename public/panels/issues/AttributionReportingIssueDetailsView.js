@@ -47,32 +47,32 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
     #appendDetails(issueCode, issues) {
         const header = document.createElement('tr');
         switch (issueCode) {
-            case "AttributionReportingIssue::InvalidRegisterSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.InvalidRegisterSourceHeader */:
-            case "AttributionReportingIssue::InvalidRegisterTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.InvalidRegisterTriggerHeader */:
-            case "AttributionReportingIssue::InvalidRegisterOsSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.InvalidRegisterOsSourceHeader */:
-            case "AttributionReportingIssue::InvalidRegisterOsTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.InvalidRegisterOsTriggerHeader */:
-            case "AttributionReportingIssue::OsSourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OsSourceIgnored */:
-            case "AttributionReportingIssue::OsTriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OsTriggerIgnored */:
-            case "AttributionReportingIssue::SourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.SourceIgnored */:
-            case "AttributionReportingIssue::TriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.TriggerIgnored */:
+            case "AttributionReportingIssue::InvalidRegisterSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_REGISTER_SOURCE_HEADER */:
+            case "AttributionReportingIssue::InvalidRegisterTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_REGISTER_TRIGGER_HEADER */:
+            case "AttributionReportingIssue::InvalidRegisterOsSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_REGISTER_OS_SOURCE_HEADER */:
+            case "AttributionReportingIssue::InvalidRegisterOsTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_REGISTER_OS_TRIGGER_HEADER */:
+            case "AttributionReportingIssue::OsSourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OS_SOURCE_IGNORED */:
+            case "AttributionReportingIssue::OsTriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OS_TRIGGER_IGNORED */:
+            case "AttributionReportingIssue::SourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.SOURCE_IGNORED */:
+            case "AttributionReportingIssue::TriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.TRIGGER_IGNORED */:
                 this.appendColumnTitle(header, i18nString(UIStrings.request));
                 this.appendColumnTitle(header, i18nString(UIStrings.invalidHeaderValue));
                 break;
-            case "AttributionReportingIssue::InsecureContext" /* IssuesManager.AttributionReportingIssue.IssueCode.InsecureContext */:
-            case "AttributionReportingIssue::UntrustworthyReportingOrigin" /* IssuesManager.AttributionReportingIssue.IssueCode.UntrustworthyReportingOrigin */:
+            case "AttributionReportingIssue::InsecureContext" /* IssuesManager.AttributionReportingIssue.IssueCode.INSECURE_CONTEXT */:
+            case "AttributionReportingIssue::UntrustworthyReportingOrigin" /* IssuesManager.AttributionReportingIssue.IssueCode.UNTRUSTWORTHY_REPORTING_ORIGIN */:
                 this.appendColumnTitle(header, i18nString(UIStrings.element));
                 this.appendColumnTitle(header, i18nString(UIStrings.request));
                 this.appendColumnTitle(header, i18nString(UIStrings.untrustworthyOrigin));
                 break;
-            case "AttributionReportingIssue::PermissionPolicyDisabled" /* IssuesManager.AttributionReportingIssue.IssueCode.PermissionPolicyDisabled */:
+            case "AttributionReportingIssue::PermissionPolicyDisabled" /* IssuesManager.AttributionReportingIssue.IssueCode.PERMISSION_POLICY_DISABLED */:
                 this.appendColumnTitle(header, i18nString(UIStrings.element));
                 this.appendColumnTitle(header, i18nString(UIStrings.request));
                 break;
-            case "AttributionReportingIssue::SourceAndTriggerHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.SourceAndTriggerHeaders */:
-            case "AttributionReportingIssue::WebAndOsHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.WebAndOsHeaders */:
+            case "AttributionReportingIssue::SourceAndTriggerHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.SOURCE_AND_TRIGGER_HEADERS */:
+            case "AttributionReportingIssue::WebAndOsHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.WEB_AND_OS_HEADERS */:
                 this.appendColumnTitle(header, i18nString(UIStrings.request));
                 break;
-            case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation" /* IssuesManager.AttributionReportingIssue.IssueCode.NavigationRegistrationWithoutTransientUserActivation */:
+            case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation" /* IssuesManager.AttributionReportingIssue.IssueCode.NAVIGATION_REGISTRATION_WITHOUT_TRANSIENT_USER_ACTIVATION */:
                 this.appendColumnTitle(header, i18nString(UIStrings.element));
                 break;
         }
@@ -89,32 +89,32 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
         element.classList.add('affected-resource-directive');
         const details = issue.issueDetails;
         switch (issueCode) {
-            case "AttributionReportingIssue::InvalidRegisterSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.InvalidRegisterSourceHeader */:
-            case "AttributionReportingIssue::InvalidRegisterTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.InvalidRegisterTriggerHeader */:
-            case "AttributionReportingIssue::InvalidRegisterOsSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.InvalidRegisterOsSourceHeader */:
-            case "AttributionReportingIssue::InvalidRegisterOsTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.InvalidRegisterOsTriggerHeader */:
-            case "AttributionReportingIssue::OsSourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OsSourceIgnored */:
-            case "AttributionReportingIssue::OsTriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OsTriggerIgnored */:
-            case "AttributionReportingIssue::SourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.SourceIgnored */:
-            case "AttributionReportingIssue::TriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.TriggerIgnored */:
+            case "AttributionReportingIssue::InvalidRegisterSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_REGISTER_SOURCE_HEADER */:
+            case "AttributionReportingIssue::InvalidRegisterTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_REGISTER_TRIGGER_HEADER */:
+            case "AttributionReportingIssue::InvalidRegisterOsSourceHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_REGISTER_OS_SOURCE_HEADER */:
+            case "AttributionReportingIssue::InvalidRegisterOsTriggerHeader" /* IssuesManager.AttributionReportingIssue.IssueCode.INVALID_REGISTER_OS_TRIGGER_HEADER */:
+            case "AttributionReportingIssue::OsSourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OS_SOURCE_IGNORED */:
+            case "AttributionReportingIssue::OsTriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.OS_TRIGGER_IGNORED */:
+            case "AttributionReportingIssue::SourceIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.SOURCE_IGNORED */:
+            case "AttributionReportingIssue::TriggerIgnored" /* IssuesManager.AttributionReportingIssue.IssueCode.TRIGGER_IGNORED */:
                 this.#appendRequestOrEmptyCell(element, details.request);
                 this.appendIssueDetailCell(element, details.invalidParameter || '');
                 break;
-            case "AttributionReportingIssue::InsecureContext" /* IssuesManager.AttributionReportingIssue.IssueCode.InsecureContext */:
-            case "AttributionReportingIssue::UntrustworthyReportingOrigin" /* IssuesManager.AttributionReportingIssue.IssueCode.UntrustworthyReportingOrigin */:
+            case "AttributionReportingIssue::InsecureContext" /* IssuesManager.AttributionReportingIssue.IssueCode.INSECURE_CONTEXT */:
+            case "AttributionReportingIssue::UntrustworthyReportingOrigin" /* IssuesManager.AttributionReportingIssue.IssueCode.UNTRUSTWORTHY_REPORTING_ORIGIN */:
                 await this.#appendElementOrEmptyCell(element, issue);
                 this.#appendRequestOrEmptyCell(element, details.request);
                 this.appendIssueDetailCell(element, details.invalidParameter || '');
                 break;
-            case "AttributionReportingIssue::PermissionPolicyDisabled" /* IssuesManager.AttributionReportingIssue.IssueCode.PermissionPolicyDisabled */:
+            case "AttributionReportingIssue::PermissionPolicyDisabled" /* IssuesManager.AttributionReportingIssue.IssueCode.PERMISSION_POLICY_DISABLED */:
                 await this.#appendElementOrEmptyCell(element, issue);
                 this.#appendRequestOrEmptyCell(element, details.request);
                 break;
-            case "AttributionReportingIssue::SourceAndTriggerHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.SourceAndTriggerHeaders */:
-            case "AttributionReportingIssue::WebAndOsHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.WebAndOsHeaders */:
+            case "AttributionReportingIssue::SourceAndTriggerHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.SOURCE_AND_TRIGGER_HEADERS */:
+            case "AttributionReportingIssue::WebAndOsHeaders" /* IssuesManager.AttributionReportingIssue.IssueCode.WEB_AND_OS_HEADERS */:
                 this.#appendRequestOrEmptyCell(element, details.request);
                 break;
-            case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation" /* IssuesManager.AttributionReportingIssue.IssueCode.NavigationRegistrationWithoutTransientUserActivation */:
+            case "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation" /* IssuesManager.AttributionReportingIssue.IssueCode.NAVIGATION_REGISTRATION_WITHOUT_TRANSIENT_USER_ACTIVATION */:
                 await this.#appendElementOrEmptyCell(element, issue);
                 break;
         }
@@ -137,7 +137,7 @@ export class AttributionReportingIssueDetailsView extends AffectedResourcesView 
         }
         const opts = {
             additionalOnClickAction() {
-                Host.userMetrics.issuesPanelResourceOpened("AttributionReporting" /* IssuesManager.Issue.IssueCategory.AttributionReporting */, "Request" /* AffectedItem.Request */);
+                Host.userMetrics.issuesPanelResourceOpened("AttributionReporting" /* IssuesManager.Issue.IssueCategory.ATTRIBUTION_REPORTING */, "Request" /* AffectedItem.Request */);
             },
         };
         parent.appendChild(this.createRequestCell(request, opts));

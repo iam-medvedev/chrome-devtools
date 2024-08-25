@@ -49,7 +49,6 @@ styles.replaceSync(
 
   &.outline-reason-ERROR {
     border-color: var(--sys-color-error-bright);
-    border-radius: var(--sys-shape-corner-small);
   }
 }
 

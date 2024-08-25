@@ -249,33 +249,33 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     waitForResponseReceived(): Promise<void>;
 }
 export declare enum Events {
-    FinishedLoading = "FinishedLoading",
-    TimingChanged = "TimingChanged",
-    RemoteAddressChanged = "RemoteAddressChanged",
-    RequestHeadersChanged = "RequestHeadersChanged",
-    ResponseHeadersChanged = "ResponseHeadersChanged",
-    WebsocketFrameAdded = "WebsocketFrameAdded",
-    EventSourceMessageAdded = "EventSourceMessageAdded",
-    TrustTokenResultAdded = "TrustTokenResultAdded"
+    FINISHED_LOADING = "FinishedLoading",
+    TIMING_CHANGED = "TimingChanged",
+    REMOTE_ADDRESS_CHANGED = "RemoteAddressChanged",
+    REQUEST_HEADERS_CHANGED = "RequestHeadersChanged",
+    RESPONSE_HEADERS_CHANGED = "ResponseHeadersChanged",
+    WEBSOCKET_FRAME_ADDED = "WebsocketFrameAdded",
+    EVENT_SOURCE_MESSAGE_ADDED = "EventSourceMessageAdded",
+    TRUST_TOKEN_RESULT_ADDED = "TrustTokenResultAdded"
 }
 export type EventTypes = {
-    [Events.FinishedLoading]: NetworkRequest;
-    [Events.TimingChanged]: NetworkRequest;
-    [Events.RemoteAddressChanged]: NetworkRequest;
-    [Events.RequestHeadersChanged]: void;
-    [Events.ResponseHeadersChanged]: void;
-    [Events.WebsocketFrameAdded]: WebSocketFrame;
-    [Events.EventSourceMessageAdded]: EventSourceMessage;
-    [Events.TrustTokenResultAdded]: void;
+    [Events.FINISHED_LOADING]: NetworkRequest;
+    [Events.TIMING_CHANGED]: NetworkRequest;
+    [Events.REMOTE_ADDRESS_CHANGED]: NetworkRequest;
+    [Events.REQUEST_HEADERS_CHANGED]: void;
+    [Events.RESPONSE_HEADERS_CHANGED]: void;
+    [Events.WEBSOCKET_FRAME_ADDED]: WebSocketFrame;
+    [Events.EVENT_SOURCE_MESSAGE_ADDED]: EventSourceMessage;
+    [Events.TRUST_TOKEN_RESULT_ADDED]: void;
 };
 export declare const enum InitiatorType {
-    Other = "other",
-    Parser = "parser",
-    Redirect = "redirect",
-    Script = "script",
-    Preload = "preload",
-    SignedExchange = "signedExchange",
-    Preflight = "preflight"
+    OTHER = "other",
+    PARSER = "parser",
+    REDIRECT = "redirect",
+    SCRIPT = "script",
+    PRELOAD = "preload",
+    SIGNED_EXCHANGE = "signedExchange",
+    PREFLIGHT = "preflight"
 }
 export declare enum WebSocketFrameType {
     Send = "send",

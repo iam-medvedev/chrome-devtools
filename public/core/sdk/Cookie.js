@@ -23,25 +23,25 @@ export class Cookie {
     }
     static fromProtocolCookie(protocolCookie) {
         const cookie = new Cookie(protocolCookie.name, protocolCookie.value, null, protocolCookie.priority);
-        cookie.addAttribute("domain" /* Attribute.Domain */, protocolCookie['domain']);
-        cookie.addAttribute("path" /* Attribute.Path */, protocolCookie['path']);
+        cookie.addAttribute("domain" /* Attribute.DOMAIN */, protocolCookie['domain']);
+        cookie.addAttribute("path" /* Attribute.PATH */, protocolCookie['path']);
         if (protocolCookie['expires']) {
-            cookie.addAttribute("expires" /* Attribute.Expires */, protocolCookie['expires'] * 1000);
+            cookie.addAttribute("expires" /* Attribute.EXPIRES */, protocolCookie['expires'] * 1000);
         }
         if (protocolCookie['httpOnly']) {
-            cookie.addAttribute("http-only" /* Attribute.HttpOnly */);
+            cookie.addAttribute("http-only" /* Attribute.HTTP_ONLY */);
         }
         if (protocolCookie['secure']) {
-            cookie.addAttribute("secure" /* Attribute.Secure */);
+            cookie.addAttribute("secure" /* Attribute.SECURE */);
         }
         if (protocolCookie['sameSite']) {
-            cookie.addAttribute("same-site" /* Attribute.SameSite */, protocolCookie['sameSite']);
+            cookie.addAttribute("same-site" /* Attribute.SAME_SITE */, protocolCookie['sameSite']);
         }
         if ('sourcePort' in protocolCookie) {
-            cookie.addAttribute("source-port" /* Attribute.SourcePort */, protocolCookie.sourcePort);
+            cookie.addAttribute("source-port" /* Attribute.SOURCE_PORT */, protocolCookie.sourcePort);
         }
         if ('sourceScheme' in protocolCookie) {
-            cookie.addAttribute("source-scheme" /* Attribute.SourceScheme */, protocolCookie.sourceScheme);
+            cookie.addAttribute("source-scheme" /* Attribute.SOURCE_SCHEME */, protocolCookie.sourceScheme);
         }
         if ('partitionKey' in protocolCookie) {
             if (protocolCookie.partitionKey) {
@@ -49,7 +49,7 @@ export class Cookie {
             }
         }
         if ('partitionKeyOpaque' in protocolCookie && protocolCookie.partitionKeyOpaque) {
-            cookie.addAttribute("partition-key" /* Attribute.PartitionKey */, OPAQUE_PARTITION_KEY);
+            cookie.addAttribute("partition-key" /* Attribute.PARTITION_KEY */, OPAQUE_PARTITION_KEY);
         }
         cookie.setSize(protocolCookie['size']);
         return cookie;
@@ -70,26 +70,26 @@ export class Cookie {
         return this.#typeInternal;
     }
     httpOnly() {
-        return this.#attributes.has("http-only" /* Attribute.HttpOnly */);
+        return this.#attributes.has("http-only" /* Attribute.HTTP_ONLY */);
     }
     secure() {
-        return this.#attributes.has("secure" /* Attribute.Secure */);
+        return this.#attributes.has("secure" /* Attribute.SECURE */);
     }
     partitioned() {
-        return this.#attributes.has("partitioned" /* Attribute.Partitioned */) || Boolean(this.partitionKey()) || this.partitionKeyOpaque();
+        return this.#attributes.has("partitioned" /* Attribute.PARTITIONED */) || Boolean(this.partitionKey()) || this.partitionKeyOpaque();
     }
     sameSite() {
         // TODO(allada) This should not rely on #attributes and instead store them individually.
         // when #attributes get added via addAttribute() they are lowercased, hence the lowercasing of samesite here
-        return this.#attributes.get("same-site" /* Attribute.SameSite */);
+        return this.#attributes.get("same-site" /* Attribute.SAME_SITE */);
     }
     partitionKey() {
         return this.#partitionKey;
     }
     setPartitionKey(topLevelSite, hasCrossSiteAncestor) {
         this.#partitionKey = { topLevelSite, hasCrossSiteAncestor };
-        if (!this.#attributes.has("partitioned" /* Attribute.Partitioned */)) {
-            this.addAttribute("partitioned" /* Attribute.Partitioned */);
+        if (!this.#attributes.has("partitioned" /* Attribute.PARTITIONED */)) {
+            this.addAttribute("partitioned" /* Attribute.PARTITIONED */);
         }
     }
     topLevelSite() {
@@ -120,7 +120,7 @@ export class Cookie {
         return (this.topLevelSite() === OPAQUE_PARTITION_KEY);
     }
     setPartitionKeyOpaque() {
-        this.addAttribute("partition-key" /* Attribute.PartitionKey */, OPAQUE_PARTITION_KEY);
+        this.addAttribute("partition-key" /* Attribute.PARTITION_KEY */, OPAQUE_PARTITION_KEY);
         this.setPartitionKey(OPAQUE_PARTITION_KEY, false);
     }
     priority() {
@@ -129,25 +129,25 @@ export class Cookie {
     session() {
         // RFC 2965 suggests using Discard attribute to mark session cookies, but this does not seem to be widely used.
         // Check for absence of explicitly max-age or expiry date instead.
-        return !(this.#attributes.has("expires" /* Attribute.Expires */) || this.#attributes.has("max-age" /* Attribute.MaxAge */));
+        return !(this.#attributes.has("expires" /* Attribute.EXPIRES */) || this.#attributes.has("max-age" /* Attribute.MAX_AGE */));
     }
     path() {
-        return this.#attributes.get("path" /* Attribute.Path */);
+        return this.#attributes.get("path" /* Attribute.PATH */);
     }
     domain() {
-        return this.#attributes.get("domain" /* Attribute.Domain */);
+        return this.#attributes.get("domain" /* Attribute.DOMAIN */);
     }
     expires() {
-        return this.#attributes.get("expires" /* Attribute.Expires */);
+        return this.#attributes.get("expires" /* Attribute.EXPIRES */);
     }
     maxAge() {
-        return this.#attributes.get("max-age" /* Attribute.MaxAge */);
+        return this.#attributes.get("max-age" /* Attribute.MAX_AGE */);
     }
     sourcePort() {
-        return this.#attributes.get("source-port" /* Attribute.SourcePort */);
+        return this.#attributes.get("source-port" /* Attribute.SOURCE_PORT */);
     }
     sourceScheme() {
-        return this.#attributes.get("source-scheme" /* Attribute.SourceScheme */);
+        return this.#attributes.get("source-scheme" /* Attribute.SOURCE_SCHEME */);
     }
     size() {
         return this.#sizeInternal;
@@ -187,7 +187,7 @@ export class Cookie {
             return;
         }
         switch (key) {
-            case "priority" /* Attribute.Priority */:
+            case "priority" /* Attribute.PRIORITY */:
                 this.#priorityInternal = value;
                 break;
             default:

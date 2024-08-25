@@ -39,7 +39,7 @@ describeWithMockConnection('ConsoleView', () => {
         return new SDK.ConsoleModel.ConsoleMessage(target.model(SDK.RuntimeModel.RuntimeModel), "javascript" /* Protocol.Log.LogEntrySource.Javascript */, null, message, { type });
     }
     it('can save to file', async () => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         const target = createTarget({ parentTarget: tabTarget });
         const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
@@ -145,7 +145,7 @@ describeWithMockConnection('ConsoleView', () => {
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
             assert.exists(runtimeModel);
             SDK.ConsoleModel.ConsoleModel.requestClearMessages();
-            const selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
+            const selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
             for (let i = 0; i < 5; i++) {
                 assert.isFalse(selfXssWarningDisabledSetting.get());
                 consoleModel.dispatchEventToListeners(SDK.ConsoleModel.Events.MessageAdded, createConsoleMessage(target, String(i), SDK.ConsoleModel.FrontendMessageType.Command));
@@ -179,15 +179,15 @@ describeWithMockConnection('ConsoleView', () => {
         consoleView.markAsRoot();
         const spy = sinon.spy(consoleView, 'issuesCountUpdatedForTest');
         const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
-        issuesManager.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */);
+        issuesManager.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */);
         assert.isTrue(spy.calledOnce);
         // Pauses updating the issue counter
         consoleView.onDetach();
-        issuesManager.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */);
+        issuesManager.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */);
         assert.isTrue(spy.calledOnce);
         // Continues updating the issue counter
         consoleView.show(document.body);
-        issuesManager.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */);
+        issuesManager.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */);
         assert.isTrue(spy.calledTwice);
     });
 });

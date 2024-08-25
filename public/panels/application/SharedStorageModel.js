@@ -168,5 +168,5 @@ export class SharedStorageModel extends SDK.SDKModel.SDKModel {
     attributionReportingSourceRegistered(_event) {
     }
 }
-SDK.SDKModel.SDKModel.register(SharedStorageModel, { capabilities: 8192 /* SDK.Target.Capability.Storage */, autostart: false });
+SDK.SDKModel.SDKModel.register(SharedStorageModel, { capabilities: 8192 /* SDK.Target.Capability.STORAGE */, autostart: false });
 //# sourceMappingURL=SharedStorageModel.js.map

@@ -40,7 +40,7 @@ describeWithMockConnection('AutofillModel', () => {
         const target = createTarget();
         const autofillModel = target.model(SDK.AutofillModel.AutofillModel);
         const dispatchedEvents = [];
-        autofillModel.addEventListener("AddressFormFilled" /* SDK.AutofillModel.Events.AddressFormFilled */, e => dispatchedEvents.push(e.data));
+        autofillModel.addEventListener("AddressFormFilled" /* SDK.AutofillModel.Events.ADDRESS_FORM_FILLED */, e => dispatchedEvents.push(e.data));
         const addressFormFilledEvent = {
             addressUi: {
                 addressFields: [

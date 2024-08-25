@@ -13,7 +13,7 @@ export declare class Throttler {
     private getTime;
 }
 export declare const enum Scheduling {
-    Default = "Default",
-    AsSoonAsPossible = "AsSoonAsPossible",
-    Delayed = "Delayed"
+    DEFAULT = "Default",
+    AS_SOON_AS_POSSIBLE = "AsSoonAsPossible",
+    DELAYED = "Delayed"
 }

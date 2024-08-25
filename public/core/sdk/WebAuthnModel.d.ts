@@ -2,12 +2,12 @@ import type * as Protocol from '../../generated/protocol.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
 export declare const enum Events {
-    CredentialAdded = "CredentialAdded",
-    CredentialAsserted = "CredentialAsserted"
+    CREDENTIAL_ADDED = "CredentialAdded",
+    CREDENTIAL_ASSERTED = "CredentialAsserted"
 }
 export type EventTypes = {
-    [Events.CredentialAdded]: Protocol.WebAuthn.CredentialAddedEvent;
-    [Events.CredentialAsserted]: Protocol.WebAuthn.CredentialAssertedEvent;
+    [Events.CREDENTIAL_ADDED]: Protocol.WebAuthn.CredentialAddedEvent;
+    [Events.CREDENTIAL_ASSERTED]: Protocol.WebAuthn.CredentialAssertedEvent;
 };
 export declare class WebAuthnModel extends SDKModel<EventTypes> {
     #private;

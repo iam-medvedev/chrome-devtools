@@ -137,9 +137,9 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
         UI.ARIAUtils.markAsList(this.#list.element);
         UI.ARIAUtils.setLabel(this.#list.element, i18nString(UIStrings.domBreakpointsList));
         this.#emptyElement.tabIndex = -1;
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointAdded" /* SDK.DOMDebuggerModel.Events.DOMBreakpointAdded */, this.breakpointAdded, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointToggled" /* SDK.DOMDebuggerModel.Events.DOMBreakpointToggled */, this.breakpointToggled, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointsRemoved" /* SDK.DOMDebuggerModel.Events.DOMBreakpointsRemoved */, this.breakpointsRemoved, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointAdded" /* SDK.DOMDebuggerModel.Events.DOM_BREAKPOINT_ADDED */, this.breakpointAdded, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointToggled" /* SDK.DOMDebuggerModel.Events.DOM_BREAKPOINT_TOGGLED */, this.breakpointToggled, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMDebuggerModel.DOMDebuggerModel, "DOMBreakpointsRemoved" /* SDK.DOMDebuggerModel.Events.DOM_BREAKPOINTS_REMOVED */, this.breakpointsRemoved, this);
         for (const domDebuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DOMDebuggerModel.DOMDebuggerModel)) {
             domDebuggerModel.retrieveDOMBreakpoints();
             for (const breakpoint of domDebuggerModel.domBreakpoints()) {

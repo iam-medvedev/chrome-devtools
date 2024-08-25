@@ -229,7 +229,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.hideNetworkMessages),
     settingName: 'hide-network-messages',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -247,7 +247,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.selectedContextOnly),
     settingName: 'selected-context-filter-enabled',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -265,7 +265,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.logXmlhttprequests),
     settingName: 'monitoring-xhr-enabled',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -273,7 +273,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.timestamps),
     settingName: 'console-timestamps-enabled',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -308,7 +308,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.autocompleteOnEnter),
     settingName: 'console-autocomplete-on-enter',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -326,7 +326,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.groupSimilarMessagesInConsole),
     settingName: 'console-group-similar',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -361,7 +361,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.eagerEvaluation),
     settingName: 'console-eager-eval',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -379,7 +379,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.evaluateTriggersUserActivation),
     settingName: 'console-user-activation-eval',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -397,7 +397,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.expandConsoleTraceMessagesByDefault),
     settingName: 'console-trace-expand',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,

@@ -38,16 +38,16 @@ export declare class StorageBucketsModel extends SDKModel<EventTypes> implements
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
 }
 export declare const enum Events {
-    BucketAdded = "BucketAdded",
-    BucketRemoved = "BucketRemoved",
-    BucketChanged = "BucketChanged"
+    BUCKET_ADDED = "BucketAdded",
+    BUCKET_REMOVED = "BucketRemoved",
+    BUCKET_CHANGED = "BucketChanged"
 }
 export interface BucketEvent {
     model: StorageBucketsModel;
     bucketInfo: Protocol.Storage.StorageBucketInfo;
 }
 export type EventTypes = {
-    [Events.BucketAdded]: BucketEvent;
-    [Events.BucketRemoved]: BucketEvent;
-    [Events.BucketChanged]: BucketEvent;
+    [Events.BUCKET_ADDED]: BucketEvent;
+    [Events.BUCKET_REMOVED]: BucketEvent;
+    [Events.BUCKET_CHANGED]: BucketEvent;
 };

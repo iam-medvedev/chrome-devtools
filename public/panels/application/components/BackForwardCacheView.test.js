@@ -30,7 +30,7 @@ describeWithMockConnection('BackForwardCacheView', () => {
     let target;
     let resourceTreeModel;
     beforeEach(async () => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
         resourceTreeModel =

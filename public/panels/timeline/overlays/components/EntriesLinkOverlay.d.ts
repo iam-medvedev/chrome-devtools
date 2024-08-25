@@ -1,19 +1,24 @@
 export declare class EntriesLinkOverlay extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../../ui/lit-html/static.js").Static;
-    entryToExists: boolean;
-    constructor(initialEntryCoordinate: {
+    constructor(initialFromEntryCoordinateAndDimentions: {
         x: number;
         y: number;
+        width: number;
+        height: number;
     });
     connectedCallback(): void;
-    set coordinateFrom(coordinateFrom: {
+    set fromEntryCoordinateAndDimentions(fromEntryParams: {
         x: number;
         y: number;
+        length: number;
+        height: number;
     });
-    set coordinateTo(coordinateTo: {
+    set toEntryCoordinateAndDimentions(toEntryParams: {
         x: number;
         y: number;
+        length?: number;
+        height?: number;
     });
 }
 declare global {

@@ -59,7 +59,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.flamechartMouseWheelAction),
     settingName: 'flamechart-mouse-wheel-action',
     settingType: "enum" /* Common.Settings.SettingType.ENUM */,

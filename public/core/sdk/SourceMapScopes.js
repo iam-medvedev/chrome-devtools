@@ -100,7 +100,7 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
             const range = {
                 start: { line: item.line, column: item.column },
                 end: { line: item.line, column: item.column },
-                isScope: Boolean(item.flags & 4 /* EncodedGeneratedRangeFlag.IsScope */),
+                isScope: Boolean(item.flags & 4 /* EncodedGeneratedRangeFlag.IS_SCOPE */),
                 values: [],
                 children: [],
             };
@@ -203,7 +203,7 @@ function* decodeGeneratedRangeItems(encodedGeneratedRange) {
             flags: iter.nextVLQ(),
             bindings: [],
         };
-        if (startItem.flags & 1 /* EncodedGeneratedRangeFlag.HasDefinition */) {
+        if (startItem.flags & 1 /* EncodedGeneratedRangeFlag.HAS_DEFINITION */) {
             const sourceIdx = iter.nextVLQ();
             const scopeIdx = iter.nextVLQ();
             state.defScopeIdx = scopeIdx + (sourceIdx === 0 ? state.defScopeIdx : 0);
@@ -213,7 +213,7 @@ function* decodeGeneratedRangeItems(encodedGeneratedRange) {
                 scopeIdx: state.defScopeIdx,
             };
         }
-        if (startItem.flags & 2 /* EncodedGeneratedRangeFlag.HasCallsite */) {
+        if (startItem.flags & 2 /* EncodedGeneratedRangeFlag.HAS_CALLSITE */) {
             const sourceIdx = iter.nextVLQ();
             const line = iter.nextVLQ();
             const column = iter.nextVLQ();

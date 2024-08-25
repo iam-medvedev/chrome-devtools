@@ -38,10 +38,10 @@ export declare const isError: (contentDataOrError: StreamingContentDataOrError) 
 };
 export declare const asContentDataOrError: (contentDataOrError: StreamingContentDataOrError) => ContentDataOrError;
 export declare const enum Events {
-    ChunkAdded = "ChunkAdded"
+    CHUNK_ADDED = "ChunkAdded"
 }
 export type EventTypes = {
-    [Events.ChunkAdded]: {
+    [Events.CHUNK_ADDED]: {
         content: StreamingContentData;
         chunk: string;
     };

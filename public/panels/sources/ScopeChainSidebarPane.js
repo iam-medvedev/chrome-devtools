@@ -72,7 +72,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
             // is happening (see https://crbug.com/1162416).
             this.infoElement.textContent = i18nString(UIStrings.loading);
             this.#scopeChainModel = new SourceMapScopes.ScopeChainModel.ScopeChainModel(callFrame);
-            this.#scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.ScopeChainUpdated */, event => this.buildScopeTreeOutline(event.data), this);
+            this.#scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, event => this.buildScopeTreeOutline(event.data), this);
         }
         else {
             this.infoElement.textContent = i18nString(UIStrings.notPaused);

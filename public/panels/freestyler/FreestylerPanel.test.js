@@ -13,6 +13,9 @@ function getTestAidaClient() {
         registerClientEvent: sinon.spy(),
     };
 }
+function getTestSyncInfo() {
+    return { isSyncActive: true };
+}
 describeWithEnvironment('FreestylerPanel', () => {
     const mockView = sinon.stub();
     beforeEach(() => {
@@ -25,6 +28,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
             });
             sinon.assert.calledWith(mockView, sinon.match({ state: "consent-view" /* Freestyler.State.CONSENT_VIEW */ }));
         });
@@ -34,6 +38,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();
@@ -46,6 +51,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
             });
             sinon.assert.calledWith(mockView, sinon.match({ state: "chat-view" /* Freestyler.State.CHAT_VIEW */ }));
         });
@@ -58,6 +64,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             const panel = new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
             });
             void panel.showConfirmSideEffectUi('code');
             const lastArg = mockView.lastCall.args[0];
@@ -68,6 +75,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             const panel = new Freestyler.FreestylerPanel(mockView, {
                 aidaClient: getTestAidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
             });
             void panel.showConfirmSideEffectUi('code').then(result => {
                 assert.isTrue(result);
@@ -93,6 +101,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient,
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();
@@ -107,6 +116,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient,
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();
@@ -127,6 +137,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient,
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();
@@ -148,6 +159,7 @@ describeWithEnvironment('FreestylerPanel', () => {
             new Freestyler.FreestylerPanel(mockView, {
                 aidaClient,
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+                syncInfo: getTestSyncInfo(),
             });
             const callArgs = mockView.getCall(0).args[0];
             mockView.reset();

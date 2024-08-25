@@ -48,8 +48,8 @@ declare enum Type {
     Unknown = "unknown"
 }
 export declare const enum Capability {
-    Touch = "touch",
-    Mobile = "mobile"
+    TOUCH = "touch",
+    MOBILE = "mobile"
 }
 export declare class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
@@ -67,12 +67,12 @@ export declare class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrap
     private copyShowValues;
 }
 export declare const enum Events {
-    CustomDevicesUpdated = "CustomDevicesUpdated",
-    StandardDevicesUpdated = "StandardDevicesUpdated"
+    CUSTOM_DEVICES_UPDATED = "CustomDevicesUpdated",
+    STANDARD_DEVICES_UPDATED = "StandardDevicesUpdated"
 }
 export type EventTypes = {
-    [Events.CustomDevicesUpdated]: void;
-    [Events.StandardDevicesUpdated]: void;
+    [Events.CUSTOM_DEVICES_UPDATED]: void;
+    [Events.STANDARD_DEVICES_UPDATED]: void;
 };
 export interface Mode {
     title: string;

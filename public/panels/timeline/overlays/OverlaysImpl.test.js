@@ -43,10 +43,15 @@ describeWithEnvironment('Overlays', () => {
     });
     it('can calculate the x position of an event based on the dimensions and its timestamp', async () => {
         const flameChartsContainer = document.createElement('div');
+        const mainFlameChartsContainer = flameChartsContainer.createChild('div');
+        const networkFlameChartsContainer = flameChartsContainer.createChild('div');
         const container = flameChartsContainer.createChild('div');
         const overlays = new Overlays.Overlays.Overlays({
             container,
-            flameChartsContainer,
+            flameChartsContainers: {
+                main: mainFlameChartsContainer,
+                network: networkFlameChartsContainer,
+            },
             charts: createCharts(),
         });
         // Set up the dimensions so it is 100px wide
@@ -75,10 +80,15 @@ describeWithEnvironment('Overlays', () => {
         const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
         const charts = createCharts(traceData);
         const flameChartsContainer = document.createElement('div');
+        const mainFlameChartsContainer = flameChartsContainer.createChild('div');
+        const networkFlameChartsContainer = flameChartsContainer.createChild('div');
         const container = flameChartsContainer.createChild('div');
         const overlays = new Overlays.Overlays.Overlays({
             container,
-            flameChartsContainer,
+            flameChartsContainers: {
+                main: mainFlameChartsContainer,
+                network: networkFlameChartsContainer,
+            },
             charts,
         });
         overlays.updateChartDimensions('main', {
@@ -109,10 +119,15 @@ describeWithEnvironment('Overlays', () => {
         const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
         const charts = createCharts(traceData);
         const flameChartsContainer = document.createElement('div');
+        const mainFlameChartsContainer = flameChartsContainer.createChild('div');
+        const networkFlameChartsContainer = flameChartsContainer.createChild('div');
         const container = flameChartsContainer.createChild('div');
         const overlays = new Overlays.Overlays.Overlays({
             container,
-            flameChartsContainer,
+            flameChartsContainers: {
+                main: mainFlameChartsContainer,
+                network: networkFlameChartsContainer,
+            },
             charts,
         });
         overlays.updateChartDimensions('main', {
@@ -144,10 +159,15 @@ describeWithEnvironment('Overlays', () => {
         const { traceData } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
         const charts = createCharts(traceData);
         const flameChartsContainer = document.createElement('div');
+        const mainFlameChartsContainer = flameChartsContainer.createChild('div');
+        const networkFlameChartsContainer = flameChartsContainer.createChild('div');
         const container = flameChartsContainer.createChild('div');
         const overlays = new Overlays.Overlays.Overlays({
             container,
-            flameChartsContainer,
+            flameChartsContainers: {
+                main: mainFlameChartsContainer,
+                network: networkFlameChartsContainer,
+            },
             charts,
         });
         overlays.updateChartDimensions('main', {
@@ -180,10 +200,15 @@ describeWithEnvironment('Overlays', () => {
         function setupChartWithDimensionsAndAnnotationOverlayListeners(traceData) {
             const charts = createCharts(traceData);
             const flameChartsContainer = document.createElement('div');
+            const mainFlameChartsContainer = flameChartsContainer.createChild('div');
+            const networkFlameChartsContainer = flameChartsContainer.createChild('div');
             const container = flameChartsContainer.createChild('div');
             const overlays = new Overlays.Overlays.Overlays({
                 container,
-                flameChartsContainer,
+                flameChartsContainers: {
+                    main: mainFlameChartsContainer,
+                    network: networkFlameChartsContainer,
+                },
                 charts,
             });
             const currManager = Timeline.ModificationsManager.ModificationsManager.activeManager();

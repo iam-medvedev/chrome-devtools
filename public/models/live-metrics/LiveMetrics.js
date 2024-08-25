@@ -95,7 +95,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                 interaction.node = await this.#refreshNode(domModel, interaction.node);
             }
         }
-        this.dispatchEventToListeners("status" /* Events.Status */, {
+        this.dispatchEventToListeners("status" /* Events.STATUS */, {
             lcp: this.#lcpValue,
             cls: this.#clsValue,
             inp: this.#inpValue,
@@ -150,7 +150,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
                 break;
             }
         }
-        this.dispatchEventToListeners("status" /* Events.Status */, {
+        this.dispatchEventToListeners("status" /* Events.STATUS */, {
             lcp: this.#lcpValue,
             cls: this.#clsValue,
             inp: this.#inpValue,

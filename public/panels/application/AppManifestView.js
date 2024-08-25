@@ -520,7 +520,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             this.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.DOMContentLoaded, () => {
                 void this.updateManifest(true);
             }),
-            this.serviceWorkerManager.addEventListener("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, () => {
+            this.serviceWorkerManager.addEventListener("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, () => {
                 void this.updateManifest(false);
             }),
         ];
@@ -546,7 +546,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             this.resourceTreeModel.getInstallabilityErrors(),
             this.resourceTreeModel.getAppId(),
         ]);
-        void this.throttler.schedule(() => this.renderManifest(url, data, errors, installabilityErrors, appId), immediately ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */ : "Default" /* Common.Throttler.Scheduling.Default */);
+        void this.throttler.schedule(() => this.renderManifest(url, data, errors, installabilityErrors, appId), immediately ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */ : "Default" /* Common.Throttler.Scheduling.DEFAULT */);
     }
     async renderManifest(url, data, errors, installabilityErrors, appIdResponse) {
         const appId = appIdResponse?.appId || null;
@@ -1080,9 +1080,9 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             await this.overlayModel?.toggleWindowControlsToolbar(wcoOsCheckbox.checkboxElement.checked);
         });
         const osSelectElement = wcoOsCheckbox.createChild('select', 'chrome-select');
-        osSelectElement.appendChild(UI.UIUtils.createOption('Windows', "Windows" /* SDK.OverlayModel.EmulatedOSType.WindowsOS */, 'windows'));
-        osSelectElement.appendChild(UI.UIUtils.createOption('macOS', "Mac" /* SDK.OverlayModel.EmulatedOSType.MacOS */, 'macos'));
-        osSelectElement.appendChild(UI.UIUtils.createOption('Linux', "Linux" /* SDK.OverlayModel.EmulatedOSType.LinuxOS */, 'linux'));
+        osSelectElement.appendChild(UI.UIUtils.createOption('Windows', "Windows" /* SDK.OverlayModel.EmulatedOSType.WINDOWS */, 'windows'));
+        osSelectElement.appendChild(UI.UIUtils.createOption('macOS', "Mac" /* SDK.OverlayModel.EmulatedOSType.MAC */, 'macos'));
+        osSelectElement.appendChild(UI.UIUtils.createOption('Linux', "Linux" /* SDK.OverlayModel.EmulatedOSType.LINUX */, 'linux'));
         osSelectElement.selectedIndex = 0;
         if (this.overlayModel) {
             osSelectElement.value = this.overlayModel?.getWindowControlsConfig().selectedPlatform;

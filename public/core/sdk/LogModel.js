@@ -25,11 +25,11 @@ export class LogModel extends SDKModel {
         }
     }
     entryAdded({ entry }) {
-        this.dispatchEventToListeners("EntryAdded" /* Events.EntryAdded */, { logModel: this, entry });
+        this.dispatchEventToListeners("EntryAdded" /* Events.ENTRY_ADDED */, { logModel: this, entry });
     }
     requestClear() {
         void this.#logAgent.invoke_clear();
     }
 }
-SDKModel.register(LogModel, { capabilities: 8 /* Capability.Log */, autostart: true });
+SDKModel.register(LogModel, { capabilities: 8 /* Capability.LOG */, autostart: true });
 //# sourceMappingURL=LogModel.js.map

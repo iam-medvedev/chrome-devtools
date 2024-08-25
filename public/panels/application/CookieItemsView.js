@@ -187,11 +187,11 @@ export class CookieItemsView extends StorageItemsView {
         this.setCookiesDomain(model, cookieDomain);
     }
     setCookiesDomain(model, domain) {
-        this.model.removeEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, this.onCookieListUpdate, this);
+        this.model.removeEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, this.onCookieListUpdate, this);
         this.model = model;
         this.cookieDomain = domain;
         this.refreshItems();
-        this.model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, this.onCookieListUpdate, this);
+        this.model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, this.onCookieListUpdate, this);
     }
     showPreview(cookie) {
         if (cookie === this.selectedCookie) {

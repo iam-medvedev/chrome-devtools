@@ -53,7 +53,7 @@ const UIStrings = {
     /**
      *@description Tooltip to explain why a cookie was blocked
      */
-    thirdPartyPhaseout: 'This cookie was blocked due to third-party cookie phaseout. Learn more in the Issues tab.',
+    thirdPartyPhaseout: 'This cookie was blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel.',
     /**
      *@description Tooltip to explain why a cookie was blocked
      */
@@ -85,7 +85,7 @@ const UIStrings = {
     /**
      *@description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
      */
-    thisSetcookieWasBlockedDueThirdPartyPhaseout: 'Setting this cookie was blocked due to third-party cookie phaseout. Learn more in the Issues tab.',
+    thisSetcookieWasBlockedDueThirdPartyPhaseout: 'Setting this cookie was blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel.',
     /**
      *@description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
      */
@@ -168,11 +168,11 @@ const UIStrings = {
     /**
      *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
      */
-    exemptionReasonTPCDDeprecationTrial: 'This cookie is allowed by third-party cookie phaseout deprecation trial. Learn more: goo.gle/ps-dt.',
+    exemptionReasonTPCDDeprecationTrial: 'This cookie is allowed by third-party cookie deprecation trial. Learn more: goo.gle/ps-dt.',
     /**
      *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
      */
-    exemptionReasonTPCDHeuristics: 'This cookie is allowed by third-party cookie phaseout heuristics. Learn more: goo.gle/hbe',
+    exemptionReasonTPCDHeuristics: 'This cookie is allowed by third-party cookie heuristics. Learn more: goo.gle/hbe',
     /**
      *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
      */
@@ -428,7 +428,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     setRemoteAddress(ip, port) {
         this.#remoteAddressInternal = ip + ':' + port;
-        this.dispatchEventToListeners(Events.RemoteAddressChanged, this);
+        this.dispatchEventToListeners(Events.REMOTE_ADDRESS_CHANGED, this);
     }
     remoteAddress() {
         return this.#remoteAddressInternal;
@@ -518,7 +518,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
                 this.#responseReceivedTimeInternal = x;
             }
         }
-        this.dispatchEventToListeners(Events.TimingChanged, this);
+        this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
     }
     get duration() {
         if (this.#endTimeInternal === -1 || this.#startTimeInternal === -1) {
@@ -556,7 +556,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.#finishedInternal = x;
         if (x) {
-            this.dispatchEventToListeners(Events.FinishedLoading, this);
+            this.dispatchEventToListeners(Events.FINISHED_LOADING, this);
         }
     }
     get failed() {
@@ -664,11 +664,11 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
             this.#responseReceivedTimeInternal = this.#startTimeInternal;
         }
         this.#timingInternal = timingInfo;
-        this.dispatchEventToListeners(Events.TimingChanged, this);
+        this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
     }
     setConnectTimingFromExtraInfo(connectTiming) {
         this.#startTimeInternal = connectTiming.requestTime;
-        this.dispatchEventToListeners(Events.TimingChanged, this);
+        this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
     }
     get mimeType() {
         return this.#mimeTypeInternal;
@@ -790,14 +790,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     setRequestHeaders(headers) {
         this.#requestHeadersInternal = headers;
-        this.dispatchEventToListeners(Events.RequestHeadersChanged);
+        this.dispatchEventToListeners(Events.REQUEST_HEADERS_CHANGED);
     }
     requestHeadersText() {
         return this.#requestHeadersTextInternal;
     }
     setRequestHeadersText(text) {
         this.#requestHeadersTextInternal = text;
-        this.dispatchEventToListeners(Events.RequestHeadersChanged);
+        this.dispatchEventToListeners(Events.REQUEST_HEADERS_CHANGED);
     }
     requestHeaderValue(headerName) {
         if (this.#requestHeaderValues[headerName]) {
@@ -845,7 +845,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#serverTimingsInternal = undefined;
         this.#responseCookiesInternal = undefined;
         this.#responseHeaderValues = {};
-        this.dispatchEventToListeners(Events.ResponseHeadersChanged);
+        this.dispatchEventToListeners(Events.RESPONSE_HEADERS_CHANGED);
     }
     get earlyHintsHeaders() {
         return this.#earlyHintsHeadersInternal || [];
@@ -871,7 +871,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     set responseHeadersText(x) {
         this.#responseHeadersTextInternal = x;
-        this.dispatchEventToListeners(Events.ResponseHeadersChanged);
+        this.dispatchEventToListeners(Events.RESPONSE_HEADERS_CHANGED);
     }
     get sortedResponseHeaders() {
         if (this.#sortedResponseHeadersInternal !== undefined) {
@@ -1261,7 +1261,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     addFrame(frame) {
         this.#framesInternal.push(frame);
-        this.dispatchEventToListeners(Events.WebsocketFrameAdded, frame);
+        this.dispatchEventToListeners(Events.WEBSOCKET_FRAME_ADDED, frame);
     }
     eventSourceMessages() {
         return this.#serverSentEvents?.eventSourceMessages ?? [];
@@ -1428,7 +1428,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     setTrustTokenOperationDoneEvent(doneEvent) {
         this.#trustTokenOperationDoneEventInternal = doneEvent;
-        this.dispatchEventToListeners(Events.TrustTokenResultAdded);
+        this.dispatchEventToListeners(Events.TRUST_TOKEN_RESULT_ADDED);
     }
     trustTokenOperationDoneEvent() {
         return this.#trustTokenOperationDoneEventInternal;
@@ -1477,20 +1477,22 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
 }
 export var Events;
 (function (Events) {
-    Events["FinishedLoading"] = "FinishedLoading";
-    Events["TimingChanged"] = "TimingChanged";
-    Events["RemoteAddressChanged"] = "RemoteAddressChanged";
-    Events["RequestHeadersChanged"] = "RequestHeadersChanged";
-    Events["ResponseHeadersChanged"] = "ResponseHeadersChanged";
-    Events["WebsocketFrameAdded"] = "WebsocketFrameAdded";
-    Events["EventSourceMessageAdded"] = "EventSourceMessageAdded";
-    Events["TrustTokenResultAdded"] = "TrustTokenResultAdded";
+    Events["FINISHED_LOADING"] = "FinishedLoading";
+    Events["TIMING_CHANGED"] = "TimingChanged";
+    Events["REMOTE_ADDRESS_CHANGED"] = "RemoteAddressChanged";
+    Events["REQUEST_HEADERS_CHANGED"] = "RequestHeadersChanged";
+    Events["RESPONSE_HEADERS_CHANGED"] = "ResponseHeadersChanged";
+    Events["WEBSOCKET_FRAME_ADDED"] = "WebsocketFrameAdded";
+    Events["EVENT_SOURCE_MESSAGE_ADDED"] = "EventSourceMessageAdded";
+    Events["TRUST_TOKEN_RESULT_ADDED"] = "TrustTokenResultAdded";
 })(Events || (Events = {}));
 export var WebSocketFrameType;
 (function (WebSocketFrameType) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     WebSocketFrameType["Send"] = "send";
     WebSocketFrameType["Receive"] = "receive";
     WebSocketFrameType["Error"] = "error";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(WebSocketFrameType || (WebSocketFrameType = {}));
 export const cookieExemptionReasonToUiString = function (exemptionReason) {
     switch (exemptionReason) {
@@ -1598,11 +1600,11 @@ export const setCookieBlockedReasonToUiString = function (blockedReason) {
 export const cookieBlockedReasonToAttribute = function (blockedReason) {
     switch (blockedReason) {
         case "SecureOnly" /* Protocol.Network.CookieBlockedReason.SecureOnly */:
-            return "secure" /* Attribute.Secure */;
+            return "secure" /* Attribute.SECURE */;
         case "NotOnPath" /* Protocol.Network.CookieBlockedReason.NotOnPath */:
-            return "path" /* Attribute.Path */;
+            return "path" /* Attribute.PATH */;
         case "DomainMismatch" /* Protocol.Network.CookieBlockedReason.DomainMismatch */:
-            return "domain" /* Attribute.Domain */;
+            return "domain" /* Attribute.DOMAIN */;
         case "SameSiteStrict" /* Protocol.Network.CookieBlockedReason.SameSiteStrict */:
         case "SameSiteLax" /* Protocol.Network.CookieBlockedReason.SameSiteLax */:
         case "SameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.CookieBlockedReason.SameSiteUnspecifiedTreatedAsLax */:
@@ -1610,7 +1612,7 @@ export const cookieBlockedReasonToAttribute = function (blockedReason) {
         case "SchemefulSameSiteStrict" /* Protocol.Network.CookieBlockedReason.SchemefulSameSiteStrict */:
         case "SchemefulSameSiteLax" /* Protocol.Network.CookieBlockedReason.SchemefulSameSiteLax */:
         case "SchemefulSameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.CookieBlockedReason.SchemefulSameSiteUnspecifiedTreatedAsLax */:
-            return "same-site" /* Attribute.SameSite */;
+            return "same-site" /* Attribute.SAME_SITE */;
         case "SamePartyFromCrossPartyContext" /* Protocol.Network.CookieBlockedReason.SamePartyFromCrossPartyContext */:
         case "NameValuePairExceedsMaxSize" /* Protocol.Network.CookieBlockedReason.NameValuePairExceedsMaxSize */:
         case "UserPreferences" /* Protocol.Network.CookieBlockedReason.UserPreferences */:
@@ -1624,7 +1626,7 @@ export const setCookieBlockedReasonToAttribute = function (blockedReason) {
     switch (blockedReason) {
         case "SecureOnly" /* Protocol.Network.SetCookieBlockedReason.SecureOnly */:
         case "OverwriteSecure" /* Protocol.Network.SetCookieBlockedReason.OverwriteSecure */:
-            return "secure" /* Attribute.Secure */;
+            return "secure" /* Attribute.SECURE */;
         case "SameSiteStrict" /* Protocol.Network.SetCookieBlockedReason.SameSiteStrict */:
         case "SameSiteLax" /* Protocol.Network.SetCookieBlockedReason.SameSiteLax */:
         case "SameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.SetCookieBlockedReason.SameSiteUnspecifiedTreatedAsLax */:
@@ -1632,11 +1634,11 @@ export const setCookieBlockedReasonToAttribute = function (blockedReason) {
         case "SchemefulSameSiteStrict" /* Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteStrict */:
         case "SchemefulSameSiteLax" /* Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteLax */:
         case "SchemefulSameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.SetCookieBlockedReason.SchemefulSameSiteUnspecifiedTreatedAsLax */:
-            return "same-site" /* Attribute.SameSite */;
+            return "same-site" /* Attribute.SAME_SITE */;
         case "InvalidDomain" /* Protocol.Network.SetCookieBlockedReason.InvalidDomain */:
-            return "domain" /* Attribute.Domain */;
+            return "domain" /* Attribute.DOMAIN */;
         case "InvalidPrefix" /* Protocol.Network.SetCookieBlockedReason.InvalidPrefix */:
-            return "name" /* Attribute.Name */;
+            return "name" /* Attribute.NAME */;
         case "SamePartyConflictsWithOtherAttributes" /* Protocol.Network.SetCookieBlockedReason.SamePartyConflictsWithOtherAttributes */:
         case "SamePartyFromCrossPartyContext" /* Protocol.Network.SetCookieBlockedReason.SamePartyFromCrossPartyContext */:
         case "NameValuePairExceedsMaxSize" /* Protocol.Network.SetCookieBlockedReason.NameValuePairExceedsMaxSize */:

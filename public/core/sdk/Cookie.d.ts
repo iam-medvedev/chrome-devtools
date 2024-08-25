@@ -42,25 +42,25 @@ export declare class Cookie {
     static isDomainMatch(domain: string, hostname: string): boolean;
 }
 export declare const enum Type {
-    Request = 0,
-    Response = 1
+    REQUEST = 0,
+    RESPONSE = 1
 }
 export declare const enum Attribute {
-    Name = "name",
-    Value = "value",
-    Size = "size",
-    Domain = "domain",
-    Path = "path",
-    Expires = "expires",
-    MaxAge = "max-age",
-    HttpOnly = "http-only",
-    Secure = "secure",
-    SameSite = "same-site",
-    SourceScheme = "source-scheme",
-    SourcePort = "source-port",
-    Priority = "priority",
-    Partitioned = "partitioned",
-    PartitionKey = "partition-key",
-    PartitionKeySite = "partition-key-site",
-    HasCrossSiteAncestor = "has-cross-site-ancestor"
+    NAME = "name",
+    VALUE = "value",
+    SIZE = "size",
+    DOMAIN = "domain",
+    PATH = "path",
+    EXPIRES = "expires",
+    MAX_AGE = "max-age",
+    HTTP_ONLY = "http-only",
+    SECURE = "secure",
+    SAME_SITE = "same-site",
+    SOURCE_SCHEME = "source-scheme",
+    SOURCE_PORT = "source-port",
+    PRIORITY = "priority",
+    PARTITIONED = "partitioned",
+    PARTITION_KEY = "partition-key",
+    PARTITION_KEY_SITE = "partition-key-site",
+    HAS_CROSS_SITE_ANCESTOR = "has-cross-site-ancestor"
 }

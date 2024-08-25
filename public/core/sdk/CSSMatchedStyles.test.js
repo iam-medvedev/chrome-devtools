@@ -373,8 +373,8 @@ describeWithMockConnection('NodeCascade', () => {
         });
         const style = matchedStyles.nodeStyles()[1];
         const [inheritableProperty, nonInheritableProperty] = style.allProperties();
-        assert.strictEqual(matchedStyles.propertyState(nonInheritableProperty), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.Overloaded */);
-        assert.strictEqual(matchedStyles.propertyState(inheritableProperty), "Active" /* SDK.CSSMatchedStyles.PropertyState.Active */);
+        assert.strictEqual(matchedStyles.propertyState(nonInheritableProperty), "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */);
+        assert.strictEqual(matchedStyles.propertyState(inheritableProperty), "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */);
     });
     it('correctly computes active properties for nested at-rules', async () => {
         const outerRule = ruleMatch('a', [{ name: 'color', value: 'var(--inner)' }]);

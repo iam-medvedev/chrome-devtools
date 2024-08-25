@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Accessed from web_tests */
     Events["AppendedToURL"] = "appendedToURL";
     Events["CanceledSaveURL"] = "canceledSaveURL";
     Events["ColorThemeChanged"] = "colorThemeChanged";
@@ -31,6 +32,7 @@ export var Events;
     Events["SetInspectedTabId"] = "setInspectedTabId";
     Events["SetUseSoftMenu"] = "setUseSoftMenu";
     Events["ShowPanel"] = "showPanel";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 export const EventDescriptors = [
     [Events.AppendedToURL, 'appendedToURL', ['url']],

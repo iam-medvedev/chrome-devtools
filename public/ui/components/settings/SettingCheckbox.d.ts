@@ -1,6 +1,7 @@
 import type * as Common from '../../../core/common/common.js';
 export interface SettingCheckboxData {
     setting: Common.Settings.Setting<boolean>;
+    textOverride?: string;
 }
 /**
  * A simple checkbox that is backed by a boolean setting.

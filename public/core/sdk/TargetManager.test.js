@@ -189,7 +189,7 @@ describeWithMockConnection('TargetManager', () => {
         const targets = [createTarget(), createTarget()];
         const inspectedURLChangedHostApi = sinon.spy(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'inspectedURLChanged');
         const inspectedURLChangedEventListener = sinon.spy();
-        targetManager.addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, inspectedURLChangedEventListener);
+        targetManager.addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, inspectedURLChangedEventListener);
         targetManager.setScopeTarget(null);
         assert.isTrue(inspectedURLChangedHostApi.notCalled && inspectedURLChangedEventListener.notCalled);
         targets.forEach(t => t.setInspectedURL(`https://a.com/${t.id()}`));

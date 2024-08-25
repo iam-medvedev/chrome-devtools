@@ -201,21 +201,21 @@ export class StyleFile {
             return;
         }
         const mirrorContentBound = this.mirrorContent.bind(this, header, true /* majorChange */);
-        void this.#throttler.schedule(mirrorContentBound, "Default" /* Common.Throttler.Scheduling.Default */);
+        void this.#throttler.schedule(mirrorContentBound, "Default" /* Common.Throttler.Scheduling.DEFAULT */);
     }
     workingCopyCommitted() {
         if (this.#isAddingRevision) {
             return;
         }
         const mirrorContentBound = this.mirrorContent.bind(this, this.uiSourceCode, true /* majorChange */);
-        void this.#throttler.schedule(mirrorContentBound, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */);
+        void this.#throttler.schedule(mirrorContentBound, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */);
     }
     workingCopyChanged() {
         if (this.#isAddingRevision) {
             return;
         }
         const mirrorContentBound = this.mirrorContent.bind(this, this.uiSourceCode, false /* majorChange */);
-        void this.#throttler.schedule(mirrorContentBound, "Default" /* Common.Throttler.Scheduling.Default */);
+        void this.#throttler.schedule(mirrorContentBound, "Default" /* Common.Throttler.Scheduling.DEFAULT */);
     }
     async mirrorContent(fromProvider, majorChange) {
         if (this.#terminated) {

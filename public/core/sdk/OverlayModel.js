@@ -78,10 +78,10 @@ export class OverlayModel extends SDKModel {
             void this.wireAgentToSettings();
         }
         this.#persistentHighlighter = new OverlayPersistentHighlighter(this, {
-            onGridOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentGridOverlayStateChanged" /* Events.PersistentGridOverlayStateChanged */, { nodeId, enabled }),
-            onFlexOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentFlexContainerOverlayStateChanged" /* Events.PersistentFlexContainerOverlayStateChanged */, { nodeId, enabled }),
-            onContainerQueryOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentContainerQueryOverlayStateChanged" /* Events.PersistentContainerQueryOverlayStateChanged */, { nodeId, enabled }),
-            onScrollSnapOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentScrollSnapOverlayStateChanged" /* Events.PersistentScrollSnapOverlayStateChanged */, { nodeId, enabled }),
+            onGridOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentGridOverlayStateChanged" /* Events.PERSISTENT_GRID_OVERLAY_STATE_CHANGED */, { nodeId, enabled }),
+            onFlexOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentFlexContainerOverlayStateChanged" /* Events.PERSISTENT_FLEX_CONTAINER_OVERLAY_STATE_CHANGED */, { nodeId, enabled }),
+            onContainerQueryOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentContainerQueryOverlayStateChanged" /* Events.PERSISTENT_CONTAINER_QUERY_OVERLAY_STATE_CHANGED */, { nodeId, enabled }),
+            onScrollSnapOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentScrollSnapOverlayStateChanged" /* Events.PERSISTENT_SCROLL_SNAP_OVERLAY_STATE_CHANGED */, { nodeId, enabled }),
         });
         this.#domModel.addEventListener(DOMModelEvents.NodeRemoved, () => {
             if (!this.#persistentHighlighter) {
@@ -211,7 +211,7 @@ export class OverlayModel extends SDKModel {
     async setInspectMode(mode, showDetailedTooltip = true) {
         await this.#domModel.requestDocument();
         this.#inspectModeEnabledInternal = mode !== "none" /* Protocol.Overlay.InspectMode.None */;
-        this.dispatchEventToListeners("InspectModeWillBeToggled" /* Events.InspectModeWillBeToggled */, this);
+        this.dispatchEventToListeners("InspectModeWillBeToggled" /* Events.INSPECT_MODE_WILL_BE_TOGGLED */, this);
         void this.#highlighter.setInspectMode(mode, this.buildHighlightConfig('all', showDetailedTooltip));
     }
     inspectModeEnabled() {
@@ -621,7 +621,7 @@ export class OverlayModel extends SDKModel {
     nodeHighlightRequested({ nodeId }) {
         const node = this.#domModel.nodeForId(nodeId);
         if (node) {
-            this.dispatchEventToListeners("HighlightNodeRequested" /* Events.HighlightNodeRequested */, node);
+            this.dispatchEventToListeners("HighlightNodeRequested" /* Events.HIGHLIGHT_NODE_REQUESTED */, node);
         }
     }
     static setInspectNodeHandler(handler) {
@@ -639,14 +639,14 @@ export class OverlayModel extends SDKModel {
         else {
             void Common.Revealer.reveal(deferredNode);
         }
-        this.dispatchEventToListeners("InspectModeExited" /* Events.ExitedInspectMode */);
+        this.dispatchEventToListeners("InspectModeExited" /* Events.EXITED_INSPECT_MODE */);
     }
     screenshotRequested({ viewport }) {
-        this.dispatchEventToListeners("ScreenshotRequested" /* Events.ScreenshotRequested */, viewport);
-        this.dispatchEventToListeners("InspectModeExited" /* Events.ExitedInspectMode */);
+        this.dispatchEventToListeners("ScreenshotRequested" /* Events.SCREENSHOT_REQUESTED */, viewport);
+        this.dispatchEventToListeners("InspectModeExited" /* Events.EXITED_INSPECT_MODE */);
     }
     inspectModeCanceled() {
-        this.dispatchEventToListeners("InspectModeExited" /* Events.ExitedInspectMode */);
+        this.dispatchEventToListeners("InspectModeExited" /* Events.EXITED_INSPECT_MODE */);
     }
     static inspectNodeHandler = null;
     getOverlayAgent() {
@@ -663,7 +663,7 @@ export class WindowControls {
     #currentUrl;
     #config = {
         showCSS: false,
-        selectedPlatform: "Windows" /* EmulatedOSType.WindowsOS */,
+        selectedPlatform: "Windows" /* EmulatedOSType.WINDOWS */,
         themeColor: '#ffffff',
     };
     constructor(cssModel) {

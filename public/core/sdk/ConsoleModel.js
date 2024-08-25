@@ -104,11 +104,11 @@ export class ConsoleModel extends SDKModel {
         const eventListeners = [];
         const cpuProfilerModel = target.model(CPUProfilerModel);
         if (cpuProfilerModel) {
-            eventListeners.push(cpuProfilerModel.addEventListener("ConsoleProfileStarted" /* CPUProfilerModelEvents.ConsoleProfileStarted */, this.consoleProfileStarted.bind(this, cpuProfilerModel)));
-            eventListeners.push(cpuProfilerModel.addEventListener("ConsoleProfileFinished" /* CPUProfilerModelEvents.ConsoleProfileFinished */, this.consoleProfileFinished.bind(this, cpuProfilerModel)));
+            eventListeners.push(cpuProfilerModel.addEventListener("ConsoleProfileStarted" /* CPUProfilerModelEvents.CONSOLE_PROFILE_STARTED */, this.consoleProfileStarted.bind(this, cpuProfilerModel)));
+            eventListeners.push(cpuProfilerModel.addEventListener("ConsoleProfileFinished" /* CPUProfilerModelEvents.CONSOLE_PROFILE_FINISHED */, this.consoleProfileFinished.bind(this, cpuProfilerModel)));
         }
         const resourceTreeModel = target.model(ResourceTreeModel);
-        if (resourceTreeModel && target.parentTarget()?.type() !== Type.Frame) {
+        if (resourceTreeModel && target.parentTarget()?.type() !== Type.FRAME) {
             eventListeners.push(resourceTreeModel.addEventListener(ResourceTreeModelEvents.PrimaryPageChanged, this.primaryPageChanged, this));
         }
         const runtimeModel = target.model(RuntimeModel);
@@ -116,7 +116,7 @@ export class ConsoleModel extends SDKModel {
             eventListeners.push(runtimeModel.addEventListener(RuntimeModelEvents.ExceptionThrown, this.exceptionThrown.bind(this, runtimeModel)));
             eventListeners.push(runtimeModel.addEventListener(RuntimeModelEvents.ExceptionRevoked, this.exceptionRevoked.bind(this, runtimeModel)));
             eventListeners.push(runtimeModel.addEventListener(RuntimeModelEvents.ConsoleAPICalled, this.consoleAPICalled.bind(this, runtimeModel)));
-            if (target.parentTarget()?.type() !== Type.Frame) {
+            if (target.parentTarget()?.type() !== Type.FRAME) {
                 eventListeners.push(runtimeModel.debuggerModel().addEventListener(DebuggerModelEvents.GlobalObjectCleared, this.clearIfNecessary, this));
             }
             eventListeners.push(runtimeModel.addEventListener(RuntimeModelEvents.QueryObjectRequested, this.queryObjectRequested.bind(this, runtimeModel)));
@@ -412,10 +412,12 @@ export class ConsoleModel extends SDKModel {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["ConsoleCleared"] = "ConsoleCleared";
     Events["MessageAdded"] = "MessageAdded";
     Events["MessageUpdated"] = "MessageUpdated";
     Events["CommandEvaluated"] = "CommandEvaluated";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 function extractExceptionMetaData(metaData) {
     if (!metaData) {
@@ -660,6 +662,6 @@ export const MessageSourceDisplayName = new Map(([
     ["intervention" /* Protocol.Log.LogEntrySource.Intervention */, 'intervention'],
     ["recommendation" /* Protocol.Log.LogEntrySource.Recommendation */, 'recommendation'],
     ["other" /* Protocol.Log.LogEntrySource.Other */, 'other'],
-    [Common.Console.FrontendMessageSource.IssuePanel, 'issue-panel'],
+    [Common.Console.FrontendMessageSource.ISSUE_PANEL, 'issue-panel'],
 ]));
 //# sourceMappingURL=ConsoleModel.js.map

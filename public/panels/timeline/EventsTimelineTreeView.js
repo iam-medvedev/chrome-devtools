@@ -69,7 +69,7 @@ export class EventsTimelineTreeView extends TimelineTreeView {
         }
     }
     findNodeWithEvent(event) {
-        if (event.name === "RunTask" /* TraceEngine.Types.TraceEvents.KnownEventName.RunTask */) {
+        if (event.name === "RunTask" /* TraceEngine.Types.TraceEvents.KnownEventName.RUN_TASK */) {
             // No node is ever created for the top level RunTask event, so
             // bail out preemptively
             return null;

@@ -263,7 +263,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         securityOriginManager.addEventListener(SDK.SecurityOriginManager.Events.MainSecurityOriginChanged, this.originChanged, this);
         const storageKeyManager = target.model(SDK.StorageKeyManager.StorageKeyManager);
         this.updateStorageKey(storageKeyManager.mainStorageKey());
-        storageKeyManager.addEventListener("MainStorageKeyChanged" /* SDK.StorageKeyManager.Events.MainStorageKeyChanged */, this.storageKeyChanged, this);
+        storageKeyManager.addEventListener("MainStorageKeyChanged" /* SDK.StorageKeyManager.Events.MAIN_STORAGE_KEY_CHANGED */, this.storageKeyChanged, this);
     }
     targetRemoved(target) {
         if (this.target !== target) {
@@ -272,7 +272,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         const securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
         securityOriginManager.removeEventListener(SDK.SecurityOriginManager.Events.MainSecurityOriginChanged, this.originChanged, this);
         const storageKeyManager = target.model(SDK.StorageKeyManager.StorageKeyManager);
-        storageKeyManager.removeEventListener("MainStorageKeyChanged" /* SDK.StorageKeyManager.Events.MainStorageKeyChanged */, this.storageKeyChanged, this);
+        storageKeyManager.removeEventListener("MainStorageKeyChanged" /* SDK.StorageKeyManager.Events.MAIN_STORAGE_KEY_CHANGED */, this.storageKeyChanged, this);
     }
     originChanged(event) {
         const { mainSecurityOrigin, unreachableMainSecurityOrigin } = event.data;

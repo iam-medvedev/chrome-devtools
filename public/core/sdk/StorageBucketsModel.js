@@ -70,8 +70,8 @@ export class StorageBucketsModel extends SDKModel {
             return;
         }
         if (this.storageKeyManager) {
-            this.storageKeyManager.addEventListener("StorageKeyAdded" /* StorageKeyManagerEvents.StorageKeyAdded */, this.storageKeyAdded, this);
-            this.storageKeyManager.addEventListener("StorageKeyRemoved" /* StorageKeyManagerEvents.StorageKeyRemoved */, this.storageKeyRemoved, this);
+            this.storageKeyManager.addEventListener("StorageKeyAdded" /* StorageKeyManagerEvents.STORAGE_KEY_ADDED */, this.storageKeyAdded, this);
+            this.storageKeyManager.addEventListener("StorageKeyRemoved" /* StorageKeyManagerEvents.STORAGE_KEY_REMOVED */, this.storageKeyRemoved, this);
             for (const storageKey of this.storageKeyManager.storageKeys()) {
                 this.addStorageKey(storageKey);
             }
@@ -104,14 +104,14 @@ export class StorageBucketsModel extends SDKModel {
     }
     bucketAdded(bucketInfo) {
         this.bucketsById.set(bucketInfo.id, bucketInfo);
-        this.dispatchEventToListeners("BucketAdded" /* Events.BucketAdded */, { model: this, bucketInfo });
+        this.dispatchEventToListeners("BucketAdded" /* Events.BUCKET_ADDED */, { model: this, bucketInfo });
     }
     bucketRemoved(bucketInfo) {
         this.bucketsById.delete(bucketInfo.id);
-        this.dispatchEventToListeners("BucketRemoved" /* Events.BucketRemoved */, { model: this, bucketInfo });
+        this.dispatchEventToListeners("BucketRemoved" /* Events.BUCKET_REMOVED */, { model: this, bucketInfo });
     }
     bucketChanged(bucketInfo) {
-        this.dispatchEventToListeners("BucketChanged" /* Events.BucketChanged */, { model: this, bucketInfo });
+        this.dispatchEventToListeners("BucketChanged" /* Events.BUCKET_CHANGED */, { model: this, bucketInfo });
     }
     bucketInfosAreEqual(bucketInfo1, bucketInfo2) {
         return bucketInfo1.bucket.storageKey === bucketInfo2.bucket.storageKey && bucketInfo1.id === bucketInfo2.id &&
@@ -160,5 +160,5 @@ export class StorageBucketsModel extends SDKModel {
     attributionReportingSourceRegistered(_event) {
     }
 }
-SDKModel.register(StorageBucketsModel, { capabilities: 8192 /* Capability.Storage */, autostart: false });
+SDKModel.register(StorageBucketsModel, { capabilities: 8192 /* Capability.STORAGE */, autostart: false });
 //# sourceMappingURL=StorageBucketsModel.js.map

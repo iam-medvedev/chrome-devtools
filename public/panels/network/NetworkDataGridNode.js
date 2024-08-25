@@ -296,7 +296,7 @@ const UIStrings = {
     /**
      *@description Tooltip to explain why the request has warning icon
      */
-    thirdPartyPhaseout: 'Cookies for this request are blocked due to third-party cookie phaseout. Learn more in the Issues tab.',
+    thirdPartyPhaseout: 'Cookies for this request are blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkDataGridNode.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -1251,7 +1251,7 @@ export class NetworkRequestNode extends NetworkNode {
             cell.appendChild(document.createTextNode(i18nString(UIStrings.push)));
         }
         switch (initiator.type) {
-            case "parser" /* SDK.NetworkRequest.InitiatorType.Parser */: {
+            case "parser" /* SDK.NetworkRequest.InitiatorType.PARSER */: {
                 const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(initiator.url);
                 const displayName = uiSourceCode?.displayName();
                 const text = displayName !== undefined && initiator.lineNumber !== undefined ?
@@ -1266,7 +1266,7 @@ export class NetworkRequestNode extends NetworkNode {
                 this.appendSubtitle(cell, i18nString(UIStrings.parser));
                 break;
             }
-            case "redirect" /* SDK.NetworkRequest.InitiatorType.Redirect */: {
+            case "redirect" /* SDK.NetworkRequest.InitiatorType.REDIRECT */: {
                 UI.Tooltip.Tooltip.install(cell, initiator.url);
                 const redirectSource = request.redirectSource();
                 console.assert(redirectSource !== null);
@@ -1279,7 +1279,7 @@ export class NetworkRequestNode extends NetworkNode {
                 this.appendSubtitle(cell, i18nString(UIStrings.redirect));
                 break;
             }
-            case "script" /* SDK.NetworkRequest.InitiatorType.Script */: {
+            case "script" /* SDK.NetworkRequest.InitiatorType.SCRIPT */: {
                 const target = SDK.NetworkManager.NetworkManager.forRequest(request)?.target() || null;
                 const linkifier = this.parentView().linkifier();
                 if (initiator.stack) {
@@ -1294,18 +1294,18 @@ export class NetworkRequestNode extends NetworkNode {
                 cell.classList.add('network-script-initiated');
                 break;
             }
-            case "preload" /* SDK.NetworkRequest.InitiatorType.Preload */: {
+            case "preload" /* SDK.NetworkRequest.InitiatorType.PRELOAD */: {
                 UI.Tooltip.Tooltip.install(cell, i18nString(UIStrings.preload));
                 cell.classList.add('network-dim-cell');
                 cell.appendChild(document.createTextNode(i18nString(UIStrings.preload)));
                 break;
             }
-            case "signedExchange" /* SDK.NetworkRequest.InitiatorType.SignedExchange */: {
+            case "signedExchange" /* SDK.NetworkRequest.InitiatorType.SIGNED_EXCHANGE */: {
                 cell.appendChild(Components.Linkifier.Linkifier.linkifyURL(initiator.url));
                 this.appendSubtitle(cell, i18nString(UIStrings.signedexchange));
                 break;
             }
-            case "preflight" /* SDK.NetworkRequest.InitiatorType.Preflight */: {
+            case "preflight" /* SDK.NetworkRequest.InitiatorType.PREFLIGHT */: {
                 cell.appendChild(document.createTextNode(i18nString(UIStrings.preflight)));
                 if (initiator.initiatorRequest) {
                     const icon = IconButton.Icon.create('arrow-up-down-circle');

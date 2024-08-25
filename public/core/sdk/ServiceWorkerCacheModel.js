@@ -40,8 +40,8 @@ export class ServiceWorkerCacheModel extends SDKModel {
         if (this.#enabled) {
             return;
         }
-        this.#storageBucketModel.addEventListener("BucketAdded" /* StorageBucketsModelEvents.BucketAdded */, this.storageBucketAdded, this);
-        this.#storageBucketModel.addEventListener("BucketRemoved" /* StorageBucketsModelEvents.BucketRemoved */, this.storageBucketRemoved, this);
+        this.#storageBucketModel.addEventListener("BucketAdded" /* StorageBucketsModelEvents.BUCKET_ADDED */, this.storageBucketAdded, this);
+        this.#storageBucketModel.addEventListener("BucketRemoved" /* StorageBucketsModelEvents.BUCKET_REMOVED */, this.storageBucketRemoved, this);
         for (const storageBucket of this.#storageBucketModel.getBuckets()) {
             this.addStorageBucket(storageBucket.bucket);
         }
@@ -103,8 +103,8 @@ export class ServiceWorkerCacheModel extends SDKModel {
         }
         this.#cachesInternal.clear();
         if (this.#enabled) {
-            this.#storageBucketModel.removeEventListener("BucketAdded" /* StorageBucketsModelEvents.BucketAdded */, this.storageBucketAdded, this);
-            this.#storageBucketModel.removeEventListener("BucketRemoved" /* StorageBucketsModelEvents.BucketRemoved */, this.storageBucketRemoved, this);
+            this.#storageBucketModel.removeEventListener("BucketAdded" /* StorageBucketsModelEvents.BUCKET_ADDED */, this.storageBucketAdded, this);
+            this.#storageBucketModel.removeEventListener("BucketRemoved" /* StorageBucketsModelEvents.BUCKET_REMOVED */, this.storageBucketRemoved, this);
         }
     }
     addStorageBucket(storageBucket) {
@@ -173,10 +173,10 @@ export class ServiceWorkerCacheModel extends SDKModel {
         this.removeStorageBucket(bucket);
     }
     cacheAdded(cache) {
-        this.dispatchEventToListeners("CacheAdded" /* Events.CacheAdded */, { model: this, cache: cache });
+        this.dispatchEventToListeners("CacheAdded" /* Events.CACHE_ADDED */, { model: this, cache: cache });
     }
     cacheRemoved(cache) {
-        this.dispatchEventToListeners("CacheRemoved" /* Events.CacheRemoved */, { model: this, cache: cache });
+        this.dispatchEventToListeners("CacheRemoved" /* Events.CACHE_REMOVED */, { model: this, cache: cache });
     }
     async requestEntries(cache, skipCount, pageSize, pathFilter, callback) {
         const response = await this.cacheAgent.invoke_requestEntries({ cacheId: cache.cacheId, skipCount, pageSize, pathFilter });
@@ -202,14 +202,14 @@ export class ServiceWorkerCacheModel extends SDKModel {
                 const promises = Array.from(this.#storageBucketsUpdated, storageBucket => this.loadCacheNames(storageBucket));
                 this.#storageBucketsUpdated.clear();
                 return Promise.all(promises);
-            }, this.#scheduleAsSoonAsPossible ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */ :
-                "Default" /* Common.Throttler.Scheduling.Default */);
+            }, this.#scheduleAsSoonAsPossible ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */ :
+                "Default" /* Common.Throttler.Scheduling.DEFAULT */);
         }
     }
     cacheStorageContentUpdated({ bucketId, cacheName }) {
         const storageBucket = this.#storageBucketModel.getBucketById(bucketId)?.bucket;
         if (storageBucket) {
-            this.dispatchEventToListeners("CacheStorageContentUpdated" /* Events.CacheStorageContentUpdated */, { storageBucket, cacheName });
+            this.dispatchEventToListeners("CacheStorageContentUpdated" /* Events.CACHE_STORAGE_CONTENT_UPDATED */, { storageBucket, cacheName });
         }
     }
     attributionReportingTriggerRegistered(_event) {
@@ -266,5 +266,5 @@ export class Cache {
         return response.response;
     }
 }
-SDKModel.register(ServiceWorkerCacheModel, { capabilities: 8192 /* Capability.Storage */, autostart: false });
+SDKModel.register(ServiceWorkerCacheModel, { capabilities: 8192 /* Capability.STORAGE */, autostart: false });
 //# sourceMappingURL=ServiceWorkerCacheModel.js.map

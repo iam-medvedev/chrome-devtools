@@ -209,6 +209,7 @@ export declare class DOMModel extends SDKModel<EventTypes> {
     querySelector(nodeId: Protocol.DOM.NodeId, selector: string): Promise<Protocol.DOM.NodeId | null>;
     querySelectorAll(nodeId: Protocol.DOM.NodeId, selector: string): Promise<Protocol.DOM.NodeId[] | null>;
     getTopLayerElements(): Promise<Protocol.DOM.NodeId[] | null>;
+    getDetachedDOMNodes(): Promise<Protocol.DOM.DetachedElementInfo[] | null>;
     getElementByRelation(nodeId: Protocol.DOM.NodeId, relation: Protocol.DOM.GetElementByRelationRequestRelation): Promise<Protocol.DOM.NodeId | null>;
     markUndoableState(minorChange?: boolean): void;
     nodeForLocation(x: number, y: number, includeUserAgentShadowDOM: boolean): Promise<DOMNode | null>;

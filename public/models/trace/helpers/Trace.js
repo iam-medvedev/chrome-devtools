@@ -294,10 +294,10 @@ export function getZeroIndexedLineAndColumnForEvent(event) {
     switch (event.name) {
         // All these events have line/column numbers which are 1 indexed; so we
         // subtract to make them 0 indexed.
-        case "FunctionCall" /* Types.TraceEvents.KnownEventName.FunctionCall */:
-        case "EvaluateScript" /* Types.TraceEvents.KnownEventName.EvaluateScript */:
-        case "v8.compile" /* Types.TraceEvents.KnownEventName.Compile */:
-        case "v8.produceCache" /* Types.TraceEvents.KnownEventName.CacheScript */: {
+        case "FunctionCall" /* Types.TraceEvents.KnownEventName.FUNCTION_CALL */:
+        case "EvaluateScript" /* Types.TraceEvents.KnownEventName.EVALUATE_SCRIPT */:
+        case "v8.compile" /* Types.TraceEvents.KnownEventName.COMPILE */:
+        case "v8.produceCache" /* Types.TraceEvents.KnownEventName.CACHE_SCRIPT */: {
             return {
                 lineNumber: typeof lineNumber === 'number' ? lineNumber - 1 : undefined,
                 columnNumber: typeof columnNumber === 'number' ? columnNumber - 1 : undefined,
@@ -321,9 +321,9 @@ export function getZeroIndexedStackTraceForEvent(event) {
     }
     return stack.map(callFrame => {
         switch (event.name) {
-            case "ScheduleStyleRecalculation" /* Types.TraceEvents.KnownEventName.ScheduleStyleRecalculation */:
-            case "InvalidateLayout" /* Types.TraceEvents.KnownEventName.InvalidateLayout */:
-            case "UpdateLayoutTree" /* Types.TraceEvents.KnownEventName.UpdateLayoutTree */: {
+            case "ScheduleStyleRecalculation" /* Types.TraceEvents.KnownEventName.SCHEDULE_STYLE_RECALCULATION */:
+            case "InvalidateLayout" /* Types.TraceEvents.KnownEventName.INVALIDATE_LAYOUT */:
+            case "UpdateLayoutTree" /* Types.TraceEvents.KnownEventName.UPDATE_LAYOUT_TREE */: {
                 return makeZeroBasedCallFrame(callFrame);
             }
             default: {
@@ -398,7 +398,7 @@ export function isTopLevelEvent(event) {
         // TODO(crbug.com/341234884): do we need this?
         return true;
     }
-    return event.cat.includes(DevToolsTimelineEventCategory) && event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RunTask */;
+    return event.cat.includes(DevToolsTimelineEventCategory) && event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RUN_TASK */;
 }
 function topLevelEventIndexEndingAfter(events, time) {
     let index = Platform.ArrayUtilities.upperBound(events, time, (time, event) => time - event.ts) - 1;

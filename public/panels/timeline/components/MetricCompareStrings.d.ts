@@ -1,2 +1,16 @@
-export declare function renderCompareText(rating: 'good' | 'needs-improvement' | 'poor', compare?: 'better' | 'worse' | 'similar', values?: Record<string, Object>): Element;
-export declare function renderDetailedCompareText(localRating: 'good' | 'needs-improvement' | 'poor', fieldRating?: 'good' | 'needs-improvement' | 'poor', values?: Record<string, Object>): Element;
+import { type MetricRating } from './Utils.js';
+export type CompareRating = 'better' | 'worse' | 'similar';
+export declare function renderCompareText(options: {
+    metric: string;
+    rating: MetricRating;
+    compare?: CompareRating;
+    localValue: Element;
+}): Element;
+export declare function renderDetailedCompareText(options: {
+    metric: string;
+    localRating: MetricRating;
+    fieldRating?: MetricRating;
+    localValue: Element;
+    fieldValue: Element;
+    percent: string;
+}): Element;

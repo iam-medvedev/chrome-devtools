@@ -22,6 +22,7 @@ const component = new Freestyler.FreestylerChatUi({
     selectedNode: {},
     isLoading: false,
     canShowFeedbackForm: false,
+    userInfo: {},
 });
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=empty_state.js.map

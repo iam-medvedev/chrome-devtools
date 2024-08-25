@@ -82,14 +82,14 @@ export class QueryContainer extends HTMLElement {
         // clang-format on
     }
     #renderQueriedSizeDetails() {
-        if (!this.#queriedSizeDetails || this.#queriedSizeDetails.queryAxis === "" /* QueryAxis.None */) {
+        if (!this.#queriedSizeDetails || this.#queriedSizeDetails.queryAxis === "" /* QueryAxis.NONE */) {
             return LitHtml.nothing;
         }
-        const areBothAxesQueried = this.#queriedSizeDetails.queryAxis === "size" /* QueryAxis.Both */;
+        const areBothAxesQueried = this.#queriedSizeDetails.queryAxis === "size" /* QueryAxis.BOTH */;
         const axisIconClasses = LitHtml.Directives.classMap({
             'axis-icon': true,
             'hidden': areBothAxesQueried,
-            'vertical': this.#queriedSizeDetails.physicalAxis === "Vertical" /* PhysicalAxis.Vertical */,
+            'vertical': this.#queriedSizeDetails.physicalAxis === "Vertical" /* PhysicalAxis.VERTICAL */,
         });
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off

@@ -429,7 +429,7 @@ describeWithEnvironment('TraceModel helpers', function () {
     describe('getZeroIndexedLineAndColumnNumbersForEvent', () => {
         it('subtracts one from the line number of a function call', async () => {
             const fakeFunctionCall = {
-                name: "FunctionCall" /* TraceModel.Types.TraceEvents.KnownEventName.FunctionCall */,
+                name: "FunctionCall" /* TraceModel.Types.TraceEvents.KnownEventName.FUNCTION_CALL */,
                 ph: "X" /* TraceModel.Types.TraceEvents.Phase.COMPLETE */,
                 cat: 'devtools-timeline',
                 dur: TraceModel.Types.Timing.MicroSeconds(100),

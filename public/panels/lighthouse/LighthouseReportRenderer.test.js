@@ -19,7 +19,7 @@ describeWithMockConnection('LighthouseReportRenderer', () => {
     const LH_NODE_HTML = (path, snippet) => `<div class="lh-node" data-path="${path}" data-snippet="${snippet}"></div>`;
     beforeEach(async () => {
         Lighthouse = await import('./lighthouse.js');
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
         linkElement = document.createElement('div');

@@ -123,13 +123,18 @@ export class TimespanBreakdownOverlay extends HTMLElement {
     }
     renderSection(section) {
         const sectionRange = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(section.bounds.range);
+        // clang-format off
         return LitHtml.html `
       <div class="timespan-breakdown-overlay-section">
         <div class="timespan-breakdown-overlay-label">
-          <span class="duration-text">${i18n.TimeUtilities.preciseMillisToString(sectionRange, 2)}</span>
+        ${section.showDuration ?
+            LitHtml.html `
+            <span class="duration-text">${i18n.TimeUtilities.preciseMillisToString(sectionRange, 2)}</span>
+          ` : LitHtml.nothing}
           ${section.label}
         </div>
       </div>`;
+        // clang-format on
     }
     #render() {
         LitHtml.render(LitHtml.html `${this.#sections?.map(this.renderSection)}`, this.#shadow, { host: this });

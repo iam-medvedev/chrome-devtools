@@ -9,7 +9,7 @@ describeWithMockConnection('ServiceWorkersView', () => {
     let target;
     let view;
     beforeEach(() => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
     });
@@ -27,7 +27,7 @@ describeWithMockConnection('ServiceWorkersView', () => {
         const ORIGIN = 'example.com';
         sinon.stub(securityOriginManager, 'securityOrigins').returns([ORIGIN]);
         const SCOPE_URL = 'SCOPE_URL';
-        serviceWorkersManager.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, {
+        serviceWorkersManager.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, {
             scopeURL: SCOPE_URL,
             securityOrigin: ORIGIN,
             versionsByMode: () => new Map(),
@@ -82,7 +82,7 @@ describeWithMockConnection('ServiceWorkersView', () => {
                 routerRules: JSON.stringify(routerRules),
             };
             registration.updateVersion(versionPayload);
-            serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, registration);
+            serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
             assert.isTrue(hasRouterField());
         });
         it('does not show the router field if active version does not have router rules', async () => {
@@ -97,7 +97,7 @@ describeWithMockConnection('ServiceWorkersView', () => {
                 runningStatus: "running" /* Protocol.ServiceWorker.ServiceWorkerVersionRunningStatus.Running */,
             };
             registration.updateVersion(versionPayload);
-            serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, registration);
+            serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
             assert.isFalse(hasRouterField());
             // Update the version with the empty router rules.
             versionId++;
@@ -106,7 +106,7 @@ describeWithMockConnection('ServiceWorkersView', () => {
                 routerRules: JSON.stringify([]),
             }));
             registration.updateVersion(versionPayload);
-            serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, registration);
+            serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
             assert.isFalse(hasRouterField());
         });
         it('does not show the router field if there is no active version', async () => {
@@ -124,7 +124,7 @@ describeWithMockConnection('ServiceWorkersView', () => {
             const updateAndDispatchEvent = (status) => {
                 versionId++;
                 registration.updateVersion(Object.assign({}, versionPayload, { versionId: versionId.toString(), status }));
-                serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, registration);
+                serviceWorkersManager?.dispatchEventToListeners("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, registration);
             };
             updateAndDispatchEvent("new" /* Protocol.ServiceWorker.ServiceWorkerVersionStatus.New */);
             assert.isFalse(hasRouterField());

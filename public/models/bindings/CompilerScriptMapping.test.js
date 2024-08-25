@@ -101,7 +101,7 @@ describeWithMockConnection('CompilerScriptMapping', () => {
         // Create a main target and a worker child target.
         const mainTarget = createTarget({
             id: 'main',
-            type: SDK.Target.Type.Frame,
+            type: SDK.Target.Type.FRAME,
         });
         const workerTarget = createTarget({
             id: 'worker',

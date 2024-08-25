@@ -64,14 +64,14 @@ export declare enum OriginGroup {
     Secure = "Secure",
     Unknown = "Unknown"
 }
-declare class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
+export declare class SecurityPanelSidebarTreeElement extends UI.TreeOutline.TreeElement {
     #private;
     private readonly selectCallback;
     private securityStateInternal;
     constructor(options: {
-        title: Element;
         onSelect: () => void;
         getIconForSecurityState: (securityState: Protocol.Security.SecurityState) => IconButton.Icon.Icon;
+        getTitleForSecurityState: (securityState: Protocol.Security.SecurityState) => Element;
         className: string;
     });
     setSecurityState(newSecurityState: Protocol.Security.SecurityState): void;
@@ -123,4 +123,3 @@ export interface OriginState {
     originView?: SecurityOriginView | null;
 }
 export type Origin = Platform.DevToolsPath.UrlString;
-export {};

@@ -234,7 +234,7 @@ describe('UISourceCode', () => {
     });
     it('can add line message', async () => {
         const sutObject = setupMockedUISourceCode();
-        sutObject.sut.addLineMessage("Error" /* Workspace.UISourceCode.Message.Level.Error */, 'Example Message', 5);
+        sutObject.sut.addLineMessage("Error" /* Workspace.UISourceCode.Message.Level.ERROR */, 'Example Message', 5);
         const messagesSet = sutObject.sut.messages();
         const addedMessage = messagesSet.values().next().value;
         assert.strictEqual(messagesSet.size, 1);

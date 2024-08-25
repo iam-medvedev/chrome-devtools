@@ -163,7 +163,7 @@ export class ColorSwatchPopoverIcon extends Common.ObjectWrapper.ObjectWrapper {
             void Common.Revealer.reveal(uiLocation, true /* omitFocus */);
         }
         UI.Context.Context.instance().setFlavor(ColorSwatchPopoverIcon, this);
-        Host.userMetrics.colorPickerOpenedFrom(1 /* Host.UserMetrics.ColorPickerOpenedFrom.StylesPane */);
+        Host.userMetrics.colorPickerOpenedFrom(1 /* Host.UserMetrics.ColorPickerOpenedFrom.STYLES_TAB */);
     }
     spectrumResized() {
         this.swatchPopoverHelper.reposition();

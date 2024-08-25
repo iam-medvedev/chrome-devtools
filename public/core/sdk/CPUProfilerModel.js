@@ -70,7 +70,7 @@ export class CPUProfilerModel extends SDKModel {
             this.#anonymousConsoleProfileIdToTitle.set(id, title);
         }
         const eventData = this.createEventDataFrom(id, location, title);
-        this.dispatchEventToListeners("ConsoleProfileStarted" /* Events.ConsoleProfileStarted */, eventData);
+        this.dispatchEventToListeners("ConsoleProfileStarted" /* Events.CONSOLE_PROFILE_STARTED */, eventData);
     }
     consoleProfileFinished({ id, location, profile, title }) {
         if (!title) {
@@ -82,7 +82,7 @@ export class CPUProfilerModel extends SDKModel {
             cpuProfile: profile,
         };
         this.registeredConsoleProfileMessages.push(eventData);
-        this.dispatchEventToListeners("ConsoleProfileFinished" /* Events.ConsoleProfileFinished */, eventData);
+        this.dispatchEventToListeners("ConsoleProfileFinished" /* Events.CONSOLE_PROFILE_FINISHED */, eventData);
     }
     createEventDataFrom(id, scriptLocation, title) {
         const debuggerLocation = Location.fromPayload(this.#debuggerModelInternal, scriptLocation);

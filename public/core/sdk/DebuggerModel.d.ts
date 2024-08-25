@@ -11,9 +11,9 @@ import { SourceMapManager } from './SourceMapManager.js';
 import { type Target } from './Target.js';
 export declare function sortAndMergeRanges(locationRanges: Protocol.Debugger.LocationRange[]): Protocol.Debugger.LocationRange[];
 export declare const enum StepMode {
-    StepInto = "StepInto",
-    StepOut = "StepOut",
-    StepOver = "StepOver"
+    STEP_INTO = "StepInto",
+    STEP_OUT = "StepOut",
+    STEP_OVER = "StepOver"
 }
 export declare class DebuggerModel extends SDKModel<EventTypes> {
     #private;

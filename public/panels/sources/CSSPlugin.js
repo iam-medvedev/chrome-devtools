@@ -209,7 +209,7 @@ function createCSSTooltip(active) {
                 spectrum.addEventListener("SizeChanged" /* ColorPicker.Spectrum.Events.SizeChanged */, () => view.requestMeasure());
                 spectrum.setColor(active.color);
                 widget = spectrum;
-                Host.userMetrics.colorPickerOpenedFrom(0 /* Host.UserMetrics.ColorPickerOpenedFrom.SourcesPanel */);
+                Host.userMetrics.colorPickerOpenedFrom(0 /* Host.UserMetrics.ColorPickerOpenedFrom.SOURCES_PANEL */);
             }
             else {
                 const spectrum = new InlineEditor.BezierEditor.BezierEditor(active.curve);

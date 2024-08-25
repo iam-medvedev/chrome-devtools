@@ -37,56 +37,56 @@ let eventBreakpointManagerInstance;
 export class EventBreakpointsManager {
     #eventListenerBreakpointsInternal = [];
     constructor() {
-        this.createInstrumentationBreakpoints("auction-worklet" /* Category.AuctionWorklet */, [
-            "beforeBidderWorkletBiddingStart" /* InstrumentationNames.BeforeBidderWorkletBiddingStart */,
-            "beforeBidderWorkletReportingStart" /* InstrumentationNames.BeforeBidderWorkletReportingStart */,
-            "beforeSellerWorkletScoringStart" /* InstrumentationNames.BeforeSellerWorkletScoringStart */,
-            "beforeSellerWorkletReportingStart" /* InstrumentationNames.BeforeSellerWorkletReportingStart */,
+        this.createInstrumentationBreakpoints("auction-worklet" /* Category.AUCTION_WORKLET */, [
+            "beforeBidderWorkletBiddingStart" /* InstrumentationNames.BEFORE_BIDDER_WORKLET_BIDDING_START */,
+            "beforeBidderWorkletReportingStart" /* InstrumentationNames.BEFORE_BIDDER_WORKLET_REPORTING_START */,
+            "beforeSellerWorkletScoringStart" /* InstrumentationNames.BEFORE_SELLER_WORKLET_SCORING_START */,
+            "beforeSellerWorkletReportingStart" /* InstrumentationNames.BEFORE_SELLER_WORKLET_REPORTING_START */,
         ]);
-        this.createInstrumentationBreakpoints("animation" /* Category.Animation */, [
-            "requestAnimationFrame" /* InstrumentationNames.RequestAnimationFrame */,
-            "cancelAnimationFrame" /* InstrumentationNames.CancelAnimationFrame */,
-            "requestAnimationFrame.callback" /* InstrumentationNames.RequestAnimationFrameCallback */,
+        this.createInstrumentationBreakpoints("animation" /* Category.ANIMATION */, [
+            "requestAnimationFrame" /* InstrumentationNames.REQUEST_ANIMATION_FRAME */,
+            "cancelAnimationFrame" /* InstrumentationNames.CANCEL_ANIMATION_FRAME */,
+            "requestAnimationFrame.callback" /* InstrumentationNames.REQUEST_ANIMATION_FRAME_CALLBACK */,
         ]);
-        this.createInstrumentationBreakpoints("canvas" /* Category.Canvas */, [
-            "canvasContextCreated" /* InstrumentationNames.CanvasContextCreated */,
-            "webglErrorFired" /* InstrumentationNames.WebGLErrorFired */,
-            "webglWarningFired" /* InstrumentationNames.WebGLWarningFired */,
+        this.createInstrumentationBreakpoints("canvas" /* Category.CANVAS */, [
+            "canvasContextCreated" /* InstrumentationNames.CANVAS_CONTEXT_CREATED */,
+            "webglErrorFired" /* InstrumentationNames.WEBGL_ERROR_FIRED */,
+            "webglWarningFired" /* InstrumentationNames.WEBGL_WARNING_FIRED */,
         ]);
-        this.createInstrumentationBreakpoints("geolocation" /* Category.Geolocation */, [
-            "Geolocation.getCurrentPosition" /* InstrumentationNames.GeolocationGetCurrentPosition */,
-            "Geolocation.watchPosition" /* InstrumentationNames.GeolocationWatchPosition */,
+        this.createInstrumentationBreakpoints("geolocation" /* Category.GEOLOCATION */, [
+            "Geolocation.getCurrentPosition" /* InstrumentationNames.GEOLOCATION_GET_CURRENT_POSITION */,
+            "Geolocation.watchPosition" /* InstrumentationNames.GEOLOCATION_WATCH_POSITION */,
         ]);
-        this.createInstrumentationBreakpoints("notification" /* Category.Notification */, [
-            "Notification.requestPermission" /* InstrumentationNames.NotificationRequestPermission */,
+        this.createInstrumentationBreakpoints("notification" /* Category.NOTIFICATION */, [
+            "Notification.requestPermission" /* InstrumentationNames.NOTIFCATION_REQUEST_PERMISSION */,
         ]);
-        this.createInstrumentationBreakpoints("parse" /* Category.Parse */, [
-            "Element.setInnerHTML" /* InstrumentationNames.ElementSetInnerHTML */,
-            "Document.write" /* InstrumentationNames.DocumentWrite */,
+        this.createInstrumentationBreakpoints("parse" /* Category.PARSE */, [
+            "Element.setInnerHTML" /* InstrumentationNames.ELEMENT_SET_INNER_HTML */,
+            "Document.write" /* InstrumentationNames.DOCUMENT_WRITE */,
         ]);
-        this.createInstrumentationBreakpoints("script" /* Category.Script */, [
-            "scriptFirstStatement" /* InstrumentationNames.ScriptFirstStatement */,
-            "scriptBlockedByCSP" /* InstrumentationNames.ScriptBlockedByCSP */,
+        this.createInstrumentationBreakpoints("script" /* Category.SCRIPT */, [
+            "scriptFirstStatement" /* InstrumentationNames.SCRIPT_FIRST_STATEMENT */,
+            "scriptBlockedByCSP" /* InstrumentationNames.SCRIPT_BLOCKED_BY_CSP */,
         ]);
-        this.createInstrumentationBreakpoints("shared-storage-worklet" /* Category.SharedStorageWorklet */, [
-            "sharedStorageWorkletScriptFirstStatement" /* InstrumentationNames.SharedStorageWorkletScriptFirstStatement */,
+        this.createInstrumentationBreakpoints("shared-storage-worklet" /* Category.SHARED_STORAGE_WORKLET */, [
+            "sharedStorageWorkletScriptFirstStatement" /* InstrumentationNames.SHARED_STORAGE_WORKLET_SCRIPT_FIRST_STATEMENT */,
         ]);
-        this.createInstrumentationBreakpoints("timer" /* Category.Timer */, [
-            "setTimeout" /* InstrumentationNames.SetTimeout */,
-            "clearTimeout" /* InstrumentationNames.ClearTimeout */,
-            "setTimeout.callback" /* InstrumentationNames.SetTimeoutCallback */,
-            "setInterval" /* InstrumentationNames.SetInterval */,
-            "clearInterval" /* InstrumentationNames.ClearInterval */,
-            "setInterval.callback" /* InstrumentationNames.SetIntervalCallback */,
+        this.createInstrumentationBreakpoints("timer" /* Category.TIMER */, [
+            "setTimeout" /* InstrumentationNames.SET_TIMEOUT */,
+            "clearTimeout" /* InstrumentationNames.CLEAR_TIMEOUT */,
+            "setTimeout.callback" /* InstrumentationNames.SET_TIMEOUT_CALLBACK */,
+            "setInterval" /* InstrumentationNames.SET_INTERVAL */,
+            "clearInterval" /* InstrumentationNames.CLEAR_INTERVAL */,
+            "setInterval.callback" /* InstrumentationNames.SET_INTERVAL_CALLBACK */,
         ]);
-        this.createInstrumentationBreakpoints("window" /* Category.Window */, [
-            "DOMWindow.close" /* InstrumentationNames.DOMWindowClose */,
+        this.createInstrumentationBreakpoints("window" /* Category.WINDOW */, [
+            "DOMWindow.close" /* InstrumentationNames.DOM_WINDOW_CLOSE */,
         ]);
-        this.createInstrumentationBreakpoints("web-audio" /* Category.WebAudio */, [
-            "audioContextCreated" /* InstrumentationNames.AudioContextCreated */,
-            "audioContextClosed" /* InstrumentationNames.AudioContextClosed */,
-            "audioContextResumed" /* InstrumentationNames.AudioContextResumed */,
-            "audioContextSuspended" /* InstrumentationNames.AudioContextSuspended */,
+        this.createInstrumentationBreakpoints("web-audio" /* Category.WEB_AUDIO */, [
+            "audioContextCreated" /* InstrumentationNames.AUDIO_CONTEXT_CREATED */,
+            "audioContextClosed" /* InstrumentationNames.AUDIO_CONTEXT_CLOSED */,
+            "audioContextResumed" /* InstrumentationNames.AUDIO_CONTEXT_RESUMED */,
+            "audioContextSuspended" /* InstrumentationNames.AUDIO_CONTEXT_SUSPENDED */,
         ]);
         TargetManager.instance().observeModels(EventBreakpointsModel, this);
     }
@@ -122,5 +122,5 @@ export class EventBreakpointsManager {
     modelRemoved(_eventBreakpointModel) {
     }
 }
-SDKModel.register(EventBreakpointsModel, { capabilities: 524288 /* Capability.EventBreakpoints */, autostart: false });
+SDKModel.register(EventBreakpointsModel, { capabilities: 524288 /* Capability.EVENT_BREAKPOINTS */, autostart: false });
 //# sourceMappingURL=EventBreakpointsModel.js.map

@@ -77,7 +77,7 @@ export class CSSLength extends HTMLElement {
         if (newValue) {
             this.value = newValue;
             this.dispatchEvent(new ValueChangedEvent(`${this.value}${this.unit}`));
-            Host.userMetrics.swatchActivated(8 /* Host.UserMetrics.SwatchType.Length */);
+            Host.userMetrics.swatchActivated(8 /* Host.UserMetrics.SwatchType.LENGTH */);
             this.render();
         }
     }

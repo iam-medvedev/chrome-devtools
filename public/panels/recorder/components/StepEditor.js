@@ -517,7 +517,7 @@ let StepEditor = class StepEditor extends LitElement {
             return;
         }
         this.#commit(await EditorState.default(value));
-        Host.userMetrics.recordingEdited(9 /* Host.UserMetrics.RecordingEdited.TypeChanged */);
+        Host.userMetrics.recordingEdited(9 /* Host.UserMetrics.RecordingEdited.TYPE_CHANGED */);
     };
     #handleAddRowClickEvent = async (event) => {
         event.preventDefault();
@@ -618,12 +618,12 @@ let StepEditor = class StepEditor extends LitElement {
                 }
                 switch (attribute) {
                     case 'properties':
-                        Host.userMetrics.recordingAssertion(2 /* Host.UserMetrics.RecordingAssertion.PropertyAssertionEdited */);
+                        Host.userMetrics.recordingAssertion(2 /* Host.UserMetrics.RecordingAssertion.PROPERTY_ASSERTION_EDITED */);
                         break;
                 }
                 return { [attribute]: value };
             },
-            metric: 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */,
+            metric: 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */,
         })}
       ></devtools-suggestion-input>
       ${this.#renderDeleteButton(attribute)}
@@ -660,7 +660,7 @@ let StepEditor = class StepEditor extends LitElement {
                         frame: new ArrayAssignments({ [index]: value }),
                     };
                 },
-                metric: 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */,
+                metric: 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */,
             })}
               ></devtools-suggestion-input>
               ${this.#renderInlineButton({
@@ -671,7 +671,7 @@ let StepEditor = class StepEditor extends LitElement {
                     frame: new ArrayAssignments({
                         [index + 1]: new InsertAssignment(defaultValuesByAttribute.frame[0]),
                     }),
-                }, `devtools-suggestion-input[data-path="frame.${index + 1}"]`, 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */),
+                }, `devtools-suggestion-input[data-path="frame.${index + 1}"]`, 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */),
             })}
               ${this.#renderInlineButton({
                 class: 'remove-frame',
@@ -679,7 +679,7 @@ let StepEditor = class StepEditor extends LitElement {
                 iconName: 'minus',
                 onClick: this.#handleAddOrRemoveClick({
                     frame: new ArrayAssignments({ [index]: undefined }),
-                }, `devtools-suggestion-input[data-path="frame.${Math.min(index, frames.length - 2)}"]`, 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */),
+                }, `devtools-suggestion-input[data-path="frame.${Math.min(index, frames.length - 2)}"]`, 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */),
             })}
             </div>
           `;
@@ -714,13 +714,13 @@ let StepEditor = class StepEditor extends LitElement {
                     selectors: new ArrayAssignments({
                         [index + 1]: new InsertAssignment(structuredClone(defaultValuesByAttribute.selectors[0])),
                     }),
-                }, `devtools-suggestion-input[data-path="selectors.${index + 1}.0"]`, 4 /* Host.UserMetrics.RecordingEdited.SelectorAdded */),
+                }, `devtools-suggestion-input[data-path="selectors.${index + 1}.0"]`, 4 /* Host.UserMetrics.RecordingEdited.SELECTOR_ADDED */),
             })}
             ${this.#renderInlineButton({
                 class: 'remove-selector',
                 title: i18nString(UIStrings.removeSelector),
                 iconName: 'minus',
-                onClick: this.#handleAddOrRemoveClick({ selectors: new ArrayAssignments({ [index]: undefined }) }, `devtools-suggestion-input[data-path="selectors.${Math.min(index, selectors.length - 2)}.0"]`, 5 /* Host.UserMetrics.RecordingEdited.SelectorRemoved */),
+                onClick: this.#handleAddOrRemoveClick({ selectors: new ArrayAssignments({ [index]: undefined }) }, `devtools-suggestion-input[data-path="selectors.${Math.min(index, selectors.length - 2)}.0"]`, 5 /* Host.UserMetrics.RecordingEdited.SELECTOR_REMOVED */),
             })}
           </div>
           ${selector.map((part, partIndex, parts) => {
@@ -747,7 +747,7 @@ let StepEditor = class StepEditor extends LitElement {
                             }),
                         };
                     },
-                    metric: 7 /* Host.UserMetrics.RecordingEdited.SelectorPartEdited */,
+                    metric: 7 /* Host.UserMetrics.RecordingEdited.SELECTOR_PART_EDITED */,
                 })}
               ></devtools-suggestion-input>
               ${this.#renderInlineButton({
@@ -760,7 +760,7 @@ let StepEditor = class StepEditor extends LitElement {
                                 [partIndex + 1]: new InsertAssignment(defaultValuesByAttribute.selectors[0][0]),
                             }),
                         }),
-                    }, `devtools-suggestion-input[data-path="selectors.${index}.${partIndex + 1}"]`, 6 /* Host.UserMetrics.RecordingEdited.SelectorPartAdded */),
+                    }, `devtools-suggestion-input[data-path="selectors.${index}.${partIndex + 1}"]`, 6 /* Host.UserMetrics.RecordingEdited.SELECTOR_PART_ADDED */),
                 })}
               ${this.#renderInlineButton({
                     class: 'remove-selector-part',
@@ -772,7 +772,7 @@ let StepEditor = class StepEditor extends LitElement {
                                 [partIndex]: undefined,
                             }),
                         }),
-                    }, `devtools-suggestion-input[data-path="selectors.${index}.${Math.min(partIndex, parts.length - 2)}"]`, 8 /* Host.UserMetrics.RecordingEdited.SelectorPartRemoved */),
+                    }, `devtools-suggestion-input[data-path="selectors.${index}.${Math.min(partIndex, parts.length - 2)}"]`, 8 /* Host.UserMetrics.RecordingEdited.SELECTOR_PART_REMOVED */),
                 })}
             </div>`;
             })}`;
@@ -814,7 +814,7 @@ let StepEditor = class StepEditor extends LitElement {
                         }),
                     };
                 },
-                metric: 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */,
+                metric: 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */,
             })}
             ></devtools-suggestion-input>
           </div>
@@ -836,7 +836,7 @@ let StepEditor = class StepEditor extends LitElement {
                         }),
                     };
                 },
-                metric: 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */,
+                metric: 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */,
             })}
             ></devtools-suggestion-input>
           </div>`;
@@ -869,12 +869,12 @@ let StepEditor = class StepEditor extends LitElement {
                     if (this.state.attributes?.[index]?.name === undefined) {
                         return;
                     }
-                    Host.userMetrics.recordingAssertion(3 /* Host.UserMetrics.RecordingAssertion.AttributeAssertionEdited */);
+                    Host.userMetrics.recordingAssertion(3 /* Host.UserMetrics.RecordingAssertion.ATTRIBUTE_ASSERTION_EDITED */);
                     return {
                         attributes: new ArrayAssignments({ [index]: { name } }),
                     };
                 },
-                metric: 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */,
+                metric: 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */,
             })}
           ></devtools-suggestion-input>
           <span class="separator">:</span>
@@ -889,12 +889,12 @@ let StepEditor = class StepEditor extends LitElement {
                     if (this.state.attributes?.[index]?.value === undefined) {
                         return;
                     }
-                    Host.userMetrics.recordingAssertion(3 /* Host.UserMetrics.RecordingAssertion.AttributeAssertionEdited */);
+                    Host.userMetrics.recordingAssertion(3 /* Host.UserMetrics.RecordingAssertion.ATTRIBUTE_ASSERTION_EDITED */);
                     return {
                         attributes: new ArrayAssignments({ [index]: { value } }),
                     };
                 },
-                metric: 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */,
+                metric: 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */,
             })}
           ></devtools-suggestion-input>
           ${this.#renderInlineButton({
@@ -917,13 +917,13 @@ let StepEditor = class StepEditor extends LitElement {
                             }
                         })()),
                     }),
-                }, `devtools-suggestion-input[data-path="attributes.${index + 1}.name"]`, 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */),
+                }, `devtools-suggestion-input[data-path="attributes.${index + 1}.name"]`, 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */),
             })}
           ${this.#renderInlineButton({
                 class: 'remove-attribute-assertion',
                 title: i18nString(UIStrings.removeSelectorPart),
                 iconName: 'minus',
-                onClick: this.#handleAddOrRemoveClick({ attributes: new ArrayAssignments({ [index]: undefined }) }, `devtools-suggestion-input[data-path="attributes.${Math.min(index, attributes.length - 2)}.value"]`, 10 /* Host.UserMetrics.RecordingEdited.OtherEditing */),
+                onClick: this.#handleAddOrRemoveClick({ attributes: new ArrayAssignments({ [index]: undefined }) }, `devtools-suggestion-input[data-path="attributes.${Math.min(index, attributes.length - 2)}.value"]`, 10 /* Host.UserMetrics.RecordingEdited.OTHER_EDITING */),
             })}
         </div>`;
         })}

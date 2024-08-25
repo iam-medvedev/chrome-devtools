@@ -109,7 +109,7 @@ class AffectedRequestsView extends AffectedResourcesView {
             this.updateAffectedResourceCount(0);
             return;
         }
-        if (this.issue.getCategory() === "MixedContent" /* IssuesManager.Issue.IssueCategory.MixedContent */) {
+        if (this.issue.getCategory() === "MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */) {
             // The AffectedMixedContentView takes care of displaying the resources.
             this.updateAffectedResourceCount(0);
             return;
@@ -119,15 +119,15 @@ class AffectedRequestsView extends AffectedResourcesView {
 }
 const issueTypeToNetworkHeaderMap = new Map([
     [
-        "Cookie" /* IssuesManager.Issue.IssueCategory.Cookie */,
+        "Cookie" /* IssuesManager.Issue.IssueCategory.COOKIE */,
         "cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.Cookies */,
     ],
     [
-        "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy */,
+        "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */,
         "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
     ],
     [
-        "MixedContent" /* IssuesManager.Issue.IssueCategory.MixedContent */,
+        "MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */,
         "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HeadersComponent */,
     ],
 ]);
@@ -157,7 +157,7 @@ class AffectedMixedContentView extends AffectedResourcesView {
             element.appendChild(this.createRequestCell(mixedContent.request, {
                 networkTab,
                 additionalOnClickAction() {
-                    Host.userMetrics.issuesPanelResourceOpened("MixedContent" /* IssuesManager.Issue.IssueCategory.MixedContent */, "Request" /* AffectedItem.Request */);
+                    Host.userMetrics.issuesPanelResourceOpened("MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */, "Request" /* AffectedItem.Request */);
                 },
             }));
         }
@@ -244,11 +244,11 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     }
     static getBodyCSSClass(issueKind) {
         switch (issueKind) {
-            case "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */:
+            case "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */:
                 return 'issue-kind-breaking-change';
-            case "PageError" /* IssuesManager.Issue.IssueKind.PageError */:
+            case "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */:
                 return 'issue-kind-page-error';
-            case "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */:
+            case "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */:
                 return 'issue-kind-improvement';
         }
     }
@@ -316,7 +316,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     onexpand() {
         const category = this.#issue.getCategory();
         // Handle sub type for cookie issues.
-        if (category === "Cookie" /* IssuesManager.Issue.IssueCategory.Cookie */) {
+        if (category === "Cookie" /* IssuesManager.Issue.IssueCategory.COOKIE */) {
             const cookieIssueSubCatagory = IssuesManager.CookieIssue.CookieIssue.getSubCategory(this.#issue.code());
             Host.userMetrics.issuesPanelIssueExpanded(cookieIssueSubCatagory);
         }
@@ -350,8 +350,8 @@ export class IssueView extends UI.TreeOutline.TreeElement {
                 menuItemAction: () => {
                     const setting = IssuesManager.IssuesManager.getHideIssueByCodeSetting();
                     const values = setting.get();
-                    values[this.#issue.code()] = this.#issue.isHidden() ? "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.Unhidden */ :
-                        "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */;
+                    values[this.#issue.code()] = this.#issue.isHidden() ? "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */ :
+                        "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */;
                     setting.set(values);
                 },
             };

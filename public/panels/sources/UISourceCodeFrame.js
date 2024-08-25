@@ -413,7 +413,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
             return null;
         }
         const issues = anchorElement.classList.contains('cm-messageIcon-issue');
-        const messages = row.filter(msg => (msg.level() === "Issue" /* Workspace.UISourceCode.Message.Level.Issue */) === issues);
+        const messages = row.filter(msg => (msg.level() === "Issue" /* Workspace.UISourceCode.Message.Level.ISSUE */) === issues);
         if (!messages.length) {
             return null;
         }
@@ -450,32 +450,32 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
     }
 }
 function getIconDataForLevel(level) {
-    if (level === "Error" /* Workspace.UISourceCode.Message.Level.Error */) {
+    if (level === "Error" /* Workspace.UISourceCode.Message.Level.ERROR */) {
         return { color: 'var(--icon-error)', width: '16px', height: '14px', iconName: 'cross-circle-filled' };
     }
-    if (level === "Warning" /* Workspace.UISourceCode.Message.Level.Warning */) {
+    if (level === "Warning" /* Workspace.UISourceCode.Message.Level.WARNING */) {
         return { color: 'var(--icon-warning)', width: '18px', height: '14px', iconName: 'warning-filled' };
     }
-    if (level === "Issue" /* Workspace.UISourceCode.Message.Level.Issue */) {
+    if (level === "Issue" /* Workspace.UISourceCode.Message.Level.ISSUE */) {
         return { color: 'var(--icon-warning)', width: '17px', height: '14px', iconName: 'issue-exclamation-filled' };
     }
     return { color: 'var(--icon-error)', width: '16px', height: '14px', iconName: 'cross-circle-filled' };
 }
 function getBubbleTypePerLevel(level) {
     switch (level) {
-        case "Error" /* Workspace.UISourceCode.Message.Level.Error */:
+        case "Error" /* Workspace.UISourceCode.Message.Level.ERROR */:
             return 'error';
-        case "Warning" /* Workspace.UISourceCode.Message.Level.Warning */:
+        case "Warning" /* Workspace.UISourceCode.Message.Level.WARNING */:
             return 'warning';
-        case "Issue" /* Workspace.UISourceCode.Message.Level.Issue */:
+        case "Issue" /* Workspace.UISourceCode.Message.Level.ISSUE */:
             return 'warning';
     }
 }
 function messageLevelComparator(a, b) {
     const messageLevelPriority = {
-        ["Issue" /* Workspace.UISourceCode.Message.Level.Issue */]: 2,
-        ["Warning" /* Workspace.UISourceCode.Message.Level.Warning */]: 3,
-        ["Error" /* Workspace.UISourceCode.Message.Level.Error */]: 4,
+        ["Issue" /* Workspace.UISourceCode.Message.Level.ISSUE */]: 2,
+        ["Warning" /* Workspace.UISourceCode.Message.Level.WARNING */]: 3,
+        ["Error" /* Workspace.UISourceCode.Message.Level.ERROR */]: 4,
     };
     return messageLevelPriority[a.level()] - messageLevelPriority[b.level()];
 }
@@ -589,17 +589,17 @@ class MessageWidget extends CodeMirror.WidgetType {
     toDOM() {
         const wrap = document.createElement('span');
         wrap.classList.add('cm-messageIcon');
-        const nonIssues = this.messages.filter(msg => msg.level() !== "Issue" /* Workspace.UISourceCode.Message.Level.Issue */);
+        const nonIssues = this.messages.filter(msg => msg.level() !== "Issue" /* Workspace.UISourceCode.Message.Level.ISSUE */);
         if (nonIssues.length) {
             const maxIssue = nonIssues.sort(messageLevelComparator)[nonIssues.length - 1];
             const errorIcon = wrap.appendChild(new IconButton.Icon.Icon());
             errorIcon.data = getIconDataForLevel(maxIssue.level());
             errorIcon.classList.add('cm-messageIcon-error');
         }
-        const issue = this.messages.find(m => m.level() === "Issue" /* Workspace.UISourceCode.Message.Level.Issue */);
+        const issue = this.messages.find(m => m.level() === "Issue" /* Workspace.UISourceCode.Message.Level.ISSUE */);
         if (issue) {
             const issueIcon = wrap.appendChild(new IconButton.Icon.Icon());
-            issueIcon.data = getIconDataForLevel("Issue" /* Workspace.UISourceCode.Message.Level.Issue */);
+            issueIcon.data = getIconDataForLevel("Issue" /* Workspace.UISourceCode.Message.Level.ISSUE */);
             issueIcon.classList.add('cm-messageIcon-issue');
             issueIcon.addEventListener('click', () => (issue.clickHandler() || Math.min)());
         }

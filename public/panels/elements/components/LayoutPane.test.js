@@ -153,9 +153,9 @@ describeWithMockConnection('LayoutPane', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.strictEqual(render.called, inScope);
     };
-    it('updates UI on in scope grid overlay update event', updatesUiOnEvent("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentGridOverlayStateChanged */, true));
-    it('does not update UI on out of scope grid overlay update event', updatesUiOnEvent("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentGridOverlayStateChanged */, false));
-    it('updates UI on in scope flex overlay update event', updatesUiOnEvent("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged */, true));
-    it('does not update UI on out of scope flex overlay update event', updatesUiOnEvent("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged */, false));
+    it('updates UI on in scope grid overlay update event', updatesUiOnEvent("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_GRID_OVERLAY_STATE_CHANGED */, true));
+    it('does not update UI on out of scope grid overlay update event', updatesUiOnEvent("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_GRID_OVERLAY_STATE_CHANGED */, false));
+    it('updates UI on in scope flex overlay update event', updatesUiOnEvent("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_FLEX_CONTAINER_OVERLAY_STATE_CHANGED */, true));
+    it('does not update UI on out of scope flex overlay update event', updatesUiOnEvent("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_FLEX_CONTAINER_OVERLAY_STATE_CHANGED */, false));
 });
 //# sourceMappingURL=LayoutPane.test.js.map

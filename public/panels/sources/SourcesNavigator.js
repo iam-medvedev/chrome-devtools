@@ -99,7 +99,7 @@ let networkNavigatorViewInstance;
 export class NetworkNavigatorView extends NavigatorView {
     constructor() {
         super('navigator-network', true);
-        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.inspectedURLChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, this.inspectedURLChanged, this);
         // Record the sources tool load time after the file navigator has loaded.
         Host.userMetrics.panelLoaded('sources', 'DevTools.Launch.Sources');
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
@@ -199,7 +199,7 @@ export class OverridesNavigatorView extends NavigatorView {
   `);
         this.toolbar = new UI.Toolbar.Toolbar('navigator-toolbar');
         this.contentElement.insertBefore(this.toolbar.element, this.contentElement.firstChild);
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("ProjectChanged" /* Persistence.NetworkPersistenceManager.Events.ProjectChanged */, this.updateProjectAndUI, this);
+        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("ProjectChanged" /* Persistence.NetworkPersistenceManager.Events.PROJECT_CHANGED */, this.updateProjectAndUI, this);
         this.workspace().addEventListener(Workspace.Workspace.Events.ProjectAdded, this.onProjectAddOrRemoved, this);
         this.workspace().addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.onProjectAddOrRemoved, this);
         this.updateProjectAndUI();

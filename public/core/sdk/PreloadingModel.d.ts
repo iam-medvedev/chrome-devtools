@@ -31,21 +31,21 @@ export declare class PreloadingModel extends SDKModel<EventTypes> {
     onPreloadEnabledStateUpdated(event: Protocol.Preload.PreloadEnabledStateUpdatedEvent): void;
 }
 export declare const enum Events {
-    ModelUpdated = "ModelUpdated",
-    WarningsUpdated = "WarningsUpdated"
+    MODEL_UPDATED = "ModelUpdated",
+    WARNINGS_UPDATED = "WarningsUpdated"
 }
 export type EventTypes = {
-    [Events.ModelUpdated]: void;
-    [Events.WarningsUpdated]: Protocol.Preload.PreloadEnabledStateUpdatedEvent;
+    [Events.MODEL_UPDATED]: void;
+    [Events.WARNINGS_UPDATED]: Protocol.Preload.PreloadEnabledStateUpdatedEvent;
 };
 export declare const enum PreloadingStatus {
-    NotTriggered = "NotTriggered",
-    Pending = "Pending",
-    Running = "Running",
-    Ready = "Ready",
-    Success = "Success",
-    Failure = "Failure",
-    NotSupported = "NotSupported"
+    NOT_TRIGGERED = "NotTriggered",
+    PENDING = "Pending",
+    RUNNING = "Running",
+    READY = "Ready",
+    SUCCESS = "Success",
+    FAILURE = "Failure",
+    NOT_SUPPORTED = "NotSupported"
 }
 export type PreloadingAttemptId = string;
 export type PreloadingAttempt = PrefetchAttempt | PrerenderAttempt;

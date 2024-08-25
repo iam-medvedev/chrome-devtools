@@ -7,7 +7,7 @@ const UIStrings = {
     /**
      * @description Label for a link for third-party cookie Issues.
      */
-    thirdPartyPhaseoutExplained: 'Prepare for phasing out third-party cookies',
+    thirdPartyPhaseoutExplained: 'Changes to Chrome\'s treatment of third-party cookies',
 };
 const str_ = i18n.i18n.registerUIStrings('models/issues_manager/CookieDeprecationMetadataIssue.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -21,7 +21,7 @@ export class CookieDeprecationMetadataIssue extends Issue {
         this.#issueDetails = issueDetails;
     }
     getCategory() {
-        return "Other" /* IssueCategory.Other */;
+        return "Other" /* IssueCategory.OTHER */;
     }
     getDescription() {
         const fileName = this.#issueDetails.operation === 'SetCookie' ? 'cookieWarnMetadataGrantSet.md' :
@@ -38,7 +38,7 @@ export class CookieDeprecationMetadataIssue extends Issue {
             ]),
             links: [
                 {
-                    link: 'https://developer.chrome.com/docs/privacy-sandbox/third-party-cookie-phase-out/',
+                    link: 'https://goo.gle/changes-to-chrome-browsing',
                     linkTitle: i18nString(UIStrings.thirdPartyPhaseoutExplained),
                 },
             ],
@@ -48,7 +48,7 @@ export class CookieDeprecationMetadataIssue extends Issue {
         return this.#issueDetails;
     }
     getKind() {
-        return "BreakingChange" /* IssueKind.BreakingChange */;
+        return "BreakingChange" /* IssueKind.BREAKING_CHANGE */;
     }
     primaryKey() {
         return JSON.stringify(this.#issueDetails);

@@ -240,6 +240,6 @@ export interface StorageKeyData {
     mainStorageKey: string | null;
 }
 export declare const enum PrimaryPageChangeType {
-    Navigation = "Navigation",
-    Activation = "Activation"
+    NAVIGATION = "Navigation",
+    ACTIVATION = "Activation"
 }

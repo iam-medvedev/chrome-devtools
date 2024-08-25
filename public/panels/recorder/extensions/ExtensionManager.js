@@ -18,18 +18,18 @@ export class ExtensionManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     attach() {
         const pluginManager = Extensions.RecorderPluginManager.RecorderPluginManager.instance();
-        pluginManager.addEventListener("pluginAdded" /* Extensions.RecorderPluginManager.Events.PluginAdded */, this.#handlePlugin);
-        pluginManager.addEventListener("pluginRemoved" /* Extensions.RecorderPluginManager.Events.PluginRemoved */, this.#handlePlugin);
-        pluginManager.addEventListener("viewRegistered" /* Extensions.RecorderPluginManager.Events.ViewRegistered */, this.#handleView);
+        pluginManager.addEventListener("pluginAdded" /* Extensions.RecorderPluginManager.Events.PLUGIN_ADDED */, this.#handlePlugin);
+        pluginManager.addEventListener("pluginRemoved" /* Extensions.RecorderPluginManager.Events.PLUGIN_REMOVED */, this.#handlePlugin);
+        pluginManager.addEventListener("viewRegistered" /* Extensions.RecorderPluginManager.Events.VIEW_REGISTERED */, this.#handleView);
         for (const descriptor of pluginManager.views()) {
             this.#handleView({ data: descriptor });
         }
     }
     detach() {
         const pluginManager = Extensions.RecorderPluginManager.RecorderPluginManager.instance();
-        pluginManager.removeEventListener("pluginAdded" /* Extensions.RecorderPluginManager.Events.PluginAdded */, this.#handlePlugin);
-        pluginManager.removeEventListener("pluginRemoved" /* Extensions.RecorderPluginManager.Events.PluginRemoved */, this.#handlePlugin);
-        pluginManager.removeEventListener("viewRegistered" /* Extensions.RecorderPluginManager.Events.ViewRegistered */, this.#handleView);
+        pluginManager.removeEventListener("pluginAdded" /* Extensions.RecorderPluginManager.Events.PLUGIN_ADDED */, this.#handlePlugin);
+        pluginManager.removeEventListener("pluginRemoved" /* Extensions.RecorderPluginManager.Events.PLUGIN_REMOVED */, this.#handlePlugin);
+        pluginManager.removeEventListener("viewRegistered" /* Extensions.RecorderPluginManager.Events.VIEW_REGISTERED */, this.#handleView);
         this.#views.clear();
     }
     extensions() {

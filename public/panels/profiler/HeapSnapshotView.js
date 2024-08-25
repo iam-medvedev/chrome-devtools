@@ -1077,9 +1077,9 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
     constructor(id, title) {
         super(id || HeapSnapshotProfileType.TypeId, title || i18nString(UIStrings.heapSnapshot));
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.HeapProfilerModel.HeapProfilerModel, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.HeapProfilerModel.HeapProfilerModel, "ResetProfiles" /* SDK.HeapProfilerModel.Events.ResetProfiles */, this.resetProfiles, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.HeapProfilerModel.HeapProfilerModel, "AddHeapSnapshotChunk" /* SDK.HeapProfilerModel.Events.AddHeapSnapshotChunk */, this.addHeapSnapshotChunk, this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.HeapProfilerModel.HeapProfilerModel, "ReportHeapSnapshotProgress" /* SDK.HeapProfilerModel.Events.ReportHeapSnapshotProgress */, this.reportHeapSnapshotProgress, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.HeapProfilerModel.HeapProfilerModel, "ResetProfiles" /* SDK.HeapProfilerModel.Events.RESET_PROFILES */, this.resetProfiles, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.HeapProfilerModel.HeapProfilerModel, "AddHeapSnapshotChunk" /* SDK.HeapProfilerModel.Events.ADD_HEAP_SNAPSHOT_CHUNK */, this.addHeapSnapshotChunk, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.HeapProfilerModel.HeapProfilerModel, "ReportHeapSnapshotProgress" /* SDK.HeapProfilerModel.Events.REPORT_HEAP_SNAPSHOT_PROGRESS */, this.reportHeapSnapshotProgress, this);
         this.exposeInternals = Common.Settings.Settings.instance().createSetting('expose-internals', false);
         this.customContentInternal = null;
     }
@@ -1204,13 +1204,13 @@ export class TrackingHeapSnapshotProfileType extends Common.ObjectWrapper.eventM
     }
     modelAdded(heapProfilerModel) {
         super.modelAdded(heapProfilerModel);
-        heapProfilerModel.addEventListener("HeapStatsUpdate" /* SDK.HeapProfilerModel.Events.HeapStatsUpdate */, this.heapStatsUpdate, this);
-        heapProfilerModel.addEventListener("LastSeenObjectId" /* SDK.HeapProfilerModel.Events.LastSeenObjectId */, this.lastSeenObjectId, this);
+        heapProfilerModel.addEventListener("HeapStatsUpdate" /* SDK.HeapProfilerModel.Events.HEAP_STATS_UPDATED */, this.heapStatsUpdate, this);
+        heapProfilerModel.addEventListener("LastSeenObjectId" /* SDK.HeapProfilerModel.Events.LAST_SEEN_OBJECT_ID */, this.lastSeenObjectId, this);
     }
     modelRemoved(heapProfilerModel) {
         super.modelRemoved(heapProfilerModel);
-        heapProfilerModel.removeEventListener("HeapStatsUpdate" /* SDK.HeapProfilerModel.Events.HeapStatsUpdate */, this.heapStatsUpdate, this);
-        heapProfilerModel.removeEventListener("LastSeenObjectId" /* SDK.HeapProfilerModel.Events.LastSeenObjectId */, this.lastSeenObjectId, this);
+        heapProfilerModel.removeEventListener("HeapStatsUpdate" /* SDK.HeapProfilerModel.Events.HEAP_STATS_UPDATED */, this.heapStatsUpdate, this);
+        heapProfilerModel.removeEventListener("LastSeenObjectId" /* SDK.HeapProfilerModel.Events.LAST_SEEN_OBJECT_ID */, this.lastSeenObjectId, this);
     }
     heapStatsUpdate(event) {
         if (!this.profileSamples) {

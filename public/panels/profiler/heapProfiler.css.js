@@ -234,6 +234,10 @@ styles.replaceSync(
   }
 }
 
+.detached-elements-view {
+  overflow: auto;
+}
+
 /*# sourceURL=heapProfiler.css */
 `);
 

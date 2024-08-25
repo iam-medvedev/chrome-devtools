@@ -1,4 +1,10 @@
+// Copyright 2024 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+import * as Marked from '../../../../third_party/marked/marked.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
+import * as MarkdownView from '../../../../ui/components/markdown_view/markdown_view.js';
+import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
 import sidebarInsightStyles from './sidebarInsight.css.js';
 import * as SidebarInsight from './SidebarInsight.js';
 import { InsightsCategories } from './types.js';
@@ -61,5 +67,16 @@ export class BaseInsight extends HTMLElement {
             insightNavigationId: this.data.navigationId,
         });
     }
+}
+/**
+ * Returns a rendered MarkdownView component.
+ *
+ * This should not be used for markdown that is not guaranteed to be valid.
+ */
+export function md(markdown) {
+    const tokens = Marked.Marked.lexer(markdown);
+    return LitHtml.html `<${MarkdownView.MarkdownView.MarkdownView.litTagName}
+    .data=${{ tokens }}>
+  </${MarkdownView.MarkdownView.MarkdownView.litTagName}>`;
 }
 //# sourceMappingURL=Helpers.js.map

@@ -136,7 +136,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         this.profilesItemTreeElement.select();
         this.showLauncherView();
         this.createFileSelectorElement();
-        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SuspendStateChanged */, this.onSuspendStateChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.onSuspendStateChanged, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.CPUProfilerModel.CPUProfilerModel, this.updateProfileTypeSpecificUI, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.HeapProfilerModel.HeapProfilerModel, this.updateProfileTypeSpecificUI, this);
     }

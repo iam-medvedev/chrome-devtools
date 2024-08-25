@@ -56,11 +56,11 @@ export class NetworkThrottlingSelector extends HTMLElement {
         this.#render();
     }
     connectedCallback() {
-        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, this.#onConditionsChanged, this);
+        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, this.#onConditionsChanged, this);
         this.#customNetworkConditionsSetting.addChangeListener(this.#onSettingChanged, this);
     }
     disconnectedCallback() {
-        SDK.NetworkManager.MultitargetNetworkManager.instance().removeEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, this.#onConditionsChanged, this);
+        SDK.NetworkManager.MultitargetNetworkManager.instance().removeEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, this.#onConditionsChanged, this);
         this.#customNetworkConditionsSetting.removeChangeListener(this.#onSettingChanged, this);
     }
     #resetPresets() {
