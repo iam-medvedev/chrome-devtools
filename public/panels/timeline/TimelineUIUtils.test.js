@@ -57,7 +57,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             // it into buildDetailsNodeForTraceEvent
             const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const fakeFunctionCall = {
-                name: "FunctionCall" /* TraceEngine.Types.TraceEvents.KnownEventName.FunctionCall */,
+                name: "FunctionCall" /* TraceEngine.Types.TraceEvents.KnownEventName.FUNCTION_CALL */,
                 ph: "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */,
                 cat: 'devtools-timeline',
                 dur: TraceEngine.Types.Timing.MicroSeconds(100),
@@ -86,7 +86,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             // it into buildDetailsNodeForTraceEvent
             const { traceData } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const fakeFunctionCall = {
-                name: "FunctionCall" /* TraceEngine.Types.TraceEvents.KnownEventName.FunctionCall */,
+                name: "FunctionCall" /* TraceEngine.Types.TraceEvents.KnownEventName.FUNCTION_CALL */,
                 ph: "X" /* TraceEngine.Types.TraceEvents.Phase.COMPLETE */,
                 cat: 'devtools-timeline',
                 dur: TraceEngine.Types.Timing.MicroSeconds(100),
@@ -346,7 +346,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.strictEqual('var(--app-color-scripting)', cssVariable);
         });
         it('treats the v8.parseOnBackgroundWaiting as scripting even though it would usually be idle', function () {
-            const event = makeCompleteEvent("v8.parseOnBackgroundWaiting" /* TraceEngine.Types.TraceEvents.KnownEventName.StreamingCompileScriptWaiting */, 1, 1, 'v8,devtools.timeline,disabled-by-default-v8.compile');
+            const event = makeCompleteEvent("v8.parseOnBackgroundWaiting" /* TraceEngine.Types.TraceEvents.KnownEventName.STREAMING_COMPILE_SCRIPT_WAITING */, 1, 1, 'v8,devtools.timeline,disabled-by-default-v8.compile');
             assert.strictEqual('rgb(2 2 2)', Timeline.TimelineUIUtils.TimelineUIUtils.eventColor(event));
         });
         it('assigns the correct color to the swatch of an event\'s title', async function () {
@@ -704,7 +704,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             TraceLoader.initTraceBoundsManager(traceData);
             const [process] = traceData.Renderer.processes.values();
             const [thread] = process.threads.values();
-            const stylesRecalc = thread.entries.filter(entry => entry.name === "UpdateLayoutTree" /* TraceEngine.Types.TraceEvents.KnownEventName.UpdateLayoutTree */);
+            const stylesRecalc = thread.entries.filter(entry => entry.name === "UpdateLayoutTree" /* TraceEngine.Types.TraceEvents.KnownEventName.UPDATE_LAYOUT_TREE */);
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(traceData, stylesRecalc[3], new Components.Linkifier.Linkifier(), false);
             const stackTraceData = getStackTraceForDetailsElement(details);
             assert.deepEqual(stackTraceData, ['(anonymous) @ web.dev/js/app.js?v=1423cda3:1:183']);
@@ -818,6 +818,19 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 { title: 'Total', value: '34\u00A0ms' },
             ];
             assert.deepEqual(pieChartData, expectedPieChartData);
+        });
+        it('renders details for synthetic server timings', async function () {
+            const { traceData } = await TraceLoader.traceEngine(this, 'server-timings.json.gz');
+            const serverTimings = traceData.ServerTimings.serverTimings;
+            const serverTiming = serverTimings[0];
+            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(traceData, serverTiming, new Components.Linkifier.Linkifier(), false);
+            const rowData = getRowDataForDetailsElement(details);
+            assert.deepEqual(rowData, [
+                {
+                    title: 'Description',
+                    value: 'Description of top level task 1',
+                },
+            ]);
         });
     });
     it('can generate details for a frame', async function () {

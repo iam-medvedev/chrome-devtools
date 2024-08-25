@@ -45,7 +45,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
             rows: [{
                     url: 'https://example.com/prefetched.html',
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */,
+                    status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);
@@ -60,7 +60,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
             rows: [{
                     url: 'https://example.com/prefetched.html?q=2',
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.Ready */,
+                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);
@@ -80,7 +80,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
             rows: [{
                     url: 'https://example.com/prefetched.html',
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.Ready */,
+                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);
@@ -99,7 +99,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
             rows: [{
                     url: 'https://example.com/prefetched.html?q=1',
                     action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
-                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.Ready */,
+                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);
@@ -118,7 +118,7 @@ describeWithEnvironment('MismatchedPreloadingGrid', () => {
             rows: [{
                     url: 'https://example.com/prerendered.html?x=1',
                     action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.Ready */,
+                    status: "Ready" /* SDK.PreloadingModel.PreloadingStatus.READY */,
                 }],
         };
         const component = await renderMismatchedPreloadingGrid(data);

@@ -450,12 +450,14 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["WorkingCopyChanged"] = "WorkingCopyChanged";
     Events["WorkingCopyCommitted"] = "WorkingCopyCommitted";
     Events["TitleChanged"] = "TitleChanged";
     Events["MessageAdded"] = "MessageAdded";
     Events["MessageRemoved"] = "MessageRemoved";
     Events["DecorationChanged"] = "DecorationChanged";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 export class UILocation {
     uiSourceCode;

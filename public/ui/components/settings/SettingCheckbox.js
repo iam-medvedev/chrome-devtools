@@ -15,6 +15,7 @@ export class SettingCheckbox extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #setting;
     #changeListenerDescriptor;
+    #textOverride;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [Input.checkboxStyles, settingCheckboxStyles];
     }
@@ -23,6 +24,7 @@ export class SettingCheckbox extends HTMLElement {
             this.#setting.removeChangeListener(this.#changeListenerDescriptor.listener);
         }
         this.#setting = data.setting;
+        this.#textOverride = data.textOverride;
         this.#changeListenerDescriptor = this.#setting.addChangeListener(() => {
             this.#render();
         });
@@ -55,7 +57,7 @@ export class SettingCheckbox extends HTMLElement {
             jslog=${VisualLogging.toggle().track({ click: true }).context(this.#setting.name)}
             aria-label=${this.#setting.title()}
           />
-          ${this.#setting.title()}${reason}${icon}
+          ${this.#textOverride || this.#setting.title()}${reason}${icon}
         </label>
       </p>`, this.#shadow, { host: this });
     }

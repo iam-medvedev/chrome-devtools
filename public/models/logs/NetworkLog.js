@@ -171,7 +171,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
             chain: null,
             request: undefined,
         };
-        let type = "other" /* SDK.NetworkRequest.InitiatorType.Other */;
+        let type = "other" /* SDK.NetworkRequest.InitiatorType.OTHER */;
         let url = Platform.DevToolsPath.EmptyUrlString;
         let lineNumber = undefined;
         let columnNumber = undefined;
@@ -181,12 +181,12 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         const initiator = request.initiator();
         const redirectSource = request.redirectSource();
         if (redirectSource) {
-            type = "redirect" /* SDK.NetworkRequest.InitiatorType.Redirect */;
+            type = "redirect" /* SDK.NetworkRequest.InitiatorType.REDIRECT */;
             url = redirectSource.url();
         }
         else if (initiator) {
             if (initiator.type === "parser" /* Protocol.Network.InitiatorType.Parser */) {
-                type = "parser" /* SDK.NetworkRequest.InitiatorType.Parser */;
+                type = "parser" /* SDK.NetworkRequest.InitiatorType.PARSER */;
                 url = initiator.url ? initiator.url : url;
                 lineNumber = initiator.lineNumber;
                 columnNumber = initiator.columnNumber;
@@ -198,7 +198,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
                         stack = stack.parent;
                         continue;
                     }
-                    type = "script" /* SDK.NetworkRequest.InitiatorType.Script */;
+                    type = "script" /* SDK.NetworkRequest.InitiatorType.SCRIPT */;
                     url = (topFrame.url || i18nString(UIStrings.anonymous));
                     lineNumber = topFrame.lineNumber;
                     columnNumber = topFrame.columnNumber;
@@ -206,7 +206,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
                     break;
                 }
                 if (!initiator.stack && initiator.url) {
-                    type = "script" /* SDK.NetworkRequest.InitiatorType.Script */;
+                    type = "script" /* SDK.NetworkRequest.InitiatorType.SCRIPT */;
                     url = initiator.url;
                     lineNumber = initiator.lineNumber;
                 }
@@ -215,14 +215,14 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
                 }
             }
             else if (initiator.type === "preload" /* Protocol.Network.InitiatorType.Preload */) {
-                type = "preload" /* SDK.NetworkRequest.InitiatorType.Preload */;
+                type = "preload" /* SDK.NetworkRequest.InitiatorType.PRELOAD */;
             }
             else if (initiator.type === "preflight" /* Protocol.Network.InitiatorType.Preflight */) {
-                type = "preflight" /* SDK.NetworkRequest.InitiatorType.Preflight */;
+                type = "preflight" /* SDK.NetworkRequest.InitiatorType.PREFLIGHT */;
                 initiatorRequest = request.preflightInitiatorRequest();
             }
             else if (initiator.type === "SignedExchange" /* Protocol.Network.InitiatorType.SignedExchange */) {
-                type = "signedExchange" /* SDK.NetworkRequest.InitiatorType.SignedExchange */;
+                type = "signedExchange" /* SDK.NetworkRequest.InitiatorType.SIGNED_EXCHANGE */;
                 url = initiator.url || Platform.DevToolsPath.EmptyUrlString;
             }
         }
@@ -292,7 +292,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
     onPrimaryPageChanged(event) {
         const mainFrame = event.data.frame;
         const manager = mainFrame.resourceTreeModel().target().model(SDK.NetworkManager.NetworkManager);
-        if (!manager || mainFrame.resourceTreeModel().target().parentTarget()?.type() === SDK.Target.Type.Frame) {
+        if (!manager || mainFrame.resourceTreeModel().target().parentTarget()?.type() === SDK.Target.Type.FRAME) {
             return;
         }
         // If a page resulted in an error, the browser will navigate to an internal error page
@@ -316,7 +316,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
         let currentPageLoad = null;
         const requestsToAdd = [];
         for (const request of oldManagerRequests) {
-            if (event.data.type !== "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Activation */ &&
+            if (event.data.type !== "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.ACTIVATION */ &&
                 request.loaderId !== mainFrame.loaderId) {
                 continue;
             }
@@ -521,9 +521,11 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
 const consoleMessageToRequest = new WeakMap();
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["Reset"] = "Reset";
     Events["RequestAdded"] = "RequestAdded";
     Events["RequestUpdated"] = "RequestUpdated";
     Events["RequestRemoved"] = "RequestRemoved";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 //# sourceMappingURL=NetworkLog.js.map

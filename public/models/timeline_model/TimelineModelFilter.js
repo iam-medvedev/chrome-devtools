@@ -19,11 +19,11 @@ export class TimelineVisibleEventsFilter extends TimelineModelFilter {
     static eventType(event) {
         // Any blink.console category events are treated as ConsoleTime events
         if (TraceEngine.Helpers.Trace.eventHasCategory(event, 'blink.console')) {
-            return "ConsoleTime" /* TraceEngine.Types.TraceEvents.KnownEventName.ConsoleTime */;
+            return "ConsoleTime" /* TraceEngine.Types.TraceEvents.KnownEventName.CONSOLE_TIME */;
         }
         // Any blink.user_timing egory events are treated as UserTiming events
         if (TraceEngine.Helpers.Trace.eventHasCategory(event, 'blink.user_timing')) {
-            return "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.UserTiming */;
+            return "UserTiming" /* TraceEngine.Types.TraceEvents.KnownEventName.USER_TIMING */;
         }
         return event.name;
     }

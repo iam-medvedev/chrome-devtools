@@ -119,7 +119,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             Common.EventTarget.removeEventListeners(this.eventDescriptors);
             await this.updateActiveProject();
         }
-        this.dispatchEventToListeners("LocalOverridesProjectUpdated" /* Events.LocalOverridesProjectUpdated */, this.enabled);
+        this.dispatchEventToListeners("LocalOverridesProjectUpdated" /* Events.LOCAL_OVERRIDES_PROJECT_UPDATED */, this.enabled);
     }
     async uiSourceCodeRenamedListener(event) {
         const uiSourceCode = event.data.uiSourceCode;
@@ -257,7 +257,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             await mutex.run(this.#innerUnbind.bind(this, binding));
         }
         else if (headerBinding) {
-            this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged" /* Events.RequestsForHeaderOverridesFileChanged */, uiSourceCode);
+            this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged" /* Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED */, uiSourceCode);
         }
     }
     async #unbindUnguarded(uiSourceCode) {
@@ -345,7 +345,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         if (!this.enabledSetting.get()) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.OverrideContentContextMenuActivateDisabled);
             this.enabledSetting.set(true);
-            await this.once("LocalOverridesProjectUpdated" /* Events.LocalOverridesProjectUpdated */);
+            await this.once("LocalOverridesProjectUpdated" /* Events.LOCAL_OVERRIDES_PROJECT_UPDATED */);
         }
         // Save new file
         if (!this.#isUISourceCodeAlreadyOverridden(uiSourceCode)) {
@@ -642,7 +642,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
     }
     #dispatchRequestsForHeaderOverridesFileChanged() {
         for (const headersFileUiSourceCode of this.#headerOverridesForEventDispatch) {
-            this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged" /* Events.RequestsForHeaderOverridesFileChanged */, headersFileUiSourceCode);
+            this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged" /* Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED */, headersFileUiSourceCode);
         }
         this.#headerOverridesForEventDispatch.clear();
         return Promise.resolve();
@@ -677,7 +677,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
             await Promise.all([...this.projectInternal.uiSourceCodes()].map(uiSourceCode => this.filesystemUISourceCodeAdded(uiSourceCode)));
         }
         await this.updateActiveProject();
-        this.dispatchEventToListeners("ProjectChanged" /* Events.ProjectChanged */, this.projectInternal);
+        this.dispatchEventToListeners("ProjectChanged" /* Events.PROJECT_CHANGED */, this.projectInternal);
     }
     async onProjectAdded(project) {
         if (project.type() !== Workspace.Workspace.projectTypes.FileSystem ||

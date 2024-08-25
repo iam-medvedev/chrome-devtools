@@ -50,9 +50,9 @@ describeWithLocale('SharedDictionaryIssue', () => {
             const sharedDictionaryIssues = IssuesManager.SharedDictionaryIssue.SharedDictionaryIssue.fromInspectorIssue(mockModel, issue);
             assert.lengthOf(sharedDictionaryIssues, 1);
             const sharedDictionaryIssue = sharedDictionaryIssues[0];
-            assert.strictEqual(sharedDictionaryIssue.getCategory(), "Other" /* IssuesManager.Issue.IssueCategory.Other */);
+            assert.strictEqual(sharedDictionaryIssue.getCategory(), "Other" /* IssuesManager.Issue.IssueCategory.OTHER */);
             assert.deepStrictEqual(sharedDictionaryIssue.details(), issueDetails);
-            assert.strictEqual(sharedDictionaryIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PageError */);
+            assert.strictEqual(sharedDictionaryIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */);
             assert.isNotNull(sharedDictionaryIssue.getDescription());
         }
     });

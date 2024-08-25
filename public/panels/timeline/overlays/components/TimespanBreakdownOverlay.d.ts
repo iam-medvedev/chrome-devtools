@@ -5,7 +5,8 @@ import * as LitHtml from '../../../../ui/lit-html/lit-html.js';
  */
 export type EntryBreakdown = {
     bounds: TraceEngine.Types.Timing.TraceWindowMicroSeconds;
-    label: string;
+    label: string | LitHtml.LitTemplate;
+    showDuration: boolean;
 };
 export declare class TimespanBreakdownOverlay extends HTMLElement {
     #private;

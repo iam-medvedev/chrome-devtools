@@ -19,14 +19,14 @@ export declare class RecorderPluginManager extends Common.ObjectWrapper.ObjectWr
     showView(id: string): void;
 }
 export declare const enum Events {
-    PluginAdded = "pluginAdded",
-    PluginRemoved = "pluginRemoved",
-    ViewRegistered = "viewRegistered",
-    ShowViewRequested = "showViewRequested"
+    PLUGIN_ADDED = "pluginAdded",
+    PLUGIN_REMOVED = "pluginRemoved",
+    VIEW_REGISTERED = "viewRegistered",
+    SHOW_VIEW_REQUESTED = "showViewRequested"
 }
 export type EventTypes = {
-    [Events.PluginAdded]: RecorderExtensionEndpoint;
-    [Events.PluginRemoved]: RecorderExtensionEndpoint;
-    [Events.ViewRegistered]: ViewDescriptor;
-    [Events.ShowViewRequested]: ViewDescriptor;
+    [Events.PLUGIN_ADDED]: RecorderExtensionEndpoint;
+    [Events.PLUGIN_REMOVED]: RecorderExtensionEndpoint;
+    [Events.VIEW_REGISTERED]: ViewDescriptor;
+    [Events.SHOW_VIEW_REQUESTED]: ViewDescriptor;
 };

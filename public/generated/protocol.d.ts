@@ -1398,6 +1398,20 @@ export declare namespace Extensions {
          */
         storageArea: StorageArea;
     }
+    interface SetStorageItemsRequest {
+        /**
+         * ID of extension.
+         */
+        id: string;
+        /**
+         * StorageArea to set data in.
+         */
+        storageArea: StorageArea;
+        /**
+         * Values to set.
+         */
+        values: any;
+    }
 }
 /**
  * Defines commands and events for Autofill.
@@ -10718,6 +10732,7 @@ export declare namespace Page {
         OtpCredentials = "otp-credentials",
         Payment = "payment",
         PictureInPicture = "picture-in-picture",
+        Popins = "popins",
         PrivateAggregation = "private-aggregation",
         PrivateStateTokenIssuance = "private-state-token-issuance",
         PrivateStateTokenRedemption = "private-state-token-redemption",
@@ -11530,6 +11545,7 @@ export declare namespace Page {
         ContentWebUSB = "ContentWebUSB",
         ContentMediaSessionService = "ContentMediaSessionService",
         ContentScreenReader = "ContentScreenReader",
+        ContentDiscarded = "ContentDiscarded",
         EmbedderPopupBlockerTabHelper = "EmbedderPopupBlockerTabHelper",
         EmbedderSafeBrowsingTriggeredPopupBlocker = "EmbedderSafeBrowsingTriggeredPopupBlocker",
         EmbedderSafeBrowsingThreatDetails = "EmbedderSafeBrowsingThreatDetails",

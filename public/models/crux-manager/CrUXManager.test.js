@@ -46,7 +46,7 @@ describeWithMockConnection('CrUXManager', () => {
     let mockFetch;
     let mockConsoleError;
     beforeEach(async () => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         target = createTarget({ parentTarget: tabTarget });
         resourceTreeModel =
             target.model(SDK.ResourceTreeModel.ResourceTreeModel);
@@ -330,7 +330,7 @@ describeWithMockConnection('CrUXManager', () => {
         let eventBodies = [];
         beforeEach(() => {
             eventBodies = [];
-            cruxManager.addEventListener("field-data-changed" /* CrUXManager.Events.FieldDataChanged */, event => {
+            cruxManager.addEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, event => {
                 eventBodies.push(event.data);
             });
             getFieldDataMock = sinon.stub(cruxManager, 'getFieldDataForCurrentPage');

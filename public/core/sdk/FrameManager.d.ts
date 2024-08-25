@@ -42,26 +42,26 @@ export declare class FrameManager extends Common.ObjectWrapper.ObjectWrapper<Eve
     private resolveAwaitedFrame;
 }
 export declare const enum Events {
-    FrameAddedToTarget = "FrameAddedToTarget",
-    FrameNavigated = "FrameNavigated",
-    FrameRemoved = "FrameRemoved",
-    ResourceAdded = "ResourceAdded",
-    OutermostFrameNavigated = "OutermostFrameNavigated"
+    FRAME_ADDED_TO_TARGET = "FrameAddedToTarget",
+    FRAME_NAVIGATED = "FrameNavigated",
+    FRAME_REMOVED = "FrameRemoved",
+    RESOURCE_ADDED = "ResourceAdded",
+    OUTERMOST_FRAME_NAVIGATED = "OutermostFrameNavigated"
 }
 export type EventTypes = {
-    [Events.FrameAddedToTarget]: {
+    [Events.FRAME_ADDED_TO_TARGET]: {
         frame: ResourceTreeFrame;
     };
-    [Events.FrameNavigated]: {
+    [Events.FRAME_NAVIGATED]: {
         frame: ResourceTreeFrame;
     };
-    [Events.FrameRemoved]: {
+    [Events.FRAME_REMOVED]: {
         frameId: Protocol.Page.FrameId;
     };
-    [Events.ResourceAdded]: {
+    [Events.RESOURCE_ADDED]: {
         resource: Resource;
     };
-    [Events.OutermostFrameNavigated]: {
+    [Events.OUTERMOST_FRAME_NAVIGATED]: {
         frame: ResourceTreeFrame;
     };
 };

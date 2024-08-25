@@ -100,7 +100,7 @@ export class ThrottlingManager {
             Common.Settings.Settings.instance().moduleSetting('custom-network-conditions');
         this.currentNetworkThrottlingConditionsSetting = Common.Settings.Settings.instance().createSetting('preferred-network-condition', SDK.NetworkManager.NoThrottlingConditions);
         this.currentNetworkThrottlingConditionsSetting.setSerializer(new SDK.NetworkManager.ConditionsSerializer());
-        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, () => {
+        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, () => {
             this.lastNetworkThrottlingConditions = this.currentNetworkThrottlingConditionsSetting.get();
             this.currentNetworkThrottlingConditionsSetting.set(SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions());
         });
@@ -174,7 +174,7 @@ export class ThrottlingManager {
     createOfflineToolbarCheckbox() {
         const checkbox = new UI.Toolbar.ToolbarCheckbox(i18nString(UIStrings.offline), i18nString(UIStrings.forceDisconnectedFromNetwork), forceOffline.bind(this));
         checkbox.element.setAttribute('jslog', `${VisualLogging.toggle('disconnect-from-network').track({ click: true })}`);
-        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.ConditionsChanged */, networkConditionsChanged);
+        SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, networkConditionsChanged);
         checkbox.setChecked(SDK.NetworkManager.MultitargetNetworkManager.instance().isOffline());
         function forceOffline() {
             if (checkbox.checked()) {
@@ -234,7 +234,7 @@ export class ThrottlingManager {
     }
     updatePanelIcon() {
         const warnings = [];
-        if (this.cpuThrottlingManager.cpuThrottlingRate() !== SDK.CPUThrottlingManager.CPUThrottlingRates.NoThrottling) {
+        if (this.cpuThrottlingManager.cpuThrottlingRate() !== SDK.CPUThrottlingManager.CPUThrottlingRates.NO_THROTTLING) {
             warnings.push(i18nString(UIStrings.cpuThrottlingIsEnabled));
         }
         if (this.hardwareConcurrencyOverrideEnabled) {
@@ -244,7 +244,7 @@ export class ThrottlingManager {
     }
     setCPUThrottlingRate(rate) {
         this.cpuThrottlingManager.setCPUThrottlingRate(rate);
-        if (rate !== SDK.CPUThrottlingManager.CPUThrottlingRates.NoThrottling) {
+        if (rate !== SDK.CPUThrottlingManager.CPUThrottlingRates.NO_THROTTLING) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.CpuThrottlingEnabled);
         }
         const index = this.cpuThrottlingRates.indexOf(rate);

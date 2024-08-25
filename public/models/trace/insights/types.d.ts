@@ -32,21 +32,17 @@ export type InsightResult<R extends Record<string, unknown>> = R & {
         INP?: number;
     };
 };
-export type LCPInsightResult = InsightResult<{
-    lcpMs?: Types.Timing.MilliSeconds;
-    lcpTs?: Types.Timing.MilliSeconds;
-    phases?: InsightsRunners.LargestContentfulPaint.LCPPhases;
-    shouldRemoveLazyLoading?: boolean;
-    shouldIncreasePriorityHint?: boolean;
-    shouldPreloadImage?: boolean;
-    lcpResource?: Types.TraceEvents.SyntheticNetworkRequest;
-    earliestDiscoveryTimeTs?: Types.Timing.MicroSeconds;
-}>;
 /**
  * Contains insights for a specific navigation.
  */
 export type NavigationInsightData = {
     [I in keyof InsightRunnersType]: ReturnType<InsightRunnersType[I]['generateInsight']> | Error;
+};
+/**
+ * Contains insights for a specific navigation.
+ */
+export type InsightResults = {
+    [I in keyof InsightRunnersType]: ReturnType<InsightRunnersType[I]['generateInsight']>;
 };
 /**
  * Contains insights for the entire trace. Insights are grouped by `navigationId`.

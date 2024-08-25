@@ -35,7 +35,7 @@ export class BackgroundServiceModel extends SDK.SDKModel.SDKModel {
         this.dispatchEventToListeners(Events.BackgroundServiceEventReceived, backgroundServiceEvent);
     }
 }
-SDK.SDKModel.SDKModel.register(BackgroundServiceModel, { capabilities: 1 /* SDK.Target.Capability.Browser */, autostart: false });
+SDK.SDKModel.SDKModel.register(BackgroundServiceModel, { capabilities: 1 /* SDK.Target.Capability.BROWSER */, autostart: false });
 export var Events;
 (function (Events) {
     Events["RecordingStateChanged"] = "RecordingStateChanged";

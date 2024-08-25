@@ -207,13 +207,13 @@ export class NavigatorView extends UI.Widget.VBox {
         this.initGrouping();
         Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingCreated, this.onBindingChanged, this);
         Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingRemoved, this.onBindingChanged, this);
-        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("RequestsForHeaderOverridesFileChanged" /* Persistence.NetworkPersistenceManager.Events.RequestsForHeaderOverridesFileChanged */, this.#onRequestsForHeaderOverridesFileChanged, this);
-        SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NameChanged */, this.targetNameChanged, this);
+        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("RequestsForHeaderOverridesFileChanged" /* Persistence.NetworkPersistenceManager.Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED */, this.#onRequestsForHeaderOverridesFileChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NAME_CHANGED */, this.targetNameChanged, this);
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
         this.resetWorkspace(Workspace.Workspace.WorkspaceImpl.instance());
         this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
-        Bindings.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionAdded" /* Bindings.NetworkProject.Events.FrameAttributionAdded */, this.frameAttributionAdded, this);
-        Bindings.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionRemoved" /* Bindings.NetworkProject.Events.FrameAttributionRemoved */, this.frameAttributionRemoved, this);
+        Bindings.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionAdded" /* Bindings.NetworkProject.Events.FRAME_ATTRIBUTION_ADDED */, this.frameAttributionAdded, this);
+        Bindings.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionRemoved" /* Bindings.NetworkProject.Events.FRAME_ATTRIBUTION_REMOVED */, this.frameAttributionRemoved, this);
     }
     static treeElementOrder(treeElement) {
         if (boostOrderForNode.has(treeElement)) {
@@ -620,7 +620,7 @@ export class NavigatorView extends UI.Widget.VBox {
         }
         let targetNode = rootOrDeployed.child('target:' + target.id());
         if (!targetNode) {
-            targetNode = new NavigatorGroupTreeNode(this, project, 'target:' + target.id(), target.type() === SDK.Target.Type.Frame ? Types.Frame : Types.Worker, target.name());
+            targetNode = new NavigatorGroupTreeNode(this, project, 'target:' + target.id(), target.type() === SDK.Target.Type.FRAME ? Types.Frame : Types.Worker, target.name());
             rootOrDeployed.appendChild(targetNode);
         }
         return targetNode;
@@ -638,10 +638,24 @@ export class NavigatorView extends UI.Widget.VBox {
     computeProjectDisplayName(target, projectOrigin) {
         const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
         const executionContexts = runtimeModel ? runtimeModel.executionContexts() : [];
+        let matchingContextName = null;
         for (const context of executionContexts) {
-            if (context.name && context.origin && projectOrigin.startsWith(context.origin)) {
-                return context.name;
+            if (!context.origin || !projectOrigin.startsWith(context.origin)) {
+                continue;
             }
+            // If the project origin matches the default context origin then we should break out and use the
+            // project origin for the display name.
+            if (context.isDefault) {
+                matchingContextName = null;
+                break;
+            }
+            if (!context.name) {
+                continue;
+            }
+            matchingContextName = context.name;
+        }
+        if (matchingContextName) {
+            return matchingContextName;
         }
         if (!projectOrigin) {
             return i18nString(UIStrings.noDomain);

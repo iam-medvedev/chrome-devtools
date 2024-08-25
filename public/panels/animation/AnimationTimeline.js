@@ -328,10 +328,10 @@ export class AnimationTimeline extends UI.Widget.VBox {
     }
     setPlaybackRate(playbackRate) {
         if (playbackRate !== this.#playbackRate) {
-            Host.userMetrics.animationPlaybackRateChanged(playbackRate === 0.1 ? 2 /* Host.UserMetrics.AnimationsPlaybackRate.Percent10 */ :
-                playbackRate === 0.25 ? 1 /* Host.UserMetrics.AnimationsPlaybackRate.Percent25 */ :
-                    playbackRate === 1 ? 0 /* Host.UserMetrics.AnimationsPlaybackRate.Percent100 */ :
-                        3 /* Host.UserMetrics.AnimationsPlaybackRate.Other */);
+            Host.userMetrics.animationPlaybackRateChanged(playbackRate === 0.1 ? 2 /* Host.UserMetrics.AnimationsPlaybackRate.PERCENT_10 */ :
+                playbackRate === 0.25 ? 1 /* Host.UserMetrics.AnimationsPlaybackRate.PERCENT_25 */ :
+                    playbackRate === 1 ? 0 /* Host.UserMetrics.AnimationsPlaybackRate.PERCENT_100 */ :
+                        3 /* Host.UserMetrics.AnimationsPlaybackRate.OTHER */);
         }
         this.#playbackRate = playbackRate;
         for (const animationModel of SDK.TargetManager.TargetManager.instance().models(AnimationModel, { scoped: true })) {

@@ -91,19 +91,19 @@ export class HeapProfilerModel extends SDKModel {
         return Boolean(response.getError());
     }
     heapStatsUpdate(samples) {
-        this.dispatchEventToListeners("HeapStatsUpdate" /* Events.HeapStatsUpdate */, samples);
+        this.dispatchEventToListeners("HeapStatsUpdate" /* Events.HEAP_STATS_UPDATED */, samples);
     }
     lastSeenObjectId(lastSeenObjectId, timestamp) {
-        this.dispatchEventToListeners("LastSeenObjectId" /* Events.LastSeenObjectId */, { lastSeenObjectId: lastSeenObjectId, timestamp: timestamp });
+        this.dispatchEventToListeners("LastSeenObjectId" /* Events.LAST_SEEN_OBJECT_ID */, { lastSeenObjectId: lastSeenObjectId, timestamp: timestamp });
     }
     addHeapSnapshotChunk(chunk) {
-        this.dispatchEventToListeners("AddHeapSnapshotChunk" /* Events.AddHeapSnapshotChunk */, chunk);
+        this.dispatchEventToListeners("AddHeapSnapshotChunk" /* Events.ADD_HEAP_SNAPSHOT_CHUNK */, chunk);
     }
     reportHeapSnapshotProgress(done, total, finished) {
-        this.dispatchEventToListeners("ReportHeapSnapshotProgress" /* Events.ReportHeapSnapshotProgress */, { done: done, total: total, finished: finished });
+        this.dispatchEventToListeners("ReportHeapSnapshotProgress" /* Events.REPORT_HEAP_SNAPSHOT_PROGRESS */, { done: done, total: total, finished: finished });
     }
     resetProfiles() {
-        this.dispatchEventToListeners("ResetProfiles" /* Events.ResetProfiles */, this);
+        this.dispatchEventToListeners("ResetProfiles" /* Events.RESET_PROFILES */, this);
     }
 }
 class HeapProfilerDispatcher {

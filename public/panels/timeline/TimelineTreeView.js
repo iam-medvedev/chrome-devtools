@@ -191,7 +191,7 @@ export class TimelineTreeView extends UI.Widget.VBox {
     init() {
         this.linkifier = new Components.Linkifier.Linkifier();
         this.taskFilter = new TimelineModel.TimelineModelFilter.ExclusiveNameFilter([
-            "RunTask" /* TraceEngine.Types.TraceEvents.KnownEventName.RunTask */,
+            "RunTask" /* TraceEngine.Types.TraceEvents.KnownEventName.RUN_TASK */,
         ]);
         this.textFilterInternal = new TimelineRegExp();
         this.currentThreadSetting = Common.Settings.Settings.instance().createSetting('timeline-tree-current-thread', 0);

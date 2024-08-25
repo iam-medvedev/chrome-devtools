@@ -87,6 +87,10 @@ export class Button extends HTMLElement {
         this.#props.size = size;
         this.#render();
     }
+    set reducedFocusRing(reducedFocusRing) {
+        this.#props.reducedFocusRing = reducedFocusRing;
+        this.#render();
+    }
     set type(type) {
         this.#props.type = type;
         this.#render();
@@ -216,6 +220,7 @@ export class Button extends HTMLElement {
             'only-icon': hasIcon && isEmpty,
             micro: this.#props.size === "MICRO" /* Size.MICRO */,
             small: Boolean(this.#props.size === "SMALL" /* Size.SMALL */),
+            'reduced-focus-ring': Boolean(this.#props.reducedFocusRing),
             active: this.#props.active,
         };
         const spinnerClasses = {

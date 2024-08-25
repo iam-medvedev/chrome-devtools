@@ -450,7 +450,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     order: 1,
     title: i18nLazyString(UIStrings.showUserAgentShadowDOM),
     settingName: 'show-ua-shadow-dom',
@@ -459,7 +459,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     order: 2,
     title: i18nLazyString(UIStrings.wordWrap),
     settingName: 'dom-word-wrap',
@@ -478,7 +478,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     order: 3,
     title: i18nLazyString(UIStrings.showHtmlComments),
     settingName: 'show-html-comments',
@@ -497,7 +497,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     order: 4,
     title: i18nLazyString(UIStrings.revealDomNodeOnHover),
     settingName: 'highlight-node-on-hover-in-overlay',
@@ -506,7 +506,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     order: 5,
     title: i18nLazyString(UIStrings.showDetailedInspectTooltip),
     settingName: 'show-detailed-inspect-tooltip',
@@ -520,14 +520,14 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "ADORNER" /* Common.Settings.SettingCategory.ADORNER */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     settingName: 'adorner-settings',
     settingType: "array" /* Common.Settings.SettingType.ARRAY */,
     defaultValue: [],
 });
 Common.Settings.registerSettingExtension({
     category: "ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.showCSSDocumentationTooltip),
     settingName: 'show-css-property-documentation-on-hover',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,

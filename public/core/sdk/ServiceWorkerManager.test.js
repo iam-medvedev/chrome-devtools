@@ -136,23 +136,23 @@ describe('ServiceWorkerVersion', () => {
     });
     it('identifies when the worker is in installing mode', () => {
         let version = makeVersion(REGISTRATION_PAYLOAD, { ...VERSION_PAYLOAD, status: 'new' });
-        assert.strictEqual(version.mode(), "installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing */);
+        assert.strictEqual(version.mode(), "installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.INSTALLING */);
         version = makeVersion(REGISTRATION_PAYLOAD, { ...VERSION_PAYLOAD, status: 'installing' });
-        assert.strictEqual(version.mode(), "installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing */);
+        assert.strictEqual(version.mode(), "installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.INSTALLING */);
     });
     it('identifies when the worker is in waiting mode', () => {
         const version = makeVersion(REGISTRATION_PAYLOAD, { ...VERSION_PAYLOAD, status: 'installed' });
-        assert.strictEqual(version.mode(), "waiting" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting */);
+        assert.strictEqual(version.mode(), "waiting" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.WAITING */);
     });
     it('identifies when the worker is in active mode', () => {
         let version = makeVersion(REGISTRATION_PAYLOAD, { ...VERSION_PAYLOAD, status: 'activating' });
-        assert.strictEqual(version.mode(), "active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active */);
+        assert.strictEqual(version.mode(), "active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.ACTIVE */);
         version = makeVersion(REGISTRATION_PAYLOAD, { ...VERSION_PAYLOAD, status: 'activated' });
-        assert.strictEqual(version.mode(), "active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active */);
+        assert.strictEqual(version.mode(), "active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.ACTIVE */);
     });
     it('identifies when the worker is in redundant mode', () => {
         const version = makeVersion(REGISTRATION_PAYLOAD, { ...VERSION_PAYLOAD, status: 'redundant' });
-        assert.strictEqual(version.mode(), "redundant" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant */);
+        assert.strictEqual(version.mode(), "redundant" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.REDUNDANT */);
     });
     it('routerRules should be null if not provided', () => {
         const VERSION_PAYLOAD_WITHOUT_ROUTER_RULES = {

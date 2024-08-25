@@ -18,7 +18,7 @@ export class BounceTrackingIssue extends Issue {
         this.#issueDetails = issueDetails;
     }
     getCategory() {
-        return "Other" /* IssueCategory.Other */;
+        return "Other" /* IssueCategory.OTHER */;
     }
     getDescription() {
         return {
@@ -35,7 +35,7 @@ export class BounceTrackingIssue extends Issue {
         return this.#issueDetails;
     }
     getKind() {
-        return "BreakingChange" /* IssueKind.BreakingChange */;
+        return "BreakingChange" /* IssueKind.BREAKING_CHANGE */;
     }
     primaryKey() {
         return JSON.stringify(this.#issueDetails);

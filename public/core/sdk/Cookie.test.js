@@ -138,25 +138,25 @@ describe('Cookie', () => {
     });
     it('can handle secure urls', () => {
         const cookie = new SDK.Cookie.Cookie('name', 'value');
-        cookie.addAttribute("secure" /* SDK.Cookie.Attribute.Secure */);
-        cookie.addAttribute("domain" /* SDK.Cookie.Attribute.Domain */, 'example.com');
-        cookie.addAttribute("path" /* SDK.Cookie.Attribute.Path */, '/test');
+        cookie.addAttribute("secure" /* SDK.Cookie.Attribute.SECURE */);
+        cookie.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, 'example.com');
+        cookie.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/test');
         assert.strictEqual(String(cookie.url()), 'https://example.com/test');
     });
     it('can handle insecure urls', () => {
         const cookie = new SDK.Cookie.Cookie('name', 'value');
-        cookie.addAttribute("domain" /* SDK.Cookie.Attribute.Domain */, 'example.com');
-        cookie.addAttribute("path" /* SDK.Cookie.Attribute.Path */, '/test');
+        cookie.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, 'example.com');
+        cookie.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/test');
         assert.strictEqual(String(cookie.url()), 'http://example.com/test');
     });
     it('can set SDK.Cookie.Attribute used as flags', () => {
         const cookie = new SDK.Cookie.Cookie('name', 'value');
-        cookie.addAttribute("http-only" /* SDK.Cookie.Attribute.HttpOnly */);
+        cookie.addAttribute("http-only" /* SDK.Cookie.Attribute.HTTP_ONLY */);
         assert.strictEqual(cookie.httpOnly(), true);
     });
     it('can set SDK.Cookie.Attribute used as key=value', () => {
         const cookie = new SDK.Cookie.Cookie('name', 'value');
-        cookie.addAttribute("path" /* SDK.Cookie.Attribute.Path */, '/test');
+        cookie.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '/test');
         assert.strictEqual(cookie.path(), '/test');
     });
     it('can set initialize with a different priority', () => {
@@ -165,7 +165,7 @@ describe('Cookie', () => {
     });
     it('can change the priority', () => {
         const cookie = new SDK.Cookie.Cookie('name', 'value');
-        cookie.addAttribute("priority" /* SDK.Cookie.Attribute.Priority */, 'Low');
+        cookie.addAttribute("priority" /* SDK.Cookie.Attribute.PRIORITY */, 'Low');
         assert.strictEqual(cookie.priority(), 'Low');
     });
     it('can set the cookie line', () => {
@@ -181,7 +181,7 @@ describe('Cookie', () => {
         const cookie = new SDK.Cookie.Cookie('name', 'value');
         const now = new Date();
         const expires = Math.floor(now.getTime()) + 3600 * 1000;
-        cookie.addAttribute("max-age" /* SDK.Cookie.Attribute.MaxAge */, '3600');
+        cookie.addAttribute("max-age" /* SDK.Cookie.Attribute.MAX_AGE */, '3600');
         const expiresDate = cookie.expiresDate(now);
         assert.strictEqual(expiresDate.toISOString(), new Date(expires).toISOString());
     });
@@ -189,7 +189,7 @@ describe('Cookie', () => {
         const cookie = new SDK.Cookie.Cookie('name', 'value');
         const now = new Date();
         const expires = Math.floor(now.getTime()) + 3600 * 1000;
-        cookie.addAttribute("expires" /* SDK.Cookie.Attribute.Expires */, expires);
+        cookie.addAttribute("expires" /* SDK.Cookie.Attribute.EXPIRES */, expires);
         const expiresDate = cookie.expiresDate(now);
         assert.strictEqual(expiresDate.toISOString(), new Date(expires).toISOString());
     });
@@ -206,7 +206,7 @@ describe('Cookie', () => {
     });
     it('detects the Partitioned attribute in the Set-Cookie header', () => {
         const cookie = new SDK.Cookie.Cookie('name', 'value');
-        cookie.addAttribute("partitioned" /* SDK.Cookie.Attribute.Partitioned */);
+        cookie.addAttribute("partitioned" /* SDK.Cookie.Attribute.PARTITIONED */);
         assert.isTrue(cookie.partitioned());
         assert.isFalse(cookie.hasCrossSiteAncestor());
         assert.strictEqual(cookie.topLevelSite(), '');

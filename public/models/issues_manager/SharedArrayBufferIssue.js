@@ -20,7 +20,7 @@ export class SharedArrayBufferIssue extends Issue {
         this.#issueDetails = issueDetails;
     }
     getCategory() {
-        return "Other" /* IssueCategory.Other */;
+        return "Other" /* IssueCategory.OTHER */;
     }
     details() {
         return this.#issueDetails;
@@ -39,9 +39,9 @@ export class SharedArrayBufferIssue extends Issue {
     }
     getKind() {
         if (this.#issueDetails.isWarning) {
-            return "BreakingChange" /* IssueKind.BreakingChange */;
+            return "BreakingChange" /* IssueKind.BREAKING_CHANGE */;
         }
-        return "PageError" /* IssueKind.PageError */;
+        return "PageError" /* IssueKind.PAGE_ERROR */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const sabIssueDetails = inspectorIssue.details.sharedArrayBufferIssueDetails;

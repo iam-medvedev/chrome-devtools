@@ -80,26 +80,28 @@ export class IsolateSelector extends UI.Widget.VBox {
         UI.Tooltip.Tooltip.install(this.totalTrendDiv, i18nString(UIStrings.totalPageJsHeapSizeChangeTrend, { PH1: trendIntervalMinutes }));
         UI.Tooltip.Tooltip.install(this.totalValueDiv, i18nString(UIStrings.totalPageJsHeapSizeAcrossAllVm));
         SDK.IsolateManager.IsolateManager.instance().observeIsolates(this);
-        SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NameChanged */, this.targetChanged, this);
-        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.InspectedURLChanged */, this.targetChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NAME_CHANGED */, this.targetChanged, this);
+        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, this.targetChanged, this);
     }
     wasShown() {
         super.wasShown();
-        SDK.IsolateManager.IsolateManager.instance().addEventListener("MemoryChanged" /* SDK.IsolateManager.Events.MemoryChanged */, this.heapStatsChanged, this);
+        SDK.IsolateManager.IsolateManager.instance().addEventListener("MemoryChanged" /* SDK.IsolateManager.Events.MEMORY_CHANGED */, this.heapStatsChanged, this);
     }
     willHide() {
-        SDK.IsolateManager.IsolateManager.instance().removeEventListener("MemoryChanged" /* SDK.IsolateManager.Events.MemoryChanged */, this.heapStatsChanged, this);
+        SDK.IsolateManager.IsolateManager.instance().removeEventListener("MemoryChanged" /* SDK.IsolateManager.Events.MEMORY_CHANGED */, this.heapStatsChanged, this);
     }
     isolateAdded(isolate) {
         this.list.element.tabIndex = 0;
         const item = new ListItem(isolate);
+        // Insert the primary page target at the top of the list.
         const index = item.model().target() ===
-            SDK.TargetManager.TargetManager.instance().rootTarget() ?
+            SDK.TargetManager.TargetManager.instance().primaryPageTarget() ?
             0 :
             this.items.length;
         this.items.insert(index, item);
         this.itemByIsolate.set(isolate, item);
-        if (this.items.length === 1 || isolate.isMainThread()) {
+        // Select the first item by default.
+        if (index === 0) {
             this.list.selectItem(item);
         }
         this.update();
@@ -236,7 +238,7 @@ export class ListItem {
         const modelCountByName = new Map();
         for (const model of this.isolate.models()) {
             const target = model.target();
-            const name = SDK.TargetManager.TargetManager.instance().rootTarget() !== target ? target.name() : '';
+            const name = SDK.TargetManager.TargetManager.instance().primaryPageTarget() !== target ? target.name() : '';
             const parsedURL = new Common.ParsedURL.ParsedURL(target.inspectedURL());
             const domain = parsedURL.isValid ? parsedURL.domain() : '';
             const title = target.decorateLabel(domain && name ? `${domain}: ${name}` : name || domain || i18nString(UIStrings.empty));

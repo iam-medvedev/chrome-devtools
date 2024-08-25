@@ -172,7 +172,7 @@ export class LayoutShiftRootCauses {
         const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
         const eventTriggersLayout = ({ name }) => {
             const knownName = name;
-            return knownName === "Layout" /* Types.TraceEvents.KnownEventName.Layout */;
+            return knownName === "Layout" /* Types.TraceEvents.KnownEventName.LAYOUT */;
         };
         const layoutEvents = modelData.Renderer.allTraceEntries.filter(eventTriggersLayout);
         for (const layout of layoutEvents) {

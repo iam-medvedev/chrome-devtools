@@ -90,7 +90,7 @@ describeWithMockConnection('CookieModel', () => {
         const mainFrame = getMainFrame(target);
         const model = target.model(SDK.CookieModel.CookieModel);
         const eventListener = sinon.stub();
-        model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, eventListener);
+        model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, eventListener);
         assert.isEmpty(await model.getCookiesForDomain(`https://${MAIN_FRAME_RESOURCE_DOMAIN}`));
         const resourceUrl = (domain) => `https://${domain}/main_resource`;
         createResource(mainFrame, resourceUrl(MAIN_FRAME_RESOURCE_DOMAIN), 'text/html', '');
@@ -113,7 +113,7 @@ describeWithMockConnection('CookieModel', () => {
         const mainFrame = getMainFrame(target);
         const model = target.model(SDK.CookieModel.CookieModel);
         const eventListener = sinon.stub();
-        model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, eventListener);
+        model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, eventListener);
         createResource(mainFrame, `https://${DOMAIN}/main_resource`, 'text/html', '');
         dispatchLoadingFinished();
         await expectCalled(eventListener);
@@ -134,7 +134,7 @@ describeWithMockConnection('CookieModel', () => {
         let [readCookie] = await model.getCookiesForDomain(`https://${DOMAIN}`);
         assert.strictEqual(readCookie.value(), 'value');
         cookie.value = 'new value';
-        model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.CookieListUpdated */, () => { });
+        model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, () => { });
         [readCookie] = await model.getCookiesForDomain(`https://${DOMAIN}`);
         assert.strictEqual(readCookie.value(), 'value');
         [readCookie] = await model.getCookiesForDomain(`https://${DOMAIN}`);

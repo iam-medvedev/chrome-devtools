@@ -9,6 +9,7 @@ describe('FreestylerEvaluateAction', () => {
         function executeWithResult(mockResult) {
             const executionContextStub = sinon.createStubInstance(SDK.RuntimeModel.ExecutionContext);
             executionContextStub.evaluate.resolves(mockResult);
+            executionContextStub.runtimeModel = sinon.createStubInstance(SDK.RuntimeModel.RuntimeModel);
             return Freestyler.FreestylerEvaluateAction.execute('', executionContextStub, { throwOnSideEffect: false });
         }
         function mockRemoteObject(overrides = {}) {

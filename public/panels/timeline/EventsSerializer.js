@@ -7,12 +7,12 @@ export class EventsSerializer {
     #modifiedProfileCallByKey = new Map();
     keyForEvent(event) {
         if (TraceEngine.Types.TraceEvents.isProfileCall(event)) {
-            return `${"p" /* TraceEngine.Types.File.EventKeyType.ProfileCall */}-${event.pid}-${event.tid}-${TraceEngine.Types.TraceEvents.SampleIndex(event.sampleIndex)}-${event.nodeId}`;
+            return `${"p" /* TraceEngine.Types.File.EventKeyType.PROFILE_CALL */}-${event.pid}-${event.tid}-${TraceEngine.Types.TraceEvents.SampleIndex(event.sampleIndex)}-${event.nodeId}`;
         }
         const rawEvents = TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
         const key = TraceEngine.Types.TraceEvents.isSyntheticBasedEvent(event) ?
-            `${"s" /* TraceEngine.Types.File.EventKeyType.SyntheticEvent */}-${rawEvents.indexOf(event.rawSourceEvent)}` :
-            `${"r" /* TraceEngine.Types.File.EventKeyType.RawEvent */}-${rawEvents.indexOf(event)}`;
+            `${"s" /* TraceEngine.Types.File.EventKeyType.SYNTHETIC_EVENT */}-${rawEvents.indexOf(event.rawSourceEvent)}` :
+            `${"r" /* TraceEngine.Types.File.EventKeyType.RAW_EVENT */}-${rawEvents.indexOf(event)}`;
         if (key.length < 3) {
             return null;
         }
@@ -38,13 +38,13 @@ export class EventsSerializer {
         throw new Error(`Unknown trace event serializable key values: ${eventValues.join('-')}`);
     }
     static isProfileCallKey(key) {
-        return key.type === "p" /* TraceEngine.Types.File.EventKeyType.ProfileCall */;
+        return key.type === "p" /* TraceEngine.Types.File.EventKeyType.PROFILE_CALL */;
     }
     static isRawEventKey(key) {
-        return key.type === "r" /* TraceEngine.Types.File.EventKeyType.RawEvent */;
+        return key.type === "r" /* TraceEngine.Types.File.EventKeyType.RAW_EVENT */;
     }
     static isSyntheticEventKey(key) {
-        return key.type === "s" /* TraceEngine.Types.File.EventKeyType.SyntheticEvent */;
+        return key.type === "s" /* TraceEngine.Types.File.EventKeyType.SYNTHETIC_EVENT */;
     }
     #getModifiedProfileCallByKeyValues(key, traceParsedData) {
         const cacheResult = this.#modifiedProfileCallByKey.get(key);

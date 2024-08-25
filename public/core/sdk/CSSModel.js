@@ -69,7 +69,7 @@ export class CSSModel extends SDKModel {
         if (!this.#colorScheme) {
             const colorSchemeResponse = await this.domModel()?.target().runtimeAgent().invoke_evaluate({ expression: 'window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches' });
             if (colorSchemeResponse && !colorSchemeResponse.exceptionDetails && !colorSchemeResponse.getError()) {
-                this.#colorScheme = colorSchemeResponse.result.value ? "dark" /* ColorScheme.Dark */ : "light" /* ColorScheme.Light */;
+                this.#colorScheme = colorSchemeResponse.result.value ? "dark" /* ColorScheme.DARK */ : "light" /* ColorScheme.LIGHT */;
             }
         }
         return this.#colorScheme;
@@ -437,8 +437,8 @@ export class CSSModel extends SDKModel {
             return null;
         }
     }
-    async requestViaInspectorStylesheet(node) {
-        const frameId = node.frameId() ||
+    async requestViaInspectorStylesheet(maybeFrameId) {
+        const frameId = maybeFrameId ||
             (this.#resourceTreeModel && this.#resourceTreeModel.mainFrame ? this.#resourceTreeModel.mainFrame.id : null);
         const headers = [...this.#styleSheetIdToHeader.values()];
         const styleSheetHeader = headers.find(header => header.frameId === frameId && header.isViaInspector());
@@ -599,13 +599,12 @@ export class CSSModel extends SDKModel {
         return null;
     }
     async getStyleSheetText(styleSheetId) {
-        try {
-            const { text } = await this.agent.invoke_getStyleSheetText({ styleSheetId });
-            return text && CSSModel.trimSourceURL(text);
-        }
-        catch (e) {
+        const response = await this.agent.invoke_getStyleSheetText({ styleSheetId });
+        if (response.getError()) {
             return null;
         }
+        const { text } = response;
+        return text && CSSModel.trimSourceURL(text);
     }
     async onPrimaryPageChanged(event) {
         // If the main frame was restored from the back-forward cache, the order of CDP
@@ -618,7 +617,7 @@ export class CSSModel extends SDKModel {
             await this.suspendModel();
             await this.resumeModel();
         }
-        else if (event.data.type !== "Activation" /* PrimaryPageChangeType.Activation */) {
+        else if (event.data.type !== "Activation" /* PrimaryPageChangeType.ACTIVATION */) {
             this.resetStyleSheets();
             this.resetFontFaces();
         }
@@ -700,7 +699,7 @@ export class CSSModel extends SDKModel {
                 return;
             }
             if (this.#cssPropertyTracker) {
-                this.#cssPropertyTracker.dispatchEventToListeners("TrackedCSSPropertiesUpdated" /* CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated */, result.nodeIds.map(nodeId => this.#domModel.nodeForId(nodeId)));
+                this.#cssPropertyTracker.dispatchEventToListeners("TrackedCSSPropertiesUpdated" /* CSSPropertyTrackerEvents.TRACKED_CSS_PROPERTIES_UPDATED */, result.nodeIds.map(nodeId => this.#domModel.nodeForId(nodeId)));
             }
         }
         if (this.#isCSSPropertyTrackingEnabled) {
@@ -718,6 +717,7 @@ export class CSSModel extends SDKModel {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["FontsUpdated"] = "FontsUpdated";
     Events["MediaQueryResultChanged"] = "MediaQueryResultChanged";
     Events["ModelWasEnabled"] = "ModelWasEnabled";
@@ -725,6 +725,7 @@ export var Events;
     Events["StyleSheetAdded"] = "StyleSheetAdded";
     Events["StyleSheetChanged"] = "StyleSheetChanged";
     Events["StyleSheetRemoved"] = "StyleSheetRemoved";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 const PseudoStateMarker = 'pseudo-state-marker';
 export class Edit {

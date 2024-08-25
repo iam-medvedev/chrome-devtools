@@ -116,7 +116,7 @@ export class AutofillView extends LegacyWrapper.LegacyWrapper.WrappableComponent
                 matches: this.#matches,
             } = formFilledEvent);
         }
-        autofillManager.addEventListener("AddressFormFilled" /* AutofillManager.AutofillManager.Events.AddressFormFilled */, this.#onAddressFormFilled, this);
+        autofillManager.addEventListener("AddressFormFilled" /* AutofillManager.AutofillManager.Events.ADDRESS_FORM_FILLED */, this.#onAddressFormFilled, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }

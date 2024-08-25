@@ -29,9 +29,9 @@ export interface Hinge {
     outlineColor: HighlightColor;
 }
 export declare const enum EmulatedOSType {
-    WindowsOS = "Windows",
-    MacOS = "Mac",
-    LinuxOS = "Linux"
+    WINDOWS = "Windows",
+    MAC = "Mac",
+    LINUX = "Linux"
 }
 export declare class OverlayModel extends SDKModel<EventTypes> implements ProtocolProxyApi.OverlayDispatcher {
     #private;
@@ -109,28 +109,28 @@ export declare class WindowControls {
     transformStyleSheetforTesting(x: number, y: number, width: number, height: number, originalStyleSheet: string | undefined): string | undefined;
 }
 export declare const enum Events {
-    InspectModeWillBeToggled = "InspectModeWillBeToggled",
-    ExitedInspectMode = "InspectModeExited",
-    HighlightNodeRequested = "HighlightNodeRequested",
-    ScreenshotRequested = "ScreenshotRequested",
-    PersistentGridOverlayStateChanged = "PersistentGridOverlayStateChanged",
-    PersistentFlexContainerOverlayStateChanged = "PersistentFlexContainerOverlayStateChanged",
-    PersistentScrollSnapOverlayStateChanged = "PersistentScrollSnapOverlayStateChanged",
-    PersistentContainerQueryOverlayStateChanged = "PersistentContainerQueryOverlayStateChanged"
+    INSPECT_MODE_WILL_BE_TOGGLED = "InspectModeWillBeToggled",
+    EXITED_INSPECT_MODE = "InspectModeExited",
+    HIGHLIGHT_NODE_REQUESTED = "HighlightNodeRequested",
+    SCREENSHOT_REQUESTED = "ScreenshotRequested",
+    PERSISTENT_GRID_OVERLAY_STATE_CHANGED = "PersistentGridOverlayStateChanged",
+    PERSISTENT_FLEX_CONTAINER_OVERLAY_STATE_CHANGED = "PersistentFlexContainerOverlayStateChanged",
+    PERSISTENT_SCROLL_SNAP_OVERLAY_STATE_CHANGED = "PersistentScrollSnapOverlayStateChanged",
+    PERSISTENT_CONTAINER_QUERY_OVERLAY_STATE_CHANGED = "PersistentContainerQueryOverlayStateChanged"
 }
 export interface ChangedNodeId {
     nodeId: number;
     enabled: boolean;
 }
 export type EventTypes = {
-    [Events.InspectModeWillBeToggled]: OverlayModel;
-    [Events.ExitedInspectMode]: void;
-    [Events.HighlightNodeRequested]: DOMNode;
-    [Events.ScreenshotRequested]: Protocol.Page.Viewport;
-    [Events.PersistentGridOverlayStateChanged]: ChangedNodeId;
-    [Events.PersistentFlexContainerOverlayStateChanged]: ChangedNodeId;
-    [Events.PersistentScrollSnapOverlayStateChanged]: ChangedNodeId;
-    [Events.PersistentContainerQueryOverlayStateChanged]: ChangedNodeId;
+    [Events.INSPECT_MODE_WILL_BE_TOGGLED]: OverlayModel;
+    [Events.EXITED_INSPECT_MODE]: void;
+    [Events.HIGHLIGHT_NODE_REQUESTED]: DOMNode;
+    [Events.SCREENSHOT_REQUESTED]: Protocol.Page.Viewport;
+    [Events.PERSISTENT_GRID_OVERLAY_STATE_CHANGED]: ChangedNodeId;
+    [Events.PERSISTENT_FLEX_CONTAINER_OVERLAY_STATE_CHANGED]: ChangedNodeId;
+    [Events.PERSISTENT_SCROLL_SNAP_OVERLAY_STATE_CHANGED]: ChangedNodeId;
+    [Events.PERSISTENT_CONTAINER_QUERY_OVERLAY_STATE_CHANGED]: ChangedNodeId;
 };
 export interface Highlighter {
     highlightInOverlay(data: HighlightData, config: Protocol.Overlay.HighlightConfig): void;

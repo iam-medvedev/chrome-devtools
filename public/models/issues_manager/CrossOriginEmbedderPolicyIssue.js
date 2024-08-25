@@ -47,7 +47,7 @@ export class CrossOriginEmbedderPolicyIssue extends Issue {
         return [this.#issueDetails.request];
     }
     getCategory() {
-        return "CrossOriginEmbedderPolicy" /* IssueCategory.CrossOriginEmbedderPolicy */;
+        return "CrossOriginEmbedderPolicy" /* IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */;
     }
     getDescription() {
         const description = issueDescriptions.get(this.code());
@@ -57,7 +57,7 @@ export class CrossOriginEmbedderPolicyIssue extends Issue {
         return resolveLazyDescription(description);
     }
     getKind() {
-        return "PageError" /* IssueKind.PageError */;
+        return "PageError" /* IssueKind.PAGE_ERROR */;
     }
 }
 const issueDescriptions = new Map([

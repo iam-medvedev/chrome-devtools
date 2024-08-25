@@ -4,17 +4,17 @@ import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare const enum IssueCategory {
-    CrossOriginEmbedderPolicy = "CrossOriginEmbedderPolicy",
-    Generic = "Generic",
-    MixedContent = "MixedContent",
-    Cookie = "Cookie",
-    HeavyAd = "HeavyAd",
-    ContentSecurityPolicy = "ContentSecurityPolicy",
-    LowTextContrast = "LowTextContrast",
-    Cors = "Cors",
-    AttributionReporting = "AttributionReporting",
-    QuirksMode = "QuirksMode",
-    Other = "Other"
+    CROSS_ORIGIN_EMBEDDER_POLICY = "CrossOriginEmbedderPolicy",
+    GENERIC = "Generic",
+    MIXED_CONTENT = "MixedContent",
+    COOKIE = "Cookie",
+    HEAVY_AD = "HeavyAd",
+    CONTENT_SECURITY_POLICY = "ContentSecurityPolicy",
+    LOW_TEXT_CONTRAST = "LowTextContrast",
+    CORS = "Cors",
+    ATTRIBUTION_REPORTING = "AttributionReporting",
+    QUIRKS_MODE = "QuirksMode",
+    OTHER = "Other"
 }
 export declare const enum IssueKind {
     /**
@@ -22,18 +22,18 @@ export declare const enum IssueKind {
      * usually be fixed right away. They usually indicate that a Web API is being
      * used in a wrong way, or that a network request was misconfigured.
      */
-    PageError = "PageError",
+    PAGE_ERROR = "PageError",
     /**
      * The page is using a Web API or relying on browser behavior that is going
      * to change in the future. If possible, the message associated with issues
      * of this kind should include a time when the behavior is going to change.
      */
-    BreakingChange = "BreakingChange",
+    BREAKING_CHANGE = "BreakingChange",
     /**
      * Anything that can be improved about the page, but isn't urgent and doesn't
      * impair functionality in a major way.
      */
-    Improvement = "Improvement"
+    IMPROVEMENT = "Improvement"
 }
 export declare function getIssueKindName(issueKind: IssueKind): Common.UIString.LocalizedString;
 export declare function getIssueKindDescription(issueKind: IssueKind): Common.UIString.LocalizedString;

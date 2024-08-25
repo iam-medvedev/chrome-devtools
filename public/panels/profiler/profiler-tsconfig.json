@@ -31,6 +31,8 @@
   "files": [
     "../../../../../../front_end/panels/profiler/BottomUpProfileDataGrid.ts",
     "../../../../../../front_end/panels/profiler/ChildrenProvider.ts",
+    "../../../../../../front_end/panels/profiler/HeapDetachedElementsDataGrid.ts",
+    "../../../../../../front_end/panels/profiler/HeapDetachedElementsView.ts",
     "../../../../../../front_end/panels/profiler/HeapProfileView.ts",
     "../../../../../../front_end/panels/profiler/HeapProfilerPanel.ts",
     "../../../../../../front_end/panels/profiler/HeapSnapshotDataGrids.ts",
@@ -81,6 +83,9 @@
     },
     {
       "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../elements/bundle-tsconfig.json"
     },
     {
       "path": "../settings/bundle-tsconfig.json"

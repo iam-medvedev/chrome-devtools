@@ -27,7 +27,7 @@ export class MixedContentIssue extends Issue {
         return this.#issueDetails;
     }
     getCategory() {
-        return "MixedContent" /* IssueCategory.MixedContent */;
+        return "MixedContent" /* IssueCategory.MIXED_CONTENT */;
     }
     getDescription() {
         return {
@@ -41,11 +41,11 @@ export class MixedContentIssue extends Issue {
     getKind() {
         switch (this.#issueDetails.resolutionStatus) {
             case "MixedContentAutomaticallyUpgraded" /* Protocol.Audits.MixedContentResolutionStatus.MixedContentAutomaticallyUpgraded */:
-                return "Improvement" /* IssueKind.Improvement */;
+                return "Improvement" /* IssueKind.IMPROVEMENT */;
             case "MixedContentBlocked" /* Protocol.Audits.MixedContentResolutionStatus.MixedContentBlocked */:
-                return "PageError" /* IssueKind.PageError */;
+                return "PageError" /* IssueKind.PAGE_ERROR */;
             case "MixedContentWarning" /* Protocol.Audits.MixedContentResolutionStatus.MixedContentWarning */:
-                return "Improvement" /* IssueKind.Improvement */;
+                return "Improvement" /* IssueKind.IMPROVEMENT */;
         }
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {

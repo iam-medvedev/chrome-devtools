@@ -486,6 +486,7 @@ export class ToolbarButton extends ToolbarItem {
         }
         else {
             this.button.variant = "text" /* Buttons.Button.Variant.TEXT */;
+            this.button.reducedFocusRing = true;
             if (glyphOrAdorner) {
                 this.button.iconName = glyphOrAdorner;
             }
@@ -525,6 +526,9 @@ export class ToolbarButton extends ToolbarItem {
     }
     setSize(size) {
         this.button.size = size;
+    }
+    setReducedFocusRing() {
+        this.button.reducedFocusRing = true;
     }
     setText(text) {
         if (this.text === text) {
@@ -616,7 +620,10 @@ export class ToolbarCombobox extends ToolbarItem {
             return;
         }
         if (!this.textElement) {
-            this.textElement = this.element.createChild('div', 'toolbar-text hidden');
+            this.textElement = document.createElement('div');
+            this.textElement.classList.add('toolbar-text', 'hidden');
+            const dropDownArrow = this.element.querySelector('.toolbar-dropdown-arrow');
+            this.element.insertBefore(this.textElement, dropDownArrow);
         }
         this.textElement.textContent = text;
         this.textElement.classList.toggle('hidden', !text);

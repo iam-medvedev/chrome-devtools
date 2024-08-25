@@ -68,13 +68,13 @@ export class AccessibilityNode {
     coreProperties() {
         const properties = [];
         if (this.#nameInternal) {
-            properties.push({ name: "name" /* CoreAxPropertyName.Name */, value: this.#nameInternal });
+            properties.push({ name: "name" /* CoreAxPropertyName.NAME */, value: this.#nameInternal });
         }
         if (this.#descriptionInternal) {
-            properties.push({ name: "description" /* CoreAxPropertyName.Description */, value: this.#descriptionInternal });
+            properties.push({ name: "description" /* CoreAxPropertyName.DESCRIPTION */, value: this.#descriptionInternal });
         }
         if (this.#valueInternal) {
-            properties.push({ name: "value" /* CoreAxPropertyName.Value */, value: this.#valueInternal });
+            properties.push({ name: "value" /* CoreAxPropertyName.VALUE */, value: this.#valueInternal });
         }
         return properties;
     }
@@ -192,11 +192,11 @@ export class AccessibilityModel extends SDKModel {
     loadComplete({ root }) {
         this.clear();
         this.#root = new AccessibilityNode(this, root);
-        this.dispatchEventToListeners("TreeUpdated" /* Events.TreeUpdated */, { root: this.#root });
+        this.dispatchEventToListeners("TreeUpdated" /* Events.TREE_UPDATED */, { root: this.#root });
     }
     nodesUpdated({ nodes }) {
         this.createNodesFromPayload(nodes);
-        this.dispatchEventToListeners("TreeUpdated" /* Events.TreeUpdated */, {});
+        this.dispatchEventToListeners("TreeUpdated" /* Events.TREE_UPDATED */, {});
         return;
     }
     createNodesFromPayload(payloadNodes) {

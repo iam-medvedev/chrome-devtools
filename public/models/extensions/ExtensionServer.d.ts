@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import type * as TextUtils from '../text_utils/text_utils.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import { PrivateAPI } from './ExtensionAPI.js';
 import { ExtensionSidebarPane } from './ExtensionPanel.js';
 import { HostUrlPattern } from './HostUrlPattern.js';

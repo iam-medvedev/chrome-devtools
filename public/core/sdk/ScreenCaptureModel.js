@@ -126,5 +126,5 @@ export class ScreenCaptureModel extends SDKModel {
     prerenderStatusUpdated(_params) {
     }
 }
-SDKModel.register(ScreenCaptureModel, { capabilities: 64 /* Capability.ScreenCapture */, autostart: false });
+SDKModel.register(ScreenCaptureModel, { capabilities: 64 /* Capability.SCREEN_CAPTURE */, autostart: false });
 //# sourceMappingURL=ScreenCaptureModel.js.map

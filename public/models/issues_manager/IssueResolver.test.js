@@ -14,7 +14,7 @@ describe('IssueResolver', () => {
             const issue = issueResolver.tryGet(issueId1, () => {
                 throw new Error('This should not get called');
             });
-            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */));
+            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             assert.strictEqual(issue, mockIssue);
         });
         it('should not resolve an unknown issue', () => {
@@ -23,7 +23,7 @@ describe('IssueResolver', () => {
             const issue = issueResolver.tryGet(issueId1, () => {
                 throw new Error('This should not get called');
             });
-            assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */));
+            assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             assert.strictEqual(issue, null);
             issueResolver.clear();
         });
@@ -35,11 +35,11 @@ describe('IssueResolver', () => {
                 const issue = issueResolver.tryGet(issueId1, resolve);
                 assert.strictEqual(issue, null);
             });
-            assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */));
+            assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             const mockIssue = StubIssue.createFromIssueId(issueId1);
             mockIssuesManager.addIssue(mockIssue);
             const issue = await waitForCall;
-            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */));
+            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             assert.strictEqual(issue, mockIssue);
         });
     });
@@ -49,16 +49,16 @@ describe('IssueResolver', () => {
             const issuesManager = new MockIssuesManager([mockIssue]);
             const issueResolver = new IssuesManager.IssueResolver.IssueResolver(issuesManager);
             const issue = await issueResolver.waitFor(issueId1);
-            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */));
+            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             assert.strictEqual(issue, mockIssue);
         });
         it('should reject the promise after `clear` has been called', async () => {
             const issuesManager = new MockIssuesManager([]);
             const issueResolver = new IssuesManager.IssueResolver.IssueResolver(issuesManager);
             const issue = issueResolver.waitFor(issueId1);
-            assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */));
+            assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             issueResolver.clear();
-            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */));
+            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             try {
                 await issue;
             }
@@ -72,11 +72,11 @@ describe('IssueResolver', () => {
             const issuesManager = mockIssuesManager;
             const issueResolver = new IssuesManager.IssueResolver.IssueResolver(issuesManager);
             const issuePromise = issueResolver.waitFor(issueId1);
-            assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */));
+            assert.isTrue(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             const mockIssue = StubIssue.createFromIssueId(issueId1);
             mockIssuesManager.addIssue(mockIssue);
             const issue = await issuePromise;
-            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */));
+            assert.isFalse(issuesManager.hasEventListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */));
             assert.strictEqual(issue, mockIssue);
         });
     });

@@ -240,7 +240,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.updateSidebarPosition();
         this.cssStyleTrackerByCSSModel = new Map();
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.DOMModel.DOMModel, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NameChanged */, event => this.targetNameChanged(event.data));
+        SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NAME_CHANGED */, event => this.targetNameChanged(event.data));
         Common.Settings.Settings.instance()
             .moduleSetting('show-ua-shadow-dom')
             .addChangeListener(this.showUAShadowDOMChanged.bind(this));
@@ -331,7 +331,7 @@ export class ElementsPanel extends UI.Panel.Panel {
                 return;
             }
             const cssModel = node.domModel().cssModel();
-            const styleSheetHeader = await cssModel.requestViaInspectorStylesheet(node);
+            const styleSheetHeader = await cssModel.requestViaInspectorStylesheet(node.frameId());
             if (!styleSheetHeader) {
                 return;
             }
@@ -966,7 +966,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         const cssPropertyTracker = cssModel.createCSSPropertyTracker(TrackedCSSProperties);
         cssPropertyTracker.start();
         this.cssStyleTrackerByCSSModel.set(cssModel, cssPropertyTracker);
-        cssPropertyTracker.addEventListener("TrackedCSSPropertiesUpdated" /* SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated */, this.trackedCSSPropertiesUpdated, this);
+        cssPropertyTracker.addEventListener("TrackedCSSPropertiesUpdated" /* SDK.CSSModel.CSSPropertyTrackerEvents.TRACKED_CSS_PROPERTIES_UPDATED */, this.trackedCSSPropertiesUpdated, this);
     }
     removeStyleTracking(cssModel) {
         const cssPropertyTracker = this.cssStyleTrackerByCSSModel.get(cssModel);
@@ -975,7 +975,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         }
         cssPropertyTracker.stop();
         this.cssStyleTrackerByCSSModel.delete(cssModel);
-        cssPropertyTracker.removeEventListener("TrackedCSSPropertiesUpdated" /* SDK.CSSModel.CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated */, this.trackedCSSPropertiesUpdated, this);
+        cssPropertyTracker.removeEventListener("TrackedCSSPropertiesUpdated" /* SDK.CSSModel.CSSPropertyTrackerEvents.TRACKED_CSS_PROPERTIES_UPDATED */, this.trackedCSSPropertiesUpdated, this);
     }
     trackedCSSPropertiesUpdated({ data: domNodes }) {
         for (const domNode of domNodes) {

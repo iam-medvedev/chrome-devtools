@@ -2,6 +2,7 @@ import * as Common from '../../core/common/common.js';
 import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as TraceEngine from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import { CompatibilityTracksAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 import { TimelineSelection } from './TimelineSelection.js';
 export type TimelineFlameChartEntry = TraceEngine.Handlers.ModelHandlers.Frames.TimelineFrame | TraceEngine.Types.TraceEvents.TraceEventData;
@@ -30,8 +31,11 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private lastSelection?;
     constructor();
     hasTrackConfigurationMode(): boolean;
-    modifyTree(node: number, action: PerfUI.FlameChart.FilterAction): void;
-    findPossibleContextMenuActions(node: number): PerfUI.FlameChart.PossibleFilterActions | void;
+    getPossibleActions(entryIndex: number, groupIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
+    customizedContextMenu(event: MouseEvent, entryIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
+    modifyTree(action: PerfUI.FlameChart.FilterAction, entryIndex: number): void;
+    findPossibleContextMenuActions(entryIndex: number): PerfUI.FlameChart.PossibleFilterActions | void;
+    handleFlameChartTransformKeyboardEvent(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     private buildGroupStyle;
     setModel(traceEngineData: TraceEngine.Handlers.Types.TraceParseData | null, isCpuProfile?: boolean): void;
     /**

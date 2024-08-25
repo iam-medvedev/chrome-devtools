@@ -226,7 +226,7 @@ describe('TreeHelpers', () => {
         });
         describe('building hierarchies trace events and profile calls', () => {
             it('builds a hierarchy from trace events and profile calls', async () => {
-                const evaluateScript = makeCompleteEvent("EvaluateScript" /* TraceModel.Types.TraceEvents.KnownEventName.EvaluateScript */, 0, 500);
+                const evaluateScript = makeCompleteEvent("EvaluateScript" /* TraceModel.Types.TraceEvents.KnownEventName.EVALUATE_SCRIPT */, 0, 500);
                 const v8Run = makeCompleteEvent('v8.run', 10, 490);
                 const parseFunction = makeCompleteEvent('V8.ParseFunction', 12, 1);
                 const traceEvents = [evaluateScript, v8Run, parseFunction];

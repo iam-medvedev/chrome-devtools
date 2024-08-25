@@ -131,7 +131,10 @@ export declare class Overlays extends EventTarget {
     #private;
     constructor(init: {
         container: HTMLElement;
-        flameChartsContainer: HTMLElement;
+        flameChartsContainers: {
+            main: HTMLElement;
+            network: HTMLElement;
+        };
         charts: TimelineCharts;
     });
     /**

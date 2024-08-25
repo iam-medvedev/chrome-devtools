@@ -117,8 +117,8 @@ describe('NetworkRequest', () => {
     it('can handle the case of exempted cookies', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', 'url', 'documentURL', null, null, null);
         const cookie = new SDK.Cookie.Cookie('name', 'value');
-        cookie.addAttribute("same-site" /* SDK.Cookie.Attribute.SameSite */, 'None');
-        cookie.addAttribute("secure" /* SDK.Cookie.Attribute.Secure */, true);
+        cookie.addAttribute("same-site" /* SDK.Cookie.Attribute.SAME_SITE */, 'None');
+        cookie.addAttribute("secure" /* SDK.Cookie.Attribute.SECURE */, true);
         cookie.setCookieLine('name=value; Path=/; SameSite=None; Secure;');
         request.addExtraResponseInfo({
             responseHeaders: [{ name: 'Set-Cookie', value: cookie.getCookieLine() }],
@@ -199,10 +199,12 @@ describeWithMockConnection('NetworkRequest', () => {
             cookiePartitionKeyOpaque: undefined,
             exemptedResponseCookies: undefined,
         });
-        assert.isTrue(addBlockedCookieSpy.calledOnceWith(cookie, [{
+        assert.isTrue(addBlockedCookieSpy.calledOnceWith(cookie, [
+            {
                 attribute: null,
-                uiString: 'Setting this cookie was blocked due to third-party cookie phaseout. Learn more in the Issues tab.',
-            }]));
+                uiString: 'Setting this cookie was blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel.',
+            },
+        ]));
         assert.deepStrictEqual(await cookieModel.getCookiesForDomain(''), [cookie]);
         request.addExtraResponseInfo({
             responseHeaders: [{ name: 'Set-Cookie', value: 'name=value; Path=/' }],
@@ -244,7 +246,7 @@ describeWithMockConnection('ServerSentEvents', () => {
             },
         });
         const networkEvents = [];
-        networkManager.requestForId('1').addEventListener(SDK.NetworkRequest.Events.EventSourceMessageAdded, ({ data }) => networkEvents.push(data));
+        networkManager.requestForId('1').addEventListener(SDK.NetworkRequest.Events.EVENT_SOURCE_MESSAGE_ADDED, ({ data }) => networkEvents.push(data));
         networkManager.dispatcher.eventSourceMessageReceived({
             requestId: '1',
             timestamp: 21,
@@ -286,7 +288,7 @@ describeWithMockConnection('ServerSentEvents', () => {
         });
         const networkEvents = [];
         const { promise: twoEventsReceivedPromise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
-        networkManager.requestForId('1').addEventListener(SDK.NetworkRequest.Events.EventSourceMessageAdded, ({ data }) => {
+        networkManager.requestForId('1').addEventListener(SDK.NetworkRequest.Events.EVENT_SOURCE_MESSAGE_ADDED, ({ data }) => {
             networkEvents.push(data);
             if (networkEvents.length === 2) {
                 resolve();
@@ -386,7 +388,7 @@ describeWithMockConnection('requestStreamingContent', () => {
         const maybeStreamingContent = await networkManager.requestForId('1').requestStreamingContent();
         assert.isFalse(TextUtils.StreamingContentData.isError(maybeStreamingContent));
         const streamingContent = maybeStreamingContent;
-        const eventPromise = streamingContent.once("ChunkAdded" /* TextUtils.StreamingContentData.Events.ChunkAdded */);
+        const eventPromise = streamingContent.once("ChunkAdded" /* TextUtils.StreamingContentData.Events.CHUNK_ADDED */);
         networkManager.dispatcher.dataReceived({
             requestId: '1',
             data: 'YmFy',

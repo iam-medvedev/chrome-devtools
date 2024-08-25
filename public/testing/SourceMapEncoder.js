@@ -195,13 +195,13 @@ export class GeneratedRangeBuilder {
         this.#state.column = column;
         let flags = 0;
         if (options?.definition) {
-            flags |= 1 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.HasDefinition */;
+            flags |= 1 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.HAS_DEFINITION */;
         }
         if (options?.callsite) {
-            flags |= 2 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.HasCallsite */;
+            flags |= 2 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.HAS_CALLSITE */;
         }
         if (options?.isScope) {
-            flags |= 4 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.IsScope */;
+            flags |= 4 /* SDK.SourceMapScopes.EncodedGeneratedRangeFlag.IS_SCOPE */;
         }
         this.#encodedRange += encodeVlq(flags);
         if (options?.definition) {

@@ -16,7 +16,7 @@ describeWithMockConnection('CoveragePlugin', () => {
     let coverageInfo;
     const URL = 'test.js';
     beforeEach(() => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();

@@ -18,7 +18,12 @@ let heapProfilerPanelInstance;
 export class HeapProfilerPanel extends ProfilesPanel {
     constructor() {
         const registry = instance;
-        const profileTypes = [registry.heapSnapshotProfileType, registry.trackingHeapSnapshotProfileType, registry.samplingHeapProfileType];
+        const profileTypes = [
+            registry.heapSnapshotProfileType,
+            registry.trackingHeapSnapshotProfileType,
+            registry.samplingHeapProfileType,
+            registry.detachedElementProfileType,
+        ];
         super('heap-profiler', profileTypes, 'profiler.heap-toggle-recording');
     }
     static instance() {

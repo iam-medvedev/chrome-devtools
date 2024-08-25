@@ -146,7 +146,7 @@ export class Isolate {
         }
         this.#usedHeapSizeInternal = usage.usedSize;
         this.#memoryTrend.add(this.#usedHeapSizeInternal);
-        IsolateManager.instance().dispatchEventToListeners("MemoryChanged" /* Events.MemoryChanged */, this);
+        IsolateManager.instance().dispatchEventToListeners("MemoryChanged" /* Events.MEMORY_CHANGED */, this);
     }
     samplesCount() {
         return this.#memoryTrend.count();
@@ -159,10 +159,6 @@ export class Isolate {
      */
     usedHeapSizeGrowRate() {
         return this.#memoryTrend.fitSlope();
-    }
-    isMainThread() {
-        const model = this.runtimeModel();
-        return model ? model.target().id() === 'main' : false;
     }
 }
 export class MemoryTrend {

@@ -45,9 +45,9 @@ export declare class ServiceWorkerCacheModel extends SDKModel<EventTypes> implem
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
 }
 export declare const enum Events {
-    CacheAdded = "CacheAdded",
-    CacheRemoved = "CacheRemoved",
-    CacheStorageContentUpdated = "CacheStorageContentUpdated"
+    CACHE_ADDED = "CacheAdded",
+    CACHE_REMOVED = "CacheRemoved",
+    CACHE_STORAGE_CONTENT_UPDATED = "CacheStorageContentUpdated"
 }
 export interface CacheEvent {
     model: ServiceWorkerCacheModel;
@@ -58,9 +58,9 @@ export interface CacheStorageContentUpdatedEvent {
     cacheName: string;
 }
 export type EventTypes = {
-    [Events.CacheAdded]: CacheEvent;
-    [Events.CacheRemoved]: CacheEvent;
-    [Events.CacheStorageContentUpdated]: CacheStorageContentUpdatedEvent;
+    [Events.CACHE_ADDED]: CacheEvent;
+    [Events.CACHE_REMOVED]: CacheEvent;
+    [Events.CACHE_STORAGE_CONTENT_UPDATED]: CacheStorageContentUpdatedEvent;
 };
 export declare class Cache {
     #private;

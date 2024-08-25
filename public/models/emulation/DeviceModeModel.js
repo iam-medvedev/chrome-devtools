@@ -109,7 +109,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
         this.#initialized = false;
         this.#appliedDeviceSizeInternal = new UI.Geometry.Size(1, 1);
         this.#appliedDeviceScaleFactorInternal = window.devicePixelRatio;
-        this.#appliedUserAgentTypeInternal = "Desktop" /* UA.Desktop */;
+        this.#appliedUserAgentTypeInternal = "Desktop" /* UA.DESKTOP */;
         this.#webPlatformExperimentalFeaturesEnabledInternal =
             window.visualViewport ? 'segments' in window.visualViewport : false;
         this.#scaleSettingInternal = Common.Settings.Settings.instance().createSetting('emulation.device-scale', 1);
@@ -135,7 +135,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
             this.#heightSetting.set(MaxDeviceSize);
         }
         this.#heightSetting.addChangeListener(this.heightSettingChanged, this);
-        this.#uaSettingInternal = Common.Settings.Settings.instance().createSetting('emulation.device-ua', "Mobile" /* UA.Mobile */);
+        this.#uaSettingInternal = Common.Settings.Settings.instance().createSetting('emulation.device-ua', "Mobile" /* UA.MOBILE */);
         this.#uaSettingInternal.addChangeListener(this.uaSettingChanged, this);
         this.#deviceScaleFactorSettingInternal =
             Common.Settings.Settings.instance().createSetting('emulation.device-scale-factor', 0);
@@ -143,7 +143,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
         this.#deviceOutlineSettingInternal =
             Common.Settings.Settings.instance().moduleSetting('emulation.show-device-outline');
         this.#deviceOutlineSettingInternal.addChangeListener(this.deviceOutlineSettingChanged, this);
-        this.#toolbarControlsEnabledSettingInternal = Common.Settings.Settings.instance().createSetting('emulation.toolbar-controls-enabled', true, "Session" /* Common.Settings.SettingStorageType.Session */);
+        this.#toolbarControlsEnabledSettingInternal = Common.Settings.Settings.instance().createSetting('emulation.toolbar-controls-enabled', true, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.#typeInternal = Type.None;
         this.#deviceInternal = null;
         this.#modeInternal = null;
@@ -329,7 +329,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
             case Type.None:
                 return false;
             case Type.Responsive:
-                return this.#uaSettingInternal.get() === "Mobile" /* UA.Mobile */ || this.#uaSettingInternal.get() === "Mobile (no touch)" /* UA.MobileNoTouch */;
+                return this.#uaSettingInternal.get() === "Mobile" /* UA.MOBILE */ || this.#uaSettingInternal.get() === "Mobile (no touch)" /* UA.MOBILE_NO_TOUCH */;
         }
         return false;
     }
@@ -356,7 +356,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
         this.#scaleSettingInternal.set(1);
         this.setWidth(400);
         this.setHeight(0);
-        this.#uaSettingInternal.set("Mobile" /* UA.Mobile */);
+        this.#uaSettingInternal.set("Mobile" /* UA.MOBILE */);
     }
     modelAdded(emulationModel) {
         if (emulationModel.target() === SDK.TargetManager.TargetManager.instance().primaryPageTarget() &&
@@ -462,10 +462,10 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
             const insets = this.currentInsets();
             this.#fitScaleInternal = this.calculateFitScale(orientation.width, orientation.height, outline, insets);
             if (mobile) {
-                this.#appliedUserAgentTypeInternal = this.#deviceInternal.touch() ? "Mobile" /* UA.Mobile */ : "Mobile (no touch)" /* UA.MobileNoTouch */;
+                this.#appliedUserAgentTypeInternal = this.#deviceInternal.touch() ? "Mobile" /* UA.MOBILE */ : "Mobile (no touch)" /* UA.MOBILE_NO_TOUCH */;
             }
             else {
-                this.#appliedUserAgentTypeInternal = this.#deviceInternal.touch() ? "Desktop (touch)" /* UA.DesktopTouch */ : "Desktop" /* UA.Desktop */;
+                this.#appliedUserAgentTypeInternal = this.#deviceInternal.touch() ? "Desktop (touch)" /* UA.DESKTOP_TOUCH */ : "Desktop" /* UA.DESKTOP */;
             }
             this.applyDeviceMetrics(new UI.Geometry.Size(orientation.width, orientation.height), insets, outline, this.#scaleSettingInternal.get(), this.#deviceInternal.deviceScaleFactor, mobile, this.getScreenOrientationType(), resetPageScaleFactor, this.#webPlatformExperimentalFeaturesEnabledInternal);
             this.applyUserAgent(this.#deviceInternal.userAgent, this.#deviceInternal.userAgentMetadata);
@@ -473,7 +473,7 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
         }
         else if (this.#typeInternal === Type.None) {
             this.#fitScaleInternal = this.calculateFitScale(this.#availableSize.width, this.#availableSize.height);
-            this.#appliedUserAgentTypeInternal = "Desktop" /* UA.Desktop */;
+            this.#appliedUserAgentTypeInternal = "Desktop" /* UA.DESKTOP */;
             this.applyDeviceMetrics(this.#availableSize, new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0), 1, 0, mobile, null, resetPageScaleFactor);
             this.applyUserAgent('', null);
             this.applyTouch(false, false);
@@ -493,12 +493,12 @@ export class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper {
             this.applyDeviceMetrics(new UI.Geometry.Size(screenWidth, screenHeight), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0), this.#scaleSettingInternal.get(), this.#deviceScaleFactorSettingInternal.get() || defaultDeviceScaleFactor, mobile, screenHeight >= screenWidth ? "portraitPrimary" /* Protocol.Emulation.ScreenOrientationType.PortraitPrimary */ :
                 "landscapePrimary" /* Protocol.Emulation.ScreenOrientationType.LandscapePrimary */, resetPageScaleFactor);
             this.applyUserAgent(mobile ? defaultMobileUserAgent : '', mobile ? defaultMobileUserAgentMetadata : null);
-            this.applyTouch(this.#uaSettingInternal.get() === "Desktop (touch)" /* UA.DesktopTouch */ || this.#uaSettingInternal.get() === "Mobile" /* UA.Mobile */, this.#uaSettingInternal.get() === "Mobile" /* UA.Mobile */);
+            this.applyTouch(this.#uaSettingInternal.get() === "Desktop (touch)" /* UA.DESKTOP_TOUCH */ || this.#uaSettingInternal.get() === "Mobile" /* UA.MOBILE */, this.#uaSettingInternal.get() === "Mobile" /* UA.MOBILE */);
         }
         if (overlayModel) {
             overlayModel.setShowViewportSizeOnResize(this.#typeInternal === Type.None);
         }
-        this.dispatchEventToListeners("Updated" /* Events.Updated */);
+        this.dispatchEventToListeners("Updated" /* Events.UPDATED */);
     }
     calculateFitScale(screenWidth, screenHeight, outline, insets) {
         const outlineWidth = outline ? outline.left + outline.right : 0;
@@ -755,9 +755,11 @@ export class Rect {
 }
 export var Type;
 (function (Type) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Type["None"] = "None";
     Type["Responsive"] = "Responsive";
     Type["Device"] = "Device";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Type || (Type = {}));
 export const MinDeviceSize = 50;
 export const MaxDeviceSize = 9999;

@@ -96,7 +96,7 @@ describeWithMockConnection('ConsoleViewMessage', () => {
                 .returns(true);
             const target = createTarget();
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.SelfXss, "warning" /* Protocol.Log.LogEntryLevel.Warning */, 'Don’t paste code...');
+            const rawMessage = new SDK.ConsoleModel.ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.SELF_XSS, "warning" /* Protocol.Log.LogEntryLevel.Warning */, 'Don’t paste code...');
             const { message } = createConsoleViewMessageWithStubDeps(rawMessage);
             const messageElement = message.toMessageElement(); // Trigger rendering.
             const button = messageElement.querySelector('[aria-label=\'Understand this warning\']');

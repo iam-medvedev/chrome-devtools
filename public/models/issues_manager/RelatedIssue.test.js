@@ -28,8 +28,8 @@ describe('issuesAssociatedWith', () => {
     });
     function createTestCookie(name) {
         const cookie = new SDK.Cookie.Cookie(name, '');
-        cookie.addAttribute("domain" /* SDK.Cookie.Attribute.Domain */, '');
-        cookie.addAttribute("path" /* SDK.Cookie.Attribute.Path */, '');
+        cookie.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, '');
+        cookie.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, '');
         return cookie;
     }
     it('should correctly filter issues associated with a cookie', () => {

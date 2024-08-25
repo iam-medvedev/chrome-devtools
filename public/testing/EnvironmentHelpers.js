@@ -17,7 +17,7 @@ import * as Workspace from '../models/workspace/workspace.js';
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let UI;
 let uniqueTargetId = 0;
-export function createTarget({ id, name, type = SDK.Target.Type.Frame, parentTarget, subtype, url = 'http://example.com' } = {}) {
+export function createTarget({ id, name, type = SDK.Target.Type.FRAME, parentTarget, subtype, url = 'http://example.com' } = {}) {
     if (!id) {
         if (!uniqueTargetId++) {
             id = 'test';

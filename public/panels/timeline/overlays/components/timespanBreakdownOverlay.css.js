@@ -74,6 +74,10 @@ styles.replaceSync(
     display: block;
   }
 
+  .discovery-time-ms {
+    font-weight: var(--ref-typeface-weight-bold);
+  }
+
   &.labelHidden {
     /* Have to use this not display: none so it maintains its width */
     user-select: none;

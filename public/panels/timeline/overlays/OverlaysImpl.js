@@ -54,6 +54,13 @@ export class Overlays extends EventTarget {
     // Update the mouse coordinates while it is being created.
     #lastMouseOffsetX = null;
     #lastMouseOffsetY = null;
+    // `entriesLinkInProgress` is the entries link Overlay that has not yet been fully created
+    // and only has the entry that the link starts from set.
+    // We save it as a separate variable because when the second entry of the link is not chosen yet,
+    // the arrow follows the mouse. To achieve that, update the coordinates of `entriesLinkInProgress`
+    // on mousemove. There can only be one link in the process on being created so the mousemove
+    // only needs to update `entriesLinkInProgress` link overlay.
+    #entriesLinkInProgress;
     #dimensions = {
         trace: {
             visibleWindow: null,
@@ -75,16 +82,40 @@ export class Overlays extends EventTarget {
      * created so we can manage its contents as overlays come and go.
      */
     #overlaysContainer;
-    /**
-     * The parent HTMLElement of both Flamecharts.
-     * This container is used to get the mouse position over the Flamecharts.
-     */
-    #flameChartsContainer;
     constructor(init) {
         super();
         this.#overlaysContainer = init.container;
-        this.#flameChartsContainer = init.flameChartsContainer;
         this.#charts = init.charts;
+        this.#entriesLinkInProgress = null;
+        // HTMLElements of both Flamecharts. They are used to get the mouse position over the Flamecharts.
+        init.flameChartsContainers.main.addEventListener('mousemove', event => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, 'main'));
+        init.flameChartsContainers.network.addEventListener('mousemove', event => this.#updateMouseCoordinatesProgressEntriesLink.bind(this)(event, 'network'));
+    }
+    // Mousemove event listener to get mouse coordinates and update them for the entries link that is being created.
+    //
+    // The 'mousemove' event is attached to `flameChartsContainers` instead of `overlaysContainer`
+    // because `overlaysContainer` doesn't have events to enable the interaction with the
+    // Flamecharts beneath it.
+    #updateMouseCoordinatesProgressEntriesLink(event, chart) {
+        const mouseEvent = event;
+        this.#lastMouseOffsetX = mouseEvent.offsetX;
+        this.#lastMouseOffsetY = mouseEvent.offsetY;
+        if (!this.#entriesLinkInProgress || this.#entriesLinkInProgress.entryTo) {
+            return;
+        }
+        // The Overlays layer coordinates cover both Network and Main Charts, while the mousemove
+        // coordinates are received from the charts individually and start from 0 for each chart.
+        //
+        // To make it work on the overlays, we need to know which chart the entry belongs to and,
+        // if it is on the main chart, add the height of the Network chart to get correct Entry
+        // coordinates on the Overlays layer.
+        const networkHeight = this.#dimensions.charts.network?.heightPixels ?? 0;
+        const linkInProgressElement = this.#overlaysToElements.get(this.#entriesLinkInProgress);
+        if (linkInProgressElement) {
+            const component = linkInProgressElement.querySelector('devtools-entries-link-overlay');
+            const yCoordinate = mouseEvent.offsetY + ((chart === 'main') ? networkHeight : 0);
+            component.toEntryCoordinateAndDimentions = { x: mouseEvent.offsetX, y: yCoordinate };
+        }
     }
     /**
      * Because entries can be a TimelineFrame, which is not a trace event, this
@@ -492,22 +523,19 @@ export class Overlays extends EventTarget {
                 const top = bottom - height;
                 element.style.top = `${top}px`;
                 element.style.fontStyle = 'italic';
-                const label = elementSections[0].querySelector('.timespan-breakdown-overlay-label');
-                const msDetails = label?.querySelector('span');
-                if (msDetails) {
-                    label?.removeChild(msDetails);
-                }
             }
         }
     }
     #positionEntriesLinkOverlay(overlay, element) {
-        // The entry arrow starts from the end on the X axis and middle of the Y axis
-        const entryEndX = this.xPixelForEventEndOnChart(overlay.entryFrom) ?? 0;
-        const halfEntryHeight = (this.pixelHeightForEventOnChart(overlay.entryFrom) ?? 0) / 2;
-        const entryMiddleY = (this.yPixelForEventOnChart(overlay.entryFrom) ?? 0) + halfEntryHeight;
         const component = element.querySelector('devtools-entries-link-overlay');
         if (component) {
-            component.coordinateFrom = { x: entryEndX, y: entryMiddleY };
+            const entryStartX = this.xPixelForEventStartOnChart(overlay.entryFrom) ?? 0;
+            const entryEndX = this.xPixelForEventEndOnChart(overlay.entryFrom) ?? 0;
+            const entryStartY = this.yPixelForEventOnChart(overlay.entryFrom) ?? 0;
+            const entryLength = entryEndX - entryStartX;
+            const entryHeight = this.pixelHeightForEventOnChart(overlay.entryFrom) ?? 0;
+            component.fromEntryCoordinateAndDimentions =
+                { x: entryStartX, y: entryStartY, length: entryLength, height: entryHeight };
         }
     }
     #positionTimeRangeOverlay(overlay, element) {
@@ -737,31 +765,13 @@ export class Overlays extends EventTarget {
                 return div;
             }
             case 'ENTRIES_LINK': {
-                // The entry arrow starts from the end on the X axis and middle of the Y axis
                 const entryEndX = this.xPixelForEventEndOnChart(overlay.entryFrom) ?? 0;
-                const halfEntryHeight = (this.pixelHeightForEventOnChart(overlay.entryFrom) ?? 0) / 2;
-                const entryMiddleY = (this.yPixelForEventOnChart(overlay.entryFrom) ?? 0) + halfEntryHeight;
-                const component = new Components.EntriesLinkOverlay.EntriesLinkOverlay({ x: entryEndX, y: entryMiddleY });
+                const entryStartX = this.xPixelForEventEndOnChart(overlay.entryFrom) ?? 0;
+                const entryStartY = (this.yPixelForEventOnChart(overlay.entryFrom) ?? 0);
+                const entryWidth = entryEndX - entryStartX;
+                const entryHeight = this.pixelHeightForEventOnChart(overlay.entryFrom) ?? 0;
+                const component = new Components.EntriesLinkOverlay.EntriesLinkOverlay({ x: entryEndX, y: entryStartY, width: entryWidth, height: entryHeight });
                 div.appendChild(component);
-                // Add an event listener to track mousemove and draw the arrow after
-                // the mouse before the entry the arrow will connect to is selected.
-                //
-                // The 'mousemove' event is attached to `flameChartsContainer` instead of `overlaysContainer`
-                // because `overlaysContainer` doesn't have events to enable the interaction with the
-                // Flamecharts beneath it.
-                // TODO: Remove the mousemove event when the connecting entry is selected
-                this.#flameChartsContainer.addEventListener('mousemove', event => {
-                    const mouseEvent = event;
-                    this.#lastMouseOffsetX = mouseEvent.offsetX;
-                    this.#lastMouseOffsetY = mouseEvent.offsetY;
-                    // TODO: Check if the mouse is over network track and do not add the network height if it is
-                    const networkHeight = this.#dimensions.charts.network?.heightPixels ?? 0;
-                    // Only follow the mouse if the link does not yet have the entry that link leads to
-                    // and the mouse is not hovering over any entry. If it is, the arrow is snapped to that entry.
-                    if (!component.entryToExists) {
-                        component.coordinateTo = { x: this.#lastMouseOffsetX, y: this.#lastMouseOffsetY + networkHeight };
-                    }
-                });
                 return div;
             }
             case 'ENTRY_OUTLINE': {
@@ -817,18 +827,23 @@ export class Overlays extends EventTarget {
             case 'ENTRIES_LINK': {
                 const component = element.querySelector('devtools-entries-link-overlay');
                 if (component) {
-                    // If entryTo exists, pass the coordinates of the entry that the arrow snaps to.
+                    // If entryTo exists, pass the coordinates and dimentions of the entry that the arrow snaps to.
                     // If it does not, pass the mouse coordinates so the arrow follows the mouse instead.
                     if (overlay.entryTo) {
-                        component.entryToExists = true;
-                        const entryEndX = this.xPixelForEventStartOnChart(overlay.entryTo) ?? 0;
-                        const halfEntryHeight = (this.pixelHeightForEventOnChart(overlay.entryTo) ?? 0) / 2;
-                        const entryMiddleY = (this.yPixelForEventOnChart(overlay.entryTo) ?? 0) + halfEntryHeight;
-                        component.coordinateTo = { x: entryEndX, y: entryMiddleY };
+                        const entryStartX = this.xPixelForEventStartOnChart(overlay.entryTo) ?? 0;
+                        const entryEndX = this.xPixelForEventEndOnChart(overlay.entryTo) ?? 0;
+                        const entryWidth = entryEndX - entryStartX;
+                        const entryHeight = this.pixelHeightForEventOnChart(overlay.entryTo) ?? 0;
+                        component.toEntryCoordinateAndDimentions = {
+                            x: entryStartX ?? 0,
+                            y: this.yPixelForEventOnChart(overlay.entryTo) ?? 0,
+                            length: entryWidth,
+                            height: entryHeight,
+                        };
                     }
                     else if (this.#lastMouseOffsetX && this.#lastMouseOffsetY) {
-                        component.entryToExists = false;
-                        component.coordinateTo = { x: this.#lastMouseOffsetX, y: this.#lastMouseOffsetY };
+                        // The second coordinate for in progress link gets updated on mousemove
+                        this.#entriesLinkInProgress = overlay;
                     }
                 }
                 break;

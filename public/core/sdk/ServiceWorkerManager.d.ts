@@ -32,18 +32,18 @@ export declare class ServiceWorkerManager extends SDKModel<EventTypes> {
     private forceUpdateSettingChanged;
 }
 export declare const enum Events {
-    RegistrationUpdated = "RegistrationUpdated",
-    RegistrationErrorAdded = "RegistrationErrorAdded",
-    RegistrationDeleted = "RegistrationDeleted"
+    REGISTRATION_UPDATED = "RegistrationUpdated",
+    REGISTRATION_ERROR_ADDED = "RegistrationErrorAdded",
+    REGISTRATION_DELETED = "RegistrationDeleted"
 }
 export interface RegistrationErrorAddedEvent {
     registration: ServiceWorkerRegistration;
     error: Protocol.ServiceWorker.ServiceWorkerErrorMessage;
 }
 export type EventTypes = {
-    [Events.RegistrationUpdated]: ServiceWorkerRegistration;
-    [Events.RegistrationErrorAdded]: RegistrationErrorAddedEvent;
-    [Events.RegistrationDeleted]: ServiceWorkerRegistration;
+    [Events.REGISTRATION_UPDATED]: ServiceWorkerRegistration;
+    [Events.REGISTRATION_ERROR_ADDED]: RegistrationErrorAddedEvent;
+    [Events.REGISTRATION_DELETED]: ServiceWorkerRegistration;
 };
 /**
  * For every version, we keep a history of ServiceWorkerVersionState. Every time
@@ -111,10 +111,10 @@ export declare namespace ServiceWorkerVersion {
         redundant: () => Common.UIString.LocalizedString;
     };
     const enum Modes {
-        Installing = "installing",
-        Waiting = "waiting",
-        Active = "active",
-        Redundant = "redundant"
+        INSTALLING = "installing",
+        WAITING = "waiting",
+        ACTIVE = "active",
+        REDUNDANT = "redundant"
     }
 }
 export declare class ServiceWorkerRegistration {

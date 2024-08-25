@@ -10,7 +10,7 @@ import { describeWithMockConnection, setMockConnectionResponseHandler, } from '.
 import * as InspectorMain from './inspector_main.js';
 describeWithMockConnection('FocusDebuggeeActionDelegate', () => {
     it('uses main frame', async () => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         const frameTarget = createTarget({ parentTarget: tabTarget });
         const delegate = new InspectorMain.InspectorMain.FocusDebuggeeActionDelegate();
@@ -25,7 +25,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
         const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
         const runPromise = inspectorMain.run();
         const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
-        SDK.TargetManager.TargetManager.instance().createTarget('someTargetID', 'someName', SDK.Target.Type.Frame, rootTarget, undefined);
+        SDK.TargetManager.TargetManager.instance().createTarget('someTargetID', 'someName', SDK.Target.Type.FRAME, rootTarget, undefined);
         await runPromise;
     };
     beforeEach(() => {
@@ -46,7 +46,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isFalse(finished);
         const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
-        SDK.TargetManager.TargetManager.instance().createTarget('someTargetID', 'someName', SDK.Target.Type.Frame, rootTarget, undefined);
+        SDK.TargetManager.TargetManager.instance().createTarget('someTargetID', 'someName', SDK.Target.Type.FRAME, rootTarget, undefined);
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isTrue(finished);
     });
@@ -55,21 +55,21 @@ describeWithMockConnection('InspectorMainImpl', () => {
         Root.Runtime.Runtime.setQueryParamForTesting('v8only', 'true');
         assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
         await inspectorMain.run();
-        assert.strictEqual(SDK.TargetManager.TargetManager.instance().rootTarget()?.type(), SDK.Target.Type.Node);
+        assert.strictEqual(SDK.TargetManager.TargetManager.instance().rootTarget()?.type(), SDK.Target.Type.NODE);
         Root.Runtime.Runtime.setQueryParamForTesting('v8only', '');
     });
     it('sets main target type to Tab if targetType=tab query param present', async () => {
         Root.Runtime.Runtime.setQueryParamForTesting('targetType', 'tab');
         assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
         await runForTabTarget();
-        assert.strictEqual(SDK.TargetManager.TargetManager.instance().rootTarget()?.type(), SDK.Target.Type.Tab);
+        assert.strictEqual(SDK.TargetManager.TargetManager.instance().rootTarget()?.type(), SDK.Target.Type.TAB);
         Root.Runtime.Runtime.setQueryParamForTesting('targetType', '');
     });
     it('sets main target type to Frame by default', async () => {
         const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
         assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
         await inspectorMain.run();
-        assert.strictEqual(SDK.TargetManager.TargetManager.instance().rootTarget()?.type(), SDK.Target.Type.Frame);
+        assert.strictEqual(SDK.TargetManager.TargetManager.instance().rootTarget()?.type(), SDK.Target.Type.FRAME);
     });
     it('creates main target waiting for debugger if the main target is frame and panel is sources', async () => {
         const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });

@@ -135,7 +135,7 @@ UI.ViewManager.registerViewExtension({
     iconName: 'location-on',
 });
 Common.Settings.registerSettingExtension({
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     settingName: 'emulation.locations',
     settingType: "array" /* Common.Settings.SettingType.ARRAY */,
     // TODO(crbug.com/1136655): http://crrev.com/c/2666426 regressed localization of city titles.

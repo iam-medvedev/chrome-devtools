@@ -69,7 +69,7 @@ function isFrameEvent(event) {
 }
 function entryIsTopLevel(entry) {
     const devtoolsTimelineCategory = 'disabled-by-default-devtools.timeline';
-    return entry.name === "RunTask" /* Types.TraceEvents.KnownEventName.RunTask */ && entry.cat.includes(devtoolsTimelineCategory);
+    return entry.name === "RunTask" /* Types.TraceEvents.KnownEventName.RUN_TASK */ && entry.cat.includes(devtoolsTimelineCategory);
 }
 export class TimelineFrameModel {
     #frames = [];
@@ -316,10 +316,10 @@ export class TimelineFrameModel {
     }
 }
 const MAIN_FRAME_MARKERS = new Set([
-    "ScheduleStyleRecalculation" /* Types.TraceEvents.KnownEventName.ScheduleStyleRecalculation */,
-    "InvalidateLayout" /* Types.TraceEvents.KnownEventName.InvalidateLayout */,
-    "BeginMainThreadFrame" /* Types.TraceEvents.KnownEventName.BeginMainThreadFrame */,
-    "ScrollLayer" /* Types.TraceEvents.KnownEventName.ScrollLayer */,
+    "ScheduleStyleRecalculation" /* Types.TraceEvents.KnownEventName.SCHEDULE_STYLE_RECALCULATION */,
+    "InvalidateLayout" /* Types.TraceEvents.KnownEventName.INVALIDATE_LAYOUT */,
+    "BeginMainThreadFrame" /* Types.TraceEvents.KnownEventName.BEGIN_MAIN_THREAD_FRAME */,
+    "ScrollLayer" /* Types.TraceEvents.KnownEventName.SCROLL_LAYER */,
 ]);
 export class TimelineFrame {
     startTime;

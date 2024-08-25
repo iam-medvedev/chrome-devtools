@@ -31,7 +31,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
     });
     it('defers loading extensions until after navigation from a privileged to a non-privileged host', async () => {
         const addExtensionSpy = sinon.spy(Extensions.ExtensionServer.ExtensionServer.instance(), 'addExtension');
-        const target = createTarget({ type: SDK.Target.Type.Frame });
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
         target.setInspectedURL('chrome://abcdef');
         assert.isTrue(addExtensionSpy.notCalled, 'addExtension not called');
         target.setInspectedURL(allowedUrl);
@@ -144,7 +144,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         assert.strictEqual(manager.plugins().length, 1);
         assert.strictEqual(manager.views().length, 1);
         const plugin = manager.plugins()[0];
-        const onceShowRequested = manager.once("showViewRequested" /* Extensions.RecorderPluginManager.Events.ShowViewRequested */);
+        const onceShowRequested = manager.once("showViewRequested" /* Extensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED */);
         await plugin.replay({
             name: 'test',
             steps: [],
@@ -168,7 +168,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         assert.strictEqual(manager.plugins().length, 1);
         assert.strictEqual(manager.views().length, 1);
         const events = [];
-        manager.addEventListener("showViewRequested" /* Extensions.RecorderPluginManager.Events.ShowViewRequested */, event => {
+        manager.addEventListener("showViewRequested" /* Extensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED */, event => {
             events.push(event);
         });
         view?.show();
@@ -195,7 +195,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         await context.chrome.devtools?.recorder.registerRecorderExtensionPlugin(extensionPlugin, 'Replay');
         const manager = Extensions.RecorderPluginManager.RecorderPluginManager.instance();
         const plugin = manager.plugins()[0];
-        const onceShowRequested = manager.once("showViewRequested" /* Extensions.RecorderPluginManager.Events.ShowViewRequested */);
+        const onceShowRequested = manager.once("showViewRequested" /* Extensions.RecorderPluginManager.Events.SHOW_VIEW_REQUESTED */);
         await plugin.replay({
             name: 'test',
             steps: [],
@@ -275,7 +275,7 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
     for (const protocol of ['devtools', 'chrome', 'chrome-untrusted', 'chrome-error', 'chrome-search']) {
         it(`blocks API calls on blocked protocols: ${protocol}`, async () => {
             assert.isUndefined(context.chrome.devtools);
-            const target = createTarget({ type: SDK.Target.Type.Frame });
+            const target = createTarget({ type: SDK.Target.Type.FRAME });
             const addExtensionStub = sinon.stub(Extensions.ExtensionServer.ExtensionServer.instance(), 'addExtension');
             target.setInspectedURL(`${protocol}://foo`);
             assert.isTrue(addExtensionStub.notCalled);
@@ -284,14 +284,14 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
     }
     it('blocks API calls on blocked hosts', async () => {
         assert.isUndefined(context.chrome.devtools);
-        const target = createTarget({ type: SDK.Target.Type.Frame });
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
         const addExtensionStub = sinon.spy(Extensions.ExtensionServer.ExtensionServer.instance(), 'addExtension');
         target.setInspectedURL(blockedUrl);
         assert.isTrue(addExtensionStub.alwaysReturned(undefined));
         assert.isUndefined(context.chrome.devtools);
     });
     it('allows API calls on allowlisted hosts', async () => {
-        const target = createTarget({ type: SDK.Target.Type.Frame });
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
         target.setInspectedURL(allowedUrl);
         {
             const result = await new Promise(cb => context.chrome.devtools?.network.getHAR(cb));
@@ -300,7 +300,7 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         }
     });
     it('allows API calls on non-blocked hosts', async () => {
-        const target = createTarget({ type: SDK.Target.Type.Frame });
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
         target.setInspectedURL('http://example.com2');
         {
             const result = await new Promise(cb => context.chrome.devtools?.network.getHAR(cb));
@@ -310,7 +310,7 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
     });
     it('defers loading extensions until after navigation from a blocked to an allowed host', async () => {
         const addExtensionSpy = sinon.spy(Extensions.ExtensionServer.ExtensionServer.instance(), 'addExtension');
-        const target = createTarget({ type: SDK.Target.Type.Frame });
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
         target.setInspectedURL(blockedUrl);
         assert.isTrue(addExtensionSpy.calledOnce, 'addExtension called once');
         assert.deepStrictEqual(addExtensionSpy.returnValues, [undefined]);
@@ -320,7 +320,7 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
     });
     it('does not include blocked hosts in the HAR entries', async () => {
         Logs.NetworkLog.NetworkLog.instance();
-        const target = createTarget({ type: SDK.Target.Type.Frame });
+        const target = createTarget({ type: SDK.Target.Type.FRAME });
         target.setInspectedURL('http://example.com2');
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
         assert.exists(networkManager);

@@ -39,7 +39,7 @@ export class ContentSecurityPolicyIssue extends Issue {
         this.#issueDetails = issueDetails;
     }
     getCategory() {
-        return "ContentSecurityPolicy" /* IssueCategory.ContentSecurityPolicy */;
+        return "ContentSecurityPolicy" /* IssueCategory.CONTENT_SECURITY_POLICY */;
     }
     primaryKey() {
         return JSON.stringify(this.#issueDetails, [
@@ -66,9 +66,9 @@ export class ContentSecurityPolicyIssue extends Issue {
     }
     getKind() {
         if (this.#issueDetails.isReportOnly) {
-            return "Improvement" /* IssueKind.Improvement */;
+            return "Improvement" /* IssueKind.IMPROVEMENT */;
         }
-        return "PageError" /* IssueKind.PageError */;
+        return "PageError" /* IssueKind.PAGE_ERROR */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const cspDetails = inspectorIssue.details.contentSecurityPolicyIssueDetails;

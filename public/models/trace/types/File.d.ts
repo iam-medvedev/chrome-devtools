@@ -10,13 +10,13 @@ export interface Breadcrumb {
     child: Breadcrumb | null;
 }
 export declare const enum DataOrigin {
-    CPUProfile = "CPUProfile",
-    TraceEvents = "TraceEvents"
+    CPU_PROFILE = "CPUProfile",
+    TRACE_EVENTS = "TraceEvents"
 }
 export declare const enum EventKeyType {
-    RawEvent = "r",
-    SyntheticEvent = "s",
-    ProfileCall = "p"
+    RAW_EVENT = "r",
+    SYNTHETIC_EVENT = "s",
+    PROFILE_CALL = "p"
 }
 /**
  * Represents an object that is saved in the file when user created annotations in the timeline.
@@ -26,6 +26,7 @@ export declare const enum EventKeyType {
 export interface SerializedAnnotations {
     entryLabels: EntryLabelAnnotationSerialized[];
     labelledTimeRanges: TimeRangeAnnotationSerialized[];
+    linksBetweenEntries: EntriesLinkAnnotationSerialized[];
 }
 /**
  * Represents an object that is used to store the Entry Label annotation that is created when a user creates a label for an entry in the timeline.
@@ -66,6 +67,13 @@ export interface TimeRangeAnnotationSerialized {
     label: string;
 }
 /**
+ * Represents an object that is saved in the file when a user creates a link between entries in the timeline.
+ */
+export interface EntriesLinkAnnotationSerialized {
+    entryFrom: TraceEventSerializableKey;
+    entryTo: TraceEventSerializableKey;
+}
+/**
  * `Annotation` are the user-created annotations that are saved into the metadata.
  * Those annotations are rendered on the timeline by `Overlays.ts`
  *
@@ -76,20 +84,20 @@ export type Annotation = EntryLabelAnnotation | TimeRangeAnnotation | EntriesLin
 export declare function isTimeRangeAnnotation(annotation: Annotation): annotation is TimeRangeAnnotation;
 export declare function isEntryLabelAnnotation(annotation: Annotation): annotation is EntryLabelAnnotation;
 export declare function isEntriesLinkAnnotation(annotation: Annotation): annotation is EntriesLinkAnnotation;
-export type RawEventKey = `${EventKeyType.RawEvent}-${number}`;
-export type SyntheticEventKey = `${EventKeyType.SyntheticEvent}-${number}`;
-export type ProfileCallKey = `${EventKeyType.ProfileCall}-${ProcessID}-${ThreadID}-${SampleIndex}-${Protocol.integer}`;
+export type RawEventKey = `${EventKeyType.RAW_EVENT}-${number}`;
+export type SyntheticEventKey = `${EventKeyType.SYNTHETIC_EVENT}-${number}`;
+export type ProfileCallKey = `${EventKeyType.PROFILE_CALL}-${ProcessID}-${ThreadID}-${SampleIndex}-${Protocol.integer}`;
 export type TraceEventSerializableKey = RawEventKey | ProfileCallKey | SyntheticEventKey;
 export type RawEventKeyValues = {
-    type: EventKeyType.RawEvent;
+    type: EventKeyType.RAW_EVENT;
     rawIndex: number;
 };
 export type SyntheticEventKeyValues = {
-    type: EventKeyType.SyntheticEvent;
+    type: EventKeyType.SYNTHETIC_EVENT;
     rawIndex: number;
 };
 export type ProfileCallKeyValues = {
-    type: EventKeyType.ProfileCall;
+    type: EventKeyType.PROFILE_CALL;
     processID: ProcessID;
     threadID: ThreadID;
     sampleIndex: SampleIndex;

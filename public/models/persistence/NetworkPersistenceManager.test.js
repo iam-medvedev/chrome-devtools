@@ -602,7 +602,7 @@ describeWithMockConnection('NetworkPersistenceManager', () => {
         };
         project.uiSourceCodes = () => [networkUISourceCode];
         const eventURLs = [];
-        networkPersistenceManager.addEventListener("RequestsForHeaderOverridesFileChanged" /* Persistence.NetworkPersistenceManager.Events.RequestsForHeaderOverridesFileChanged */, event => {
+        networkPersistenceManager.addEventListener("RequestsForHeaderOverridesFileChanged" /* Persistence.NetworkPersistenceManager.Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED */, event => {
             eventURLs.push(event.data.url());
         });
         workspace.dispatchEventToListeners(Workspace.Workspace.Events.UISourceCodeAdded, networkUISourceCode);

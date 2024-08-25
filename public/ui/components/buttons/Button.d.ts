@@ -32,6 +32,7 @@ interface CommonButtonData {
     toggleType?: ToggleType;
     toggleOnClick?: boolean;
     size?: Size;
+    reducedFocusRing?: boolean;
     disabled?: boolean;
     toggled?: boolean;
     checked?: boolean;
@@ -74,6 +75,7 @@ export declare class Button extends HTMLElement {
     set toggleType(toggleType: ToggleType);
     set variant(variant: Variant);
     set size(size: Size);
+    set reducedFocusRing(reducedFocusRing: boolean);
     set type(type: ButtonType);
     set title(title: string);
     set disabled(disabled: boolean);

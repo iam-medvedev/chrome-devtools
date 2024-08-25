@@ -81,6 +81,9 @@ export function nodeIdsForEvent(modelData, event) {
             foundIds.add(paintImageEvent.args.data.nodeId);
         }
     }
+    else if (Types.TraceEvents.isTraceEventParseMetaViewport(event) && typeof event.args?.data.node_id !== 'undefined') {
+        foundIds.add(event.args.data.node_id);
+    }
     nodeIdsForEventCache.set(event, foundIds);
     return foundIds;
 }

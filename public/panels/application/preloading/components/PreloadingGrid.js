@@ -95,7 +95,7 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
     }
     #buildReportRows() {
         function statusRenderer(statusString, status) {
-            if (status !== "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */) {
+            if (status !== "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */) {
                 return LitHtml.html `<div>${statusString}</div>`;
             }
             // Disabled until https://crbug.com/1079231 is fixed.

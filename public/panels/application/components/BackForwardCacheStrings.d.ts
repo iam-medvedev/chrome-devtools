@@ -287,6 +287,9 @@ export declare const NotRestoredReasonDescription: {
     Dummy: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    ContentDiscarded: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
     ContentSecurityHandler: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };

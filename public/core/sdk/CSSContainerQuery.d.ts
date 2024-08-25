@@ -26,14 +26,14 @@ export interface ContainerQueriedSizeDetails {
     height?: string;
 }
 export declare const enum QueryAxis {
-    None = "",
-    Inline = "inline-size",
-    Block = "block-size",
-    Both = "size"
+    NONE = "",
+    INLINE = "inline-size",
+    BLOCK = "block-size",
+    BOTH = "size"
 }
 export declare const enum PhysicalAxis {
-    None = "",
-    Horizontal = "Horizontal",
-    Vertical = "Vertical",
-    Both = "Both"
+    NONE = "",
+    HORIZONTAL = "Horizontal",
+    VERTICAL = "Vertical",
+    BOTH = "Both"
 }

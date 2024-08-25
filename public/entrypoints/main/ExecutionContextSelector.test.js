@@ -10,10 +10,10 @@ import * as Main from './main.js';
 describeWithMockConnection('ExecutionContextSelector', () => {
     it('switches to the default context once available', () => {
         new Main.ExecutionContextSelector.ExecutionContextSelector(SDK.TargetManager.TargetManager.instance(), UI.Context.Context.instance());
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
-        const mainFrameTarget = createTarget({ type: SDK.Target.Type.Frame, parentTarget: tabTarget });
-        const subframeTarget = createTarget({ type: SDK.Target.Type.Frame, parentTarget: mainFrameTarget });
-        const prerenderTarget = createTarget({ type: SDK.Target.Type.Frame, parentTarget: tabTarget, subtype: 'prerender' });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+        const mainFrameTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
+        const subframeTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTarget });
+        const prerenderTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget, subtype: 'prerender' });
         const contextSetFlavor = sinon.spy(UI.Context.Context.instance(), 'setFlavor');
         const sentExecutionContextCreated = (target) => {
             const frame = getMainFrame(target);

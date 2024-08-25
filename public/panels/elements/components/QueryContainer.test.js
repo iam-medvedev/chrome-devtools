@@ -93,29 +93,29 @@ describe('QueryContainer', () => {
         };
         component.shadowRoot.querySelector('a')?.dispatchEvent(new Event('mouseenter'));
         component.updateContainerQueriedSizeDetails({
-            physicalAxis: "" /* SDK.CSSContainerQuery.PhysicalAxis.None */,
-            queryAxis: "" /* SDK.CSSContainerQuery.QueryAxis.None */,
+            physicalAxis: "" /* SDK.CSSContainerQuery.PhysicalAxis.NONE */,
+            queryAxis: "" /* SDK.CSSContainerQuery.QueryAxis.NONE */,
             width: '500px',
             height: '300px',
         });
         const nonExistentDetailsElement = component.shadowRoot.querySelector('.queried-size-details');
         assert.strictEqual(nonExistentDetailsElement, null, 'query details without any axis should not be rendered');
         component.updateContainerQueriedSizeDetails({
-            physicalAxis: "Horizontal" /* SDK.CSSContainerQuery.PhysicalAxis.Horizontal */,
-            queryAxis: "inline-size" /* SDK.CSSContainerQuery.QueryAxis.Inline */,
+            physicalAxis: "Horizontal" /* SDK.CSSContainerQuery.PhysicalAxis.HORIZONTAL */,
+            queryAxis: "inline-size" /* SDK.CSSContainerQuery.QueryAxis.INLINE */,
             width: '500px',
         });
         const detailsElement = component.shadowRoot.querySelector('.queried-size-details');
         assert.strictEqual(detailsElement?.innerText, '(inline-size) 500px', 'queried size details are not correct');
         component.updateContainerQueriedSizeDetails({
-            physicalAxis: "Horizontal" /* SDK.CSSContainerQuery.PhysicalAxis.Horizontal */,
-            queryAxis: "block-size" /* SDK.CSSContainerQuery.QueryAxis.Block */,
+            physicalAxis: "Horizontal" /* SDK.CSSContainerQuery.PhysicalAxis.HORIZONTAL */,
+            queryAxis: "block-size" /* SDK.CSSContainerQuery.QueryAxis.BLOCK */,
             width: '200px',
         });
         assert.strictEqual(detailsElement?.innerText, '(block-size) 200px', 'queried size details are not correct');
         component.updateContainerQueriedSizeDetails({
-            physicalAxis: "Both" /* SDK.CSSContainerQuery.PhysicalAxis.Both */,
-            queryAxis: "size" /* SDK.CSSContainerQuery.QueryAxis.Both */,
+            physicalAxis: "Both" /* SDK.CSSContainerQuery.PhysicalAxis.BOTH */,
+            queryAxis: "size" /* SDK.CSSContainerQuery.QueryAxis.BOTH */,
             width: '500px',
             height: '300px',
         });

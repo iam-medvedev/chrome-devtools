@@ -94,7 +94,7 @@ export class InputModel extends SDK.SDKModel.SDKModel {
     }
 }
 SDK.SDKModel.SDKModel.register(InputModel, {
-    capabilities: 1024 /* SDK.Target.Capability.Input */,
+    capabilities: 1024 /* SDK.Target.Capability.INPUT */,
     autostart: false,
 });
 //# sourceMappingURL=InputModel.js.map

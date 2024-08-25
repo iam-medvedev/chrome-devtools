@@ -61,8 +61,8 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     detailsView;
     onMainAddEntryLabelAnnotation;
     onNetworkAddEntryLabelAnnotation;
-    onMainEntriesLinkAnnotationChange;
-    onNetworkEntriesLinkAnnotationChange;
+    onMainEntriesLinkAnnotationCreated;
+    onNetworkEntriesLinkAnnotationCreated;
     onMainEntrySelected;
     onNetworkEntrySelected;
     #boundRefreshAfterIgnoreList;
@@ -158,7 +158,10 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         });
         this.#overlays = new Overlays.Overlays.Overlays({
             container: this.#overlaysContainer,
-            flameChartsContainer: flameChartsContainer.element,
+            flameChartsContainers: {
+                main: this.mainFlameChart.element,
+                network: this.networkFlameChart.element,
+            },
             charts: {
                 mainChart: this.mainFlameChart,
                 mainProvider: this.mainDataProvider,
@@ -207,13 +210,17 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.detailsSplitWidget.show(this.element);
         this.onMainAddEntryLabelAnnotation = this.onAddEntryLabelAnnotation.bind(this, this.mainDataProvider);
         this.onNetworkAddEntryLabelAnnotation = this.onAddEntryLabelAnnotation.bind(this, this.networkDataProvider);
-        this.onMainEntriesLinkAnnotationChange = this.onEntriesLinkAnnotationChange.bind(this, this.mainDataProvider);
-        this.onNetworkEntriesLinkAnnotationChange = this.onEntriesLinkAnnotationChange.bind(this, this.networkDataProvider);
+        this.onMainEntriesLinkAnnotationCreated = event => {
+            this.onEntriesLinkAnnotationCreate(this.mainDataProvider, event.data.entryFromIndex);
+        }, this;
+        this.onNetworkEntriesLinkAnnotationCreated = event => {
+            this.onEntriesLinkAnnotationCreate(this.networkDataProvider, event.data.entryFromIndex);
+        }, this;
         if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
             this.mainFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.EntryLabelAnnotationAdded */, this.onMainAddEntryLabelAnnotation, this);
             this.networkFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.EntryLabelAnnotationAdded */, this.onNetworkAddEntryLabelAnnotation, this);
-            this.mainFlameChart.addEventListener("EntriesLinkAnnotationChanged" /* PerfUI.FlameChart.Events.EntriesLinkAnnotationChanged */, this.onMainEntriesLinkAnnotationChange, this);
-            this.networkFlameChart.addEventListener("EntriesLinkAnnotationChanged" /* PerfUI.FlameChart.Events.EntriesLinkAnnotationChanged */, this.onNetworkEntriesLinkAnnotationChange, this);
+            this.mainFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.EntriesLinkAnnotationCreated */, this.onMainEntriesLinkAnnotationCreated, this);
+            this.networkFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.EntriesLinkAnnotationCreated */, this.onNetworkEntriesLinkAnnotationCreated, this);
         }
         this.onMainEntrySelected = this.onEntrySelected.bind(this, this.mainDataProvider);
         this.onNetworkEntrySelected = this.onEntrySelected.bind(this, this.networkDataProvider);
@@ -221,7 +228,13 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         this.mainFlameChart.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.EntryInvoked */, this.onMainEntrySelected, this);
         this.networkFlameChart.addEventListener("EntrySelected" /* PerfUI.FlameChart.Events.EntrySelected */, this.onNetworkEntrySelected, this);
         this.networkFlameChart.addEventListener("EntryInvoked" /* PerfUI.FlameChart.Events.EntryInvoked */, this.onNetworkEntrySelected, this);
-        this.mainFlameChart.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.EntryHovered */, this.onEntryHovered, this);
+        this.mainFlameChart.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.EntryHovered */, event => {
+            this.onEntryHovered(event);
+            this.updateLinkSelectionAnnotation(this.mainDataProvider, event.data);
+        }, this);
+        this.networkFlameChart.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.EntryHovered */, event => {
+            this.updateLinkSelectionAnnotation(this.networkDataProvider, event.data);
+        }, this);
         this.element.addEventListener('keydown', this.#keydownHandler.bind(this));
         this.#boundRefreshAfterIgnoreList = this.#refreshAfterIgnoreList.bind(this);
         this.#selectedEvents = null;
@@ -241,8 +254,20 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (insight) {
             const newInsightOverlays = insight.createOverlayFn();
             this.#currentInsightOverlays = newInsightOverlays;
+            const entries = [];
             for (const overlay of this.#currentInsightOverlays) {
                 this.addOverlay(overlay);
+                if ('entry' in overlay) {
+                    const entry = overlay.entry;
+                    if (entry) {
+                        entries.push(entry);
+                    }
+                }
+            }
+            if (entries.length > 0) {
+                const earliestEntry = entries.reduce((earliest, current) => (earliest.ts < current.ts ? earliest : current), entries[0]);
+                // Reveal the earliest event found from the overlays.
+                this.revealEvent(earliestEntry);
             }
             const newBounds = this.calculateZoom(this.#currentInsightOverlays);
             TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(newBounds);
@@ -345,8 +370,14 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     isNetworkTrackShownForTests() {
         return this.networkSplitWidget.showMode() !== "OnlyMain" /* UI.SplitWidget.ShowMode.OnlyMain */;
     }
+    getLinkSelectionAnnotation() {
+        return this.#linkSelectionAnnotation;
+    }
     getMainDataProvider() {
         return this.mainDataProvider;
+    }
+    getNetworkDataProvider() {
+        return this.networkDataProvider;
     }
     refreshMainFlameChart() {
         this.mainFlameChart.update();
@@ -475,6 +506,20 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             }
         }
     }
+    // If an entry is hovered over and a creation of link annotation is in progress, update that annotation with a hovered entry.
+    updateLinkSelectionAnnotation(dataProvider, entryIndex) {
+        if (!this.#linkSelectionAnnotation) {
+            return;
+        }
+        const toSelectionObject = this.#selectionIfTraceEvent(entryIndex, dataProvider);
+        if (toSelectionObject) {
+            this.#linkSelectionAnnotation.entryTo = toSelectionObject;
+        }
+        else {
+            delete this.#linkSelectionAnnotation['entryTo'];
+        }
+        ModificationsManager.activeManager()?.updateAnnotation(this.#linkSelectionAnnotation);
+    }
     onEntryHovered(commonEvent) {
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
         const entryIndex = commonEvent.data;
@@ -524,7 +569,17 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             this.chartSplitWidget.hideSidebar();
         }
     }
-    setSelection(selection) {
+    revealEvent(event) {
+        const mainIndex = this.mainDataProvider.indexForEvent(event);
+        const networkIndex = this.networkDataProvider.indexForEvent(event);
+        if (mainIndex) {
+            this.mainFlameChart.revealEntry(mainIndex);
+        }
+        else if (networkIndex) {
+            this.networkFlameChart.revealEntry(networkIndex);
+        }
+    }
+    setSelectionAndReveal(selection) {
         const mainIndex = this.mainDataProvider.entryIndexForSelection(selection);
         const networkIndex = this.networkDataProvider.entryIndexForSelection(selection);
         this.mainFlameChart.setSelectedEntry(mainIndex);
@@ -578,7 +633,7 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         if (selection &&
             (TimelineSelection.isTraceEventSelection(selection.object) ||
                 TimelineSelection.isSyntheticNetworkRequestDetailsEventSelection(selection.object))) {
-            this.setSelection(selection);
+            this.setSelectionAndReveal(selection);
             ModificationsManager.activeManager()?.createAnnotation({
                 type: 'ENTRY_LABEL',
                 entry: selection.object,
@@ -586,29 +641,14 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
             });
         }
     }
-    onEntriesLinkAnnotationChange(dataProvider, event) {
-        const fromSelectionObject = this.#selectionIfTraceEvent(event.data.entryFromIndex, dataProvider);
-        const toSelectionObject = (event.data.entryToIndex) ? this.#selectionIfTraceEvent(event.data.entryToIndex, dataProvider) : null;
+    onEntriesLinkAnnotationCreate(dataProvider, entryFromIndex) {
+        const fromSelectionObject = (entryFromIndex) ? this.#selectionIfTraceEvent(entryFromIndex, dataProvider) : null;
         if (fromSelectionObject) {
-            this.setSelection(dataProvider.createSelection(event.data.entryFromIndex));
-            if (this.#linkSelectionAnnotation) {
-                // Only the entry that the link points to can be updated.
-                if (toSelectionObject) {
-                    this.#linkSelectionAnnotation.entryTo = toSelectionObject;
-                }
-                else {
-                    delete this.#linkSelectionAnnotation['entryTo'];
-                }
-                ModificationsManager.activeManager()?.updateAnnotation(this.#linkSelectionAnnotation);
-            }
-            else {
-                this.#linkSelectionAnnotation = {
-                    type: 'ENTRIES_LINK',
-                    entryFrom: fromSelectionObject,
-                    ...(toSelectionObject !== null && { entryTo: toSelectionObject }),
-                };
-                ModificationsManager.activeManager()?.createAnnotation(this.#linkSelectionAnnotation);
-            }
+            this.#linkSelectionAnnotation = {
+                type: 'ENTRIES_LINK',
+                entryFrom: fromSelectionObject,
+            };
+            ModificationsManager.activeManager()?.createAnnotation(this.#linkSelectionAnnotation);
         }
     }
     #selectionIfTraceEvent(index, dataProvider) {
@@ -637,6 +677,32 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         }
         dataProvider.buildFlowForInitiator(entryIndex);
         this.delegate.select(dataProvider.createSelection(entryIndex));
+        if (this.#linkSelectionAnnotation) {
+            this.handleToEntryOfLinkBetweenEntriesSelection(entryIndex);
+        }
+    }
+    handleToEntryOfLinkBetweenEntriesSelection(toIndex) {
+        // If there is a link annotation in the process of being created when an empty
+        // space in the Flamechart is clicked, delete the link being created.
+        //
+        // If an entry is clicked when a link between entries in created and the entry that an arrow
+        // is pointing to is earlier than the one it starts from, switch 'to' and 'from' entries to
+        // reverse the arrow.
+        if (this.#linkSelectionAnnotation && toIndex === -1) {
+            ModificationsManager.activeManager()?.removeAnnotation(this.#linkSelectionAnnotation);
+        }
+        else if (this.#linkSelectionAnnotation && this.#linkSelectionAnnotation?.entryTo &&
+            (this.#linkSelectionAnnotation?.entryFrom.ts > this.#linkSelectionAnnotation?.entryTo.ts)) {
+            const entryFrom = this.#linkSelectionAnnotation.entryFrom;
+            const entryTo = this.#linkSelectionAnnotation.entryTo;
+            this.#linkSelectionAnnotation.entryTo = entryFrom;
+            this.#linkSelectionAnnotation.entryFrom = entryTo;
+            ModificationsManager.activeManager()?.updateAnnotation(this.#linkSelectionAnnotation);
+        }
+        // Regardless of if the link in progress was deleted or the clicked entry is the final selection,
+        // set the link selection in progress to null so a new one is created if the an event to create
+        // of update the current link is dispatched.
+        this.#linkSelectionAnnotation = null;
     }
     resizeToPreferredHeights() {
         if (!this.isShowing()) {

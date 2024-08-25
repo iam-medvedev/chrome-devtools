@@ -269,8 +269,8 @@ export class ServiceWorkersView extends UI.Widget.VBox {
             this.updateRegistration(registration);
         }
         this.eventListeners.set(serviceWorkerManager, [
-            this.manager.addEventListener("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.RegistrationUpdated */, this.registrationUpdated, this),
-            this.manager.addEventListener("RegistrationDeleted" /* SDK.ServiceWorkerManager.Events.RegistrationDeleted */, this.registrationDeleted, this),
+            this.manager.addEventListener("RegistrationUpdated" /* SDK.ServiceWorkerManager.Events.REGISTRATION_UPDATED */, this.registrationUpdated, this),
+            this.manager.addEventListener("RegistrationDeleted" /* SDK.ServiceWorkerManager.Events.REGISTRATION_DELETED */, this.registrationDeleted, this),
             this.securityOriginManager.addEventListener(SDK.SecurityOriginManager.Events.SecurityOriginAdded, this.updateSectionVisibility, this),
             this.securityOriginManager.addEventListener(SDK.SecurityOriginManager.Events.SecurityOriginRemoved, this.updateSectionVisibility, this),
         ]);
@@ -287,10 +287,10 @@ export class ServiceWorkersView extends UI.Widget.VBox {
     getTimeStamp(registration) {
         const versions = registration.versionsByMode();
         let timestamp = 0;
-        const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active */);
-        const installing = versions.get("installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing */);
-        const waiting = versions.get("waiting" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting */);
-        const redundant = versions.get("redundant" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant */);
+        const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.ACTIVE */);
+        const installing = versions.get("installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.INSTALLING */);
+        const waiting = versions.get("waiting" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.WAITING */);
+        const redundant = versions.get("redundant" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.REDUNDANT */);
         if (active) {
             timestamp = active.scriptResponseTime;
         }
@@ -578,10 +578,10 @@ export class Section {
         const scopeURL = this.registration.scopeURL;
         const title = this.registration.isDeleted ? i18nString(UIStrings.sDeleted, { PH1: scopeURL }) : scopeURL;
         this.section.setTitle(title);
-        const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active */);
-        const waiting = versions.get("waiting" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Waiting */);
-        const installing = versions.get("installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Installing */);
-        const redundant = versions.get("redundant" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Redundant */);
+        const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.ACTIVE */);
+        const waiting = versions.get("waiting" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.WAITING */);
+        const installing = versions.get("installing" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.INSTALLING */);
+        const redundant = versions.get("redundant" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.REDUNDANT */);
         this.statusField.removeChildren();
         const versionsStack = this.statusField.createChild('div', 'service-worker-version-stack');
         versionsStack.createChild('div', 'service-worker-version-stack-bar');
@@ -656,7 +656,7 @@ export class Section {
     }
     maybeCreateRouterField() {
         const versions = this.registration.versionsByMode();
-        const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.Active */);
+        const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.ACTIVE */);
         const title = i18nString(UIStrings.routers);
         if (active && active.routerRules && active.routerRules.length > 0) {
             // If there is at least one registered rule in the active version, append the router filed.

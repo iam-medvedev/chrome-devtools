@@ -63,8 +63,8 @@ interface OriginalScopeTree {
 export declare function decodeOriginalScopes(encodedOriginalScopes: string[], names: string[]): OriginalScopeTree[];
 export declare function decodeGeneratedRanges(encodedGeneratedRange: string, originalScopeTrees: OriginalScopeTree[], names: string[]): GeneratedRange[];
 export declare const enum EncodedGeneratedRangeFlag {
-    HasDefinition = 1,
-    HasCallsite = 2,
-    IsScope = 4
+    HAS_DEFINITION = 1,
+    HAS_CALLSITE = 2,
+    IS_SCOPE = 4
 }
 export {};

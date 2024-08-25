@@ -140,13 +140,13 @@ export class RequestPayloadView extends UI.Widget.VBox {
     }
     wasShown() {
         this.registerCSSFiles([requestPayloadViewStyles]);
-        this.request.addEventListener(SDK.NetworkRequest.Events.RequestHeadersChanged, this.refreshFormData, this);
+        this.request.addEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshFormData, this);
         this.refreshQueryString();
         void this.refreshFormData();
         // this._root.select(/* omitFocus */ true, /* selectedByUser */ false);
     }
     willHide() {
-        this.request.removeEventListener(SDK.NetworkRequest.Events.RequestHeadersChanged, this.refreshFormData, this);
+        this.request.removeEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshFormData, this);
     }
     addEntryContextMenuHandler(treeElement, value) {
         treeElement.listItemElement.addEventListener('contextmenu', event => {

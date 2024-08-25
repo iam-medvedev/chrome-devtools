@@ -83,7 +83,7 @@ export class ResourceTreeModel extends SDKModel {
     }
     static reloadAllPages(bypassCache, scriptToEvaluateOnLoad) {
         for (const resourceTreeModel of TargetManager.instance().models(ResourceTreeModel)) {
-            if (resourceTreeModel.target().parentTarget()?.type() !== Type.Frame) {
+            if (resourceTreeModel.target().parentTarget()?.type() !== Type.FRAME) {
                 resourceTreeModel.reloadPage(bypassCache, scriptToEvaluateOnLoad);
             }
         }
@@ -177,7 +177,7 @@ export class ResourceTreeModel extends SDKModel {
         }
         this.dispatchEventToListeners(Events.FrameNavigated, frame);
         if (frame.isPrimaryFrame()) {
-            this.primaryPageChanged(frame, "Navigation" /* PrimaryPageChangeType.Navigation */);
+            this.primaryPageChanged(frame, "Navigation" /* PrimaryPageChangeType.NAVIGATION */);
         }
         // Fill frame with retained resources (the ones loaded using new loader).
         const resources = frame.resources();
@@ -483,6 +483,7 @@ export class ResourceTreeModel extends SDKModel {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["FrameAdded"] = "FrameAdded";
     Events["FrameNavigated"] = "FrameNavigated";
     Events["FrameDetached"] = "FrameDetached";
@@ -501,6 +502,7 @@ export var Events;
     Events["InterstitialHidden"] = "InterstitialHidden";
     Events["BackForwardCacheDetailsUpdated"] = "BackForwardCacheDetailsUpdated";
     Events["JavaScriptDialogOpening"] = "JavaScriptDialogOpening";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 export class ResourceTreeFrame {
     #model;
@@ -655,7 +657,7 @@ export class ResourceTreeFrame {
             return null;
         }
         const parentTarget = this.#model.target().parentTarget();
-        if (parentTarget?.type() !== Type.Frame) {
+        if (parentTarget?.type() !== Type.FRAME) {
             return null;
         }
         const parentModel = parentTarget.model(ResourceTreeModel);
@@ -691,7 +693,7 @@ export class ResourceTreeFrame {
      * https://chromium.googlesource.com/chromium/src/+/HEAD/docs/frame_trees.md
      */
     isOutermostFrame() {
-        return this.#model.target().parentTarget()?.type() !== Type.Frame && !this.#sameTargetParentFrameInternal &&
+        return this.#model.target().parentTarget()?.type() !== Type.FRAME && !this.#sameTargetParentFrameInternal &&
             !this.crossTargetParentFrameId;
     }
     /**
@@ -809,7 +811,7 @@ export class ResourceTreeFrame {
             return highlightFrameOwner(parentFrame.resourceTreeModel().domModel());
         }
         // Fenced frames.
-        if (parentTarget?.type() === Type.Frame) {
+        if (parentTarget?.type() === Type.FRAME) {
             const domModel = parentTarget.model(DOMModel);
             if (domModel) {
                 return highlightFrameOwner(domModel);

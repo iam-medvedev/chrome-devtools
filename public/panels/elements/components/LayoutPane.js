@@ -170,14 +170,14 @@ export class LayoutPane extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     }
     modelAdded(domModel) {
         const overlayModel = domModel.overlayModel();
-        overlayModel.addEventListener("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentGridOverlayStateChanged */, this.render, this);
-        overlayModel.addEventListener("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged */, this.render, this);
+        overlayModel.addEventListener("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_GRID_OVERLAY_STATE_CHANGED */, this.render, this);
+        overlayModel.addEventListener("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_FLEX_CONTAINER_OVERLAY_STATE_CHANGED */, this.render, this);
         this.#domModels.push(domModel);
     }
     modelRemoved(domModel) {
         const overlayModel = domModel.overlayModel();
-        overlayModel.removeEventListener("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentGridOverlayStateChanged */, this.render, this);
-        overlayModel.removeEventListener("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PersistentFlexContainerOverlayStateChanged */, this.render, this);
+        overlayModel.removeEventListener("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_GRID_OVERLAY_STATE_CHANGED */, this.render, this);
+        overlayModel.removeEventListener("PersistentFlexContainerOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_FLEX_CONTAINER_OVERLAY_STATE_CHANGED */, this.render, this);
         this.#domModels = this.#domModels.filter(model => model !== domModel);
     }
     async #fetchNodesByStyle(style) {

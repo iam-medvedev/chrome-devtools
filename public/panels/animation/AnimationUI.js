@@ -359,13 +359,14 @@ export class AnimationUI {
         else {
             this.#animationInternal.setTiming(this.duration(), this.delayOrStartTime());
         }
-        Host.userMetrics.animationPointDragged(this.#mouseEventType === "AnimationDrag" /* Events.AnimationDrag */ ? 0 /* Host.UserMetrics.AnimationPointDragType.AnimationDrag */ :
-            this.#mouseEventType === "KeyframeMove" /* Events.KeyframeMove */ ? 1 /* Host.UserMetrics.AnimationPointDragType.KeyframeMove */ :
+        Host.userMetrics.animationPointDragged(this.#mouseEventType === "AnimationDrag" /* Events.AnimationDrag */ ? 0 /* Host.UserMetrics.AnimationPointDragType.ANIMATION_DRAG */ :
+            this.#mouseEventType === "KeyframeMove" /* Events.KeyframeMove */ ?
+                1 /* Host.UserMetrics.AnimationPointDragType.KEYFRAME_MOVE */ :
                 this.#mouseEventType === "StartEndpointMove" /* Events.StartEndpointMove */ ?
-                    2 /* Host.UserMetrics.AnimationPointDragType.StartEndpointMove */ :
+                    2 /* Host.UserMetrics.AnimationPointDragType.START_ENDPOINT_MOVE */ :
                     this.#mouseEventType === "FinishEndpointMove" /* Events.FinishEndpointMove */ ?
-                        3 /* Host.UserMetrics.AnimationPointDragType.FinishEndpointMove */ :
-                        4 /* Host.UserMetrics.AnimationPointDragType.Other */);
+                        3 /* Host.UserMetrics.AnimationPointDragType.FINISH_ENDPOINT_MOVE */ :
+                        4 /* Host.UserMetrics.AnimationPointDragType.OTHER */);
         this.#movementInMs = 0;
         this.redraw();
         this.#mouseEventType = undefined;

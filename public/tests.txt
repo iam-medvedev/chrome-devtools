@@ -318,6 +318,7 @@ panels/emulation/AdvancedApp.test.js
 panels/emulation/MediaQueryInspector.test.js
 panels/explain/PromptBuilder.test.js
 panels/explain/components/ConsoleInsight.test.js
+panels/freestyler/ChangeManager.test.js
 panels/freestyler/FreestylerAgent.test.js
 panels/freestyler/FreestylerEvaluateAction.test.js
 panels/freestyler/FreestylerPanel.test.js
@@ -438,6 +439,7 @@ panels/timeline/components/FieldSettingsDialog.test.js
 panels/timeline/components/InteractionBreakdown.test.js
 panels/timeline/components/Invalidations.test.js
 panels/timeline/components/LiveMetricsView.test.js
+panels/timeline/components/MetricCard.test.js
 panels/timeline/components/NetworkRequestDetails.test.js
 panels/timeline/components/NetworkThrottlingSelector.test.js
 panels/timeline/components/SidebarAnnotationsTab.test.js

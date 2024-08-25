@@ -393,7 +393,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                 selector.createOption(`${target.name()} (${target.inspectedURL()})`, target.id());
             }
         };
-        targetManager.addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AvailableTargetsChanged */, syncTargets);
+        targetManager.addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED */, syncTargets);
         syncTargets();
         return selector;
     }

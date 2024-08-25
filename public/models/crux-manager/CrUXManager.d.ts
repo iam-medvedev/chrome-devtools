@@ -88,9 +88,9 @@ export declare class CrUXManager extends Common.ObjectWrapper.ObjectWrapper<Even
     setEndpointForTesting(endpoint: string): void;
 }
 export declare const enum Events {
-    FieldDataChanged = "field-data-changed"
+    FIELD_DATA_CHANGED = "field-data-changed"
 }
 type EventTypes = {
-    [Events.FieldDataChanged]: PageResult | undefined;
+    [Events.FIELD_DATA_CHANGED]: PageResult | undefined;
 };
 export {};

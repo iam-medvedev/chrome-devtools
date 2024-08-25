@@ -19,12 +19,12 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * will render [FCP][DCL][LCP] everytime.
  */
 export const SORT_ORDER_PAGE_LOAD_MARKERS = {
-    ["navigationStart" /* TraceEngine.Types.TraceEvents.KnownEventName.NavigationStart */]: 0,
-    ["MarkLoad" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkLoad */]: 1,
-    ["firstContentfulPaint" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkFCP */]: 2,
-    ["firstPaint" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkFirstPaint */]: 2,
-    ["MarkDOMContent" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkDOMContent */]: 3,
-    ["largestContentfulPaint::Candidate" /* TraceEngine.Types.TraceEvents.KnownEventName.MarkLCPCandidate */]: 4,
+    ["navigationStart" /* TraceEngine.Types.TraceEvents.KnownEventName.NAVIGATION_START */]: 0,
+    ["MarkLoad" /* TraceEngine.Types.TraceEvents.KnownEventName.MARK_LOAD */]: 1,
+    ["firstContentfulPaint" /* TraceEngine.Types.TraceEvents.KnownEventName.MARK_FCP */]: 2,
+    ["firstPaint" /* TraceEngine.Types.TraceEvents.KnownEventName.MARK_FIRST_PAINT */]: 2,
+    ["MarkDOMContent" /* TraceEngine.Types.TraceEvents.KnownEventName.MARK_DOM_CONTENT */]: 3,
+    ["largestContentfulPaint::Candidate" /* TraceEngine.Types.TraceEvents.KnownEventName.MARK_LCP_CANDIDATE */]: 4,
 };
 export class TimingsTrackAppender {
     appenderName = 'Timings';

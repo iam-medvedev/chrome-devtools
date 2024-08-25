@@ -57,7 +57,7 @@ export class CookieModel extends SDKModel {
         const updated = this.#isUpdated(newCookies);
         this.#cookies = newCookies;
         if (updated) {
-            this.dispatchEventToListeners("CookieListUpdated" /* Events.CookieListUpdated */);
+            this.dispatchEventToListeners("CookieListUpdated" /* Events.COOKIE_LIST_UPDATED */);
         }
     }
     async deleteCookie(cookie) {
@@ -199,5 +199,5 @@ export class CookieModel extends SDKModel {
         }
     }
 }
-SDKModel.register(CookieModel, { capabilities: 16 /* Capability.Network */, autostart: false });
+SDKModel.register(CookieModel, { capabilities: 16 /* Capability.NETWORK */, autostart: false });
 //# sourceMappingURL=CookieModel.js.map

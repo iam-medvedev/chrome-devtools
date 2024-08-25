@@ -3,6 +3,7 @@ export declare class SidebarAnnotationsTab extends HTMLElement {
     #private;
     static readonly litTagName: import("../../../ui/lit-html/static.js").Static;
     set annotations(annotations: TraceEngine.Types.File.Annotation[]);
+    set annotationEntryToColorMap(annotationEntryToColorMap: Map<TraceEngine.Types.TraceEvents.TraceEventData, string>);
     connectedCallback(): void;
 }
 declare global {

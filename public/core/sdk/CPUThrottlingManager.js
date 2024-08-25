@@ -11,7 +11,7 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
     #pendingMainTargetPromise;
     constructor() {
         super();
-        this.#cpuThrottlingRateInternal = CPUThrottlingRates.NoThrottling;
+        this.#cpuThrottlingRateInternal = CPUThrottlingRates.NO_THROTTLING;
         TargetManager.instance().observeModels(EmulationModel, this);
     }
     static instance(opts = { forceNew: null }) {
@@ -29,14 +29,14 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         for (const emulationModel of TargetManager.instance().models(EmulationModel)) {
             void emulationModel.setCPUThrottlingRate(this.#cpuThrottlingRateInternal);
         }
-        this.dispatchEventToListeners("RateChanged" /* Events.RateChanged */, this.#cpuThrottlingRateInternal);
+        this.dispatchEventToListeners("RateChanged" /* Events.RATE_CHANGED */, this.#cpuThrottlingRateInternal);
     }
     setHardwareConcurrency(concurrency) {
         this.#hardwareConcurrencyInternal = concurrency;
         for (const emulationModel of TargetManager.instance().models(EmulationModel)) {
             void emulationModel.setHardwareConcurrency(concurrency);
         }
-        this.dispatchEventToListeners("HardwareConcurrencyChanged" /* Events.HardwareConcurrencyChanged */, this.#hardwareConcurrencyInternal);
+        this.dispatchEventToListeners("HardwareConcurrencyChanged" /* Events.HARDWARE_CONCURRENCY_CHANGED */, this.#hardwareConcurrencyInternal);
     }
     hasPrimaryPageTargetSet() {
         // In some environments, such as Node, trying to check if we have a page
@@ -78,7 +78,7 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         return result.value;
     }
     modelAdded(emulationModel) {
-        if (this.#cpuThrottlingRateInternal !== CPUThrottlingRates.NoThrottling) {
+        if (this.#cpuThrottlingRateInternal !== CPUThrottlingRates.NO_THROTTLING) {
             void emulationModel.setCPUThrottlingRate(this.#cpuThrottlingRateInternal);
         }
         if (this.#hardwareConcurrencyInternal !== undefined) {
@@ -100,9 +100,11 @@ export function throttlingManager() {
 }
 export var CPUThrottlingRates;
 (function (CPUThrottlingRates) {
-    CPUThrottlingRates[CPUThrottlingRates["NoThrottling"] = 1] = "NoThrottling";
+    CPUThrottlingRates[CPUThrottlingRates["NO_THROTTLING"] = 1] = "NO_THROTTLING";
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Used by web_tests.
     CPUThrottlingRates[CPUThrottlingRates["MidTierMobile"] = 4] = "MidTierMobile";
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Used by web_tests.
     CPUThrottlingRates[CPUThrottlingRates["LowEndMobile"] = 6] = "LowEndMobile";
-    CPUThrottlingRates[CPUThrottlingRates["ExtraSlow"] = 20] = "ExtraSlow";
+    CPUThrottlingRates[CPUThrottlingRates["EXTRA_SLOW"] = 20] = "EXTRA_SLOW";
 })(CPUThrottlingRates || (CPUThrottlingRates = {}));
 //# sourceMappingURL=CPUThrottlingManager.js.map

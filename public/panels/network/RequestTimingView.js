@@ -605,15 +605,15 @@ export class RequestTimingView extends UI.Widget.VBox {
         }
     }
     wasShown() {
-        this.request.addEventListener(SDK.NetworkRequest.Events.TimingChanged, this.refresh, this);
-        this.request.addEventListener(SDK.NetworkRequest.Events.FinishedLoading, this.refresh, this);
+        this.request.addEventListener(SDK.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
+        this.request.addEventListener(SDK.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
         this.calculator.addEventListener("BoundariesChanged" /* Events.BoundariesChanged */, this.boundaryChanged, this);
         this.registerCSSFiles([networkingTimingTableStyles]);
         this.refresh();
     }
     willHide() {
-        this.request.removeEventListener(SDK.NetworkRequest.Events.TimingChanged, this.refresh, this);
-        this.request.removeEventListener(SDK.NetworkRequest.Events.FinishedLoading, this.refresh, this);
+        this.request.removeEventListener(SDK.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
+        this.request.removeEventListener(SDK.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
         this.calculator.removeEventListener("BoundariesChanged" /* Events.BoundariesChanged */, this.boundaryChanged, this);
     }
     refresh() {

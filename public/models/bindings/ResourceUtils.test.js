@@ -22,7 +22,7 @@ describeWithMockConnection('ResourceUtils', () => {
     const INVALID_URL = ':~INVALID_URL~:';
     let target;
     beforeEach(() => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTarget });
         target.setInspectedURL(INSPECTED_URL);

@@ -124,6 +124,10 @@ describeWithEnvironment('TraceModel', function () {
                     label: 'range label',
                 },
             ],
+            linksBetweenEntries: [{
+                    entryFrom: 'r-10',
+                    entryTo: 'r-11',
+                }],
         };
         const modifications = {
             entriesModifications,

@@ -50,16 +50,16 @@ export declare class TargetManager extends Common.ObjectWrapper.ObjectWrapper<Ev
     scopeTarget(): Target | null;
 }
 export declare const enum Events {
-    AvailableTargetsChanged = "AvailableTargetsChanged",
-    InspectedURLChanged = "InspectedURLChanged",
-    NameChanged = "NameChanged",
-    SuspendStateChanged = "SuspendStateChanged"
+    AVAILABLE_TARGETS_CHANGED = "AvailableTargetsChanged",
+    INSPECTED_URL_CHANGED = "InspectedURLChanged",
+    NAME_CHANGED = "NameChanged",
+    SUSPEND_STATE_CHANGED = "SuspendStateChanged"
 }
 export type EventTypes = {
-    [Events.AvailableTargetsChanged]: Protocol.Target.TargetInfo[];
-    [Events.InspectedURLChanged]: Target;
-    [Events.NameChanged]: Target;
-    [Events.SuspendStateChanged]: void;
+    [Events.AVAILABLE_TARGETS_CHANGED]: Protocol.Target.TargetInfo[];
+    [Events.INSPECTED_URL_CHANGED]: Target;
+    [Events.NAME_CHANGED]: Target;
+    [Events.SUSPEND_STATE_CHANGED]: void;
 };
 export declare class Observer {
     targetAdded(_target: Target): void;

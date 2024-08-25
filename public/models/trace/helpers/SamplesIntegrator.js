@@ -154,8 +154,8 @@ export class SamplesIntegrator {
     #onTraceEventStart(event) {
         // Top level events cannot be nested into JS frames so we reset
         // the stack when we find one.
-        if (event.name === "RunMicrotasks" /* Types.TraceEvents.KnownEventName.RunMicrotasks */ ||
-            event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RunTask */) {
+        if (event.name === "RunMicrotasks" /* Types.TraceEvents.KnownEventName.RUN_MICROTASKS */ ||
+            event.name === "RunTask" /* Types.TraceEvents.KnownEventName.RUN_TASK */) {
             this.#lockedJsStackDepth = [];
             this.#truncateJSStack(0, event.ts);
             this.#fakeJSInvocation = false;
@@ -366,7 +366,7 @@ export class SamplesIntegrator {
     }
     #makeJSSampleEvent(call, timestamp) {
         const JSSampleEvent = {
-            name: "JSSample" /* Types.TraceEvents.KnownEventName.JSSample */,
+            name: "JSSample" /* Types.TraceEvents.KnownEventName.JS_SAMPLE */,
             cat: 'devtools.timeline',
             args: {
                 data: { stackTrace: this.#makeProfileCallsForStack(call).map(e => e.callFrame) },

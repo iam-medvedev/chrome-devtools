@@ -23,10 +23,10 @@ export interface Observer {
     isolateChanged(isolate: Isolate): void;
 }
 export declare const enum Events {
-    MemoryChanged = "MemoryChanged"
+    MEMORY_CHANGED = "MemoryChanged"
 }
 export type EventTypes = {
-    [Events.MemoryChanged]: Isolate;
+    [Events.MEMORY_CHANGED]: Isolate;
 };
 export declare const MemoryTrendWindowMs = 120000;
 export declare class Isolate {
@@ -44,7 +44,6 @@ export declare class Isolate {
      * bytes per millisecond
      */
     usedHeapSizeGrowRate(): number;
-    isMainThread(): boolean;
 }
 export declare class MemoryTrend {
     #private;

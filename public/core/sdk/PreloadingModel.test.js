@@ -48,7 +48,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                 url: 'https://example.com/subresource.js',
             },
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
             requestId: 'requestId:1',
         });
         assert.deepEqual(model.getAllRuleSets(), [
@@ -80,7 +80,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         url: 'https://example.com/subresource.js',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prefetchStatus: null,
                     requestId: 'requestId:1',
                     ruleSetIds: ['ruleSetId:1'],
@@ -133,7 +133,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
                 url: 'https://example.com/page.html',
             },
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
         });
         assert.deepEqual(model.getAllRuleSets(), [
             {
@@ -181,7 +181,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         url: 'https://example.com/subresource.js',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prefetchStatus: null,
                     requestId: 'requestId:1',
                     ruleSetIds: ['ruleSetId:1'],
@@ -197,7 +197,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
                         url: 'https://example.com/page.html',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prerenderStatus: null,
                     disallowedMojoInterface: null,
                     mismatchedHeaders: null,
@@ -229,7 +229,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                 url: 'https://example.com/subresource.js',
             },
-            status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */,
+            status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
             prefetchStatus: "PrefetchEvictedAfterCandidateRemoved" /* Protocol.Preload.PrefetchStatus.PrefetchEvictedAfterCandidateRemoved */,
             requestId: 'requestId:1',
         });
@@ -262,7 +262,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
                         url: 'https://example.com/page.html',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prerenderStatus: null,
                     disallowedMojoInterface: null,
                     mismatchedHeaders: null,
@@ -318,7 +318,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         url: 'https://example.com/subresource.js',
                     },
-                    status: "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NotTriggered */,
+                    status: "NotTriggered" /* SDK.PreloadingModel.PreloadingStatus.NOT_TRIGGERED */,
                     prefetchStatus: null,
                     // Invalid request id
                     requestId: '',
@@ -371,7 +371,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                 url: 'https://example.com/subresource1.js',
             },
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
         });
         loaderId = 'loaderId:2';
         navigate(getMainFrame(target), { loaderId });
@@ -411,7 +411,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                 url: 'https://example.com/subresource2.js',
             },
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
             requestId: 'requestId:1',
         });
         assert.deepEqual(model.getAllRuleSets(), [
@@ -443,7 +443,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         url: 'https://example.com/subresource2.js',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prefetchStatus: null,
                     requestId: 'requestId:1',
                     ruleSetIds: ['ruleSetId:2'],
@@ -522,7 +522,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                 url: 'https://example.com/subresource12.js',
             },
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
             requestId: 'requestId:1',
         });
         dispatchEvent(target, 'Preload.prefetchStatusUpdated', {
@@ -531,7 +531,7 @@ describeWithMockConnection('PreloadingModel', () => {
                 action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                 url: 'https://example.com/subresource2.js',
             },
-            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+            status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
             requestId: 'requestId:2',
         });
         assert.deepEqual(model.getPreloadingAttempts(null), [
@@ -544,7 +544,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         url: 'https://example.com/subresource12.js',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prefetchStatus: null,
                     requestId: 'requestId:1',
                     ruleSetIds: ['ruleSetId:1', 'ruleSetId:2'],
@@ -560,7 +560,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         url: 'https://example.com/subresource2.js',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prefetchStatus: null,
                     requestId: 'requestId:2',
                     ruleSetIds: ['ruleSetId:2'],
@@ -578,7 +578,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         url: 'https://example.com/subresource12.js',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prefetchStatus: null,
                     requestId: 'requestId:1',
                     ruleSetIds: ['ruleSetId:1', 'ruleSetId:2'],
@@ -596,7 +596,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         url: 'https://example.com/subresource12.js',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prefetchStatus: null,
                     requestId: 'requestId:1',
                     ruleSetIds: ['ruleSetId:1', 'ruleSetId:2'],
@@ -612,7 +612,7 @@ describeWithMockConnection('PreloadingModel', () => {
                         action: "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */,
                         url: 'https://example.com/subresource2.js',
                     },
-                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.Running */,
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
                     prefetchStatus: null,
                     requestId: 'requestId:2',
                     ruleSetIds: ['ruleSetId:2'],

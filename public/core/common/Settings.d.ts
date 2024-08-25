@@ -171,13 +171,13 @@ export declare const enum SettingStorageType {
      * Synced storage persists settings with the active Chrome profile but also
      * syncs the settings across devices via Chrome Sync.
      */
-    Synced = "Synced",
+    SYNCED = "Synced",
     /** Global storage persists settings with the active Chrome profile */
-    Global = "Global",
+    GLOBAL = "Global",
     /** Uses Window.localStorage */
-    Local = "Local",
+    LOCAL = "Local",
     /** Session storage dies when DevTools window closes */
-    Session = "Session"
+    SESSION = "Session"
 }
 export declare function moduleSetting(settingName: string): Setting<unknown>;
 export declare function settingForTest(settingName: string): Setting<unknown>;

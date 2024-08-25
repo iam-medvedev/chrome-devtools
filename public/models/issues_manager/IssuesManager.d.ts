@@ -14,8 +14,8 @@ export type HideIssueMenuSetting = {
     [x: string]: IssueStatus;
 };
 export declare const enum IssueStatus {
-    Hidden = "Hidden",
-    Unhidden = "Unhidden"
+    HIDDEN = "Hidden",
+    UNHIDDEN = "Unhidden"
 }
 export declare function defaultHideIssueByCodeSetting(): HideIssueMenuSetting;
 export declare function getHideIssueByCodeSetting(): Common.Settings.Setting<HideIssueMenuSetting>;
@@ -59,7 +59,7 @@ export interface IssueAddedEvent {
     issue: Issue;
 }
 export type EventTypes = {
-    [Events.IssuesCountUpdated]: void;
-    [Events.FullUpdateRequired]: void;
-    [Events.IssueAdded]: IssueAddedEvent;
+    [Events.ISSUES_COUNT_UPDATED]: void;
+    [Events.FULL_UPDATE_REQUIRED]: void;
+    [Events.ISSUE_ADDED]: IssueAddedEvent;
 };

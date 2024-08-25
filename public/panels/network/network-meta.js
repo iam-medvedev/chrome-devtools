@@ -319,7 +319,7 @@ UI.ActionRegistration.registerActionExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.colorcodeResourceTypes),
     settingName: 'network-color-code-resource-types',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -341,7 +341,7 @@ Common.Settings.registerSettingExtension({
 });
 Common.Settings.registerSettingExtension({
     category: "NETWORK" /* Common.Settings.SettingCategory.NETWORK */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.groupNetworkLogByFrame),
     settingName: 'network.group-by-frame',
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,

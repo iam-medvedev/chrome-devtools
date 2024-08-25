@@ -325,12 +325,12 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     }
 }
 export const slowScrollRectNames = new Map([
-    ["NonFastScrollable" /* SDK.LayerTreeBase.Layer.ScrollRectType.NonFastScrollable */, i18nLazyString(UIStrings.nonFastScrollable)],
-    ["TouchEventHandler" /* SDK.LayerTreeBase.Layer.ScrollRectType.TouchEventHandler */, i18nLazyString(UIStrings.touchEventHandler)],
-    ["WheelEventHandler" /* SDK.LayerTreeBase.Layer.ScrollRectType.WheelEventHandler */, i18nLazyString(UIStrings.wheelEventHandler)],
-    ["RepaintsOnScroll" /* SDK.LayerTreeBase.Layer.ScrollRectType.RepaintsOnScroll */, i18nLazyString(UIStrings.repaintsOnScroll)],
+    ["NonFastScrollable" /* SDK.LayerTreeBase.Layer.ScrollRectType.NON_FAST_SCROLLABLE */, i18nLazyString(UIStrings.nonFastScrollable)],
+    ["TouchEventHandler" /* SDK.LayerTreeBase.Layer.ScrollRectType.TOUCH_EVENT_HANDLER */, i18nLazyString(UIStrings.touchEventHandler)],
+    ["WheelEventHandler" /* SDK.LayerTreeBase.Layer.ScrollRectType.WHEEL_EVENT_HANDLER */, i18nLazyString(UIStrings.wheelEventHandler)],
+    ["RepaintsOnScroll" /* SDK.LayerTreeBase.Layer.ScrollRectType.REPAINTS_ON_SCROLL */, i18nLazyString(UIStrings.repaintsOnScroll)],
     [
-        "MainThreadScrollingReason" /* SDK.LayerTreeBase.Layer.ScrollRectType.MainThreadScrollingReason */,
+        "MainThreadScrollingReason" /* SDK.LayerTreeBase.Layer.ScrollRectType.MAIN_THREAD_SCROLL_REASON */,
         i18nLazyString(UIStrings.mainThreadScrollingReason),
     ],
 ]);

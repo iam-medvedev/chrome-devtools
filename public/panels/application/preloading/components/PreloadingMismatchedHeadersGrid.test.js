@@ -24,7 +24,7 @@ async function testPreloadingMismatchedHeadersGrid(recievedMismatchedHeaders, ro
             action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
             url: 'https://example.com/prerendered.html',
         },
-        status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.Failure */,
+        status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
         prerenderStatus: "ActivationNavigationParameterMismatch" /* Protocol.Preload.PrerenderFinalStatus.ActivationNavigationParameterMismatch */,
         disallowedMojoInterface: null,
         mismatchedHeaders: recievedMismatchedHeaders,

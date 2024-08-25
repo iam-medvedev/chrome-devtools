@@ -33,10 +33,10 @@ export class WebAuthnModel extends SDKModel {
         await this.#agent.invoke_removeCredential({ authenticatorId, credentialId });
     }
     credentialAdded(params) {
-        this.dispatchEventToListeners("CredentialAdded" /* Events.CredentialAdded */, params);
+        this.dispatchEventToListeners("CredentialAdded" /* Events.CREDENTIAL_ADDED */, params);
     }
     credentialAsserted(params) {
-        this.dispatchEventToListeners("CredentialAsserted" /* Events.CredentialAsserted */, params);
+        this.dispatchEventToListeners("CredentialAsserted" /* Events.CREDENTIAL_ASSERTED */, params);
     }
 }
 class WebAuthnDispatcher {
@@ -51,5 +51,5 @@ class WebAuthnDispatcher {
         this.#model.credentialAsserted(params);
     }
 }
-SDKModel.register(WebAuthnModel, { capabilities: 65536 /* Capability.WebAuthn */, autostart: false });
+SDKModel.register(WebAuthnModel, { capabilities: 65536 /* Capability.WEB_AUTHN */, autostart: false });
 //# sourceMappingURL=WebAuthnModel.js.map

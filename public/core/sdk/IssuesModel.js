@@ -25,7 +25,7 @@ export class IssuesModel extends SDKModel {
         await auditsAgent.invoke_enable();
     }
     issueAdded(issueAddedEvent) {
-        this.dispatchEventToListeners("IssueAdded" /* Events.IssueAdded */, { issuesModel: this, inspectorIssue: issueAddedEvent.issue });
+        this.dispatchEventToListeners("IssueAdded" /* Events.ISSUE_ADDED */, { issuesModel: this, inspectorIssue: issueAddedEvent.issue });
     }
     dispose() {
         super.dispose();
@@ -38,5 +38,5 @@ export class IssuesModel extends SDKModel {
         return null;
     }
 }
-SDKModel.register(IssuesModel, { capabilities: 32768 /* Capability.Audits */, autostart: true });
+SDKModel.register(IssuesModel, { capabilities: 32768 /* Capability.AUDITS */, autostart: true });
 //# sourceMappingURL=IssuesModel.js.map

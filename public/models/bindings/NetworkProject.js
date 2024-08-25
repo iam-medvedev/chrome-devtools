@@ -91,7 +91,7 @@ export class NetworkProject {
             return;
         }
         const data = { uiSourceCode: uiSourceCode, frame: frame };
-        NetworkProjectManager.instance().dispatchEventToListeners("FrameAttributionAdded" /* Events.FrameAttributionAdded */, data);
+        NetworkProjectManager.instance().dispatchEventToListeners("FrameAttributionAdded" /* Events.FRAME_ATTRIBUTION_ADDED */, data);
     }
     static removeFrameAttribution(uiSourceCode, frameId) {
         const frameAttribution = uiSourceCodeToAttributionMap.get(uiSourceCode);
@@ -109,7 +109,7 @@ export class NetworkProject {
         }
         frameAttribution.delete(frameId);
         const data = { uiSourceCode: uiSourceCode, frame: attributionInfo.frame };
-        NetworkProjectManager.instance().dispatchEventToListeners("FrameAttributionRemoved" /* Events.FrameAttributionRemoved */, data);
+        NetworkProjectManager.instance().dispatchEventToListeners("FrameAttributionRemoved" /* Events.FRAME_ATTRIBUTION_REMOVED */, data);
     }
     static targetForUISourceCode(uiSourceCode) {
         return projectToTargetMap.get(uiSourceCode.project()) || null;

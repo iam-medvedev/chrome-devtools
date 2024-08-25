@@ -141,6 +141,10 @@ styles.replaceSync(
   font: var(--sys-typescale-body4-regular);
 }
 
+.insight-savings {
+  font-weight: var(--ref-typeface-weight-bold);
+}
+
 /*# sourceURL=sidebarInsight.css */
 `);
 

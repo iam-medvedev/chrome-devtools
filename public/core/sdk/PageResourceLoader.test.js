@@ -87,7 +87,7 @@ describeWithLocale('PageResourceLoader', () => {
                         };
                     },
                 },
-                type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Navigation */,
+                type: "Navigation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.NAVIGATION */,
             },
         });
         assert.deepEqual(loader.getNumberOfResources(), { loading: 3, queued: 0, resources: 0 });
@@ -275,7 +275,7 @@ describeWithMockConnection('PageResourceLoader', () => {
                         };
                     },
                 },
-                type: "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.Activation */,
+                type: "Activation" /* SDK.ResourceTreeModel.PrimaryPageChangeType.ACTIVATION */,
             },
         });
         assert.deepEqual(loader.getNumberOfResources(), { loading: 0, queued: 0, resources: 1 });

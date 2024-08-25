@@ -198,22 +198,22 @@ export declare class MultitargetNetworkManager extends Common.ObjectWrapper.Obje
 }
 export declare namespace MultitargetNetworkManager {
     const enum Events {
-        BlockedPatternsChanged = "BlockedPatternsChanged",
-        ConditionsChanged = "ConditionsChanged",
-        UserAgentChanged = "UserAgentChanged",
-        InterceptorsChanged = "InterceptorsChanged",
-        AcceptedEncodingsChanged = "AcceptedEncodingsChanged",
-        RequestIntercepted = "RequestIntercepted",
-        RequestFulfilled = "RequestFulfilled"
+        BLOCKED_PATTERNS_CHANGED = "BlockedPatternsChanged",
+        CONDITIONS_CHANGED = "ConditionsChanged",
+        USER_AGENT_CHANGED = "UserAgentChanged",
+        INTERCEPTORS_CHANGED = "InterceptorsChanged",
+        ACCEPTED_ENCODINGS_CHANGED = "AcceptedEncodingsChanged",
+        REQUEST_INTERCEPTED = "RequestIntercepted",
+        REQUEST_FULFILLED = "RequestFulfilled"
     }
     type EventTypes = {
-        [Events.BlockedPatternsChanged]: void;
-        [Events.ConditionsChanged]: void;
-        [Events.UserAgentChanged]: void;
-        [Events.InterceptorsChanged]: void;
-        [Events.AcceptedEncodingsChanged]: void;
-        [Events.RequestIntercepted]: string;
-        [Events.RequestFulfilled]: Platform.DevToolsPath.UrlString;
+        [Events.BLOCKED_PATTERNS_CHANGED]: void;
+        [Events.CONDITIONS_CHANGED]: void;
+        [Events.USER_AGENT_CHANGED]: void;
+        [Events.INTERCEPTORS_CHANGED]: void;
+        [Events.ACCEPTED_ENCODINGS_CHANGED]: void;
+        [Events.REQUEST_INTERCEPTED]: string;
+        [Events.REQUEST_FULFILLED]: Platform.DevToolsPath.UrlString;
     };
 }
 export declare class InterceptedRequest {

@@ -360,10 +360,10 @@
     "message": "This cookie is allowed by the top-level Storage Access API. Learn more: goo.gle/saa-top"
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonTPCDDeprecationTrial": {
-    "message": "This cookie is allowed by third-party cookie phaseout deprecation trial. Learn more: goo.gle/ps-dt."
+    "message": "This cookie is allowed by third-party cookie deprecation trial. Learn more: goo.gle/ps-dt."
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonTPCDHeuristics": {
-    "message": "This cookie is allowed by third-party cookie phaseout heuristics. Learn more: goo.gle/hbe"
+    "message": "This cookie is allowed by third-party cookie heuristics. Learn more: goo.gle/hbe"
   },
   "core/sdk/NetworkRequest.ts | exemptionReasonTPCDMetadata": {
     "message": "This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/dt-grace."
@@ -411,7 +411,7 @@
     "message": "The scheme of this connection is not allowed to store cookies."
   },
   "core/sdk/NetworkRequest.ts | thirdPartyPhaseout": {
-    "message": "This cookie was blocked due to third-party cookie phaseout. Learn more in the Issues tab."
+    "message": "This cookie was blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel."
   },
   "core/sdk/NetworkRequest.ts | thisSetcookieDidntSpecifyASamesite": {
     "message": "This Set-Cookie header didn't specify a \"SameSite\" attribute, was defaulted to \"SameSite=Lax\", and was blocked because it came from a cross-site response which was not the response to a top-level navigation. This response is considered cross-site because the URL has a different scheme than the current site."
@@ -435,7 +435,7 @@
     "message": "This attempt to set a cookie via a Set-Cookie header was blocked because the cookie was too large. The combined size of the name and value must be less than or equal to 4096 characters."
   },
   "core/sdk/NetworkRequest.ts | thisSetcookieWasBlockedDueThirdPartyPhaseout": {
-    "message": "Setting this cookie was blocked due to third-party cookie phaseout. Learn more in the Issues tab."
+    "message": "Setting this cookie was blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel."
   },
   "core/sdk/NetworkRequest.ts | thisSetcookieWasBlockedDueToUser": {
     "message": "This attempt to set a cookie via a Set-Cookie header was blocked due to user preferences."
@@ -1440,7 +1440,7 @@
     "message": "Trusted Types - Policy violation"
   },
   "models/issues_manager/CookieDeprecationMetadataIssue.ts | thirdPartyPhaseoutExplained": {
-    "message": "Prepare for phasing out third-party cookies"
+    "message": "Changes to Chrome's treatment of third-party cookies"
   },
   "models/issues_manager/CookieIssue.ts | anInsecure": {
     "message": "an insecure"
@@ -1449,10 +1449,10 @@
     "message": "a secure"
   },
   "models/issues_manager/CookieIssue.ts | consoleTpcdErrorMessage": {
-    "message": "Third-party cookie is blocked in Chrome as part of Privacy Sandbox."
+    "message": "Third-party cookie is blocked in Chrome either because of Chrome flags or browser configuration."
   },
   "models/issues_manager/CookieIssue.ts | consoleTpcdWarningMessage": {
-    "message": "Third-party cookie will be blocked in future Chrome versions as part of Privacy Sandbox."
+    "message": "Chrome is moving towards a new experience that lets people make an informed choice with respect to third-party cookies."
   },
   "models/issues_manager/CookieIssue.ts | fileCrosSiteRedirectBug": {
     "message": "File a bug"
@@ -1467,7 +1467,7 @@
     "message": "SameSite cookies explained"
   },
   "models/issues_manager/CookieIssue.ts | thirdPartyPhaseoutExplained": {
-    "message": "Prepare for phasing out third-party cookies"
+    "message": "Changes to Chrome's treatment of third-party cookies"
   },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Cross-Origin Resource Sharing (CORS)"
@@ -2650,6 +2650,9 @@
   },
   "panels/application/components/BackForwardCacheStrings.ts | containsPlugins": {
     "message": "Pages containing plugins are not currently eligible for back/forward cache."
+  },
+  "panels/application/components/BackForwardCacheStrings.ts | contentDiscarded": {
+    "message": "Undefined"
   },
   "panels/application/components/BackForwardCacheStrings.ts | contentFileChooser": {
     "message": "Pages that use FileChooser API are not eligible for back/forward cache."
@@ -8259,7 +8262,7 @@
     "message": "{PH1} + Preflight"
   },
   "panels/network/NetworkDataGridNode.ts | thirdPartyPhaseout": {
-    "message": "Cookies for this request are blocked due to third-party cookie phaseout. Learn more in the Issues tab."
+    "message": "Cookies for this request are blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel."
   },
   "panels/network/NetworkDataGridNode.ts | timeSubtitleTooltipText": {
     "message": "Latency (response received time - start time)"
@@ -9175,6 +9178,27 @@
   },
   "panels/performance_monitor/PerformanceMonitor.ts | styleRecalcsSec": {
     "message": "Style recalcs / sec"
+  },
+  "panels/profiler/HeapDetachedElementsDataGrid.ts | detachedElementsList": {
+    "message": "Detached elements list"
+  },
+  "panels/profiler/HeapDetachedElementsDataGrid.ts | detachedNodes": {
+    "message": "Detached nodes"
+  },
+  "panels/profiler/HeapDetachedElementsDataGrid.ts | nodeSize": {
+    "message": "Node count"
+  },
+  "panels/profiler/HeapDetachedElementsView.ts | detachedElementProfile": {
+    "message": "Detached elements {PH1}"
+  },
+  "panels/profiler/HeapDetachedElementsView.ts | detachedElementsDescription": {
+    "message": "Detached elements shows objects that are retained by a JS reference."
+  },
+  "panels/profiler/HeapDetachedElementsView.ts | detachedElementsTitle": {
+    "message": "Detached elements"
+  },
+  "panels/profiler/HeapDetachedElementsView.ts | startDetachedElements": {
+    "message": "Obtain detached elements"
   },
   "panels/profiler/HeapProfilerPanel.ts | revealInSummaryView": {
     "message": "Reveal in Summary view"
@@ -10911,7 +10935,7 @@
     "message": "Get explanations and additional context for styling behaviors"
   },
   "panels/settings/AISettingsTab.ts | freestylerSendsData": {
-    "message": "Any DOM or CSS content on the inspected page may be sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
+    "message": "Any data the inspected page can access via Web APIs may be sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
   },
   "panels/settings/AISettingsTab.ts | generatedSnippets": {
     "message": "Use generated code snippets with caution"
@@ -12431,6 +12455,12 @@
   "panels/timeline/components/insights/LCPPhases.ts | timeToFirstByte": {
     "message": "Time to first byte"
   },
+  "panels/timeline/components/insights/SidebarInsight.ts | estimatedSavings": {
+    "message": "Est savings: {PH1}"
+  },
+  "panels/timeline/components/insights/Viewport.ts | description": {
+    "message": "A viewport meta element not only optimizes your app for mobile screen sizes, but also [prevents a 300 millisecond delay to user input](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/)."
+  },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Input delay"
   },
@@ -12446,12 +12476,6 @@
   "panels/timeline/components/LiveMetricsView.ts | auto": {
     "message": "Auto ({PH1})"
   },
-  "panels/timeline/components/LiveMetricsView.ts | betweenRange": {
-    "message": "({PH1}-{PH2})"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | clsTitle": {
-    "message": "Cumulative Layout Shift (CLS)"
-  },
   "panels/timeline/components/LiveMetricsView.ts | collectionPeriod": {
     "message": "Collection period:"
   },
@@ -12464,8 +12488,8 @@
   "panels/timeline/components/LiveMetricsView.ts | device": {
     "message": "Device: {PH1}"
   },
-  "panels/timeline/components/LiveMetricsView.ts | field75thPercentile": {
-    "message": "Field 75th Percentile"
+  "panels/timeline/components/LiveMetricsView.ts | disableNetworkCache": {
+    "message": "Disable network cache"
   },
   "panels/timeline/components/LiveMetricsView.ts | fieldData": {
     "message": "Field data"
@@ -12473,29 +12497,14 @@
   "panels/timeline/components/LiveMetricsView.ts | fieldDataLink": {
     "message": "field data"
   },
-  "panels/timeline/components/LiveMetricsView.ts | good": {
-    "message": "Good"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | gtRange": {
-    "message": "(>{PH1})"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | inpTitle": {
-    "message": "Interaction to Next Paint (INP)"
-  },
   "panels/timeline/components/LiveMetricsView.ts | interactions": {
     "message": "Interactions"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | interactToMeasure": {
-    "message": "Interact with the page to measure INP."
   },
   "panels/timeline/components/LiveMetricsView.ts | lcpElement": {
     "message": "LCP Element"
   },
-  "panels/timeline/components/LiveMetricsView.ts | lcpTitle": {
-    "message": "Largest Contentful Paint (LCP)"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | leqRange": {
-    "message": "(≤{PH1})"
+  "panels/timeline/components/LiveMetricsView.ts | learnMoreDevices": {
+    "message": "Learn more about simulating different devices."
   },
   "panels/timeline/components/LiveMetricsView.ts | loadingOption": {
     "message": "{PH1} - Loading…"
@@ -12509,23 +12518,17 @@
   "panels/timeline/components/LiveMetricsView.ts | localMetricsLink": {
     "message": "local metrics"
   },
-  "panels/timeline/components/LiveMetricsView.ts | localValue": {
-    "message": "Local"
-  },
   "panels/timeline/components/LiveMetricsView.ts | mobile": {
     "message": "Mobile"
   },
   "panels/timeline/components/LiveMetricsView.ts | mostUsersDesktop": {
-    "message": "A majority of users are on desktop. Try emulating a desktop window size that matches real users."
+    "message": "A majority of users are on desktop. Try simulating a desktop window size that matches real users."
   },
   "panels/timeline/components/LiveMetricsView.ts | mostUsersMobile": {
-    "message": "A majority of users are on mobile. Try emulating a mobile device that matches real users."
+    "message": "A majority of users are on mobile. Try simulating a mobile device that matches real users."
   },
   "panels/timeline/components/LiveMetricsView.ts | needsDataOption": {
     "message": "{PH1} - No data"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | needsImprovement": {
-    "message": "Needs improvement"
   },
   "panels/timeline/components/LiveMetricsView.ts | nextSteps": {
     "message": "Next steps"
@@ -12535,12 +12538,6 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | originOptionWithKey": {
     "message": "Origin: {PH1}"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | percentage": {
-    "message": "{PH1}%"
-  },
-  "panels/timeline/components/LiveMetricsView.ts | poor": {
-    "message": "Poor"
   },
   "panels/timeline/components/LiveMetricsView.ts | recordingSettings": {
     "message": "Recording settings"
@@ -12567,7 +12564,7 @@
     "message": "Try disabling network throttling to approximate the network latency measured by real users."
   },
   "panels/timeline/components/LiveMetricsView.ts | tryUsingThrottling": {
-    "message": "Try using {PH1} network throttling to approximate the network latency measured by real users."
+    "message": "Try using {PH1} network throttling to approximate real-user network latencies measured on this page by the Chrome UX Report."
   },
   "panels/timeline/components/LiveMetricsView.ts | urlOption": {
     "message": "URL"
@@ -12575,11 +12572,50 @@
   "panels/timeline/components/LiveMetricsView.ts | urlOptionWithKey": {
     "message": "URL: {PH1}"
   },
-  "panels/timeline/components/LiveMetricsView.ts | viewCardDetails": {
+  "panels/timeline/components/MetricCard.ts | betweenRange": {
+    "message": "({PH1}-{PH2})"
+  },
+  "panels/timeline/components/MetricCard.ts | clsTitle": {
+    "message": "Cumulative Layout Shift (CLS)"
+  },
+  "panels/timeline/components/MetricCard.ts | field75thPercentile": {
+    "message": "Field 75th Percentile"
+  },
+  "panels/timeline/components/MetricCard.ts | good": {
+    "message": "Good"
+  },
+  "panels/timeline/components/MetricCard.ts | gtRange": {
+    "message": "(>{PH1})"
+  },
+  "panels/timeline/components/MetricCard.ts | inpTitle": {
+    "message": "Interaction to Next Paint (INP)"
+  },
+  "panels/timeline/components/MetricCard.ts | interactToMeasure": {
+    "message": "Interact with the page to measure INP."
+  },
+  "panels/timeline/components/MetricCard.ts | lcpTitle": {
+    "message": "Largest Contentful Paint (LCP)"
+  },
+  "panels/timeline/components/MetricCard.ts | leqRange": {
+    "message": "(≤{PH1})"
+  },
+  "panels/timeline/components/MetricCard.ts | localValue": {
+    "message": "Local"
+  },
+  "panels/timeline/components/MetricCard.ts | needsImprovement": {
+    "message": "Needs improvement"
+  },
+  "panels/timeline/components/MetricCard.ts | percentage": {
+    "message": "{PH1}%"
+  },
+  "panels/timeline/components/MetricCard.ts | poor": {
+    "message": "Poor"
+  },
+  "panels/timeline/components/MetricCard.ts | viewCardDetails": {
     "message": "View card details"
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodBetterCompare": {
-    "message": "Your local {PH1} {PH2} is good, and is significantly better than your users’ experience."
+    "message": "Your local {PH1} {PH2} is good, but is significantly better than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodGoodDetailedCompare": {
     "message": "Your local {PH1} {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} {PH3} is good."
@@ -12597,10 +12633,10 @@
     "message": "Your local {PH1} {PH2} is good."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodWorseCompare": {
-    "message": "Your local {PH1} {PH2} is good, and is significantly worse than your users’ experience."
+    "message": "Your local {PH1} {PH2} is good, but is significantly worse than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementBetterCompare": {
-    "message": "Your local {PH1} {PH2} needs improvement, and is significantly better than your users’ experience."
+    "message": "Your local {PH1} {PH2} needs improvement, but is significantly better than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementGoodDetailedCompare": {
     "message": "Your local {PH1} {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is good."
@@ -12618,10 +12654,10 @@
     "message": "Your local {PH1} {PH2} needs improvement."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementWorseCompare": {
-    "message": "Your local {PH1} {PH2} needs improvement, and is significantly worse than your users’ experience."
+    "message": "Your local {PH1} {PH2} needs improvement, but is significantly worse than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorBetterCompare": {
-    "message": "Your local {PH1} {PH2} is poor, and is significantly better than your users’ experience."
+    "message": "Your local {PH1} {PH2} is poor, but is significantly better than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorGoodDetailedCompare": {
     "message": "Your local {PH1} {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is good."
@@ -12639,7 +12675,7 @@
     "message": "Your local {PH1} {PH2} is poor."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorWorseCompare": {
-    "message": "Your local {PH1} {PH2} is poor, and is significantly worse than your users’ experience."
+    "message": "Your local {PH1} {PH2} is poor, but is significantly worse than your users’ experience."
   },
   "panels/timeline/components/NetworkRequestDetails.ts | contentDownloading": {
     "message": "Content downloading"
@@ -13295,6 +13331,9 @@
   "panels/timeline/TimelineEventOverview.ts | sSDash": {
     "message": "{PH1} – {PH2}"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | addScriptToIgnoreList": {
+    "message": "Add script to ignore list"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | droppedFrame": {
     "message": "Dropped Frame"
   },
@@ -13304,11 +13343,29 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | frames": {
     "message": "Frames"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | hideChildren": {
+    "message": "Hide children"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | hideFunction": {
+    "message": "Hide function"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | hideRepeatingChildren": {
+    "message": "Hide repeating children"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Idle Frame"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "Partially Presented Frame"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | removeScriptFromIgnoreList": {
+    "message": "Remove script from ignore list"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | resetChildren": {
+    "message": "Reset children"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | resetTrace": {
+    "message": "Reset trace"
   },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} at {PH2}"
@@ -13678,6 +13735,9 @@
   },
   "panels/timeline/TimelineUIUtils.ts | currentClusterScore": {
     "message": "Current Cluster Score"
+  },
+  "panels/timeline/TimelineUIUtils.ts | description": {
+    "message": "Description"
   },
   "panels/timeline/TimelineUIUtils.ts | details": {
     "message": "Details"
@@ -14660,9 +14720,6 @@
   "ui/legacy/components/perf_ui/FilmStripView.ts | screenshotForSSelectToView": {
     "message": "Screenshot for {PH1} - select to view preceding requests."
   },
-  "ui/legacy/components/perf_ui/FlameChart.ts | addScriptToIgnoreList": {
-    "message": "Add script to ignore list"
-  },
   "ui/legacy/components/perf_ui/FlameChart.ts | enterTrackConfigurationMode": {
     "message": "Configure tracks…"
   },
@@ -14672,29 +14729,11 @@
   "ui/legacy/components/perf_ui/FlameChart.ts | flameChart": {
     "message": "Flame Chart"
   },
-  "ui/legacy/components/perf_ui/FlameChart.ts | hideChildren": {
-    "message": "Hide children"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | hideFunction": {
-    "message": "Hide function"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | hideRepeatingChildren": {
-    "message": "Hide repeating children"
-  },
   "ui/legacy/components/perf_ui/FlameChart.ts | labelEntry": {
     "message": "Label entry"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | linkEntries": {
     "message": "Link entries"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | removeScriptFromIgnoreList": {
-    "message": "Remove script from ignore list"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | resetChildren": {
-    "message": "Reset children"
-  },
-  "ui/legacy/components/perf_ui/FlameChart.ts | resetTrace": {
-    "message": "Reset trace"
   },
   "ui/legacy/components/perf_ui/FlameChart.ts | sCollapsed": {
     "message": "{PH1} collapsed"

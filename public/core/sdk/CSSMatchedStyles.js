@@ -642,14 +642,14 @@ class NodeCascade {
                     continue;
                 }
                 if (!property.activeInStyle()) {
-                    this.propertiesState.set(property, "Overloaded" /* PropertyState.Overloaded */);
+                    this.propertiesState.set(property, "Overloaded" /* PropertyState.OVERLOADED */);
                     continue;
                 }
                 // If the custom property was registered with `inherits: false;`, inherited properties are invalid.
                 if (this.#isInherited) {
                     const registration = this.#matchedStyles.getRegisteredProperty(property.name);
                     if (registration && !registration.inherits()) {
-                        this.propertiesState.set(property, "Overloaded" /* PropertyState.Overloaded */);
+                        this.propertiesState.set(property, "Overloaded" /* PropertyState.OVERLOADED */);
                         continue;
                     }
                 }
@@ -666,13 +666,13 @@ class NodeCascade {
     updatePropertyState(propertyWithHigherSpecificity, canonicalName) {
         const activeProperty = this.activeProperties.get(canonicalName);
         if (activeProperty?.important && !propertyWithHigherSpecificity.important) {
-            this.propertiesState.set(propertyWithHigherSpecificity, "Overloaded" /* PropertyState.Overloaded */);
+            this.propertiesState.set(propertyWithHigherSpecificity, "Overloaded" /* PropertyState.OVERLOADED */);
             return;
         }
         if (activeProperty) {
-            this.propertiesState.set(activeProperty, "Overloaded" /* PropertyState.Overloaded */);
+            this.propertiesState.set(activeProperty, "Overloaded" /* PropertyState.OVERLOADED */);
         }
-        this.propertiesState.set(propertyWithHigherSpecificity, "Active" /* PropertyState.Active */);
+        this.propertiesState.set(propertyWithHigherSpecificity, "Active" /* PropertyState.ACTIVE */);
         this.activeProperties.set(canonicalName, propertyWithHigherSpecificity);
     }
 }
@@ -870,17 +870,17 @@ class DOMInheritanceCascade {
         for (const nodeCascade of this.#nodeCascades) {
             nodeCascade.computeActiveProperties();
             for (const [property, state] of nodeCascade.propertiesState) {
-                if (state === "Overloaded" /* PropertyState.Overloaded */) {
-                    this.#propertiesState.set(property, "Overloaded" /* PropertyState.Overloaded */);
+                if (state === "Overloaded" /* PropertyState.OVERLOADED */) {
+                    this.#propertiesState.set(property, "Overloaded" /* PropertyState.OVERLOADED */);
                     continue;
                 }
                 const canonicalName = cssMetadata().canonicalPropertyName(property.name);
                 if (activeProperties.has(canonicalName)) {
-                    this.#propertiesState.set(property, "Overloaded" /* PropertyState.Overloaded */);
+                    this.#propertiesState.set(property, "Overloaded" /* PropertyState.OVERLOADED */);
                     continue;
                 }
                 activeProperties.set(canonicalName, property);
-                this.#propertiesState.set(property, "Active" /* PropertyState.Active */);
+                this.#propertiesState.set(property, "Active" /* PropertyState.ACTIVE */);
             }
         }
         // If every longhand of the shorthand is not active, then the shorthand is not active too.
@@ -906,7 +906,7 @@ class DOMInheritanceCascade {
                 continue;
             }
             activeProperties.delete(canonicalName);
-            this.#propertiesState.set(shorthandProperty, "Overloaded" /* PropertyState.Overloaded */);
+            this.#propertiesState.set(shorthandProperty, "Overloaded" /* PropertyState.OVERLOADED */);
         }
         // Work inheritance chain backwards to compute visible CSS Variables.
         const accumulatedCSSVariables = new Map();

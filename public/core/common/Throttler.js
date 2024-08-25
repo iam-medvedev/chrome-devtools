@@ -51,14 +51,14 @@ export class Throttler {
         });
         this.#process = null;
     }
-    schedule(process, scheduling = "Default" /* Scheduling.Default */) {
+    schedule(process, scheduling = "Default" /* Scheduling.DEFAULT */) {
         // Deliberately skip previous #process.
         this.#process = process;
         // Run the first scheduled task instantly.
         const hasScheduledTasks = Boolean(this.#processTimeout) || this.#isRunningProcess;
         const okToFire = this.getTime() - this.#lastCompleteTime > this.#timeout;
-        const asSoonAsPossible = scheduling === "AsSoonAsPossible" /* Scheduling.AsSoonAsPossible */ ||
-            (scheduling === "Default" /* Scheduling.Default */ && !hasScheduledTasks && okToFire);
+        const asSoonAsPossible = scheduling === "AsSoonAsPossible" /* Scheduling.AS_SOON_AS_POSSIBLE */ ||
+            (scheduling === "Default" /* Scheduling.DEFAULT */ && !hasScheduledTasks && okToFire);
         const forceTimerUpdate = asSoonAsPossible && !this.#asSoonAsPossible;
         this.#asSoonAsPossible = this.#asSoonAsPossible || asSoonAsPossible;
         this.innerSchedule(forceTimerUpdate);

@@ -52,6 +52,11 @@ describe('SettingCheckbox', () => {
         checkbox.click();
         assert.isTrue(setting.get());
     });
+    it('renders override text if provided', () => {
+        const setting = createFakeSetting('setting', false);
+        const { component } = renderSettingCheckbox({ setting, textOverride: 'Text override' });
+        assert.strictEqual(component.shadowRoot.querySelector('label').innerText, 'Text override');
+    });
     it('ignores clicks when disabled', () => {
         const setting = createFakeSetting('setting', false);
         setting.setDisabled(true);

@@ -45,7 +45,7 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/source_frame/sour
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 Common.Settings.registerSettingExtension({
     category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     title: i18nLazyString(UIStrings.defaultIndentation),
     settingName: 'text-editor-indent',
     settingType: "enum" /* Common.Settings.SettingType.ENUM */,

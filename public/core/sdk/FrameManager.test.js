@@ -73,7 +73,7 @@ describe('FrameManager', () => {
     const childTargetId = 'child-frame-id';
     it('collects frames from a ResourceTreeModel', () => {
         const frameManager = new SDK.FrameManager.FrameManager();
-        const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FrameAddedToTarget */]);
+        const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */]);
         const mockModel = attachMockModel(frameManager, targetId);
         addMockFrame(mockModel, frameId);
         const frameIds = dispatchedEvents.map(event => event.data.frame.id);
@@ -83,7 +83,7 @@ describe('FrameManager', () => {
     });
     it('handles attachment and detachment of frames', () => {
         const frameManager = new SDK.FrameManager.FrameManager();
-        const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FrameAddedToTarget */, "FrameRemoved" /* SDK.FrameManager.Events.FrameRemoved */]);
+        const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, "FrameRemoved" /* SDK.FrameManager.Events.FRAME_REMOVED */]);
         const mockModel = attachMockModel(frameManager, targetId);
         addMockFrame(mockModel, parentFrameId);
         const mockChildFrame = addMockFrame(mockModel, childFrameId);
@@ -108,7 +108,7 @@ describe('FrameManager', () => {
     });
     it('handles removal of target', () => {
         const frameManager = new SDK.FrameManager.FrameManager();
-        const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FrameAddedToTarget */, "FrameRemoved" /* SDK.FrameManager.Events.FrameRemoved */]);
+        const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, "FrameRemoved" /* SDK.FrameManager.Events.FRAME_REMOVED */]);
         const mockModel = attachMockModel(frameManager, targetId);
         addMockFrame(mockModel, parentFrameId);
         addMockFrame(mockModel, childFrameId);
@@ -134,7 +134,7 @@ describe('FrameManager', () => {
     });
     it('handles a frame transferring to a different target', () => {
         const frameManager = new SDK.FrameManager.FrameManager();
-        const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FrameAddedToTarget */, "FrameRemoved" /* SDK.FrameManager.Events.FrameRemoved */]);
+        const dispatchedEvents = setupEventSink(frameManager, ["FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, "FrameRemoved" /* SDK.FrameManager.Events.FRAME_REMOVED */]);
         const mockParentModel = attachMockModel(frameManager, parentTargetId);
         addMockFrame(mockParentModel, parentFrameId);
         const mockChildModel = attachMockModel(frameManager, childTargetId);

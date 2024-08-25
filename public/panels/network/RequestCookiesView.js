@@ -278,13 +278,13 @@ export class RequestCookiesView extends UI.Widget.Widget {
     wasShown() {
         super.wasShown();
         this.registerCSSFiles([requestCookiesViewStyles]);
-        this.request.addEventListener(SDK.NetworkRequest.Events.RequestHeadersChanged, this.refreshRequestCookiesView, this);
-        this.request.addEventListener(SDK.NetworkRequest.Events.ResponseHeadersChanged, this.refreshRequestCookiesView, this);
+        this.request.addEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
+        this.request.addEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
         this.refreshRequestCookiesView();
     }
     willHide() {
-        this.request.removeEventListener(SDK.NetworkRequest.Events.RequestHeadersChanged, this.refreshRequestCookiesView, this);
-        this.request.removeEventListener(SDK.NetworkRequest.Events.ResponseHeadersChanged, this.refreshRequestCookiesView, this);
+        this.request.removeEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
+        this.request.removeEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
     }
 }
 //# sourceMappingURL=RequestCookiesView.js.map

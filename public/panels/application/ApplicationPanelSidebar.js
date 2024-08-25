@@ -1364,13 +1364,13 @@ export class ResourcesSection {
         this.treeElementForFrameId = new Map();
         this.treeElementForTargetId = new Map();
         const frameManager = SDK.FrameManager.FrameManager.instance();
-        frameManager.addEventListener("FrameAddedToTarget" /* SDK.FrameManager.Events.FrameAddedToTarget */, event => this.frameAdded(event.data.frame), this);
-        frameManager.addEventListener("FrameRemoved" /* SDK.FrameManager.Events.FrameRemoved */, event => this.frameDetached(event.data.frameId), this);
-        frameManager.addEventListener("FrameNavigated" /* SDK.FrameManager.Events.FrameNavigated */, event => this.frameNavigated(event.data.frame), this);
-        frameManager.addEventListener("ResourceAdded" /* SDK.FrameManager.Events.ResourceAdded */, event => this.resourceAdded(event.data.resource), this);
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetCreated" /* SDK.ChildTargetManager.Events.TargetCreated */, this.windowOpened, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetInfoChanged" /* SDK.ChildTargetManager.Events.TargetInfoChanged */, this.windowChanged, this, { scoped: true });
-        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetDestroyed" /* SDK.ChildTargetManager.Events.TargetDestroyed */, this.windowDestroyed, this, { scoped: true });
+        frameManager.addEventListener("FrameAddedToTarget" /* SDK.FrameManager.Events.FRAME_ADDED_TO_TARGET */, event => this.frameAdded(event.data.frame), this);
+        frameManager.addEventListener("FrameRemoved" /* SDK.FrameManager.Events.FRAME_REMOVED */, event => this.frameDetached(event.data.frameId), this);
+        frameManager.addEventListener("FrameNavigated" /* SDK.FrameManager.Events.FRAME_NAVIGATED */, event => this.frameNavigated(event.data.frame), this);
+        frameManager.addEventListener("ResourceAdded" /* SDK.FrameManager.Events.RESOURCE_ADDED */, event => this.resourceAdded(event.data.resource), this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetCreated" /* SDK.ChildTargetManager.Events.TARGET_CREATED */, this.windowOpened, this, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetInfoChanged" /* SDK.ChildTargetManager.Events.TARGET_INFO_CHANGED */, this.windowChanged, this, { scoped: true });
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetDestroyed" /* SDK.ChildTargetManager.Events.TARGET_DESTROYED */, this.windowDestroyed, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().observeTargets(this, { scoped: true });
     }
     initialize() {
@@ -1391,7 +1391,7 @@ export class ResourcesSection {
         if (target.type() === SDK.Target.Type.Worker || target.type() === SDK.Target.Type.ServiceWorker) {
             void this.workerAdded(target);
         }
-        if (target.type() === SDK.Target.Type.Frame && target === target.outermostTarget()) {
+        if (target.type() === SDK.Target.Type.FRAME && target === target.outermostTarget()) {
             // Process existing frames, e.g. after prerendering activation or
             // switching between outermost targets.
             this.initialize();

@@ -16,12 +16,12 @@ export class StorageKeyManager extends SDKModel {
         this.#storageKeysInternal = storageKeys;
         for (const storageKey of oldStorageKeys) {
             if (!this.#storageKeysInternal.has(storageKey)) {
-                this.dispatchEventToListeners("StorageKeyRemoved" /* Events.StorageKeyRemoved */, storageKey);
+                this.dispatchEventToListeners("StorageKeyRemoved" /* Events.STORAGE_KEY_REMOVED */, storageKey);
             }
         }
         for (const storageKey of this.#storageKeysInternal) {
             if (!oldStorageKeys.has(storageKey)) {
-                this.dispatchEventToListeners("StorageKeyAdded" /* Events.StorageKeyAdded */, storageKey);
+                this.dispatchEventToListeners("StorageKeyAdded" /* Events.STORAGE_KEY_ADDED */, storageKey);
             }
         }
     }
@@ -33,7 +33,7 @@ export class StorageKeyManager extends SDKModel {
     }
     setMainStorageKey(storageKey) {
         this.#mainStorageKeyInternal = storageKey;
-        this.dispatchEventToListeners("MainStorageKeyChanged" /* Events.MainStorageKeyChanged */, {
+        this.dispatchEventToListeners("MainStorageKeyChanged" /* Events.MAIN_STORAGE_KEY_CHANGED */, {
             mainStorageKey: this.#mainStorageKeyInternal,
         });
     }
@@ -50,5 +50,5 @@ export function parseStorageKey(storageKeyString) {
     return storageKey;
 }
 // TODO(jarhar): this is the one of the two usages of Capability.None. Do something about it!
-SDKModel.register(StorageKeyManager, { capabilities: 0 /* Capability.None */, autostart: false });
+SDKModel.register(StorageKeyManager, { capabilities: 0 /* Capability.NONE */, autostart: false });
 //# sourceMappingURL=StorageKeyManager.js.map

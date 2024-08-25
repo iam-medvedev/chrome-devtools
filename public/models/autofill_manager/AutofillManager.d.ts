@@ -16,7 +16,7 @@ export interface Match {
     filledFieldIndex: number;
 }
 export declare const enum Events {
-    AddressFormFilled = "AddressFormFilled"
+    ADDRESS_FORM_FILLED = "AddressFormFilled"
 }
 export interface AddressFormFilledEvent {
     address: string;
@@ -25,5 +25,5 @@ export interface AddressFormFilledEvent {
     autofillModel: SDK.AutofillModel.AutofillModel;
 }
 export type EventTypes = {
-    [Events.AddressFormFilled]: AddressFormFilledEvent;
+    [Events.ADDRESS_FORM_FILLED]: AddressFormFilledEvent;
 };

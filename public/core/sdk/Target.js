@@ -19,7 +19,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
     #targetInfoInternal;
     #creatingModels;
     constructor(targetManager, id, name, type, parentTarget, sessionId, suspended, connection, targetInfo) {
-        const needsNodeJSPatching = type === Type.Node;
+        const needsNodeJSPatching = type === Type.NODE;
         super(needsNodeJSPatching, parentTarget, sessionId, connection);
         this.#targetManagerInternal = targetManager;
         this.#nameInternal = name;
@@ -27,54 +27,54 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         this.#inspectedURLName = '';
         this.#capabilitiesMask = 0;
         switch (type) {
-            case Type.Frame:
-                this.#capabilitiesMask = 1 /* Capability.Browser */ | 8192 /* Capability.Storage */ | 2 /* Capability.DOM */ | 4 /* Capability.JS */ |
-                    8 /* Capability.Log */ | 16 /* Capability.Network */ | 32 /* Capability.Target */ | 128 /* Capability.Tracing */ | 256 /* Capability.Emulation */ |
-                    1024 /* Capability.Input */ | 2048 /* Capability.Inspector */ | 32768 /* Capability.Audits */ | 65536 /* Capability.WebAuthn */ | 131072 /* Capability.IO */ |
-                    262144 /* Capability.Media */ | 524288 /* Capability.EventBreakpoints */;
-                if (parentTarget?.type() !== Type.Frame) {
+            case Type.FRAME:
+                this.#capabilitiesMask = 1 /* Capability.BROWSER */ | 8192 /* Capability.STORAGE */ | 2 /* Capability.DOM */ | 4 /* Capability.JS */ |
+                    8 /* Capability.LOG */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ | 128 /* Capability.TRACING */ | 256 /* Capability.EMULATION */ |
+                    1024 /* Capability.INPUT */ | 2048 /* Capability.INSPECTOR */ | 32768 /* Capability.AUDITS */ | 65536 /* Capability.WEB_AUTHN */ | 131072 /* Capability.IO */ |
+                    262144 /* Capability.MEDIA */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
+                if (parentTarget?.type() !== Type.FRAME) {
                     // This matches backend exposing certain capabilities only for the main frame.
                     this.#capabilitiesMask |=
-                        4096 /* Capability.DeviceEmulation */ | 64 /* Capability.ScreenCapture */ | 512 /* Capability.Security */ | 16384 /* Capability.ServiceWorker */;
+                        4096 /* Capability.DEVICE_EMULATION */ | 64 /* Capability.SCREEN_CAPTURE */ | 512 /* Capability.SECURITY */ | 16384 /* Capability.SERVICE_WORKER */;
                     if (Common.ParsedURL.schemeIs(targetInfo?.url, 'chrome-extension:')) {
-                        this.#capabilitiesMask &= ~512 /* Capability.Security */;
+                        this.#capabilitiesMask &= ~512 /* Capability.SECURITY */;
                     }
                     // TODO(dgozman): we report service workers for the whole frame tree on the main frame,
                     // while we should be able to only cover the subtree corresponding to the target.
                 }
                 break;
             case Type.ServiceWorker:
-                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 16 /* Capability.Network */ | 32 /* Capability.Target */ |
-                    2048 /* Capability.Inspector */ | 131072 /* Capability.IO */ | 524288 /* Capability.EventBreakpoints */;
-                if (parentTarget?.type() !== Type.Frame) {
-                    this.#capabilitiesMask |= 1 /* Capability.Browser */;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ |
+                    2048 /* Capability.INSPECTOR */ | 131072 /* Capability.IO */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
+                if (parentTarget?.type() !== Type.FRAME) {
+                    this.#capabilitiesMask |= 1 /* Capability.BROWSER */;
                 }
                 break;
-            case Type.SharedWorker:
-                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 16 /* Capability.Network */ | 32 /* Capability.Target */ |
-                    131072 /* Capability.IO */ | 262144 /* Capability.Media */ | 2048 /* Capability.Inspector */ | 524288 /* Capability.EventBreakpoints */;
+            case Type.SHARED_WORKER:
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ |
+                    131072 /* Capability.IO */ | 262144 /* Capability.MEDIA */ | 2048 /* Capability.INSPECTOR */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
                 break;
-            case Type.SharedStorageWorklet:
-                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 2048 /* Capability.Inspector */ | 524288 /* Capability.EventBreakpoints */;
+            case Type.SHARED_STORAGE_WORKLET:
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 2048 /* Capability.INSPECTOR */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
                 break;
             case Type.Worker:
-                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 16 /* Capability.Network */ | 32 /* Capability.Target */ |
-                    131072 /* Capability.IO */ | 262144 /* Capability.Media */ | 256 /* Capability.Emulation */ | 524288 /* Capability.EventBreakpoints */;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ |
+                    131072 /* Capability.IO */ | 262144 /* Capability.MEDIA */ | 256 /* Capability.EMULATION */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
                 break;
-            case Type.Worklet:
-                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.Log */ | 524288 /* Capability.EventBreakpoints */;
+            case Type.WORKLET:
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 524288 /* Capability.EVENT_BREAKPOINTS */ | 16 /* Capability.NETWORK */;
                 break;
-            case Type.Node:
+            case Type.NODE:
                 this.#capabilitiesMask = 4 /* Capability.JS */;
                 break;
-            case Type.AuctionWorklet:
-                this.#capabilitiesMask = 4 /* Capability.JS */ | 524288 /* Capability.EventBreakpoints */;
+            case Type.AUCTION_WORKLET:
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
                 break;
-            case Type.Browser:
-                this.#capabilitiesMask = 32 /* Capability.Target */ | 131072 /* Capability.IO */;
+            case Type.BROWSER:
+                this.#capabilitiesMask = 32 /* Capability.TARGET */ | 131072 /* Capability.IO */;
                 break;
-            case Type.Tab:
-                this.#capabilitiesMask = 32 /* Capability.Target */ | 128 /* Capability.Tracing */;
+            case Type.TAB:
+                this.#capabilitiesMask = 32 /* Capability.TARGET */ | 128 /* Capability.TRACING */;
                 break;
         }
         this.#typeInternal = type;
@@ -120,7 +120,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
     }
     markAsNodeJSForTest() {
         super.markAsNodeJSForTest();
-        this.#typeInternal = Type.Node;
+        this.#typeInternal = Type.NODE;
     }
     targetManager() {
         return this.#targetManagerInternal;
@@ -141,7 +141,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         let lastTarget = null;
         let currentTarget = this;
         do {
-            if (currentTarget.type() !== Type.Tab && currentTarget.type() !== Type.Browser) {
+            if (currentTarget.type() !== Type.TAB && currentTarget.type() !== Type.BROWSER) {
                 lastTarget = currentTarget;
             }
             currentTarget = currentTarget.parentTarget();
@@ -214,15 +214,17 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
 }
 export var Type;
 (function (Type) {
-    Type["Frame"] = "frame";
+    Type["FRAME"] = "frame";
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Used by web_tests.
     Type["ServiceWorker"] = "service-worker";
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Used by web_tests.
     Type["Worker"] = "worker";
-    Type["SharedWorker"] = "shared-worker";
-    Type["SharedStorageWorklet"] = "shared-storage-worklet";
-    Type["Node"] = "node";
-    Type["Browser"] = "browser";
-    Type["AuctionWorklet"] = "auction-worklet";
-    Type["Worklet"] = "worklet";
-    Type["Tab"] = "tab";
+    Type["SHARED_WORKER"] = "shared-worker";
+    Type["SHARED_STORAGE_WORKLET"] = "shared-storage-worklet";
+    Type["NODE"] = "node";
+    Type["BROWSER"] = "browser";
+    Type["AUCTION_WORKLET"] = "auction-worklet";
+    Type["WORKLET"] = "worklet";
+    Type["TAB"] = "tab";
 })(Type || (Type = {}));
 //# sourceMappingURL=Target.js.map

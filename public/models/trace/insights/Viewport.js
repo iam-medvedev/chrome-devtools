@@ -34,22 +34,18 @@ export function generateInsight(traceParsedData, context) {
         }
         return true;
     });
-    const content = viewportEvent?.args.data.content;
-    const nodeId = viewportEvent?.args.data.node_id;
     // Returns true only if all events are mobile optimized.
     for (const event of compositorEvents) {
         if (!event.args.is_mobile_optimized) {
             return {
                 mobileOptimized: false,
-                content,
-                nodeId,
+                viewportEvent,
             };
         }
     }
     return {
         mobileOptimized: true,
-        content,
-        nodeId,
+        viewportEvent,
     };
 }
 //# sourceMappingURL=Viewport.js.map

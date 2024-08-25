@@ -151,12 +151,12 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         dataGridWidget.setMinimumSize(0, 250);
     }
     wasShown() {
-        this.model.addEventListener("CacheStorageContentUpdated" /* SDK.ServiceWorkerCacheModel.Events.CacheStorageContentUpdated */, this.cacheContentUpdated, this);
+        this.model.addEventListener("CacheStorageContentUpdated" /* SDK.ServiceWorkerCacheModel.Events.CACHE_STORAGE_CONTENT_UPDATED */, this.cacheContentUpdated, this);
         this.registerCSSFiles([serviceWorkerCacheViewsStyles]);
         void this.updateData(true);
     }
     willHide() {
-        this.model.removeEventListener("CacheStorageContentUpdated" /* SDK.ServiceWorkerCacheModel.Events.CacheStorageContentUpdated */, this.cacheContentUpdated, this);
+        this.model.removeEventListener("CacheStorageContentUpdated" /* SDK.ServiceWorkerCacheModel.Events.CACHE_STORAGE_CONTENT_UPDATED */, this.cacheContentUpdated, this);
     }
     showPreview(preview) {
         if (preview && this.preview === preview) {
@@ -341,7 +341,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         if ((!this.cache.inBucket(storageBucket) || this.cache.cacheName !== cacheName)) {
             return;
         }
-        void this.refreshThrottler.schedule(() => Promise.resolve(this.updateData(true)), "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */);
+        void this.refreshThrottler.schedule(() => Promise.resolve(this.updateData(true)), "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */);
     }
     async previewCachedResponse(request) {
         let preview = networkRequestToPreview.get(request);

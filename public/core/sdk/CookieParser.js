@@ -60,31 +60,31 @@ export class CookieParser {
         }
         switch (header.toLowerCase()) {
             case 'domain':
-                return "domain" /* Attribute.Domain */;
+                return "domain" /* Attribute.DOMAIN */;
             case 'expires':
-                return "expires" /* Attribute.Expires */;
+                return "expires" /* Attribute.EXPIRES */;
             case 'max-age':
-                return "max-age" /* Attribute.MaxAge */;
+                return "max-age" /* Attribute.MAX_AGE */;
             case 'httponly':
-                return "http-only" /* Attribute.HttpOnly */;
+                return "http-only" /* Attribute.HTTP_ONLY */;
             case 'name':
-                return "name" /* Attribute.Name */;
+                return "name" /* Attribute.NAME */;
             case 'path':
-                return "path" /* Attribute.Path */;
+                return "path" /* Attribute.PATH */;
             case 'samesite':
-                return "same-site" /* Attribute.SameSite */;
+                return "same-site" /* Attribute.SAME_SITE */;
             case 'secure':
-                return "secure" /* Attribute.Secure */;
+                return "secure" /* Attribute.SECURE */;
             case 'value':
-                return "value" /* Attribute.Value */;
+                return "value" /* Attribute.VALUE */;
             case 'priority':
-                return "priority" /* Attribute.Priority */;
+                return "priority" /* Attribute.PRIORITY */;
             case 'sourceport':
-                return "source-port" /* Attribute.SourcePort */;
+                return "source-port" /* Attribute.SOURCE_PORT */;
             case 'sourcescheme':
-                return "source-scheme" /* Attribute.SourceScheme */;
+                return "source-scheme" /* Attribute.SOURCE_SCHEME */;
             case 'partitioned':
-                return "partitioned" /* Attribute.Partitioned */;
+                return "partitioned" /* Attribute.PARTITIONED */;
             default:
                 console.error('Failed getting cookie attribute: ' + header);
                 return null;
@@ -102,7 +102,7 @@ export class CookieParser {
                 this.#lastCookie.addAttribute(this.getCookieAttribute(kv.key), kv.value);
             }
             else {
-                this.addCookie(kv, 1 /* Type.Response */);
+                this.addCookie(kv, 1 /* Type.RESPONSE */);
             }
             if (this.advanceAndCheckCookieDelimiter()) {
                 this.flushCookie();
@@ -171,7 +171,7 @@ export class CookieParser {
         this.#lastCookie = typeof keyValue.value === 'string' ? new Cookie(keyValue.key, keyValue.value, type) :
             new Cookie('', keyValue.key, type);
         if (this.#domain) {
-            this.#lastCookie.addAttribute("domain" /* Attribute.Domain */, this.#domain);
+            this.#lastCookie.addAttribute("domain" /* Attribute.DOMAIN */, this.#domain);
         }
         this.#lastCookiePosition = keyValue.position;
         this.#cookiesInternal.push(this.#lastCookie);

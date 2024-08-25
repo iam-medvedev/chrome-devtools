@@ -20,7 +20,7 @@ describeWithMockConnection('SourceMapManager', () => {
         const scriptUrl = 'https://script-host/script.js';
         const sourceUrl = 'script.js';
         const sourceMapUrl = 'script.js.map';
-        const mainTarget = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.Frame });
+        const mainTarget = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
         mainTarget.setInspectedURL(frameUrl);
         const workerTarget = createTarget({
             id: 'worker',
@@ -45,7 +45,7 @@ describeWithMockConnection('SourceMapManager', () => {
         const frameSource = '<script>0\n//# sourceURL=' + sourceUrl + '\n//# sourceMappingURL=' + sourceMapUrl + '</script>';
         const frameUrl = `data:test/html;base64,${btoa(frameSource)}`;
         const scriptUrl = 'https://script-host/script.js';
-        const mainTarget = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.Frame });
+        const mainTarget = createTarget({ id: 'main', name: 'main', type: SDK.Target.Type.FRAME });
         mainTarget.setInspectedURL(frameUrl);
         const debuggerModel = mainTarget.model(SDK.DebuggerModel.DebuggerModel);
         assert.isNotNull(debuggerModel);
@@ -69,7 +69,7 @@ describe('SourceMapManager', () => {
     });
     const createTarget = () => {
         const target = sinon.createStubInstance(SDK.Target.Target);
-        target.type.returns(SDK.Target.Type.Frame);
+        target.type.returns(SDK.Target.Type.FRAME);
         return target;
     };
     class MockClient {

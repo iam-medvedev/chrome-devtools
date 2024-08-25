@@ -117,7 +117,7 @@ UI.ActionRegistration.registerActionExtension({
     ],
 });
 Common.Settings.registerSettingExtension({
-    storageType: "Synced" /* Common.Settings.SettingStorageType.Synced */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
     settingName: 'custom-network-conditions',
     settingType: "array" /* Common.Settings.SettingType.ARRAY */,
     defaultValue: [],

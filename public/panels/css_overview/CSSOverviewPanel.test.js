@@ -8,7 +8,7 @@ import * as CSSOverview from './css_overview.js';
 describeWithMockConnection('CSSOverviewPanel', () => {
     let target;
     beforeEach(async () => {
-        const tabTaget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTaget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTaget, subtype: 'prerender' });
         target = createTarget({ parentTarget: tabTaget });
     });

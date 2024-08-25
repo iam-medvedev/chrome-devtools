@@ -1,4 +1,5 @@
 import * as Host from '../../core/host/host.js';
+import { ChangeManager } from './ChangeManager.js';
 export declare const FIX_THIS_ISSUE_PROMPT = "Fix this issue using JavaScript code execution";
 export declare enum Step {
     THOUGHT = "thought",
@@ -8,20 +9,30 @@ export declare enum Step {
     QUERYING = "querying"
 }
 export interface CommonStepData {
-    step: Step.THOUGHT | Step.ANSWER | Step.ERROR;
+    step: Step.ANSWER | Step.ERROR;
+    id: string;
     text: string;
+    rpcId?: number;
+}
+export interface ThoughtStepData {
+    step: Step.THOUGHT;
+    id: string;
+    text: string;
+    title?: string;
     rpcId?: number;
 }
 export interface ActionStepData {
     step: Step.ACTION;
+    id: string;
     code: string;
     output: string;
     rpcId?: number;
 }
 export interface QueryStepData {
     step: Step.QUERYING;
+    id: string;
 }
-export type StepData = CommonStepData | ActionStepData;
+export type StepData = CommonStepData | ActionStepData | ThoughtStepData | QueryStepData;
 declare function executeJsCode(code: string, { throwOnSideEffect }: {
     throwOnSideEffect: boolean;
 }): Promise<string>;
@@ -29,13 +40,19 @@ type HistoryChunk = {
     text: string;
     entity: Host.AidaClient.Entity;
 };
-interface AgentOptions {
+type CreateExtensionScopeFunction = (changes: ChangeManager) => {
+    install(): Promise<void>;
+    uninstall(): Promise<void>;
+};
+type AgentOptions = {
     aidaClient: Host.AidaClient.AidaClient;
+    confirmSideEffect: (action: string) => Promise<boolean>;
+    changeManager?: ChangeManager;
     serverSideLoggingEnabled?: boolean;
+    createExtensionScope?: CreateExtensionScopeFunction;
     execJs?: typeof executeJsCode;
     internalExecJs?: typeof executeJsCode;
-    confirmSideEffect: (action: string) => Promise<boolean>;
-}
+};
 interface AidaRequestOptions {
     input: string;
     preamble?: string;
@@ -55,6 +72,7 @@ export declare class FreestylerAgent {
     static buildRequest(opts: AidaRequestOptions): Host.AidaClient.AidaRequest;
     static parseResponse(response: string): {
         thought?: string;
+        title?: string;
         action?: string;
         answer?: string;
     };

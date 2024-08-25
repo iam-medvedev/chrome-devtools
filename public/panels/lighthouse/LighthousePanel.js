@@ -180,7 +180,7 @@ export class LighthousePanel extends UI.Panel.Panel {
         this.settingsPane.show(this.contentElement);
         this.settingsPane.element.classList.add('lighthouse-settings-pane');
         this.settingsPane.element.appendChild(this.startView.settingsToolbar().element);
-        this.showSettingsPaneSetting = Common.Settings.Settings.instance().createSetting('lighthouse-show-settings-toolbar', false, "Synced" /* Common.Settings.SettingStorageType.Synced */);
+        this.showSettingsPaneSetting = Common.Settings.Settings.instance().createSetting('lighthouse-show-settings-toolbar', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         this.rightToolbar = new UI.Toolbar.Toolbar('', lighthouseToolbarContainer);
         this.rightToolbar.appendSeparator();
         this.rightToolbar.appendToolbarItem(new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.lighthouseSettings), 'gear-filled'));

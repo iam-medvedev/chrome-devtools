@@ -339,16 +339,16 @@ export class DebuggerModel extends SDKModel {
         return sortAndMergeRanges(skipList);
     }
     async stepInto() {
-        const skipList = await this.computeAutoStepSkipList("StepInto" /* StepMode.StepInto */);
+        const skipList = await this.computeAutoStepSkipList("StepInto" /* StepMode.STEP_INTO */);
         void this.agent.invoke_stepInto({ breakOnAsyncCall: false, skipList });
     }
     async stepOver() {
         this.#autoSteppingContext = this.#debuggerPausedDetailsInternal?.callFrames[0]?.functionLocation() ?? null;
-        const skipList = await this.computeAutoStepSkipList("StepOver" /* StepMode.StepOver */);
+        const skipList = await this.computeAutoStepSkipList("StepOver" /* StepMode.STEP_OVER */);
         void this.agent.invoke_stepOver({ skipList });
     }
     async stepOut() {
-        const skipList = await this.computeAutoStepSkipList("StepOut" /* StepMode.StepOut */);
+        const skipList = await this.computeAutoStepSkipList("StepOut" /* StepMode.STEP_OUT */);
         if (skipList.length !== 0) {
             void this.agent.invoke_stepOver({ skipList });
         }
@@ -357,7 +357,7 @@ export class DebuggerModel extends SDKModel {
         }
     }
     scheduleStepIntoAsync() {
-        void this.computeAutoStepSkipList("StepInto" /* StepMode.StepInto */).then(skipList => {
+        void this.computeAutoStepSkipList("StepInto" /* StepMode.STEP_INTO */).then(skipList => {
             void this.agent.invoke_stepInto({ breakOnAsyncCall: true, skipList });
         });
     }
@@ -373,7 +373,7 @@ export class DebuggerModel extends SDKModel {
     async setBreakpointByURL(url, lineNumber, columnNumber, condition) {
         // Convert file url to node-js path.
         let urlRegex;
-        if (this.target().type() === Type.Node && Common.ParsedURL.schemeIs(url, 'file:')) {
+        if (this.target().type() === Type.NODE && Common.ParsedURL.schemeIs(url, 'file:')) {
             const platformPath = Common.ParsedURL.ParsedURL.urlToRawPathString(url, Host.Platform.isWin());
             urlRegex =
                 `${Platform.StringUtilities.escapeForRegExp(platformPath)}|${Platform.StringUtilities.escapeForRegExp(url)}`;
@@ -781,13 +781,16 @@ const debuggerIdToModel = new Map();
  */
 export var PauseOnExceptionsState;
 (function (PauseOnExceptionsState) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     PauseOnExceptionsState["DontPauseOnExceptions"] = "none";
     PauseOnExceptionsState["PauseOnAllExceptions"] = "all";
     PauseOnExceptionsState["PauseOnCaughtExceptions"] = "caught";
     PauseOnExceptionsState["PauseOnUncaughtExceptions"] = "uncaught";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(PauseOnExceptionsState || (PauseOnExceptionsState = {}));
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["DebuggerWasEnabled"] = "DebuggerWasEnabled";
     Events["DebuggerWasDisabled"] = "DebuggerWasDisabled";
     Events["DebuggerPaused"] = "DebuggerPaused";
@@ -799,6 +802,7 @@ export var Events;
     Events["CallFrameSelected"] = "CallFrameSelected";
     Events["DebuggerIsReadyToPause"] = "DebuggerIsReadyToPause";
     Events["ScriptSourceWasEdited"] = "ScriptSourceWasEdited";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 class DebuggerDispatcher {
     #debuggerModel;

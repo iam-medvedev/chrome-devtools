@@ -137,7 +137,7 @@ export class NetworkManager extends SDKModel {
             return { error: i18nString(UIStrings.noContentForWebSocket) };
         }
         if (!request.finished) {
-            await request.once(NetworkRequestEvents.FinishedLoading);
+            await request.once(NetworkRequestEvents.FINISHED_LOADING);
         }
         if (request.isRedirect()) {
             return { error: i18nString(UIStrings.noContentForRedirect) };
@@ -272,6 +272,7 @@ export class NetworkManager extends SDKModel {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["RequestStarted"] = "RequestStarted";
     Events["RequestUpdated"] = "RequestUpdated";
     Events["RequestFinished"] = "RequestFinished";
@@ -283,6 +284,7 @@ export var Events;
     Events["ReportingApiReportAdded"] = "ReportingApiReportAdded";
     Events["ReportingApiReportUpdated"] = "ReportingApiReportUpdated";
     Events["ReportingApiEndpointsChangedForOrigin"] = "ReportingApiEndpointsChangedForOrigin";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 /**
  * Define some built-in DevTools throttling presets.
@@ -384,7 +386,7 @@ export class NetworkDispatcher {
          * once it is created in `requestWillBeSent`.
          */
         this.#requestIdToTrustTokenEvent = new Map();
-        MultitargetNetworkManager.instance().addEventListener("RequestIntercepted" /* MultitargetNetworkManager.Events.RequestIntercepted */, this.#markAsIntercepted.bind(this));
+        MultitargetNetworkManager.instance().addEventListener("RequestIntercepted" /* MultitargetNetworkManager.Events.REQUEST_INTERCEPTED */, this.#markAsIntercepted.bind(this));
     }
     #markAsIntercepted(event) {
         const request = this.requestForId(event.data);
@@ -1117,7 +1119,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         for (const agent of this.#networkAgents) {
             this.updateNetworkConditions(agent);
         }
-        this.dispatchEventToListeners("ConditionsChanged" /* MultitargetNetworkManager.Events.ConditionsChanged */);
+        this.dispatchEventToListeners("ConditionsChanged" /* MultitargetNetworkManager.Events.CONDITIONS_CHANGED */);
     }
     networkConditions() {
         return this.#networkConditionsInternal;
@@ -1171,7 +1173,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
             this.#userAgentMetadataOverride = null;
         }
         if (uaChanged) {
-            this.dispatchEventToListeners("UserAgentChanged" /* MultitargetNetworkManager.Events.UserAgentChanged */);
+            this.dispatchEventToListeners("UserAgentChanged" /* MultitargetNetworkManager.Events.USER_AGENT_CHANGED */);
         }
     }
     userAgentOverride() {
@@ -1185,12 +1187,12 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     setCustomAcceptedEncodingsOverride(acceptedEncodings) {
         this.#customAcceptedEncodings = acceptedEncodings;
         this.updateAcceptedEncodingsOverride();
-        this.dispatchEventToListeners("AcceptedEncodingsChanged" /* MultitargetNetworkManager.Events.AcceptedEncodingsChanged */);
+        this.dispatchEventToListeners("AcceptedEncodingsChanged" /* MultitargetNetworkManager.Events.ACCEPTED_ENCODINGS_CHANGED */);
     }
     clearCustomAcceptedEncodingsOverride() {
         this.#customAcceptedEncodings = null;
         this.updateAcceptedEncodingsOverride();
-        this.dispatchEventToListeners("AcceptedEncodingsChanged" /* MultitargetNetworkManager.Events.AcceptedEncodingsChanged */);
+        this.dispatchEventToListeners("AcceptedEncodingsChanged" /* MultitargetNetworkManager.Events.ACCEPTED_ENCODINGS_CHANGED */);
     }
     isAcceptedEncodingOverrideSet() {
         return this.#customAcceptedEncodings !== null;
@@ -1219,7 +1221,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     setBlockedPatterns(patterns) {
         this.#blockedPatternsSetting.set(patterns);
         this.updateBlockedPatterns();
-        this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BlockedPatternsChanged */);
+        this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */);
     }
     setBlockingEnabled(enabled) {
         if (this.#blockingEnabledSetting.get() === enabled) {
@@ -1227,7 +1229,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         }
         this.#blockingEnabledSetting.set(enabled);
         this.updateBlockedPatterns();
-        this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BlockedPatternsChanged */);
+        this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */);
     }
     updateBlockedPatterns() {
         const urls = [];
@@ -1273,14 +1275,14 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         for (const agent of this.#fetchAgents) {
             promises.push(agent.invoke_enable({ patterns: this.#urlsForRequestInterceptor.valuesArray() }));
         }
-        this.dispatchEventToListeners("InterceptorsChanged" /* MultitargetNetworkManager.Events.InterceptorsChanged */);
+        this.dispatchEventToListeners("InterceptorsChanged" /* MultitargetNetworkManager.Events.INTERCEPTORS_CHANGED */);
         await Promise.all(promises);
     }
     async requestIntercepted(interceptedRequest) {
         for (const requestInterceptor of this.#urlsForRequestInterceptor.keysArray()) {
             await requestInterceptor(interceptedRequest);
             if (interceptedRequest.hasResponded() && interceptedRequest.networkRequest) {
-                this.dispatchEventToListeners("RequestIntercepted" /* MultitargetNetworkManager.Events.RequestIntercepted */, interceptedRequest.networkRequest.requestId());
+                this.dispatchEventToListeners("RequestIntercepted" /* MultitargetNetworkManager.Events.REQUEST_INTERCEPTED */, interceptedRequest.networkRequest.requestId());
                 return;
             }
         }
@@ -1419,7 +1421,7 @@ export class InterceptedRequest {
             this.networkRequest.hasOverriddenContent = isBodyOverridden;
         }
         void this.#fetchAgent.invoke_fulfillRequest({ requestId: this.requestId, responseCode, body, responseHeaders });
-        MultitargetNetworkManager.instance().dispatchEventToListeners("RequestFulfilled" /* MultitargetNetworkManager.Events.RequestFulfilled */, this.request.url);
+        MultitargetNetworkManager.instance().dispatchEventToListeners("RequestFulfilled" /* MultitargetNetworkManager.Events.REQUEST_FULFILLED */, this.request.url);
     }
     continueRequestWithoutChange() {
         console.assert(!this.#hasRespondedInternal);
@@ -1544,7 +1546,7 @@ class ExtraInfoBuilder {
         finalRequest?.setEarlyHintsHeaders(this.#responseEarlyHintsHeaders);
     }
 }
-SDKModel.register(NetworkManager, { capabilities: 16 /* Capability.Network */, autostart: true });
+SDKModel.register(NetworkManager, { capabilities: 16 /* Capability.NETWORK */, autostart: true });
 export class ConditionsSerializer {
     stringify(value) {
         const conditions = value;

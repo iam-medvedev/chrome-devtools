@@ -3,21 +3,21 @@ import * as Protocol from '../../generated/protocol.js';
 import { Issue, IssueCategory, IssueKind } from './Issue.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare const enum IssueCode {
-    PermissionPolicyDisabled = "AttributionReportingIssue::PermissionPolicyDisabled",
-    UntrustworthyReportingOrigin = "AttributionReportingIssue::UntrustworthyReportingOrigin",
-    InsecureContext = "AttributionReportingIssue::InsecureContext",
-    InvalidRegisterSourceHeader = "AttributionReportingIssue::InvalidRegisterSourceHeader",
-    InvalidRegisterTriggerHeader = "AttributionReportingIssue::InvalidRegisterTriggerHeader",
-    SourceAndTriggerHeaders = "AttributionReportingIssue::SourceAndTriggerHeaders",
-    SourceIgnored = "AttributionReportingIssue::SourceIgnored",
-    TriggerIgnored = "AttributionReportingIssue::TriggerIgnored",
-    OsSourceIgnored = "AttributionReportingIssue::OsSourceIgnored",
-    OsTriggerIgnored = "AttributionReportingIssue::OsTriggerIgnored",
-    InvalidRegisterOsSourceHeader = "AttributionReportingIssue::InvalidRegisterOsSourceHeader",
-    InvalidRegisterOsTriggerHeader = "AttributionReportingIssue::InvalidRegisterOsTriggerHeader",
-    WebAndOsHeaders = "AttributionReportingIssue::WebAndOsHeaders",
-    NavigationRegistrationWithoutTransientUserActivation = "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation",
-    Unknown = "AttributionReportingIssue::Unknown"
+    PERMISSION_POLICY_DISABLED = "AttributionReportingIssue::PermissionPolicyDisabled",
+    UNTRUSTWORTHY_REPORTING_ORIGIN = "AttributionReportingIssue::UntrustworthyReportingOrigin",
+    INSECURE_CONTEXT = "AttributionReportingIssue::InsecureContext",
+    INVALID_REGISTER_SOURCE_HEADER = "AttributionReportingIssue::InvalidRegisterSourceHeader",
+    INVALID_REGISTER_TRIGGER_HEADER = "AttributionReportingIssue::InvalidRegisterTriggerHeader",
+    SOURCE_AND_TRIGGER_HEADERS = "AttributionReportingIssue::SourceAndTriggerHeaders",
+    SOURCE_IGNORED = "AttributionReportingIssue::SourceIgnored",
+    TRIGGER_IGNORED = "AttributionReportingIssue::TriggerIgnored",
+    OS_SOURCE_IGNORED = "AttributionReportingIssue::OsSourceIgnored",
+    OS_TRIGGER_IGNORED = "AttributionReportingIssue::OsTriggerIgnored",
+    INVALID_REGISTER_OS_SOURCE_HEADER = "AttributionReportingIssue::InvalidRegisterOsSourceHeader",
+    INVALID_REGISTER_OS_TRIGGER_HEADER = "AttributionReportingIssue::InvalidRegisterOsTriggerHeader",
+    WEB_AND_OS_HEADERS = "AttributionReportingIssue::WebAndOsHeaders",
+    NAVIGATION_REGISTRATION_WITHOUT_TRANSIENT_USER_ACTIVATION = "AttributionReportingIssue::NavigationRegistrationWithoutTransientUserActivation",
+    UNKNOWN = "AttributionReportingIssue::Unknown"
 }
 export declare class AttributionReportingIssue extends Issue<IssueCode> {
     issueDetails: Readonly<Protocol.Audits.AttributionReportingIssueDetails>;

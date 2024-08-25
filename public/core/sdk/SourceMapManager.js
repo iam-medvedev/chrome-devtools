@@ -20,7 +20,7 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#attachingClient = null;
         this.#clientData = new Map();
         this.#sourceMaps = new Map();
-        TargetManager.instance().addEventListener("InspectedURLChanged" /* TargetManagerEvents.InspectedURLChanged */, this.inspectedURLChanged, this);
+        TargetManager.instance().addEventListener("InspectedURLChanged" /* TargetManagerEvents.INSPECTED_URL_CHANGED */, this.inspectedURLChanged, this);
     }
     setEnabled(isEnabled) {
         if (isEnabled === this.#isEnabled) {
@@ -39,7 +39,7 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     static getBaseUrl(target) {
-        while (target && target.type() !== Type.Frame) {
+        while (target && target.type() !== Type.FRAME) {
             target = target.parentTarget();
         }
         return target?.inspectedURL() ?? Platform.DevToolsPath.EmptyUrlString;
@@ -169,7 +169,7 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     dispose() {
-        TargetManager.instance().removeEventListener("InspectedURLChanged" /* TargetManagerEvents.InspectedURLChanged */, this.inspectedURLChanged, this);
+        TargetManager.instance().removeEventListener("InspectedURLChanged" /* TargetManagerEvents.INSPECTED_URL_CHANGED */, this.inspectedURLChanged, this);
     }
 }
 async function loadSourceMap(url, initiator) {
@@ -183,9 +183,11 @@ async function loadSourceMap(url, initiator) {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["SourceMapWillAttach"] = "SourceMapWillAttach";
     Events["SourceMapFailedToAttach"] = "SourceMapFailedToAttach";
     Events["SourceMapAttached"] = "SourceMapAttached";
     Events["SourceMapDetached"] = "SourceMapDetached";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 //# sourceMappingURL=SourceMapManager.js.map

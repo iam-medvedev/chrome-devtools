@@ -34,21 +34,21 @@ const str_ = i18n.i18n.registerUIStrings('models/issues_manager/Issue.ts', UIStr
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function getIssueKindName(issueKind) {
     switch (issueKind) {
-        case "BreakingChange" /* IssueKind.BreakingChange */:
+        case "BreakingChange" /* IssueKind.BREAKING_CHANGE */:
             return i18nString(UIStrings.breakingChanges);
-        case "Improvement" /* IssueKind.Improvement */:
+        case "Improvement" /* IssueKind.IMPROVEMENT */:
             return i18nString(UIStrings.improvements);
-        case "PageError" /* IssueKind.PageError */:
+        case "PageError" /* IssueKind.PAGE_ERROR */:
             return i18nString(UIStrings.pageErrors);
     }
 }
 export function getIssueKindDescription(issueKind) {
     switch (issueKind) {
-        case "PageError" /* IssueKind.PageError */:
+        case "PageError" /* IssueKind.PAGE_ERROR */:
             return i18nString(UIStrings.pageErrorIssue);
-        case "BreakingChange" /* IssueKind.BreakingChange */:
+        case "BreakingChange" /* IssueKind.BREAKING_CHANGE */:
             return i18nString(UIStrings.breakingChangeIssue);
-        case "Improvement" /* IssueKind.Improvement */:
+        case "Improvement" /* IssueKind.IMPROVEMENT */:
             return i18nString(UIStrings.improvementIssue);
     }
 }
@@ -57,13 +57,13 @@ export function getIssueKindDescription(issueKind) {
  * important kind on aggregated issues that union issues of different kinds.
  */
 export function unionIssueKind(a, b) {
-    if (a === "PageError" /* IssueKind.PageError */ || b === "PageError" /* IssueKind.PageError */) {
-        return "PageError" /* IssueKind.PageError */;
+    if (a === "PageError" /* IssueKind.PAGE_ERROR */ || b === "PageError" /* IssueKind.PAGE_ERROR */) {
+        return "PageError" /* IssueKind.PAGE_ERROR */;
     }
-    if (a === "BreakingChange" /* IssueKind.BreakingChange */ || b === "BreakingChange" /* IssueKind.BreakingChange */) {
-        return "BreakingChange" /* IssueKind.BreakingChange */;
+    if (a === "BreakingChange" /* IssueKind.BREAKING_CHANGE */ || b === "BreakingChange" /* IssueKind.BREAKING_CHANGE */) {
+        return "BreakingChange" /* IssueKind.BREAKING_CHANGE */;
     }
-    return "Improvement" /* IssueKind.Improvement */;
+    return "Improvement" /* IssueKind.IMPROVEMENT */;
 }
 export function getShowThirdPartyIssuesSetting() {
     return Common.Settings.Settings.instance().createSetting('show-third-party-issues', true);

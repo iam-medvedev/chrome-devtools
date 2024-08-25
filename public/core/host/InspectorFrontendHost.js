@@ -299,6 +299,10 @@ export class InspectorFrontendHostStub {
         window.localStorage.clear();
     }
     getSyncInformation(callback) {
+        if ('getSyncInformationForTesting' in globalThis) {
+            // @ts-ignore for testing
+            return callback(globalThis.getSyncInformationForTesting());
+        }
         callback({
             isSyncActive: false,
             arePreferencesSynced: false,

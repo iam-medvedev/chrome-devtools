@@ -170,7 +170,7 @@ async function process() {
             const trackHover = loggingState.config.track?.hover;
             if (trackHover) {
                 element.addEventListener('mouseover', logHover(hoverLogThrottler), { capture: true });
-                element.addEventListener('mouseout', () => hoverLogThrottler.schedule(cancelLogging, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */), { capture: true });
+                element.addEventListener('mouseout', () => hoverLogThrottler.schedule(cancelLogging, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */), { capture: true });
             }
             const trackDrag = loggingState.config.track?.drag;
             if (trackDrag) {
@@ -291,7 +291,7 @@ function maybeCancelDrag(event) {
         Math.abs(event.screenY - dragStartY) >= DRAG_REPORT_THRESHOLD) {
         return;
     }
-    void dragLogThrottler.schedule(cancelLogging, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AsSoonAsPossible */);
+    void dragLogThrottler.schedule(cancelLogging, "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */);
 }
 function isAncestorOf(state1, state2) {
     while (state2) {
@@ -344,7 +344,7 @@ async function onResizeOrIntersection(entries) {
                 }
             }
             pendingResize.clear();
-        }, "Delayed" /* Common.Throttler.Scheduling.Delayed */);
+        }, "Delayed" /* Common.Throttler.Scheduling.DELAYED */);
     }
 }
 //# sourceMappingURL=LoggingDriver.js.map

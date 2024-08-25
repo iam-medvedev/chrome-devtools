@@ -29,7 +29,7 @@
  */
 import * as Common from '../../core/common/common.js';
 import { UISourceCode } from './UISourceCode.js';
-// eslint-disable-next-line @typescript-eslint/naming-convention
+/* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
 export var projectTypes;
 (function (projectTypes) {
     projectTypes["Debugger"] = "debugger";
@@ -39,6 +39,7 @@ export var projectTypes;
     projectTypes["ContentScripts"] = "contentscripts";
     projectTypes["Service"] = "service";
 })(projectTypes || (projectTypes = {}));
+/* eslint-enable @typescript-eslint/naming-convention */
 export class ProjectStore {
     workspaceInternal;
     idInternal;
@@ -214,6 +215,7 @@ export class WorkspaceImpl extends Common.ObjectWrapper.ObjectWrapper {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["UISourceCodeAdded"] = "UISourceCodeAdded";
     Events["UISourceCodeRemoved"] = "UISourceCodeRemoved";
     Events["UISourceCodeRenamed"] = "UISourceCodeRenamed";
@@ -222,5 +224,6 @@ export var Events;
     Events["WorkingCopyCommittedByUser"] = "WorkingCopyCommittedByUser";
     Events["ProjectAdded"] = "ProjectAdded";
     Events["ProjectRemoved"] = "ProjectRemoved";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 //# sourceMappingURL=WorkspaceImpl.js.map

@@ -19,7 +19,7 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     #corsIssues = new Set();
     #cspIssues = new Set();
     #deprecationIssues = new Set();
-    #issueKind = "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */;
+    #issueKind = "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */;
     #lowContrastIssues = new Set();
     #cookieDeprecationMetadataIssues = new Set();
     #mixedContentIssues = new Set();
@@ -104,7 +104,7 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
         if (this.#representative) {
             return this.#representative.getCategory();
         }
-        return "Other" /* IssuesManager.Issue.IssueCategory.Other */;
+        return "Other" /* IssuesManager.Issue.IssueCategory.OTHER */;
     }
     getAggregatedIssuesCount() {
         return this.#aggregatedIssuesCount;
@@ -207,8 +207,8 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
     constructor(issuesManager) {
         super();
         this.issuesManager = issuesManager;
-        this.issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, this.#onIssueAdded, this);
-        this.issuesManager.addEventListener("FullUpdateRequired" /* IssuesManager.IssuesManager.Events.FullUpdateRequired */, this.#onFullUpdateRequired, this);
+        this.issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, this.#onIssueAdded, this);
+        this.issuesManager.addEventListener("FullUpdateRequired" /* IssuesManager.IssuesManager.Events.FULL_UPDATE_REQUIRED */, this.#onFullUpdateRequired, this);
         for (const issue of this.issuesManager.issues()) {
             this.#aggregateIssue(issue);
         }

@@ -7,9 +7,9 @@ import { MockIssuesModel } from './MockIssuesModel.js';
 export class MockIssuesManager extends Common.ObjectWrapper.ObjectWrapper {
     mockIssues;
     issueCounts = new Map([
-        ["Improvement" /* IssuesManager.Issue.IssueKind.Improvement */, 0],
-        ["BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */, 1],
-        ["PageError" /* IssuesManager.Issue.IssueKind.PageError */, 2],
+        ["Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */, 0],
+        ["BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */, 1],
+        ["PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */, 2],
     ]);
     // An empty model to pass along for the IssuesManager.Events.IssueAdded event.
     mockModel = new MockIssuesModel([]);
@@ -41,11 +41,11 @@ export class MockIssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         for (const [key, value] of this.issueCounts) {
             this.issueCounts.set(key, value + 1);
         }
-        this.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */);
+        this.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */);
     }
     addIssue(mockIssue) {
         this.mockIssues.push(mockIssue);
-        this.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issue: mockIssue, issuesModel: this.mockModel });
+        this.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issue: mockIssue, issuesModel: this.mockModel });
     }
 }
 //# sourceMappingURL=MockIssuesManager.js.map

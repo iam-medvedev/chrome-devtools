@@ -307,7 +307,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper.eventMixi
         for (let i = 0, l = children.length; i < l; ++i) {
             const child = children[i];
             this.appendChildAfterSorting(child);
-            if (child.expanded) {
+            if (child.populated) {
                 void child.sort();
             }
         }

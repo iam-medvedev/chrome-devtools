@@ -80,8 +80,8 @@ export class PresentationConsoleMessageManager {
             return;
         }
         const level = consoleMessage.level === "error" /* Protocol.Log.LogEntryLevel.Error */ ?
-            "Error" /* Workspace.UISourceCode.Message.Level.Error */ :
-            "Warning" /* Workspace.UISourceCode.Message.Level.Warning */;
+            "Error" /* Workspace.UISourceCode.Message.Level.ERROR */ :
+            "Warning" /* Workspace.UISourceCode.Message.Level.WARNING */;
         this.#sourceFrameMessageManager.addMessage(new Workspace.UISourceCode.Message(level, consoleMessage.messageText), consoleMessage, runtimeModel.target());
     }
 }

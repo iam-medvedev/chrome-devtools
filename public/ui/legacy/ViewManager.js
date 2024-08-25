@@ -580,7 +580,7 @@ class TabbedLocation extends Location {
             const title = view.title();
             if (view.viewId() === 'issues-pane') {
                 contextMenu.defaultSection().appendItem(title, () => {
-                    Host.userMetrics.issuesPanelOpenedFrom(3 /* Host.UserMetrics.IssueOpener.HamburgerMenu */);
+                    Host.userMetrics.issuesPanelOpenedFrom(3 /* Host.UserMetrics.IssueOpener.HAMBURGER_MENU */);
                     void this.showView(view, undefined, true);
                 }, { jslogContext: 'issues-pane' });
                 continue;

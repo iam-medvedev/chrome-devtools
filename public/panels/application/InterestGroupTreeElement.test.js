@@ -18,7 +18,7 @@ describeWithMockConnection('InterestGroupTreeElement', () => {
         adComponents: [],
     };
     it('reads details', async () => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         const frameTarget = createTarget({ parentTarget: tabTarget });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
         const view = new Resources.InterestGroupTreeElement.InterestGroupTreeElement({});

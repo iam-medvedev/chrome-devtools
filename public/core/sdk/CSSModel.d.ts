@@ -14,8 +14,8 @@ import { SDKModel } from './SDKModel.js';
 import { SourceMapManager } from './SourceMapManager.js';
 import { type Target } from './Target.js';
 export declare const enum ColorScheme {
-    Light = "light",
-    Dark = "dark"
+    LIGHT = "light",
+    DARK = "dark"
 }
 export declare class CSSModel extends SDKModel<EventTypes> {
     #private;
@@ -57,7 +57,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     setSupportsText(styleSheetId: Protocol.CSS.StyleSheetId, range: TextUtils.TextRange.TextRange, newSupportsText: string): Promise<boolean>;
     setScopeText(styleSheetId: Protocol.CSS.StyleSheetId, range: TextUtils.TextRange.TextRange, newScopeText: string): Promise<boolean>;
     addRule(styleSheetId: Protocol.CSS.StyleSheetId, ruleText: string, ruleLocation: TextUtils.TextRange.TextRange): Promise<CSSStyleRule | null>;
-    requestViaInspectorStylesheet(node: DOMNode): Promise<CSSStyleSheetHeader | null>;
+    requestViaInspectorStylesheet(maybeFrameId?: Protocol.Page.FrameId | null): Promise<CSSStyleSheetHeader | null>;
     mediaQueryResultChanged(): void;
     fontsUpdated(fontFace?: Protocol.CSS.FontFace | null): void;
     fontFaces(): CSSFontFace[];
@@ -147,10 +147,10 @@ export declare class CSSPropertyTracker extends Common.ObjectWrapper.ObjectWrapp
     getTrackedProperties(): Protocol.CSS.CSSComputedStyleProperty[];
 }
 export declare const enum CSSPropertyTrackerEvents {
-    TrackedCSSPropertiesUpdated = "TrackedCSSPropertiesUpdated"
+    TRACKED_CSS_PROPERTIES_UPDATED = "TrackedCSSPropertiesUpdated"
 }
 export type CSSPropertyTrackerEventTypes = {
-    [CSSPropertyTrackerEvents.TrackedCSSPropertiesUpdated]: (DOMNode | null)[];
+    [CSSPropertyTrackerEvents.TRACKED_CSS_PROPERTIES_UPDATED]: (DOMNode | null)[];
 };
 export interface ContrastInfo {
     backgroundColors: string[] | null;

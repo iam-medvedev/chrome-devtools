@@ -120,7 +120,7 @@ export class TimelineHistoryManager {
         ];
         this.totalHeight = this.allOverviews.reduce((acc, entry) => acc + entry.height, 0);
         this.enabled = true;
-        CrUXManager.CrUXManager.instance().addEventListener("field-data-changed" /* CrUXManager.Events.FieldDataChanged */, () => {
+        CrUXManager.CrUXManager.instance().addEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, () => {
             this.#updateLandingPageTitleIfActive();
         });
     }

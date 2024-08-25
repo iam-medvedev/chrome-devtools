@@ -100,7 +100,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
             //           |----a----|
             //                 |-b-|
             const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedBasicProfile, PROFILE_ID, pid, tid);
-            const callEvent = makeCompleteEvent("FunctionCall" /* TraceModel.Types.TraceEvents.KnownEventName.FunctionCall */, 0, 500);
+            const callEvent = makeCompleteEvent("FunctionCall" /* TraceModel.Types.TraceEvents.KnownEventName.FUNCTION_CALL */, 0, 500);
             const traceEvents = [callEvent];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
             assert.strictEqual(constructedCalls.length, 2);
@@ -148,7 +148,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
             //              |-------b-------|
             const parsedProfile = new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(cdpProfile);
             const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
-            const callEvent = makeCompleteEvent("FunctionCall" /* TraceModel.Types.TraceEvents.KnownEventName.FunctionCall */, 250, 250);
+            const callEvent = makeCompleteEvent("FunctionCall" /* TraceModel.Types.TraceEvents.KnownEventName.FUNCTION_CALL */, 250, 250);
             const traceEvents = [callEvent];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
             assert.strictEqual(constructedCalls.length, 2);
@@ -187,7 +187,7 @@ describeWithEnvironment('SamplesIntegrator', function () {
             //        |--V8.ParseFuntion--||---a---||-----b------|
             const parsedProfile = new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(cdpProfile);
             const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
-            const evaluateScript = makeCompleteEvent("EvaluateScript" /* TraceModel.Types.TraceEvents.KnownEventName.EvaluateScript */, 0, 500);
+            const evaluateScript = makeCompleteEvent("EvaluateScript" /* TraceModel.Types.TraceEvents.KnownEventName.EVALUATE_SCRIPT */, 0, 500);
             const v8Run = makeCompleteEvent('v8.run', 10, 490);
             const parseFunction = makeCompleteEvent('V8.ParseFunction', 12, 1);
             const traceEvents = [evaluateScript, v8Run, parseFunction];
@@ -227,9 +227,9 @@ describeWithEnvironment('SamplesIntegrator', function () {
             //              |--------a-------||------RunMicroTasks------|
             //                                |-----------a------------|
             //                                |-----------b------------|
-            const runTask = makeCompleteEvent("RunTask" /* TraceModel.Types.TraceEvents.KnownEventName.RunTask */, 0, 100);
-            const evaluateScript = makeCompleteEvent("EvaluateScript" /* TraceModel.Types.TraceEvents.KnownEventName.EvaluateScript */, 0, 100);
-            const runMicroTasks = makeCompleteEvent("RunMicrotasks" /* TraceModel.Types.TraceEvents.KnownEventName.RunMicrotasks */, 50, 100);
+            const runTask = makeCompleteEvent("RunTask" /* TraceModel.Types.TraceEvents.KnownEventName.RUN_TASK */, 0, 100);
+            const evaluateScript = makeCompleteEvent("EvaluateScript" /* TraceModel.Types.TraceEvents.KnownEventName.EVALUATE_SCRIPT */, 0, 100);
+            const runMicroTasks = makeCompleteEvent("RunMicrotasks" /* TraceModel.Types.TraceEvents.KnownEventName.RUN_MICROTASKS */, 50, 100);
             const traceEvents = [runTask, evaluateScript, runMicroTasks];
             const parsedProfile = new CPUProfile.CPUProfileDataModel.CPUProfileDataModel(cdpProfile);
             const integrator = new TraceModel.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);

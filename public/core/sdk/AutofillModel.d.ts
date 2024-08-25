@@ -12,12 +12,12 @@ export declare class AutofillModel extends SDKModel<EventTypes> implements Proto
     addressFormFilled(addressFormFilledEvent: Protocol.Autofill.AddressFormFilledEvent): void;
 }
 export declare const enum Events {
-    AddressFormFilled = "AddressFormFilled"
+    ADDRESS_FORM_FILLED = "AddressFormFilled"
 }
 export interface AddressFormFilledEvent {
     autofillModel: AutofillModel;
     event: Protocol.Autofill.AddressFormFilledEvent;
 }
 export type EventTypes = {
-    [Events.AddressFormFilled]: AddressFormFilledEvent;
+    [Events.ADDRESS_FORM_FILLED]: AddressFormFilledEvent;
 };

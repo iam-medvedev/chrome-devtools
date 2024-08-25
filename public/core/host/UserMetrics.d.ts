@@ -57,12 +57,12 @@ export declare class UserMetrics {
  * The numeric enum values are not necessarily continuous! It is possible that
  * values have been removed, which results in gaps in the sequence of values.
  * When adding a new value:
- * 1. Add an entry to the bottom of the enum before 'MaxValue'.
- * 2. Set the value of the new entry to the current value of 'MaxValue'.
- * 2. Increment the value of 'MaxValue' by 1.
+ * 1. Add an entry to the bottom of the enum before 'MAX_VALUE'.
+ * 2. Set the value of the new entry to the current value of 'MAX_VALUE'.
+ * 2. Increment the value of 'MAX_VALUE' by 1.
  * When removing a value which is no longer needed:
  * 1. Delete the line with the unneeded value
- * 2. Do not update any 'MaxValue' or any other value.
+ * 2. Do not update any 'MAX_VALUE' or any other value.
  */
 export declare enum Action {
     WindowDocked = 1,
@@ -221,7 +221,7 @@ export declare enum Action {
     InsightsOnboardingNextPage = 157,
     InsightsOnboardingPrevPage = 158,
     InsightsOnboardingFeatureDisabled = 159,
-    MaxValue = 160
+    MAX_VALUE = 160
 }
 export declare enum PanelCodes {
     elements = 1,
@@ -290,7 +290,7 @@ export declare enum PanelCodes {
     'bounce-tracking-mitigations' = 65,
     'developer-resources' = 66,
     'autofill-view' = 67,
-    MaxValue = 68
+    MAX_VALUE = 68
 }
 export declare enum PanelWithLocation {
     'elements-main' = 1,
@@ -423,7 +423,7 @@ export declare enum PanelWithLocation {
     'developer-resources-drawer' = 130,
     'autofill-view-main' = 131,
     'autofill-view-drawer' = 132,
-    MaxValue = 133
+    MAX_VALUE = 133
 }
 export declare enum ElementsSidebarTabCodes {
     'OtherSidebarPane' = 0,
@@ -434,7 +434,7 @@ export declare enum ElementsSidebarTabCodes {
     'elements.dom-breakpoints' = 5,
     'elements.dom-properties' = 6,
     'accessibility.view' = 7,
-    MaxValue = 8
+    MAX_VALUE = 8
 }
 export declare enum SourcesSidebarTabCodes {
     'OtherSidebarPane' = 0,
@@ -443,7 +443,7 @@ export declare enum SourcesSidebarTabCodes {
     'navigator-overrides' = 3,
     'navigator-content-scripts' = 4,
     'navigator-snippets' = 5,
-    MaxValue = 6
+    MAX_VALUE = 6
 }
 export declare enum MediaTypes {
     Unknown = 0,
@@ -483,12 +483,12 @@ export declare enum MediaTypes {
     'text/x.vue' = 35,
     'text/javascript+snippet' = 36,
     'text/javascript+eval' = 37,// Scripts resulting from console inputs or page "eval"s with no sourceUrl comment.
-    MaxValue = 38
+    MAX_VALUE = 38
 }
 export declare enum KeybindSetSettings {
     'devToolsDefault' = 0,
     'vsCode' = 1,
-    MaxValue = 2
+    MAX_VALUE = 2
 }
 export declare enum KeyboardShortcutAction {
     OtherShortcut = 0,
@@ -609,16 +609,16 @@ export declare enum KeyboardShortcutAction {
     'elements.refresh-event-listeners' = 115,
     'coverage.clear' = 116,
     'coverage.export' = 117,
-    MaxValue = 118
+    MAX_VALUE = 118
 }
 export declare const enum IssueOpener {
-    ConsoleInfoBar = 0,
-    LearnMoreLinkCOEP = 1,
-    StatusBarIssuesCounter = 2,
-    HamburgerMenu = 3,
-    Adorner = 4,
-    CommandMenu = 5,
-    MaxValue = 6
+    CONSOLE_INFO_BAR = 0,
+    LEARN_MORE_LINK_COEP = 1,
+    STATUS_BAR_ISSUES_COUNTER = 2,
+    HAMBURGER_MENU = 3,
+    ADORNER = 4,
+    COMMAND_MENU = 5,
+    MAX_VALUE = 6
 }
 /**
  * This list should contain the currently active Devtools Experiments,
@@ -661,18 +661,18 @@ export declare enum DevtoolsExperiments {
     'timeline-observations' = 96,
     'gen-ai-settings-panel' = 97,
     'timeline-server-timings' = 98,
-    'MaxValue' = 99
+    MAX_VALUE = 99
 }
 export declare const enum ColorPickerOpenedFrom {
-    SourcesPanel = 0,
-    StylesPane = 1,
-    MaxValue = 2
+    SOURCES_PANEL = 0,
+    STYLES_TAB = 1,
+    MAX_VALUE = 2
 }
 export declare const enum CSSPropertyDocumentation {
-    Shown = 0,
-    ToggledOn = 1,
-    ToggledOff = 2,
-    MaxValue = 3
+    SHOWN = 0,
+    TOGGLED_ON = 1,
+    TOGGLED_OFF = 2,
+    MAX_VALUE = 3
 }
 export declare enum IssueExpanded {
     CrossOriginEmbedderPolicy = 0,
@@ -684,7 +684,7 @@ export declare enum IssueExpanded {
     Generic = 6,
     ThirdPartyPhaseoutCookie = 7,
     GenericCookie = 8,
-    MaxValue = 9
+    MAX_VALUE = 9
 }
 export declare enum IssueResourceOpened {
     CrossOriginEmbedderPolicyRequest = 0,
@@ -695,7 +695,7 @@ export declare enum IssueResourceOpened {
     HeavyAdElement = 5,
     ContentSecurityPolicyDirective = 6,
     ContentSecurityPolicyElement = 7,
-    MaxValue = 13
+    MAX_VALUE = 13
 }
 /**
  * This list should contain the currently active issue types,
@@ -783,30 +783,30 @@ export declare enum IssueCreated {
     'CookieIssue::WarnThirdPartyPhaseout::SetCookie' = 83,
     'CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie' = 84,
     'CookieIssue::ExcludeThirdPartyPhaseout::SetCookie' = 85,
-    MaxValue = 86
+    MAX_VALUE = 86
 }
 export declare const enum DeveloperResourceLoaded {
-    LoadThroughPageViaTarget = 0,
-    LoadThroughPageViaFrame = 1,
-    LoadThroughPageFailure = 2,
-    LoadThroughPageFallback = 3,
-    FallbackAfterFailure = 4,
-    FallbackPerOverride = 5,
-    FallbackPerProtocol = 6,
-    FallbackFailure = 7,
-    MaxValue = 8
+    LOAD_THROUGH_PAGE_VIA_TARGET = 0,
+    LOAD_THROUGH_PAGE_VIA_FRAME = 1,
+    LOAD_THROUGH_PAGE_FAILURE = 2,
+    LOAD_THROUGH_PAGE_FALLBACK = 3,
+    FALLBACK_AFTER_FAILURE = 4,
+    FALLBACK_PER_OVERRIDE = 5,
+    FALLBACK_PER_PROTOCOL = 6,
+    FALLBACK_FAILURE = 7,
+    MAX_VALUE = 8
 }
 export declare const enum DeveloperResourceScheme {
-    SchemeOther = 0,
-    SchemeUnknown = 1,
-    SchemeHttp = 2,
-    SchemeHttps = 3,
-    SchemeHttpLocalhost = 4,
-    SchemeHttpsLocalhost = 5,
-    SchemeData = 6,
-    SchemeFile = 7,
-    SchemeBlob = 8,
-    MaxValue = 9
+    OTHER = 0,
+    UKNOWN = 1,
+    HTTP = 2,
+    HTTPS = 3,
+    HTTP_LOCALHOST = 4,
+    HTTPS_LOCALHOST = 5,
+    DATA = 6,
+    FILE = 7,
+    BLOB = 8,
+    MAX_VALUE = 9
 }
 export declare enum ResourceType {
     all = 0,
@@ -821,7 +821,7 @@ export declare enum ResourceType {
     WebSocket = 9,
     WebAssembly = 10,
     Other = 11,
-    MaxValue = 12
+    MAX_VALUE = 12
 }
 export declare enum NetworkPanelMoreFilters {
     'Hide data URLs' = 0,
@@ -829,7 +829,7 @@ export declare enum NetworkPanelMoreFilters {
     'Blocked response cookies' = 2,
     'Blocked requests' = 3,
     '3rd-party requests' = 4,
-    MaxValue = 5
+    MAX_VALUE = 5
 }
 export declare enum Language {
     'af' = 1,
@@ -914,95 +914,95 @@ export declare enum Language {
     'zh-HK' = 80,
     'zh-TW' = 81,
     'zu' = 82,
-    MaxValue = 83
+    MAX_VALUE = 83
 }
 export declare const enum SyncSetting {
-    ChromeSyncDisabled = 1,
-    ChromeSyncSettingsDisabled = 2,
-    DevToolsSyncSettingDisabled = 3,
-    DevToolsSyncSettingEnabled = 4,
-    MaxValue = 5
+    CHROME_SYNC_DISABLED = 1,
+    CHROME_SYNC_SETTINGS_DISABLED = 2,
+    DEVTOOLS_SYNC_SETTING_DISABLED = 3,
+    DEVTOOLS_SYNC_SETTING_ENABLED = 4,
+    MAX_VALUE = 5
 }
 export declare const enum RecordingToggled {
-    RecordingStarted = 1,
-    RecordingFinished = 2,
-    MaxValue = 3
+    RECORDING_STARTED = 1,
+    RECORDING_FINISHED = 2,
+    MAX_VALUE = 3
 }
 export declare const enum RecordingAssertion {
-    AssertionAdded = 1,
-    PropertyAssertionEdited = 2,
-    AttributeAssertionEdited = 3,
-    MaxValue = 4
+    ASSERTION_ADDED = 1,
+    PROPERTY_ASSERTION_EDITED = 2,
+    ATTRIBUTE_ASSERTION_EDITED = 3,
+    MAX_VALUE = 4
 }
 export declare const enum RecordingReplayFinished {
-    Success = 1,
-    TimeoutErrorSelectors = 2,
-    TimeoutErrorTarget = 3,
-    OtherError = 4,
-    MaxValue = 5
+    SUCCESS = 1,
+    TIMEOUT_ERROR_SELECTORS = 2,
+    TIMEOUT_ERROR_TARGET = 3,
+    OTHER_ERROR = 4,
+    MAX_VALUE = 5
 }
 export declare const enum RecordingReplaySpeed {
-    Normal = 1,
-    Slow = 2,
-    VerySlow = 3,
-    ExtremelySlow = 4,
-    MaxValue = 5
+    NORMAL = 1,
+    SLOW = 2,
+    VERY_SLOW = 3,
+    EXTREMELY_SLOW = 4,
+    MAX_VALUE = 5
 }
 export declare const enum RecordingReplayStarted {
-    ReplayOnly = 1,
-    ReplayWithPerformanceTracing = 2,
-    ReplayViaExtension = 3,
-    MaxValue = 4
+    REPLAY_ONLY = 1,
+    REPLAY_WITH_PERFORMANCE_TRACING = 2,
+    REPLAY_VIA_EXTENSION = 3,
+    MAX_VALUE = 4
 }
 export declare const enum RecordingEdited {
-    SelectorPickerUsed = 1,
-    StepAdded = 2,
-    StepRemoved = 3,
-    SelectorAdded = 4,
-    SelectorRemoved = 5,
-    SelectorPartAdded = 6,
-    SelectorPartEdited = 7,
-    SelectorPartRemoved = 8,
-    TypeChanged = 9,
-    OtherEditing = 10,
-    MaxValue = 11
+    SELECTOR_PICKER_USED = 1,
+    STEP_ADDED = 2,
+    STEP_REMOVED = 3,
+    SELECTOR_ADDED = 4,
+    SELECTOR_REMOVED = 5,
+    SELECTOR_PART_ADDED = 6,
+    SELECTOR_PART_EDITED = 7,
+    SELECTOR_PART_REMOVED = 8,
+    TYPE_CHANGED = 9,
+    OTHER_EDITING = 10,
+    MAX_VALUE = 11
 }
 export declare const enum RecordingExported {
-    ToPuppeteer = 1,
-    ToJSON = 2,
-    ToPuppeteerReplay = 3,
-    ToExtension = 4,
-    ToLighthouse = 5,
-    MaxValue = 6
+    TO_PUPPETEER = 1,
+    TO_JSON = 2,
+    TO_PUPPETEER_REPLAY = 3,
+    TO_EXTENSION = 4,
+    TO_LIGHTHOUSE = 5,
+    MAX_VALUE = 6
 }
 export declare const enum RecordingCodeToggled {
-    CodeShown = 1,
-    CodeHidden = 2,
-    MaxValue = 3
+    CODE_SHOWN = 1,
+    CODE_HIDDEN = 2,
+    MAX_VALUE = 3
 }
 export declare const enum RecordingCopiedToClipboard {
-    CopiedRecordingWithPuppeteer = 1,
-    CopiedRecordingWithJSON = 2,
-    CopiedRecordingWithReplay = 3,
-    CopiedRecordingWithExtension = 4,
-    CopiedStepWithPuppeteer = 5,
-    CopiedStepWithJSON = 6,
-    CopiedStepWithReplay = 7,
-    CopiedStepWithExtension = 8,
-    MaxValue = 9
+    COPIED_RECORDING_WITH_PUPPETEER = 1,
+    COPIED_RECORDING_WITH_JSON = 2,
+    COPIED_RECORDING_WITH_REPLAY = 3,
+    COPIED_RECORDING_WITH_EXTENSION = 4,
+    COPIED_STEP_WITH_PUPPETEER = 5,
+    COPIED_STEP_WITH_JSON = 6,
+    COPIED_STEP_WITH_REPLAY = 7,
+    COPIED_STEP_WITH_EXTENSION = 8,
+    MAX_VALUE = 9
 }
 export declare const enum StyleTextCopied {
-    DeclarationViaChangedLine = 1,
-    AllChangesViaStylesPane = 2,
-    DeclarationViaContextMenu = 3,
-    PropertyViaContextMenu = 4,
-    ValueViaContextMenu = 5,
-    DeclarationAsJSViaContextMenu = 6,
-    RuleViaContextMenu = 7,
-    AllDeclarationsViaContextMenu = 8,
-    AllDeclarationsAsJSViaContextMenu = 9,
-    SelectorViaContextMenu = 10,
-    MaxValue = 11
+    DECLARATION_VIA_CHANGED_LINE = 1,
+    ALL_CHANGES_VIA_STYLES_TAB = 2,
+    DECLARATION_VIA_CONTEXT_MENU = 3,
+    PROPERTY_VIA_CONTEXT_MENU = 4,
+    VALUE_VIA_CONTEXT_MENU = 5,
+    DECLARATION_AS_JS_VIA_CONTEXT_MENU = 6,
+    RULE_VIA_CONTEXT_MENU = 7,
+    ALL_DECLARATIONS_VIA_CONTEXT_MENU = 8,
+    ALL_DECLARATINS_AS_JS_VIA_CONTEXT_MENU = 9,
+    SELECTOR_VIA_CONTEXT_MENU = 10,
+    MAX_VALUE = 11
 }
 export declare enum ManifestSectionCodes {
     OtherSection = 0,
@@ -1011,53 +1011,53 @@ export declare enum ManifestSectionCodes {
     'Protocol Handlers' = 3,
     'Icons' = 4,
     'Window Controls Overlay' = 5,
-    MaxValue = 6
+    MAX_VALUE = 6
 }
 export declare const enum CSSHintType {
-    Other = 0,
-    AlignContent = 1,
-    FlexItem = 2,
-    FlexContainer = 3,
-    GridContainer = 4,
-    GridItem = 5,
-    FlexGrid = 6,
-    MulticolFlexGrid = 7,
-    Padding = 8,
-    Position = 9,
-    ZIndex = 10,
-    Sizing = 11,
-    FlexOrGridItem = 12,
-    FontVariationSettings = 13,
-    MaxValue = 14
+    OTHER = 0,
+    ALIGN_CONTENT = 1,
+    FLEX_ITEM = 2,
+    FLEX_CONTAINER = 3,
+    GRID_CONTAINER = 4,
+    GRID_ITEM = 5,
+    FLEX_GRID = 6,
+    MULTICOL_FLEX_GRID = 7,
+    PADDING = 8,
+    POSITION = 9,
+    Z_INDEX = 10,
+    SIZING = 11,
+    FLEX_OR_GRID_ITEM = 12,
+    FONT_VARIATION_SETTINGS = 13,
+    MAX_VALUE = 14
 }
 export declare const enum LighthouseModeRun {
-    Navigation = 0,
-    Timespan = 1,
-    Snapshot = 2,
-    LegacyNavigation = 3,
-    MaxValue = 4
+    NAVIGATION = 0,
+    TIMESPAN = 1,
+    SNAPSHOT = 2,
+    LEGACY_NAVIGATION = 3,
+    MAX_VALUE = 4
 }
 export declare const enum LighthouseCategoryUsed {
-    Performance = 0,
-    Accessibility = 1,
-    BestPractices = 2,
+    PERFORMANCE = 0,
+    ACCESSIBILITY = 1,
+    BEST_PRACTICES = 2,
     SEO = 3,
     PWA = 4,
-    PubAds = 5,
-    MaxValue = 6
+    PUB_ADS = 5,
+    MAX_VALUE = 6
 }
 export declare const enum SwatchType {
-    VarLink = 0,
-    AnimationNameLink = 1,
-    Color = 2,
-    AnimationTiming = 3,
-    Shadow = 4,
-    Grid = 5,
-    Flex = 6,
-    Angle = 7,
-    Length = 8,
-    PositionTryLink = 10,
-    MaxValue = 11
+    VAR_LINK = 0,
+    ANIMATION_NAME_LINK = 1,
+    COLOR = 2,
+    ANIMATION_TIMING = 3,
+    SHADOW = 4,
+    GRID = 5,
+    FLEX = 6,
+    ANGLE = 7,
+    LENGTH = 8,
+    POSITION_TRY_LINK = 10,
+    MAX_VALUE = 11
 }
 export declare const enum BadgeType {
     GRID = 0,
@@ -1069,20 +1069,20 @@ export declare const enum BadgeType {
     SLOT = 6,
     TOP_LAYER = 7,
     REVEAL = 8,
-    MaxValue = 9
+    MAX_VALUE = 9
 }
 export declare const enum AnimationsPlaybackRate {
-    Percent100 = 0,
-    Percent25 = 1,
-    Percent10 = 2,
-    Other = 3,
-    MaxValue = 4
+    PERCENT_100 = 0,
+    PERCENT_25 = 1,
+    PERCENT_10 = 2,
+    OTHER = 3,
+    MAX_VALUE = 4
 }
 export declare const enum AnimationPointDragType {
-    AnimationDrag = 0,
-    KeyframeMove = 1,
-    StartEndpointMove = 2,
-    FinishEndpointMove = 3,
-    Other = 4,
-    MaxValue = 5
+    ANIMATION_DRAG = 0,
+    KEYFRAME_MOVE = 1,
+    START_ENDPOINT_MOVE = 2,
+    FINISH_ENDPOINT_MOVE = 3,
+    OTHER = 4,
+    MAX_VALUE = 5
 }

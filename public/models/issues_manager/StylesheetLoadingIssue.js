@@ -47,10 +47,10 @@ export class StylesheetLoadingIssue extends Issue {
         }
     }
     getCategory() {
-        return "Other" /* IssueCategory.Other */;
+        return "Other" /* IssueCategory.OTHER */;
     }
     getKind() {
-        return "PageError" /* IssueKind.PageError */;
+        return "PageError" /* IssueKind.PAGE_ERROR */;
     }
     static fromInspectorIssue(issueModel, inspectorIssue) {
         const stylesheetLoadingDetails = inspectorIssue.details.stylesheetLoadingIssueDetails;

@@ -44,8 +44,8 @@ describeWithMockConnection('IssueAggregator', () => {
         const model = createModel();
         const mockManager = new MockIssuesManager([]);
         const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
-        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: model, issue: issue1 });
-        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: model, issue: issue2 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue1 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue2 });
         const issues = Array.from(aggregator.aggregatedIssues());
         assert.strictEqual(issues.length, 1);
         const requestIds = [...issues[0].requests()].map(r => r.requestId).sort();
@@ -59,8 +59,8 @@ describeWithMockConnection('IssueAggregator', () => {
         const model = createModel();
         const mockManager = new MockIssuesManager([issue1b, issue3]);
         const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
-        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: model, issue: issue1 });
-        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: model, issue: issue2 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue1 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue2 });
         const issues = Array.from(aggregator.aggregatedIssues());
         assert.strictEqual(issues.length, 1);
         const requestIds = [...issues[0].requests()].map(r => r.requestId).sort();
@@ -74,8 +74,8 @@ describeWithMockConnection('IssueAggregator', () => {
         const model = createModel();
         const mockManager = new MockIssuesManager([issue1b, issue3]);
         const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
-        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: model, issue: issue1 });
-        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: model, issue: issue2 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue1 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue2 });
         const issues = Array.from(aggregator.aggregatedIssues());
         assert.strictEqual(issues.length, 3);
         const issueCodes = issues.map(r => r.aggregationKey().toString()).sort((a, b) => a.localeCompare(b));
@@ -83,39 +83,39 @@ describeWithMockConnection('IssueAggregator', () => {
     });
     describe('aggregates issue kind', () => {
         it('for a single issue', () => {
-            const issues = StubIssue.createFromIssueKinds(["Improvement" /* IssuesManager.Issue.IssueKind.Improvement */]);
+            const issues = StubIssue.createFromIssueKinds(["Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */]);
             const mockManager = new MockIssuesManager(issues);
             const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
             const aggregatedIssues = Array.from(aggregator.aggregatedIssues());
             assert.strictEqual(aggregatedIssues.length, 1);
             const aggregatedIssue = aggregatedIssues[0];
-            assert.strictEqual(aggregatedIssue.getKind(), "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */);
+            assert.strictEqual(aggregatedIssue.getKind(), "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */);
         });
         it('for issues of two different kinds', () => {
             const issues = StubIssue.createFromIssueKinds([
-                "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */,
-                "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */,
-                "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */,
+                "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */,
+                "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */,
+                "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */,
             ]);
             const mockManager = new MockIssuesManager(issues);
             const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
             const aggregatedIssues = Array.from(aggregator.aggregatedIssues());
             assert.strictEqual(aggregatedIssues.length, 1);
             const aggregatedIssue = aggregatedIssues[0];
-            assert.strictEqual(aggregatedIssue.getKind(), "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */);
+            assert.strictEqual(aggregatedIssue.getKind(), "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */);
         });
         it('for issues of three different kinds', () => {
             const issues = StubIssue.createFromIssueKinds([
-                "BreakingChange" /* IssuesManager.Issue.IssueKind.BreakingChange */,
-                "PageError" /* IssuesManager.Issue.IssueKind.PageError */,
-                "Improvement" /* IssuesManager.Issue.IssueKind.Improvement */,
+                "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */,
+                "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */,
+                "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */,
             ]);
             const mockManager = new MockIssuesManager(issues);
             const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
             const aggregatedIssues = Array.from(aggregator.aggregatedIssues());
             assert.strictEqual(aggregatedIssues.length, 1);
             const aggregatedIssue = aggregatedIssues[0];
-            assert.strictEqual(aggregatedIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PageError */);
+            assert.strictEqual(aggregatedIssue.getKind(), "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */);
         });
     });
 });
@@ -136,8 +136,8 @@ describeWithMockConnection('IssueAggregator', () => {
         const issue2 = new IssuesManager.HeavyAdIssue.HeavyAdIssue(details2, model);
         const mockManager = new MockIssuesManager([]);
         const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
-        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: model, issue: issue1 });
-        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: model, issue: issue2 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue1 });
+        mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue2 });
         const issues = Array.from(aggregator.aggregatedIssues());
         assert.strictEqual(issues.length, 1);
         const resolutions = [...issues[0].getHeavyAdIssues()].map(r => r.details().resolution).sort();
@@ -166,7 +166,7 @@ describeWithMockConnection('IssueAggregator', () => {
             const mockManager = new MockIssuesManager([]);
             const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
             for (const issue of [issue1, issue2, issue3, issue4]) {
-                mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: model, issue: issue });
+                mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: model, issue: issue });
             }
             const issues = Array.from(aggregator.aggregatedIssues());
             assert.strictEqual(issues.length, 1);
@@ -205,8 +205,8 @@ describeWithMockConnection('IssueAggregator', () => {
             new StubIssue('UnhiddenStubIssue2', [], []),
         ];
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
+            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         for (const issue of issues) {
             issuesManager.addIssue(model, issue);
@@ -225,13 +225,13 @@ describeWithMockConnection('IssueAggregator', () => {
             issuesManager.addIssue(model, issue);
         }
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
+            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         assert.strictEqual(aggregator.numberOfAggregatedIssues(), 3);
         assert.strictEqual(aggregator.numberOfHiddenAggregatedIssues(), 1);
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
+            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         assert.strictEqual(aggregator.numberOfAggregatedIssues(), 2);
         assert.strictEqual(aggregator.numberOfHiddenAggregatedIssues(), 2);
@@ -244,10 +244,10 @@ describeWithMockConnection('IssueAggregator', () => {
             new StubIssue('UnhiddenStubIssue2', [], []),
         ];
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'UnhiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'UnhiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
+            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'UnhiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'UnhiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         for (const issue of issues) {
             issuesManager.addIssue(model, issue);
@@ -255,10 +255,10 @@ describeWithMockConnection('IssueAggregator', () => {
         assert.strictEqual(aggregator.numberOfHiddenAggregatedIssues(), 4);
         assert.strictEqual(aggregator.numberOfAggregatedIssues(), 0);
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'UnhiddenStubIssue1': "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.Unhidden */,
-            'UnhiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
+            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'UnhiddenStubIssue1': "Unhidden" /* IssuesManager.IssuesManager.IssueStatus.UNHIDDEN */,
+            'UnhiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         assert.strictEqual(aggregator.numberOfAggregatedIssues(), 1);
         assert.strictEqual(aggregator.numberOfHiddenAggregatedIssues(), 3);
@@ -271,10 +271,10 @@ describeWithMockConnection('IssueAggregator', () => {
             new StubIssue('UnhiddenStubIssue2', [], []),
         ];
         hideIssueByCodeSetting.set({
-            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'UnhiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
-            'UnhiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.Hidden */,
+            'HiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'HiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'UnhiddenStubIssue1': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
+            'UnhiddenStubIssue2': "Hidden" /* IssuesManager.IssuesManager.IssueStatus.HIDDEN */,
         });
         for (const issue of issues) {
             issuesManager.addIssue(model, issue);

@@ -25,53 +25,53 @@ function getIssueCode(details) {
         case "MissingAllowOriginHeader" /* Protocol.Network.CorsError.MissingAllowOriginHeader */:
         case "MultipleAllowOriginValues" /* Protocol.Network.CorsError.MultipleAllowOriginValues */:
         case "InvalidAllowOriginValue" /* Protocol.Network.CorsError.InvalidAllowOriginValue */:
-            return "CorsIssue::InvalidHeaders" /* IssueCode.InvalidHeaderValues */;
+            return "CorsIssue::InvalidHeaders" /* IssueCode.INVALID_HEADER_VALUES */;
         case "PreflightWildcardOriginNotAllowed" /* Protocol.Network.CorsError.PreflightWildcardOriginNotAllowed */:
         case "WildcardOriginNotAllowed" /* Protocol.Network.CorsError.WildcardOriginNotAllowed */:
-            return "CorsIssue::WildcardOriginWithCredentials" /* IssueCode.WildcardOriginNotAllowed */;
+            return "CorsIssue::WildcardOriginWithCredentials" /* IssueCode.WILDCARD_ORIGN_NOT_ALLOWED */;
         case "PreflightInvalidStatus" /* Protocol.Network.CorsError.PreflightInvalidStatus */:
         case "PreflightDisallowedRedirect" /* Protocol.Network.CorsError.PreflightDisallowedRedirect */:
         case "InvalidResponse" /* Protocol.Network.CorsError.InvalidResponse */:
-            return "CorsIssue::PreflightResponseInvalid" /* IssueCode.PreflightResponseInvalid */;
+            return "CorsIssue::PreflightResponseInvalid" /* IssueCode.PREFLIGHT_RESPONSE_INVALID */;
         case "AllowOriginMismatch" /* Protocol.Network.CorsError.AllowOriginMismatch */:
         case "PreflightAllowOriginMismatch" /* Protocol.Network.CorsError.PreflightAllowOriginMismatch */:
-            return "CorsIssue::OriginMismatch" /* IssueCode.OriginMismatch */;
+            return "CorsIssue::OriginMismatch" /* IssueCode.ORIGIN_MISMATCH */;
         case "InvalidAllowCredentials" /* Protocol.Network.CorsError.InvalidAllowCredentials */:
         case "PreflightInvalidAllowCredentials" /* Protocol.Network.CorsError.PreflightInvalidAllowCredentials */:
-            return "CorsIssue::AllowCredentialsRequired" /* IssueCode.AllowCredentialsRequired */;
+            return "CorsIssue::AllowCredentialsRequired" /* IssueCode.ALLOW_CREDENTIALS_REQUIRED */;
         case "MethodDisallowedByPreflightResponse" /* Protocol.Network.CorsError.MethodDisallowedByPreflightResponse */:
-            return "CorsIssue::MethodDisallowedByPreflightResponse" /* IssueCode.MethodDisallowedByPreflightResponse */;
+            return "CorsIssue::MethodDisallowedByPreflightResponse" /* IssueCode.METHOD_DISALLOWED_BY_PREFLIGHT_RESPONSE */;
         case "HeaderDisallowedByPreflightResponse" /* Protocol.Network.CorsError.HeaderDisallowedByPreflightResponse */:
-            return "CorsIssue::HeaderDisallowedByPreflightResponse" /* IssueCode.HeaderDisallowedByPreflightResponse */;
+            return "CorsIssue::HeaderDisallowedByPreflightResponse" /* IssueCode.HEADER_DISALLOWED_BY_PREFLIGHT_RESPONSE */;
         case "RedirectContainsCredentials" /* Protocol.Network.CorsError.RedirectContainsCredentials */:
-            return "CorsIssue::RedirectContainsCredentials" /* IssueCode.RedirectContainsCredentials */;
+            return "CorsIssue::RedirectContainsCredentials" /* IssueCode.REDIRECT_CONTAINS_CREDENTIALS */;
         case "DisallowedByMode" /* Protocol.Network.CorsError.DisallowedByMode */:
-            return "CorsIssue::DisallowedByMode" /* IssueCode.DisallowedByMode */;
+            return "CorsIssue::DisallowedByMode" /* IssueCode.DISALLOWED_BY_MODE */;
         case "CorsDisabledScheme" /* Protocol.Network.CorsError.CorsDisabledScheme */:
-            return "CorsIssue::CorsDisabledScheme" /* IssueCode.CorsDisabledScheme */;
+            return "CorsIssue::CorsDisabledScheme" /* IssueCode.CORS_DISABLED_SCHEME */;
         case "PreflightMissingAllowExternal" /* Protocol.Network.CorsError.PreflightMissingAllowExternal */:
-            return "CorsIssue::PreflightMissingAllowExternal" /* IssueCode.PreflightMissingAllowExternal */;
+            return "CorsIssue::PreflightMissingAllowExternal" /* IssueCode.PREFLIGHT_MISSING_ALLOW_EXTERNAL */;
         case "PreflightInvalidAllowExternal" /* Protocol.Network.CorsError.PreflightInvalidAllowExternal */:
-            return "CorsIssue::PreflightInvalidAllowExternal" /* IssueCode.PreflightInvalidAllowExternal */;
+            return "CorsIssue::PreflightInvalidAllowExternal" /* IssueCode.PREFLIGHT_INVALID_ALLOW_EXTERNAL */;
         case "InsecurePrivateNetwork" /* Protocol.Network.CorsError.InsecurePrivateNetwork */:
-            return "CorsIssue::InsecurePrivateNetwork" /* IssueCode.InsecurePrivateNetwork */;
+            return "CorsIssue::InsecurePrivateNetwork" /* IssueCode.INSECURE_PRIVATE_NETWORK */;
         case "NoCorsRedirectModeNotFollow" /* Protocol.Network.CorsError.NoCorsRedirectModeNotFollow */:
-            return "CorsIssue::NoCorsRedirectModeNotFollow" /* IssueCode.NoCorsRedirectModeNotFollow */;
+            return "CorsIssue::NoCorsRedirectModeNotFollow" /* IssueCode.NO_CORS_REDIRECT_MODE_NOT_FOLLOW */;
         case "InvalidPrivateNetworkAccess" /* Protocol.Network.CorsError.InvalidPrivateNetworkAccess */:
-            return "CorsIssue::InvalidPrivateNetworkAccess" /* IssueCode.InvalidPrivateNetworkAccess */;
+            return "CorsIssue::InvalidPrivateNetworkAccess" /* IssueCode.INVALID_PRIVATE_NETWORK_ACCESS */;
         case "UnexpectedPrivateNetworkAccess" /* Protocol.Network.CorsError.UnexpectedPrivateNetworkAccess */:
-            return "CorsIssue::UnexpectedPrivateNetworkAccess" /* IssueCode.UnexpectedPrivateNetworkAccess */;
+            return "CorsIssue::UnexpectedPrivateNetworkAccess" /* IssueCode.UNEXPECTED_PRIVATE_NETWORK_ACCESS */;
         case "PreflightMissingAllowPrivateNetwork" /* Protocol.Network.CorsError.PreflightMissingAllowPrivateNetwork */:
         case "PreflightInvalidAllowPrivateNetwork" /* Protocol.Network.CorsError.PreflightInvalidAllowPrivateNetwork */:
-            return "CorsIssue::PreflightAllowPrivateNetworkError" /* IssueCode.PreflightAllowPrivateNetworkError */;
+            return "CorsIssue::PreflightAllowPrivateNetworkError" /* IssueCode.PREFLIGHT_ALLOW_PRIVATE_NETWORK_ERROR */;
         case "PreflightMissingPrivateNetworkAccessId" /* Protocol.Network.CorsError.PreflightMissingPrivateNetworkAccessId */:
-            return "CorsIssue::PreflightMissingPrivateNetworkAccessId" /* IssueCode.PreflightMissingPrivateNetworkAccessId */;
+            return "CorsIssue::PreflightMissingPrivateNetworkAccessId" /* IssueCode.PREFLIGHT_MISSING_PRIVATE_NETWORK_ACCESS_ID */;
         case "PreflightMissingPrivateNetworkAccessName" /* Protocol.Network.CorsError.PreflightMissingPrivateNetworkAccessName */:
-            return "CorsIssue::PreflightMissingPrivateNetworkAccessName" /* IssueCode.PreflightMissingPrivateNetworkAccessName */;
+            return "CorsIssue::PreflightMissingPrivateNetworkAccessName" /* IssueCode.PREFLIGHT_MISSING_PRIVATE_NETWORK_ACCESS_NAME */;
         case "PrivateNetworkAccessPermissionUnavailable" /* Protocol.Network.CorsError.PrivateNetworkAccessPermissionUnavailable */:
-            return "CorsIssue::PrivateNetworkAccessPermissionUnavailable" /* IssueCode.PrivateNetworkAccessPermissionUnavailable */;
+            return "CorsIssue::PrivateNetworkAccessPermissionUnavailable" /* IssueCode.PRIVATE_NETWORK_ACCESS_PERMISSION_UNAVAILABLE */;
         case "PrivateNetworkAccessPermissionDenied" /* Protocol.Network.CorsError.PrivateNetworkAccessPermissionDenied */:
-            return "CorsIssue::PrivateNetworkAccessPermissionDenied" /* IssueCode.PrivateNetworkAccessPermissionDenied */;
+            return "CorsIssue::PrivateNetworkAccessPermissionDenied" /* IssueCode.PRIVATE_NETWORK_ACCESS_PERMISSION_DENIED */;
     }
 }
 export class CorsIssue extends Issue {
@@ -81,14 +81,14 @@ export class CorsIssue extends Issue {
         this.#issueDetails = issueDetails;
     }
     getCategory() {
-        return "Cors" /* IssueCategory.Cors */;
+        return "Cors" /* IssueCategory.CORS */;
     }
     details() {
         return this.#issueDetails;
     }
     getDescription() {
         switch (getIssueCode(this.#issueDetails)) {
-            case "CorsIssue::InsecurePrivateNetwork" /* IssueCode.InsecurePrivateNetwork */:
+            case "CorsIssue::InsecurePrivateNetwork" /* IssueCode.INSECURE_PRIVATE_NETWORK */:
                 return {
                     file: 'corsInsecurePrivateNetwork.md',
                     links: [{
@@ -96,7 +96,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.corsPrivateNetworkAccess),
                         }],
                 };
-            case "CorsIssue::PreflightAllowPrivateNetworkError" /* IssueCode.PreflightAllowPrivateNetworkError */:
+            case "CorsIssue::PreflightAllowPrivateNetworkError" /* IssueCode.PREFLIGHT_ALLOW_PRIVATE_NETWORK_ERROR */:
                 return {
                     file: 'corsPreflightAllowPrivateNetworkError.md',
                     links: [{
@@ -104,7 +104,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.corsPrivateNetworkAccess),
                         }],
                 };
-            case "CorsIssue::InvalidHeaders" /* IssueCode.InvalidHeaderValues */:
+            case "CorsIssue::InvalidHeaders" /* IssueCode.INVALID_HEADER_VALUES */:
                 return {
                     file: 'corsInvalidHeaderValues.md',
                     links: [{
@@ -112,7 +112,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::WildcardOriginWithCredentials" /* IssueCode.WildcardOriginNotAllowed */:
+            case "CorsIssue::WildcardOriginWithCredentials" /* IssueCode.WILDCARD_ORIGN_NOT_ALLOWED */:
                 return {
                     file: 'corsWildcardOriginNotAllowed.md',
                     links: [{
@@ -120,7 +120,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::PreflightResponseInvalid" /* IssueCode.PreflightResponseInvalid */:
+            case "CorsIssue::PreflightResponseInvalid" /* IssueCode.PREFLIGHT_RESPONSE_INVALID */:
                 return {
                     file: 'corsPreflightResponseInvalid.md',
                     links: [{
@@ -128,7 +128,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::OriginMismatch" /* IssueCode.OriginMismatch */:
+            case "CorsIssue::OriginMismatch" /* IssueCode.ORIGIN_MISMATCH */:
                 return {
                     file: 'corsOriginMismatch.md',
                     links: [{
@@ -136,7 +136,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::AllowCredentialsRequired" /* IssueCode.AllowCredentialsRequired */:
+            case "CorsIssue::AllowCredentialsRequired" /* IssueCode.ALLOW_CREDENTIALS_REQUIRED */:
                 return {
                     file: 'corsAllowCredentialsRequired.md',
                     links: [{
@@ -144,7 +144,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::MethodDisallowedByPreflightResponse" /* IssueCode.MethodDisallowedByPreflightResponse */:
+            case "CorsIssue::MethodDisallowedByPreflightResponse" /* IssueCode.METHOD_DISALLOWED_BY_PREFLIGHT_RESPONSE */:
                 return {
                     file: 'corsMethodDisallowedByPreflightResponse.md',
                     links: [{
@@ -152,7 +152,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::HeaderDisallowedByPreflightResponse" /* IssueCode.HeaderDisallowedByPreflightResponse */:
+            case "CorsIssue::HeaderDisallowedByPreflightResponse" /* IssueCode.HEADER_DISALLOWED_BY_PREFLIGHT_RESPONSE */:
                 return {
                     file: 'corsHeaderDisallowedByPreflightResponse.md',
                     links: [{
@@ -160,7 +160,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::RedirectContainsCredentials" /* IssueCode.RedirectContainsCredentials */:
+            case "CorsIssue::RedirectContainsCredentials" /* IssueCode.REDIRECT_CONTAINS_CREDENTIALS */:
                 return {
                     file: 'corsRedirectContainsCredentials.md',
                     links: [{
@@ -168,7 +168,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::DisallowedByMode" /* IssueCode.DisallowedByMode */:
+            case "CorsIssue::DisallowedByMode" /* IssueCode.DISALLOWED_BY_MODE */:
                 return {
                     file: 'corsDisallowedByMode.md',
                     links: [{
@@ -176,7 +176,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::CorsDisabledScheme" /* IssueCode.CorsDisabledScheme */:
+            case "CorsIssue::CorsDisabledScheme" /* IssueCode.CORS_DISABLED_SCHEME */:
                 return {
                     file: 'corsDisabledScheme.md',
                     links: [{
@@ -184,7 +184,7 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.CORS),
                         }],
                 };
-            case "CorsIssue::NoCorsRedirectModeNotFollow" /* IssueCode.NoCorsRedirectModeNotFollow */:
+            case "CorsIssue::NoCorsRedirectModeNotFollow" /* IssueCode.NO_CORS_REDIRECT_MODE_NOT_FOLLOW */:
                 return {
                     file: 'corsNoCorsRedirectModeNotFollow.md',
                     links: [{
@@ -194,8 +194,8 @@ export class CorsIssue extends Issue {
                 };
             // TODO(1462857): Change the link after we have a blog post for PNA
             // permission prompt.
-            case "CorsIssue::PreflightMissingPrivateNetworkAccessId" /* IssueCode.PreflightMissingPrivateNetworkAccessId */:
-            case "CorsIssue::PreflightMissingPrivateNetworkAccessName" /* IssueCode.PreflightMissingPrivateNetworkAccessName */:
+            case "CorsIssue::PreflightMissingPrivateNetworkAccessId" /* IssueCode.PREFLIGHT_MISSING_PRIVATE_NETWORK_ACCESS_ID */:
+            case "CorsIssue::PreflightMissingPrivateNetworkAccessName" /* IssueCode.PREFLIGHT_MISSING_PRIVATE_NETWORK_ACCESS_NAME */:
                 return {
                     file: 'corsPrivateNetworkPermissionDenied.md',
                     links: [{
@@ -203,12 +203,12 @@ export class CorsIssue extends Issue {
                             linkTitle: i18nString(UIStrings.corsPrivateNetworkAccess),
                         }],
                 };
-            case "CorsIssue::PreflightMissingAllowExternal" /* IssueCode.PreflightMissingAllowExternal */:
-            case "CorsIssue::PreflightInvalidAllowExternal" /* IssueCode.PreflightInvalidAllowExternal */:
-            case "CorsIssue::InvalidPrivateNetworkAccess" /* IssueCode.InvalidPrivateNetworkAccess */:
-            case "CorsIssue::UnexpectedPrivateNetworkAccess" /* IssueCode.UnexpectedPrivateNetworkAccess */:
-            case "CorsIssue::PrivateNetworkAccessPermissionUnavailable" /* IssueCode.PrivateNetworkAccessPermissionUnavailable */:
-            case "CorsIssue::PrivateNetworkAccessPermissionDenied" /* IssueCode.PrivateNetworkAccessPermissionDenied */:
+            case "CorsIssue::PreflightMissingAllowExternal" /* IssueCode.PREFLIGHT_MISSING_ALLOW_EXTERNAL */:
+            case "CorsIssue::PreflightInvalidAllowExternal" /* IssueCode.PREFLIGHT_INVALID_ALLOW_EXTERNAL */:
+            case "CorsIssue::InvalidPrivateNetworkAccess" /* IssueCode.INVALID_PRIVATE_NETWORK_ACCESS */:
+            case "CorsIssue::UnexpectedPrivateNetworkAccess" /* IssueCode.UNEXPECTED_PRIVATE_NETWORK_ACCESS */:
+            case "CorsIssue::PrivateNetworkAccessPermissionUnavailable" /* IssueCode.PRIVATE_NETWORK_ACCESS_PERMISSION_UNAVAILABLE */:
+            case "CorsIssue::PrivateNetworkAccessPermissionDenied" /* IssueCode.PRIVATE_NETWORK_ACCESS_PERMISSION_DENIED */:
                 return null;
         }
     }
@@ -222,9 +222,9 @@ export class CorsIssue extends Issue {
                     "PreflightMissingAllowPrivateNetwork" /* Protocol.Network.CorsError.PreflightMissingAllowPrivateNetwork */ ||
                 this.#issueDetails.corsErrorStatus.corsError ===
                     "PreflightInvalidAllowPrivateNetwork" /* Protocol.Network.CorsError.PreflightInvalidAllowPrivateNetwork */)) {
-            return "BreakingChange" /* IssueKind.BreakingChange */;
+            return "BreakingChange" /* IssueKind.BREAKING_CHANGE */;
         }
-        return "PageError" /* IssueKind.PageError */;
+        return "PageError" /* IssueKind.PAGE_ERROR */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const corsIssueDetails = inspectorIssue.details.corsIssueDetails;

@@ -64,7 +64,7 @@ export function securityStateCompare(a, b) {
     ];
     return SECURITY_STATE_ORDER.indexOf(a) - SECURITY_STATE_ORDER.indexOf(b);
 }
-SDK.SDKModel.SDKModel.register(SecurityModel, { capabilities: 512 /* SDK.Target.Capability.Security */, autostart: false });
+SDK.SDKModel.SDKModel.register(SecurityModel, { capabilities: 512 /* SDK.Target.Capability.SECURITY */, autostart: false });
 export var Events;
 (function (Events) {
     Events["VisibleSecurityStateChanged"] = "VisibleSecurityStateChanged";

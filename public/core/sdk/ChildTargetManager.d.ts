@@ -34,12 +34,12 @@ export declare class ChildTargetManager extends SDKModel<EventTypes> implements 
     private static attachCallback?;
 }
 export declare const enum Events {
-    TargetCreated = "TargetCreated",
-    TargetDestroyed = "TargetDestroyed",
-    TargetInfoChanged = "TargetInfoChanged"
+    TARGET_CREATED = "TargetCreated",
+    TARGET_DESTROYED = "TargetDestroyed",
+    TARGET_INFO_CHANGED = "TargetInfoChanged"
 }
 export type EventTypes = {
-    [Events.TargetCreated]: Protocol.Target.TargetInfo;
-    [Events.TargetDestroyed]: Protocol.Target.TargetID;
-    [Events.TargetInfoChanged]: Protocol.Target.TargetInfo;
+    [Events.TARGET_CREATED]: Protocol.Target.TargetInfo;
+    [Events.TARGET_DESTROYED]: Protocol.Target.TargetID;
+    [Events.TARGET_INFO_CHANGED]: Protocol.Target.TargetInfo;
 };

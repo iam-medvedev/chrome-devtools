@@ -38,7 +38,7 @@ styles.replaceSync(
   display: flex;
   flex-direction: column;
   padding: var(--sys-size-8) var(--sys-size-4) 0 var(--sys-size-4);
-  max-width: 720px;
+  max-width: var(--sys-size-36);
   width: 100%;
   margin: 0 auto;
 }
@@ -80,46 +80,56 @@ styles.replaceSync(
   margin-bottom: var(--sys-size-4);
 }
 
-.messages-container {
-  margin: var(--sys-size-6) auto 0 auto;
-  max-width: 720px;
-  padding: 0 var(--sys-size-4);
-}
-
 .messages-scroll-container {
   overflow: overlay;
   flex-grow: 1;
 }
 
+.messages-container {
+  margin: var(--sys-size-6) auto 0 auto;
+  max-width: var(--sys-size-36);
+  padding: 0 var(--sys-size-4);
+}
+
 .chat-message {
   user-select: text;
   cursor: initial;
-  width: fit-content;
-  padding: 8px var(--sys-size-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sys-size-5);
+  width: 100%;
+  padding: var(--sys-size-7) var(--sys-size-8);
   font-size: 12px;
-  border-radius: var(--sys-size-6);
   word-break: break-word;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 
-  &:not(:first-of-type) {
-    margin-top: var(--sys-size-6);
+  &:not(:first-child) {
+    margin-top: var(--sys-size-5);
+  }
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  .message-info {
+    display: flex;
+    align-items: center;
+    height: var(--sys-size-11);
+    gap: var(--sys-size-4);
+
+    .message-name {
+      font-weight: bold;
+    }
   }
 
   &.query {
-    max-width: 320px;
-    color: var(--sys-color-on-surface);
-    background: var(--sys-color-surface2);
-    margin-left: auto;
-  }
-
-  &.answer {
-    max-width: 440px;
-    color: var(--sys-color-on-surface);
-    background: var(--sys-color-surface2);
-  }
-
-  & .chat-loading {
-    margin: 4px 0;
-    padding: 4px 0;
+    img {
+      border: 0;
+      border-radius: var(--sys-shape-corner-full);
+      display: block;
+      height: var(--sys-size-9);
+      width: var(--sys-size-9);
+    }
   }
 
   & .actions {
@@ -127,6 +137,21 @@ styles.replaceSync(
     gap: var(--sys-size-8);
     justify-content: space-between;
     align-items: flex-end;
+  }
+
+  .thought {
+    summary {
+      line-height: var(--sys-size-9);
+    }
+
+    devtools-icon {
+      vertical-align: bottom;
+      color: var(--sys-color-green-bright);
+    }
+
+    devtools-icon.loading {
+      color: var(--sys-color-blue-bright);
+    }
   }
 }
 

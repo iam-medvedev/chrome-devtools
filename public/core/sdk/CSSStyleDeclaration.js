@@ -257,9 +257,11 @@ export class CSSStyleDeclaration {
 }
 export var Type;
 (function (Type) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Type["Regular"] = "Regular";
     Type["Inline"] = "Inline";
     Type["Attributes"] = "Attributes";
     Type["Pseudo"] = "Pseudo";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Type || (Type = {}));
 //# sourceMappingURL=CSSStyleDeclaration.js.map

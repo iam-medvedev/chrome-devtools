@@ -30,19 +30,19 @@ const UIStrings = {
     /**
      * @description Label for a link for third-party cookie Issues.
      */
-    thirdPartyPhaseoutExplained: 'Prepare for phasing out third-party cookies',
+    thirdPartyPhaseoutExplained: 'Changes to Chrome\'s treatment of third-party cookies',
     /**
      * @description Label for a link for cross-site redirect Issues.
      */
     fileCrosSiteRedirectBug: 'File a bug',
     /**
-     * @description text to show in Console panel when a third-party cookie will be blocked in Chrome.
+     * @description text to show in Console panel when a third-party cookie accessed.
      */
-    consoleTpcdWarningMessage: 'Third-party cookie will be blocked in future Chrome versions as part of Privacy Sandbox.',
+    consoleTpcdWarningMessage: 'Chrome is moving towards a new experience that lets people make an informed choice with respect to third-party cookies.',
     /**
      * @description text to show in Console panel when a third-party cookie is blocked in Chrome.
      */
-    consoleTpcdErrorMessage: 'Third-party cookie is blocked in Chrome as part of Privacy Sandbox.',
+    consoleTpcdErrorMessage: 'Third-party cookie is blocked in Chrome either because of Chrome flags or browser configuration.',
 };
 const str_ = i18n.i18n.registerUIStrings('models/issues_manager/CookieIssue.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -172,7 +172,7 @@ export class CookieIssue extends Issue {
         return [];
     }
     getCategory() {
-        return "Cookie" /* IssueCategory.Cookie */;
+        return "Cookie" /* IssueCategory.COOKIE */;
     }
     getDescription() {
         const description = issueDescriptions.get(this.code());
@@ -187,9 +187,9 @@ export class CookieIssue extends Issue {
     }
     getKind() {
         if (this.#issueDetails.cookieExclusionReasons?.length > 0) {
-            return "PageError" /* IssueKind.PageError */;
+            return "PageError" /* IssueKind.PAGE_ERROR */;
         }
-        return "BreakingChange" /* IssueKind.BreakingChange */;
+        return "BreakingChange" /* IssueKind.BREAKING_CHANGE */;
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const cookieIssueDetails = inspectorIssue.details.cookieIssueDetails;
@@ -201,17 +201,17 @@ export class CookieIssue extends Issue {
     }
     static getSubCategory(code) {
         if (code.includes('SameSite') || code.includes('Downgrade')) {
-            return "SameSiteCookie" /* CookieIssueSubCategory.SameSiteCookie */;
+            return "SameSiteCookie" /* CookieIssueSubCategory.SAME_SITE_COOKIE */;
         }
         if (code.includes('ThirdPartyPhaseout')) {
-            return "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.ThirdPartyPhaseoutCookie */;
+            return "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.THIRD_PARTY_PHASEOUT_COOKIE */;
         }
-        return "GenericCookie" /* CookieIssueSubCategory.GenericCookie */;
+        return "GenericCookie" /* CookieIssueSubCategory.GENERIC_COOKIE */;
     }
     maybeCreateConsoleMessage() {
         const issuesModel = this.model();
-        if (issuesModel && CookieIssue.getSubCategory(this.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.ThirdPartyPhaseoutCookie */) {
-            return new SDK.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK.RuntimeModel.RuntimeModel), Common.Console.FrontendMessageSource.IssuePanel, "warning" /* Protocol.Log.LogEntryLevel.Warning */, this.getKind() === "PageError" /* IssueKind.PageError */ ? UIStrings.consoleTpcdErrorMessage :
+        if (issuesModel && CookieIssue.getSubCategory(this.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.THIRD_PARTY_PHASEOUT_COOKIE */) {
+            return new SDK.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK.RuntimeModel.RuntimeModel), Common.Console.FrontendMessageSource.ISSUE_PANEL, "warning" /* Protocol.Log.LogEntryLevel.Warning */, this.getKind() === "PageError" /* IssueKind.PAGE_ERROR */ ? UIStrings.consoleTpcdErrorMessage :
                 UIStrings.consoleTpcdWarningMessage, {
                 url: this.#issueDetails.request?.url,
                 affectedResources: { requestId: this.#issueDetails.request?.requestId, issueId: this.issueId },
@@ -409,28 +409,28 @@ const excludeBlockedWithinRelatedWebsiteSet = {
 const cookieWarnThirdPartyPhaseoutSet = {
     file: 'cookieWarnThirdPartyPhaseoutSet.md',
     links: [{
-            link: 'https://goo.gle/3pcd-dev-issue',
+            link: 'https://goo.gle/3pc-dev-issue',
             linkTitle: i18nLazyString(UIStrings.thirdPartyPhaseoutExplained),
         }],
 };
 const cookieWarnThirdPartyPhaseoutRead = {
     file: 'cookieWarnThirdPartyPhaseoutRead.md',
     links: [{
-            link: 'https://goo.gle/3pcd-dev-issue',
+            link: 'https://goo.gle/3pc-dev-issue',
             linkTitle: i18nLazyString(UIStrings.thirdPartyPhaseoutExplained),
         }],
 };
 const cookieExcludeThirdPartyPhaseoutSet = {
     file: 'cookieExcludeThirdPartyPhaseoutSet.md',
     links: [{
-            link: 'https://goo.gle/3pcd-dev-issue',
+            link: 'https://goo.gle/report-3pc-dev-issue',
             linkTitle: i18nLazyString(UIStrings.thirdPartyPhaseoutExplained),
         }],
 };
 const cookieExcludeThirdPartyPhaseoutRead = {
     file: 'cookieExcludeThirdPartyPhaseoutRead.md',
     links: [{
-            link: 'https://goo.gle/3pcd-dev-issue',
+            link: 'https://goo.gle/report-3pc-dev-issue',
             linkTitle: i18nLazyString(UIStrings.thirdPartyPhaseoutExplained),
         }],
 };

@@ -15,7 +15,7 @@ export declare class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper<Even
     targetRemoved(target: SDK.Target.Target): void;
 }
 export declare const enum Events {
-    Status = "status"
+    STATUS = "status"
 }
 export type MetricValue = Pick<Spec.MetricChangeEvent, 'value'>;
 export interface LCPValue extends MetricValue {
@@ -33,6 +33,6 @@ export interface StatusEvent {
     interactions: InteractionValue[];
 }
 type EventTypes = {
-    [Events.Status]: StatusEvent;
+    [Events.STATUS]: StatusEvent;
 };
 export {};

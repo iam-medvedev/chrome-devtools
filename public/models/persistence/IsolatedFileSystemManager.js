@@ -287,11 +287,13 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["FileSystemAdded"] = "FileSystemAdded";
     Events["FileSystemRemoved"] = "FileSystemRemoved";
     Events["FileSystemFilesChanged"] = "FileSystemFilesChanged";
     Events["ExcludedFolderAdded"] = "ExcludedFolderAdded";
     Events["ExcludedFolderRemoved"] = "ExcludedFolderRemoved";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 let lastRequestId = 0;
 //# sourceMappingURL=IsolatedFileSystemManager.js.map

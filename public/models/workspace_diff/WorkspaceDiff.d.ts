@@ -33,14 +33,14 @@ export declare class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrappe
     revertToOriginal(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<void>;
 }
 export declare const enum Events {
-    ModifiedStatusChanged = "ModifiedStatusChanged"
+    MODIFIED_STATUS_CHANGED = "ModifiedStatusChanged"
 }
 export interface ModifiedStatusChangedEvent {
     uiSourceCode: Workspace.UISourceCode.UISourceCode;
     isModified: boolean;
 }
 export type EventTypes = {
-    [Events.ModifiedStatusChanged]: ModifiedStatusChangedEvent;
+    [Events.MODIFIED_STATUS_CHANGED]: ModifiedStatusChangedEvent;
 };
 export declare class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper<UISourceCodeDiffEventTypes> {
     private uiSourceCode;
@@ -54,10 +54,10 @@ export declare class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper
     private innerRequestDiff;
 }
 export declare const enum UISourceCodeDiffEvents {
-    DiffChanged = "DiffChanged"
+    DIFF_CHANGED = "DiffChanged"
 }
 export type UISourceCodeDiffEventTypes = {
-    [UISourceCodeDiffEvents.DiffChanged]: void;
+    [UISourceCodeDiffEvents.DIFF_CHANGED]: void;
 };
 export declare function workspaceDiff(): WorkspaceDiffImpl;
 export declare const UpdateTimeout = 200;

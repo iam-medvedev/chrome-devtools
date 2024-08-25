@@ -857,9 +857,11 @@ export class DOMNode {
 (function (DOMNode) {
     let ShadowRootTypes;
     (function (ShadowRootTypes) {
+        /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
         ShadowRootTypes["UserAgent"] = "user-agent";
         ShadowRootTypes["Open"] = "open";
         ShadowRootTypes["Closed"] = "closed";
+        /* eslint-enable @typescript-eslint/naming-convention */
     })(ShadowRootTypes = DOMNode.ShadowRootTypes || (DOMNode.ShadowRootTypes = {}));
 })(DOMNode || (DOMNode = {}));
 export class DeferredDOMNode {
@@ -1326,6 +1328,9 @@ export class DOMModel extends SDKModel {
     getTopLayerElements() {
         return this.agent.invoke_getTopLayerElements().then(({ nodeIds }) => nodeIds);
     }
+    getDetachedDOMNodes() {
+        return this.agent.invoke_getDetachedDomNodes().then(({ detachedNodes }) => detachedNodes);
+    }
     getElementByRelation(nodeId, relation) {
         return this.agent.invoke_getElementByRelation({ nodeId, relation }).then(({ nodeId }) => nodeId);
     }
@@ -1371,6 +1376,7 @@ export class DOMModel extends SDKModel {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["AttrModified"] = "AttrModified";
     Events["AttrRemoved"] = "AttrRemoved";
     Events["CharacterDataModified"] = "CharacterDataModified";
@@ -1382,6 +1388,7 @@ export var Events;
     Events["DistributedNodesChanged"] = "DistributedNodesChanged";
     Events["MarkersChanged"] = "MarkersChanged";
     Events["TopLayerElementsChanged"] = "TopLayerElementsChanged";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 class DOMDispatcher {
     #domModel;

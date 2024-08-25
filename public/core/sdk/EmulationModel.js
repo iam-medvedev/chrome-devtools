@@ -24,7 +24,7 @@ export class EmulationModel extends SDKModel {
         this.#cssModel = target.model(CSSModel);
         this.#overlayModelInternal = target.model(OverlayModel);
         if (this.#overlayModelInternal) {
-            this.#overlayModelInternal.addEventListener("InspectModeWillBeToggled" /* Events.InspectModeWillBeToggled */, () => {
+            this.#overlayModelInternal.addEventListener("InspectModeWillBeToggled" /* Events.INSPECT_MODE_WILL_BE_TOGGLED */, () => {
                 void this.updateTouch();
             }, this);
         }
@@ -155,7 +155,7 @@ export class EmulationModel extends SDKModel {
         this.#touchEmulationAllowed = touchEmulationAllowed;
     }
     supportsDeviceEmulation() {
-        return this.target().hasAllCapabilities(4096 /* Capability.DeviceEmulation */);
+        return this.target().hasAllCapabilities(4096 /* Capability.DEVICE_EMULATION */);
     }
     async resetPageScaleFactor() {
         await this.#emulationAgent.invoke_resetPageScaleFactor();
@@ -474,5 +474,5 @@ export class DeviceOrientation {
         return JSON.stringify(this);
     }
 }
-SDKModel.register(EmulationModel, { capabilities: 256 /* Capability.Emulation */, autostart: true });
+SDKModel.register(EmulationModel, { capabilities: 256 /* Capability.EMULATION */, autostart: true });
 //# sourceMappingURL=EmulationModel.js.map

@@ -373,7 +373,7 @@ export class MainImpl {
         UI.DockController.DockController.instance({ forceNew: true, canDock });
         SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
         SDK.DOMDebuggerModel.DOMDebuggerManager.instance({ forceNew: true });
-        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SuspendStateChanged */, this.#onSuspendStateChanged.bind(this));
+        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.#onSuspendStateChanged.bind(this));
         Workspace.FileManager.FileManager.instance({ forceNew: true });
         Workspace.Workspace.WorkspaceImpl.instance();
         Bindings.NetworkProject.NetworkProjectManager.instance();
@@ -512,7 +512,7 @@ export class MainImpl {
         return this.#readyForTestPromise;
     }
     #registerMessageSinkListener() {
-        Common.Console.Console.instance().addEventListener("messageAdded" /* Common.Console.Events.MessageAdded */, messageAdded);
+        Common.Console.Console.instance().addEventListener("messageAdded" /* Common.Console.Events.MESSAGE_ADDED */, messageAdded);
         function messageAdded({ data: message }) {
             if (message.show) {
                 Common.Console.Console.instance().show();
@@ -707,7 +707,7 @@ export class MainMenuItem {
         }
         if (UI.DockController.DockController.instance().dockSide() === "undocked" /* UI.DockController.DockState.UNDOCKED */) {
             const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-            if (mainTarget && mainTarget.type() === SDK.Target.Type.Frame) {
+            if (mainTarget && mainTarget.type() === SDK.Target.Type.FRAME) {
                 contextMenu.defaultSection().appendAction('inspector-main.focus-debuggee', i18nString(UIStrings.focusDebuggee));
             }
         }
@@ -728,7 +728,7 @@ export class MainMenuItem {
             const id = viewExtension.viewId();
             if (id === 'issues-pane') {
                 moreTools.defaultSection().appendItem(title, () => {
-                    Host.userMetrics.issuesPanelOpenedFrom(3 /* Host.UserMetrics.IssueOpener.HamburgerMenu */);
+                    Host.userMetrics.issuesPanelOpenedFrom(3 /* Host.UserMetrics.IssueOpener.HAMBURGER_MENU */);
                     void UI.ViewManager.ViewManager.instance().showView('issues-pane', /* userGesture */ true);
                 }, { jslogContext: id });
                 continue;

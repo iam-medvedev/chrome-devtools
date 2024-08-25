@@ -34,7 +34,7 @@ describe('LowTextContrastIssue', () => {
         const issues = issueDetails.map(details => new IssuesManager.LowTextContrastIssue.LowTextContrastIssue(details, mockModel));
         const aggregator = new Issues.IssueAggregator.IssueAggregator(mockManager);
         for (const issue of issues) {
-            mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.IssueAdded */, { issuesModel: mockModel, issue });
+            mockManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
         }
         const aggregatedIssues = Array.from(aggregator.aggregatedIssues());
         assert.strictEqual(aggregatedIssues.length, 1);

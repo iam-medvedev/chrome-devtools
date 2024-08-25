@@ -50,10 +50,12 @@ export class SecurityOriginManager extends SDKModel {
 }
 export var Events;
 (function (Events) {
+    /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     Events["SecurityOriginAdded"] = "SecurityOriginAdded";
     Events["SecurityOriginRemoved"] = "SecurityOriginRemoved";
     Events["MainSecurityOriginChanged"] = "MainSecurityOriginChanged";
+    /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 // TODO(jarhar): this is the one of the two usages of Capability.None. Do something about it!
-SDKModel.register(SecurityOriginManager, { capabilities: 0 /* Capability.None */, autostart: false });
+SDKModel.register(SecurityOriginManager, { capabilities: 0 /* Capability.NONE */, autostart: false });
 //# sourceMappingURL=SecurityOriginManager.js.map

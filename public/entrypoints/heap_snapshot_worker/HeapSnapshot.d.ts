@@ -186,9 +186,9 @@ export interface LiveObjects {
  * DOM node link state.
  */
 declare const enum DOMLinkState {
-    Unknown = 0,
-    Attached = 1,
-    Detached = 2
+    UNKNOWN = 0,
+    ATTACHED = 1,
+    DETACHED = 2
 }
 export declare abstract class HeapSnapshot {
     #private;
@@ -225,6 +225,7 @@ export declare abstract class HeapSnapshot {
     edgeShortcutType: number;
     edgeWeakType: number;
     edgeInvisibleType: number;
+    edgePropertyType: number;
     nodeCount: number;
     retainedSizes: Float64Array;
     firstEdgeIndexes: Uint32Array;
@@ -236,9 +237,6 @@ export declare abstract class HeapSnapshot {
     dominatedNodes: Uint32Array;
     dominatorsTree: Uint32Array;
     nodeDetachednessAndClassIndexOffset: number;
-    lazyStringCache: {
-        [x: string]: string;
-    };
     detachednessAndClassIndexArray?: Uint32Array;
     constructor(profile: Profile, progress: HeapSnapshotProgress);
     initialize(): void;
@@ -280,8 +278,9 @@ export declare abstract class HeapSnapshot {
         duplicatedPart: string;
         tableId: string;
     } | undefined;
+    private computeIsEssentialEdge;
     /**
-     * The function checks is the edge should be considered during building
+     * The function checks whether the edge should be considered during building
      * postorder iterator and dominator tree.
      */
     private isEssentialEdge;
@@ -403,7 +402,6 @@ export declare class JSHeapSnapshot extends HeapSnapshot {
         detachedDOMTreeNode: number;
         pageObject: number;
     };
-    lazyStringCache: {};
     private flags;
     constructor(profile: Profile, progress: HeapSnapshotProgress);
     createNode(nodeIndex?: number): JSHeapSnapshotNode;
@@ -428,11 +426,12 @@ export declare class JSHeapSnapshot extends HeapSnapshot {
     getStatistics(): HeapSnapshotModel.HeapSnapshotModel.Statistics;
 }
 export declare class JSHeapSnapshotNode extends HeapSnapshotNode {
+    #private;
     constructor(snapshot: JSHeapSnapshot, nodeIndex?: number);
     canBeQueried(): boolean;
-    rawName(): string;
     name(): string;
     private consStringName;
+    static formatPropertyName(name: string): string;
     id(): number;
     isHidden(): boolean;
     isArray(): boolean;

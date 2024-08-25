@@ -26,10 +26,10 @@ describeWithMockConnection('DOMStorageModel', () => {
         const manager = target.model(SDK.StorageKeyManager.StorageKeyManager);
         assert.exists(manager);
         assert.isEmpty(domStorageModel.storages());
-        manager.dispatchEventToListeners("StorageKeyAdded" /* SDK.StorageKeyManager.Events.StorageKeyAdded */, testKey);
+        manager.dispatchEventToListeners("StorageKeyAdded" /* SDK.StorageKeyManager.Events.STORAGE_KEY_ADDED */, testKey);
         assert.exists(domStorageModel.storageForId(testId));
         assert.exists(domStorageModel.storageForId(testId));
-        manager.dispatchEventToListeners("StorageKeyRemoved" /* SDK.StorageKeyManager.Events.StorageKeyRemoved */, testKey);
+        manager.dispatchEventToListeners("StorageKeyRemoved" /* SDK.StorageKeyManager.Events.STORAGE_KEY_REMOVED */, testKey);
         assert.isUndefined(domStorageModel.storageForId(testId));
     });
 });

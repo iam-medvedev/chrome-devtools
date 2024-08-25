@@ -48,12 +48,12 @@ export function hasIssueOfCategory(obj, category) {
 export function hasThirdPartyPhaseoutCookieIssue(obj) {
     const issues = Array.from(IssuesManager.instance().issues());
     return issuesAssociatedWith(issues, obj)
-        .some(issue => CookieIssue.getSubCategory(issue.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.ThirdPartyPhaseoutCookie */);
+        .some(issue => CookieIssue.getSubCategory(issue.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.THIRD_PARTY_PHASEOUT_COOKIE */);
 }
 export function hasThirdPartyPhaseoutCookieIssueForDomain(domain) {
     const issues = Array.from(IssuesManager.instance().issues());
     const issuesForDomain = issues.filter(issue => Array.from(issue.cookies()).some(cookie => cookie.domain === domain));
-    return issuesForDomain.some(issue => CookieIssue.getSubCategory(issue.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.ThirdPartyPhaseoutCookie */);
+    return issuesForDomain.some(issue => CookieIssue.getSubCategory(issue.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.THIRD_PARTY_PHASEOUT_COOKIE */);
 }
 export async function reveal(obj, category) {
     if (typeof obj === 'string') {

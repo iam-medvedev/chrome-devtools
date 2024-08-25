@@ -110,27 +110,27 @@ class IssueCategoryView extends UI.TreeOutline.TreeElement {
     }
     getCategoryName() {
         switch (this.#category) {
-            case "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CrossOriginEmbedderPolicy */:
+            case "CrossOriginEmbedderPolicy" /* IssuesManager.Issue.IssueCategory.CROSS_ORIGIN_EMBEDDER_POLICY */:
                 return i18nString(UIStrings.crossOriginEmbedderPolicy);
-            case "MixedContent" /* IssuesManager.Issue.IssueCategory.MixedContent */:
+            case "MixedContent" /* IssuesManager.Issue.IssueCategory.MIXED_CONTENT */:
                 return i18nString(UIStrings.mixedContent);
-            case "Cookie" /* IssuesManager.Issue.IssueCategory.Cookie */:
+            case "Cookie" /* IssuesManager.Issue.IssueCategory.COOKIE */:
                 return i18nString(UIStrings.samesiteCookie);
-            case "HeavyAd" /* IssuesManager.Issue.IssueCategory.HeavyAd */:
+            case "HeavyAd" /* IssuesManager.Issue.IssueCategory.HEAVY_AD */:
                 return i18nString(UIStrings.heavyAds);
-            case "ContentSecurityPolicy" /* IssuesManager.Issue.IssueCategory.ContentSecurityPolicy */:
+            case "ContentSecurityPolicy" /* IssuesManager.Issue.IssueCategory.CONTENT_SECURITY_POLICY */:
                 return i18nString(UIStrings.contentSecurityPolicy);
-            case "LowTextContrast" /* IssuesManager.Issue.IssueCategory.LowTextContrast */:
+            case "LowTextContrast" /* IssuesManager.Issue.IssueCategory.LOW_TEXT_CONTRAST */:
                 return i18nString(UIStrings.lowTextContrast);
-            case "Cors" /* IssuesManager.Issue.IssueCategory.Cors */:
+            case "Cors" /* IssuesManager.Issue.IssueCategory.CORS */:
                 return i18nString(UIStrings.cors);
-            case "AttributionReporting" /* IssuesManager.Issue.IssueCategory.AttributionReporting */:
+            case "AttributionReporting" /* IssuesManager.Issue.IssueCategory.ATTRIBUTION_REPORTING */:
                 return i18nString(UIStrings.attributionReporting);
-            case "QuirksMode" /* IssuesManager.Issue.IssueCategory.QuirksMode */:
+            case "QuirksMode" /* IssuesManager.Issue.IssueCategory.QUIRKS_MODE */:
                 return i18nString(UIStrings.quirksMode);
-            case "Generic" /* IssuesManager.Issue.IssueCategory.Generic */:
+            case "Generic" /* IssuesManager.Issue.IssueCategory.GENERIC */:
                 return i18nString(UIStrings.generic);
-            case "Other" /* IssuesManager.Issue.IssueCategory.Other */:
+            case "Other" /* IssuesManager.Issue.IssueCategory.OTHER */:
                 return i18nString(UIStrings.other);
         }
     }
@@ -185,7 +185,7 @@ export class IssuesPane extends UI.Widget.VBox {
         this.#aggregator.addEventListener("FullUpdateRequired" /* IssueAggregatorEvents.FullUpdateRequired */, this.#onFullUpdate, this);
         this.#hiddenIssuesRow.hidden = this.#issuesManager.numberOfHiddenIssues() === 0;
         this.#onFullUpdate();
-        this.#issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.IssuesCountUpdated */, this.#updateCounts, this);
+        this.#issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */, this.#updateCounts, this);
     }
     elementsToRestoreScrollPositionsFor() {
         return [this.#issuesTree.element];

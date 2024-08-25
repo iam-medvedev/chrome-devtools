@@ -45,7 +45,7 @@ describeWithMockConnection('WebAuthn pane', () => {
         let model;
         let panel;
         beforeEach(() => {
-            const tabTarget = createTarget({ type: SDK.Target.Type.Tab });
+            const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
             createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
             target = createTarget({ parentTarget: tabTarget });
             SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
@@ -120,7 +120,7 @@ describeWithMockConnection('WebAuthn pane', () => {
                 signCount: 1,
                 privateKey: '',
             };
-            model.dispatchEventToListeners("CredentialAdded" /* SDK.WebAuthnModel.Events.CredentialAdded */, {
+            model.dispatchEventToListeners("CredentialAdded" /* SDK.WebAuthnModel.Events.CREDENTIAL_ADDED */, {
                 authenticatorId,
                 credential,
             });
@@ -160,7 +160,7 @@ describeWithMockConnection('WebAuthn pane', () => {
                 signCount: 1,
                 privateKey: '',
             };
-            model.dispatchEventToListeners("CredentialAdded" /* SDK.WebAuthnModel.Events.CredentialAdded */, {
+            model.dispatchEventToListeners("CredentialAdded" /* SDK.WebAuthnModel.Events.CREDENTIAL_ADDED */, {
                 authenticatorId,
                 credential,
             });
@@ -183,7 +183,7 @@ describeWithMockConnection('WebAuthn pane', () => {
                 signCount: 2,
                 privateKey: '',
             };
-            model.dispatchEventToListeners("CredentialAsserted" /* SDK.WebAuthnModel.Events.CredentialAsserted */, {
+            model.dispatchEventToListeners("CredentialAsserted" /* SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED */, {
                 authenticatorId,
                 credential: updatedCredential,
             });
@@ -199,7 +199,7 @@ describeWithMockConnection('WebAuthn pane', () => {
                 signCount: 1,
                 privateKey: '',
             };
-            model.dispatchEventToListeners("CredentialAsserted" /* SDK.WebAuthnModel.Events.CredentialAsserted */, {
+            model.dispatchEventToListeners("CredentialAsserted" /* SDK.WebAuthnModel.Events.CREDENTIAL_ASSERTED */, {
                 authenticatorId,
                 credential: anotherCredential,
             });

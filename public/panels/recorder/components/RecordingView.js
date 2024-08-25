@@ -200,26 +200,26 @@ function converterIdToFlowMetric(converterId) {
     switch (converterId) {
         case "puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */:
         case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */:
-            return 1 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithPuppeteer */;
+            return 1 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_PUPPETEER */;
         case "json" /* Models.ConverterIds.ConverterIds.JSON */:
-            return 2 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithJSON */;
+            return 2 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_JSON */;
         case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */:
-            return 3 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithReplay */;
+            return 3 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_REPLAY */;
         default:
-            return 4 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedRecordingWithExtension */;
+            return 4 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_RECORDING_WITH_EXTENSION */;
     }
 }
 function converterIdToStepMetric(converterId) {
     switch (converterId) {
         case "puppeteer" /* Models.ConverterIds.ConverterIds.Puppeteer */:
         case "puppeteer-firefox" /* Models.ConverterIds.ConverterIds.PuppeteerFirefox */:
-            return 5 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithPuppeteer */;
+            return 5 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_PUPPETEER */;
         case "json" /* Models.ConverterIds.ConverterIds.JSON */:
-            return 6 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithJSON */;
+            return 6 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_JSON */;
         case "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.Replay */:
-            return 7 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithReplay */;
+            return 7 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_REPLAY */;
         default:
-            return 8 /* Host.UserMetrics.RecordingCopiedToClipboard.CopiedStepWithExtension */;
+            return 8 /* Host.UserMetrics.RecordingCopiedToClipboard.COPIED_STEP_WITH_EXTENSION */;
     }
 }
 export class RecordingView extends HTMLElement {
@@ -780,8 +780,8 @@ export class RecordingView extends HTMLElement {
     }
     showCodeToggle = () => {
         this.#showCodeView = !this.#showCodeView;
-        Host.userMetrics.recordingCodeToggled(this.#showCodeView ? 1 /* Host.UserMetrics.RecordingCodeToggled.CodeShown */ :
-            2 /* Host.UserMetrics.RecordingCodeToggled.CodeHidden */);
+        Host.userMetrics.recordingCodeToggled(this.#showCodeView ? 1 /* Host.UserMetrics.RecordingCodeToggled.CODE_SHOWN */ :
+            2 /* Host.UserMetrics.RecordingCodeToggled.CODE_HIDDEN */);
         void this.#convertToCode();
     };
     #convertToCode = async () => {

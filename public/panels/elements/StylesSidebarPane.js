@@ -262,8 +262,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.activeCSSAngle = null;
         const showDocumentationSetting = Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover');
         showDocumentationSetting.addChangeListener(event => {
-            const metricType = Boolean(event.data) ? 1 /* Host.UserMetrics.CSSPropertyDocumentation.ToggledOn */ :
-                2 /* Host.UserMetrics.CSSPropertyDocumentation.ToggledOff */;
+            const metricType = Boolean(event.data) ? 1 /* Host.UserMetrics.CSSPropertyDocumentation.TOGGLED_ON */ :
+                2 /* Host.UserMetrics.CSSPropertyDocumentation.TOGGLED_OFF */;
             Host.userMetrics.cssPropertyDocumentation(metricType);
         });
         this.#hintPopoverHelper = new UI.PopoverHelper.PopoverHelper(this.contentElement, event => {
@@ -304,7 +304,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                         show: async (popover) => {
                             const popupElement = new ElementsComponents.CSSPropertyDocsView.CSSPropertyDocsView(cssProperty);
                             popover.contentElement.appendChild(popupElement);
-                            Host.userMetrics.cssPropertyDocumentation(0 /* Host.UserMetrics.CSSPropertyDocumentation.Shown */);
+                            Host.userMetrics.cssPropertyDocumentation(0 /* Host.UserMetrics.CSSPropertyDocumentation.SHOWN */);
                             return true;
                         },
                     };
@@ -1016,7 +1016,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             return;
         }
         this.setUserOperation(true);
-        const styleSheetHeader = await cssModel.requestViaInspectorStylesheet(node);
+        const styleSheetHeader = await cssModel.requestViaInspectorStylesheet(node.frameId());
         this.setUserOperation(false);
         await this.createNewRuleInStyleSheet(styleSheetHeader);
     }
@@ -1317,7 +1317,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         copyAllChangesButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.Click */, async () => {
             const allChanges = await this.getFormattedChanges();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
-            Host.userMetrics.styleTextCopied(2 /* Host.UserMetrics.StyleTextCopied.AllChangesViaStylesPane */);
+            Host.userMetrics.styleTextCopied(2 /* Host.UserMetrics.StyleTextCopied.ALL_CHANGES_VIA_STYLES_TAB */);
             if (timeout) {
                 clearTimeout(timeout);
                 timeout = undefined;

@@ -112,7 +112,7 @@ export async function frameworkEventListeners(object) {
                 if (!location) {
                     throw new Error('Empty event listener\'s location');
                 }
-                return new SDK.DOMDebuggerModel.EventListener(domDebuggerModel, object, type, useCapture, passive, once, handler, originalHandler, location, removeFunctionObject, "FrameworkUser" /* SDK.DOMDebuggerModel.EventListener.Origin.FrameworkUser */);
+                return new SDK.DOMDebuggerModel.EventListener(domDebuggerModel, object, type, useCapture, passive, once, handler, originalHandler, location, removeFunctionObject, "FrameworkUser" /* SDK.DOMDebuggerModel.EventListener.Origin.FRAMEWORK_USER */);
             }
         }
     }
