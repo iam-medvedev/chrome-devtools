@@ -234,6 +234,13 @@ main .buttons {
   }
 }
 
+button.link {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+}
+
 .loader {
   background:
     linear-gradient(

@@ -19,24 +19,6 @@ styles.replaceSync(
   color: var(--sys-color-error-bright);
 }
 
-ul.discovery-icon-results {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
-  li {
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 4px;
-
-    span {
-      /* push the text down to align slightly better with the icons */
-      padding-top: 2px;
-    }
-  }
-}
-
 /*# sourceURL=lcpDiscovery.css */
 `);
 

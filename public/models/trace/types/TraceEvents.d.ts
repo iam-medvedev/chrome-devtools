@@ -1,5 +1,5 @@
 import type * as Protocol from '../../../generated/protocol.js';
-import { type MicroSeconds, type MilliSeconds, type Seconds } from './Timing.js';
+import { type MicroSeconds, type MilliSeconds, type Seconds, type TraceWindowMicroSeconds } from './Timing.js';
 export declare const enum Phase {
     BEGIN = "B",
     END = "E",
@@ -254,7 +254,12 @@ export interface SyntheticNetworkRequest extends TraceEventComplete, SyntheticBa
     args: TraceEventArgs & {
         data: TraceEventArgsData & {
             syntheticData: SyntheticArgsData;
+            /** Size of the resource after decompression (if applicable). */
             decodedBodyLength: number;
+            /**
+             * Size of the resource over the network. Includes size of headers and
+             * anything else in the HTTP response packet.
+             */
             encodedDataLength: number;
             frame: string;
             fromServiceWorker: boolean;
@@ -634,6 +639,7 @@ type LayoutShiftData = TraceEventArgsData & {
     region_rects: TraceRect[];
     score: number;
     weighted_score_delta: number;
+    navigationId?: string;
 };
 export interface TraceEventLayoutShift extends TraceEventInstant {
     name: 'LayoutShift';
@@ -663,6 +669,25 @@ export interface SyntheticLayoutShift extends TraceEventLayoutShift, SyntheticBa
         };
     };
     parsedData: LayoutShiftParsedData;
+}
+/**
+ * This is a synthetic Layout shift cluster. Not based on a raw event as there's no concept
+ * of this as a trace event.
+ */
+export interface SyntheticLayoutShiftCluster {
+    name: 'LayoutShiftCluster';
+    clusterWindow: TraceWindowMicroSeconds;
+    clusterCumulativeScore: number;
+    events: SyntheticLayoutShift[];
+    scoreWindows: {
+        good: TraceWindowMicroSeconds;
+        needsImprovement?: TraceWindowMicroSeconds;
+        bad?: TraceWindowMicroSeconds;
+    };
+    navigationId?: string;
+    worstShiftEvent?: TraceEventData;
+    ts?: MicroSeconds;
+    dur?: MicroSeconds;
 }
 export type FetchPriorityHint = 'low' | 'high' | 'auto';
 export type RenderBlocking = 'blocking' | 'non_blocking' | 'in_body_parser_blocking' | 'potentially_blocking';

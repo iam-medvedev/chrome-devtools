@@ -31,7 +31,6 @@
   "files": [
     "../../../../../../front_end/entrypoints/main/ExecutionContextSelector.ts",
     "../../../../../../front_end/entrypoints/main/MainImpl.ts",
-    "../../../../../../front_end/entrypoints/main/SettingTracker.ts",
     "../../../../../../front_end/entrypoints/main/SimpleApp.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

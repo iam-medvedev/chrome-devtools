@@ -66,5 +66,28 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.isFalse(Common.Settings.moduleSetting('freestyler-enabled').get());
         assert.isTrue(isExpanded(details[1]));
     });
+    it('renders disabled switch component with reason', async () => {
+        Common.Settings.moduleSetting('console-insights-enabled').setRegistration({
+            settingName: 'console-insights-enabled',
+            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            defaultValue: false,
+            disabledCondition: () => {
+                return { disabled: true, reason: 'reason 1' };
+            },
+        });
+        Common.Settings.moduleSetting('freestyler-enabled').setRegistration({
+            settingName: 'freestyler-enabled',
+            settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+            defaultValue: true,
+            disabledCondition: () => {
+                return { disabled: true, reason: 'reason 2' };
+            },
+        });
+        const { switches } = await renderAISettings();
+        assert.isTrue(switches[0].disabled);
+        assert.strictEqual(switches[0].title, 'reason 1');
+        assert.isTrue(switches[1].disabled);
+        assert.strictEqual(switches[1].title, 'reason 2');
+    });
 });
 //# sourceMappingURL=AISettingsTab.test.js.map

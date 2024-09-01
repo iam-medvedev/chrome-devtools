@@ -4,20 +4,23 @@
 import { decodeGeneratedRanges, decodeOriginalScopes, } from './SourceMapScopes.js';
 export class SourceMapScopesInfo {
     /* eslint-disable-next-line no-unused-private-class-members */
+    #sourceMap;
+    /* eslint-disable-next-line no-unused-private-class-members */
     #originalScopes;
     #generatedRanges;
-    constructor(originalScopes, generatedRanges) {
+    constructor(sourceMap, originalScopes, generatedRanges) {
+        this.#sourceMap = sourceMap;
         this.#originalScopes = originalScopes;
         this.#generatedRanges = generatedRanges;
     }
-    static parseFromMap(sourceMap) {
-        if (!sourceMap.originalScopes || !sourceMap.generatedRanges) {
+    static parseFromMap(sourceMap, sourceMapJson) {
+        if (!sourceMapJson.originalScopes || !sourceMapJson.generatedRanges) {
             throw new Error('Cant create SourceMapScopesInfo without encoded scopes');
         }
-        const scopeTrees = decodeOriginalScopes(sourceMap.originalScopes, sourceMap.names ?? []);
+        const scopeTrees = decodeOriginalScopes(sourceMapJson.originalScopes, sourceMapJson.names ?? []);
         const originalScopes = scopeTrees.map(tree => tree.root);
-        const generatedRanges = decodeGeneratedRanges(sourceMap.generatedRanges, scopeTrees, sourceMap.names ?? []);
-        return new SourceMapScopesInfo(originalScopes, generatedRanges);
+        const generatedRanges = decodeGeneratedRanges(sourceMapJson.generatedRanges, scopeTrees, sourceMapJson.names ?? []);
+        return new SourceMapScopesInfo(sourceMap, originalScopes, generatedRanges);
     }
     /**
      * Given a generated position, returns the original name of the surrounding function as well as

@@ -47,8 +47,6 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     defaultSidebarHeight;
     constraintsInDip;
     resizeStartSizeDIP;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setting;
     totalSizeCSS;
     totalSizeOtherDimensionCSS;
@@ -223,6 +221,9 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     }
     showMode() {
         return this.showModeInternal;
+    }
+    sidebarIsShowing() {
+        return this.showModeInternal !== "OnlyMain" /* ShowMode.OnlyMain */;
     }
     setSecondIsSidebar(secondIsSidebar) {
         if (secondIsSidebar === this.secondIsSidebar) {
@@ -658,7 +659,8 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     }
     settingForOrientation() {
         const state = this.setting ? this.setting.get() : {};
-        return this.isVerticalInternal ? state.vertical : state.horizontal;
+        const orientationState = this.isVerticalInternal ? state.vertical : state.horizontal;
+        return orientationState ?? null;
     }
     preferredSidebarSizeDIP() {
         let size = this.savedSidebarSizeDIP;

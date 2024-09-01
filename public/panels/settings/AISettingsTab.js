@@ -24,31 +24,19 @@ const UIStrings = {
     /**
      *@description Text describing a fact to consider when using AI features
      */
-    experimentalFeatures: 'These features are experimental and may change',
+    experimentalFeatures: 'These features are experimental. They use generative AI and may provide inaccurate or offensive information that does not represent Google’s views.',
     /**
      *@description Text describing a fact to consider when using AI features
      */
-    maybeInaccurate: 'These features use generative AI and may provide inaccurate or offensive information that do not represent Google’s views',
+    sendsDataToGoogle: 'Using these features sends data relevant for the feature to Google. Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information.',
     /**
      *@description Text describing a fact to consider when using AI features
      */
-    sendsDataToGoogle: 'Using these features sends data relevant for the feature to Google. Please find more feature-specific information below.',
+    retainData: 'Usage data will be retained for up to 18 months and stored in a way where Google cannot tell who provided it.',
     /**
      *@description Text describing a fact to consider when using AI features
      */
-    collectData: 'Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information.',
-    /**
-     *@description Text describing a fact to consider when using AI features
-     */
-    retainData: 'Usage data will be stored in a way where Google cannot tell who provided it and can no longer fulfill any deletion requests and will be retained for up to 18 months',
-    /**
-     *@description Text describing a fact to consider when using AI features
-     */
-    managedAccount: 'Google may refrain from data collection depending on your Google account management and/or region',
-    /**
-     *@description Text describing a fact to consider when using AI features
-     */
-    adminSettings: 'Features available to managed users may vary depending upon their administrator’s settings',
+    adminSettings: 'Depending on your Google account management and/or region, Google may refrain from data collection. Depending on their organization’s settings, features available to managed users may vary.',
     /**
      *@description Text describing the 'Console Insights' feature
      */
@@ -114,7 +102,7 @@ const UIStrings = {
     /**
      *@description Label for a link to the privacy notice
      */
-    privacyNotice: 'Privacy Notice',
+    privacyNotice: 'Google Privacy Policy',
     /**
      *@description Message to display if a setting change requires a reload of DevTools
      */
@@ -215,11 +203,8 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     #renderSharedDisclaimer() {
         const bulletPoints = [
             { icon: 'psychiatry', text: i18nString(UIStrings.experimentalFeatures) },
-            { icon: 'report', text: i18nString(UIStrings.maybeInaccurate) },
             { icon: 'google', text: i18nString(UIStrings.sendsDataToGoogle) },
-            { icon: 'account-box', text: i18nString(UIStrings.collectData) },
             { icon: 'calendar-today', text: i18nString(UIStrings.retainData) },
-            { icon: 'globe', text: i18nString(UIStrings.managedAccount) },
             { icon: 'corporate-fare', text: i18nString(UIStrings.adminSettings) },
         ];
         return LitHtml.html `
@@ -284,6 +269,8 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         <${Switch.Switch.Switch.litTagName}
           .checked=${this.#consoleInsightsSetting?.get()}
           .jslogContext=${this.#consoleInsightsSetting?.name}
+          .disabled=${this.#consoleInsightsSetting?.disabled()}
+          title=${this.#consoleInsightsSetting?.disabledReason()}
           @switchchange=${this.#toggleConsoleInsightsSetting.bind(this)}
         ></${Switch.Switch.Switch.litTagName}>
       </div>
@@ -363,6 +350,8 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         <${Switch.Switch.Switch.litTagName}
           .checked=${this.#freestylerSetting?.get()}
           .jslogContext=${this.#freestylerSetting?.name}
+          .disabled=${this.#freestylerSetting?.disabled()}
+          title=${this.#freestylerSetting?.disabledReason()}
           @switchchange=${this.#toggleFreestylerSetting.bind(this)}
         ></${Switch.Switch.Switch.litTagName}>
       </div>

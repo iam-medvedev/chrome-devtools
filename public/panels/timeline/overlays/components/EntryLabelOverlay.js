@@ -183,9 +183,6 @@ export class EntryLabelOverlay extends HTMLElement {
         }
         this.#labelBox.innerText = initialLabel;
         // PART 1: draw the label box
-        // Set label height to the entry height
-        this.#labelBox.style.height = `${EntryLabelOverlay.LABEL_HEIGHT}px`;
-        this.#labelBox.style.padding = `${EntryLabelOverlay.LABEL_PADDING}px`;
         this.#labelBox.style.transform = `translateX(-${EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH}px)`;
         // If the label is not empty, it was loaded from the trace file.
         // In that case, do not make just created label editable.
@@ -250,7 +247,7 @@ export class EntryLabelOverlay extends HTMLElement {
             @keydown=${this.#handleLabelInputKeyDown}
             @paste=${this.#handleLabelInputPaste}
             @keyup=${this.#handleLabelInputKeyUp}
-            contenteditable=${this.#isLabelEditable}>
+            contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}>
           </span>
           <svg class="connectorContainer">
             <line/>

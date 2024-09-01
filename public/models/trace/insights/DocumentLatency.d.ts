@@ -3,6 +3,8 @@ import { type InsightResult, type NavigationInsightContext, type RequiredData } 
 export type DocumentLatencyInsightResult = InsightResult<{
     serverResponseTime: Types.Timing.MilliSeconds;
     redirectDuration: Types.Timing.MilliSeconds;
+    uncompressedResponseBytes: number;
+    documentRequest?: Types.TraceEvents.SyntheticNetworkRequest;
 }>;
 export declare function deps(): ['Meta', 'NetworkRequests'];
 export declare function generateInsight(traceParsedData: RequiredData<typeof deps>, context: NavigationInsightContext): DocumentLatencyInsightResult;

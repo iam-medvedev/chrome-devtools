@@ -1,8 +1,6 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-const syntheticEventsManagerByTraceIndex = [];
-const managerByRawEvents = new Map();
 let activeManager = null;
 export class SyntheticEventsManager {
     /**
@@ -14,25 +12,13 @@ export class SyntheticEventsManager {
      * All raw entries from a trace.
      */
     #rawTraceEvents = [];
-    /**
-     * Initializes a SyntheticEventsManager for a trace. This needs to be
-     * called before running the trace engine handlers, since the instance
-     * created here will be used by the handlers to register their
-     * synthetic trace events.
-     *
-     * Can be called multiple times for the same set of raw events, in which case it will re-use the existing manager rather than recreate it again.
-     */
-    static initAndActivate(rawEvents) {
-        const existingManager = managerByRawEvents.get(rawEvents);
-        if (existingManager) {
-            activeManager = existingManager;
-        }
-        else {
-            const manager = new SyntheticEventsManager(rawEvents);
-            managerByRawEvents.set(rawEvents, manager);
-            activeManager = manager;
-        }
-        return activeManager;
+    static activate(manager) {
+        activeManager = manager;
+    }
+    static createAndActivate(rawEvents) {
+        const manager = new SyntheticEventsManager(rawEvents);
+        SyntheticEventsManager.activate(manager);
+        return manager;
     }
     static getActiveManager() {
         if (!activeManager) {
@@ -41,7 +27,6 @@ export class SyntheticEventsManager {
         return activeManager;
     }
     static reset() {
-        syntheticEventsManagerByTraceIndex.length = 0;
         activeManager = null;
     }
     static registerSyntheticBasedEvent(syntheticEvent) {

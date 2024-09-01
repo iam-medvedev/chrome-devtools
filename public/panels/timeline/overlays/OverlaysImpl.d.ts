@@ -225,7 +225,7 @@ export declare class Overlays extends EventTarget {
      * This means if the event is in the main flame chart and below the network,
      * we add the height of the network chart to the Y value to position it
      * correctly.
-     * This can return null if any data waas missing, or if the event is not
+     * This can return null if any data was missing, or if the event is not
      * visible (if the level it's on is hidden because the track is collapsed,
      * for example)
      */

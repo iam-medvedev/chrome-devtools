@@ -9,7 +9,7 @@ import * as SDK from './sdk.js';
 const sourceUrlFoo = '<foo>';
 describe('SourceMapEntry', () => {
     it('can be instantiated correctly', () => {
-        const sourceMapEntry = new SDK.SourceMap.SourceMapEntry(1, 1, 'http://www.example.com/', 1, 1, 'example');
+        const sourceMapEntry = new SDK.SourceMap.SourceMapEntry(1, 1, 0, 'http://www.example.com/', 1, 1, 'example');
         assert.strictEqual(sourceMapEntry.lineNumber, 1, 'line number was not set correctly');
         assert.strictEqual(sourceMapEntry.columnNumber, 1, 'column number was not set correctly');
         assert.strictEqual(sourceMapEntry.sourceURL, 'http://www.example.com/', 'source URL was not set correctly');
@@ -19,18 +19,18 @@ describe('SourceMapEntry', () => {
     });
     describe('comparison', () => {
         it('checks line numbers first', () => {
-            const sourceMapEntry1 = new SDK.SourceMap.SourceMapEntry(1, 5, sourceUrlFoo, 1, 5, 'foo');
-            const sourceMapEntry2 = new SDK.SourceMap.SourceMapEntry(2, 5, sourceUrlFoo, 2, 5, 'foo');
+            const sourceMapEntry1 = new SDK.SourceMap.SourceMapEntry(1, 5, 0, sourceUrlFoo, 1, 5, 'foo');
+            const sourceMapEntry2 = new SDK.SourceMap.SourceMapEntry(2, 5, 0, sourceUrlFoo, 2, 5, 'foo');
             assert.isBelow(SDK.SourceMap.SourceMapEntry.compare(sourceMapEntry1, sourceMapEntry2), 0, 'first entry is not smaller');
         });
         it('checks column numbers second when line numbers are equal', () => {
-            const sourceMapEntry1 = new SDK.SourceMap.SourceMapEntry(2, 5, sourceUrlFoo, 1, 5, 'foo');
-            const sourceMapEntry2 = new SDK.SourceMap.SourceMapEntry(2, 25, sourceUrlFoo, 2, 5, 'foo');
+            const sourceMapEntry1 = new SDK.SourceMap.SourceMapEntry(2, 5, 0, sourceUrlFoo, 1, 5, 'foo');
+            const sourceMapEntry2 = new SDK.SourceMap.SourceMapEntry(2, 25, 0, sourceUrlFoo, 2, 5, 'foo');
             assert.isBelow(SDK.SourceMap.SourceMapEntry.compare(sourceMapEntry1, sourceMapEntry2), 0, 'first entry is not smaller');
         });
         it('works for equal SourceMapEntries', () => {
-            const sourceMapEntry1 = new SDK.SourceMap.SourceMapEntry(2, 5, sourceUrlFoo, 1, 5, 'foo');
-            const sourceMapEntry2 = new SDK.SourceMap.SourceMapEntry(2, 5, sourceUrlFoo, 1, 5, 'foo');
+            const sourceMapEntry1 = new SDK.SourceMap.SourceMapEntry(2, 5, 0, sourceUrlFoo, 1, 5, 'foo');
+            const sourceMapEntry2 = new SDK.SourceMap.SourceMapEntry(2, 5, 0, sourceUrlFoo, 1, 5, 'foo');
             assert.strictEqual(SDK.SourceMap.SourceMapEntry.compare(sourceMapEntry1, sourceMapEntry2), 0);
         });
     });

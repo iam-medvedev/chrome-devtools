@@ -30,6 +30,10 @@ function getCompareText(view) {
 function getDetailedCompareText(view) {
     return view.shadowRoot.querySelector('.detailed-compare-text');
 }
+function getEnvironmentRecs(view) {
+    const recs = Array.from(view.shadowRoot.querySelectorAll('.environment-recs li'));
+    return recs.map(rec => rec.textContent);
+}
 function createMockHistogram() {
     // start/end values aren't actually used but they are filled out just in case
     // the histogram is therefore usable by all metrics
@@ -199,7 +203,7 @@ describeWithMockConnection('MetricCard', () => {
             renderElementIntoDOM(view);
             await coordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP 100 ms is good, and is similar to your users’ experience.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 100 ms is good, and is similar to your users’ experience.');
         });
         it('should show message when local is better', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -212,7 +216,7 @@ describeWithMockConnection('MetricCard', () => {
             renderElementIntoDOM(view);
             await coordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP 100 ms is good, but is significantly better than your users’ experience.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 100 ms is good, but is significantly better than your users’ experience.');
         });
         it('should show message when local is worse', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -225,7 +229,7 @@ describeWithMockConnection('MetricCard', () => {
             renderElementIntoDOM(view);
             await coordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP 5.00 s is poor, but is significantly worse than your users’ experience.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 5.00 s is poor, but is significantly worse than your users’ experience.');
         });
         it('should always be similar if local and field are rated "good"', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -238,7 +242,7 @@ describeWithMockConnection('MetricCard', () => {
             renderElementIntoDOM(view);
             await coordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP 10 ms is good, and is similar to your users’ experience.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 10 ms is good, and is similar to your users’ experience.');
         });
         it('should show generic summary if field is missing', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -249,7 +253,7 @@ describeWithMockConnection('MetricCard', () => {
             renderElementIntoDOM(view);
             await coordinator.done();
             const compareText = getCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP 3.00 s needs improvement.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 3.00 s needs improvement.');
         });
         it('should suggest interaction if local INP is missing', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -274,7 +278,7 @@ describeWithMockConnection('MetricCard', () => {
             renderElementIntoDOM(view);
             await coordinator.done();
             const compareText = getDetailedCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP 100 ms is good and is rated the same as 50% of real-user LCP experiences. Additionally, the field data 75th percentile LCP 1.00 s is good.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 100 ms is good and is rated the same as 50% of real-user LCP experiences. Additionally, the field data 75th percentile LCP value of 1.00 s is good.');
         });
         it('should show message when values are rated differently', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -287,7 +291,7 @@ describeWithMockConnection('MetricCard', () => {
             renderElementIntoDOM(view);
             await coordinator.done();
             const compareText = getDetailedCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP 100 ms is good and is rated the same as 50% of real-user LCP experiences. However, the field data 75th percentile LCP 5.00 s is poor.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 100 ms is good and is rated the same as 50% of real-user LCP experiences. However, the field data 75th percentile LCP value of 5.00 s is poor.');
         });
         it('should show generic summary if field is missing', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -298,7 +302,7 @@ describeWithMockConnection('MetricCard', () => {
             renderElementIntoDOM(view);
             await coordinator.done();
             const compareText = getDetailedCompareText(view);
-            assert.strictEqual(compareText.innerText, 'Your local LCP 3.00 s needs improvement.');
+            assert.strictEqual(compareText.innerText, 'Your local LCP value of 3.00 s needs improvement.');
         });
         it('should suggest interaction if local INP is missing', async () => {
             const view = new Components.MetricCard.MetricCard();
@@ -309,6 +313,113 @@ describeWithMockConnection('MetricCard', () => {
             await coordinator.done();
             const compareText = getDetailedCompareText(view);
             assert.strictEqual(compareText.innerText, 'Interact with the page to measure INP.');
+        });
+    });
+    describe('environment recommendations', () => {
+        it('should show nothing if field is missing', async () => {
+            const view = new Components.MetricCard.MetricCard();
+            view.data = {
+                metric: 'LCP',
+                localValue: 5000,
+            };
+            renderElementIntoDOM(view);
+            await coordinator.done();
+            const recs = getEnvironmentRecs(view);
+            assert.lengthOf(recs, 0);
+        });
+        it('should show nothing if local/field are similar', async () => {
+            const view = new Components.MetricCard.MetricCard();
+            view.data = {
+                metric: 'LCP',
+                localValue: 5000,
+                fieldValue: 5500,
+                histogram: createMockHistogram(),
+            };
+            renderElementIntoDOM(view);
+            await coordinator.done();
+            const recs = getEnvironmentRecs(view);
+            assert.lengthOf(recs, 0);
+        });
+        it('should show LCP recs', async () => {
+            const view = new Components.MetricCard.MetricCard();
+            view.data = {
+                metric: 'LCP',
+                localValue: 50,
+                fieldValue: 5500,
+                histogram: createMockHistogram(),
+            };
+            renderElementIntoDOM(view);
+            await coordinator.done();
+            const recs = getEnvironmentRecs(view);
+            assert.deepStrictEqual(recs, [
+                'Real users may experience longer page loads due to slower network conditions. Increasing network throttling will simulate slower network conditions.',
+                'Screen size can influence what the LCP element is. Ensure you are testing common viewport sizes.',
+                'The LCP element can vary between page loads if content is dynamic.',
+            ]);
+        });
+        it('should hide LCP throttling rec if local is bigger', async () => {
+            const view = new Components.MetricCard.MetricCard();
+            view.data = {
+                metric: 'LCP',
+                localValue: 5000,
+                fieldValue: 50,
+                histogram: createMockHistogram(),
+            };
+            renderElementIntoDOM(view);
+            await coordinator.done();
+            const recs = getEnvironmentRecs(view);
+            assert.deepStrictEqual(recs, [
+                'Screen size can influence what the LCP element is. Ensure you are testing common viewport sizes.',
+                'The LCP element can vary between page loads if content is dynamic.',
+            ]);
+        });
+        it('should show CLS recs', async () => {
+            const view = new Components.MetricCard.MetricCard();
+            view.data = {
+                metric: 'CLS',
+                localValue: 0,
+                fieldValue: 0.2,
+                histogram: createMockHistogram(),
+            };
+            renderElementIntoDOM(view);
+            await coordinator.done();
+            const recs = getEnvironmentRecs(view);
+            assert.deepStrictEqual(recs, [
+                'Screen size can influence what layout shifts happen. Ensure you are testing common viewport sizes.',
+                'How a user interacts with the page can influence layout shifts. Ensure you are testing common interactions like scrolling the page.',
+                'Dynamic content can influence what layout shifts happen.',
+            ]);
+        });
+        it('should show INP recs', async () => {
+            const view = new Components.MetricCard.MetricCard();
+            view.data = {
+                metric: 'INP',
+                localValue: 100,
+                fieldValue: 500,
+                histogram: createMockHistogram(),
+            };
+            renderElementIntoDOM(view);
+            await coordinator.done();
+            const recs = getEnvironmentRecs(view);
+            assert.deepStrictEqual(recs, [
+                'Real users may experience longer interactions due to slower CPU speeds. Increasing CPU throttling will simulate a slower device.',
+                'How a user interacts with the page influences interaction delays. Ensure you are testing common interactions.',
+            ]);
+        });
+        it('should hide INP throttling rec if local is bigger', async () => {
+            const view = new Components.MetricCard.MetricCard();
+            view.data = {
+                metric: 'INP',
+                localValue: 500,
+                fieldValue: 100,
+                histogram: createMockHistogram(),
+            };
+            renderElementIntoDOM(view);
+            await coordinator.done();
+            const recs = getEnvironmentRecs(view);
+            assert.deepStrictEqual(recs, [
+                'How a user interacts with the page influences interaction delays. Ensure you are testing common interactions.',
+            ]);
         });
     });
 });

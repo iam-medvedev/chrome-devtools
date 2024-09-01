@@ -59,13 +59,14 @@ export type SourceMapV3 = SourceMapV3Object | {
  */
 export declare function parseSourceMap(content: string): SourceMapV3;
 export declare class SourceMapEntry {
-    lineNumber: number;
-    columnNumber: number;
-    sourceURL: Platform.DevToolsPath.UrlString | undefined;
-    sourceLineNumber: number;
-    sourceColumnNumber: number;
-    name: string | undefined;
-    constructor(lineNumber: number, columnNumber: number, sourceURL?: Platform.DevToolsPath.UrlString, sourceLineNumber?: number, sourceColumnNumber?: number, name?: string);
+    readonly lineNumber: number;
+    readonly columnNumber: number;
+    readonly sourceIndex?: number;
+    readonly sourceURL: Platform.DevToolsPath.UrlString | undefined;
+    readonly sourceLineNumber: number;
+    readonly sourceColumnNumber: number;
+    readonly name: string | undefined;
+    constructor(lineNumber: number, columnNumber: number, sourceIndex?: number, sourceURL?: Platform.DevToolsPath.UrlString, sourceLineNumber?: number, sourceColumnNumber?: number, name?: string);
     static compare(entry1: SourceMapEntry, entry2: SourceMapEntry): number;
 }
 interface Position {

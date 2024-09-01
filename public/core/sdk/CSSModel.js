@@ -449,16 +449,19 @@ export class CSSModel extends SDKModel {
             return null;
         }
         try {
-            const { styleSheetId } = await this.agent.invoke_createStyleSheet({ frameId });
-            if (!styleSheetId) {
-                return null;
-            }
-            return this.#styleSheetIdToHeader.get(styleSheetId) || null;
+            return await this.createInspectorStylesheet(frameId);
         }
         catch (e) {
             console.error(e);
             return null;
         }
+    }
+    async createInspectorStylesheet(frameId) {
+        const result = await this.agent.invoke_createStyleSheet({ frameId });
+        if (result.getError()) {
+            throw new Error(result.getError());
+        }
+        return this.#styleSheetIdToHeader.get(result.styleSheetId) || null;
     }
     mediaQueryResultChanged() {
         this.#colorScheme = undefined;
@@ -710,6 +713,7 @@ export class CSSModel extends SDKModel {
         this.disableCSSPropertyTracker();
         super.dispose();
         this.#sourceMapManager.dispose();
+        this.dispatchEventToListeners(Events.ModelDisposed, this);
     }
     getAgent() {
         return this.agent;
@@ -721,6 +725,7 @@ export var Events;
     Events["FontsUpdated"] = "FontsUpdated";
     Events["MediaQueryResultChanged"] = "MediaQueryResultChanged";
     Events["ModelWasEnabled"] = "ModelWasEnabled";
+    Events["ModelDisposed"] = "ModelDisposed";
     Events["PseudoStateForced"] = "PseudoStateForced";
     Events["StyleSheetAdded"] = "StyleSheetAdded";
     Events["StyleSheetChanged"] = "StyleSheetChanged";

@@ -19,7 +19,7 @@ const component = new Freestyler.FreestylerChatUi({
     state: "chat-view" /* Freestyler.State.CHAT_VIEW */,
     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
     messages: [],
-    selectedNode: {},
+    selectedElement: {},
     isLoading: false,
     canShowFeedbackForm: false,
     userInfo: {},

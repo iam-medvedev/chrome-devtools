@@ -207,17 +207,14 @@ async function buildLayoutShiftsClusters() {
             // navigation.
             const navigationId = currentShiftNavigation === null ? undefined : navigations[currentShiftNavigation].args.data?.navigationId;
             clusters.push({
+                name: 'LayoutShiftCluster',
                 events: [],
                 clusterWindow: traceWindowFromTime(clusterStartTime),
                 clusterCumulativeScore: 0,
                 scoreWindows: {
                     good: traceWindowFromTime(clusterStartTime),
-                    needsImprovement: null,
-                    bad: null,
                 },
                 navigationId,
-                // This is calculated below.
-                worstShiftEvent: null,
             });
             firstShiftTime = clusterStartTime;
         }
@@ -240,6 +237,7 @@ async function buildLayoutShiftsClusters() {
                 data: {
                     ...event.args.data,
                     rawEvent: event,
+                    navigationId: currentCluster.navigationId ?? undefined,
                 },
             },
             parsedData: {
@@ -326,14 +324,21 @@ async function buildLayoutShiftsClusters() {
                 updateTraceWindowMax(cluster.scoreWindows.good, cluster.clusterWindow.max);
             }
             // Find the worst layout shift of the cluster.
-            const cumulativeScore = shift.args.data?.cumulative_score;
-            if (cumulativeScore !== undefined && cumulativeScore > largestScore) {
-                largestScore = cumulativeScore;
+            const score = shift.args.data?.score;
+            if (score !== undefined && score > largestScore) {
+                largestScore = score;
                 worstShiftEvent = shift;
             }
         }
         // Update the cluster's worst layout shift.
-        cluster.worstShiftEvent = worstShiftEvent;
+        if (worstShiftEvent) {
+            cluster.worstShiftEvent = worstShiftEvent;
+        }
+        // layout shifts are already sorted by time ascending.
+        // Capture the time range of the cluster.
+        cluster.ts = cluster.events[0].ts;
+        const lastShiftTimings = Helpers.Timing.eventTimingsMicroSeconds(cluster.events[cluster.events.length - 1]);
+        cluster.dur = Types.Timing.MicroSeconds(lastShiftTimings.endTime - cluster.events[0].ts);
         if (weightedScore > sessionMaxScore) {
             clsWindowID = windowID;
             sessionMaxScore = weightedScore;

@@ -245,10 +245,11 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
     }
     setActiveInsight(insight) {
         this.#activeInsight = insight;
+        const minimapBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.minimapTraceBounds;
         for (const overlay of this.#currentInsightOverlays) {
             this.removeOverlay(overlay);
         }
-        if (!this.#activeInsight) {
+        if (!this.#activeInsight || !minimapBounds) {
             return;
         }
         if (insight) {
@@ -269,12 +270,14 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
                 // Reveal the earliest event found from the overlays.
                 this.revealEvent(earliestEntry);
             }
-            const newBounds = this.calculateZoom(this.#currentInsightOverlays);
-            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(newBounds);
+            const overlaysBounds = this.calculateOverlaysTraceWindow(this.#currentInsightOverlays);
+            // Trace window covering all overlays expanded by 100% so that the overlays cover 50% of the visible window.
+            const expandedBounds = TraceEngine.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(overlaysBounds, minimapBounds, 100);
+            TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(expandedBounds);
         }
     }
-    // Returns a trace windows to zoom onto insight overlays so that the overlay covers 50% of the visible window.
-    calculateZoom(overlays) {
+    // Returns a trace windows that covers all provided overlays.
+    calculateOverlaysTraceWindow(overlays) {
         const allOverlayBounds = [];
         for (const overlay of overlays) {
             switch (overlay.type) {
@@ -297,12 +300,10 @@ export class TimelineFlameChartView extends UI.Widget.VBox {
         }
         const min = Math.min(...allOverlayBounds);
         const max = Math.max(...allOverlayBounds);
-        const range = max - min;
-        const quarterPadding = range / 2;
         return {
-            min: TraceEngine.Types.Timing.MicroSeconds(min - quarterPadding),
-            max: TraceEngine.Types.Timing.MicroSeconds(max + quarterPadding),
-            range: TraceEngine.Types.Timing.MicroSeconds(range),
+            min: TraceEngine.Types.Timing.MicroSeconds(min),
+            max: TraceEngine.Types.Timing.MicroSeconds(max),
+            range: TraceEngine.Types.Timing.MicroSeconds(max - min),
         };
     }
     #processFlameChartMouseMoveEvent(data) {

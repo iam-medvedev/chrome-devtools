@@ -55,13 +55,15 @@ export function parseSourceMap(content) {
 export class SourceMapEntry {
     lineNumber;
     columnNumber;
+    sourceIndex;
     sourceURL;
     sourceLineNumber;
     sourceColumnNumber;
     name;
-    constructor(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, name) {
+    constructor(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber, name) {
         this.lineNumber = lineNumber;
         this.columnNumber = columnNumber;
+        this.sourceIndex = sourceIndex;
         this.sourceURL = sourceURL;
         this.sourceLineNumber = sourceLineNumber;
         this.sourceColumnNumber = sourceColumnNumber;
@@ -163,6 +165,7 @@ export class SourceMap {
             return {
                 lineNumber,
                 columnNumber,
+                sourceIndex: callsite.sourceIndex,
                 sourceURL: this.sourceURLs()[callsite.sourceIndex],
                 sourceLineNumber: callsite.line,
                 sourceColumnNumber: callsite.column,
@@ -413,11 +416,11 @@ export class SourceMap {
             sourceLineNumber += tokenIter.nextVLQ();
             sourceColumnNumber += tokenIter.nextVLQ();
             if (!tokenIter.hasNext() || this.isSeparator(tokenIter.peek())) {
-                this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber));
+                this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber));
                 continue;
             }
             nameIndex += tokenIter.nextVLQ();
-            this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
+            this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
         }
         if (Root.Runtime.experiments.isEnabled("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */)) {
             this.parseBloombergScopes(map);
@@ -500,7 +503,7 @@ export class SourceMap {
     }
     #parseScopes(map) {
         if (map.originalScopes && map.generatedRanges) {
-            this.#scopesInfo = SourceMapScopesInfo.parseFromMap(map);
+            this.#scopesInfo = SourceMapScopesInfo.parseFromMap(this, map);
         }
     }
     findScopeEntry(sourceURL, sourceLineNumber, sourceColumnNumber) {

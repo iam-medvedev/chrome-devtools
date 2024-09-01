@@ -52,10 +52,11 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     profileUid?: string;
     constructor(worker: HeapSnapshotWorkerProxy, objectId: number);
     search(searchConfig: HeapSnapshotModel.HeapSnapshotModel.SearchConfig, filter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<number[]>;
+    interfaceDefinitions(): Promise<string>;
     aggregatesWithFilter(filter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<{
         [x: string]: HeapSnapshotModel.HeapSnapshotModel.Aggregate;
     }>;
-    aggregatesForDiff(): Promise<{
+    aggregatesForDiff(interfaceDefinitions: string): Promise<{
         [x: string]: HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff;
     }>;
     calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: {

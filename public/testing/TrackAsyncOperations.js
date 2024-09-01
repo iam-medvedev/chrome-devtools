@@ -162,6 +162,19 @@ function cancelTrackingActivity(id) {
         activity.cancelDelayed();
     }
 }
+/**
+ * Extracted into separate object which will make TypeScript
+ * check fail if new properties are added.
+ */
+const BasePromise = {
+    all: Promise.all,
+    allSettled: Promise.allSettled,
+    any: Promise.any,
+    race: Promise.race,
+    reject: Promise.reject,
+    resolve: Promise.resolve,
+    withResolvers: Promise.withResolvers,
+};
 // We can't subclass native Promise here as this will cause all derived promises
 // (e.g. those returned by `then`) to also be subclass instances. This results
 // in a new asyncActivity entry on each iteration of checkForPendingActivity
@@ -195,14 +208,7 @@ const TrackingPromise = Object.assign(function (arg) {
     };
     asyncActivity.push(activity);
     return promise;
-}, {
-    all: Promise.all,
-    allSettled: Promise.allSettled,
-    any: Promise.any,
-    race: Promise.race,
-    reject: Promise.reject,
-    resolve: Promise.resolve,
-});
+}, BasePromise);
 function getStack(error) {
     return (error.stack ?? 'No stack').split('\n').slice(2).join('\n');
 }

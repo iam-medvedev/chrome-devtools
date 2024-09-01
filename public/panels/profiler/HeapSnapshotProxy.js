@@ -231,11 +231,14 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     search(searchConfig, filter) {
         return this.callMethodPromise('search', searchConfig, filter);
     }
+    interfaceDefinitions() {
+        return this.callMethodPromise('interfaceDefinitions');
+    }
     aggregatesWithFilter(filter) {
         return this.callMethodPromise('aggregatesWithFilter', filter);
     }
-    aggregatesForDiff() {
-        return this.callMethodPromise('aggregatesForDiff');
+    aggregatesForDiff(interfaceDefinitions) {
+        return this.callMethodPromise('aggregatesForDiff', interfaceDefinitions);
     }
     calculateSnapshotDiff(baseSnapshotId, baseSnapshotAggregates) {
         return this.callMethodPromise('calculateSnapshotDiff', baseSnapshotId, baseSnapshotAggregates);

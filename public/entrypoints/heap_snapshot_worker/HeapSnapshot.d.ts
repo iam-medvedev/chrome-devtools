@@ -117,7 +117,7 @@ export declare class HeapSnapshotNode implements HeapSnapshotItem {
     traceNodeId(): number;
     itemIndex(): number;
     serialize(): HeapSnapshotModel.HeapSnapshotModel.Node;
-    private nameInternal;
+    rawNameIndex(): number;
     edgeIndexesStart(): number;
     edgeIndexesEnd(): number;
     ordinal(): number;
@@ -264,7 +264,7 @@ export declare abstract class HeapSnapshot {
     allocationTracesTops(): HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode[];
     allocationNodeCallers(nodeId: number): HeapSnapshotModel.HeapSnapshotModel.AllocationNodeCallers;
     allocationStack(nodeIndex: number): HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[] | null;
-    aggregatesForDiff(): {
+    aggregatesForDiff(interfaceDefinitions: string): {
         [x: string]: HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff;
     };
     isUserRoot(_node: HeapSnapshotNode): boolean;
@@ -290,6 +290,10 @@ export declare abstract class HeapSnapshot {
     private calculateRetainedSizes;
     private buildDominatedNodes;
     private calculateObjectNames;
+    interfaceDefinitions(): string;
+    private isPlainJSObject;
+    private inferInterfaceDefinitions;
+    private applyInterfaceDefinitions;
     /**
      * Iterates children of a node.
      */

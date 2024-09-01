@@ -16,6 +16,7 @@ query about the selected DOM element. You are going to answer to the query in th
 * TITLE
 * ACTION
 * ANSWER
+* FIXABLE
 Use THOUGHT to explain why you take the ACTION. Use TITLE to provide a short summary of the thought.
 Use ACTION to evaluate JavaScript code on the page to gather all the data needed to answer the query and put it inside the data variable - then return STOP.
 You have access to a special $0 variable referencing the current element in the scope of the JavaScript code.
@@ -25,6 +26,7 @@ Please run ACTION again if the information you received is not enough to answer 
 Please answer only if you are sure about the answer. Otherwise, explain why you're not able to answer.
 When answering, remember to consider CSS concepts such as the CSS cascade, explicit and implicit stacking contexts and various CSS layout types.
 When answering, always consider MULTIPLE possible solutions.
+After the ANSWER, output FIXABLE: true if the user request needs a fix using JavaScript or Web APIs and it has not been fixed previously.
 
 If you need to set styles on an HTML element, always call the \`async setElementStyles(el: Element, styles: object)\` function.
 
@@ -54,17 +56,19 @@ OBSERVATION
 
 You then output:
 ANSWER: The element is centered on the page because the parent is a flex container with justify-content set to center.
+FIXABLE: true
 
 The example session ends here.`;
 export const FIX_THIS_ISSUE_PROMPT = 'Fix this issue using JavaScript code execution';
-export var Step;
-(function (Step) {
-    Step["THOUGHT"] = "thought";
-    Step["ACTION"] = "action";
-    Step["ANSWER"] = "answer";
-    Step["ERROR"] = "error";
-    Step["QUERYING"] = "querying";
-})(Step || (Step = {}));
+export var ResponseType;
+(function (ResponseType) {
+    ResponseType["THOUGHT"] = "thought";
+    ResponseType["ACTION"] = "action";
+    ResponseType["SIDE_EFFECT"] = "side-effect";
+    ResponseType["ANSWER"] = "answer";
+    ResponseType["ERROR"] = "error";
+    ResponseType["QUERYING"] = "querying";
+})(ResponseType || (ResponseType = {}));
 // TODO: this should use the current execution context pased on the
 // node.
 async function executeJsCode(code, { throwOnSideEffect }) {
@@ -131,6 +135,7 @@ export class FreestylerAgent {
         let title;
         let action;
         let answer;
+        let fixable = false;
         let i = 0;
         while (i < lines.length) {
             const trimmed = lines[i].trim();
@@ -165,7 +170,8 @@ export class FreestylerAgent {
                 let j = i + 1;
                 while (j < lines.length) {
                     const line = lines[j].trim();
-                    if (line.startsWith('ACTION') || line.startsWith('OBSERVATION:') || line.startsWith('THOUGHT:')) {
+                    if (line.startsWith('ACTION') || line.startsWith('OBSERVATION:') || line.startsWith('THOUGHT:') ||
+                        line.startsWith('FIXABLE:')) {
                         break;
                     }
                     answerLines.push(lines[j]);
@@ -173,6 +179,10 @@ export class FreestylerAgent {
                 }
                 answer = answerLines.join('\n').trim();
                 i = j;
+            }
+            else if (trimmed.startsWith('FIXABLE: true')) {
+                fixable = true;
+                i++;
             }
             else {
                 i++;
@@ -183,13 +193,13 @@ export class FreestylerAgent {
         if (!answer && !thought && !action) {
             answer = response;
         }
-        return { thought, title, action, answer };
+        return { thought, title, action, answer, fixable };
     }
     #aidaClient;
     #chatHistory = new Map();
     #serverSideLoggingEnabled;
-    #confirmSideEffect;
     #execJs;
+    #confirmSideEffect;
     #sessionId = crypto.randomUUID();
     #changes;
     #createExtensionScope;
@@ -200,8 +210,12 @@ export class FreestylerAgent {
         this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
             return new ExtensionScope(changes);
         });
-        this.#confirmSideEffect = opts.confirmSideEffect;
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
+        this.#confirmSideEffect = opts.confirmSideEffectForTest ?? (() => Promise.withResolvers());
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+    }
+    onPrimaryPageChanged() {
+        void this.#changes.clear();
     }
     get #getHistoryEntry() {
         return [...this.#chatHistory.values()].flat();
@@ -221,10 +235,10 @@ export class FreestylerAgent {
         }
         return { response, rpcId };
     }
-    async #generateObservation(action, { throwOnSideEffect, confirmExecJs: confirm, execJsDeniedMesssage: denyErrorMessage }) {
-        const actionExpression = `{${action};((typeof data !== "undefined") ? data : undefined)}`;
+    async #generateObservation(action, { throwOnSideEffect, confirmExecJs: confirm, execJsDeniedMessage: denyErrorMessage, }) {
+        const actionExpression = `{const scope = {$0, $1, getEventListeners}; with (scope) {${action};((typeof data !== "undefined") ? data : undefined)}}`;
         try {
-            const runConfirmed = await (confirm?.call(this, action) ?? Promise.resolve(true));
+            const runConfirmed = await confirm ?? Promise.resolve(true);
             if (!runConfirmed) {
                 throw new Error(denyErrorMessage ?? 'Code execution is not allowed');
             }
@@ -233,17 +247,22 @@ export class FreestylerAgent {
             if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
                 throw new Error('Output exceeded the maximum allowed length.');
             }
-            return result;
+            return {
+                observation: result,
+                sideEffect: false,
+            };
         }
         catch (error) {
             if (error instanceof SideEffectError) {
-                return await this.#generateObservation(action, {
-                    throwOnSideEffect: false,
-                    confirmExecJs: this.#confirmSideEffect,
-                    execJsDeniedMesssage: error.message,
-                });
+                return {
+                    observation: error.message,
+                    sideEffect: true,
+                };
             }
-            return `Error: ${error.message}`;
+            return {
+                observation: `Error: ${error.message}`,
+                sideEffect: false,
+            };
         }
     }
     #runId = 0;
@@ -255,15 +274,10 @@ export class FreestylerAgent {
         options.signal?.addEventListener('abort', () => {
             this.#chatHistory.delete(currentRunId);
         });
-        // We need the first id for queueing to match
-        // the one of the first response
-        let id = `${currentRunId}-${0}`;
-        yield {
-            step: Step.QUERYING,
-            id,
-        };
         for (let i = 0; i < MAX_STEPS; i++) {
-            id = `${currentRunId}-${i}`;
+            yield {
+                type: ResponseType.QUERYING,
+            };
             const request = FreestylerAgent.buildRequest({
                 input: query,
                 preamble,
@@ -283,7 +297,11 @@ export class FreestylerAgent {
                 if (options.signal?.aborted) {
                     break;
                 }
-                yield { step: Step.ERROR, id, text: genericErrorMessage, rpcId };
+                yield {
+                    type: ResponseType.ERROR,
+                    error: genericErrorMessage,
+                    rpcId,
+                };
                 break;
             }
             if (options.signal?.aborted) {
@@ -306,7 +324,7 @@ export class FreestylerAgent {
                     entity: Host.AidaClient.Entity.SYSTEM,
                 },
             ]);
-            const { thought, title, action, answer } = FreestylerAgent.parseResponse(response);
+            const { thought, title, action, answer, fixable } = FreestylerAgent.parseResponse(response);
             // Sometimes the answer will follow an action and a thought. In
             // that case, we only use the action and the thought (if present)
             // since the answer is not based on the observation resulted from
@@ -314,43 +332,66 @@ export class FreestylerAgent {
             if (action) {
                 if (thought) {
                     yield {
-                        step: Step.THOUGHT,
-                        id,
-                        text: thought,
+                        type: ResponseType.THOUGHT,
+                        thought,
                         title,
                         rpcId,
                     };
-                    id = `${currentRunId}-${i}-action`;
                 }
                 debugLog(`Action to execute: ${action}`);
                 const scope = this.#createExtensionScope(this.#changes);
                 await scope.install();
                 try {
-                    const observation = await this.#generateObservation(action, { throwOnSideEffect: !options.isFixQuery });
-                    debugLog(`Action result: ${observation}`);
+                    let result = await this.#generateObservation(action, { throwOnSideEffect: !options.isFixQuery });
+                    debugLog(`Action result: ${result}`);
+                    if (result.sideEffect) {
+                        const sideEffectConfirmationPromiseWithResolvers = this.#confirmSideEffect();
+                        yield {
+                            type: ResponseType.SIDE_EFFECT,
+                            code: action,
+                            confirm: sideEffectConfirmationPromiseWithResolvers.resolve,
+                            rpcId,
+                        };
+                        result = await this.#generateObservation(action, {
+                            throwOnSideEffect: false,
+                            confirmExecJs: sideEffectConfirmationPromiseWithResolvers.promise,
+                            execJsDeniedMessage: result.observation,
+                        });
+                    }
                     yield {
-                        step: Step.ACTION,
+                        type: ResponseType.ACTION,
                         code: action,
-                        id,
-                        output: observation,
+                        output: result.observation,
                         rpcId,
                     };
-                    query = `OBSERVATION: ${observation}`;
+                    query = `OBSERVATION: ${result.observation}`;
                 }
                 finally {
                     await scope.uninstall();
                 }
             }
             else if (answer) {
-                yield { step: Step.ANSWER, id, text: answer, rpcId };
+                yield {
+                    type: ResponseType.ANSWER,
+                    text: answer,
+                    rpcId,
+                    fixable,
+                };
                 break;
             }
             else {
-                yield { step: Step.ERROR, id, text: genericErrorMessage, rpcId };
+                yield {
+                    type: ResponseType.ERROR,
+                    error: genericErrorMessage,
+                    rpcId,
+                };
                 break;
             }
             if (i === MAX_STEPS - 1) {
-                yield { step: Step.ERROR, id, text: 'Max steps reached, please try again.' };
+                yield {
+                    type: ResponseType.ERROR,
+                    error: 'Max steps reached, please try again.',
+                };
                 break;
             }
         }

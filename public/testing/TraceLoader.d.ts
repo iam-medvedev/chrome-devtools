@@ -26,8 +26,6 @@ export declare class TraceLoader {
     static fixtureContents(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<TraceEngine.Types.File.Contents>;
     /**
      * Load an array of raw events from the trace file.
-     * Will default to typing those events using the types from TraceEngine, but
-     * can be overriden by passing the legacy EventPayload type as the generic.
      **/
     static rawEvents(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<readonly TraceEngine.Types.TraceEvents.TraceEventData[]>;
     /**

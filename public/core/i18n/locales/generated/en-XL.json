@@ -3524,14 +3524,8 @@
   "panels/application/DOMStorageItemsView.ts | domStorageItemsCleared": {
     "message": "D̂ÓM̂ Śt̂ór̂áĝé Ît́êḿŝ ćl̂éâŕêd́"
   },
-  "panels/application/DOMStorageItemsView.ts | domStorageNumberEntries": {
-    "message": "N̂úm̂b́êŕ ôf́ êńt̂ŕîéŝ śĥóŵń îń t̂áb̂ĺê: {PH1}"
-  },
   "panels/application/DOMStorageItemsView.ts | key": {
     "message": "K̂éŷ"
-  },
-  "panels/application/DOMStorageItemsView.ts | selectAValueToPreview": {
-    "message": "Ŝél̂éĉt́ â v́âĺûé t̂ó p̂ŕêv́îéŵ"
   },
   "panels/application/DOMStorageItemsView.ts | value": {
     "message": "V̂ál̂úê"
@@ -10905,7 +10899,7 @@
     "message": "T̂ím̂éẑón̂é ÎD́"
   },
   "panels/settings/AISettingsTab.ts | adminSettings": {
-    "message": "F̂éât́ûŕêś âv́âíl̂áb̂ĺê t́ô ḿâńâǵêd́ ûśêŕŝ ḿâý v̂ár̂ý d̂ép̂én̂d́îńĝ úp̂ón̂ t́ĥéîŕ âd́m̂ín̂íŝt́r̂át̂ór̂’ś ŝét̂t́îńĝś"
+    "message": "D̂ép̂én̂d́îńĝ ón̂ ýôúr̂ Ǵôóĝĺê áĉćôún̂t́ m̂án̂áĝém̂én̂t́ âńd̂/ór̂ ŕêǵîón̂, Ǵôóĝĺê ḿâý r̂éf̂ŕâín̂ f́r̂óm̂ d́ât́â ćôĺl̂éĉt́îón̂. D́êṕêńd̂ín̂ǵ ôń t̂h́êír̂ ór̂ǵâńîźât́îón̂’ś ŝét̂t́îńĝś, f̂éât́ûŕêś âv́âíl̂áb̂ĺê t́ô ḿâńâǵêd́ ûśêŕŝ ḿâý v̂ár̂ý."
   },
   "panels/settings/AISettingsTab.ts | boostYourProductivity": {
     "message": "B̂óôśt̂ ýôúr̂ ṕr̂ód̂úĉt́îv́ît́ŷ ẃît́ĥ Ćĥŕôḿê ÁÎ"
@@ -10916,9 +10910,6 @@
   "panels/settings/AISettingsTab.ts | collapse": {
     "message": "ĉól̂ĺâṕŝé"
   },
-  "panels/settings/AISettingsTab.ts | collectData": {
-    "message": "Ĝóôǵl̂é ĉól̂ĺêćt̂ś t̂h́îś d̂át̂á âńd̂ f́êéd̂b́âćk̂ t́ô ím̂ṕr̂óv̂é ît́ŝ ṕr̂ód̂úĉt́ŝ án̂d́ ŝér̂v́îćêś ŵít̂h́ t̂h́ê h́êĺp̂ óf̂ h́ûḿâń r̂év̂íêẃêŕŝ. Áv̂óîd́ ŝh́âŕîńĝ śêńŝít̂ív̂é ôŕ p̂ér̂śôńâĺ îńf̂ór̂ḿât́îón̂."
-  },
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
     "message": "T̂h́ê ćôńŝól̂é m̂éŝśâǵê, áŝśôćîát̂éd̂ śt̂áĉḱ t̂ŕâćê, ŕêĺât́êd́ ŝóûŕĉé ĉód̂é, âńd̂ t́ĥé âśŝóĉíât́êd́ n̂ét̂ẃôŕk̂ h́êád̂ér̂ś âŕê śêńt̂ t́ô Ǵôóĝĺê t́ô ǵêńêŕât́ê éx̂ṕl̂án̂át̂íôńŝ. T́ĥíŝ d́ât́â ḿâý b̂é ŝéêń b̂ý ĥúm̂án̂ ŕêv́îéŵér̂ś t̂ó îḿp̂ŕôv́ê t́ĥíŝ f́êát̂úr̂é."
   },
@@ -10926,7 +10917,7 @@
     "message": "êx́p̂án̂d́"
   },
   "panels/settings/AISettingsTab.ts | experimentalFeatures": {
-    "message": "T̂h́êśê f́êát̂úr̂éŝ ár̂é êx́p̂ér̂ím̂én̂t́âĺ âńd̂ ḿâý ĉh́âńĝé"
+    "message": "T̂h́êśê f́êát̂úr̂éŝ ár̂é êx́p̂ér̂ím̂én̂t́âĺ. T̂h́êý ûśê ǵêńêŕât́îv́ê ÁÎ án̂d́ m̂áŷ ṕr̂óv̂íd̂é îńâćĉúr̂át̂é ôŕ ôf́f̂én̂śîv́ê ín̂f́ôŕm̂át̂íôń t̂h́ât́ d̂óêś n̂ót̂ ŕêṕr̂éŝén̂t́ Ĝóôǵl̂é’ŝ v́îéŵś."
   },
   "panels/settings/AISettingsTab.ts | explainConsole": {
     "message": "Ĝét̂ éx̂ṕl̂án̂át̂íôńŝ f́ôŕ ĉón̂śôĺê ẃâŕn̂ín̂ǵŝ án̂d́ êŕr̂ór̂ś"
@@ -10949,17 +10940,11 @@
   "panels/settings/AISettingsTab.ts | learnMore": {
     "message": "L̂éâŕn̂ ḿôŕê"
   },
-  "panels/settings/AISettingsTab.ts | managedAccount": {
-    "message": "Ĝóôǵl̂é m̂áŷ ŕêf́r̂áîń f̂ŕôḿ d̂át̂á ĉól̂ĺêćt̂íôń d̂ép̂én̂d́îńĝ ón̂ ýôúr̂ Ǵôóĝĺê áĉćôún̂t́ m̂án̂áĝém̂én̂t́ âńd̂/ór̂ ŕêǵîón̂"
-  },
-  "panels/settings/AISettingsTab.ts | maybeInaccurate": {
-    "message": "T̂h́êśê f́êát̂úr̂éŝ úŝé ĝén̂ér̂át̂ív̂é ÂÍ âńd̂ ḿâý p̂ŕôv́îd́ê ín̂áĉćûŕât́ê ór̂ óf̂f́êńŝív̂é îńf̂ór̂ḿât́îón̂ t́ĥát̂ d́ô ńôt́ r̂ép̂ŕêśêńt̂ Ǵôóĝĺê’ś v̂íêẃŝ"
-  },
   "panels/settings/AISettingsTab.ts | oneOrMoreSettingsHaveChanged": {
     "message": "Ôńê ór̂ ḿôŕê śêt́t̂ín̂ǵŝ h́âv́ê ćĥán̂ǵêd́ ŵh́îćĥ ŕêq́ûír̂éŝ á r̂él̂óâd́ t̂ó t̂ák̂é êf́f̂éĉt́."
   },
   "panels/settings/AISettingsTab.ts | privacyNotice": {
-    "message": "P̂ŕîv́âćŷ Ńôt́îćê"
+    "message": "Ĝóôǵl̂é P̂ŕîv́âćŷ Ṕôĺîćŷ"
   },
   "panels/settings/AISettingsTab.ts | receiveStylingSuggestions": {
     "message": "R̂éĉéîv́ê śûǵĝéŝt́îón̂ś âńd̂ ćôd́ê śâḿp̂ĺêś f̂ór̂ f́îx́îńĝ śt̂ýl̂ín̂ǵ îśŝúêś"
@@ -10968,10 +10953,10 @@
     "message": "R̂éĉéîv́ê śûǵĝéŝt́îón̂ś âńd̂ ćôd́ê śâḿp̂ĺêś t̂ó âd́d̂ŕêśŝ t́ĥéŝé îśŝúêś"
   },
   "panels/settings/AISettingsTab.ts | retainData": {
-    "message": "Ûśâǵê d́ât́â ẃîĺl̂ b́ê śt̂ór̂éd̂ ín̂ á ŵáŷ ẃĥér̂é Ĝóôǵl̂é ĉán̂ńôt́ t̂él̂ĺ ŵh́ô ṕr̂óv̂íd̂éd̂ ít̂ án̂d́ ĉán̂ ńô ĺôńĝér̂ f́ûĺf̂íl̂ĺ âńŷ d́êĺêt́îón̂ ŕêq́ûéŝt́ŝ án̂d́ ŵíl̂ĺ b̂é r̂ét̂áîńêd́ f̂ór̂ úp̂ t́ô 18 ḿôńt̂h́ŝ"
+    "message": "Ûśâǵê d́ât́â ẃîĺl̂ b́ê ŕêt́âín̂éd̂ f́ôŕ ûṕ t̂ó 18 m̂ón̂t́ĥś âńd̂ śt̂ór̂éd̂ ín̂ á ŵáŷ ẃĥér̂é Ĝóôǵl̂é ĉán̂ńôt́ t̂él̂ĺ ŵh́ô ṕr̂óv̂íd̂éd̂ ít̂."
   },
   "panels/settings/AISettingsTab.ts | sendsDataToGoogle": {
-    "message": "Ûśîńĝ t́ĥéŝé f̂éât́ûŕêś ŝén̂d́ŝ d́ât́â ŕêĺêv́âńt̂ f́ôŕ t̂h́ê f́êát̂úr̂é t̂ó Ĝóôǵl̂é. P̂ĺêáŝé f̂ín̂d́ m̂ór̂é f̂éât́ûŕê-śp̂éĉíf̂íĉ ín̂f́ôŕm̂át̂íôń b̂él̂óŵ."
+    "message": "Ûśîńĝ t́ĥéŝé f̂éât́ûŕêś ŝén̂d́ŝ d́ât́â ŕêĺêv́âńt̂ f́ôŕ t̂h́ê f́êát̂úr̂é t̂ó Ĝóôǵl̂é. Ĝóôǵl̂é ĉól̂ĺêćt̂ś t̂h́îś d̂át̂á âńd̂ f́êéd̂b́âćk̂ t́ô ím̂ṕr̂óv̂é ît́ŝ ṕr̂ód̂úĉt́ŝ án̂d́ ŝér̂v́îćêś ŵít̂h́ t̂h́ê h́êĺp̂ óf̂ h́ûḿâń r̂év̂íêẃêŕŝ. Áv̂óîd́ ŝh́âŕîńĝ śêńŝít̂ív̂é ôŕ p̂ér̂śôńâĺ îńf̂ór̂ḿât́îón̂."
   },
   "panels/settings/AISettingsTab.ts | termsOfService": {
     "message": "Ĝóôǵl̂é T̂ér̂ḿŝ óf̂ Śêŕv̂íĉé"
@@ -12431,6 +12416,15 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "Ŵh́êń D̂év̂T́ôól̂ś îś ôṕêń, t̂h́ê ÚR̂Ĺŝ ýôú v̂íŝít̂ ẃîĺl̂ b́ê śêńt̂ t́ô Ǵôóĝĺê t́ô q́ûér̂ý f̂íêĺd̂ d́ât́â. T́ĥéŝé r̂éq̂úêśt̂ś âŕê ńôt́ t̂íêd́ t̂ó ŷóûŕ Ĝóôǵl̂é âćĉóûńt̂."
   },
+  "panels/timeline/components/insights/DocumentLatency.ts | redirects": {
+    "message": "Âv́ôíd̂ś m̂úl̂t́îṕl̂é p̂áĝé r̂éd̂ír̂éĉt́ŝ"
+  },
+  "panels/timeline/components/insights/DocumentLatency.ts | serverResponseTime": {
+    "message": "Îńît́îál̂ śêŕv̂ér̂ ŕêśp̂ón̂śê t́îḿê ẃâś ŝh́ôŕt̂"
+  },
+  "panels/timeline/components/insights/DocumentLatency.ts | textCompression": {
+    "message": "T̂éx̂t́ ĉóm̂ṕr̂éŝśîón̂ áp̂ṕl̂íêd́"
+  },
   "panels/timeline/components/insights/LCPDiscovery.ts | fetchPriorityApplied": {
     "message": "f̂ét̂ćĥṕr̂íôŕît́ŷ=h́îǵĥ áp̂ṕl̂íêd́"
   },
@@ -12496,6 +12490,9 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | fieldDataLink": {
     "message": "f̂íêĺd̂ d́ât́â"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | interactionExcluded": {
+    "message": "ÎŃP̂ íŝ ćâĺĉúl̂át̂éd̂ úŝín̂ǵ t̂h́ê 98t́ĥ ṕêŕĉén̂t́îĺê óf̂ ín̂t́êŕâćt̂íôń d̂él̂áŷś, ŝó ŝóm̂é îńt̂ér̂áĉt́îón̂ d́êĺâýŝ ḿâý b̂é l̂ár̂ǵêŕ t̂h́âń t̂h́ê ÍN̂Ṕ v̂ál̂úê."
   },
   "panels/timeline/components/LiveMetricsView.ts | interactions": {
     "message": "Îńt̂ér̂áĉt́îón̂ś"
@@ -12575,8 +12572,8 @@
   "panels/timeline/components/MetricCard.ts | betweenRange": {
     "message": "({PH1}-{PH2})"
   },
-  "panels/timeline/components/MetricCard.ts | clsTitle": {
-    "message": "Ĉúm̂úl̂át̂ív̂é L̂áŷóût́ Ŝh́îf́t̂ (ĆL̂Ś)"
+  "panels/timeline/components/MetricCard.ts | considerTesting": {
+    "message": "Ĉón̂śîd́êŕ ŷóûŕ l̂óĉál̂ t́êśt̂ ćôńd̂ít̂íôńŝ"
   },
   "panels/timeline/components/MetricCard.ts | field75thPercentile": {
     "message": "F̂íêĺd̂ 75t́ĥ Ṕêŕĉén̂t́îĺê"
@@ -12587,14 +12584,8 @@
   "panels/timeline/components/MetricCard.ts | gtRange": {
     "message": "(>{PH1})"
   },
-  "panels/timeline/components/MetricCard.ts | inpTitle": {
-    "message": "Îńt̂ér̂áĉt́îón̂ t́ô Ńêx́t̂ Ṕâín̂t́ (ÎŃP̂)"
-  },
   "panels/timeline/components/MetricCard.ts | interactToMeasure": {
     "message": "Îńt̂ér̂áĉt́ ŵít̂h́ t̂h́ê ṕâǵê t́ô ḿêáŝúr̂é ÎŃP̂."
-  },
-  "panels/timeline/components/MetricCard.ts | lcpTitle": {
-    "message": "L̂ár̂ǵêśt̂ Ćôńt̂én̂t́f̂úl̂ Ṕâín̂t́ (L̂ĆP̂)"
   },
   "panels/timeline/components/MetricCard.ts | leqRange": {
     "message": "(≤{PH1})"
@@ -12611,71 +12602,95 @@
   "panels/timeline/components/MetricCard.ts | poor": {
     "message": "P̂óôŕ"
   },
+  "panels/timeline/components/MetricCard.ts | recDynamicContentCLS": {
+    "message": "D̂ýn̂ám̂íĉ ćôńt̂én̂t́ ĉán̂ ín̂f́l̂úêńĉé ŵh́ât́ l̂áŷóût́ ŝh́îf́t̂ś ĥáp̂ṕêń."
+  },
+  "panels/timeline/components/MetricCard.ts | recDynamicContentLCP": {
+    "message": "T̂h́ê ĹĈṔ êĺêḿêńt̂ ćâń v̂ár̂ý b̂ét̂ẃêén̂ ṕâǵê ĺôád̂ś îf́ ĉón̂t́êńt̂ íŝ d́ŷńâḿîć."
+  },
+  "panels/timeline/components/MetricCard.ts | recJourneyCLS": {
+    "message": "Ĥóŵ á ûśêŕ îńt̂ér̂áĉt́ŝ ẃît́ĥ t́ĥé p̂áĝé ĉán̂ ín̂f́l̂úêńĉé l̂áŷóût́ ŝh́îf́t̂ś. Êńŝúr̂é ŷóû ár̂é t̂éŝt́îńĝ ćôḿm̂ón̂ ín̂t́êŕâćt̂íôńŝ ĺîḱê śĉŕôĺl̂ín̂ǵ t̂h́ê ṕâǵê."
+  },
+  "panels/timeline/components/MetricCard.ts | recJourneyINP": {
+    "message": "Ĥóŵ á ûśêŕ îńt̂ér̂áĉt́ŝ ẃît́ĥ t́ĥé p̂áĝé îńf̂ĺûén̂ćêś îńt̂ér̂áĉt́îón̂ d́êĺâýŝ. Én̂śûŕê ýôú âŕê t́êśt̂ín̂ǵ ĉóm̂ḿôń îńt̂ér̂áĉt́îón̂ś."
+  },
+  "panels/timeline/components/MetricCard.ts | recThrottlingINP": {
+    "message": "R̂éâĺ ûśêŕŝ ḿâý êx́p̂ér̂íêńĉé l̂ón̂ǵêŕ îńt̂ér̂áĉt́îón̂ś d̂úê t́ô śl̂óŵér̂ ĆP̂Ú ŝṕêéd̂ś. Îńĉŕêáŝín̂ǵ ĈṔÛ t́ĥŕôt́t̂ĺîńĝ ẃîĺl̂ śîḿûĺât́ê á ŝĺôẃêŕ d̂év̂íĉé."
+  },
+  "panels/timeline/components/MetricCard.ts | recThrottlingLCP": {
+    "message": "R̂éâĺ ûśêŕŝ ḿâý êx́p̂ér̂íêńĉé l̂ón̂ǵêŕ p̂áĝé l̂óâd́ŝ d́ûé t̂ó ŝĺôẃêŕ n̂ét̂ẃôŕk̂ ćôńd̂ít̂íôńŝ. Ín̂ćr̂éâśîńĝ ńêt́ŵór̂ḱ t̂h́r̂ót̂t́l̂ín̂ǵ ŵíl̂ĺ ŝím̂úl̂át̂é ŝĺôẃêŕ n̂ét̂ẃôŕk̂ ćôńd̂ít̂íôńŝ."
+  },
+  "panels/timeline/components/MetricCard.ts | recViewportCLS": {
+    "message": "Ŝćr̂éêń ŝíẑé ĉán̂ ín̂f́l̂úêńĉé ŵh́ât́ l̂áŷóût́ ŝh́îf́t̂ś ĥáp̂ṕêń. Êńŝúr̂é ŷóû ár̂é t̂éŝt́îńĝ ćôḿm̂ón̂ v́îéŵṕôŕt̂ śîźêś."
+  },
+  "panels/timeline/components/MetricCard.ts | recViewportLCP": {
+    "message": "Ŝćr̂éêń ŝíẑé ĉán̂ ín̂f́l̂úêńĉé ŵh́ât́ t̂h́ê ĹĈṔ êĺêḿêńt̂ íŝ. Én̂śûŕê ýôú âŕê t́êśt̂ín̂ǵ ĉóm̂ḿôń v̂íêẃp̂ór̂t́ ŝíẑéŝ."
+  },
   "panels/timeline/components/MetricCard.ts | viewCardDetails": {
     "message": "V̂íêẃ ĉár̂d́ d̂ét̂áîĺŝ"
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodBetterCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ b́êt́t̂ér̂ t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś ĝóôd́, b̂út̂ íŝ śîǵn̂íf̂íĉán̂t́l̂ý b̂ét̂t́êŕ t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodGoodDetailedCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. Ád̂d́ît́îón̂ál̂ĺŷ, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} {PH3} íŝ ǵôód̂."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś ĝóôd́ âńd̂ íŝ ŕât́êd́ t̂h́ê śâḿê áŝ {PH4} óf̂ ŕêál̂-úŝér̂ {PH1} éx̂ṕêŕîén̂ćêś. Âd́d̂ít̂íôńâĺl̂ý, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} v̂ál̂úê óf̂ {PH3} íŝ ǵôód̂."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodNeedsImprovementDetailedCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. H́ôẃêv́êŕ, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} {PH3} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś ĝóôd́ âńd̂ íŝ ŕât́êd́ t̂h́ê śâḿê áŝ {PH4} óf̂ ŕêál̂-úŝér̂ {PH1} éx̂ṕêŕîén̂ćêś. Ĥóŵév̂ér̂, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} v́âĺûé ôf́ {PH3} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodPoorDetailedCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. H́ôẃêv́êŕ, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} {PH3} îś p̂óôŕ."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś ĝóôd́ âńd̂ íŝ ŕât́êd́ t̂h́ê śâḿê áŝ {PH4} óf̂ ŕêál̂-úŝér̂ {PH1} éx̂ṕêŕîén̂ćêś. Ĥóŵév̂ér̂, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} v́âĺûé ôf́ {PH3} îś p̂óôŕ."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodSimilarCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂, án̂d́ îś ŝím̂íl̂ár̂ t́ô ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś ĝóôd́, âńd̂ íŝ śîḿîĺâŕ t̂ó ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodSummarized": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś ĝóôd́."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodWorseCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ǵôód̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ ẃôŕŝé t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś ĝóôd́, b̂út̂ íŝ śîǵn̂íf̂íĉán̂t́l̂ý ŵór̂śê t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementBetterCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ b́êt́t̂ér̂ t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́, b̂út̂ íŝ śîǵn̂íf̂íĉán̂t́l̂ý b̂ét̂t́êŕ t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementGoodDetailedCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. H́ôẃêv́êŕ, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} {PH3} îś ĝóôd́."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́ âńd̂ íŝ ŕât́êd́ t̂h́ê śâḿê áŝ {PH4} óf̂ ŕêál̂-úŝér̂ {PH1} éx̂ṕêŕîén̂ćêś. Ĥóŵév̂ér̂, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} v́âĺûé ôf́ {PH3} îś ĝóôd́."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementNeedsImprovementDetailedCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. Ád̂d́ît́îón̂ál̂ĺŷ, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} {PH3} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́ âńd̂ íŝ ŕât́êd́ t̂h́ê śâḿê áŝ {PH4} óf̂ ŕêál̂-úŝér̂ {PH1} éx̂ṕêŕîén̂ćêś. Âd́d̂ít̂íôńâĺl̂ý, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} v̂ál̂úê óf̂ {PH3} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementPoorDetailedCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. H́ôẃêv́êŕ, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} {PH3} îś p̂óôŕ."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́ âńd̂ íŝ ŕât́êd́ t̂h́ê śâḿê áŝ {PH4} óf̂ ŕêál̂-úŝér̂ {PH1} éx̂ṕêŕîén̂ćêś. Ĥóŵév̂ér̂, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} v́âĺûé ôf́ {PH3} îś p̂óôŕ."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementSimilarCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂, án̂d́ îś ŝím̂íl̂ár̂ t́ô ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́, âńd̂ íŝ śîḿîĺâŕ t̂ó ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementSummarized": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementWorseCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} ńêéd̂ś îḿp̂ŕôv́êḿêńt̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ ẃôŕŝé t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́, b̂út̂ íŝ śîǵn̂íf̂íĉán̂t́l̂ý ŵór̂śê t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorBetterCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ b́êt́t̂ér̂ t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś p̂óôŕ, b̂út̂ íŝ śîǵn̂íf̂íĉán̂t́l̂ý b̂ét̂t́êŕ t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorGoodDetailedCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. H́ôẃêv́êŕ, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} {PH3} îś ĝóôd́."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś p̂óôŕ âńd̂ íŝ ŕât́êd́ t̂h́ê śâḿê áŝ {PH4} óf̂ ŕêál̂-úŝér̂ {PH1} éx̂ṕêŕîén̂ćêś. Ĥóŵév̂ér̂, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} v́âĺûé ôf́ {PH3} îś ĝóôd́."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorNeedsImprovementDetailedCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. H́ôẃêv́êŕ, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} {PH3} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś p̂óôŕ âńd̂ íŝ ŕât́êd́ t̂h́ê śâḿê áŝ {PH4} óf̂ ŕêál̂-úŝér̂ {PH1} éx̂ṕêŕîén̂ćêś. Ĥóŵév̂ér̂, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} v́âĺûé ôf́ {PH3} n̂éêd́ŝ ím̂ṕr̂óv̂ém̂én̂t́."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorPoorDetailedCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂ án̂d́ îś r̂át̂éd̂ t́ĥé ŝám̂é âś {PH4} ôf́ r̂éâĺ-ûśêŕ {PH1} êx́p̂ér̂íêńĉéŝ. Ád̂d́ît́îón̂ál̂ĺŷ, t́ĥé f̂íêĺd̂ d́ât́â 75t́ĥ ṕêŕĉén̂t́îĺê {PH1} {PH3} íŝ ṕôór̂."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś p̂óôŕ âńd̂ íŝ ŕât́êd́ t̂h́ê śâḿê áŝ {PH4} óf̂ ŕêál̂-úŝér̂ {PH1} éx̂ṕêŕîén̂ćêś. Âd́d̂ít̂íôńâĺl̂ý, t̂h́ê f́îél̂d́ d̂át̂á 75t̂h́ p̂ér̂ćêńt̂íl̂é {PH1} v̂ál̂úê óf̂ {PH3} íŝ ṕôór̂."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorSimilarCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂, án̂d́ îś ŝím̂íl̂ár̂ t́ô ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś p̂óôŕ, âńd̂ íŝ śîḿîĺâŕ t̂ó ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorSummarized": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś p̂óôŕ."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorWorseCompare": {
-    "message": "Ŷóûŕ l̂óĉál̂ {PH1} {PH2} íŝ ṕôór̂, b́ût́ îś ŝíĝńîf́îćâńt̂ĺŷ ẃôŕŝé t̂h́âń ŷóûŕ ûśêŕŝ’ éx̂ṕêŕîén̂ćê."
+    "message": "Ŷóûŕ l̂óĉál̂ {PH1} v́âĺûé ôf́ {PH2} îś p̂óôŕ, b̂út̂ íŝ śîǵn̂íf̂íĉán̂t́l̂ý ŵór̂śê t́ĥán̂ ýôúr̂ úŝér̂ś’ êx́p̂ér̂íêńĉé."
   },
   "panels/timeline/components/NetworkRequestDetails.ts | contentDownloading": {
     "message": "Ĉón̂t́êńt̂ d́ôẃn̂ĺôád̂ín̂ǵ"
@@ -13373,11 +13388,8 @@
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Ĉúr̂ŕêńt̂ Śêśŝíôń: {PH1}. {PH2}"
   },
-  "panels/timeline/TimelineHistoryManager.ts | landingPageTitleLocalAndFieldMetrics": {
-    "message": "L̂óĉál̂ án̂d́ f̂íêĺd̂ ḿêt́r̂íĉś"
-  },
-  "panels/timeline/TimelineHistoryManager.ts | landingPageTitleLocalMetrics": {
-    "message": "L̂óĉál̂ ḿêt́r̂íĉś"
+  "panels/timeline/TimelineHistoryManager.ts | landingPageTitle": {
+    "message": "L̂ív̂é m̂ét̂ŕîćŝ"
   },
   "panels/timeline/TimelineHistoryManager.ts | moments": {
     "message": "m̂óm̂én̂t́ŝ"
@@ -14542,6 +14554,12 @@
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sSUseTheUpAndDownArrowKeysTo": {
     "message": "{PH1} {PH2}, ûśê t́ĥé ûṕ âńd̂ d́ôẃn̂ ár̂ŕôẃ k̂éŷś t̂ó n̂áv̂íĝát̂é âńd̂ ín̂t́êŕâćt̂ ẃît́ĥ t́ĥé r̂óŵś ôf́ t̂h́ê t́âb́l̂é; Ûśê b́r̂óŵśê ḿôd́ê t́ô ŕêád̂ ćêĺl̂ b́ŷ ćêĺl̂."
+  },
+  "ui/legacy/components/data_grid/DataGridWithPreview.ts | numberEntries": {
+    "message": "N̂úm̂b́êŕ ôf́ êńt̂ŕîéŝ śĥóŵń îń t̂áb̂ĺê: {PH1}"
+  },
+  "ui/legacy/components/data_grid/DataGridWithPreview.ts | selectAValueToPreview": {
+    "message": "Ŝél̂éĉt́ â v́âĺûé t̂ó p̂ŕêv́îéŵ"
   },
   "ui/legacy/components/data_grid/ShowMoreDataGridNode.ts | showAllD": {
     "message": "Ŝh́ôẃ âĺl̂ {PH1}"

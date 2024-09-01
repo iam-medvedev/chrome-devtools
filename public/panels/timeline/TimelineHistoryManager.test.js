@@ -35,7 +35,7 @@ describeWithEnvironment('TimelineHistoryManager', function () {
         const menuItemText = Array.from(dropdown.querySelectorAll('[role="menuitem"]'), elem => {
             return elem.innerText.replaceAll('\n', '');
         });
-        assert.deepEqual(menuItemText, ['Local metrics', 'web.dev5.39 s']);
+        assert.deepEqual(menuItemText, ['Live metrics', 'web.dev5.39 s']);
         // Cancel the dropdown, which also resolves the show() promise, meaning we
         // don't leak it into other tests.
         historyManager.cancelIfShowing();

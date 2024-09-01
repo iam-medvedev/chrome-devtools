@@ -26,8 +26,11 @@ export declare const enum SidebarTabs {
     ANNOTATIONS = "annotations"
 }
 export declare const DEFAULT_SIDEBAR_TAB = SidebarTabs.INSIGHTS;
+export declare const DEFAULT_SIDEBAR_WIDTH_PX = 240;
 export declare class SidebarWidget extends UI.Widget.VBox {
     #private;
+    userHasOpenedSidebarOnce(): boolean;
+    constructor();
     wasShown(): void;
     setAnnotations(updatedAnnotations: TraceEngine.Types.File.Annotation[], annotationEntryToColorMap: Map<TraceEngine.Types.TraceEvents.TraceEventData, string>): void;
     setTraceParsedData(traceParsedData: TraceEngine.Handlers.Types.TraceParseData | null): void;

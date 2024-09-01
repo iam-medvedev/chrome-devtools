@@ -75,7 +75,8 @@ describe('FreestylerEvaluateAction', () => {
             return getExecutionContext(runtimeModel);
         }
         async function executeForTest(code) {
-            return Freestyler.FreestylerEvaluateAction.execute(code, await executionContextForTest(), { throwOnSideEffect: false });
+            const actionExpression = `const scope = {$0, $1, getEventListeners}; with (scope) {${code}}`;
+            return Freestyler.FreestylerEvaluateAction.execute(actionExpression, await executionContextForTest(), { throwOnSideEffect: false });
         }
         it('should serialize primitive values correctly', async () => {
             assert.strictEqual(await executeForTest('"string"'), '\'string\'');
@@ -141,15 +142,15 @@ describe('FreestylerEvaluateAction', () => {
             assert.strictEqual(await executeForTest('[{key: 1}]'), '[{"key":1}]');
         });
         it('should serialize objects correctly', async () => {
-            assert.strictEqual(await executeForTest('{const object = {key: "str"}; object}'), '{"key":"str"}');
-            assert.strictEqual(await executeForTest('{const object = {key: "str", secondKey: "str2"}; object}'), '{"key":"str","secondKey":"str2"}');
-            assert.strictEqual(await executeForTest('{const object = {key: 1}; object}'), '{"key":1}');
+            assert.strictEqual(await executeForTest('const object = {key: "str"}; object;'), '{"key":"str"}');
+            assert.strictEqual(await executeForTest('const object = {key: "str", secondKey: "str2"}; object;'), '{"key":"str","secondKey":"str2"}');
+            assert.strictEqual(await executeForTest('const object = {key: 1}; object;'), '{"key":1}');
         });
         it('should not continue serializing cycles', async () => {
             assert.strictEqual(await executeForTest(`{
         const obj = { a: 1 };
         obj.itself = obj;
-        obj
+        obj;
       }`), '{"a":1,"itself":"(cycle)"}');
         });
         it('should not include number keys for CSSStyleDeclaration', async () => {

@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -15,6 +16,7 @@ export class ExtensionScope {
     #changeManager;
     #frameId;
     #target;
+    #bindingMutex = new Common.Mutex.Mutex();
     constructor(changes) {
         this.#changeManager = changes;
         const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
@@ -86,27 +88,24 @@ export class ExtensionScope {
         if (data.name !== FREESTYLER_BINDING_NAME) {
             return;
         }
-        const target = this.#target;
-        const id = data.payload;
-        const { object } = await this.#simpleEval(executionContext, `freestyler.getArgs(${id})`);
-        const arg = JSON.parse(object.value);
-        const selector = arg.selector;
-        const styles = Platform.StringUtilities.toKebabCaseKeys(arg.styles);
-        const lines = Object.entries(styles).map(([key, value]) => `${key}: ${value};`);
-        this.#changeManager.addChange({
-            selector,
-            styles: lines.join('\n'),
+        await this.#bindingMutex.run(async () => {
+            const target = this.#target;
+            const id = data.payload;
+            const { object } = await this.#simpleEval(executionContext, `freestyler.getArgs(${id})`);
+            const arg = JSON.parse(object.value);
+            const selector = arg.selector;
+            const styles = Platform.StringUtilities.toKebabCaseKeys(arg.styles);
+            const lines = Object.entries(styles).map(([key, value]) => `${key}: ${value};`);
+            const cssModel = target.model(SDK.CSSModel.CSSModel);
+            if (!cssModel) {
+                throw new Error('CSSModel is not found');
+            }
+            await this.#changeManager.addChange(cssModel, this.#frameId, {
+                selector,
+                styles: lines.join('\n'),
+            });
+            await this.#simpleEval(executionContext, `freestyler.respond(${id})`);
         });
-        const cssModel = target.model(SDK.CSSModel.CSSModel);
-        if (!cssModel) {
-            throw new Error('CSSModel is not found');
-        }
-        const styleSheetHeader = await cssModel.requestViaInspectorStylesheet(this.#frameId);
-        if (!styleSheetHeader) {
-            throw new Error('inspector-stylesheet is not found');
-        }
-        await cssModel.setStyleSheetText(styleSheetHeader.id, this.#changeManager.buildStyleSheet(), true);
-        await this.#simpleEval(executionContext, `freestyler.respond(${id})`);
     }
 }
 const freestylerBinding = `globalThis.freestyler = (args) => {
@@ -124,6 +123,7 @@ const freestylerBinding = `globalThis.freestyler = (args) => {
   });
   ${FREESTYLER_BINDING_NAME}(String(freestyler.id));
   freestyler.id++;
+  return p;
 }
 freestyler.id = 1;
 freestyler.callbacks = new Map();
@@ -135,10 +135,27 @@ freestyler.respond = (callbackId) => {
   freestyler.callbacks.delete(callbackId);
 }`;
 const functions = `async function setElementStyles(el, styles) {
+  let selector = el.tagName.toLowerCase();
+  if (el.id) {
+    selector = '#' + el.id;
+  } else if (el.classList.length) {
+    const parts = [];
+    for (const cls of el.classList) {
+      if (cls === '${AI_ASSISTANT_CSS_CLASS_NAME}') {
+        continue;
+      }
+      parts.push('.' + cls);
+    }
+    if (parts.length) {
+      selector = parts.join('');
+    }
+  }
+
   el.classList.add('${AI_ASSISTANT_CSS_CLASS_NAME}');
+
   await freestyler({
     method: 'setElementStyles',
-    selector: el.tagName.toLowerCase(),
+    selector: selector,
     styles: styles
   });
 }`;

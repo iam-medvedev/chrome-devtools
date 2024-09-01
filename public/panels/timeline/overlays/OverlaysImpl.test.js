@@ -270,7 +270,7 @@ describeWithEnvironment('Overlays', () => {
                 outlineReason: 'ERROR',
             });
             overlays.update();
-            const outlineVisible = container.querySelector('.overlay-type-ENTRY_OUTLINE')?.style.visibility === 'visible';
+            const outlineVisible = container.querySelector('.overlay-type-ENTRY_OUTLINE')?.style.display === 'block';
             assert.isTrue(outlineVisible, 'The ENTRY_OUTLINE should be visible');
             // Now make a selected entry too
             overlays.add({
@@ -278,7 +278,7 @@ describeWithEnvironment('Overlays', () => {
                 entry: event,
             });
             overlays.update();
-            const outlineNowHidden = container.querySelector('.overlay-type-ENTRY_OUTLINE')?.style.visibility === 'hidden';
+            const outlineNowHidden = container.querySelector('.overlay-type-ENTRY_OUTLINE')?.style.display === 'none';
             assert.isTrue(outlineNowHidden, 'The ENTRY_OUTLINE should be hidden');
         });
         it('only ever renders a single selected overlay', async function () {

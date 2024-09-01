@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import { dispatchKeyDownEvent } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -11,7 +10,7 @@ class FakeSearchScope {
     performSearchCalledPromise;
     #resolvePerformSearchCalledPromise;
     constructor() {
-        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
+        const { promise, resolve } = Promise.withResolvers();
         this.performSearchCalledPromise = promise;
         this.#resolvePerformSearchCalledPromise = resolve;
     }

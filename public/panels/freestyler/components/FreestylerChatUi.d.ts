@@ -4,8 +4,15 @@ import type * as SDK from '../../../core/sdk/sdk.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
 import * as LitHtml from '../../../ui/lit-html/lit-html.js';
-import { type ActionStepData, type CommonStepData, type QueryStepData, type ThoughtStepData } from '../FreestylerAgent.js';
 export declare const DOGFOOD_INFO: Platform.DevToolsPath.UrlString;
+export interface CollapsibleStep {
+    isLoading: boolean;
+    thought?: string;
+    title?: string;
+    code?: string;
+    output?: string;
+    sideEffect?: ConfirmSideEffectDialog;
+}
 interface ConfirmSideEffectDialog {
     code: string;
     onAnswer: (result: boolean) => void;
@@ -21,7 +28,9 @@ export interface UserChatMessage {
 export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
     suggestingFix: boolean;
-    steps: Map<string, ActionStepData | CommonStepData | ThoughtStepData | QueryStepData>;
+    steps: CollapsibleStep[];
+    answer?: string;
+    error?: string;
     rpcId?: number;
 }
 export type ChatMessage = UserChatMessage | ModelChatMessage;
@@ -40,10 +49,9 @@ export interface Props {
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
     messages: ChatMessage[];
-    selectedNode: SDK.DOMModel.DOMNode | null;
+    selectedElement: SDK.DOMModel.DOMNode | null;
     isLoading: boolean;
     canShowFeedbackForm: boolean;
-    confirmSideEffectDialog?: ConfirmSideEffectDialog;
     userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage'>;
 }
 declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {

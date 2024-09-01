@@ -14,6 +14,10 @@ export declare class EntriesLinkOverlay extends HTMLElement {
         length: number;
         height: number;
     });
+    set entriesVisibility(entriesVisibility: {
+        fromEntryVisibility: boolean;
+        toEntryVisibility: boolean;
+    });
     set toEntryCoordinateAndDimentions(toEntryParams: {
         x: number;
         y: number;

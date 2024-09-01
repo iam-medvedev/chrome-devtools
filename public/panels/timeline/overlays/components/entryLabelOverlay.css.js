@@ -26,10 +26,12 @@ styles.replaceSync(
 .label-box {
   pointer-events: auto;
   background-color: var(--sys-color-token-variable);
-  border-radius: 4px;
-  font-family: var(--monospace-font-family);
-  font-weight: bold;
+  border-radius: var(--sys-shape-corner-extra-small);
   white-space: nowrap;
+  padding: var(--sys-size-3) var(--sys-size-4);
+  font-family: var(--default-font-family);
+  font-size: var(--sys-typescale-body2-size);
+  font-weight: var(--ref-typeface-weight-medium);
 }
 
 .label-box:focus {
@@ -43,8 +45,7 @@ styles.replaceSync(
 
 .entry-highlight-wrapper {
   box-sizing: border-box;
-  border: 2px solid var(--sys-color-token-variable);
-  border-radius: 7px;
+  border: 2px solid var(--sys-color-on-surface);
 }
 
 /*# sourceURL=entryLabelOverlay.css */
