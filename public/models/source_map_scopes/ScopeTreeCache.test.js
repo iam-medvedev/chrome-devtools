@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as SourceMapScopes from '../source_map_scopes/source_map_scopes.js';
@@ -34,7 +33,7 @@ describe('ScopeTreeCache', () => {
         });
         it('requests the scope tree once for a script, even if the first request is not done yet', async () => {
             const scopeTree = { start: 0, end: 20, variables: [], children: [] };
-            const { promise: scopeTreePromise, resolve: scopeTreeResolve } = Platform.PromiseUtilities.promiseWithResolvers();
+            const { promise: scopeTreePromise, resolve: scopeTreeResolve } = Promise.withResolvers();
             javaScriptScopeTreeStub.returns(scopeTreePromise);
             const scopeTreePromise1 = scopeTreeForScript(script);
             const scopeTreePromise2 = scopeTreeForScript(script);

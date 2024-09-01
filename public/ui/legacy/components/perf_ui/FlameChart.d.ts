@@ -495,6 +495,7 @@ export type FlameChartDecoration = {
     endAtTime?: TraceEngine.Types.Timing.MicroSeconds;
 } | {
     type: FlameChartDecorationType.WARNING_TRIANGLE;
+    customStartTime?: TraceEngine.Types.Timing.MicroSeconds;
     customEndTime?: TraceEngine.Types.Timing.MicroSeconds;
 } | {
     type: FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW;

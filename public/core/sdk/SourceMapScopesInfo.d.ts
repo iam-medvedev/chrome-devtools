@@ -1,9 +1,9 @@
-import { type SourceMapV3Object } from './SourceMap.js';
+import { type SourceMap, type SourceMapV3Object } from './SourceMap.js';
 import { type GeneratedRange, type OriginalPosition, type OriginalScope } from './SourceMapScopes.js';
 export declare class SourceMapScopesInfo {
     #private;
-    constructor(originalScopes: OriginalScope[], generatedRanges: GeneratedRange[]);
-    static parseFromMap(sourceMap: Pick<SourceMapV3Object, 'names' | 'originalScopes' | 'generatedRanges'>): SourceMapScopesInfo;
+    constructor(sourceMap: SourceMap, originalScopes: OriginalScope[], generatedRanges: GeneratedRange[]);
+    static parseFromMap(sourceMap: SourceMap, sourceMapJson: Pick<SourceMapV3Object, 'names' | 'originalScopes' | 'generatedRanges'>): SourceMapScopesInfo;
     /**
      * Given a generated position, returns the original name of the surrounding function as well as
      * all the original function names that got inlined into the surrounding generated function and their

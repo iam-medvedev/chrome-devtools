@@ -430,6 +430,8 @@ const colorAwareProperties = new Set([
     'stroke',
     'text-decoration-color',
     'text-shadow',
+    'text-emphasis',
+    'text-emphasis-color',
     '-webkit-border-after',
     '-webkit-border-after-color',
     '-webkit-border-before',
@@ -465,6 +467,20 @@ const angleAwareProperties = new Set([
     'offset-rotate',
     'font-style',
 ]);
+const textEmphasisPosition = new Set([
+    'over',
+    'under',
+    'over right', // Initial value
+    'over left',
+    'under right',
+    'under left',
+]);
+// https://drafts.csswg.org/css-text-decor/#text-emphasis-style-property
+const textEmphasisStyle = new Set([
+    'none', 'dot', 'circle', 'double-circle', 'triangle', 'sesame', 'filled', 'open', 'dot open', 'circle open',
+    'double-circle open', 'triangle open', 'sesame open',
+    '"❤️"', // <string>
+]);
 // manually maintained list of property #values to add into autocomplete list
 const extraPropertyValues = new Map([
     ['background-repeat', new Set(['repeat', 'repeat-x', 'repeat-y', 'no-repeat', 'space', 'round'])],
@@ -490,7 +506,8 @@ const extraPropertyValues = new Map([
     ['color-interpolation', new Set(['sRGB', 'linearRGB'])],
     ['word-wrap', new Set(['normal', 'break-word'])],
     ['font-weight', new Set(['100', '200', '300', '400', '500', '600', '700', '800', '900'])],
-    ['-webkit-text-emphasis', new Set(['circle', 'filled', 'open', 'dot', 'double-circle', 'triangle', 'sesame'])],
+    ['text-emphasis', textEmphasisStyle],
+    ['-webkit-text-emphasis', textEmphasisStyle],
     ['color-rendering', new Set(['optimizeSpeed', 'optimizeQuality'])],
     ['-webkit-text-combine', new Set(['horizontal'])],
     ['text-orientation', new Set(['sideways-right'])],
@@ -513,7 +530,8 @@ const extraPropertyValues = new Map([
         ]),
     ],
     ['dominant-baseline', new Set(['text-before-edge', 'text-after-edge', 'use-script', 'no-change', 'reset-size'])],
-    ['-webkit-text-emphasis-position', new Set(['over', 'under'])],
+    ['text-emphasis-position', textEmphasisPosition],
+    ['-webkit-text-emphasis-position', textEmphasisPosition],
     ['alignment-baseline', new Set(['before-edge', 'after-edge', 'text-before-edge', 'text-after-edge', 'hanging'])],
     ['page-break-before', new Set(['left', 'right', 'always', 'avoid'])],
     ['border-image', new Set(['repeat', 'stretch', 'space', 'round'])],
@@ -600,7 +618,8 @@ const extraPropertyValues = new Map([
     ],
     ['vertical-align', new Set(['top', 'bottom', '-webkit-baseline-middle'])],
     ['page-break-after', new Set(['left', 'right', 'always', 'avoid'])],
-    ['-webkit-text-emphasis-style', new Set(['circle', 'filled', 'open', 'dot', 'double-circle', 'triangle', 'sesame'])],
+    ['text-emphasis-style', textEmphasisStyle],
+    ['-webkit-text-emphasis-style', textEmphasisStyle],
     [
         'transform',
         new Set([

@@ -1,7 +1,6 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Platform from '../../../core/platform/platform.js';
 class WorkItem {
     promise;
     trigger;
@@ -9,7 +8,7 @@ class WorkItem {
     label;
     #handler;
     constructor(label, initialHandler) {
-        const { promise, resolve, reject } = Platform.PromiseUtilities.promiseWithResolvers();
+        const { promise, resolve, reject } = Promise.withResolvers();
         this.promise = promise.then(() => this.#handler());
         this.trigger = resolve;
         this.cancel = reject;

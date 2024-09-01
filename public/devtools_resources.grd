@@ -22,7 +22,6 @@
       <include file="Images/accelerometer-left.png" name="IMAGES_ACCELEROMETER_LEFT_PNG" resource_path="Images/accelerometer-left.png" type="BINDATA" compress="false"/>
       <include file="Images/accelerometer-right.png" name="IMAGES_ACCELEROMETER_RIGHT_PNG" resource_path="Images/accelerometer-right.png" type="BINDATA" compress="false"/>
       <include file="Images/accelerometer-top.png" name="IMAGES_ACCELEROMETER_TOP_PNG" resource_path="Images/accelerometer-top.png" type="BINDATA" compress="false"/>
-      <include file="Images/account-box.svg" name="IMAGES_ACCOUNT_BOX_SVG" resource_path="Images/account-box.svg" type="BINDATA" compress="false"/>
       <include file="Images/align-content-center.svg" name="IMAGES_ALIGN_CONTENT_CENTER_SVG" resource_path="Images/align-content-center.svg" type="BINDATA" compress="false"/>
       <include file="Images/align-content-end.svg" name="IMAGES_ALIGN_CONTENT_END_SVG" resource_path="Images/align-content-end.svg" type="BINDATA" compress="false"/>
       <include file="Images/align-content-space-around.svg" name="IMAGES_ALIGN_CONTENT_SPACE_AROUND_SVG" resource_path="Images/align-content-space-around.svg" type="BINDATA" compress="false"/>
@@ -144,7 +143,6 @@
       <include file="Images/gear-filled.svg" name="IMAGES_GEAR_FILLED_SVG" resource_path="Images/gear-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/gear.svg" name="IMAGES_GEAR_SVG" resource_path="Images/gear.svg" type="BINDATA" compress="false"/>
       <include file="Images/gears.svg" name="IMAGES_GEARS_SVG" resource_path="Images/gears.svg" type="BINDATA" compress="false"/>
-      <include file="Images/globe.svg" name="IMAGES_GLOBE_SVG" resource_path="Images/globe.svg" type="BINDATA" compress="false"/>
       <include file="Images/google.svg" name="IMAGES_GOOGLE_SVG" resource_path="Images/google.svg" type="BINDATA" compress="false"/>
       <include file="Images/goto-filled.svg" name="IMAGES_GOTO_FILLED_SVG" resource_path="Images/goto-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/heap-snapshot.svg" name="IMAGES_HEAP_SNAPSHOT_SVG" resource_path="Images/heap-snapshot.svg" type="BINDATA" compress="false"/>
@@ -661,6 +659,7 @@
       <include file="third_party/marked/marked.js" name="THIRD_PARTY_MARKED_MARKED_JS" resource_path="third_party/marked/marked.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer-replay/puppeteer-replay.js" name="THIRD_PARTY_PUPPETEER_REPLAY_PUPPETEER_REPLAY_JS" resource_path="third_party/puppeteer-replay/puppeteer-replay.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/puppeteer.js" name="THIRD_PARTY_PUPPETEER_PUPPETEER_JS" resource_path="third_party/puppeteer/puppeteer.js" type="BINDATA" compress="false"/>
+      <include file="third_party/third-party-web/third-party-web.js" name="THIRD_PARTY_THIRD_PARTY_WEB_THIRD_PARTY_WEB_JS" resource_path="third_party/third-party-web/third-party-web.js" type="BINDATA" compress="false"/>
       <include file="third_party/wasmparser/wasmparser.js" name="THIRD_PARTY_WASMPARSER_WASMPARSER_JS" resource_path="third_party/wasmparser/wasmparser.js" type="BINDATA" compress="false"/>
       <include file="third_party/web-vitals/web-vitals.js" name="THIRD_PARTY_WEB_VITALS_WEB_VITALS_JS" resource_path="third_party/web-vitals/web-vitals.js" type="BINDATA" compress="false"/>
       <include file="ui/components/adorners/adorners.js" name="UI_COMPONENTS_ADORNERS_ADORNERS_JS" resource_path="ui/components/adorners/adorners.js" type="BINDATA" compress="false"/>
@@ -767,7 +766,6 @@
       <include file="core/platform/MapUtilities.js" name="CORE_PLATFORM_MAPUTILITIES_JS" resource_path="core/platform/MapUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/MimeType.js" name="CORE_PLATFORM_MIMETYPE_JS" resource_path="core/platform/MimeType.js" type="BINDATA" compress="false"/>
       <include file="core/platform/NumberUtilities.js" name="CORE_PLATFORM_NUMBERUTILITIES_JS" resource_path="core/platform/NumberUtilities.js" type="BINDATA" compress="false"/>
-      <include file="core/platform/PromiseUtilities.js" name="CORE_PLATFORM_PROMISEUTILITIES_JS" resource_path="core/platform/PromiseUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/ServerTiming.js" name="CORE_PLATFORM_SERVERTIMING_JS" resource_path="core/platform/ServerTiming.js" type="BINDATA" compress="false"/>
       <include file="core/platform/StringUtilities.js" name="CORE_PLATFORM_STRINGUTILITIES_JS" resource_path="core/platform/StringUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/Timing.js" name="CORE_PLATFORM_TIMING_JS" resource_path="core/platform/Timing.js" type="BINDATA" compress="false"/>
@@ -880,7 +878,6 @@
       <include file="entrypoints/lighthouse_worker/LighthouseWorkerService.js" name="ENTRYPOINTS_LIGHTHOUSE_WORKER_LIGHTHOUSEWORKERSERVICE_JS" resource_path="entrypoints/lighthouse_worker/LighthouseWorkerService.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/main/ExecutionContextSelector.js" name="ENTRYPOINTS_MAIN_EXECUTIONCONTEXTSELECTOR_JS" resource_path="entrypoints/main/ExecutionContextSelector.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/main/MainImpl.js" name="ENTRYPOINTS_MAIN_MAINIMPL_JS" resource_path="entrypoints/main/MainImpl.js" type="BINDATA" compress="false"/>
-      <include file="entrypoints/main/SettingTracker.js" name="ENTRYPOINTS_MAIN_SETTINGTRACKER_JS" resource_path="entrypoints/main/SettingTracker.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/main/SimpleApp.js" name="ENTRYPOINTS_MAIN_SIMPLEAPP_JS" resource_path="entrypoints/main/SimpleApp.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/node_app/NodeConnectionsPanel.js" name="ENTRYPOINTS_NODE_APP_NODECONNECTIONSPANEL_JS" resource_path="entrypoints/node_app/NodeConnectionsPanel.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/node_app/NodeMain.js" name="ENTRYPOINTS_NODE_APP_NODEMAIN_JS" resource_path="entrypoints/node_app/NodeMain.js" type="BINDATA" compress="false"/>
@@ -1777,6 +1774,7 @@
       <include file="panels/timeline/components/breadcrumbsUI.css.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBSUI_CSS_JS" resource_path="panels/timeline/components/breadcrumbsUI.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/fieldSettingsDialog.css.js" name="PANELS_TIMELINE_COMPONENTS_FIELDSETTINGSDIALOG_CSS_JS" resource_path="panels/timeline/components/fieldSettingsDialog.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/CLSCulprits.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_CLSCULPRITS_JS" resource_path="panels/timeline/components/insights/CLSCulprits.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/insights/DocumentLatency.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_DOCUMENTLATENCY_JS" resource_path="panels/timeline/components/insights/DocumentLatency.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/Helpers.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_HELPERS_JS" resource_path="panels/timeline/components/insights/Helpers.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/LCPDiscovery.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_LCPDISCOVERY_JS" resource_path="panels/timeline/components/insights/LCPDiscovery.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/LCPPhases.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_LCPPHASES_JS" resource_path="panels/timeline/components/insights/LCPPhases.js" type="BINDATA" compress="false"/>
@@ -2033,6 +2031,7 @@
       <include file="third_party/puppeteer/package/lib/esm/third_party/mitt/mitt.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_THIRD_PARTY_MITT_MITT_JS" resource_path="third_party/puppeteer/package/lib/esm/third_party/mitt/mitt.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/third_party/parsel-js/parsel-js.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_THIRD_PARTY_PARSEL_JS_PARSEL_JS_JS" resource_path="third_party/puppeteer/package/lib/esm/third_party/parsel-js/parsel-js.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/package/lib/esm/third_party/rxjs/rxjs.js" name="THIRD_PARTY_PUPPETEER_PACKAGE_LIB_ESM_THIRD_PARTY_RXJS_RXJS_JS" resource_path="third_party/puppeteer/package/lib/esm/third_party/rxjs/rxjs.js" type="BINDATA" compress="false"/>
+      <include file="third_party/third-party-web/lib/nostats-subset.js" name="THIRD_PARTY_THIRD_PARTY_WEB_LIB_NOSTATS_SUBSET_JS" resource_path="third_party/third-party-web/lib/nostats-subset.js" type="BINDATA" compress="false"/>
       <include file="third_party/wasmparser/package/dist/esm/WasmDis.js" name="THIRD_PARTY_WASMPARSER_PACKAGE_DIST_ESM_WASMDIS_JS" resource_path="third_party/wasmparser/package/dist/esm/WasmDis.js" type="BINDATA" compress="false"/>
       <include file="third_party/wasmparser/package/dist/esm/WasmParser.js" name="THIRD_PARTY_WASMPARSER_PACKAGE_DIST_ESM_WASMPARSER_JS" resource_path="third_party/wasmparser/package/dist/esm/WasmParser.js" type="BINDATA" compress="false"/>
       <include file="third_party/web-vitals/package/dist/modules/attribution/deprecated.js" name="THIRD_PARTY_WEB_VITALS_PACKAGE_DIST_MODULES_ATTRIBUTION_DEPRECATED_JS" resource_path="third_party/web-vitals/package/dist/modules/attribution/deprecated.js" type="BINDATA" compress="false"/>
@@ -2257,6 +2256,7 @@
       <include file="ui/legacy/components/cookie_table/CookiesTable.js" name="UI_LEGACY_COMPONENTS_COOKIE_TABLE_COOKIESTABLE_JS" resource_path="ui/legacy/components/cookie_table/CookiesTable.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/cookie_table/cookiesTable.css.js" name="UI_LEGACY_COMPONENTS_COOKIE_TABLE_COOKIESTABLE_CSS_JS" resource_path="ui/legacy/components/cookie_table/cookiesTable.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/DataGrid.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_DATAGRID_JS" resource_path="ui/legacy/components/data_grid/DataGrid.js" type="BINDATA" compress="false"/>
+      <include file="ui/legacy/components/data_grid/DataGridWithPreview.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_DATAGRIDWITHPREVIEW_JS" resource_path="ui/legacy/components/data_grid/DataGridWithPreview.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/ShowMoreDataGridNode.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_SHOWMOREDATAGRIDNODE_JS" resource_path="ui/legacy/components/data_grid/ShowMoreDataGridNode.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/SortableDataGrid.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_SORTABLEDATAGRID_JS" resource_path="ui/legacy/components/data_grid/SortableDataGrid.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/data_grid/ViewportDataGrid.js" name="UI_LEGACY_COMPONENTS_DATA_GRID_VIEWPORTDATAGRID_JS" resource_path="ui/legacy/components/data_grid/ViewportDataGrid.js" type="BINDATA" compress="false"/>

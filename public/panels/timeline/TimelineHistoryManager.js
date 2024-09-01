@@ -27,13 +27,9 @@ const UIStrings = {
      */
     currentSessionSS: 'Current Session: {PH1}. {PH2}',
     /**
-     *@description the title shown when the user is viewing the landing page which is showing only local metrics.
+     *@description the title shown when the user is viewing the landing page which is showing live performance metrics that are updated automatically.
      */
-    landingPageTitleLocalMetrics: 'Local metrics',
-    /**
-     *@description the title shown when the user is viewing the landing page which is showing local and field metrics.
-     */
-    landingPageTitleLocalAndFieldMetrics: 'Local and field metrics',
+    landingPageTitle: 'Live metrics',
     /**
      *@description Text that shows there is no recording
      */
@@ -289,7 +285,7 @@ export class TimelineHistoryManager {
     }
     title(item) {
         if (item.type === 'LANDING_PAGE') {
-            return titleForLandingPageItem();
+            return i18nString(UIStrings.landingPageTitle);
         }
         const data = TimelineHistoryManager.dataForTraceIndex(item.traceParseDataIndex);
         if (!data) {
@@ -497,7 +493,7 @@ export class DropDown {
         const icon = IconButton.Icon.create('arrow-back');
         div.appendChild(icon);
         const text = document.createElement('span');
-        text.innerText = titleForLandingPageItem();
+        text.innerText = i18nString(UIStrings.landingPageTitle);
         div.appendChild(text);
         return div;
     }
@@ -520,15 +516,6 @@ export class DropDown {
         return false;
     }
     static instance = null;
-}
-/**
- * Get the title for the "back to landing page" dropdown item, which differs based on if the user has consented to CrUX (and we can show field metrics) or not. Implemented here because both TimelineHistoryManager and Dropdown classes need it.
- */
-function titleForLandingPageItem() {
-    const hasMetrics = CrUXManager.CrUXManager.instance().isEnabled();
-    const title = hasMetrics ? i18nString(UIStrings.landingPageTitleLocalAndFieldMetrics) :
-        i18nString(UIStrings.landingPageTitleLocalMetrics);
-    return title;
 }
 export class ToolbarButton extends UI.Toolbar.ToolbarItem {
     contentElement;

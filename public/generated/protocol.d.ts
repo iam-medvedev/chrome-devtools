@@ -1704,6 +1704,7 @@ export declare namespace Browser {
         VideoCapturePanTiltZoom = "videoCapturePanTiltZoom",
         WakeLockScreen = "wakeLockScreen",
         WakeLockSystem = "wakeLockSystem",
+        WebAppInstallation = "webAppInstallation",
         WindowManagement = "windowManagement"
     }
     const enum PermissionSetting {
@@ -10753,6 +10754,7 @@ export declare namespace Page {
         Usb = "usb",
         UsbUnrestricted = "usb-unrestricted",
         VerticalScroll = "vertical-scroll",
+        WebAppInstallation = "web-app-installation",
         WebPrinting = "web-printing",
         WebShare = "web-share",
         WindowManagement = "window-management",

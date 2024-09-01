@@ -121,6 +121,7 @@ export class NetworkTrackAppender {
                 TraceEngine.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(event)) {
                 addDecorationToEvent(this.#flameChartData, i, {
                     type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */,
+                    customStartTime: event.args.data.syntheticData.sendStartTime,
                     customEndTime: event.args.data.syntheticData.finishTime,
                 });
             }

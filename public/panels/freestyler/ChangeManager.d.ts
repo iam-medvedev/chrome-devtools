@@ -1,3 +1,5 @@
+import * as SDK from '../../core/sdk/sdk.js';
+import type * as Protocol from '../../generated/protocol.js';
 export type Change = {
     selector: string;
     styles: string;
@@ -9,6 +11,7 @@ export declare const AI_ASSISTANT_CSS_CLASS_NAME = "ai-assistant-change";
  */
 export declare class ChangeManager {
     #private;
-    addChange(change: Change): void;
-    buildStyleSheet(): string;
+    clear(): Promise<void>;
+    addChange(cssModel: SDK.CSSModel.CSSModel, frameId: Protocol.Page.FrameId, change: Change): Promise<void>;
+    buildChanges(changes: Array<Change>): string;
 }

@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../../../front_end/panels/timeline/components/insights/CLSCulprits.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/DocumentLatency.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/Helpers.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPDiscovery.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPPhases.ts",

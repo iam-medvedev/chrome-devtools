@@ -3524,14 +3524,8 @@
   "panels/application/DOMStorageItemsView.ts | domStorageItemsCleared": {
     "message": "DOM Storage Items cleared"
   },
-  "panels/application/DOMStorageItemsView.ts | domStorageNumberEntries": {
-    "message": "Number of entries shown in table: {PH1}"
-  },
   "panels/application/DOMStorageItemsView.ts | key": {
     "message": "Key"
-  },
-  "panels/application/DOMStorageItemsView.ts | selectAValueToPreview": {
-    "message": "Select a value to preview"
   },
   "panels/application/DOMStorageItemsView.ts | value": {
     "message": "Value"
@@ -10905,7 +10899,7 @@
     "message": "Timezone ID"
   },
   "panels/settings/AISettingsTab.ts | adminSettings": {
-    "message": "Features available to managed users may vary depending upon their administrator’s settings"
+    "message": "Depending on your Google account management and/or region, Google may refrain from data collection. Depending on their organization’s settings, features available to managed users may vary."
   },
   "panels/settings/AISettingsTab.ts | boostYourProductivity": {
     "message": "Boost your productivity with Chrome AI"
@@ -10916,9 +10910,6 @@
   "panels/settings/AISettingsTab.ts | collapse": {
     "message": "collapse"
   },
-  "panels/settings/AISettingsTab.ts | collectData": {
-    "message": "Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information."
-  },
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
     "message": "The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
   },
@@ -10926,7 +10917,7 @@
     "message": "expand"
   },
   "panels/settings/AISettingsTab.ts | experimentalFeatures": {
-    "message": "These features are experimental and may change"
+    "message": "These features are experimental. They use generative AI and may provide inaccurate or offensive information that does not represent Google’s views."
   },
   "panels/settings/AISettingsTab.ts | explainConsole": {
     "message": "Get explanations for console warnings and errors"
@@ -10949,17 +10940,11 @@
   "panels/settings/AISettingsTab.ts | learnMore": {
     "message": "Learn more"
   },
-  "panels/settings/AISettingsTab.ts | managedAccount": {
-    "message": "Google may refrain from data collection depending on your Google account management and/or region"
-  },
-  "panels/settings/AISettingsTab.ts | maybeInaccurate": {
-    "message": "These features use generative AI and may provide inaccurate or offensive information that do not represent Google’s views"
-  },
   "panels/settings/AISettingsTab.ts | oneOrMoreSettingsHaveChanged": {
     "message": "One or more settings have changed which requires a reload to take effect."
   },
   "panels/settings/AISettingsTab.ts | privacyNotice": {
-    "message": "Privacy Notice"
+    "message": "Google Privacy Policy"
   },
   "panels/settings/AISettingsTab.ts | receiveStylingSuggestions": {
     "message": "Receive suggestions and code samples for fixing styling issues"
@@ -10968,10 +10953,10 @@
     "message": "Receive suggestions and code samples to address these issues"
   },
   "panels/settings/AISettingsTab.ts | retainData": {
-    "message": "Usage data will be stored in a way where Google cannot tell who provided it and can no longer fulfill any deletion requests and will be retained for up to 18 months"
+    "message": "Usage data will be retained for up to 18 months and stored in a way where Google cannot tell who provided it."
   },
   "panels/settings/AISettingsTab.ts | sendsDataToGoogle": {
-    "message": "Using these features sends data relevant for the feature to Google. Please find more feature-specific information below."
+    "message": "Using these features sends data relevant for the feature to Google. Google collects this data and feedback to improve its products and services with the help of human reviewers. Avoid sharing sensitive or personal information."
   },
   "panels/settings/AISettingsTab.ts | termsOfService": {
     "message": "Google Terms of Service"
@@ -12431,6 +12416,15 @@
   "panels/timeline/components/FieldSettingsDialog.ts | whenPerformanceIsShown": {
     "message": "When DevTools is open, the URLs you visit will be sent to Google to query field data. These requests are not tied to your Google account."
   },
+  "panels/timeline/components/insights/DocumentLatency.ts | redirects": {
+    "message": "Avoids multiple page redirects"
+  },
+  "panels/timeline/components/insights/DocumentLatency.ts | serverResponseTime": {
+    "message": "Initial server response time was short"
+  },
+  "panels/timeline/components/insights/DocumentLatency.ts | textCompression": {
+    "message": "Text compression applied"
+  },
   "panels/timeline/components/insights/LCPDiscovery.ts | fetchPriorityApplied": {
     "message": "fetchpriority=high applied"
   },
@@ -12496,6 +12490,9 @@
   },
   "panels/timeline/components/LiveMetricsView.ts | fieldDataLink": {
     "message": "field data"
+  },
+  "panels/timeline/components/LiveMetricsView.ts | interactionExcluded": {
+    "message": "INP is calculated using the 98th percentile of interaction delays, so some interaction delays may be larger than the INP value."
   },
   "panels/timeline/components/LiveMetricsView.ts | interactions": {
     "message": "Interactions"
@@ -12575,8 +12572,8 @@
   "panels/timeline/components/MetricCard.ts | betweenRange": {
     "message": "({PH1}-{PH2})"
   },
-  "panels/timeline/components/MetricCard.ts | clsTitle": {
-    "message": "Cumulative Layout Shift (CLS)"
+  "panels/timeline/components/MetricCard.ts | considerTesting": {
+    "message": "Consider your local test conditions"
   },
   "panels/timeline/components/MetricCard.ts | field75thPercentile": {
     "message": "Field 75th Percentile"
@@ -12587,14 +12584,8 @@
   "panels/timeline/components/MetricCard.ts | gtRange": {
     "message": "(>{PH1})"
   },
-  "panels/timeline/components/MetricCard.ts | inpTitle": {
-    "message": "Interaction to Next Paint (INP)"
-  },
   "panels/timeline/components/MetricCard.ts | interactToMeasure": {
     "message": "Interact with the page to measure INP."
-  },
-  "panels/timeline/components/MetricCard.ts | lcpTitle": {
-    "message": "Largest Contentful Paint (LCP)"
   },
   "panels/timeline/components/MetricCard.ts | leqRange": {
     "message": "(≤{PH1})"
@@ -12611,71 +12602,95 @@
   "panels/timeline/components/MetricCard.ts | poor": {
     "message": "Poor"
   },
+  "panels/timeline/components/MetricCard.ts | recDynamicContentCLS": {
+    "message": "Dynamic content can influence what layout shifts happen."
+  },
+  "panels/timeline/components/MetricCard.ts | recDynamicContentLCP": {
+    "message": "The LCP element can vary between page loads if content is dynamic."
+  },
+  "panels/timeline/components/MetricCard.ts | recJourneyCLS": {
+    "message": "How a user interacts with the page can influence layout shifts. Ensure you are testing common interactions like scrolling the page."
+  },
+  "panels/timeline/components/MetricCard.ts | recJourneyINP": {
+    "message": "How a user interacts with the page influences interaction delays. Ensure you are testing common interactions."
+  },
+  "panels/timeline/components/MetricCard.ts | recThrottlingINP": {
+    "message": "Real users may experience longer interactions due to slower CPU speeds. Increasing CPU throttling will simulate a slower device."
+  },
+  "panels/timeline/components/MetricCard.ts | recThrottlingLCP": {
+    "message": "Real users may experience longer page loads due to slower network conditions. Increasing network throttling will simulate slower network conditions."
+  },
+  "panels/timeline/components/MetricCard.ts | recViewportCLS": {
+    "message": "Screen size can influence what layout shifts happen. Ensure you are testing common viewport sizes."
+  },
+  "panels/timeline/components/MetricCard.ts | recViewportLCP": {
+    "message": "Screen size can influence what the LCP element is. Ensure you are testing common viewport sizes."
+  },
   "panels/timeline/components/MetricCard.ts | viewCardDetails": {
     "message": "View card details"
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodBetterCompare": {
-    "message": "Your local {PH1} {PH2} is good, but is significantly better than your users’ experience."
+    "message": "Your local {PH1} value of {PH2} is good, but is significantly better than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodGoodDetailedCompare": {
-    "message": "Your local {PH1} {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} {PH3} is good."
+    "message": "Your local {PH1} value of {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} value of {PH3} is good."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodNeedsImprovementDetailedCompare": {
-    "message": "Your local {PH1} {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} needs improvement."
+    "message": "Your local {PH1} value of {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} needs improvement."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodPoorDetailedCompare": {
-    "message": "Your local {PH1} {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is poor."
+    "message": "Your local {PH1} value of {PH2} is good and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} is poor."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodSimilarCompare": {
-    "message": "Your local {PH1} {PH2} is good, and is similar to your users’ experience."
+    "message": "Your local {PH1} value of {PH2} is good, and is similar to your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodSummarized": {
-    "message": "Your local {PH1} {PH2} is good."
+    "message": "Your local {PH1} value of {PH2} is good."
   },
   "panels/timeline/components/MetricCompareStrings.ts | goodWorseCompare": {
-    "message": "Your local {PH1} {PH2} is good, but is significantly worse than your users’ experience."
+    "message": "Your local {PH1} value of {PH2} is good, but is significantly worse than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementBetterCompare": {
-    "message": "Your local {PH1} {PH2} needs improvement, but is significantly better than your users’ experience."
+    "message": "Your local {PH1} value of {PH2} needs improvement, but is significantly better than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementGoodDetailedCompare": {
-    "message": "Your local {PH1} {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is good."
+    "message": "Your local {PH1} value of {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} is good."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementNeedsImprovementDetailedCompare": {
-    "message": "Your local {PH1} {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} {PH3} needs improvement."
+    "message": "Your local {PH1} value of {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} value of {PH3} needs improvement."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementPoorDetailedCompare": {
-    "message": "Your local {PH1} {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is poor."
+    "message": "Your local {PH1} value of {PH2} needs improvement and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} is poor."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementSimilarCompare": {
-    "message": "Your local {PH1} {PH2} needs improvement, and is similar to your users’ experience."
+    "message": "Your local {PH1} value of {PH2} needs improvement, and is similar to your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementSummarized": {
-    "message": "Your local {PH1} {PH2} needs improvement."
+    "message": "Your local {PH1} value of {PH2} needs improvement."
   },
   "panels/timeline/components/MetricCompareStrings.ts | needsImprovementWorseCompare": {
-    "message": "Your local {PH1} {PH2} needs improvement, but is significantly worse than your users’ experience."
+    "message": "Your local {PH1} value of {PH2} needs improvement, but is significantly worse than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorBetterCompare": {
-    "message": "Your local {PH1} {PH2} is poor, but is significantly better than your users’ experience."
+    "message": "Your local {PH1} value of {PH2} is poor, but is significantly better than your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorGoodDetailedCompare": {
-    "message": "Your local {PH1} {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} is good."
+    "message": "Your local {PH1} value of {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} is good."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorNeedsImprovementDetailedCompare": {
-    "message": "Your local {PH1} {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} {PH3} needs improvement."
+    "message": "Your local {PH1} value of {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. However, the field data 75th percentile {PH1} value of {PH3} needs improvement."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorPoorDetailedCompare": {
-    "message": "Your local {PH1} {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} {PH3} is poor."
+    "message": "Your local {PH1} value of {PH2} is poor and is rated the same as {PH4} of real-user {PH1} experiences. Additionally, the field data 75th percentile {PH1} value of {PH3} is poor."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorSimilarCompare": {
-    "message": "Your local {PH1} {PH2} is poor, and is similar to your users’ experience."
+    "message": "Your local {PH1} value of {PH2} is poor, and is similar to your users’ experience."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorSummarized": {
-    "message": "Your local {PH1} {PH2} is poor."
+    "message": "Your local {PH1} value of {PH2} is poor."
   },
   "panels/timeline/components/MetricCompareStrings.ts | poorWorseCompare": {
-    "message": "Your local {PH1} {PH2} is poor, but is significantly worse than your users’ experience."
+    "message": "Your local {PH1} value of {PH2} is poor, but is significantly worse than your users’ experience."
   },
   "panels/timeline/components/NetworkRequestDetails.ts | contentDownloading": {
     "message": "Content downloading"
@@ -13373,11 +13388,8 @@
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Current Session: {PH1}. {PH2}"
   },
-  "panels/timeline/TimelineHistoryManager.ts | landingPageTitleLocalAndFieldMetrics": {
-    "message": "Local and field metrics"
-  },
-  "panels/timeline/TimelineHistoryManager.ts | landingPageTitleLocalMetrics": {
-    "message": "Local metrics"
+  "panels/timeline/TimelineHistoryManager.ts | landingPageTitle": {
+    "message": "Live metrics"
   },
   "panels/timeline/TimelineHistoryManager.ts | moments": {
     "message": "moments"
@@ -14542,6 +14554,12 @@
   },
   "ui/legacy/components/data_grid/DataGrid.ts | sSUseTheUpAndDownArrowKeysTo": {
     "message": "{PH1} {PH2}, use the up and down arrow keys to navigate and interact with the rows of the table; Use browse mode to read cell by cell."
+  },
+  "ui/legacy/components/data_grid/DataGridWithPreview.ts | numberEntries": {
+    "message": "Number of entries shown in table: {PH1}"
+  },
+  "ui/legacy/components/data_grid/DataGridWithPreview.ts | selectAValueToPreview": {
+    "message": "Select a value to preview"
   },
   "ui/legacy/components/data_grid/ShowMoreDataGridNode.ts | showAllD": {
     "message": "Show all {PH1}"

@@ -98,7 +98,6 @@ entrypoints/inspector_main/InspectorMain.test.js
 entrypoints/inspector_main/OutermostTargetSelector.test.js
 entrypoints/main/ExecutionContextSelector.test.js
 entrypoints/main/MainImpl.test.js
-entrypoints/main/SettingTracker.test.js
 entrypoints/wasmparser_worker/wasmparser_worker.test.js
 models/autofill_manager/AutofillManager.test.js
 models/bindings/CompilerScriptMapping.test.js

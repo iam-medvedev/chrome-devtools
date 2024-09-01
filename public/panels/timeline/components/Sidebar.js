@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../../core/common/common.js';
 import * as Root from '../../../core/root/root.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import { SidebarAnnotationsTab } from './SidebarAnnotationsTab.js';
@@ -22,11 +23,29 @@ export class EventReferenceClick extends Event {
     }
 }
 export const DEFAULT_SIDEBAR_TAB = "insights" /* SidebarTabs.INSIGHTS */;
+export const DEFAULT_SIDEBAR_WIDTH_PX = 240;
+const MIN_SIDEBAR_WIDTH_PX = 170;
 export class SidebarWidget extends UI.Widget.VBox {
     #tabbedPane = new UI.TabbedPane.TabbedPane();
     #insightsView = new InsightsView();
     #annotationsView = new AnnotationsView();
+    /**
+     * Track if the user has opened the sidebar before. We do this so that the
+     * very first time they record/import a trace after the sidebar ships, we can
+     * automatically pop it open to aid discovery. But, after that, the sidebar
+     * visibility will be persisted based on if the user opens or closes it - the
+     * SplitWidget tracks its state in its own setting.
+     */
+    #userHasOpenedSidebarOnce = Common.Settings.Settings.instance().createSetting('timeline-user-has-opened-siderbar-once', false);
+    userHasOpenedSidebarOnce() {
+        return this.#userHasOpenedSidebarOnce.get();
+    }
+    constructor() {
+        super();
+        this.setMinimumSize(MIN_SIDEBAR_WIDTH_PX, 0);
+    }
     wasShown() {
+        this.#userHasOpenedSidebarOnce.set(true);
         this.#tabbedPane.show(this.element);
         if (!this.#tabbedPane.hasTab("insights" /* SidebarTabs.INSIGHTS */) &&
             Root.Runtime.experiments.isEnabled("timeline-rpp-sidebar" /* Root.Runtime.ExperimentName.TIMELINE_INSIGHTS */)) {

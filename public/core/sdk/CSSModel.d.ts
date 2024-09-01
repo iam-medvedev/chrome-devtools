@@ -58,6 +58,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     setScopeText(styleSheetId: Protocol.CSS.StyleSheetId, range: TextUtils.TextRange.TextRange, newScopeText: string): Promise<boolean>;
     addRule(styleSheetId: Protocol.CSS.StyleSheetId, ruleText: string, ruleLocation: TextUtils.TextRange.TextRange): Promise<CSSStyleRule | null>;
     requestViaInspectorStylesheet(maybeFrameId?: Protocol.Page.FrameId | null): Promise<CSSStyleSheetHeader | null>;
+    createInspectorStylesheet(frameId: Protocol.Page.FrameId): Promise<CSSStyleSheetHeader | null>;
     mediaQueryResultChanged(): void;
     fontsUpdated(fontFace?: Protocol.CSS.FontFace | null): void;
     fontFaces(): CSSFontFace[];
@@ -93,6 +94,7 @@ export declare enum Events {
     FontsUpdated = "FontsUpdated",
     MediaQueryResultChanged = "MediaQueryResultChanged",
     ModelWasEnabled = "ModelWasEnabled",
+    ModelDisposed = "ModelDisposed",
     PseudoStateForced = "PseudoStateForced",
     StyleSheetAdded = "StyleSheetAdded",
     StyleSheetChanged = "StyleSheetChanged",
@@ -111,6 +113,7 @@ export type EventTypes = {
     [Events.FontsUpdated]: void;
     [Events.MediaQueryResultChanged]: void;
     [Events.ModelWasEnabled]: void;
+    [Events.ModelDisposed]: CSSModel;
     [Events.PseudoStateForced]: PseudoStateForcedEvent;
     [Events.StyleSheetAdded]: CSSStyleSheetHeader;
     [Events.StyleSheetChanged]: StyleSheetChangedEvent;

@@ -97,7 +97,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         return promise;
     }
     getMetadata(path) {
-        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
+        const { promise, resolve } = Promise.withResolvers();
         this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), undefined, fileEntryLoaded, errorHandler);
         return promise;
         function fileEntryLoaded(entry) {
@@ -206,7 +206,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         }
     }
     deleteFile(path) {
-        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
+        const { promise, resolve } = Promise.withResolvers();
         this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), undefined, fileEntryLoaded.bind(this), errorHandler.bind(this));
         return promise;
         function fileEntryLoaded(fileEntry) {
@@ -225,7 +225,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         }
     }
     deleteDirectoryRecursively(path) {
-        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
+        const { promise, resolve } = Promise.withResolvers();
         this.domFileSystem.root.getDirectory(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), undefined, dirEntryLoaded.bind(this), errorHandler.bind(this));
         return promise;
         function dirEntryLoaded(dirEntry) {

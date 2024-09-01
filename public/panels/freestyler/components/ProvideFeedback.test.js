@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import * as Freestyler from '../freestyler.js';
-describe('ProvideFeedback', () => {
+describeWithEnvironment('ProvideFeedback', () => {
     it('should show the feedback form when canShowFeedbackForm is true', async () => {
         const component = new Freestyler.ProvideFeedback({ onFeedbackSubmit: sinon.stub(), canShowFeedbackForm: true });
         renderElementIntoDOM(component);

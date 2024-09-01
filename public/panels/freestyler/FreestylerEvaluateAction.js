@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as SDK from '../../core/sdk/sdk.js';
 export class ExecutionError extends Error {
 }
 export class SideEffectError extends Error {
@@ -76,7 +77,7 @@ export class FreestylerEvaluateAction {
             }
             if (response.exceptionDetails) {
                 const exceptionDescription = response.exceptionDetails.exception?.description;
-                if (exceptionDescription?.startsWith('EvalError: Possible side-effect in debug-evaluate')) {
+                if (SDK.RuntimeModel.RuntimeModel.isSideEffectFailure(response)) {
                     throw new SideEffectError(exceptionDescription);
                 }
                 throw new ExecutionError(exceptionDescription || 'JS exception');

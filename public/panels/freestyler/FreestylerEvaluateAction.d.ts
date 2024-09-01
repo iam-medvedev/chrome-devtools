@@ -1,4 +1,4 @@
-import type * as SDK from '../../core/sdk/sdk.js';
+import * as SDK from '../../core/sdk/sdk.js';
 export declare class ExecutionError extends Error {
 }
 export declare class SideEffectError extends Error {

@@ -43,7 +43,7 @@ export declare class TimelineFlameChartView extends UI.Widget.VBox implements Pe
     private searchRegex?;
     constructor(delegate: TimelineModeViewDelegate);
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
-    calculateZoom(overlays: Overlays.Overlays.TimelineOverlay[]): TraceEngine.Types.Timing.TraceWindowMicroSeconds;
+    calculateOverlaysTraceWindow(overlays: Overlays.Overlays.TimelineOverlay[]): TraceEngine.Types.Timing.TraceWindowMicroSeconds;
     runBrickBreakerGame(): void;
     isNetworkTrackShownForTests(): boolean;
     getLinkSelectionAnnotation(): TraceEngine.Types.File.EntriesLinkAnnotation | null;

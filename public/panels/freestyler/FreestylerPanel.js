@@ -4,13 +4,12 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LitHtml from '../../ui/lit-html/lit-html.js';
 import { ChangeManager } from './ChangeManager.js';
 import { DOGFOOD_INFO, FreestylerChatUi, } from './components/FreestylerChatUi.js';
-import { FIX_THIS_ISSUE_PROMPT, FreestylerAgent, Step } from './FreestylerAgent.js';
+import { FIX_THIS_ISSUE_PROMPT, FreestylerAgent, ResponseType } from './FreestylerAgent.js';
 import freestylerPanelStyles from './freestylerPanel.css.js';
 /*
   * TODO(nvitkov): b/346933425
@@ -68,7 +67,7 @@ export class FreestylerPanel extends UI.Panel.Panel {
     view;
     static panelName = 'freestyler';
     #toggleSearchElementAction;
-    #selectedNode;
+    #selectedElement;
     #contentContainer;
     #aidaClient;
     #agent;
@@ -85,14 +84,14 @@ export class FreestylerPanel extends UI.Panel.Panel {
             UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         this.#aidaClient = aidaClient;
         this.#contentContainer = this.contentElement.createChild('div', 'freestyler-chat-ui-container');
-        this.#selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
+        this.#selectedElement = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         this.#viewProps = {
             state: this.#consentViewAcceptedSetting.get() ? "chat-view" /* FreestylerChatUiState.CHAT_VIEW */ :
                 "consent-view" /* FreestylerChatUiState.CONSENT_VIEW */,
             aidaAvailability,
             messages: [],
             inspectElementToggled: this.#toggleSearchElementAction.toggled(),
-            selectedNode: this.#selectedNode,
+            selectedElement: this.#selectedElement,
             isLoading: false,
             onTextSubmit: this.#startConversation.bind(this),
             onInspectElementClick: this.#handleSelectElementClick.bind(this),
@@ -113,10 +112,10 @@ export class FreestylerPanel extends UI.Panel.Panel {
         });
         this.#agent = this.#createAgent();
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, ev => {
-            if (this.#viewProps.selectedNode === ev.data) {
+            if (this.#viewProps.selectedElement === ev.data) {
                 return;
             }
-            this.#viewProps.selectedNode = ev.data;
+            this.#viewProps.selectedElement = Boolean(ev.data) && ev.data.nodeType() === Node.ELEMENT_NODE ? ev.data : null;
             this.doUpdate();
         });
         this.doUpdate();
@@ -126,7 +125,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
             aidaClient: this.#aidaClient,
             changeManager: this.#changeManager,
             serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-            confirmSideEffect: this.showConfirmSideEffectUi.bind(this),
         });
     }
     static async instance(opts = { forceNew: null }) {
@@ -145,18 +143,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
     }
     doUpdate() {
         this.view(this.#viewProps, this.#viewOutput, this.#contentContainer);
-    }
-    async showConfirmSideEffectUi(action) {
-        const sideEffectConfirmationPromiseWithResolvers = Platform.PromiseUtilities.promiseWithResolvers();
-        this.#viewProps.confirmSideEffectDialog = {
-            code: action,
-            onAnswer: (answer) => sideEffectConfirmationPromiseWithResolvers.resolve(answer),
-        };
-        this.doUpdate();
-        const result = await sideEffectConfirmationPromiseWithResolvers.promise;
-        this.#viewProps.confirmSideEffectDialog = undefined;
-        this.doUpdate();
-        return result;
     }
     #handleSelectElementClick() {
         void this.#toggleSearchElementAction.execute();
@@ -197,7 +183,6 @@ export class FreestylerPanel extends UI.Panel.Panel {
     #clearMessages() {
         this.#viewProps.messages = [];
         this.#viewProps.isLoading = false;
-        this.#viewProps.confirmSideEffectDialog = undefined;
         this.#agent = this.#createAgent();
         this.#cancel();
         this.doUpdate();
@@ -215,13 +200,10 @@ export class FreestylerPanel extends UI.Panel.Panel {
             text,
         });
         this.#viewProps.isLoading = true;
-        // TODO: We should only show "Fix this issue" button when the answer suggests fix or fixes.
-        // We shouldn't show this when the answer is complete like a confirmation without any suggestion.
-        const suggestingFix = !isFixQuery;
         const systemMessage = {
             entity: "model" /* ChatMessageEntity.MODEL */,
-            suggestingFix,
-            steps: new Map(),
+            suggestingFix: false,
+            steps: [],
         };
         this.#viewProps.messages.push(systemMessage);
         this.doUpdate();
@@ -230,28 +212,63 @@ export class FreestylerPanel extends UI.Panel.Panel {
         signal.addEventListener('abort', () => {
             systemMessage.rpcId = undefined;
             systemMessage.suggestingFix = false;
-            systemMessage.steps.set('aborted', {
-                step: Step.ERROR,
-                id: 'aborted',
-                text: i18nString(UIStringsTemp.stoppedResponse),
-            });
+            systemMessage.error = i18nString(UIStringsTemp.stoppedResponse);
+            this.#viewProps.isLoading = false;
         });
+        let step = { isLoading: true };
         for await (const data of this.#agent.run(text, { signal, isFixQuery })) {
-            if (data.step === Step.QUERYING) {
-                systemMessage.steps.set(data.id, data);
-                this.#viewProps.isLoading = true;
-                this.doUpdate();
-                this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
-                continue;
+            step.sideEffect = undefined;
+            switch (data.type) {
+                case ResponseType.QUERYING: {
+                    step = { isLoading: true };
+                    if (!systemMessage.steps.length) {
+                        systemMessage.steps.push(step);
+                    }
+                    break;
+                }
+                case ResponseType.THOUGHT: {
+                    step.isLoading = false;
+                    step.thought = data.thought;
+                    step.title = data.title;
+                    if (systemMessage.steps.at(-1) !== step) {
+                        systemMessage.steps.push(step);
+                    }
+                    break;
+                }
+                case ResponseType.SIDE_EFFECT: {
+                    step.isLoading = false;
+                    step.sideEffect = {
+                        code: data.code,
+                        onAnswer: data.confirm,
+                    };
+                    if (systemMessage.steps.at(-1) !== step) {
+                        systemMessage.steps.push(step);
+                    }
+                    break;
+                }
+                case ResponseType.ACTION: {
+                    step.isLoading = false;
+                    step.code = data.code;
+                    step.output = data.output;
+                    if (systemMessage.steps.at(-1) !== step) {
+                        systemMessage.steps.push(step);
+                    }
+                    break;
+                }
+                case ResponseType.ANSWER: {
+                    step.isLoading = false;
+                    systemMessage.suggestingFix = data.fixable;
+                    systemMessage.answer = data.text;
+                    systemMessage.rpcId = data.rpcId;
+                    this.#viewProps.isLoading = false;
+                    break;
+                }
+                case ResponseType.ERROR: {
+                    step.isLoading = false;
+                    systemMessage.error = data.error;
+                    this.#viewProps.isLoading = false;
+                }
             }
-            if (data.step === Step.ANSWER || data.step === Step.ERROR) {
-                this.#viewProps.isLoading = false;
-            }
-            if (data.step === Step.ERROR) {
-                systemMessage.suggestingFix = false;
-            }
-            systemMessage.rpcId = data.rpcId;
-            systemMessage.steps.set(data.id, data);
             this.doUpdate();
             this.#viewOutput.freestylerChatUi?.scrollToLastMessage();
         }

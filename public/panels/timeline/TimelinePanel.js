@@ -278,7 +278,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIS
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let timelinePanelInstance;
 let isNode;
-const DEFAULT_SIDEBAR_WIDTH_PX = 240;
 export class TimelinePanel extends UI.Panel.Panel {
     dropTarget;
     recordingOptionUIControls;
@@ -312,8 +311,8 @@ export class TimelinePanel extends UI.Panel.Panel {
      */
     #splitWidget = new UI.SplitWidget.SplitWidget(true, // isVertical
     false, // secondIsSidebar
-    undefined, // settingName (we don't want to persist this state to a setting)
-    DEFAULT_SIDEBAR_WIDTH_PX);
+    'timeline-panel-sidebar-state', // settingName (to persist the open/closed state for the user)
+    TimelineComponents.Sidebar.DEFAULT_SIDEBAR_WIDTH_PX);
     statusPaneContainer;
     flameChart;
     searchableViewInternal;
@@ -350,6 +349,19 @@ export class TimelinePanel extends UI.Panel.Panel {
     // These are used to announce to screen-readers and not shown visibly.
     i18nString(UIStrings.sidebarShown), i18nString(UIStrings.sidebarHidden), 'timeline.sidebar');
     #sideBar = new TimelineComponents.Sidebar.SidebarWidget();
+    /**
+     * Rather than auto-pop the sidebar every time the user records a trace,
+     * which could get annoying, we instead persist the state of the sidebar
+     * visibility to a setting so it's restored across sessions.
+     * However, sometimes we have to automatically hide the sidebar, like when a
+     * trace recording is happening, or the user is on the landing page. In those
+     * times, we toggle this flag to true. Then, when we enter the VIEWING_TRACE
+     * mode, we check this flag and pop the sidebar open if it's set to true.
+     * Longer term a better fix here would be to divide the 3 UI screens
+     * (status pane, landing page, trace view) into distinct components /
+     * widgets, to avoid this complexity.
+     */
+    #restoreSidebarVisibilityOnTraceLoad = false;
     constructor() {
         super('timeline');
         const adornerContent = document.createElement('span');
@@ -427,8 +439,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.flameChart.setSearchableView(this.searchableViewInternal);
         this.searchableViewInternal.hideWidget();
         this.#splitWidget.setMainWidget(this.timelinePane);
-        this.#splitWidget.show(this.element);
         this.#splitWidget.setSidebarWidget(this.#sideBar);
+        this.#splitWidget.enableShowModeSaving();
+        this.#splitWidget.show(this.element);
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightDeactivated.eventName, () => {
             this.#setActiveInsight(null);
         });
@@ -500,10 +513,6 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.registerCSSFiles([timelinePanelStyles]);
         // Record the performance tool load time.
         Host.userMetrics.panelLoaded('timeline', 'DevTools.Launch.Timeline');
-        // The sidebar state is by-default persisted across reloads; we do not want
-        // that as if you come back to the panel you see the landing page, and the
-        // sidebar is empty in that state.
-        this.#splitWidget.hideSidebar();
     }
     willHide() {
         UI.Context.Context.instance().setFlavor(TimelinePanel, null);
@@ -608,6 +617,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 this.#removeStatusPane();
                 this.#hideLandingPage();
                 this.#setModelForActiveTrace();
+                this.#showSidebarIfRequired();
                 return;
             }
             case 'STATUS_PANE_OVERLAY': {
@@ -617,7 +627,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 this.#hideLandingPage();
                 // We also hide the sidebar - else if the user is viewing a trace and
                 // then load/record another, the sidebar remains visible.
-                this.#splitWidget.hideSidebar();
+                this.#hideSidebar();
                 return;
             }
             default:
@@ -1352,7 +1362,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         const { traceIndex } = this.#viewMode;
         const traceParsedData = this.#traceEngineModel.traceParsedData(traceIndex);
-        if (!traceParsedData) {
+        const syntheticEventsManager = this.#traceEngineModel.syntheticTraceEventsManager(traceIndex);
+        if (!traceParsedData || !syntheticEventsManager) {
             // This should not happen, because you can only get into the
             // VIEWING_TRACE viewMode if you have a valid trace index from the
             // TraceEngine. If it does, let's bail back to the landing page.
@@ -1360,6 +1371,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.#changeView({ mode: 'LANDING_PAGE' });
             return;
         }
+        TraceEngine.Helpers.SyntheticEvents.SyntheticEventsManager.activate(syntheticEventsManager);
         // Clear the line level profile that could exist from the previous trace.
         PerfUI.LineLevelProfile.Performance.instance().reset();
         this.#minimapComponent.reset();
@@ -1449,17 +1461,22 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.flameChart.setInsights(traceInsightsData);
             this.#sideBar.setInsights(traceInsightsData);
         }
-        // Automatically show the sidebar when a trace is loaded if we have data.
-        // Or hide it when we do not have data (which likely means we are back on the landing page)
-        const hasInsights = traceInsightsData !== null && traceInsightsData.size > 0;
-        const hasAnnotations = (currModificationManager?.getAnnotations().length ?? 0) > 0;
-        const shouldOpenSidebar = this.#panelSidebarEnabled() && (hasInsights || hasAnnotations);
-        if (shouldOpenSidebar) {
+        this.#showSidebarIfRequired();
+    }
+    /**
+     * We automatically show the sidebar in only 2 scenarios:
+     * 1. The user has never seen it before, so we show it once to aid discovery
+     * 2. The user had it open, and we hid it (for example, during recording), so now we need to bring it back.
+     * We also check that the experiments are enabled, else we reveal an entirely empty sidebar.
+     */
+    #showSidebarIfRequired() {
+        const needToRestore = this.#restoreSidebarVisibilityOnTraceLoad;
+        const userHasSeenSidebar = this.#sideBar.userHasOpenedSidebarOnce();
+        const experimentsEnabled = this.#panelSidebarEnabled();
+        if (experimentsEnabled && (!userHasSeenSidebar || needToRestore)) {
             this.#splitWidget.showBoth();
         }
-        else {
-            this.#splitWidget.hideSidebar();
-        }
+        this.#restoreSidebarVisibilityOnTraceLoad = false;
     }
     // Build a map mapping annotated entries to the colours that are used to display them in the FlameChart.
     // We need this map to display the entries in the sidebar with the same colours.
@@ -1522,10 +1539,20 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.statusPane.updateProgressBar(i18nString(UIStrings.bufferUsage), usage * 100);
         }
     }
+    /**
+     * Hide the sidebar, but persist the user's state, because when they import a
+     * trace we want to revert the sidebar back to what it was.
+     */
+    #hideSidebar() {
+        if (this.#splitWidget.sidebarIsShowing()) {
+            this.#restoreSidebarVisibilityOnTraceLoad = true;
+            this.#splitWidget.hideSidebar();
+        }
+    }
     #showLandingPage() {
         this.updateSettingsPaneVisibility();
         this.#removeSidebarIconFromToolbar();
-        this.#splitWidget.hideSidebar();
+        this.#hideSidebar();
         if (this.landingPage) {
             this.landingPage.show(this.statusPaneContainer);
             return;

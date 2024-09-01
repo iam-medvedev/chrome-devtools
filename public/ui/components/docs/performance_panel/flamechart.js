@@ -60,15 +60,15 @@ function renderBasicExample() {
     flameChart.update();
 }
 /**
- * Render a flame chart with main thread long events to stripe and a warning triangle.
+ * Render a flame chart with events with decorations.
  **/
-function renderLongTaskExample() {
-    class FakeProviderWithLongTasksForStriping extends TraceHelpers.FakeFlameChartProvider {
+function renderDecorationExample() {
+    class FakeProviderWithDecorations extends TraceHelpers.FakeFlameChartProvider {
         timelineData() {
             return PerfUI.FlameChart.FlameChartTimelineData.create({
-                entryLevels: [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2],
-                entryStartTimes: [5, 55, 70, 5, 30, 55, 75, 5, 10, 15, 20],
-                entryTotalTimes: [45, 10, 20, 20, 20, 5, 15, 4, 4, 4, 4],
+                entryLevels: [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2],
+                entryStartTimes: [5, 55, 70, 5, 30, 55, 75, 5, 10, 15, 20, 25],
+                entryTotalTimes: [45, 10, 20, 20, 20, 5, 15, 4, 4, 4, 4, 1],
                 entryDecorations: [
                     [
                         {
@@ -128,6 +128,14 @@ function renderLongTaskExample() {
                         { type: "HIDDEN_DESCENDANTS_ARROW" /* PerfUI.FlameChart.FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */ },
                         { type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */ },
                     ],
+                    [
+                        {
+                            type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */,
+                            // This triangle should start 1/4 of hte event, and end at 3/4 of the event.
+                            customStartTime: TraceEngine.Types.Timing.MicroSeconds(25_250),
+                            customEndTime: TraceEngine.Types.Timing.MicroSeconds(25_750),
+                        },
+                    ],
                 ],
                 groups: [{
                         name: 'Testing Candy Stripe, warning triangles and hidden descendants arrow decorations',
@@ -137,12 +145,12 @@ function renderLongTaskExample() {
             });
         }
     }
-    const container = document.querySelector('div#long-task');
+    const container = document.querySelector('div#decorations');
     if (!container) {
         throw new Error('No container');
     }
     const delegate = new TraceHelpers.MockFlameChartDelegate();
-    const dataProvider = new FakeProviderWithLongTasksForStriping();
+    const dataProvider = new FakeProviderWithDecorations();
     const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
     flameChart.markAsRoot();
     flameChart.setWindowTimes(0, 100);
@@ -332,7 +340,7 @@ function renderInitiatorsExample() {
     flameChart.update();
 }
 renderBasicExample();
-renderLongTaskExample();
+renderDecorationExample();
 renderNestedExample();
 renderTrackCustomizationExample();
 renderInitiatorsExample();

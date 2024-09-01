@@ -29,18 +29,21 @@ describeWithEnvironment('FreestylerAgent', () => {
                 title: undefined,
                 thought: payload,
                 answer: undefined,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`   THOUGHT: ${payload}`), {
                 action: undefined,
                 title: undefined,
                 thought: payload,
                 answer: undefined,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`Something\n   THOUGHT: ${payload}`), {
                 action: undefined,
                 title: undefined,
                 thought: payload,
                 answer: undefined,
+                fixable: false,
             });
         });
         it('parses a answer', async () => {
@@ -50,18 +53,21 @@ describeWithEnvironment('FreestylerAgent', () => {
                 title: undefined,
                 thought: undefined,
                 answer: payload,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`   ANSWER: ${payload}`), {
                 action: undefined,
                 title: undefined,
                 thought: undefined,
                 answer: payload,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`Something\n   ANSWER: ${payload}`), {
                 action: undefined,
                 title: undefined,
                 thought: undefined,
                 answer: payload,
+                fixable: false,
             });
         });
         it('parses a multiline answer', async () => {
@@ -73,36 +79,42 @@ c`;
                 title: undefined,
                 thought: undefined,
                 answer: payload,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`   ANSWER: ${payload}`), {
                 action: undefined,
                 title: undefined,
                 thought: undefined,
                 answer: payload,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`Something\n   ANSWER: ${payload}`), {
                 action: undefined,
                 title: undefined,
                 thought: undefined,
                 answer: payload,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`ANSWER: ${payload}\nTHOUGHT: thought`), {
                 action: undefined,
                 title: undefined,
                 thought: 'thought',
                 answer: payload,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`ANSWER: ${payload}\nOBSERVATION: observation`), {
                 action: undefined,
                 title: undefined,
                 thought: undefined,
                 answer: payload,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`ANSWER: ${payload}\nACTION\naction\nSTOP`), {
                 action: 'action',
                 title: undefined,
                 thought: undefined,
                 answer: payload,
+                fixable: false,
             });
         });
         it('parses an action', async () => {
@@ -114,18 +126,21 @@ c`;
                 title: undefined,
                 thought: undefined,
                 answer: undefined,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n${payload}`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
                 answer: undefined,
+                fixable: false,
             });
             assert.deepStrictEqual(FreestylerAgent.parseResponse(`ACTION\n\n${payload}\n\nSTOP`), {
                 action: payload,
                 title: undefined,
                 thought: undefined,
                 answer: undefined,
+                fixable: false,
             });
         });
         it('parses a thought and title', async () => {
@@ -136,6 +151,7 @@ c`;
                 thought: payload,
                 title: title,
                 answer: undefined,
+                fixable: false,
             });
         });
         it('parses an action with backticks in the code', async () => {
@@ -147,6 +163,7 @@ c`;
                 title: undefined,
                 thought: undefined,
                 answer: undefined,
+                fixable: false,
             });
         });
         it('parses an action with 5 backticks in the code and `js` text in the prelude', async () => {
@@ -158,6 +175,7 @@ c`;
                 title: undefined,
                 thought: undefined,
                 answer: undefined,
+                fixable: false,
             });
         });
         it('parses a thought and an action', async () => {
@@ -170,6 +188,7 @@ c`;
                 title: undefined,
                 thought: thoughtPayload,
                 answer: undefined,
+                fixable: false,
             });
         });
         it('parses a response as an answer', async () => {
@@ -178,6 +197,7 @@ c`;
                 title: undefined,
                 thought: undefined,
                 answer: 'This is also an answer',
+                fixable: false,
             });
         });
     });
@@ -302,6 +322,8 @@ c`;
         }
         describe('side effect handling', () => {
             it('calls confirmSideEffect when the code execution contains a side effect', async () => {
+                const promise = Promise.withResolvers();
+                const stub = sinon.stub().returns(promise);
                 let count = 0;
                 async function* generateActionAndAnswer() {
                     if (count === 0) {
@@ -321,19 +343,19 @@ c`;
                     count++;
                 }
                 const execJs = sinon.mock().throws(new Freestyler.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
-                const confirmSideEffect = sinon.mock().resolves(false);
                 const agent = new FreestylerAgent({
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     createExtensionScope,
-                    confirmSideEffect,
+                    confirmSideEffectForTest: stub,
                     execJs,
-                    internalExecJs: sinon.mock(),
                 });
+                promise.resolve(true);
                 await Array.fromAsync(agent.run('test'));
                 sinon.assert.match(execJs.getCall(0).args[1], sinon.match({ throwOnSideEffect: true }));
-                sinon.assert.calledOnce(confirmSideEffect);
             });
             it('calls execJs with allowing side effects when confirmSideEffect resolves to true', async () => {
+                const promise = Promise.withResolvers();
+                const stub = sinon.stub().returns(promise);
                 let count = 0;
                 async function* generateActionAndAnswer() {
                     if (count === 0) {
@@ -355,20 +377,20 @@ c`;
                 const execJs = sinon.mock().twice();
                 execJs.onCall(0).throws(new Freestyler.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
                 execJs.onCall(1).resolves('value');
-                const confirmSideEffect = sinon.mock().resolves(true);
                 const agent = new FreestylerAgent({
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     createExtensionScope,
-                    confirmSideEffect,
+                    confirmSideEffectForTest: stub,
                     execJs,
-                    internalExecJs: sinon.mock(),
                 });
+                promise.resolve(true);
                 await Array.fromAsync(agent.run('test'));
-                sinon.assert.calledOnce(confirmSideEffect);
                 assert.strictEqual(execJs.getCalls().length, 2);
                 sinon.assert.match(execJs.getCall(1).args[1], sinon.match({ throwOnSideEffect: false }));
             });
             it('returns side effect error when confirmSideEffect resolves to false', async () => {
+                const promise = Promise.withResolvers();
+                const stub = sinon.stub().returns(promise);
                 let count = 0;
                 async function* generateActionAndAnswer() {
                     if (count === 0) {
@@ -389,18 +411,15 @@ c`;
                 }
                 const execJs = sinon.mock().twice();
                 execJs.onCall(0).throws(new Freestyler.SideEffectError('EvalError: Possible side-effect in debug-evaluate'));
-                const confirmSideEffect = sinon.mock().resolves(false);
                 const agent = new FreestylerAgent({
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     createExtensionScope,
-                    confirmSideEffect,
+                    confirmSideEffectForTest: stub,
                     execJs,
-                    internalExecJs: sinon.mock(),
                 });
+                promise.resolve(false);
                 const steps = await Array.fromAsync(agent.run('test'));
-                const actionStep = steps.find(step => step.step === Freestyler.Step.ACTION);
-                sinon.assert.calledOnce(confirmSideEffect);
-                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                const actionStep = steps.find(step => step.type === Freestyler.ResponseType.ACTION);
                 assert.strictEqual(actionStep.output, 'Error: EvalError: Possible side-effect in debug-evaluate');
                 assert.strictEqual(execJs.getCalls().length, 1);
             });
@@ -424,17 +443,13 @@ c`;
                     count++;
                 }
                 const execJs = sinon.mock().once();
-                const confirmSideEffect = sinon.mock();
                 const agent = new FreestylerAgent({
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     createExtensionScope,
-                    confirmSideEffect,
                     execJs,
-                    internalExecJs: sinon.mock(),
                 });
                 await Array.fromAsync(agent.run(Freestyler.FIX_THIS_ISSUE_PROMPT, { isFixQuery: true }));
                 const optionsArg = execJs.lastCall.args[1];
-                sinon.assert.notCalled(confirmSideEffect);
                 sinon.assert.match(optionsArg, sinon.match({ throwOnSideEffect: false }));
             });
         });
@@ -459,17 +474,14 @@ c`;
                     count++;
                 }
                 const execJs = sinon.mock().returns(new Array(10_000).fill('<div>...</div>').join());
-                const confirmSideEffect = sinon.mock().resolves(false);
                 const agent = new FreestylerAgent({
                     aidaClient: mockAidaClient(generateActionAndAnswer),
                     createExtensionScope,
-                    confirmSideEffect,
                     execJs,
-                    internalExecJs: sinon.mock(),
                 });
                 const result = await Array.fromAsync(agent.run('test'));
                 const actionSteps = result.filter(step => {
-                    return step.step === Freestyler.Step.ACTION;
+                    return step.type === Freestyler.ResponseType.ACTION;
                 });
                 assert(actionSteps.length === 1, 'Found non or multiple action steps');
                 const actionStep = actionSteps.at(0);
@@ -486,21 +498,18 @@ c`;
             const execJs = sinon.spy();
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateAnswer),
-                confirmSideEffect: () => Promise.resolve(true),
                 execJs,
-                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
                 {
-                    step: Freestyler.Step.QUERYING,
-                    id: '1-0',
+                    type: Freestyler.ResponseType.QUERYING,
                 },
                 {
-                    step: Freestyler.Step.ANSWER,
-                    id: '1-0',
+                    type: Freestyler.ResponseType.ANSWER,
                     text: 'this is the answer',
                     rpcId: undefined,
+                    fixable: false,
                 },
             ]);
             sinon.assert.notCalled(execJs);
@@ -526,21 +535,18 @@ c`;
             }
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateAnswer),
-                confirmSideEffect: () => Promise.resolve(true),
                 execJs: sinon.spy(),
-                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
                 {
-                    step: Freestyler.Step.QUERYING,
-                    id: '1-0',
+                    type: Freestyler.ResponseType.QUERYING,
                 },
                 {
-                    step: Freestyler.Step.ANSWER,
-                    id: '1-0',
+                    type: Freestyler.ResponseType.ANSWER,
                     text: 'this is the answer',
                     rpcId: 123,
+                    fixable: false,
                 },
             ]);
         });
@@ -559,21 +565,17 @@ c`;
             }
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateAnswer),
-                confirmSideEffect: () => Promise.resolve(true),
                 execJs: sinon.spy(),
-                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
                 {
-                    step: Freestyler.Step.QUERYING,
-                    id: '1-0',
+                    type: Freestyler.ResponseType.QUERYING,
                 },
                 {
                     rpcId: undefined,
-                    id: '1-0',
-                    step: Freestyler.Step.ERROR,
-                    text: 'Sorry, I could not help you with this query.',
+                    type: Freestyler.ResponseType.ERROR,
+                    error: 'Sorry, I could not help you with this query.',
                 },
             ]);
         });
@@ -592,21 +594,18 @@ c`;
             }
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateAnswer),
-                confirmSideEffect: () => Promise.resolve(true),
                 execJs: sinon.spy(),
-                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
                 {
-                    step: Freestyler.Step.QUERYING,
-                    id: '1-0',
+                    type: Freestyler.ResponseType.QUERYING,
                 },
                 {
-                    step: Freestyler.Step.ANSWER,
-                    id: '1-0',
+                    type: Freestyler.ResponseType.ANSWER,
                     text: 'this is the answer',
                     rpcId: 123,
+                    fixable: false,
                 },
             ]);
         });
@@ -620,20 +619,16 @@ c`;
             const execJs = sinon.spy();
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateNothing),
-                confirmSideEffect: () => Promise.resolve(true),
                 execJs,
-                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
                 {
-                    step: Freestyler.Step.QUERYING,
-                    id: '1-0',
+                    type: Freestyler.ResponseType.QUERYING,
                 },
                 {
-                    step: Freestyler.Step.ERROR,
-                    id: '1-0',
-                    text: 'Sorry, I could not help you with this query.',
+                    type: Freestyler.ResponseType.ERROR,
+                    error: 'Sorry, I could not help you with this query.',
                     rpcId: undefined,
                 },
             ]);
@@ -676,35 +671,33 @@ ANSWER: this is the answer`,
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateNothing),
                 createExtensionScope,
-                confirmSideEffect: () => Promise.resolve(true),
                 execJs,
-                internalExecJs: sinon.mock(),
             });
             const steps = await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(steps, [
                 {
-                    step: Freestyler.Step.QUERYING,
-                    id: '1-0',
+                    type: Freestyler.ResponseType.QUERYING,
                 },
                 {
-                    step: Freestyler.Step.THOUGHT,
-                    id: '1-0',
-                    text: 'I am thinking.',
+                    type: Freestyler.ResponseType.THOUGHT,
+                    thought: 'I am thinking.',
                     title: undefined,
                     rpcId: undefined,
                 },
                 {
-                    step: Freestyler.Step.ACTION,
-                    id: '1-0-action',
+                    type: Freestyler.ResponseType.ACTION,
                     code: 'console.log(\'hello\');',
                     output: 'hello',
                     rpcId: undefined,
                 },
                 {
-                    step: Freestyler.Step.ANSWER,
-                    id: '1-1',
+                    type: Freestyler.ResponseType.QUERYING,
+                },
+                {
+                    type: Freestyler.ResponseType.ANSWER,
                     text: 'this is the actual answer',
                     rpcId: undefined,
+                    fixable: false,
                 },
             ]);
             sinon.assert.calledOnce(execJs);
@@ -729,9 +722,7 @@ ANSWER: this is the answer`,
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateMultipleTimes),
                 createExtensionScope,
-                confirmSideEffect: () => Promise.resolve(true),
                 execJs,
-                internalExecJs: sinon.mock(),
             });
             await Array.fromAsync(agent.run('test'));
             assert.deepStrictEqual(agent.chatHistoryForTesting, [
@@ -789,9 +780,7 @@ ANSWER: this is the answer`,
             const agent = new FreestylerAgent({
                 aidaClient: mockAidaClient(generateMultipleTimes),
                 createExtensionScope,
-                confirmSideEffect: () => Promise.resolve(true),
                 execJs,
-                internalExecJs: sinon.mock(),
             });
             const controller = new AbortController();
             controller.abort();

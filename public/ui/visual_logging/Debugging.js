@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Platform from '../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import { VisualElements } from './LoggingConfig.js';
 import { getLoggingState } from './LoggingState.js';
@@ -502,7 +501,7 @@ export async function expectVeEvents(expectedEvents) {
     if (pendingEventExpectation) {
         throw new Error('VE events expectation already set. Cannot set another one until the previous is resolved');
     }
-    const { promise, resolve: success, reject: fail } = Platform.PromiseUtilities.promiseWithResolvers();
+    const { promise, resolve: success, reject: fail } = Promise.withResolvers();
     pendingEventExpectation = { expectedEvents, success, fail };
     checkPendingEventExpectation();
     setTimeout(() => {

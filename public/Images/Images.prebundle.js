@@ -27,7 +27,6 @@ style.setProperty('--image-file-3d-pan', 'url(\"' + new URL('./src/3d-pan.svg', 
 style.setProperty('--image-file-3d-rotate', 'url(\"' + new URL('./src/3d-rotate.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-accelerometer-back', 'url(\"' + new URL('./src/accelerometer-back.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-accelerometer-front', 'url(\"' + new URL('./src/accelerometer-front.svg', import.meta.url).toString() + '\")');
-style.setProperty('--image-file-account-box', 'url(\"' + new URL('./src/account-box.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-align-content-center', 'url(\"' + new URL('./src/align-content-center.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-align-content-end', 'url(\"' + new URL('./src/align-content-end.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-align-content-space-around', 'url(\"' + new URL('./src/align-content-space-around.svg', import.meta.url).toString() + '\")');
@@ -145,7 +144,6 @@ style.setProperty('--image-file-frame', 'url(\"' + new URL('./src/frame.svg', im
 style.setProperty('--image-file-gear-filled', 'url(\"' + new URL('./src/gear-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-gear', 'url(\"' + new URL('./src/gear.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-gears', 'url(\"' + new URL('./src/gears.svg', import.meta.url).toString() + '\")');
-style.setProperty('--image-file-globe', 'url(\"' + new URL('./src/globe.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-google', 'url(\"' + new URL('./src/google.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-goto-filled', 'url(\"' + new URL('./src/goto-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-heap-snapshot', 'url(\"' + new URL('./src/heap-snapshot.svg', import.meta.url).toString() + '\")');

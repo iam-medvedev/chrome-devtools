@@ -54,7 +54,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ExecutionContextSelector } from './ExecutionContextSelector.js';
-import { SettingTracker } from './SettingTracker.js';
 const UIStrings = {
     /**
      *@description Title of item in main
@@ -253,8 +252,6 @@ export class MainImpl {
         const syncedStorage = new Common.Settings.SettingsStorage(prefs, hostSyncedStorage, storagePrefix);
         const globalStorage = new Common.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
         Common.Settings.Settings.instance({ forceNew: true, syncedStorage, globalStorage, localStorage, config });
-        // Needs to be created after Settings are available.
-        new SettingTracker();
         if (!Host.InspectorFrontendHost.isUnderTest()) {
             new Common.Settings.VersionController().updateVersion();
         }

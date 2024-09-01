@@ -1005,23 +1005,22 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             // |highlightedEntryIndex| might be correct, but to make the code easier
             // to maintain, let's use |selectedEntryIndex|.
             this.contextMenu = this.dataProvider.customizedContextMenu(event, this.selectedEntryIndex, groupIndex);
-            if (this.contextMenu) {
-                if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
-                    const annotationSection = this.contextMenu.section('annotations');
-                    const labelEntryAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
-                        this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.EntryLabelAnnotationAdded */, this.selectedEntryIndex);
-                    });
-                    // TODO: Change the 'add label to entry' shortcut depending on the OS
-                    labelEntryAnnotationOption.setShortcut('Cmd + Click');
-                    const linkEntriesAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
-                        this.dispatchEventToListeners("EntriesLinkAnnotationCreated" /* Events.EntriesLinkAnnotationCreated */, { entryFromIndex: this.selectedEntryIndex });
-                    });
-                    // TODO: Change the 'add link between entries' shortcut depending on the OS
-                    linkEntriesAnnotationOption.setShortcut('Cmd + Click');
-                }
-                void this.contextMenu.show();
+            if (!this.contextMenu) {
                 return;
             }
+            if (Root.Runtime.experiments.isEnabled("perf-panel-annotations" /* Root.Runtime.ExperimentName.TIMELINE_ANNOTATIONS */)) {
+                const annotationSection = this.contextMenu.section('annotations');
+                const labelEntryAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.labelEntry), () => {
+                    this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.EntryLabelAnnotationAdded */, this.selectedEntryIndex);
+                });
+                const prefix = Host.Platform.isMac() ? 'Cmd' : 'Ctrl';
+                labelEntryAnnotationOption.setShortcut(`${prefix} + Click`);
+                const linkEntriesAnnotationOption = annotationSection.appendItem(i18nString(UIStrings.linkEntries), () => {
+                    this.dispatchEventToListeners("EntriesLinkAnnotationCreated" /* Events.EntriesLinkAnnotationCreated */, { entryFromIndex: this.selectedEntryIndex });
+                });
+                linkEntriesAnnotationOption.setShortcut(`${prefix} + Click`);
+            }
+            void this.contextMenu.show();
         }
     }
     #handleFlameChartTransformEvent(event) {
@@ -1742,22 +1741,33 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         break;
                     }
                     case "WARNING_TRIANGLE" /* FlameChartDecorationType.WARNING_TRIANGLE */: {
+                        let endTimePixels = barX + barWidth;
                         if (typeof decoration.customEndTime !== 'undefined') {
-                            // The user can pass a customEndTime to tell us where the event's box ends and therefore where we should draw the triangle. So therefore we calculate the width by taking the end time off the start time.
+                            // The user can pass a customEndTime to tell us where the event's box ends and therefore where we should
+                            // draw the triangle. So therefore we calculate the width by taking the end time off the start time.
                             const endTimeMilli = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(decoration.customEndTime);
-                            const endTimePixels = this.timeToPositionClipped(endTimeMilli);
+                            endTimePixels = this.timeToPositionClipped(endTimeMilli);
                             barWidth = endTimePixels - barX;
                         }
-                        const triangleSize = 8;
+                        const triangleHeight = 8;
+                        let triangleWidth = 8;
+                        if (typeof decoration.customStartTime !== 'undefined') {
+                            // The user can pass a customStartTime to tell us where the event's box start and therefore where we
+                            // should draw the triangle. So therefore we calculate the width by taking the end time off the start
+                            // time.
+                            const startTimeMilli = TraceEngine.Helpers.Timing.microSecondsToMilliseconds(decoration.customStartTime);
+                            const startTimePixels = this.timeToPositionClipped(startTimeMilli);
+                            triangleWidth = Math.min(endTimePixels - startTimePixels, 8);
+                        }
                         context.save();
                         context.beginPath();
                         context.rect(barX, barY, barWidth, barHeight);
                         context.clip();
                         context.beginPath();
                         context.fillStyle = 'red';
-                        context.moveTo(barX + barWidth - triangleSize, barY);
+                        context.moveTo(barX + barWidth - triangleWidth, barY);
                         context.lineTo(barX + barWidth, barY);
-                        context.lineTo(barX + barWidth, barY + triangleSize);
+                        context.lineTo(barX + barWidth, barY + triangleHeight);
                         context.fill();
                         context.restore();
                         break;

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
-import * as Platform from '../platform/platform.js';
 import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 import { bindOutputStream } from './ResourceLoader.js';
 export var Entity;
@@ -87,11 +86,11 @@ export class AidaClient {
             throw new Error('doAidaConversation is not available');
         }
         const stream = (() => {
-            let { promise, resolve, reject } = Platform.PromiseUtilities.promiseWithResolvers();
+            let { promise, resolve, reject } = Promise.withResolvers();
             return {
                 write: async (data) => {
                     resolve(data);
-                    ({ promise, resolve, reject } = Platform.PromiseUtilities.promiseWithResolvers());
+                    ({ promise, resolve, reject } = Promise.withResolvers());
                 },
                 close: async () => {
                     resolve(null);
@@ -190,7 +189,7 @@ export class AidaClient {
         }
     }
     registerClientEvent(clientEvent) {
-        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
+        const { promise, resolve } = Promise.withResolvers();
         InspectorFrontendHostInstance.registerAidaClientEvent(JSON.stringify({
             client: CLIENT_NAME,
             event_time: new Date().toISOString(),

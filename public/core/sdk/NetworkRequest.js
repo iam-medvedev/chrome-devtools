@@ -1469,7 +1469,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         if (this.responseReceivedPromise) {
             return this.responseReceivedPromise;
         }
-        const { promise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
+        const { promise, resolve } = Promise.withResolvers();
         this.responseReceivedPromise = promise;
         this.responseReceivedPromiseResolve = resolve;
         return this.responseReceivedPromise;

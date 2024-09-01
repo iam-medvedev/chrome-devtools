@@ -3,7 +3,7 @@ import * as Types from '../types/types.js';
 import { ScoreClassification } from './PageLoadMetricsHandler.js';
 import { type TraceEventHandlerName } from './types.js';
 interface LayoutShifts {
-    clusters: readonly LayoutShiftCluster[];
+    clusters: readonly Types.TraceEvents.SyntheticLayoutShiftCluster[];
     sessionMaxScore: number;
     clsWindowID: number;
     prePaintEvents: Types.TraceEvents.TraceEventPrePaint[];
@@ -27,18 +27,6 @@ export declare function finalize(): Promise<void>;
 export declare function data(): LayoutShifts;
 export declare function deps(): TraceEventHandlerName[];
 export declare function scoreClassificationForLayoutShift(score: number): ScoreClassification;
-export interface LayoutShiftCluster {
-    clusterWindow: Types.Timing.TraceWindowMicroSeconds;
-    clusterCumulativeScore: number;
-    events: Types.TraceEvents.SyntheticLayoutShift[];
-    scoreWindows: {
-        good: Types.Timing.TraceWindowMicroSeconds;
-        needsImprovement: Types.Timing.TraceWindowMicroSeconds | null;
-        bad: Types.Timing.TraceWindowMicroSeconds | null;
-    };
-    navigationId?: string;
-    worstShiftEvent: Types.TraceEvents.TraceEventData | null;
-}
 export declare const enum LayoutShiftsThreshold {
     GOOD = 0,
     NEEDS_IMPROVEMENT = 0.1,

@@ -5,7 +5,6 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { expectCookie } from '../../testing/Cookies.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
-import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 describe('NetworkRequest', () => {
     it('can parse statusText from the first line of responseReceivedExtraInfo\'s headersText', () => {
@@ -287,7 +286,7 @@ describeWithMockConnection('ServerSentEvents', () => {
             },
         });
         const networkEvents = [];
-        const { promise: twoEventsReceivedPromise, resolve } = Platform.PromiseUtilities.promiseWithResolvers();
+        const { promise: twoEventsReceivedPromise, resolve } = Promise.withResolvers();
         networkManager.requestForId('1').addEventListener(SDK.NetworkRequest.Events.EVENT_SOURCE_MESSAGE_ADDED, ({ data }) => {
             networkEvents.push(data);
             if (networkEvents.length === 2) {

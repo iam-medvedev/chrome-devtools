@@ -9,6 +9,7 @@ import * as EmulationModel from '../../../models/emulation/emulation.js';
 import * as LiveMetrics from '../../../models/live-metrics/live-metrics.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
+import * as IconButton from '../../../ui/components/icon_button/icon_button.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
 import * as Settings from '../../../ui/components/settings/settings.js';
@@ -142,7 +143,7 @@ const UIStrings = {
      */
     disableNetworkCache: 'Disable network cache',
     /**
-     * @description Text label for a link to the Largest Contentful Paint (LCP) related DOM node.
+     * @description Text label for a link to the Largest Contentful Paint (LCP) related page element. This element represents the largest content on the page. "LCP" should not be translated.
      */
     lcpElement: 'LCP Element',
     /**
@@ -178,6 +179,10 @@ const UIStrings = {
      * @description Link text that is inserted in another translated text block that describes performance data measured by real users in the field.
      */
     fieldDataLink: 'field data',
+    /**
+     * @description Tooltip text explaining that this user interaction was ignored when calculating the Interaction to Next Paint (INP) metric because the interaction delay fell beyond the 98th percentile of interaction delays on this page. "INP" is an acronym and should not be translated.
+     */
+    interactionExcluded: 'INP is calculated using the 98th percentile of interaction delays, so some interaction delays may be larger than the INP value.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/LiveMetricsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -598,8 +603,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         if (CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled) {
             return this.#renderCollectionPeriod();
         }
-        // "Chrome UX Report" is intentionally left untranslated because it is a product name.
-        const linkEl = UI.XLink.XLink.create('https://developer.chrome.com/docs/crux', 'Chrome UX Report');
+        const linkEl = UI.XLink.XLink.create('https://developer.chrome.com/docs/crux', i18n.i18n.lockedString('Chrome UX Report'));
         const messageEl = i18n.i18n.getFormatLocalizedString(str_, UIStrings.seeHowYourLocalMetricsCompare, { PH1: linkEl });
         return html `
       <div class="field-data-message">${messageEl}</div>
@@ -617,6 +621,40 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         ${fieldEnabled ? html `<div>${fieldEl}</div>` : nothing}
       </div>
     `;
+    }
+    #renderInteractionsSection() {
+        if (!this.#interactions.length) {
+            return LitHtml.nothing;
+        }
+        // clang-format off
+        return html `
+      <section class="interactions-section" aria-labelledby="interactions-section-title">
+        <h2 id="interactions-section-title" class="section-title">${i18nString(UIStrings.interactions)}</h2>
+        <ol class="interactions-list"
+          on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
+            this.#interactionsListEl = node;
+        })}
+        >
+          ${this.#interactions.map(interaction => {
+            const metricValue = renderMetricValue('timeline.landing.interaction-event-timing', interaction.duration, INP_THRESHOLDS, v => i18n.TimeUtilities.millisToString(v), { dim: true });
+            const isP98Excluded = this.#inpValue && this.#inpValue.value < interaction.duration;
+            return html `
+              <li class="interaction">
+                <span class="interaction-type">${interaction.interactionType}</span>
+                <span class="interaction-node">${interaction.node && until(Common.Linkifier.Linkifier.linkify(interaction.node))}</span>
+                ${isP98Excluded ? html `<${IconButton.Icon.Icon.litTagName}
+                  class="interaction-info"
+                  name="info"
+                  title=${i18nString(UIStrings.interactionExcluded)}
+                ></${IconButton.Icon.Icon.litTagName}>` : nothing}
+                <span class="interaction-duration">${metricValue}</span>
+              </li>
+            `;
+        })}
+        </ol>
+      </section>
+    `;
+        // clang-format on
     }
     #render = () => {
         const fieldEnabled = CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled;
@@ -644,26 +682,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
               </div>
             </div>
             ${this.#renderDataDescriptions()}
-            ${this.#interactions.length > 0 ? html `
-              <section class="interactions-section" aria-labelledby="interactions-section-title">
-                <h2 id="interactions-section-title" class="section-title">${i18nString(UIStrings.interactions)}</h2>
-                <ol class="interactions-list"
-                  on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
-            this.#interactionsListEl = node;
-        })}
-                >
-                  ${this.#interactions.map(interaction => html `
-                    <li class="interaction">
-                      <span class="interaction-type">${interaction.interactionType}</span>
-                      <span class="interaction-node">${interaction.node && until(Common.Linkifier.Linkifier.linkify(interaction.node))}</span>
-                      <span class="interaction-duration">
-                        ${renderMetricValue('timeline.landing.interaction-event-timing', interaction.duration, INP_THRESHOLDS, v => i18n.TimeUtilities.millisToString(v), { dim: true })}
-                      </span>
-                    </li>
-                  `)}
-                </ol>
-              </section>
-            ` : nothing}
+            ${this.#renderInteractionsSection()}
           </main>
           <aside class="next-steps" aria-labelledby="next-steps-section-title">
             <h2 id="next-steps-section-title" class="section-title">${i18nString(UIStrings.nextSteps)}</h2>
